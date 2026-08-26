@@ -44,8 +44,20 @@ local function collect_figure_ids(elem)
   if elem.level ~= 5 then return end
   local text = pandoc.utils.stringify(elem):lower()
     :gsub("^%s+", "")
-  -- Match either "appendix figure N" (checked first — longer prefix)
-  -- or "figure N". Trailing punctuation (".", ":") is allowed.
+  -- "supplementary figure N" / "appendix figure N" are checked before
+  -- plain "figure N" because the longer prefixes also contain it.
+  -- Trailing punctuation (".", ":") is allowed.
+  local supp = text:match("^supplementary figure (%d+)")
+  if supp and elem.identifier ~= "" then
+    -- The body cites these as "Figure S10" while the captions read
+    -- "Supplementary Figure 10". Register BOTH spellings against the
+    -- same anchor: linking has to work from what the prose actually
+    -- says, and reconciling the manuscript's own wording is the
+    -- author's call, not this filter's.
+    figure_ids["figure s" .. supp] = elem.identifier
+    figure_ids["supplementary figure " .. supp] = elem.identifier
+    return
+  end
   local key = text:match("^(appendix figure %d+)")
     or text:match("^(figure %d+)")
   if key and elem.identifier ~= "" then
@@ -98,6 +110,25 @@ local function split_image_in_heading(elem)
     )
     results:insert(pandoc.Header(elem.level, rest, stripped_attr))
   end
+  -- Wrap image(s) + caption as ONE block, but ONLY when this heading
+  -- actually held both. That is the supplementary-figure shape (image
+  -- pasted into the caption paragraph), and without the wrapper it
+  -- relied on the advisory break-after/break-before pair — which
+  -- WeasyPrint ignored across the column-span:all boundary, printing
+  -- Supplementary Figure 3's artwork on one page and its caption
+  -- alone on the next.
+  --
+  -- When the heading was image-ONLY (`rest` empty — Figure 6's shape,
+  -- where the caption is its own following heading), return the bare
+  -- paragraph. Wrapping it here would hide the Para from
+  -- reattach_ids_to_image_paras, which pairs it with that next
+  -- heading and does its own wrapping; hiding it silently cost
+  -- Figure 6 its canonical-render swap.
+  if #rest > 0 then
+    return pandoc.List({
+      pandoc.Div(results, pandoc.Attr("", {"figure-block"})),
+    })
+  end
   return results
 end
 
@@ -145,6 +176,30 @@ end
 -- Tail like "2", "2)", "2.", "2;". Returns (num, suffix) or nil.
 local function tail_match(s)
   return s:match("^(%d+)([^%a%d]*)$")
+end
+
+-- Supplementary tail: "S3", "S10)", "S4,". Returns (label, suffix) or
+-- nil, where label is the lookup key fragment ("s3"). Kept separate
+-- from tail_match because a bare %d+ must NOT swallow the "S" — an
+-- unqualified "Figure 3" and a supplementary "Figure S3" are
+-- different figures and mixing them would silently mis-link.
+local function supp_tail_match(s)
+  local num, suffix = s:match("^[Ss](%d+)([^%a%d]*)$")
+  if not num then return nil end
+  return num, suffix or ""
+end
+
+-- Slash-joined supplementary pairs: "S13/S14", "S13/S14)". The draft
+-- cites two panels-worth of supplement that way, and a single-number
+-- matcher leaves the whole run unlinked. Returns {n1, n2, ...} and the
+-- trailing punctuation, or nil when the shape does not fit.
+local function supp_multi_match(s)
+  local body, suffix = s:match("^([Ss]%d+[/&,]?[Ss]?[%d/&,Ss]*)([^%a%d/&,]*)$")
+  if not body or not body:find("/") then return nil end
+  local nums = {}
+  for n in body:gmatch("[Ss](%d+)") do nums[#nums + 1] = n end
+  if #nums < 2 then return nil end
+  return nums, suffix or ""
 end
 
 -- Emit a body-text figure reference as a Link, pulling matched
@@ -209,7 +264,7 @@ local function linkify_figure_refs(inlines)
       end
     end
 
-    -- "Figure N" (3 inlines)
+    -- "Figure N" and "Figure SN" (3 inlines each)
     if not matched
         and i + 2 <= #inlines
         and inlines[i].t == "Str"
@@ -217,14 +272,56 @@ local function linkify_figure_refs(inlines)
         and inlines[i + 2].t == "Str" then
       local prefix, fig_word = head_match(inlines[i].text)
       if fig_word then
-        local num, suffix = tail_match(inlines[i + 2].text)
-        if num then
-          local key = "figure " .. num
-          local id = figure_ids[key]
-          if id then
-            emit_link_with_brackets(result, prefix, fig_word .. " " .. num, suffix, id)
+        -- Supplementary first: "S3" would otherwise fall through to
+        -- tail_match, fail, and leave the reference unlinked.
+        -- Slash-joined pair first ("Figure S13/S14"): the single-number
+        -- matcher would reject it outright and leave both unlinked.
+        local supp_nums, multi_suffix = supp_multi_match(inlines[i + 2].text)
+        if supp_nums then
+          local all_known = true
+          for _, n in ipairs(supp_nums) do
+            if not figure_ids["figure s" .. n] then all_known = false end
+          end
+          if all_known then
+            if prefix ~= "" then result:insert(pandoc.Str(prefix)) end
+            for idx, n in ipairs(supp_nums) do
+              if idx > 1 then result:insert(pandoc.Str("/")) end
+              local label = (idx == 1)
+                and (fig_word .. " S" .. n) or ("S" .. n)
+              result:insert(pandoc.Link({pandoc.Str(label)},
+                "#" .. figure_ids["figure s" .. n]))
+            end
+            if multi_suffix ~= "" then result:insert(pandoc.Str(multi_suffix)) end
             i = i + 3
             matched = true
+          end
+        end
+
+        -- Guarded: the multi-match branch above may already have
+        -- advanced `i`, in which case inlines[i + 2] can be past the
+        -- end and indexing it would blow up the whole filter.
+        if not matched then
+          local supp_num, supp_suffix = supp_tail_match(inlines[i + 2].text)
+          if supp_num then
+            local id = figure_ids["figure s" .. supp_num]
+            if id then
+              emit_link_with_brackets(
+                result, prefix, fig_word .. " S" .. supp_num, supp_suffix, id)
+              i = i + 3
+              matched = true
+            end
+          end
+        end
+        if not matched then
+          local num, suffix = tail_match(inlines[i + 2].text)
+          if num then
+            local key = "figure " .. num
+            local id = figure_ids[key]
+            if id then
+              emit_link_with_brackets(result, prefix, fig_word .. " " .. num, suffix, id)
+              i = i + 3
+              matched = true
+            end
           end
         end
       end
@@ -252,7 +349,14 @@ local function is_figure_caption_heading(elem)
     and elem.identifier ~= nil
     and elem.identifier ~= ""
     and (elem.identifier:match("^figure%-%d")
-         or elem.identifier:match("^appendix%-figure%-%d"))
+         or elem.identifier:match("^appendix%-figure%-%d")
+         -- Supplementary captions carry ids like
+         -- "supplementary-figure-2-…". Omitting this pattern meant the
+         -- image-only-heading shape (image in its own heading, caption
+         -- in the next) never got paired for supplementary figures, so
+         -- they kept splitting across pages even after the wrapper
+         -- landed.
+         or elem.identifier:match("^supplementary%-figure%-%d"))
 end
 
 -- After splitting + emitting, walk neighbouring (img-Para, caption-Hdr)
@@ -277,12 +381,21 @@ local function reattach_ids_to_image_paras(blocks)
       local anchor = pandoc.Span({}, pandoc.Attr(id))
       local new_inlines = pandoc.List({anchor})
       for _, inl in ipairs(cur.content) do new_inlines:insert(inl) end
-      result:insert(pandoc.Para(new_inlines))
       local stripped_h = pandoc.Header(
         nxt.level, nxt.content,
         pandoc.Attr("", nxt.attr.classes, nxt.attr.attributes)
       )
-      result:insert(stripped_h)
+      -- Wrap the pair in ONE block so the artwork and its caption are
+      -- structurally inseparable. `break-after`/`break-before: avoid`
+      -- on the two siblings is only advisory, and WeasyPrint dropped
+      -- it across the column-span:all boundary — Supplementary Figure
+      -- 3 ended up with its caption stranded alone at the top of a
+      -- near-empty page. A single container with break-inside: avoid
+      -- is a constraint the layout engine cannot quietly ignore.
+      result:insert(pandoc.Div(
+        {pandoc.Para(new_inlines), stripped_h},
+        pandoc.Attr("", {"figure-block"})
+      ))
       i = i + 2
     else
       result:insert(cur)

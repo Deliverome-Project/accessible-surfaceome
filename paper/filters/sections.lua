@@ -14,11 +14,13 @@
 
   What it does NOT touch, deliberately:
 
-  * "Figure S3", "Table S1" and friends. Supplementary lives in a
-    SEPARATE file, so an intra-document anchor would be a dead link
-    (worse than plain text — it looks clickable and goes nowhere).
-    SUPPLEMENTARY_PATTERNS below encodes that; extend it if the
-    supplement ever gains new label shapes.
+  * "Figure S3", "Table S1" and friends. These are FIGURE references,
+    not section references, so they belong to filters/figures.lua —
+    which links them to their "Supplementary Figure N" captions now
+    that the supplement lives in the main file rather than a separate
+    one. The guard below stays: it is what stops a section-name match
+    from chewing through a label run that figures.lua left unlinked
+    (a "Figure SN" with no matching caption).
   * The section headings themselves, so "Methods" in the Methods
     title doesn't self-link.
   * Any name that resolves to more than one heading. The draft has

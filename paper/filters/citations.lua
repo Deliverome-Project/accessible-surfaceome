@@ -65,6 +65,11 @@ local matched_count = 0
 local function is_refs_heading(header)
   local s = pandoc.utils.stringify(header):lower()
     :gsub("^%s+", ""):gsub("%s+$", "")
+  -- "Supplementary References" counts too. Miss it and that section's
+  -- entries keep their Zotero wrappers, which citations.lua then reads
+  -- as in-text citations — producing nonsense keys off page numbers
+  -- ("… Brunak, S. 1005") and leaving real citations unlinked.
+  s = s:gsub("^supplementary%s+", ""):gsub("^supplemental%s+", "")
   return s == "references" or s == "bibliography"
     or s == "works cited" or s == "literature cited"
 end
@@ -81,6 +86,23 @@ local function norm_author(s)
   -- a quoted title ("Plasma membrane (HPA)," n.d.).
   s = s:gsub("[\u{201C}\u{201D}\u{2018}\u{2019}\"']", "")
   s = s:gsub("[,%.]%s*$", "")
+  -- Strip only UNBALANCED brackets. Zotero occasionally leaves the
+  -- closing ")" outside the <a> it wraps, so a group can arrive as
+  -- "(Westergaard et al., 2018" — the outer-bracket peel below can't
+  -- fire on that, and the "(" would ride into the lookup key and fail
+  -- to match a perfectly good reference.
+  --
+  -- Balanced brackets must SURVIVE, because a bracket can be part of
+  -- the name itself: "Plasma membrane (HPA)" is a real reference whose
+  -- key needs its "(HPA)" intact. Count first, strip only the excess.
+  local opens = select(2, s:gsub("%(", ""))
+  local closes = select(2, s:gsub("%)", ""))
+  if opens > closes then
+    s = s:gsub("^%(", "", opens - closes)
+  elseif closes > opens then
+    for _ = 1, closes - opens do s = s:gsub("%)%s*$", "") end
+  end
+  s = s:gsub("^%[+", ""):gsub("%]+$", "")
   s = s:gsub("^%s+", ""):gsub("%s+$", "")
   s = s:gsub("%s+", " ")
   return s
@@ -300,7 +322,10 @@ local RESOURCE_LINES = {
   {prefix = "code (github)", icon = "github.svg", alt = "GitHub"},
   {prefix = "code:",         icon = "github.svg", alt = "GitHub"},
   {prefix = "data:",         icon = "zenodo.svg", alt = "Zenodo"},
-  {prefix = "viewer:",       icon = nil},
+  -- The viewer line gets a mark too, purely so all four labels share
+  -- a left edge: without one, "Viewer:" starts at the margin while the
+  -- icon-bearing labels are pushed right, and the block reads ragged.
+  {prefix = "viewer:",       icon = "viewer.svg", alt = "Web viewer"},
 }
 
 -- build.py exports this so the filter can emit absolute image paths.

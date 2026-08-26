@@ -605,3 +605,26 @@ img.resource-icon {
   margin: 0 0.2em 0 0;
   vertical-align: -0.1em;
 }
+
+/* A figure and its caption, wrapped as one block by
+ * filters/figures.lua. break-inside on the container is a hard
+ * constraint, unlike the advisory break-after/break-before pair on
+ * the two siblings — which WeasyPrint dropped across the
+ * column-span:all boundary, stranding a caption alone on a page. */
+.figure-block {
+  column-span: all;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Cap artwork height inside a figure-block. Keeping a figure welded to
+ * its caption is only free while the pair FITS: a 7x5in figure under a
+ * ten-line caption exceeds the 9.2in text block, so the whole unit was
+ * shunted to the next page and left a completely blank one behind.
+ * Clamping the tallest artwork lets every pair fit. Nothing is lost —
+ * these are vector or 600-DPI sources being scaled down, not up. */
+.figure-block img {
+  max-height: 6.2in;
+  width: auto;
+  max-width: 100%;
+}

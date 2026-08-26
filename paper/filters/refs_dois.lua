@@ -32,6 +32,12 @@ local doi_pattern = "https?://doi%.org/[^%s%)%]]+"
 -- "References". Lower-cased + stripped of surrounding whitespace.
 local function is_refs_heading(header)
   local s = pandoc.utils.stringify(header):lower():gsub("^%s+", ""):gsub("%s+$", "")
+  -- Strip a "Supplementary "/"Supplemental " qualifier so the
+  -- supplement's own reference list is treated like the main one.
+  -- Without this its entries keep their Zotero wrappers, and the
+  -- downstream citation filter reads each full reference entry as an
+  -- in-text citation.
+  s = s:gsub("^supplementary%s+", ""):gsub("^supplemental%s+", "")
   return s == "references"
     or s == "bibliography"
     or s == "works cited"
