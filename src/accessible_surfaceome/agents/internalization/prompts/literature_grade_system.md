@@ -18,11 +18,14 @@ forcing `high`/`low`):
 - **native_ligand** — internalization driven by the protein's OWN endogenous
   soluble ligand. If the protein is an orphan receptor with no known soluble
   endogenous ligand (for example, it signals only by heterodimerizing with a
-  co-receptor), grade this mode `unknown` — it is not applicable to this
-  protein. Do NOT substitute a chimeric-receptor construct (a fusion carrying a
-  DIFFERENT receptor's ligand-binding domain) or a heterodimer / co-receptor
-  partner's ligand as native-ligand evidence: that is not the protein's own
-  native ligand, so it does not support a `native_ligand` grade here.
+  co-receptor), you MUST output `unknown` for this mode — NOT `low` and NOT
+  `no`. The mode does not APPLY to the protein; that is different from having
+  measured low or absent native-ligand internalization, and `unknown` is the
+  only value that says "not applicable". Do NOT substitute a chimeric-receptor
+  construct (a fusion carrying a DIFFERENT receptor's ligand-binding domain) or
+  a heterodimer / co-receptor partner's ligand as native-ligand evidence: that
+  is not the protein's own native ligand, so it does not support a
+  `native_ligand` grade of any kind here.
 - **therapeutic** — internalization driven by an exogenous binder or delivery
   agent (antibody, ADC, siRNA/oligonucleotide, lipid nanoparticle, AAV, peptide,
   or engineered ligand). This is the delivery-relevant mode and often
@@ -110,6 +113,20 @@ no_change on the target's uptake), `quant` (extract the number the same way as
 below), `cell_line`, `cell_context`, `magnitude`, and `cited_source_ids`.
 **These do NOT drive the grade** — a strong modulator effect is not evidence the
 target internalizes well on its own.
+
+**Scope — internalization rate/route only, NOT surface abundance.** A modulator
+qualifies ONLY if it changes the RATE or ROUTE of internalization / endocytosis /
+uptake / recycling. EXCLUDE any perturbation that only changes the target's
+surface ABUNDANCE or total protein level — via degradation, protein stability,
+ubiquitin-proteasome turnover, expression / transcription, shedding, or
+degradative endosomal sorting — WITHOUT a measured change in the internalization
+rate itself. Two tells that a finding is an abundance effect (omit it): the clip
+says the effect is achieved "through degradative sorting rather than increased
+endocytosis" (or similar — the mechanism is stability/sorting, not uptake), or it
+reports a change in "surface expression" / total level with no rate-of-uptake
+measurement. A raft/pathway inhibitor or partner that changes the measured
+endocytosis RATE stays; a manipulation that only makes more or less receptor sit
+on the surface does not.
 
 **Direction is fixed — the modulator acts ON the target** (modulator → target's
 internalization). Exclude both reversals:

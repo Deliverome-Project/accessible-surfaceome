@@ -41,7 +41,11 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 # 0.1.4: grade prompt — native_ligand mode is `unknown`/NA for orphan receptors
 #        with no soluble endogenous ligand; chimeric-receptor + heterodimer-
 #        partner-ligand studies no longer count as native-ligand evidence.
-LIT_PROMPT_VERSION = "0.1.4"
+# 0.1.5: grade prompt — orphan native_ligand MUST be `unknown` (not low/no; 0.1.4
+#        still emitted `low`); modulator scope tightened to internalization
+#        rate/route only, excluding surface-abundance effects (degradation,
+#        stability, proteasomal turnover, expression, degradative sorting).
+LIT_PROMPT_VERSION = "0.1.5"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
