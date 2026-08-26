@@ -49,6 +49,20 @@ def hazard_residues(features: list[dict[str, Any]]) -> set[int]:
     return out
 
 
+def ca_coords(pdb_path: str) -> dict[int, tuple[float, float, float]]:
+    """Per-residue CA coordinate (x, y, z) on the model — for 3D distance filters
+    (e.g. terminus-proximity). Tuples (not numpy) so callers stay numpy-free."""
+    from Bio.PDB import PDBParser
+
+    struct = PDBParser(QUIET=True).get_structure("m", str(pdb_path))
+    out: dict[int, tuple[float, float, float]] = {}
+    for res in struct.get_residues():
+        if "CA" in res:
+            c = res["CA"].coord
+            out[res.id[1]] = (float(c[0]), float(c[1]), float(c[2]))
+    return out
+
+
 def feature_distances(pdb_path: str, hazard_res: set[int]) -> dict[int, float]:
     """Per-residue minimum CA-CA distance (Å) to any hazard residue on the
     model. Residues with no hazard in the structure get ``inf`` (fully clear)."""
