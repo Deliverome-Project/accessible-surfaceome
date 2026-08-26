@@ -527,5 +527,293 @@
       "canonical_residue": 160,
       "left_pct": 74.60317460317461
     }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "TMEM123-disorder-101::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 101,
+      "canonical_residue": 102,
+      "left_pct": 50.5
+    },
+    {
+      "site_id": "TMEM123-disorder-110::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 110,
+      "canonical_residue": 119,
+      "left_pct": 56.41025641025641
+    },
+    {
+      "site_id": "TMEM123-disorder-116::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 116,
+      "canonical_residue": 117,
+      "left_pct": 57.99999999999999
+    },
+    {
+      "site_id": "TMEM123-disorder-123::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 123,
+      "canonical_residue": 132,
+      "left_pct": 63.07692307692307
+    },
+    {
+      "site_id": "TMEM123-disorder-127::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 127,
+      "canonical_residue": 128,
+      "left_pct": 63.5
+    },
+    {
+      "site_id": "TMEM123-disorder-131::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 131,
+      "canonical_residue": 140,
+      "left_pct": 67.17948717948717
+    },
+    {
+      "site_id": "TMEM123-disorder-135::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 135,
+      "canonical_residue": 136,
+      "left_pct": 67.5
+    },
+    {
+      "site_id": "TMEM123-disorder-143::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 143,
+      "canonical_residue": 144,
+      "left_pct": 71.5
+    },
+    {
+      "site_id": "TMEM123-disorder-145::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 145,
+      "canonical_residue": 158,
+      "left_pct": 74.35897435897436
+    },
+    {
+      "site_id": "TMEM123-disorder-158::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 158,
+      "canonical_residue": 159,
+      "left_pct": 79.0
+    },
+    {
+      "site_id": "TMEM123-disorder-28::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 28,
+      "canonical_residue": 28,
+      "left_pct": 14.000000000000002
+    },
+    {
+      "site_id": "TMEM123-disorder-29::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 29,
+      "canonical_residue": 32,
+      "left_pct": 14.871794871794872
+    },
+    {
+      "site_id": "TMEM123-disorder-38::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 38,
+      "canonical_residue": 38,
+      "left_pct": 19.0
+    },
+    {
+      "site_id": "TMEM123-disorder-40::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 40,
+      "canonical_residue": 43,
+      "left_pct": 20.51282051282051
+    },
+    {
+      "site_id": "TMEM123-disorder-49::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 49,
+      "canonical_residue": 49,
+      "left_pct": 24.5
+    },
+    {
+      "site_id": "TMEM123-disorder-54::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 54,
+      "canonical_residue": 59,
+      "left_pct": 27.692307692307693
+    },
+    {
+      "site_id": "TMEM123-disorder-61::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 61,
+      "canonical_residue": 62,
+      "left_pct": 30.5
+    },
+    {
+      "site_id": "TMEM123-disorder-69::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 69,
+      "canonical_residue": 72,
+      "left_pct": 35.38461538461539
+    },
+    {
+      "site_id": "TMEM123-disorder-71::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 71,
+      "canonical_residue": 72,
+      "left_pct": 35.5
+    },
+    {
+      "site_id": "TMEM123-disorder-80::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 80,
+      "canonical_residue": 87,
+      "left_pct": 41.02564102564102
+    },
+    {
+      "site_id": "TMEM123-disorder-83::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 83,
+      "canonical_residue": 84,
+      "left_pct": 41.5
+    },
+    {
+      "site_id": "TMEM123-disorder-90::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 90,
+      "canonical_residue": 97,
+      "left_pct": 46.15384615384615
+    },
+    {
+      "site_id": "TMEM123-disorder-92::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 92,
+      "canonical_residue": 93,
+      "left_pct": 46.0
+    },
+    {
+      "site_id": "TMEM123-disorder-99::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 99,
+      "canonical_residue": 107,
+      "left_pct": 50.76923076923077
+    },
+    {
+      "site_id": "TMEM123-surface_loop-147::iso::Q91Z22",
+      "isoform_id": "Q91Z22",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 147,
+      "canonical_residue": 160,
+      "left_pct": 75.38461538461539
+    },
+    {
+      "site_id": "TMEM123-surface_loop-161::iso::A0A2K5U3Y5",
+      "isoform_id": "A0A2K5U3Y5",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 161,
+      "canonical_residue": 162,
+      "left_pct": 80.5
+    }
   ]
 }

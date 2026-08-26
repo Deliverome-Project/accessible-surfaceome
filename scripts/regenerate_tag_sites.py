@@ -29,12 +29,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import tempfile
 import urllib.request
 from pathlib import Path
 
 from accessible_surfaceome.tag_sites import features as F
-from accessible_surfaceome.tag_sites.run import run_gene, run_isoform_pins
+from accessible_surfaceome.tag_sites.run import run_gene, run_isoform_pins, run_ortholog_pins
 from accessible_surfaceome.tools.afdb_plddt import read_afdb_model_links
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +44,9 @@ CANON_3LINE = PRED / "human_canonical_non_hla/predicted_topologies.3line"
 ISO_3LINE = PRED / "human_isoforms_from_afdb_non_hla/predicted_topologies.3line"
 OUT_DIR = ROOT / "viewer/public/tag-sites"
 PDB_CACHE = ROOT / "data/cache/afdb_pdb"
+# Public API record is the source of ortholog seq/topology/acc — the same data the
+# viewer's ortholog tiles read (deterministic_features.orthologs).
+API_BASE = os.environ.get("SURFACEOME_API_BASE", "https://api.deliverome.org/surfaceome").rstrip("/")
 
 log = logging.getLogger("regenerate_tag_sites")
 
@@ -92,6 +96,40 @@ def _hazard(acc: str) -> set[int]:
     except Exception as ex:  # noqa: BLE001 — best-effort veto
         log.warning("  UniProt features unavailable for %s (%s) -> empty veto", acc, type(ex).__name__)
         return set()
+
+
+def orthologs_for(symbol: str) -> list[tuple[str, str, str]]:
+    """[(ortholog_acc, seq, topology_str), ...] for the CANONICAL mouse + cyno
+    one-to-one orthologs of ``symbol``, read from the public API record (the same
+    ``deterministic_features.orthologs`` the viewer's ortholog tiles use). Uses the
+    ortholog's OWN per-residue topology (its own residue frame, matching its AFDB
+    model). Best-effort: empty on any fetch/shape failure — ortholog pins are an
+    overlay, never a hard dependency of the deterministic run."""
+    try:
+        req = urllib.request.Request(
+            f"{API_BASE}/v1/genes/{symbol}",
+            headers={"accept": "application/json", "user-agent": "Mozilla/5.0 (regenerate_tag_sites)"},
+        )
+        with urllib.request.urlopen(req, timeout=30) as r:  # noqa: S310 - fixed API host
+            rec = json.loads(r.read())
+    except Exception as ex:  # noqa: BLE001
+        log.warning("  ortholog record fetch failed for %s (%s) -> no ortholog pins", symbol, type(ex).__name__)
+        return []
+    orth = (rec.get("deterministic_features") or {}).get("orthologs") or {}
+    out: list[tuple[str, str, str]] = []
+    for species in ("mouse", "cynomolgus"):
+        for o in orth.get(species) or []:
+            if not isinstance(o, dict) or not o.get("is_canonical"):
+                continue
+            acc, seq, topo = (
+                o.get("ortholog_uniprot_acc"),
+                o.get("sequence"),
+                o.get("per_residue_topology"),
+            )
+            if acc and seq and topo and len(seq) == len(topo):
+                out.append((acc, seq, topo))
+            break  # canonical ortholog only
+    return out
 
 
 def isoforms_for(acc: str, iso_map: dict[str, tuple[str, str]]) -> list[tuple[str, str, str]]:
@@ -152,6 +190,15 @@ def regenerate_gene(
         isoforms=isos, fetch_pdb=af_pdb, hazard_for=None,
     ) if isos else []
 
+    # Per-ortholog pins (gates on each ortholog's OWN AFDB model, classified vs
+    # human canonical). Keyed by ortholog acc; rendered on the ortholog's own
+    # structure at its own residue axis. Best-effort (orthologs sourced from the API).
+    orths = orthologs_for(symbol)
+    opins = run_ortholog_pins(
+        symbol, acc, canonical_sequence=seq, canonical_sites=det_sites,
+        orthologs=orths, fetch_pdb=af_pdb, hazard_for=None,
+    ) if orths else []
+
     out_path = out_dir / f"{symbol}.json"
     kept = _existing_non_deterministic(out_path)          # preserve literature sites
     sites = sorted(kept + det_sites, key=lambda s: s["site_id"])
@@ -161,6 +208,7 @@ def regenerate_gene(
         "uniprot_acc": acc,
         "sites": sites,
         "isoform_pins": sorted(pins, key=lambda p: p["site_id"]),
+        "ortholog_pins": sorted(opins, key=lambda p: p["site_id"]),
     }
     n_term = sum(1 for s in det_sites if s.get("det_path") in ("terminal", "snorkel"))
     summary = {
@@ -168,6 +216,8 @@ def regenerate_gene(
         "literature_kept": len(kept), "isoforms_run": len(isos),
         "isoform_pins": len(pins),
         "isoform_unique": sum(1 for p in pins if p.get("classification") == "unique"),
+        "orthologs_run": len(orths), "ortholog_pins": len(opins),
+        "ortholog_unique": sum(1 for p in opins if p.get("classification") == "unique"),
     }
     if dry_run:
         log.info("[dry-run] %s %s -> %s", symbol, acc, summary)
@@ -223,7 +273,7 @@ def main() -> None:
              len(genes), len(canon), len(iso_map), "  [dry-run]" if args.dry_run else "")
 
     out_dir = Path(args.out_dir)
-    totals = {"genes": 0, "det": 0, "term": 0, "pins": 0, "unique": 0}
+    totals = {"genes": 0, "det": 0, "term": 0, "pins": 0, "unique": 0, "opins": 0, "ounique": 0}
     for symbol, acc in genes:
         s = regenerate_gene(symbol, acc, canon=canon, iso_map=iso_map,
                             out_dir=out_dir, dry_run=args.dry_run)
@@ -233,8 +283,14 @@ def main() -> None:
             totals["term"] += s["terminal_or_snorkel"]
             totals["pins"] += s["isoform_pins"]
             totals["unique"] += s["isoform_unique"]
-    log.info("done: %d genes | %d deterministic (%d terminal/snorkel) | %d isoform pins (%d unique)",
-             totals["genes"], totals["det"], totals["term"], totals["pins"], totals["unique"])
+            totals["opins"] += s.get("ortholog_pins", 0)
+            totals["ounique"] += s.get("ortholog_unique", 0)
+    log.info(
+        "done: %d genes | %d deterministic (%d terminal/snorkel) | %d isoform pins (%d unique) "
+        "| %d ortholog pins (%d unique)",
+        totals["genes"], totals["det"], totals["term"], totals["pins"], totals["unique"],
+        totals["opins"], totals["ounique"],
+    )
     if not args.dry_run and totals["genes"]:
         log.info("next: uv run python scripts/sync_tag_sites_to_d1.py --version <YYYY-MM-DD>")
 
