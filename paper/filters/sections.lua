@@ -309,6 +309,19 @@ return {
     Header = function(elem)
       local text = pandoc.utils.stringify(elem)
       local trimmed = text:gsub("^%s+", ""):gsub("%s+$", "")
+      -- Drop headings with no text. The .docx carries several empty
+      -- "##" paragraphs (stray blank headings between sections); they
+      -- print as bare section rules in the PDF and, once the web build
+      -- gained a table of contents, as blank clickable rows in it.
+      -- Guarded on having no image, so an image-only heading — the
+      -- shape figures.lua splits — is never mistaken for an empty one.
+      if trimmed == "" then
+        local has_image = false
+        for _, inl in ipairs(elem.content) do
+          if inl.t == "Image" then has_image = true end
+        end
+        if not has_image then return {} end
+      end
       if want(trimmed) then return nil end
       local id, name = rule_for_block(text)
       return pandoc.Header(
