@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { EvidenceChip } from "../EvidenceChip/EvidenceChip";
 import { EvidenceDrawer } from "../EvidenceDrawer/EvidenceDrawer";
@@ -40,12 +40,21 @@ const API_BASE =
   process.env.NEXT_PUBLIC_SURFACEOME_API_BASE ??
   "https://api.deliverome.org/surfaceome";
 
+interface MotifHit {
+  motif_type: string;
+  sequence: string;
+  region: string;
+  approx_position: string | null;
+  functional_context: boolean;
+  note: string;
+}
 interface IsoformPrior {
   isoform_id: string;
   is_canonical: boolean;
   length_aa: number | null;
   topology_summary: string;
   endocytic_motifs_noted: string | null;
+  motifs?: MotifHit[];
   grade: Grade;
   confidence: string;
   rationale: string;
@@ -73,6 +82,7 @@ interface Observation {
   assay_type: string;
   cell_line: string | null;
   cell_context: string;
+  species?: string | null;
   internalization_mode: string;
   ligand_name: string | null;
   mechanism: string | null;
@@ -167,29 +177,122 @@ function Pill({ grade, label }: { grade: Grade | string; label?: string }) {
   return <span className={`${styles.pill} ${styles["g_" + g] ?? styles.g_unknown}`}>{label ?? g}</span>;
 }
 
-function SourceLink({ id }: { id: string }) {
-  if (id?.startsWith("PMID:")) {
-    const num = id.slice(5);
-    return (
-      <a href={`https://pubmed.ncbi.nlm.nih.gov/${num}/`} target="_blank" rel="noreferrer">
-        {id}
-      </a>
-    );
-  }
-  if (id?.startsWith("PMC:")) {
-    const num = id.slice(4);
-    return (
-      <a href={`https://www.ncbi.nlm.nih.gov/pmc/articles/${num}/`} target="_blank" rel="noreferrer">
-        {id}
-      </a>
-    );
-  }
-  return <>{id}</>;
+// Prettify a snake_case enum for a badge ("adc_internalization" -> "ADC
+// internalization"), upper-casing common acronyms.
+const _ACRONYMS = /\b(adc|pet|ph|rna|dna|aav|lnp|immunopet)\b/gi;
+function prettyLabel(v: string | null | undefined): string {
+  if (!v) return "";
+  return v.replace(/_/g, " ").replace(_ACRONYMS, (m) => m.toUpperCase());
+}
+
+// Small neutral category chip for the assay / mode / metric columns — makes each
+// a distinct field rather than run-on text.
+function Badge({ value }: { value: string | null | undefined }) {
+  if (!value) return <span className={styles.empty}>—</span>;
+  return <span className={styles.badge}>{prettyLabel(value)}</span>;
+}
+
+// Confidence, explicitly labeled so it's not a mystery "(moderate)" in parens.
+function Conf({ level }: { level: string | null | undefined }) {
+  if (!level) return null;
+  return (
+    <span className={styles.conf}>
+      confidence <strong>{level}</strong>
+    </span>
+  );
+}
+
+// Magnitude ordinal (for the sortable "mag" column). Index signature — the card
+// declares a local `Record` interface that shadows TS's generic Record<K,V>.
+const MAG_RANK: { [k: string]: number } = {
+  high: 4,
+  moderate: 3,
+  low: 2,
+  none: 1,
+  unknown: 0,
+};
+
+// Reader-facing labels for the structured endocytic-motif types.
+const MOTIF_LABEL: { [k: string]: string } = {
+  yxxphi: "YXXΦ",
+  npxy: "NPXY",
+  dileucine: "dileucine",
+  acidic_cluster: "acidic cluster",
+  other: "motif",
+};
+
+// Turn inline `int_evi_NN` refs in grader prose into clickable EvidenceChips
+// ("int_evi_03 shows…" -> "[3] shows…") so mode rationales link into the same
+// drawer as the table cites instead of showing raw internal ids.
+function linkifyIntEvi(text: string | null | undefined): ReactNode {
+  if (!text) return <span className={styles.empty}>—</span>;
+  const parts = text.split(/(int_evi_\d+)/g);
+  if (parts.length === 1) return text;
+  return parts.map((p, i) =>
+    /^int_evi_\d+$/.test(p) ? <EvidenceChip key={i} evidenceId={p} /> : p,
+  );
+}
+
+// Sort the observations by the active column. String columns sort
+// alphabetically; `mag` by ordinal rank; `value` by the numeric rate_value.
+function sortObs(
+  obs: readonly Observation[],
+  sort: { key: string; dir: 1 | -1 },
+): Observation[] {
+  if (!sort.key) return [...obs];
+  const { key, dir } = sort;
+  const v = (o: Observation): string | number => {
+    if (key === "mag") return MAG_RANK[o.magnitude] ?? 0;
+    if (key === "value") return o.quant.rate_value ?? Number.NEGATIVE_INFINITY;
+    if (key === "metric") return o.quant.rate_metric ?? "";
+    if (key === "assay") return o.assay_type ?? "";
+    if (key === "mode") return o.internalization_mode ?? "";
+    if (key === "species") return o.species ?? "";
+    if (key === "cell_line") return o.cell_line ?? "";
+    return "";
+  };
+  return [...obs].sort((a, b) => {
+    const av = v(a);
+    const bv = v(b);
+    return av < bv ? -dir : av > bv ? dir : 0;
+  });
+}
+
+// Clickable sortable table header cell.
+function SortTh({
+  k,
+  label,
+  sort,
+  onSort,
+}: {
+  k: string;
+  label: string;
+  sort: { key: string; dir: 1 | -1 };
+  onSort: (k: string) => void;
+}) {
+  const active = sort.key === k;
+  return (
+    <th
+      className={styles.sortable}
+      onClick={() => onSort(k)}
+      aria-sort={active ? (sort.dir === 1 ? "ascending" : "descending") : "none"}
+    >
+      {label}
+      <span className={styles.sortArrow}>{active ? (sort.dir === 1 ? " ▲" : " ▼") : ""}</span>
+    </th>
+  );
 }
 
 export function InternalizationCard({ symbol, n }: Props) {
   const [rec, setRec] = useState<Record | null>(null);
   const [state, setState] = useState<"loading" | "ok" | "none">("loading");
+  // Client-side sort for the observations table (empty key = original order).
+  const [obsSort, setObsSort] = useState<{ key: string; dir: 1 | -1 }>({
+    key: "",
+    dir: 1,
+  });
+  const toggleObsSort = (k: string) =>
+    setObsSort((p) => (p.key === k ? { key: k, dir: p.dir === 1 ? -1 : 1 } : { key: k, dir: 1 }));
 
   useEffect(() => {
     let live = true;
@@ -250,16 +353,38 @@ export function InternalizationCard({ symbol, n }: Props) {
             {rec.model_priors.map((m) => (
               <div key={m.model} className={styles.mp}>
                 <div className={styles.mpHead}>
-                  <code>{m.model}</code> overall <Pill grade={m.overall_grade} /> ({m.overall_confidence})
+                  <code>{m.model}</code> overall <Pill grade={m.overall_grade} /> <Conf level={m.overall_confidence} />
                 </div>
                 {m.per_isoform.map((iso) => (
                   <div key={iso.isoform_id} className={styles.iso}>
                     <div>
                       <Pill grade={iso.grade} /> <code>{iso.isoform_id}</code>
-                      {iso.is_canonical ? " · canonical" : ""} · {iso.confidence} conf
+                      {iso.is_canonical ? " · canonical" : ""} · <Conf level={iso.confidence} />
                     </div>
                     <div className={styles.mono}>{em(iso.topology_summary)}</div>
-                    <div className={styles.muted}>motifs: {em(iso.endocytic_motifs_noted)}</div>
+                    {iso.motifs && iso.motifs.length > 0 ? (
+                      <div className={styles.motifs}>
+                        {iso.motifs.map((mo, mi) => (
+                          <span
+                            key={mi}
+                            className={`${styles.motif} ${mo.functional_context ? styles.motifOn : ""}`}
+                            title={`${mo.region}${mo.approx_position ? ` · ${mo.approx_position}` : ""}${mo.note ? ` — ${mo.note}` : ""}`}
+                          >
+                            <span className={styles.motifType}>
+                              {MOTIF_LABEL[mo.motif_type] ?? mo.motif_type}
+                            </span>{" "}
+                            <code>{mo.sequence}</code>
+                            {mo.functional_context ? (
+                              <span className={styles.motifOk}> ✓ cytoplasmic</span>
+                            ) : (
+                              <span className={styles.muted}> · {mo.region}</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    ) : iso.endocytic_motifs_noted ? (
+                      <div className={styles.muted}>motifs: {em(iso.endocytic_motifs_noted)}</div>
+                    ) : null}
                     <p>{em(iso.rationale)}</p>
                   </div>
                 ))}
@@ -273,7 +398,8 @@ export function InternalizationCard({ symbol, n }: Props) {
               <span className={styles.trackLabelLit}>Literature</span>
               {lit && (
                 <span className={styles.muted}>
-                  {lit.n_papers_discovered} discovered · {lit.n_papers_fetched} fetched
+                  {lit.n_papers_discovered} papers discovered · {lit.n_papers_fetched} full-text
+                  fetched · {lit.sources.length} evidence sources
                 </span>
               )}
             </div>
@@ -281,9 +407,12 @@ export function InternalizationCard({ symbol, n }: Props) {
             {lit && (
               <>
                 <div className={styles.overall}>
-                  overall <Pill grade={lit.overall_grade} /> ({lit.overall_confidence}) · species {em(lit.species_scope)}
+                  overall <Pill grade={lit.overall_grade} /> <Conf level={lit.overall_confidence} />
+                  {lit.species_scope && lit.species_scope !== "unspecified" ? (
+                    <> · species {lit.species_scope}</>
+                  ) : null}
                 </div>
-                <p>{em(lit.rationale)}</p>
+                <p>{linkifyIntEvi(lit.rationale)}</p>
                 <div className={styles.modes}>
                   {(
                     ["basal", "native_ligand", "therapeutic", "pathogen_entry"] as const
@@ -302,8 +431,8 @@ export function InternalizationCard({ symbol, n }: Props) {
                     return (
                       <div key={k} className={styles.mode}>
                         <span className={styles.modeName}>{k.replace(/_/g, " ")}</span>{" "}
-                        <Pill grade={mg.grade} /> <span className={styles.muted}>{mg.confidence}</span>
-                        <p className={styles.modeRat}>{em(mg.rationale)}</p>
+                        <Pill grade={mg.grade} /> <Conf level={mg.confidence} />
+                        <p className={styles.modeRat}>{linkifyIntEvi(mg.rationale)}</p>
                       </div>
                     );
                   })}
@@ -312,27 +441,39 @@ export function InternalizationCard({ symbol, n }: Props) {
                 <h4 className={styles.h4}>Observations ({lit.observations.length})</h4>
                 <div className={styles.tablewrap}>
                   <table className={styles.table}>
+                    <colgroup>
+                      <col className={styles.colAssay} />
+                      <col className={styles.colMode} />
+                      <col className={styles.colSpecies} />
+                      <col className={styles.colCell} />
+                      <col className={styles.colMag} />
+                      <col className={styles.colMetric} />
+                      <col />
+                      <col className={styles.colCites} />
+                    </colgroup>
                     <thead>
                       <tr>
-                        <th>assay</th>
-                        <th>mode</th>
-                        <th>cell line</th>
-                        <th>mag</th>
-                        <th>rate</th>
+                        <SortTh k="assay" label="assay" sort={obsSort} onSort={toggleObsSort} />
+                        <SortTh k="mode" label="mode" sort={obsSort} onSort={toggleObsSort} />
+                        <SortTh k="species" label="species" sort={obsSort} onSort={toggleObsSort} />
+                        <SortTh k="cell_line" label="cell line" sort={obsSort} onSort={toggleObsSort} />
+                        <SortTh k="mag" label="mag" sort={obsSort} onSort={toggleObsSort} />
+                        <SortTh k="metric" label="value type" sort={obsSort} onSort={toggleObsSort} />
                         <th>value / summary</th>
                         <th>cites</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {lit.observations.map((o, i) => (
+                      {sortObs(lit.observations, obsSort).map((o, i) => (
                         <tr key={i}>
-                          <td>{em(o.assay_type)}</td>
-                          <td>{em(o.internalization_mode)}</td>
+                          <td><Badge value={o.assay_type} /></td>
+                          <td><Badge value={o.internalization_mode} /></td>
+                          <td><Badge value={o.species} /></td>
                           <td>{em(o.cell_line)}</td>
                           <td>
                             <Pill grade={o.magnitude} />
                           </td>
-                          <td>{em(o.quant.rate_metric)}</td>
+                          <td><Badge value={o.quant.rate_metric} /></td>
                           <td>
                             <QuantValue
                               value={o.quant.rate_value}
@@ -391,26 +532,9 @@ export function InternalizationCard({ symbol, n }: Props) {
                   </>
                 )}
 
-                <h4 className={styles.h4}>Cited sources ({lit.sources.length})</h4>
-                <ul className={styles.sources}>
-                  {lit.sources.map((s) => {
-                    const sp = s.spans[0];
-                    return (
-                      <li key={s.evidence_id} className={styles.source}>
-                        <div>
-                          <code className={styles.eid}>{s.evidence_id}</code>{" "}
-                          {sp && <SourceLink id={sp.source.source_id} />}{" "}
-                          {s.entailment_verified ? (
-                            <span className={styles.ok}>✓ span-verified</span>
-                          ) : (
-                            <span className={styles.bad}>unverified</span>
-                          )}
-                        </div>
-                        {sp && <blockquote>{sp.quote}</blockquote>}
-                      </li>
-                    );
-                  })}
-                </ul>
+                {/* No standalone "Cited sources" list — every cite in the tables
+                    above is an EvidenceChip that opens the drawer below with the
+                    claim, verbatim quote, and source link. */}
                 {/* One drawer instance fed this card's own sources. The
                     page-level EvidenceClickDelegator dispatches the open event;
                     this drawer only opens for ``int_evi_*`` ids (the deep-dive

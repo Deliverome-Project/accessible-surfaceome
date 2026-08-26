@@ -49,7 +49,10 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 #        overall_grade); native_ligand now counts membrane-bound/glycan ligands
 #        (only true orphans -> unknown), engineered-mimic evidence capped at low
 #        confidence; fold_change quant_summary must state the comparator.
-LIT_PROMPT_VERSION = "0.1.6"
+# 0.1.7: per-observation `species` field + set it from the clip; exclude
+#        partner-driven trans-endocytosis (partner cell pulls the target in) from
+#        native_ligand/basal; set record `species_scope` from the evidence.
+LIT_PROMPT_VERSION = "0.1.7"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
@@ -259,6 +262,9 @@ class InternalizationObservation(BaseModel):
     assay_type_other_label: str | None = None
     cell_line: str | None = None
     cell_context: CellContext = "unknown"
+    # Assay species (e.g. "human", "mouse", "cyno", "rat"); None when the clip
+    # doesn't state it. Additive (pre-0.1.7 records validate without it).
+    species: str | None = None
     internalization_mode: InternalizationMode = "unknown"
     ligand_name: str | None = None
     ligand_effect: LigandEffect = "unknown"
