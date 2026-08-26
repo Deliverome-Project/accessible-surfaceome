@@ -45,7 +45,11 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 #        still emitted `low`); modulator scope tightened to internalization
 #        rate/route only, excluding surface-abundance effects (degradation,
 #        stability, proteasomal turnover, expression, degradative sorting).
-LIT_PROMPT_VERSION = "0.1.5"
+# 0.1.6: 4th mode `pathogen_entry` (virus/toxin entry — capacity signal, NOT
+#        overall_grade); native_ligand now counts membrane-bound/glycan ligands
+#        (only true orphans -> unknown), engineered-mimic evidence capped at low
+#        confidence; fold_change quant_summary must state the comparator.
+LIT_PROMPT_VERSION = "0.1.6"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
@@ -140,7 +144,9 @@ class ModelPriorTrack(BaseModel):
 
 # --- Literature track (Plan 2): PMID-anchored, span-verified ---
 
-InternalizationMode = Literal["basal", "native_ligand", "therapeutic", "unknown"]
+InternalizationMode = Literal[
+    "basal", "native_ligand", "therapeutic", "pathogen_entry", "unknown"
+]
 AssayType = Literal[
     "antibody_uptake",
     "ligand_uptake",
@@ -228,6 +234,12 @@ class GradesByMode(BaseModel):
     basal: ModeGrade = Field(default_factory=ModeGrade)
     native_ligand: ModeGrade = Field(default_factory=ModeGrade)
     therapeutic: ModeGrade = Field(default_factory=ModeGrade)
+    # Pathogen/toxin-driven entry (virus, bacterial toxin) that co-opts the
+    # receptor's own internalization machinery — demonstrates internalization
+    # CAPACITY but is neither the native ligand nor a therapeutic binder.
+    # Additive (defaults to unknown) so pre-0.1.6 records validate unchanged; it
+    # does NOT drive overall_grade (not delivery-relevant on its own).
+    pathogen_entry: ModeGrade = Field(default_factory=ModeGrade)
 
 
 class InternalizationQuant(BaseModel):

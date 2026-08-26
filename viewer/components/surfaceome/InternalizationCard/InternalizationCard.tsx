@@ -105,7 +105,13 @@ interface Literature {
   rationale: string;
   cross_condition_note: string;
   species_scope: string;
-  grades_by_mode: { basal: ModeGrade; native_ligand: ModeGrade; therapeutic: ModeGrade };
+  grades_by_mode: {
+    basal: ModeGrade;
+    native_ligand: ModeGrade;
+    therapeutic: ModeGrade;
+    // Additive 4th mode (schema 0.1.6+); absent on older records.
+    pathogen_entry?: ModeGrade;
+  };
   observations: Observation[];
   modulator_observations?: ModulatorObs[];
   sources: Source[];
@@ -279,11 +285,23 @@ export function InternalizationCard({ symbol, n }: Props) {
                 </div>
                 <p>{em(lit.rationale)}</p>
                 <div className={styles.modes}>
-                  {(["basal", "native_ligand", "therapeutic"] as const).map((k) => {
+                  {(
+                    ["basal", "native_ligand", "therapeutic", "pathogen_entry"] as const
+                  ).map((k) => {
                     const mg = lit.grades_by_mode[k];
+                    // pathogen_entry is additive + usually unknown — only surface
+                    // it when it carries a real grade, so the card isn't cluttered
+                    // with an empty 4th row for every gene (and old records that
+                    // lack the field entirely just skip it).
+                    if (!mg) return null;
+                    if (
+                      k === "pathogen_entry" &&
+                      (!mg.grade || mg.grade === "unknown")
+                    )
+                      return null;
                     return (
                       <div key={k} className={styles.mode}>
-                        <span className={styles.modeName}>{k.replace("_", " ")}</span>{" "}
+                        <span className={styles.modeName}>{k.replace(/_/g, " ")}</span>{" "}
                         <Pill grade={mg.grade} /> <span className={styles.muted}>{mg.confidence}</span>
                         <p className={styles.modeRat}>{em(mg.rationale)}</p>
                       </div>

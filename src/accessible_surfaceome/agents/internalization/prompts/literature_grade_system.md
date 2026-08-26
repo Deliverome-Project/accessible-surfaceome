@@ -16,24 +16,35 @@ forcing `high`/`low`):
 
 - **basal** — constitutive internalization with no added ligand.
 - **native_ligand** — internalization driven by the protein's OWN endogenous
-  soluble ligand. If the protein is an orphan receptor with no known soluble
-  endogenous ligand (for example, it signals only by heterodimerizing with a
-  co-receptor), you MUST output `unknown` for this mode — NOT `low` and NOT
-  `no`. The mode does not APPLY to the protein; that is different from having
-  measured low or absent native-ligand internalization, and `unknown` is the
-  only value that says "not applicable". Do NOT substitute a chimeric-receptor
-  construct (a fusion carrying a DIFFERENT receptor's ligand-binding domain) or
-  a heterodimer / co-receptor partner's ligand as native-ligand evidence: that
-  is not the protein's own native ligand, so it does not support a
-  `native_ligand` grade of any kind here.
+  physiological ligand. The ligand does NOT have to be soluble: a soluble ligand,
+  a membrane-bound / trans-adhesion partner (e.g. a nectin binding its partner
+  nectin), or an endogenous glycan / carbohydrate ligand ALL count as the native
+  ligand. Only a TRUE orphan receptor with NO endogenous ligand of any kind (for
+  example, it signals only by heterodimerizing with a co-receptor) gets `unknown`
+  here — for such a receptor you MUST output `unknown`, NOT `low` and NOT `no`
+  (the mode does not APPLY; that is different from measured-low). Do NOT
+  substitute a chimeric-receptor construct (a fusion carrying a DIFFERENT
+  receptor's ligand-binding domain) or a heterodimer / co-receptor partner's
+  ligand as native-ligand evidence — that is not the protein's own ligand. When
+  the ONLY native-ligand evidence is an ENGINEERED or synthetic ligand MIMIC
+  (e.g. a multivalent probe or conjugate mimicking the endogenous ligand) rather
+  than the actual endogenous ligand, keep `confidence` `low`. Pathogen- or
+  toxin-driven entry does NOT count here — grade it under `pathogen_entry`.
 - **therapeutic** — internalization driven by an exogenous binder or delivery
   agent (antibody, ADC, siRNA/oligonucleotide, lipid nanoparticle, AAV, peptide,
   or engineered ligand). This is the delivery-relevant mode and often
   differs from basal.
+- **pathogen_entry** — internalization the receptor undergoes when a PATHOGEN or
+  TOXIN (virus, bacterial toxin) co-opts it for entry. This demonstrates the
+  receptor's internalization CAPACITY but is neither the native ligand nor a
+  therapeutic binder, so it gets its OWN grade and does NOT feed `native_ligand`
+  or `therapeutic`. Leave `unknown` when there is no such evidence.
 
 Leave a mode `unknown` when the ledger has no evidence for it. Set `overall_grade`
-to the strongest well-supported mode (favor `therapeutic`/`native_ligand` for
-delivery relevance when they are supported).
+to the strongest well-supported mode of `basal` / `native_ligand` / `therapeutic`
+(favor `therapeutic`/`native_ligand` for delivery relevance when they are
+supported). `pathogen_entry` is a capacity signal only — it does NOT drive
+`overall_grade`.
 
 # Observations
 
@@ -53,7 +64,10 @@ Whenever a clip reports a number, populate the **structured** `quant` fields —
 free-text `quant_summary`. Map the reported number to the metric:
 
 - a fold-change ("1.5-fold higher", "increased 3×") → `rate_metric=fold_change`,
-  `rate_value=1.5`;
+  `rate_value=1.5`. For a fold-change, `quant_summary` MUST state the COMPARATOR —
+  what the value is relative to (e.g. "3-fold higher than the unconjugated
+  antibody", "1.5× vs. non-targeting siRNA control"): a bare fold-change with no
+  reference condition is meaningless, so never write just "2.5-fold";
 - a percent internalized ("45% internalized at 2 h") →
   `rate_metric=percent_internalized`, `rate_value=45`, `rate_unit="%"`,
   `time_point="2 h"`;
