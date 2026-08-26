@@ -248,3 +248,32 @@ def run_isoform_pins(
             )
         )
     return pins
+
+
+def run_ortholog_pins(
+    gene_symbol: str,
+    canonical_acc: str,
+    *,
+    canonical_sequence: str,
+    canonical_sites: list[dict[str, Any]],
+    orthologs: list[tuple[str, str, str]],
+    fetch_pdb: Any,
+    hazard_for: Any = None,
+) -> list[dict[str, Any]]:
+    """Per-ortholog tag pins: run the deterministic gates on each ortholog's OWN
+    AFDB model and classify shared/unique vs the human canonical prediction —
+    identical machinery to :func:`run_isoform_pins`, just fed ortholog
+    accessions. ``orthologs`` is ``[(ortholog_acc, sequence, topology_str), ...]``
+    (e.g. mouse/cyno one-to-one orthologs). Pins are keyed by the ortholog acc and
+    carry the ortholog's OWN residue axis (``isoform_residue`` / ``left_pct``), so
+    the viewer places them on the ortholog's own structure — unlike isoform pins,
+    which render on the canonical fold at ``canonical_residue``."""
+    return run_isoform_pins(
+        gene_symbol,
+        canonical_acc,
+        canonical_sequence=canonical_sequence,
+        canonical_sites=canonical_sites,
+        isoforms=orthologs,
+        fetch_pdb=fetch_pdb,
+        hazard_for=hazard_for,
+    )

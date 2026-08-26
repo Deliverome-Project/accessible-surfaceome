@@ -41,6 +41,50 @@ function residueSortVal(s: TaggedSite): number {
   return 0;
 }
 
+/** Parse a residue_range like "H27-K159" / "89-120" -> [27, 159]; null if
+ *  absent/malformed. Mirrors parseSpan in tag-sites-overlay so the table's loop
+ *  grouping matches the 3D overlay's collapse. */
+function parseRange(range: string | null | undefined): [number, number] | null {
+  if (!range) return null;
+  const m = /^[A-Za-z]?(\d+)\s*-\s*[A-Za-z]?(\d+)$/.exec(range.trim());
+  if (!m) return null;
+  const a = Number(m[1]);
+  const b = Number(m[2]);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || a < 1 || b < a) return null;
+  return [a, b];
+}
+
+/** One representative row per loop: deterministic sites that share a
+ *  residue_range (+ det_path) collapse to the residue closest to the span
+ *  midpoint — the SAME anchor the 3D overlay's collapseBySpan picks, so the table
+ *  and the structure agree. Sites with no range (termini, single-residue) pass
+ *  through unchanged. */
+function collapseByLoop(sites: TaggedSite[]): TaggedSite[] {
+  const groups = new Map<string, TaggedSite[]>();
+  const passthrough: TaggedSite[] = [];
+  for (const s of sites) {
+    const span = parseRange(s.residue_range);
+    if (!span) {
+      passthrough.push(s);
+      continue;
+    }
+    const key = `${s.det_path}:${span[0]}-${span[1]}`;
+    const g = groups.get(key);
+    if (g) g.push(s);
+    else groups.set(key, [s]);
+  }
+  const reps: TaggedSite[] = [];
+  for (const g of groups.values()) {
+    const span = parseRange(g[0].residue_range) as [number, number];
+    const mid = (span[0] + span[1]) / 2;
+    g.sort(
+      (a, b) => Math.abs(residueSortVal(a) - mid) - Math.abs(residueSortVal(b) - mid),
+    );
+    reps.push(g[0]); // representative anchor closest to the loop midpoint
+  }
+  return [...passthrough, ...reps];
+}
+
 // --- chips ------------------------------------------------------------------
 
 /** Normalize a compartment to a human label. Accepts both the human words
@@ -326,7 +370,11 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
       s.provenance === "literature_retrieved" &&
       (s.extracellular || s.site_kind === "terminal_n"),
   );
-  const det = sites.filter((s) => s.provenance === "deterministic_computed");
+  // One representative row per loop (mirrors the 3D overlay's collapse) so a long
+  // disordered ectodomain shows one row per loop, not a dense run of adjacent rows.
+  const det = collapseByLoop(
+    sites.filter((s) => s.provenance === "deterministic_computed"),
+  );
   const legendCategories = Array.from(
     new Set([...lit, ...det].map((s) => tagSiteCategory(s))),
   );

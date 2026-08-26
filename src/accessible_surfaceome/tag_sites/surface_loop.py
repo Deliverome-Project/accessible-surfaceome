@@ -14,8 +14,13 @@ from typing import Any
 from .model import residue_range, tagged_site
 
 PLDDT_MIN = 70.0         # reliability gate (NOT a disorder gate)
-RSA_MIN = 0.30           # solvent-exposed junction (window max)
+RSA_MIN = 0.40           # solvent-exposed junction (window max)
 FEATURE_DIST_MIN = 10.0  # Angstrom, 3D clearance from functional atoms (disorder path imports this)
+# A tag insertion must sit in a GENUINE host loop, not a 2-3 residue turn: the
+# intended cargo is a SpyTag+ALFA tandem (~26 aa + linkers, i.e. a ~30-40 aa
+# insert), which needs a real, flexible, exposed loop to protrude from without
+# disrupting the fold. Require a contiguous coil/turn run of at least this length.
+MIN_LOOP_LEN = 8
 LOOP_SS = {"C", "T", "S", "G"}  # DSSP coil/turn/bend/3-10 — never mid-helix/strand
 
 
@@ -114,6 +119,8 @@ def surface_loop_candidates(
             continue  # surface-exposed (junction window, not just the anchor side-chain)
         if signals["feature_dist"].get(res, 0.0) < FEATURE_DIST_MIN:
             continue  # 3D clearance veto
+        if loop_length(signals["ss"], res) < MIN_LOOP_LEN:
+            continue  # genuine host loop only — no 2-3 residue turns for a ~30-40 aa tandem
         # NOTE: indel-tolerance (gap_freq) is a RANKING signal, not a hard gate —
         # a good site (e.g. TFRC I290) need not sit at a natural indel, and with a
         # shallow ortholog set gap_freq is 0 at most positions.

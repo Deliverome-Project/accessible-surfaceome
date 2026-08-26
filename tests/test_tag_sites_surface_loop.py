@@ -2,13 +2,13 @@ from accessible_surfaceome.tag_sites.surface_loop import surface_loop_candidates
 
 
 def _signals():
-    # residue 100 = exposed ordered loop (should be picked);
-    # residue 200 = buried helix (should be rejected).
+    # residue 100 = exposed ordered loop inside a genuine 9-aa coil run (should be
+    # picked); residue 200 = buried helix (should be rejected).
     return {
         "topology": {100: "O", 200: "O"},
         "plddt": {100: 95.0, 200: 95.0},
         "rsa": {100: 0.55, 200: 0.02},
-        "ss": {100: "C", 200: "H"},
+        "ss": {**{r: "C" for r in range(96, 105)}, 200: "H"},  # 96-104 = 9-aa host loop
         "gap_freq": {100: 0.30, 200: 0.00},
         "conservation": {100: 0.20, 200: 0.90},
         "feature_dist": {100: 25.0, 200: 25.0},  # Angstrom to nearest functional atom
@@ -23,6 +23,17 @@ def test_gate_selects_exposed_ordered_loop_not_buried_helix():
     assert 200 not in picked
     assert all(p["det_path"] == "surface_loop" for p in picks)
     assert all(p["provenance"] == "deterministic_computed" for p in picks)
+
+
+def test_gate_rejects_short_loop_below_min_length():
+    # A genuine host loop is required for a ~30-40 aa SpyTag+ALFA tandem: a short
+    # coil turn (< MIN_LOOP_LEN) is rejected even when exposed, ordered, and clear.
+    from accessible_surfaceome.tag_sites.surface_loop import MIN_LOOP_LEN
+    sig = _signals()
+    # collapse the 9-aa run down to a 3-residue turn around 100
+    sig["ss"] = {99: "C", 100: "C", 101: "C", 200: "H"}
+    assert MIN_LOOP_LEN > 3
+    assert surface_loop_candidates(sig, gene_symbol="X", uniprot_acc="Q00000") == []
 
 
 def test_gate_rejects_intracellular_and_low_plddt():

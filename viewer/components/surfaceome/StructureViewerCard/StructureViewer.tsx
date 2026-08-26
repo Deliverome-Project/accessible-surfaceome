@@ -414,6 +414,12 @@ interface StructureViewerProps {
    *  its pins render on the (canonical-fold) structure at each pin's
    *  canonical_residue, colored shared-vs-unique. */
   isoformPins?: IsoformTagPin[];
+  /** Per-ortholog deterministic pins (mouse / cyno). When an ortholog variant
+   *  tab is active, its pins render on the ORTHOLOG's OWN structure at each pin's
+   *  ``isoform_residue`` (the ortholog's own residue axis — orthologs render
+   *  their own AFDB model, not the canonical fold), colored shared-vs-unique.
+   *  Shares the IsoformTagPin shape; ``isoform_id`` holds the ortholog acc. */
+  orthologPins?: IsoformTagPin[];
   /** Optional alternate variants (alt isoforms, mouse / cyno
    *  orthologs). When non-empty, a tab strip renders above the
    *  canvas; clicking a tab swaps the rendered structure to that
@@ -1088,6 +1094,7 @@ export function StructureViewer({
   surfaceBindAnchors = [],
   tagSites = [],
   isoformPins = [],
+  orthologPins = [],
   variants = [],
   schwekeHomomer = null,
 }: StructureViewerProps) {
@@ -1369,17 +1376,36 @@ export function StructureViewer({
         (pin) => pin.isoform_id === activeIsoformId && pin.canonical_residue != null,
       )
     : [];
+  // Ortholog variant active: identified by the variant id prefix GeneHeader
+  // assigns (``ortholog-{species}-{acc}``; isoforms are ``iso-{isoform_id}``) —
+  // robust because an isoform's ``uniprot_acc`` is the isoform-suffixed acc
+  // (e.g. P00533-2), NOT the base canonical, so an acc comparison would misclass
+  // isoforms as orthologs. Ortholog pins render on the ORTHOLOG's OWN structure at
+  // each pin's ``isoform_residue`` (the ortholog's own residue axis) — NOT the
+  // canonical_residue that isoform pins use.
+  const isOrthologActive = activeVariant?.id?.startsWith("ortholog-") ?? false;
+  const activeOrthologPins =
+    isOrthologActive && activeIsoformId
+      ? orthologPins.filter(
+          (pin) => pin.isoform_id === activeIsoformId && pin.isoform_residue != null,
+        )
+      : [];
   // Revert to topology when switching to a non-canonical tab in sites mode (the
   // canonical-keyed SURFACE-Bind anchors don't translate). Tags mode is KEPT for
-  // an isoform tab that has its own pins (they map to the canonical fold).
+  // an isoform tab (pins on the canonical fold) OR an ortholog tab (pins on the
+  // ortholog's own fold) that has its own pins.
   useEffect(() => {
     if (variantIdx === 0) return;
     if (viewMode === "sites") {
       setViewMode("topology");
-    } else if (viewMode === "tags" && activeIsoformPins.length === 0) {
+    } else if (
+      viewMode === "tags" &&
+      activeIsoformPins.length === 0 &&
+      activeOrthologPins.length === 0
+    ) {
       setViewMode("topology");
     }
-  }, [variantIdx, viewMode, activeIsoformPins.length]);
+  }, [variantIdx, viewMode, activeIsoformPins.length, activeOrthologPins.length]);
   // The uniprot_acc / topology / type used by the render pipeline.
   // For experimental view, ``activeUniprot`` is unused (we fetch
   // RCSB by pdb_id instead) — keep canonical for the aria-label.
@@ -1424,7 +1450,46 @@ export function StructureViewer({
   // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
   const hasTagSites =
-    (tagSites.length > 0 && isCanonicalActive) || activeIsoformPins.length > 0;
+    (tagSites.length > 0 && isCanonicalActive) ||
+    activeIsoformPins.length > 0 ||
+    activeOrthologPins.length > 0;
+
+  // Keyboard shortcuts (same guarded-window-listener pattern as GeneDetail's
+  // prev/next-gene nav): 1-9 pick a structure tile (1 = Canonical, then each
+  // variant tile left-to-right), a/s/d pick the viewer mode (a = topology,
+  // s = tag sites, d = SURFACE-Bind). Guarded against typing in inputs and
+  // against modifier chords so it never hijacks a browser/OS shortcut. A mode
+  // key is a no-op when that mode isn't available for the current gene/tab.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el?.isContentEditable) {
+        return;
+      }
+      const k = e.key.toLowerCase();
+      if (k >= "1" && k <= "9") {
+        const idx = Number(k) - 1; // 1 -> Canonical (0); 2 -> first variant tile (1); …
+        if (idx <= effectiveVariants.length) {
+          userPickedRef.current = true;
+          setVariantIdx(idx);
+          e.preventDefault();
+        }
+      } else if (k === "a") {
+        setViewMode("topology");
+        e.preventDefault();
+      } else if (k === "s" && hasTagSites) {
+        setViewMode("tags");
+        e.preventDefault();
+      } else if (k === "d" && hasAnchors) {
+        setViewMode("sites");
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [effectiveVariants.length, hasTagSites, hasAnchors]);
 
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
@@ -2085,6 +2150,19 @@ export function StructureViewer({
       // (disorder / surface_loop / ecto N- / ecto C-term / snorkel / literature).
       const shouldRenderTagSites =
         viewMode === "tags" && hasTagSites && !schwekeVariant && isCanonicalActive;
+      // Dual-ball for a residue carrying BOTH a deterministic site and a
+      // literature site (e.g. TFRC F760: deterministic terminal_c + its
+      // literature validation). Two spheres on the same Cα can't be layered via
+      // addStyle (the later one replaces the former), so the deterministic ball
+      // stays at its true residue — keeping its category color (amber terminal_c,
+      // never overwritten by the lavender literature ball) — and the LITERATURE
+      // ball is nudged one residue toward the interior so both read with a slight
+      // overlap instead of one hiding the other.
+      const litResidues = new Set<number>();
+      const detResidues = new Set<number>();
+      for (const t of tagSites) {
+        (t.category === "literature" ? litResidues : detResidues).add(t.residue);
+      }
       for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
         const { residue, category, tagType, spanStart, spanEnd } = tagSites[i];
         const color = CATEGORY_HEX[category];
@@ -2102,7 +2180,15 @@ export function StructureViewer({
             viewer.setStyle(spanSel, { cartoon: { color } });
           }
         }
-        const sel = { resi: residue, atom: "CA" };
+        // Nudge a literature ball that sits on top of a deterministic ball.
+        const isLit = category === "literature";
+        const drawResidue =
+          isLit && detResidues.has(residue)
+            ? residue > 1
+              ? residue - 1
+              : residue + 1
+            : residue;
+        const sel = { resi: drawResidue, atom: "CA" };
         if (typeof viewerExt.addStyle === "function") {
           viewerExt.addStyle(sel, {
             sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
@@ -2114,7 +2200,7 @@ export function StructureViewer({
         }
         if (typeof viewerExt.addLabel === "function") {
           viewerExt.addLabel(`${tagType}`, {
-            position: { resi: residue, atom: "CA" },
+            position: { resi: drawResidue, atom: "CA" },
             backgroundColor: color,
             backgroundOpacity: 0.94,
             fontColor: "white",
@@ -2138,6 +2224,45 @@ export function StructureViewer({
       for (let i = 0; shouldRenderIsoformPins && i < activeIsoformPins.length; i += 1) {
         const pin = activeIsoformPins[i];
         const residue = pin.canonical_residue;
+        if (residue == null) continue;
+        const color = ISOFORM_PIN_HEX[pin.classification];
+        const sel = { resi: residue, atom: "CA" };
+        if (typeof viewerExt.addStyle === "function") {
+          viewerExt.addStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        } else {
+          viewer.setStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        }
+        if (typeof viewerExt.addLabel === "function") {
+          viewerExt.addLabel(`${pin.tag_type ?? "tag"} · ${pin.classification}`, {
+            position: { resi: residue, atom: "CA" },
+            backgroundColor: color,
+            backgroundOpacity: 0.94,
+            fontColor: "white",
+            fontSize: 12,
+            borderThickness: 0,
+            inFront: true,
+            screenOffset: { x: 16, y: 16 },
+          });
+        }
+      }
+
+      // Ortholog-variant tag pins — rendered when an ortholog tab (mouse/cyno) is
+      // active in tags mode. Unlike isoform pins, orthologs render their OWN AFDB
+      // model, so each pin is placed at its OWN residue (``isoform_residue``, the
+      // ortholog's residue axis), colored shared (also predicted on the human
+      // canonical) vs unique (ortholog-specific).
+      const shouldRenderOrthologPins =
+        viewMode === "tags" &&
+        !schwekeVariant &&
+        isOrthologActive &&
+        activeOrthologPins.length > 0;
+      for (let i = 0; shouldRenderOrthologPins && i < activeOrthologPins.length; i += 1) {
+        const pin = activeOrthologPins[i];
+        const residue = pin.isoform_residue;
         if (residue == null) continue;
         const color = ISOFORM_PIN_HEX[pin.classification];
         const sel = { resi: residue, atom: "CA" };
@@ -2374,7 +2499,7 @@ export function StructureViewer({
             }
             aria-selected={isCanonicalActive}
           >
-            <span className={styles.variantTabLabel}>Canonical</span>
+            <span className={styles.variantTabLabel}>Canonical [1]</span>
             <span className={styles.variantTabSub}>{data.uniprot_acc}</span>
           </button>
           {effectiveVariants.map((v, i) => {
@@ -2404,7 +2529,10 @@ export function StructureViewer({
                 }
                 aria-selected={isActive}
               >
-                <span className={styles.variantTabLabel}>{v.label}</span>
+                <span className={styles.variantTabLabel}>
+                  {v.label}
+                  {i + 2 <= 9 ? ` [${i + 2}]` : ""}
+                </span>
                 {v.sublabel ? (
                   <span className={styles.variantTabSub}>{v.sublabel}</span>
                 ) : null}
@@ -2517,32 +2645,38 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "topology"}
               onClick={() => setViewMode("topology")}
-              title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). All sites render in one purple color; the number label distinguishes them."
+              title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). All sites render in one purple color; the number label distinguishes them. Shortcut: a"
             >
-              Topology
+              Topology [a]
             </button>
-            {hasAnchors ? (
-              <button
-                type="button"
-                className={styles.modeButton}
-                data-active={viewMode === "sites"}
-                onClick={() => setViewMode("sites")}
-                title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
-              >
-                SURFACE-Bind sites
-              </button>
-            ) : null}
             {hasTagSites ? (
               <button
                 type="button"
                 className={styles.modeButton}
                 data-active={viewMode === "tags"}
                 onClick={() => setViewMode("tags")}
-                title="Overlay tag-insertion-site spheres on a washed-out cartoon, colored by sourcing method: lavender = literature-retrieved, teal = deterministic-computed."
+                title="Overlay tag-insertion-site spheres on a washed-out cartoon, colored by category: amber = extracellular terminus, green = disordered loop, blue = ordered surface loop, lavender = literature-retrieved. Shortcut: s"
               >
-                Tag sites
+                Tag sites [s]
               </button>
             ) : null}
+            {hasAnchors ? (
+              <button
+                type="button"
+                className={styles.modeButton}
+                data-active={viewMode === "sites"}
+                onClick={() => setViewMode("sites")}
+                title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay. Shortcut: d"
+              >
+                SURFACE-Bind [d]
+              </button>
+            ) : null}
+            <InfoTip label="Viewer keyboard shortcuts">
+              <strong>a</strong> topology, <strong>s</strong> tag sites,{" "}
+              <strong>d</strong> SURFACE-Bind. <strong>1</strong>–<strong>9</strong>{" "}
+              switch the structure (Canonical = 1, then each variant tile left to
+              right: isoforms, mouse / cyno orthologs, experimental).
+            </InfoTip>
           </div>
           {/* The previous ↗ deep-link to SURFACE-Bind was removed —
               the §SURFACE-Bind card below already carries the
@@ -2606,25 +2740,35 @@ export function StructureViewer({
             </a>
           </p>
         </>
-      ) : viewMode === "tags" && !isCanonicalActive && activeIsoformPins.length > 0 ? (
+      ) : viewMode === "tags" &&
+        !isCanonicalActive &&
+        (activeIsoformPins.length > 0 || activeOrthologPins.length > 0) ? (
         <ul
           className={styles.sitesLegend}
-          aria-label="Isoform tag-site legend (shared vs isoform-specific)"
+          aria-label="Variant tag-site legend (shared vs variant-specific)"
         >
-          {Array.from(new Set(activeIsoformPins.map((pin) => pin.classification))).map(
-            (cls) => (
-              <li key={cls} className={styles.sitesLegendItem}>
-                <span
-                  className={styles.sitesLegendSwatch}
-                  style={{ background: ISOFORM_PIN_HEX[cls] }}
-                  aria-hidden="true"
-                />
-                <span className={styles.sitesLegendLabel}>
-                  {cls === "unique" ? "Isoform-specific" : "Shared with canonical"}
-                </span>
-              </li>
+          {Array.from(
+            new Set(
+              (activeOrthologPins.length > 0 ? activeOrthologPins : activeIsoformPins).map(
+                (pin) => pin.classification,
+              ),
             ),
-          )}
+          ).map((cls) => (
+            <li key={cls} className={styles.sitesLegendItem}>
+              <span
+                className={styles.sitesLegendSwatch}
+                style={{ background: ISOFORM_PIN_HEX[cls] }}
+                aria-hidden="true"
+              />
+              <span className={styles.sitesLegendLabel}>
+                {cls === "unique"
+                  ? isOrthologActive
+                    ? "Ortholog-specific"
+                    : "Isoform-specific"
+                  : "Shared with human canonical"}
+              </span>
+            </li>
+          ))}
         </ul>
       ) : viewMode === "tags" && hasTagSites ? (
         <ul

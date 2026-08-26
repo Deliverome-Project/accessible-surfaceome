@@ -74,6 +74,12 @@ export interface TaggedSitesFile {
    *  pipeline regeneration populates it. Consumed by the IsoformsCard topology
    *  bars (shared = transfers from canonical; unique = isoform-specific). */
   isoform_pins?: IsoformTagPin[];
+  /** Per-ortholog deterministic tag pins (mouse / cyno), computed on each
+   *  ortholog's OWN AFDB model and classified vs the human canonical prediction.
+   *  Same shape as isoform pins; ``isoform_id`` holds the ortholog UniProt acc and
+   *  ``isoform_residue`` is on the ortholog's own residue axis. Rendered on the
+   *  ortholog's own structure when its variant tab is active. */
+  ortholog_pins?: IsoformTagPin[];
 }
 
 /** Overlay design-token NAMES per rendered provenance. Actual color values
@@ -135,8 +141,8 @@ export function tagSiteCategory(
  *  sync with the --tag-site-* tokens in app/design-tokens.css. */
 export const CATEGORY_HEX: Record<TagSiteCategory, string> = {
   literature: "#8878c8", // --lavender-bright
-  surface_loop: "#3d6b60", // --teal-mid
-  disorder: "#3f7fd0", // blue — clearly distinct from the teal surface_loop lane
+  surface_loop: "#3f7fd0", // blue (ordered exposed loop)
+  disorder: "#2f9e44", // green — disordered loop, clearly distinct from the blue surface_loop lane
   terminal_n: "#f4aa28", // --amber-bright
   terminal_c: "#c07830", // --amber-mid
   snorkel: "#922038", // --maroon-mid — fallback / lower-confidence

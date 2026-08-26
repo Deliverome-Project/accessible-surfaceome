@@ -800,6 +800,9 @@ export function GeneHeader({
               // isoform variant tab is active (placed at canonical_residue,
               // since isoforms render on the canonical fold).
               isoformPins={taggedSites?.isoform_pins ?? []}
+              // Per-ortholog pins — rendered on the ortholog's OWN structure at
+              // its own residue when a mouse/cyno ortholog tab is active.
+              orthologPins={taggedSites?.ortholog_pins ?? []}
               // Variant tabs above the 3D canvas: alt isoforms
               // (sourced from `rec.deterministic_features.isoform_topologies`)
               // and 1:1 orthologs (mouse + cynomolgus). Each variant

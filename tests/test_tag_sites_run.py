@@ -9,7 +9,7 @@ def test_combines_both_paths_disjoint_by_plddt():
     plddt[100] = 95.0
     topo = {r: "O" for r in list(lo) + [99, 100, 101, 102]}
     rsa = {100: 0.55}
-    ss = {100: "C"}
+    ss = {r: "C" for r in range(96, 105)}  # 9-aa host loop around residue 100 (>= MIN_LOOP_LEN)
     feat = {r: 25.0 for r in list(lo) + [99, 100, 101, 102]}
     sig = {
         "plddt": plddt, "topology": topo, "rsa": rsa, "ss": ss,

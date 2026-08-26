@@ -4,33 +4,6 @@
   "uniprot_acc": "Q02223",
   "sites": [
     {
-      "site_id": "TNFRSF17-surface_loop-17",
-      "gene_symbol": "TNFRSF17",
-      "uniprot_acc": "Q02223",
-      "provenance": "deterministic_computed",
-      "det_path": "surface_loop",
-      "site_kind": "internal",
-      "insert_after_residue": 17,
-      "residue_before": "L",
-      "residue_after": "L",
-      "residue_label": "L17",
-      "residue_range": "S16-H19",
-      "topology_state": "O",
-      "extracellular": true,
-      "compartment": "extracellular",
-      "tag_type": "ALFA, DogTag",
-      "tag_length_aa": 15,
-      "linker": "GS both sides",
-      "evidence_type": "structural inference (surface_loop path)",
-      "functional_impact_measured": "NOT MEASURED",
-      "confidence": "medium",
-      "rationale": "ordered surface loop (4 aa): pLDDT>=70, DSSP loop/turn, exposed junction residue (max RSA), indel-tolerant, 3D-clear of features",
-      "sources": [],
-      "plddt": 89.9,
-      "conservation_rank": null,
-      "median_conservation": 0.0
-    },
-    {
       "site_id": "TNFRSF17-terminal-n",
       "gene_symbol": "TNFRSF17",
       "uniprot_acc": "Q02223",
@@ -170,28 +143,6 @@
       "left_pct": 82.22222222222221
     },
     {
-      "site_id": "TNFRSF17-surface_loop-17::iso::Q02223-2",
-      "isoform_id": "Q02223-2",
-      "classification": "shared",
-      "det_path": "surface_loop",
-      "site_kind": "internal",
-      "tag_type": "ALFA, DogTag",
-      "isoform_residue": 17,
-      "canonical_residue": 17,
-      "left_pct": 12.592592592592592
-    },
-    {
-      "site_id": "TNFRSF17-surface_loop-31::iso::Q02223-2",
-      "isoform_id": "Q02223-2",
-      "classification": "unique",
-      "det_path": "surface_loop",
-      "site_kind": "internal",
-      "tag_type": "ALFA, DogTag",
-      "isoform_residue": 31,
-      "canonical_residue": 31,
-      "left_pct": 22.962962962962962
-    },
-    {
       "site_id": "TNFRSF17-surface_loop-74::iso::Q02223-2",
       "isoform_id": "Q02223-2",
       "classification": "unique",
@@ -212,6 +163,74 @@
       "isoform_residue": 7,
       "canonical_residue": 7,
       "left_pct": 5.185185185185185
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "TNFRSF17-disorder-1::iso::A0A2K5UD97",
+      "isoform_id": "A0A2K5UD97",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": 1,
+      "left_pct": 0.546448087431694
+    },
+    {
+      "site_id": "TNFRSF17-disorder-38::iso::O88472",
+      "isoform_id": "O88472",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 38,
+      "canonical_residue": 43,
+      "left_pct": 20.54054054054054
+    },
+    {
+      "site_id": "TNFRSF17-disorder-46::iso::O88472",
+      "isoform_id": "O88472",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 46,
+      "canonical_residue": 51,
+      "left_pct": 24.864864864864867
+    },
+    {
+      "site_id": "TNFRSF17-surface_loop-26::iso::O88472",
+      "isoform_id": "O88472",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 26,
+      "canonical_residue": 29,
+      "left_pct": 14.054054054054054
+    },
+    {
+      "site_id": "TNFRSF17-surface_loop-4::iso::O88472",
+      "isoform_id": "O88472",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 4,
+      "canonical_residue": 7,
+      "left_pct": 2.1621621621621623
+    },
+    {
+      "site_id": "TNFRSF17-surface_loop-7::iso::A0A2K5UD97",
+      "isoform_id": "A0A2K5UD97",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 7,
+      "canonical_residue": 7,
+      "left_pct": 3.825136612021858
     }
   ]
 }
