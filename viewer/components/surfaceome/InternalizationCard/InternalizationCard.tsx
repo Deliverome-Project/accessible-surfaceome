@@ -398,8 +398,7 @@ export function InternalizationCard({ symbol, n }: Props) {
               <span className={styles.trackLabelLit}>Literature</span>
               {lit && (
                 <span className={styles.muted}>
-                  {lit.n_papers_discovered} papers discovered · {lit.n_papers_fetched} full-text
-                  fetched · {lit.sources.length} evidence sources
+                  {lit.n_papers_discovered} papers discovered · {lit.sources.length} evidence sources
                 </span>
               )}
             </div>
