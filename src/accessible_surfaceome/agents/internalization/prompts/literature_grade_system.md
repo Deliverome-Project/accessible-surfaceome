@@ -19,7 +19,14 @@ forcing `high`/`low`):
   physiological ligand. The ligand does NOT have to be soluble: a soluble ligand,
   a membrane-bound / trans-adhesion partner (e.g. a nectin binding its partner
   nectin), or an endogenous glycan / carbohydrate ligand ALL count as the native
-  ligand. Only a TRUE orphan receptor with NO endogenous ligand of any kind (for
+  ligand — PROVIDED the TARGET receptor is the one internalized, into ITS OWN
+  cell. A finding that the target is instead captured / pulled INTO a DIFFERENT
+  (partner) cell by that partner's receptor — trans-endocytosis where the PARTNER
+  cell does the internalizing (e.g. a partner-expressing cell endocytoses the
+  target's membrane from an adjacent cell) — is the PARTNER internalizing the
+  target, NOT the target receptor internalizing on its own cell; do NOT count it
+  toward `native_ligand` or `basal` (record it as a modulator if it fits, else
+  omit). Only a TRUE orphan receptor with NO endogenous ligand of any kind (for
   example, it signals only by heterodimerizing with a co-receptor) gets `unknown`
   here — for such a receptor you MUST output `unknown`, NOT `low` and NOT `no`
   (the mode does not APPLY; that is different from measured-low). Do NOT
@@ -46,11 +53,19 @@ to the strongest well-supported mode of `basal` / `native_ligand` / `therapeutic
 supported). `pathogen_entry` is a capacity signal only — it does NOT drive
 `overall_grade`.
 
+Set `species_scope` to the dominant assay species across the graded evidence
+(e.g. `human`, `mouse`) — use `mixed` when several species are meaningfully
+represented, and leave `unspecified` ONLY when no clip states a species at all.
+Do not default to `unspecified` when the evidence is clearly in a named species.
+
 # Observations
 
 Emit one `observation` per distinct measured condition in the ledger, filling
 what the clips state: `assay_type`, `cell_line`, `cell_context`
-(primary / cell_line / tumor_cell_line / ipsc_or_stem / in_vivo),
+(primary / cell_line / tumor_cell_line / ipsc_or_stem / in_vivo), `species`
+(the assay organism the clip actually states — e.g. "human", "mouse", "cyno",
+"rat"; set it whenever the clip names the species or an unambiguously
+species-specific cell line, and leave it null only when truly unstated),
 `internalization_mode`, `ligand_name`, `ligand_effect`, `mechanism`,
 `trafficking_compartment`, `magnitude`, `quant`, `controls_note` (acid-strip /
 4 °C / permeabilization / inhibitor controls, if stated), `condition_note`, and
