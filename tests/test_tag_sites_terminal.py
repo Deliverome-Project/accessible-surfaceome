@@ -79,8 +79,9 @@ def test_run_orders_nterm_before_internal_no_snorkel_when_nterm_ec():
     topo = {r: "O" for r in [1, 99, 100, 101, 102]}
     topo[200] = "I"
     sig = {
-        "plddt": {100: 95.0}, "topology": topo, "rsa": {100: 0.55}, "ss": {100: "C"},
-        "feature_dist": {r: 25.0 for r in [99, 100, 101, 102]},
+        "plddt": {100: 95.0}, "topology": topo, "rsa": {100: 0.55},
+        "ss": {r: "C" for r in range(96, 105)},  # 9-aa host loop (>= MIN_LOOP_LEN)
+        "feature_dist": {r: 25.0 for r in range(96, 105)},
         "gap_freq": {}, "conservation": {}, "sequence": seq,
     }
     sites = derive_deterministic_sites("X", "Q0", signals=sig)
@@ -127,8 +128,9 @@ def test_run_orders_snorkel_last_when_no_ecto_terminus():
     topo[1] = "I"
     topo[200] = "I"
     sig = {
-        "plddt": {100: 95.0}, "topology": topo, "rsa": {100: 0.55}, "ss": {100: "C"},
-        "feature_dist": {r: 25.0 for r in [99, 100, 101, 102]},
+        "plddt": {100: 95.0}, "topology": topo, "rsa": {100: 0.55},
+        "ss": {r: "C" for r in range(96, 105)},  # 9-aa host loop (>= MIN_LOOP_LEN)
+        "feature_dist": {r: 25.0 for r in range(96, 105)},
         "gap_freq": {}, "conservation": {}, "sequence": seq,
     }
     sites = derive_deterministic_sites("X", "Q0", signals=sig)
