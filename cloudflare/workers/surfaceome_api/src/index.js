@@ -164,6 +164,15 @@ function checkSymbol(sym) {
 // always-on L7 DDoS protection covers the volumetric case underneath.
 async function checkRate(env, request, path) {
   if (path === "/v1/health") return null;
+  // Trusted-build bypass: the Cloudflare Pages build pre-fetches ~5k per-gene
+  // records from ONE egress IP and would otherwise trip the per-IP limiter
+  // (~10 min of forced pacing). A request carrying the shared
+  // BUILD_BYPASS_TOKEN secret in `X-Build-Bypass` skips the limiter so the build
+  // fetches at full concurrency. If the secret isn't configured (env var unset)
+  // there is NO bypass; public traffic can't reach this path without the exact
+  // secret, so it stays rate-limited.
+  const bypass = env.BUILD_BYPASS_TOKEN;
+  if (bypass && request.headers.get("X-Build-Bypass") === bypass) return null;
   const heavy = path === "/v1/catalog" || path.endsWith(".tsv");
   const limiter = heavy ? env.RATE_LIMITER_HEAVY : env.RATE_LIMITER;
   if (!limiter) return null;

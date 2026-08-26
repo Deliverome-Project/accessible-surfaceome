@@ -97,7 +97,16 @@ const ENDPOINTS = [
 // `ratePace()` now caps request STARTS at ~480/min (20% under the limiter),
 // which eliminates the rate-limit misses; concurrency 8 keeps latency overlap
 // so the paced record pre-fetch is still ~11 min, once per deploy.
-const RECORD_CONCURRENCY = 8;
+// Trusted-build bypass: when BUILD_BYPASS_TOKEN is set (a Pages env var), every
+// fetch carries it in X-Build-Bypass so the Worker skips its per-IP rate limiter
+// for this build — the record pre-fetch then runs un-paced at higher concurrency
+// (~10 min -> well under a minute). Unset -> the paced fallback below (unchanged),
+// so local dev and untrusted contexts stay safely rate-limited.
+const BUILD_BYPASS = process.env.BUILD_BYPASS_TOKEN || "";
+const FETCH_INIT = BUILD_BYPASS
+  ? { headers: { "X-Build-Bypass": BUILD_BYPASS } }
+  : undefined;
+const RECORD_CONCURRENCY = BUILD_BYPASS ? 24 : 8;
 const RECORD_ATTEMPTS = 4;
 const RECORD_MAX_FAIL_FRAC = 0.02;
 // Minimum spacing between per-gene request STARTS across all workers. 125 ms ⇒
@@ -120,6 +129,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // latency varies). A worker awaits its slot before each initial fetch.
 let _nextSlotMs = 0;
 async function ratePace() {
+  if (BUILD_BYPASS) return; // trusted build skips the limiter — no pacing needed
   const now = Date.now();
   const slot = Math.max(now, _nextSlotMs);
   _nextSlotMs = slot + RECORD_MIN_INTERVAL_MS;
@@ -154,7 +164,7 @@ async function fetchRecordBody(url) {
   for (let attempt = 0; attempt < RECORD_ATTEMPTS; attempt += 1) {
     let res = null;
     try {
-      res = await fetch(url);
+      res = await fetch(url, FETCH_INIT);
     } catch {
       res = null; // network error / abort — transient
     }
@@ -178,7 +188,7 @@ async function snapshotEndpoints() {
     console.log(`[snapshot] fetching ${url}`);
     let res;
     try {
-      res = await fetch(url);
+      res = await fetch(url, FETCH_INIT);
     } catch (e) {
       console.error(`[snapshot] ${endpoint} → fetch failed: ${e.message}`);
       process.exit(1);
@@ -204,7 +214,7 @@ async function snapshotRecords() {
   console.log(`[snapshot] fetching ${listUrl}`);
   let listRes;
   try {
-    listRes = await fetch(listUrl);
+    listRes = await fetch(listUrl, FETCH_INIT);
   } catch (e) {
     console.error(`[snapshot] /v1/genes → fetch failed: ${e.message}`);
     process.exit(1);

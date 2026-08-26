@@ -49,6 +49,12 @@ const RAW_API_BASE = (
 ).trim();
 const API_BASE = RAW_API_BASE.replace(/\/+$/, "").replace(/\/v1$/, "");
 
+// Trusted-build bypass: sent on Worker fetches so the build isn't rate-limited.
+// Only the api-source FALLBACK path hits the Worker (the normal path reads the
+// records build:snapshot already cached to disk), but keep it consistent.
+const BUILD_BYPASS = process.env.BUILD_BYPASS_TOKEN || "";
+const BYPASS_HEADER = BUILD_BYPASS ? { "X-Build-Bypass": BUILD_BYPASS } : {};
+
 // Output target. Default "public" = write {SYM}.json + {SYM}.md under
 // viewer/public/ (legacy; only used for local/offline inspection now that
 // build:exports is OUT of the Pages build). "r2" = the standalone ops job:
@@ -1323,6 +1329,7 @@ async function fetchJson(url) {
     headers: {
       "User-Agent":
         "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
+      ...BYPASS_HEADER,
     },
   });
   if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
@@ -1389,6 +1396,7 @@ async function fetchRecordWithRetry(url) {
         headers: {
           "User-Agent":
             "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
+          ...BYPASS_HEADER,
         },
       });
     } catch {
