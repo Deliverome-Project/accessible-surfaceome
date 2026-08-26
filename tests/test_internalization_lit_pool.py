@@ -2,8 +2,8 @@ from collections import defaultdict
 from types import SimpleNamespace
 from typing import Any, cast
 
-from accessible_surfaceome.agents.internalization import literature_pool as mod
-from accessible_surfaceome.agents.internalization.literature_pool import (
+from accessible_surfaceome.agents._support import literature_clips as mod
+from accessible_surfaceome.agents._support.literature_clips import (
     _add_to_pool,
     build_source_store,
 )

@@ -13,7 +13,7 @@ from typing import Any
 from .disorder import disorder_candidates
 from .emit import emit_tag_sites_json
 from .isoform import classify_isoform_sites
-from .features import feature_distances
+from .features import ca_coords, feature_distances
 from .signals import (
     merge_signals,
     ortholog_conservation,
@@ -46,9 +46,58 @@ def compute_signals(
             "topology": topology,
             "sequence": sequence,
             "feature_dist": feature_distances(pdb_path, hazard_res),
+            "ca": ca_coords(pdb_path),  # for the terminus-proximity filter (3D)
         },
         ortholog_conservation(sequence, ortholog_seqs),  # conservation + gap_freq
     )
+
+
+# 3D clearance (Å, CA-CA) an internal loop site must have from an EXTRACELLULAR
+# terminus. A loop hugging an accessible terminus is redundant with the terminal
+# tag (you'd just tag the terminus), so it's dropped. Measured in Angstrom, not
+# residues: a loop can be sequence-far yet spatially at the terminus, or vice versa.
+TERMINUS_MIN_DIST_A = 15.0
+
+
+def _terminus_anchor_residue(term: dict[str, Any]) -> int | None:
+    """Residue number that spatially represents an extracellular terminal tag:
+    the mature first residue for terminal_n (insert_after+1; residue 1 for a
+    direct N-term), or the last residue for terminal_c (= insert_after)."""
+    if term["site_kind"] == "terminal_n":
+        return (term.get("insert_after_residue") or 0) + 1
+    if term["site_kind"] == "terminal_c":
+        return term.get("insert_after_residue")
+    return None
+
+
+def _drop_near_terminus(
+    internal: list[dict[str, Any]], terms: list[dict[str, Any]], signals: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Drop internal sites whose CA is within ``TERMINUS_MIN_DIST_A`` of any
+    EXTRACELLULAR terminal anchor (det_path 'terminal', i.e. a real ecto-terminus
+    — NOT a snorkel). No-op when CA coords are absent (e.g. unit-test signals)."""
+    ca: dict[int, tuple[float, float, float]] = signals.get("ca") or {}
+    anchors = [
+        ca[a]
+        for t in terms
+        if t.get("det_path") == "terminal"
+        for a in (_terminus_anchor_residue(t),)
+        if a is not None and a in ca
+    ]
+    if not ca or not anchors:
+        return internal
+
+    def _clear(site: dict[str, Any]) -> bool:
+        r = site.get("insert_after_residue")
+        if r is None or r not in ca:
+            return True  # can't measure -> don't drop
+        p = ca[r]
+        dmin = min(
+            ((p[0] - a[0]) ** 2 + (p[1] - a[1]) ** 2 + (p[2] - a[2]) ** 2) ** 0.5 for a in anchors
+        )
+        return dmin >= TERMINUS_MIN_DIST_A
+
+    return [s for s in internal if _clear(s)]
 
 
 def _with_terminals(
@@ -56,8 +105,11 @@ def _with_terminals(
 ) -> list[dict[str, Any]]:
     """Prepend the extracellular N-terminal site and append the C-terminal /
     snorkel site around the residue-ordered internal sites. Terminals are single
-    named sites (own ``site_id``s) and bypass ``select_representatives`` NMS."""
+    named sites (own ``site_id``s) and bypass ``select_representatives`` NMS.
+    Internal sites hugging an extracellular terminus (redundant with the terminal
+    tag) are dropped first."""
     terms = terminal_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
+    internal = _drop_near_terminus(internal, terms, signals)
     n_terms = [s for s in terms if s["site_kind"] == "terminal_n"]
     c_terms = [s for s in terms if s["site_kind"] == "terminal_c"]
     return n_terms + internal + c_terms

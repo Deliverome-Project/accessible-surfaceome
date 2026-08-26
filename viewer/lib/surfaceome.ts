@@ -62,6 +62,8 @@ import { pickDeepDiveFilters } from "./deep-dive-fields";
 // snapshot via fs below and hands the parsed object to these helpers; the
 // same module is value-imported client-side by the gene page.
 import { parseFgLibrary, fgLibrarySymbolSet } from "./fg-library";
+import { parseTagSiteCounts } from "./tag-site-counts";
+import type { TagSiteCounts, TagSiteCountsMap } from "./tag-site-counts";
 import { renumberEvidenceIds } from "./evidenceRenumber";
 import { parseTriageHeadline } from "./triage-headline";
 import type {
@@ -130,6 +132,16 @@ const FG_LIBRARY_JSON = path.join(
   "public",
   "data",
   "fg-library.json",
+);
+
+// Per-gene tag-site category counts overlay (built by
+// scripts/build-tag-site-counts.mjs). Same public/data/ location + build-time
+// overlay pattern as fg-library.json.
+const TAG_SITE_COUNTS_JSON = path.join(
+  process.cwd(),
+  "public",
+  "data",
+  "tag-site-counts.json",
 );
 
 /**
@@ -353,6 +365,10 @@ export interface CatalogRow {
    *  deep-dive coverage. Always present (defaults to `false`). The public
    *  Worker does NOT serve this flag — it's a viewer-side overlay. */
   in_fg_library: boolean;
+  /** Per-gene tag-site category counts (deterministic lanes + termini +
+   *  literature), overlaid at build time from public/data/tag-site-counts.json
+   *  (enrichRowsWithTagSiteCounts). Null when the gene has no tag sites. */
+  tag_site_counts: TagSiteCounts | null;
 }
 
 export interface Catalog {
@@ -577,6 +593,33 @@ function enrichRowsWithFgLibrary(
   );
 }
 
+let _tagSiteCountsCache: TagSiteCountsMap | null = null;
+
+function loadTagSiteCounts(): TagSiteCountsMap {
+  if (_tagSiteCountsCache) return _tagSiteCountsCache;
+  let map: TagSiteCountsMap = {};
+  try {
+    map = parseTagSiteCounts(JSON.parse(readFileSync(TAG_SITE_COUNTS_JSON, "utf-8")));
+  } catch {
+    // Missing/malformed snapshot — no tag-site counts overlaid (graceful).
+  }
+  _tagSiteCountsCache = map;
+  return map;
+}
+
+/** Overlay per-gene tag-site category counts onto rows, keyed by symbol. Build-
+ *  time step modeled on enrichRowsWithFgLibrary; rows for genes with no tag
+ *  sites keep the inflate default (null). */
+function enrichRowsWithTagSiteCounts(
+  rows: CatalogRow[],
+  counts: TagSiteCountsMap,
+): CatalogRow[] {
+  if (Object.keys(counts).length === 0) return rows;
+  return rows.map((r) =>
+    counts[r.symbol] ? { ...r, tag_site_counts: counts[r.symbol] } : r,
+  );
+}
+
 /**
  * The Worker (`row_schema: 3`) packs each row's per-model NCBI
  * verdicts into a 3-slot tuple at `r.tr` — `[haiku?, sonnet?, opus?]`
@@ -645,6 +688,8 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     // it true for library members (the Worker doesn't ship this facet). A
     // snapshot fallback carrying `in_fg_library` is honored if present.
     in_fg_library: Boolean(r.in_fg_library),
+    // Default null — the build-time enrichRowsWithTagSiteCounts overlay fills it.
+    tag_site_counts: null,
   };
 }
 
@@ -798,7 +843,10 @@ async function _loadCatalogImpl(): Promise<Catalog> {
   // Two build-time overlays keyed by symbol: HGNC names/uniprot, then the
   // FG-library membership flag from the committed snapshot.
   const named = enrichRowsWithNames(reconciled, names);
-  const rows = enrichRowsWithFgLibrary(named, loadFgLibrarySymbols());
+  const rows = enrichRowsWithTagSiteCounts(
+    enrichRowsWithFgLibrary(named, loadFgLibrarySymbols()),
+    loadTagSiteCounts(),
+  );
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,

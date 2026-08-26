@@ -62,3 +62,16 @@ expect("out-of-range residue dropped", oob.length, 0);
 
 if (failures > 0) { console.error(`\n${failures} assertion(s) failed`); process.exit(1); }
 console.log("\nall assertions passed");
+
+// One anchor ball per span: deterministic sites sharing a residue_range collapse
+// to a single representative (the residue closest to the span midpoint).
+const collapsed = renderableTagSites([
+  site({ site_id: "d1", provenance: "deterministic_computed", det_path: "disorder", insert_after_residue: 27, residue_range: "H27-K159" }),
+  site({ site_id: "d2", provenance: "deterministic_computed", det_path: "disorder", insert_after_residue: 91, residue_range: "H27-K159" }),
+  site({ site_id: "d3", provenance: "deterministic_computed", det_path: "disorder", insert_after_residue: 159, residue_range: "H27-K159" }),
+  site({ site_id: "loop", provenance: "deterministic_computed", det_path: "surface_loop", insert_after_residue: 200, residue_range: "A190-A210" }),
+], 400);
+const disorderBalls = collapsed.filter((r) => r.category === "disorder");
+expect("one anchor per disorder span", disorderBalls.length, 1);
+expect("anchor is midpoint-closest (91 in H27-K159)", disorderBalls[0].residue, 91);
+expect("separate span (surface_loop) kept", collapsed.filter((r) => r.category === "surface_loop").length, 1);

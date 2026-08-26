@@ -793,7 +793,13 @@ export function GeneHeader({
                 provenance: r.provenance,
                 category: r.category,
                 tagType: r.tagType,
+                spanStart: r.spanStart,
+                spanEnd: r.spanEnd,
               }))}
+              // Per-isoform deterministic pins for the 3D overlay when an
+              // isoform variant tab is active (placed at canonical_residue,
+              // since isoforms render on the canonical fold).
+              isoformPins={taggedSites?.isoform_pins ?? []}
               // Variant tabs above the 3D canvas: alt isoforms
               // (sourced from `rec.deterministic_features.isoform_topologies`)
               // and 1:1 orthologs (mouse + cynomolgus). Each variant

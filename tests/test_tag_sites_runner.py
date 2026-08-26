@@ -8,9 +8,19 @@ from accessible_surfaceome.tools._shared.http import CachedHTTP
 
 
 def _paper(*, pmid=None, doi=None, pmc_id=None, title="", abstract="", year=None, is_preprint=False):
-    # Minimal Paper stand-in carrying the fields paper_source_id + the prompt render read.
+    # Minimal Paper stand-in carrying the fields paper_source_id + discovery read.
     return types.SimpleNamespace(pmid=pmid, doi=doi, pmc_id=pmc_id, title=title,
                                  abstract=abstract, year=year, is_preprint=is_preprint)
+
+
+def _evi(quote, *, source_id="PMID:11", claim="tag inserted at this site", verified=True):
+    # Duck-typed Evidence stand-in: the runner only reads .spans[0].source.source_id,
+    # .spans[0].quote, .claim, .entailment_verified (the real pydantic Evidence has
+    # ~8 required fields, so a namespace keeps these tests focused on runner logic).
+    span = types.SimpleNamespace(source=types.SimpleNamespace(source_id=source_id), quote=quote)
+    return types.SimpleNamespace(
+        evidence_id="tag_evi_1", claim=claim, spans=[span], entailment_verified=verified
+    )
 
 
 def _site(rank, *, ev="published tag insertion at this exact site",
@@ -53,29 +63,44 @@ def test_rank_sites_drops_unvalidated_and_orders_by_validation_then_tier():
     assert 30 not in residues                # the structural-inference site is gone
 
 
-def test_format_candidate_papers():
-    assert "rely on web_search" in R.format_candidate_papers({})
+def test_format_evidence_ledger():
+    # empty ledger -> instruction to return zero sites
+    assert "EMPTY sites list" in R.format_evidence_ledger([])
 
-    p = _paper(pmid=28924207, title="Ecto-tagged integrins",
-               abstract="We inserted ALFA after G101.", year=2017)
-    block = R.format_candidate_papers({"PMID:28924207": p})
-    assert "PMID 28924207" in block and "Ecto-tagged integrins" in block
+    # a PMID-keyed clip surfaces the numeric PMID + its verbatim quote
+    block = R.format_evidence_ledger([
+        _evi("We inserted ALFA after G101 in the ectodomain.", source_id="PMID:28924207",
+             claim="ALFA inserted after G101 displayed on the surface"),
+    ])
+    assert "PMID 28924207" in block
+    assert "We inserted ALFA after G101 in the ectodomain." in block
+    assert "ALFA inserted after G101 displayed on the surface" in block
+
+    # a preprint (DOI source_id, no PMID) is cited by DOI so the model sets supporting_pmid=null
+    pp = R.format_evidence_ledger([
+        _evi("ALFA inserted after N100.", source_id="DOI:10.1101/2023.01.01"),
+    ])
+    assert "DOI:10.1101/2023.01.01" in pp
 
 
-def test_run_tag_site_agent_composes_discovery_and_builder(monkeypatch):
-    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
-    # web_search discovery is delegated to the shared module; a web-discovered paper
-    # unions into the corpus and reaches the prompt as a CANDIDATE PAPER.
+def test_run_tag_site_agent_composes_pipeline_and_synthesis(monkeypatch):
+    # Discovery + web complement feed the shared clip pipeline; the span-verified
+    # evidence ledger (NOT raw papers) reaches the synthesis prompt.
+    monkeypatch.setattr(R, "discover_tag_site_papers",
+                        lambda **k: {"PMID:55501": _paper(pmid=55501, title="Web ALFA knock-in")})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts", lambda *a, **k: [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
     monkeypatch.setattr(
-        R, "web_discover_papers",
-        lambda *a, **k: [_paper(pmid=55501, title="Web-found ALFA knock-in",
-                                abstract="ALFA inserted in the ectodomain.", year=2024)],
+        R, "promote",
+        lambda *a, **k: [_evi("ALFA inserted in the ectodomain after G101.", source_id="PMID:55501")],
     )
     captured = {}
 
     def fake_call_builder(client, **k):
         captured["label"] = k["label"]
-        captured["tools"] = k.get("tools")  # no inline web_search tool now
         captured["prompt"] = k["user_prompt"]
         return _result([_site(2, val="surface_only"), _site(1, val="not_measured", res=200)])
 
@@ -86,16 +111,56 @@ def test_run_tag_site_agent_composes_discovery_and_builder(monkeypatch):
         client=cast(Anthropic, object()), http=cast(CachedHTTP, object()),
     )
     assert captured["label"] == "tag_site:X"
-    assert captured["tools"] is None  # discovery moved upfront -> no inline web tool
-    assert "CANDIDATE PAPERS" in captured["prompt"]
-    assert "PMID 55501" in captured["prompt"]  # the web-discovered paper is a candidate
-    # surface_only ranks above not_measured
-    assert out.sites[0].validation_level == "surface_only"
+    assert "EVIDENCE LEDGER" in captured["prompt"]
+    assert "PMID 55501" in captured["prompt"]       # the span-verified clip's source
+    assert out.sites[0].validation_level == "surface_only"  # ranks above not_measured
+
+
+def test_run_returns_empty_when_no_evidence(monkeypatch):
+    # No span-verified tag-insertion clip -> ZERO sites, WITHOUT a synthesis call.
+    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {"PMID:1": _paper(pmid=1)})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts", lambda *a, **k: [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [])
+
+    def _boom(*a, **k):
+        raise AssertionError("call_builder must not run with an empty ledger")
+
+    monkeypatch.setattr(R, "call_builder", _boom)
+    out = R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
+        sequence="AAA", topology="OOO", client=cast(Anthropic, object()), http=cast(CachedHTTP, object()),
+    )
+    assert out.sites == [] and out.sequence_length == 3
+
+
+def test_run_returns_empty_on_no_papers(monkeypatch):
+    # Nothing discovered -> empty result without touching the pipeline.
+    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+
+    def _boom(*a, **k):
+        raise AssertionError("pipeline must not run with no papers")
+
+    monkeypatch.setattr(R, "triage_abstracts", _boom)
+    out = R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
+        sequence="AAAA", topology="OOOO", client=cast(Anthropic, object()), http=cast(CachedHTTP, object()),
+    )
+    assert out.sites == [] and out.sequence_length == 4
 
 
 def test_run_returns_empty_on_builder_failure(monkeypatch):
-    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {"PMID:1": _paper(pmid=1)})
     monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts", lambda *a, **k: [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [_evi("ALFA after G101.", source_id="PMID:1")])
     monkeypatch.setattr(R, "call_builder", lambda client, **k: None)
     out = R.run_tag_site_agent(
         gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
@@ -111,7 +176,12 @@ def test_to_viewer_sites_shape():
     assert s["site_id"].endswith("-lit") and s["det_path"] is None
     assert s["topology_state"] == "O" and s["extracellular"] is True
     assert "validation: surface_and_function" in s["rationale"]
-    assert s["sources"] == [{"pmid": 123, "citation": "PMID 123"}]
+    assert s["sources"] == [{"pmid": 123, "citation": "PMID 123", "claim": None}]
+    # supporting_quote rides in the source's claim (drives the drawer quote)
+    q = _site(1, val="surface_and_function")
+    q.supporting_quote = "We inserted an ALFA tag after G100"
+    qs = R.to_viewer_sites(_result([q]), uniprot_acc="Q0")[0]
+    assert qs["sources"][0]["claim"] == "We inserted an ALFA tag after G100"
     assert s["residue_label"] == "A100"   # residue_before 'A' + insert_after 100
 
 
@@ -125,19 +195,6 @@ def test_residue_label_after_convention():
     assert residue_label(None, 101) is None   # before-residue-1 N-terminal tag
 
 
-def test_format_candidate_papers_includes_fulltext():
-    p = _paper(pmid=32996060, title="ASIC1a surface HA",
-               abstract="We inserted HA into the ectodomain.", year=2020)
-    block = R.format_candidate_papers(
-        {"PMID:32996060": p},
-        fulltext={"PMID:32996060": {"methods": "HA between D298 and L299.",
-                                    "results": "acid-evoked current was reduced vs WT."}},
-    )
-    assert "METHODS: HA between D298 and L299." in block
-    assert "RESULTS: acid-evoked current was reduced vs WT." in block
-    assert "REDUCED/CONFOUNDED" in block  # the extraction instruction is present
-
-
 def test_quote_supported_entailment():
     from accessible_surfaceome.agents.tag_site.literature_discovery import quote_supported
     src = "Methods: we inserted an ALFA tag after residue G101 in the extracellular loop."
@@ -148,15 +205,16 @@ def test_quote_supported_entailment():
 
 
 def test_verify_entailment_flags_hallucinated_quotes():
-    p = _paper(pmid=11, abstract="We inserted an HA epitope after residue D298 in the ectodomain.")
+    # The ledger is the span-verified source: a site whose quote is IN the ledger
+    # passes; a hallucinated quote (nowhere in the ledger) is flagged.
+    evidence = [_evi("We inserted an HA epitope after residue D298 in the ectodomain.",
+                     source_id="PMID:11")]
     good = _site(1, val="surface_only", res=298)
-    good.supporting_pmid = 11
     good.supporting_quote = "We inserted an HA epitope after residue D298"
     bad = _site(2, val="surface_and_function", res=147)
-    bad.supporting_pmid = 11
     bad.supporting_quote = "This exact sentence never appears in any fetched source text"
     res = _result([good, bad])
-    R.verify_entailment(res, papers={"PMID:11": p}, fulltext={})
+    R.verify_entailment(res, evidence=evidence)
     by_res = {s.insert_after_residue: s.entailment_verified for s in res.sites}
     assert by_res[298] is True and by_res[147] is False
 
@@ -169,40 +227,3 @@ def test_verify_entailment_tiebreak_in_ranking():
     b.entailment_verified = True
     out = R.rank_sites(_result([a, b]))
     assert [s.insert_after_residue for s in out.sites] == [20, 10]
-
-
-def test_format_candidate_papers_includes_preprint_papers():
-    # Preprints are now IN the papers dict (DOI-anchored, is_preprint=True), keyed
-    # on paper_source_id — no separate list. They render as DOI + [preprint].
-    pp = _paper(doi="10.1101/2023.01.01", title="EndoNB ALFA knock-in",
-                abstract="ALFA inserted after N100.", year=2023, is_preprint=True)
-    block = R.format_candidate_papers({"DOI:10.1101/2023.01.01": pp})
-    assert "DOI 10.1101/2023.01.01" in block
-    assert "[preprint]" in block
-    assert "EndoNB ALFA knock-in" in block
-
-
-def test_verify_entailment_hydrates_web_cited_pmid(monkeypatch):
-    # A site cites a PMID the candidate set never contained (agent found it via
-    # web_search). With http given, verify_entailment hydrates that PMID on demand
-    # and confirms the quote, instead of flagging a real citation unverified.
-    hp = _paper(pmid=999,
-                abstract="We introduced an HA tag in extracellular loop 2 of the serotonin transporter.")
-
-    monkeypatch.setattr(R, "europepmc_bulk_by_pmid", lambda **k: [hp])
-    monkeypatch.setattr(R, "fetch_fulltext_sections", lambda **k: {})
-
-    site = _site(1, val="function_perturbed", res=243)
-    site.supporting_pmid = 999
-    site.supporting_quote = "We introduced an HA tag in extracellular loop 2"
-    res = _result([site])
-    R.verify_entailment(res, papers={}, fulltext={}, http=cast(CachedHTTP, object()))
-    assert res.sites[0].entailment_verified is True
-
-    # Without http, the same web-cited PMID cannot be fetched -> stays unverified.
-    site2 = _site(1, res=243)
-    site2.supporting_pmid = 999
-    site2.supporting_quote = "We introduced an HA tag in extracellular loop 2"
-    res2 = _result([site2])
-    R.verify_entailment(res2, papers={}, fulltext={})
-    assert res2.sites[0].entailment_verified is False
