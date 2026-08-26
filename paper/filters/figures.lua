@@ -214,22 +214,17 @@ end
 --   "(Figure 1, 2)"     prefix="(", suffix=","   → no close paren in suffix; prefix stays OUTSIDE the link (the ")" lives further along the inline chain, with the rest of the citation group)
 --   "Figure 1."         prefix="",  suffix="."   → link covers "Figure 1", trailing "."
 local function emit_link_with_brackets(result, prefix, ref_text, suffix, id)
-  local opener_to_closer = {["("] = ")", ["["] = "]"}
-  local matching_close = opener_to_closer[prefix]
-  local before_link, link_text, after_link
-  if matching_close and suffix:sub(1, 1) == matching_close then
-    -- Matched bracket pair — pull both INTO the link text.
-    before_link = ""
-    link_text = prefix .. ref_text .. matching_close
-    after_link = suffix:sub(2)
-  else
-    -- No matching close — prefix stays outside; the link covers
-    -- just the reference text. Suffix (punctuation like "." or
-    -- ",") sits to the right of the link.
-    before_link = prefix
-    link_text = ref_text
-    after_link = suffix
-  end
+  -- Brackets ALWAYS stay outside the link, so only "Figure 1" carries
+  -- link colour and the surrounding "( )" prints in body ink. They
+  -- belong to the sentence, not to the reference — the same treatment
+  -- filters/citations.lua gives "(Brase, 2009)".
+  --
+  -- An earlier version pulled a matched pair INTO the link text,
+  -- which painted the brackets maroon and made a parenthetical
+  -- reference read as one solid coloured blob.
+  local before_link = prefix
+  local link_text = ref_text
+  local after_link = suffix
   if before_link ~= "" then result:insert(pandoc.Str(before_link)) end
   result:insert(pandoc.Link({pandoc.Str(link_text)}, "#" .. id))
   if after_link ~= "" then result:insert(pandoc.Str(after_link)) end

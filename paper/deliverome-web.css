@@ -1,0 +1,328 @@
+/*
+ * Deliverome paper WEB stylesheet
+ * ------------------------------------------------------------
+ * Screen counterpart to deliverome-print.css. Same manuscript HTML,
+ * same brand, different medium: one readable column instead of two,
+ * a sticky table of contents instead of page numbers, and no @page
+ * rules at all.
+ *
+ * Deliberately SELF-CONTAINED. The print sheet imports the project's
+ * design tokens from `../viewer/app/design-tokens.css`, which is fine
+ * for a local WeasyPrint run but meaningless once this file is copied
+ * into another site's public/ directory. The token values below are
+ * duplicated from that file; if the brand palette moves, re-sync this
+ * block. Everything downstream reads the variables, so a re-sync is a
+ * single edit.
+ */
+
+/* MUST be the first statement in the file: a CSS @import placed after
+ * any rule is discarded, which silently cost us both web fonts. */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap");
+
+:root {
+  --maroon-deepest: #3e0a18;
+  --maroon-dark: #6e1428;
+  --maroon-mid: #922038;
+  --maroon-light: #bc3c4c;
+  --maroon-soft: rgba(146, 32, 56, 0.08);
+
+  --ink: #1f1718;
+  --ink-soft: #2a2122;
+  --muted: #6f5d5a;
+
+  --bg: #fefefe;
+  --paper-beige: #fefdfa;
+  --rule: rgba(31, 23, 24, 0.12);
+
+  --measure: 44rem;
+  --toc-width: 15rem;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* 1.0625rem ≈ 17px: the print edition runs 9.5pt because column
+   * width forces density, but on screen a single wide column wants a
+   * larger face and a looser leading. */
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+/* ============================================================
+ * Title band — mirrors the print edition's cream banner.
+ * ============================================================ */
+
+.paper-header {
+  background: var(--paper-beige);
+  border-bottom: 3px solid var(--maroon-mid);
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem 2rem;
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.paper-header > * {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+.paper-header h1 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 5.5vw, 3.1rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 0 0 1rem;
+  color: var(--ink);
+}
+
+.paper-header p {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0.3rem auto;
+}
+
+/* ============================================================
+ * Layout — content column, with the TOC docked beside it once
+ * there is room for both.
+ * ============================================================ */
+
+body > *:not(.paper-header):not(#TOC) {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+/* Reserve room for the docked TOC by insetting the whole page, rather
+ * than nudging individual blocks. Shifting blocks with a transform
+ * moves the text but NOT the title band's background, so the heading
+ * slid out of its own cream banner. A padding gutter keeps every
+ * element — banner included — inside the same reduced canvas. */
+@media (min-width: 78rem) {
+  body {
+    padding-left: calc(var(--toc-width) + 3rem);
+  }
+}
+
+#TOC {
+  display: none;
+}
+
+@media (min-width: 78rem) {
+  #TOC {
+    display: block;
+    position: fixed;
+    top: 2.5rem;
+    left: 1.5rem;
+    width: var(--toc-width);
+    max-height: calc(100vh - 5rem);
+    overflow-y: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    border-left: 2px solid var(--rule);
+    padding-left: 1rem;
+  }
+  #TOC ul { list-style: none; margin: 0; padding: 0 0 0 0.6rem; }
+  #TOC > ul { padding-left: 0; }
+  #TOC li { margin: 0.32rem 0; }
+  #TOC a { color: var(--muted); text-decoration: none; }
+  #TOC a:hover { color: var(--maroon-mid); }
+}
+
+/* ============================================================
+ * Prose
+ * ============================================================ */
+
+h2, h3, h4, h6 {
+  font-family: "Manrope", sans-serif;
+  color: var(--maroon-dark);
+  line-height: 1.25;
+  /* margin-BLOCK, never the shorthand: the layout rule above centres
+   * body children with `margin-inline: auto`, and a shorthand here
+   * would reset that to 0 and un-centre the document. */
+  margin-block: 2.2rem 0.6rem;
+  scroll-margin-top: 1.5rem;
+}
+
+h2 {
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+h3 { font-size: 1.22rem; font-weight: 600; color: var(--ink); }
+h4 { font-size: 1.02rem; font-weight: 600; color: var(--ink-soft); }
+h6 { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+
+p { margin-block: 0 1.05rem; }
+
+a {
+  color: var(--maroon-mid);
+  text-decoration-color: rgba(146, 32, 56, 0.35);
+  text-underline-offset: 2px;
+}
+a:hover { text-decoration-color: currentColor; }
+
+strong { font-weight: 600; }
+
+/* ============================================================
+ * Figures — the print sheet's caption card, restyled for screen.
+ * `figure-block` is emitted by filters/figures.lua and keeps the
+ * artwork welded to its caption.
+ * ============================================================ */
+
+/* `body >` is required, not stylistic: the layout rule above is
+ * `body > *:not(...):not(...)`, whose :not() pseudo-classes out-specify
+ * a bare .figure-block and would otherwise clamp figures to the 44rem
+ * prose measure. */
+body > .figure-block {
+  /* Figures earn more width than the prose measure: a five-panel
+   * violin at 44rem is unreadable. */
+  max-width: min(58rem, 100%);
+  margin: 2.4rem auto;
+  scroll-margin-top: 1.5rem;
+}
+
+.figure-block p,
+p:has(> img) { margin: 0; text-align: center; }
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-inline: auto;
+}
+
+h5 {
+  background: var(--paper-beige);
+  border-left: 4px solid var(--maroon-mid);
+  border-radius: 2px;
+  margin-block: 0.7rem 0;
+  padding: 0.85rem 1.1rem;
+  font-family: "Manrope", sans-serif;
+  font-weight: 400;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: 0;
+  scroll-margin-top: 1.5rem;
+}
+h5 strong { color: var(--maroon-dark); font-weight: 700; }
+
+/* Landing highlight: clicking a cross-reference should make it
+ * obvious WHICH block you just jumped to. */
+.figure-block:target h5,
+h5:target {
+  box-shadow: 0 0 0 3px var(--maroon-soft);
+}
+
+/* ============================================================
+ * Front-matter resource lines + brand marks
+ * ============================================================ */
+
+.resource-line p {
+  text-align: left;
+  overflow-wrap: anywhere;
+  margin: 0.35rem 0;
+}
+img.resource-icon {
+  width: 0.95em;
+  height: 0.95em;
+  display: inline;
+  margin-right: 0.25em;
+  vertical-align: -0.12em;
+}
+
+/* ============================================================
+ * References — tighter, hanging-indent list.
+ * ============================================================ */
+
+#references + ol,
+#references ~ ol {
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+#references ~ ol li { margin-bottom: 0.6rem; }
+a.doi { color: var(--maroon-mid); word-break: break-all; }
+
+/* A reference that has just been jumped to from a citation. */
+li:target,
+span[id^="ref-"]:target {
+  background: var(--maroon-soft);
+  border-radius: 2px;
+}
+
+/* ============================================================
+ * Tables
+ * ============================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  margin-block: 1.4rem;
+  display: block;
+  overflow-x: auto;
+}
+th, td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+th { color: var(--maroon-dark); font-weight: 600; }
+
+/* ============================================================
+ * Print from the browser: fall back to something sane rather than
+ * shipping the screen layout to paper. The real print artefact is
+ * the WeasyPrint PDF.
+ * ============================================================ */
+
+@media print {
+  #TOC { display: none; }
+  body { font-size: 10pt; }
+  .figure-block { break-inside: avoid; }
+}
+
+/* ============================================================
+ * Citation hover panel (deliverome-web.js)
+ * ------------------------------------------------------------
+ * Read a reference without leaving your place in the argument.
+ * Purely additive — the underlying anchor still jumps on click, so
+ * this degrades to the previous behaviour without JS or on touch.
+ * ============================================================ */
+
+.ref-tooltip {
+  position: absolute;
+  z-index: 50;
+  max-width: min(30rem, calc(100vw - 2rem));
+  padding: 0.7rem 0.85rem;
+  background: var(--bg);
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--maroon-mid);
+  border-radius: 4px;
+  box-shadow: 0 6px 22px rgba(31, 23, 24, 0.13);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  pointer-events: auto;
+}
+
+.ref-tooltip.is-visible { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ref-tooltip { transition: none; }
+}

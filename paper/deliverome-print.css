@@ -582,7 +582,17 @@ a.footnote-back {
  * ......... "https://…") while the URL still had to break mid-token
  * anyway. Left-align them and let the URL wrap wherever it needs to.
  * ============================================================ */
+/* Tight stack: these four lines are one list, not four paragraphs, so
+ * they should read as a block rather than drifting apart at the body's
+ * normal 0.5em paragraph rhythm. */
+.resource-line {
+  margin: 0;
+}
+.resource-line + .resource-line {
+  margin-top: 0.12em;
+}
 .resource-line p {
+  margin: 0;
   text-align: left;
   hyphens: none;
   overflow-wrap: anywhere;

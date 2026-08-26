@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -111,6 +112,8 @@ from weasyprint import CSS, HTML  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CSS_PATH = REPO_ROOT / "paper" / "deliverome-print.css"
+WEB_CSS_PATH = REPO_ROOT / "paper" / "deliverome-web.css"
+WEB_JS_PATH = REPO_ROOT / "paper" / "deliverome-web.js"
 REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
 FIGURES_FILTER = REPO_ROOT / "paper" / "filters" / "figures.lua"
 SECTIONS_FILTER = REPO_ROOT / "paper" / "filters" / "sections.lua"
@@ -273,6 +276,154 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     return {"html": html_path, "pdf": pdf_path, "xml": xml_path}
 
 
+def build_web(src: Path, out_dir: Path) -> Path:
+    """Render the manuscript as a self-contained web page.
+
+    Same pandoc pass and same filters as the PDF build — so the
+    citation, section and figure cross-references are identical — but
+    the output is a directory that can be dropped into any static
+    site:
+
+        <out_dir>/index.html
+        <out_dir>/assets/…            images, brand marks, stylesheet
+
+    Differences from the print build:
+      * ``--toc`` adds a table of contents; the web stylesheet docks
+        it beside the text on wide screens.
+      * every ``<img src>`` is rewritten to a RELATIVE ``assets/…``
+        path and the file copied in, because the PDF build leaves
+        absolute local paths that mean nothing on a web server.
+      * deliverome-web.css replaces the print sheet.
+
+    Returns the written index.html.
+    """
+    from figure_swap import (  # ty: ignore[unresolved-import]
+        format_report,
+        load_manifest,
+        swap_figures,
+    )
+    from lxml import html as lxml_html
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    assets_dir = out_dir / "assets"
+    assets_dir.mkdir(exist_ok=True)
+
+    stem = _stem_for(src)
+    work = out_dir / f"_{stem}.html"
+    media_dir = out_dir / f"_media-{stem}"
+
+    os.environ["PAPER_ASSETS_DIR"] = str(PAPER_ASSETS_DIR)
+    print(f"→ pandoc {src.name} → web html")
+    pypandoc.convert_file(
+        str(src),
+        to="html5",
+        format="docx",
+        outputfile=str(work),
+        extra_args=[
+            "--standalone",
+            "--toc",
+            # Depth 2 = the <h1> title plus the <h2> section headings
+            # (Introduction, Results, Discussion, Methods…). Depth 3
+            # pulled in every <h3> subsection and buried the majors.
+            # Keyed on heading LEVEL, so it tracks the document
+            # structure rather than a hand-kept list of section names.
+            "--toc-depth=2",
+            f"--extract-media={media_dir}",
+            f"--lua-filter={REFS_DOIS_FILTER}",
+            f"--lua-filter={FIGURES_FILTER}",
+            f"--lua-filter={SECTIONS_FILTER}",
+            f"--lua-filter={CITATIONS_FILTER}",
+        ],
+    )
+
+    manifest = load_manifest(FIGURE_MANIFEST)
+    if manifest:
+        print(f"→ figure-swap   ({len(manifest)} manifest entries)")
+        report = swap_figures(work, manifest, FIGURE_SEARCH_PATH)
+        formatted = format_report(report)
+        if formatted:
+            print(formatted)
+
+    # Localise every image: copy the file next to the page and point
+    # the tag at a relative path. Content-addressed by index so two
+    # sources with the same basename can't collide.
+    doc = lxml_html.parse(str(work)).getroot()
+    copied: dict[str, str] = {}
+    for i, img in enumerate(doc.xpath("//img")):
+        raw = img.get("src") or ""
+        if raw.startswith(("http://", "https://", "data:", "assets/")):
+            continue
+        srcpath = Path(raw)
+        if not srcpath.is_absolute():
+            srcpath = (work.parent / srcpath).resolve()
+        if not srcpath.is_file():
+            print(f"  ⚠ image not found, left as-is: {raw}")
+            continue
+        key = str(srcpath)
+        if key not in copied:
+            name = f"{i:02d}-{srcpath.name}"
+            shutil.copy2(srcpath, assets_dir / name)
+            copied[key] = f"assets/{name}"
+        img.set("src", copied[key])
+
+    # Build a real title band. The .docx carries no title metadata, so
+    # pandoc emits a bare <h1> followed by loose author / affiliation /
+    # resource paragraphs rather than its usual #title-block-header.
+    # Group everything before the first <h2> into one <header> so the
+    # stylesheet has something to anchor the banner on.
+    body = doc.find("body")
+    if body is not None:
+        first_h2 = body.find("h2")
+        if first_h2 is not None:
+            header = lxml_html.Element("header")
+            header.set("class", "paper-header")
+            for node in list(body):
+                if node is first_h2:
+                    break
+                if node.tag in ("nav", "meta", "script", "style"):
+                    continue
+                body.remove(node)
+                header.append(node)
+            body.insert(0, header)
+
+    # Point the stylesheet at the copied web CSS.
+    shutil.copy2(WEB_CSS_PATH, assets_dir / "paper.css")
+    shutil.copy2(WEB_JS_PATH, assets_dir / "paper.js")
+    for link in doc.xpath("//link[@rel='stylesheet']"):
+        link.getparent().remove(link)
+    # Drop pandoc's built-in <style> too. --standalone injects a default
+    # sheet whose `body { max-width: 36em; margin: auto }` silently
+    # overrode our layout and squeezed the whole page into a 274px
+    # column, TOC gutter and all.
+    for style in doc.xpath("//head/style"):
+        style.getparent().remove(style)
+    head = doc.find("head")
+    if head is not None:
+        head.append(lxml_html.fromstring(
+            '<link rel="stylesheet" href="assets/paper.css"/>'
+        ))
+        head.append(lxml_html.fromstring(
+            '<meta name="viewport" content="width=device-width, initial-scale=1"/>'
+        ))
+    if body is not None:
+        # `defer` so the parser is never blocked; the script only
+        # enhances links that already work without it.
+        body.append(lxml_html.fromstring(
+            '<script src="assets/paper.js" defer></script>'
+        ))
+
+    index = out_dir / "index.html"
+    index.write_bytes(lxml_html.tostring(
+        doc, method="html", encoding="utf-8", doctype="<!DOCTYPE html>"))
+
+    # Tidy the intermediates — the published directory should contain
+    # only what the page actually serves.
+    work.unlink(missing_ok=True)
+    shutil.rmtree(media_dir, ignore_errors=True)
+    print(f"  copied {len(copied)} image(s) → {assets_dir}")
+    return index
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -295,7 +446,31 @@ def main() -> int:
             "continue."
         ),
     )
+    parser.add_argument(
+        "--web",
+        type=Path,
+        metavar="OUT_DIR",
+        help=(
+            "Render a self-contained web page into OUT_DIR instead of "
+            "building the PDF. Writes OUT_DIR/index.html plus an "
+            "assets/ directory, ready to drop into a static site."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.web is not None:
+        try:
+            index = build_web(args.source.resolve(), args.web.resolve())
+        except FileNotFoundError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 66
+        except Exception as exc:  # noqa: BLE001
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print()
+        print(f"✓ Wrote {index}")
+        print(f"  open {index} in a browser to check it.")
+        return 0
 
     try:
         outputs = build(args.source.resolve(), strict_figures=args.strict_figures)
