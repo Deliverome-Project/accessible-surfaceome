@@ -24,6 +24,10 @@ export function defaultEvidenceLabel(evidenceId: string): string {
   if (newForm) return newForm[1];
   const legacyForm = /^a[12]_evi_(\d+)$/.exec(evidenceId);
   if (legacyForm) return legacyForm[1];
+  // Internalization sources (separate pass) key on ``int_evi_NN``; strip the
+  // prefix + zero-pad so its chips read as bare numbers like the deep-dive's.
+  const internForm = /^int_evi_(\d+)$/.exec(evidenceId);
+  if (internForm) return String(parseInt(internForm[1], 10));
   return evidenceId;
 }
 

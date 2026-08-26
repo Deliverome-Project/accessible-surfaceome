@@ -34,9 +34,20 @@ function row(overrides: Partial<CatalogRow>): CatalogRow {
 }
 
 const rows: CatalogRow[] = [
-  row({ symbol: "TFRC", uniprot: "P02786", internalization: "high" }),
-  row({ symbol: "MS4A1", uniprot: "P11836", internalization: "low" }),
-  row({ symbol: "NOINTERN", uniprot: "P99999" }), // no grade → column shows a dash
+  // seq + lit grades can diverge — the reason there are two columns.
+  row({
+    symbol: "TFRC",
+    uniprot: "P02786",
+    internalization: "high",
+    internalization_lit: "high",
+  }),
+  row({
+    symbol: "MS4A1",
+    uniprot: "P11836",
+    internalization: "moderate",
+    internalization_lit: "no", // observed non-internalizing despite a modest prior
+  }),
+  row({ symbol: "NOINTERN", uniprot: "P99999" }), // no grades → columns show dashes
 ];
 
 function render(): string {
@@ -51,11 +62,15 @@ function render(): string {
   );
 }
 
-test("renders the trailing 'Internalize' sortable column header", () => {
+test("renders SEPARATE seq + lit internalization sortable column headers", () => {
   const html = render();
   assert.ok(
-    html.includes("Internalize"),
-    "the internalization column header must be present in the catalog header row",
+    /Intern[^<]*seq/i.test(html),
+    "the internalization SEQUENCE-prior column header must render",
+  );
+  assert.ok(
+    /Intern[^<]*lit/i.test(html),
+    "the internalization LITERATURE column header must render",
   );
 });
 

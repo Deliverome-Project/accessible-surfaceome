@@ -15,15 +15,36 @@ that support it — use `moderate` for partial/slow internalization rather than
 forcing `high`/`low`):
 
 - **basal** — constitutive internalization with no added ligand.
-- **native_ligand** — internalization driven by the protein's endogenous ligand.
+- **native_ligand** — internalization driven by the protein's OWN endogenous
+  physiological ligand. The ligand does NOT have to be soluble: a soluble ligand,
+  a membrane-bound / trans-adhesion partner (e.g. a nectin binding its partner
+  nectin), or an endogenous glycan / carbohydrate ligand ALL count as the native
+  ligand. Only a TRUE orphan receptor with NO endogenous ligand of any kind (for
+  example, it signals only by heterodimerizing with a co-receptor) gets `unknown`
+  here — for such a receptor you MUST output `unknown`, NOT `low` and NOT `no`
+  (the mode does not APPLY; that is different from measured-low). Do NOT
+  substitute a chimeric-receptor construct (a fusion carrying a DIFFERENT
+  receptor's ligand-binding domain) or a heterodimer / co-receptor partner's
+  ligand as native-ligand evidence — that is not the protein's own ligand. When
+  the ONLY native-ligand evidence is an ENGINEERED or synthetic ligand MIMIC
+  (e.g. a multivalent probe or conjugate mimicking the endogenous ligand) rather
+  than the actual endogenous ligand, keep `confidence` `low`. Pathogen- or
+  toxin-driven entry does NOT count here — grade it under `pathogen_entry`.
 - **therapeutic** — internalization driven by an exogenous binder or delivery
   agent (antibody, ADC, siRNA/oligonucleotide, lipid nanoparticle, AAV, peptide,
   or engineered ligand). This is the delivery-relevant mode and often
   differs from basal.
+- **pathogen_entry** — internalization the receptor undergoes when a PATHOGEN or
+  TOXIN (virus, bacterial toxin) co-opts it for entry. This demonstrates the
+  receptor's internalization CAPACITY but is neither the native ligand nor a
+  therapeutic binder, so it gets its OWN grade and does NOT feed `native_ligand`
+  or `therapeutic`. Leave `unknown` when there is no such evidence.
 
 Leave a mode `unknown` when the ledger has no evidence for it. Set `overall_grade`
-to the strongest well-supported mode (favor `therapeutic`/`native_ligand` for
-delivery relevance when they are supported).
+to the strongest well-supported mode of `basal` / `native_ligand` / `therapeutic`
+(favor `therapeutic`/`native_ligand` for delivery relevance when they are
+supported). `pathogen_entry` is a capacity signal only — it does NOT drive
+`overall_grade`.
 
 # Observations
 
@@ -43,7 +64,10 @@ Whenever a clip reports a number, populate the **structured** `quant` fields —
 free-text `quant_summary`. Map the reported number to the metric:
 
 - a fold-change ("1.5-fold higher", "increased 3×") → `rate_metric=fold_change`,
-  `rate_value=1.5`;
+  `rate_value=1.5`. For a fold-change, `quant_summary` MUST state the COMPARATOR —
+  what the value is relative to (e.g. "3-fold higher than the unconjugated
+  antibody", "1.5× vs. non-targeting siRNA control"): a bare fold-change with no
+  reference condition is meaningless, so never write just "2.5-fold";
 - a percent internalized ("45% internalized at 2 h") →
   `rate_metric=percent_internalized`, `rate_value=45`, `rate_unit="%"`,
   `time_point="2 h"`;
@@ -103,6 +127,20 @@ no_change on the target's uptake), `quant` (extract the number the same way as
 below), `cell_line`, `cell_context`, `magnitude`, and `cited_source_ids`.
 **These do NOT drive the grade** — a strong modulator effect is not evidence the
 target internalizes well on its own.
+
+**Scope — internalization rate/route only, NOT surface abundance.** A modulator
+qualifies ONLY if it changes the RATE or ROUTE of internalization / endocytosis /
+uptake / recycling. EXCLUDE any perturbation that only changes the target's
+surface ABUNDANCE or total protein level — via degradation, protein stability,
+ubiquitin-proteasome turnover, expression / transcription, shedding, or
+degradative endosomal sorting — WITHOUT a measured change in the internalization
+rate itself. Two tells that a finding is an abundance effect (omit it): the clip
+says the effect is achieved "through degradative sorting rather than increased
+endocytosis" (or similar — the mechanism is stability/sorting, not uptake), or it
+reports a change in "surface expression" / total level with no rate-of-uptake
+measurement. A raft/pathway inhibitor or partner that changes the measured
+endocytosis RATE stays; a manipulation that only makes more or less receptor sit
+on the surface does not.
 
 **Direction is fixed — the modulator acts ON the target** (modulator → target's
 internalization). Exclude both reversals:

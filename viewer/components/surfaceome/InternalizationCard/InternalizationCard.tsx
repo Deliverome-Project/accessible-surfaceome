@@ -2,7 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { SectionCard } from "../SectionCard/SectionCard";
+import { EvidenceChip } from "../EvidenceChip/EvidenceChip";
+import { EvidenceDrawer } from "../EvidenceDrawer/EvidenceDrawer";
+import type { Evidence } from "../../../lib/surfaceome-types";
 import styles from "./InternalizationCard.module.css";
+
+/** Strip of clickable evidence chips for a table "cites" cell — each opens the
+ *  card's EvidenceDrawer (same UX as the deep-dive), replacing the raw
+ *  ``int_evi_NN`` ids. Falls back to a dash when a row cites nothing. */
+function CiteChips({ ids }: { ids: readonly string[] }) {
+  if (!ids.length) return <span className={styles.muted}>—</span>;
+  return (
+    <span className={styles.citeChips}>
+      {ids.map((id) => (
+        <EvidenceChip key={id} evidenceId={id} />
+      ))}
+    </span>
+  );
+}
 
 // The sequence (model-prior) track uses the 5-point SeqGrade; the literature
 // track's per-mode Grade retains `no` (and legacy records may carry it). Keep
@@ -88,7 +105,13 @@ interface Literature {
   rationale: string;
   cross_condition_note: string;
   species_scope: string;
-  grades_by_mode: { basal: ModeGrade; native_ligand: ModeGrade; therapeutic: ModeGrade };
+  grades_by_mode: {
+    basal: ModeGrade;
+    native_ligand: ModeGrade;
+    therapeutic: ModeGrade;
+    // Additive 4th mode (schema 0.1.6+); absent on older records.
+    pathogen_entry?: ModeGrade;
+  };
   observations: Observation[];
   modulator_observations?: ModulatorObs[];
   sources: Source[];
@@ -110,6 +133,33 @@ interface Props {
 function em(v: unknown) {
   if (v === null || v === undefined || v === "") return <span className={styles.empty}>—</span>;
   return <>{String(v)}</>;
+}
+
+// Structured rate value + its human context. A bare "2.5 fold" or "45 %" is
+// ambiguous without the comparator ("...higher than the unconjugated antibody",
+// "...of surface pool internalized at 1 h") — which the grader records in
+// quant_summary. Always show the summary next to the number so the reader knows
+// what the value is relative to; fall back to the summary alone when there is no
+// structured value.
+function QuantValue({
+  value,
+  unit,
+  summary,
+}: {
+  value: number | null | undefined;
+  unit: string | null | undefined;
+  summary?: string | null;
+}) {
+  if (value === null || value === undefined) return em(summary);
+  return (
+    <>
+      <strong>
+        {value}
+        {unit ? ` ${unit}` : ""}
+      </strong>
+      {summary ? <span className={styles.muted}> — {summary}</span> : null}
+    </>
+  );
 }
 
 function Pill({ grade, label }: { grade: Grade | string; label?: string }) {
@@ -235,11 +285,23 @@ export function InternalizationCard({ symbol, n }: Props) {
                 </div>
                 <p>{em(lit.rationale)}</p>
                 <div className={styles.modes}>
-                  {(["basal", "native_ligand", "therapeutic"] as const).map((k) => {
+                  {(
+                    ["basal", "native_ligand", "therapeutic", "pathogen_entry"] as const
+                  ).map((k) => {
                     const mg = lit.grades_by_mode[k];
+                    // pathogen_entry is additive + usually unknown — only surface
+                    // it when it carries a real grade, so the card isn't cluttered
+                    // with an empty 4th row for every gene (and old records that
+                    // lack the field entirely just skip it).
+                    if (!mg) return null;
+                    if (
+                      k === "pathogen_entry" &&
+                      (!mg.grade || mg.grade === "unknown")
+                    )
+                      return null;
                     return (
                       <div key={k} className={styles.mode}>
-                        <span className={styles.modeName}>{k.replace("_", " ")}</span>{" "}
+                        <span className={styles.modeName}>{k.replace(/_/g, " ")}</span>{" "}
                         <Pill grade={mg.grade} /> <span className={styles.muted}>{mg.confidence}</span>
                         <p className={styles.modeRat}>{em(mg.rationale)}</p>
                       </div>
@@ -272,11 +334,13 @@ export function InternalizationCard({ symbol, n }: Props) {
                           </td>
                           <td>{em(o.quant.rate_metric)}</td>
                           <td>
-                            {o.quant.rate_value !== null
-                              ? em(`${o.quant.rate_value} ${o.quant.rate_unit ?? ""}`)
-                              : em(o.quant.quant_summary)}
+                            <QuantValue
+                              value={o.quant.rate_value}
+                              unit={o.quant.rate_unit}
+                              summary={o.quant.quant_summary}
+                            />
                           </td>
-                          <td className={styles.mono}>{em(o.cited_source_ids.join(", "))}</td>
+                          <td><CiteChips ids={o.cited_source_ids} /></td>
                         </tr>
                       ))}
                     </tbody>
@@ -312,11 +376,13 @@ export function InternalizationCard({ symbol, n }: Props) {
                               <td>{em(m.effect_on_target)}</td>
                               <td>{em(m.cell_line)}</td>
                               <td>
-                                {m.quant.rate_value !== null
-                                  ? em(`${m.quant.rate_value} ${m.quant.rate_unit ?? ""}`)
-                                  : em(m.quant.quant_summary || m.note)}
+                                <QuantValue
+                                  value={m.quant.rate_value}
+                                  unit={m.quant.rate_unit}
+                                  summary={m.quant.quant_summary || m.note}
+                                />
                               </td>
-                              <td className={styles.mono}>{em(m.cited_source_ids.join(", "))}</td>
+                              <td><CiteChips ids={m.cited_source_ids} /></td>
                             </tr>
                           ))}
                         </tbody>
@@ -345,6 +411,15 @@ export function InternalizationCard({ symbol, n }: Props) {
                     );
                   })}
                 </ul>
+                {/* One drawer instance fed this card's own sources. The
+                    page-level EvidenceClickDelegator dispatches the open event;
+                    this drawer only opens for ``int_evi_*`` ids (the deep-dive
+                    drawer ignores them — namespaces don't collide), so an
+                    evidence chip in the tables above slides open the same
+                    detail panel the rest of the page uses. */}
+                <EvidenceDrawer
+                  evidence={lit.sources as unknown as Evidence[]}
+                />
               </>
             )}
           </div>

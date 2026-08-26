@@ -523,6 +523,20 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  catalog_internalization_lit: (
+    <>
+      <strong>Internalization (literature)</strong> — the{" "}
+      <em>observed</em> internalization grade, distinct from the sequence prior:
+      built from PMID/DOI-anchored, span-verified evidence in the literature
+      (per-mode basal / native-ligand / therapeutic, rolled to one overall
+      call). Scale: high → moderate → low → <em>no</em> (observed
+      non-internalizing) → <em>unknown</em>. Because it reads real measurements
+      rather than sequence, it can diverge from the prior — e.g. a modest
+      sequence prior with strong literature evidence. Shown only for genes with
+      a literature run; a dash means none yet.
+    </>
+  ),
+
   catalog_internalization_group: (
     <>
       <strong>Internalization sequence prior</strong> — a standalone pass,
