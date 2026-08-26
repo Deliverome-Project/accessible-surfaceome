@@ -113,8 +113,8 @@
   --tag-site-deterministic: var(--teal-mid);       /* deterministic_computed overlay */
   /* Fine-grained tag-site CATEGORY tokens (structure-viewer "Tag sites" mode).
      Mirror CATEGORY_HEX in viewer/lib/tag-sites-types.ts (WebGL uses the hex). */
-  --tag-site-surface-loop: var(--teal-mid);        /* internal exposed loop */
-  --tag-site-disorder: #3f7fd0;                    /* internal disordered loop (blue, distinct from teal surface loop) */
+  --tag-site-surface-loop: #3f7fd0;                /* internal ordered exposed loop (blue) */
+  --tag-site-disorder: #2f9e44;                    /* internal disordered loop (green, distinct from the blue surface loop) */
   --tag-site-terminal-n: var(--amber-bright);      /* extracellular N-terminus */
   --tag-site-terminal-c: var(--amber-mid);         /* extracellular C-terminus */
   --tag-site-snorkel: var(--maroon-mid);           /* C-terminal snorkel (fallback) */
