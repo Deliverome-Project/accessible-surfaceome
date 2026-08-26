@@ -1,5 +1,5 @@
 {
-  "n_genes": 2346,
+  "n_genes": 2340,
   "genes": {
     "ABCA8": {
       "tier": "T2",
@@ -10345,88 +10345,6 @@
         {
           "symbol": "GRIK4",
           "species": "cyno"
-        }
-      ]
-    },
-    "GRIN2A": {
-      "tier": "T2",
-      "surface_isoform_ids": [
-        "Q12879-2"
-      ],
-      "surface_orthologs": [
-        {
-          "symbol": "Grin2a",
-          "species": "mouse"
-        },
-        {
-          "symbol": "GRIN2A",
-          "species": "cyno"
-        }
-      ]
-    },
-    "GRIN2B": {
-      "tier": "T2",
-      "surface_isoform_ids": [],
-      "surface_orthologs": [
-        {
-          "symbol": "Grin2b",
-          "species": "mouse"
-        },
-        {
-          "symbol": "GRIN2B",
-          "species": "cyno"
-        }
-      ]
-    },
-    "GRIN2C": {
-      "tier": "T2",
-      "surface_isoform_ids": [],
-      "surface_orthologs": [
-        {
-          "symbol": "Grin2c",
-          "species": "mouse"
-        },
-        {
-          "symbol": "GRIN2C",
-          "species": "cyno"
-        }
-      ]
-    },
-    "GRIN2D": {
-      "tier": "T2",
-      "surface_isoform_ids": [],
-      "surface_orthologs": [
-        {
-          "symbol": "Grin2d",
-          "species": "mouse"
-        },
-        {
-          "symbol": "GRIN2D",
-          "species": "cyno"
-        }
-      ]
-    },
-    "GRIN3A": {
-      "tier": "T2",
-      "surface_isoform_ids": [],
-      "surface_orthologs": [
-        {
-          "symbol": "Grin3a",
-          "species": "mouse"
-        },
-        {
-          "symbol": "GRIN3A",
-          "species": "cyno"
-        }
-      ]
-    },
-    "GRIN3B": {
-      "tier": "T2",
-      "surface_isoform_ids": [],
-      "surface_orthologs": [
-        {
-          "symbol": "Grin3b",
-          "species": "mouse"
         }
       ]
     },
