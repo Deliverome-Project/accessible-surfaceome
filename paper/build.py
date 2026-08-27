@@ -498,8 +498,16 @@ def build_web(
         body.set("class", (existing + " paper-root").strip())
 
     index = out_dir / "index.html"
-    index.write_bytes(lxml_html.tostring(
-        doc, method="html", encoding="utf-8", doctype="<!DOCTYPE html>"))
+    # Trailing newline: lxml's tostring doesn't emit one, and when this
+    # file is committed to a repo with an end-of-file-fixer pre-commit
+    # hook (the site repo has one), every regeneration fails CI until
+    # someone hand-fixes it.
+    index.write_bytes(
+        lxml_html.tostring(
+            doc, method="html", encoding="utf-8", doctype="<!DOCTYPE html>"
+        ).rstrip(b"\n")
+        + b"\n"
+    )
 
     # Tidy the intermediates — the published directory should contain
     # only what the page actually serves.
