@@ -63,6 +63,13 @@ class FigureSpec:
     min_dpi: int | None = None
     optional: bool = False
     allow_embedded_raster: bool = False
+    # CSS length (e.g. "4.2in", "60%") capping how wide the figure
+    # renders. The swap strips the .docx's inline width/height so the
+    # print stylesheet controls sizing — but a figure the author
+    # deliberately kept small (Fig 1's Venn was 3.96in in Word) would
+    # otherwise blow up to the full column-span width. None = let the
+    # stylesheet decide.
+    max_width: str | None = None
     description: str = ""
 
     @property
@@ -110,6 +117,7 @@ def _entry_to_spec(entry: dict) -> FigureSpec:
         min_dpi=entry.get("min_dpi"),
         optional=bool(entry.get("optional", False)),
         allow_embedded_raster=bool(entry.get("allow_embedded_raster", False)),
+        max_width=entry.get("max_width"),
         description=entry.get("description", ""),
     )
 
@@ -341,6 +349,9 @@ def swap_figures(
             for attr in ("width", "height", "style"):
                 if attr in img.attrib:
                     del img.attrib[attr]
+            # Re-apply a deliberate cap, if the manifest declares one.
+            if spec.max_width:
+                img.set("style", f"max-width:{spec.max_width};")
         report.swapped[span_id] = canonical_path
 
     # Write back. Use method='html' to keep tag self-closing where

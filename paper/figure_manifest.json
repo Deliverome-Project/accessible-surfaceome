@@ -7,7 +7,8 @@
     "1": {
       "slug": "db_overlap_venn",
       "format": "svg",
-      "description": "Five-way Venn of the source surface-protein databases; 188-protein core. Vector, converted from db_overlap_venn.pdf (the canonical PNG carries no DPI tEXt chunk, so it cannot pass the min_dpi gate)."
+      "max_width": "4in",
+      "description": "Five-way Venn of the source surface-protein databases; 188-protein core. Vector, converted from db_overlap_venn.pdf (the canonical PNG carries no DPI tEXt chunk, so it cannot pass the min_dpi gate). max_width preserves the author's sizing: this figure was 3.96in in the .docx and is nearly square, so unlike the wide panel figures it towers over the page if allowed to fill the full column-span width."
     },
     "2": {
       "slug": "db_correctness_by_class",
