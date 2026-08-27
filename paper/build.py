@@ -181,6 +181,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     #    --extract-media pulls embedded .docx images out to disk so
     #    WeasyPrint can load them; the link path is relative to the HTML.
     os.environ["PAPER_ASSETS_DIR"] = str(PAPER_ASSETS_DIR)
+    os.environ.pop("PAPER_WEB_EXTRAS", None)
     print(f"→ pandoc {src.name} → {html_path.name}")
     pypandoc.convert_file(
         str(src),
@@ -276,7 +277,55 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     return {"html": html_path, "pdf": pdf_path, "xml": xml_path}
 
 
-def build_web(src: Path, out_dir: Path) -> Path:
+def _downsample_raster(src: Path, dest: Path, max_width: int) -> Path | None:
+    """Re-encode a raster asset as a width-capped WebP, or return None.
+
+    The canonical figures are 600-DPI renders 6,000-13,000 px wide,
+    which is right for print and absurd for a web page: shipped as-is
+    they made the paper directory 41 MB. A figure displays at roughly
+    930 CSS px here, so ~2,400 px still covers a 2.5x display with
+    room to spare — and the lightbox, which is the only place a figure
+    is seen larger, is viewport-bound anyway.
+
+    WebP rather than PNG: these are dense plots with text, where WebP
+    at high quality lands far smaller than PNG for no visible loss.
+    Between the width cap and the format the paper directory drops
+    from ~41 MB to a few MB.
+
+    Vector assets are never touched; they're already small and scale
+    for free. Returns the written path, or None when the file isn't a
+    raster or Pillow can't read it, so the caller falls back to a
+    plain copy.
+    """
+    if src.suffix.lower() not in (".png", ".jpg", ".jpeg"):
+        return None
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    try:
+        Image.MAX_IMAGE_PIXELS = None  # these are legitimately huge
+        out = dest.with_suffix(".webp")
+        with Image.open(src) as im:
+            if im.width > max_width:
+                height = round(im.height * max_width / im.width)
+                im = im.resize((max_width, height), Image.LANCZOS)
+            im.convert("RGBA" if im.mode in ("RGBA", "LA", "P") else "RGB").save(
+                out, format="WEBP", quality=92, method=6
+            )
+        return out
+    except Exception as exc:  # noqa: BLE001 — fall back to copying
+        print(f"  ⚠ could not re-encode {src.name} ({exc}); copying as-is")
+        return None
+
+
+def build_web(
+    src: Path,
+    out_dir: Path,
+    asset_prefix: str = "assets",
+    max_raster_width: int = 2400,
+    biorxiv_url: str | None = None,
+) -> Path:
     """Render the manuscript as a self-contained web page.
 
     Same pandoc pass and same filters as the PDF build — so the
@@ -313,6 +362,10 @@ def build_web(src: Path, out_dir: Path) -> Path:
     media_dir = out_dir / f"_media-{stem}"
 
     os.environ["PAPER_ASSETS_DIR"] = str(PAPER_ASSETS_DIR)
+    # Web-only front-matter links. Set to the bioRxiv URL (a placeholder
+    # until the preprint is posted); the filter also adds a PDF download
+    # beside it. Neither makes sense inside the PDF itself.
+    os.environ["PAPER_WEB_EXTRAS"] = biorxiv_url or "https://www.biorxiv.org/"
     print(f"→ pandoc {src.name} → web html")
     pypandoc.convert_file(
         str(src),
@@ -351,7 +404,7 @@ def build_web(src: Path, out_dir: Path) -> Path:
     copied: dict[str, str] = {}
     for i, img in enumerate(doc.xpath("//img")):
         raw = img.get("src") or ""
-        if raw.startswith(("http://", "https://", "data:", "assets/")):
+        if raw.startswith(("http://", "https://", "data:")) or raw.startswith(asset_prefix + "/"):
             continue
         srcpath = Path(raw)
         if not srcpath.is_absolute():
@@ -362,9 +415,35 @@ def build_web(src: Path, out_dir: Path) -> Path:
         key = str(srcpath)
         if key not in copied:
             name = f"{i:02d}-{srcpath.name}"
-            shutil.copy2(srcpath, assets_dir / name)
-            copied[key] = f"assets/{name}"
+            dest = assets_dir / name
+            written = _downsample_raster(srcpath, dest, max_raster_width)
+            if written is None:
+                shutil.copy2(srcpath, dest)
+            else:
+                name = written.name
+            copied[key] = f"{asset_prefix}/{name}"
         img.set("src", copied[key])
+
+    # Prune supplementary sub-entries from the contents rail. The
+    # supplement's own "Supplementary Note N" / "Supplementary
+    # References" headings are <h2>, so --toc-depth=2 pulls them in
+    # alongside the paper's major sections and the rail stops reading
+    # as a map of the argument. The parent "Supplementary information"
+    # entry stays, so the section is still reachable.
+    toc = doc.get_element_by_id("TOC", None)
+    if toc is not None:
+        pruned = 0
+        for a in toc.xpath(".//a"):
+            label = " ".join((a.text_content() or "").split())
+            if label.startswith("Supplementary ") and label != "Supplementary information":
+                li = a.getparent()
+                while li is not None and li.tag != "li":
+                    li = li.getparent()
+                if li is not None and li.getparent() is not None:
+                    li.getparent().remove(li)
+                    pruned += 1
+        if pruned:
+            print(f"  pruned {pruned} supplementary sub-entr(y/ies) from the TOC")
 
     # Build a real title band. The .docx carries no title metadata, so
     # pandoc emits a bare <h1> followed by loose author / affiliation /
@@ -400,7 +479,7 @@ def build_web(src: Path, out_dir: Path) -> Path:
     head = doc.find("head")
     if head is not None:
         head.append(lxml_html.fromstring(
-            '<link rel="stylesheet" href="assets/paper.css"/>'
+            f'<link rel="stylesheet" href="{asset_prefix}/paper.css"/>'
         ))
         head.append(lxml_html.fromstring(
             '<meta name="viewport" content="width=device-width, initial-scale=1"/>'
@@ -409,8 +488,14 @@ def build_web(src: Path, out_dir: Path) -> Path:
         # `defer` so the parser is never blocked; the script only
         # enhances links that already work without it.
         body.append(lxml_html.fromstring(
-            '<script src="assets/paper.js" defer></script>'
+            f'<script src="{asset_prefix}/paper.js" defer></script>'
         ))
+
+    # Standalone pages need the scope class the stylesheet keys off;
+    # embedded pages get it from the wrapper div instead.
+    if body is not None:
+        existing = body.get("class", "")
+        body.set("class", (existing + " paper-root").strip())
 
     index = out_dir / "index.html"
     index.write_bytes(lxml_html.tostring(
@@ -447,6 +532,37 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--biorxiv-url",
+        default=None,
+        help=(
+            "bioRxiv URL for the web build's front-matter link. "
+            "Defaults to biorxiv.org as a placeholder until the "
+            "preprint is posted."
+        ),
+    )
+    parser.add_argument(
+        "--max-raster-width",
+        type=int,
+        default=2400,
+        help=(
+            "Downsample raster figures wider than this when building "
+            "for web (default: 2400 px). Print-resolution 600-DPI "
+            "sources are 6,000-13,000 px wide, which no screen needs. "
+            "Vector assets are unaffected."
+        ),
+    )
+    parser.add_argument(
+        "--asset-prefix",
+        default="assets",
+        help=(
+            "URL prefix written into the page's <img>/<link>/<script> "
+            "paths (default: 'assets', i.e. relative). Set an absolute "
+            "prefix like '/paper/<slug>/assets' when the HTML will be "
+            "served by a route whose URL differs from where the asset "
+            "files actually live."
+        ),
+    )
+    parser.add_argument(
         "--web",
         type=Path,
         metavar="OUT_DIR",
@@ -460,7 +576,13 @@ def main() -> int:
 
     if args.web is not None:
         try:
-            index = build_web(args.source.resolve(), args.web.resolve())
+            index = build_web(
+                args.source.resolve(),
+                args.web.resolve(),
+                args.asset_prefix,
+                args.max_raster_width,
+                args.biorxiv_url,
+            )
         except FileNotFoundError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 66

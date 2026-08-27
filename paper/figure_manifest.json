@@ -1,8 +1,6 @@
 {
-  "_doc": "Map: figure number (or 'appendix-N') → print asset, resolved against the search path paper/figures/ then data/analysis/figures/ (first match wins). After pandoc renders the .docx, paper/build.py rewrites each <img src> to point at the resolved asset so the final PDF ships the in-repo figure (current at HEAD) instead of whatever bitmap the .docx embedded. format=svg → vector, no DPI check; format=png → min_dpi enforced via Pillow. format=pdf is ALWAYS rejected: WeasyPrint has no PDF image decoder and would emit a silently blank figure — convert to SVG with `pdftocairo -svg` into paper/figures/ instead. Set 'optional': true on entries with no canonical asset yet (build warns and keeps the .docx bitmap rather than erroring).",
-
+  "_doc": "Map: figure number (or 'appendix-N') \u2192 print asset, resolved against the search path paper/figures/ then data/analysis/figures/ (first match wins). After pandoc renders the .docx, paper/build.py rewrites each <img src> to point at the resolved asset so the final PDF ships the in-repo figure (current at HEAD) instead of whatever bitmap the .docx embedded. format=svg \u2192 vector, no DPI check; format=png \u2192 min_dpi enforced via Pillow. format=pdf is ALWAYS rejected: WeasyPrint has no PDF image decoder and would emit a silently blank figure \u2014 convert to SVG with `pdftocairo -svg` into paper/figures/ instead. Set 'optional': true on entries with no canonical asset yet (build warns and keeps the .docx bitmap rather than erroring).",
   "_numbering": "Numbering tracks '2026 Anthropic Surfaceome Technical Draft (4).docx' (7 main figures). Earlier manifest revisions numbered a 2-figure draft; re-check these keys against the caption order whenever the .docx figure set changes, because the swap keys purely off the figure-N anchor that filters/figures.lua derives from the caption.",
-
   "figures": {
     "1": {
       "slug": "db_overlap_venn",
@@ -34,15 +32,91 @@
       "slug": "deep_dive_record_richness",
       "format": "png",
       "min_dpi": 600,
-      "description": "Five-panel violin of record richness by confidence tier. Deliberately raster, NOT vector: the per-gene dots (n = 5,130 × 5 panels) make the SVG ~20 MB and slow to render, while the 600-DPI PNG is 14,659 px wide — far above print need."
+      "description": "Five-panel violin of record richness by confidence tier. Deliberately raster, NOT vector: the per-gene dots (n = 5,130 \u00d7 5 panels) make the SVG ~20 MB and slow to render, while the 600-DPI PNG is 14,659 px wide \u2014 far above print need."
     },
     "7": {
       "slug": "web_preview",
       "format": "svg",
       "allow_embedded_raster": true,
-      "description": "Two-panel viewer composite (a: homepage table with the CD81 row, b: SRC detail page). Inherently a screenshot, so the SVG legitimately wraps two base64 rasters (2749x1212 and 2644x1078) — hence allow_embedded_raster. Still a large upgrade on the .docx bitmap, which was a single 780x666 px flatten shown at 6.5in (~120 DPI, visibly soft). Do not be fooled by the aspect-ratio mismatch against the .docx bitmap: the SVG has different whitespace padding around the panels, not different content."
+      "description": "Two-panel viewer composite (a: homepage table with the CD81 row, b: SRC detail page). Inherently a screenshot, so the SVG legitimately wraps two base64 rasters (2749x1212 and 2644x1078) \u2014 hence allow_embedded_raster. Still a large upgrade on the .docx bitmap, which was a single 780x666 px flatten shown at 6.5in (~120 DPI, visibly soft). Do not be fooled by the aspect-ratio mismatch against the .docx bitmap: the SVG has different whitespace padding around the panels, not different content."
     }
   },
-
-  "appendix_figures": {}
+  "appendix_figures": {},
+  "supplementary_figures": {
+    "1": {
+      "slug": "db_correctness_overall",
+      "format": "svg",
+      "description": "Vector, converted from db_correctness_overall.pdf."
+    },
+    "2": {
+      "slug": "benchmark_cost_vs_accuracy",
+      "format": "svg",
+      "description": "Vector, converted from benchmark_cost_vs_accuracy.pdf."
+    },
+    "3": {
+      "slug": "db_cutoff_tradeoff",
+      "format": "svg",
+      "description": "Vector, converted from db_cutoff_tradeoff.pdf."
+    },
+    "4": {
+      "slug": "curator_vs_agent_reason",
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Raster on purpose: curator_vs_agent_reason.pdf converts to an SVG that only wraps a raster panel, so the 600-DPI PNG is the sharper asset."
+    },
+    "5": {
+      "slug": "ensemble_vs_best_db_vs_sonnet",
+      "format": "svg",
+      "description": "Vector, converted from ensemble_vs_best_db_vs_sonnet.pdf."
+    },
+    "6": {
+      "slug": "db_vs_sonnet_whole_proteome",
+      "format": "svg",
+      "description": "Vector, converted from db_vs_sonnet_whole_proteome.pdf."
+    },
+    "7": {
+      "slug": "positive_control_db_coverage_bars",
+      "format": "svg",
+      "description": "Vector, converted from positive_control_db_coverage_bars.pdf."
+    },
+    "8": {
+      "slug": "bench_topology_vs_universe",
+      "format": "svg",
+      "description": "Vector, converted from bench_topology_vs_universe.pdf."
+    },
+    "9": {
+      "slug": "topology_coverage_by_source",
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Raster on purpose: topology_coverage_by_source.pdf converts to an SVG that only wraps a raster panel, so the 600-DPI PNG is the sharper asset."
+    },
+    "10": {
+      "slug": "paywall_bot_block_compare",
+      "format": "svg",
+      "description": "Vector, converted from paywall_bot_block_compare.pdf."
+    },
+    "11": {
+      "slug": "evidence_corpus_vs_selected",
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Raster on purpose: the vector conversion is 4.1 MB (a dense per-paper scatter), against a 600-DPI PNG 6,997 px wide."
+    },
+    "12": {
+      "slug": "deep_dive_vs_sonnet_benchmark",
+      "format": "svg",
+      "description": "Vector, converted from deep_dive_vs_sonnet_benchmark.pdf."
+    },
+    "13": {
+      "slug": "triage_vs_deep_dive_reason",
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Raster on purpose: triage_vs_deep_dive_reason.pdf converts to an SVG that only wraps a raster panel, so the 600-DPI PNG is the sharper asset."
+    },
+    "14": {
+      "slug": "surfaceome_deterministic_features",
+      "format": "svg",
+      "description": "Vector, converted from surfaceome_deterministic_features.pdf."
+    }
+  },
+  "_supplementary_note": "Supplementary figures were shipping as the .docx's 2048px Google-Docs exports while 600-DPI / vector canonical renders existed for all 14 \u2014 the visible resolution gap against the main figures. Slugs resolved from each caption's gist id via data/analysis/figures/gist_map.json, so the mapping is the manuscript's own, not inferred from titles."
 }

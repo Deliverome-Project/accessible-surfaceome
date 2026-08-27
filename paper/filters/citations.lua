@@ -306,62 +306,145 @@ local function rewrite_citation(link)
   return out
 end
 
--- ── Phase 3: tag the front-matter resource lines ─────────────────
+-- ── Phase 3: front-matter resource row ───────────────────────────
 --
--- "Viewer: …", "Code (GitHub): …", "Data: …" are ordinary <p>s, so
--- they inherit the body's justified text. Justification stretches
--- the space between the short label and a long raw URL into a
--- ragged gap. Tag them so the stylesheet can set them left-aligned
--- and let the URL wrap on its own terms.
--- Each entry: prefix the line must start with (lower-cased), and the
--- icon file in paper/assets/ to set beside it. Order matters —
--- "code (zenodo)" must be tested before "code (" so the GitHub icon
--- doesn't win both Code lines.
+-- The .docx lists the project's resources as four paragraphs stranded
+-- after the abstract, each printing a full raw URL:
+--
+--     Viewer: surfaceome.deliverome.org
+--     Code (GitHub): https://github.com/Deliverome-Project/accessible-…
+--     Code (Zenodo): https://doi.org/10.5281/zenodo.22116981
+--     Data: https://zenodo.org/records/20805383
+--
+-- Long URLs read badly in a justified column and say nothing a reader
+-- can act on. This collapses them into ONE row of brand-marked links
+-- placed directly under the corresponding-author line, where readers
+-- look for a paper's resources.
+--
+-- Order and labels are driven by the prefix each paragraph starts
+-- with, so re-ordering them in the .docx re-orders the row.
 local RESOURCE_LINES = {
-  {prefix = "code (zenodo)", icon = "zenodo.svg", alt = "Zenodo"},
-  {prefix = "code (github)", icon = "github.svg", alt = "GitHub"},
-  {prefix = "code:",         icon = "github.svg", alt = "GitHub"},
-  {prefix = "data:",         icon = "zenodo.svg", alt = "Zenodo"},
-  -- The viewer line gets a mark too, purely so all four labels share
-  -- a left edge: without one, "Viewer:" starts at the margin while the
-  -- icon-bearing labels are pushed right, and the block reads ragged.
-  {prefix = "viewer:",       icon = "viewer.svg", alt = "Web viewer"},
+  {prefix = "code (zenodo)", icon = "zenodo.svg", label = "Code DOI"},
+  {prefix = "code (github)", icon = "github.svg", label = "Code"},
+  {prefix = "code:",         icon = "github.svg", label = "Code"},
+  {prefix = "data:",         icon = "zenodo.svg", label = "Data"},
+  {prefix = "viewer:",       icon = "viewer.svg", label = "Viewer"},
 }
 
--- build.py exports this so the filter can emit absolute image paths.
--- WeasyPrint resolves <img src> against the HTML's directory (the
--- build/ dir next to the .docx), which is nowhere near paper/assets/,
--- so a relative path would silently fail to load.
 local ASSETS_DIR = os.getenv("PAPER_ASSETS_DIR")
+-- Set by build.py only for the web build: bioRxiv and the PDF download
+-- belong on the page, not inside the PDF itself.
+local WEB_EXTRAS = os.getenv("PAPER_WEB_EXTRAS")
 
-local function tag_resource_line(elem)
-  local text = pandoc.utils.stringify(elem):lower():gsub("^%s+", "")
+local function classify(text)
+  local lower = text:lower():gsub("^%s+", "")
   for _, rule in ipairs(RESOURCE_LINES) do
-    if text:sub(1, #rule.prefix) == rule.prefix then
-      local content = elem.content
-      if rule.icon and ASSETS_DIR then
-        local img = pandoc.Image(
-          {pandoc.Str(rule.alt)},
-          ASSETS_DIR .. "/" .. rule.icon,
-          "",
-          pandoc.Attr("", {"resource-icon"})
-        )
-        local inlines = pandoc.List({img, pandoc.Space()})
-        for _, inl in ipairs(content) do inlines:insert(inl) end
-        content = inlines
-      end
-      return pandoc.Div(
-        {pandoc.Para(content)}, pandoc.Attr("", {"resource-line"})
-      )
-    end
+    if lower:sub(1, #rule.prefix) == rule.prefix then return rule end
   end
   return nil
+end
+
+-- First link target inside a block — the URL the paragraph points at.
+local function first_url(blk)
+  local found = nil
+  pandoc.walk_block(blk, {
+    Link = function(l)
+      if not found then found = l.target end
+    end,
+  })
+  return found
+end
+
+local function icon_link(icon, label, url)
+  local inlines = pandoc.List({})
+  -- bioRxiv is set as TEXT, not an image. An SVG wordmark built from
+  -- <text> is font-dependent, and a browser loading it through <img>
+  -- isolates it from the page's fonts — so it rendered inconsistently
+  -- and sometimes not at all. Typesetting it inline uses the page's
+  -- own font and lets CSS colour the capital R, which is the whole of
+  -- the mark's identity.
+  if label == "bioRxiv" then
+    inlines:insert(pandoc.Str("bio"))
+    inlines:insert(pandoc.Span({pandoc.Str("R")}, pandoc.Attr("", {"biorxiv-r"})))
+    inlines:insert(pandoc.Str("xiv"))
+    return pandoc.Link(
+      inlines, url, "", pandoc.Attr("", {"resource-link", "resource-biorxiv"})
+    )
+  end
+  if icon and ASSETS_DIR then
+    inlines:insert(pandoc.Image(
+      {pandoc.Str(label)},
+      ASSETS_DIR .. "/" .. icon,
+      "",
+      pandoc.Attr("", {"resource-icon"})
+    ))
+    inlines:insert(pandoc.Space())
+  end
+  inlines:insert(pandoc.Str(label))
+  return pandoc.Link(inlines, url, "", pandoc.Attr("", {"resource-link"}))
+end
+
+local function build_resource_row(doc)
+  local collected = {}
+  local kept = pandoc.List({})
+  local anchor_at = nil
+
+  for _, blk in ipairs(doc.blocks) do
+    local text = (blk.t == "Para" or blk.t == "Plain")
+      and pandoc.utils.stringify(blk) or ""
+    local rule = (text ~= "") and classify(text) or nil
+    if rule then
+      local url = first_url(blk)
+      if url then
+        collected[#collected + 1] = {rule = rule, url = url}
+      else
+        kept:insert(blk)  -- no link to hang the row off; leave as prose
+      end
+    else
+      kept:insert(blk)
+      if anchor_at == nil and text:lower():find("corresponding author") then
+        anchor_at = #kept
+      end
+    end
+  end
+
+  if #collected == 0 then return doc end
+
+  local row = pandoc.List({})
+  if WEB_EXTRAS then
+    -- Web only, and FIRST in the row: on the page these are the two
+    -- things a reader most wants (the preprint of record, and a copy
+    -- to keep). Neither belongs inside the PDF.
+    row:insert(icon_link("biorxiv.svg", "bioRxiv", WEB_EXTRAS))
+    row:insert(pandoc.Space())
+    row:insert(icon_link(nil, "Download PDF",
+      "accessible-human-surfaceome.pdf"))
+    row:insert(pandoc.Space())
+  end
+  for i, item in ipairs(collected) do
+    if i > 1 or WEB_EXTRAS then row:insert(pandoc.Space()) end
+    row:insert(icon_link(item.rule.icon, item.rule.label, item.url))
+  end
+
+  local row_div = pandoc.Div(
+    {pandoc.Para(row)}, pandoc.Attr("", {"resource-row"})
+  )
+  -- Slot it under the corresponding-author line; if that line isn't
+  -- found, fall back to leaving the row where the first entry was.
+  local out = pandoc.List({})
+  for i, blk in ipairs(kept) do
+    out:insert(blk)
+    if i == anchor_at then out:insert(row_div) end
+  end
+  if anchor_at == nil then out:insert(row_div) end
+  doc.blocks = out
+  return doc
 end
 
 return {
   {Pandoc = index_references},
   {Link = rewrite_citation},
-  {Para = tag_resource_line},
+  {Pandoc = build_resource_row},
   {
     Pandoc = function(doc)
       io.stderr:write(("citations.lua: linked %d citation(s) to %d reference(s).\n")

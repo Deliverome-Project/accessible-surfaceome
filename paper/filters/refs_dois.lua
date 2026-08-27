@@ -27,6 +27,10 @@
 local in_refs = false
 local refs_header_level = nil
 local doi_pattern = "https?://doi%.org/[^%s%)%]]+"
+-- Some references cite a plain web resource rather than a DOI (the
+-- HPA "Plasma membrane [WWW Document]" entry). Those URLs were left as
+-- dead text while every DOI beside them was clickable.
+local url_pattern = "https?://[^%s%)%]]+"
 
 -- Match the heading text against the section names we treat as
 -- "References". Lower-cased + stripped of surrounding whitespace.
@@ -54,6 +58,11 @@ local function rewrite_refs_inlines(inlines)
     if inline.t == "Link" then
       local inner_text = pandoc.utils.stringify(inline)
       local doi_start, doi_end = inner_text:find(doi_pattern)
+      if not doi_start then
+        -- Fall back to any http(s) URL so web-document references are
+        -- clickable too.
+        doi_start, doi_end = inner_text:find(url_pattern)
+      end
       if doi_start then
         local pre = inner_text:sub(1, doi_start - 1)
         local doi = inner_text:sub(doi_start, doi_end)
