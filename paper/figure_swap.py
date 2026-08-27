@@ -107,6 +107,8 @@ def load_manifest(path: Path) -> dict[str, FigureSpec]:
         out[str(n)] = _entry_to_spec(entry)
     for n, entry in (raw.get("appendix_figures") or {}).items():
         out[f"appendix-{n}"] = _entry_to_spec(entry)
+    for n, entry in (raw.get("supplementary_figures") or {}).items():
+        out[f"supplementary-{n}"] = _entry_to_spec(entry)
     return out
 
 
@@ -301,7 +303,9 @@ def swap_figures(
 
     doc = lxml_html.parse(str(html_path)).getroot()
     spans = doc.xpath(
-        "//span[starts-with(@id, 'figure-') or starts-with(@id, 'appendix-figure-')]"
+        "//span[starts-with(@id, 'figure-')"
+        " or starts-with(@id, 'appendix-figure-')"
+        " or starts-with(@id, 'supplementary-figure-')]"
     )
     for span in spans:
         span_id = span.get("id", "")
@@ -379,6 +383,10 @@ def _key_from_span_id(span_id: str) -> str | None:
     7-figure draft ended up un-swapped.
     """
     for prefix, key_fmt in (
+        # Longest prefixes first: "supplementary-figure-3" also ends
+        # with the "figure-" pattern, and matching that first would
+        # file a supplementary figure under main-figure key "3".
+        ("supplementary-figure-", "supplementary-{}"),
         ("appendix-figure-", "appendix-{}"),
         ("figure-", "{}"),
     ):

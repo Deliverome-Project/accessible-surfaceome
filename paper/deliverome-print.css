@@ -573,36 +573,34 @@ a.footnote-back {
 
 
 /* ============================================================
- * Front-matter resource lines — "Viewer: …", "Code (GitHub): …",
- * "Code (Zenodo): …", "Data: …". Tagged by filters/citations.lua.
- *
- * These are short label + long raw URL. Under the body's justified
- * text, the only elastic space is the one after the label, so
- * justification stretched it into a ragged gap ("Code (GitHub):"
- * ......... "https://…") while the URL still had to break mid-token
- * anyway. Left-align them and let the URL wrap wherever it needs to.
+ * Front-matter resource row — filters/citations.lua collapses the
+ * .docx's four raw-URL paragraphs into one row of brand-marked
+ * links, placed under the corresponding-author line.
  * ============================================================ */
-.resource-line p {
-  text-align: left;
-  hyphens: none;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+.resource-row {
+  margin: 0.35em 0 0.2em 0;
 }
 
-/* Brand marks beside the front-matter Code / Data links. Sized in `em`
- * so they track the surrounding type, and nudged down off the baseline
- * to sit optically centred against lowercase text. The fill is baked
- * into the SVG rather than set here: WeasyPrint loads these through
- * <img>, which isolates the SVG, so `currentColor` would resolve to
- * black instead of inheriting the link maroon. */
+.resource-row p {
+  margin: 0;
+  text-align: left;
+  line-height: 1.9;
+}
+
+a.resource-link {
+  white-space: nowrap;
+  margin-right: 0.85em;
+  color: var(--maroon-mid, #922038);
+}
+
 img.resource-icon {
-  /* BOTH axes stated explicitly. With `width: auto` WeasyPrint has to
-   * derive the width from the SVG's intrinsic size, which these icons
-   * don't usefully supply, and the mark collapses to a speck. */
+  /* Both axes stated: with width auto WeasyPrint has to derive it from
+   * the SVG's intrinsic size, which these marks don't usefully supply,
+   * and the icon collapses to a speck. */
   width: 0.85em;
   height: 0.85em;
   display: inline;
-  margin: 0 0.2em 0 0;
+  margin: 0 0.15em 0 0;
   vertical-align: -0.1em;
 }
 
@@ -610,7 +608,11 @@ img.resource-icon {
  * filters/figures.lua. break-inside on the container is a hard
  * constraint, unlike the advisory break-after/break-before pair on
  * the two siblings — which WeasyPrint dropped across the
- * column-span:all boundary, stranding a caption alone on a page. */
+ * column-span:all boundary, stranding a caption alone on a page.
+ *
+ * column-span is load-bearing: without it the supplementary figures
+ * render inside a single body column at roughly half width, which is
+ * how they looked when this block was accidentally truncated. */
 .figure-block {
   column-span: all;
   break-inside: avoid;

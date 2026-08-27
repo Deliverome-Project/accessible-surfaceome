@@ -33,6 +33,50 @@
   Usage:  pandoc … --lua-filter=paper/filters/figures.lua
 ]]--
 
+
+-- ── Configuration ────────────────────────────────────────────────
+--
+-- Everything this filter assumes about a particular manuscript lives
+-- HERE. Adapting it to another paper should mean editing this block,
+-- not the matching logic below.
+--
+-- CAPTION_LEVELS
+--   Heading levels that hold figure captions. This project's .docx
+--   styles captions as Heading 5, so pandoc emits <h5>. A journal
+--   template that uses Heading 6, or two levels, just lists them.
+--
+-- LABEL_WORDS
+--   The words that can introduce a reference, as Lua patterns
+--   anchored whole-token. Plurals matter: "Figures S1, S2" is as
+--   common as the singular, and omitting the plural silently drops
+--   every multi-reference.
+--
+-- SERIES
+--   One entry per numbering series the manuscript uses. `caption`
+--   is the lower-cased prefix the CAPTION starts with; `cite` is how
+--   the BODY writes the number.
+--
+--   The supplementary entry carries `cite_prefix = "s"` because this
+--   manuscript captions them "Supplementary Figure 10" but cites
+--   them "Figure S10" — a split worth supporting generally, since
+--   many journals do exactly this. Both spellings are registered
+--   against the same anchor, so either works.
+--
+-- SEPARATORS
+--   Characters that may join numbers inside one reference run:
+--   "Figures S1, S2" and "(Figure S13/S14)" both occur here.
+local CAPTION_LEVELS = {[5] = true}
+
+local LABEL_WORDS = {"[Ff]igures?", "[Ff]igs?%.?"}
+
+local SERIES = {
+  {caption = "supplementary figure", cite_prefix = "s"},
+  {caption = "appendix figure",      cite_prefix = "appendix "},
+  {caption = "figure",               cite_prefix = ""},
+}
+
+local SEPARATORS = "/&,;"
+
 -- Map "figure 2" / "appendix figure 4" (lowercase, single-spaced)
 -- to the h5 anchor identifier we'll link to.
 local figure_ids = {}
@@ -41,7 +85,7 @@ local figure_ids = {}
 -- starts with "Figure N." or "Appendix Figure N.". Two-phase walk
 -- via filter ordering (Header before Para via return order).
 local function collect_figure_ids(elem)
-  if elem.level ~= 5 then return end
+  if not CAPTION_LEVELS[elem.level] then return end
   local text = pandoc.utils.stringify(elem):lower()
     :gsub("^%s+", "")
   -- "supplementary figure N" / "appendix figure N" are checked before
@@ -163,9 +207,15 @@ end
 -- truncates multi-capture returns to a single value, so the second
 -- capture (the word) gets dropped. Branch explicitly.
 local function head_match(s)
-  local p, w = s:match("^([%(%[]?)([Ff]igure)$")
-  if p then return p, w end
-  return s:match("^([%(%[]?)([Ff]ig%.?)$")
+  -- Driven by LABEL_WORDS so another manuscript's vocabulary is a
+  -- config change. Plurals are included there because "Figures S1,
+  -- S2" is as common as the singular, and matching only the singular
+  -- silently drops every multi-reference.
+  for _, word in ipairs(LABEL_WORDS) do
+    local p, w = s:match("^([%(%[]?)(" .. word .. ")$")
+    if p then return p, w end
+  end
+  return nil
 end
 
 -- Same shape but for "Appendix" prefix word.
@@ -214,22 +264,17 @@ end
 --   "(Figure 1, 2)"     prefix="(", suffix=","   → no close paren in suffix; prefix stays OUTSIDE the link (the ")" lives further along the inline chain, with the rest of the citation group)
 --   "Figure 1."         prefix="",  suffix="."   → link covers "Figure 1", trailing "."
 local function emit_link_with_brackets(result, prefix, ref_text, suffix, id)
-  local opener_to_closer = {["("] = ")", ["["] = "]"}
-  local matching_close = opener_to_closer[prefix]
-  local before_link, link_text, after_link
-  if matching_close and suffix:sub(1, 1) == matching_close then
-    -- Matched bracket pair — pull both INTO the link text.
-    before_link = ""
-    link_text = prefix .. ref_text .. matching_close
-    after_link = suffix:sub(2)
-  else
-    -- No matching close — prefix stays outside; the link covers
-    -- just the reference text. Suffix (punctuation like "." or
-    -- ",") sits to the right of the link.
-    before_link = prefix
-    link_text = ref_text
-    after_link = suffix
-  end
+  -- Brackets ALWAYS stay outside the link, so only "Figure 1" carries
+  -- link colour and the surrounding "( )" prints in body ink. They
+  -- belong to the sentence, not to the reference — the same treatment
+  -- filters/citations.lua gives "(Brase, 2009)".
+  --
+  -- An earlier version pulled a matched pair INTO the link text,
+  -- which painted the brackets maroon and made a parenthetical
+  -- reference read as one solid coloured blob.
+  local before_link = prefix
+  local link_text = ref_text
+  local after_link = suffix
   if before_link ~= "" then result:insert(pandoc.Str(before_link)) end
   result:insert(pandoc.Link({pandoc.Str(link_text)}, "#" .. id))
   if after_link ~= "" then result:insert(pandoc.Str(after_link)) end
@@ -274,44 +319,65 @@ local function linkify_figure_refs(inlines)
       if fig_word then
         -- Supplementary first: "S3" would otherwise fall through to
         -- tail_match, fail, and leave the reference unlinked.
-        -- Slash-joined pair first ("Figure S13/S14"): the single-number
-        -- matcher would reject it outright and leave both unlinked.
-        local supp_nums, multi_suffix = supp_multi_match(inlines[i + 2].text)
-        if supp_nums then
+        -- Consume a RUN of supplementary numbers. Pandoc tokenises
+        -- "Figures S1, S2)" as Str"S1," Space Str"S2)", so a matcher
+        -- that only looked at one tail token linked S1 and dropped S2.
+        -- Slash-joined pairs ("S13/S14") arrive as a single token and
+        -- are handled by the same collector.
+        local nums, seps, consumed, tail_suffix = {}, {}, 0, ""
+        local j = i + 2
+        while j <= #inlines and inlines[j].t == "Str" do
+          -- Trailing punctuation may itself contain "," or ";" —
+          -- "(Figure S1)," is common. Excluding those from the SUFFIX
+          -- class (they're needed inside the body for run detection)
+          -- made the whole token fail to match, silently dropping the
+          -- reference. The suffix accepts any non-alphanumeric run;
+          -- Lua's greedy body capture still claims a separator comma
+          -- when one is genuinely mid-run ("S1, S2").
+          local body, suf = inlines[j].text:match("^([Ss]%d+[/&,;]?[Ss]?[%d/&,;Ss]*)([^%a%d]*)$")
+          if not body then break end
+          for n in body:gmatch("[Ss](%d+)") do
+            if #nums > 0 then
+              seps[#nums] = body:find("/") and "/" or ", "
+            end
+            nums[#nums + 1] = n
+          end
+          consumed = j - i + 1
+          tail_suffix = suf or ""
+          -- Continue only when this token ended with a separator and
+          -- the next inline is " S<n>" — otherwise the run is done.
+          local trailing = body:sub(-1)
+          if (trailing == "," or trailing == ";")
+              and inlines[j + 1] and inlines[j + 1].t == "Space"
+              and inlines[j + 2] and inlines[j + 2].t == "Str"
+              and inlines[j + 2].text:match("^[Ss]%d") then
+            seps[#nums] = ", "
+            j = j + 2
+          else
+            break
+          end
+        end
+
+        if #nums > 0 then
           local all_known = true
-          for _, n in ipairs(supp_nums) do
+          for _, n in ipairs(nums) do
             if not figure_ids["figure s" .. n] then all_known = false end
           end
           if all_known then
             if prefix ~= "" then result:insert(pandoc.Str(prefix)) end
-            for idx, n in ipairs(supp_nums) do
-              if idx > 1 then result:insert(pandoc.Str("/")) end
+            for idx, n in ipairs(nums) do
+              if idx > 1 then result:insert(pandoc.Str(seps[idx - 1] or ", ")) end
               local label = (idx == 1)
                 and (fig_word .. " S" .. n) or ("S" .. n)
               result:insert(pandoc.Link({pandoc.Str(label)},
                 "#" .. figure_ids["figure s" .. n]))
             end
-            if multi_suffix ~= "" then result:insert(pandoc.Str(multi_suffix)) end
-            i = i + 3
+            if tail_suffix ~= "" then result:insert(pandoc.Str(tail_suffix)) end
+            i = i + consumed
             matched = true
           end
         end
 
-        -- Guarded: the multi-match branch above may already have
-        -- advanced `i`, in which case inlines[i + 2] can be past the
-        -- end and indexing it would blow up the whole filter.
-        if not matched then
-          local supp_num, supp_suffix = supp_tail_match(inlines[i + 2].text)
-          if supp_num then
-            local id = figure_ids["figure s" .. supp_num]
-            if id then
-              emit_link_with_brackets(
-                result, prefix, fig_word .. " S" .. supp_num, supp_suffix, id)
-              i = i + 3
-              matched = true
-            end
-          end
-        end
         if not matched then
           local num, suffix = tail_match(inlines[i + 2].text)
           if num then
@@ -407,6 +473,33 @@ end
 
 -- Three-phase pipeline. Pandoc applies each filter table in order
 -- against the full document tree.
+-- Reference-shaped text the filter did NOT link, reported at the end
+-- of the build. Without this a reference that falls outside the
+-- patterns above just stays plain text — which is how "(Figure S1),"
+-- and every "Figures S1, S2" went unlinked through several builds
+-- without anything saying so.
+local unlinked = {}
+
+local function note_unlinked(inlines)
+  -- Scan only the text OUTSIDE links. Stringifying the whole run
+  -- would include each Link's own label ("Figure 1"), so every
+  -- successfully-linked reference would report itself as unlinked —
+  -- a checker that fires on success is worse than no checker.
+  local parts = {}
+  for _, inl in ipairs(inlines) do
+    if inl.t ~= "Link" then
+      parts[#parts + 1] = pandoc.utils.stringify(inl)
+    else
+      parts[#parts + 1] = "\0"   -- barrier: don't fuse across a link
+    end
+  end
+  local text = table.concat(parts, " ")
+  for ref in text:gmatch("[Ff]igures?%s+S?%d+") do
+    local key = ref:gsub("%s+", " ")
+    unlinked[key] = (unlinked[key] or 0) + 1
+  end
+end
+
 return {
   -- Phase 1: walk all headings, record figure-N id → anchor map.
   {
@@ -426,7 +519,23 @@ return {
   {
     Blocks = reattach_ids_to_image_paras,
     Para = function(elem)
-      return pandoc.Para(linkify_figure_refs(elem.content))
+      local out = linkify_figure_refs(elem.content)
+      note_unlinked(out)
+      return pandoc.Para(out)
+    end,
+  },
+  -- Phase 4: report anything reference-shaped that stayed plain text.
+  {
+    Pandoc = function(doc)
+      local names = {}
+      for k in pairs(unlinked) do names[#names + 1] = k end
+      if #names > 0 then
+        table.sort(names)
+        io.stderr:write(
+          ("figures.lua: %d reference(s) left UNLINKED (no caption matched): ")
+            :format(#names) .. table.concat(names, "; ") .. "\n")
+      end
+      return doc
     end,
   },
 }
