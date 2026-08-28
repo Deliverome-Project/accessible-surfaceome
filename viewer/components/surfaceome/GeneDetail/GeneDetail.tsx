@@ -89,6 +89,11 @@ interface GeneDetailProps {
   /** Whether this gene is in the FG library — forwarded to <GeneHeader> for
    *  the "In library" badge. */
   inFgLibrary: boolean;
+  /** Whether this gene is an oversized truncation candidate — forwarded to
+   *  <GeneHeader> for the "Oversized" chip. */
+  oversized: boolean;
+  /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
+  oversizedOrfKb: number | null;
 }
 
 /**
@@ -111,6 +116,8 @@ export function GeneDetail({
   deepDiveGenes,
   fgLibrary,
   inFgLibrary,
+  oversized,
+  oversizedOrfKb,
 }: GeneDetailProps) {
   const router = useRouter();
 
@@ -395,6 +402,8 @@ export function GeneDetail({
             catalogRow={catalogRow}
             triageHeadline={triageHeadline}
             inFgLibrary={inFgLibrary}
+            oversized={oversized}
+            oversizedOrfKb={oversizedOrfKb}
           />
         </Reveal>
 

@@ -29168,5 +29168,1575 @@
         }
       ]
     }
+  },
+  "n_oversized": 99,
+  "oversized": {
+    "ABCA1": {
+      "tier": "T2",
+      "orf_kb": 6.8,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Abca1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "ABCA1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "ABCA7": {
+      "tier": "T2",
+      "orf_kb": 6.4,
+      "surface_isoform_ids": [
+        "Q8IZY2-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Abca7",
+          "species": "mouse"
+        },
+        {
+          "symbol": "ABCA7",
+          "species": "cyno"
+        }
+      ]
+    },
+    "ADGRG4": {
+      "tier": "T2",
+      "orf_kb": 9.2,
+      "surface_isoform_ids": [
+        "Q8IZF6-2",
+        "Q8IZF6-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "ADGRG4",
+          "species": "cyno"
+        }
+      ]
+    },
+    "ADGRV1": {
+      "tier": "T2",
+      "orf_kb": 18.9,
+      "surface_isoform_ids": [
+        "Q8WXG9-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Adgrv1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "ADGRV1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CACNA1A": {
+      "tier": "T2",
+      "orf_kb": 7.5,
+      "surface_isoform_ids": [
+        "O00555-2",
+        "O00555-3",
+        "O00555-4",
+        "O00555-5",
+        "O00555-6"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CACNA1A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CACNA1B": {
+      "tier": "T2",
+      "orf_kb": 7.0,
+      "surface_isoform_ids": [
+        "Q00975-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1b",
+          "species": "mouse"
+        }
+      ]
+    },
+    "CACNA1C": {
+      "tier": "T2",
+      "orf_kb": 6.7,
+      "surface_isoform_ids": [
+        "Q13936-10",
+        "Q13936-11",
+        "Q13936-12",
+        "Q13936-13",
+        "Q13936-14",
+        "Q13936-15",
+        "Q13936-16",
+        "Q13936-17",
+        "Q13936-18",
+        "Q13936-19",
+        "Q13936-2",
+        "Q13936-20",
+        "Q13936-21",
+        "Q13936-22",
+        "Q13936-23",
+        "Q13936-24",
+        "Q13936-25",
+        "Q13936-26",
+        "Q13936-27",
+        "Q13936-28",
+        "Q13936-29",
+        "Q13936-3",
+        "Q13936-30",
+        "Q13936-31",
+        "Q13936-32",
+        "Q13936-33",
+        "Q13936-34",
+        "Q13936-35",
+        "Q13936-36",
+        "Q13936-37",
+        "Q13936-4",
+        "Q13936-5",
+        "Q13936-6",
+        "Q13936-7",
+        "Q13936-8",
+        "Q13936-9"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1c",
+          "species": "mouse"
+        }
+      ]
+    },
+    "CACNA1D": {
+      "tier": "T2",
+      "orf_kb": 6.5,
+      "surface_isoform_ids": [
+        "Q01668-2",
+        "Q01668-3",
+        "Q01668-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1d",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CACNA1D",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CACNA1E": {
+      "tier": "T2",
+      "orf_kb": 6.9,
+      "surface_isoform_ids": [
+        "Q15878-2",
+        "Q15878-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1e",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CACNA1E",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CACNA1F": {
+      "tier": "T2",
+      "orf_kb": 5.9,
+      "surface_isoform_ids": [
+        "O60840-2",
+        "O60840-4",
+        "O60840-5",
+        "O60840-6",
+        "O60840-7"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1f",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CACNA1F",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CACNA1G": {
+      "tier": "T2",
+      "orf_kb": 7.1,
+      "surface_isoform_ids": [
+        "O43497-10",
+        "O43497-11",
+        "O43497-12",
+        "O43497-13",
+        "O43497-15",
+        "O43497-16",
+        "O43497-17",
+        "O43497-18",
+        "O43497-19",
+        "O43497-2",
+        "O43497-20",
+        "O43497-21",
+        "O43497-22",
+        "O43497-23",
+        "O43497-24",
+        "O43497-25",
+        "O43497-26",
+        "O43497-27",
+        "O43497-28",
+        "O43497-29",
+        "O43497-3",
+        "O43497-30",
+        "O43497-31",
+        "O43497-32",
+        "O43497-33",
+        "O43497-34",
+        "O43497-35",
+        "O43497-36",
+        "O43497-4",
+        "O43497-5",
+        "O43497-6",
+        "O43497-7",
+        "O43497-8",
+        "O43497-9"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1g",
+          "species": "mouse"
+        }
+      ]
+    },
+    "CACNA1H": {
+      "tier": "T2",
+      "orf_kb": 7.1,
+      "surface_isoform_ids": [
+        "O95180-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1h",
+          "species": "mouse"
+        }
+      ]
+    },
+    "CACNA1I": {
+      "tier": "T2",
+      "orf_kb": 6.7,
+      "surface_isoform_ids": [
+        "Q9P0X4-2",
+        "Q9P0X4-3",
+        "Q9P0X4-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1i",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CACNA1I",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CACNA1S": {
+      "tier": "T2",
+      "orf_kb": 5.6,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Cacna1s",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CACNA1S",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CDH23": {
+      "tier": "T1",
+      "orf_kb": 10.1,
+      "surface_isoform_ids": [
+        "Q9H251-2",
+        "Q9H251-3",
+        "Q9H251-4",
+        "Q9H251-7",
+        "Q9H251-8",
+        "Q9H251-9"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Cdh23",
+          "species": "mouse"
+        }
+      ]
+    },
+    "CELSR1": {
+      "tier": "T2",
+      "orf_kb": 9.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Celsr1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CELSR1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CELSR2": {
+      "tier": "T2",
+      "orf_kb": 8.8,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Celsr2",
+          "species": "mouse"
+        }
+      ]
+    },
+    "CELSR3": {
+      "tier": "T2",
+      "orf_kb": 9.9,
+      "surface_isoform_ids": [
+        "Q9NYQ7-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Celsr3",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CELSR3",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CR1": {
+      "tier": "T1",
+      "orf_kb": 6.1,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "CR1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CSMD1": {
+      "tier": "T1",
+      "orf_kb": 10.7,
+      "surface_isoform_ids": [
+        "Q96PZ7-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Csmd1",
+          "species": "mouse"
+        }
+      ]
+    },
+    "CSMD2": {
+      "tier": "T1",
+      "orf_kb": 10.5,
+      "surface_isoform_ids": [
+        "Q7Z408-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Csmd2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CSMD2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CSMD3": {
+      "tier": "T1",
+      "orf_kb": 11.1,
+      "surface_isoform_ids": [
+        "Q7Z407-2",
+        "Q7Z407-3",
+        "Q7Z407-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Csmd3",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CSMD3",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CSPG4": {
+      "tier": "T3",
+      "orf_kb": 7.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Cspg4",
+          "species": "mouse"
+        },
+        {
+          "symbol": "CSPG4",
+          "species": "cyno"
+        }
+      ]
+    },
+    "DCHS1": {
+      "tier": "T1",
+      "orf_kb": 9.9,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Dchs1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "DCHS1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "DSCAM": {
+      "tier": "T1",
+      "orf_kb": 6.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Dscam",
+          "species": "mouse"
+        },
+        {
+          "symbol": "DSCAM",
+          "species": "cyno"
+        }
+      ]
+    },
+    "DSCAML1": {
+      "tier": "T1",
+      "orf_kb": 6.2,
+      "surface_isoform_ids": [
+        "Q8TD84-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Dscaml1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "DSCAML1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "FAT1": {
+      "tier": "T1",
+      "orf_kb": 13.8,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Fat1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "FAT1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "FAT2": {
+      "tier": "T1",
+      "orf_kb": 13.1,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Fat2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "FAT2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "FAT3": {
+      "tier": "T1",
+      "orf_kb": 13.7,
+      "surface_isoform_ids": [
+        "Q8TDW7-1"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Fat3",
+          "species": "mouse"
+        },
+        {
+          "symbol": "FAT3",
+          "species": "cyno"
+        }
+      ]
+    },
+    "FAT4": {
+      "tier": "T1",
+      "orf_kb": 14.9,
+      "surface_isoform_ids": [
+        "Q6V0I7-2",
+        "Q6V0I7-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Fat4",
+          "species": "mouse"
+        },
+        {
+          "symbol": "FAT4",
+          "species": "cyno"
+        }
+      ]
+    },
+    "FNDC1": {
+      "tier": "T3",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "FNDC1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "GPR179": {
+      "tier": "T2",
+      "orf_kb": 7.1,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Gpr179",
+          "species": "mouse"
+        },
+        {
+          "symbol": "GPR179",
+          "species": "cyno"
+        }
+      ]
+    },
+    "ITGB4": {
+      "tier": "T1",
+      "orf_kb": 5.5,
+      "surface_isoform_ids": [
+        "P16144-2",
+        "P16144-3",
+        "P16144-4",
+        "P16144-5"
+      ],
+      "surface_orthologs": []
+    },
+    "LCT": {
+      "tier": "T1",
+      "orf_kb": 5.8,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Lct",
+          "species": "mouse"
+        },
+        {
+          "symbol": "LCT",
+          "species": "cyno"
+        }
+      ]
+    },
+    "LRP1": {
+      "tier": "T1",
+      "orf_kb": 13.6,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Lrp1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "LRP1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "LRP1B": {
+      "tier": "T1",
+      "orf_kb": 13.8,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Lrp1b",
+          "species": "mouse"
+        },
+        {
+          "symbol": "LRP1B",
+          "species": "cyno"
+        }
+      ]
+    },
+    "LRP2": {
+      "tier": "T1",
+      "orf_kb": 14.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Lrp2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "LRP2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "LRP4": {
+      "tier": "T1",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Lrp4",
+          "species": "mouse"
+        },
+        {
+          "symbol": "LRP4",
+          "species": "cyno"
+        }
+      ]
+    },
+    "LY75": {
+      "tier": "T1",
+      "orf_kb": 5.2,
+      "surface_isoform_ids": [
+        "O60449-2",
+        "O60449-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ly75",
+          "species": "mouse"
+        },
+        {
+          "symbol": "LY75",
+          "species": "cyno"
+        }
+      ]
+    },
+    "MEGF8": {
+      "tier": "T1",
+      "orf_kb": 8.5,
+      "surface_isoform_ids": [
+        "Q7Z7M0-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Megf8",
+          "species": "mouse"
+        },
+        {
+          "symbol": "MEGF8",
+          "species": "cyno"
+        }
+      ]
+    },
+    "MGAM": {
+      "tier": "T1",
+      "orf_kb": 8.3,
+      "surface_isoform_ids": [
+        "O43451-1"
+      ],
+      "surface_orthologs": []
+    },
+    "MUC12": {
+      "tier": "T1",
+      "orf_kb": 16.4,
+      "surface_isoform_ids": [
+        "Q9UKN1-2"
+      ],
+      "surface_orthologs": []
+    },
+    "MUC16": {
+      "tier": "T3",
+      "orf_kb": 43.5,
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
+    "MUC17": {
+      "tier": "T1",
+      "orf_kb": 13.5,
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
+    "MUC22": {
+      "tier": "T1",
+      "orf_kb": 5.3,
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
+    "MUC3A": {
+      "tier": "T1",
+      "orf_kb": 10.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
+    "MUC3B": {
+      "tier": "T1",
+      "orf_kb": 40.4,
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
+    "MUC4": {
+      "tier": "T3",
+      "orf_kb": 16.2,
+      "surface_isoform_ids": [
+        "Q99102-10",
+        "Q99102-12",
+        "Q99102-13",
+        "Q99102-17"
+      ],
+      "surface_orthologs": []
+    },
+    "NOTCH1": {
+      "tier": "T1",
+      "orf_kb": 7.7,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Notch1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "NOTCH1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "NOTCH2": {
+      "tier": "T1",
+      "orf_kb": 7.4,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Notch2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "NOTCH2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "NOTCH3": {
+      "tier": "T1",
+      "orf_kb": 7.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Notch3",
+          "species": "mouse"
+        }
+      ]
+    },
+    "NOTCH4": {
+      "tier": "T1",
+      "orf_kb": 6.0,
+      "surface_isoform_ids": [
+        "Q99466-2"
+      ],
+      "surface_orthologs": []
+    },
+    "PCDH15": {
+      "tier": "T1",
+      "orf_kb": 5.9,
+      "surface_isoform_ids": [
+        "Q96QU1-2",
+        "Q96QU1-4",
+        "Q96QU1-6",
+        "Q96QU1-7"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Pcdh15",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PCDH15",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PCSK5": {
+      "tier": "T1",
+      "orf_kb": 5.6,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Pcsk5",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PCSK5",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PIEZO1": {
+      "tier": "T2",
+      "orf_kb": 7.6,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Piezo1",
+          "species": "mouse"
+        }
+      ]
+    },
+    "PIEZO2": {
+      "tier": "T2",
+      "orf_kb": 8.3,
+      "surface_isoform_ids": [
+        "Q9H5I5-2",
+        "Q9H5I5-3",
+        "Q9H5I5-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Piezo2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PIEZO2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PKD1": {
+      "tier": "T2",
+      "orf_kb": 12.9,
+      "surface_isoform_ids": [
+        "P98161-2",
+        "P98161-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Pkd1",
+          "species": "mouse"
+        }
+      ]
+    },
+    "PKDREJ": {
+      "tier": "T2",
+      "orf_kb": 6.8,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "PKDREJ",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PKHD1": {
+      "tier": "T1",
+      "orf_kb": 12.2,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Pkhd1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PKHD1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PLXNA1": {
+      "tier": "T1",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxna1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PLXNA1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PLXNA2": {
+      "tier": "T1",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [
+        "O75051-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxna2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PLXNA2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PLXNA3": {
+      "tier": "T1",
+      "orf_kb": 5.6,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxna3",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PLXNA3",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PLXNA4": {
+      "tier": "T1",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxna4",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PLXNA4",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PLXNB1": {
+      "tier": "T1",
+      "orf_kb": 6.4,
+      "surface_isoform_ids": [
+        "O43157-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxnb1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PLXNB1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PLXNB2": {
+      "tier": "T1",
+      "orf_kb": 5.5,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxnb2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PLXNB2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PLXNB3": {
+      "tier": "T3",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [
+        "Q9ULL4-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxnb3",
+          "species": "mouse"
+        }
+      ]
+    },
+    "PLXND1": {
+      "tier": "T1",
+      "orf_kb": 5.8,
+      "surface_isoform_ids": [
+        "Q9Y4D7-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Plxnd1",
+          "species": "mouse"
+        }
+      ]
+    },
+    "PTPRB": {
+      "tier": "T1",
+      "orf_kb": 6.0,
+      "surface_isoform_ids": [
+        "P23467-2",
+        "P23467-3",
+        "P23467-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ptprb",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PTPRB",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PTPRD": {
+      "tier": "T1",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [
+        "P23468-2",
+        "P23468-3",
+        "P23468-4",
+        "P23468-5",
+        "P23468-6",
+        "P23468-7"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ptprd",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PTPRD",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PTPRF": {
+      "tier": "T1",
+      "orf_kb": 5.7,
+      "surface_isoform_ids": [
+        "P10586-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ptprf",
+          "species": "mouse"
+        }
+      ]
+    },
+    "PTPRQ": {
+      "tier": "T1",
+      "orf_kb": 7.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Ptprq",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PTPRQ",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PTPRS": {
+      "tier": "T1",
+      "orf_kb": 5.8,
+      "surface_isoform_ids": [
+        "Q13332-2",
+        "Q13332-3",
+        "Q13332-4",
+        "Q13332-5",
+        "Q13332-6",
+        "Q13332-7"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ptprs",
+          "species": "mouse"
+        }
+      ]
+    },
+    "PTPRZ1": {
+      "tier": "T3",
+      "orf_kb": 6.9,
+      "surface_isoform_ids": [
+        "P23471-2",
+        "P23471-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ptprz1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PTPRZ1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "PTPRZ2": {
+      "tier": "T1",
+      "orf_kb": 6.9,
+      "surface_isoform_ids": [
+        "P23471-2",
+        "P23471-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ptprz1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "PTPRZ1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "ROS1": {
+      "tier": "T1",
+      "orf_kb": 7.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Ros1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "ROS1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN10A": {
+      "tier": "T2",
+      "orf_kb": 5.9,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn10a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN10A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN11A": {
+      "tier": "T2",
+      "orf_kb": 5.4,
+      "surface_isoform_ids": [
+        "Q9UI33-2",
+        "Q9UI33-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "SCN11A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN1A": {
+      "tier": "T2",
+      "orf_kb": 6.0,
+      "surface_isoform_ids": [
+        "P35498-2",
+        "P35498-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn1a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN1A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN2A": {
+      "tier": "T2",
+      "orf_kb": 6.0,
+      "surface_isoform_ids": [
+        "Q99250-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn2a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN2A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN3A": {
+      "tier": "T2",
+      "orf_kb": 6.0,
+      "surface_isoform_ids": [
+        "Q9NY46-2",
+        "Q9NY46-3",
+        "Q9NY46-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn3a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN3A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN4A": {
+      "tier": "T2",
+      "orf_kb": 5.5,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn4a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN4A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN5A": {
+      "tier": "T2",
+      "orf_kb": 6.1,
+      "surface_isoform_ids": [
+        "Q14524-2",
+        "Q14524-3",
+        "Q14524-4",
+        "Q14524-5",
+        "Q14524-6"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn5a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN5A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN7A": {
+      "tier": "T2",
+      "orf_kb": 5.0,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn7a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN7A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN8A": {
+      "tier": "T2",
+      "orf_kb": 5.9,
+      "surface_isoform_ids": [
+        "Q9UQD0-2",
+        "Q9UQD0-3",
+        "Q9UQD0-4",
+        "Q9UQD0-5"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn8a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN8A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SCN9A": {
+      "tier": "T2",
+      "orf_kb": 6.0,
+      "surface_isoform_ids": [
+        "Q15858-2",
+        "Q15858-3",
+        "Q15858-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Scn9a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SCN9A",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SDK1": {
+      "tier": "T2",
+      "orf_kb": 6.6,
+      "surface_isoform_ids": [
+        "Q7Z5N4-2",
+        "Q7Z5N4-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Sdk1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SDK1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SDK2": {
+      "tier": "T1",
+      "orf_kb": 6.5,
+      "surface_isoform_ids": [
+        "Q58EX2-3",
+        "Q58EX2-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Sdk2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SDK2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SI": {
+      "tier": "T1",
+      "orf_kb": 5.5,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Sis",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SI",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SIGLEC1": {
+      "tier": "T3",
+      "orf_kb": 5.1,
+      "surface_isoform_ids": [
+        "Q9BZZ2-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Siglec1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SIGLEC1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "SORL1": {
+      "tier": "T1",
+      "orf_kb": 6.6,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Sorl1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "SORL1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "STAB1": {
+      "tier": "T1",
+      "orf_kb": 7.7,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Stab1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "STAB1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "STAB2": {
+      "tier": "T1",
+      "orf_kb": 7.7,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Stab2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "STAB2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "TENM1": {
+      "tier": "T3",
+      "orf_kb": 8.2,
+      "surface_isoform_ids": [
+        "Q9UKZ4-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Tenm1",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TENM1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "TENM2": {
+      "tier": "T1",
+      "orf_kb": 8.3,
+      "surface_isoform_ids": [
+        "Q9NT68-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Tenm2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TENM2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "TENM4": {
+      "tier": "T1",
+      "orf_kb": 8.3,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Tenm4",
+          "species": "mouse"
+        }
+      ]
+    },
+    "TRPM3": {
+      "tier": "T2",
+      "orf_kb": 5.2,
+      "surface_isoform_ids": [
+        "Q9HCF6-10",
+        "Q9HCF6-11",
+        "Q9HCF6-2",
+        "Q9HCF6-3",
+        "Q9HCF6-4",
+        "Q9HCF6-5",
+        "Q9HCF6-6",
+        "Q9HCF6-7",
+        "Q9HCF6-8"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Trpm3",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TRPM3",
+          "species": "cyno"
+        }
+      ]
+    },
+    "TRPM6": {
+      "tier": "T2",
+      "orf_kb": 6.1,
+      "surface_isoform_ids": [
+        "Q9BX84-2",
+        "Q9BX84-3",
+        "Q9BX84-4"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Trpm6",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TRPM6",
+          "species": "cyno"
+        }
+      ]
+    },
+    "TRPM7": {
+      "tier": "T2",
+      "orf_kb": 5.6,
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Trpm7",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TRPM7",
+          "species": "cyno"
+        }
+      ]
+    },
+    "USH2A": {
+      "tier": "T1",
+      "orf_kb": 15.6,
+      "surface_isoform_ids": [
+        "O75445-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Ush2a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "USH2A",
+          "species": "cyno"
+        }
+      ]
+    }
   }
 }

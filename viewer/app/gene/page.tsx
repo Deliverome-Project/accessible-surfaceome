@@ -27,6 +27,8 @@ import {
 import {
   parseFgLibrary,
   inFgLibrary as symbolInFgLibrary,
+  isOversized as symbolIsOversized,
+  oversizedOrfKb as symbolOversizedOrfKb,
   type FgLibraryData,
 } from "../../lib/fg-library";
 import type {
@@ -152,6 +154,11 @@ interface ReadyData {
   /** Whether THIS gene's symbol is in the FG library (derived from `fgLibrary`).
    *  Threaded to <GeneHeader> for the badge. */
   inFgLibrary: boolean;
+  /** Whether THIS gene is an oversized truncation candidate (clears every gate
+   *  but the ~5 kb ORF cap). Threaded to <GeneHeader> for the "Oversized" chip. */
+  oversized: boolean;
+  /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
+  oversizedOrfKb: number | null;
 }
 
 type State =
@@ -271,6 +278,8 @@ export default function GeneShellPage() {
           ),
           fgLibrary,
           inFgLibrary: symbolInFgLibrary(fgLibrary, symbol),
+          oversized: symbolIsOversized(fgLibrary, symbol),
+          oversizedOrfKb: symbolOversizedOrfKb(fgLibrary, symbol),
         },
       });
     })();
