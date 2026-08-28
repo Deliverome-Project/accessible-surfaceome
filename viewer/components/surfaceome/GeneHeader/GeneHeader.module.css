@@ -617,3 +617,19 @@
   border: 1px solid color-mix(in srgb, #c07830 38%, transparent);
   white-space: nowrap;
 }
+
+/* Oversized truncation-candidate flag — distinct (lavender) from the orange
+   "In library" chip; carries an InfoTip explaining the ~5 kb ORF cap. */
+.oversizedChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: var(--fw-medium, 600);
+  color: color-mix(in srgb, #8878c8 82%, var(--fg, #1f1718));
+  background: color-mix(in srgb, #8878c8 12%, transparent);
+  border: 1px solid color-mix(in srgb, #8878c8 40%, transparent);
+  white-space: nowrap;
+}

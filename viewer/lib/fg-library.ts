@@ -35,12 +35,19 @@ export interface FgGeneEntry {
   /** UniProt isoform accessions (e.g. "P00533-2") flagged surface-competent. */
   surface_isoform_ids: string[];
   surface_orthologs: FgOrtholog[];
+  /** Present only on `oversized` entries: full-length ORF size (kb) that
+   *  exceeds the ~5 kb lentiviral cap. */
+  orf_kb?: number;
 }
 
 /** Parsed `fg-library.json`. A gene is "in the FG library" iff its symbol
- *  is a key in `genes`. */
+ *  is a key in `genes`. `oversized` genes clear every library gate EXCEPT the
+ *  ~5 kb ORF cap (truncation candidates): shown as in-library with an
+ *  "Oversized" chip, but kept OUT of `genes` so they don't inflate the core
+ *  library count. */
 export interface FgLibraryData {
   genes: Record<string, FgGeneEntry>;
+  oversized: Record<string, FgGeneEntry>;
 }
 
 const KNOWN_TIERS: ReadonlySet<string> = new Set([
@@ -77,37 +84,70 @@ function parseOrthologs(v: unknown): FgOrtholog[] {
  * library"), the same graceful-miss contract the gene page's other overlays
  * use. `null`/`undefined` in → empty out.
  */
-export function parseFgLibrary(raw: unknown): FgLibraryData {
-  const out: FgLibraryData = { genes: {} };
-  if (!raw || typeof raw !== "object") return out;
-  const root = raw as Record<string, unknown>;
-  const genes = root.genes;
-  if (!genes || typeof genes !== "object") return out;
-  for (const [symbol, entryRaw] of Object.entries(
-    genes as Record<string, unknown>,
-  )) {
-    if (!entryRaw || typeof entryRaw !== "object") continue;
-    const e = entryRaw as Record<string, unknown>;
-    const tier =
-      typeof e.tier === "string" && KNOWN_TIERS.has(e.tier)
-        ? (e.tier as FgTier)
-        : "T1";
-    out.genes[symbol] = {
-      tier,
-      surface_isoform_ids: asStringArray(e.surface_isoform_ids),
-      surface_orthologs: parseOrthologs(e.surface_orthologs),
-    };
+function parseEntry(entryRaw: unknown): FgGeneEntry | null {
+  if (!entryRaw || typeof entryRaw !== "object") return null;
+  const e = entryRaw as Record<string, unknown>;
+  const tier =
+    typeof e.tier === "string" && KNOWN_TIERS.has(e.tier)
+      ? (e.tier as FgTier)
+      : "T1";
+  const entry: FgGeneEntry = {
+    tier,
+    surface_isoform_ids: asStringArray(e.surface_isoform_ids),
+    surface_orthologs: parseOrthologs(e.surface_orthologs),
+  };
+  if (typeof e.orf_kb === "number") entry.orf_kb = e.orf_kb;
+  return entry;
+}
+
+function parseEntryMap(v: unknown): Record<string, FgGeneEntry> {
+  const out: Record<string, FgGeneEntry> = {};
+  if (!v || typeof v !== "object") return out;
+  for (const [symbol, entryRaw] of Object.entries(v as Record<string, unknown>)) {
+    const entry = parseEntry(entryRaw);
+    if (entry) out[symbol] = entry;
   }
   return out;
 }
 
-/** True when `symbol` is a member of the FG library (a key in `genes`). */
+export function parseFgLibrary(raw: unknown): FgLibraryData {
+  const out: FgLibraryData = { genes: {}, oversized: {} };
+  if (!raw || typeof raw !== "object") return out;
+  const root = raw as Record<string, unknown>;
+  out.genes = parseEntryMap(root.genes);
+  out.oversized = parseEntryMap(root.oversized);
+  return out;
+}
+
+/** True when `symbol` is a member of the FG library (a key in `genes`).
+ *  NOTE: oversized truncation-candidate genes are NOT counted here — use
+ *  {@link isOversized}. */
 export function inFgLibrary(
   data: FgLibraryData | null | undefined,
   symbol: string,
 ): boolean {
   if (!data) return false;
   return Object.prototype.hasOwnProperty.call(data.genes, symbol);
+}
+
+/** True when `symbol` is an oversized truncation candidate (clears every gate
+ *  except the ~5 kb ORF cap). Displayed as in-library with an "Oversized" chip,
+ *  but deliberately NOT part of the counted core library (`genes`). */
+export function isOversized(
+  data: FgLibraryData | null | undefined,
+  symbol: string,
+): boolean {
+  if (!data || !data.oversized) return false;
+  return Object.prototype.hasOwnProperty.call(data.oversized, symbol);
+}
+
+/** Full-length ORF size (kb) for an oversized gene, if known (for the chip tooltip). */
+export function oversizedOrfKb(
+  data: FgLibraryData | null | undefined,
+  symbol: string,
+): number | null {
+  const kb = data?.oversized?.[symbol]?.orf_kb;
+  return typeof kb === "number" ? kb : null;
 }
 
 /** The set of every library-member symbol — used to filter an alphabetical
@@ -126,7 +166,7 @@ export function surfaceIsoformIds(
   data: FgLibraryData | null | undefined,
   symbol: string,
 ): Set<string> {
-  const entry = data?.genes[symbol];
+  const entry = data?.genes[symbol] ?? data?.oversized?.[symbol];
   return new Set(entry?.surface_isoform_ids ?? []);
 }
 
@@ -144,7 +184,7 @@ export function surfaceOrthologKeys(
   data: FgLibraryData | null | undefined,
   symbol: string,
 ): Set<string> {
-  const entry = data?.genes[symbol];
+  const entry = data?.genes[symbol] ?? data?.oversized?.[symbol];
   const out = new Set<string>();
   for (const o of entry?.surface_orthologs ?? []) {
     out.add(orthologKey(o.symbol, o.species));

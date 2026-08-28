@@ -124,6 +124,13 @@ interface GeneHeaderProps {
    *  row. Sourced from the fetched `/data/fg-library.json` overlay (see
    *  `app/gene/page.tsx`); defaults to false. */
   inFgLibrary?: boolean;
+  /** Whether this gene is an oversized truncation candidate — it clears every
+   *  library gate except the ~5 kb ORF cap. Renders an "Oversized" chip and
+   *  makes the "In library" chip show, but the gene is NOT in the counted core
+   *  library. Sourced from the `oversized` block of `/data/fg-library.json`. */
+  oversized?: boolean;
+  /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
+  oversizedOrfKb?: number | null;
 }
 
 /** Re-export of the loader's TriageHeadlinePayload — see
@@ -280,6 +287,8 @@ export function GeneHeader({
   catalogRow,
   triageHeadline,
   inFgLibrary = false,
+  oversized = false,
+  oversizedOrfKb = null,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -446,8 +455,30 @@ export function GeneHeader({
             {/* FG surface-protein library membership — a positive marker that
                 this gene is in the Deliverome library. Same chip style as the
                 sub-facet chip; gated on the fetched membership overlay. */}
-            {inFgLibrary ? (
+            {inFgLibrary || oversized ? (
               <span className={styles.tierFacetChip}>In library</span>
+            ) : null}
+            {oversized ? (
+              <span className={styles.oversizedChip}>
+                Oversized
+                <InfoTip label="About the oversized flag">
+                  <p>
+                    Clears every FG-library gate{" "}
+                    <strong>except the ~5&nbsp;kb ORF cap</strong>
+                    {oversizedOrfKb
+                      ? ` (full-length ORF ≈ ${oversizedOrfKb} kb)`
+                      : ""}
+                    &nbsp;— too large to package as a full-length lentiviral
+                    ORF, so it is a <strong>truncation candidate</strong> rather
+                    than a drop-in library member.
+                  </p>
+                  <p>
+                    Shown as in-library for discoverability, but deliberately
+                    kept out of the counted core library while truncation
+                    strategies are worked out.
+                  </p>
+                </InfoTip>
+              </span>
             ) : null}
             {lowLitSurface ? (
               <span className={styles.lowLitChip}>
