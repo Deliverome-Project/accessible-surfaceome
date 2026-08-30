@@ -326,7 +326,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 20, "axes.labelsize": 24, "axes.titlesize": 0,
+        "font.size": 20, "axes.labelsize": 19, "axes.titlesize": 0,
         "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     data = _load_data()

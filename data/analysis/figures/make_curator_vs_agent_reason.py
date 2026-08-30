@@ -119,7 +119,7 @@ def _apply_brand_style() -> None:
         # Match the canonical generator's rcParams so the layout
         # fingerprint (font.size / axes.labelsize / tick sizes / legend)
         # stays in sync with scripts/curator_vs_agent_reason.py.
-        "font.size": 20, "axes.labelsize": 24, "axes.titlesize": 0,
+        "font.size": 20, "axes.labelsize": 19, "axes.titlesize": 0,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none",
