@@ -458,7 +458,7 @@ def make_plot(data: pd.DataFrame) -> plt.Figure:
         nrows=2, ncols=1, height_ratios=[1.7, 2.1], hspace=0.30,
     )
     top = outer[0].subgridspec(
-        nrows=2, ncols=1, height_ratios=[0.7, 1.0], hspace=0.20,
+        nrows=2, ncols=1, height_ratios=[0.7, 1.0], hspace=0.55,
     )
     ax_bucket = fig.add_subplot(top[0])
     ax_perreason = fig.add_subplot(top[1])
@@ -557,18 +557,8 @@ def make_plot(data: pd.DataFrame) -> plt.Figure:
                    bar_w=0.16, overall_idx=0,
                    label="Exact-reason accuracy (%)",
                    show_legend=True)
-    # Annotate the Overall bar group with each config's exact-reason %.
-    for i, (mod, var, _lab) in enumerate(CONFIGS_B):
-        m_, t_ = overall_b[(mod, var)]
-        if not t_:
-            continue
-        pct = 100 * m_ / t_
-        x_pos = (i - (len(CONFIGS_B) - 1) / 2) * 0.16
-        ax_perreason.text(
-            x_pos, pct + 1.4, f"{pct:.0f}%",
-            ha="center", va="bottom", fontsize=14,
-            color=BRAND_INK, fontweight="semibold",
-        )
+    # (On-bar exact-reason % labels for the Overall group were removed:
+    # the four config bars sit too close and their labels overlapped.)
     # Re-rotate + bucket-color the per-reason x-tick labels.
     pb_tick_buckets = [None] + [_bucket(r) for r in reasons]
     bucket_to_color = {"yes": BUCKET_COLOR["yes"],
