@@ -68,8 +68,10 @@ interface GeneDetailProps {
    *  on a fetch miss — GeneHeader / TriageRow then fall back to
    *  `rec.triage_signal`. */
   triageHeadline: TriageHeadlinePayload | null;
-  /** Deep-dive genes for the toolbar's GeneJump typeahead. */
-  deepDiveGenes: readonly GeneEntry[];
+  /** Lazy loader for the toolbar's GeneJump typeahead universe. Deferred so
+   *  the ~1.7 MB gene index is fetched only when the reader opens the jump
+   *  box, not on the gene page's initial load. */
+  loadGenes: () => Promise<readonly GeneEntry[]>;
 }
 
 /**
@@ -88,7 +90,7 @@ export function GeneDetail({
   catalogRow,
   benchmarkRow,
   triageHeadline,
-  deepDiveGenes,
+  loadGenes,
 }: GeneDetailProps) {
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
@@ -214,7 +216,7 @@ export function GeneDetail({
           </Link>
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
-          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
+          <GeneJump loadGenes={loadGenes} current={rec.gene.hgnc_symbol} />
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
