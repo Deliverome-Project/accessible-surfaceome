@@ -137,7 +137,14 @@ def main() -> int:
     with httpx.Client(
         http2=use_http2,
         timeout=args.timeout,
-        headers={"User-Agent": "surfaceome-ttfb-check/1.0"},
+        # Mimic a real browser navigation. `Accept: text/html` matters: the
+        # gene-URL Pages Function (viewer/functions/[[path]].js) only serves
+        # the client shell (200) to document requests — a bare `Accept: */*`
+        # correctly gets a 404, which would false-flag gene pages here.
+        headers={
+            "User-Agent": "surfaceome-ttfb-check/1.0 (+monitoring)",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
         follow_redirects=True,
     ) as client:
         for t in targets:
