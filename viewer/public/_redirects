@@ -1,0 +1,14 @@
+# SPA fallback for per-gene records.
+#
+# Gene records are addressed at /{SYMBOL}/, but the static export ships ONE
+# shell (out/gene/index.html) rather than one file per gene (5k+ files would
+# blow Cloudflare Pages' 20k-file cap — see app/gene/page.tsx). Serve that
+# shell with a 200 (URL preserved) for any path without a matching static
+# asset, so /{SYMBOL}/ returns HTTP 200 and renders the record client-side
+# instead of soft-404ing (rendering fine but returning 404 to crawlers and
+# uptime monitors).
+#
+# Cloudflare Pages serves an existing static asset before evaluating this
+# splat, so real routes (/, /api/, /reproducibility/, /data/*, ...) are
+# unaffected; only asset-less paths fall through here.
+/*    /gene/index.html    200
