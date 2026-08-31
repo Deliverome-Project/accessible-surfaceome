@@ -1,0 +1,40 @@
+name: TTFB check
+
+# Time-to-first-byte budget monitor for the live surfaceome site + public API.
+# Fails (red X → owner notification) if any monitored URL's median TTFB exceeds
+# 800 ms — the web.dev "good" threshold — or returns a non-2xx status (which
+# also catches soft-404s, e.g. a gene URL that renders client-side but returns
+# HTTP 404). See scripts/ttfb_check.py.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Every 6 hours. Cloudflare cache is per-datacenter, so this samples the
+    # GitHub-runner colo — enough to catch a global regression (a broken
+    # deploy, an origin slowdown, a routing/status regression), not per-region
+    # RUM. Adjust cadence as needed.
+    - cron: "0 */6 * * *"
+  push:
+    branches: [main]
+    # Only when something that could move TTFB changes.
+    paths:
+      - "viewer/**"
+      - "cloudflare/**"
+      - "scripts/ttfb_check.py"
+      - ".github/workflows/ttfb-check.yml"
+
+jobs:
+  ttfb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # Lightweight: the check only needs httpx (h2 is optional; the script
+      # falls back to HTTP/1.1 keep-alive without it). No full `uv sync`.
+      - name: Install httpx
+        run: pip install "httpx>=0.27"
+      - name: TTFB budget check (<= 800 ms)
+        run: python scripts/ttfb_check.py --budget-ms 800 --samples 5
