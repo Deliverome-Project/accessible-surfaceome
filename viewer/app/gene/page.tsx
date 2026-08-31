@@ -129,7 +129,10 @@ interface ReadyData {
   catalogRow: CatalogRow | null;
   benchmarkRow: BenchmarkRowPayload | null;
   triageHeadline: TriageHeadlinePayload | null;
-  deepDiveGenes: GeneEntry[];
+  /** Lazy loader for the GeneJump typeahead universe — the ~1.7 MB
+   *  `/v1/genes` index is fetched only when the reader opens the jump box,
+   *  never on the gene page's initial load. */
+  loadGenes: () => Promise<readonly GeneEntry[]>;
 }
 
 type State =
@@ -146,14 +149,33 @@ export default function GeneShellPage() {
     let cancelled = false;
     setState({ kind: "loading" });
 
-    (async () => {
-      const symbol = symbolFromPath(window.location.pathname);
-      if (!symbol) {
-        if (!cancelled) setState({ kind: "notfound", symbol: null });
-        return;
-      }
+    const symbol = symbolFromPath(window.location.pathname);
+    if (!symbol) {
+      setState({ kind: "notfound", symbol: null });
+      return;
+    }
 
-      // The record is the only hard requirement.
+    // Lazy typeahead loader. The ~1.7 MB `/v1/genes` index (+ the synonym
+    // overlay) is fetched only when the reader opens the GeneJump box — kept
+    // entirely off the gene page's initial critical path.
+    const loadGenes = async (): Promise<readonly GeneEntry[]> => {
+      const [genesJson, synonymsJson] = await Promise.all([
+        fetchJson(`${API_BASE}/v1/genes`),
+        // Build-baked synonym overlay (site origin, not the Worker) so the
+        // GeneJump dropdown matches alias queries like "Nav1.7" → SCN9A,
+        // the same way the homepage catalog search does.
+        fetchJson("/data/gene-synonyms.json"),
+      ]);
+      return buildGeneJumpEntries(
+        genesJson,
+        synonymsJson as SynonymOverlay | null,
+      );
+    };
+
+    (async () => {
+      // ── The record is the only hard requirement: render the page as soon
+      // as it arrives, then hydrate the secondary strips progressively so a
+      // slow/large secondary never blocks first paint. ──────────────────
       let recRes: Response;
       try {
         recRes = await fetch(`${API_BASE}/v1/genes/${symbol}`);
@@ -176,20 +198,6 @@ export default function GeneShellPage() {
         if (!cancelled) setState({ kind: "error", symbol });
         return;
       }
-
-      // Secondary enrichments — fetched in parallel, each null-tolerant so
-      // a miss degrades gracefully rather than failing the page.
-      const [triageJson, benchJson, genesJson, catalogJson, synonymsJson] =
-        await Promise.all([
-          fetchJson(`${API_BASE}/v1/triage/${symbol}`),
-          fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
-          fetchJson(`${API_BASE}/v1/genes`),
-          fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
-          // Build-baked synonym overlay (site origin, not the Worker) so the
-          // GeneJump dropdown matches alias queries like "Nav1.7" → SCN9A,
-          // the same way the homepage catalog search does.
-          fetchJson("/data/gene-synonyms.json"),
-        ]);
       if (cancelled) return;
 
       // Renumber the merged evidence ledger's ids client-side, exactly as
@@ -202,6 +210,9 @@ export default function GeneShellPage() {
       // SURFACE-Bind proteins; null → GeneHeader shows the bare symbol.
       const proteinName = rec.deterministic_features.surface_bind.protein_name;
 
+      // First paint: the record + everything derivable from it. The triage /
+      // catalog / benchmark strips start null (each is null-tolerant and
+      // degrades to a record-derived fallback) and hydrate just below.
       setState({
         kind: "ready",
         data: {
@@ -215,20 +226,40 @@ export default function GeneShellPage() {
             rec.gene.uniprot_acc,
             rec.deterministic_features.homo_oligomerization,
           ),
-          // Slim per-gene DB-vote row from /v1/catalog/{sym} — the 5-DB
-          // presence strip. Null-tolerant: 404 for genes outside the
-          // candidate universe → strip omitted.
-          catalogRow: adaptCatalogRow(catalogJson),
-          benchmarkRow: adaptBenchmarkRow(benchJson),
-          triageHeadline: triageJson
-            ? parseTriageHeadline(triageJson as TriageRunsPayload)
-            : null,
-          deepDiveGenes: buildGeneJumpEntries(
-            genesJson,
-            synonymsJson as SynonymOverlay | null,
-          ),
+          catalogRow: null,
+          benchmarkRow: null,
+          triageHeadline: null,
+          loadGenes,
         },
       });
+
+      // ── Secondary enrichments — small, fast, null-tolerant. Fetched after
+      // first paint and merged in progressively; a miss degrades gracefully
+      // rather than failing (or delaying) the page. ─────────────────────
+      const [triageJson, benchJson, catalogJson] = await Promise.all([
+        fetchJson(`${API_BASE}/v1/triage/${symbol}`),
+        fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
+        // Slim per-gene DB-vote row from /v1/catalog/{sym} — the 5-DB
+        // presence strip. Null-tolerant: 404 for genes outside the
+        // candidate universe → strip omitted.
+        fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
+      ]);
+      if (cancelled) return;
+      setState((prev) =>
+        prev.kind === "ready"
+          ? {
+              kind: "ready",
+              data: {
+                ...prev.data,
+                catalogRow: adaptCatalogRow(catalogJson),
+                benchmarkRow: adaptBenchmarkRow(benchJson),
+                triageHeadline: triageJson
+                  ? parseTriageHeadline(triageJson as TriageRunsPayload)
+                  : null,
+              },
+            }
+          : prev,
+      );
     })();
 
     return () => {
