@@ -48,6 +48,20 @@ def map_junction_to_canonical(junction: int, canonical_seq: str) -> JunctionMapp
     return JunctionMapping(junction, before, after, f"{before}{junction}", verified=True)
 
 
+def match_isoform_by_length(
+    tedman_len: int, isoforms: list[tuple[str, int]], *, canonical_len: int | None = None
+) -> str | None:
+    """Match a Tedman isoform transcript (known only by protein length) to a UniProt
+    isoform by exact length, when UNIQUE. `isoforms` = [(isoform_id, seq_len)].
+    Excludes candidates whose length equals the canonical length (those aren't a
+    distinct alternative isoform). Returns the isoform_id or None (no/ambiguous match)."""
+    cands = [
+        iid for iid, ln in isoforms
+        if ln == tedman_len and (canonical_len is None or ln != canonical_len)
+    ]
+    return cands[0] if len(cands) == 1 else None
+
+
 def _num(v):
     s = str(v).strip()
     if s in ("", "None"):

@@ -3,6 +3,8 @@ from accessible_surfaceome.tag_sites.control import control_tag_site
 from accessible_surfaceome.tag_sites.model import TAGGED_SITE_KEYS
 from accessible_surfaceome.tag_sites.tedman import parse_ha_position, map_junction_to_canonical
 from accessible_surfaceome.tag_sites.tedman import build_control_sites_for_gene
+from accessible_surfaceome.tag_sites.tedman import match_isoform_by_length
+from accessible_surfaceome.tag_sites.control import control_isoform_pin
 
 
 def test_parse_ha_position_nterm():
@@ -84,3 +86,34 @@ def test_build_control_sites_for_gene_post_sp_and_skips_unverified():
     assert sites[0]["insert_after_residue"] == 28
     assert sites[0]["residue_before"] == "K"
     assert sites[0]["residue_label"] == "K28"
+
+
+def test_match_isoform_by_length_unique():
+    assert match_isoform_by_length(300, [("P1-2", 300), ("P1-3", 250)]) == "P1-2"
+
+
+def test_match_isoform_by_length_ambiguous_returns_none():
+    assert match_isoform_by_length(300, [("P1-2", 300), ("P1-3", 300)]) is None
+
+
+def test_match_isoform_by_length_excludes_canonical_length():
+    assert match_isoform_by_length(300, [("P1-1", 300)], canonical_len=300) is None
+
+
+def test_match_isoform_by_length_no_match():
+    assert match_isoform_by_length(999, [("P1-2", 300)]) is None
+
+
+def test_control_isoform_pin_shape():
+    pin = control_isoform_pin(
+        canonical_site_id="X-nterm-tedman", isoform_id="P1-2",
+        isoform_residue=5, isoform_len=250, canonical_residue=5, note="PME 100 (-40% vs canonical)",
+    )
+    assert pin["site_id"] == "X-nterm-tedman::iso::P1-2"
+    assert pin["isoform_id"] == "P1-2"
+    assert pin["classification"] == "control"
+    assert pin["site_kind"] == "terminal_n"
+    assert pin["tag_type"] == "HA"
+    assert pin["isoform_residue"] == 5
+    assert abs(pin["left_pct"] - (5 / 250 * 100)) < 1e-9
+    assert pin["note"] == "PME 100 (-40% vs canonical)"

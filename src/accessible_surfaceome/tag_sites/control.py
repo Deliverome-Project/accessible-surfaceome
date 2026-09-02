@@ -44,3 +44,19 @@ def control_tag_site(
         "sources": sources or [],
         "plddt": None, "conservation_rank": None, "median_conservation": None,
     }
+
+
+def control_isoform_pin(
+    *, canonical_site_id: str, isoform_id: str, isoform_residue: int, isoform_len: int,
+    canonical_residue: Optional[int], note: Optional[str] = None,
+) -> dict[str, Any]:
+    """A control-class per-isoform tag pin (screen_validated N-terminal HA), matching
+    the viewer's IsoformTagPin shape. Placed on the isoform's own residue axis."""
+    return {
+        "site_id": f"{canonical_site_id}::iso::{isoform_id}",
+        "isoform_id": isoform_id, "classification": "control", "det_path": None,
+        "site_kind": "terminal_n", "tag_type": "HA",
+        "isoform_residue": isoform_residue, "canonical_residue": canonical_residue,
+        "left_pct": (isoform_residue / isoform_len) * 100 if isoform_len else 0.0,
+        "note": note,
+    }
