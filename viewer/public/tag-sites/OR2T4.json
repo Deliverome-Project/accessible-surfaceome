@@ -1,0 +1,43 @@
+{
+  "has_data": true,
+  "gene_symbol": "OR2T4",
+  "uniprot_acc": "Q8NH00",
+  "sites": [
+    {
+      "site_id": "OR2T4-nterm-tedman",
+      "gene_symbol": "OR2T4",
+      "uniprot_acc": "Q8NH00",
+      "provenance": "screen_validated",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": null,
+      "residue_after": "M",
+      "residue_label": null,
+      "residue_range": null,
+      "topology_state": "S",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": 9,
+      "linker": null,
+      "evidence_type": "N-terminal HA epitope; parallel surface-display screen",
+      "functional_impact_measured": "Surface immunostaining PME 122.4 \u00b1 21.1 (HA immunostaining, Tedman deep receptor scanning)",
+      "confidence": "high",
+      "rationale": "Experimentally validated N-terminal HA epitope insertion (after signal-peptide cleavage where present); surface expression read out by HA immunostaining in Tedman et al. deep receptor scanning.",
+      "sources": [
+        {
+          "citation": "Tedman et al., Efficient experimental characterization of the GPCRome via deep receptor scanning, Nat Commun 2026 (bioRxiv 2025.09.19.677468, PMC12458215)",
+          "doi": "10.1038/s41467-026-76564-7",
+          "pmid": null,
+          "url": "https://doi.org/10.1038/s41467-026-76564-7",
+          "claim": "N-terminal HA epitope inserted per receptor; surface expression read out by HA immunostaining in a pooled GPCRome deep-receptor-scanning screen."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": []
+}
