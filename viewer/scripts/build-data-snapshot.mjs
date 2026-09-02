@@ -87,12 +87,13 @@ const ENDPOINTS = [
 // load. `MAX_FAIL_FRAC` is the guardrail: a high miss rate means the
 // Worker/WAF is blocking the build, and we must fail LOUD instead of
 // shipping a site full of not-found gene pages.
-// Concurrency 8 keeps request rate comfortably under the Worker's per-IP
-// limiter with margin for the Pages build environment (a local run at 12
-// saw ~27 transient 429s that the retry recovered; 8 drives that toward
-// zero). Build cost is ~60-90s once per deploy — cheap insurance against
-// a flaky build. ATTEMPTS×backoff still recovers the occasional blip.
-const RECORD_CONCURRENCY = 8;
+// The Worker's per-IP limiter was raised to 1800 req/60s (from 600) so this
+// snapshot can run hotter without tripping it. At concurrency 12 the burst
+// stays well under 1800/60s — a prior run at 12 saw ~27 transient 429s under
+// the old 600 cap (all retry-recovered), and the 3x-higher cap now drives
+// that toward zero while cutting build time. `MAX_FAIL_FRAC` still fails LOUD
+// if the Worker/WAF blocks the build. ATTEMPTS×backoff recovers the odd blip.
+const RECORD_CONCURRENCY = 12;
 const RECORD_ATTEMPTS = 4;
 const RECORD_MAX_FAIL_FRAC = 0.02;
 
