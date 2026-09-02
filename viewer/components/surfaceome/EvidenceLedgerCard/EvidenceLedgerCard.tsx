@@ -80,6 +80,18 @@ function sourceLink(e: Evidence) {
 }
 
 export function EvidenceLedgerCard({ rec, n }: Props) {
+  // The ledger is lazy-loaded off the gene-page critical path (see
+  // `app/gene/page.tsx`): the record renders as soon as the core payload
+  // arrives, and `rec.evidence` is fetched from the separate
+  // `/v1/genes/{sym}/evidence` endpoint just after first paint. So this
+  // card sees three states, distinguished by `rec.evidence`:
+  //   * `undefined` — the lazy fetch is still in flight → show a skeleton
+  //   * `[]`        — the fetch settled (or gracefully failed) with no
+  //                   entries → the honest "no entries recorded"
+  //   * `[...]`     — loaded → render the ledger
+  const isLoading = rec.evidence === undefined;
+  const ledger = rec.evidence ?? [];
+
   // Group entries by canonical id so cross-planner duplicates (A1 and
   // A2 both extracted the same paper/span — flagged by the orchestrator
   // with `duplicate_of=<canonical>`) collapse onto ONE card with both
@@ -89,7 +101,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
   const byCanonical: Record<string, { canonical: Evidence; dupes: Evidence[] }> = {};
   // First pass: register canonicals (entries that ARE the canonical,
   // or that don't participate in any cluster).
-  for (const e of rec.evidence) {
+  for (const e of ledger) {
     if (!e.duplicate_of) {
       byCanonical[e.evidence_id] = { canonical: e, dupes: [] };
     }
@@ -98,7 +110,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
   // a canonical id is missing (pre-dedup record / pathological data),
   // fall back to listing the duplicate as its own card so the entry
   // doesn't vanish.
-  for (const e of rec.evidence) {
+  for (const e of ledger) {
     if (e.duplicate_of) {
       const cluster = byCanonical[e.duplicate_of];
       if (cluster) {
@@ -114,20 +126,21 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
   let secondary = 0;
   let tertiary = 0;
   let pmcOa = 0;
-  for (const e of rec.evidence) {
+  for (const e of ledger) {
     if (e.evidence_tier === "primary") primary += 1;
     else if (e.evidence_tier === "secondary") secondary += 1;
     else if (e.evidence_tier === "tertiary") tertiary += 1;
     if (pmcIdOf(firstSource(e))) pmcOa += 1;
   }
-  const totalEntries = rec.evidence.length;
+  const totalEntries = ledger.length;
   const totalUnique = clusters.length;
   const totalDupes = totalEntries - totalUnique;
   // Meta string adapts to whether dedup actually folded anything —
   // for genes with no cross-planner overlap the old wording stays
   // ("N entries"); for folded ledgers we surface the relationship.
-  const headerMeta =
-    totalDupes > 0
+  const headerMeta = isLoading
+    ? "Loading evidence…"
+    : totalDupes > 0
       ? `${totalUnique} unique sources (${totalEntries} total planner extractions, ${totalDupes} folded as duplicates) · ${primary} primary · ${secondary} secondary · ${tertiary} tertiary · ${pmcOa} PMC OA`
       : `${totalEntries} entries · ${primary} primary · ${secondary} secondary · ${tertiary} tertiary · ${pmcOa} PMC OA`;
 
@@ -138,7 +151,21 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
       title="Evidence ledger"
       meta={headerMeta}
     >
-      {totalEntries === 0 ? (
+      {isLoading ? (
+        // Lazy ledger still loading — a compact skeleton stands in so the
+        // section keeps its shape (and the reader knows entries are coming)
+        // rather than flashing "No evidence entries recorded." then filling.
+        <ul className={styles.skeleton} aria-busy="true">
+          <li className="sr-only">Loading evidence ledger…</li>
+          {[0, 1, 2].map((i) => (
+            <li key={i} className={styles.skelItem} aria-hidden="true">
+              <span className={styles.skelBar} style={{ width: "9rem", height: "1.25rem" }} />
+              <span className={styles.skelBar} style={{ width: "100%", height: "1rem" }} />
+              <span className={styles.skelBar} style={{ width: "80%", height: "1rem" }} />
+            </li>
+          ))}
+        </ul>
+      ) : totalEntries === 0 ? (
         <p className={styles.empty}>No evidence entries recorded.</p>
       ) : (
         <ul className={styles.list}>

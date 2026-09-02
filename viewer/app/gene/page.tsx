@@ -24,6 +24,7 @@ import {
 } from "../../lib/gene-jump-entries";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
+  Evidence,
   SurfaceomeRecord,
 } from "../../lib/surfaceome-types";
 import styles from "./page.module.css";
@@ -121,6 +122,17 @@ function adaptCatalogRow(j: unknown): CatalogRow | null {
   };
 }
 
+/** Pull the evidence ledger array out of the `/v1/genes/{sym}/evidence`
+ *  payload (`{ gene, evidence: [...] }`). Returns [] for any missing or
+ *  malformed shape — including the `fetchJson` null returned on a network /
+ *  parse / non-2xx miss — so a bad response degrades to an empty ledger: the
+ *  EvidenceLedgerCard resolves its skeleton to "No evidence entries recorded"
+ *  rather than hanging, and nothing downstream crashes. */
+function evidenceArrayFromPayload(j: unknown): Evidence[] {
+  const r = j as { evidence?: unknown } | null;
+  return Array.isArray(r?.evidence) ? (r.evidence as Evidence[]) : [];
+}
+
 interface ReadyData {
   rec: SurfaceomeRecord;
   geneName: { name: string; synonyms: string[] } | null;
@@ -200,10 +212,29 @@ export default function GeneShellPage() {
       }
       if (cancelled) return;
 
-      // Renumber the merged evidence ledger's ids client-side, exactly as
-      // the old server loader (`loadSurfaceomeRecord`) did — chip ids
-      // collide across the per-section blocks otherwise.
-      const rec = renumberEvidenceIds(rawRec);
+      // ── Backward-compatible evidence handling ─────────────────────────
+      // The Worker is moving the citation ledger (verbatim quotes +
+      // provenance — 42–47% of the payload) OUT of this core response and
+      // onto a separate `GET /v1/genes/{sym}/evidence`. Two cases:
+      //   * Pre-split Worker: the core response still inlines a non-empty
+      //     `evidence` array → use it directly, renumber now, skip the
+      //     extra fetch.
+      //   * Post-split Worker: `evidence` is absent/empty → render the core
+      //     record immediately and lazy-load the ledger just below.
+      // `renumberEvidenceIds` rewrites the record's inline `aN_evi_NN` chip
+      // tokens against the ledger, so it needs the ledger present: it runs
+      // now only in the inline case, and is otherwise DEFERRED to the merge
+      // (see the lazy fetch below) so first paint never waits on it.
+      const coreHasEvidence =
+        Array.isArray(rawRec.evidence) && rawRec.evidence.length > 0;
+      // On the lazy path force `evidence` to `undefined` (not `[]`) so the
+      // ledger card renders its loading skeleton — rather than a premature
+      // "No evidence entries recorded" — until the `/evidence` fetch merges
+      // in. Covers a post-split Worker that sends `evidence: []` inline as
+      // well as one that omits the field entirely.
+      const rec = coreHasEvidence
+        ? renumberEvidenceIds(rawRec)
+        : { ...rawRec, evidence: undefined };
 
       // Display name from the record (the build-time NCBI/HGNC gene-name TSV
       // is not client-safe). `protein_name` is only populated for
@@ -232,6 +263,42 @@ export default function GeneShellPage() {
           loadGenes,
         },
       });
+
+      // ── Lazy evidence ledger — off the critical path ──────────────────
+      // The citation ledger is the biggest single slice of the record, so
+      // when the core response omits it (post-split Worker) it's fetched
+      // separately and merged in AFTER first paint. Non-blocking: the page
+      // has already rendered above; this only hydrates the evidence-
+      // dependent surfaces (EvidenceLedgerCard, ExpressionCard citation
+      // chips, EvidenceDrawer). A miss/failure degrades to an empty ledger
+      // (fetchJson → null → []) rather than crashing. Skipped entirely when
+      // the core record already carried the ledger inline (handled above),
+      // so this deploy is safe before OR after the Worker split ships.
+      if (!coreHasEvidence) {
+        void (async () => {
+          const evJson = await fetchJson(
+            `${API_BASE}/v1/genes/${symbol}/evidence`,
+          );
+          if (cancelled) return;
+          const evidence = evidenceArrayFromPayload(evJson);
+          setState((prev) =>
+            prev.kind === "ready"
+              ? {
+                  kind: "ready",
+                  data: {
+                    ...prev.data,
+                    // Merge the ledger in and run the deferred renumber NOW
+                    // that it's present — it rewrites the record's inline
+                    // `aN_evi_NN` chip tokens into the merged `evi_N`
+                    // sequence. Setting `evidence` (even to []) also flips
+                    // the ledger card out of its loading skeleton.
+                    rec: renumberEvidenceIds({ ...prev.data.rec, evidence }),
+                  },
+                }
+              : prev,
+          );
+        })();
+      }
 
       // ── Secondary enrichments — small, fast, null-tolerant. Fetched after
       // first paint and merged in progressively; a miss degrades gracefully
