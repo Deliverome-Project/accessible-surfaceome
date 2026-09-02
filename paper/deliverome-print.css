@@ -304,9 +304,19 @@ ul li::marker {
 p:has(> img) {
   column-span: all;
   break-inside: avoid;
+  /* Never let a page break fall between the artwork and its caption.
+   * `break-inside` alone only protects each block individually, so a
+   * figure could still sit at the foot of one page with its caption
+   * stranded at the head of the next. The h5 rule below carries the
+   * matching `break-before: avoid`; WeasyPrint needs both sides. */
+  break-after: avoid;
+  page-break-after: avoid;
   margin: 1.2em 0 0;
-  padding: 0.4em 0 0.3em 0.7em;
-  border-left: 4px solid var(--maroon-mid, #922038);
+  /* NO border-left and no left padding: the maroon side bar belongs
+   * to the caption card alone. Running it up the figure too double-
+   * printed the brand mark and, worse, indented the artwork out of
+   * alignment with the caption below and the body text either side. */
+  padding: 0.4em 0 0.3em 0;
 }
 
 p > img,
@@ -332,6 +342,10 @@ img {
 h5 {
   column-span: all;
   break-inside: avoid;
+  /* Pairs with `break-after: avoid` on the figure paragraph — the
+   * caption must stay on the same page as the artwork it describes. */
+  break-before: avoid;
+  page-break-before: avoid;
   margin: 0.4em 0 1.4em 0;
   padding: 0.5em 0.9em 0.6em 0.9em;
   background: var(--paper-beige);
@@ -556,3 +570,63 @@ a.footnote-back {
  *   h1.title { font-size: 32pt; }  // bump display title
  *   body { column-gap: 0.5in; }    // wider gutter
  */
+
+
+/* ============================================================
+ * Front-matter resource row — filters/citations.lua collapses the
+ * .docx's four raw-URL paragraphs into one row of brand-marked
+ * links, placed under the corresponding-author line.
+ * ============================================================ */
+.resource-row {
+  margin: 0.35em 0 0.2em 0;
+}
+
+.resource-row p {
+  margin: 0;
+  text-align: left;
+  line-height: 1.9;
+}
+
+a.resource-link {
+  white-space: nowrap;
+  margin-right: 0.85em;
+  color: var(--maroon-mid, #922038);
+}
+
+img.resource-icon {
+  /* Both axes stated: with width auto WeasyPrint has to derive it from
+   * the SVG's intrinsic size, which these marks don't usefully supply,
+   * and the icon collapses to a speck. */
+  width: 0.85em;
+  height: 0.85em;
+  display: inline;
+  margin: 0 0.15em 0 0;
+  vertical-align: -0.1em;
+}
+
+/* A figure and its caption, wrapped as one block by
+ * filters/figures.lua. break-inside on the container is a hard
+ * constraint, unlike the advisory break-after/break-before pair on
+ * the two siblings — which WeasyPrint dropped across the
+ * column-span:all boundary, stranding a caption alone on a page.
+ *
+ * column-span is load-bearing: without it the supplementary figures
+ * render inside a single body column at roughly half width, which is
+ * how they looked when this block was accidentally truncated. */
+.figure-block {
+  column-span: all;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Cap artwork height inside a figure-block. Keeping a figure welded to
+ * its caption is only free while the pair FITS: a 7x5in figure under a
+ * ten-line caption exceeds the 9.2in text block, so the whole unit was
+ * shunted to the next page and left a completely blank one behind.
+ * Clamping the tallest artwork lets every pair fit. Nothing is lost —
+ * these are vector or 600-DPI sources being scaled down, not up. */
+.figure-block img {
+  max-height: 6.2in;
+  width: auto;
+  max-width: 100%;
+}

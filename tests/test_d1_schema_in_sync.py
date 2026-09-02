@@ -12,14 +12,38 @@ being stale meant future PR review couldn't spot the missing Worker
 enrichment from the file alone.
 
 This test queries ``sqlite_master`` on the live public DB and asserts
-every table + index name appears in the schema file. Skipped when
-``CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID`` (et al.) aren't set — same posture
-as every other D1-touching test, so CI without secrets stays green.
+every table + index name appears in the schema file.
+
+**Network-gated** (``@pytest.mark.network`` → only under
+``pytest --run-network``), like every other test here that reads a live
+service.
+
+That gating is load-bearing, and it was missing until 2026-08-26. These
+were the only live-service tests in the repo without the marker. The
+original reasoning — "skipped when ``CLOUDFLARE_*`` aren't set, so CI
+without secrets stays green" — doesn't hold, because CI *has* the
+secrets: the env-var skip only protects local runs. The result was a
+test whose outcome depended on the state of a **shared, mutable,
+external database** rather than on the commit under test. Deploying a
+table to dev ahead of backfilling the schema file (an ordinary, expected
+step) turned CI red for *every open PR in the repo*, none of which had
+touched D1 — and no local run could reproduce it. That happened with
+``surface_internalization`` / ``tag_site_public``, which blocked an
+unrelated paper-build PR.
+
+Drift is still worth catching, so run it deliberately rather than
+incidentally::
+
+    uv run pytest tests/test_d1_schema_in_sync.py --run-network
+
+Do that after a D1 migration, before a Worker deploy, and before cutting
+a release. ``scripts/sync_d1_schema.py`` turns a failure into a
+one-command fix.
 
 When the test fails:
-1. Add the new objects to ``cloudflare/d1_public_schema.sql`` (verbatim
-   ``CREATE TABLE`` / ``CREATE INDEX`` from
-   ``SELECT sql FROM sqlite_master WHERE name = ?``).
+1. Run ``uv run python scripts/sync_d1_schema.py --write`` to backfill
+   ``cloudflare/d1_public_schema.sql`` from live ``sqlite_master``, then
+   review the diff.
 2. If a NEW table is meant to feed a deterministic-features field, also
    wire it into ``cloudflare/workers/surfaceome_api/src/index.js::handleGene``
    per the "Worker enriches D1-backed deterministic features" pattern.
@@ -111,6 +135,7 @@ def _schema_file_text() -> str:
     return _SCHEMA_FILE.read_text()
 
 
+@pytest.mark.network
 def test_every_live_table_in_schema_file() -> None:
     """Every CREATE TABLE in live D1 is mirrored in the checked-in file."""
     text = _schema_file_text()
@@ -135,6 +160,7 @@ def test_every_live_table_in_schema_file() -> None:
     )
 
 
+@pytest.mark.network
 def test_every_live_index_in_schema_file() -> None:
     """Every CREATE INDEX in live D1 is mirrored in the checked-in file.
 

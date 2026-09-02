@@ -110,6 +110,24 @@ simple = { limit = 60, period = 60 }    # 60 req / 60s / IP on catalog + *.tsv
 binding = "GENE_MD"
 bucket_name = "surfaceome-gene-md"
 
+# --- Read-through record cache (KV) ---
+#
+# Shared-GLOBAL mirror behind `caches.default` for cacheable GETs
+# (`withEdgeCache` in src/index.js): a record populated once in any POP is
+# served worldwide without re-running the D1 handler, and it survives isolate
+# eviction / cold POPs that the per-POP `caches.default` doesn't. The binding
+# is OPTIONAL — the Worker falls back to the caches.default-only path when
+# it's absent, so this config is safe to deploy before the namespace exists.
+# Entries expire on the response's own TTL (1 day for per-gene records);
+# post-publish freshness is handled by the KV purge in
+# `cloud/surface_annotation._maybe_purge_kv` (which needs
+# CLOUDFLARE_KV_RECORD_CACHE_ID in the publisher's env).
+#
+# TODO: wrangler kv namespace create RECORD_CACHE → paste id
+[[kv_namespaces]]
+binding = "RECORD_CACHE"
+id = "REPLACE_WITH_RECORD_CACHE_KV_ID"
+
 # --- Feedback flow bindings (per docs/superpowers/specs/2026-05-25-feedback-button-design.md) ---
 
 # Write binding for unmoderated submissions (PII + audit). Same database

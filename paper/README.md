@@ -82,13 +82,40 @@ print layout:
 
 Between pandoc HTML and WeasyPrint PDF, the build runs a **figure-swap
 step** that replaces each in-document `<img>` with the canonical
-render under `data/analysis/figures/<slug>.<ext>` per
-`paper/figure_manifest.json`. This means: **whatever bitmap is pasted
-into the `.docx` is ignored** — the published PDF always carries the
-HEAD-of-main render of each figure (same artifact the viewer, the
-gist, and the Zenodo deposit point at). The swap matches on the
-anchor id pandoc emits for each figure caption — `figure-N` for main
-figures, `appendix-figure-N` for appendix figures.
+render per `paper/figure_manifest.json`. This means: **whatever bitmap
+is pasted into the `.docx` is ignored** — the published PDF always
+carries the HEAD-of-main render of each figure (same artifact the
+viewer, the gist, and the Zenodo deposit point at). The swap matches
+on the anchor id pandoc emits for each figure caption — `figure-N` for
+main figures, `appendix-figure-N` for appendix figures.
+
+Assets resolve against a two-directory **search path**, first match
+wins:
+
+| Order | Directory | What belongs there |
+|---|---|---|
+| 1 | `paper/figures/` | Print-ready *derived* assets — chiefly vector SVGs converted from the canonical PDFs with `pdftocairo -svg`. |
+| 2 | `data/analysis/figures/` | The curated figure library (`.pdf` + `.png` + `make_<slug>.py`). |
+
+The split exists so the print build can carry a print-specific
+rendition without mutating the curated library, whose README defines
+its own admission criteria.
+
+> **Never point the manifest at a `.pdf`.** WeasyPrint ships no PDF
+> image decoder, so `<img src="fig.pdf">` renders as a silently blank
+> box — no error, just a missing figure. Convert to SVG instead:
+>
+> ```bash
+> pdftocairo -svg data/analysis/figures/my_fig.pdf paper/figures/my_fig.svg
+> ```
+>
+> `format: "pdf"` is rejected by the validator for exactly this reason.
+
+**Vector vs raster.** Prefer SVG; fall back to a ≥600 DPI PNG when the
+vector is pathological. Figure 6 (`deep_dive_record_richness`) is the
+worked example: it plots one dot per gene (n = 5,130 across five
+panels), so its SVG is ~20 MB and slow to render, while its 600-DPI
+PNG is 14,659 px wide — far past what print needs.
 
 To add a new figure to the manifest:
 
@@ -113,7 +140,13 @@ The build validates every swapped asset:
 - **SVG** → root element must be `<svg>`. Soft-warns if the SVG
   wraps a base64 raster (the embedded bitmap then keeps its own
   resolution; the SVG wrapper isn't "vector at any zoom").
-- **PDF** → file header must begin with `%PDF-`.
+- **PDF** → always rejected; see the callout above.
+
+A figure with **no** manifest entry is left alone — the `.docx`
+bitmap survives into the PDF and the swap logs
+`no manifest entry for key 'N'`. That's the right fallback for a
+figure with no canonical asset yet (currently Figure 7, the viewer
+screenshot); see `_pending` in the manifest.
 
 Default mode warns and keeps the build moving. Pass `--strict-figures`
 to escalate any unresolved issue (missing canonical asset, PNG below
@@ -129,6 +162,39 @@ You can also run the validator standalone, without a `.docx`:
 uv run python paper/figure_swap.py            # report issues
 uv run python paper/figure_swap.py --strict   # exit 1 on any issue
 ```
+
+## Cross-reference links
+
+The build synthesises clickable in-PDF cross-references from the prose,
+because Google Docs exports its cross-references as plain text — the
+`.docx` carries 64 bookmarks but zero `w:anchor` hyperlinks pointing at
+them, so there is nothing to preserve.
+
+Two filters, applied in this order (`sections.lua` must run second — it
+indexes the headings that `figures.lua` leaves behind):
+
+| Filter | Turns into a link | Example |
+|---|---|---|
+| `filters/figures.lua` | `Figure N`, `Appendix Figure N` | "…as shown in **Figure 3**." |
+| `filters/sections.lua` | Section names: Methods, Results, Discussion, Introduction, Abstract, Data availability, Code availability | "…(see **Methods**)" |
+
+Section links fire in **body text and figure captions** alike — three of
+the draft's six "Methods" references live inside captions, which pandoc
+emits as `<h5>`, not `<p>`. A heading whose own text *is* a section name
+is skipped so "Methods" never links to itself.
+
+**Supplementary references are deliberately left as plain text.**
+`Figure S3`, `Table S1` and friends live in a separate supplementary
+file, so an intra-document anchor would be a dead link — worse than
+plain text, because it looks clickable and goes nowhere. If the
+supplement is ever merged into the main file, drop the
+`SUPPLEMENTARY_PATTERNS` guard in `sections.lua` and add
+`figure-sN` anchors.
+
+If a section name matches **more than one** heading the reference is
+left unlinked and a warning goes to stderr — the draft currently has a
+duplicated `Web viewer and public API` H3, which is the kind of thing
+this catches.
 
 ## Citations
 

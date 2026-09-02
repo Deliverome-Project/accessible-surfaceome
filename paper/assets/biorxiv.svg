@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 32" width="132" height="32" role="img" aria-label="bioRxiv">
+  <title>bioRxiv</title>
+  <text x="0" y="24"
+        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="24" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="#1f1718">bio</tspan><tspan fill="#be2531">R</tspan><tspan fill="#1f1718">xiv</tspan>
+  </text>
+</svg>

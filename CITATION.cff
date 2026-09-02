@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+title: >-
+  accessible-surfaceome: an LLM-curated atlas of the
+  accessible human surfaceome
+message: >-
+  If you use this software or the atlas it produces, please
+  cite it using the metadata below. Cite the concept DOI
+  (10.5281/zenodo.20805383 for the data) when you mean "the
+  resource"; cite a version DOI when you mean a specific
+  snapshot you actually ran against.
+type: software
+authors:
+  # Alphabetical by family name, matching the manuscript.
+  # ORCIDs intentionally omitted rather than guessed — add
+  # `orcid: 'https://orcid.org/0000-0000-0000-0000'` per author
+  # when you have them, and mirror the same values into
+  # .zenodo.json so the two never disagree.
+  - given-names: Rebecca J.
+    family-names: Carlson
+    affiliation: Deliverome Bio, Inc.
+    email: becca@deliverome.org
+  - given-names: L. Robert
+    family-names: Hollingsworth
+    affiliation: Deliverome Bio, Inc.
+  - given-names: Michael J.
+    family-names: Smallegan
+    affiliation: Coral Biosciences, LLC
+repository-code: >-
+  https://github.com/Deliverome-Project/accessible-surfaceome
+url: 'https://surfaceome.deliverome.org'
+abstract: >-
+  Pipeline, agents, and web viewer behind a consensus atlas of
+  extracellularly accessible human plasma-membrane proteins.
+  Five public surface-protein resources disagree substantially
+  about which proteins reach the cell surface, agreeing on only
+  188. A tool-free triage agent classifies every protein-coding
+  human gene for surface accessibility, and a
+  literature-anchored deep-dive pipeline turns each candidate
+  into a structured, evidence-cited record with per-claim
+  citations and precomputed deterministic structural features.
+keywords:
+  - surfaceome
+  - cell surface proteins
+  - plasma membrane
+  - drug target discovery
+  - antibody-drug conjugates
+  - large language models
+  - literature curation
+  - bioinformatics
+  - proteomics
+license: MIT
+version: 1.0.0
+date-released: '2026-08-26'

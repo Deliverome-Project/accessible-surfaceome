@@ -187,14 +187,16 @@ export default function GeneShellPage() {
     let cancelled = false;
     setState({ kind: "loading" });
 
-    (async () => {
-      const symbol = symbolFromPath(window.location.pathname);
-      if (!symbol) {
-        if (!cancelled) setState({ kind: "notfound", symbol: null });
-        return;
-      }
+    const symbol = symbolFromPath(window.location.pathname);
+    if (!symbol) {
+      setState({ kind: "notfound", symbol: null });
+      return;
+    }
 
-      // The record is the only hard requirement.
+    (async () => {
+      // ── The record is the only hard requirement: render the page as soon
+      // as it arrives, then hydrate the secondary strips progressively so a
+      // slow/large secondary never blocks first paint. ──────────────────
       let recRes: Response;
       try {
         recRes = await fetch(`${API_BASE}/v1/genes/${symbol}`);
@@ -278,6 +280,10 @@ export default function GeneShellPage() {
       // SURFACE-Bind proteins; null → GeneHeader shows the bare symbol.
       const proteinName = rec.deterministic_features.surface_bind.protein_name;
 
+      // First paint: the record plus everything derivable from it AND the
+      // eagerly-fetched secondary strips (triage / catalog / benchmark /
+      // tag-sites / FG-library). Each is null-tolerant, so a miss degrades to
+      // a record-derived fallback; only the evidence ledger is deferred below.
       setState({
         kind: "ready",
         data: {

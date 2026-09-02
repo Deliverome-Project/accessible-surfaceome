@@ -2,6 +2,7 @@
 
 import {
   type KeyboardEvent,
+  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -31,8 +32,14 @@ interface GeneJumpProps {
    *  (`listSurfaceomeGeneEntries()`), each carrying a `stale` flag.
    *  Restricting the typeahead to this set means every pick lands on a real
    *  statically-generated page; under `output: export` a non-deep-dive symbol
-   *  would 404. */
-  genes: readonly GeneEntry[];
+   *  would 404. Optional: when omitted, the set is fetched lazily via
+   *  `loadGenes` on first focus (keeps the ~1.7 MB gene index off the
+   *  gene-page critical path). */
+  genes?: readonly GeneEntry[];
+  /** Lazy loader for the gene universe, invoked once on first focus/keystroke
+   *  when `genes` is not supplied. Deferring this fetch is what keeps the
+   *  1.7 MB `/v1/genes` index out of the initial gene-page load. */
+  loadGenes?: () => Promise<readonly GeneEntry[]>;
   /** Current gene symbol — excluded from its own suggestions. */
   current?: string;
   /** When true, each suggestion shows a schema-freshness dot (green = record
@@ -56,13 +63,38 @@ interface GeneJumpProps {
  * out of date). The status is also a `title` tooltip + visually-hidden
  * text, so it never relies on color alone.
  */
-export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpProps) {
+export function GeneJump({
+  genes,
+  loadGenes,
+  current,
+  showSchemaDots = false,
+}: GeneJumpProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
+  // Gene universe: seeded from the eager `genes` prop when given, otherwise
+  // filled once by `loadGenes` on first focus. `loadedRef` guards against
+  // duplicate fetches; on error it resets so a later focus can retry.
+  const [loadedGenes, setLoadedGenes] = useState<readonly GeneEntry[]>(
+    genes ?? [],
+  );
+  const [genesLoading, setGenesLoading] = useState(false);
+  const loadedRef = useRef<boolean>((genes?.length ?? 0) > 0);
   const baseId = useId();
   const blurTimer = useRef<number | null>(null);
+
+  const ensureGenes = useCallback(() => {
+    if (loadedRef.current || !loadGenes) return;
+    loadedRef.current = true;
+    setGenesLoading(true);
+    loadGenes()
+      .then((g) => setLoadedGenes(g))
+      .catch(() => {
+        loadedRef.current = false; // allow a retry on the next focus
+      })
+      .finally(() => setGenesLoading(false));
+  }, [loadGenes]);
 
   const universe = useMemo(() => {
     const cur = (current ?? "").toUpperCase();
@@ -70,13 +102,13 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
     // first so the reader sees what's up-to-date at a glance; within each
     // freshness group, sort alphabetically. When dots are off, the `stale`
     // flag is invisible — fall back to plain alphabetical.
-    return [...genes]
+    return [...loadedGenes]
       .filter((g) => g.symbol && g.symbol.toUpperCase() !== cur)
       .sort((a, b) => {
         if (showSchemaDots && a.stale !== b.stale) return a.stale ? 1 : -1;
         return a.symbol.localeCompare(b.symbol);
       });
-  }, [genes, current, showSchemaDots]);
+  }, [loadedGenes, current, showSchemaDots]);
 
   const matches = useMemo(() => {
     const q = query.trim().toUpperCase();
@@ -102,9 +134,11 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
     [],
   );
 
-  // Offline stub build (SURFACEOME_API_BASE=local) lists no genes — render
-  // nothing rather than a dead search box.
-  if (universe.length === 0) return null;
+  // Render nothing only when there is genuinely no universe AND no way to
+  // load one (e.g. the offline stub build, SURFACEOME_API_BASE=local). When a
+  // lazy `loadGenes` exists, always render so the box is focusable and can
+  // trigger the deferred fetch.
+  if (universe.length === 0 && !loadGenes) return null;
 
   function go(symbol: string) {
     setOpen(false);
@@ -115,6 +149,7 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
       e.preventDefault();
+      ensureGenes();
       setOpen(true);
       setActiveIdx((i) => Math.min(i + 1, matches.length - 1));
     } else if (e.key === "ArrowUp") {
@@ -154,12 +189,14 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
         placeholder="Jump to gene…"
         value={query}
         onChange={(e) => {
+          ensureGenes();
           setQuery(e.target.value);
           setOpen(true);
           setActiveIdx(0);
         }}
         onFocus={() => {
           if (blurTimer.current != null) window.clearTimeout(blurTimer.current);
+          ensureGenes();
           setOpen(true);
         }}
         onBlur={() => {
@@ -171,7 +208,13 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
       {open ? (
         <ul className={styles.list} id={`${baseId}-list`} role="listbox">
           {matches.length === 0 ? (
-            <li className={styles.empty}>No deep dive for “{query.trim()}”</li>
+            <li className={styles.empty}>
+              {genesLoading
+                ? "Loading genes…"
+                : query.trim()
+                  ? `No deep dive for “${query.trim()}”`
+                  : "No genes available"}
+            </li>
           ) : (
             matches.map((g, i) => (
               <li

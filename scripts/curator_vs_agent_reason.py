@@ -326,7 +326,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 20, "axes.labelsize": 24, "axes.titlesize": 0,
+        "font.size": 20, "axes.labelsize": 19, "axes.titlesize": 0,
         "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     data = _load_data()
@@ -348,7 +348,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         nrows=2, ncols=1, height_ratios=[1.7, 2.1], hspace=0.30,
     )
     top = outer[0].subgridspec(
-        nrows=2, ncols=1, height_ratios=[0.7, 1.0], hspace=0.20,
+        nrows=2, ncols=1, height_ratios=[0.7, 1.0], hspace=0.55,
     )
     ax_bucket = fig.add_subplot(top[0])
     ax_perreason = fig.add_subplot(top[1])
@@ -549,20 +549,9 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                    bar_w=0.16, overall_idx=0,
                    label="Exact-reason accuracy (%)",
                    show_legend=True)
-    # Annotate the Overall bar group with each config's exact-reason
-    # accuracy % so the headline 87% claim is readable on-figure.
-    # Bar layout: x positions sit at (i - (n-1)/2) * bar_w around x=0.
-    for i, (mod, var, _lab) in enumerate(CONFIGS_B):
-        m_, t_ = overall_b[(mod, var)]
-        if not t_:
-            continue
-        pct = 100 * m_ / t_
-        x_pos = (i - (len(CONFIGS_B) - 1) / 2) * 0.16
-        ax_perreason.text(
-            x_pos, pct + 1.4, f"{pct:.0f}%",
-            ha="center", va="bottom", fontsize=14,
-            color=COLORS["dark"], fontweight="semibold",
-        )
+    # (On-bar exact-reason % labels for the Overall group were removed:
+    # the four config bars sit too close and their labels overlapped.
+    # The headline exact-reason accuracies live in the text/table.)
     # Re-rotate x-labels (per-reason labels are too long horizontally)
     # + color each label by its bucket (yes/contextual/no), matching
     # the tick coloring on panel c's confusion matrix.
