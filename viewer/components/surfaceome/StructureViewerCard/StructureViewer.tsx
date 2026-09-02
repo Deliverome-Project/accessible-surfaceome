@@ -451,9 +451,10 @@ const SPHERE_RADIUS = 3.2;
 
 /** Isoform-pin colors — a distinct shared-vs-unique axis (separate from the
  *  canonical CATEGORY_HEX). Unique = isoform-specific site (highlight). */
-const ISOFORM_PIN_HEX: Record<"shared" | "unique", string> = {
+const ISOFORM_PIN_HEX: Record<"shared" | "unique" | "control", string> = {
   shared: "#3d6b60", // teal — also predicted on the canonical
   unique: "#ee7733", // orange — isoform-specific
+  control: "#c2571f", // Tedman N-terminal HA control — matches --tag-site-screen-validated
 };
 
 /** Collapse a per-residue topology string into per-state [start, end]

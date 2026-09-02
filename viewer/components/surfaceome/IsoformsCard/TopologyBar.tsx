@@ -39,7 +39,7 @@ export interface TopologyPin {
   tagType: string;
   /** When set (isoform pins), colors the pin by shared-vs-unique classification
    *  (--tag-site-isoform-*) instead of by provenance. */
-  classification?: "shared" | "unique";
+  classification?: "shared" | "unique" | "control";
 }
 
 interface Run {
