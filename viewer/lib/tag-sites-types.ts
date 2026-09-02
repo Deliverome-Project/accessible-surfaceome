@@ -149,7 +149,7 @@ export const CATEGORY_HEX: Record<TagSiteCategory, string> = {
   terminal_n: "#f4aa28", // --amber-bright
   terminal_c: "#c07830", // --amber-mid
   snorkel: "#922038", // --maroon-mid — fallback / lower-confidence
-  screen_validated: "#c2571f",
+  screen_validated: "#e5342e", // red — Tedman N-terminal HA control (distinct attention color)
 };
 
 export const CATEGORY_TOKEN: Record<TagSiteCategory, string> = {

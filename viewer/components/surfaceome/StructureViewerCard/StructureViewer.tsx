@@ -454,7 +454,7 @@ const SPHERE_RADIUS = 3.2;
 const ISOFORM_PIN_HEX: Record<"shared" | "unique" | "control", string> = {
   shared: "#3d6b60", // teal — also predicted on the canonical
   unique: "#ee7733", // orange — isoform-specific
-  control: "#c2571f", // Tedman N-terminal HA control — matches --tag-site-screen-validated
+  control: "#e5342e", // red — Tedman N-terminal HA control, matches --tag-site-screen-validated
 };
 
 /** Collapse a per-residue topology string into per-state [start, end]

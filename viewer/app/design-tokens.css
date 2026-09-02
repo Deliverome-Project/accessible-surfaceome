@@ -118,11 +118,11 @@
   --tag-site-terminal-n: var(--amber-bright);      /* extracellular N-terminus */
   --tag-site-terminal-c: var(--amber-mid);         /* extracellular C-terminus */
   --tag-site-snorkel: var(--maroon-mid);           /* C-terminal snorkel (fallback) */
-  --tag-site-screen-validated: #c2571f;             /* Tedman N-terminal HA control (deep amber-orange) */
+  --tag-site-screen-validated: #e5342e;             /* Tedman N-terminal HA control (red — distinct attention color) */
   /* Per-isoform pin colors referenced by IsoformsCard/TopologyBar (were undefined). */
   --tag-site-isoform-shared: var(--teal-mid);       /* transfers from canonical */
   --tag-site-isoform-unique: var(--lavender-bright);/* isoform-specific */
-  --tag-site-isoform-control: #c2571f;              /* Tedman control pin — matches screen-validated */
+  --tag-site-isoform-control: #e5342e;              /* Tedman control pin (red) — matches screen-validated */
 
   /* ============================================================
    * Typography
