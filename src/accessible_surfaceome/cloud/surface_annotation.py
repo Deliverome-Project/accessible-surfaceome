@@ -33,7 +33,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import httpx
 
@@ -155,6 +155,34 @@ def _post(
 _CACHE_INTERNAL_BASE = f"https://cache.internal{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
 _CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
 
+# Base for the Worker's KV (``RECORD_CACHE``) mirror keys. The Worker keys
+# KV on its ``caches.default`` cache-key URL verbatim —
+# ``new URL(url.pathname, "https://surfaceome-api.cache").href`` — so in
+# production (where the request path carries the ``/surfaceome`` route
+# prefix) a record's KV keys are
+# ``https://surfaceome-api.cache/surfaceome/v1/genes/{SYM}`` and its
+# ``/evidence`` sibling. MUST stay in sync with ``withEdgeCache`` +
+# ``handleGeneEvidence`` in
+# ``cloudflare/workers/surfaceome_api/src/index.js`` (the synthetic host is
+# ``https://surfaceome-api.cache``, matching that file's cache key — NOT the
+# ``https://cache.internal`` host the caches.default file-purge above uses).
+_KV_CACHE_BASE = f"https://surfaceome-api.cache{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
+
+
+def _kv_keys_for(sym: str) -> list[str]:
+    """The Worker ``RECORD_CACHE`` (KV) keys a republish of ``sym`` invalidates.
+
+    The evidence-ledger split means a per-gene publish now backs TWO cached
+    surfaces in KV: the record itself (``/v1/genes/{SYMBOL}`` — evidence
+    stripped) and the split-out evidence ledger
+    (``/v1/genes/{SYMBOL}/evidence``). Both must be purged so a republish is
+    live immediately rather than on the KV entry's expiration TTL (1 day).
+    """
+    return [
+        f"{_KV_CACHE_BASE}/v1/genes/{sym}",
+        f"{_KV_CACHE_BASE}/v1/genes/{sym}/evidence",
+    ]
+
 
 def _purge_urls_for(sym: str) -> list[str]:
     """The exact ``caches.default`` keys a republish of ``sym`` invalidates.
@@ -241,6 +269,77 @@ def _maybe_purge(sym: str, *, token: str, client: httpx.Client) -> bool | None:
             "edge-cache purge failed for %s (%s) — record stale until TTL",
             sym,
             exc,
+        )
+        return False
+
+
+def _delete_kv_key(
+    key: str, *, account_id: str, namespace_id: str, token: str, client: httpx.Client
+) -> bool:
+    """Delete one ``RECORD_CACHE`` KV key. Returns success bool.
+
+    Single-key delete (``DELETE .../values/{key}``) with the key URL-encoded
+    into the path — the key contains ``:`` and ``/`` (it's the Worker's
+    synthetic cache-key URL), so ``quote(..., safe="")`` is required.
+    """
+    resp = client.delete(
+        f"{API_ROOT}/accounts/{account_id}/storage/kv/namespaces/"
+        f"{namespace_id}/values/{quote(key, safe='')}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    resp.raise_for_status()
+    return bool(resp.json().get("success"))
+
+
+def _maybe_purge_kv(
+    sym: str, *, cfg: D1Config, client: httpx.Client
+) -> bool | None:
+    """Best-effort delete of ``sym``'s Worker KV mirror keys (core + evidence).
+
+    The Worker's ``withEdgeCache`` reads through a shared-global KV mirror
+    (``RECORD_CACHE``) behind ``caches.default``; a republish must evict the
+    gene's KV entries or the new record serves stale until the KV
+    expiration TTL (1 day). Deletes both the record key and the split-out
+    ``/evidence`` key (see :func:`_kv_keys_for`).
+
+    Soft-skips (returns ``None``, warns) when
+    ``CLOUDFLARE_KV_RECORD_CACHE_ID`` (the ``RECORD_CACHE`` namespace id) is
+    unset — same posture as ``CLOUDFLARE_ZONE_ID`` for the edge purge, so a
+    Worker deployed before the KV binding exists (or CI / offline dev)
+    never breaks. Reuses the D1 token + account (same Cloudflare account);
+    the token needs a ``Workers KV Storage → Edit`` scope. Never raises.
+    """
+    ns_id = os.environ.get("CLOUDFLARE_KV_RECORD_CACHE_ID", "").strip()
+    if not ns_id:
+        logger.warning(
+            "CLOUDFLARE_KV_RECORD_CACHE_ID not set — skipping KV purge for %s. "
+            "The new record goes live on the KV entry's expiration TTL (1 day) "
+            "rather than immediately. (Expected until the RECORD_CACHE namespace "
+            "is created and bound.)",
+            sym,
+        )
+        return None
+    try:
+        ok = all(
+            _delete_kv_key(
+                key,
+                account_id=cfg.account_id,
+                namespace_id=ns_id,
+                token=cfg.api_token,
+                client=client,
+            )
+            for key in _kv_keys_for(sym)
+        )
+        if ok:
+            logger.info("KV mirror purged for %s (record + evidence)", sym)
+        else:
+            logger.warning(
+                "KV purge for %s returned success=false — stale until TTL", sym
+            )
+        return ok
+    except Exception as exc:  # noqa: BLE001 — KV purge is best-effort, never fatal
+        logger.warning(
+            "KV purge failed for %s (%s) — record stale until KV TTL", sym, exc
         )
         return False
 
@@ -736,6 +835,13 @@ def _publish_dict(
         # extra requirement is CLOUDFLARE_ZONE_ID + a Cache Purge scope on
         # the token; missing either soft-skips with a warning.
         cache_purged = _maybe_purge(sym, token=cfg.api_token, client=client)
+        # Also evict the Worker's shared-global KV mirror (RECORD_CACHE) —
+        # both the record key and the split-out /evidence key. The edge
+        # purge above only touches caches.default; without this the KV
+        # read-through in withEdgeCache keeps serving the pre-publish
+        # record until the KV entry's 1-day expiration TTL. Best-effort,
+        # soft-skips when the RECORD_CACHE namespace id isn't configured.
+        _maybe_purge_kv(sym, cfg=cfg, client=client)
 
     return PublishResult(
         gene_symbol=sym,
