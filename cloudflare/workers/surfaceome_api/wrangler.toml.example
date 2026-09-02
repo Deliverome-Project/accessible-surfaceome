@@ -85,7 +85,7 @@ zone_name = "deliverome.org"
 name = "RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1001"
-simple = { limit = 600, period = 60 }   # 600 req / 60s / IP on the route
+simple = { limit = 1800, period = 60 }  # 1800 req / 60s / IP on the route (raised from 600 so the viewer build's 5,130-record snapshot can run at higher concurrency without 429s)
 
 [[unsafe.bindings]]
 name = "RATE_LIMITER_HEAVY"
