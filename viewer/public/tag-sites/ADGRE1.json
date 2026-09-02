@@ -39,5 +39,54 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "ADGRE1-nterm-tedman::iso::Q14246-2",
+      "isoform_id": "Q14246-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 25,
+      "canonical_residue": null,
+      "left_pct": 3.0450669914738127,
+      "note": "Isoform surface expr 388 (-59% vs canonical)"
+    },
+    {
+      "site_id": "ADGRE1-nterm-tedman::iso::Q14246-3",
+      "isoform_id": "Q14246-3",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 25,
+      "canonical_residue": null,
+      "left_pct": 2.883506343713956,
+      "note": "Isoform surface expr 169 (-82% vs canonical)"
+    },
+    {
+      "site_id": "ADGRE1-nterm-tedman::iso::Q14246-4",
+      "isoform_id": "Q14246-4",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 25,
+      "canonical_residue": null,
+      "left_pct": 3.5260930888575457,
+      "note": "Isoform surface expr 943 (-0% vs canonical)"
+    },
+    {
+      "site_id": "ADGRE1-nterm-tedman::iso::Q14246-5",
+      "isoform_id": "Q14246-5",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 25,
+      "canonical_residue": null,
+      "left_pct": 3.3557046979865772,
+      "note": "Isoform surface expr 1284 (+35% vs canonical)"
+    }
+  ]
 }

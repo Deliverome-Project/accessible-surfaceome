@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "FSHR-nterm-tedman::iso::P23945-3",
+      "isoform_id": "P23945-3",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 18,
+      "canonical_residue": null,
+      "left_pct": 2.690582959641256,
+      "note": "Isoform surface expr 167 (-56% vs canonical)"
+    }
+  ]
 }

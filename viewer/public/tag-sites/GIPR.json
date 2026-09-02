@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "GIPR-nterm-tedman::iso::P48546-2",
+      "isoform_id": "P48546-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 28,
+      "canonical_residue": null,
+      "left_pct": 6.682577565632458,
+      "note": "Isoform surface expr 134 (-98% vs canonical)"
+    }
+  ]
 }

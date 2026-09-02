@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "EDNRA-nterm-tedman::iso::P25101-4",
+      "isoform_id": "P25101-4",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 25,
+      "canonical_residue": null,
+      "left_pct": 7.861635220125786,
+      "note": "Isoform surface expr 339 (-88% vs canonical)"
+    }
+  ]
 }

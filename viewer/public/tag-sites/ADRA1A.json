@@ -39,5 +39,42 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "ADRA1A-nterm-tedman::iso::P35348-2",
+      "isoform_id": "P35348-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 1,
+      "canonical_residue": null,
+      "left_pct": 0.21052631578947367,
+      "note": "Isoform surface expr 2823 (+34% vs canonical)"
+    },
+    {
+      "site_id": "ADRA1A-nterm-tedman::iso::P35348-3",
+      "isoform_id": "P35348-3",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 1,
+      "canonical_residue": null,
+      "left_pct": 0.2331002331002331,
+      "note": "Isoform surface expr 3190 (+51% vs canonical)"
+    },
+    {
+      "site_id": "ADRA1A-nterm-tedman::iso::P35348-4",
+      "isoform_id": "P35348-4",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 1,
+      "canonical_residue": null,
+      "left_pct": 0.21978021978021978,
+      "note": "Isoform surface expr 743 (-65% vs canonical)"
+    }
+  ]
 }

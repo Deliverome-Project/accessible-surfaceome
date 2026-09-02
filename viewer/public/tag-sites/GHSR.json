@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "GHSR-nterm-tedman::iso::Q92847-2",
+      "isoform_id": "Q92847-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 1,
+      "canonical_residue": null,
+      "left_pct": 0.34602076124567477,
+      "note": "Isoform surface expr 198 (-87% vs canonical)"
+    }
+  ]
 }

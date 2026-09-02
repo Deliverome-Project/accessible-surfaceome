@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "ADGRD1-nterm-tedman::iso::Q6QNK2-4",
+      "isoform_id": "Q6QNK2-4",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 30,
+      "canonical_residue": null,
+      "left_pct": 3.3112582781456954,
+      "note": "Isoform surface expr 2367 (+53% vs canonical)"
+    }
+  ]
 }

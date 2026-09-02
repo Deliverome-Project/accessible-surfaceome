@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "TAS1R1-nterm-tedman::iso::Q7RTX1-2",
+      "isoform_id": "Q7RTX1-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 25,
+      "canonical_residue": null,
+      "left_pct": 4.258943781942079,
+      "note": "Isoform surface expr 137 (+10% vs canonical)"
+    }
+  ]
 }

@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "RXFP2-nterm-tedman::iso::Q8WXD0-2",
+      "isoform_id": "Q8WXD0-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 39,
+      "canonical_residue": null,
+      "left_pct": 5.342465753424658,
+      "note": "Isoform surface expr 195 (+0% vs canonical)"
+    }
+  ]
 }

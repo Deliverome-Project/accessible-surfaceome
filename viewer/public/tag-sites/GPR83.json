@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "GPR83-nterm-tedman::iso::Q9NYM4-2",
+      "isoform_id": "Q9NYM4-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 21,
+      "canonical_residue": null,
+      "left_pct": 5.511811023622047,
+      "note": "Isoform surface expr 135 (-72% vs canonical)"
+    }
+  ]
 }

@@ -39,5 +39,18 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [
+    {
+      "site_id": "GNRHR-nterm-tedman::iso::P30968-2",
+      "isoform_id": "P30968-2",
+      "classification": "control",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "tag_type": "HA",
+      "isoform_residue": 1,
+      "canonical_residue": null,
+      "left_pct": 0.4016064257028112,
+      "note": "Isoform surface expr 141 (-12% vs canonical)"
+    }
+  ]
 }
