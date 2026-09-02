@@ -1,4 +1,6 @@
 import { MEMBRANE_COLOR, TOPOLOGY_COLORS } from "../../../lib/structure-viewer-types";
+import { CATEGORY_LABEL, CATEGORY_TOKEN } from "../../../lib/tag-sites-types";
+import type { TagSiteCategory } from "../../../lib/tag-sites-types";
 import styles from "./TopologyBar.module.css";
 
 interface Props {
@@ -35,10 +37,18 @@ interface Props {
 export interface TopologyPin {
   siteId: string;
   leftPct: number; // 0..100
-  provenance: "literature_retrieved" | "deterministic_computed";
+  provenance: "literature_retrieved" | "deterministic_computed" | "screen_validated";
   tagType: string;
+  /** Fine-grained overlay category (matches the 3D spheres' color axis via
+   *  CATEGORY_TOKEN). When present, takes priority over the coarse
+   *  literature/deterministic provenance fallback below — this is what lets a
+   *  screen_validated pin render its own --tag-site-screen-validated color
+   *  instead of falling into the deterministic bucket. Optional so legacy
+   *  callers (isoform pins, which color by `classification` instead) don't
+   *  need to supply it. */
+  category?: TagSiteCategory;
   /** When set (isoform pins), colors the pin by shared-vs-unique classification
-   *  (--tag-site-isoform-*) instead of by provenance. */
+   *  (--tag-site-isoform-*) instead of by provenance/category. */
   classification?: "shared" | "unique" | "control";
 }
 
@@ -151,12 +161,16 @@ export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame, 
             left: `${pin.leftPct}%`,
             background: pin.classification
               ? `var(--tag-site-isoform-${pin.classification})`
-              : `var(--tag-site-${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`,
+              : pin.category
+                ? `var(${CATEGORY_TOKEN[pin.category]})`
+                : `var(--tag-site-${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`,
           }}
           title={
             pin.classification
               ? `${pin.tagType} (${pin.classification})`
-              : `${pin.tagType} (${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`
+              : pin.category
+                ? `${pin.tagType} (${CATEGORY_LABEL[pin.category]})`
+                : `${pin.tagType} (${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`
           }
         />
       ))}

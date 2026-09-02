@@ -46,7 +46,7 @@ export interface SurfaceBindAnchor {
 export interface TagSiteSphere {
   siteId: string;
   residue: number;
-  provenance: "literature_retrieved" | "deterministic_computed";
+  provenance: "literature_retrieved" | "deterministic_computed" | "screen_validated";
   /** Fine-grained overlay category (lane / terminus / snorkel / literature) —
    *  the color axis for ``tags`` mode via ``CATEGORY_HEX``. */
   category: TagSiteCategory;

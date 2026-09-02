@@ -934,6 +934,7 @@ export function GeneHeader({
                   siteId: r.siteId,
                   leftPct: r.leftPct,
                   provenance: r.provenance,
+                  category: r.category,
                   tagType: r.tagType,
                 }))}
               />

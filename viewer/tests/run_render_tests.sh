@@ -23,6 +23,7 @@ tests=(
   catalog_table_fg_library.test.tsx
   topology_bar_pins.test.tsx
   tagged_sites_card.test.tsx
+  tagged_sites_card_screen.test.tsx
 )
 
 fails=0
