@@ -465,6 +465,7 @@ export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
         provenance: "deterministic_computed" as const,
         tagType: pin.tag_type ?? "tag",
         classification: pin.classification,
+        note: pin.note ?? null,
       }));
   const df = rec.deterministic_features;
   const ct = df.canonical_topology;

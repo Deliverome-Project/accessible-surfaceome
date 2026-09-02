@@ -50,6 +50,9 @@ export interface TopologyPin {
   /** When set (isoform pins), colors the pin by shared-vs-unique classification
    *  (--tag-site-isoform-*) instead of by provenance/category. */
   classification?: "shared" | "unique" | "control";
+  /** Optional free-text (e.g. isoform surface-expression PME) appended to the
+   *  classification-branch tooltip when present. */
+  note?: string | null;
 }
 
 interface Run {
@@ -167,7 +170,7 @@ export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame, 
           }}
           title={
             pin.classification
-              ? `${pin.tagType} (${pin.classification})`
+              ? `${pin.tagType} (${pin.classification})${pin.note ? " — " + pin.note : ""}`
               : pin.category
                 ? `${pin.tagType} (${CATEGORY_LABEL[pin.category]})`
                 : `${pin.tagType} (${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`
