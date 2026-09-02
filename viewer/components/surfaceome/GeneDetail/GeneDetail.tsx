@@ -292,7 +292,11 @@ export function GeneDetail({
        *  <EvidenceChip> stay a pure presentational component (no per-chip
        *  handler) — one drawer for the whole page. */}
       <EvidenceClickDelegator />
-      <EvidenceDrawer evidence={rec.evidence} />
+      {/* `rec.evidence` is lazy-loaded off the critical path (see
+       *  app/gene/page.tsx) — `undefined` until it merges in. Pass an empty
+       *  ledger until then: chips clicked before it lands simply resolve to
+       *  no quote (the drawer no-ops), and re-resolve once evidence merges. */}
+      <EvidenceDrawer evidence={rec.evidence ?? []} />
       <FeedbackModal />
     </Shell>
   );

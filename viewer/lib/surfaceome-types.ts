@@ -1428,7 +1428,19 @@ export interface SurfaceomeRecord {
   surface_evidence: SurfaceEvidence;
   biological_context: BiologicalContext;
   accessibility_risks: AccessibilityRisks;
-  evidence: Evidence[];
+  /** Citation ledger (verbatim quotes + provenance) backing the record's
+   *  claims. OPTIONAL on the wire: `GET /v1/genes/{SYMBOL}` no longer
+   *  inlines it (it was 42–47% of the payload) — the viewer lazy-loads it
+   *  from `GET /v1/genes/{SYMBOL}/evidence` after first paint and merges
+   *  it in (see `app/gene/page.tsx`). Reads must be null/empty-tolerant:
+   *    * `undefined` — not (yet) loaded / lazy split deployed, ledger pending
+   *    * `[]`        — loaded, but the gene genuinely has no ledger entries
+   *  Pre-split records (and the build-time server loader) still carry it
+   *  inline, so a non-empty value here means "use it directly, skip the
+   *  lazy fetch". This is the citation LEDGER only — the narrative
+   *  reasoning (executive_summary / surface_evidence / biological_context /
+   *  filters) is unaffected and stays in the core response. */
+  evidence?: Evidence[];
   search_log: SearchEntry[];
   confidence: number;
   /** Free-text justification for the top-level confidence value.

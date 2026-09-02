@@ -235,9 +235,19 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         anchor: "genes",
         sizeKey: "/v1/genes/{SYMBOL}",
         summary:
-          "Full SurfaceomeRecord JSON for one gene. Contains the executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks, and the full evidence ledger with citations.",
+          "SurfaceomeRecord JSON for one gene: the executive summary, evidence-grade rationale, per-method observations, deterministic features, and accessibility risks. The citation ledger (verbatim quotes + provenance) is NO LONGER inlined here — it moved to GET /v1/genes/{SYMBOL}/evidence, trimming this record ~45%. The narrative reasoning stays inline; only the ledger split out.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 | jq '.executive_summary.surface_accessibility, .confidence'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/evidence",
+        anchor: "genes-evidence",
+        sizeKey: "/v1/genes/{SYMBOL}/evidence",
+        summary:
+          "The evidence ledger for one gene: { gene, evidence: [...] }, where each entry carries the verbatim quote, its source provenance (PMC / PMID / DOI / URL), evidence tier, and the cross-planner duplicate links. Split out of GET /v1/genes/{SYMBOL} (it was 42–47% of that payload) so consumers that only need the record's reasoning don't pay for the citations; fetch this to resolve the evidence_id chips back to their sources.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/evidence | jq '.evidence | length'",
       },
       {
         method: "GET",
