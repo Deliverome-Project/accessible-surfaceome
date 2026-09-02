@@ -19,10 +19,12 @@ Usage:
 
 Exit code: 0 if every target is within budget, 1 otherwise (for CI).
 """
+
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
@@ -134,17 +136,29 @@ def main() -> int:
         use_http2 = True
     except ImportError:
         use_http2 = False
+    # Mimic a real browser navigation. `Accept: text/html` matters: the
+    # gene-URL Pages Function (viewer/functions/[[path]].js) only serves the
+    # client shell (200) to document requests — a bare `Accept: */*` correctly
+    # gets a 404, which would false-flag gene pages here.
+    headers = {
+        "User-Agent": "surfaceome-ttfb-check/1.0 (+monitoring)",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+    # From a GitHub Actions runner (a datacenter IP) Cloudflare's zone bot
+    # protection returns HTTP 403 to this monitor at the edge, before the
+    # request reaches cache/origin — a *false* failure, since real (residential)
+    # visitors get 200. When TTFB_MONITOR_TOKEN is set, send it as a shared
+    # secret header; a Cloudflare WAF "Skip" rule matching this header lets the
+    # monitor (and only the monitor) bypass bot protection. The token lives in
+    # the TTFB_MONITOR_TOKEN GitHub Actions secret + the WAF rule's value.
+    monitor_token = os.environ.get("TTFB_MONITOR_TOKEN")
+    if monitor_token:
+        headers["X-TTFB-Monitor"] = monitor_token
+
     with httpx.Client(
         http2=use_http2,
         timeout=args.timeout,
-        # Mimic a real browser navigation. `Accept: text/html` matters: the
-        # gene-URL Pages Function (viewer/functions/[[path]].js) only serves
-        # the client shell (200) to document requests — a bare `Accept: */*`
-        # correctly gets a 404, which would false-flag gene pages here.
-        headers={
-            "User-Agent": "surfaceome-ttfb-check/1.0 (+monitoring)",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        },
+        headers=headers,
         follow_redirects=True,
     ) as client:
         for t in targets:
@@ -159,12 +173,21 @@ def main() -> int:
     failures = [r for r in results if failed(r)]
 
     if args.json:
-        print(json.dumps(
-            {"budget_ms": args.budget_ms, "results": results,
-             "passed": not failures}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "budget_ms": args.budget_ms,
+                    "results": results,
+                    "passed": not failures,
+                },
+                indent=2,
+            )
+        )
     else:
-        print(f"TTFB budget: {args.budget_ms:.0f} ms  "
-              f"(median of {args.samples} samples/target)\n")
+        print(
+            f"TTFB budget: {args.budget_ms:.0f} ms  "
+            f"(median of {args.samples} samples/target)\n"
+        )
         width = max(len(r["label"]) for r in results)
         for r in results:
             ok = (
@@ -173,16 +196,31 @@ def main() -> int:
                 and r["median_ms"] <= args.budget_ms
             )
             mark = "PASS" if ok else "FAIL"
-            detail = r["error"] if r["error"] else (
-                f'{r["median_ms"]:7.1f} ms  (HTTP {r["status"]})')
+            detail = (
+                r["error"]
+                if r["error"]
+                else (f"{r['median_ms']:7.1f} ms  (HTTP {r['status']})")
+            )
             print(f"  [{mark}] {r['label']:<{width}}  {detail}")
         print()
         if failures:
-            print(f"{len(failures)} target(s) over the {args.budget_ms:.0f} ms "
-                  f"TTFB budget.")
+            print(
+                f"{len(failures)} target(s) over the {args.budget_ms:.0f} ms "
+                f"TTFB budget."
+            )
+            if any(r["status"] == 403 for r in failures) and not monitor_token:
+                print(
+                    "\nNote: HTTP 403 in a few ms (not a timing) usually means "
+                    "this runner's IP was bot-challenged by Cloudflare, not that "
+                    "the site is slow. Set the TTFB_MONITOR_TOKEN secret and a "
+                    "matching WAF skip rule so the monitor is allowed through "
+                    "(see .github/workflows/ttfb-check.yml)."
+                )
         else:
-            print(f"All {len(results)} targets within the "
-                  f"{args.budget_ms:.0f} ms TTFB budget.")
+            print(
+                f"All {len(results)} targets within the "
+                f"{args.budget_ms:.0f} ms TTFB budget."
+            )
 
     return 1 if failures else 0
 
