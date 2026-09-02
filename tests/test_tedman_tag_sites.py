@@ -2,6 +2,7 @@ import pytest
 from accessible_surfaceome.tag_sites.control import control_tag_site
 from accessible_surfaceome.tag_sites.model import TAGGED_SITE_KEYS
 from accessible_surfaceome.tag_sites.tedman import parse_ha_position, map_junction_to_canonical
+from accessible_surfaceome.tag_sites.tedman import build_control_sites_for_gene
 
 
 def test_parse_ha_position_nterm():
@@ -54,3 +55,32 @@ def test_control_tag_site_shape_and_provenance():
     assert s["tag_type"] == "HA"
     assert s["extracellular"] is True
     assert "1234.5" in s["functional_impact_measured"]
+
+
+def test_build_control_sites_for_gene_bare_nterm():
+    row = {"gene_symbol": "ADRB2", "uniprot_acc": "P07550", "junction_after_residue": "",
+           "expected_residue": "M", "surface_expression_pme": "1234.5",
+           "surface_expression_sd": "67.8", "verified": "true"}
+    sites = build_control_sites_for_gene([row], sources=[{"citation": "Tedman et al. 2026"}])
+    assert len(sites) == 1
+    assert sites[0]["provenance"] == "screen_validated"
+    assert sites[0]["site_id"] == "ADRB2-nterm-tedman"
+    assert sites[0]["insert_after_residue"] is None
+    assert sites[0]["residue_after"] == "M"
+    assert "1234.5" in sites[0]["functional_impact_measured"]
+
+
+def test_build_control_sites_for_gene_post_sp_and_skips_unverified():
+    rows = [
+        {"gene_symbol": "GIPR", "uniprot_acc": "P48546", "junction_after_residue": "28",
+         "expected_residue": "K", "surface_expression_pme": "6435.0",
+         "surface_expression_sd": "100.0", "verified": "true"},
+        {"gene_symbol": "GIPR", "uniprot_acc": "P48546", "junction_after_residue": "5",
+         "expected_residue": "X", "surface_expression_pme": "", "surface_expression_sd": "",
+         "verified": "false"},
+    ]
+    sites = build_control_sites_for_gene(rows, sources=[])
+    assert len(sites) == 1  # unverified row skipped
+    assert sites[0]["insert_after_residue"] == 28
+    assert sites[0]["residue_before"] == "K"
+    assert sites[0]["residue_label"] == "K28"

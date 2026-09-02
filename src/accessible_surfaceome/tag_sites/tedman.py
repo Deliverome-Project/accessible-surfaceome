@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from accessible_surfaceome.tag_sites.control import control_tag_site
+
 
 def parse_ha_position(value: str) -> int:
     """`"0-1"` -> 0, `"27-28"` -> 27 (the residue the HA tag is inserted AFTER,
@@ -44,3 +46,36 @@ def map_junction_to_canonical(junction: int, canonical_seq: str) -> JunctionMapp
     before = seq[junction - 1]
     after = seq[junction] if junction < len(seq) else None
     return JunctionMapping(junction, before, after, f"{before}{junction}", verified=True)
+
+
+def _num(v):
+    s = str(v).strip()
+    if s in ("", "None"):
+        return None
+    return float(s)
+
+
+def build_control_sites_for_gene(rows: list[dict], *, sources: list[dict]) -> list[dict]:
+    """Turn verified canonical Tedman TSV rows for ONE gene into control TaggedSite
+    dicts (screen_validated). Skips rows with verified != "true". site_id is
+    ``{gene_symbol}-nterm-tedman``; a re-run overwrites the same id via the emitter's
+    merge-by-site_id. junction empty -> bare N-terminal (insert_after_residue None,
+    residue_after = expected_residue); junction N -> residue_before = expected_residue."""
+    out: list[dict] = []
+    for r in rows:
+        if str(r.get("verified")).lower() != "true":
+            continue
+        j = str(r.get("junction_after_residue", "")).strip()
+        junction = int(j) if j not in ("", "None") else None
+        exp = (r.get("expected_residue") or "").strip() or None
+        out.append(control_tag_site(
+            site_id=f"{r['gene_symbol']}-nterm-tedman",
+            gene_symbol=r["gene_symbol"], uniprot_acc=r["uniprot_acc"],
+            insert_after_residue=junction,
+            residue_before=exp if junction is not None else None,
+            residue_after=None if junction is not None else exp,
+            pme=_num(r.get("surface_expression_pme")),
+            pme_sd=_num(r.get("surface_expression_sd")),
+            sources=sources,
+        ))
+    return out
