@@ -9,6 +9,7 @@ import type { Compartment } from "./surface-bind";
 export type TaggedSiteProvenance =
   | "literature_retrieved"
   | "deterministic_computed"
+  | "screen_validated"
   | "validated_literature"; // validation-only; never rendered
 
 export type DeterministicPath = "disorder" | "surface_loop" | "terminal" | "snorkel";
@@ -117,12 +118,14 @@ export type TagSiteCategory =
   | "disorder"
   | "terminal_n"
   | "terminal_c"
-  | "snorkel";
+  | "snorkel"
+  | "screen_validated";
 
 /** Resolve a site to its overlay category from provenance + det_path + kind. */
 export function tagSiteCategory(
   site: Pick<TaggedSite, "provenance" | "det_path" | "site_kind">,
 ): TagSiteCategory {
+  if (site.provenance === "screen_validated") return "screen_validated";
   if (site.provenance !== "deterministic_computed") return "literature";
   switch (site.det_path) {
     case "disorder":
@@ -146,6 +149,7 @@ export const CATEGORY_HEX: Record<TagSiteCategory, string> = {
   terminal_n: "#f4aa28", // --amber-bright
   terminal_c: "#c07830", // --amber-mid
   snorkel: "#922038", // --maroon-mid — fallback / lower-confidence
+  screen_validated: "#c2571f",
 };
 
 export const CATEGORY_TOKEN: Record<TagSiteCategory, string> = {
@@ -155,6 +159,7 @@ export const CATEGORY_TOKEN: Record<TagSiteCategory, string> = {
   terminal_n: "--tag-site-terminal-n",
   terminal_c: "--tag-site-terminal-c",
   snorkel: "--tag-site-snorkel",
+  screen_validated: "--tag-site-screen-validated",
 };
 
 export const CATEGORY_LABEL: Record<TagSiteCategory, string> = {
@@ -164,6 +169,7 @@ export const CATEGORY_LABEL: Record<TagSiteCategory, string> = {
   terminal_n: "Extracellular N-terminus",
   terminal_c: "Extracellular C-terminus",
   snorkel: "C-terminal snorkel",
+  screen_validated: "Screen-validated",
 };
 
 
@@ -172,11 +178,13 @@ export const CATEGORY_LABEL: Record<TagSiteCategory, string> = {
 export interface IsoformTagPin {
   site_id: string;
   isoform_id: string;
-  classification: "shared" | "unique";
+  classification: "shared" | "unique" | "control";
   det_path: DeterministicPath | null;
   site_kind: TaggedSiteKind;
   tag_type: string | null;
   isoform_residue: number;
   canonical_residue: number | null;
   left_pct: number; // 0..100 along the isoform's own topology axis
+  /** Optional free-text (e.g. isoform surface-expression PME) for the pin tooltip. */
+  note?: string | null;
 }
