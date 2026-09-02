@@ -142,12 +142,20 @@ def test_hgnc_ahead_of_uniprot_rename(http, hgnc_id, expected_acc, renamed_to, u
     )
     # Also: production's symbol search must miss (or find something else)
     # — that's the failure mode this resolver path exists to recover from.
+    # Once UniProt's index catches up to the HGNC rename, symbol search finds
+    # the acc too and the case stops exercising the recovery path. That's a
+    # data-sync event, not a regression, so SKIP (don't fail) — keeps CI green
+    # while flagging that a fresher rename should be dropped in.
     prod_pick = _uniprot_search_by_symbol(renamed_to, http=http)
-    assert prod_pick != expected_acc, (
-        "If UniProt's symbol search ever finds this acc, the rename has "
-        "synced and this test case can be retired. Pick a fresher HGNC "
-        "rename for the test."
-    )
+    if prod_pick == expected_acc:
+        pytest.skip(
+            f"UniProt's symbol search now resolves {renamed_to!r} -> "
+            f"{expected_acc}; the HGNC-ahead-of-UniProt rename has synced, so "
+            f"this case no longer exercises the recovery path. Retire it and "
+            f"drop in a fresher HGNC rename to restore active coverage."
+        )
+    # Still lagging: symbol search misses/mispicks, so the HGNC-ID recovery
+    # path validated above is the only route to the right protein.
 
 
 # ---------------------------------------------------------------------------
