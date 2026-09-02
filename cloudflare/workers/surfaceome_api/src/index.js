@@ -9,7 +9,9 @@
 //                                  (also served at the bare service root)
 //   GET /v1/health
 //   GET /v1/genes               — list of annotated genes
-//   GET /v1/genes/:symbol       — full SurfaceomeRecord
+//   GET /v1/genes/:symbol       — full SurfaceomeRecord (WITHOUT `evidence`)
+//   GET /v1/genes/:symbol/evidence — the record's evidence ledger, split
+//                                  out of the record: { gene, evidence[] }
 //   GET /v1/genes/:symbol.md    — rich Markdown export (served from R2)
 //   GET /v1/catalog             — genome-wide candidate-universe table
 //   GET /v1/catalog/:symbol     — one gene's 5-DB surface-vote row (slim)
@@ -182,58 +184,109 @@ async function checkRate(env, request, path) {
 }
 
 
-// Wrap a cacheable handler so 2xx / 404 responses are stored in
-// caches.default and served on the next hit without re-running the
-// handler. The response's own Cache-Control governs the TTL — the
-// helper doesn't override it. This is the same pattern handleCatalog
-// uses inline; extending it to every cacheable GET is what turns the
-// "correct headers, zero hits" state into actual edge caching.
+// Parse the integer `max-age` (seconds) out of a Cache-Control header so the
+// KV mirror's `expirationTtl` matches the response's own TTL. Returns 0 when
+// absent — but callers only ever cache 200/404, both of which carry a
+// positive max-age from json()/tsv()/notFound().
+function maxAgeFromCacheControl(cc) {
+  const m = /max-age=(\d+)/.exec(cc || "");
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+// Two-tier read-through cache for a cacheable handler:
 //
-// Rationale: a zone-level Cache Rule alone is not enough to cache
-// Worker responses on Cloudflare — the edge only auto-caches responses
-// with a URL-shaped origin, and a Worker route has no separate origin.
-// Storing via `caches.default.put()` opts the response into the same
-// per-POP cache the Cache Rule would otherwise populate; on a repeat
-// request the isolate serves the stored Response without entering
-// D1/handler code at all.
+//   (1) caches.default   — per-POP, isolate-local, fastest.
+//   (2) RECORD_CACHE (KV) — shared GLOBAL mirror: a record populated once
+//       (in any POP) is served worldwide without re-running the D1 handler,
+//       and it survives isolate eviction / cold POPs that caches.default
+//       doesn't. Read with a 3600s `cacheTtl` so a KV hit is itself edge-
+//       cached for an hour.
+//   (3) handler (D1)     — full miss; result populates BOTH tiers.
 //
-// Cache-key strategy: URL path only by default (matches the zone Cache
-// Rule that already strips query strings). Pass `includeQuery: true` for
-// endpoints where the query genuinely parameterizes the response
-// (e.g. /v1/triage/export.tsv?run_id=X — different run_id, different
-// content). The cache-key uses the REAL request origin + pathname — NOT a
-// synthetic host. A synthetic host (`https://cache.internal/...`) silently
-// broke purge-on-publish: `surface_annotation.publish_record` purges the
-// public URL (`https://api.deliverome.org/surfaceome/v1/genes/{SYM}`), but a
-// single-file purge can only evict an entry stored under that same URL — it
-// can never match a fake host, so a republished record served stale until the
-// TTL (up to a day). Keying on `url.origin + pathname` makes the stored key
-// equal the purged URL, so the purge now actually evicts it. Query string is
-// dropped (unless includeQuery) so `?_=cache-buster` variants share one
-// purgeable key. Forces GET so no method-mismatch surprises.
+// The KV binding is OPTIONAL. Pre-binding (or a `wrangler dev` without the
+// namespace) leaves `env.RECORD_CACHE` undefined and this degrades to the
+// original caches.default-only path — the Worker never crashes on `.get`.
 //
-// Only 200 and 404 are cached — both have positive TTLs from `json()`
-// / `notFound()`. 400/405 responses set ttl=0 and are safe to skip
-// entirely.
-async function withEdgeCache(request, handler, { includeQuery = false } = {}) {
+// KV stores only the response body, so the response's status + content-type
+// (and its max-age → TTL) ride along as KV metadata; the KV-hit branch
+// reads them back via getWithMetadata (same arrayBuffer read + cacheTtl a
+// plain .get would do) and rebuilds the Response with the correct headers.
+//
+// Cache-key strategy: URL path only by default (matches the zone Cache Rule
+// that strips query strings). Pass `includeQuery: true` where the query
+// genuinely parameterizes the response (e.g. /v1/triage/export.tsv?run_id=X).
+// The key uses a SYNTHETIC host, not the real api.deliverome.org origin: the
+// zone cache rule (http.host eq "api.deliverome.org") excludes ALL query
+// strings, so with includeQuery it would strip run_id and collide
+// ?run_id=X with ?run_id=Y (the bug that duplicated a genome run in the
+// Zenodo deposit). An internal host the zone rule can't match preserves the
+// full keyPath. Mirrors the catalog handler's `https://catalog.cache` key.
+// The KV key is that same cache-key URL verbatim — one string per cached
+// surface — so the post-publish purge (surface_annotation._purge_kv_for)
+// can reproduce and delete it exactly.
+//
+// Only 200 and 404 are cached (both carry positive TTLs); 400/405 opt out.
+async function withEdgeCache(request, env, ctx, handler, { includeQuery = false } = {}) {
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
-  // Key the cache on a SYNTHETIC host, not the real api.deliverome.org origin.
-  // The zone runs a cache rule (http.host eq "api.deliverome.org") whose
-  // custom cache key EXCLUDES ALL query strings — so with includeQuery it would
-  // strip run_id and collide /v1/triage/export.tsv?run_id=X with ?run_id=Y
-  // (the bug that duplicated a genome run in the Zenodo deposit). An internal
-  // host the zone rule can't match preserves the full keyPath. Mirrors the
-  // catalog handler's `https://catalog.cache` cache key.
   const cacheKey = new Request(new URL(keyPath, "https://surfaceome-api.cache").href, {
     method: "GET",
   });
+  // (1) per-POP edge cache
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
+
+  const kv = env && env.RECORD_CACHE;
+  const kvKey = cacheKey.url;
+
+  // (2) shared global KV mirror
+  if (kv) {
+    let kvEntry = null;
+    try {
+      kvEntry = await kv.getWithMetadata(kvKey, { type: "arrayBuffer", cacheTtl: 3600 });
+    } catch {
+      kvEntry = null; // fail-open: a KV read hiccup falls through to D1
+    }
+    if (kvEntry && kvEntry.value) {
+      const meta = kvEntry.metadata || {};
+      const ttl = typeof meta.ttl === "number" ? meta.ttl : CACHE_TTL_LONG;
+      const rebuilt = new Response(kvEntry.value, {
+        status: typeof meta.status === "number" ? meta.status : 200,
+        headers: {
+          "Content-Type": meta.ct || "application/json; charset=utf-8",
+          "Cache-Control": cacheControl(ttl),
+          ...CORS_HEADERS,
+        },
+      });
+      // Backfill the per-POP edge cache so the next hit in this POP skips KV.
+      ctx.waitUntil(cache.put(cacheKey, rebuilt.clone()));
+      return rebuilt;
+    }
+  }
+
+  // (3) full miss — run the handler (D1) and populate both tiers.
   const response = await handler();
   if (response.status === 200 || response.status === 404) {
-    await cache.put(cacheKey, response.clone());
+    if (kv) {
+      const ttl = maxAgeFromCacheControl(response.headers.get("Cache-Control"));
+      const meta = {
+        status: response.status,
+        ct: response.headers.get("Content-Type"),
+        ttl,
+      };
+      const body = await response.clone().arrayBuffer();
+      // KV's expirationTtl floor is 60s; every 200/404 cached here carries
+      // >= 60 (CACHE_TTL_LONG / CACHE_TTL_SHORT / notFound's 60).
+      const expirationTtl = Math.max(60, ttl);
+      ctx.waitUntil(Promise.all([
+        kv.put(kvKey, body, { expirationTtl, metadata: meta }),
+        cache.put(cacheKey, response.clone()),
+      ]));
+    } else {
+      // Old caches.default-only path (KV binding absent / pre-binding).
+      await cache.put(cacheKey, response.clone());
+    }
   }
   return response;
 }
@@ -917,7 +970,42 @@ async function handleGene(env, symbol) {
         record?.executive_summary?.evidence_grade_summary ?? null,
     });
   }
+  // Evidence-ledger split (serve-layer only — the D1 record_json is
+  // unchanged): the per-gene record OMITS `evidence` (42–47% of the
+  // payload). The quote ledger is served separately at
+  // GET /v1/genes/{SYMBOL}/evidence (handleGeneEvidence) so the gene
+  // page's initial record load isn't dominated by the evidence array.
+  if (record && "evidence" in record) delete record.evidence;
   return json(record, { ttl: CACHE_TTL_LONG });
+}
+
+// GET /v1/genes/{SYMBOL}/evidence — the evidence ledger split out of the
+// per-gene record (see the strip at the end of handleGene). Reads the SAME
+// record_json blob from D1 and returns just `{ gene, evidence }`. Same
+// symbol validation + 404 posture as handleGene (unknown gene →
+// gene_not_annotated), and routed through withEdgeCache (+KV) at the same
+// 1-day TTL. No serve-time enrichment runs here — enrichment targets
+// deterministic_features / triage, never the evidence array.
+async function handleGeneEvidence(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const row = await env.DB.prepare(
+    `SELECT annotation_json
+       FROM surface_annotation
+      WHERE gene_symbol = ? COLLATE NOCASE
+      ORDER BY schema_version DESC,
+               COALESCE(prompt_corpus_version, '0.0.0') DESC
+      LIMIT 1`
+  ).bind(sym).first();
+  if (!row) return notFound("gene_not_annotated");
+  let record;
+  try {
+    record = JSON.parse(row.annotation_json);
+  } catch (e) {
+    return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
+  }
+  const evidence = Array.isArray(record?.evidence) ? record.evidence : [];
+  return json({ gene: sym, evidence }, { ttl: CACHE_TTL_LONG });
 }
 
 async function handleOrthologs(env, symbol) {
@@ -1998,7 +2086,8 @@ const V1_ENDPOINTS = [
   },
   { group: "Deep dive", method: "GET", path: "/v1/health", summary: "Liveness + n_annotations" },
   { group: "Deep dive", method: "GET", path: "/v1/genes", summary: "Index of genes with a deep-dive SurfaceomeRecord" },
-  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON" },
+  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON (WITHOUT `evidence` — fetch that from /v1/genes/{symbol}/evidence)" },
+  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/evidence", summary: "The gene's evidence ledger (quote+span items) split out of the record: { gene, evidence[] }" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
@@ -2962,7 +3051,7 @@ async function handleGeneMarkdown(env, symbol) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -3011,17 +3100,17 @@ export default {
     // than re-running the D1 query. handleCatalog stays untouched because
     // it already has its own caches.default logic inline (with a bespoke
     // cache key on universe_version).
-    if (path === "/v1/health") return withEdgeCache(request, () => handleHealth(env));
-    if (path === "/v1/genes") return withEdgeCache(request, () => handleGeneList(env));
+    if (path === "/v1/health") return withEdgeCache(request, env, ctx, () => handleHealth(env));
+    if (path === "/v1/genes") return withEdgeCache(request, env, ctx, () => handleGeneList(env));
     if (path === "/v1/catalog") return handleCatalog(env, request);
-    if (path === "/v1/benchmark") return withEdgeCache(request, () => handleBenchmarkList(env));
-    if (path === "/v1/benchmark/matrix") return withEdgeCache(request, () => handleBenchmarkMatrix(env));
-    if (path === "/v1/benchmark/export.tsv") return withEdgeCache(request, () => handleBenchmarkExport(env));
+    if (path === "/v1/benchmark") return withEdgeCache(request, env, ctx, () => handleBenchmarkList(env));
+    if (path === "/v1/benchmark/matrix") return withEdgeCache(request, env, ctx, () => handleBenchmarkMatrix(env));
+    if (path === "/v1/benchmark/export.tsv") return withEdgeCache(request, env, ctx, () => handleBenchmarkExport(env));
     // ?run_id=X actually parameterizes the response, so the query has to
     // be in the cache key here (unlike the other endpoints whose query
     // params are cache-busting noise the zone Cache Rule already strips).
-    if (path === "/v1/triage/export.tsv") return withEdgeCache(request, () => handleTriageExport(env, url), { includeQuery: true });
-    if (path === "/v1/meta/sizes") return withEdgeCache(request, () => handleMetaSizes(env));
+    if (path === "/v1/triage/export.tsv") return withEdgeCache(request, env, ctx, () => handleTriageExport(env, url), { includeQuery: true });
+    if (path === "/v1/meta/sizes") return withEdgeCache(request, env, ctx, () => handleMetaSizes(env));
     // Feedback endpoints are user-specific / write-adjacent — never cache.
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
@@ -3029,20 +3118,25 @@ export default {
     let m;
     // `.md` must be tested before the bare record route: `([^/]+)` would
     // otherwise swallow the `.md` suffix and route to handleGene.
-    if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, () => handleGeneMarkdown(env, m[1]));
-    if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return withEdgeCache(request, () => handleGene(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, env, ctx, () => handleGeneMarkdown(env, m[1]));
+    // Evidence ledger split out of the per-gene record. Must be tested
+    // before the bare record route: `([^/]+)` there would otherwise never
+    // match the trailing `/evidence` segment, but keeping it adjacent is
+    // clearer about the pair.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/evidence$/))) return withEdgeCache(request, env, ctx, () => handleGeneEvidence(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleGene(env, m[1]));
     // Single-gene catalog row (DB-vote strip on the gene page). `/v1/catalog`
     // (exact) is matched above; this is the per-symbol variant.
-    if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, () => handleCatalogOne(env, m[1]));
-    if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, () => handleOrthologs(env, m[1]));
-    if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, () => handleBenchmarkOne(env, m[1]));
+    if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleCatalogOne(env, m[1]));
+    if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
+    if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
     // /v1/triage/:symbol route). model = claude-<name>-<n>-<n>; variant
     // = naive|ncbi|web_ncbi|pubmed_ncbi.
     if ((m = path.match(/^\/v1\/triage\/([^/]+)\/([A-Za-z0-9._-]+)\/([a-z_]+)$/))) {
-      return withEdgeCache(request, () => handleTriageCell(env, m[1], m[2], m[3]));
+      return withEdgeCache(request, env, ctx, () => handleTriageCell(env, m[1], m[2], m[3]));
     }
-    if ((m = path.match(/^\/v1\/triage\/([^/]+)$/))) return withEdgeCache(request, () => handleTriage(env, m[1]));
+    if ((m = path.match(/^\/v1\/triage\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTriage(env, m[1]));
 
     return notFound("route_not_found");
   },
