@@ -143,12 +143,17 @@ function tierCounts(rec: SurfaceomeRecord) {
   let primary = 0;
   let secondary = 0;
   let tertiary = 0;
-  for (const e of rec.evidence) {
+  // `rec.evidence` is lazy-loaded (see app/gene/page.tsx) and is `undefined`
+  // until it merges in — count over an empty ledger until then, so these
+  // vital sub-counts read "0" during the brief loading window and hydrate
+  // on merge rather than crashing.
+  const ledger = rec.evidence ?? [];
+  for (const e of ledger) {
     if (e.evidence_tier === "primary") primary += 1;
     else if (e.evidence_tier === "secondary") secondary += 1;
     else if (e.evidence_tier === "tertiary") tertiary += 1;
   }
-  return { primary, secondary, tertiary, total: rec.evidence.length };
+  return { primary, secondary, tertiary, total: ledger.length };
 }
 
 // All four vitals share one traffic-light scale: green (high / direct

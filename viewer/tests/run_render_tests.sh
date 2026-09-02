@@ -24,6 +24,7 @@ tests=(
   topology_bar_pins.test.tsx
   tagged_sites_card.test.tsx
   tagged_sites_card_screen.test.tsx
+  gene_page_evidence_split.test.tsx
 )
 
 fails=0
