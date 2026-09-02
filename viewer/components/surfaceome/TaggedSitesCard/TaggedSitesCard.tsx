@@ -352,7 +352,9 @@ export interface TaggedSitesCardProps {
 /**
  * §Tag sites — a dedicated section (its own tab, distinct from
  * Internalization) listing engineered epitope/tag insertion points for the
- * protein. Two provenances, matching the structure-viewer overlay legend:
+ * protein. Three provenances, matching the structure-viewer overlay legend:
+ *   • screen_validated — control tag sites confirmed by a parallel
+ *     surface-display screen (e.g. Tedman et al.), with a measured PME;
  *   • literature_retrieved — tags published + validated in the literature
  *     (hybrid lit-search + web_search agent), with linked sources;
  *   • deterministic_computed — computed candidate insertion points from the
@@ -375,11 +377,19 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   const det = collapseByLoop(
     sites.filter((s) => s.provenance === "deterministic_computed"),
   );
+  // Screen-validated controls (e.g. Tedman-style parallel surface-display
+  // screens) — surface-accessible the same way literature sites are (an
+  // N-terminal tag is extracellular by construction, post signal-cleavage).
+  const screenSites = sites.filter(
+    (s) =>
+      s.provenance === "screen_validated" &&
+      (s.extracellular || s.site_kind === "terminal_n"),
+  );
   const legendCategories = Array.from(
-    new Set([...lit, ...det].map((s) => tagSiteCategory(s))),
+    new Set([...lit, ...det, ...screenSites].map((s) => tagSiteCategory(s))),
   );
 
-  if (!taggedSites?.has_data || lit.length + det.length === 0) {
+  if (!taggedSites?.has_data || lit.length + det.length + screenSites.length === 0) {
     return (
       <SectionCard n={n} title="Tag sites">
         <p className={styles.empty}>No tag-site suggestions for this protein yet.</p>
@@ -405,6 +415,13 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
           </span>
         ))}
       </p>
+
+      {screenSites.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>Screen-validated ({screenSites.length})</h3>
+          <SortableTable sites={screenSites} columns={LIT_COLUMNS} />
+        </>
+      ) : null}
 
       {lit.length > 0 ? (
         <>

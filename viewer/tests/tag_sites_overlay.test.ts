@@ -75,3 +75,21 @@ const disorderBalls = collapsed.filter((r) => r.category === "disorder");
 expect("one anchor per disorder span", disorderBalls.length, 1);
 expect("anchor is midpoint-closest (91 in H27-K159)", disorderBalls[0].residue, 91);
 expect("separate span (surface_loop) kept", collapsed.filter((r) => r.category === "surface_loop").length, 1);
+
+// screen_validated (Tedman-style control tag sites) must render, not be dropped
+// like validated_literature — same category-derivation path as tagSiteCategory.
+const screenValidated = renderableTagSites([
+  site({
+    site_id: "X-nterm", gene_symbol: "X", uniprot_acc: "P1", provenance: "screen_validated",
+    det_path: null, site_kind: "terminal_n", insert_after_residue: null, residue_before: null,
+    residue_after: "M", topology_state: "S", extracellular: true, compartment: "extracellular",
+    tag_type: "HA", tag_length_aa: 9, linker: null, evidence_type: null,
+    functional_impact_measured: null, confidence: "high", rationale: null, sources: [],
+    plddt: null, conservation_rank: null, median_conservation: null,
+  }),
+], 300);
+expect("screen_validated N-terminal site renders", screenValidated.length, 1);
+expect("screen_validated category carried", screenValidated[0]?.category, "screen_validated");
+
+if (failures > 0) { console.error(`\n${failures} assertion(s) failed`); process.exit(1); }
+console.log("\nall assertions passed (incl. screen_validated)");

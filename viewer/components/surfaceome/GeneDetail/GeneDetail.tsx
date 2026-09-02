@@ -235,14 +235,15 @@ export function GeneDetail({
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
     // Tag sites — its OWN tab (distinct from Internalization). Shown only
-    // when the gene has at least one RENDERED tag site (literature_retrieved
-    // or deterministic_computed); validated_literature is validation-only and
-    // never rendered, matching `renderableTagSites`.
+    // when the gene has at least one RENDERED tag site (literature_retrieved,
+    // deterministic_computed, or screen_validated); validated_literature is
+    // validation-only and never rendered, matching `renderableTagSites`.
     ...(taggedSites?.has_data &&
     taggedSites.sites.some(
       (s) =>
         s.provenance === "literature_retrieved" ||
-        s.provenance === "deterministic_computed",
+        s.provenance === "deterministic_computed" ||
+        s.provenance === "screen_validated",
     )
       ? [
           {

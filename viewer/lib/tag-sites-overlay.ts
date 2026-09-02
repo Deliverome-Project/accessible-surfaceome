@@ -8,7 +8,7 @@
 import type { TagSiteCategory, TaggedSite, TaggedSiteProvenance } from "./tag-sites-types";
 import { tagSiteCategory } from "./tag-sites-types";
 
-export type RenderedProvenance = "literature_retrieved" | "deterministic_computed";
+export type RenderedProvenance = "literature_retrieved" | "deterministic_computed" | "screen_validated";
 
 export interface RenderableTagSite {
   siteId: string;
@@ -24,7 +24,7 @@ export interface RenderableTagSite {
   spanEnd: number | null;
 }
 
-const RENDERED: TaggedSiteProvenance[] = ["literature_retrieved", "deterministic_computed"];
+const RENDERED: TaggedSiteProvenance[] = ["literature_retrieved", "deterministic_computed", "screen_validated"];
 
 /** Parse a residue_range like "H27-K159" / "89-120" -> [27, 159]; null if absent/malformed. */
 function parseSpan(range: string | null | undefined): [number, number] | null {
