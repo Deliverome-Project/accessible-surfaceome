@@ -5,6 +5,7 @@ import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { SectionCard } from "../SectionCard/SectionCard";
 import type {
   EvidenceSource,
+  IsoformTagPin,
   TaggedSite,
   TaggedSitesFile,
 } from "../../../lib/tag-sites-types";
@@ -28,7 +29,13 @@ const CONF_RANK: Record<string, number> = { high: 3, medium: 2, low: 1 };
 function residueDisplay(s: TaggedSite): string {
   if (s.residue_label) return s.residue_label;
   if (s.site_kind === "terminal_c") return "C-term";
-  if (s.site_kind === "terminal_n") return "N-term";
+  if (s.site_kind === "terminal_n") {
+    // Tag downstream of the mature N-terminus (post-SP): "after N".
+    if (s.insert_after_residue != null) return `after ${s.insert_after_residue}`;
+    // Bare N-terminal tag sits BEFORE residue 1 — name that residue (e.g.
+    // "before M1") so the reader sees the exact position, not just "N-term".
+    return s.residue_after ? `before ${s.residue_after}1` : "N-term";
+  }
   if (s.insert_after_residue != null) return `after ${s.insert_after_residue}`;
   return "—";
 }
@@ -344,6 +351,43 @@ const DET_COLUMNS: Column[] = [
   { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
 ];
 
+/** Compact table for per-isoform CONTROL pins (e.g. Tedman screen): each row is
+ *  one alternative isoform that carries the same N-terminal control tag, with its
+ *  own measured surface expression. These also render on the Isoforms tab's
+ *  topology bars + 3D variant tabs; this table just makes them legible here. */
+function IsoformControlTable({ pins }: { pins: IsoformTagPin[] }) {
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th className={styles.head}>Isoform</th>
+            <th className={styles.head}>Placement</th>
+            <th className={styles.head}>Tag</th>
+            <th className={styles.head}>Surface expression</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pins.map((p) => (
+            <tr key={p.site_id}>
+              <td className={styles.residue}>{p.isoform_id}</td>
+              <td>
+                {p.isoform_residue <= 1
+                  ? "N-terminus"
+                  : `after ${p.isoform_residue}`}
+              </td>
+              <td>
+                <TagChips value={p.tag_type} />
+              </td>
+              <td className={styles.evidence}>{p.note ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export interface TaggedSitesCardProps {
   taggedSites: TaggedSitesFile | null;
   n?: number;
@@ -385,11 +429,20 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
       s.provenance === "screen_validated" &&
       (s.extracellular || s.site_kind === "terminal_n"),
   );
+  // Per-isoform control pins (e.g. Tedman screen) — surfaced as their own
+  // section so the alternative-isoform tag sites are legible here, not just
+  // edge pins on the Isoforms tab's topology bars.
+  const isoformCtrl = (taggedSites?.isoform_pins ?? []).filter(
+    (p) => p.classification === "control",
+  );
   const legendCategories = Array.from(
     new Set([...lit, ...det, ...screenSites].map((s) => tagSiteCategory(s))),
   );
 
-  if (!taggedSites?.has_data || lit.length + det.length + screenSites.length === 0) {
+  if (
+    !taggedSites?.has_data ||
+    lit.length + det.length + screenSites.length + isoformCtrl.length === 0
+  ) {
     return (
       <SectionCard n={n} title="Tag sites">
         <p className={styles.empty}>No tag-site suggestions for this protein yet.</p>
@@ -420,6 +473,15 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
         <>
           <h3 className={styles.subhead}>Screen-validated ({screenSites.length})</h3>
           <SortableTable sites={screenSites} columns={LIT_COLUMNS} />
+        </>
+      ) : null}
+
+      {isoformCtrl.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>
+            Isoform control sites ({isoformCtrl.length})
+          </h3>
+          <IsoformControlTable pins={isoformCtrl} />
         </>
       ) : null}
 
