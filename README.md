@@ -17,6 +17,24 @@ MIT-licensed; copyright Michael Smallegan and Rebecca Carlson. Full
 design notes:
 [docs/plans/2026-04-16-surface-proteome-annotation.md](docs/plans/2026-04-16-surface-proteome-annotation.md).
 
+## Quickstart
+
+**Browse it — no install.** The [web viewer](https://surfaceome.deliverome.org) is a sortable catalog with a per-gene evidence page; the public JSON API serves the same records (e.g. `https://api.deliverome.org/surfaceome/v1/genes/KLK2`).
+
+**Deep-dive one gene yourself:**
+
+```bash
+git clone https://github.com/Deliverome-Project/accessible-surfaceome
+cd accessible-surfaceome
+uv sync                              # Python environment
+cp .env.example .env                 # add ANTHROPIC_API_KEY (+ NCBI keys)
+uv run python scripts/surfaceome_v2_annotate.py KLK2
+```
+
+**Reproduce a figure.** Every figure's gist bundles its data and script; the figure ↔ SWHID ↔ gist map is [`data/analysis/figures/figure_swhids.json`](data/analysis/figures/figure_swhids.json) (see [Figure reproducibility](#figure-reproducibility)).
+
+**Run the viewer locally:** `cd viewer && npm install && npm run dev` (it builds a data snapshot first; the live site is the canonical deployment).
+
 ## Why this exists
 
 Existing surface-proteome databases (SURFY, CSPA, UniProt subcellular,
@@ -283,16 +301,19 @@ for the embedder.
 | `src/accessible_surfaceome/sources/` | One module per M1 data source (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `compartments.py`, `ensembl_compara.py`); each exposes `download` / `build` subcommands. Shared helpers under `sources/_support/`. |
 | `src/accessible_surfaceome/merge/` | Candidate-universe orchestration; loaders, normalization, gene-symbol resolution. |
 | `src/accessible_surfaceome/agents/surface_triage/` | The triage agent (orchestrator + prompts + Pydantic models). |
-| `src/accessible_surfaceome/agents/surface_annotator/` | The deep-dive agent (orchestrator + tool registry + deep-dive pack loader + evidence-promotion pipeline + audit module). |
+| `src/accessible_surfaceome/agents/surfaceome_v2/` | The production deep-dive: orchestrator, Sonnet block builders, and record assembly. Stage-1 literature retrieval is `agents/plan_trim_select/`; the Stage-3 synthesizer is `agents/surfaceome_synthesizer/`; `agents/surfaceome_v1/` is the retired v1 agent. |
 | `src/accessible_surfaceome/audit/` | Audit scripts and figure helpers. |
 | `src/accessible_surfaceome/controls.py` | Control-panel builder. |
 | `src/accessible_surfaceome/cloud/` | D1 HTTP client + triage-run uploader. |
 | `src/accessible_surfaceome/tools/` | Shared per-tool helpers + Pydantic models. |
 | `cloudflare/` | D1 schemas + Worker code for the public API. |
-| `scripts/` | One-shot data refreshers (`refresh_compara.sh`, `upload_compara_to_d1.py`, `sync_public_d1.py`), the triage runner (`triage_runner.py`), per-eval render scripts, and the release ritual (`scripts/release/`). |
+| `scripts/` | Flat collection of one-shot builders, backfills, and audits, plus D1 upload/sync, figure builders (`build_figure_*`, mirrored by `data/analysis/figures/make_*`), the triage runner (`triage_runner.py`), the single-gene deep-dive driver (`surfaceome_v2_annotate.py`), and the release ritual (`scripts/release/`). |
 | `viewer/` | Next.js 16 app, deployed at `surfaceome.deliverome.org`. |
 | `data/raw/`, `data/external/`, `data/processed/`, `data/annotations/`, `data/analysis/` | Source snapshots, normalized tables, agent outputs, and final figures. Annotations dir is gitignored; `viewer/public/data/genes/` holds the published snapshot. |
 | `docs/` | Project plans, eval reports, decisions. |
+| `paper/` | Manuscript-facing figure assets — the figure index (`figure_index.md`), per-paper-number figure symlinks, and figure SVGs. |
+| `modal/` | Modal serverless-compute app for running the deep-dive pipeline at scale. |
+| `assets/` | Shared brand fonts and assets used by the figure scripts. |
 | `tests/` | Pytest suite. |
 
 ## Commands
@@ -321,14 +342,8 @@ positives, patent delivery-handle positives, negative controls).
 ## Agent commands
 
 ```bash
-# Sync the deep-dive agent to Anthropic (one-time per code change to agent.py / prompts)
-uv run accessible-surfaceome agents sync
-
 # Deep-dive one gene end-to-end (Sonnet 4.6, ~$1.3/gene, ~9 min):
 uv run python scripts/surfaceome_v2_annotate.py HSPA1A
-
-# Audit the corpus round-trip + Sonnet entailment on a record:
-uv run accessible-surfaceome agents audit-corpus HSPA1A
 
 # Run the triage benchmark sweep (147-gene mainbench):
 uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --replicates 1 --d1
