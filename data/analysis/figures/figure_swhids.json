@@ -1,3 +1,128 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3903fd586a265066da904a940e96e0911a834d2a0feb9142a52bec9a5d0ebeab
-size 4976
+[
+  {
+    "figure": "Figure 1",
+    "slug": "db_overlap_venn",
+    "swhid": "swh:1:rev:8322ad4a453c4d806405a0b6d01337ec80f25062",
+    "gist": "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"
+  },
+  {
+    "figure": "Figure 2",
+    "slug": "db_correctness_by_class",
+    "swhid": "swh:1:rev:4e00280896421aa67ea53d3028e5f836ba63115e",
+    "gist": "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"
+  },
+  {
+    "figure": "Figure 3",
+    "slug": "zero_db_rescues_by_triage",
+    "swhid": "swh:1:rev:0bc13e155a8cd32b101b46bea44bc4eacc4b67c9",
+    "gist": "https://gist.github.com/beccajcarlson/a4526c9e6de5e958826bf1d764744c1b"
+  },
+  {
+    "figure": "Figure 4",
+    "slug": "deep_dive_flow",
+    "swhid": "swh:1:rev:ddcf5b4d22ab557226725385e122b0cd7f48c3a9",
+    "gist": "https://gist.github.com/beccajcarlson/eb7ce1015ff21ec0329472e33a9ea713"
+  },
+  {
+    "figure": "Figure 5",
+    "slug": "deep_dive_final_categories",
+    "swhid": "swh:1:rev:8b90b2e2123cebb846a69bfcccb916d9f6dace8b",
+    "gist": "https://gist.github.com/beccajcarlson/c2441f8d0314c5524463bc85a3e86612"
+  },
+  {
+    "figure": "Figure 6",
+    "slug": "deep_dive_record_richness",
+    "swhid": "swh:1:rev:c4c3168889b47e496431ae8694a54785fdff0195",
+    "gist": "https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01"
+  },
+  {
+    "figure": "Figure 7",
+    "slug": "web_preview",
+    "swhid": "swh:1:rev:3b0062e20f36c6dce22177c89d32803b2d553b81",
+    "gist": "https://gist.github.com/beccajcarlson/f8de3e35072ad91d76eb2ea5fb49cca6"
+  },
+  {
+    "figure": "Supplementary Figure 1",
+    "slug": "db_correctness_overall",
+    "swhid": "swh:1:rev:b9ec42213f03d398ddd77ae78a557b634ac06ae3",
+    "gist": "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d"
+  },
+  {
+    "figure": "Supplementary Figure 2",
+    "slug": "benchmark_cost_vs_accuracy",
+    "swhid": "swh:1:rev:b9a4fd09631c6c3e6742d003d069569bdc694148",
+    "gist": "https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41"
+  },
+  {
+    "figure": "Supplementary Figure 3",
+    "slug": "curator_vs_agent_reason",
+    "swhid": "swh:1:rev:92c0449d4eb83f371f4f9f2b0a1308f79ce145aa",
+    "gist": "https://gist.github.com/beccajcarlson/c98fe6646ba8b967767d072657da31b7"
+  },
+  {
+    "figure": "Supplementary Figure 4",
+    "slug": "db_cutoff_tradeoff",
+    "swhid": "swh:1:rev:0441abc156c911e3b0b8862b20e009edf8edc178",
+    "gist": "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
+  },
+  {
+    "figure": "Supplementary Figure 5",
+    "slug": "ensemble_vs_best_db_vs_sonnet",
+    "swhid": "swh:1:rev:060b7ca0c42e3f5a0d9a884ac82b5d05e18e1568",
+    "gist": "https://gist.github.com/beccajcarlson/0104308c239fe49d91d82a1007632b27"
+  },
+  {
+    "figure": "Supplementary Figure 6",
+    "slug": "db_vs_sonnet_whole_proteome",
+    "swhid": "swh:1:rev:d25574fdaf0f6c370b351fdc272fc41b54000169",
+    "gist": "https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013"
+  },
+  {
+    "figure": "Supplementary Figure 7",
+    "slug": "positive_control_db_coverage_bars",
+    "swhid": "swh:1:rev:f7b6b3911b420731d9f565039f7f70571b4d09d7",
+    "gist": "https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c"
+  },
+  {
+    "figure": "Supplementary Figure 8",
+    "slug": "bench_topology_vs_universe",
+    "swhid": "swh:1:rev:53dde26c2bcf3fb7d8c5db78945480e29b1d4db1",
+    "gist": "https://gist.github.com/beccajcarlson/f724dd328f48566a354f0294109a7337"
+  },
+  {
+    "figure": "Supplementary Figure 9",
+    "slug": "topology_coverage_by_source",
+    "swhid": "swh:1:rev:2b550d7df12f9cad0892f48d3a457971e1a1f9bf",
+    "gist": "https://gist.github.com/beccajcarlson/95b0f4cdcaf6a6b91f57539cd1515a25"
+  },
+  {
+    "figure": "Supplementary Figure 10",
+    "slug": "paywall_bot_block_compare",
+    "swhid": "swh:1:rev:8ab41cc6ef790b01df229633fd35a6ef2a19e958",
+    "gist": "https://gist.github.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d"
+  },
+  {
+    "figure": "Supplementary Figure 11",
+    "slug": "deep_dive_vs_sonnet_benchmark",
+    "swhid": "swh:1:rev:992d9e7775fed835fa88e984b4ae4e83de96a051",
+    "gist": "https://gist.github.com/beccajcarlson/d88f7c7a135bf222ccc5883b9c1a2eb4"
+  },
+  {
+    "figure": "Supplementary Figure 12",
+    "slug": "evidence_corpus_vs_selected",
+    "swhid": "swh:1:rev:7206042633c3a2a9dbfc42d53164f14f30532cb8",
+    "gist": "https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549"
+  },
+  {
+    "figure": "Supplementary Figure 13",
+    "slug": "triage_vs_deep_dive_reason",
+    "swhid": "swh:1:rev:102d61c221a64222d16ac2df66668076340c3144",
+    "gist": "https://gist.github.com/beccajcarlson/152a4d8b4a1d156e2afaa73d205294b6"
+  },
+  {
+    "figure": "Supplementary Figure 14",
+    "slug": "surfaceome_deterministic_features",
+    "swhid": "swh:1:rev:55012ff3536e27f1fde9acca0c4eb0b8d0cdcc0c",
+    "gist": "https://gist.github.com/beccajcarlson/57cf3cc3db903ab39bc0ba315ce5e4d5"
+  }
+]

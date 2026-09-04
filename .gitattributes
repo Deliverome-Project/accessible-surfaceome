@@ -20,6 +20,7 @@ data/analysis/figures/*.md -filter text
 # at collection time — LFS pointer reads as text that fails json.loads.
 data/analysis/figures/gist_map.json -filter -diff -merge text
 data/analysis/figures/swhid_map.json -filter -diff -merge text
+data/analysis/figures/figure_swhids.json -filter -diff -merge text
 
 # Figure outputs themselves ship as plain git too — each PDF is
 # 20–60 KB and each PNG is 130–500 KB, well under the CLAUDE.md
