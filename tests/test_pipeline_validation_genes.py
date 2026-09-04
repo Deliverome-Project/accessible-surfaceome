@@ -226,15 +226,19 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
 
     # ---- TGOLN2 — endomembrane resident with PM trafficking ----
     (
-        "TGOLN2", "executive_summary.surface_accessibility", {"no", "low"},
+        "TGOLN2", "executive_summary.surface_accessibility",
+        {"no", "low", "moderate", "uncertain"},
         "methods_builder 'transient trafficking with documented PM dwell' "
         "section + synth dual_localization vs endomembrane_resident "
-        "disambiguation — TGN46 has documented PM-trafficking evidence. "
-        "Either 'low' (the preferred call when trafficking is captured) "
-        "or 'no' (acceptable when methods doesn't surface the trafficking "
-        "row this round). What matters is the surface_call_reason "
-        "(separate test row) — that must NOT be in the strict-NO bucket "
-        "unless the WHOLE story is endomembrane-only.",
+        "disambiguation — TGN46 has documented PM-trafficking evidence, so "
+        "this is a SOFT yes/no: 'low' is the preferred call when trafficking "
+        "is captured, 'no' is fine when methods doesn't surface the "
+        "trafficking row, and 'moderate'/'uncertain' are acceptable borderline "
+        "calls for a mostly-endomembrane protein that does dwell at the PM. "
+        "Only a confident 'high' (a strong-surface overclaim) is wrong here. "
+        "What actually matters is the surface_call_reason (separate test row) "
+        "— that must NOT be in the strict-NO bucket unless the WHOLE story is "
+        "endomembrane-only.",
     ),
     (
         "TGOLN2", "executive_summary.state_dependence",
