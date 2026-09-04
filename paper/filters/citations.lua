@@ -364,11 +364,17 @@ local function icon_link(icon, label, url)
   -- own font and lets CSS colour the capital R, which is the whole of
   -- the mark's identity.
   if label == "bioRxiv" then
-    inlines:insert(pandoc.Str("bio"))
-    inlines:insert(pandoc.Span({pandoc.Str("R")}, pandoc.Attr("", {"biorxiv-r"})))
-    inlines:insert(pandoc.Str("xiv"))
+    -- Real bioRxiv logo (the official public-domain wordmark lockup),
+    -- sized down in CSS. A fixed image reads as the brand and — unlike
+    -- the old typeset wordmark — doesn't depend on the page's fonts.
+    local src = ASSETS_DIR and (ASSETS_DIR .. "/biorxiv_logo.png")
+      or "biorxiv_logo.png"
+    local logo = pandoc.Image(
+      {pandoc.Str("bioRxiv")}, src, "",
+      pandoc.Attr("", {"resource-biorxiv-logo"})
+    )
     return pandoc.Link(
-      inlines, url, "", pandoc.Attr("", {"resource-link", "resource-biorxiv"})
+      {logo}, url, "", pandoc.Attr("", {"resource-link", "resource-biorxiv"})
     )
   end
   if icon and ASSETS_DIR then

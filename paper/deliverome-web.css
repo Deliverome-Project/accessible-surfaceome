@@ -116,7 +116,12 @@ html { -webkit-text-size-adjust: 100%; }
  * there is room for both.
  * ============================================================ */
 
-.paper-root > *:not(.paper-header):not(#TOC) {
+/* The figure lightbox is a full-screen fixed overlay appended to the
+ * body, so it must NOT be squeezed into the text column — without the
+ * exclusion it inherited max-width:--measure + margin/padding and the
+ * dark backdrop rendered as a centred box instead of covering the
+ * viewport. */
+.paper-root > *:not(.paper-header):not(#TOC):not(.figure-lightbox) {
   max-width: var(--measure);
   margin-inline: auto;
   padding-inline: 1.5rem;
@@ -442,6 +447,14 @@ th { color: var(--maroon-dark); font-weight: 600; }
   color: var(--ink-soft);
   max-width: 60rem;
 }
+/* Match the in-flow caption card: the run-in "Figure N. Title." is a
+ * <strong>, and the caption ends with a "Figure data and script." gist
+ * link — both carried in verbatim, so give them the same maroon here. */
+.figure-lightbox__inner figcaption strong {
+  color: var(--maroon-dark);
+  font-weight: 700;
+}
+.figure-lightbox__inner figcaption a { color: var(--maroon-mid); }
 
 .figure-lightbox__close {
   position: fixed;
@@ -532,19 +545,155 @@ th { color: var(--maroon-dark); font-weight: 600; }
   word-break: break-word;
 }
 
-/* bioRxiv wordmark, typeset rather than imaged — see citations.lua.
- *
- * MUST opt out of the inline-flex above: in a flex container each
- * text run becomes its own anonymous flex item, so the row `gap`
- * was inserted between "bio", "R" and "xiv" and the mark rendered
- * as "bio R xiv". */
+/* bioRxiv resource link — now the real logo image (see citations.lua).
+ * No hover underline: it would run under the logo and look broken. */
 a.resource-biorxiv {
-  display: inline-block;
-  gap: 0;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  border-bottom: none;
+  padding: 0;
+}
+img.resource-biorxiv-logo {
+  height: 1.6em;
+  width: auto;
+  display: block;
 }
 
-a.resource-biorxiv .biorxiv-r {
-  color: #be2531;
+/* ============================================================
+ * Reader comments (web build only) — markup from build.py,
+ * behaviour from deliverome-web.js.
+ * ============================================================ */
+
+.paper-comments {
+  margin-top: 3rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--rule, rgba(31, 23, 24, 0.12));
+  font-family: var(--font-sans, "Manrope"), sans-serif;
 }
+
+.paper-comments__title {
+  font-family: var(--font-sans, "Manrope"), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--maroon-dark);
+  margin: 0 0 0.35rem;
+}
+
+.paper-comments__intro {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1.4rem;
+  max-width: 42rem;
+}
+
+/* Approved public comments. */
+.paper-comments__list {
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.paper-comments__list:empty { margin: 0; }
+
+.paper-comments__note {
+  border-left: 3px solid var(--maroon-mid);
+  padding: 0.15rem 0 0.15rem 0.9rem;
+}
+.paper-comments__note-body {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+.paper-comments__note-by {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Form. */
+.paper-comments__form {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 42rem;
+}
+.paper-comments__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+@media (max-width: 34rem) {
+  .paper-comments__grid { grid-template-columns: 1fr; }
+}
+
+.paper-comments__field {
+  display: grid;
+  gap: 0.3rem;
+}
+.paper-comments__field > span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.paper-comments__field > span em {
+  font-weight: 400;
+  font-style: normal;
+  color: var(--muted);
+}
+
+.paper-comments__field input,
+.paper-comments__field textarea {
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--rule, rgba(31, 23, 24, 0.2));
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem;
+  width: 100%;
+}
+.paper-comments__field textarea { resize: vertical; min-height: 5.5rem; }
+.paper-comments__field input:focus,
+.paper-comments__field textarea:focus {
+  outline: none;
+  border-color: var(--maroon-mid);
+  box-shadow: 0 0 0 3px var(--maroon-soft);
+}
+
+.paper-comments__check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+.paper-comments__check input { margin-top: 0.15rem; }
+
+.paper-comments__turnstile:empty { display: none; }
+
+.paper-comments__status {
+  margin: 0;
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+.paper-comments__status.is-error { color: var(--maroon-mid); }
+.paper-comments__status.is-ok { color: #1f7a4d; }
+.paper-comments__status.is-pending { color: var(--muted); }
+
+.paper-comments__submit {
+  justify-self: start;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  background: var(--maroon-mid);
+  border: 0;
+  border-radius: 4px;
+  padding: 0.55rem 1.3rem;
+  cursor: pointer;
+}
+.paper-comments__submit:hover:not(:disabled) { background: var(--maroon-dark); }
+.paper-comments__submit:disabled { opacity: 0.55; cursor: default; }
