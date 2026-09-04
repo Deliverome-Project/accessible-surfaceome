@@ -53,6 +53,52 @@ to the strongest well-supported mode of `basal` / `native_ligand` / `therapeutic
 supported). `pathogen_entry` is a capacity signal only — it does NOT drive
 `overall_grade`.
 
+## A grade needs a DIRECT internalization measurement, not an indirect correlate
+
+A `low` / `moderate` / `high` grade for ANY mode must rest on at least one clip
+that **directly measures the receptor moving from the surface into the cell** —
+for example: antibody / ligand / cargo uptake (ideally with an acid-strip, 4 °C,
+or surface-strip control); a pulse-chase or internalization rate / half-life
+assay; live or fixed imaging of *internalized* (intracellular) receptor; loss of
+uptake under an endocytosis inhibitor or clathrin / dynamin knockdown; or a
+receptor recycling assay. These are the only evidence types that establish that
+internalization actually happens.
+
+**Indirect correlates do NOT establish internalization** and cannot, on their
+own, justify a positive grade — on their own they support at most `unknown`
+(mention the correlate in the rationale, at `low` confidence, rather than
+promoting it to a graded value). Treat as indirect, and therefore NOT gradable by
+themselves:
+
+- the receptor merely being **detected on secreted extracellular vesicles /
+  exosomes** — vesicle biogenesis is not a surface-to-inside uptake measurement,
+  so EV/exosome presence alone is not evidence the receptor internalizes;
+- the mere **presence of endocytic machinery** or of adaptor / scaffold binding
+  partners, with no measured uptake;
+- a change in **surface or total abundance / expression** with no rate-of-uptake
+  measurement (see the modulator abundance rule below — the same principle);
+- a **topology or sequence-motif argument** that the receptor *could* internalize.
+
+When the only evidence for a mode is such a correlate, grade that mode `unknown`
+and say why in the rationale — do NOT infer a constitutive (basal) or any other
+positive grade from it, and do not let the protein's general reputation stand in
+for a measurement. (A genuine uptake measurement that ALSO reports trafficking
+through endosomes or release on vesicles is fine — the disqualifier is when
+vesicle presence, machinery, abundance, or a "could-internalize" argument is the
+ONLY evidence.)
+
+## `high` and confidence scale with evidence DEPTH
+
+A `high` grade for a mode requires the direct measurement above to be
+CORROBORATED: at least TWO independent papers (distinct source PMIDs/PMCIDs),
+each reporting a direct internalization measurement for that mode. A single paper
+with a direct measurement — however clean that one result is — caps the mode at
+`moderate`; a single indirect correlate caps it at `unknown` (per the rule
+above). Set `confidence` the same way: `high` confidence needs multiple
+concordant papers; a mode resting on ONE paper is at most `moderate` confidence;
+papers that disagree lower it further. Count distinct source ids, not distinct
+observations — several observations pulled from the same paper are ONE paper.
+
 Set `species_scope` to the dominant assay species across the graded evidence
 (e.g. `human`, `mouse`) — use `mixed` when several species are meaningfully
 represented, and leave `unspecified` ONLY when no clip states a species at all.

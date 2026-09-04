@@ -20,6 +20,7 @@ from accessible_surfaceome.agents.internalization.literature_discovery import (
 )
 from accessible_surfaceome.agents.internalization.literature_grade import (
     grade_from_evidence,
+    rollup_species_scope,
 )
 from accessible_surfaceome.agents.internalization.literature_pool import (
     build_pool,
@@ -210,6 +211,10 @@ def annotate_literature(
     has_primary_or_invivo = any(
         o.cell_context in ("primary", "in_vivo") for o in llm.observations
     )
+    # Likewise derive species_scope from the per-observation species — the LLM
+    # schema (extra="forbid") has no species_scope field, so the grader's summary
+    # was dropped at parse time and every record defaulted to "unspecified".
+    species_scope = rollup_species_scope(llm.observations)
 
     track = LiteratureTrack(
         grades_by_mode=llm.grades_by_mode,
@@ -218,6 +223,8 @@ def annotate_literature(
         rationale=llm.rationale,
         cross_condition_note=llm.cross_condition_note,
         trafficking_summary=llm.trafficking_summary,
+        species_scope=species_scope,
+        species_inferred=species_scope != "unspecified",
         has_primary_or_invivo_evidence=has_primary_or_invivo,
         observations=llm.observations,
         modulator_observations=modulators,

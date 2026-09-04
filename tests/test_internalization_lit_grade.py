@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 from accessible_surfaceome.agents.internalization.literature_grade import (
     grade_from_evidence,
+    rollup_species_scope,
 )
 from accessible_surfaceome.agents.internalization.models import (
     GradesByMode,
@@ -129,3 +130,36 @@ def test_grade_repairs_on_invalid_assay_other_then_succeeds():
     )
     assert client.messages.calls == 2  # one repair round
     assert out.overall_grade == "low"
+
+
+def _obs(species):
+    # 'other' assay needs a label; the rollup only reads .species.
+    return InternalizationObservation(
+        assay_type="other",
+        assay_type_other_label="x",
+        internalization_mode="basal",
+        species=species,
+    )
+
+
+def test_rollup_species_scope_dominant_and_aliases():
+    # One named 'human' among nulls -> human (the ACKR3 case that had been
+    # rolling up to 'unspecified'); latin binomials normalize.
+    assert rollup_species_scope([_obs("human"), _obs(None), _obs(None)]) == "human"
+    assert rollup_species_scope([_obs("Homo sapiens"), _obs(None)]) == "human"
+
+
+def test_rollup_species_scope_mixed_and_minor():
+    # A second species reaching >=1/3 of the named obs -> mixed ...
+    assert (
+        rollup_species_scope([_obs("human"), _obs("human"), _obs("mouse")]) == "mixed"
+    )
+    # ... but a lone minor mention does not override the dominant species.
+    assert (
+        rollup_species_scope([_obs("human")] * 4 + [_obs("mouse")]) == "human"
+    )
+
+
+def test_rollup_species_scope_unspecified_when_none_named():
+    assert rollup_species_scope([_obs(None), _obs(None)]) == "unspecified"
+    assert rollup_species_scope([]) == "unspecified"

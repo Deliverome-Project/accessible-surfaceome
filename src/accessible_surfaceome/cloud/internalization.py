@@ -9,10 +9,92 @@ drop-stale-versions) but for the separate internalization record.
 
 from __future__ import annotations
 
+import logging
+import os
 from datetime import UTC, datetime
+from urllib.parse import urlparse
 
 from accessible_surfaceome.agents.internalization.models import InternalizationRecord
 from accessible_surfaceome.cloud.d1_client import D1Client
+
+logger = logging.getLogger(__name__)
+
+# Edge-cache keys the Worker uses for the internalization surfaces — MUST match
+# ``cloudflare/workers/surfaceome_api/src/index.js``. ``withEdgeCache`` keys BOTH
+# ``caches.default`` and the ``RECORD_CACHE`` KV mirror on the synthetic host
+# ``https://surfaceome-api.cache`` + the UNSTRIPPED request pathname (which
+# carries the ``/surfaceome`` route prefix); ``handleCatalog`` uses its own
+# synthetic host ``https://catalog.cache`` + a hardcoded ``/v1/catalog``.
+# NOTE: surface_annotation.py purges the per-gene ``caches.default`` key under a
+# DIFFERENT host (``cache.internal``) — that host does not match the deployed
+# Worker's key, so its file-purge silently misses (only its KV delete lands).
+# We use the correct ``surfaceome-api.cache`` host here for BOTH layers.
+_PUBLIC_API_BASE = os.environ.get(
+    "SURFACEOME_PUBLIC_API_BASE", "https://api.deliverome.org/surfaceome"
+)
+_CACHE_KEY_BASE = f"https://surfaceome-api.cache{urlparse(_PUBLIC_API_BASE).path.rstrip('/')}"
+_CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
+
+
+def _purge_internalization_cache(sym: str) -> None:
+    """Best-effort edge-cache invalidation after an internalization D1 write.
+
+    A republish must evict the gene's ``/v1/internalization/{sym}`` entry from
+    BOTH ``caches.default`` (per-POP) and the ``RECORD_CACHE`` KV mirror, plus the
+    genome-wide ``/v1/catalog`` (its ``intern``/``intern_lit_grade`` column for
+    this row changed) — otherwise the re-graded record serves stale until the
+    Worker's Cache-Control TTL (up to 1 day for a per-gene record).
+
+    Never raises and soft-skips with a warning when the Cloudflare env isn't
+    configured (same posture as the D1 push itself, so CI / offline dev never
+    breaks — the record then just goes live on the TTL). Reuses
+    surface_annotation's Cloudflare API helpers for the actual calls but pins the
+    keys to the internalization route on the host the Worker really uses.
+    """
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+    zone = os.environ.get("CLOUDFLARE_ZONE_ID", "").strip()
+    if not (token and zone):
+        logger.warning(
+            "CLOUDFLARE_ZONE_ID / CLOUDFLARE_API_TOKEN not set — skipping "
+            "internalization edge-cache purge for %s (record goes live on the "
+            "Worker's Cache-Control TTL, up to 1 day, rather than immediately).",
+            sym,
+        )
+        return
+    import httpx
+
+    from accessible_surfaceome.cloud.surface_annotation import (
+        _delete_kv_key,
+        _purge_cf_cache,
+    )
+
+    rec_url = f"{_CACHE_KEY_BASE}/v1/internalization/{sym}"
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            _purge_cf_cache(
+                [rec_url, _CATALOG_CACHE_URL], zone_id=zone, token=token, client=client
+            )
+            acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+            ns = os.environ.get("CLOUDFLARE_KV_RECORD_CACHE_ID", "").strip()
+            if acct and ns:
+                _delete_kv_key(
+                    rec_url, account_id=acct, namespace_id=ns, token=token, client=client
+                )
+            else:
+                logger.warning(
+                    "CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_KV_RECORD_CACHE_ID not set "
+                    "— purged caches.default but not the KV mirror for %s; the KV "
+                    "entry serves stale until its expiration TTL (1 day).",
+                    sym,
+                )
+        logger.info("internalization edge-cache purged for %s (per-gene + catalog)", sym)
+    except Exception as exc:  # noqa: BLE001 — purge is best-effort, never fatal
+        logger.warning(
+            "internalization edge-cache purge failed for %s (%s) — record stale "
+            "until TTL",
+            sym,
+            exc,
+        )
 
 # DDL kept in sync with cloudflare/d1_internalization_schema.sql. D1's HTTP API
 # rejects multi-statement batches, so each statement is submitted separately.
@@ -166,6 +248,9 @@ def publish_seq_record(
             f"VALUES ({placeholders});",
             [row[c] for c in _COLS],
         )
+        # Evict the gene's cached Worker responses so a re-grade goes live
+        # immediately rather than on the Cache-Control TTL (up to 1 day).
+        _purge_internalization_cache(record.gene_symbol)
     finally:
         if owns:
             client.close()
