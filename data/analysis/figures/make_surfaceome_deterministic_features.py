@@ -281,7 +281,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
                 parts["cmedians"].set_linewidth(1.6)
             ax.set_xticks(positions)
             ax.set_xticklabels(facet_labels, rotation=20, ha="right")
-            ax.set_ylabel(label, fontsize=11)
+            ax.set_ylabel(label, fontsize=13)
             ax.set_xlim(-0.6, len(GROUPS) - 0.4)
             ax.set_ylim(*ylim)
         elif kind == "frac_bool":
@@ -300,16 +300,16 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
             for i, (y, n_) in enumerate(zip(ys, ns)):
                 if y > 84:
                     ax.text(i, y - 2, f"{y:.0f}%\nn={n_}", ha="center", va="top",
-                            fontsize=9, color="white", weight="semibold")
+                            fontsize=12, color="white", weight="semibold")
                 else:
                     ax.text(i, y + 1.5, f"{y:.0f}%\nn={n_}", ha="center", va="bottom",
-                            fontsize=9, color=facet_colors[i], weight="semibold")
+                            fontsize=12, color=facet_colors[i], weight="semibold")
             ax.set_ylim(*ylim)
             ax.set_xticks(range(len(GROUPS)))
             ax.set_xticklabels(facet_labels, rotation=20, ha="right")
-            ax.set_ylabel(label, fontsize=12)
+            ax.set_ylabel(label, fontsize=13)
 
-        ax.tick_params(axis="x", labelsize=12)
+        ax.tick_params(axis="x", labelsize=13)
         for tl in ax.get_xticklabels():
             tl.set_horizontalalignment("right")
         sns.despine(ax=ax, top=True, right=True)
@@ -327,7 +327,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
     ]
     fig.legend(
         handles=legend_handles, loc="upper center", ncol=5, frameon=False,
-        bbox_to_anchor=(0.5, 1.02), fontsize=10,
+        bbox_to_anchor=(0.5, 1.02), fontsize=13,
     )
 
     plt.tight_layout(rect=(0, 0, 1, 0.96))
