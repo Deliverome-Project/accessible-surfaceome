@@ -159,3 +159,7 @@ paper/*.docx
 paper/*.pdf
 paper/*.html
 paper/*.xml
+
+# Editor / build cruft
+.zed/
+.pages-rebuild-marker
