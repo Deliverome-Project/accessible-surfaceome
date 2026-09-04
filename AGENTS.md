@@ -29,7 +29,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
 
 ## Deep-dive agents run in-process with local prompts (no managed-agent sync)
-`surface_triage` and the deep-dive agents (v1 `surface_evidence_compiler` / `biology_compiler` / `surfaceome_synthesizer`; v2 `plan_trim_select` + 10 block builders + the synthesizer) are all invoked **in-process**: each runner reads its local `prompts/system.md` at call time and loops `client.messages.create(...)` — a plain Anthropic Messages API call (compilers add tools; synthesizer + triage run tool-less). There is **no Managed-Agents registration, no remote prompt snapshot, and no auto-sync** in the shipped code.
+`surface_triage` and the deep-dive agents (v1 `surface_evidence_compiler` / `biology_compiler` / `surfaceome_synthesizer`; v2 `plan_trim_select` + the block builders + the synthesizer) are all invoked **in-process**: each runner reads its local `prompts/system.md` at call time and loops `client.messages.create(...)` — a plain Anthropic Messages API call (compilers add tools; synthesizer + triage run tool-less). There is **no Managed-Agents registration, no remote prompt snapshot, and no auto-sync** in the shipped code.
 
 **Editing a prompt takes effect on the very next local invocation — nothing to push.** Edit the `prompts/*.md` (or the `SurfaceomeRecord` / `SynthesizerLLMFilters` schema in `src/accessible_surfaceome/tools/_shared/models.py`, read locally to build the structured-output tool) and re-run. No `.runs/agents-registry.json` is read at run time; there is no `sync_agent_and_environment` and no `accessible-surfaceome agents sync` command (`agents` just runs the v1 deep-dive).
 
@@ -39,7 +39,7 @@ Concise contributor guide for `accessible-surfaceome`.
 
 > **Historical note.** An earlier design proposed registering these as Anthropic Managed Agents with sha-checked auto-sync (`.runs/agents-registry.json`, `sync_agent_and_environment`, `ANNOTATE_NO_AUTO_SYNC`). **That machinery was never wired into the shipped code.** Any reference to managed-agent sync / auto-sync / `ANNOTATE_NO_AUTO_SYNC` is stale.
 
-**Cost note:** a full v2 deep-dive is ~$2–3 on Sonnet 4.6 per gene (synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
+**Cost note:** a full v2 deep-dive is ~$1.3 on Sonnet 4.6 per gene (median; $1.44 mean across the 5,130-gene cohort run; synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
 
 ## Triage body-fetch: Unpaywall + PDF fallback
 `plan_trim_select` abstract-triage fetches a `worth_fetching` paper's body via a 3-step fall-through: **PMC JATS** (`pmc_id` or PMID→PMCID eLink) → **Unpaywall OA PDF**. The Unpaywall step tries **all** OA PDF locations best-quality-first (so a bot-blocked publisher copy can fall through to a repository copy), parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber; gutter-based 2-column split + font-aware run-in/bold heading detection → the JATS `SectionName` enum). Any failure → abstract fallback, never crashes the batch.
@@ -175,7 +175,7 @@ statement:
 |---|---|---|
 | `gene_identifier` | Stable-ID cache (per-gene canonical IDs). **Read here before re-resolving anything.** | `hgnc_id`, `hgnc_symbol`, `uniprot_acc` |
 | `triage_run` | Per-cell triage records. | `(run_id, gene_symbol, model, prompt_variant, replicate)` |
-| `deep_dive_run` | Surface-annotator deep-dive records. | `(run_id, gene_symbol)` |
+| `deep_dive_run` | Deep-dive (`surfaceome_v2`) records. | `(run_id, gene_symbol)` |
 | `candidate_universe_public` | Catalog index. | `(universe_version, gene_symbol, uniprot_acc)` |
 | `benchmark_version` | Bench-snapshot symbol pinning. | `(bench_version, gene_symbol)` |
 
