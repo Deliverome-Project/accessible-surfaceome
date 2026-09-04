@@ -5,6 +5,7 @@ scrubs any cited_source_ids the model invented that aren't in the ledger."""
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +31,56 @@ def _render_evidence(evidence: list[Any]) -> str:
         quote = span.quote if span else ""
         lines.append(f"[{e.evidence_id}] ({source_id}) {e.claim} | quote: {quote}")
     return "\n".join(lines)
+
+
+# Light normalization of the per-observation species strings the model emits
+# ("Homo sapiens" -> "human", etc.) so the rollup below buckets consistently.
+_SPECIES_ALIASES = {
+    "homo sapiens": "human",
+    "h. sapiens": "human",
+    "hsapiens": "human",
+    "mus musculus": "mouse",
+    "m. musculus": "mouse",
+    "murine": "mouse",
+    "rattus norvegicus": "rat",
+    "macaca fascicularis": "cyno",
+    "cynomolgus": "cyno",
+    "cynomolgus monkey": "cyno",
+}
+
+
+def _norm_species(s: str | None) -> str:
+    v = (s or "").strip().lower()
+    return _SPECIES_ALIASES.get(v, v)
+
+
+def rollup_species_scope(observations: list[Any]) -> str:
+    """Deterministically derive the record ``species_scope`` from the
+    per-observation ``species`` values.
+
+    ``LiteratureLLMOut`` forbids extras and has no ``species_scope`` field, so the
+    grader's record-level species summary was silently dropped at parse time and
+    every record defaulted to ``unspecified`` — even when clips clearly named a
+    species. Derive it in code instead (the same "not trusted to the LLM" pattern
+    the runner uses for ``has_primary_or_invivo_evidence``): the dominant named
+    species wins; ``mixed`` when a second species is meaningfully represented
+    (>=1/3 of the named observations); ``unspecified`` ONLY when no observation
+    names a species.
+    """
+    named = [
+        n for n in (_norm_species(getattr(o, "species", None)) for o in observations)
+        if n and n != "unspecified"
+    ]
+    if not named:
+        return "unspecified"
+    counts = Counter(named)
+    total = len(named)
+    dominant = counts.most_common(1)[0][0]
+    # A second species that reaches a third of the named observations makes the
+    # record genuinely multi-species; a stray minor mention does not override the
+    # dominant species.
+    minor = [sp for sp, n in counts.items() if sp != dominant and n / total >= 1 / 3]
+    return "mixed" if minor else dominant
 
 
 def _scrub_unknown_cites(out: LiteratureLLMOut, *, known: set[str]) -> LiteratureLLMOut:

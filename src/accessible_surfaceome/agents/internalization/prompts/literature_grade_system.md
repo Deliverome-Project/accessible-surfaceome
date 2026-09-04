@@ -87,6 +87,18 @@ through endosomes or release on vesicles is fine — the disqualifier is when
 vesicle presence, machinery, abundance, or a "could-internalize" argument is the
 ONLY evidence.)
 
+## `high` and confidence scale with evidence DEPTH
+
+A `high` grade for a mode requires the direct measurement above to be
+CORROBORATED: at least TWO independent papers (distinct source PMIDs/PMCIDs),
+each reporting a direct internalization measurement for that mode. A single paper
+with a direct measurement — however clean that one result is — caps the mode at
+`moderate`; a single indirect correlate caps it at `unknown` (per the rule
+above). Set `confidence` the same way: `high` confidence needs multiple
+concordant papers; a mode resting on ONE paper is at most `moderate` confidence;
+papers that disagree lower it further. Count distinct source ids, not distinct
+observations — several observations pulled from the same paper are ONE paper.
+
 Set `species_scope` to the dominant assay species across the graded evidence
 (e.g. `human`, `mouse`) — use `mixed` when several species are meaningfully
 represented, and leave `unspecified` ONLY when no clip states a species at all.

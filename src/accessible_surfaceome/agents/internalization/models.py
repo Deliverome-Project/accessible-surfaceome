@@ -60,7 +60,15 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 #        "could-internalize" arguments — support at most `unknown`, never a
 #        graded value (generalizes the abundance-exclusion; fixes EV-presence
 #        being read as constitutive/basal internalization).
-LIT_PROMPT_VERSION = "0.1.8"
+# 0.1.9: `high` grade + high confidence now scale with evidence DEPTH — a mode
+#        needs >=2 independent papers (distinct source ids) with a direct
+#        measurement to reach `high`; a single-paper direct measurement caps at
+#        `moderate` (fixes single-observation `high` grades). Paired with a
+#        code-side change: `species_scope` is now rolled up DETERMINISTICALLY
+#        from the per-observation species in literature_grade._rollup_species_scope
+#        (the model tagged per-obs species but left the record scope
+#        `unspecified` on every gene).
+LIT_PROMPT_VERSION = "0.1.9"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
