@@ -4,7 +4,7 @@
   "description": "<p>Pipeline, agents, and web viewer behind <a href=\"https://surfaceome.deliverome.org\">surfaceome.deliverome.org</a> — a consensus atlas of extracellularly accessible human plasma-membrane proteins.</p><p>Five public surface-protein resources (UniProt, GO Cellular Component, the Human Protein Atlas, the Cell Surface Protein Atlas, and SURFY) disagree substantially about which proteins reach the cell surface, agreeing on only 188. This repository builds a reconciled atlas: a tool-free triage agent classifies every protein-coding human gene for surface accessibility, and a literature-anchored deep-dive pipeline turns each candidate into a structured, evidence-cited record with per-claim citations and precomputed deterministic structural features.</p><p>Contents: the candidate-universe construction and benchmark curation code; the triage and deep-dive agents; deterministic feature builders (orthology, paralogs, isoforms, membrane topology, AlphaFold structure, candidate binding sites, homo-oligomerization); the Cloudflare Worker and public API; the React viewer; figure-generation scripts; and the manuscript build chain.</p><p>Supported by the Astera Institute (ROR 00ydx1s47) and Anthropic (ROR 056y0v115). Deliverome Bio received API credits through the Claude AI for Science program for this project.</p><p>Underlying data are deposited separately at <a href=\"https://doi.org/10.5281/zenodo.20805383\">10.5281/zenodo.20805383</a> (CC BY 4.0).</p>",
   "license": "mit",
   "access_right": "open",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "language": "eng",
   "creators": [
     {
@@ -28,8 +28,7 @@
     "antibody-drug conjugates",
     "large language models",
     "literature curation",
-    "bioinformatics",
-    "proteomics"
+    "bioinformatics"
   ],
   "related_identifiers": [
     {
