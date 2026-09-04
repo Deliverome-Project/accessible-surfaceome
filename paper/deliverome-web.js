@@ -193,7 +193,15 @@
     if (lastFocused === null) lastFocused = document.activeElement;
     imgEl.setAttribute("src", source.getAttribute("src"));
     imgEl.setAttribute("alt", source.getAttribute("alt") || "");
-    capEl.textContent = caption ? caption.textContent.trim() : "";
+    /* Carry the caption's rich markup, not just its text: the run-in
+     * "Figure N. Title." is a <strong> and the caption ends with a
+     * "Figure data and script." link to the figure's gist. Flattening
+     * to textContent dropped both the bold and the (clickable) link;
+     * innerHTML keeps them. The caption never carries an id (figures.lua
+     * moves it to the image anchor) so the copy raises no duplicate id.
+     * The link stays clickable because the click-to-dismiss handler
+     * already excludes anything inside <figcaption>. */
+    capEl.innerHTML = caption ? caption.innerHTML : "";
     overlay.hidden = false;
     /* Force a reflow so the opacity transition has a start state,
      * then flip the class SYNCHRONOUSLY. The obvious
@@ -296,6 +304,15 @@
    * caption is excluded so its text stays selectable. */
   overlay.addEventListener("click", function (e) {
     if (e.target.closest(".figure-lightbox__nav")) return;
+    /* An in-page caption link (e.g. "Methods", href="#…") has to take the
+     * reader to that section — but the overlay is a fixed layer sitting on
+     * top, so the jump is invisible while it's open. Close first, then let
+     * the anchor navigate. External links (target=_blank) open a new tab
+     * and leave the figure up, so they keep the caption exception below. */
+    if (e.target.closest("figcaption a[href^='#']")) {
+      close();
+      return;
+    }
     if (e.target.closest("figcaption")) return;
     close();
   });
@@ -399,4 +416,175 @@
   );
 
   recompute();
+})();
+
+/*
+ * Reader comments — a progressive-enhancement island at the bottom of
+ * the paper (markup emitted by build.py). Posts to the shared feedback
+ * Worker (Resend-backed, author-moderated) under a paper-only "gene"
+ * sentinel, so a comment here can never surface on a surfaceome gene
+ * page. Approved comments are fetched and shown above the form; a reader
+ * can opt in to having theirs posted publicly on this page after review.
+ */
+(function () {
+  "use strict";
+
+  var section = document.querySelector(".paper-comments");
+  if (!section) return;
+
+  var apiBase = (section.getAttribute("data-api-base") || "").replace(/\/+$/, "");
+  var gene = section.getAttribute("data-gene") || "";
+  var siteKey = section.getAttribute("data-turnstile-key") || "";
+  if (!apiBase || !gene) return;
+
+  var form = section.querySelector(".paper-comments__form");
+  var listEl = section.querySelector(".paper-comments__list");
+  var statusEl = section.querySelector(".paper-comments__status");
+  var turnstileSlot = section.querySelector(".paper-comments__turnstile");
+  var submitBtn = section.querySelector(".paper-comments__submit");
+  var token = "";
+  var widgetId = null;
+
+  function setStatus(msg, kind) {
+    statusEl.textContent = msg || "";
+    statusEl.className = "paper-comments__status" + (kind ? " is-" + kind : "");
+  }
+
+  /* Approved public comments. Rendered with textContent throughout — the
+   * bodies are reader-supplied, so never touch innerHTML here. */
+  function renderNotes(notes) {
+    listEl.textContent = "";
+    if (!notes || !notes.length) return;
+    for (var i = 0; i < notes.length; i++) {
+      var n = notes[i];
+      var li = document.createElement("li");
+      li.className = "paper-comments__note";
+      var bodyEl = document.createElement("p");
+      bodyEl.className = "paper-comments__note-body";
+      bodyEl.textContent = n.comment || "";
+      var whoEl = document.createElement("p");
+      whoEl.className = "paper-comments__note-by";
+      whoEl.textContent = "— " + (n.submitter_name || "Anonymous");
+      li.appendChild(bodyEl);
+      li.appendChild(whoEl);
+      listEl.appendChild(li);
+    }
+  }
+
+  function loadNotes() {
+    fetch(apiBase + "/v1/feedback/public?gene=" + encodeURIComponent(gene), {
+      headers: { accept: "application/json" }
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { renderNotes(j && j.notes); })
+      .catch(function () {});
+  }
+
+  /* Turnstile: load the loader script once, then render explicitly. */
+  function renderTurnstile() {
+    if (!siteKey || !turnstileSlot || !window.turnstile) return;
+    try {
+      widgetId = window.turnstile.render(turnstileSlot, {
+        sitekey: siteKey,
+        callback: function (t) { token = t; },
+        "error-callback": function () { token = ""; },
+        "expired-callback": function () { token = ""; }
+      });
+    } catch (e) {
+      /* widget already rendered / bad key — leave the form usable */
+    }
+  }
+
+  function loadTurnstile() {
+    if (!siteKey) return;
+    if (window.turnstile) { renderTurnstile(); return; }
+    if (!document.getElementById("cf-turnstile-script")) {
+      var s = document.createElement("script");
+      s.id = "cf-turnstile-script";
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+    }
+    var tries = 0;
+    var iv = setInterval(function () {
+      if (window.turnstile) { clearInterval(iv); renderTurnstile(); }
+      else if (++tries > 100) { clearInterval(iv); }
+    }, 100);
+  }
+
+  function resetTurnstile() {
+    token = "";
+    if (widgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(widgetId); } catch (e) {}
+    }
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = form.elements["name"].value.trim();
+    var email = form.elements["email"].value.trim();
+    var comment = form.elements["comment"].value.trim();
+    var isPublic = form.elements["public"].checked;
+    if (!name) return setStatus("Please enter your name.", "error");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return setStatus("Please enter a valid e-mail.", "error");
+    if (!comment) return setStatus("Please write a comment.", "error");
+    if (siteKey && !token)
+      return setStatus("Please complete the verification below.", "error");
+
+    setStatus("Sending…", "pending");
+    submitBtn.disabled = true;
+
+    fetch(apiBase + "/v1/feedback/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        gene: gene,
+        name: name,
+        email: email,
+        subject: "Comment on the accessible human surfaceome paper",
+        comment: comment,
+        public_requested: isPublic,
+        referrer: window.location.href,
+        user_agent: navigator.userAgent,
+        site_version: "paper-web",
+        turnstile_token: token
+      })
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          return { ok: r.ok, status: r.status, j: j };
+        });
+      })
+      .then(function (res) {
+        submitBtn.disabled = false;
+        if (res.ok) {
+          form.reset();
+          resetTurnstile();
+          setStatus(
+            isPublic
+              ? "Thanks — sent to the authors. It'll appear here once approved."
+              : "Thanks — your comment was sent to the authors.",
+            "ok"
+          );
+          return;
+        }
+        var err = (res.j && res.j.error) || ("Server returned " + res.status + ".");
+        if (err === "rate_limited") {
+          err = "You've sent a few already — please try again later.";
+        } else if (err === "turnstile_failed") {
+          resetTurnstile();
+          err = "Verification failed — please complete the checkbox again.";
+        }
+        setStatus(err, "error");
+      })
+      .catch(function () {
+        submitBtn.disabled = false;
+        setStatus("Network error — please try again.", "error");
+      });
+  });
+
+  loadNotes();
+  loadTurnstile();
 })();

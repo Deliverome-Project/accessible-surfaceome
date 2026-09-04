@@ -132,6 +132,17 @@ CANONICAL_FIGURES_DIR = REPO_ROOT / "data" / "analysis" / "figures"
 PAPER_FIGURES_DIR = REPO_ROOT / "paper" / "figures"
 FIGURE_SEARCH_PATH = [PAPER_FIGURES_DIR, CANONICAL_FIGURES_DIR]
 
+# Reader comment form (web build only). Posts to the same public feedback
+# Worker the viewer uses (Resend-backed, with maintainer moderation). It is
+# scoped to a paper-only "gene" sentinel so a comment on the paper can NEVER
+# surface on a surfaceome gene page — the viewer only ever queries real HGNC
+# symbols, never this token — while still being eligible for public display
+# on the paper itself once approved.
+FEEDBACK_API_BASE = "https://api.deliverome.org/surfaceome"
+PAPER_COMMENT_GENE = "PAPER-SURFACEOME"
+# Public Turnstile site key (same widget the viewer's feedback modal uses).
+TURNSTILE_SITE_KEY = "0x4AAAAAADWMXfjX7seRgQLJ"
+
 
 def _stem_for(src: Path) -> str:
     """Normalize the .docx basename into a filesystem-safe stem.
@@ -319,6 +330,50 @@ def _downsample_raster(src: Path, dest: Path, max_width: int) -> Path | None:
         return None
 
 
+def _comments_section(api_base: str, gene: str, turnstile_key: str) -> str:
+    """HTML for the reader comment form appended to the bottom of the web
+    build.
+
+    A progressive-enhancement island: with JS off it's an inert form.
+    ``deliverome-web.js`` wires the Turnstile widget, fetches + renders the
+    already-approved public comments, and POSTs new ones to the shared
+    feedback Worker. All config travels on ``data-*`` so the script stays
+    generic. The ``gene`` sentinel keeps these comments off every surfaceome
+    gene page (the viewer only ever queries real HGNC symbols).
+    """
+    return (
+        '<section class="paper-comments" id="comments"'
+        f' data-api-base="{api_base}" data-gene="{gene}"'
+        f' data-turnstile-key="{turnstile_key}">'
+        '<h2 class="paper-comments__title">Comments</h2>'
+        '<p class="paper-comments__intro">Questions, corrections, or feedback on'
+        ' the paper reach the authors directly. Tick the box to have your comment'
+        ' considered for public posting on this page after review.</p>'
+        '<ol class="paper-comments__list" aria-live="polite"></ol>'
+        '<form class="paper-comments__form" novalidate>'
+        '<div class="paper-comments__grid">'
+        '<label class="paper-comments__field"><span>Name</span>'
+        '<input name="name" type="text" autocomplete="name" maxlength="80" required/>'
+        '</label>'
+        '<label class="paper-comments__field">'
+        '<span>E-mail <em>(never published)</em></span>'
+        '<input name="email" type="email" autocomplete="email" required/></label>'
+        '</div>'
+        '<label class="paper-comments__field"><span>Comment</span>'
+        '<textarea name="comment" rows="5" maxlength="4000" required></textarea>'
+        '</label>'
+        '<label class="paper-comments__check">'
+        '<input name="public" type="checkbox"/>'
+        '<span>Post my comment publicly on this page after the authors review'
+        ' it.</span></label>'
+        '<div class="paper-comments__turnstile"></div>'
+        '<p class="paper-comments__status" role="status" aria-live="polite"></p>'
+        '<button class="paper-comments__submit" type="submit">Post comment</button>'
+        '</form>'
+        '</section>'
+    )
+
+
 def build_web(
     src: Path,
     out_dir: Path,
@@ -424,6 +479,24 @@ def build_web(
             copied[key] = f"{asset_prefix}/{name}"
         img.set("src", copied[key])
 
+    # Open every off-site link (gist, DOI, bioRxiv, GitHub, Zenodo …) in
+    # a new tab so following a citation or reproduction link never navigates
+    # the reader away from the paper. Same-page anchors (#…) and the
+    # relative PDF download stay in-tab.
+    ext_links = 0
+    for a in doc.xpath(
+        "//a[starts-with(@href, 'http://') or starts-with(@href, 'https://')]"
+    ):
+        a.set("target", "_blank")
+        rel = (a.get("rel") or "").split()
+        for token in ("noopener", "noreferrer"):
+            if token not in rel:
+                rel.append(token)
+        a.set("rel", " ".join(rel))
+        ext_links += 1
+    if ext_links:
+        print(f"  set target=_blank on {ext_links} external link(s)")
+
     # Prune supplementary sub-entries from the contents rail. The
     # supplement's own "Supplementary Note N" / "Supplementary
     # References" headings are <h2>, so --toc-depth=2 pulls them in
@@ -485,6 +558,12 @@ def build_web(
             '<meta name="viewport" content="width=device-width, initial-scale=1"/>'
         ))
     if body is not None:
+        # Reader comment form at the very bottom of the paper.
+        body.append(lxml_html.fromstring(
+            _comments_section(
+                FEEDBACK_API_BASE, PAPER_COMMENT_GENE, TURNSTILE_SITE_KEY
+            )
+        ))
         # `defer` so the parser is never blocked; the script only
         # enhances links that already work without it.
         body.append(lxml_html.fromstring(
