@@ -52,7 +52,15 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 # 0.1.7: per-observation `species` field + set it from the clip; exclude
 #        partner-driven trans-endocytosis (partner cell pulls the target in) from
 #        native_ligand/basal; set record `species_scope` from the evidence.
-LIT_PROMPT_VERSION = "0.1.7"
+# 0.1.8: a positive mode grade (low/moderate/high) now REQUIRES a direct
+#        internalization measurement (uptake/acid-strip/pulse-chase/imaging of
+#        internalized receptor/inhibitor-sensitivity/recycling). Indirect
+#        correlates — presence on secreted EVs/exosomes, mere presence of
+#        endocytic machinery, surface-abundance changes, or topology/motif
+#        "could-internalize" arguments — support at most `unknown`, never a
+#        graded value (generalizes the abundance-exclusion; fixes EV-presence
+#        being read as constitutive/basal internalization).
+LIT_PROMPT_VERSION = "0.1.8"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
