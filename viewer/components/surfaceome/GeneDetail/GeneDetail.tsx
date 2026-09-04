@@ -94,6 +94,9 @@ interface GeneDetailProps {
   oversized: boolean;
   /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
   oversizedOrfKb: number | null;
+  /** Tedman GPCR canonical surface expression (PME); null for non-GPCRs.
+   *  Forwarded to <GeneHeader> for the "Low surface" chip. */
+  tedmanPme: number | null;
 }
 
 /**
@@ -118,6 +121,7 @@ export function GeneDetail({
   inFgLibrary,
   oversized,
   oversizedOrfKb,
+  tedmanPme,
 }: GeneDetailProps) {
   const router = useRouter();
 
@@ -405,6 +409,7 @@ export function GeneDetail({
             inFgLibrary={inFgLibrary}
             oversized={oversized}
             oversizedOrfKb={oversizedOrfKb}
+            tedmanPme={tedmanPme}
           />
         </Reveal>
 

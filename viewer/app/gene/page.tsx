@@ -171,6 +171,9 @@ interface ReadyData {
   oversized: boolean;
   /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
   oversizedOrfKb: number | null;
+  /** Tedman GPCR canonical surface expression (PME); null for non-GPCRs.
+   *  Threaded to <GeneHeader> for the "Low surface" chip. */
+  tedmanPme: number | null;
 }
 
 type State =
@@ -230,6 +233,7 @@ export default function GeneShellPage() {
         synonymsJson,
         fgLibraryJson,
         taggedSitesResult,
+        tedmanSurfaceJson,
       ] = await Promise.all([
         fetchJson(`${API_BASE}/v1/triage/${symbol}`),
         fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
@@ -246,10 +250,24 @@ export default function GeneShellPage() {
         fetchJson("/data/fg-library.json"),
         // Static tag-sites asset (Worker-first fetch happens client-side; static fallback + pins).
         fetchTaggedSites(symbol),
+        // Tedman GPCR surface-expression overlay (site origin). Drives the
+        // "Low surface" chip on library GPCRs (PME ≤ 1000). Miss → no chip.
+        fetchJson("/data/tedman-surface.json"),
       ]);
       if (cancelled) return;
 
       const fgLibrary = fgLibraryJson ? parseFgLibrary(fgLibraryJson) : null;
+
+      // Tedman GPCR canonical surface expression (PME) for this gene, or null
+      // when Tedman didn't measure it (non-GPCR). Drives the "Low surface" chip.
+      const tedmanSurfacePme =
+        tedmanSurfaceJson &&
+        typeof tedmanSurfaceJson === "object" &&
+        (tedmanSurfaceJson as { pme?: Record<string, number> }).pme
+          ? ((tedmanSurfaceJson as { pme: Record<string, number> }).pme[
+              symbol
+            ] ?? null)
+          : null;
 
       // ── Backward-compatible evidence handling ─────────────────────────
       // The Worker is moving the citation ledger (verbatim quotes +
@@ -317,6 +335,7 @@ export default function GeneShellPage() {
           inFgLibrary: symbolInFgLibrary(fgLibrary, symbol),
           oversized: symbolIsOversized(fgLibrary, symbol),
           oversizedOrfKb: symbolOversizedOrfKb(fgLibrary, symbol),
+          tedmanPme: tedmanSurfacePme,
         },
       });
 

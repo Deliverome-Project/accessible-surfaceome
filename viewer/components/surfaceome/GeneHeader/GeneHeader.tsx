@@ -131,6 +131,10 @@ interface GeneHeaderProps {
   oversized?: boolean;
   /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
   oversizedOrfKb?: number | null;
+  /** Tedman GPCR canonical HA-immunostaining surface expression (PME), or null
+   *  when Tedman didn't measure this gene (non-GPCR). Drives the "Low surface"
+   *  chip on library genes whose PME ≤ 1000 (exogenous-SP candidates). */
+  tedmanPme?: number | null;
 }
 
 /** Re-export of the loader's TriageHeadlinePayload — see
@@ -294,6 +298,7 @@ export function GeneHeader({
   inFgLibrary = false,
   oversized = false,
   oversizedOrfKb = null,
+  tedmanPme = null,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -481,6 +486,35 @@ export function GeneHeader({
                     Shown as in-library for discoverability, but deliberately
                     kept out of the counted core library while truncation
                     strategies are worked out.
+                  </p>
+                </InfoTip>
+              </span>
+            ) : null}
+            {(inFgLibrary || oversized) &&
+            tedmanPme != null &&
+            tedmanPme <= 1000 ? (
+              <span className={styles.lowSurfaceChip}>
+                Low surface · Tedman {Math.round(tedmanPme)}
+                <InfoTip label="About the low Tedman surface flag">
+                  <p>
+                    <strong>Low plasma-membrane expression</strong> in Tedman
+                    et&nbsp;al. deep receptor scanning — HA-immunostaining
+                    intensity {Math.round(tedmanPme)} (≤&nbsp;1000), measured
+                    without olfactory RTP chaperones. A library gene at this
+                    level is a candidate for boosting surface display with an{" "}
+                    <strong>exogenous signal peptide</strong>.
+                  </p>
+                  <p>
+                    GPCR-only signal (Tedman measured GPCRs). Source: Tedman
+                    et&nbsp;al., Nat Commun 2026,{" "}
+                    <a
+                      href="https://doi.org/10.1038/s41467-026-76564-7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      doi:10.1038/s41467-026-76564-7
+                    </a>
+                    .
                   </p>
                 </InfoTip>
               </span>

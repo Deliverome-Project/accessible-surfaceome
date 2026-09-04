@@ -580,6 +580,22 @@
   white-space: nowrap;
 }
 
+/* Low Tedman surface expression (GPCR library genes) — amber caution flag:
+ * a candidate for an exogenous signal peptide to boost surface display. */
+.lowSurfaceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: var(--fw-medium, 600);
+  color: color-mix(in srgb, var(--amber-dark, #a86400) 82%, var(--fg, #1f1718));
+  background: color-mix(in srgb, var(--amber-dark, #a86400) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-dark, #a86400) 46%, transparent);
+  white-space: nowrap;
+}
+
 /* Deep-dive tier callout — solid pill in the five-tier palette (canonical
  * green → not-surface neutral), with a subtle outlined sub-facet chip. */
 .tierCallout {
