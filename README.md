@@ -1,8 +1,10 @@
 # The accessible human surfaceome
 
-An evidence-graded, per-claim-cited annotation of the **human cell-surface
-proteome** — surfaced as a database, a public JSON API, an interactive
-viewer, and (in v0) a blog with a stable DOI/SWHID-citable snapshot.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22116981.svg)](https://doi.org/10.5281/zenodo.22116981) [![Latest release](https://img.shields.io/github/v/release/Deliverome-Project/accessible-surfaceome)](https://github.com/Deliverome-Project/accessible-surfaceome/releases) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+An open atlas of the human cell-surface proteome — which proteins reach the
+surface, and under what conditions — with a browsable viewer, a public JSON
+API, and a literature citation behind every call.
 
 The headline call per protein is *accessibility* — physical surface
 localization, extracellular-face exposure, and any conditional/induced
@@ -121,37 +123,35 @@ prompt could quietly mis-route the expensive step.
 Code: `src/accessible_surfaceome/agents/surface_triage/`. Runner:
 `scripts/triage_runner.py`.
 
-### Deep dive (in progress)
+### Deep dive (complete)
 
-Per-protein `SurfaceomeRecord` v0.5.0 — the full annotation described
-in [What we deliver](#what-we-deliver-per-protein). Runs Sonnet 4.6
-(~$0.30–0.50 per gene, ~5 min wall-clock), with structured tool calls
-against cached corpora (PubMed, UniProt, HPA, OpenAlex, structure DBs).
+Per-protein `SurfaceomeRecord` — the full annotation described in
+[What we deliver](#what-we-deliver-per-protein). A three-stage agentic
+pipeline: deterministic literature retrieval (PubMed / EuropePMC / PubTator
+discovery, then a tiered PMC → Unpaywall → DataCite full-text fallback,
+selected into a per-claim-cited evidence ledger), concurrent Sonnet 4.6
+block builders, and a synthesizer. About $1.3 per gene (median; $1.44 mean)
+and ~9 min wall-clock.
 
-Current status: **proof-of-concept working** for individual genes.
-Reference records published:
-- [GPR75](https://api.deliverome.org/surfaceome/v1/genes/GPR75) — first
-  public deep dive, included in the v0 deposit;
-- [HSPA1A](docs/evals/hspa1a-deep-dive-eval-2026-05.md) — conditional-
-  surface stress test (heat-shock-induced surface presentation);
-- TGOLN2 — trafficking_cycling test (constitutive surface ↔ TGN
-  recycling).
+Run across the full deep-dive cohort of 5,130 genes — the union of the
+triage agent's positive calls and the five databases' surface calls, minus
+proteins in a single database that the agent rated high-confidence
+non-surface. Records sort into 1,782 canonical, 1,243 likely, 973 low,
+1,078 no, and 54 uncertain, and each is published to the viewer and the
+public API (e.g. [GPR75](https://api.deliverome.org/surfaceome/v1/genes/GPR75),
+[KLK2](https://api.deliverome.org/surfaceome/v1/genes/KLK2)).
 
-The bulk-run posture (running deep-dive across the full triage-positive
-set) is not yet executed — pending audit-gate sign-off on the corpus
-round-trip + Sonnet entailment validators. See `docs/evals/` for the
-gate criteria and current measurements.
+See `docs/evals/` for the corpus round-trip and entailment audit gates.
 
-Code: `src/accessible_surfaceome/agents/surface_annotator/`. Runner:
-`uv run accessible-surfaceome agents annotate <SYMBOL>`.
+Code: `src/accessible_surfaceome/agents/surfaceome_v2/`. Run one gene:
+`uv run python scripts/surfaceome_v2_annotate.py <GENE>`.
 
-### Publication (planned)
+### Publication (v1.1.0 shipped)
 
-A blog post + open code + DOI/SWHID-citable snapshot once the deep-dive
-audit gates pass and the headline disagreement spotlight (n=100 DB-vs-
-ours adjudication) is curated. Per the Lambert et al. analogue, the
-**resource is the site, not the table** — the per-gene viewer (see
-below) is the citable artifact.
+Open code plus a DOI/SWHID-citable snapshot, released through the
+GitHub → Zenodo integration (latest **v1.1.0**). Per the Lambert et al.
+analogue, the **resource is the site, not the table** — the per-gene
+viewer (see below) is the citable artifact.
 
 Citation infrastructure splits across four parallel channels, each
 optimized for a different reader/bot:
@@ -159,8 +159,8 @@ optimized for a different reader/bot:
 | Channel | Citable as | What's in it |
 |---|---|---|
 | **Software Heritage** | `swh:1:rev:<sha>` per gist | Each figure's bundled data + script + README (content-addressed, append-only, free; see `data/analysis/figures/swhid_map.json`) |
-| **Zenodo — code series** (auto via GitHub-Zenodo integration) | One DOI per GitHub Release | The repo tarball at the tagged commit |
-| **Zenodo — data series** (manual via `scripts/release/publish-archive.py`) | `10.5281/zenodo.20805384` (reserved) | Triage runs with reasoning, benchmark runs with reasoning, deep-dive bundle |
+| **Zenodo — code series** (auto via GitHub-Zenodo integration) | Concept `10.5281/zenodo.22116981`; one version DOI per GitHub Release (latest **v1.1.0**) | The repo tarball at the tagged commit |
+| **Zenodo — data series** (manual via `scripts/release/publish-archive.py`) | `10.5281/zenodo.20805384` (published; concept `10.5281/zenodo.20805383`) | Triage runs with reasoning, benchmark runs with reasoning, deep-dive bundle |
 | **Zenodo — manuscript record** (manual via Zenodo UI, registered under bioRxiv DOI as external) | bioRxiv DOI | Manuscript PDF + JATS XML; **Unpaywall OAI-PMH harvest picks it up and adds the Zenodo PDF as a bot-accessible `oa_location` under the bioRxiv DOI** — the bot-reach motivation for the dual-deposit pattern |
 
 The release ritual is one command for the data record — see
@@ -324,8 +324,8 @@ positives, patent delivery-handle positives, negative controls).
 # Sync the deep-dive agent to Anthropic (one-time per code change to agent.py / prompts)
 uv run accessible-surfaceome agents sync
 
-# Annotate one gene end-to-end (Sonnet 4.6, ~$0.30-0.50, ~5 min):
-uv run accessible-surfaceome agents annotate HSPA1A
+# Deep-dive one gene end-to-end (Sonnet 4.6, ~$1.3/gene, ~9 min):
+uv run python scripts/surfaceome_v2_annotate.py HSPA1A
 
 # Audit the corpus round-trip + Sonnet entailment on a record:
 uv run accessible-surfaceome agents audit-corpus HSPA1A
