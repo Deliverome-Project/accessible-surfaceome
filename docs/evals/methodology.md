@@ -203,10 +203,10 @@ calibrate. Surprises do.
 
 ## Anchors
 
-- Worked example: `docs/eval/v1-cost-stress-test.md`
+- Worked example: `docs/evals/v1-cost-stress-test.md`
 - Per-call cost capture: `src/accessible_surfaceome/agents/_support/pricing.py`
 - Caching + compaction: `src/accessible_surfaceome/agents/_support/payload.py`
-- Retrieval diagnostic: `scripts/audit_evidence_retrieval.py`
+- Retrieval diagnostic: `scripts/audit/audit_evidence_retrieval.py`
 - Eval driver: `scripts/v1_cost_stress_test.py`
 - Pre-built claim drafts: `EvidenceClaimDraft` in
   `src/accessible_surfaceome/tools/_shared/models.py`

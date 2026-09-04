@@ -153,7 +153,7 @@ def main() -> int:
                 e.dimer_pdb_filename, e.complex_pdb_filename, e.schweke_version,
             ])
     print(f"UPSERTed {len(entries)} row(s) into D1 schweke_homomer_public")
-    print("\nnext: uv run --with remotezip python scripts/ingest_schweke_pdbs_to_r2.py --execute")
+    print("\nnext: uv run --with remotezip python scripts/cloud/ingest_schweke_pdbs_to_r2.py --execute")
     return 0
 
 

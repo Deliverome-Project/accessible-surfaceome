@@ -75,7 +75,7 @@ env.SURFACEOME_AGENTS.prepare("SELECT * FROM triage_run WHERE ...").all();
 
 **This repo's Python tooling does NOT need the Pages binding** — the
 `triage_runner.py --d1` streaming sink and the
-`scripts/d1_export_to_r2.sh` backup script both call D1's HTTP API
+`scripts/cloud/d1_export_to_r2.sh` backup script both call D1's HTTP API
 directly, authenticated by `CLOUDFLARE_API_TOKEN` and addressed by
 `CLOUDFLARE_D1_SURFACEOME_AGENTS_ID`. They work independently of any
 wrangler.toml binding.
@@ -210,7 +210,7 @@ everything after is lost. For most accidents this is what you want.
 Snapshot the database to a portable SQL file:
 
 ```sh
-bash scripts/d1_triage_backup.sh
+bash scripts/cloud/d1_triage_backup.sh
 ```
 
 This runs `npx --yes wrangler d1 export` and writes
@@ -228,13 +228,13 @@ offline-grep-able trail beyond the Time Travel window.
 ### Layer 2.5 — Automated SQL exports → R2 bucket (CI-driven)
 
 The GitHub workflow `.github/workflows/d1-backup.yml` triggers
-`scripts/d1_export_to_r2.sh` on every push to `main` that touches:
+`scripts/cloud/d1_export_to_r2.sh` on every push to `main` that touches:
 
 - `cloudflare/d1_schema.sql` (schema changes)
 - `data/annotations/**` (new deep-dive records)
 - `data/triage/**` (production triage outputs)
 - `src/accessible_surfaceome/cloud/**` (uploader code)
-- `scripts/d1_export_to_r2.sh`
+- `scripts/cloud/d1_export_to_r2.sh`
 
 Each run produces an offsite SQL dump in the R2 bucket
 `deliverome-d1-backups` under the dated key
@@ -257,8 +257,8 @@ npx --yes wrangler r2 bucket create deliverome-d1-backups
 Manual trigger from your local machine:
 
 ```sh
-bash scripts/d1_export_to_r2.sh            # CI mode: dump → R2, no local copy
-bash scripts/d1_export_to_r2.sh --keep-local  # also keep a local file
+bash scripts/cloud/d1_export_to_r2.sh            # CI mode: dump → R2, no local copy
+bash scripts/cloud/d1_export_to_r2.sh --keep-local  # also keep a local file
 ```
 
 Inspect / restore from R2:

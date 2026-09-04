@@ -12,7 +12,7 @@ import importlib.util
 from pathlib import Path
 
 _SCRIPT = (
-    Path(__file__).resolve().parents[1] / "scripts" / "backfill_deep_block_rollups.py"
+    Path(__file__).resolve().parents[1] / "scripts" / "build" / "backfill_deep_block_rollups.py"
 )
 _spec = importlib.util.spec_from_file_location("backfill_deep_block_rollups", _SCRIPT)
 assert _spec and _spec.loader

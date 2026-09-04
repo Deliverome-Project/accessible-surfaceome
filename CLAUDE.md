@@ -59,7 +59,7 @@ The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfac
 **Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, human-readable render of the live deep-dive prompts — each prompt's full text, the diff vs `main`, and a closed-enum reference (the structured-output options the model must choose from, e.g. `epitope_masking.mechanism` annotated with its homo / hetero / other axis). It is a **generated artifact**, so it goes stale the instant a prompt changes. Whenever you edit any in-process prompt under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/), [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/), or [surfaceome_synthesizer/prompts/](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/) — or change a closed enum the review renders (in [models.py](src/accessible_surfaceome/tools/_shared/models.py)) — regenerate it in the **same commit**:
 
 ```bash
-uv run python scripts/gen_prompt_review.py
+uv run python scripts/build/gen_prompt_review.py
 ```
 
 There is no CI gate on this by design, so it is on the committer (agent or human) to re-run it — a stale review misleads reviewers worse than no review does.
@@ -84,16 +84,16 @@ Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.pu
 
 **Why default-on:** previously a record could land on disk via `--persist` but never reach D1 — which meant the Worker kept serving a stale schema-incomplete row and the viewer crashed on missing fields (e.g. `rec.deterministic_features.surface_bind.has_data`). The fix is to add the field to the **records**, not defensive `?.` chains in the viewer. Publishing-by-default is the mechanism that enforces this.
 
-The same `publish_record` helper backs `scripts/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
+The same `publish_record` helper backs `scripts/cloud/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
 
 **Paper-count signals on Filters (schema 2.14.1+).** `Filters.n_papers_selected` and `Filters.n_papers_found` carry the per-record paper counts that power the viewer's "understudied genes" filter — both `int | None` (None on legacy pre-2.14.0 records is "unknown", distinct from a real-zero measurement).
 
-- `n_papers_selected = len({source.source_id for ev in evidence for span in ev.spans})` — unique papers the agent selected for full-text reading; computable from existing records via [`scripts/backfill_n_papers_selected.py`](scripts/backfill_n_papers_selected.py) (free, no LLM).
-- `n_papers_found = max(dual.a{1,2}.n_papers_discovered)` — TRUE pre-trim discovery corpus from the EuropePMC + PubTator + gene2pubmed union (methods-section median 234.5, range ~50–400). Plumbed through [`PlanTrimSelectResult.n_papers_discovered`](src/accessible_surfaceome/agents/plan_trim_select/runner.py) from `len(cumulative_discovered)`. Cannot be backfilled from a published record because the discovery count was never persisted — needs a discover-only rerun via [`scripts/backfill_n_papers_found.py`](scripts/backfill_n_papers_found.py) (no LLM, ~1–2 min/gene: it reuses the runner's own `_build_gene_context` → `build_kickoff` → `_execute_plan` over both A1/A2 focuses, so a backfilled value matches a fresh annotate). Snapshot-scoped — only reaches genes with a committed `viewer/public/data/surfaceome/*.json`; genes that live only in D1 need a snapshot first or a D1-direct backfill.
+- `n_papers_selected = len({source.source_id for ev in evidence for span in ev.spans})` — unique papers the agent selected for full-text reading; computable from existing records via [`scripts/archive/backfill_n_papers_selected.py`](scripts/archive/backfill_n_papers_selected.py) (free, no LLM).
+- `n_papers_found = max(dual.a{1,2}.n_papers_discovered)` — TRUE pre-trim discovery corpus from the EuropePMC + PubTator + gene2pubmed union (methods-section median 234.5, range ~50–400). Plumbed through [`PlanTrimSelectResult.n_papers_discovered`](src/accessible_surfaceome/agents/plan_trim_select/runner.py) from `len(cumulative_discovered)`. Cannot be backfilled from a published record because the discovery count was never persisted — needs a discover-only rerun via [`scripts/archive/backfill_n_papers_found.py`](scripts/archive/backfill_n_papers_found.py) (no LLM, ~1–2 min/gene: it reuses the runner's own `_build_gene_context` → `build_kickoff` → `_execute_plan` over both A1/A2 focuses, so a backfilled value matches a fresh annotate). Snapshot-scoped — only reaches genes with a committed `viewer/public/data/surfaceome/*.json`; genes that live only in D1 need a snapshot first or a D1-direct backfill.
 
 The Worker's `/v1/catalog` endpoint (`row_schema 6+`) bakes `ddf.n_papers_selected_band ∈ {low (≤p10), moderate (p10–p90), high (≥p90)}` per row using cohort percentiles, and surfaces the cutoffs as top-level `n_papers_selected_cutoffs: {p10, p90, n}` so the viewer's filter tooltip can show concrete thresholds. Pre-existing `Filters.evidence_density` (citation-row count, 3-bucket) stays for back-compat as the "evidence depth / quality gate" axis — semantically distinct from n_papers_selected; keep both filters in the UI.
 
-**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/apply_cf_edge_rules.py`](scripts/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
+**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/cloud/apply_cf_edge_rules.py`](scripts/cloud/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
 
 ## Triage body-fetch: Unpaywall + PDF fallback
 
@@ -107,7 +107,7 @@ Operational notes:
 - **Binary cache**: `CachedHTTP.get_bytes` caches downloaded PDFs to `data/external/blob_cache/` (gitignored — copyrighted PDFs; never commit). Streamed with a size cap (`_MAX_PDF_BYTES`) + page cap; per-host courtesy interval so we don't hammer publishers at cohort scale.
 - **Config**: `UNPAYWALL_EMAIL` (optional; falls back to the project contact). Keep the **polite, identifiable User-Agent** — do not impersonate a browser. Several publishers (ASH/*Blood*, Wiley) 403 our UA regardless; those fall back to abstract by design.
 - **Provenance / licensing**: `TriageAction.fetch_source` records `pmc_xml` vs `unpaywall_pdf`; `TriageAction.fetch_license` records the raw Unpaywall OA license of the recovered copy ("must track per-item license"). Redistribution is **not gated** — we ship only short substring-anchored snippets (fair use), but the license is captured so a gate can be added later. PDF clips key on the clean `PMID:`/`PMC:` source id (not `DOI:`).
-- **Validate** with `scripts/probe_triage_fetch.py` / `scripts/probe_pdf_fallback.py` ($0, no model calls).
+- **Validate** with `scripts/probes/probe_triage_fetch.py` / `scripts/probes/probe_pdf_fallback.py` ($0, no model calls).
 
 ## Agent Command Allowlist
 
@@ -157,7 +157,7 @@ high-profile failures like **COX1** (cyclooxygenase-1 vs the
 mitochondrial cytochrome c oxidase the cohort actually meant) and
 **WAS** (Wiskott-Aldrich protein vs the MT-RNR1 rRNA gene). The audit
 that surfaced these lives at
-[`scripts/audit_resolver_hgnc_id_v3.py`](scripts/audit_resolver_hgnc_id_v3.py);
+[`scripts/audit/audit_resolver_hgnc_id_v3.py`](scripts/audit/audit_resolver_hgnc_id_v3.py);
 the documented divergence list is at
 `data/analysis/resolver_definitive_audit_v3.tsv`.
 
@@ -197,7 +197,7 @@ could read this table. Resolver upgrades change the `resolver_version`
 column; consumers detect staleness by comparing against the resolver
 SHA they expect.
 
-Rebuild with [`scripts/build_gene_identifier_table.py`](scripts/build_gene_identifier_table.py)
+Rebuild with [`scripts/build/build_gene_identifier_table.py`](scripts/build/build_gene_identifier_table.py)
 after any resolver patch or cohort refresh — `--execute` to write to
 D1, otherwise dry-run. Idempotent UPSERT on `hgnc_id`; sub-5-minute on
 a warm cache.
@@ -334,13 +334,13 @@ bug class one layer down — don't.
 After any cohort regeneration, any UniProt or HGNC API behavior
 change, or any picker logic change, re-run the audit:
 
-    uv run python scripts/audit_resolver_hgnc_id_v3.py
+    uv run python scripts/audit/audit_resolver_hgnc_id_v3.py
 
 Sub-minute on a warm cache, ~60-90 min on a cold cache. Outputs
 `data/analysis/resolver_definitive_audit_v3.tsv` (per-symbol
 divergences) and `_d1_rows.tsv` / `_d1_rows_full.tsv` (affected D1
 rows for Phase-4-style targeted reruns). The
-`scripts/audit_resolver_hgnc_id_v3_extend.py` companion scans
+`scripts/audit/audit_resolver_hgnc_id_v3_extend.py` companion scans
 `triage_run`, `deep_dive_run`, and `benchmark_version` in one pass.
 
 Pinned regression cases (BBC3, ND4, PRNP, TSPO, ABHD4, HSD17B8,
@@ -364,22 +364,22 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 - **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
 - **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
 
-### Canonical generator (`scripts/`) vs gist mirror (`data/analysis/figures/`)
+### Canonical generator (`scripts/figures/`) vs gist mirror (`data/analysis/figures/`)
 
 A published figure has **two source files** by convention — and they drift if you only touch one:
 
-- **`scripts/<slug>.py`** — **canonical generator.** Uses the project's `_plotting_config` import (centralized styling), reads from in-repo TSVs or D1. This is what the gist's `01_<slug>.md` README cites as the canonical generator (per `figure_gists_canonical_in_scripts.md` memory).
+- **`scripts/figures/<slug>.py`** — **canonical generator.** Uses the project's `_plotting_config` import (centralized styling), reads from in-repo TSVs or D1. This is what the gist's `01_<slug>.md` README cites as the canonical generator (per `figure_gists_canonical_in_scripts.md` memory).
 - **`data/analysis/figures/make_<slug>.py`** — **standalone gist mirror.** PyPA inline script metadata, inline brand styling, reads from `raw.githubusercontent.com` URLs. Synced to the published gist via `gh gist edit`. Readers run this with `uv run make_<slug>.py`.
 
-**The drift trap.** Many figure-style commits (font caps, layout bumps, ylabel wrap, brand-style version bumps) historically touched only `data/analysis/figures/make_<slug>.py` because the author edited the gist + synced the mirror. The canonical `scripts/<slug>.py` then silently fell behind, so re-running it produced a figure with the OLD layout — exactly what happened to `zero_db_rescues_by_triage.py` (subpanel a/b labels + hspace bump landed only in the mirror) and `db_vs_sonnet_whole_proteome.py` (figsize 17→22, fontsize 8/11→14/20, ylabel wrap, `tight_layout()` missing).
+**The drift trap.** Many figure-style commits (font caps, layout bumps, ylabel wrap, brand-style version bumps) historically touched only `data/analysis/figures/make_<slug>.py` because the author edited the gist + synced the mirror. The canonical `scripts/figures/<slug>.py` then silently fell behind, so re-running it produced a figure with the OLD layout — exactly what happened to `zero_db_rescues_by_triage.py` (subpanel a/b labels + hspace bump landed only in the mirror) and `db_vs_sonnet_whole_proteome.py` (figsize 17→22, fontsize 8/11→14/20, ylabel wrap, `tight_layout()` missing).
 
 **The rule when you edit either side**:
 
 1. Edit the layout / fontsize / annotation in **both files** in the same commit. Yes, this is duplicate work — the gist mirror needs inline styling to stay PyPA-inline-metadata standalone, so a shared module isn't a clean fix.
-2. Regenerate the figure (`uv run python scripts/<slug>.py` — always run the canonical, since the rendered `.pdf`/`.png` outputs are committed and that's what readers + the Zenodo deposit see).
+2. Regenerate the figure (`uv run python scripts/figures/<slug>.py` — always run the canonical, since the rendered `.pdf`/`.png` outputs are committed and that's what readers + the Zenodo deposit see).
 3. Sync the gist with `gh gist edit <GIST_ID> data/analysis/figures/make_<slug>.py` only after both source files agree.
 
-The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figure_canonical_mirror_sync.py) compares a layout fingerprint (`figsize`, `axes.labelsize`, `xtick.labelsize`, `ytick.labelsize`, `legend.fontsize`, ylabel-wrap presence, `tight_layout` presence) between every `scripts/<slug>.py` ↔ `data/analysis/figures/make_<slug>.py` pair and fails the build if they disagree. Re-run + commit fixes both sides.
+The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figure_canonical_mirror_sync.py) compares a layout fingerprint (`figsize`, `axes.labelsize`, `xtick.labelsize`, `ytick.labelsize`, `legend.fontsize`, ylabel-wrap presence, `tight_layout` presence) between every `scripts/figures/<slug>.py` ↔ `data/analysis/figures/make_<slug>.py` pair and fails the build if they disagree. Re-run + commit fixes both sides.
 
 ## Final-figure data flow (pre-publication)
 
@@ -411,9 +411,9 @@ The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figur
                                                gist.github.com/beccajcarlson/...)
 ```
 
-**Final figures use sibling-first loaders: the bundled TSV in the gist takes precedence over `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — see the "Final-Figure Gist Convention" section below for details. The data-flow above describes how the canonical TSV gets to the gist via `scripts/sync_figure_gists_bundle_data.py`; the raw GH URL is the fallback when the script runs outside a gist (in-repo dev, or unbundled gist). Reasons for bundling:
+**Final figures use sibling-first loaders: the bundled TSV in the gist takes precedence over `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — see the "Final-Figure Gist Convention" section below for details. The data-flow above describes how the canonical TSV gets to the gist via `scripts/figures/sync_figure_gists_bundle_data.py`; the raw GH URL is the fallback when the script runs outside a gist (in-repo dev, or unbundled gist). Reasons for bundling:
 - **One atomic citation per figure.** The gist's HEAD commit SHA is the SWHID `swh:1:rev:<sha>` for the whole reproduction unit (script + data + README). No two-things-can-drift.
-- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`; per-cell majority across replicates); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer. The denormalized truth columns in the mainbench TSV are guarded against drift by [tests/test_mainbench_truth_drift.py](tests/test_mainbench_truth_drift.py) — re-run `augment_figure_tsvs_with_stable_ids.py` in the same commit that edits the curated TSV or the test fails CI.
+- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/tsv-export/export_mainbench_to_tsv.py`; per-cell majority across replicates); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer. The denormalized truth columns in the mainbench TSV are guarded against drift by [tests/test_mainbench_truth_drift.py](tests/test_mainbench_truth_drift.py) — re-run `augment_figure_tsvs_with_stable_ids.py` in the same commit that edits the curated TSV or the test fails CI.
 - **Survives GitHub.** Software Heritage archives gists. Even if the gist URL goes away, the SWHID resolves to the bundled bundle forever.
 
 **Refresh procedure** (after any sweep that updates predictions in public D1):
@@ -422,7 +422,7 @@ The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figur
 # Pulls the latest mainbench_canonical_v2 rows from public D1 (per-cell
 # majority across replicates) and writes
 # data/processed/triage_bench/mainbench_canonical_v2.tsv.
-uv run python scripts/export_mainbench_to_tsv.py
+uv run python scripts/tsv-export/export_mainbench_to_tsv.py
 
 # Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) +
 # denormalized truth columns into the figure TSVs by joining each row
@@ -433,7 +433,7 @@ uv run python scripts/export_mainbench_to_tsv.py
 #   • data/eval/triage_benchmark_v1.tsv
 #   • data/processed/triage_bench/mainbench_canonical_v2.tsv
 #   • data/processed/triage_bench/db_optimized_cutoffs.tsv
-uv run python scripts/augment_figure_tsvs_with_stable_ids.py
+uv run python scripts/figures/augment_figure_tsvs_with_stable_ids.py
 
 git add data/processed/triage_bench/mainbench_canonical_v2.tsv \
         data/processed/candidate_universe/candidate_universe.tsv \
@@ -459,7 +459,7 @@ Per the "Gene identifier resolution" section above, `hgnc_id` is the canonical s
 | `ncbi_gene_id` | Always |
 | `ensembl_canonical_protein` | When the row references a specific protein isoform |
 
-The `scripts/augment_figure_tsvs_with_stable_ids.py` script is the canonical place to backfill these by joining against `gene_identifier_public`. **Extend that script** (don't write a new one) when adding a new figure-input TSV — the join logic should live in one place.
+The `scripts/figures/augment_figure_tsvs_with_stable_ids.py` script is the canonical place to backfill these by joining against `gene_identifier_public`. **Extend that script** (don't write a new one) when adding a new figure-input TSV — the join logic should live in one place.
 
 **2. Denormalize the most-common reanalysis questions.**
 
@@ -496,7 +496,7 @@ CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — fl
 
 **At publication:**
 
-1. **Re-bundle every gist** (`uv run python scripts/sync_figure_gists_bundle_data.py`) so the gist HEAD captures the final TSV bytes.
+1. **Re-bundle every gist** (`uv run python scripts/figures/sync_figure_gists_bundle_data.py`) so the gist HEAD captures the final TSV bytes.
 2. **Trigger Software Heritage archival** for each gist — POST to `https://archive.softwareheritage.org/save/git/url/<gist-clone-url>/` once per gist. Archival is usually <24h.
 3. **Capture per-gist SWHIDs** into [data/analysis/figures/swhid_map.json](data/analysis/figures/swhid_map.json) — the helper script does this on each sync run.
 4. **Cite each figure as `swh:1:rev:<sha>`** in the paper / Zenodo records / figure PNG metadata. Zenodo's per-figure data deposit is no longer needed — the SWHID is the citation. Zenodo splits across three record series:
@@ -513,12 +513,12 @@ Each gist contains exactly two files:
 - `01_<figure_slug>.md` — one-paragraph context, run command, hyperlinks to the canonical data source and the canonical figure generator in the repo. The `01_` prefix forces this file to the top of the gist's alphabetical file list so it acts as a README.
 - `make_<figure_slug>.py` — standalone Python reproduction script. Uses [**PyPA inline script metadata**](https://packaging.python.org/en/latest/specifications/inline-script-metadata/) — `# /// script ... # ///` header to declare dependencies so readers run it with `uv run make_<figure_slug>.py` — no `pip install` step.
 
-**Co-location rule.** Both gist files (`01_<slug>.md` and `make_<slug>.py`) AND the rendered figure outputs (`<slug>.pdf`, `<slug>.png`) live in `data/analysis/figures/`. The canonical generator under `scripts/<slug>.py` must save its outputs there too — NOT to a per-analysis subdir like `data/analysis/<some-area>/<slug>.pdf`. This is the single folder a reader points to when they want the figure, the script that made it, and the gist's reader-side mirror. Drift between "gist mirror in figures/" and "rendered output in audit-subdir" has happened (`topology_coverage_by_source` originally rendered into `data/analysis/db_vs_sonnet_inclusion/` before being relocated) — enforced by [tests/test_published_figures_have_outputs.py](tests/test_published_figures_have_outputs.py), which fails CI if any `make_<slug>.py` is missing its sibling `<slug>.pdf`, `<slug>.png`, or `01_<slug>.md`.
+**Co-location rule.** Both gist files (`01_<slug>.md` and `make_<slug>.py`) AND the rendered figure outputs (`<slug>.pdf`, `<slug>.png`) live in `data/analysis/figures/`. The canonical generator under `scripts/figures/<slug>.py` must save its outputs there too — NOT to a per-analysis subdir like `data/analysis/<some-area>/<slug>.pdf`. This is the single folder a reader points to when they want the figure, the script that made it, and the gist's reader-side mirror. Drift between "gist mirror in figures/" and "rendered output in audit-subdir" has happened (`topology_coverage_by_source` originally rendered into `data/analysis/db_vs_sonnet_inclusion/` before being relocated) — enforced by [tests/test_published_figures_have_outputs.py](tests/test_published_figures_have_outputs.py), which fails CI if any `make_<slug>.py` is missing its sibling `<slug>.pdf`, `<slug>.png`, or `01_<slug>.md`.
 
 **Data fetching — bundle the TSV into the gist** so the gist is a self-contained reproduction unit. Each `make_<slug>.py` uses a **sibling-first** loader: try `Path(__file__).parent / Path(url).name` first; if found (gist case), read it; otherwise fall back to in-repo-dev-mode path, then to `raw.githubusercontent.com` over the wire. This gives one atomic reproduction artifact:
 
 - **The gist as a whole is cited as `swh:1:rev:<gist HEAD commit SHA>`** — Software Heritage archives gists. The git commit SHA *is* the `sha1_git` Software Heritage uses for rev SWHIDs, so the same identifier captures `01_<slug>.md` + `make_<slug>.py` + bundled TSV(s) + rendered figures together. No drift between script and data is possible — they're in the same commit.
-- **Bundling is automated** — `scripts/sync_figure_gists_bundle_data.py` reads `gist_map.json` + a per-slug TSV bundle list, pushes each canonical TSV into its gist via `gh gist edit -a`, then re-pushes the updated mirror via `gh gist edit -f`, then captures the new HEAD SHA into `data/analysis/figures/swhid_map.json` as `swh:1:rev:<sha>`.
+- **Bundling is automated** — `scripts/figures/sync_figure_gists_bundle_data.py` reads `gist_map.json` + a per-slug TSV bundle list, pushes each canonical TSV into its gist via `gh gist edit -a`, then re-pushes the updated mirror via `gh gist edit -f`, then captures the new HEAD SHA into `data/analysis/figures/swhid_map.json` as `swh:1:rev:<sha>`.
 - **Drift guard** — [tests/test_figure_gist_data_sync.py](tests/test_figure_gist_data_sync.py) (marked `network`, gated by `--run-network`) fetches each gist's bundled TSV via `gist.githubusercontent.com/.../raw/<file>` and sha256-compares against the canonical repo TSV. Fails CI if any bundled copy is stale. When it fires, re-run the sync script.
 - **Gist size limits** — GitHub gist files larger than **1 MB** display a "too large to render" warning on the gist landing page but `raw` fetch still works. The hard limit is **10 MB per file**, **100 files per gist**. Three of our TSVs are over 1 MB (`whole_proteome_catalog.tsv` 2.3 MB, `per_protein_features.tsv` 2.9 MB, `mainbench_replicates_v2.tsv` 0.86 MB just under) — they bundle fine but show the warning. GitHub doesn't sell larger gist quotas; the workaround for >10 MB would be a real repo, but no figure TSV is near that ceiling.
 
@@ -528,7 +528,7 @@ When the canonical TSV is too large or genuinely lives outside the repo (private
 
 Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line so readers can find it from the source script. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
 
-**Also register the gist in [data/analysis/figures/gist_map.json](data/analysis/figures/gist_map.json)** — the slug → gist-ID lookup that `scripts/embed_figure_gist_metadata.py` and similar tooling read. The mirror's `GIST_URL` constant is the on-figure surface; `gist_map.json` is the programmatic registry. These two **must** agree, and [tests/test_figure_gist_map_sync.py](tests/test_figure_gist_map_sync.py) enforces both directions of the contract — a `make_<slug>.py` with `GIST_URL` and no registry entry fails CI, and an orphan registry entry with no backing mirror fails CI. When you create a new gist, edit both surfaces in the same commit. `topology_coverage_by_source` is the cautionary tale: its mirror had the URL embedded for months while the registry sat at 9 entries.
+**Also register the gist in [data/analysis/figures/gist_map.json](data/analysis/figures/gist_map.json)** — the slug → gist-ID lookup that `scripts/figures/embed_figure_gist_metadata.py` and similar tooling read. The mirror's `GIST_URL` constant is the on-figure surface; `gist_map.json` is the programmatic registry. These two **must** agree, and [tests/test_figure_gist_map_sync.py](tests/test_figure_gist_map_sync.py) enforces both directions of the contract — a `make_<slug>.py` with `GIST_URL` and no registry entry fails CI, and an orphan registry entry with no backing mirror fails CI. When you create a new gist, edit both surfaces in the same commit. `topology_coverage_by_source` is the cautionary tale: its mirror had the URL embedded for months while the registry sat at 9 entries.
 
 **Also embed the gist URL in the artifact itself** via `save_figure(..., gist_url=...)` (in `src/accessible_surfaceome/audit/_plotting_config.py`). The helper writes the URL into the PNG's `Source` tEXt chunk and the PDF's `Subject` info field, so the URL travels with the file when it gets dragged into a Substack draft, copied to Slack, or sent in email. Reading the metadata back:
 
@@ -626,7 +626,7 @@ Rules for changing what a gene page renders:
   via `accessible_surfaceome.cloud.surface_annotation.publish_record`
   after every successful run. If you hand-edited the committed
   snapshots, push them with
-  `uv run python scripts/upload_viewer_snapshots_to_d1.py --execute`
+  `uv run python scripts/cloud/upload_viewer_snapshots_to_d1.py --execute`
   (idempotent `INSERT OR REPLACE` on `(gene_symbol, schema_version)`;
   drops stale older-schema rows). Re-sync D1 in the **same** change as
   the JSON edit so the Worker and the in-tree snapshots never diverge.
@@ -688,7 +688,7 @@ a Pages binding.
   so restarting a crashed sweep with the same `--run-id` skips cells
   that already landed.
 - **Backup to R2** is CI-driven: `.github/workflows/d1-backup.yml`
-  runs `scripts/d1_export_to_r2.sh` on every push to `main` that
+  runs `scripts/cloud/d1_export_to_r2.sh` on every push to `main` that
   touches `cloudflare/d1_schema.sql`, `data/annotations/**`,
   `data/triage/**`, the uploader code, or the
   backup scripts themselves. Each run drops a timestamped SQL dump and

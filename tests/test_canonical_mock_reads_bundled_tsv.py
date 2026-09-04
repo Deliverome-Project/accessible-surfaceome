@@ -33,7 +33,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPTS = REPO_ROOT / "scripts"
+SCRIPTS = REPO_ROOT / "scripts" / "figures"
 
 # Figures whose canonical generator reads its dedicated per-figure TSV
 # (``data/processed/figures/<slug>.tsv``) as the single source of truth,

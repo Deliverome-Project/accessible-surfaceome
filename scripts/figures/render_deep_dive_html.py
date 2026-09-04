@@ -1,14 +1,14 @@
 """Render a single-file HTML viewer for one surface-annotator record.
 
-Mirrors the look-and-feel of ``docs/eval/triage_agent_reference.html``
+Mirrors the look-and-feel of ``docs/evals/triage_agent_reference.html``
 (Manrope + Playfair Display + project palette) but reads a real
 record from ``data/annotations/<SYMBOL>.json`` and renders the key
 fields as sections.
 
 Usage:
-    uv run python scripts/render_deep_dive_html.py TGOLN2
+    uv run python scripts/figures/render_deep_dive_html.py TGOLN2
 
-Output: ``docs/eval/deep_dive_<symbol>.html`` (single self-contained
+Output: ``docs/evals/deep_dive_<symbol>.html`` (single self-contained
 file, JSON embedded inline, no external requests except CDN fonts).
 """
 
@@ -608,10 +608,10 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("symbol", help="HGNC symbol (e.g. TGOLN2)")
     p.add_argument("-o", "--output", type=Path, default=None,
-                   help="Output HTML path (default: docs/eval/deep_dive_<symbol>.html)")
+                   help="Output HTML path (default: docs/evals/deep_dive_<symbol>.html)")
     args = p.parse_args()
 
-    out = args.output or (ROOT / "docs" / "eval" / f"deep_dive_{args.symbol.lower()}.html")
+    out = args.output or (ROOT / "docs" / "evals" / f"deep_dive_{args.symbol.lower()}.html")
     out.parent.mkdir(parents=True, exist_ok=True)
     # Strip trailing whitespace per-line to satisfy the pre-commit
     # trailing-whitespace hook — easier than chasing every f-string
