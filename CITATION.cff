@@ -4,10 +4,10 @@ title: >-
   accessible human surfaceome
 message: >-
   If you use this software or the atlas it produces, please
-  cite it using the metadata below. Cite the concept DOI
-  (10.5281/zenodo.20805383 for the data) when you mean "the
-  resource"; cite a version DOI when you mean a specific
-  snapshot you actually ran against.
+  cite it using the metadata below. Cite a concept DOI
+  (10.5281/zenodo.22116981 for the software, 10.5281/zenodo.20805383
+  for the data) when you mean "the resource"; cite a version DOI when
+  you mean a specific snapshot you actually ran against.
 type: software
 authors:
   # Alphabetical by family name, matching the manuscript.
@@ -47,7 +47,7 @@ keywords:
   - large language models
   - literature curation
   - bioinformatics
-  - proteomics
 license: MIT
-version: 1.0.0
-date-released: '2026-08-26'
+version: 1.1.0
+date-released: '2026-09-04'
+doi: 10.5281/zenodo.22116981
