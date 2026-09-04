@@ -1,99 +1,106 @@
+/* Internalization card — consumes the site design tokens (app/design-tokens.css)
+   like every other gene-page card. No local palette: the viewer is light-only
+   (there is no dark block anywhere in the token system), so a card that defined
+   its own `--surface2` beige + its own dark overrides was the one card that
+   drifted from the rest of the page. Grades reuse the brand tint families
+   (teal = positive, amber = partial, maroon = negative) the paralog/ortholog
+   tiers already use; structural panels are airy (hairline border, no fill) and
+   only small inline chips carry the site's warm inset. */
 .root {
-  --teal: #0d7d74;
-  --amber: #b8791f;
-  --maroon: #8a2f45;
-  --lav: #6b5ca8;
-  --slate: #6b7280;
-  --rust: #a3442f;
-  --muted: #8b857c;
-  --hair: #e7e2da;
-  --surface2: #f4f0ea;
-  font-size: 0.9rem;
-  line-height: 1.55;
-}
-@media (prefers-color-scheme: dark) {
-  .root {
-    --teal: #2fb3a6; --amber: #d69a3c; --maroon: #c76a83; --lav: #9a8ce0;
-    --slate: #9aa2ad; --rust: #d9755c; --muted: #9a9284; --hair: #332c23; --surface2: #26211b;
-  }
-}
-:global([data-theme="light"]) .root {
-  --teal: #0d7d74; --amber: #b8791f; --maroon: #8a2f45; --lav: #6b5ca8;
-  --slate: #6b7280; --rust: #a3442f; --muted: #8b857c; --hair: #e7e2da; --surface2: #f4f0ea;
-}
-:global([data-theme="dark"]) .root {
-  --teal: #2fb3a6; --amber: #d69a3c; --maroon: #c76a83; --lav: #9a8ce0;
-  --slate: #9aa2ad; --rust: #d9755c; --muted: #9a9284; --hair: #332c23; --surface2: #26211b;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: var(--lh-body);
 }
 
 .muted { color: var(--muted); }
-.empty { color: var(--muted); opacity: 0.55; }
-.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+.empty { color: var(--muted); opacity: 0.6; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-.body { display: flex; flex-direction: column; gap: 1.4rem; }
+.body { display: flex; flex-direction: column; gap: var(--space-6); }
 .sub { }
-.subHead { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
-.trackLabelMp { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--lav); }
-.trackLabelLit { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--teal); }
-.badge {
-  font-size: 0.68rem; color: var(--muted); border: 1px dashed var(--hair);
-  border-radius: 6px; padding: 0.05rem 0.4rem;
+.subHead {
+  display: flex; align-items: baseline; gap: var(--space-2);
+  flex-wrap: wrap; margin-bottom: var(--space-2);
+}
+.trackLabelMp {
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+  font-weight: var(--fw-medium); color: var(--lavender-dark);
+}
+.trackLabelLit {
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+  font-weight: var(--fw-medium); color: var(--teal-dark);
 }
 
+/* Grade pill — teal (positive) / amber (partial) / maroon (negative) tint
+   families, same brand tints the paralog/ortholog risk tiers use. */
 .pill {
-  display: inline-block; padding: 0.06rem 0.5rem; border-radius: 999px;
-  font-size: 0.75rem; font-weight: 600; line-height: 1.5; border: 1px solid transparent; white-space: nowrap;
+  display: inline-block; padding: 0.06rem 0.5rem; border-radius: var(--radius-pill);
+  font-size: 0.75rem; font-weight: var(--fw-medium); line-height: 1.5;
+  border: 1px solid transparent; white-space: nowrap;
 }
-.g_very_high { background: color-mix(in srgb, var(--teal) 28%, transparent); color: var(--teal); border-color: color-mix(in srgb, var(--teal) 60%, transparent); font-weight: 700; }
-.g_high { background: color-mix(in srgb, var(--teal) 16%, transparent); color: var(--teal); border-color: color-mix(in srgb, var(--teal) 40%, transparent); }
-.g_moderate { background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 40%, transparent); }
-.g_low { background: color-mix(in srgb, var(--slate) 16%, transparent); color: var(--slate); border-color: color-mix(in srgb, var(--slate) 40%, transparent); }
-.g_very_low { background: color-mix(in srgb, var(--rust) 26%, transparent); color: var(--rust); border-color: color-mix(in srgb, var(--rust) 60%, transparent); font-weight: 700; }
-.g_no { background: color-mix(in srgb, var(--rust) 16%, transparent); color: var(--rust); border-color: color-mix(in srgb, var(--rust) 40%, transparent); }
-.g_unknown { background: var(--surface2); color: var(--muted); border: 1px dashed var(--hair); }
+.g_very_high { background: var(--teal-tint); color: var(--teal-dark); border-color: var(--teal-lt); font-weight: 700; }
+.g_high { background: var(--teal-soft); color: var(--teal-dark); border-color: color-mix(in srgb, var(--teal-mid) 35%, transparent); }
+.g_moderate { background: var(--amber-soft); color: var(--amber-dark); border-color: color-mix(in srgb, var(--amber-mid) 35%, transparent); }
+.g_low { background: var(--bg-warm); color: var(--muted); border-color: var(--line); }
+.g_very_low { background: var(--maroon-blush); color: var(--maroon-dark); border-color: var(--maroon-pale); font-weight: 700; }
+.g_no { background: var(--maroon-soft); color: var(--maroon-dark); border-color: color-mix(in srgb, var(--maroon-mid) 30%, transparent); }
+.g_unknown { background: var(--bg-warm); color: var(--muted); border: 1px dashed var(--line); }
 
-.mp { border-left: 3px solid var(--lav); padding-left: 0.8rem; margin: 0.5rem 0; }
-.mpHead { font-family: ui-monospace, monospace; font-size: 0.82rem; }
+/* Sequence-prior block — lavender left rule, airy (no fill). */
+.mp { border-left: 3px solid var(--lavender-bright); padding-left: var(--space-3); margin: var(--space-2) 0; }
+.mpHead { font-family: var(--font-mono); font-size: 0.82rem; }
 .mpHead code { font-size: 0.82rem; }
-.iso { background: var(--surface2); border: 1px solid var(--hair); border-radius: 8px; padding: 0.5rem 0.7rem; margin: 0.4rem 0; }
-.iso .mono { font-size: 0.78rem; color: var(--muted); margin: 0.2rem 0; }
-.iso p { margin: 0.3rem 0 0; font-size: 0.85rem; }
+.iso {
+  border: 1px solid var(--line-soft); border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3); margin: var(--space-2) 0;
+}
+.iso .mono { font-size: 0.82rem; color: var(--muted); margin: 0.2rem 0; }
+.iso p { margin: 0.3rem 0 0; font-size: 0.9rem; }
 
-.overall { font-size: 0.9rem; margin-bottom: 0.3rem; }
-.modes { display: grid; grid-template-columns: 1fr; gap: 0.4rem; margin: 0.6rem 0; }
+.overall { margin-bottom: 0.3rem; }
+.modes { display: grid; grid-template-columns: 1fr; gap: var(--space-2); margin: var(--space-3) 0; }
 @media (min-width: 720px) { .modes { grid-template-columns: repeat(3, 1fr); } }
-.mode { background: var(--surface2); border: 1px solid var(--hair); border-radius: 8px; padding: 0.5rem 0.7rem; }
-.modeName { font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
-.modeRat { font-size: 0.8rem; margin: 0.3rem 0 0; }
+.mode {
+  border: 1px solid var(--line-soft); border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+.modeName { font-weight: var(--fw-medium); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink); }
+.modeRat { font-size: 0.85rem; margin: 0.3rem 0 0; }
 
-.h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--maroon); margin: 1.2rem 0 0.5rem; }
-/* Table styling matched to the site convention (TaggedSites / deep-dive tabs):
-   borderless wrap, rows separated by a soft bottom border, 0.9rem body. */
+/* Mini section header ("Observations (5)"). On-brand maroon eyebrow. */
+.h4 {
+  font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--accent-deep); font-weight: var(--fw-medium); margin: var(--space-5) 0 var(--space-2);
+}
+
+/* Tables — borderless, rows separated by a soft hairline, matching the
+   Isoforms / Expression tabs (no wrapper box, no header fill). */
 .tablewrap { overflow-x: auto; }
 .table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
 .table th {
-  text-align: left; color: var(--muted); font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.03em; font-size: 0.72rem;
-  padding: 0.4rem 0.7rem 0.4rem 0; border-bottom: 1px solid var(--line-soft, var(--hair));
+  text-align: left; color: var(--muted); font-weight: var(--fw-medium);
+  text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.72rem;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0; border-bottom: 1px solid var(--line-soft);
   white-space: nowrap;
 }
 .table td {
-  padding: 0.5rem 0.7rem 0.5rem 0; border-bottom: 1px solid var(--line-soft, var(--hair));
+  padding: var(--space-2) var(--space-3) var(--space-2) 0; border-bottom: 1px solid var(--line-soft);
   vertical-align: top;
 }
 .table tbody tr:last-child td { border-bottom: 0; }
 
 /* Sortable header cells. */
 .sortable { cursor: pointer; user-select: none; }
-.sortable:hover { color: var(--maroon); }
-.sortArrow { font-size: 0.65rem; color: var(--maroon); }
+.sortable:hover { color: var(--accent); }
+.sortArrow { font-size: 0.65rem; color: var(--accent); }
 
-/* Category chip for the assay / mode / value-type cells — makes each a distinct
-   field. Neutral so it reads as a category, not a grade (grades use .pill). */
+/* Category chip for the assay / mode / value-type cells — a distinct field,
+   neutral so it reads as a category (grades use .pill). Uses the site's warm
+   inset token. */
 .badge {
-  display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px;
-  font-size: 0.74rem; font-weight: 600; white-space: nowrap; line-height: 1.5;
-  background: var(--surface2); border: 1px solid var(--hair);
+  display: inline-block; padding: 0.1rem 0.5rem; border-radius: var(--radius-pill);
+  font-size: 0.74rem; font-weight: var(--fw-medium); white-space: nowrap; line-height: 1.5;
+  background: var(--bg-warm); border: 1px solid var(--line-soft); color: var(--ink);
 }
 
 /* Column widths — assay wide enough for "ADC internalization"; cell line narrow.
@@ -103,29 +110,29 @@
 .colMode { width: 9ch; }
 .colSpecies { width: 7ch; }
 .colCell { width: 8ch; }
+.colMag { width: 4.5ch; }
+.colMetric { width: 9ch; }
+.colCites { width: 5ch; }
 
 /* Confidence label — clearly reads as confidence, not a mystery paren. */
 .conf { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
 .conf strong { color: inherit; font-weight: 700; }
 
 /* Structured endocytic-motif chips (sequence prior). A functional (cytoplasmic)
-   motif is highlighted; extracellular/TM matches are shown muted. */
+   motif is highlighted teal; extracellular/TM matches are shown neutral. */
 .motifs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.35rem 0; }
 .motif {
   display: inline-flex; align-items: baseline; gap: 0.2rem;
-  padding: 0.1rem 0.5rem; border-radius: 6px; font-size: 0.76rem;
-  background: var(--surface2); border: 1px solid var(--hair);
+  padding: 0.1rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.76rem;
+  background: var(--bg-warm); border: 1px solid var(--line-soft);
 }
 .motifOn {
-  border-color: color-mix(in srgb, var(--teal) 45%, transparent);
-  background: color-mix(in srgb, var(--teal) 10%, transparent);
+  border-color: color-mix(in srgb, var(--teal-mid) 45%, transparent);
+  background: var(--teal-soft);
 }
 .motifType { font-weight: 700; }
 .motif code { font-size: 0.76rem; }
-.motifOk { font-size: 0.7rem; color: var(--teal); font-weight: 600; }
-.colMag { width: 4.5ch; }
-.colMetric { width: 9ch; }
-.colCites { width: 5ch; }
+.motifOk { font-size: 0.7rem; color: var(--teal-dark); font-weight: var(--fw-medium); }
 
 /* Chip strip inside a table "cites" cell — clickable EvidenceChips that open
    the drawer, wrapping neatly instead of a raw comma-joined id list. */
