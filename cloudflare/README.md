@@ -236,12 +236,17 @@ The GitHub workflow `.github/workflows/d1-backup.yml` triggers
 - `src/accessible_surfaceome/cloud/**` (uploader code)
 - `scripts/cloud/d1_export_to_r2.sh`
 
-Each run produces an offsite SQL dump in the R2 bucket
-`deliverome-d1-backups` under the dated key
-`d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql`
-and updates the stable pointer `d1-backups/surfaceome_agents/latest.sql`.
-A small JSON manifest (sha256 + byte count) lands next to each dump for
-integrity checks.
+Each run exports the DB, gzips the dump, splits it into fixed-size parts
+(250 MiB — `wrangler r2 object put` refuses files over 300 MiB, and the
+`surfaceome_agents` dump passed 2 GiB in mid-2026), verifies that the
+parts reassemble to the raw dump's sha256, and only then uploads to
+`deliverome-d1-backups` under the dated prefix
+`d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql.gz.part-aa, -ab, …`
+plus a manifest (`…_<UTC>.manifest.json`: part keys, sizes, sha256s, and
+the exact restore commands). The stable pointer is
+`d1-backups/surfaceome_agents/latest.manifest.json`. Restore = fetch the
+parts listed in the manifest, `cat parts | gunzip`, check the sha256, then
+`wrangler d1 execute --file`.
 
 **One-time R2 setup** (run locally with `wrangler`):
 
@@ -267,13 +272,22 @@ Inspect / restore from R2:
 # List recent dumps.
 npx --yes wrangler r2 object list deliverome-d1-backups --prefix d1-backups/surfaceome_agents/
 
-# Pull the latest pointer locally.
-npx --yes wrangler r2 object get deliverome-d1-backups \
-    d1-backups/surfaceome_agents/latest.sql \
-    --output ./latest.sql
+# Pull the latest manifest — it lists the gzip parts and their sha256s.
+npx --yes wrangler r2 object get deliverome-d1-backups/d1-backups/surfaceome_agents/latest.manifest.json \
+    --file ./latest.manifest.json --remote
+
+# Fetch every part listed under "parts" (keys look like
+# d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql.gz.part-aa, -ab, …).
+for key in $(python3 -c 'import json; print(" ".join(p["key"] for p in json.load(open("latest.manifest.json"))["parts"]))'); do
+    npx --yes wrangler r2 object get "deliverome-d1-backups/$key" --file "./$(basename "$key")" --remote
+done
+
+# Reassemble in order, decompress, and check against the manifest's sql_sha256.
+cat ./surfaceome_agents_*.sql.gz.part-* | gunzip > ./restore.sql
+shasum -a 256 ./restore.sql
 
 # Re-import into D1 (DESTRUCTIVE — wipes current tables before applying).
-npx --yes wrangler d1 execute surfaceome_agents --remote --file=./latest.sql
+npx --yes wrangler d1 execute surfaceome_agents --remote --file=./restore.sql
 ```
 
 R2 is durable, cross-region, and outside the Time Travel window — this
@@ -294,6 +308,6 @@ audit trail — if D1 is wiped, re-running the sweep with the same
 | event | action |
 |---|---|
 | After every triage sweep | nothing — `--d1` streams as you go |
-| Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh dump lands in R2 with a dated key + `latest.sql` pointer |
+| Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh gzipped + split dump lands in R2 under a dated prefix + `latest.manifest.json` pointer |
 | Before schema migration | run `d1_triage_backup.sh`, migrate, smoke-test |
-| Catastrophic D1 loss | restore from `r2://deliverome-d1-backups/d1-backups/.../latest.sql`, then re-run the triage runner with the same `--run-id` to refill any post-backup rows from the on-disk JSON tree |
+| Catastrophic D1 loss | restore from the parts listed in `r2://deliverome-d1-backups/d1-backups/<db>/latest.manifest.json` (snippet above), then re-run the triage runner with the same `--run-id` to refill any post-backup rows from the on-disk JSON tree |

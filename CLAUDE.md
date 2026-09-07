@@ -691,9 +691,11 @@ a Pages binding.
   runs `scripts/cloud/d1_export_to_r2.sh` on every push to `main` that
   touches `cloudflare/d1_schema.sql`, `data/annotations/**`,
   `data/triage/**`, the uploader code, or the
-  backup scripts themselves. Each run drops a timestamped SQL dump and
-  a stable `latest.sql` pointer into the R2 bucket
-  `deliverome-d1-backups`. Manual trigger via `workflow_dispatch`.
+  backup scripts themselves. Each run drops a gzipped dump split into
+  250 MiB parts (wrangler's put limit is 300 MiB; the agents dump is
+  >2 GiB) plus a manifest, and a stable `latest.manifest.json` pointer,
+  into the R2 bucket `deliverome-d1-backups`. Manual trigger via
+  `workflow_dispatch`.
 - **Layered recovery** (cloudflare/README.md has the full walkthrough):
   Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
   long-term) → on-disk JSON under `data/eval/` and `data/annotations/`

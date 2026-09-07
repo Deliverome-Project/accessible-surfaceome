@@ -353,9 +353,11 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   `data/triage/**`, `src/accessible_surfaceome/cloud/**`, the
   backup scripts themselves) triggers `scripts/cloud/d1_export_to_r2.sh`,
   which runs
-  `wrangler d1 export` and uploads to the R2 bucket
-  `deliverome-d1-backups` under a dated key plus a stable
-  `latest.sql` pointer.
+  `wrangler d1 export`, gzips and splits the dump into 250 MiB parts
+  (wrangler's put limit is 300 MiB; the agents dump is >2 GiB), verifies
+  they reassemble, and uploads them to the R2 bucket
+  `deliverome-d1-backups` under a dated prefix plus a stable
+  `latest.manifest.json` pointer listing the parts + restore steps.
 - **Layered recovery** (cloudflare/README.md has the full walkthrough):
   Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
   long-term) → on-disk JSON under `data/eval/` and `data/annotations/`
