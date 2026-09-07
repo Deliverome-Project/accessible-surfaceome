@@ -240,7 +240,7 @@ Two Cloudflare D1 databases on the same account:
   the private DB: Ensembl Compara orthologs, benchmark truth labels,
   triage verdicts (sans cost/token data), and per-gene
   `SurfaceomeRecord` JSONs. Schema in `cloudflare/d1_public_schema.sql`.
-  Synced one-way from private via `scripts/sync_public_d1.py`.
+  Synced one-way from private via `scripts/cloud/sync_public_d1.py`.
 
 A read-only **Cloudflare Worker** at
 `cloudflare/workers/surfaceome_api/` exposes `surfaceome_public` as a
@@ -291,7 +291,7 @@ field-agnostic — the same shape works for any computational figure
 with cited inputs. See
 [`docs/figure-reproducibility-schema.md`](docs/figure-reproducibility-schema.md)
 for the spec and
-[`scripts/embed_figure_gist_metadata.py`](scripts/embed_figure_gist_metadata.py)
+[`scripts/figures/embed_figure_gist_metadata.py`](scripts/figures/embed_figure_gist_metadata.py)
 for the embedder.
 
 ## Layout
@@ -307,7 +307,7 @@ for the embedder.
 | `src/accessible_surfaceome/cloud/` | D1 HTTP client + triage-run uploader. |
 | `src/accessible_surfaceome/tools/` | Shared per-tool helpers + Pydantic models. |
 | `cloudflare/` | D1 schemas + Worker code for the public API. |
-| `scripts/` | Flat collection of one-shot builders, backfills, and audits, plus D1 upload/sync, figure builders (`build_figure_*`, mirrored by `data/analysis/figures/make_*`), the triage runner (`triage_runner.py`), the single-gene deep-dive driver (`surfaceome_v2_annotate.py`), and the release ritual (`scripts/release/`). |
+| `scripts/` | Entry points at the top level (`surfaceome_v2_annotate.py`, `triage_runner.py`, `build_candidate_universe_v3.py`, `build_figure_tsvs.py`, `build_figure_index.py`, `build_positive_control_lists.py`, `check-py.sh`); everything else grouped into `figures/` (canonical generators, mirrored by `data/analysis/figures/make_*`), `build/`, `cloud/` (D1 upload/sync + edge), `audit/`, `probes/`, `tsv-export/`, `release/`, and `archive/` (finished one-shots). See [`scripts/README.md`](scripts/README.md). |
 | `viewer/` | Next.js 16 app, deployed at `surfaceome.deliverome.org`. |
 | `data/raw/`, `data/external/`, `data/processed/`, `data/annotations/`, `data/analysis/` | Source snapshots, normalized tables, agent outputs, and final figures. Annotations dir is gitignored; `viewer/public/data/genes/` holds the published snapshot. |
 | `docs/` | Project plans, eval reports, decisions. |
@@ -353,10 +353,10 @@ uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --replicates 1 
 
 ```bash
 # Refresh Ensembl Compara CSV + upload to D1:
-bash scripts/refresh_compara.sh
+bash scripts/build/refresh_compara.sh
 
 # One-way push from private surfaceome_agents → public surfaceome_public:
-uv run python scripts/sync_public_d1.py
+uv run python scripts/cloud/sync_public_d1.py
 
 # Deploy the public API Worker:
 cd cloudflare/workers/surfaceome_api && npx wrangler deploy

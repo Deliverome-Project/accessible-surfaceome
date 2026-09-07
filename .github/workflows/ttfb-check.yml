@@ -4,7 +4,7 @@ name: TTFB check
 # Fails (red X → owner notification) if any monitored URL's median TTFB exceeds
 # 800 ms — the web.dev "good" threshold — or returns a non-2xx status (which
 # also catches soft-404s, e.g. a gene URL that renders client-side but returns
-# HTTP 404). See scripts/ttfb_check.py.
+# HTTP 404). See scripts/probes/ttfb_check.py.
 #
 # Bot-protection bypass: GitHub-runner IPs (Azure datacenter ranges) are
 # bot-challenged by Cloudflare's zone protection, which 403s this monitor at
@@ -29,7 +29,7 @@ on:
     paths:
       - "viewer/**"
       - "cloudflare/**"
-      - "scripts/ttfb_check.py"
+      - "scripts/probes/ttfb_check.py"
       - ".github/workflows/ttfb-check.yml"
 
 jobs:
@@ -51,4 +51,4 @@ jobs:
           # bypasses bot protection from the runner's datacenter IP. Optional:
           # if unset, the script omits the header (and CI 403s — see above).
           TTFB_MONITOR_TOKEN: ${{ secrets.TTFB_MONITOR_TOKEN }}
-        run: python scripts/ttfb_check.py --budget-ms 800 --samples 5
+        run: python scripts/probes/ttfb_check.py --budget-ms 800 --samples 5

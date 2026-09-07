@@ -18,9 +18,9 @@
 #   * The target D1 database must exist
 #
 # USAGE
-#   bash scripts/d1_export_to_r2.sh                       # default surfaceome_agents
-#   bash scripts/d1_export_to_r2.sh --db surfaceome_public
-#   bash scripts/d1_export_to_r2.sh --keep-local          # also retain local copy
+#   bash scripts/cloud/d1_export_to_r2.sh                       # default surfaceome_agents
+#   bash scripts/cloud/d1_export_to_r2.sh --db surfaceome_public
+#   bash scripts/cloud/d1_export_to_r2.sh --keep-local          # also retain local copy
 #
 # CI USAGE
 #   See .github/workflows/d1-backup.yml — runs on push/PR that touches

@@ -11,8 +11,8 @@
 # want them in the repo).
 #
 # USAGE
-#   bash scripts/d1_triage_backup.sh
-#   bash scripts/d1_triage_backup.sh /custom/output/dir
+#   bash scripts/cloud/d1_triage_backup.sh
+#   bash scripts/cloud/d1_triage_backup.sh /custom/output/dir
 #
 # REQUIREMENTS
 #   * wrangler installed via `npm ci` at the repo root — pins the version
