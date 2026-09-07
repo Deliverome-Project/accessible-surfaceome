@@ -272,13 +272,22 @@ Inspect / restore from R2:
 # List recent dumps.
 npx --yes wrangler r2 object list deliverome-d1-backups --prefix d1-backups/surfaceome_agents/
 
-# Pull the latest pointer locally.
-npx --yes wrangler r2 object get deliverome-d1-backups \
-    d1-backups/surfaceome_agents/latest.sql \
-    --output ./latest.sql
+# Pull the latest manifest — it lists the gzip parts and their sha256s.
+npx --yes wrangler r2 object get deliverome-d1-backups/d1-backups/surfaceome_agents/latest.manifest.json \
+    --file ./latest.manifest.json --remote
+
+# Fetch every part listed under "parts" (keys look like
+# d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql.gz.part-aa, -ab, …).
+for key in $(python3 -c 'import json; print(" ".join(p["key"] for p in json.load(open("latest.manifest.json"))["parts"]))'); do
+    npx --yes wrangler r2 object get "deliverome-d1-backups/$key" --file "./$(basename "$key")" --remote
+done
+
+# Reassemble in order, decompress, and check against the manifest's sql_sha256.
+cat ./surfaceome_agents_*.sql.gz.part-* | gunzip > ./restore.sql
+shasum -a 256 ./restore.sql
 
 # Re-import into D1 (DESTRUCTIVE — wipes current tables before applying).
-npx --yes wrangler d1 execute surfaceome_agents --remote --file=./latest.sql
+npx --yes wrangler d1 execute surfaceome_agents --remote --file=./restore.sql
 ```
 
 R2 is durable, cross-region, and outside the Time Travel window — this
@@ -299,6 +308,6 @@ audit trail — if D1 is wiped, re-running the sweep with the same
 | event | action |
 |---|---|
 | After every triage sweep | nothing — `--d1` streams as you go |
-| Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh dump lands in R2 with a dated key + `latest.sql` pointer |
+| Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh gzipped + split dump lands in R2 under a dated prefix + `latest.manifest.json` pointer |
 | Before schema migration | run `d1_triage_backup.sh`, migrate, smoke-test |
-| Catastrophic D1 loss | restore from `r2://deliverome-d1-backups/d1-backups/.../latest.sql`, then re-run the triage runner with the same `--run-id` to refill any post-backup rows from the on-disk JSON tree |
+| Catastrophic D1 loss | restore from the parts listed in `r2://deliverome-d1-backups/d1-backups/<db>/latest.manifest.json` (snippet above), then re-run the triage runner with the same `--run-id` to refill any post-backup rows from the on-disk JSON tree |
