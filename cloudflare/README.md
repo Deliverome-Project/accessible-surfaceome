@@ -236,12 +236,17 @@ The GitHub workflow `.github/workflows/d1-backup.yml` triggers
 - `src/accessible_surfaceome/cloud/**` (uploader code)
 - `scripts/cloud/d1_export_to_r2.sh`
 
-Each run produces an offsite SQL dump in the R2 bucket
-`deliverome-d1-backups` under the dated key
-`d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql`
-and updates the stable pointer `d1-backups/surfaceome_agents/latest.sql`.
-A small JSON manifest (sha256 + byte count) lands next to each dump for
-integrity checks.
+Each run exports the DB, gzips the dump, splits it into fixed-size parts
+(250 MiB — `wrangler r2 object put` refuses files over 300 MiB, and the
+`surfaceome_agents` dump passed 2 GiB in mid-2026), verifies that the
+parts reassemble to the raw dump's sha256, and only then uploads to
+`deliverome-d1-backups` under the dated prefix
+`d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql.gz.part-aa, -ab, …`
+plus a manifest (`…_<UTC>.manifest.json`: part keys, sizes, sha256s, and
+the exact restore commands). The stable pointer is
+`d1-backups/surfaceome_agents/latest.manifest.json`. Restore = fetch the
+parts listed in the manifest, `cat parts | gunzip`, check the sha256, then
+`wrangler d1 execute --file`.
 
 **One-time R2 setup** (run locally with `wrangler`):
 

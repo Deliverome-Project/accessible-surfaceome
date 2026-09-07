@@ -6,9 +6,11 @@ name: D1 backup → R2
 # changes touch the data the DBs store or the schema / uploader that
 # defines them.
 #
-# The workflow runs `wrangler d1 export` twice and pushes each dump to
-# the R2 bucket `deliverome-d1-backups` under a timestamped key plus a
-# stable `latest.sql` pointer. Combined with Cloudflare's built-in Time
+# The workflow runs `wrangler d1 export` twice, gzips + splits each dump
+# into 250 MiB parts (wrangler's put limit is 300 MiB; the agents dump is
+# >2 GiB), verifies they reassemble, and pushes parts + manifest to the
+# R2 bucket `deliverome-d1-backups` under a timestamped prefix plus a
+# stable `latest.manifest.json` pointer. Combined with Cloudflare's built-in Time
 # Travel (7-30 day automatic point-in-time recovery), this gives us
 # long-term offsite versioning with grep-able SQL for both DBs.
 #
@@ -91,5 +93,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Backups uploaded to R2 bucket: \`deliverome-d1-backups\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- \`d1-backups/surfaceome_agents/latest.sql\` (full agent write log)" >> $GITHUB_STEP_SUMMARY
-          echo "- \`d1-backups/surfaceome_public/latest.sql\` (public read-only mirror)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`d1-backups/surfaceome_agents/latest.manifest.json\` (full agent write log)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`d1-backups/surfaceome_public/latest.manifest.json\` (public read-only mirror)" >> $GITHUB_STEP_SUMMARY
