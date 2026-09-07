@@ -27,7 +27,8 @@ Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → 
 
 | Method | Path | Returns |
 |---|---|---|
-| `GET` | `/v1/genes/:symbol` | Full `SurfaceomeRecord` JSON (latest schema_version) |
+| `GET` | `/v1/genes/:symbol` | `SurfaceomeRecord` JSON (latest schema_version): executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks. The citation ledger is **no longer inlined** here (moved to `/evidence`; record ~45% smaller). |
+| `GET` | `/v1/genes/:symbol/evidence` | The citation ledger for one gene — verbatim quotes + provenance as `{ gene, evidence[] }`, split out of the core record and served via KV read-through. |
 | `GET` | `/v1/orthologs/:symbol` | Mouse + cyno orthologs for any gene from latest Compara release (broad genome-wide raw Compara — full-length identity; distinct from the deep ECD/topology orthologs inside the per-gene record) |
 | `GET` | `/v1/genes` | List of annotated genes (summary fields) |
 | `GET` | `/v1/health` | `{ ok, n_annotations }` — confirms DB binding |
