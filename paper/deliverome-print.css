@@ -245,6 +245,20 @@ h4 {
   letter-spacing: 0.005em;
 }
 
+/* DEEPEST heading (h6). This manuscript reserves h5 for figure captions,
+ * so its fifth-level headings (e.g. "Discovery" under a Methods subsection)
+ * come through as h6 — which otherwise falls to WeasyPrint's tiny default
+ * and renders as near-body-size text. Style it one clear step below h4. */
+h6 {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 9.5pt;
+  color: var(--maroon-dark, #6e1428);
+  margin: 0.8em 0 0.15em 0;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
 /* ============================================================
  * Body copy
  * ============================================================ */
