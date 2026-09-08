@@ -126,7 +126,7 @@ source of truth + on-error SSG fallback. A record change that lands only
 in the JSON silently drifts the live site (it keeps rendering D1's stale
 row — e.g. the `protein_family` → `llm_family` rename that blanked the
 Family chip). So: don't hand-edit a snapshot and stop. Land the change
-in D1 — re-run `scripts/surfaceome_v2_annotate.py` (publishes via
+in D1 — re-run `scripts/annotate_gene.py` (publishes via
 `publish_record`) or push hand-edits with
 `uv run python scripts/cloud/upload_viewer_snapshots_to_d1.py --execute`, in
 the **same** change as the JSON edit. Don't paper over JSON ↔ D1 schema

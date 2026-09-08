@@ -54,7 +54,7 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 
 ### v2 is the production deep-dive path
 
-The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](scripts/surfaceome_v2_annotate.py)). It runs entirely on **in-process Sonnet `messages.create` calls** — `plan_trim_select` (dual A1/A2), 9 block builders, and the synthesizer. **Every prompt is read locally from disk and takes effect on the next invocation — there is no remote agent registry to sync.** The synthesizer reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) directly via `messages.create` (`run_synthesizer_with_drafts`); any historical Managed-Agent registration of it is vestigial and off the v2 code path. The in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) are likewise edit-and-go. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) for the original v1/v2 trade-off table.
+The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/annotate_gene.py](scripts/annotate_gene.py)). It runs entirely on **in-process Sonnet `messages.create` calls** — `plan_trim_select` (dual A1/A2), 9 block builders, and the synthesizer. **Every prompt is read locally from disk and takes effect on the next invocation — there is no remote agent registry to sync.** The synthesizer reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) directly via `messages.create` (`run_synthesizer_with_drafts`); any historical Managed-Agent registration of it is vestigial and off the v2 code path. The in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) are likewise edit-and-go. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) for the original v1/v2 trade-off table.
 
 **Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, human-readable render of the live deep-dive prompts — each prompt's full text, the diff vs `main`, and a closed-enum reference (the structured-output options the model must choose from, e.g. `epitope_masking.mechanism` annotated with its homo / hetero / other axis). It is a **generated artifact**, so it goes stale the instant a prompt changes. Whenever you edit any in-process prompt under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/), [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/), or [surfaceome_synthesizer/prompts/](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/) — or change a closed enum the review renders (in [models.py](src/accessible_surfaceome/tools/_shared/models.py)) — regenerate it in the **same commit**:
 
@@ -74,7 +74,7 @@ If you need a concrete example to communicate a pattern, use "gene X" / "gene Y"
 
 ### v2 publishes records by default — `--no-publish` to opt out
 
-After a v2 annotate run validates, `scripts/surfaceome_v2_annotate.py` writes the record to **three** surfaces:
+After a v2 annotate run validates, `scripts/annotate_gene.py` writes the record to **three** surfaces:
 
 1. `data/annotations/{symbol}.json` — the agent's canonical disk artifact (was previously gated behind `--persist`; now default-on, opt out with `--no-persist`).
 2. `viewer/public/data/surfaceome/{symbol}.json` — the viewer's offline / Worker-down fallback.
@@ -622,7 +622,7 @@ Rules for changing what a gene page renders:
 - **Don't hand-edit a JSON snapshot to change record content/schema and
   stop there.** The edit hasn't reached the live site until it's in D1.
 - **Land the change in D1.** Normal path: re-run the annotator
-  (`scripts/surfaceome_v2_annotate.py`), which publishes to public D1
+  (`scripts/annotate_gene.py`), which publishes to public D1
   via `accessible_surfaceome.cloud.surface_annotation.publish_record`
   after every successful run. If you hand-edited the committed
   snapshots, push them with

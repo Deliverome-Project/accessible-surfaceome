@@ -18,7 +18,7 @@ override (e.g. point at ``data/eval/surfaceome_v2_samples/`` for a
 historical-sample reimport).
 
 In normal day-to-day operation you shouldn't need to run this:
-``scripts/surfaceome_v2_annotate.py`` publishes by default after every
+``scripts/annotate_gene.py`` publishes by default after every
 successful annotate run (via the same
 :func:`accessible_surfaceome.cloud.surface_annotation.publish_record`
 helper this script delegates to). Run it explicitly when:

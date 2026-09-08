@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> None:
     # The v1.0.0 ``agents annotate`` deep-dive (Surface Evidence Compiler ∥
     # Biology Compiler → Synthesizer) was removed — it is deprecated; the
     # production deep-dive is ``surfaceome_v2``, run via
-    # ``scripts/surfaceome_v2_annotate.py``. (TODO: repoint a CLI ``annotate``
+    # ``scripts/annotate_gene.py``. (TODO: repoint a CLI ``annotate``
     # command at the v2 orchestrator if a first-class CLI entry is wanted.)
 
     bench_parser = subparsers.add_parser(

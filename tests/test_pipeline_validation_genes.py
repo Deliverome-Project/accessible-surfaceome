@@ -15,7 +15,7 @@ module-scoped fixture.
 **Discipline:** prompt edits don't auto-re-annotate. After bumping
 ``PROMPT_CORPUS_VERSION`` (or editing any prompt that could affect
 these 7 archetypes), re-run them via
-``scripts/surfaceome_v2_annotate.py <SYMBOL>`` (~$2-3/gene) before
+``scripts/annotate_gene.py <SYMBOL>`` (~$2-3/gene) before
 running these tests. Otherwise the tests run against the pre-edit
 records and can't see new drift.
 
@@ -455,7 +455,7 @@ def test_all_validation_genes_published(
     missing = [g for g in _VALIDATION_GENES if g not in records]
     assert not missing, (
         f"validation genes missing from /v1/genes: {missing}. "
-        f"Re-annotate via scripts/surfaceome_v2_annotate.py <SYMBOL>."
+        f"Re-annotate via scripts/annotate_gene.py <SYMBOL>."
     )
 
 
