@@ -107,9 +107,9 @@ npx wrangler dev
 # → http://localhost:8787/v1/health
 ```
 
-## Sync from the private DB
+## How records reach this Worker
 
-This Worker reads what the **sync script** writes. The Worker doesn't pull from private D1 directly — it only reads `surfaceome_public`. To refresh data:
+This Worker reads what the **sync script** writes. It only ever reads `surfaceome_public`. To refresh data:
 
 ```bash
 uv run python scripts/cloud/sync_public_d1.py
@@ -175,7 +175,7 @@ Response shape: `{ "gene": "SYMBOL", "notes": [{ id, submitter_name, comment, ap
 
 Required bindings (`wrangler.toml`):
 - `DB` — public D1 (`surfaceome_public`) — already present.
-- `FEEDBACK_DB` — private D1 (`surfaceome_agents`) for submissions + audit.
+- `FEEDBACK_DB` — `surfaceome_agents` for submissions + audit.
 - `FEEDBACK_RATELIMIT` — KV namespace for per-IP rate-limit counters.
 
 Required secrets (`wrangler secret put`):
