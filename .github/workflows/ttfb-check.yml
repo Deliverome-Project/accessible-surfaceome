@@ -9,6 +9,9 @@ name: TTFB check
 # Bot-protection bypass: GitHub-runner IPs (Azure datacenter ranges) are
 # bot-challenged by Cloudflare's zone protection, which 403s this monitor at
 # the edge even though real visitors get 200. To let the monitor through, set
+# Targets are the pages.dev / workers.dev platform hostnames, which sit outside
+# the zone's Bot Fight Mode (Free plan; it cannot be skipped by a WAF rule).
+# To probe the custom domains instead, upgrade to Pro, then set
 # the repo secret TTFB_MONITOR_TOKEN and add a Cloudflare WAF custom rule with
 # a "Skip" action that matches `http.request.headers["x-ttfb-monitor"]` equal
 # to that same token (scoped to api.deliverome.org + surfaceome.deliverome.org).
