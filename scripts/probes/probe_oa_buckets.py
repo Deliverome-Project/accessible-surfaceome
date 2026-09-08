@@ -483,7 +483,7 @@ def main():
 
     # Sample N random genes (same seed across sources → same gene set for comparable runs)
     cohort_path = (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[2]
         / "data/processed/candidate_universe/candidate_universe_v2.tsv"
     )
     cohort = []
@@ -499,7 +499,7 @@ def main():
     print(f"Sampling {args.n_genes} genes × {args.papers_per_gene} papers each, source={args.source}")
 
     out_dir = (
-        Path(__file__).resolve().parents[1]
+        Path(__file__).resolve().parents[2]
         / "data/analysis/paywall_bot_block/probe_results"
     )
     out_dir.mkdir(parents=True, exist_ok=True)
