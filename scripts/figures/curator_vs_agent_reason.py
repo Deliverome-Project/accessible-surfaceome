@@ -20,7 +20,7 @@ Headline: ~84% exact reason agreement; the matrix shows which reason
 classes carry the residual disagreement.
 
 Run:
-    uv run python scripts/curator_vs_agent_reason.py
+    uv run python scripts/figures/curator_vs_agent_reason.py
 """
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "curator_vs_agent_reason"
 

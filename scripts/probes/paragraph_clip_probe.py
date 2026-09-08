@@ -25,7 +25,7 @@ Outputs:
 
 Usage:
 
-    uv run python scripts/paragraph_clip_probe.py GPR75
+    uv run python scripts/probes/paragraph_clip_probe.py GPR75
     open .runs/paragraph_clip_probe_GPR75_html/index.html
 """
 

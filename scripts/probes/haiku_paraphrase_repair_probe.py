@@ -11,8 +11,8 @@ char counts, latency). Aggregates total cost at the end.
 
 Usage:
 
-    uv run python scripts/haiku_paraphrase_repair_probe.py GPR75
-    uv run python scripts/haiku_paraphrase_repair_probe.py GPR75 --limit 3
+    uv run python scripts/probes/haiku_paraphrase_repair_probe.py GPR75
+    uv run python scripts/probes/haiku_paraphrase_repair_probe.py GPR75 --limit 3
 
 If the probe is reliable across the GPR75 unanchored rows (and on a wider
 sweep), the next step is wiring this as a post-validation repair pass in

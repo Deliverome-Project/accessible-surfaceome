@@ -6,8 +6,8 @@ the same gene before deciding to wire it in.
 
 Usage:
 
-    uv run python scripts/plan_trim_select_run.py GPR75
-    uv run python scripts/plan_trim_select_run.py EGFR
+    uv run python scripts/audit/plan_trim_select_run.py GPR75
+    uv run python scripts/audit/plan_trim_select_run.py EGFR
 
 Writes ``.runs/plan_trim_select_<gene>.json`` with:
 * The full SearchPlan + SelectionResponse the agents emitted

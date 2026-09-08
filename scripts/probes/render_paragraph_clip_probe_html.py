@@ -10,7 +10,7 @@ header. Each clip's section + length + id are visible at a glance.
 
 Usage:
 
-    uv run python scripts/render_paragraph_clip_probe_html.py GPR75
+    uv run python scripts/probes/render_paragraph_clip_probe_html.py GPR75
     open .runs/paragraph_clip_probe_GPR75_html/index.html
 """
 

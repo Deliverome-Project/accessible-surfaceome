@@ -55,7 +55,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 from accessible_surfaceome.audit._plotting_config import (  # noqa: E402
     COLORS,

@@ -13,7 +13,7 @@ generator that replaced the ``triage_bench_db_barplot.py`` ``make_overall_plot``
 path, whose hardcoded ``opus-4-7`` model list shipped empty bars when the data
 moved to Opus 4.8.
 
-Run: ``uv run python scripts/db_correctness_overall.py``
+Run: ``uv run python scripts/figures/db_correctness_overall.py``
 # Reproduction: https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/figures/db_correctness_overall.tsv"
 OUT_DIR = REPO / "data/analysis/figures"
 GIST_URL = "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d"

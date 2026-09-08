@@ -15,7 +15,7 @@ Columns consumed from the TSV:
   surfy_surface_flag         — SURFY membrane proteomics panel (0/1)
   cspa_surface_flag          — CSPA mass-spec surface atlas (0/1)
 
-Run: ``uv run python scripts/db_overlap_venn.py``
+Run: ``uv run python scripts/figures/db_overlap_venn.py``
 # Reproduction: https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa
 """
 from __future__ import annotations
@@ -29,7 +29,7 @@ from venn import venn
 
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/figures/db_overlap_venn.tsv"
 OUT_DIR = REPO / "data/analysis/figures"
 GIST_URL = "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"

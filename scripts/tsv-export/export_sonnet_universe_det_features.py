@@ -23,7 +23,7 @@ surface-bind anchors), so no full-blob / large-column fetch that would risk the
 D1 isolate memory cap.
 
 Run:
-    uv run python scripts/export_sonnet_universe_det_features.py
+    uv run python scripts/tsv-export/export_sonnet_universe_det_features.py
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ import pandas as pd
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data/processed/deep_dive/sonnet_universe_det_features.tsv"
 _TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
 

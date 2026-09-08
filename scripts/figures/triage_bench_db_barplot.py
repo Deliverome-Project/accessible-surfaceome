@@ -146,7 +146,7 @@ VERDICT_LABEL = {
     "no": "no",
 }
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
 CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 # Per-cell LLM predictions used to come from the JSON tree at

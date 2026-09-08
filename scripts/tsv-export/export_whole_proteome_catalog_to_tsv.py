@@ -36,8 +36,8 @@ the original when both exist for the same gene.
 
 Usage::
 
-    uv run python scripts/export_whole_proteome_catalog_to_tsv.py             # dry-run (count + preview)
-    uv run python scripts/export_whole_proteome_catalog_to_tsv.py --execute   # write the TSV
+    uv run python scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py             # dry-run (count + preview)
+    uv run python scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py --execute   # write the TSV
 
 Idempotent: just regenerates the TSV from the live D1 state. Bump
 when D1 universe/triage state changes (e.g. after the
@@ -54,7 +54,7 @@ import csv
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from accessible_surfaceome.cloud.d1_client import D1Client  # noqa: E402

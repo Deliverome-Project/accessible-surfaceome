@@ -13,7 +13,7 @@ bundled TSV by ``scripts/build_positive_control_lists.py``.
 
 Run:
 
-    uv run python scripts/positive_control_db_coverage_bars.py
+    uv run python scripts/figures/positive_control_db_coverage_bars.py
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ import seaborn as sns
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 # Single bundled per-figure TSV — pass-through copy of positive_control_long.tsv
 # (one row per (category × gene) with per-DB flags + sonnet_full_flag +
 # adc_source). Built by `scripts/build_figure_tsvs.py` per the

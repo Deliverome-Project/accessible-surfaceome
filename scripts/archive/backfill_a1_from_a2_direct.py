@@ -14,16 +14,16 @@ stricter than the LLM grader, so re-grading a direct gene risks a downgrade).
 
 Usage:
     # 1. (re)generate the manifest by scanning D1 intermediates ($0, no LLM)
-    uv run python scripts/backfill_a1_from_a2_direct.py --scan --out data/analysis/a1_recovery/manifest.json
+    uv run python scripts/archive/backfill_a1_from_a2_direct.py --scan --out data/analysis/a1_recovery/manifest.json
 
     # 2. dry-run: what would be processed (default; no LLM, no publish)
-    uv run python scripts/backfill_a1_from_a2_direct.py --manifest data/analysis/a1_recovery/manifest.json
+    uv run python scripts/archive/backfill_a1_from_a2_direct.py --manifest data/analysis/a1_recovery/manifest.json
 
     # 3. one gene, compute-only (prints before/after grade + cost; NOT published)
-    uv run python scripts/backfill_a1_from_a2_direct.py --gene ICAM1 --execute
+    uv run python scripts/archive/backfill_a1_from_a2_direct.py --gene ICAM1 --execute
 
     # 4. one gene, publish the corrected record to D1
-    uv run python scripts/backfill_a1_from_a2_direct.py --gene ICAM1 --execute --publish
+    uv run python scripts/archive/backfill_a1_from_a2_direct.py --gene ICAM1 --execute --publish
 
 For the full 400+ gene sweep use the Modal app (modal/a1_recovery_app.py) —
 this local driver is for the manifest, dry-runs, and single-gene checks.

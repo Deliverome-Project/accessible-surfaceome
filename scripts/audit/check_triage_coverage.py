@@ -9,7 +9,7 @@ Catches the genome-wide blocker BEFORE the sweep burns cost on
 genes the synth can't fully evaluate.
 
 Usage:
-    uv run python scripts/check_triage_coverage.py \\
+    uv run python scripts/audit/check_triage_coverage.py \\
         --gene-list data/processed/candidate_universe/candidate_universe_v2.tsv \\
         --model claude-sonnet-4-6 \\
         --prompt-variant ncbi \\

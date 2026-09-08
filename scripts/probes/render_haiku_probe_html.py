@@ -16,7 +16,7 @@ plus an ``index.html`` linking them.
 
 Usage:
 
-    uv run python scripts/render_haiku_probe_html.py GPR75
+    uv run python scripts/probes/render_haiku_probe_html.py GPR75
     open .runs/haiku_repair_probe_GPR75_html/index.html
 """
 

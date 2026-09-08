@@ -6,7 +6,7 @@ at the PMC-OA filter, at the fetch, or at hallmark extraction.
 
 Usage:
 
-    uv run python scripts/audit_evidence_retrieval.py P60033 surface_biotinylation western_blot_paired
+    uv run python scripts/audit/audit_evidence_retrieval.py P60033 surface_biotinylation western_blot_paired
 """
 
 from __future__ import annotations

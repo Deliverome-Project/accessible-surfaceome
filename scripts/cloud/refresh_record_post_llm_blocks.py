@@ -38,11 +38,11 @@ on, and bails before writing if validation fails.
 
 Usage:
 
-    uv run python scripts/refresh_record_post_llm_blocks.py \\
+    uv run python scripts/cloud/refresh_record_post_llm_blocks.py \\
         .runs/surfaceome_v2_CD81.json
 
     # Glob mode — refresh every frozen record in a directory
-    uv run python scripts/refresh_record_post_llm_blocks.py \\
+    uv run python scripts/cloud/refresh_record_post_llm_blocks.py \\
         .runs/surfaceome_v2_*.json
 """
 

@@ -14,9 +14,9 @@ into both private + public D1 with ``cohort='human_isoforms'``.
 
 Run::
 
-    uv run python scripts/upload_human_isoforms_topology_to_d1.py
-    uv run python scripts/upload_human_isoforms_topology_to_d1.py --dry-run
-    uv run python scripts/upload_human_isoforms_topology_to_d1.py --public-only
+    uv run python scripts/cloud/upload_human_isoforms_topology_to_d1.py
+    uv run python scripts/cloud/upload_human_isoforms_topology_to_d1.py --dry-run
+    uv run python scripts/cloud/upload_human_isoforms_topology_to_d1.py --public-only
 
 Idempotent on (topology_version, cohort, uniprot_acc_full) via
 INSERT OR IGNORE. Safe to re-run after a partial failure.

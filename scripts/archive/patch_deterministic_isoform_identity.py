@@ -16,10 +16,10 @@ the deep-dive agent's LLM cost. See ``merge/isoform_identity.py``.
 Usage::
 
     # Single gene, dry-run (prints the computed numbers):
-    uv run python scripts/patch_deterministic_isoform_identity.py EGFR --dry-run
+    uv run python scripts/archive/patch_deterministic_isoform_identity.py EGFR --dry-run
 
     # Whole viewer cohort:
-    uv run python scripts/patch_deterministic_isoform_identity.py --all
+    uv run python scripts/archive/patch_deterministic_isoform_identity.py --all
 """
 
 from __future__ import annotations

@@ -19,14 +19,14 @@ methods/grade/expression/etc. builders) — those outputs are taken
 from the cached intermediates verbatim.
 
 Usage:
-    uv run python scripts/surfaceome_v2_replay_synth.py TGOLN2
+    uv run python scripts/audit/surfaceome_v2_replay_synth.py TGOLN2
 
     # Force a specific intermediates timestamp:
-    uv run python scripts/surfaceome_v2_replay_synth.py TGOLN2 \\
+    uv run python scripts/audit/surfaceome_v2_replay_synth.py TGOLN2 \\
         --at 2026-06-08T15:15:04
 
     # Compare two runs on the same ledger:
-    uv run python scripts/surfaceome_v2_replay_synth.py TGOLN2 --n 3
+    uv run python scripts/audit/surfaceome_v2_replay_synth.py TGOLN2 --n 3
 """
 
 from __future__ import annotations

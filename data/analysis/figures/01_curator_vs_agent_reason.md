@@ -1,4 +1,4 @@
-# Supplementary Figure 4 — Curator vs agent `TriageReason` confusion matrix
+# Supplementary Figure 3 — Curator vs agent `TriageReason` confusion matrix
 
 **147-gene SurfaceBench, Sonnet 4.6 + NCBI context.** For each gene
 the curator hand-assigned a `ground_truth_reason` from the same closed

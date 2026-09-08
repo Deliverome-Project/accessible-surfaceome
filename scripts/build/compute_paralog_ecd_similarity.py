@@ -12,8 +12,8 @@ ECD similarity is NULL for pairs where either protein has no extracellular
 ('O') residues — same semantics as `ecd_pct_identity`.
 
 Usage:
-    uv run python scripts/compute_paralog_ecd_similarity.py            # dry-run
-    uv run python scripts/compute_paralog_ecd_similarity.py --execute  # write D1
+    uv run python scripts/build/compute_paralog_ecd_similarity.py            # dry-run
+    uv run python scripts/build/compute_paralog_ecd_similarity.py --execute  # write D1
 """
 from __future__ import annotations
 

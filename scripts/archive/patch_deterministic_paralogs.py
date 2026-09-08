@@ -19,10 +19,10 @@ no agent LLM cost. Mirrors ``patch_deterministic_orthologs.py``.
 Usage::
 
     # Single gene, dry-run:
-    uv run python scripts/patch_deterministic_paralogs.py SRC --dry-run
+    uv run python scripts/archive/patch_deterministic_paralogs.py SRC --dry-run
 
     # Whole viewer cohort:
-    uv run python scripts/patch_deterministic_paralogs.py --all
+    uv run python scripts/archive/patch_deterministic_paralogs.py --all
 """
 
 from __future__ import annotations

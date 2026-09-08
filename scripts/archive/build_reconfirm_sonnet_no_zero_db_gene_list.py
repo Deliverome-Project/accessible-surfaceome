@@ -32,7 +32,7 @@ Output:
   ``n_db_votes``).
 
 Run:
-  ``uv run python scripts/build_reconfirm_sonnet_no_zero_db_gene_list.py``
+  ``uv run python scripts/archive/build_reconfirm_sonnet_no_zero_db_gene_list.py``
 """
 from __future__ import annotations
 
@@ -55,7 +55,7 @@ AMBIGUOUS_REASONS = frozenset(
     }
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_PATH = ROOT / "data/processed/reconfirm_sonnet_no_zero_db_v1/gene_list.tsv"
 
 

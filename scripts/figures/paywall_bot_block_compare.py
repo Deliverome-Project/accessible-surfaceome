@@ -24,7 +24,7 @@ and the salvaged openalex snapshot).
 #   data/analysis/paywall_bot_block/make_paywall_bot_block_compare.py.
 
 Run:
-    uv run python scripts/paywall_bot_block_compare.py
+    uv run python scripts/figures/paywall_bot_block_compare.py
 """
 from __future__ import annotations
 
@@ -47,7 +47,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 PROBE_DIR = ROOT / "data/analysis/paywall_bot_block/probe_results"
 # Visual artifacts (PDF/PNG/.md/.py) live in data/analysis/figures alongside
 # the other published figures.

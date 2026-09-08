@@ -19,13 +19,13 @@ existing static viewer JSONs without re-spending the agent's $0.30–
 Usage::
 
     # Single gene, dry-run:
-    uv run python scripts/patch_deterministic_orthologs.py SRC --dry-run
+    uv run python scripts/archive/patch_deterministic_orthologs.py SRC --dry-run
 
     # Whole viewer cohort:
-    uv run python scripts/patch_deterministic_orthologs.py --all
+    uv run python scripts/archive/patch_deterministic_orthologs.py --all
 
     # Only patch genes whose orthologs were previously empty:
-    uv run python scripts/patch_deterministic_orthologs.py --all --only-empty
+    uv run python scripts/archive/patch_deterministic_orthologs.py --all --only-empty
 """
 
 from __future__ import annotations

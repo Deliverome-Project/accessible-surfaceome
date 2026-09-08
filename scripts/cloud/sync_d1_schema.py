@@ -12,8 +12,8 @@ August 2026).
 file is stale. This script tells you *what* to add, and can append it
 for you::
 
-    uv run python scripts/sync_d1_schema.py            # report only
-    uv run python scripts/sync_d1_schema.py --write    # append missing DDL
+    uv run python scripts/cloud/sync_d1_schema.py            # report only
+    uv run python scripts/cloud/sync_d1_schema.py --write    # append missing DDL
 
 ``--write`` only ever APPENDS, into a clearly-marked section at the end
 of the file. It never edits or reorders what's already there, so a
@@ -138,7 +138,7 @@ def main() -> int:
     # hand-written comments and column alignment worth preserving, and a
     # regenerate-in-place would flatten all of it.
     chunks = [
-        f"\n\n-- ── Backfilled from live D1 by scripts/sync_d1_schema.py "
+        f"\n\n-- ── Backfilled from live D1 by scripts/cloud/sync_d1_schema.py "
         f"on {date.today().isoformat()} ──\n"
         "-- Review before committing. A new table that feeds a "
         "deterministic-features\n"

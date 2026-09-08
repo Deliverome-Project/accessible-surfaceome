@@ -30,7 +30,7 @@ so we can read off the actual token count of the cached prefix without
 issuing a real ``messages.create``.
 
 Run:
-    uv run python scripts/probe_cache_engagement.py
+    uv run python scripts/probes/probe_cache_engagement.py
 
 Cost: ~$0.10 total — 5 configs × 2 calls × ~5k input tokens at most.
 """

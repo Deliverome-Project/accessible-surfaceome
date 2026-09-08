@@ -6,7 +6,7 @@ private D1 (``deep_dive_run`` + children), public D1 (``surface_annotation``) â€
 and classifies each gene (``ok`` / ``missing`` / a named drift class). It never
 mutates anything; each drift class names the point tool that repairs it.
 
-    uv run python scripts/deep_dive_census.py \\
+    uv run python scripts/audit/deep_dive_census.py \\
         --run-id candidate_universe_v1_sonnet_2026_05 \\
         --gene-list data/processed/candidate_universe/candidate_universe.tsv \\
         --annotations-dir data/annotations

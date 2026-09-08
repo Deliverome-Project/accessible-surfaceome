@@ -26,7 +26,7 @@ by construction.
 #   data/analysis/figures/make_db_vs_sonnet_whole_proteome.py.
 
 Run:
-    uv run python scripts/db_vs_sonnet_whole_proteome.py
+    uv run python scripts/figures/db_vs_sonnet_whole_proteome.py
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/figures/db_vs_sonnet_whole_proteome.tsv"
 OUT_DIR = REPO / "data/analysis/figures"  # promoted to canonical figures dir
 

@@ -26,7 +26,7 @@ small-n classes (Likely secreted n=4, No-TM/no-signal n=6) read as
 noisier than they would as bare bars.
 
 Run:
-    uv run python scripts/bench_topology_vs_universe.py
+    uv run python scripts/figures/bench_topology_vs_universe.py
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO / "data/analysis/figures"
 SLUG = "bench_topology_vs_universe"
 

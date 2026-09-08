@@ -50,7 +50,7 @@ PRELIMINARY — 1,175 of ~5,128 swept, pre-QA-fix.
 
 Run::
 
-    uv run python scripts/deep_dive_record_richness.py
+    uv run python scripts/figures/deep_dive_record_richness.py
 
 # Reproduction: https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01
 """
@@ -68,7 +68,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "deep_dive_record_richness"
 # In-repo per-figure TSV: one row per deep-dived gene, carrying the five real

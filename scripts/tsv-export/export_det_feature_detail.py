@@ -20,7 +20,7 @@ so the magnitude columns are uniform regardless of facet. One row per gene that
 carries any of the detail.
 
 Run:
-    uv run python scripts/export_det_feature_detail.py
+    uv run python scripts/tsv-export/export_det_feature_detail.py
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ import pandas as pd
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data/processed/deep_dive/det_feature_detail.tsv"
 
 _DETAIL_COLS = [

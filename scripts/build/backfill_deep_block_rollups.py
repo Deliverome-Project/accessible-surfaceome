@@ -16,8 +16,8 @@ The derivation here MUST mirror
 Writes only the three new keys into each record's ``filters`` block; the rest
 of the record is re-serialized unchanged. Dry-run by default.
 
-    uv run python scripts/backfill_deep_block_rollups.py            # dry-run
-    uv run python scripts/backfill_deep_block_rollups.py --execute  # write
+    uv run python scripts/build/backfill_deep_block_rollups.py            # dry-run
+    uv run python scripts/build/backfill_deep_block_rollups.py --execute  # write
 """
 from __future__ import annotations
 

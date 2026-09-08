@@ -48,7 +48,7 @@ Inside `scripts/`, the root holds the entry points you actually invoke. The rest
 
 ## Two things that surprise people
 
-**Figure scripts are mirrored.** Each figure has a canonical generator in `data/analysis/figures/make_*.py` and a mirror in `scripts/figures/`. Guard tests assert the pair stays in sync, so edit both or the suite fails.
+**Figure scripts are mirrored.** Each figure has a canonical generator in `scripts/figures/<slug>.py` and a standalone gist mirror in `data/analysis/figures/make_<slug>.py`. Guard tests assert the pair stays in sync, so edit both or the suite fails.
 
 **The Worker does not auto-deploy.** Merging a change under `cloudflare/workers/` does not ship it. Deploy explicitly with `wrangler deploy` from the Worker directory.
 

@@ -1,13 +1,12 @@
-# Supplementary Figure 11 — Papers found vs papers selected as evidence — MOCK / placeholder
+# Supplementary Figure 12 — Papers found vs papers selected as evidence
 
-**MOCK figure.** Per-gene scatter of two corpus axes the deep-dive
-literature pipeline returns, colored by the agent's `evidence_grade`
-verdict. Points are synthesized from the production-pipeline
-distributional shape pending the full v2 deep-dive sweep — the layout,
-verdict-color encoding, and reference selection-rate diagonals (5 %,
-10 %) will not change between MOCK and real.
+Per-gene scatter of two corpus axes the deep-dive literature pipeline
+returns, colored by the agent's `evidence_grade` verdict. Every point is
+a real published deep-dive record, computed over the genes in the
+completed sweep that have at least one discovered paper. Reference
+selection-rate diagonals are drawn at 5 % and 10 %.
 
-## What each axis would measure (once the full sweep completes)
+## What each axis measures
 
 - **x-axis — Papers found per gene (discovery corpus).** The size of
   the per-gene candidate corpus from the discovery stage (EuropePMC +

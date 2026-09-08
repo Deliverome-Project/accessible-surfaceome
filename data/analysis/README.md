@@ -8,8 +8,9 @@ here, and the distinction is what decides where a new file belongs.
 Everything the manuscript cites. Each figure keeps its generator, its input
 TSV, its rendered PDF/PNG, and its caption together in this one directory:
 
-- `make_<slug>.py` — the canonical generator. Mirrored by `scripts/figures/`,
-  and guard tests fail if the pair drifts apart, so edit both.
+- `make_<slug>.py` — the standalone gist mirror of the canonical generator,
+  which lives at `scripts/figures/<slug>.py`. Guard tests fail if the pair
+  drifts apart, so edit both.
 - `01_<slug>.md` — the analysis note behind the figure.
 - `<slug>.caption.md`, `<slug>.pdf`, `<slug>.png` — caption and renders.
 - `by_paper_number/` — symlinks mapping the manuscript's figure numbering onto

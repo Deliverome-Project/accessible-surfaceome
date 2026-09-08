@@ -11,7 +11,7 @@ TSV that sizes the backfill.
         --topology-version topo_2026_05_16 \
         --triage-run-id genome_full_sonnet_ncbi_v2
 
-    uv run python scripts/audit_v2_deterministic_coverage.py
+    uv run python scripts/audit/audit_v2_deterministic_coverage.py
 
 Output: data/analysis/v2_deterministic_coverage/manifest.tsv
 

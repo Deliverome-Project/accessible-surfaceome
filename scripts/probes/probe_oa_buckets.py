@@ -14,8 +14,8 @@ sampled papers, so the per-bucket counts are directly comparable.
 Union analysis happens in ``scripts/union_oa_probes.py`` afterward.
 
 Usage:
-    uv run python scripts/probe_oa_buckets.py --source production --n-genes 100 --papers-per-gene 10
-    uv run python scripts/probe_oa_buckets.py --source openalex   --n-genes 100 --papers-per-gene 10
+    uv run python scripts/probes/probe_oa_buckets.py --source production --n-genes 100 --papers-per-gene 10
+    uv run python scripts/probes/probe_oa_buckets.py --source openalex   --n-genes 100 --papers-per-gene 10
 
 Output goes to ``data/analysis/paywall_bot_block/probe_results/cohort{N}x{K}_{source}.jsonl``
 — one JSON object per gene. Re-running with the same args resumes from

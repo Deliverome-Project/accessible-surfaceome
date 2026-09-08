@@ -44,8 +44,8 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 |---|---|---|---|
 | `GET` | `/v1/catalog` | Per-gene-per-source DB-vote matrix (5 DBs) + latest triage verdict + deep-dive flag | 60s |
 | `GET` | `/v1/triage/{SYMBOL}` | Every triage run for one gene — model × variant × replicate, with cost + token counts and the agent's free-text `verdict_reasoning` | 60s |
-| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side. Default `mainbench_canonical_v2` (the multi-model bench sweep); pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene Sonnet sweep. Reasoning columns omitted by default (figure-input exports stay prose-free). | 1d |
-| `GET` | `/v1/triage/export.tsv?…&with_reasoning=1` | Same export **with the agent's reasoning** appended (`predicted_key_uncertainty` + `verdict_reasoning` trailing columns). `with_reasoning=1` works on any `run_id`; use it with `run_id=genome_full_sonnet_ncbi_v1` for the **full genome-wide triage corpus with reasoning** — the bulk counterpart to per-gene `/v1/triage/{SYMBOL}`. | 1d |
+| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side. Default `mainbench_canonical_v2` (the multi-model bench sweep); pass `run_id=genome_full_sonnet_ncbi_v2` for the full ~19k-gene Sonnet sweep. Reasoning columns omitted by default (figure-input exports stay prose-free). | 1d |
+| `GET` | `/v1/triage/export.tsv?…&with_reasoning=1` | Same export **with the agent's reasoning** appended (`predicted_key_uncertainty` + `verdict_reasoning` trailing columns). `with_reasoning=1` works on any `run_id`; use it with `run_id=genome_full_sonnet_ncbi_v2` for the **full genome-wide triage corpus with reasoning** — the bulk counterpart to per-gene `/v1/triage/{SYMBOL}`. | 1d |
 
 ### Deep dive (per-gene) & utility
 
@@ -187,7 +187,7 @@ curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainb
   | head -5
 
 # full genome-wide sweep WITH agent reasoning:
-curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1&with_reasoning=1' \
+curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1' \
   | head -5
 ```
 
