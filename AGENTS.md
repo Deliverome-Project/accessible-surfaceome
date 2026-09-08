@@ -337,9 +337,10 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   lives in the deliverome main-site repo's `wrangler.toml`** — this
   repo's Python tooling reads / writes via D1's HTTP API and doesn't
   need a Pages binding.
-- **Schema**: `cloudflare/d1_schema.sql` — 6 tables (`prompt_version`,
-  `benchmark_version`, `triage_run`, `deep_dive_run`,
-  `deep_dive_evidence`, `deep_dive_search_log`) plus 3 views. Triage
+- **Schema**: `cloudflare/d1_schema.sql` — 18 tables plus 3 views. The
+  run tables are `prompt_version`, `benchmark_version`, `triage_run`,
+  `deep_dive_run`, `deep_dive_evidence`, `deep_dive_search_log`; the rest
+  cover identifiers, topology, Compara, feedback, and intermediates. Triage
   and deep-dive share the DB so cross-table joins
   (`triage_vs_deep_dive`) are cheap.
 - **Upload**: `scripts/triage_runner.py --d1 --run-id <tag>` streams

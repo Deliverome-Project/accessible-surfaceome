@@ -46,9 +46,9 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 - `bash scripts/check-py.sh` runs ruff + ty + compile + pytest.
 - Use `uv run pre-commit run --all-files --config .pre-commit-config.yaml` before PR.
 
-## Managed Agents
+## Agent execution model
 
-`surface_triage` is an **Anthropic Managed Agent** — Anthropic stores its own snapshot of the system prompt + tool list + model, and that remote snapshot is the source of truth at run time. It runs through `scripts/triage_runner.py`, a different code path from the deep-dive.
+`surface_triage` is **not** a Managed Agent. It runs in-process via `anthropic.Anthropic`'s `messages.create`, with the system prompt read locally from disk, so an edit takes effect on the next invocation. It runs through `scripts/triage_runner.py`, a different code path from the deep-dive.
 
 **The v1 deep-dive Managed Agents were removed (v1 is deprecated; production is `surfaceome_v2`).** `surface_evidence_compiler` and `biology_compiler`, the v1 `annotate` orchestrator entry point, and the auto-sync machinery that was wired into it are all deleted. The shared, agent-agnostic deterministic helpers that v2 still imports survive under `agents/surfaceome_v1/` (`_derive_filters`, the triage-record loaders, `_attach_deterministic_families`, `d1_deterministic`) — pending relocation to a non-`surfaceome_v1` module.
 
@@ -678,7 +678,7 @@ in the deliverome main-site repo's `wrangler.toml`** — this repo's
 Python tooling reads / writes via D1's HTTP API and does not require
 a Pages binding.
 
-- **Schema**: `cloudflare/d1_schema.sql` — 6 tables, 3 views. Triage +
+- **Schema**: `cloudflare/d1_schema.sql` — 18 tables, 3 views. Triage +
   deep-dive share the DB; cross-table joins (`triage_vs_deep_dive`)
   are the primary analytics target.
 - **Upload**: `scripts/triage_runner.py --d1 --run-id <tag>` streams
