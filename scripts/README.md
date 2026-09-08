@@ -31,7 +31,7 @@ with `uv run python scripts/<subdir>/<name>.py` (shell scripts with `bash`).
 | `tsv-export/` | TSV exporters for benchmark + feature tables (`export_*`). |
 | `release/` | Citable-snapshot release ritual — see [`release/README.md`](release/README.md). |
 | `precommit/` | Local pre-commit hook scripts (`forbid_env_files.sh`, `scan_secrets.py`). |
-| `archive/` | Finished one-shot migrations, backfills, and fixes — already run, kept for provenance. Not expected to be re-run; internal `scripts/<name>` paths inside archived shells may be stale. |
+| `archive/` | Finished one-shot migrations, backfills and fixes that a committed data artifact or a published figure still cites for provenance. Already run; not expected to be re-run, and internal `scripts/<name>` paths inside archived shells may be stale. One-shots that nothing references have been removed — recover them from git history if ever needed. |
 
 ## Canonical generator ↔ gist mirror
 

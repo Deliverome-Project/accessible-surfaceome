@@ -16,6 +16,7 @@ data/analysis/**/make_*.py -filter text
 data/analysis/**/01_*.md -filter text
 data/analysis/figures/*.py -filter text
 data/analysis/figures/*.md -filter text
+data/analysis/README.md -filter -diff -merge text
 # Gist registry + SWHID map are small JSON read by Python test code
 # at collection time — LFS pointer reads as text that fails json.loads.
 data/analysis/figures/gist_map.json -filter -diff -merge text
