@@ -538,6 +538,22 @@ def build_web(
                 header.append(node)
             body.insert(0, header)
 
+    # Give the browser tab the paper's real title, not the .docx filename.
+    # Pandoc falls back to the filename because the .docx carries no title
+    # metadata, so the tab read "2026 Anthropic Surfaceome Draft" instead of
+    # the actual title. Use the first <h1> (the title band's heading).
+    if body is not None:
+        h1 = body.find(".//h1")
+        head_el = doc.find("head")
+        if h1 is not None and head_el is not None:
+            title_text = " ".join((h1.text_content() or "").split())
+            if title_text:
+                title_el = head_el.find("title")
+                if title_el is None:
+                    title_el = lxml_html.Element("title")
+                    head_el.insert(0, title_el)
+                title_el.text = title_text
+
     # Point the stylesheet at the copied web CSS.
     shutil.copy2(WEB_CSS_PATH, assets_dir / "paper.css")
     shutil.copy2(WEB_JS_PATH, assets_dir / "paper.js")
