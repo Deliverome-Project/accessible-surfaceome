@@ -23,7 +23,7 @@ licenses, usage, and redistribution status are detailed in
 - **DeepTMHMM** — DTU Health Tech (Hallgren et al. 2022). Academic license; predictions derived by us.
 - **AlphaFold DB** — DeepMind / EMBL-EBI (Jumper et al. 2021; Varadi et al. 2022). CC BY 4.0.
 - **Schweke homo-oligomer atlas** — Schweke et al. 2024, Cell (PMID 38325366).
-- **SURFACE-Bind** — Balbi et al. 2026, PNAS (PMID 41604262); surface-bind.inria.fr.
+- **SURFACE-Bind** — Balbi et al. 2026, PNAS (PMID 41604262); surface-bind.inria.fr. Predictions from the project repo (BSD-3-Clause); full dataset on Zenodo (CC BY 4.0, 10.5281/zenodo.15016859).
 - **ADCdb** — Shen et al. 2024 (Nucleic Acids Research).
 - **OpenCell** — CZ Biohub (Cho et al. 2022, Science).
 - **ViralZone** — SIB Swiss Institute of Bioinformatics (Hulo et al. 2011).
@@ -35,7 +35,7 @@ independently confirmed — treat their derived data as **use-with-confirmation*
 until checked (see `LICENSING.md`):
 
 - **HPA** — CC BY-SA 4.0 share-alike may attach to substantial derivatives.
-- **SURFY** — released as PNAS supplementary data; reuse terms unconfirmed.
+- **SURFY** — prediction table published for open download at wollscheidlab.org/SURFY; no stated reuse terms. We ship per-accession classifier output only.
 - **ADCdb** — database reuse terms unconfirmed.
 - **OpenCell** — license (likely CC BY 4.0) unconfirmed.
 - **Schweke atlas** — figshare deposit via private-share link; license unconfirmed.
