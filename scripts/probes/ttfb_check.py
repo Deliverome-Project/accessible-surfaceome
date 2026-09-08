@@ -32,8 +32,26 @@ from dataclasses import dataclass
 
 import httpx
 
-SITE = "https://surfaceome.deliverome.org"
-API = "https://api.deliverome.org/surfaceome"
+# Probe the PLATFORM hostnames, not the custom domains.
+#
+# The zone deliverome.org is on the Free plan, where Bot Fight Mode issues a
+# managed_challenge to this runner's IP (GitHub Actions egress, Microsoft ASN).
+# Bot Fight Mode does not run on the Ruleset Engine, so a WAF custom rule with
+# the Skip action CANNOT exempt the monitor -- that only works for Super Bot
+# Fight Mode on Pro and above. Every request therefore came back 403 in ~30-60 ms:
+# the check was timing a bot challenge, never the site.
+#
+# pages.dev and workers.dev sit outside the zone's bot protection, so they are
+# reachable and still measure the same Cloudflare edge, Pages assets and Worker
+# routes. What this does NOT cover is custom-domain-only behaviour: DNS, the
+# zone's redirect rules, and cache config on the apex.
+#
+# To move back to the custom domains: upgrade the zone to Pro, set the
+# TTFB_MONITOR_TOKEN secret, add a WAF Skip rule matching
+#   http.request.headers["x-ttfb-monitor"][0] eq "<secret>"
+# then restore the two constants below and the gene-page-shell target.
+SITE = "https://accessible-surfaceome.pages.dev"
+API = "https://surfaceome-api.beccajcarlson.workers.dev"
 
 # A representative, low-cardinality gene used for the per-gene endpoints. Any
 # deep-dived symbol works; KLK2 is a stable member of the cohort.
@@ -51,7 +69,10 @@ def default_targets() -> list[Target]:
     return [
         # Static site documents (served from Cloudflare Pages' edge).
         Target("site: home", f"{SITE}/", False),
-        Target("site: gene page shell", f"{SITE}/{_GENE}/", False),
+        # NOTE: the gene page shell (f"{SITE}/{_GENE}/") is deliberately absent.
+        # On the custom domain a redirect rule rewrites it to the SPA shell and
+        # returns 200; on pages.dev the same path is a genuine 404 that the
+        # client-side router paints over. Restore it with the custom domains.
         Target("site: api docs", f"{SITE}/api/", False),
         Target("site: reproducibility", f"{SITE}/reproducibility/", False),
         # Public Worker API (D1-backed; warmed so we measure the edge-cache
