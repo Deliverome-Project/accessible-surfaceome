@@ -26,7 +26,7 @@ SSG time and rendered as the "Searches the agents run" section.
 
 Run::
 
-    uv run python scripts/build_search_catalog.py
+    uv run python scripts/build/build_search_catalog.py
 
 Regenerate after changing the evidence_retrieval categories, the
 gene_literature topic anchors, or the kickoff templates.
@@ -44,7 +44,7 @@ from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
 from accessible_surfaceome.tools.evidence_retrieval import _CATEGORY_SPECS
 from accessible_surfaceome.tools.gene_literature import _TOPIC_TERMS
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_PATH = REPO_ROOT / "viewer" / "lib" / "search-catalog.json"
 
 # Topology that fires the membrane+ECD-gated standing axes, so the catalog
@@ -247,7 +247,7 @@ def build_catalog() -> dict:
     ]
 
     return {
-        "_generated_by": "scripts/build_search_catalog.py",
+        "_generated_by": "scripts/build/build_search_catalog.py",
         "_source": "evidence_retrieval._CATEGORY_SPECS + the live deterministic "
         "kickoff (plan_trim_select/kickoff_templates.build_a1/a2_kickoff)",
         "categories": categories,

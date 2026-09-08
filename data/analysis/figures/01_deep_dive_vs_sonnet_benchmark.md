@@ -1,4 +1,4 @@
-# Deep-dive vs Sonnet+NCBI accuracy on SurfaceBench (Supp. Fig. S12)
+# Deep-dive vs Sonnet+NCBI accuracy on SurfaceBench (Supp. Fig. S11)
 
 On the SurfaceBench benchmark genes deep-dived so far (**n = 27 of 147**,
 the intersection), the evidence-anchored deep dive matches the

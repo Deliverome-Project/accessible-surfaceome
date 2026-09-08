@@ -14,7 +14,7 @@ EGFR flips from the 704-aa fragment ``A0A2K5WKD8`` to the full-length
 
 Usage::
 
-    uv run python scripts/diff_ortholog_model_selection.py \\
+    uv run python scripts/audit/diff_ortholog_model_selection.py \\
         --candidate-set data/processed/topology_run_topo_2026_05_16/candidate_accessions.tsv \\
         --ortholog-ecd-version orthologecd_topo_2026_05_16
 """

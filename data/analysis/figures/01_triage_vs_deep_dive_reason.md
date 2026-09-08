@@ -1,8 +1,4 @@
-# Supplementary Figure 12 — `triage_vs_deep_dive_reason`
-
-**MOCK figure** — placeholder counts pending the v2 deep-dive sweep
-joining onto the triage_run table; only ~20 deep-dive records exist
-as of this draft.
+# Supplementary Figure 13 — `triage_vs_deep_dive_reason`
 
 19×19 confusion matrix between the triage agent's first-pass
 `surface_call_reason` (rows) and the deep-dive synthesizer's

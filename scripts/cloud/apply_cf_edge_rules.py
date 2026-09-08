@@ -33,9 +33,9 @@ deliverome.org zone UUID).
 
 Run::
 
-    uv run python scripts/apply_cf_edge_rules.py            # dry-run the cache rule
-    uv run python scripts/apply_cf_edge_rules.py --execute  # apply the cache rule
-    uv run python scripts/apply_cf_edge_rules.py --only ratelimit --execute  # Pro+ only
+    uv run python scripts/cloud/apply_cf_edge_rules.py            # dry-run the cache rule
+    uv run python scripts/cloud/apply_cf_edge_rules.py --execute  # apply the cache rule
+    uv run python scripts/cloud/apply_cf_edge_rules.py --only ratelimit --execute  # Pro+ only
 """
 
 from __future__ import annotations

@@ -23,7 +23,7 @@ Writes ``data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_ful
 UniProt/D1 pulls).
 
 Run (needs UniProt network + D1):
-    uv run python scripts/export_s9_full_universe_features.py
+    uv run python scripts/tsv-export/export_s9_full_universe_features.py
 """
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.sources.uniprot import _feature_counts, iter_pages
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ZERO_DB = ROOT / "data/processed/figures/zero_db_rescues_by_triage.tsv"
 UNIPROT_CAND = ROOT / "data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.tsv"
 OUT = ROOT / "data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv"

@@ -25,7 +25,7 @@ once the target version + scope is confirmed.
 Usage::
 
     DEEPTMHMM_ROOT=/Users/.../Git/deliverome-internal/analyses/surface-proteome \\
-    uv run python scripts/rerun_changed_ortholog_topology.py \\
+    uv run python scripts/archive/rerun_changed_ortholog_topology.py \\
         --delta data/processed/topology_run_topo_2026_05_16/ortholog_selection_delta.tsv \\
         --max-workers 1
 """

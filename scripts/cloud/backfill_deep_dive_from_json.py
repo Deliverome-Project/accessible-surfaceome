@@ -8,10 +8,10 @@ Examples:
 
     uv run modal volume get surfaceome-annotations / data/annotations/
 
-    uv run python scripts/backfill_deep_dive_from_json.py \\
+    uv run python scripts/cloud/backfill_deep_dive_from_json.py \\
         --run-id candidate_universe_v3_sonnet_2026_06_stage1
 
-    uv run python scripts/backfill_deep_dive_from_json.py \\
+    uv run python scripts/cloud/backfill_deep_dive_from_json.py \\
         --run-id candidate_universe_v3_sonnet_2026_06_stage1 \\
         --annotations-dir /tmp/modal_snapshot \\
         --execute

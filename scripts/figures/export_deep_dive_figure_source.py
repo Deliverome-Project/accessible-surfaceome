@@ -19,7 +19,7 @@ export to compare the two stages' calls; keeping it a separate committed TSV
 lets the S12 builder in ``build_figure_tsvs.py`` stay offline-reproducible.
 
 Run:
-    uv run python scripts/export_deep_dive_figure_source.py
+    uv run python scripts/figures/export_deep_dive_figure_source.py
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ import pandas as pd
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data/processed/deep_dive/deep_dive_records.tsv"
 # Companion triage-verdict source: one row per gene carrying the TRIAGE-stage
 # call (verdict + reason) from the genome-wide Sonnet triage run. This is the

@@ -34,8 +34,8 @@ changes within a single SHA).
 
 Usage::
 
-    uv run python scripts/build_gene_identifier_table.py            # dry-run
-    uv run python scripts/build_gene_identifier_table.py --execute  # do it
+    uv run python scripts/build/build_gene_identifier_table.py            # dry-run
+    uv run python scripts/build/build_gene_identifier_table.py --execute  # do it
 """
 from __future__ import annotations
 

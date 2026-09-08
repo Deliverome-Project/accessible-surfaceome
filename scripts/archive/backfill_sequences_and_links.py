@@ -30,21 +30,21 @@ A sequence is stored ONLY when its length equals the entity's
 Usage::
 
     # dry run — report what WOULD change, touch nothing
-    uv run python scripts/backfill_sequences_and_links.py
+    uv run python scripts/archive/backfill_sequences_and_links.py
 
     # write the JSON snapshots (data/annotations + viewer/public)
-    uv run python scripts/backfill_sequences_and_links.py --execute
+    uv run python scripts/archive/backfill_sequences_and_links.py --execute
 
     # …and re-sync public D1 from the enriched records
-    uv run python scripts/backfill_sequences_and_links.py --execute --sync-d1
+    uv run python scripts/archive/backfill_sequences_and_links.py --execute --sync-d1
 
     # restrict to specific symbols
-    uv run python scripts/backfill_sequences_and_links.py --execute EGFR SRC
+    uv run python scripts/archive/backfill_sequences_and_links.py --execute EGFR SRC
 
     # for genes whose D1 row is NEWER than the disk snapshot (a re-run after
     # the snapshot was committed), source the record from D1 so the publish
     # staleness guard doesn't block the enriched republish:
-    uv run python scripts/backfill_sequences_and_links.py \\
+    uv run python scripts/archive/backfill_sequences_and_links.py \\
         --from-d1 --execute --sync-d1 EGFR GPR75 SRC
 """
 

@@ -40,7 +40,7 @@ present to plot). The ``weak`` pile is partly the pretrim-cap recall bug
 deleting foundational literature; re-render after the full sweep + QA fixes.
 
 Run:
-    uv run python scripts/evidence_corpus_vs_selected.py
+    uv run python scripts/figures/evidence_corpus_vs_selected.py
 """
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "evidence_corpus_vs_selected"
 

@@ -28,9 +28,9 @@ Safety rails:
 
 Usage::
 
-    uv run python scripts/backfill_deterministic_family.py EGFR
-    uv run python scripts/backfill_deterministic_family.py EGFR --execute
-    uv run python scripts/backfill_deterministic_family.py EGFR CD19 MSLN --execute
+    uv run python scripts/archive/backfill_deterministic_family.py EGFR
+    uv run python scripts/archive/backfill_deterministic_family.py EGFR --execute
+    uv run python scripts/archive/backfill_deterministic_family.py EGFR CD19 MSLN --execute
 
 Genes are accepted as HGNC symbols; each is resolved to an HGNC ID via D1's
 ``gene_identifier`` table (same path the annotator uses).

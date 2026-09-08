@@ -31,7 +31,7 @@ Outputs to data/analysis/db_vs_sonnet_inclusion/:
 
 Run from the repo root::
 
-    uv run python scripts/audit_db_vs_sonnet_inclusion.py
+    uv run python scripts/audit/audit_db_vs_sonnet_inclusion.py
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 V3 = REPO / "data/processed/candidate_universe/candidate_universe_v3.tsv"
 # Final-figure output dir — every promoted figure lands here so the
 # Zenodo deposit, the published gists, and the readers' figure

@@ -29,14 +29,14 @@ to pick up where it left off.
 
 Usage::
 
-    uv run python scripts/run_topology_sweep.py \\
+    uv run python scripts/build/run_topology_sweep.py \\
         --topology-version topo_2026_05_16 \\
         --cohorts human_canonical,human_isoforms,mouse_ortholog,cyno_ortholog \\
         --max-workers 6
 
 For a 3-protein dry run::
 
-    uv run python scripts/run_topology_sweep.py \\
+    uv run python scripts/build/run_topology_sweep.py \\
         --topology-version topo_test \\
         --candidate-set data/processed/topology_run_topo_test/candidate_accessions.tsv \\
         --cohorts human_canonical \\

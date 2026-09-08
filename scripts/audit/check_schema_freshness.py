@@ -11,7 +11,7 @@ schema change or a cohort re-run. Once everything is current you can delete the
 manifest (or flip ``SCHEMA_FRESHNESS_DOTS_ENABLED`` in the viewer) to retire
 the dots.
 
-    uv run python scripts/check_schema_freshness.py
+    uv run python scripts/audit/check_schema_freshness.py
 
 Source: the public Worker's ``/v1/genes`` index + per-gene records (the exact
 set the dropdown shows). Validation runs against the *importable*
@@ -54,7 +54,7 @@ _UA = (
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parents[2]
 
 
 def _get_json(url: str) -> object:

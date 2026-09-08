@@ -30,7 +30,7 @@ more canonical TSV URLs (``BASE/data/...``). For each:
 hardcoded counts and no TSV to bundle.
 
 Usage:
-    uv run python scripts/sync_figure_gists_bundle_data.py [--dry-run]
+    uv run python scripts/figures/sync_figure_gists_bundle_data.py [--dry-run]
 
 Idempotent. Safe to re-run; ``gh gist edit -a`` updates existing files
 in place.
@@ -44,7 +44,7 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 FIGURES_DIR = ROOT / "data/analysis/figures"
 MAP_PATH = FIGURES_DIR / "gist_map.json"
 SWHID_MAP_PATH = FIGURES_DIR / "swhid_map.json"

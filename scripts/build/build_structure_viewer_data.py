@@ -51,7 +51,7 @@ import urllib.request
 from pathlib import Path
 from typing import TypedDict
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 DEFAULT_TOPOLOGY_FILE = (
     ROOT

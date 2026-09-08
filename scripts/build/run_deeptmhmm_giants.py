@@ -24,7 +24,7 @@ Memory + time estimates (Apple M2, 16 GB):
 Run::
 
     DEEPTMHMM_ROOT=/path/to/deeptmhmm DEEPTMHMM_THREADS=2 \
-        uv run python scripts/run_deeptmhmm_giants.py \
+        uv run python scripts/build/run_deeptmhmm_giants.py \
         --accessions Q7Z5P9,Q8NF91,Q9H195 \
         --topology-version topo_2026_05_16
 

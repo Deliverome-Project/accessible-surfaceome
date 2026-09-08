@@ -20,8 +20,8 @@ representation.
 Idempotent (a record without the old string is skipped) and dry-run by
 default.
 
-    uv run python scripts/backfill_surface_bind_attribution.py            # dry-run
-    uv run python scripts/backfill_surface_bind_attribution.py --execute  # write
+    uv run python scripts/archive/backfill_surface_bind_attribution.py            # dry-run
+    uv run python scripts/archive/backfill_surface_bind_attribution.py --execute  # write
 """
 from __future__ import annotations
 

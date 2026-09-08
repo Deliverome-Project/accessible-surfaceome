@@ -17,7 +17,7 @@ Overall correctness only — per-bucket breakdown lives in the sibling
 #   data/analysis/figures/make_ensemble_vs_best_db_vs_sonnet.py.
 
 Run:
-    uv run python scripts/ensemble_vs_best_db_vs_sonnet.py
+    uv run python scripts/figures/ensemble_vs_best_db_vs_sonnet.py
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA_TSV = ROOT / "data/processed/figures/ensemble_vs_best_db_vs_sonnet.tsv"
 OUT_DIR = ROOT / "data/analysis/figures"  # promoted to canonical figures dir
 

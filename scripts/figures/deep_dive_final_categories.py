@@ -28,7 +28,7 @@ Full deep-dive cohort (5,130 genes); canonical uses the PR #130 gate.
 #   Reader-side mirror: data/analysis/figures/make_deep_dive_final_categories.py
 
 Run:
-    uv run python scripts/deep_dive_final_categories.py
+    uv run python scripts/figures/deep_dive_final_categories.py
 """
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "deep_dive_final_categories"
 GIST_URL = "https://gist.github.com/beccajcarlson/c2441f8d0314c5524463bc85a3e86612"

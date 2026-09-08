@@ -33,13 +33,13 @@ Tables synced:
 Usage::
 
     # Full sync (every table)
-    uv run python scripts/sync_public_d1.py
+    uv run python scripts/cloud/sync_public_d1.py
 
     # Only the triage_run table (incremental — only rows newer than last sync)
-    uv run python scripts/sync_public_d1.py --only triage_run --since 2026-05-01
+    uv run python scripts/cloud/sync_public_d1.py --only triage_run --since 2026-05-01
 
     # Dry-run: print what would be written but don't write
-    uv run python scripts/sync_public_d1.py --dry-run
+    uv run python scripts/cloud/sync_public_d1.py --dry-run
 
 Requires the standard Cloudflare env vars (CLOUDFLARE_ACCOUNT_ID,
 CLOUDFLARE_API_TOKEN) plus CLOUDFLARE_D1_SURFACEOME_AGENTS_ID

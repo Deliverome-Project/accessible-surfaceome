@@ -17,14 +17,14 @@ trim filter, abstract triage, selector) — those run inside plan-trim-
 select, which this driver skips.
 
 Usage:
-    uv run python scripts/surfaceome_v2_replay_builders.py TGOLN2
+    uv run python scripts/audit/surfaceome_v2_replay_builders.py TGOLN2
 
     # Pin to a specific intermediates timestamp:
-    uv run python scripts/surfaceome_v2_replay_builders.py TGOLN2 \\
+    uv run python scripts/audit/surfaceome_v2_replay_builders.py TGOLN2 \\
         --at 2026-06-08T15:15
 
     # Publish the resulting record to public D1 (default: just print):
-    uv run python scripts/surfaceome_v2_replay_builders.py TGOLN2 --publish
+    uv run python scripts/audit/surfaceome_v2_replay_builders.py TGOLN2 --publish
 """
 
 from __future__ import annotations

@@ -15,7 +15,7 @@ Sonnet 97% (near-identical; single collapsed-verdict basis: 97.3% vs 95.6%).
 
 Run::
 
-    uv run python scripts/deep_dive_vs_sonnet_benchmark.py
+    uv run python scripts/figures/deep_dive_vs_sonnet_benchmark.py
 
 # Reproduction: https://gist.github.com/beccajcarlson/d88f7c7a135bf222ccc5883b9c1a2eb4
 """
@@ -35,7 +35,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "deep_dive_vs_sonnet_benchmark"
 DATA_TSV = ROOT / "data/processed/figures/deep_dive_vs_sonnet_benchmark.tsv"

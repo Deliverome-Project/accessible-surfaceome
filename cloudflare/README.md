@@ -48,7 +48,9 @@ npx --yes wrangler d1 execute surfaceome_agents \
 # 4. Sanity-check that the tables exist.
 npx --yes wrangler d1 execute surfaceome_agents --remote --command \
     "SELECT name FROM sqlite_master WHERE type='table';"
-#   Expected: prompt_version, benchmark_version, triage_run, sqlite_sequence
+#   Expected: 18 tables + 3 views (prompt_version, benchmark_version,
+#   triage_run, gene_identifier, topology_public, feedback, … — see
+#   d1_schema.sql for the full list), plus sqlite_sequence
 ```
 
 ### Bind the new D1 to the Deliverome Pages project
@@ -125,7 +127,7 @@ covers every modern code path.)
 
 ### Schema overview
 
-Six tables and three views (see `d1_schema.sql` for the canonical
+Eighteen tables and three views (see `d1_schema.sql` for the canonical
 definition):
 
 | table | rows | purpose |

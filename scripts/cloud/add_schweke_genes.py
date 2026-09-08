@@ -21,10 +21,10 @@ PDBs to R2.
 Usage::
 
     # dry-run — show the rows that would be added
-    uv run python scripts/add_schweke_genes.py Q99720 Q9UBI4
+    uv run python scripts/cloud/add_schweke_genes.py Q99720 Q9UBI4
 
     # append to payload + UPSERT to D1
-    uv run python scripts/add_schweke_genes.py Q99720 Q9UBI4 --execute
+    uv run python scripts/cloud/add_schweke_genes.py Q99720 Q9UBI4 --execute
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ import re
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
 sys.path.insert(0, str(REPO / "scripts"))
 

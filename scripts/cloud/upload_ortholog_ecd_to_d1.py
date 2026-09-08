@@ -10,7 +10,7 @@ ortholog_uniprot_acc) via INSERT OR IGNORE.
 
 Usage::
 
-    uv run python scripts/upload_ortholog_ecd_to_d1.py \\
+    uv run python scripts/cloud/upload_ortholog_ecd_to_d1.py \\
         --ortholog-ecd-version orthologecd_topo_2026_05_16 \\
         --compara-release "ensembl_compara_2026_05_12" \\
         --jsonl data/processed/topology_run_topo_2026_05_16/ortholog_ecd_records.jsonl

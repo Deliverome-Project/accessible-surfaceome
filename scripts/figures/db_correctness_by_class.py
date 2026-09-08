@@ -16,7 +16,7 @@ data, never a hardcode — this replaces the
 ``triage_bench_db_barplot.py::make_class_plot`` path that hardcoded
 ``opus-4-7`` and shipped empty bars when the data moved to Opus 4.8.
 
-Run: ``uv run python scripts/db_correctness_by_class.py``
+Run: ``uv run python scripts/figures/db_correctness_by_class.py``
 # Reproduction: https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d
 """
 from __future__ import annotations
@@ -29,7 +29,7 @@ import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/figures/db_correctness_by_class.tsv"
 OUT_DIR = REPO / "data/analysis/figures"
 GIST_URL = "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"

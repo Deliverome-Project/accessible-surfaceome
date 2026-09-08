@@ -10,7 +10,7 @@ DATA SOURCE — reads ``data/processed/triage_bench/db_cutoff_tradeoff_points.ts
 truth shared with the gist mirror
 ``data/analysis/figures/make_db_cutoff_tradeoff.py``).
 
-Run: ``uv run python scripts/db_cutoff_tradeoff.py``
+Run: ``uv run python scripts/figures/db_cutoff_tradeoff.py``
 # Reproduction: https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed
 """
 from __future__ import annotations
@@ -25,7 +25,7 @@ from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
 
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv"
 OUT_DIR = REPO / "data/analysis/figures"
 GIST_URL = "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"

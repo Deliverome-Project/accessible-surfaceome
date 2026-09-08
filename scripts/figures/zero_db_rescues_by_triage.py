@@ -24,7 +24,7 @@ gene callouts beneath each panel.
 #   data/analysis/figures/make_zero_db_rescues_by_triage.py.
 
 Run:
-    uv run python scripts/zero_db_rescues_by_triage.py
+    uv run python scripts/figures/zero_db_rescues_by_triage.py
 """
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 
 # Reason taxonomy per verdict bucket (matches the triage agent's closed

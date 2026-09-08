@@ -29,7 +29,7 @@ exist — the figure shows what we'd face on a random walk.
 #   data/analysis/paywall_bot_block/make_paywall_bot_block_overview.py.
 
 Run:
-    uv run python scripts/paywall_bot_block_overview.py
+    uv run python scripts/probes/paywall_bot_block_overview.py
 """
 from __future__ import annotations
 
@@ -47,7 +47,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SAMPLE_JSON = ROOT / "data/analysis/paywall_bot_block/cohort_150_4bucket.json"
 OUT_DIR = ROOT / "data/analysis/paywall_bot_block"
 

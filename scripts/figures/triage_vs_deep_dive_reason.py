@@ -47,7 +47,7 @@ Full deep-dive cohort (5,130 genes); about 53% of genes land on the reason
 diagonal, the rest split into same-bucket relabels and cross-bucket flips.
 
 Run:
-    uv run python scripts/triage_vs_deep_dive_reason.py
+    uv run python scripts/figures/triage_vs_deep_dive_reason.py
 """
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 # Single per-figure TSV: one row per gene with a deep-dive record AND a
 # triage hit. Columns: gene_symbol, uniprot_acc, triage_verdict,

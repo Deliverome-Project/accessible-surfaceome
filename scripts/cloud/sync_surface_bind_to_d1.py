@@ -11,9 +11,9 @@ two tables in the ``surfaceome_public`` D1 database:
 
 Run::
 
-    uv run python scripts/sync_surface_bind_to_d1.py
-    uv run python scripts/sync_surface_bind_to_d1.py --dry-run
-    uv run python scripts/sync_surface_bind_to_d1.py --apply-schema  # one-shot
+    uv run python scripts/cloud/sync_surface_bind_to_d1.py
+    uv run python scripts/cloud/sync_surface_bind_to_d1.py --dry-run
+    uv run python scripts/cloud/sync_surface_bind_to_d1.py --apply-schema  # one-shot
 
 Idempotent on the primary keys: re-runs UPSERT in place.
 

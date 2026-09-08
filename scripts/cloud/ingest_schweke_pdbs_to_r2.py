@@ -31,13 +31,13 @@ for object PUT — no separate S3 credentials required.
 Usage::
 
     # dry-run — print the worklist + byte totals, upload nothing
-    uv run --with remotezip python scripts/ingest_schweke_pdbs_to_r2.py
+    uv run --with remotezip python scripts/cloud/ingest_schweke_pdbs_to_r2.py
 
     # do it (downloads the two zips to a gitignored cache, then uploads)
-    uv run --with remotezip python scripts/ingest_schweke_pdbs_to_r2.py --execute
+    uv run --with remotezip python scripts/cloud/ingest_schweke_pdbs_to_r2.py --execute
 
     # re-upload even objects already present in R2
-    uv run --with remotezip python scripts/ingest_schweke_pdbs_to_r2.py --execute --force
+    uv run --with remotezip python scripts/cloud/ingest_schweke_pdbs_to_r2.py --execute --force
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
 
 from accessible_surfaceome.env import load_env  # noqa: E402

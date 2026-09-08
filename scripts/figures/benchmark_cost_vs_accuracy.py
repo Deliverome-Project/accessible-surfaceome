@@ -15,7 +15,7 @@ frontier figure, replacing the ``triage_bench_db_barplot.py``
 ``make_cost_vs_accuracy_plot`` path whose hardcoded model list caused empty
 cells when the data moved to Opus 4.8.
 
-Run: ``uv run python scripts/benchmark_cost_vs_accuracy.py``
+Run: ``uv run python scripts/figures/benchmark_cost_vs_accuracy.py``
 # Reproduction: https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/figures/benchmark_cost_vs_accuracy.tsv"
 OUT_DIR = REPO / "data/analysis/figures"
 GIST_URL = "https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41"

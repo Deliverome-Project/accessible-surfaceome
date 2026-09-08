@@ -6,9 +6,9 @@ than the unified MVP path before promoting either into the orchestrator.
 
 Usage:
 
-    uv run python scripts/plan_trim_select_dual_run.py HGNC:4526
-    uv run python scripts/plan_trim_select_dual_run.py Q9BPV8
-    uv run python scripts/plan_trim_select_dual_run.py GPR75   # symbol → needs D1
+    uv run python scripts/audit/plan_trim_select_dual_run.py HGNC:4526
+    uv run python scripts/audit/plan_trim_select_dual_run.py Q9BPV8
+    uv run python scripts/audit/plan_trim_select_dual_run.py GPR75   # symbol → needs D1
 
 Writes ``.runs/plan_trim_select_<id>_dual.json`` with the A1 + A2
 sub-results stitched together so the QC HTML renderer can show both

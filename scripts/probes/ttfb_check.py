@@ -13,9 +13,9 @@ as the median of a few samples over a reused (keep-alive) connection, which is
 what a returning visitor experiences.
 
 Usage:
-    uv run python scripts/ttfb_check.py            # default targets
-    uv run python scripts/ttfb_check.py --budget-ms 800
-    uv run python scripts/ttfb_check.py --samples 5 --json
+    uv run python scripts/probes/ttfb_check.py            # default targets
+    uv run python scripts/probes/ttfb_check.py --budget-ms 800
+    uv run python scripts/probes/ttfb_check.py --samples 5 --json
 
 Exit code: 0 if every target is within budget, 1 otherwise (for CI).
 """
