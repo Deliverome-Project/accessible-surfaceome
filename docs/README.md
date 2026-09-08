@@ -16,4 +16,5 @@ Project documentation, by kind. (Navigation index — descriptions are brief poi
 | `figures/` | Figure-related documentation. |
 | `superpowers/` | Specs and implementation plans authored via the skills workflow. |
 | `prompt_review.html` | Generated render of the live deep-dive prompts. |
-| `coding-style.md`, `tools-design.md`, `evidence-retrieval-prd.md`, `figure-reproducibility-schema.md` | Standalone design / reference notes. |
+| `coding-style.md`, `evidence-retrieval-prd.md`, `figure-reproducibility-schema.md` | Standalone design / reference notes. |
+| `tools-design.md` | Historical design note — describes a package layout that no longer exists. |

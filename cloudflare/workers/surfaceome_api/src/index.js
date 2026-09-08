@@ -5,7 +5,7 @@
 //
 // Endpoints:
 //   GET /v1                     — self-describing index: endpoint catalog +
-//                                  docs/skill/llms.txt links + dataset versions
+//                                  docs, skill and llms_txt links + dataset versions
 //                                  (also served at the bare service root)
 //   GET /v1/health
 //   GET /v1/genes               — list of annotated genes

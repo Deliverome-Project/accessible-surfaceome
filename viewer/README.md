@@ -38,7 +38,9 @@ Reference record: `GPR75.json` (orphan class-A GPCR worked
 example for the v1.0.0 schema).
 
 Same files double as the static fetch endpoint:
-`https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.json`.
+`https://api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` (JSON) and
+`https://api.deliverome.org/surfaceome/v1/genes/{SYMBOL}.md` (Markdown). The
+`public/data/surfaceome/` copies are build-time inputs, not public URLs.
 
 Agents that prefer the live API hit the read-only Worker:
 [`api.deliverome.org/surfaceome/v1/genes/{SYMBOL}`](https://api.deliverome.org/surfaceome/v1/genes)

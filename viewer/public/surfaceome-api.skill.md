@@ -51,7 +51,7 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 
 | Method | Path | Returns | TTL |
 |---|---|---|---|
-| `GET` | `/v1` | Self-describing index: endpoint catalogue + path templates + docs/skill/llms.txt/schema links + live dataset versions. Also served at the bare service root. Hit first to discover the API. | 60s |
+| `GET` | `/v1` | Self-describing index: endpoint catalogue, path templates, and docs / skill/llms.txt/schema links + live dataset versions. Also served at the bare service root. Hit first to discover the API. | 60s |
 | `GET` | `/v1/health` | `{ ok, n_annotations }` — liveness | 60s |
 | `GET` | `/v1/genes` | List of genes with a deep-dive record (summary fields) | 60s |
 | `GET` | `/v1/genes/{SYMBOL}` | Full SurfaceomeRecord JSON (see schema below) | 1d |
