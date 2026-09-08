@@ -15,14 +15,14 @@ genes (the COX1 / WAS class).
 
 ## Start here
 
-- [API index (JSON)](https://api.deliverome.org/surfaceome/v1): self-describing endpoint catalogue + docs/skill/schema links + live dataset versions. Hit this first to discover the whole API surface.
+- [API index (JSON)](https://api.deliverome.org/surfaceome/v1): self-describing endpoint catalogue, plus docs, skill and schema links + live dataset versions. Hit this first to discover the whole API surface.
 - [Agent skill (Markdown, downloadable)](https://surfaceome.deliverome.org/surfaceome-api.skill.md): drop into `~/.claude/skills/` and an agent can call the API without further prompting. Documents every endpoint, the record shape, and the controlled vocabularies.
 - [API documentation (human)](https://surfaceome.deliverome.org/api): endpoint reference with curl examples and approximate response sizes.
 
 ## API endpoints
 
 - [Per-gene record](https://api.deliverome.org/surfaceome/v1/genes/ERBB2): full `SurfaceomeRecord` JSON for one gene (executive summary, evidence ledger, deterministic features, accessibility risks). Replace `ERBB2` with any HGNC symbol (case-insensitive).
-- [Per-gene Markdown mirror](https://surfaceome.deliverome.org/data/surfaceome/ERBB2.md): the same record as human-readable Markdown with sequences + per-residue topology embedded — the most agent-friendly single-gene artifact.
+- [Per-gene Markdown mirror](https://api.deliverome.org/surfaceome/v1/genes/ERBB2.md): the same record as human-readable Markdown with sequences + per-residue topology embedded — the most agent-friendly single-gene artifact.
 - [Genome-wide catalog](https://api.deliverome.org/surfaceome/v1/catalog): per-gene 5-DB surface-vote matrix (UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + deep-dive flag for all ~19k genes.
 - [Per-gene triage](https://api.deliverome.org/surfaceome/v1/triage/ERBB2): every triage run on file — model × prompt-variant × replicate — with the agent's free-text `verdict_reasoning`.
 - [Genome-wide triage export, with reasoning (TSV)](https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1): the full ~19k-gene Sonnet/NCBI sweep with the agent's reasoning appended. Drop `with_reasoning=1` for the prose-free figure-input export.

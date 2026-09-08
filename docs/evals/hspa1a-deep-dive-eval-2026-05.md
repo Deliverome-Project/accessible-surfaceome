@@ -1,5 +1,11 @@
 # HSPA1A — first v0.4.0 deep-dive reference record
 
+> **Record schema note.** This eval is from May 2026 and describes the v1
+> record shape, including `surface_biology.surface_status`. The shipping
+> record has no such field; the equivalent signals now live in
+> `executive_summary.surface_call_reason`, `surface_evidence.evidence_grade`
+> and `deep_dive_tier`. See the README for the current field list.
+
 **Date:** 2026-05-11
 **Schema version:** `v0.4.0`
 **Model:** `claude-sonnet-4-6`

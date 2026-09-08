@@ -101,7 +101,9 @@ GET /v1/triage/:symbol             — per-call model verdicts
 GET /v1/catalog                    — the full catalog
 ```
 
-Served from `https://api.deliverome.org/surfaceome/v1/…`; the `surfaceome/` prefix is stripped before route matching, so `/v1/...` is the contract. Records are read from a Cloudflare D1 database through a read-only Worker in [`cloudflare/workers/surfaceome_api/`](cloudflare/workers/surfaceome_api/). Deploy with `npx wrangler deploy` from that directory — there is no auto-deploy.
+Served from `https://api.deliverome.org/surfaceome/v1/…`; the `surfaceome/` prefix is stripped before route matching, so `/v1/...` is the contract. [`GET /v1`](https://api.deliverome.org/surfaceome/v1) is a self-describing index of every endpoint.
+
+For agents and scripts there is a machine-readable front door: [llms.txt](https://surfaceome.deliverome.org/llms.txt) points at the whole surface, [surfaceome-api.skill.md](https://surfaceome.deliverome.org/surfaceome-api.skill.md) is a downloadable agent skill, and the [API docs page](https://surfaceome.deliverome.org/api/) carries worked `curl` examples. Any gene is also available as Markdown: `/v1/genes/{SYMBOL}.md`. Records are read from a Cloudflare D1 database through a read-only Worker in [`cloudflare/workers/surfaceome_api/`](cloudflare/workers/surfaceome_api/). Deploy with `npx wrangler deploy` from that directory — there is no auto-deploy.
 
 ## Figure reproducibility
 

@@ -161,6 +161,5 @@ data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
 # into its slug's gist as the single source the mirror reads (single-TSV-per-
 # gist invariant). Exempted from LFS so the bundled copy + the
 # raw.githubusercontent.com fallback both resolve to plain text. Small (~5 KB
-# mock placeholder / ~30 KB long-form), well under the 5 MB practical cap.
+# ~30 KB long-form), well under the 5 MB practical cap.
 data/processed/figures/positive_control_db_coverage_bars.tsv  -filter -diff -merge text
-data/processed/figures/surfaceome_deterministic_features_placeholder.tsv -filter -diff -merge text

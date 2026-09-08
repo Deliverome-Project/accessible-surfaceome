@@ -18,8 +18,9 @@ TSV, its rendered PDF/PNG, and its caption together in this one directory:
 - `gist_map.json`, `swhid_map.json`, `figure_swhids.json` — the reproduction
   gist and Software Heritage identifier for each figure.
 
-One generator can emit several figures, so there are fewer `make_*.py` files
-than numbered figures.
+There are 19 `make_*.py` generators for 21 figures: `deep_dive_flow` and
+`web_preview` are hand-authored SVG schematics with no data pipeline, so they
+have a caption and an `.svg` but no generator.
 
 ## Topic directories — exploratory analyses
 

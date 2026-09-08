@@ -182,7 +182,7 @@ ZENODO_DATA_DOI = "10.5281/zenodo.20805384"
 # The CODE record DOI is minted by GitHub-Zenodo auto-archive on the
 # next tagged release; until that happens, the related-identifiers
 # link is a placeholder.
-ZENODO_CODE_CONCEPT_DOI: str | None = None  # TODO populate after first release
+ZENODO_CODE_CONCEPT_DOI: str | None = "10.5281/zenodo.22116981"  # concept DOI (all versions)
 
 EXTRA_FILES: list[str | dict[str, Any]] = [
     # The active path today uses build_consolidated_deposit_tsvs.py +
@@ -363,17 +363,14 @@ SEED_METADATA = {
             "open data",
         ],
         # Link this data record to the auto-archived code record(s).
-        # The code-record concept DOI is minted by the GitHub-Zenodo
-        # auto-archive on the FIRST tagged release (none exists yet —
-        # see ZENODO_CODE_CONCEPT_DOI at the top of this file). When
-        # that DOI is known, set ZENODO_CODE_CONCEPT_DOI and uncomment
-        # the placeholder below; the link makes the relationship
-        # explicit in CrossRef/DataCite and Zenodo's UI.
+        # The code-record concept DOI now exists and is set in
+        # ZENODO_CODE_CONCEPT_DOI at the top of this file. Uncomment the
+        # entry below to emit the link, which makes the relationship
+        # explicit in CrossRef/DataCite and Zenodo's UI. Left commented so
+        # enabling it stays a deliberate release decision.
         "related_identifiers": [
-            # PUBLICATION-WORKFLOW PLACEHOLDER — populate after the
-            # first code-record release. See ZENODO_CODE_CONCEPT_DOI.
             # {
-            #     "identifier": f"10.5281/zenodo.{ZENODO_CODE_CONCEPT_DOI}",
+            #     "identifier": ZENODO_CODE_CONCEPT_DOI,
             #     "relation": "isSupplementTo",
             #     "scheme": "doi",
             # },
