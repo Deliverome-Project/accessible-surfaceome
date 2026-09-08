@@ -50,9 +50,10 @@
   --ink-soft: var(--paper-ink-soft);
   --muted: var(--paper-muted);
   --rule: var(--line, var(--paper-rule));
-  /* Explicit white: the paper reads as a document sheet, so it does
-   * not inherit any warm page wash the surrounding site may use. */
-  --bg: #ffffff;
+  /* Match the deliverome site's warm off-white page background
+   * (--bg: #fefefc) rather than a pure-white sheet, so navigating from
+   * the site to the paper doesn't jump between two shades of white. */
+  --bg: #fefefc;
   --paper-beige: #fbfaf8;
 }
 
