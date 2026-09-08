@@ -324,7 +324,7 @@ end
 -- Order and labels are driven by the prefix each paragraph starts
 -- with, so re-ordering them in the .docx re-orders the row.
 local RESOURCE_LINES = {
-  {prefix = "code (zenodo)", icon = "zenodo.svg", label = "Code DOI"},
+  {prefix = "code (zenodo)", icon = "zenodo.svg", label = "Deposited code"},
   {prefix = "code (github)", icon = "github.svg", label = "Code"},
   {prefix = "code:",         icon = "github.svg", label = "Code"},
   {prefix = "data:",         icon = "zenodo.svg", label = "Data"},

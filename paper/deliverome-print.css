@@ -124,10 +124,10 @@ body > h1:first-of-type {
    * follow get the same beige wash and butt up directly against
    * this block to form one continuous title band. */
   margin: -0.85in -0.75in 0 -0.75in;
-  /* Padding absorbs the page-margin space + adds a tighter top
-   * gutter (1.05in → 0.5in extra over the bleed) so the title
-   * sits closer to the top of the page per review. */
-  padding: 0.95in 0.95in 0.3em 0.95in;
+  /* Padding absorbs the page-margin space (-0.85in bleed) + a small
+   * top gutter so the title sits high on the page with little
+   * whitespace above it. */
+  padding: 0.5in 0.95in 0.3em 0.95in;
   break-after: avoid-page;
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 600;
@@ -591,8 +591,16 @@ a.footnote-back {
  * .docx's four raw-URL paragraphs into one row of brand-marked
  * links, placed under the corresponding-author line.
  * ============================================================ */
+/* Sits inside the cream title band (full-bleed beige, butted up against
+ * the author-metadata paragraphs) so the resource links read as part of
+ * the banner — matching the site — rather than floating on the page.
+ * Carries the closing maroon rule that ends the title block. */
 .resource-row {
-  margin: 0.35em 0 0.2em 0;
+  column-span: all;
+  background: var(--title-beige);
+  margin: 0 -0.75in 0.45in -0.75in;
+  padding: 0.1em 0.95in 0.32in 0.95in;
+  border-bottom: 4px solid var(--maroon-mid, #922038);
 }
 
 .resource-row p {
