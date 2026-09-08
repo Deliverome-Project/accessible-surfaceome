@@ -31,6 +31,8 @@ so it is dropped (and logged) before writing the universe — see
 
 Bench check: re-confirmed 0 bench yes/contextual genes are removed.
 """
+import argparse
+
 import csv
 from collections import Counter
 from pathlib import Path
@@ -198,6 +200,10 @@ def write_tsv(path, rs):
 
 
 def main():
+    argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    ).parse_args()  # no options; makes --help work and rejects stray argv
     load_env()
 
     # Optimized cutoffs: accession -> (uniprot_optimized, cspa_optimized).

@@ -11,7 +11,7 @@ Do **not** add `Co-Authored-By: Claude <…>` (or any AI-attribution trailer) to
 `accessible-surfaceome` is a workspace for building an annotated catalogue of
 human cell-surface proteins from seven public data sources.
 
-Current implementation focus: candidate-universe builders (M1).
+Current implementation focus: candidate-universe builders.
 
 ## Repository Structure
 
