@@ -598,8 +598,10 @@ a.footnote-back {
 .resource-row {
   column-span: all;
   background: var(--title-beige);
-  margin: 0 -0.75in 0.45in -0.75in;
-  padding: 0.1em 0.95in 0.32in 0.95in;
+  /* Tight bottom margin so the abstract follows the band closely rather
+   * than sitting too low on the page. */
+  margin: 0 -0.75in 0.16in -0.75in;
+  padding: 0.1em 0.95in 0.2in 0.95in;
   border-bottom: 4px solid var(--maroon-mid, #922038);
 }
 
