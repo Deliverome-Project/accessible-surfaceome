@@ -176,7 +176,7 @@ def annotate_one(
     Also pushes the run's intermediates (PTS ledgers, builder outputs,
     synth raw JSON, deterministic blocks) into private D1's
     ``agent_run_intermediates`` table — same call shape as the
-    single-gene driver ``scripts/surfaceome_v2_annotate.py``. Per the
+    single-gene driver ``scripts/annotate_gene.py``. Per the
     R2/reproducibility audit
     (``docs/audit/r2_and_reproducibility_2026_06_08.md``), the cohort
     sweep previously skipped this and lost every gene's diagnostic blob;

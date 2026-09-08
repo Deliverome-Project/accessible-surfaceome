@@ -2,8 +2,8 @@
 
 Usage:
 
-    uv run python scripts/surfaceome_v2_annotate.py HGNC:4526
-    uv run python scripts/surfaceome_v2_annotate.py GPR75
+    uv run python scripts/annotate_gene.py HGNC:4526
+    uv run python scripts/annotate_gene.py GPR75
 
 Runs:
 1. plan-trim-select dual (warm cache → cheap HTTP).

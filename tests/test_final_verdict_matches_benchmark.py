@@ -23,7 +23,7 @@ gene whose call has flipped.
 **Failure protocol.** A red here is one of two things:
 
 1. The synth made a wrong call → re-annotate
-   (``scripts/surfaceome_v2_annotate.py <SYMBOL>``) after fixing the
+   (``scripts/annotate_gene.py <SYMBOL>``) after fixing the
    prompt section that owns the relevant bucket.
 2. The benchmark needs updating → only if the literature has actually
    shifted; treat this case skeptically because the 5 genes were
@@ -223,13 +223,13 @@ def test_synth_verdict_matches_benchmark(
         f"\n  Missing executive_summary.surface_accessibility on the "
         f"record. Worker probably served a stale schema or a non-200 "
         f"response. Re-annotate via "
-        f"scripts/surfaceome_v2_annotate.py {gene}."
+        f"scripts/annotate_gene.py {gene}."
     )
     assert scr is not None, (
         f"\n  Gene: {gene}"
         f"\n  Missing executive_summary.surface_call_reason on the "
         f"record. Re-annotate via "
-        f"scripts/surfaceome_v2_annotate.py {gene}."
+        f"scripts/annotate_gene.py {gene}."
     )
 
     derived = synth_to_triage_verdict(sa, scr)

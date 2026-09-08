@@ -77,7 +77,7 @@ export default async function BenchmarkPage() {
           <p>
             <span className="label-mono">DB columns ·</span> UniProt · GO ·
             SURFY · CSPA · HPA — the five gating databases that
-            drive M1 universe membership (same set the homepage catalog
+            drive candidate-universe membership (same set the homepage catalog
             shows). Each cell is one source&apos;s vote on whether the
             protein reaches the plasma membrane: filled dot = surface,
             empty ring = not on the surface in that source.

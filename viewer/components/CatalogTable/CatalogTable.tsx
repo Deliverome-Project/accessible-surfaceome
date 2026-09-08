@@ -94,7 +94,7 @@ type TriageDetailState =
   | { status: "ready"; runs: TriageRun[] };
 
 // Five gating DBs. DeepTMHMM + COMPARTMENTS were demoted from the
-// M1 universe gate upstream (kept in the D1 row for fidelity but
+// candidate-universe gate upstream (kept in the D1 row for fidelity but
 // hidden in the public catalog).
 const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },

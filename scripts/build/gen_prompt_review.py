@@ -800,7 +800,7 @@ def flow_section() -> str:
       between agents. Hand-curated reference &mdash; numbers are typical not
       exact (paralog count + AFDB pLDDT vary across resolver releases). To
       regenerate against fresh runtime data: run <code>uv run python
-      scripts/surfaceome_v2_annotate.py EGFR --no-publish</code> and read the
+      scripts/annotate_gene.py EGFR --no-publish</code> and read the
       orchestrator log + the synthesizer&rsquo;s persisted task message.</p>
       <div class="fflow">{''.join(cards)}</div>
     </section>"""

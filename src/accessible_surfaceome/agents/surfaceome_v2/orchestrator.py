@@ -251,7 +251,7 @@ def _load_pts_checkpoint(gene: str) -> DualPlanTrimSelectResult | None:
 # BEFORE a terminal intermediates row is written still leaves the (expensive)
 # PTS dual in durable D1; the local ``.runs`` checkpoint above is per-container
 # and evaporates on a Modal retry / cold replacement. The single-gene CLI
-# driver (``scripts/surfaceome_v2_annotate.py``) calls ``annotate`` directly,
+# driver (``scripts/annotate_gene.py``) calls ``annotate`` directly,
 # not through ``run_one``, so it never installs a publisher and keeps only the
 # on-disk checkpoint (no extra D1 write).
 # Signature: ``publisher(gene_symbol, pts_only_intermediates_blob)``.

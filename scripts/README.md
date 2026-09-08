@@ -9,9 +9,9 @@ with `uv run python scripts/<subdir>/<name>.py` (shell scripts with `bash`).
 
 | Script | What it does |
 |---|---|
-| `surfaceome_v2_annotate.py <GENE>` | Deep-dive one gene end-to-end (publishes to D1). |
+| `annotate_gene.py <GENE>` | Deep-dive one gene end-to-end (publishes to D1). |
 | `triage_runner.py --model … --d1` | Run the triage benchmark / genome-wide sweep. |
-| `build_candidate_universe_v3.py` | Rebuild the M1 candidate universe from the five sources. |
+| `build_candidate_universe_v3.py` | Rebuild the candidate universe from the five source databases. |
 | `build_figure_tsvs.py` | Single source of truth for figure DATA — the per-figure bundled TSVs. |
 | `build_figure_index.py` | Rebuild `paper/figure_index.md` + the by-paper-number symlinks. |
 | `build_positive_control_lists.py` | Rebuild the ADC / TCE / ViralZone positive-control sets. |
