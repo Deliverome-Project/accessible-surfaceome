@@ -106,7 +106,7 @@ discovery: PubTator N papers + EuropePMC M papers → union K
      ✗ PMC789012 sections=[...] → 0 snippets (after gene-proximity filter)
 ```
 
-See `scripts/audit_evidence_retrieval.py`. It tells you *exactly*
+See `scripts/audit/audit_evidence_retrieval.py`. It tells you *exactly*
 where papers drop out — retrieval, filter, fetch, hallmark match,
 proximity. That tells you which stage's code to fix.
 
@@ -176,7 +176,7 @@ Whatever script you wrote to trace the funnel, commit it under
 `scripts/`. The next agent (or future you) wants to re-run the same
 diagnostic against a different gene without re-deriving it.
 
-Same for the eval driver (`scripts/v1_cost_stress_test.py`). It IS the
+Same for the eval driver (`scripts/v1_cost_stress_test.py`, since removed with v1). It WAS the
 methodology made executable.
 
 ## 10. Document the surprising findings, not the easy ones
@@ -207,6 +207,6 @@ calibrate. Surprises do.
 - Per-call cost capture: `src/accessible_surfaceome/agents/_support/pricing.py`
 - Caching + compaction: `src/accessible_surfaceome/agents/_support/payload.py`
 - Retrieval diagnostic: `scripts/audit/audit_evidence_retrieval.py`
-- Eval driver: `scripts/v1_cost_stress_test.py`
+- Eval driver: `scripts/v1_cost_stress_test.py` (removed with the v1 pipeline; recover from git history if needed)
 - Pre-built claim drafts: `EvidenceClaimDraft` in
   `src/accessible_surfaceome/tools/_shared/models.py`

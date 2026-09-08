@@ -5,7 +5,7 @@
 -- Worker at e.g. `api.deliverome.org/surfaceome/...` with no auth.
 --
 -- Sync direction: ALWAYS private → public. The sync script
--- (scripts/sync_public_d1.py) is one-way and append-only — historical
+-- (scripts/cloud/sync_public_d1.py) is one-way and append-only — historical
 -- snapshots stay queryable, the public DB is never read by the agent
 -- pipeline.
 --
@@ -22,7 +22,7 @@
 --   wrangler d1 execute surfaceome_public --remote \\
 --     --file=cloudflare/d1_public_schema.sql
 --
--- Or via D1 HTTP API (no wrangler needed) — see scripts/apply_d1_schema.py.
+-- Or via the D1 HTTP API (no wrangler needed) — see scripts/cloud/sync_d1_schema.py.
 
 -- ---------------------------------------------------------------------------
 -- compara_release / compara_ortholog
@@ -230,7 +230,7 @@ CREATE INDEX IF NOT EXISTS idx_surface_annotation_cohort
 --
 -- Loaded from `data/processed/candidate_universe/candidate_universe.tsv`
 -- (a build artifact, NOT in the private agents DB) by
--- scripts/upload_candidate_universe_to_d1.py. Each merge run bumps
+-- scripts/cloud/upload_candidate_universe_to_d1.py. Each merge run bumps
 -- universe_version so historical universes stay queryable; the Worker
 -- always serves the latest.
 -- ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ CREATE TABLE IF NOT EXISTS candidate_universe_release (
 -- gene_identifier table. Lets the public Worker (and the viewer) look up
 -- canonical stable IDs for any gene without re-resolving from symbol —
 -- which historically was where the resolver bugs entered the pipeline
--- (see scripts/audit_resolver_hgnc_id_v3.py for the failure modes).
+-- (see scripts/audit/audit_resolver_hgnc_id_v3.py for the failure modes).
 --
 -- Synced from `surfaceome_agents.gene_identifier` by the same one-way
 -- script that mirrors candidate_universe + triage_run. Resolver-version
@@ -519,7 +519,7 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
 --
 -- Two tables: protein-level aggregate (one row per UniProt acc) +
 -- site-level detail (one row per (acc, site_id)). Sync script:
--- scripts/sync_surface_bind_to_d1.py reads from
+-- scripts/cloud/sync_surface_bind_to_d1.py reads from
 -- data/external/surface_bind/surface_bind_summary.json and UPSERTs.
 -- ---------------------------------------------------------------------------
 
@@ -584,7 +584,7 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
 -- despite being known dimers). Consumers default ``is_homo_oligomer
 -- =False`` for any uniprot_acc with no row.
 --
--- Sync script: ``scripts/build_schweke_d1_table.py`` reads the figshare
+-- Sync script: ``scripts/cloud/build_schweke_d1_table.py`` reads the figshare
 -- deposit (see ``data/external/schweke_homomer_atlas/PROVENANCE.md``)
 -- and UPSERTs per ``(universe_version, uniprot_acc)``. Released here as
 -- a public mirror — CC-BY 4.0 per Schweke's deposit, attribution
@@ -695,7 +695,7 @@ CREATE INDEX IF NOT EXISTS idx_feedback_public_gene
 -- ``Transmembrane`` features + comparing against the PDB's residue
 -- coverage.
 --
--- Build script: scripts/build_schweke_d1_table.py
+-- Build script: scripts/cloud/build_schweke_d1_table.py
 -- Sources: data/external/schweke_homomer_atlas/list_models_refset.csv
 --          + data/external/schweke_homomer_atlas/full_complex_index.tsv
 --          + data/processed/candidate_universe/candidate_universe_v2.tsv
@@ -798,7 +798,7 @@ CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_cell_family_class  ON czi_cellxgene
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_tissue_organ_class ON czi_cellxgene_enrichment (tissue_organ_class);
 
 
--- ── Backfilled from live D1 by scripts/sync_d1_schema.py on 2026-08-26 ──
+-- ── Backfilled from live D1 by scripts/cloud/sync_d1_schema.py on 2026-08-26 ──
 -- Review before committing. A new table that feeds a deterministic-features
 -- field also needs wiring into the Worker's handleGene enrichment.
 

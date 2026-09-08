@@ -135,7 +135,7 @@ agent's original JSON with the fixes applied and produced
 
 ## Notes for the next eval
 
-- **Compara refresh first.** Run `bash scripts/refresh_compara.sh` before the next
+- **Compara refresh first.** Run `bash scripts/build/refresh_compara.sh` before the next
   end-to-end so the `orthology` field actually populates.
 - **Audit pass.** Wire `--audit` into the next CLI invocation to get
   `entailment_verified=True` flags. Add ~$0.10 to the cost.

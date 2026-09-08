@@ -23,7 +23,7 @@ selection-rate diagonals are drawn at 5 % and 10 %.
   `plan_trim_select` step ranks high-enough to feed into the block
   builders for full-text claim extraction. **Already computable from
   existing records** as `len({source.source_id for ev in evidence for
-  span in ev.spans})` — see `scripts/backfill_n_papers_selected.py`.
+  span in ev.spans})` — see `scripts/build/backfill_n_papers_selected.py`.
 - **Color — agent `evidence_grade` verdict** ∈ closed enum:
   - `direct_multi_method` — multiple independent assay types
   - `direct_single_method` — direct surface evidence from one assay
@@ -63,7 +63,7 @@ per synthesized gene with columns `gene_symbol`, `papers_found_mock`,
 
 ## Canonical generator
 
-[`scripts/evidence_corpus_vs_selected.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/evidence_corpus_vs_selected.py)
+[`scripts/figures/evidence_corpus_vs_selected.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/evidence_corpus_vs_selected.py)
 in the project repo. The mock-synthesis recipe lives in that script's
 `_synthesize_mock_data()`; once the v2 deep-dive sweep populates
 `deep_dive_run.evidence_grade` genome-wide, that helper will be

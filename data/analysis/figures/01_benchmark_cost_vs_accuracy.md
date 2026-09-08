@@ -25,4 +25,4 @@ Sources (fetched live from the public API):
 - Bench truth labels: `https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv` (7 columns: gene / uniprot / class / verdict / signal / reason / rationale)
 
 Canonical in-repo generator:
-[`scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_bench_db_barplot.py).
+[`scripts/figures/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_bench_db_barplot.py).

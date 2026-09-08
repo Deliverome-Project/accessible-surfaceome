@@ -90,7 +90,7 @@ Outputs two files in the current directory:
 ## Canonical generator
 
 The in-repo generator lives at
-[`scripts/paywall_bot_block_overview.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/paywall_bot_block_overview.py)
+[`scripts/probes/paywall_bot_block_overview.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/probes/paywall_bot_block_overview.py)
 and reuses `src/accessible_surfaceome/audit/_plotting_config.py` for
 the Deliverome categorical palette + Manrope brand font. This gist
 inlines those bits so the standalone version stays self-contained.

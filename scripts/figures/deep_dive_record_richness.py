@@ -46,7 +46,7 @@ Reads the bundled per-figure TSV at
 ``data/processed/figures/deep_dive_record_richness.tsv`` (one row per deep-dived
 gene: the five real per-gene axes + the deep-dive ``tier``).
 
-PRELIMINARY — 1,175 of ~5,128 swept, pre-QA-fix.
+Computed over the completed deep-dive sweep (5,130 genes).
 
 Run::
 

@@ -100,16 +100,16 @@ then backfill missing private rows from JSON:
 uv run modal volume get surfaceome-annotations / data/annotations/
 
 # Dry-run report.
-uv run python scripts/backfill_deep_dive_from_json.py \
+uv run python scripts/cloud/backfill_deep_dive_from_json.py \
     --run-id candidate_universe_v1_sonnet_2026_05
 
 # Execute D1 inserts for missing parent rows.
-uv run python scripts/backfill_deep_dive_from_json.py \
+uv run python scripts/cloud/backfill_deep_dive_from_json.py \
     --run-id candidate_universe_v1_sonnet_2026_05 \
     --execute
 
 # Then verify existing parent rows have complete children.
-uv run python scripts/audit_deep_dive_orphans.py \
+uv run python scripts/audit/audit_deep_dive_orphans.py \
     --run-id candidate_universe_v1_sonnet_2026_05
 ```
 
@@ -148,7 +148,7 @@ For smoke tests (no Modal account needed), use the same helpers
 in-process:
 
 ```bash
-uv run python scripts/deep_dive_sweep.py \
+uv run python scripts/build/deep_dive_sweep.py \
     --gene-list data/processed/candidate_universe/candidate_universe.tsv \
     --run-id smoke_test_2026_05 \
     --canary 3 --concurrency 1 --no-d1

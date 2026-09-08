@@ -25,12 +25,16 @@ Both are concept DOIs and always resolve to the newest version. Individual figur
 
 **Annotate one gene yourself:**
 
+Prerequisites: [uv](https://docs.astral.sh/uv/), and `git-lfs` if you want the
+underlying data (the `data/` trees are LFS-tracked). The viewer additionally
+needs Node 24 — `npm install` refuses to run on an older major.
+
 ```bash
 git clone https://github.com/Deliverome-Project/accessible-surfaceome
 cd accessible-surfaceome
 uv sync                              # Python environment
 cp .env.example .env                 # add ANTHROPIC_API_KEY (+ NCBI keys)
-uv run python scripts/annotate_gene.py KLK2
+uv run python scripts/annotate_gene.py KLK2 --no-publish
 ```
 
 Roughly $1.30 per gene and about nine minutes.
@@ -129,8 +133,10 @@ Each gist is also deposited with Software Heritage for a content-addressed perma
 # Annotate one gene end-to-end (~$1.30, ~9 min):
 uv run python scripts/annotate_gene.py HSPA1A
 
-# Run the triage benchmark sweep (147-gene SurfaceBench):
-uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --replicates 1 --d1
+# Run the triage benchmark sweep (147-gene SurfaceBench).
+# NOTE: --variants defaults to all four, so this is ~588 model calls, and
+# --d1 writes them to the project database. Try --dry-run or --smoke first.
+uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --replicates 1
 
 # Rebuild the candidate universe:
 uv run python -m accessible_surfaceome.merge
