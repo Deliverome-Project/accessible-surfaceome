@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 FIGURES_DIR="$REPO_ROOT/data/analysis/figures"
 GIST_MAP="$FIGURES_DIR/gist_map.json"
 
