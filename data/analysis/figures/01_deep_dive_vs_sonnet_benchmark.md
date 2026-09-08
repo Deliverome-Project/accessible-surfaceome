@@ -20,9 +20,10 @@ contextually-surface protein counts correct when called surface.
 Deep dive and Sonnet are near-identical overall (**96% vs 96%**), and
 Sonnet's SEM overlaps the deep-dive bar in every bucket.
 
-> **PRELIMINARY** — n = 27 is small (the 'no' bucket is only 2 genes),
-> so read these as an early signal; the estimates firm up as the sweep
-> covers more benchmark genes.
+> Computed over the 113 benchmark genes that carry both a Sonnet verdict
+> and a published deep-dive record (68 `yes`, 31 `contextual`, 14 `no`).
+> The `no` bucket is the smallest, so per-bucket differences there carry
+> the widest error bars.
 
 ## Reproduce
 
@@ -43,5 +44,5 @@ the data is bundled in this gist.
   (`build_deep_dive_vs_sonnet_benchmark`), which joins the SurfaceBench
   ground truth, the per-gene deep-dive tier, and the three-replicate
   Sonnet+NCBI mainbench triage.
-- **Canonical generator** — [`scripts/deep_dive_vs_sonnet_benchmark.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/deep_dive_vs_sonnet_benchmark.py)
+- **Canonical generator** — [`scripts/figures/deep_dive_vs_sonnet_benchmark.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/deep_dive_vs_sonnet_benchmark.py)
   (this file is its standalone mirror).

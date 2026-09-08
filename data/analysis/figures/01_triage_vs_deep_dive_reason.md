@@ -39,6 +39,6 @@ published deep-dive records (Worker `/v1/genes/{SYMBOL}` index).
 The in-repo canonical figure at
 [`data/analysis/figures/triage_vs_deep_dive_reason.pdf`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/figures/triage_vs_deep_dive_reason.pdf)
 is rendered by
-[`scripts/triage_vs_deep_dive_reason.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_vs_deep_dive_reason.py)
+[`scripts/figures/triage_vs_deep_dive_reason.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_vs_deep_dive_reason.py)
 in the project repo. This gist mirror ships an equivalent
 single-panel render from the same bundled TSV.

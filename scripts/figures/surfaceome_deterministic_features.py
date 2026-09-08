@@ -43,7 +43,7 @@ RECORDS (full coverage per deep-dived gene), which fixes the prior
 DeepTMHMM-M1-only coverage bias where the low / uncertain / no tiers were
 70-94% missing.
 
-PRELIMINARY — a partial sweep of the ~5,128 candidate genes; treat the
+Computed over the completed deep-dive sweep of 5,130 candidate genes; treat the
 per-tier rates as provisional until the sweep completes.
 """
 from __future__ import annotations

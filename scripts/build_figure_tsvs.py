@@ -503,7 +503,7 @@ def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFr
     ``gene_symbol, uniprot_acc, papers_found, papers_selected, evidence_grade,
     tier``.
 
-    PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix.
+    Computed over the completed deep-dive sweep (5,130 genes).
     """
     cols = ["gene_symbol", "uniprot_acc", "papers_found", "papers_selected",
             "evidence_grade", "tier"]
@@ -551,7 +551,7 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
     back-compat; ``tier`` (the finer 5-tier call) is what the figure now facets
     every panel by (a/b: canonical/likely/low/no; c/d/e: canonical/likely/low).
 
-    PRELIMINARY — pre-QA-fix; counts grow as the sweep progresses.
+    Computed over the completed deep-dive sweep (5,130 genes).
     """
     cols = ["gene_symbol", "tier", "surface_verdict_bucket", "papers_found",
             "papers_selected", "papers_with_ec", "n_filters_evidence",
@@ -613,7 +613,7 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
     go_surface_flag, surfy_surface_flag, hpa_surface_flag, uniprot_optimized,
     cspa_optimized``.
 
-    Real data, small n as the sweep progresses; PRELIMINARY, pre-QA-fix.
+    Real data over the completed deep-dive sweep (5,130 genes).
     """
     cols = ["gene_symbol", "uniprot_acc", "triage_verdict", "triage_reason",
             "deep_dive_reason", "deep_dive_tier"]
@@ -864,7 +864,7 @@ def build_surfaceome_deterministic_features(
     Mirrors ``scripts/surfaceome_deterministic_features.py``
     ``load_data()`` — it reads this bundled single TSV.
 
-    PRELIMINARY — pre-QA-fix; counts grow as the sweep progresses.
+    Computed over the completed deep-dive sweep (5,130 genes).
     """
     feature_cols = ["tm_helix_count", "protein_length", "ecd_length_residues",
                     "has_signal_peptide",

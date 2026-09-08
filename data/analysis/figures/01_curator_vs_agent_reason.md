@@ -46,7 +46,7 @@ is a **3-panel composite** that adds:
 - **Panel c** — the confusion matrix this gist reproduces
 
 The composite is produced by
-[`scripts/curator_vs_agent_reason.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/curator_vs_agent_reason.py)
+[`scripts/figures/curator_vs_agent_reason.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/curator_vs_agent_reason.py)
 in the project repo. This gist mirror ships the matrix alone since
 that's the analytical core readers cite for Figure S4.
 
@@ -56,6 +56,6 @@ that's the analytical core readers cite for Figure S4.
 - Per-rep agent predictions: [`data/processed/triage_bench/mainbench_replicates_v2.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/triage_bench/mainbench_replicates_v2.tsv)
 - Pre-joined per-figure TSV (bundled here): [`data/processed/figures/curator_vs_agent_reason.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/figures/curator_vs_agent_reason.tsv)
 - Per-cell collapse rule documented at
-  [`scripts/export_mainbench_to_tsv.py:_collapse_to_majority`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_mainbench_to_tsv.py)
+  [`scripts/tsv-export/export_mainbench_to_tsv.py:_collapse_to_majority`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/tsv-export/export_mainbench_to_tsv.py)
   — pick the majority verdict across reps, then the first replicate
   in that majority-verdict group provides the representative reason.

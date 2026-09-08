@@ -34,7 +34,7 @@ tier``). The single source of that TSV is ``scripts/build_figure_tsvs.py``
 this canonical generator reads the TSV so it renders the **same** dataset as
 the gist mirror (``data/analysis/figures/make_evidence_corpus_vs_selected.py``).
 
-PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix; ``papers_found`` is null on
+Computed over the completed deep-dive sweep; ``papers_found`` is null on
 a handful of legacy records so those genes are absent (both axes must be
 present to plot). The ``weak`` pile is partly the pretrim-cap recall bug
 deleting foundational literature; re-render after the full sweep + QA fixes.

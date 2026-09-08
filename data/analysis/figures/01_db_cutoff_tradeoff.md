@@ -31,7 +31,7 @@ Source (fetched live from the public repo):
   in sync.
 
 Canonical in-repo generator:
-[`scripts/triage_bench_db_barplot.py::make_db_tradeoff_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_bench_db_barplot.py).
+[`scripts/figures/triage_bench_db_barplot.py::make_db_tradeoff_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_bench_db_barplot.py).
 The accuracy math runs over the raw DB source dumps; this gist
 script reads the precomputed points table instead so it stays small
 and self-contained.

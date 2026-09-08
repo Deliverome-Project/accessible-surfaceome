@@ -20,4 +20,4 @@ Source (fetched live from the public repo):
 - DB votes (whole-proteome catalog): [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv)
 
 Canonical in-repo generator:
-[`scripts/triage_bench_db_venn.py::make_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_bench_db_venn.py).
+[`scripts/figures/triage_bench_db_venn.py::make_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_bench_db_venn.py).

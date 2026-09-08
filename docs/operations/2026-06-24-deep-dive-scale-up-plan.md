@@ -13,7 +13,7 @@ Status as of 2026-06-24 after two Modal canaries under
 - Cloudflare targeted cache purge works after the API token scope update.
 - Europe PMC `PPR...` preprint IDs no longer poison a whole result page; they are
   skipped until the downstream `Paper` contract supports non-PMID IDs.
-- `scripts/audit_deep_dive_orphans.py` found zero orphan child rows for the smoke
+- `scripts/audit/audit_deep_dive_orphans.py` found zero orphan child rows for the smoke
   run.
 
 ## Remaining Gaps
@@ -56,9 +56,9 @@ Status: implemented in this branch.
 
 Existing coverage:
 
-- `scripts/audit_deep_dive_orphans.py` repairs parent rows whose evidence or
+- `scripts/audit/audit_deep_dive_orphans.py` repairs parent rows whose evidence or
   search-log children are incomplete.
-- `scripts/backfill_deep_dive_from_json.py` inserts missing private
+- `scripts/cloud/backfill_deep_dive_from_json.py` inserts missing private
   `deep_dive_run` parent + child rows from `<annotations_dir>/<run_id>/*.json`.
 
 Command:
@@ -66,10 +66,10 @@ Command:
 ```bash
 uv run modal volume get surfaceome-annotations / data/annotations/
 
-uv run python scripts/backfill_deep_dive_from_json.py \
+uv run python scripts/cloud/backfill_deep_dive_from_json.py \
   --run-id candidate_universe_v3_sonnet_2026_06_stage1
 
-uv run python scripts/backfill_deep_dive_from_json.py \
+uv run python scripts/cloud/backfill_deep_dive_from_json.py \
   --run-id candidate_universe_v3_sonnet_2026_06_stage1 \
   --execute
 ```
@@ -132,10 +132,10 @@ uv run modal run modal/deep_dive_app.py::full_sweep \
 Post-run checks:
 
 ```bash
-uv run python scripts/audit_deep_dive_orphans.py \
+uv run python scripts/audit/audit_deep_dive_orphans.py \
   --run-id candidate_universe_v3_sonnet_2026_06_stage1
 
-uv run python scripts/backfill_deep_dive_from_json.py \
+uv run python scripts/cloud/backfill_deep_dive_from_json.py \
   --run-id candidate_universe_v3_sonnet_2026_06_stage1
 
 uv run modal volume ls surfaceome-annotations \

@@ -36,7 +36,7 @@ back-compat.
   "swhid":      "swh:1:snp:<40-char hex>",
   "doi": null,
   "repo":       "Deliverome-Project/accessible-surfaceome",
-  "repo_path":  "scripts/triage_bench_db_venn.py",
+  "repo_path":  "scripts/figures/triage_bench_db_venn.py",
   "repo_ref":   "<40-char commit SHA>",
   "repo_tag":   null,
   "data": [
@@ -137,8 +137,8 @@ new SWHIDs.
 ## Implementation references
 
 - Schema constants + validator: `src/accessible_surfaceome/_provenance.py`
-- Metadata embedder: `scripts/embed_figure_gist_metadata.py`
+- Metadata embedder: `scripts/figures/embed_figure_gist_metadata.py`
 - Conformance test: `tests/test_figure_provenance.py`
 - Worked example (Venn diagram):
-  - canonical generator: `scripts/triage_bench_db_venn.py`
+  - canonical generator: `scripts/figures/triage_bench_db_venn.py`
   - standalone gist: <https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa>
