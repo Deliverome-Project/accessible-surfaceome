@@ -301,6 +301,21 @@ img.resource-icon {
   vertical-align: -0.12em;
 }
 
+/* "Post a comment" — a small pill button in the resource row that jumps
+ * to the comment form at the foot of the page. Must come after the
+ * a.resource-link rules to win the equal-specificity cascade. */
+a.resource-comment {
+  border: 1px solid var(--maroon-mid);
+  border-radius: 999px;
+  padding: 0.1rem 0.7rem;
+  color: var(--maroon-mid);
+}
+a.resource-comment:hover {
+  background: var(--maroon-mid);
+  border-color: var(--maroon-mid);
+  color: #fff;
+}
+
 /* ============================================================
  * References — tighter, hanging-indent list.
  * ============================================================ */

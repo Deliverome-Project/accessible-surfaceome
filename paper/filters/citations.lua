@@ -431,6 +431,16 @@ local function build_resource_row(doc)
     if i > 1 or WEB_EXTRAS then row:insert(pandoc.Space()) end
     row:insert(icon_link(item.rule.icon, item.rule.label, item.url))
   end
+  if WEB_EXTRAS then
+    -- Web only, LAST in the row (next to Data): a jump-to-comments
+    -- affordance styled as a small button. The comment form lives at the
+    -- foot of the page; this scrolls the reader there.
+    row:insert(pandoc.Space())
+    row:insert(pandoc.Link(
+      {pandoc.Str("Post a comment")}, "#comments", "",
+      pandoc.Attr("", {"resource-link", "resource-comment"})
+    ))
+  end
 
   local row_div = pandoc.Div(
     {pandoc.Para(row)}, pandoc.Attr("", {"resource-row"})
