@@ -20,6 +20,9 @@ Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → 
 | Method | Path | Returns |
 |---|---|---|
 | `GET` | `/v1/catalog` | Genome-wide table — candidate-universe rows × DB flags × latest triage × deep-dive flag (drives the viewer's index) |
+| `GET` | `/v1/catalog/:symbol` | One catalog row |
+| `GET` | `/v1/genes/:symbol.md` | The record as Markdown, served from R2 |
+| `GET` | `/v1/meta/sizes` | Payload sizes per endpoint |
 | `GET` | `/v1/triage/:symbol` | Triage agent verdicts across (model × variant × replicate) — no costs |
 | `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, 21 cols including DB votes + `uniprot_acc` joined server-side. Default `run_id=mainbench_canonical_v2`; pass `run_id=genome_full_sonnet_ncbi_v2` for the full ~19k-gene sweep. |
 
