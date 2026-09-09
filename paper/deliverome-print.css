@@ -221,6 +221,13 @@ h2 {
   margin: 1.4em 0 0.5em 0;
 }
 
+/* The first section heading (Abstract) sits at the very top of the body
+ * columns, directly under the title band — drop its top margin so it
+ * doesn't render with an empty line above it. */
+body > h2:first-of-type {
+  margin-top: 0;
+}
+
 /* SUBSECTION headings — Manrope (NOT serif). User feedback: serif
  * is reserved for the title only; everything below stays in the body
  * font for scan consistency. */
