@@ -16,13 +16,23 @@ Cloudflare variables in `.env` are only needed for scripts that read or write D1
 
 ## The check that has to pass
 
-One script runs everything CI runs:
+The main gate is one script:
 
 ```bash
 ./scripts/check-py.sh
 ```
 
-It runs `ruff check` over `src tests scripts`, `ty check`, `compileall`, the full `pytest` suite, and `check_viewer_types_sync.py`, which verifies the viewer's TypeScript interfaces still cover every field on the Pydantic models. Run it before opening a PR. CI runs the same thing plus `pre-commit run --all-files`.
+It runs `ruff check` over `src tests scripts`, `ty check`, `compileall`, the full `pytest` suite, and `check_viewer_types_sync.py`, which verifies the viewer's TypeScript interfaces still cover every field on the Pydantic models.
+
+CI runs three more things around it, so run these too if you touched dependencies or `pyproject.toml`:
+
+```bash
+uv sync --frozen
+uv lock --check                                    # fails if pyproject and uv.lock disagree
+uv run --frozen pre-commit run --all-files
+```
+
+`uv lock --check` is the one that catches people out: `uv.lock` records the project's own version, so bumping `pyproject.toml` without re-running `uv lock` fails CI while `check-py.sh` stays green.
 
 Pre-commit hooks cover formatting, YAML/TOML/JSON validity, merge-conflict markers, the viewer type sync, and three safety hooks: `detect-private-key`, `forbid-env-files`, and `scan-secrets`. Never commit a real `.env`.
 
