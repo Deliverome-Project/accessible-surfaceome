@@ -35,7 +35,7 @@ The trimmed list lives at
 [`data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv`](../../data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv)
 (19,464 rows). A cross-reference annotating every NCBI protein-coding
 row with its HGNC status is at
-[`Homo_sapiens.protein_coding.with_hgnc_status.tsv`](../../data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc_status.tsv).
+[`Homo_sapiens.protein_coding.with_hgnc.tsv`](../../data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv).
 
 ## Why we trim the raw 20,624
 

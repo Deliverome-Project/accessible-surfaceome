@@ -99,6 +99,9 @@ GET /v1/orthologs/:symbol          — mouse + cyno orthologs
 GET /v1/benchmark[/:symbol]        — curated truth labels
 GET /v1/triage/:symbol             — per-call model verdicts
 GET /v1/catalog                    — the full catalog
+GET /v1/catalog/:symbol            — one catalog row
+GET /v1/genes/:symbol.md           — the record as Markdown
+GET /v1/meta/sizes                 — payload sizes per endpoint
 ```
 
 Served from `https://api.deliverome.org/surfaceome/v1/…`; the `surfaceome/` prefix is stripped before route matching, so `/v1/...` is the contract. [`GET /v1`](https://api.deliverome.org/surfaceome/v1) is a self-describing index of every endpoint.
