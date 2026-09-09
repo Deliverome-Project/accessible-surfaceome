@@ -471,12 +471,43 @@
     }
   }
 
-  function loadNotes() {
+  /* Approved comments are fetched live on load — never baked into the page.
+   * Two robustness wrinkles the naive one-shot fetch got wrong:
+   *   1. D1 read-replica lag. Right after a comment is approved, the write
+   *      may not have reached every region's read replica, so the first
+   *      fetch can come back empty. Retry a bounded few times WHILE the list
+   *      is still empty, so a freshly-approved note appears without a manual
+   *      reload. A genuinely comment-free page just does a few cheap GETs
+   *      and stops (retries only fire while nothing has rendered yet).
+   *   2. A note approved while the tab sits open won't show until reload —
+   *      so also refetch when the tab regains focus.
+   * A transient empty response (replica lag on a later refetch) must never
+   * blank notes we've already shown: once we've rendered a non-empty list we
+   * only ever replace it with another non-empty list. */
+  var renderedNonEmpty = false;
+
+  function applyNotes(notes) {
+    if (notes && notes.length) {
+      renderNotes(notes);
+      renderedNonEmpty = true;
+    } else if (!renderedNonEmpty) {
+      renderNotes([]);
+    }
+  }
+
+  function loadNotes(retriesOnEmpty) {
     fetch(apiBase + "/v1/feedback/public?gene=" + encodeURIComponent(gene), {
-      headers: { accept: "application/json" }
+      headers: { accept: "application/json" },
+      cache: "no-store"
     })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) { renderNotes(j && j.notes); })
+      .then(function (j) {
+        var notes = j && j.notes ? j.notes : [];
+        applyNotes(notes);
+        if (!notes.length && !renderedNonEmpty && retriesOnEmpty > 0) {
+          setTimeout(function () { loadNotes(retriesOnEmpty - 1); }, 2000);
+        }
+      })
       .catch(function () {});
   }
 
@@ -585,6 +616,9 @@
       });
   });
 
-  loadNotes();
+  loadNotes(3); // initial load + up to 3 empty-retries (~6s replica-lag window)
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") loadNotes(0);
+  });
   loadTurnstile();
 })();
