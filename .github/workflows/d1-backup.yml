@@ -22,6 +22,11 @@ name: D1 backup → R2
 # without needing `wrangler login`.
 
 on:
+  # Weekly floor, so the offsite copy cannot silently go stale during a
+  # quiet stretch. Push-triggered runs still fire on data/schema changes;
+  # this only guarantees a backup exists even if nobody pushes.
+  schedule:
+    - cron: "0 6 * * 1"   # Mondays 06:00 UTC
   push:
     branches: [main]
     paths:
