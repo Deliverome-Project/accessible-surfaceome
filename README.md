@@ -1,6 +1,6 @@
 # The accessible human surfaceome
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22116981.svg)](https://doi.org/10.5281/zenodo.22116981) [![Latest release](https://img.shields.io/github/v/release/Deliverome-Project/accessible-surfaceome)](https://github.com/Deliverome-Project/accessible-surfaceome/releases) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.22116981-blue)](https://doi.org/10.5281/zenodo.22116981) [![Latest release](https://img.shields.io/github/v/release/Deliverome-Project/accessible-surfaceome)](https://github.com/Deliverome-Project/accessible-surfaceome/releases) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Proteins on the extracellular face of the plasma membrane are important therapeutic targets, because they can direct large-molecule therapeutics to specific cell types and ferry them into the cell. But existing databases disagree substantially on which proteins make up the human plasma membrane proteome, and none focus specifically on the proteins that are *accessible* from outside an intact cell.
 
