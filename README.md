@@ -26,8 +26,11 @@ Both are concept DOIs and always resolve to the newest version. Individual figur
 **Annotate one gene yourself:**
 
 Prerequisites: [uv](https://docs.astral.sh/uv/), and `git-lfs` if you want the
-underlying data (the `data/` trees are LFS-tracked). The viewer additionally
-needs Node 24 — `npm install` refuses to run on an older major.
+underlying data (the `data/` trees are LFS-tracked, ~214 MB). The viewer
+additionally needs Node 24 — `npm install` refuses to run on an older major.
+
+Only want the code? `GIT_LFS_SKIP_SMUDGE=1 git clone …` fetches pointers
+instead of the data, and `git lfs pull` gets it later if you change your mind.
 
 ```bash
 git clone https://github.com/Deliverome-Project/accessible-surfaceome
