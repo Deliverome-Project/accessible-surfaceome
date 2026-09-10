@@ -2,12 +2,18 @@
 
 Concise contributor guide for `accessible-surfaceome`.
 
+> **Which file to read.** This is the tool-agnostic guide: structure, commands,
+> conventions. [`CLAUDE.md`](CLAUDE.md) is the deeper operational reference —
+> D1 schemas, agent internals, figure/TSV rules — and is the one to consult
+> when a task touches the pipeline or the databases. Start here; go there for
+> depth. Human contributors want [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Project Structure & Organization
 - `src/accessible_surfaceome/` core package.
 - `src/accessible_surfaceome/sources/` per-source download + build modules (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `compartments.py`); shared infra in `sources/_support/`.
 - `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution).
 - `src/accessible_surfaceome/audit/` audit + figure scripts.
-- `src/accessible_surfaceome/tools/` per-machine install plumbing (not part of the data pipeline).
+- `src/accessible_surfaceome/tools/` the record models (`_shared/models.py`) plus the per-tool helpers the deep dive calls (evidence retrieval, gene literature, PDBe structures, AlphaFold pLDDT). Core to the pipeline, not plumbing.
 - `viewer/` Next.js 16 app — **standalone Cloudflare Pages project deployed at `surfaceome.deliverome.org`**. Design tokens mirrored from `Deliverome-Project/deliverome-internal` PR #24 (Rosy Maroon system); manual sync.
 - `data/raw/` source workbooks.
 - `data/external/` downloaded datasets + traceability manifests.
