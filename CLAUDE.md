@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code for this repository.
 
+> **Which file to read.** This is the deep operational reference — D1 schemas,
+> agent internals, figure and TSV rules. [`AGENTS.md`](AGENTS.md) is the
+> shorter tool-agnostic orientation; read that first if you are new to the
+> repo. Human contributors want [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Commit conventions — no Co-Authored-By trailer
 
 Do **not** add `Co-Authored-By: Claude <…>` (or any AI-attribution trailer) to git commit messages or PR descriptions. The repo's `.claude/settings.json` carries the equivalent `attribution.commit/pr: ""` config; this CLAUDE.md instruction is the belt-and-suspenders override for agents whose system prompt would otherwise inject the trailer.
@@ -11,7 +16,9 @@ Do **not** add `Co-Authored-By: Claude <…>` (or any AI-attribution trailer) to
 `accessible-surfaceome` is a workspace for building an annotated catalogue of
 human cell-surface proteins from seven public data sources.
 
-Current implementation focus: candidate-universe builders.
+The pipeline is complete end to end: the candidate universe, the triage sweep
+over 19,324 genes, and the deep dive over 5,130 candidates have all run, and
+the records are live on the public API.
 
 ## Repository Structure
 
