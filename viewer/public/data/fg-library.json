@@ -1,5 +1,5 @@
 {
-  "n_genes": 2340,
+  "n_genes": 2344,
   "genes": {
     "ABCA8": {
       "tier": "T2",
@@ -2168,6 +2168,18 @@
         }
       ]
     },
+    "ATP1B3": {
+      "tier": "T1",
+      "surface_isoform_ids": [
+        "P54709-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "ATP1B3",
+          "species": "cyno"
+        }
+      ]
+    },
     "ATP2B1": {
       "tier": "T2",
       "surface_isoform_ids": [
@@ -4202,6 +4214,23 @@
       "surface_orthologs": [
         {
           "symbol": "CD99L2",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CDC50A": {
+      "tier": "T2",
+      "surface_isoform_ids": [
+        "Q9NV96-2",
+        "Q9NV96-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Tmem30a",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TMEM30A",
           "species": "cyno"
         }
       ]
@@ -10806,6 +10835,29 @@
         },
         {
           "symbol": "HEPHL1",
+          "species": "cyno"
+        }
+      ]
+    },
+    "HFE": {
+      "tier": "T1",
+      "surface_isoform_ids": [
+        "Q30201-10",
+        "Q30201-11",
+        "Q30201-2",
+        "Q30201-3",
+        "Q30201-4",
+        "Q30201-5",
+        "Q30201-6",
+        "Q30201-7"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Hfe",
+          "species": "mouse"
+        },
+        {
+          "symbol": "HFE",
           "species": "cyno"
         }
       ]
@@ -18891,6 +18943,22 @@
         },
         {
           "symbol": "P2RX5",
+          "species": "cyno"
+        }
+      ]
+    },
+    "P2RX6": {
+      "tier": "T2",
+      "surface_isoform_ids": [
+        "O15547-2"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "P2rx6",
+          "species": "mouse"
+        },
+        {
+          "symbol": "P2RX6",
           "species": "cyno"
         }
       ]
