@@ -156,3 +156,37 @@ def test_print_css_scopes_the_first_line_fallback_off_marked_captions() -> None:
         assert ":not(:has(.caption-lead))" in selector, (
             f"unscoped ::first-line rule would override the lead span: {selector}"
         )
+
+
+# ── The UNLINKED reporter's panel-letter guard ──────────────────────
+
+def _filter_stderr(markdown: str) -> str:
+    """Run the filter and return pandoc's stderr (where the report goes)."""
+    import subprocess
+    proc = subprocess.run(
+        [pypandoc.get_pandoc_path(), "-f", "markdown", "-t", "html5",
+         f"--lua-filter={FILTER}"],
+        input=markdown, capture_output=True, text=True, check=True,
+    )
+    return proc.stderr
+
+
+# A caption to anchor "Figure 5" against, plus body prose referencing it.
+_CAPTION = "##### Figure 5. Every protein resolves to a tier. Body text.\n\n"
+
+
+def test_panel_suffixed_reference_is_not_reported_as_unlinked() -> None:
+    """"Figure 5a" is declined by linkify on purpose (tail_match wants a
+    bare integer), so reporting it accuses the filter of missing what it
+    chose not to match. The manuscript has three such panel references
+    and they cried wolf on every build."""
+    err = _filter_stderr(_CAPTION + "The calls split by tier (Figure 5a), "
+                                    "with facets (Figure 5b).\n")
+    assert "UNLINKED" not in err, err
+
+
+def test_a_genuinely_unlinked_reference_is_still_reported() -> None:
+    """The guard must not silence the checker wholesale — a bare
+    reference with no matching caption still has to surface."""
+    err = _filter_stderr("Nothing here matches (Figure 9).\n")
+    assert "UNLINKED" in err and "Figure 9" in err, err

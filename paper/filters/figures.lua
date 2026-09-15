@@ -715,9 +715,20 @@ local function note_unlinked(inlines)
     end
   end
   local text = table.concat(parts, " ")
-  for ref in text:gmatch("[Ff]igures?%s+S?%d+") do
-    local key = ref:gsub("%s+", " ")
-    unlinked[key] = (unlinked[key] or 0) + 1
+  -- The trailing `(%a?)` is the panel-letter guard. linkify_figure_refs
+  -- deliberately declines a suffixed reference ("Figure 5a") because
+  -- `tail_match` requires a bare integer — so reporting one as
+  -- UNLINKED accuses the filter of missing something it chose not to
+  -- match. `%d+` is greedy, so "Figure 5a" captures ref="Figure 5"
+  -- with suffix="a"; a real reference ("Figure 5", "Figure 5)")
+  -- captures an empty suffix. Without this the manuscript's three
+  -- "(Figure 5a)" / "(Figure 5b)" panel references cried wolf on
+  -- every single build, which is exactly how a checker gets ignored.
+  for ref, suffix in text:gmatch("([Ff]igures?%s+S?%d+)(%a?)") do
+    if suffix == "" then
+      local key = ref:gsub("%s+", " ")
+      unlinked[key] = (unlinked[key] or 0) + 1
+    end
   end
 end
 
