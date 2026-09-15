@@ -540,6 +540,44 @@ local function sentence_end_index(inlines, from)
   return nil
 end
 
+-- Repair a Strong run that stops short of its own sentence end.
+--
+-- Word does this constantly: the author bolds the lead clause but
+-- leaves the closing full stop outside the run — the manuscript's
+-- Figure 1 reads `**…agree on only 188 proteins**. Five-way Venn…`.
+-- Taken literally that ends the accent one character early and opens
+-- the body text with an orphaned ".", which is the same "doesn't
+-- include the full first sentence" complaint the ::first-line
+-- version drew.
+--
+-- Returns a (possibly rebuilt) inline list and the new stop index:
+--   * lead already ends a sentence → unchanged
+--   * next Str is exactly the stray punctuation → absorb it
+--   * next Str leads with the punctuation → split it, absorb the head
+--   * bold stopped several words early → run on to the sentence end
+local function close_lead_sentence(inlines, stop)
+  local lead = ""
+  for i = 1, stop do lead = lead .. pandoc.utils.stringify(inlines[i]) end
+  if ends_sentence(lead) then return inlines, stop end
+
+  local nxt = inlines[stop + 1]
+  if nxt and nxt.t == "Str" then
+    local punct, rest = nxt.text:match("^([%.%?%!][%)%]}\"']*)(.*)$")
+    if punct and rest == "" then
+      return inlines, stop + 1
+    elseif punct then
+      local out = pandoc.List({})
+      for i = 1, stop do out:insert(inlines[i]) end
+      out:insert(pandoc.Str(punct))
+      out:insert(pandoc.Str(rest))
+      for i = stop + 2, #inlines do out:insert(inlines[i]) end
+      return out, stop + 1
+    end
+  end
+
+  return inlines, sentence_end_index(inlines, stop + 1) or stop
+end
+
 -- inlines[1..stop] wrapped in Span.caption-lead, rest trailing it.
 local function wrap_lead(inlines, stop)
   local lead, out = pandoc.List({}), pandoc.List({})
@@ -571,7 +609,7 @@ local function mark_caption_lead(elem)
   -- Title…") would cut the title out of the lead.
   if inlines[1].t == "Strong" and #inlines > 1
       and not is_label(pandoc.utils.stringify(inlines[1])) then
-    stop = 1
+    inlines, stop = close_lead_sentence(inlines, 1)
   else
     stop = sentence_end_index(inlines, label_end_index(inlines) + 1)
   end

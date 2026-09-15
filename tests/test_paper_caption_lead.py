@@ -93,6 +93,29 @@ def lead_of(caption: str) -> str | None:
             "Figure 6. Author bolded the label only.",
             id="strong-holding-only-the-label-falls-through",
         ),
+        # Word leaves the closing full stop outside the bold run all the
+        # time — the manuscript's own Figure 1 does exactly this. Taken
+        # literally the accent stops a character early and the body text
+        # opens with an orphaned ".".
+        pytest.param(
+            "**Figure 1. Databases agree on only 188 proteins**. Five-way "
+            "Venn diagram over five databases.",
+            "Figure 1. Databases agree on only 188 proteins.",
+            id="stray-full-stop-outside-the-bold-is-absorbed",
+        ),
+        pytest.param(
+            "**Figure 4. Bold ends before a parenthetical stop**). Body "
+            "text follows.",
+            "Figure 4. Bold ends before a parenthetical stop).",
+            id="stray-bracket-and-stop-are-absorbed-together",
+        ),
+        pytest.param(
+            "**Figure 3. Bold stopped several words early** in the middle "
+            "of the title sentence. Body text follows.",
+            "Figure 3. Bold stopped several words early in the middle of "
+            "the title sentence.",
+            id="bold-ending-mid-sentence-runs-on-to-the-sentence-end",
+        ),
     ],
 )
 def test_lead_is_the_label_plus_first_sentence(caption: str, expected: str) -> None:
