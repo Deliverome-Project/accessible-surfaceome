@@ -354,8 +354,8 @@ img {
 
 /* Figure captions — current docx convention is Heading 5 in Word,
  * which pandoc emits as <h5>. Style it as the figure caption (NOT
- * as a section heading): beige card, side bar, Manrope, with a
- * bold first-line treatment for the "Figure N. Title" lead clause.
+ * as a section heading): beige card, side bar, Manrope, with the
+ * "Figure N. Title" lead clause picked out below.
  *
  * Heading semantics are overridden first (font-family / weight /
  * text-transform / letter-spacing) so this h5 doesn't get the
@@ -382,7 +382,37 @@ h5 {
   text-align: left;
 }
 
-h5::first-line {
+/* The Pioneer-style lead clause — "Figure N. Title sentence." set
+ * bold + brand maroon.
+ *
+ * The extent is decided structurally, in paper/filters/figures.lua,
+ * which wraps that clause in <span class="caption-lead">. It used to
+ * be `::first-line`, which paints whatever text happens to fit on the
+ * first rendered LINE: the accent stopped mid-sentence on one caption
+ * and ran on into the body sentence on the next, entirely as a
+ * function of where the column broke. A line box is not a sentence,
+ * and no amount of CSS can make it one. */
+.caption-lead {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
+}
+
+/* The .docx marks the lead clause bold, so the span usually wraps a
+ * <strong> — and the global `strong { font-weight: 600 }` above then
+ * beats the span's inherited 700, printing the lead a notch lighter
+ * than an unbolded one. Colour and letter-spacing inherit on their
+ * own; only the weight needs saying. */
+.caption-lead strong {
+  font-weight: inherit;
+}
+
+/* Fallback for a caption the filter could not resolve (it reports
+ * each one at build time). Scoped OFF any caption that did get a
+ * lead span — otherwise ::first-line, which the spec applies as the
+ * innermost fictional wrapper, would repaint the first line straight
+ * back over the span and reinstate the bug. */
+h5:not(:has(.caption-lead))::first-line {
   font-weight: 700;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
@@ -434,13 +464,13 @@ h2#references ~ p a.doi {
  * itself (it'd otherwise inherit nothing special — but the global
  * h2 rule above already handles it). */
 
-/* The Pioneer-style "Figure N." prefix — bold + brand maroon, set
- * with `::first-line` so the lead phrase reads as a stylized
- * label even though pandoc emits it as plain prose. ::first-line
- * matches only what fits on the first rendered line, which for
- * a typical "Figure 1. Title text. Body explanation…" caption
- * means the leading title clause reads emphasized. */
-p:has(> img) + p::first-line {
+/* Same lead treatment for the other caption shape: a plain <p>
+ * caption directly under the image paragraph, which is what pandoc
+ * emits when the .docx didn't style the caption as Heading 5.
+ * figures.lua only marks heading captions, so this shape still
+ * relies on the ::first-line approximation — see the note on
+ * `.caption-lead` above for why that is the weaker treatment. */
+p:has(> img) + p:not(:has(.caption-lead))::first-line {
   font-weight: 700;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
@@ -470,7 +500,7 @@ figcaption {
   border-radius: 2px;
 }
 
-figcaption::first-line {
+figcaption:not(:has(.caption-lead))::first-line {
   font-weight: 700;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
