@@ -29,6 +29,8 @@ export interface GeneIdentifier {
   uniprot_acc: string;
   ncbi_gene_id: number;
   ensembl_gene: string;
+  /** Canonical protein (ENSP) from the stable-ID cache. */
+  ensembl_canonical_protein?: string | null;
 }
 
 export type TriageSignal =
@@ -401,6 +403,14 @@ export interface IsoformTopology {
    *  insertions are dropped. Optional — absent on pre-backfill records, where
    *  TopologyBar falls back to raw length-scaling. */
   per_residue_topology_canonical_frame?: string | null;
+  /** DeepTMHMM's own top-level call, carried verbatim rather than
+   *  re-derived from the ECD/ICD numbers. ``null`` on pre-2.14.4 records
+   *  means unknown, not false. */
+  predicted_surface_membrane?: boolean | null;
+  predicted_secreted?: boolean | null;
+  beta_strand_count?: number | null;
+  /** Residue length the topology string indexes 1:1. */
+  protein_length?: number | null;
 }
 
 export interface OrthologEntry {

@@ -190,14 +190,21 @@ def test_purge_urls_for_targets_record_evidence_catalog_and_list() -> None:
     # The Worker caches in caches.default under SYNTHETIC hosts, not the
     # public request host — purging the api.deliverome.org URL is a silent
     # no-op. These keys mirror index.js exactly: withEdgeCache uses
-    # https://cache.internal + the unstripped pathname (carries the
+    # https://surfaceome-api.cache + the unstripped pathname (carries the
     # /surfaceome route prefix); handleCatalog uses https://catalog.cache.
+    #
+    # This assertion previously pinned ``https://cache.internal``, which is
+    # a host the Worker has never used — so the test passed while the purge
+    # evicted nothing and republished records served stale for up to their
+    # full 24h TTL. Pinning a literal is only as good as the literal; the
+    # companion test in tests/test_purge_cache_key_host.py now parses the
+    # host out of index.js so the two cannot disagree again.
     urls = _purge_urls_for("EGFR")
     assert urls == [
-        "https://cache.internal/surfaceome/v1/genes/EGFR",
-        "https://cache.internal/surfaceome/v1/genes/EGFR/evidence",
+        "https://surfaceome-api.cache/surfaceome/v1/genes/EGFR",
+        "https://surfaceome-api.cache/surfaceome/v1/genes/EGFR/evidence",
         "https://catalog.cache/v1/catalog",
-        "https://cache.internal/surfaceome/v1/genes",
+        "https://surfaceome-api.cache/surfaceome/v1/genes",
     ]
 
 
