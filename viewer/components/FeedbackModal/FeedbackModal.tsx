@@ -101,6 +101,8 @@ export function FeedbackModal() {
   const [subject, setSubject] = useState("");
   const [comment, setComment] = useState("");
   const [publicRequested, setPublicRequested] = useState(false);
+  const [papers, setPapers] = useState<File[]>([]);
+  const [paperRightsConfirmed, setPaperRightsConfirmed] = useState(false);
   // Opt-in: remember name + e-mail in this browser for next time (default off).
   const [remember, setRemember] = useState(false);
 
@@ -179,6 +181,8 @@ export function FeedbackModal() {
       setSubject("");
       setComment("");
       setPublicRequested(false);
+      setPapers([]);
+      setPaperRightsConfirmed(false);
       setRemember(false);
       turnstileTokenRef.current = "";
       if (widgetIdRef.current && window.turnstile) {
@@ -211,6 +215,13 @@ export function FeedbackModal() {
     if (!turnstileTokenRef.current)
       return setErrorMsg("Please complete the verification widget.") as unknown as void;
 
+    if (papers.length && !paperRightsConfirmed)
+      return setErrorMsg("Please confirm you have permission to share the attached papers.");
+    if (papers.length > 3) return setErrorMsg("Please attach up to 3 PDFs.");
+    if (papers.reduce((sum, file) => sum + file.size, 0) > 10 * 1024 * 1024)
+      return setErrorMsg("Please keep the PDFs under 10 MB in total.");
+    if (papers.some((file) => !file.name.toLowerCase().endsWith(".pdf")))
+      return setErrorMsg("Please attach PDF files only.");
     setErrorMsg("");
     setPhase("submitting");
 
@@ -222,17 +233,20 @@ export function FeedbackModal() {
       subject: subject.trim(),
       comment: comment.trim(),
       public_requested: publicRequested,
+      paper_rights_confirmed: paperRightsConfirmed,
       referrer: typeof window !== "undefined" ? window.location.href : "",
       user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       site_version: SITE_VERSION,
       turnstile_token: turnstileTokenRef.current,
     };
 
+    const form = new FormData();
+    for (const [key, value] of Object.entries(body)) form.append(key, String(value ?? ""));
+    for (const paper of papers) form.append("papers", paper);
     try {
       const r = await fetch(`${API_BASE}/v1/feedback/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: form,
       });
       if (!r.ok) {
         const j = await r.json().catch(() => ({}));
@@ -373,6 +387,37 @@ export function FeedbackModal() {
               />
             </div>
 
+            <div className={styles.field}>
+              <label htmlFor="feedback-papers">Attach full-text papers (optional)</label>
+              <input id="feedback-papers" type="file" accept="application/pdf,.pdf" multiple
+                disabled={phase === "submitting"}
+                aria-describedby="feedback-papers-help"
+                onChange={(e) => { setPapers(Array.from(e.target.files ?? [])); setPaperRightsConfirmed(false); }} />
+              <p id="feedback-papers-help" className={styles.additionalHint}>
+                Up to 3 PDFs, 10 MB total. Papers are stored privately for our review
+                and sent with your feedback. They remain private even if your comment is published.
+                Please include the DOI or PMID in your message. Being an author does not
+                necessarily authorize sharing the publisher’s PDF. If unsure, include
+                a DOI, repository link, or publisher sharing link instead of uploading.
+              </p>
+              {papers.length > 0 && (
+                <label className={styles.checkbox}>
+                  <input type="checkbox" required checked={paperRightsConfirmed}
+                    onChange={(e) => setPaperRightsConfirmed(e.target.checked)} />
+                  <span>I confirm that I am authorized to upload each attached version and
+                    permit the Surfaceome team to store it privately and use it to review
+                    my feedback. This does not authorize public redistribution or automated
+                    AI processing.</span>
+                </label>
+              )}
+              <p className={styles.additionalHint}>
+                Unsure whether you can share this version? Check your journal’s policy in{" "}
+                <a href="https://openpolicyfinder.jisc.ac.uk/" target="_blank" rel="noopener noreferrer">
+                  Jisc Open Policy Finder
+                </a>, including the permitted version, embargo, and hosting location.
+              </p>
+            </div>
+
             <div className={styles.additional}>
               <p className={styles.additionalLabel}>Additional information</p>
               <p className={styles.additionalHint}>
@@ -454,6 +499,12 @@ export function FeedbackModal() {
 
 function prettyError(code: string): string {
   switch (code) {
+    case "paper_rights_required": return "Please confirm you have permission to share the attached papers.";
+    case "invalid_pdf": return "Please attach valid PDF files only.";
+    case "too_many_papers": return "Please attach up to 3 PDFs.";
+    case "upload_too_large": return "Please keep the PDFs under 10 MB in total.";
+    case "uploads_unavailable": return "Paper uploads are temporarily unavailable. Please try later or submit without papers.";
+    case "storage_failed": return "We couldn't save your feedback. Please try again later.";
     case "invalid_gene": return "We couldn't identify the gene for this submission.";
     case "invalid_name": return "Please enter your name (up to 80 characters).";
     case "invalid_email": return "Please enter a valid e-mail address.";

@@ -154,3 +154,8 @@ id = "REPLACE_WITH_FEEDBACK_RATELIMIT_KV_ID"
 #   npx wrangler secret put MAINTAINER_EMAIL
 # Values come from the root .env (RESEND_API_KEY, TURNSTILE_SECRET_KEY,
 # MAGIC_LINK_SECRET, MAINTAINER_EMAIL respectively).
+
+# Private feedback PDFs. Create before enabling uploads; never enable public R2 access.
+[[r2_buckets]]
+binding = "FEEDBACK_PAPERS"
+bucket_name = "surfaceome-feedback-papers"

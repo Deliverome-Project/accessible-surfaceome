@@ -25,6 +25,8 @@ on:
     paths:
       # Schema / SQL — any change to the D1 schema triggers a fresh dump.
       - "cloudflare/d1_schema.sql"
+      - "cloudflare/d1_feedback_papers_schema.sql"
+      - "cloudflare/workers/surfaceome_api/src/**"
       # Eval data — benchmark TSV + any live run output.
       - "data/eval/triage_benchmark_v1.tsv"
       - "data/eval/triage_haiku_live_run.tsv"

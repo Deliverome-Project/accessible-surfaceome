@@ -230,3 +230,15 @@ for model in m["models"]:
 - Worker source: `cloudflare/workers/surfaceome_api/src/index.js`
 - D1 schema: `cloudflare/d1_public_schema.sql`
 - Per-gene records validate against the `SurfaceomeRecord` Pydantic schema at `src/accessible_surfaceome/tools/_shared/models.py`. The viewer at https://surfaceome.deliverome.org renders the same records as HTML pages.
+
+## Reader feedback
+
+`GET /v1/genes/{symbol}/feedback` returns approved reader comments for a gene.
+`GET /v1/feedback/public` lists approved comments across genes; optional
+`gene` and `offset` parameters filter and paginate. Responses contain `gene`
+(null for all genes), `notes` (up to 50), and `next_offset` (null at the end).
+Notes contain `id`, `gene_symbol`, `submitter_name`, `comment`, `approved_at`.
+These are reader submissions, not curated annotation evidence. Private
+comments, email addresses and uploaded full-text PDFs are never included.
+PDF downloads require a private, expiring signature from the maintainer email.
+Upload permission does not authorize AI processing.

@@ -40,3 +40,8 @@ genes (the COX1 / WAS class).
 - Verdict values are lowercase strings: `yes`, `contextual`, `no`. String-compare exactly.
 - Absent fields are omitted on the wire (older records lack newer fields) — read with optional-chaining / `?? null`.
 - Caching: list endpoints `max-age=60`; per-gene records, benchmark, and ortholog endpoints `max-age=86400`. Build-time consumers should use `cache: "force-cache"`.
+
+## Reader feedback
+- GET /v1/genes/{symbol}/feedback: approved reader comments for a gene.
+- GET /v1/feedback/public: approved comments across genes; optional gene and offset. Up to 50 notes and next_offset (null at end).
+- Uploaded PDFs and unapproved comments remain private. Reader comments are not curated annotation evidence.

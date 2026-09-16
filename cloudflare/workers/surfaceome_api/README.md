@@ -182,3 +182,79 @@ Required secrets (`wrangler secret put`):
 - `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile secret for token verification.
 - `MAGIC_LINK_SECRET` — 32-byte secret used as HMAC key for magic links.
 - `MAINTAINER_EMAIL` — destination + From address for notification e-mails.
+
+### Full-text paper uploads
+
+`POST /v1/feedback/submit` also accepts `multipart/form-data`: the same
+fields as JSON (booleans encoded as `"true"` or `"false"`), plus repeated
+`papers` file fields and `paper_rights_confirmed=true`. Up to three PDFs,
+10 MiB combined. Extension, MIME type and PDF signature are checked; this
+is file-type validation, not malware scanning or complete PDF parsing.
+Body size is bounded while streaming, even without Content-Length.
+
+The rights checkbox is required only for uploads and enforced server-side.
+Its exact text is stored in each private `feedback_paper` row with the
+submission ID and acknowledgment timestamp (`created_at`). This records
+claimed authorization for private storage and feedback review, not a verified
+licence or permission for public redistribution or AI processing. Authorship
+alone is insufficient. When unsure, submit a DOI, repository URL or publisher
+sharing link in the comment instead.
+The upload form links to [Jisc Open Policy Finder](https://openpolicyfinder.jisc.ac.uk/)
+for checking the permitted manuscript version, embargo and hosting location.
+The link and acknowledgment do not establish permission to host a public copy.
+
+PDF bytes go to the private `FEEDBACK_PAPERS` R2 bucket. Feedback and paper
+metadata commit together in D1 before Resend sends PDFs and seven-day signed
+download links. Email failure preserves the saved submission; logs identify
+it for manual recovery (no automatic retry). Storage failure returns 503.
+Partial R2 objects are retained because D1 commit failures can be ambiguous;
+reconcile unreferenced objects before deleting them.
+
+Additional errors: 400 `invalid_pdf`, `too_many_papers`,
+`paper_rights_required`, `invalid_body`; 413 `upload_too_large`; 503
+`uploads_unavailable` or `storage_failed`. Legacy JSON works without files.
+
+### Public feedback API and private downloads
+
+- `GET /v1/genes/{symbol}/feedback` — approved comments for one gene.
+- `GET /v1/feedback/public?gene={symbol}` — equivalent existing endpoint.
+- `GET /v1/feedback/public` — approved comments across genes.
+- Comment feeds accept `offset` (default 0), return up to 50 notes and
+  `next_offset` (null at the end). Notes contain `id`, `gene_symbol`,
+  `submitter_name`, `comment`, `approved_at`. Envelope `gene` is null for
+  the broad feed. Offsets paginate a live feed, not an immutable snapshot.
+- `GET /v1/feedback/paper?id={paper_id}&expires={unix_seconds}&t={hmac}` —
+  private download requiring the signed URL from the maintainer email.
+  Links are bearer credentials: anyone possessing one can use it until
+  expiration. Downloads use `private, no-store` and attachment disposition.
+
+Approval publishes only the comment and attribution. No PDF bytes, file
+metadata, private comments, emails or download links enter public feeds or
+the gene record. Papers are not automatically fed into annotation. Comment
+feeds use `no-store` to prevent query mixing under the zone's query-string-
+ignoring cache rule. Do not override origin `no-store` for `/v1/feedback/*`
+or `/v1/genes/*/feedback` in edge caching rules.
+
+### Deployment and operations
+
+Before deploying Worker and viewer:
+
+1. Apply `cloudflare/d1_feedback_papers_schema.sql` to private D1
+   (`surfaceome_agents`): an idempotent additive migration also included
+   in `cloudflare/d1_schema.sql` for fresh databases.
+2. Create `surfaceome-feedback-papers` in R2, bind as `FEEDBACK_PAPERS`
+   (see `wrangler.toml.example`), and keep public access disabled.
+3. Deploy Worker then viewer. Existing `MAGIC_LINK_SECRET` signs paper
+   links in a separate `paper:` namespace; no new API key.
+4. For deletion requests, query `feedback_paper` by `feedback_id`, delete
+   its R2 objects, then metadata and private feedback (and public note if
+   present). Discarding a comment does not delete attachments. Expiring a
+   link does not delete stored files.
+5. Recover failed emails or expired links through private D1 metadata and
+   authenticated R2 administration. There is no public private-paper list.
+
+D1 backups include metadata, not PDF bytes. R2 is the durable file store;
+bucket backup/retention remains a separate operational decision.
+
+Validate after installing viewer dependencies:
+`bash cloudflare/workers/surfaceome_api/tests/run.sh` from the repo root.

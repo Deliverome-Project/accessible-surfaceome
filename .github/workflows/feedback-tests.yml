@@ -1,0 +1,28 @@
+name: feedback upload checks
+on:
+  pull_request:
+    paths:
+      - "cloudflare/workers/surfaceome_api/**"
+      - "viewer/lib/catalog-presets.ts"
+      - "viewer/components/FeedbackModal/**"
+      - ".github/workflows/feedback-tests.yml"
+  push:
+    branches: [main, dev]
+    paths:
+      - "cloudflare/workers/surfaceome_api/**"
+      - "viewer/lib/catalog-presets.ts"
+      - "viewer/components/FeedbackModal/**"
+      - ".github/workflows/feedback-tests.yml"
+jobs:
+  feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: viewer/.nvmrc
+          cache: npm
+          cache-dependency-path: viewer/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: viewer
+      - run: bash cloudflare/workers/surfaceome_api/tests/run.sh

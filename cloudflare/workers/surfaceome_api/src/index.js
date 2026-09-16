@@ -2126,6 +2126,8 @@ const REASONING_COLUMNS = ["predicted_key_uncertainty", "verdict_reasoning"];
 // so an agent that lands on the API base discovers the whole surface
 // (method + path template + summary) without scraping the docs page.
 const V1_ENDPOINTS = [
+  { group: "Feedback", method: "GET", path: "/v1/genes/{symbol}/feedback", summary: "Approved public reader comments for one gene; no private papers or emails." },
+  { group: "Feedback", method: "GET", path: "/v1/feedback/public", summary: "Approved comments across genes; optional gene and offset parameters, 50 per page, next_offset for pagination. Papers remain private." },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark", summary: "147 ground-truth labels for the current bench_version" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/{symbol}", summary: "One gene's ground-truth label + rationale" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant]" },
@@ -2769,7 +2771,7 @@ async function checkRateLimit(kv, ipHash) {
 // Send the feedback notification email via Resend. Returns true on
 // success, false on failure (the caller still 200's the submission —
 // we don't lose the row just because email is slow).
-async function sendFeedbackEmail({ apiKey, from, to, replyTo, subject, html }) {
+async function sendFeedbackEmail({ apiKey, from, to, replyTo, subject, html, attachments }) {
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -2783,6 +2785,7 @@ async function sendFeedbackEmail({ apiKey, from, to, replyTo, subject, html }) {
         reply_to: replyTo ? [replyTo] : undefined,
         subject,
         html,
+        attachments,
       }),
     });
     if (!r.ok) {
@@ -2797,7 +2800,7 @@ async function sendFeedbackEmail({ apiKey, from, to, replyTo, subject, html }) {
 }
 
 // Compose the email body sent to the maintainer.
-function feedbackEmailHtml({ rec, base, approvePublicUrl, discardUrl }) {
+function feedbackEmailHtml({ rec, base, approvePublicUrl, discardUrl, paperLinks = "" }) {
   const additional = `
     <p><strong>Additional information</strong></p>
     <ul style="line-height: 1.5">
@@ -2827,6 +2830,7 @@ function feedbackEmailHtml({ rec, base, approvePublicUrl, discardUrl }) {
                 padding-left:1em;color:#1f1718">
         ${escapeHtml(rec.comment)}
       </p>
+      ${paperLinks}
       ${additional}
       <p style="margin-top:2em">
         ${publicBtn}
@@ -2844,16 +2848,109 @@ function feedbackEmailHtml({ rec, base, approvePublicUrl, discardUrl }) {
   `;
 }
 
+const MAX_PAPER_BYTES = 10 * 1024 * 1024;
+const MAX_PAPERS = 3;
+// Persist the exact acknowledgment with each paper for future review.
+const PAPER_RIGHTS_ACK = "I confirm that I am authorized to upload each attached version and permit the Surfaceome team to store it privately and use it to review my feedback. This does not authorize public redistribution or automated AI processing.";
+
+// Enforce the limit while reading, including requests without Content-Length.
+async function readFeedbackBody(request) {
+  const multipart = (request.headers.get("Content-Type") || "").startsWith("multipart/form-data");
+  const limit = multipart ? MAX_PAPER_BYTES + 65536 : 65536;
+  if (Number(request.headers.get("Content-Length")) > limit) throw new Error("upload_too_large");
+  const reader = request.body?.getReader();
+  if (!reader) throw new Error("invalid_body");
+  const chunks = [];
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > limit) {
+      await reader.cancel();
+      throw new Error("upload_too_large");
+    }
+    chunks.push(value);
+  }
+  const payload = new Response(new Blob(chunks), { headers: request.headers });
+  if (!multipart) {
+    const body = await payload.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("invalid_body");
+    return { body, papers: [] };
+  }
+  const form = await payload.formData();
+  const body = {};
+  const papers = [];
+  for (const [key, value] of form.entries()) {
+    if (key === "papers" && typeof value !== "string") papers.push(value);
+    else if (typeof value === "string") body[key] = value;
+    else throw new Error("invalid_pdf");
+  }
+  if (papers.length > MAX_PAPERS) throw new Error("too_many_papers");
+  if (papers.reduce((sum, file) => sum + file.size, 0) > MAX_PAPER_BYTES) throw new Error("upload_too_large");
+  for (const file of papers) {
+    if (!file.name.toLowerCase().endsWith(".pdf") ||
+        (file.type && file.type !== "application/pdf") ||
+        await file.slice(0, 5).text() !== "%PDF-") throw new Error("invalid_pdf");
+  }
+  return { body, papers };
+}
+
+function safePaperName(name) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-120);
+}
+
+async function paperBase64(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const chunks = [];
+  for (let i = 0; i < bytes.length; i += 32768) {
+    chunks.push(String.fromCharCode(...bytes.subarray(i, i + 32768)));
+  }
+  return btoa(chunks.join(""));
+}
+
+// Scoped bearer links are private: never cache or expose them in public feeds.
+async function handleFeedbackPaper(env, url) {
+  const id = url.searchParams.get("id") || "";
+  const expires = url.searchParams.get("expires") || "";
+  const token = url.searchParams.get("t") || "";
+  const deny = () => new Response("Forbidden", { status: 403, headers: { "Cache-Control": "private, no-store" } });
+  if (!env.MAGIC_LINK_SECRET || !/^[a-f0-9-]{36}$/.test(id) ||
+      !/^\d{10}$/.test(expires) || Number(expires) <= Date.now() / 1000) return deny();
+  const expected = await hmacSign(env.MAGIC_LINK_SECRET, `paper:${id}:${expires}`);
+  if (!timingSafeEqualStr(expected, token)) return deny();
+  const row = await env.FEEDBACK_DB.prepare(
+    "SELECT object_key, filename FROM feedback_paper WHERE id = ?",
+  ).bind(id).first();
+  const object = row && await env.FEEDBACK_PAPERS?.get(row.object_key);
+  if (!object) return new Response("Not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
+  return new Response(object.body, { headers: {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `attachment; filename="${safePaperName(row.filename)}"`,
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+  } });
+}
+
 async function handleFeedbackSubmit(request, env, url) {
   // Parse + validate body.
-  let body;
+  let body, papers;
   try {
-    body = await request.json();
-  } catch {
-    return badRequest("invalid_json");
+    ({ body, papers } = await readFeedbackBody(request));
+  } catch (error) {
+    const code = ["upload_too_large", "too_many_papers", "invalid_pdf"].includes(error.message)
+      ? error.message : "invalid_body";
+    return json({ error: code }, { status: code === "upload_too_large" ? 413 : 400, ttl: 0 });
+  }
+  if (papers.length && body.paper_rights_confirmed !== true && body.paper_rights_confirmed !== "true") {
+    return badRequest("paper_rights_required");
+  }
+  if (papers.length && !env.FEEDBACK_PAPERS) {
+    return json({ error: "uploads_unavailable" }, { status: 503, ttl: 0 });
   }
   const gene = String(body.gene ?? "").trim();
-  if (!/^[A-Z0-9-]{1,30}$/.test(gene)) return badRequest("invalid_gene");
+  if (!/^[A-Za-z0-9-]{1,30}$/.test(gene)) return badRequest("invalid_gene");
   const name = String(body.name ?? "").trim();
   if (name.length < 1 || name.length > 80) return badRequest("invalid_name");
   const email = String(body.email ?? "").trim();
@@ -2880,8 +2977,8 @@ async function handleFeedbackSubmit(request, env, url) {
   // Insert.
   const id = crypto.randomUUID();
   const approveToken = await hmacSign(env.MAGIC_LINK_SECRET, id);
-  const publicRequested = body.public_requested ? 1 : 0;
-  await env.FEEDBACK_DB.prepare(
+  const publicRequested = body.public_requested === true || body.public_requested === "true" ? 1 : 0;
+  const insertFeedback = env.FEEDBACK_DB.prepare(
     `INSERT INTO feedback (
        id, gene_symbol, uniprot_acc, submitter_name, submitter_email,
        subject, comment, public_requested, referrer, user_agent,
@@ -2895,7 +2992,29 @@ async function handleFeedbackSubmit(request, env, url) {
     String(body.user_agent ?? "") || null,
     String(body.site_version ?? "") || null,
     ipHash, approveToken,
-  ).run();
+  );
+  const storedPapers = [];
+  try {
+    for (const file of papers) {
+      const paper = { id: crypto.randomUUID(), filename: safePaperName(file.name), file };
+      paper.objectKey = `feedback/${id}/${paper.id}.pdf`;
+      storedPapers.push(paper);
+      await env.FEEDBACK_PAPERS.put(paper.objectKey, await file.arrayBuffer(), {
+        httpMetadata: { contentType: "application/pdf" },
+      });
+    }
+    // D1 batch is atomic: a submission and its paper metadata land together.
+    await env.FEEDBACK_DB.batch([insertFeedback, ...storedPapers.map((paper) =>
+      env.FEEDBACK_DB.prepare(
+        "INSERT INTO feedback_paper (id, feedback_id, object_key, filename, size_bytes, rights_acknowledgment) VALUES (?, ?, ?, ?, ?, ?)",
+      ).bind(paper.id, id, paper.objectKey, paper.filename, paper.file.size, PAPER_RIGHTS_ACK),
+    )]);
+  } catch (error) {
+    // A failed D1 response can be ambiguous; retain objects rather than deleting
+    // papers that may already have committed. Reconcile orphan objects later.
+    console.error("Feedback persistence failed", error);
+    return json({ error: "storage_failed" }, { status: 503, ttl: 0 });
+  }
 
   // Email notify maintainer.
   const prefix = url.pathname.startsWith("/surfaceome/") ? "/surfaceome" : "";
@@ -2907,8 +3026,18 @@ async function handleFeedbackSubmit(request, env, url) {
     `${base}/v1/feedback/moderate?id=${encodeURIComponent(id)}` +
     `&action=discard&t=${encodeURIComponent(await hmacSign(env.MAGIC_LINK_SECRET, id + ":discard"))}`;
 
-  await sendFeedbackEmail({
+  const expires = String(Math.floor(Date.now() / 1000) + 7 * 86400);
+  const links = [];
+  const attachments = [];
+  for (const paper of storedPapers) {
+    const token = await hmacSign(env.MAGIC_LINK_SECRET, `paper:${paper.id}:${expires}`);
+    const link = `${base}/v1/feedback/paper?id=${paper.id}&expires=${expires}&t=${token}`;
+    links.push(`<li><a href="${escapeHtml(link)}">${escapeHtml(paper.filename)}</a></li>`);
+    attachments.push({ filename: paper.filename, content: await paperBase64(paper.file) });
+  }
+  const emailSent = await sendFeedbackEmail({
     apiKey: env.RESEND_API_KEY,
+    attachments: attachments.length ? attachments : undefined,
     from: env.MAINTAINER_EMAIL,
     to: env.MAINTAINER_EMAIL,
     replyTo: email,
@@ -2922,9 +3051,11 @@ async function handleFeedbackSubmit(request, env, url) {
         site_version: String(body.site_version ?? ""),
       },
       base, approvePublicUrl, discardUrl,
+      paperLinks: links.length ? `<p>Private papers (download links expire in 7 days; files remain stored):</p><ul>${links.join("")}</ul><p>Submitter acknowledgment: ${escapeHtml(PAPER_RIGHTS_ACK)}</p>` : "",
     }),
   });
 
+  if (!emailSent) console.error("Feedback notification needs retry", { feedbackId: id });
   return json({ ok: true, id }, { status: 200, ttl: 0 });
 }
 
@@ -3043,19 +3174,23 @@ async function handleFeedbackModerate(env, url) {
 
 async function handleFeedbackPublic(env, url) {
   const gene = url.searchParams.get("gene");
-  // Allow lowercase: some HGNC symbols are mixed-case (the Cxorf class,
-  // e.g. C11orf24), and gene_symbol is matched COLLATE NOCASE below.
-  if (!gene || !/^[A-Za-z0-9-]{1,30}$/.test(gene)) {
-    return badRequest("invalid_gene");
-  }
+  if (gene !== null && !/^[A-Za-z0-9-]{1,30}$/.test(gene)) return badRequest("invalid_gene");
+  const offsetText = url.searchParams.get("offset") ?? "0";
+  if (!/^\d{1,7}$/.test(offsetText)) return badRequest("invalid_offset");
+  const offset = Number(offsetText);
   const rows = await env.DB.prepare(
-    `SELECT id, submitter_name, comment, approved_at
+    `SELECT id, gene_symbol, submitter_name, comment, approved_at
      FROM feedback_public
-     WHERE gene_symbol = ? COLLATE NOCASE
-     ORDER BY approved_at DESC
-     LIMIT 50`,
-  ).bind(gene).all();
-  return json({ gene, notes: rows.results }, { ttl: CACHE_TTL_SHORT });
+     ${gene ? "WHERE gene_symbol = ? COLLATE NOCASE" : ""}
+     ORDER BY approved_at DESC, id DESC
+     LIMIT 51 OFFSET ?`,
+  ).bind(...(gene ? [gene, offset] : [offset])).all();
+  const response = json({ gene, notes: rows.results.slice(0, 50),
+    next_offset: rows.results.length > 50 ? offset + 50 : null,
+  }, { ttl: 0 });
+  // Query-string-ignoring zone cache rules must not mix genes/pages.
+  response.headers.set("Cache-Control", "no-store");
+  return response;
 }
 
 // --- entry ----------------------------------------------------------------
@@ -3262,8 +3397,13 @@ export default {
     // Feedback endpoints are user-specific / write-adjacent — never cache.
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
+    if (path === "/v1/feedback/paper") return handleFeedbackPaper(env, url);
 
     let m;
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/feedback$/))) {
+      url.searchParams.set("gene", m[1]);
+      return handleFeedbackPublic(env, url);
+    }
     // `.md` must be tested before the bare record route: `([^/]+)` would
     // otherwise swallow the `.md` suffix and route to handleGene.
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, env, ctx, () => handleGeneMarkdown(env, m[1]));
