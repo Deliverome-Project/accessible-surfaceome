@@ -242,13 +242,21 @@ def _cache_epoch(client: httpx.Client | None = None) -> str:
 def _purge_urls_for(sym: str) -> list[str]:
     """The exact ``caches.default`` keys a republish of ``sym`` invalidates.
 
-    A ``surface_annotation`` write changes three cached surfaces:
+    A ``surface_annotation`` write changes four cached surfaces:
 
     * the per-gene record (``/v1/genes/{SYMBOL}``),
+    * the split-out evidence ledger (``/v1/genes/{SYMBOL}/evidence`` —
+      on the same synthetic host), which carries the verbatim quotes AND the
+      serve-time ``papers`` citation-metadata join,
     * the genome-wide catalog (``/v1/catalog`` — carries a slimmed
       ``ddf`` projection of every deep-dived gene's filters —
       ``catalog.cache``), and
     * the gene-list index (``/v1/genes``).
+
+    The evidence URL was missed when the ledger was split out of the
+    record: ``_kv_keys_for`` purged its KV mirror but the
+    ``caches.default`` copy was left to expire, so a republished gene
+    could serve a fresh record alongside a day-stale ledger.
 
     Every key is namespaced by the Worker's deploy epoch (see
     :func:`_cache_epoch`), so these are only valid against the
@@ -267,6 +275,7 @@ def _purge_urls_for(sym: str) -> list[str]:
     epoch = _cache_epoch()
     return [
         f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}/evidence",
         f"{_CATALOG_CACHE_BASE}/{epoch}/v1/catalog",
         f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes",
     ]

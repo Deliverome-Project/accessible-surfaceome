@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Evidence } from "../../../lib/surfaceome-types";
+import type {
+  Evidence,
+  PaperMetadata,
+  PaperMetadataMap,
+} from "../../../lib/surfaceome-types";
 import {
   scrubAgentJargon,
   scrubEvidenceTokens,
   stripInlineHtml,
 } from "../../../lib/textScrub";
+import { bylineOf } from "../../../lib/paperCitation";
 import { StatusPill } from "../StatusPill/StatusPill";
 
 // Local minimal prettyEnum — the canonical one in lib/surfaceome.ts
@@ -48,6 +53,11 @@ import styles from "./EvidenceDrawer.module.css";
 
 interface EvidenceDrawerProps {
   evidence: readonly Evidence[];
+  /** `source_id` → NCBI citation metadata, from the evidence endpoint's
+   *  `papers` map. Omitted on the offline-snapshot path (the committed
+   *  JSON carries identifiers only), in which case each source falls back
+   *  to the bare accession link. */
+  papers?: PaperMetadataMap;
 }
 
 /**
@@ -63,7 +73,7 @@ interface EvidenceDrawerProps {
  *   • close button (×)
  *   • click on the backdrop layer
  */
-export function EvidenceDrawer({ evidence }: EvidenceDrawerProps) {
+export function EvidenceDrawer({ evidence, papers }: EvidenceDrawerProps) {
   const [openId, setOpenId] = useState<string | null>(null);
 
   const evidenceById = useMemo(() => {
@@ -114,13 +124,84 @@ export function EvidenceDrawer({ evidence }: EvidenceDrawerProps) {
         aria-label={data ? `Evidence ${data.evidence_id}` : "Evidence panel"}
         aria-hidden={!isOpen}
       >
-        {data ? <EvidenceCard ev={data} onClose={() => setOpenId(null)} /> : null}
+        {data ? (
+          <EvidenceCard
+            ev={data}
+            papers={papers}
+            onClose={() => setOpenId(null)}
+          />
+        ) : null}
       </aside>
     </>
   );
 }
 
-function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
+/** One deduped citation the drawer can link to. `meta` is present only
+ *  when the evidence endpoint carried NCBI metadata for this source_id. */
+export interface SourceEntry {
+  href: string;
+  label: string;
+  /** Tooltip text, for the cases where the label alone is opaque (a raw
+   *  URL) or the source was recovered from a validation warning. */
+  title?: string;
+  meta?: PaperMetadata;
+}
+
+/** The drawer's citation list. With metadata the title leads and the
+ *  accession trails as a secondary marker; without it the accession stays
+ *  the link text exactly as it did before this metadata path existed — so
+ *  a paper missing from `paper_metadata`, or the whole offline-snapshot
+ *  path, degrades to the previous rendering rather than to a blank.
+ *
+ *  Exported for the render test: the card it lives in only mounts in
+ *  response to a window event, so this is the seam the citation rendering
+ *  is asserted through. */
+export function SourceList({ sources }: { sources: readonly SourceEntry[] }) {
+  return (
+    <ul className={styles.sources}>
+      {sources.map((s) => (
+        <li key={s.href}>
+          {s.meta?.title ? (
+            <div className={styles.sourceCite}>
+              <a
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.sourceTitle}
+              >
+                {s.meta.title}
+              </a>
+              <p className={styles.sourceByline}>
+                {bylineOf(s.meta) ? <>{bylineOf(s.meta)} · </> : null}
+                <span className={styles.sourceAccession}>{s.label} ↗</span>
+              </p>
+            </div>
+          ) : (
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.sourceLink}
+              title={s.title}
+            >
+              {s.label} ↗
+            </a>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function EvidenceCard({
+  ev,
+  papers,
+  onClose,
+}: {
+  ev: Evidence;
+  papers?: PaperMetadataMap;
+  onClose: () => void;
+}) {
   // The v1 schema carries verbatim quotes + source per *span* (each
   // evidence claim can be anchored to multiple spans across one or
   // more sources). Surface the head span's quote + walk the spans for
@@ -143,11 +224,7 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
   const headSpan = spans.length ? spans[0] : null;
   // Dedupe source links across spans by pmcid|pmid|doi|url.
   const seenKeys = new Set<string>();
-  const sources: Array<{
-    href: string;
-    label: string;
-    title?: string;
-  }> = [];
+  const sources: SourceEntry[] = [];
   for (const sp of spans) {
     const s = sp?.source;
     if (!s) continue;
@@ -159,33 +236,39 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
     const pmcFromSid = sid.startsWith("PMC:") ? sid.slice(4) : null;
     const pmcId = s.pmc_id ?? pmcFromSid;
     const pmid = s.pmid ?? pmidFromSid;
+    // Citation metadata is keyed on the VERBATIM ``source_id`` — the same
+    // string the Worker looked up in ``paper_metadata`` — so no
+    // normalization step can mis-key it. Undefined whenever the paper
+    // isn't in the table or the whole map is absent (snapshot path).
+    const meta = sid ? papers?.[sid] : undefined;
     if (pmcId && !seenKeys.has(`pmc:${pmcId}`)) {
       seenKeys.add(`pmc:${pmcId}`);
       sources.push({
         href: `https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcId}/`,
         label: pmcId,
-        title: s.title,
+        meta,
       });
     } else if (pmid && !seenKeys.has(`pmid:${pmid}`)) {
       seenKeys.add(`pmid:${pmid}`);
       sources.push({
         href: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
         label: `PMID ${pmid}`,
-        title: s.title,
+        meta,
       });
     } else if (s.doi && !seenKeys.has(`doi:${s.doi}`)) {
       seenKeys.add(`doi:${s.doi}`);
       sources.push({
         href: `https://doi.org/${s.doi}`,
         label: `doi:${s.doi}`,
-        title: s.title,
+        meta,
       });
     } else if (s.url && !seenKeys.has(`url:${s.url}`)) {
       seenKeys.add(`url:${s.url}`);
       sources.push({
         href: s.url,
         label: s.url.replace(/^https?:\/\//, "").slice(0, 48),
-        title: s.title ?? s.url,
+        title: s.url,
+        meta,
       });
     }
   }
@@ -224,6 +307,11 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
           href: `https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcId}/`,
           label: pmcId,
           title: "Recovered from validation warning (quote not verifiable)",
+          // The warning yields a bare accession; `paper_metadata` is keyed
+          // on the `SourceRef.source_id` form, which for PMC is always the
+          // accession behind a `PMC:` scheme. Reconstructing it means an
+          // entailment-failed claim still names its paper in full.
+          meta: papers?.[`PMC:${pmcId}`],
         });
       }
     }
@@ -283,21 +371,7 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
               <h3 className={styles.subhead}>
                 Source{sources.length > 1 ? "s" : ""}
               </h3>
-              <ul className={styles.sources}>
-                {sources.map((s) => (
-                  <li key={s.href}>
-                    <a
-                      href={s.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.sourceLink}
-                      title={s.title}
-                    >
-                      {s.label} ↗
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <SourceList sources={sources} />
             </>
           ) : null}
           <h3 className={styles.subhead}>Verbatim quote</h3>
@@ -312,21 +386,7 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
           <h3 className={styles.subhead}>
             Source{sources.length > 1 ? "s" : ""}
           </h3>
-          <ul className={styles.sources}>
-            {sources.map((s) => (
-              <li key={s.href}>
-                <a
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.sourceLink}
-                  title={s.title}
-                >
-                  {s.label} ↗
-                </a>
-              </li>
-            ))}
-          </ul>
+          <SourceList sources={sources} />
         </>
       ) : null}
       {e.assay_context ? (
