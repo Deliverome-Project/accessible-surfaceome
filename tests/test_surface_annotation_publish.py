@@ -175,12 +175,17 @@ def test_publish_record_dict_accepts_drifted_schema(
 # --- edge-cache purge-on-publish -------------------------------------------
 
 
-def test_purge_urls_for_targets_record_catalog_and_list() -> None:
-    # A surface_annotation write invalidates exactly three cached surfaces:
-    # the per-gene record, the genome-wide catalog (carries the gene's ddf
-    # projection), and the gene-list index. Nothing else (orthologs /
-    # triage / benchmark) — a tighter set avoids disturbing the rest of the
-    # shared deliverome.org zone cache.
+def test_purge_urls_for_targets_record_evidence_catalog_and_list() -> None:
+    # A surface_annotation write invalidates exactly four cached surfaces:
+    # the per-gene record, its split-out evidence ledger, the genome-wide
+    # catalog (carries the gene's ddf projection), and the gene-list index.
+    # Nothing else (orthologs / triage / benchmark) — a tighter set avoids
+    # disturbing the rest of the shared deliverome.org zone cache.
+    #
+    # The evidence URL is load-bearing: the ledger moved out of the record
+    # but only its KV mirror was being purged, so the caches.default copy
+    # (and with it the serve-time `papers` citation join) could serve a day
+    # stale next to a freshly republished record.
     #
     # The Worker caches in caches.default under SYNTHETIC hosts, not the
     # public request host — purging the api.deliverome.org URL is a silent
@@ -197,6 +202,7 @@ def test_purge_urls_for_targets_record_catalog_and_list() -> None:
     urls = _purge_urls_for("EGFR")
     assert urls == [
         "https://surfaceome-api.cache/surfaceome/v1/genes/EGFR",
+        "https://surfaceome-api.cache/surfaceome/v1/genes/EGFR/evidence",
         "https://catalog.cache/v1/catalog",
         "https://surfaceome-api.cache/surfaceome/v1/genes",
     ]

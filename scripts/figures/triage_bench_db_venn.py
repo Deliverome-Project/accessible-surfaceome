@@ -65,10 +65,12 @@ PALETTE_BY_LABEL = {
     label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)
 }
 
-# Pin to an immutable commit SHA so the reproduction is traceable and
-# tamper-evident. Bump together with ``_EXPECTED_TSV_SHA256`` whenever
-# the upstream universe TSV is intentionally refreshed (and update the
-# matching ``data[0]`` entry in scripts/embed_figure_gist_metadata.py).
+# Pin to an immutable commit SHA so a NETWORK reproduction is traceable
+# and tamper-evident. This governs the fallback fetch only — see
+# ``_load_universe_bytes`` for why the in-repo copy is not gated on it.
+# Bump together with ``_EXPECTED_TSV_SHA256`` whenever the upstream
+# universe TSV is intentionally refreshed (and update the matching
+# ``data[0]`` entry in scripts/embed_figure_gist_metadata.py).
 _PINNED_COMMIT_SHA = "898c743d9df4ec7497e7424b80d3408e5ad07c41"
 _CAND_URL = (
     "https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/"
@@ -81,21 +83,34 @@ _EXPECTED_TSV_SHA256 = (
 
 def _load_universe_bytes(path: Path) -> bytes:
     """Return the universe TSV bytes from ``path`` if present, else fetch
-    them from the pinned commit URL. Verifies sha256 against the
-    pinned digest in either case and raises ``SystemExit`` on mismatch.
+    them from the pinned commit URL.
+
+    The sha256 gate applies to the NETWORK path only. The pin exists as
+    tamper-evidence for bytes arriving over the wire from a mutable
+    host; the in-repo copy already carries git's own integrity
+    guarantees, so re-checking it there buys nothing.
+
+    It also actively broke this generator. The repo's documented refresh
+    workflow — ``scripts/figures/augment_figure_tsvs_with_stable_ids.py``
+    — is *designed* to rewrite candidate_universe.tsv (backfilling
+    stable IDs and denormalised columns), so every refresh moved the
+    local digest away from the pin. Six commits touched the TSV after
+    898c743d, after which the gate rejected the repo's own checked-in
+    file and the figure could no longer be regenerated in-repo at all.
+    A pin that fails on the canonical copy is checking the wrong thing.
     """
 
     if path.is_file():
-        tsv_bytes = path.read_bytes()
-    else:
-        r = httpx.get(_CAND_URL, timeout=30)
-        r.raise_for_status()
-        tsv_bytes = r.content
+        return path.read_bytes()
+
+    r = httpx.get(_CAND_URL, timeout=30)
+    r.raise_for_status()
+    tsv_bytes = r.content
     got = hashlib.sha256(tsv_bytes).hexdigest()
     if got != _EXPECTED_TSV_SHA256:
         raise SystemExit(
-            f"candidate_universe.tsv sha256 mismatch: expected "
-            f"{_EXPECTED_TSV_SHA256}, got {got}. The pinned URL "
+            f"candidate_universe.tsv sha256 mismatch on the pinned fetch: "
+            f"expected {_EXPECTED_TSV_SHA256}, got {got}. The pinned URL "
             f"({_CAND_URL}) may be wrong, or upstream content changed."
         )
     return tsv_bytes

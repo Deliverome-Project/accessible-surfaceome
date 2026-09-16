@@ -1,7 +1,7 @@
 --[[
   paper/filters/figures.lua
 
-  Two figure-related transformations:
+  Three figure-related transformations:
 
   1. **Split image-in-heading shapes.** When a .docx author leaves an
      image embedded in the same paragraph as the figure caption (and
@@ -29,6 +29,14 @@
      caption heading. Reader can click a body-text "Figure 2" and
      jump to the figure. Skipped inside the caption headings
      themselves so the figure label doesn't self-link.
+
+  3. **Mark the caption's lead clause.** Wraps the leading
+     "Figure N. Title sentence." of each caption in
+     `<span class="caption-lead">` so the stylesheet can paint that
+     clause. Print used to do this with `::first-line`, which colours
+     whatever text fits on the first rendered LINE — so the accent
+     stopped mid-sentence on one caption and ran into the body
+     sentence on the next. See the `LEAD_CLASS` block below.
 
   Usage:  pandoc … --lua-filter=paper/filters/figures.lua
 ]]--
@@ -401,6 +409,219 @@ local function linkify_figure_refs(inlines)
   return result
 end
 
+-- ── Figure-caption lead ───────────────────────────────────────────
+--
+-- Marks the "Figure N. Title sentence." clause at the head of each
+-- caption as `<span class="caption-lead">` so the stylesheet can
+-- paint it. The print CSS used to do this with `::first-line`, which
+-- selects whatever text HAPPENS to fall on the first rendered line —
+-- so the maroon stopped mid-sentence on one caption and spilled into
+-- the body sentence on the next, purely as a function of how the
+-- column happened to break. A line box is not a sentence; only
+-- markup can be, which is why the decision moves here.
+--
+-- Two ways the lead is identified, tried in order:
+--
+--   1. The caption opens with a Strong run. That is the .docx
+--      convention (`**Figure 1. Title.** Body…`, mirrored in
+--      data/analysis/figures/<slug>.caption.md) and what the web
+--      edition's `h5 strong` rule already keys off. The author has
+--      said where the lead ends — respect it, so print and web mark
+--      the same words.
+--   2. No Strong: take the "Figure N." label plus the sentence that
+--      follows it.
+--
+-- A caption neither route resolves is left untouched and reported at
+-- the end of the build; the stylesheet keeps a `::first-line`
+-- fallback scoped with `:not(:has(.caption-lead))` so such a caption
+-- degrades to the old behaviour rather than to no lead treatment.
+local LEAD_CLASS = "caption-lead"
+
+-- Tokens ending in "." that do NOT end a sentence. Compared
+-- lower-cased, so "Fig." and "fig." both hit.
+local ABBREVIATIONS = {
+  ["e.g."] = true, ["i.e."] = true, ["cf."] = true,  ["vs."] = true,
+  ["etc."] = true, ["al."] = true,  ["fig."] = true, ["figs."] = true,
+  ["eq."] = true,  ["ca."] = true,  ["approx."] = true, ["no."] = true,
+  ["ref."] = true, ["refs."] = true, ["suppl."] = true, ["supp."] = true,
+  ["inc."] = true, ["ltd."] = true, ["st."] = true,  ["dr."] = true,
+  ["min."] = true, ["max."] = true, ["sd."] = true,  ["sem."] = true,
+}
+
+-- Closing punctuation that may sit after a sentence's full stop.
+-- Stripped by literal suffix comparison rather than a character
+-- class: the curly quotes are multi-byte UTF-8 and Lua's patterns
+-- are byte-oriented, so `[…”’]` would match stray continuation
+-- bytes instead of whole characters.
+local CLOSERS = {")", "]", "}", '"', "'", "\u{201D}", "\u{2019}", "\u{00BB}"}
+
+local function strip_closers(s)
+  local trimmed = true
+  while trimmed do
+    trimmed = false
+    for _, c in ipairs(CLOSERS) do
+      if #s > #c and s:sub(-#c) == c then
+        s = s:sub(1, #s - #c)
+        trimmed = true
+      end
+    end
+  end
+  return s
+end
+
+-- Does this Str token close a sentence?
+local function ends_sentence(text)
+  local core = strip_closers(text)
+  if not core:match("[%.%?%!]$") then return false end
+  if ABBREVIATIONS[core:lower()] then return false end
+  -- A lone initial ("J.") ends a name, not a sentence.
+  if core:match("^%a%.$") then return false end
+  return true
+end
+
+-- Shapes the leading label can take, matched lower-cased and
+-- trimmed. The trailing separator is optional because journals
+-- variously write "Figure 1.", "Figure 1:", "Figure 1 |" and bare
+-- "Figure 1".
+local LABEL_SHAPES = {
+  "^supplementary figure s?%d+[%.%:%|]?$",
+  "^supplementary table s?%d+[%.%:%|]?$",
+  "^appendix figure s?%d+[%.%:%|]?$",
+  "^extended data figure s?%d+[%.%:%|]?$",
+  "^figure s?%d+[%.%:%|]?$",
+  "^table s?%d+[%.%:%|]?$",
+  "^fig%.? s?%d+[%.%:%|]?$",
+}
+
+local function is_label(text)
+  local probe = text:gsub("^%s+", ""):gsub("%s+$", ""):lower()
+  for _, shape in ipairs(LABEL_SHAPES) do
+    if probe:match(shape) then return true end
+  end
+  return false
+end
+
+-- Index of the last inline belonging to the leading label, or 0 when
+-- the caption doesn't open with one. Consuming it matters because
+-- the label's own full stop ("Figure 3.") would otherwise read as
+-- the end of the lead sentence, leaving the title unmarked.
+local function label_end_index(inlines)
+  local acc, last = "", 0
+  for i = 1, math.min(#inlines, 8) do
+    acc = acc .. pandoc.utils.stringify(inlines[i])
+    if is_label(acc) then last = i end
+  end
+  return last
+end
+
+-- First non-blank text at or after `from`, or nil at end of caption.
+local function next_word(inlines, from)
+  for i = from, #inlines do
+    local s = pandoc.utils.stringify(inlines[i])
+    if s:match("%S") then return (s:gsub("^%s+", "")) end
+  end
+  return nil
+end
+
+-- Index of the inline closing the caption's lead sentence, or nil.
+local function sentence_end_index(inlines, from)
+  for i = from, #inlines do
+    local inl = inlines[i]
+    if inl.t == "Str" and ends_sentence(inl.text) then
+      -- A full stop followed by a lower-case word is an abbreviation
+      -- missing from the table above far more often than it is a
+      -- real sentence break. Require the next word to open one.
+      local nxt = next_word(inlines, i + 1)
+      if nxt == nil or nxt:match("^[%u%d%(%[\"']") then
+        return i
+      end
+    end
+  end
+  return nil
+end
+
+-- Repair a Strong run that stops short of its own sentence end.
+--
+-- Word does this constantly: the author bolds the lead clause but
+-- leaves the closing full stop outside the run — the manuscript's
+-- Figure 1 reads `**…agree on only 188 proteins**. Five-way Venn…`.
+-- Taken literally that ends the accent one character early and opens
+-- the body text with an orphaned ".", which is the same "doesn't
+-- include the full first sentence" complaint the ::first-line
+-- version drew.
+--
+-- Returns a (possibly rebuilt) inline list and the new stop index:
+--   * lead already ends a sentence → unchanged
+--   * next Str is exactly the stray punctuation → absorb it
+--   * next Str leads with the punctuation → split it, absorb the head
+--   * bold stopped several words early → run on to the sentence end
+local function close_lead_sentence(inlines, stop)
+  local lead = ""
+  for i = 1, stop do lead = lead .. pandoc.utils.stringify(inlines[i]) end
+  if ends_sentence(lead) then return inlines, stop end
+
+  local nxt = inlines[stop + 1]
+  if nxt and nxt.t == "Str" then
+    local punct, rest = nxt.text:match("^([%.%?%!][%)%]}\"']*)(.*)$")
+    if punct and rest == "" then
+      return inlines, stop + 1
+    elseif punct then
+      local out = pandoc.List({})
+      for i = 1, stop do out:insert(inlines[i]) end
+      out:insert(pandoc.Str(punct))
+      out:insert(pandoc.Str(rest))
+      for i = stop + 2, #inlines do out:insert(inlines[i]) end
+      return out, stop + 1
+    end
+  end
+
+  return inlines, sentence_end_index(inlines, stop + 1) or stop
+end
+
+-- inlines[1..stop] wrapped in Span.caption-lead, rest trailing it.
+local function wrap_lead(inlines, stop)
+  local lead, out = pandoc.List({}), pandoc.List({})
+  for i, inl in ipairs(inlines) do
+    if i <= stop then lead:insert(inl) end
+  end
+  out:insert(pandoc.Span(lead, pandoc.Attr("", {LEAD_CLASS})))
+  for i = stop + 1, #inlines do out:insert(inlines[i]) end
+  return out
+end
+
+-- Captions no route could resolve, reported once at end of build.
+local unmarked_captions = {}
+
+local function mark_caption_lead(elem)
+  if not CAPTION_LEVELS[elem.level] then return nil end
+  local inlines = elem.content
+  if #inlines == 0 then return nil end
+  -- Idempotent: a caption already carrying the span is left alone.
+  if inlines[1].t == "Span" and inlines[1].classes
+      and inlines[1].classes:includes(LEAD_CLASS) then
+    return nil
+  end
+
+  local stop
+  -- Route 1 — author-marked. Requires something after the Strong: a
+  -- caption that is bold end-to-end tells us nothing about where the
+  -- lead stops, and a Strong holding only the label ("**Figure 1.**
+  -- Title…") would cut the title out of the lead.
+  if inlines[1].t == "Strong" and #inlines > 1
+      and not is_label(pandoc.utils.stringify(inlines[1])) then
+    inlines, stop = close_lead_sentence(inlines, 1)
+  else
+    stop = sentence_end_index(inlines, label_end_index(inlines) + 1)
+  end
+
+  if not stop then
+    unmarked_captions[#unmarked_captions + 1] =
+      pandoc.utils.stringify(elem):sub(1, 60)
+    return nil
+  end
+  return pandoc.Header(elem.level, wrap_lead(inlines, stop), elem.attr)
+end
+
 -- Predicates for the Blocks pass below.
 local function para_contains_img(elem)
   if elem.t ~= "Para" then return false end
@@ -471,7 +692,7 @@ local function reattach_ids_to_image_paras(blocks)
   return result
 end
 
--- Three-phase pipeline. Pandoc applies each filter table in order
+-- Five-phase pipeline. Pandoc applies each filter table in order
 -- against the full document tree.
 -- Reference-shaped text the filter did NOT link, reported at the end
 -- of the build. Without this a reference that falls outside the
@@ -494,9 +715,20 @@ local function note_unlinked(inlines)
     end
   end
   local text = table.concat(parts, " ")
-  for ref in text:gmatch("[Ff]igures?%s+S?%d+") do
-    local key = ref:gsub("%s+", " ")
-    unlinked[key] = (unlinked[key] or 0) + 1
+  -- The trailing `(%a?)` is the panel-letter guard. linkify_figure_refs
+  -- deliberately declines a suffixed reference ("Figure 5a") because
+  -- `tail_match` requires a bare integer — so reporting one as
+  -- UNLINKED accuses the filter of missing something it chose not to
+  -- match. `%d+` is greedy, so "Figure 5a" captures ref="Figure 5"
+  -- with suffix="a"; a real reference ("Figure 5", "Figure 5)")
+  -- captures an empty suffix. Without this the manuscript's three
+  -- "(Figure 5a)" / "(Figure 5b)" panel references cried wolf on
+  -- every single build, which is exactly how a checker gets ignored.
+  for ref, suffix in text:gmatch("([Ff]igures?%s+S?%d+)(%a?)") do
+    if suffix == "" then
+      local key = ref:gsub("%s+", " ")
+      unlinked[key] = (unlinked[key] or 0) + 1
+    end
   end
 end
 
@@ -514,7 +746,16 @@ return {
       return split_image_in_heading(elem)
     end,
   },
-  -- Phase 3: move figure-caption ids from h5 → preceding Para(img)
+  -- Phase 3: mark each caption's "Figure N. Title." lead clause so
+  -- the stylesheet paints a SENTENCE rather than a line box. Runs
+  -- after the split above, which is what settles the final caption
+  -- heading's content.
+  {
+    Header = function(elem)
+      return mark_caption_lead(elem)
+    end,
+  },
+  -- Phase 4: move figure-caption ids from h5 → preceding Para(img)
   -- so body links land at the image's top, then linkify body refs.
   {
     Blocks = reattach_ids_to_image_paras,
@@ -524,7 +765,8 @@ return {
       return pandoc.Para(out)
     end,
   },
-  -- Phase 4: report anything reference-shaped that stayed plain text.
+  -- Phase 5: report anything reference-shaped that stayed plain
+  -- text, and any caption whose lead clause could not be located.
   {
     Pandoc = function(doc)
       local names = {}
@@ -534,6 +776,12 @@ return {
         io.stderr:write(
           ("figures.lua: %d reference(s) left UNLINKED (no caption matched): ")
             :format(#names) .. table.concat(names, "; ") .. "\n")
+      end
+      if #unmarked_captions > 0 then
+        io.stderr:write(
+          ("figures.lua: %d caption(s) left with NO lead clause marked "
+           .. "(falling back to ::first-line): "):format(#unmarked_captions)
+          .. table.concat(unmarked_captions, "; ") .. "\n")
       end
       return doc
     end,

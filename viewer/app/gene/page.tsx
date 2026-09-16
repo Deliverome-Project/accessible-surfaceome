@@ -25,6 +25,7 @@ import {
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   Evidence,
+  PaperMetadataMap,
   SurfaceomeRecord,
 } from "../../lib/surfaceome-types";
 import styles from "./page.module.css";
@@ -133,8 +134,25 @@ function evidenceArrayFromPayload(j: unknown): Evidence[] {
   return Array.isArray(r?.evidence) ? (r.evidence as Evidence[]) : [];
 }
 
+/** Pull the `papers` citation-metadata map out of the same payload. The
+ *  Worker joins it in from public D1's `paper_metadata` (the records
+ *  themselves carry only accessions), so it's absent against a pre-join
+ *  Worker and undefined on a fetch miss — the drawer treats both as "show
+ *  the bare accession". */
+function papersFromPayload(j: unknown): PaperMetadataMap | undefined {
+  const r = j as { papers?: unknown } | null;
+  const papers = r?.papers;
+  return papers && typeof papers === "object" && !Array.isArray(papers)
+    ? (papers as PaperMetadataMap)
+    : undefined;
+}
+
 interface ReadyData {
   rec: SurfaceomeRecord;
+  /** Citation metadata for the ledger's papers, merged in with the lazy
+   *  `/evidence` fetch. Undefined until then (and on the inline-evidence
+   *  path, where the core record never carried it). */
+  papers?: PaperMetadataMap;
   geneName: { name: string; synonyms: string[] } | null;
   structureData: StructureViewerData | null;
   schwekeHomomer: SchwekeHomomerLoaderRow | null;
@@ -281,12 +299,14 @@ export default function GeneShellPage() {
           );
           if (cancelled) return;
           const evidence = evidenceArrayFromPayload(evJson);
+          const papers = papersFromPayload(evJson);
           setState((prev) =>
             prev.kind === "ready"
               ? {
                   kind: "ready",
                   data: {
                     ...prev.data,
+                    papers,
                     // Merge the ledger in and run the deferred renumber NOW
                     // that it's present — it rewrites the record's inline
                     // `aN_evi_NN` chip tokens into the merged `evi_N`
