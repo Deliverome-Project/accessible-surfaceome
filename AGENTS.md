@@ -164,7 +164,12 @@ REST API directly — no wrangler needed. Auth pulls from `.env`
         rows = d1.query("SELECT uniprot_acc FROM gene_identifier WHERE hgnc_id = ?;", ["HGNC:1234"])
 
 D1's HTTP API doesn't accept multi-statement batches; submit one
-statement per `query()` call (loop for bulk loads).
+statement per `query()` call (loop for bulk loads). Two limits shape
+a bulk load: **100 bound parameters per query** (size a multi-row
+`INSERT` as `floor(100 / n_columns)` rows) and one statement per HTTP
+call, so thread-pool the calls when each is idempotent on its key.
+`json_each(col, '$.path')` walks a JSON array column; `json_tree`
+with a path argument does not work on D1. See CLAUDE.md for detail.
 
 ### Applying DDL when wrangler isn't available
 
@@ -184,6 +189,7 @@ statement:
 | `deep_dive_run` | Deep-dive (`surfaceome_v2`) records. | `(run_id, gene_symbol)` |
 | `candidate_universe_public` | Catalog index. | `(universe_version, gene_symbol, uniprot_acc)` |
 | `benchmark_version` | Bench-snapshot symbol pinning. | `(bench_version, gene_symbol)` |
+| `paper_metadata` | NCBI citation metadata (title / byline / journal / year) for papers the evidence ledgers cite. Public D1 only; joined in at serve time by `/v1/genes/{sym}/evidence`, because records carry an accession and nothing else. | `source_id` (verbatim, e.g. `PMC:PMC6199259`) |
 
 ### `run_id` conventions
 

@@ -187,13 +187,21 @@ def _kv_keys_for(sym: str) -> list[str]:
 def _purge_urls_for(sym: str) -> list[str]:
     """The exact ``caches.default`` keys a republish of ``sym`` invalidates.
 
-    A ``surface_annotation`` write changes three cached surfaces:
+    A ``surface_annotation`` write changes four cached surfaces:
 
     * the per-gene record (``/v1/genes/{SYMBOL}`` — ``cache.internal``),
+    * the split-out evidence ledger (``/v1/genes/{SYMBOL}/evidence`` —
+      ``cache.internal``), which carries the verbatim quotes AND the
+      serve-time ``papers`` citation-metadata join,
     * the genome-wide catalog (``/v1/catalog`` — carries a slimmed
       ``ddf`` projection of every deep-dived gene's filters —
       ``catalog.cache``), and
     * the gene-list index (``/v1/genes`` — ``cache.internal``).
+
+    The evidence URL was missed when the ledger was split out of the
+    record: ``_kv_keys_for`` purged its KV mirror but the
+    ``caches.default`` copy was left to expire, so a republished gene
+    could serve a fresh record alongside a day-stale ledger.
 
     Orthologs, triage, and benchmark endpoints are NOT touched by a
     record publish, so they're deliberately excluded — a tighter purge
@@ -206,6 +214,7 @@ def _purge_urls_for(sym: str) -> list[str]:
     """
     return [
         f"{_CACHE_INTERNAL_BASE}/v1/genes/{sym}",
+        f"{_CACHE_INTERNAL_BASE}/v1/genes/{sym}/evidence",
         _CATALOG_CACHE_URL,
         f"{_CACHE_INTERNAL_BASE}/v1/genes",
     ]

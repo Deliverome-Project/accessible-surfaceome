@@ -191,3 +191,34 @@
   color: var(--ink-soft);
   line-height: 1.5;
 }
+
+/* Citation line — replaces the bare accession link on rows whose paper
+   resolved in `paper_metadata`. Title reads as prose (the row is already
+   dense with claim + quote, so a mono accession-sized title would fight
+   the quote above it); the byline + accession trail in muted mono. */
+.cite {
+  margin: 0;
+  align-self: flex-start;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.citeTitle {
+  color: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.citeTitle:hover {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.citeMeta {
+  display: block;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
