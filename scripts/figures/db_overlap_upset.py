@@ -46,11 +46,16 @@ from accessible_surfaceome.audit._plotting_config import (
 )
 from accessible_surfaceome.paths import REPO_ROOT
 
+# Published reproduction gist. This is the gist that previously served the
+# 5-way Venn: Figure 1 changed form, so the same URL now serves the UpSet
+# rather than minting a second one (gist URLs are permanent and already
+# cited). The Venn's own revision stays in the gist's git history.
+GIST_URL = "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"
+
 OUT_DIR = REPO_ROOT / "data/analysis/figures"
-# Shares the Venn's bundled TSV: identical five flags, one row per
-# accession. Per the figure-TSV convention, fit a new figure into an
-# existing TSV rather than adding another near-duplicate.
-TSV = REPO_ROOT / "data/processed/figures/db_overlap_venn.tsv"
+# Per-figure bundled TSV (single-TSV-per-gist invariant): the five
+# databases' native pre-recalibration surface flags, union members only.
+TSV = REPO_ROOT / "data/processed/figures/db_overlap_upset.tsv"
 
 # Canonical DB-only order + canonical colours.
 ORDER = ["UniProt", "SURFY", "CSPA", "GO CC", "HPA"]
@@ -112,10 +117,19 @@ def make_plot(out_dir: Path) -> None:
     sel, sizes = build_columns(flags)
 
     setup_plotting_style(style="white", context="notebook", font_scale=1.0)
-    plt.rcParams["axes.labelsize"] = 13
-    plt.rcParams["xtick.labelsize"] = 11
-    plt.rcParams["ytick.labelsize"] = 11
-    plt.rcParams["legend.fontsize"] = 11
+    # Declared as a dict literal, and LAST, so the canonical<->mirror
+    # fingerprint guard (tests/test_figure_canonical_mirror_sync.py) reads
+    # the same six knobs from both files. The gist mirror re-declares this
+    # exact block after its inline brand style, whose defaults are tuned
+    # for much larger figures than this 12.5x7.4 panel.
+    plt.rcParams.update({
+        "font.size": 11,
+        "axes.labelsize": 13,
+        "axes.titlesize": 0,
+        "xtick.labelsize": 11,
+        "ytick.labelsize": 11,
+        "legend.fontsize": 11,
+    })
 
     fig = plt.figure(figsize=(12.5, 7.4))
     gs = fig.add_gridspec(
@@ -211,7 +225,7 @@ def make_plot(out_dir: Path) -> None:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(fig, filename="db_overlap_upset", output_dir=str(out_dir),
-                formats=("pdf", "png"))
+                formats=("pdf", "png"), gist_url=GIST_URL)
     plt.close(fig)
 
 
