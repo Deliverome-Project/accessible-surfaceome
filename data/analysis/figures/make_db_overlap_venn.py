@@ -430,8 +430,8 @@ def main() -> None:
         fontsize=21,
     )
 
-    out_pdf = Path("db_overlap_venn2.pdf")
-    out_png = Path("db_overlap_venn2.png")
+    out_pdf = Path("db_overlap_venn.pdf")
+    out_png = Path("db_overlap_venn.png")
     fig.savefig(
         out_pdf,
         bbox_inches="tight",
