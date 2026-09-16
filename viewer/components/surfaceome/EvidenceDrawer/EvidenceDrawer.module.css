@@ -231,3 +231,43 @@
 .sourceLink:focus-visible {
   border-bottom-color: var(--accent);
 }
+
+/* Citation block — rendered in place of the bare accession link when the
+ * evidence endpoint's `papers` map carries NCBI metadata for the source.
+ * Title leads (it's what a reader scans for), byline + journal/year sit
+ * under it, and the accession keeps its link role at the end so the
+ * "click through to the paper" affordance doesn't move. */
+.sourceCite {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sourceTitle {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.sourceTitle:hover,
+.sourceTitle:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+.sourceByline {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.sourceAccession {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
