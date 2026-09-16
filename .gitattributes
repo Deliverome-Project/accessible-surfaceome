@@ -162,3 +162,7 @@ data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
 # mock placeholder / ~30 KB long-form), well under the 5 MB practical cap.
 data/processed/figures/positive_control_db_coverage_bars.tsv  -filter -diff -merge text
 data/processed/figures/surfaceome_deterministic_features_placeholder.tsv -filter -diff -merge text
+
+# Draft binder coverage audit: small, reader-accessible tables and provenance.
+data/analysis/binder_coverage/* -filter -diff -merge
+data/analysis/binder_coverage/*.tsv text

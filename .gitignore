@@ -164,3 +164,7 @@ paper/*.xml
 data/backups/
 # AlphaFold model PDBs downloaded by the tag-site benchmark (local cache; AFDB is the source of truth)
 data/cache/afdb_pdb/
+
+# Reproducible binder pilot downloads and uncompressed observation export.
+data/external/binder_coverage/
+data/analysis/binder_coverage/observations.tsv
