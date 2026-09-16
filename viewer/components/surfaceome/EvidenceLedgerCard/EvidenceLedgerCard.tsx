@@ -3,10 +3,10 @@
 import type {
   Evidence,
   EvidenceTier,
-  PaperMetadata,
   PaperMetadataMap,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
+import { bylineOf } from "../../../lib/paperCitation";
 import { prettyEnum } from "../../../lib/enums";
 import {
   scrubAgentJargon,
@@ -64,15 +64,6 @@ function sourceIdOf(src: Record<string, unknown> | null): string | null {
   if (typeof sid === "string" && sid) return sid;
   const pmcId = pmcIdOf(src);
   return pmcId ? `PMC:${pmcId}` : null;
-}
-
-/** "Bock et al. · Sci Rep 2018" — whichever parts NCBI actually had.
- *  Mirrors the drawer's byline so one paper reads the same in both
- *  places. Null when nothing is known, so the caller can skip the line. */
-function bylineOf(meta: PaperMetadata): string | null {
-  const journalYear = [meta.journal, meta.year].filter(Boolean).join(" ");
-  const parts = [meta.authors_short, journalYear].filter(Boolean);
-  return parts.length ? parts.join(" · ") : null;
 }
 
 function sourceLink(e: Evidence) {

@@ -11,6 +11,7 @@ import {
   scrubEvidenceTokens,
   stripInlineHtml,
 } from "../../../lib/textScrub";
+import { bylineOf } from "../../../lib/paperCitation";
 import { StatusPill } from "../StatusPill/StatusPill";
 
 // Local minimal prettyEnum — the canonical one in lib/surfaceome.ts
@@ -144,15 +145,6 @@ export interface SourceEntry {
    *  URL) or the source was recovered from a validation warning. */
   title?: string;
   meta?: PaperMetadata;
-}
-
-/** "Bock et al. · Sci Rep 2018" — whichever parts NCBI actually had.
- *  Returns null when none of them are known, so the caller can fall back
- *  to the bare accession rather than render an empty line. */
-function bylineOf(meta: PaperMetadata): string | null {
-  const journalYear = [meta.journal, meta.year].filter(Boolean).join(" ");
-  const parts = [meta.authors_short, journalYear].filter(Boolean);
-  return parts.length ? parts.join(" · ") : null;
 }
 
 /** The drawer's citation list. With metadata the title leads and the
