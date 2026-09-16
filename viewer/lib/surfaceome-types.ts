@@ -540,6 +540,20 @@ export interface SurfaceBindSite {
   /** Eisenberg-style hydrophobicity score. Positive = hydrophobic /
    *  lipid-facing-style; negative = polar / solvent-exposed-style. */
   hydrophobicity: number;
+  /** Which side of the membrane the anchor residue sits on, from
+   *  DeepTMHMM's per-residue topology. SURFACE-Bind scores the whole
+   *  solved structure, so a scored patch is NOT necessarily reachable
+   *  from outside the cell — 23% of sites cohort-wide anchor elsewhere
+   *  (EGFR alone has three kinase-domain sites). Only ``extracellular``
+   *  is antibody-accessible; ``signal_peptide`` is ambiguous because the
+   *  peptide is cleaved; ``null`` means the topology was unavailable,
+   *  which is distinct from any determinate answer. */
+  anchor_topology?:
+    | "extracellular"
+    | "intracellular"
+    | "membrane"
+    | "signal_peptide"
+    | null;
 }
 
 /**
