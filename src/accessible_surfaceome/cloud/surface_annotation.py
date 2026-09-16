@@ -145,14 +145,27 @@ def _post(
 # schemes byte-for-byte. MUST stay in sync with
 # ``cloudflare/workers/surfaceome_api/src/index.js``:
 #   * ``withEdgeCache`` (per-gene record + gene-list index): the key is
-#     ``https://cache.internal`` + the UNSTRIPPED ``url.pathname``, which
-#     in production carries the ``PUBLIC_API_BASE`` path prefix
+#     ``https://surfaceome-api.cache`` + the UNSTRIPPED ``url.pathname``,
+#     which in production carries the ``PUBLIC_API_BASE`` path prefix
 #     (``/surfaceome``). Derived from ``PUBLIC_API_BASE`` here so the two
 #     stay pinned to the same route.
 #   * ``handleCatalog`` (genome-wide ``/v1/catalog``): its own synthetic
 #     host ``https://catalog.cache`` + a HARDCODED ``/v1/catalog`` path
 #     (no route prefix).
-_CACHE_INTERNAL_BASE = f"https://cache.internal{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
+#
+# This host was ``https://cache.internal`` until now, which matched
+# nothing: the Worker renamed its ``withEdgeCache`` key host to
+# ``surfaceome-api.cache`` in #119/#171 and this side never followed. The
+# failure was silent in exactly the way the note above predicts —
+# Cloudflare returned ``success=true`` for every purge while evicting
+# nothing, so per-gene records served stale for up to their full 24h TTL
+# after a republish. Confirmed against production: purging the
+# ``cache.internal`` key left ``cf-cache-status: HIT`` with ``age``
+# climbing, and purging the ``surfaceome-api.cache`` key flipped the same
+# URL straight to a MISS. It is the same synthetic host ``_KV_CACHE_BASE``
+# already uses, so the two now derive from one constant and cannot drift
+# apart again.
+_EDGE_CACHE_BASE = f"https://surfaceome-api.cache{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
 _CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
 
 # Base for the Worker's KV (``RECORD_CACHE``) mirror keys. The Worker keys
@@ -163,10 +176,10 @@ _CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
 # ``https://surfaceome-api.cache/surfaceome/v1/genes/{SYM}`` and its
 # ``/evidence`` sibling. MUST stay in sync with ``withEdgeCache`` +
 # ``handleGeneEvidence`` in
-# ``cloudflare/workers/surfaceome_api/src/index.js`` (the synthetic host is
-# ``https://surfaceome-api.cache``, matching that file's cache key — NOT the
-# ``https://cache.internal`` host the caches.default file-purge above uses).
-_KV_CACHE_BASE = f"https://surfaceome-api.cache{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
+# ``cloudflare/workers/surfaceome_api/src/index.js``. Identical to the
+# edge-purge base above — both tiers key on the same synthetic host, so
+# this is an alias rather than a second source of truth.
+_KV_CACHE_BASE = _EDGE_CACHE_BASE
 
 
 def _kv_keys_for(sym: str) -> list[str]:
@@ -205,9 +218,9 @@ def _purge_urls_for(sym: str) -> list[str]:
     is the canonical key — there are no ``?x=`` variants to chase.
     """
     return [
-        f"{_CACHE_INTERNAL_BASE}/v1/genes/{sym}",
+        f"{_EDGE_CACHE_BASE}/v1/genes/{sym}",
         _CATALOG_CACHE_URL,
-        f"{_CACHE_INTERNAL_BASE}/v1/genes",
+        f"{_EDGE_CACHE_BASE}/v1/genes",
     ]
 
 
