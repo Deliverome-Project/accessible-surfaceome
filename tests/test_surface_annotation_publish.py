@@ -194,11 +194,15 @@ def test_purge_urls_for_targets_record_catalog_and_list() -> None:
     # full 24h TTL. Pinning a literal is only as good as the literal; the
     # companion test in tests/test_purge_cache_key_host.py now parses the
     # host out of index.js so the two cannot disagree again.
+    # Keys are namespaced by the Worker's deploy epoch. With no Worker
+    # reachable, _cache_epoch falls back to "v0" — the same fallback the
+    # Worker uses when the version_metadata binding is absent — so the
+    # shape is deterministic offline.
     urls = _purge_urls_for("EGFR")
     assert urls == [
-        "https://surfaceome-api.cache/surfaceome/v1/genes/EGFR",
-        "https://catalog.cache/v1/catalog",
-        "https://surfaceome-api.cache/surfaceome/v1/genes",
+        "https://surfaceome-api.cache/v0/surfaceome/v1/genes/EGFR",
+        "https://catalog.cache/v0/v1/catalog",
+        "https://surfaceome-api.cache/v0/surfaceome/v1/genes",
     ]
 
 

@@ -226,11 +226,33 @@ function maxAgeFromCacheControl(cc) {
 // can reproduce and delete it exactly.
 //
 // Only 200 and 404 are cached (both carry positive TTLs); 400/405 opt out.
+// Deploy epoch folded into every cache key.
+//
+// Neither cache tier had any notion of the RESPONSE SHAPE, so a deploy that
+// changed the shape kept serving the old one until each entry's own TTL —
+// up to an hour for a KV read (its `cacheTtl`) and up to a day for a
+// caches.default entry. Purging cannot fix that: the KV read's edge cache
+// is not invalidated by deleting the KV key, and purging every gene by
+// hand after every deploy is not a plan. Keying on the Worker version
+// makes a deploy start a clean cache namespace, which is the correct
+// granularity — a shape change IS a deploy.
+//
+// `CF_VERSION_METADATA` is a `[version_metadata]` binding whose `id`
+// changes on every deploy. It is OPTIONAL here: a config without the
+// binding (or `wrangler dev`) falls back to a fixed token and behaves
+// exactly as before rather than crashing. Orphaned keys need no cleanup —
+// every kv.put already carries an `expirationTtl` matched to the
+// response's max-age, so old-epoch entries age out on their own.
+function cacheEpoch(env) {
+  return env?.CF_VERSION_METADATA?.id || "v0";
+}
+
+
 async function withEdgeCache(request, env, ctx, handler, { includeQuery = false } = {}) {
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
-  const cacheKey = new Request(new URL(keyPath, "https://surfaceome-api.cache").href, {
+  const cacheKey = new Request(new URL(`/${cacheEpoch(env)}${keyPath}`, "https://surfaceome-api.cache").href, {
     method: "GET",
   });
   // (1) per-POP edge cache
@@ -299,7 +321,16 @@ async function handleHealth(env) {
   const r = await env.DB.prepare(
     "SELECT count(*) AS n FROM surface_annotation"
   ).first();
-  return json({ ok: true, n_annotations: r?.n ?? 0 });
+  // ``cache_epoch`` is the deploy token every cache key is namespaced by.
+  // The publish path reads it from here so it can still construct the exact
+  // KV / caches.default keys to purge for a single republished gene — a
+  // deploy invalidates everything by changing this, but a republish between
+  // deploys still needs targeted eviction.
+  return json({
+    ok: true,
+    n_annotations: r?.n ?? 0,
+    cache_epoch: cacheEpoch(env),
+  });
 }
 
 async function handleGeneList(env) {
@@ -1407,9 +1438,10 @@ async function handleCatalog(env, request) {
   // /v1/catalog), so a re-deploy or universe-version bump surfaces on
   // the next miss.
   const cache = caches.default;
-  const cacheKey = new Request(new URL("/v1/catalog", "https://catalog.cache").href, {
-    method: "GET",
-  });
+  const cacheKey = new Request(
+    new URL(`/${cacheEpoch(env)}/v1/catalog`, "https://catalog.cache").href,
+    { method: "GET" },
+  );
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
 

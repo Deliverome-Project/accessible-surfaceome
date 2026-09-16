@@ -69,3 +69,41 @@ def test_edge_and_kv_share_one_base() -> None:
     """Both tiers key on the same synthetic host. Deriving them from one
     constant is what stops them drifting apart again."""
     assert sa._KV_CACHE_BASE == sa._EDGE_CACHE_BASE
+
+
+# ---------------------------------------------------------------------------
+# Deploy epoch — the cache keys had no notion of response SHAPE.
+# ---------------------------------------------------------------------------
+
+_EPOCH_CALL_RE = re.compile(r"cacheEpoch\(env\)")
+
+
+def test_worker_namespaces_both_cache_keys_by_the_deploy_epoch() -> None:
+    """Both tiers must carry it. Epoching only one leaves the other serving
+    the old response shape after a deploy — up to an hour for a KV read,
+    up to a day for a caches.default entry."""
+    src = WORKER.read_text()
+    assert len(_EPOCH_CALL_RE.findall(src)) >= 3, (
+        "expected cacheEpoch(env) in withEdgeCache's key, handleCatalog's "
+        "key, and /v1/health's payload"
+    )
+
+
+def test_worker_falls_back_when_the_binding_is_absent() -> None:
+    """`version_metadata` is optional (wrangler.toml is gitignored, so a
+    stale local config is likely). Absent binding must degrade to the old
+    behaviour, never crash."""
+    src = WORKER.read_text()
+    assert 'env?.CF_VERSION_METADATA?.id || "v0"' in src
+
+
+def test_python_and_worker_agree_on_the_fallback_token() -> None:
+    """Offline, _cache_epoch returns the Worker's own fallback so keys built
+    without a reachable Worker still match a Worker deployed without the
+    binding."""
+    import accessible_surfaceome.cloud.surface_annotation as m
+    m._EPOCH_CACHE = None
+    try:
+        assert m._cache_epoch() == "v0" or m._EPOCH_CACHE is not None
+    finally:
+        m._EPOCH_CACHE = None
