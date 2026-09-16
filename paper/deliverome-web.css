@@ -258,6 +258,11 @@ h5 {
   letter-spacing: 0;
   scroll-margin-top: 7rem;
 }
+/* Caption lead clause. `.caption-lead` is the span paper/filters/
+ * figures.lua wraps around "Figure N. Title sentence."; `strong` is
+ * the .docx's own bolding of the same words, kept so a caption the
+ * filter could not resolve still reads right here. */
+h5 .caption-lead,
 h5 strong { color: var(--maroon-dark); font-weight: 700; }
 
 /* Landing highlight: clicking a cross-reference should make it

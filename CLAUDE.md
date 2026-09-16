@@ -143,12 +143,14 @@ Commits). A title that doesn't match fails the check and blocks merge.
 
 - **Format**: `<type>(<scope>): <subject>` — scope is optional.
 - **Allowed types**: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`.
-- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`, `viewer`.
+- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`, `viewer`, `paper`.
 - **Pick a scope by what the PR mostly touches**: `sources/` → `sources`,
   `merge/` → `merge`, `audit/` → `audit`, `agents/` (Managed Agent
   orchestrator, system prompt, agent definition) → `agents`, `tools/`
   (custom-tool handlers like `gene_lookup`, `patent_lookup`) → `tools`,
-  dependency bumps → `deps`, CI workflows → `ci`, project-wide /
+  dependency bumps → `deps`, CI workflows → `ci`, `paper/` (the
+  manuscript build chain: pandoc filters, print/web CSS, figure
+  swap) → `paper`, project-wide /
   cross-cutting → `surface-proteome`. If you need a scope that isn't
   listed, update the workflow's `scopes:` block in the same PR — don't
   invent a new one.
