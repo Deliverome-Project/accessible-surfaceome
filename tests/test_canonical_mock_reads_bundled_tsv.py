@@ -71,6 +71,7 @@ READS_BUNDLED_TSV = [
     # opus-4-8). db_cutoff_tradeoff was also extracted but reads a
     # data/processed/triage_bench/ TSV (not a figures/ one), so it's guarded by
     # mirror-sync only and intentionally absent from this list.
+    "db_overlap_upset",
     "db_overlap_venn",
     "db_correctness_by_class",
     "benchmark_cost_vs_accuracy",

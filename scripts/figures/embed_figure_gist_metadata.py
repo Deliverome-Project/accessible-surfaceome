@@ -47,14 +47,14 @@ ZENODO_DATA_DOI = "10.5281/zenodo.20805384"
 # ``data[].doi`` is the per-file DOI, only set when that specific file
 # is bundled in the deposit.
 FIGURE_PROVENANCE: dict[str, dict[str, Any]] = {
-    "db_overlap_venn": {
-        "title": "M1 surface DB overlap — 5-way Venn",
+    "db_overlap_upset": {
+        "title": "M1 surface DB overlap — UpSet (Figure 1)",
         "gist_url": "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",
         "gist_sha": "c1253926045bfd5aad70cc5cce7598b0024fcd31",
         "swhid": "swh:1:snp:ab608a15f4ee00e602cbb317b3f43313214cec08",
         "doi": ZENODO_DATA_DOI,  # reserved; activates on publish
         "repo": "Deliverome-Project/accessible-surfaceome",
-        "repo_path": "scripts/figures/triage_bench_db_venn.py",
+        "repo_path": "scripts/figures/db_overlap_upset.py",
         "repo_ref": "898c743d9df4ec7497e7424b80d3408e5ad07c41",
         "repo_tag": None,
         "data": [

@@ -48,7 +48,7 @@ OUT_HTML = ROOT / "paper/figure_tsv_spotcheck.html"
 # is referenced; S7 ADCs/TCEs/ViralZone is being built in PR87; S13
 # not yet built).
 FIGURE_ORDER: list[tuple[str, str]] = [
-    ("Figure 1",  "db_overlap_venn"),
+    ("Figure 1",  "db_overlap_upset"),
     ("Figure 2",  "db_correctness_by_class"),
     ("Figure 3",  "zero_db_rescues_by_triage"),
     ("Figure 4",  "deep_dive_flow"),
