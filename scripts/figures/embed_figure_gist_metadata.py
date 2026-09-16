@@ -54,7 +54,7 @@ FIGURE_PROVENANCE: dict[str, dict[str, Any]] = {
         "swhid": "swh:1:snp:ab608a15f4ee00e602cbb317b3f43313214cec08",
         "doi": ZENODO_DATA_DOI,  # reserved; activates on publish
         "repo": "Deliverome-Project/accessible-surfaceome",
-        "repo_path": "scripts/triage_bench_db_venn.py",
+        "repo_path": "scripts/figures/triage_bench_db_venn.py",
         "repo_ref": "898c743d9df4ec7497e7424b80d3408e5ad07c41",
         "repo_tag": None,
         "data": [
