@@ -183,7 +183,7 @@ export function GeneDetail({
     {
       kind: "ledger",
       label: "Evidence",
-      render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
+      render: (n) => <EvidenceLedgerCard rec={rec} n={n} papers={papers} />,
     },
     {
       kind: "community",

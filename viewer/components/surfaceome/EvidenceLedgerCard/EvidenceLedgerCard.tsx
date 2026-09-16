@@ -3,6 +3,8 @@
 import type {
   Evidence,
   EvidenceTier,
+  PaperMetadata,
+  PaperMetadataMap,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/enums";
@@ -19,6 +21,11 @@ import styles from "./EvidenceLedgerCard.module.css";
 interface Props {
   rec: SurfaceomeRecord;
   n: number;
+  /** `source_id` → NCBI citation metadata, from the evidence endpoint's
+   *  `papers` map (same map the EvidenceDrawer gets). Undefined until the
+   *  lazy ledger fetch lands, and absent on the offline-snapshot path —
+   *  each row then shows the bare accession it showed before. */
+  papers?: PaperMetadataMap;
 }
 
 function tierTone(t: EvidenceTier) {
@@ -47,6 +54,27 @@ function pmcIdOf(src: Record<string, unknown> | null): string | null {
   if (!src) return null;
   return (src.pmc_id as string | undefined) ?? (src.pmcid as string | undefined) ?? null;
 }
+/** The key `paper_metadata` is stored under: the verbatim
+ *  `SourceRef.source_id`. Legacy records predate that field but do carry a
+ *  PMC accession, and the id form is always `PMC:<accession>` — so it can
+ *  be reconstructed rather than lost. */
+function sourceIdOf(src: Record<string, unknown> | null): string | null {
+  if (!src) return null;
+  const sid = src.source_id;
+  if (typeof sid === "string" && sid) return sid;
+  const pmcId = pmcIdOf(src);
+  return pmcId ? `PMC:${pmcId}` : null;
+}
+
+/** "Bock et al. · Sci Rep 2018" — whichever parts NCBI actually had.
+ *  Mirrors the drawer's byline so one paper reads the same in both
+ *  places. Null when nothing is known, so the caller can skip the line. */
+function bylineOf(meta: PaperMetadata): string | null {
+  const journalYear = [meta.journal, meta.year].filter(Boolean).join(" ");
+  const parts = [meta.authors_short, journalYear].filter(Boolean);
+  return parts.length ? parts.join(" · ") : null;
+}
+
 function sourceLink(e: Evidence) {
   const s = firstSource(e);
   if (!s) return null;
@@ -79,7 +107,7 @@ function sourceLink(e: Evidence) {
   return null;
 }
 
-export function EvidenceLedgerCard({ rec, n }: Props) {
+export function EvidenceLedgerCard({ rec, n, papers }: Props) {
   // The ledger is lazy-loaded off the gene-page critical path (see
   // `app/gene/page.tsx`): the record renders as soon as the core payload
   // arrives, and `rec.evidence` is fetched from the separate
@@ -172,6 +200,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
             {clusters.map(({ canonical: e, dupes }) => {
               const link = sourceLink(e);
               const firstSpan = e.spans[0]?.quote ?? null;
+              const meta = papers?.[sourceIdOf(firstSource(e)) ?? ""];
               return (
                 <li key={e.evidence_id} className={styles.item}>
                   <div className={styles.head}>
@@ -220,7 +249,28 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
                       &rdquo;
                     </p>
                   ) : null}
-                  {link ? (
+                  {/* With citation metadata the title becomes the link
+                   *  text and the accession trails as a marker, so the row
+                   *  says what the paper IS without a click. Without it —
+                   *  paper missing from `paper_metadata`, ledger not yet
+                   *  fetched, or the offline-snapshot path — the accession
+                   *  stays the link exactly as before. */}
+                  {link && meta?.title ? (
+                    <p className={styles.cite}>
+                      <a
+                        className={styles.citeTitle}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {meta.title}
+                      </a>
+                      <span className={styles.citeMeta}>
+                        {bylineOf(meta) ? `${bylineOf(meta)} · ` : ""}
+                        {link.label}
+                      </span>
+                    </p>
+                  ) : link ? (
                     <a
                       className={styles.link}
                       href={link.href}
