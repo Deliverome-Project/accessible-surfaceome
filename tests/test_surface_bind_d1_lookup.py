@@ -46,9 +46,11 @@ class _StubD1Client:
 
     def __init__(self, *, protein_rows: list[dict[str, Any]],
                  site_rows: list[dict[str, Any]],
+                 topology_rows: list[dict[str, Any]] | None = None,
                  raise_on_query: bool = False):
         self._protein_rows = protein_rows
         self._site_rows = site_rows
+        self._topology_rows = topology_rows or []
         self._raise_on_query = raise_on_query
         self.queries: list[tuple[str, list[Any]]] = []
 
@@ -66,6 +68,11 @@ class _StubD1Client:
             return list(self._protein_rows)
         if "surface_bind_site" in sql:
             return list(self._site_rows)
+        if "topology_public" in sql:
+            # Per-site anchor topology enrichment. Default stub has no
+            # topology row, so sites come back with anchor_topology=None —
+            # the "unknown" case, which must not break the lookup.
+            return list(self._topology_rows)
         raise AssertionError(f"unexpected SQL in stub: {sql!r}")
 
 
@@ -139,12 +146,19 @@ def test_lookup_returns_populated_features_when_d1_has_row() -> None:
     assert result.sites[0].n_seeds_alpha == 1
     assert result.sites[0].n_seeds_beta == 878
     assert result.sites[0].hydrophobicity == pytest.approx(6.7)
-    # The two queries hit the canonical surface_bind tables, in order.
-    assert len(stub.queries) == 2
+    # The three queries hit the canonical surface_bind tables plus the
+    # topology row that tells each site which side of the membrane its
+    # anchor is on, in order.
+    assert len(stub.queries) == 3
     assert "surface_bind_protein" in stub.queries[0][0]
     assert stub.queries[0][1] == ["P00533"]
     assert "surface_bind_site" in stub.queries[1][0]
     assert stub.queries[1][1] == ["P00533"]
+    assert "topology_public" in stub.queries[2][0]
+    assert stub.queries[2][1] == ["P00533"]
+    # This stub supplies no topology row, so the anchors read as unknown
+    # rather than being guessed either way.
+    assert all(s.anchor_topology is None for s in result.sites)
     # Defaults from the Pydantic model carry through (Balbi attribution),
     # so we never have to write them at the D1 layer.
     assert "Balbi" in result.source
@@ -246,3 +260,48 @@ def test_decode_pdbs_accepts_canonical_and_defensive_shapes(
     raw: Any, expected: list[str]
 ) -> None:
     assert surface_bind._decode_pdbs(raw) == expected
+
+
+# ---------------------------------------------------------------------------
+# Per-site anchor topology (the API passed sites through without it).
+# ---------------------------------------------------------------------------
+
+
+def test_sites_carry_anchor_topology_from_the_topology_row() -> None:
+    """A SURFACE-Bind patch anchored in the kinase domain must say so.
+    EGFR's real sites at 743 / 764 / 948 are intracellular; before this the
+    API served them indistinguishably from the ectodomain ones."""
+    protein = {"chain": "A", "main_class": "Receptors", "sub_class": "Kinase",
+               "protein_name": "EGFR", "n_sites": 2, "n_seeds_alpha": 1,
+               "n_seeds_beta": 2, "n_seeds_total": 3, "pdbs": json.dumps([])}
+    sites = [
+        {"site_id": 0, "anchor_residue": 3, "area_a2": 1.0,
+         "n_seeds_alpha": 1, "n_seeds_beta": 0, "hydrophobicity": 0.0},
+        {"site_id": 1, "anchor_residue": 6, "area_a2": 2.0,
+         "n_seeds_alpha": 0, "n_seeds_beta": 2, "hydrophobicity": 1.0},
+    ]
+    stub = _StubD1Client(
+        protein_rows=[protein], site_rows=sites,
+        topology_rows=[{"per_residue_topology": "OOOMMI"}],
+    )
+    with _patch_d1(stub):
+        feats = surface_bind.lookup("P00533")
+    assert feats is not None and feats.has_data is True
+    assert [s.anchor_topology for s in feats.sites] == ["extracellular", "intracellular"]
+
+
+def test_missing_topology_row_does_not_lose_the_surface_bind_block() -> None:
+    """Topology is enrichment. If it is absent the sites must still come
+    back — just with anchor_topology=None — rather than the whole lookup
+    falling through to the JSON snapshot."""
+    protein = {"chain": "A", "main_class": "Receptors", "sub_class": None,
+               "protein_name": "X", "n_sites": 1, "n_seeds_alpha": 0,
+               "n_seeds_beta": 0, "n_seeds_total": 0, "pdbs": json.dumps([])}
+    sites = [{"site_id": 0, "anchor_residue": 10, "area_a2": 1.0,
+              "n_seeds_alpha": 0, "n_seeds_beta": 0, "hydrophobicity": 0.0}]
+    stub = _StubD1Client(protein_rows=[protein], site_rows=sites, topology_rows=[])
+    with _patch_d1(stub):
+        feats = surface_bind.lookup("P00533")
+    assert feats is not None and feats.has_data is True
+    assert len(feats.sites) == 1
+    assert feats.sites[0].anchor_topology is None
