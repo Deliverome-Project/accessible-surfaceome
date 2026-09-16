@@ -389,6 +389,9 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push(`| UniProt | [${g.uniprot_acc}](https://www.uniprot.org/uniprotkb/${g.uniprot_acc}) |`);
   lines.push(`| NCBI Gene | [${g.ncbi_gene_id}](https://www.ncbi.nlm.nih.gov/gene/${g.ncbi_gene_id}) |`);
   lines.push(`| Ensembl | [${g.ensembl_gene}](https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${g.ensembl_gene}) |`);
+  if (g.ensembl_canonical_protein) {
+    lines.push(`| Ensembl canonical protein | [${g.ensembl_canonical_protein}](https://www.ensembl.org/Homo_sapiens/Transcript/ProteinSummary?p=${g.ensembl_canonical_protein}) |`);
+  }
   lines.push(`| Subcategory | ${prettyEnum(e.subcategory)} |`);
   lines.push(`| Surface accessibility | ${prettyEnum(e.surface_accessibility)} |`);
   lines.push(`| Confidence | ${prettyEnum(e.confidence)} |`);
@@ -769,6 +772,22 @@ function md(rec, structureData, sequences, afdbEntry) {
   for (const p of sortedParalogs) {
     lines.push(
       `| Paralog | ${p.paralog_symbol} | [${p.paralog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}) | ${fmtPct(p.full_length_pct_identity)} | ${fmtPct(p.ecd_pct_identity)} | ${p.tm_helix_count ?? "—"} | ${aaOrDash(p.ecd_length_residues)} | ${aaOrDash(p.icd_length_residues)} | ${aaOrDash(p.signal_peptide_length)} | ${p.n_terminal_orientation ? `${prettyEnum(p.n_terminal_orientation)}→${prettyEnum(p.c_terminal_orientation)}` : "—"} | ${paralogTier(p.ecd_pct_identity ?? p.full_length_pct_identity)} |`,
+    );
+  }
+  lines.push("");
+  if (ct && ct.predicted_surface_membrane != null) {
+    const call = ct.predicted_surface_membrane
+      ? "membrane / surface"
+      : ct.predicted_secreted
+        ? "secreted — signal peptide, no TM helix"
+        : "neither a TM helix nor a signal peptide";
+    const extras = [];
+    if (ct.protein_length != null) extras.push(`${ct.protein_length} aa`);
+    if (ct.beta_strand_count) {
+      extras.push(`${ct.beta_strand_count} β-strand${ct.beta_strand_count === 1 ? "" : "s"}`);
+    }
+    lines.push(
+      `**DeepTMHMM call** — ${call}${extras.length ? ` (${extras.join(" · ")})` : ""}. The tool's own classification, not an inference from the ECD/ICD lengths above.`,
     );
   }
   lines.push("");

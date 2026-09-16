@@ -569,13 +569,22 @@ async function handleGene(env, symbol) {
     // records with a real DeepTMHMM row are left alone.
     const existingCanonTopo = record?.deterministic_features?.canonical_topology;
     const canonTopoIsPlaceholder = existingCanonTopo?.tool_version === "placeholder-no-d1-row";
-    const canonTopoNeedsEnrich = !existingCanonTopo || canonTopoIsPlaceholder;
+    // Records baked before the DeepTMHMM call / length columns were carried
+    // through have the block but not these keys. Without this every already
+    // published gene keeps hiding the tool's own classification behind the
+    // derived ECD/ICD numbers.
+    const canonTopoLacksCall = !!existingCanonTopo
+      && existingCanonTopo.predicted_surface_membrane === undefined;
+    const canonTopoNeedsEnrich =
+      !existingCanonTopo || canonTopoIsPlaceholder || canonTopoLacksCall;
     if (canonTopoNeedsEnrich && canonicalTopoVersion) {
       const tr = await env.DB.prepare(
         `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
                 n_terminal_orientation, c_terminal_orientation,
                 signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at
+                per_residue_topology, sequence, tool_version, retrieved_at,
+                predicted_surface_membrane, predicted_secreted,
+                beta_strand_count, protein_length
            FROM topology_public
           WHERE uniprot_acc = ? AND cohort = 'human_canonical'
             AND topology_version = ?
@@ -596,7 +605,35 @@ async function handleGene(env, symbol) {
           sequence: tr.sequence ?? null,
           tool_version: tr.tool_version || "deeptmhmm-1.0.24",
           retrieved_at: tr.retrieved_at || new Date().toISOString(),
+          // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays
+          // null so "column absent" never reads as a confident false.
+          predicted_surface_membrane:
+            tr.predicted_surface_membrane == null ? null : Boolean(Number(tr.predicted_surface_membrane)),
+          predicted_secreted:
+            tr.predicted_secreted == null ? null : Boolean(Number(tr.predicted_secreted)),
+          beta_strand_count:
+            tr.beta_strand_count == null ? null : Number(tr.beta_strand_count),
+          protein_length:
+            tr.protein_length == null ? null : Number(tr.protein_length),
         };
+      }
+    }
+
+    // ----- gene.ensembl_canonical_protein -----
+    // The stable-ID cache carries the canonical ENSP, but the record's gene
+    // block only ever shipped ensembl_gene — so the API was weaker than the
+    // figure TSVs, which require the canonical protein "when the row
+    // references a specific protein isoform". Enrich rather than require a
+    // re-annotation, and only when absent so a baked value always wins.
+    if (record?.gene && record.gene.ensembl_canonical_protein == null) {
+      const giRow = await env.DB.prepare(
+        `SELECT ensembl_canonical_protein
+           FROM gene_identifier_public
+          WHERE uniprot_acc = ?
+          LIMIT 1`
+      ).bind(uniprot).first().catch(() => null);
+      if (giRow?.ensembl_canonical_protein) {
+        record.gene.ensembl_canonical_protein = giRow.ensembl_canonical_protein;
       }
     }
 
