@@ -860,8 +860,16 @@ async function handleGene(env, symbol) {
     // SurfaceBindFeatures block is left alone so the data the LLM saw at
     // annotation time matches what the viewer renders.
     const existingSurfaceBind = record?.deterministic_features?.surface_bind;
+    // A record baked before per-site topology existed carries sites with no
+    // ``anchor_topology`` key. Those need enriching too, otherwise every
+    // already-published gene keeps serving sites that don't say which side
+    // of the membrane they're on — which is the whole point of the field.
+    const sbSitesLackTopology = Array.isArray(existingSurfaceBind?.sites)
+      && existingSurfaceBind.sites.length > 0
+      && existingSurfaceBind.sites.every((s) => s?.anchor_topology === undefined);
     const sbNeedsEnrichment = !existingSurfaceBind
-      || existingSurfaceBind.has_data === false;
+      || existingSurfaceBind.has_data === false
+      || sbSitesLackTopology;
     if (sbNeedsEnrichment) {
       const sbProteinRow = await env.DB.prepare(
         `SELECT chain, main_class, sub_class, protein_name, n_sites,
@@ -879,6 +887,36 @@ async function handleGene(env, symbol) {
             WHERE uniprot_acc = ?
             ORDER BY site_id`
         ).bind(uniprot).all().catch(() => null);
+        // Which side of the membrane each anchor residue sits on.
+        // SURFACE-Bind scores the whole solved structure, so a scored
+        // patch is not necessarily reachable from outside the cell:
+        // cohort-wide, 23% of sites anchor somewhere other than the
+        // extracellular face (EGFR alone contributes three kinase-domain
+        // sites). Served as its own scalar pull rather than a JOIN so a
+        // missing topology row degrades to nulls instead of dropping the
+        // whole surface_bind block.
+        const sbTopoRow = await env.DB.prepare(
+          `SELECT per_residue_topology
+             FROM topology_public
+            WHERE uniprot_acc = ? AND species = 'human'
+              AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
+            LIMIT 1`
+        ).bind(uniprot).first().catch(() => null);
+        const prt = sbTopoRow?.per_residue_topology ?? null;
+        // DeepTMHMM alphabet, per the per_residue_topology column comment
+        // in cloudflare/d1_public_schema.sql ("O/M/I/S/B chars").
+        const TOPO_CHARS = {
+          O: "extracellular",
+          I: "intracellular",
+          M: "membrane",
+          B: "membrane",
+          S: "signal_peptide",
+        };
+        const anchorTopology = (residue) => {
+          if (!prt || !Number.isFinite(residue)) return null;
+          if (residue < 1 || residue > prt.length) return null;
+          return TOPO_CHARS[prt[residue - 1]] ?? null;
+        };
         // ``pdbs`` is stored as a JSON-encoded array string (see
         // scripts/sync_surface_bind_to_d1.py: ``json.dumps(entry.get("pdbs",
         // []))``). Defensively accept a real array (forward-compat), an
@@ -910,6 +948,7 @@ async function handleGene(env, symbol) {
           n_seeds_alpha: Number(s.n_seeds_alpha),
           n_seeds_beta: Number(s.n_seeds_beta),
           hydrophobicity: Number(s.hydrophobicity),
+          anchor_topology: anchorTopology(Number(s.anchor_residue)),
         }));
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.surface_bind = {

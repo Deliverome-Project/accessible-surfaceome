@@ -904,16 +904,16 @@ function md(rec, structureData, sequences, afdbEntry) {
     );
     lines.push("");
     lines.push(
-      "**Reading the scores.** BSA vs the average antibody–antigen interface ≈ 1103 ± 244 Å² ([PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)): ≥1500 Å² comfortable · 850–1500 workable · <850 thin. Seed pool: ≥1000 comfortable design margin · ≥100 workable · <100 thin/specialized. SURFACE-Bind excludes transmembrane regions but not necessarily intracellular domains — cross-check the anchor residue against the topology string in §5/appendix (`O` = extracellular/antibody-accessible, `I` = intracellular).",
+      "**Reading the scores.** BSA vs the average antibody–antigen interface ≈ 1103 ± 244 Å² ([PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)): ≥1500 Å² comfortable · 850–1500 workable · <850 thin. Seed pool: ≥1000 comfortable design margin · ≥100 workable · <100 thin/specialized. SURFACE-Bind excludes transmembrane regions but not necessarily intracellular domains, so the **Anchor side** column reports which face each patch sits on (from the DeepTMHMM topology string in §5/appendix). Only `extracellular` patches are antibody-accessible; `signal peptide` is ambiguous because the peptide is cleaved, and a blank means the topology prediction was unavailable.",
     );
     lines.push("");
     lines.push(
-      "| Site | Anchor residue | BSA (Å²) | α-helix seeds | β-strand seeds | Hydrophobicity |",
+      "| Site | Anchor residue | Anchor side | BSA (Å²) | α-helix seeds | β-strand seeds | Hydrophobicity |",
     );
-    lines.push("|---|---|---|---|---|---|");
+    lines.push("|---|---|---|---|---|---|---|");
     for (const site of sb.sites) {
       lines.push(
-        `| ${site.site_id} | ${site.anchor_residue} | ${fmtNum(site.area_a2)} | ${fmtInt(site.n_seeds_alpha)} | ${fmtInt(site.n_seeds_beta)} | ${fmtNum(site.hydrophobicity)} |`,
+        `| ${site.site_id} | ${site.anchor_residue} | ${site.anchor_topology ? site.anchor_topology.replace("_", " ") : "—"} | ${fmtNum(site.area_a2)} | ${fmtInt(site.n_seeds_alpha)} | ${fmtInt(site.n_seeds_beta)} | ${fmtNum(site.hydrophobicity)} |`,
       );
     }
     lines.push("");
