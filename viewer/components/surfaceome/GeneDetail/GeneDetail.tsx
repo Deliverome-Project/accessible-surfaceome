@@ -29,6 +29,7 @@ import { TriageRow } from "../TriageRow/TriageRow";
 import type { CatalogRow, GeneEntry } from "../../../lib/surfaceome";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
+  PaperMetadataMap,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import type {
@@ -42,6 +43,12 @@ interface GeneDetailProps {
   /** The full SurfaceomeRecord — the only hard requirement, fetched by the
    *  client shell from the Worker before this renders. */
   rec: SurfaceomeRecord;
+  /** `source_id` → NCBI citation metadata for the papers the evidence
+   *  ledger cites, from `GET /v1/genes/{sym}/evidence`. Arrives with the
+   *  lazy ledger fetch, so it's undefined on first paint and absent
+   *  entirely on the offline-snapshot path — the EvidenceDrawer falls back
+   *  to the bare accession in both cases. */
+  papers?: PaperMetadataMap;
   /** Descriptive protein name + synonyms. On the client shell this comes
    *  from the record's `deterministic_features.surface_bind.protein_name`
    *  (the build-time NCBI/HGNC gene-name TSV is not client-safe), so
@@ -84,6 +91,7 @@ interface GeneDetailProps {
  */
 export function GeneDetail({
   rec,
+  papers,
   geneName,
   structureData,
   schwekeHomomer,
@@ -296,7 +304,7 @@ export function GeneDetail({
        *  app/gene/page.tsx) — `undefined` until it merges in. Pass an empty
        *  ledger until then: chips clicked before it lands simply resolve to
        *  no quote (the drawer no-ops), and re-resolve once evidence merges. */}
-      <EvidenceDrawer evidence={rec.evidence ?? []} />
+      <EvidenceDrawer evidence={rec.evidence ?? []} papers={papers} />
       <FeedbackModal />
     </Shell>
   );

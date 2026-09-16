@@ -242,6 +242,24 @@ returns an empty result set for non-SELECT statements. **D1's HTTP
 API doesn't accept multi-statement batches**; submit one statement
 per call (loop chunked for bulk loads).
 
+Two limits shape any bulk load:
+
+* **100 bound parameters per query.** Exceeding it fails with
+  `SQLITE_ERROR: too many SQL variables`. A multi-row
+  `INSERT ... VALUES (...),(...)` is still the right shape — just size
+  the batch as `floor(100 / n_columns)` rows. See
+  [`build_paper_metadata_table.py`](scripts/build/build_paper_metadata_table.py)
+  (12 columns → 8 rows per call), whose coupling is pinned by a test.
+* **One statement per HTTP call**, so a 50k-row load is thousands of
+  round trips. Issue them from a small thread pool (`httpx.Client` is
+  thread-safe) — but only when each statement is idempotent on its key,
+  since `D1Client` retries transient failures at-least-once.
+
+`json_each(col, '$.path')` works for walking a JSON array column and is
+the cheap way to extract from `annotation_json` without pulling ~120 KB
+blobs over the wire; `json_tree` with a path argument does **not** — it
+fails with `malformed JSON: SQLITE_ERROR` on D1's SQLite build.
+
 ### Applying schema changes when wrangler isn't handy
 
 The deprecated wrangler v1 on common install paths can't speak D1.
@@ -269,6 +287,7 @@ script — no need to install wrangler just to peek at row counts.
 | `deep_dive_run` | Per-gene deep-dive (surface_annotator) records. | `(run_id, gene_symbol)` |
 | `candidate_universe_public` | Genome-wide DB-vote table (the catalog index). | `(universe_version, gene_symbol, uniprot_acc)` |
 | `benchmark_version` | Bench-snapshot symbol → uniprot pinning. | `(bench_version, gene_symbol)` |
+| `paper_metadata` | **Citation metadata for cited papers** (public D1 only). NCBI title / byline / journal / year for every `SourceRef.source_id` in the evidence ledgers — the records themselves carry only an accession (`SourceRef.title` is a placeholder equal to the id). Joined in at serve time by `/v1/genes/{sym}/evidence`. | `source_id` (verbatim, e.g. `PMC:PMC6199259`) |
 
 ### `run_id` conventions
 

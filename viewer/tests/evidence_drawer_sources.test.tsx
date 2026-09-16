@@ -1,0 +1,120 @@
+/*
+ * Render tests for the EvidenceDrawer's citation list.
+ *
+ * The drawer used to show only a bare accession ("PMC6199259") next to the
+ * verbatim quote, because the stored record carries nothing else — the
+ * agent writes `SourceRef.title` as a placeholder equal to the id. Real
+ * citation metadata is joined in at serve time from `paper_metadata` and
+ * arrives as the evidence endpoint's `papers` map. These tests pin both
+ * halves of that contract: the enriched rendering, and the fallback for
+ * every path where the metadata isn't there (paper missing from the table,
+ * offline snapshot, pre-join Worker).
+ *
+ *   npx --yes tsx --import ./tests/helpers/register.mjs \
+ *       --test tests/evidence_drawer_sources.test.tsx
+ */
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import {
+  SourceList,
+  type SourceEntry,
+} from "../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
+import type { PaperMetadata } from "../lib/surfaceome-types";
+
+const PMC_HREF = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6199259/";
+
+function meta(overrides: Partial<PaperMetadata> = {}): PaperMetadata {
+  return {
+    source_id: "PMC:PMC6199259",
+    pmid: "30353140",
+    pmc_id: "PMC6199259",
+    doi: "10.1038/s41598-018-33841-w",
+    title: "Structural and functional insights into the transporter TAPL",
+    authors_short: "Bock et al.",
+    authors: ["Bock C", "Löhr F", "Tumulka F"],
+    n_authors: 11,
+    journal: "Sci Rep",
+    year: 2018,
+    ...overrides,
+  };
+}
+
+function render(sources: SourceEntry[]): string {
+  return renderToStaticMarkup(React.createElement(SourceList, { sources }));
+}
+
+test("renders title, byline and accession when metadata is present", () => {
+  const html = render([
+    { href: PMC_HREF, label: "PMC6199259", meta: meta() },
+  ]);
+  assert.match(
+    html,
+    /Structural and functional insights into the transporter TAPL/,
+    "paper title must be rendered",
+  );
+  assert.match(html, /Bock et al\./, "byline must carry the short author form");
+  assert.match(html, /Sci Rep 2018/, "byline must carry journal + year");
+  assert.match(html, /PMC6199259/, "accession must survive as a marker");
+  assert.match(
+    html,
+    new RegExp(`href="${PMC_HREF.replace(/[/.]/g, "\\$&")}"`),
+    "the title must link to the paper",
+  );
+});
+
+test("falls back to the bare accession link when metadata is absent", () => {
+  const html = render([{ href: PMC_HREF, label: "PMC6199259" }]);
+  assert.match(html, /PMC6199259 ↗/, "accession stays the link text");
+  assert.doesNotMatch(html, /undefined/, "no undefined leaks into the markup");
+});
+
+test("falls back when the metadata row exists but has no title", () => {
+  // A `paper_metadata` row can exist with a null title (NCBI returned a
+  // docsum with no title field). Rendering the byline alone under a blank
+  // heading would read as a broken citation, so the whole enriched branch
+  // is gated on the title.
+  const html = render([
+    { href: PMC_HREF, label: "PMC6199259", meta: meta({ title: null }) },
+  ]);
+  assert.match(html, /PMC6199259 ↗/, "must fall back to the accession link");
+  assert.doesNotMatch(html, /Bock et al\./, "byline must not render alone");
+});
+
+test("omits the byline when NCBI had no authors, journal or year", () => {
+  const html = render([
+    {
+      href: PMC_HREF,
+      label: "PMC6199259",
+      meta: meta({ authors_short: null, journal: null, year: null }),
+    },
+  ]);
+  assert.match(html, /transporter TAPL/, "title still renders");
+  assert.match(html, /PMC6199259/, "accession still renders");
+  assert.doesNotMatch(html, / · <span/, "no dangling separator before the id");
+});
+
+test("renders each of several sources once", () => {
+  const html = render([
+    { href: PMC_HREF, label: "PMC6199259", meta: meta() },
+    {
+      href: "https://pubmed.ncbi.nlm.nih.gov/40482031/",
+      label: "PMID 40482031",
+      meta: meta({
+        source_id: "PMID:40482031",
+        title: "Three cryo-EM structures of a protease inhibitor",
+        authors_short: "Almeida & Jensen",
+        journal: "Cell Rep",
+        year: 2025,
+      }),
+    },
+  ]);
+  assert.match(html, /Sci Rep 2018/);
+  assert.match(html, /Almeida &amp; Jensen · Cell Rep 2025/);
+  assert.equal(
+    html.match(/<li>/g)?.length,
+    2,
+    "one list item per deduped source",
+  );
+});
