@@ -165,8 +165,14 @@ def _post(
 # URL straight to a MISS. It is the same synthetic host ``_KV_CACHE_BASE``
 # already uses, so the two now derive from one constant and cannot drift
 # apart again.
-_EDGE_CACHE_BASE = f"https://surfaceome-api.cache{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
-_CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
+_EDGE_CACHE_HOST = "https://surfaceome-api.cache"
+_ROUTE_PREFIX = urlparse(PUBLIC_API_BASE).path.rstrip("/")
+# Epoch goes between host and route prefix, matching the Worker's
+# `new URL(`/${cacheEpoch(env)}${keyPath}`, ...)` — keyPath is the
+# UNSTRIPPED pathname, so the prefix comes after the epoch, not before.
+_EDGE_CACHE_BASE = f"{_EDGE_CACHE_HOST}{_ROUTE_PREFIX}"  # unepoched; reference only
+_CATALOG_CACHE_BASE = "https://catalog.cache"
+_CATALOG_CACHE_URL = f"{_CATALOG_CACHE_BASE}/v1/catalog"  # unepoched; kept for reference
 
 # Base for the Worker's KV (``RECORD_CACHE``) mirror keys. The Worker keys
 # KV on its ``caches.default`` cache-key URL verbatim —
@@ -191,10 +197,46 @@ def _kv_keys_for(sym: str) -> list[str]:
     (``/v1/genes/{SYMBOL}/evidence``). Both must be purged so a republish is
     live immediately rather than on the KV entry's expiration TTL (1 day).
     """
+    epoch = _cache_epoch()
     return [
-        f"{_KV_CACHE_BASE}/v1/genes/{sym}",
-        f"{_KV_CACHE_BASE}/v1/genes/{sym}/evidence",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}/evidence",
     ]
+
+
+_EPOCH_CACHE: str | None = None
+
+
+def _cache_epoch(client: httpx.Client | None = None) -> str:
+    """The deploy token the Worker namespaces every cache key by.
+
+    Both cache keys are prefixed with the Worker's version id (see
+    ``cacheEpoch`` in index.js) so a deploy that changes the response shape
+    starts a clean cache namespace. That means this side can no longer
+    derive a key from the URL alone — it has to ask the Worker which epoch
+    is live, which ``/v1/health`` reports.
+
+    Cached for the process: a publish run purges many genes and the epoch
+    cannot change mid-run without a deploy. Falls back to ``"v0"`` — the
+    Worker's own fallback when the ``version_metadata`` binding is absent —
+    so an unreachable Worker or an older deploy degrades to the previous
+    behaviour instead of raising inside a best-effort purge.
+    """
+    global _EPOCH_CACHE
+    if _EPOCH_CACHE is not None:
+        return _EPOCH_CACHE
+    own = client is None
+    c = client or httpx.Client(timeout=10)
+    try:
+        resp = c.get(f"{PUBLIC_API_BASE}/v1/health")
+        resp.raise_for_status()
+        _EPOCH_CACHE = str(resp.json().get("cache_epoch") or "v0")
+    except Exception:  # noqa: BLE001 — purge is best-effort, never fatal
+        _EPOCH_CACHE = "v0"
+    finally:
+        if own:
+            c.close()
+    return _EPOCH_CACHE
 
 
 def _purge_urls_for(sym: str) -> list[str]:
@@ -202,7 +244,7 @@ def _purge_urls_for(sym: str) -> list[str]:
 
     A ``surface_annotation`` write changes four cached surfaces:
 
-    * the per-gene record (``/v1/genes/{SYMBOL}`` — ``cache.internal``),
+    * the per-gene record (``/v1/genes/{SYMBOL}``),
     * the split-out evidence ledger (``/v1/genes/{SYMBOL}/evidence`` —
       on the same synthetic host), which carries the verbatim quotes AND the
       serve-time ``papers`` citation-metadata join,
@@ -216,6 +258,11 @@ def _purge_urls_for(sym: str) -> list[str]:
     ``caches.default`` copy was left to expire, so a republished gene
     could serve a fresh record alongside a day-stale ledger.
 
+    Every key is namespaced by the Worker's deploy epoch (see
+    :func:`_cache_epoch`), so these are only valid against the
+    currently-deployed Worker — which is the only one whose cache
+    entries exist.
+
     Orthologs, triage, and benchmark endpoints are NOT touched by a
     record publish, so they're deliberately excluded — a tighter purge
     set means we never disturb the rest of the shared ``deliverome.org``
@@ -225,11 +272,12 @@ def _purge_urls_for(sym: str) -> list[str]:
     the path only; the catalog key is a hardcoded path), so the bare URL
     is the canonical key — there are no ``?x=`` variants to chase.
     """
+    epoch = _cache_epoch()
     return [
-        f"{_EDGE_CACHE_BASE}/v1/genes/{sym}",
-        f"{_EDGE_CACHE_BASE}/v1/genes/{sym}/evidence",
-        _CATALOG_CACHE_URL,
-        f"{_EDGE_CACHE_BASE}/v1/genes",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}/evidence",
+        f"{_CATALOG_CACHE_BASE}/{epoch}/v1/catalog",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes",
     ]
 
 
