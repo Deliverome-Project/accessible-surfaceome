@@ -124,3 +124,10 @@ UniProt cache and frozen cohort from the earlier audit are required.
 `biolip_gpcrdb_evidence.tsv.gz` contains representative BioLiP sites and the
 accepted GPCRdb evidence. The manifest records source URLs and hashes, including
 per-request cached metadata. Downloaded inputs remain uncommitted.
+
+## All-source comparison
+
+The [all-source comparison table](../../data/analysis/deep_dive_binding_sites/all_source_comparison.md)
+adds true source exclusivity and extracellular coverage for both denominators,
+with SurfaceBind shown separately. Unlike sequential incremental counts,
+exclusivity asks whether any other displayed source covers the same gene.

@@ -1,0 +1,7 @@
+{
+  "input_sha256": "3a03d5fb52bcf1d8cd80556fc27fd4a784d5a0c665bdffe59a17dd635fb585dc",
+  "denominator": 5130,
+  "ligand_yes_denominator": 3157,
+  "unique_definition": "Exclusive across all eight displayed source/evidence streams, including SurfaceBind",
+  "extracellular_definition": "All mapped residues extracellular; not assessed for SurfaceBind anchors"
+}
