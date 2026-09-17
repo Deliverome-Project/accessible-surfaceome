@@ -32,7 +32,9 @@ import worker from "./worker.mjs";
 const record = {
   gene_symbol: "TMEM123",
   model_priors: [{ overall_grade: "moderate" }],
-  literature: { overall_grade: "moderate", observations: [{ id: "observation-1" }] },
+  literature: { overall_grade: "moderate", observations: [{ id: "observation-1" }],
+    sources: [{ spans: [{ source: { source_id: "DOI:10.1234/preprint" } }] }],
+  },
 };
 const keys = [];
 globalThis.caches = { default: {
@@ -42,7 +44,13 @@ globalThis.caches = { default: {
 let reads = 0;
 const env = {
   CF_VERSION_METADATA: { id: "restored-deployment" },
-  DB: { prepare(sql) {
+  DB: {
+    async batch(statements) {
+      assert.equal(statements.length, 1);
+      return [{ results: [{ source_id: "DOI:10.1234/preprint", title: "An uptake assay",
+        authors_short: "Smith et al.", journal: "bioRxiv (preprint)", year: 2025 }] }];
+    },
+    prepare(sql) {
     let args = [];
     return {
       bind(...values) { args = values; return this; },
@@ -91,7 +99,13 @@ async function call(path) {
 }
 const response = await call("/v1/internalization/tmem123");
 assert.equal(response.status, 200);
-assert.deepEqual(await response.json(), record);
+const payload = await response.json();
+const { papers, ...savedRecord } = payload;
+assert.deepEqual(savedRecord, record);
+assert.equal(papers["DOI:10.1234/preprint"].title, "An uptake assay");
+assert.equal(papers["DOI:10.1234/preprint"].authors_short, "Smith et al.");
+assert.equal(papers["DOI:10.1234/preprint"].journal, "bioRxiv (preprint)");
+assert.equal(papers["DOI:10.1234/preprint"].year, 2025);
 assert.equal(response.headers.get("Access-Control-Allow-Origin"), "*");
 assert.match(response.headers.get("Cache-Control"), /max-age=86400/);
 const missing = await call("/v1/internalization/UNSWEPT");
