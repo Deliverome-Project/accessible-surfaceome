@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import argparse
 import gzip
 import hashlib
 import json
@@ -28,6 +29,15 @@ def load_uniprot() -> dict:
         for p in (CACHE / "uniprot").glob("*.json")
         for r in json.loads(p.read_text()).get("data", {}).get("results", [])
     }
+
+
+def unique_gene_index(cohort: list[dict]) -> dict[str, dict]:
+    """Shared protein IDs stay in the denominator, without gene-specific credit."""
+    rows = [r for r in cohort if r.get("identifier_status", "unique") == "unique"]
+    index = {r["uniprot_acc"]: r for r in rows}
+    if len(index) != len(rows):
+        raise ValueError("Unmarked shared UniProt identifiers in cohort")
+    return index
 
 
 def topology(positions: list[int], protein: dict) -> str:
@@ -95,17 +105,36 @@ def write_tsv(name: str, rows: list[dict]) -> None:
 
 
 def main() -> None:
+    global OUT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--deep-dives", action="store_true")
+    args = parser.parse_args()
+    cohort_path = ROOT / (
+        "data/analysis/deep_dive_binding_sites/cohort.tsv"
+        if args.deep_dives
+        else "data/analysis/binder_coverage/gene_coverage.tsv"
+    )
+    prior_path = ROOT / (
+        "data/analysis/deep_dive_binding_sites/prior_observations.tsv.gz"
+        if args.deep_dives
+        else "data/analysis/binder_coverage/observations.tsv.gz"
+    )
+    if args.deep_dives:
+        OUT = ROOT / "data/analysis/deep_dive_binding_sites"
     OUT.mkdir(parents=True, exist_ok=True)
     cohort = list(
         csv.DictReader(
-            (ROOT / "data/analysis/binder_coverage/gene_coverage.tsv").open(),
+            cohort_path.open(),
             delimiter="\t",
         )
     )
     assert len({r["hgnc_id"] for r in cohort}) == len(cohort)
-    by_acc = {r["uniprot_acc"]: r for r in cohort}
+    by_acc = unique_gene_index(cohort)
+    all_accessions = {r["uniprot_acc"] for r in cohort}
     missing = [
-        acc for acc in by_acc if not (CACHE / "ligands" / f"{acc}.json").exists()
+        acc
+        for acc in all_accessions
+        if not (CACHE / "ligands" / f"{acc}.json").exists()
     ]
     if missing:
         raise ValueError(f"Incomplete PDBe scan: {len(missing)} accessions not queried")
@@ -130,6 +159,11 @@ def main() -> None:
     observations = []
     coverage = defaultdict(set)
     retrieval = []
+    for acc in sorted(all_accessions - set(by_acc)):
+        result = json.loads((CACHE / "ligands" / f"{acc}.json").read_text())
+        retrieval.append(
+            dict(uniprot_acc=acc, source="PDBe_ligand_sites", status=result["status"])
+        )
 
     def add(
         acc: str,
@@ -172,9 +206,7 @@ def main() -> None:
     with (ROOT / "data/external/binder_coverage/gtop_ligands.txt").open() as handle:
         next(handle)
         ligands = {r["Ligand ID"]: r for r in csv.DictReader(handle)}
-    with gzip.open(
-        ROOT / "data/analysis/binder_coverage/observations.tsv.gz", "rt"
-    ) as handle:
+    with gzip.open(prior_path, "rt") as handle:
         prior = list(csv.DictReader(handle, delimiter="\t"))
     gtop_pairs = defaultdict(set)
     gtop_inchikey_pairs = defaultdict(set)
@@ -258,11 +290,24 @@ def main() -> None:
                     if row["topology"] == "extracellular":
                         coverage["pdbe_gtopdb_supported_pair_extracellular"].add(acc)
 
-    matched = json.loads((CACHE / "sabdab_matched.json").read_text())
-    coverage["sabdab_target_complex"] = {r["uniprot_acc"] for r in matched}
+    matched = json.loads(
+        (
+            CACHE
+            / (
+                "sabdab_matched_deep_dives.json"
+                if args.deep_dives
+                else "sabdab_matched.json"
+            )
+        ).read_text()
+    )
+    coverage["sabdab_target_complex"] = {
+        r["uniprot_acc"] for r in matched if r["uniprot_acc"] in by_acc
+    }
     for path in (CACHE / "antibody_contacts").glob("*.json"):
         item = json.loads(path.read_text())
         acc = item["uniprot_acc"]
+        if acc not in by_acc:
+            continue
         retrieval.append(
             dict(
                 uniprot_acc=acc,
@@ -388,6 +433,8 @@ def main() -> None:
     for path in (CACHE / "minibinder_contacts").glob("*.json"):
         item = json.loads(path.read_text())
         acc = item["uniprot_acc"]
+        if acc not in by_acc:
+            continue
         positions = item["positions"]
         if positions:
             row = add(
@@ -437,19 +484,36 @@ def main() -> None:
                 ]
             },
             **{key: int(r["uniprot_acc"] in coverage[key]) for key in sorted(coverage)},
+            "identifier_status": r.get("identifier_status", "unique"),
+            "in_previous_candidate_audit": r.get("in_previous_candidate_audit", "1"),
         }
         for r in cohort
     ]
     summaries = []
-    for key in sorted(coverage):
-        for subset, rows in [
+    subsets = (
+        [
+            ("all_deep_dives", cohort),
+            (
+                "previously_audited_deep_dives",
+                [r for r in cohort if r["in_previous_candidate_audit"] == "1"],
+            ),
+            (
+                "newly_audited_deep_dives",
+                [r for r in cohort if r["in_previous_candidate_audit"] == "0"],
+            ),
+        ]
+        if args.deep_dives
+        else [
             ("all_candidates", cohort),
             (
                 "classical_receptors",
                 [r for r in cohort if r["triage_classical_receptor"] == "1"],
             ),
             ("surface_positive", [r for r in cohort if r["triage_surface_yes"] == "1"]),
-        ]:
+        ]
+    )
+    for key in sorted(coverage):
+        for subset, rows in subsets:
             count = sum(r["uniprot_acc"] in coverage[key] for r in rows)
             summaries.append(
                 dict(
@@ -472,11 +536,13 @@ def main() -> None:
     manifest = dict(
         generated_at=datetime.now(UTC).isoformat(),
         cohort_genes=len(cohort),
+        identifier_ambiguous_rows=sum(
+            r.get("identifier_status", "unique") != "unique" for r in cohort
+        ),
         iedb_assays=len(seen),
         iedb_pagination_complete=True,
-        cohort_sha256=hashlib.sha256(
-            (ROOT / "data/analysis/binder_coverage/gene_coverage.tsv").read_bytes()
-        ).hexdigest(),
+        cohort_sha256=hashlib.sha256(cohort_path.read_bytes()).hexdigest(),
+        prior_observations_sha256=hashlib.sha256(prior_path.read_bytes()).hexdigest(),
         contact_cutoff_angstrom=5.0,
         source_endpoints={
             "ligands/{uniprot}.json": "https://www.ebi.ac.uk/pdbe/api/uniprot/ligand_sites/{uniprot}",
@@ -504,7 +570,13 @@ def main() -> None:
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2))
     print(
         json.dumps(
-            [r for r in summaries if r["subset"] == "classical_receptors"], indent=2
+            [
+                r
+                for r in summaries
+                if r["subset"]
+                == ("all_deep_dives" if args.deep_dives else "classical_receptors")
+            ],
+            indent=2,
         )
     )
 

@@ -7,6 +7,8 @@ Full text stays in the ignored local cache; only availability/counts are exporte
 from __future__ import annotations
 
 import csv
+import argparse
+import hashlib
 import json
 import re
 import time
@@ -24,10 +26,20 @@ BASE = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--deep-dives", action="store_true")
+    args = parser.parse_args()
     raw = ROOT / "data/external/binder_coverage/literature"
-    out = ROOT / "data/analysis/binder_coverage"
+    out = ROOT / (
+        "data/analysis/deep_dive_binding_sites"
+        if args.deep_dives
+        else "data/analysis/binder_coverage"
+    )
+    observations_path = out / (
+        "prior_observations.tsv" if args.deep_dives else "observations.tsv"
+    )
     raw.mkdir(exist_ok=True)
-    with (out / "observations.tsv").open() as stream:
+    with observations_path.open() as stream:
         observations = [
             r
             for r in csv.DictReader(stream, delimiter="\t")
@@ -47,7 +59,10 @@ def main() -> None:
                 "resultType": "core",
                 "pageSize": 100,
             }
-            path = raw / f"metadata_{start}.json"
+            path = (
+                raw
+                / f"metadata_batch_{hashlib.sha256('|'.join(batch).encode()).hexdigest()[:16]}.json"
+            )
             if not path.exists():
                 response = client.get(BASE + "/search", params=params)
                 response.raise_for_status()
@@ -151,7 +166,7 @@ def main() -> None:
     manifest = dict(
         generated_at=utc_now_iso(),
         generator_sha256=sha256_file(Path(__file__)),
-        observations_sha256=sha256_file(out / "observations.tsv"),
+        observations_sha256=sha256_file(observations_path),
         requests=requests,
         summary=summary,
         limitation="Keyword hits are paper-level triage leads, not validated target-specific epitopes. Supplements flagged but not downloaded. No paid model calls.",

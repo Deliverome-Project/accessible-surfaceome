@@ -170,3 +170,5 @@ data/external/binder_coverage/
 data/analysis/binder_coverage/observations.tsv
 data/external/binding_site_audit/
 data/analysis/binding_site_audit/observations.tsv
+data/analysis/deep_dive_binding_sites/observations.tsv
+data/analysis/deep_dive_binding_sites/prior_observations.tsv

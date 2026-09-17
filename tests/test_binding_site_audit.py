@@ -2,6 +2,7 @@
 
 import importlib.util
 from pathlib import Path
+import pytest
 
 
 def load_script(name):
@@ -21,6 +22,31 @@ mapped_iedb_positions, pdb_sites, topology = (
     _summary.pdb_sites,
     _summary.topology,
 )
+
+
+def test_shared_protein_ids_remain_uncredited_without_collapsing_denominator():
+    cohort = [
+        {
+            "hgnc_id": "HGNC:1",
+            "uniprot_acc": "P00001",
+            "identifier_status": "shared_uniprot_ambiguous",
+        },
+        {
+            "hgnc_id": "HGNC:2",
+            "uniprot_acc": "P00001",
+            "identifier_status": "shared_uniprot_ambiguous",
+        },
+        {"hgnc_id": "HGNC:3", "uniprot_acc": "P00002", "identifier_status": "unique"},
+    ]
+    assert list(_summary.unique_gene_index(cohort)) == ["P00002"]
+    assert len(cohort) == 3
+
+
+def test_unmarked_shared_proteins_fail_instead_of_overwriting_a_gene():
+    with pytest.raises(ValueError, match="Unmarked shared"):
+        _summary.unique_gene_index(
+            [{"uniprot_acc": "P00001"}, {"uniprot_acc": "P00001"}]
+        )
 
 
 def test_sites_do_not_mix_structures_or_predicted_annotations():

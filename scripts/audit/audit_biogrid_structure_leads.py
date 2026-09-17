@@ -7,6 +7,7 @@ These records deliberately remain review leads, outside mapped-site coverage.
 from __future__ import annotations
 
 import csv
+import argparse
 import gzip
 import json
 import re
@@ -42,7 +43,17 @@ def paper_pdb_ids(xml: str) -> set[str]:
 
 
 def main() -> None:
-    output = ROOT / "data/analysis/binding_site_audit"
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--deep-dives", action="store_true")
+    args = parser.parse_args()
+    output = ROOT / (
+        "data/analysis/deep_dive_binding_sites"
+        if args.deep_dives
+        else "data/analysis/binding_site_audit"
+    )
+    literature_output = (
+        output if args.deep_dives else ROOT / "data/analysis/binder_coverage"
+    )
     output.mkdir(parents=True, exist_ok=True)
     mapping = defaultdict(set)
     with gzip.open(
@@ -54,12 +65,17 @@ def main() -> None:
     papers = {
         r["pmid"]: r
         for r in csv.DictReader(
-            (ROOT / "data/analysis/binder_coverage/literature_retrieval.tsv").open(),
+            (literature_output / "literature_retrieval.tsv").open(),
             delimiter="\t",
         )
     }
     with gzip.open(
-        ROOT / "data/analysis/binder_coverage/observations.tsv.gz", "rt"
+        (
+            output / "prior_observations.tsv.gz"
+            if args.deep_dives
+            else ROOT / "data/analysis/binder_coverage/observations.tsv.gz"
+        ),
+        "rt",
     ) as handle:
         binders = [
             r

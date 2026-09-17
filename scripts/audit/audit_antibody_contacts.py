@@ -9,6 +9,7 @@ not a complete antibody catalogue or a count of independent validations.
 from __future__ import annotations
 
 import csv
+import argparse
 import gzip
 import hashlib
 import io
@@ -45,11 +46,13 @@ def download(path: Path, url: str) -> bytes:
     raise RuntimeError(url)
 
 
-def select_complexes() -> list[dict]:
+def select_complexes(cohort_path: Path | None = None) -> list[dict]:
     cohort = {
         r["uniprot_acc"]
         for r in csv.DictReader(
-            (ROOT / "data/analysis/binder_coverage/gene_coverage.tsv").open(),
+            (
+                cohort_path or ROOT / "data/analysis/binder_coverage/gene_coverage.tsv"
+            ).open(),
             delimiter="\t",
         )
     }
@@ -183,8 +186,22 @@ def audit(row: dict) -> dict:
 
 
 def main() -> None:
-    matches = select_complexes()
-    (CACHE / "sabdab_matched.json").write_text(json.dumps(matches))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--deep-dives", action="store_true")
+    args = parser.parse_args()
+    matches = select_complexes(
+        ROOT / "data/analysis/deep_dive_binding_sites/cohort.tsv"
+        if args.deep_dives
+        else None
+    )
+    (
+        CACHE
+        / (
+            "sabdab_matched_deep_dives.json"
+            if args.deep_dives
+            else "sabdab_matched.json"
+        )
+    ).write_text(json.dumps(matches))
     selected = defaultdict(list)
 
     def rank(row: dict) -> tuple:

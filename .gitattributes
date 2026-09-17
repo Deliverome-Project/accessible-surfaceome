@@ -168,3 +168,5 @@ data/analysis/binder_coverage/* -filter -diff -merge
 data/analysis/binder_coverage/*.tsv text
 data/analysis/binding_site_audit/* -filter -diff -merge
 data/analysis/binding_site_audit/*.tsv text
+data/analysis/deep_dive_binding_sites/* -filter -diff -merge
+data/analysis/deep_dive_binding_sites/*.tsv text

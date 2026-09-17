@@ -67,7 +67,18 @@ def main() -> None:
     parser.add_argument(
         "source", choices=["bulk", "pdbe", "iedb", "uniprot", "natural", "compounds"]
     )
+    parser.add_argument("--deep-dives", action="store_true")
     args = parser.parse_args()
+    cohort_path = ROOT / (
+        "data/analysis/deep_dive_binding_sites/cohort.tsv"
+        if args.deep_dives
+        else "data/analysis/binder_coverage/gene_coverage.tsv"
+    )
+    prior_path = ROOT / (
+        "data/analysis/deep_dive_binding_sites/prior_observations.tsv.gz"
+        if args.deep_dives
+        else "data/analysis/binder_coverage/observations.tsv.gz"
+    )
     if args.source == "bulk":
         urls = {
             "sabdab_summary.txt": "https://sabdab.opig.stats.ox.ac.uk/api/download/all-summary",
@@ -95,7 +106,7 @@ def main() -> None:
         return
     cohort = list(
         csv.DictReader(
-            (ROOT / "data/analysis/binder_coverage/gene_coverage.tsv").open(),
+            cohort_path.open(),
             delimiter="\t",
         )
     )
@@ -106,19 +117,22 @@ def main() -> None:
             result = json.loads(path.read_text())
             for protein in result.get("data", {}).values():
                 ids.update(item["accession"] for item in protein.get("data", []))
-        ordered = sorted(ids)
+        cached_ids = {
+            ccd
+            for path in (CACHE / "compounds").glob("*.json")
+            for ccd in json.loads(path.read_text()).get("data", {})
+        }
+        ordered = sorted(ids - cached_ids)
         for i in range(0, len(ordered), 100):
             fetch(
-                f"compounds/{i}",
+                f"compounds/batch_{hashlib.sha256(','.join(ordered[i : i + 100]).encode()).hexdigest()[:16]}",
                 "https://www.ebi.ac.uk/pdbe/api/pdb/compound/summary/"
                 + ",".join(ordered[i : i + 100]),
             )
             print(f"Compounds {min(i + 100, len(ordered))}/{len(ordered)}", flush=True)
         return
     if args.source == "natural":
-        with gzip.open(
-            ROOT / "data/analysis/binder_coverage/observations.tsv.gz", "rt"
-        ) as handle:
+        with gzip.open(prior_path, "rt") as handle:
             accessions = sorted(
                 {
                     r["uniprot_acc"]
@@ -168,10 +182,16 @@ def main() -> None:
                 break
             offset += count
     else:
+        cached_ids = {
+            r["primaryAccession"]
+            for p in (CACHE / "uniprot").glob("*.json")
+            for r in json.loads(p.read_text()).get("data", {}).get("results", [])
+        }
+        accessions = sorted(set(accessions) - cached_ids)
         for i in range(0, len(accessions), 100):
             batch = accessions[i : i + 100]
             result = fetch(
-                f"uniprot/{i}",
+                f"uniprot/batch_{hashlib.sha256(','.join(batch).encode()).hexdigest()[:16]}",
                 "https://rest.uniprot.org/uniprotkb/search",
                 {
                     "query": " OR ".join(f"accession:{acc}" for acc in batch),
