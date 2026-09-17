@@ -1358,6 +1358,39 @@ export interface EvidenceSpan {
   normalized_source_sha256?: string;
 }
 
+/** NCBI citation metadata for one cited paper, served by
+ *  `GET /v1/genes/{SYMBOL}/evidence` as the `papers` map (keyed by the same
+ *  `source_id` the record's spans carry).
+ *
+ *  Why this isn't just `SourceRef.title`: the annotator writes
+ *  `SourceRef.title` as a PLACEHOLDER equal to the id ("PMC:PMC6199259"),
+ *  and the record schema has no author / journal / year fields at all. The
+ *  real citation metadata lives in public D1's `paper_metadata` table and is
+ *  joined in by the Worker at serve time, so every field here is nullable —
+ *  a paper missing from the table (or the whole map missing, on the offline
+ *  snapshot path) degrades to the bare accession. */
+export interface PaperMetadata {
+  source_id: string;
+  pmid: string | null;
+  pmc_id: string | null;
+  doi: string | null;
+  /** Article title, trailing period stripped. */
+  title: string | null;
+  /** Reader-facing byline: "Bock et al." / "Bock & Löhr" / "Bock". */
+  authors_short: string | null;
+  /** Every author in NCBI order ("Bock C", "Löhr F", …). */
+  authors: string[] | null;
+  n_authors: number | null;
+  /** NLM journal abbreviation ("Sci Rep"). */
+  journal: string | null;
+  year: number | null;
+}
+
+/** `source_id` → citation metadata, as returned by the evidence endpoint.
+ *  Absent entirely when the record was loaded from the committed snapshot
+ *  fallback rather than the Worker. */
+export type PaperMetadataMap = Readonly<Record<string, PaperMetadata>>;
+
 export interface Evidence {
   evidence_id: string;
   claim: string;

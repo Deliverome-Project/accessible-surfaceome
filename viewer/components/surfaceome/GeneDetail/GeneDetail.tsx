@@ -36,6 +36,7 @@ import {
 } from "../../../lib/fg-library";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
+  PaperMetadataMap,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import type {
@@ -47,6 +48,7 @@ import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import styles from "./GeneDetail.module.css";
 
 interface GeneDetailProps {
+  papers?: PaperMetadataMap;
   /** The full SurfaceomeRecord — the only hard requirement, fetched by the
    *  client shell from the Worker before this renders. */
   rec: SurfaceomeRecord;
@@ -109,6 +111,7 @@ interface GeneDetailProps {
  */
 export function GeneDetail({
   rec,
+  papers,
   geneName,
   structureData,
   taggedSites,
@@ -285,7 +288,7 @@ export function GeneDetail({
     {
       kind: "ledger",
       label: "Evidence",
-      render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
+      render: (n) => <EvidenceLedgerCard rec={rec} n={n} papers={papers} />,
     },
     {
       kind: "community",
@@ -459,7 +462,7 @@ export function GeneDetail({
        *  app/gene/page.tsx) — `undefined` until it merges in. Pass an empty
        *  ledger until then: chips clicked before it lands simply resolve to
        *  no quote (the drawer no-ops), and re-resolve once evidence merges. */}
-      <EvidenceDrawer evidence={rec.evidence ?? []} />
+      <EvidenceDrawer evidence={rec.evidence ?? []} papers={papers} />
       <FeedbackModal />
     </Shell>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { EvidenceChip } from "../EvidenceChip/EvidenceChip";
+import type { PaperMetadataMap } from "../../../lib/surfaceome-types";
 import { EvidenceDrawer } from "../EvidenceDrawer/EvidenceDrawer";
 import type { Evidence } from "../../../lib/surfaceome-types";
 import styles from "./InternalizationCard.module.css";
@@ -129,6 +130,7 @@ interface Literature {
   n_papers_fetched: number;
 }
 interface Record {
+  papers?: PaperMetadataMap;
   gene_symbol: string;
   uniprot_acc: string;
   model_priors: ModelPriorTrack[];
@@ -542,6 +544,7 @@ export function InternalizationCard({ symbol, n }: Props) {
                     detail panel the rest of the page uses. */}
                 <EvidenceDrawer
                   evidence={lit.sources as unknown as Evidence[]}
+                  papers={rec.papers}
                 />
               </>
             )}

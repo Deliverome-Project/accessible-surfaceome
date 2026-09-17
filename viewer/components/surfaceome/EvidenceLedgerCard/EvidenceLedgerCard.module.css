@@ -191,3 +191,54 @@
   color: var(--ink-soft);
   line-height: 1.5;
 }
+
+/* Citation line — replaces the bare accession link on rows whose paper
+   resolved in `paper_metadata`. One anchor around the whole thing so the
+   byline and accession are live, not just the title.
+
+   Display serif on the title for the same reason as the drawer: the row
+   already stacks a claim and an italic quote in Manrope, so a sans title
+   underneath reads as a third paragraph of prose rather than as the
+   paper's name. */
+.cite {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  align-self: flex-start;
+  text-decoration: none;
+  /* The row stacks claim -> quote -> citation with no separators, and the
+     quote's own left rule ends flush against this. Without the extra top
+     space the serif title reads as a continuation of the quote rather
+     than as the paper it came from. */
+  margin-top: var(--space-1);
+}
+
+.citeTitle {
+  font-family: var(--font-display);
+  /* Well below the row's 0.96rem claim. The ledger is a scannable list —
+     the claim is what a reader scans, and the citation is provenance
+     hanging off it, so the title must not compete. The serif is doing the
+     "this is a paper title" work; size is not. */
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.cite:hover .citeTitle,
+.cite:focus-visible .citeTitle {
+  color: var(--accent);
+}
+
+.citeMeta {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 350;
+}
+
+.citeAccession {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
