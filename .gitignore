@@ -181,3 +181,9 @@ data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
 
 # Read-only ligand-gap diagnostic caches
 /data/external/ligand_gap_audit/
+
+# Structural and IntAct extension source caches
+/data/external/structural_intact_extension/
+
+/data/analysis/deep_dive_binding_sites/structural_intact_evidence.tsv
+/data/analysis/deep_dive_binding_sites/structural_intact_attempts.tsv
