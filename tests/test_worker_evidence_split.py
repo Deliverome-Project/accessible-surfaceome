@@ -34,6 +34,7 @@ from typing import Any
 
 import pytest
 
+from accessible_surfaceome.cloud import surface_annotation as _sa
 from accessible_surfaceome.cloud.surface_annotation import _kv_keys_for
 from accessible_surfaceome.paths import REPO_ROOT
 
@@ -153,6 +154,22 @@ console.log(JSON.stringify({
   },
 }));
 """
+
+
+@pytest.fixture(autouse=True)
+def _pin_cache_epoch(monkeypatch):
+    """Pin the deploy epoch so cache-key assertions don't depend on network.
+
+    ``_cache_epoch()`` asks the live Worker (``/v1/health``) which epoch is
+    deployed, falling back to ``"v0"`` when it can't reach it. That makes any
+    test asserting a literal cache key pass offline and FAIL wherever
+    production is reachable — which is how this suite went green in CI and
+    red on a developer machine. Pinning the module-level cache takes the
+    network out of the assertion entirely.
+    """
+    monkeypatch.setattr(_sa, "_EPOCH_CACHE", "v0")
+    yield
+    monkeypatch.setattr(_sa, "_EPOCH_CACHE", None)
 
 
 def _patched_worker_source() -> str:

@@ -5,13 +5,17 @@
 //
 // Endpoints:
 //   GET /v1                     — self-describing index: endpoint catalog +
-//                                  docs/skill/llms.txt links + dataset versions
+//                                  docs, skill and llms_txt links + dataset versions
 //                                  (also served at the bare service root)
 //   GET /v1/health
 //   GET /v1/genes               — list of annotated genes
 //   GET /v1/genes/:symbol       — full SurfaceomeRecord (WITHOUT `evidence`)
 //   GET /v1/genes/:symbol/evidence — the record's evidence ledger, split
-//                                  out of the record: { gene, evidence[] }
+//                                  out of the record: { gene, evidence[],
+//                                  papers{} } — `papers` is the NCBI citation
+//                                  metadata (title / byline / journal / year)
+//                                  joined in from `paper_metadata`, keyed by
+//                                  the same `source_id` the spans carry
 //   GET /v1/genes/:symbol.md    — rich Markdown export (served from R2)
 //   GET /v1/catalog             — genome-wide candidate-universe table
 //   GET /v1/catalog/:symbol     — one gene's 5-DB surface-vote row (slim)
@@ -235,11 +239,33 @@ function maxAgeFromCacheControl(cc) {
 // can reproduce and delete it exactly.
 //
 // Only 200 and 404 are cached (both carry positive TTLs); 400/405 opt out.
+// Deploy epoch folded into every cache key.
+//
+// Neither cache tier had any notion of the RESPONSE SHAPE, so a deploy that
+// changed the shape kept serving the old one until each entry's own TTL —
+// up to an hour for a KV read (its `cacheTtl`) and up to a day for a
+// caches.default entry. Purging cannot fix that: the KV read's edge cache
+// is not invalidated by deleting the KV key, and purging every gene by
+// hand after every deploy is not a plan. Keying on the Worker version
+// makes a deploy start a clean cache namespace, which is the correct
+// granularity — a shape change IS a deploy.
+//
+// `CF_VERSION_METADATA` is a `[version_metadata]` binding whose `id`
+// changes on every deploy. It is OPTIONAL here: a config without the
+// binding (or `wrangler dev`) falls back to a fixed token and behaves
+// exactly as before rather than crashing. Orphaned keys need no cleanup —
+// every kv.put already carries an `expirationTtl` matched to the
+// response's max-age, so old-epoch entries age out on their own.
+function cacheEpoch(env) {
+  return env?.CF_VERSION_METADATA?.id || "v0";
+}
+
+
 async function withEdgeCache(request, env, ctx, handler, { includeQuery = false } = {}) {
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
-  const cacheKey = new Request(new URL(keyPath, "https://surfaceome-api.cache").href, {
+  const cacheKey = new Request(new URL(`/${cacheEpoch(env)}${keyPath}`, "https://surfaceome-api.cache").href, {
     method: "GET",
   });
   // (1) per-POP edge cache
@@ -308,7 +334,16 @@ async function handleHealth(env) {
   const r = await env.DB.prepare(
     "SELECT count(*) AS n FROM surface_annotation"
   ).first();
-  return json({ ok: true, n_annotations: r?.n ?? 0 });
+  // ``cache_epoch`` is the deploy token every cache key is namespaced by.
+  // The publish path reads it from here so it can still construct the exact
+  // KV / caches.default keys to purge for a single republished gene — a
+  // deploy invalidates everything by changing this, but a republish between
+  // deploys still needs targeted eviction.
+  return json({
+    ok: true,
+    n_annotations: r?.n ?? 0,
+    cache_epoch: cacheEpoch(env),
+  });
 }
 
 async function handleGeneList(env) {
@@ -578,13 +613,22 @@ async function handleGene(env, symbol) {
     // records with a real DeepTMHMM row are left alone.
     const existingCanonTopo = record?.deterministic_features?.canonical_topology;
     const canonTopoIsPlaceholder = existingCanonTopo?.tool_version === "placeholder-no-d1-row";
-    const canonTopoNeedsEnrich = !existingCanonTopo || canonTopoIsPlaceholder;
+    // Records baked before the DeepTMHMM call / length columns were carried
+    // through have the block but not these keys. Without this every already
+    // published gene keeps hiding the tool's own classification behind the
+    // derived ECD/ICD numbers.
+    const canonTopoLacksCall = !!existingCanonTopo
+      && existingCanonTopo.predicted_surface_membrane === undefined;
+    const canonTopoNeedsEnrich =
+      !existingCanonTopo || canonTopoIsPlaceholder || canonTopoLacksCall;
     if (canonTopoNeedsEnrich && canonicalTopoVersion) {
       const tr = await env.DB.prepare(
         `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
                 n_terminal_orientation, c_terminal_orientation,
                 signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at
+                per_residue_topology, sequence, tool_version, retrieved_at,
+                predicted_surface_membrane, predicted_secreted,
+                beta_strand_count, protein_length
            FROM topology_public
           WHERE uniprot_acc = ? AND cohort = 'human_canonical'
             AND topology_version = ?
@@ -605,7 +649,35 @@ async function handleGene(env, symbol) {
           sequence: tr.sequence ?? null,
           tool_version: tr.tool_version || "deeptmhmm-1.0.24",
           retrieved_at: tr.retrieved_at || new Date().toISOString(),
+          // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays
+          // null so "column absent" never reads as a confident false.
+          predicted_surface_membrane:
+            tr.predicted_surface_membrane == null ? null : Boolean(Number(tr.predicted_surface_membrane)),
+          predicted_secreted:
+            tr.predicted_secreted == null ? null : Boolean(Number(tr.predicted_secreted)),
+          beta_strand_count:
+            tr.beta_strand_count == null ? null : Number(tr.beta_strand_count),
+          protein_length:
+            tr.protein_length == null ? null : Number(tr.protein_length),
         };
+      }
+    }
+
+    // ----- gene.ensembl_canonical_protein -----
+    // The stable-ID cache carries the canonical ENSP, but the record's gene
+    // block only ever shipped ensembl_gene — so the API was weaker than the
+    // figure TSVs, which require the canonical protein "when the row
+    // references a specific protein isoform". Enrich rather than require a
+    // re-annotation, and only when absent so a baked value always wins.
+    if (record?.gene && record.gene.ensembl_canonical_protein == null) {
+      const giRow = await env.DB.prepare(
+        `SELECT ensembl_canonical_protein
+           FROM gene_identifier_public
+          WHERE uniprot_acc = ?
+          LIMIT 1`
+      ).bind(uniprot).first().catch(() => null);
+      if (giRow?.ensembl_canonical_protein) {
+        record.gene.ensembl_canonical_protein = giRow.ensembl_canonical_protein;
       }
     }
 
@@ -865,8 +937,16 @@ async function handleGene(env, symbol) {
     // SurfaceBindFeatures block is left alone so the data the LLM saw at
     // annotation time matches what the viewer renders.
     const existingSurfaceBind = record?.deterministic_features?.surface_bind;
+    // A record baked before per-site topology existed carries sites with no
+    // ``anchor_topology`` key. Those need enriching too, otherwise every
+    // already-published gene keeps serving sites that don't say which side
+    // of the membrane they're on — which is the whole point of the field.
+    const sbSitesLackTopology = Array.isArray(existingSurfaceBind?.sites)
+      && existingSurfaceBind.sites.length > 0
+      && existingSurfaceBind.sites.every((s) => s?.anchor_topology === undefined);
     const sbNeedsEnrichment = !existingSurfaceBind
-      || existingSurfaceBind.has_data === false;
+      || existingSurfaceBind.has_data === false
+      || sbSitesLackTopology;
     if (sbNeedsEnrichment) {
       const sbProteinRow = await env.DB.prepare(
         `SELECT chain, main_class, sub_class, protein_name, n_sites,
@@ -884,6 +964,36 @@ async function handleGene(env, symbol) {
             WHERE uniprot_acc = ?
             ORDER BY site_id`
         ).bind(uniprot).all().catch(() => null);
+        // Which side of the membrane each anchor residue sits on.
+        // SURFACE-Bind scores the whole solved structure, so a scored
+        // patch is not necessarily reachable from outside the cell:
+        // cohort-wide, 23% of sites anchor somewhere other than the
+        // extracellular face (EGFR alone contributes three kinase-domain
+        // sites). Served as its own scalar pull rather than a JOIN so a
+        // missing topology row degrades to nulls instead of dropping the
+        // whole surface_bind block.
+        const sbTopoRow = await env.DB.prepare(
+          `SELECT per_residue_topology
+             FROM topology_public
+            WHERE uniprot_acc = ? AND species = 'human'
+              AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
+            LIMIT 1`
+        ).bind(uniprot).first().catch(() => null);
+        const prt = sbTopoRow?.per_residue_topology ?? null;
+        // DeepTMHMM alphabet, per the per_residue_topology column comment
+        // in cloudflare/d1_public_schema.sql ("O/M/I/S/B chars").
+        const TOPO_CHARS = {
+          O: "extracellular",
+          I: "intracellular",
+          M: "membrane",
+          B: "membrane",
+          S: "signal_peptide",
+        };
+        const anchorTopology = (residue) => {
+          if (!prt || !Number.isFinite(residue)) return null;
+          if (residue < 1 || residue > prt.length) return null;
+          return TOPO_CHARS[prt[residue - 1]] ?? null;
+        };
         // ``pdbs`` is stored as a JSON-encoded array string (see
         // scripts/sync_surface_bind_to_d1.py: ``json.dumps(entry.get("pdbs",
         // []))``). Defensively accept a real array (forward-compat), an
@@ -915,6 +1025,7 @@ async function handleGene(env, symbol) {
           n_seeds_alpha: Number(s.n_seeds_alpha),
           n_seeds_beta: Number(s.n_seeds_beta),
           hydrophobicity: Number(s.hydrophobicity),
+          anchor_topology: anchorTopology(Number(s.anchor_residue)),
         }));
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.surface_bind = {
@@ -988,13 +1099,103 @@ async function handleGene(env, symbol) {
   return json(record, { ttl: CACHE_TTL_LONG });
 }
 
+// Max distinct papers we'll look up citation metadata for in one request.
+// The busiest records cite ~120 papers; the cap is a cheap guard against a
+// pathological record turning one page view into an unbounded fan-out of D1
+// queries. Beyond it the extra papers simply render without metadata.
+const PAPER_METADATA_MAX = 400;
+
+// Bound parameters per `IN (...)` lookup. D1 rejects a query carrying more
+// than 100 bound params, so the id set is chunked and the chunks are issued
+// as one `db.batch()` round trip.
+const PAPER_METADATA_CHUNK = 90;
+
+// Pull every distinct `source_id` out of an evidence ledger's spans. Records
+// cite the same paper from many spans, so the Set is what keeps the lookup
+// (and the response) proportional to papers rather than to citations.
+function collectSourceIds(evidence) {
+  const ids = new Set();
+  for (const ev of evidence) {
+    for (const sp of ev?.spans ?? []) {
+      const sid = sp?.source?.source_id;
+      if (typeof sid === "string" && sid) ids.add(sid);
+      if (ids.size >= PAPER_METADATA_MAX) return [...ids];
+    }
+  }
+  return [...ids];
+}
+
+// Citation metadata for a set of `source_id`s, as a `{ [source_id]: {...} }`
+// map. This is the serve-time half of the citation pipeline: the annotator
+// bakes only an accession into the record (`SourceRef.title` is a placeholder
+// equal to the id), and `paper_metadata` — built by
+// scripts/build/build_paper_metadata_table.py from NCBI E-utilities — carries
+// the real title / byline / journal / year. Joining here rather than
+// rewriting stored records means a metadata refresh ships without
+// re-annotating any gene.
+//
+// Returns {} on any failure or when the table hasn't been created yet: the
+// drawer degrades to the bare accession it showed before, which is a worse
+// reading experience but never a broken page.
+async function fetchPaperMetadata(env, sourceIds) {
+  if (!sourceIds.length) return {};
+  const statements = [];
+  for (let i = 0; i < sourceIds.length; i += PAPER_METADATA_CHUNK) {
+    const chunk = sourceIds.slice(i, i + PAPER_METADATA_CHUNK);
+    const placeholders = chunk.map(() => "?").join(",");
+    statements.push(
+      env.DB.prepare(
+        `SELECT source_id, pmid, pmc_id, doi, title, authors_short,
+                authors_json, n_authors, journal, year
+           FROM paper_metadata
+          WHERE source_id IN (${placeholders})`
+      ).bind(...chunk)
+    );
+  }
+  let batches;
+  try {
+    batches = await env.DB.batch(statements);
+  } catch (e) {
+    return {};
+  }
+  const papers = {};
+  for (const b of batches) {
+    for (const row of b?.results ?? []) {
+      // `authors_json` is stored as a JSON array string; hand the client the
+      // parsed array so it never has to know the storage encoding.
+      let authors = null;
+      if (row.authors_json) {
+        try {
+          const parsed = JSON.parse(row.authors_json);
+          if (Array.isArray(parsed)) authors = parsed;
+        } catch (e) {
+          authors = null;
+        }
+      }
+      papers[row.source_id] = {
+        source_id: row.source_id,
+        pmid: row.pmid ?? null,
+        pmc_id: row.pmc_id ?? null,
+        doi: row.doi ?? null,
+        title: row.title ?? null,
+        authors_short: row.authors_short ?? null,
+        authors: authors,
+        n_authors: row.n_authors ?? null,
+        journal: row.journal ?? null,
+        year: row.year ?? null,
+      };
+    }
+  }
+  return papers;
+}
+
 // GET /v1/genes/{SYMBOL}/evidence — the evidence ledger split out of the
 // per-gene record (see the strip at the end of handleGene). Reads the SAME
-// record_json blob from D1 and returns just `{ gene, evidence }`. Same
+// record_json blob from D1 and returns `{ gene, evidence, papers }`. Same
 // symbol validation + 404 posture as handleGene (unknown gene →
 // gene_not_annotated), and routed through withEdgeCache (+KV) at the same
-// 1-day TTL. No serve-time enrichment runs here — enrichment targets
-// deterministic_features / triage, never the evidence array.
+// 1-day TTL. The one serve-time enrichment here is `papers` (citation
+// metadata by source_id) — the evidence array itself is never rewritten.
 async function handleGeneEvidence(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -1014,7 +1215,8 @@ async function handleGeneEvidence(env, symbol) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
   const evidence = Array.isArray(record?.evidence) ? record.evidence : [];
-  return json({ gene: sym, evidence }, { ttl: CACHE_TTL_LONG });
+  const papers = await fetchPaperMetadata(env, collectSourceIds(evidence));
+  return json({ gene: sym, evidence, papers }, { ttl: CACHE_TTL_LONG });
 }
 
 async function handleOrthologs(env, symbol) {
@@ -1340,9 +1542,10 @@ async function handleCatalog(env, request) {
   // /v1/catalog), so a re-deploy or universe-version bump surfaces on
   // the next miss.
   const cache = caches.default;
-  const cacheKey = new Request(new URL("/v1/catalog", "https://catalog.cache").href, {
-    method: "GET",
-  });
+  const cacheKey = new Request(
+    new URL(`/${cacheEpoch(env)}/v1/catalog`, "https://catalog.cache").href,
+    { method: "GET" },
+  );
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
 
@@ -2146,7 +2349,7 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/health", summary: "Liveness + n_annotations" },
   { group: "Deep dive", method: "GET", path: "/v1/genes", summary: "Index of genes with a deep-dive SurfaceomeRecord" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON (WITHOUT `evidence` — fetch that from /v1/genes/{symbol}/evidence)" },
-  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/evidence", summary: "The gene's evidence ledger (quote+span items) split out of the record: { gene, evidence[] }" },
+  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/evidence", summary: "The gene's evidence ledger (quote+span items) split out of the record: { gene, evidence[], papers{} } — papers carries NCBI citation metadata (title, byline, journal, year) keyed by source_id" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },

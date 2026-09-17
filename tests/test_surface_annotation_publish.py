@@ -22,12 +22,29 @@ from pathlib import Path
 
 import pytest
 
+from accessible_surfaceome.cloud import surface_annotation as _sa
 from accessible_surfaceome.cloud.surface_annotation import (
     PublishResult,
     _maybe_purge,
     _purge_urls_for,
     publish_record_dict,
 )
+
+
+@pytest.fixture(autouse=True)
+def _pin_cache_epoch(monkeypatch):
+    """Pin the deploy epoch so cache-key assertions don't depend on network.
+
+    ``_cache_epoch()`` asks the live Worker (``/v1/health``) which epoch is
+    deployed, falling back to ``"v0"`` when it can't reach it. That makes any
+    test asserting a literal cache key pass offline and FAIL wherever
+    production is reachable — which is how this suite went green in CI and
+    red on a developer machine. Pinning the module-level cache takes the
+    network out of the assertion entirely.
+    """
+    monkeypatch.setattr(_sa, "_EPOCH_CACHE", "v0")
+    yield
+    monkeypatch.setattr(_sa, "_EPOCH_CACHE", None)
 
 
 @pytest.fixture(autouse=True)
@@ -175,23 +192,40 @@ def test_publish_record_dict_accepts_drifted_schema(
 # --- edge-cache purge-on-publish -------------------------------------------
 
 
-def test_purge_urls_for_targets_record_catalog_and_list() -> None:
-    # A surface_annotation write invalidates exactly three cached surfaces:
-    # the per-gene record, the genome-wide catalog (carries the gene's ddf
-    # projection), and the gene-list index. Nothing else (orthologs /
-    # triage / benchmark) — a tighter set avoids disturbing the rest of the
-    # shared deliverome.org zone cache.
+def test_purge_urls_for_targets_record_evidence_catalog_and_list() -> None:
+    # A surface_annotation write invalidates exactly four cached surfaces:
+    # the per-gene record, its split-out evidence ledger, the genome-wide
+    # catalog (carries the gene's ddf projection), and the gene-list index.
+    # Nothing else (orthologs / triage / benchmark) — a tighter set avoids
+    # disturbing the rest of the shared deliverome.org zone cache.
+    #
+    # The evidence URL is load-bearing: the ledger moved out of the record
+    # but only its KV mirror was being purged, so the caches.default copy
+    # (and with it the serve-time `papers` citation join) could serve a day
+    # stale next to a freshly republished record.
     #
     # The Worker caches in caches.default under SYNTHETIC hosts, not the
     # public request host — purging the api.deliverome.org URL is a silent
     # no-op. These keys mirror index.js exactly: withEdgeCache uses
-    # https://cache.internal + the unstripped pathname (carries the
+    # https://surfaceome-api.cache + the unstripped pathname (carries the
     # /surfaceome route prefix); handleCatalog uses https://catalog.cache.
+    #
+    # This assertion previously pinned ``https://cache.internal``, which is
+    # a host the Worker has never used — so the test passed while the purge
+    # evicted nothing and republished records served stale for up to their
+    # full 24h TTL. Pinning a literal is only as good as the literal; the
+    # companion test in tests/test_purge_cache_key_host.py now parses the
+    # host out of index.js so the two cannot disagree again.
+    # Four surfaces, each namespaced by the Worker's deploy epoch. With no
+    # Worker reachable, _cache_epoch falls back to "v0" — the same fallback
+    # the Worker uses when the version_metadata binding is absent — so the
+    # shape is deterministic offline.
     urls = _purge_urls_for("EGFR")
     assert urls == [
-        "https://cache.internal/surfaceome/v1/genes/EGFR",
-        "https://catalog.cache/v1/catalog",
-        "https://cache.internal/surfaceome/v1/genes",
+        "https://surfaceome-api.cache/v0/surfaceome/v1/genes/EGFR",
+        "https://surfaceome-api.cache/v0/surfaceome/v1/genes/EGFR/evidence",
+        "https://catalog.cache/v0/v1/catalog",
+        "https://surfaceome-api.cache/v0/surfaceome/v1/genes",
     ]
 
 
