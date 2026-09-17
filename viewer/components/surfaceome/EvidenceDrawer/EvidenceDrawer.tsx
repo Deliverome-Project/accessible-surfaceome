@@ -162,20 +162,22 @@ export function SourceList({ sources }: { sources: readonly SourceEntry[] }) {
       {sources.map((s) => (
         <li key={s.href}>
           {s.meta?.title ? (
-            <div className={styles.sourceCite}>
-              <a
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.sourceTitle}
-              >
-                {s.meta.title}
-              </a>
-              <p className={styles.sourceByline}>
+            // ONE anchor around the whole citation. Linking only the title
+            // left the byline and the accession dead while the accession
+            // still carried the ↗ affordance — so the most clickable-looking
+            // part of the citation was the part that did nothing.
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.sourceCite}
+            >
+              <span className={styles.sourceTitle}>{s.meta.title}</span>
+              <span className={styles.sourceByline}>
                 {bylineOf(s.meta) ? <>{bylineOf(s.meta)} · </> : null}
-                <span className={styles.sourceAccession}>{s.label} ↗</span>
-              </p>
-            </div>
+                <span className={styles.sourceAccession}>{s.label}</span> ↗
+              </span>
+            </a>
           ) : (
             <a
               href={s.href}

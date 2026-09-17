@@ -64,6 +64,22 @@ test("renders title, byline and accession when metadata is present", () => {
   );
 });
 
+test("the whole citation is one link, with no dead text beside the arrow", () => {
+  // Regression: the title was the only anchor, so the byline and the
+  // accession were dead text — while the accession carried the ↗, making
+  // the least clickable part look the most clickable.
+  const html = render([
+    { href: PMC_HREF, label: "PMC6199259", meta: meta() },
+  ]);
+  const anchor = /<a[^>]*href="[^"]*PMC6199259[^"]*"[^>]*>([\s\S]*?)<\/a>/.exec(html);
+  assert.ok(anchor, "citation must be wrapped in an anchor to the paper");
+  const inner = anchor[1];
+  assert.match(inner, /Structural and functional insights/, "title inside the link");
+  assert.match(inner, /Bock et al\./, "byline inside the link");
+  assert.match(inner, /PMC6199259/, "accession inside the link");
+  assert.match(inner, /↗/, "the arrow belongs to the same link");
+});
+
 test("falls back to the bare accession link when metadata is absent", () => {
   const html = render([{ href: PMC_HREF, label: "PMC6199259" }]);
   assert.match(html, /PMC6199259 ↗/, "accession stays the link text");

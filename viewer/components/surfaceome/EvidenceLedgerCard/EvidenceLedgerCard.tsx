@@ -247,20 +247,21 @@ export function EvidenceLedgerCard({ rec, n, papers }: Props) {
                    *  fetched, or the offline-snapshot path — the accession
                    *  stays the link exactly as before. */}
                   {link && meta?.title ? (
-                    <p className={styles.cite}>
-                      <a
-                        className={styles.citeTitle}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {meta.title}
-                      </a>
+                    // ONE anchor around the whole citation — see the same
+                    // note in EvidenceDrawer's SourceList. Title, byline
+                    // and accession all link to the paper.
+                    <a
+                      className={styles.cite}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className={styles.citeTitle}>{meta.title}</span>
                       <span className={styles.citeMeta}>
                         {bylineOf(meta) ? `${bylineOf(meta)} · ` : ""}
-                        {link.label}
+                        <span className={styles.citeAccession}>{link.label}</span> ↗
                       </span>
-                    </p>
+                    </a>
                   ) : link ? (
                     <a
                       className={styles.link}

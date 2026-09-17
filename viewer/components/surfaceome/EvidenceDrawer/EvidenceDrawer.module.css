@@ -233,36 +233,47 @@
 }
 
 /* Citation block — rendered in place of the bare accession link when the
- * evidence endpoint's `papers` map carries NCBI metadata for the source.
- * Title leads (it's what a reader scans for), byline + journal/year sit
- * under it, and the accession keeps its link role at the end so the
- * "click through to the paper" affordance doesn't move. */
+   evidence endpoint's `papers` map carries NCBI metadata for the source.
+
+   The whole block is ONE anchor: title, byline and accession all link to
+   the paper, so there is no dead text next to a live ↗.
+
+   The title is set in the display serif. Everything else in the drawer is
+   Manrope or mono, so the serif is what makes a paper title read as a
+   title rather than as another line of the agent's prose — the drawer
+   stacks claim, source and verbatim quote close together, and without a
+   face change the title just looked like more body copy. */
 .sourceCite {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
+  text-decoration: none;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid transparent;
 }
 
 .sourceTitle {
-  font-family: var(--font-sans);
-  font-size: 0.88rem;
-  font-weight: var(--fw-medium);
-  line-height: 1.4;
+  font-family: var(--font-display);
+  /* Playfair runs large for its nominal size, so this sits below the
+     0.9rem claim text above it — the serif alone carries the "this is a
+     paper title" signal; it doesn't also need to be the biggest thing in
+     the panel. */
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.3;
   color: var(--ink);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color var(--dur-fast) var(--ease-out);
+  text-wrap: pretty;
 }
 
-.sourceTitle:hover,
-.sourceTitle:focus-visible {
-  border-bottom-color: var(--accent);
+.sourceCite:hover .sourceTitle,
+.sourceCite:focus-visible .sourceTitle {
+  color: var(--accent);
 }
 
 .sourceByline {
-  margin: 0;
   font-family: var(--font-sans);
   font-size: 0.78rem;
+  font-weight: 350;
   line-height: 1.45;
   color: var(--muted);
 }
