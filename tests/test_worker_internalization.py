@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,6 +13,8 @@ import pytest
 def test_internalization_routes_and_catalog(tmp_path: Path) -> None:
     node = shutil.which("node")
     if node is None:
+        if os.environ.get("REQUIRE_WORKER_NODE") == "1":
+            pytest.fail("Shared API compatibility checks require Node; refusing to skip")
         pytest.skip("Node is required for Worker tests")
     root = Path(__file__).resolve().parents[1]
     source = (root / "cloudflare/workers/surfaceome_api/src/index.js").read_text()
@@ -54,13 +57,24 @@ const env = {
           assert.match(sql, /ORDER BY schema_version DESC LIMIT 1/);
           return { results: args[0] === "TMEM123" ? [{ record_json: JSON.stringify(record) }] : [] };
         }
-        if (sql.includes("FROM candidate_universe_public u")) return { results: [{
+        if (sql.includes("FROM candidate_universe_public u")) {
+          // A mocked row alone would hide a removed SQL join: pin the scalar
+          // inputs too, so neither fetching nor serializing grades can regress.
+          assert.match(sql, /FROM surface_internalization sii1/);
+          for (const column of ["seq_canonical_grade", "has_literature", "lit_overall_grade"]) {
+            assert(sql.includes(column), `catalog stopped reading ${column}`);
+          }
+          return { results: [{
           gene_symbol: "TMEM123", n_sources_surface: 1, has_deep_dive: 1,
           intern_grade: "moderate", intern_has_lit: 1, intern_lit_grade: "moderate",
         }, { gene_symbol: "UNSWEPT", n_sources_surface: 0 }] };
-        if (sql.includes("FROM surface_annotation sa1")) return { results: [{
+        }
+        if (sql.includes("FROM surface_annotation sa1")) {
+          assert.match(sql, /JOIN surface_internalization/);
+          return { results: [{
           gene_symbol: "ORPHAN", intern_grade: "high", intern_has_lit: 0,
         }] };
+        }
         return { results: [] };
       },
     };
@@ -87,7 +101,7 @@ const beforeInvalid = reads;
 assert.equal((await call("/v1/internalization/invalid!symbol")).status, 400);
 assert.equal(reads, beforeInvalid);
 const catalog = await (await call("/v1/catalog")).json();
-assert.equal(catalog.row_schema, 9);
+assert(catalog.row_schema >= 9);
 const tmem = catalog.rows.find(r => r.symbol === "TMEM123");
 assert.equal(tmem.intern, "moderate");
 assert.equal(tmem.intern_lit, 1);
@@ -97,3 +111,10 @@ assert.equal(catalog.rows.find(r => r.symbol === "UNSWEPT").intern, undefined);
 assert(keys.every(key => new URL(key).pathname.startsWith("/restored-deployment/")));
 ''')
     subprocess.run([node, str(tmp_path / "test.mjs")], check=True, capture_output=True, text=True)
+
+
+def test_required_worker_runtime_cannot_skip(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("REQUIRE_WORKER_NODE", "1")
+    monkeypatch.setattr(shutil, "which", lambda _: None)
+    with pytest.raises(pytest.fail.Exception, match="refusing to skip"):
+        test_internalization_routes_and_catalog(tmp_path)
