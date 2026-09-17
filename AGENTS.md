@@ -431,3 +431,19 @@ fails the check and blocks merge.
 
 ## Doc Sync Rule
 - Keep `AGENTS.md` and `CLAUDE.md` aligned when workflow guidance changes.
+
+## Shared API compatibility across main and dev
+
+The `surfaceome-api` Worker at `api.deliverome.org/surfaceome` serves both
+production and dev viewers. A main deployment must preserve endpoints and
+response fields consumed by dev, even when the related UI has not merged
+to main. In particular, keep `/v1/internalization/{symbol}` and the catalog
+fields `intern`, `intern_lit`, and `intern_lit_grade`. Do not deploy an older
+branch's Worker wholesale over the shared service; reconcile both branches'
+API changes first.
+
+CI runs `tests/test_worker_internalization.py` as an explicit shared-API
+compatibility check with Node from `.nvmrc`; a missing Node runtime fails
+that check instead of silently skipping it. Update the contract tests when
+adding another dev-only consumer of the shared API. This protects code
+review and CI; manual deployments must run the same check before deployment.
