@@ -166,3 +166,5 @@ data/processed/figures/surfaceome_deterministic_features_placeholder.tsv -filter
 # Draft binder coverage audit: small, reader-accessible tables and provenance.
 data/analysis/binder_coverage/* -filter -diff -merge
 data/analysis/binder_coverage/*.tsv text
+data/analysis/binding_site_audit/* -filter -diff -merge
+data/analysis/binding_site_audit/*.tsv text

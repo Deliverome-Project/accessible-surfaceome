@@ -168,3 +168,5 @@ data/cache/afdb_pdb/
 # Reproducible binder pilot downloads and uncompressed observation export.
 data/external/binder_coverage/
 data/analysis/binder_coverage/observations.tsv
+data/external/binding_site_audit/
+data/analysis/binding_site_audit/observations.tsv
