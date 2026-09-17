@@ -178,3 +178,6 @@ data/analysis/deep_dive_binding_sites/biolip_gpcrdb_evidence.tsv
 
 data/external/therapeutic_antibody_audit/
 data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
+
+# Read-only ligand-gap diagnostic caches
+/data/external/ligand_gap_audit/

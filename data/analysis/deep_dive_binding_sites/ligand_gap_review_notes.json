@@ -1,0 +1,452 @@
+[
+  {
+    "hgnc_id": "HGNC:8179",
+    "hgnc_symbol": "OR1A1",
+    "llm_named_ligands": "Nitromusks; ethyl 3-phenylglycidate",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Functional odorant responses; cited pocket is a homology/docking model. Synthetic nitromusks are not endogenous ligands.",
+    "alternative_route": "Extract exact compounds and functional assays; retain predicted pocket separately.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5924878/"
+  },
+  {
+    "hgnc_id": "HGNC:14449",
+    "hgnc_symbol": "OPN4",
+    "llm_named_ligands": "11-cis-retinal",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Chromophore-dependent activity supports a ligand, not an entirely extracellular residue interface; no sampled PDBe interface record.",
+    "alternative_route": "Capture covalent chromophore site with evidence and transmembrane-pocket label.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12461567/"
+  },
+  {
+    "hgnc_id": "HGNC:9008",
+    "hgnc_symbol": "PKD1",
+    "llm_named_ligands": "WNT9B; WNT5A",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "PDBe returns PKD2 channel interfaces rather than the claimed Wnt pair; BioLiP has no eligible sampled site.",
+    "alternative_route": "Follow cited Wnt binding paper and extract ectodomain constructs or mutagenesis.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13015290/"
+  },
+  {
+    "hgnc_id": "HGNC:21355",
+    "hgnc_symbol": "MLIP",
+    "llm_named_ligands": "LMNA",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Claim is nuclear-envelope lamin binding, not an extracellular ligand.",
+    "alternative_route": "Keep intracellular interaction outside EC denominator.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/Q5VWP3/entry"
+  },
+  {
+    "hgnc_id": "HGNC:190",
+    "hgnc_symbol": "ADAM12",
+    "llm_named_ligands": "BSG; HBEGF",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Substrate shedding does not define an ADAM12 residue-level binding interface; zinc annotations are not substrate epitopes.",
+    "alternative_route": "Extract enzyme-substrate binding and mapped domains separately from cleavage sites.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6514901/"
+  },
+  {
+    "hgnc_id": "HGNC:6142",
+    "hgnc_symbol": "ITGA6",
+    "llm_named_ligands": "Laminin-332; LAMA4",
+    "primary_gap": "structural_retrieval_gap",
+    "assessment": "PDBe interface endpoint returns 404 despite human ITGA6 in PDB 7CEC with laminin-511; this is an alternative laminin partner, not either exact claimed ligand.",
+    "alternative_route": "Use PDB complexes plus SIFTS and compute chain-specific contacts; preserve heterotrimer identity.",
+    "supporting_source": "https://www.rcsb.org/structure/7CEC"
+  },
+  {
+    "hgnc_id": "HGNC:18123",
+    "hgnc_symbol": "ACVR1C",
+    "llm_named_ligands": "Activin B/AB/C/E; Nodal; GDF1",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Cited ligand signaling uses type-II/type-I receptor complexes; no interface was returned in this probe.",
+    "alternative_route": "Curate complex stoichiometry and direct ALK7 contacts; use binding assays before residue inference.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10557571/"
+  },
+  {
+    "hgnc_id": "HGNC:10468",
+    "hgnc_symbol": "RTN2",
+    "llm_named_ligands": "SLC1A1; GTRAP3-18; BACE1; spastin",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Cited partners concern ER trafficking and ER shaping.",
+    "alternative_route": "Record compartment-specific interaction; do not infer EC binding.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2581797/"
+  },
+  {
+    "hgnc_id": "HGNC:14894",
+    "hgnc_symbol": "ULBP2",
+    "llm_named_ligands": "NKG2D",
+    "primary_gap": "existing_site_wrong_context",
+    "assessment": "Existing BioLiP Y01 site at 227/234 is in the removed 218-246 propeptide; PDBe partners are GPI-processing machinery, not NKG2D.",
+    "alternative_route": "Exclude precursor-only sites; search mature ULBP2-NKG2D pair explicitly.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/Q9BZM5/entry"
+  },
+  {
+    "hgnc_id": "HGNC:25984",
+    "hgnc_symbol": "SLC38A12",
+    "llm_named_ligands": "Glutamine; asparagine; alanine (claimed)",
+    "primary_gap": "llm_claim_needs_correction",
+    "assessment": "Cited ledger evidence is predicted topology and expression, not measured substrate transport; UniProt calls transporter putative.",
+    "alternative_route": "Downgrade specific substrate claim until gene-specific transport evidence is found.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/Q8NE00/entry"
+  },
+  {
+    "hgnc_id": "HGNC:5991",
+    "hgnc_symbol": "IL1A",
+    "llm_named_ligands": "IL1R1; IL1R2; heparan sulfate",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "IL1A is the ligand side; direct PDBe probe returns other interactions, not these receptor pairs.",
+    "alternative_route": "Search both orientations with stable IDs; extract mature cytokine binding evidence.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12333676/"
+  },
+  {
+    "hgnc_id": "HGNC:23087",
+    "hgnc_symbol": "SLC43A2",
+    "llm_named_ligands": "Leucine; isoleucine; valine; methionine; phenylalanine",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Transport assays establish substrates but not an entirely EC epitope; no PDBe interface record.",
+    "alternative_route": "Add substrate/transport tier and pocket evidence separately.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/15659399/"
+  },
+  {
+    "hgnc_id": "HGNC:5471",
+    "hgnc_symbol": "IGFBP2",
+    "llm_named_ligands": "IGF-I/II; ITGA5/ITGB1",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Secreted binding protein with several partner classes; no exact sampled interface recovered; cited rationale references integrin studies.",
+    "alternative_route": "Mine direct binding/domain experiments for each pair and preserve soluble context.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/38796567/"
+  },
+  {
+    "hgnc_id": "HGNC:465",
+    "hgnc_symbol": "AMHR2",
+    "llm_named_ligands": "AMH",
+    "primary_gap": "structural_retrieval_gap",
+    "assessment": "No prior IUPHAR observation for target; direct PDBe query recovers AMH P03971 interface in 7L0J with EC positions.",
+    "alternative_route": "Add unrestricted pair-validated PDBe/PDB interface pass.",
+    "supporting_source": "https://www.rcsb.org/structure/7L0J"
+  },
+  {
+    "hgnc_id": "HGNC:17084",
+    "hgnc_symbol": "SYNE2",
+    "llm_named_ligands": "SUN1; SUN2",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Direct PDBe recovers SUN2 interface in perinuclear space; this is not outside the cell.",
+    "alternative_route": "Retain perinuclear localization; do not count as EC.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/Q8WXH0/entry"
+  },
+  {
+    "hgnc_id": "HGNC:8748",
+    "hgnc_symbol": "PCSK7",
+    "llm_named_ligands": "TFRC; CASC4; GPP130; APOA5; syncytin-2",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Cleavage/trafficking evidence spans Golgi and endolysosomal contexts; no mapped substrate interface recovered.",
+    "alternative_route": "Separate substrate cleavage, direct binding and extracellular exposure.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/31945259/"
+  },
+  {
+    "hgnc_id": "HGNC:172",
+    "hgnc_symbol": "ACVR1B",
+    "llm_named_ligands": "Activin A/B; myostatin; Nodal; GDF11",
+    "primary_gap": "structural_retrieval_gap",
+    "assessment": "Natural IUPHAR rows were complex_component and filtered out; direct PDBe returns activin A in 7OLY and GDF11 in 7MRZ at EC residues.",
+    "alternative_route": "Retain complex-level leads, then assign contacts to the resolved receptor chain.",
+    "supporting_source": "https://www.rcsb.org/structure/7OLY"
+  },
+  {
+    "hgnc_id": "HGNC:3696",
+    "hgnc_symbol": "FGL2",
+    "llm_named_ligands": "Prothrombin; FCGR2B",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Claim mixes enzyme substrate and soluble FGL2 receptor; no exact mapped interface recovered.",
+    "alternative_route": "Extract direct binding and soluble versus membrane form for each pair.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11949062/"
+  },
+  {
+    "hgnc_id": "HGNC:9449",
+    "hgnc_symbol": "PRNP",
+    "llm_named_ligands": "GRIN1; RPSA",
+    "primary_gap": "topology_annotation_gap",
+    "assessment": "Antibody interfaces are already mapped but labelled unknown because restricted UniProt fetch omitted GPI/mature-chain context; these do not establish GRIN1/RPSA sites.",
+    "alternative_route": "Classify mature GPI-chain antibody epitopes; search natural pairs independently.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/P04156/entry"
+  },
+  {
+    "hgnc_id": "HGNC:28431",
+    "hgnc_symbol": "LYPD1",
+    "llm_named_ligands": "Nicotinic acetylcholine receptor subunits",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Rationale cites modulation/knockout biology without exact subunit-level mapped interface.",
+    "alternative_route": "Resolve nAChR composition, species and direct binding/domain data.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11998120/"
+  },
+  {
+    "hgnc_id": "HGNC:10806",
+    "hgnc_symbol": "SGCB",
+    "llm_named_ligands": "Sarcoglycans; dystroglycan",
+    "primary_gap": "species_or_paralog_evidence",
+    "assessment": "Cited DGC cryo-EM structure is native mouse complex, not a human SGCB site.",
+    "alternative_route": "Use explicitly labelled ortholog-transferred evidence with alignment; do not count as human experimental.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13178787/"
+  },
+  {
+    "hgnc_id": "HGNC:26035",
+    "hgnc_symbol": "SLC48A1",
+    "llm_named_ligands": "Heme",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Heme transport is primarily endolysosomal; conserved transport residues are not an EC targeting epitope.",
+    "alternative_route": "Capture transport-residue evidence with organelle compartment and species.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3281596/"
+  },
+  {
+    "hgnc_id": "HGNC:11009",
+    "hgnc_symbol": "SLC2A4",
+    "llm_named_ligands": "Glucose; insulin stimulus (claimed)",
+    "primary_gap": "existing_site_wrong_context",
+    "assessment": "Cytochalasin B site is already mapped but transmembrane; insulin-driven trafficking is not direct insulin-GLUT4 binding.",
+    "alternative_route": "Remove insulin as direct binder; keep glucose substrate and inhibitor pocket separate.",
+    "supporting_source": "https://www.rcsb.org/structure/7WSM"
+  },
+  {
+    "hgnc_id": "HGNC:15041",
+    "hgnc_symbol": "OR6B2",
+    "llm_named_ligands": "Unspecified odorants",
+    "primary_gap": "llm_claim_needs_correction",
+    "assessment": "Frozen rationale explicitly says no individually deorphanized ligand; class membership was promoted to yes.",
+    "alternative_route": "Change to unknown exact ligand unless a receptor-specific assay is verified.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/Q6IFH4/entry"
+  },
+  {
+    "hgnc_id": "HGNC:6586",
+    "hgnc_symbol": "LHFPL6",
+    "llm_named_ligands": "GABA-A receptors; NLGN2 (claimed)",
+    "primary_gap": "llm_claim_needs_correction",
+    "assessment": "Cited GARLH paper concerns LHFPL3/4; LHFPL4 was incorrectly attributed to LHFPL6.",
+    "alternative_route": "Correct gene identity; reassess ligand flag from LHFPL6-specific evidence.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5347473/"
+  },
+  {
+    "hgnc_id": "HGNC:14137",
+    "hgnc_symbol": "JPT2",
+    "llm_named_ligands": "NAADP",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "NAADP-binding protein is cytosolic in the cited work.",
+    "alternative_route": "Keep intracellular second-messenger binding outside EC coverage.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/33758062/"
+  },
+  {
+    "hgnc_id": "HGNC:2045",
+    "hgnc_symbol": "CLDN3",
+    "llm_named_ligands": "C. perfringens enterotoxin; rotavirus VP7",
+    "primary_gap": "species_or_paralog_evidence",
+    "assessment": "Example cCPE structure 6AKE is mouse Cldn3; human canonical query cannot inherit those residues automatically.",
+    "alternative_route": "Curate pathogen ligand and species; align ortholog evidence as a separate tier.",
+    "supporting_source": "https://www.rcsb.org/structure/6AKE"
+  },
+  {
+    "hgnc_id": "HGNC:10907",
+    "hgnc_symbol": "SLC11A1",
+    "llm_named_ligands": "Fe2+; Mn2+",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Endolysosomal metal transporter; BioLiP Mn row is intentionally excluded by organic-ligand filter.",
+    "alternative_route": "Add ion/substrate tier if desired; do not call it an EC epitope.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11742427/"
+  },
+  {
+    "hgnc_id": "HGNC:4206",
+    "hgnc_symbol": "OPN1MW",
+    "llm_named_ligands": "11-cis-retinal",
+    "primary_gap": "existing_site_wrong_context",
+    "assessment": "Retinal site is already in BioLiP/PDBe but entirely transmembrane, so fails strict EC criterion.",
+    "alternative_route": "Report membrane pocket separately from wholly EC surface epitopes.",
+    "supporting_source": "https://www.rcsb.org/structure/8Y01"
+  },
+  {
+    "hgnc_id": "HGNC:10250",
+    "hgnc_symbol": "ROBO2",
+    "llm_named_ligands": "SLIT1/2/3; NELL1/2",
+    "primary_gap": "species_or_paralog_evidence",
+    "assessment": "Ledger uses ROBO1 structures; NELL work includes mouse Robo2 mutagenesis and domain/pH dependence, not a human co-complex in probe.",
+    "alternative_route": "Extract domain/functional residues with species; distinguish ROBO1/2/3 and condition-dependent exposure.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6433047/"
+  },
+  {
+    "hgnc_id": "HGNC:4134",
+    "hgnc_symbol": "GALR3",
+    "llm_named_ligands": "Galanin; spexin",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Functional agonism is supported; cited ECL contacts are computational docking, not experimentally mapped interface.",
+    "alternative_route": "Retain agonist assays and predicted sites in separate evidence tiers.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/24517231/"
+  },
+  {
+    "hgnc_id": "HGNC:8264",
+    "hgnc_symbol": "OR2K2",
+    "llm_named_ligands": "Unspecified odorants",
+    "primary_gap": "llm_claim_needs_correction",
+    "assessment": "Frozen rationale explicitly lacks a cognate deorphanized odorant and relies on receptor-family membership.",
+    "alternative_route": "Downgrade exact ligand to unknown pending gene-specific assay.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/Q8NGT1/entry"
+  },
+  {
+    "hgnc_id": "HGNC:50",
+    "hgnc_symbol": "ABCB9",
+    "llm_named_ligands": "Oligopeptides/polypeptides",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Peptide transport occurs into lysosomes; broad cargo class is not an EC binding reagent.",
+    "alternative_route": "Record peptide transport and lysosomal compartment separately.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6695453/"
+  },
+  {
+    "hgnc_id": "HGNC:15356",
+    "hgnc_symbol": "OR4L1",
+    "llm_named_ligands": "Unspecified odorants",
+    "primary_gap": "llm_claim_needs_correction",
+    "assessment": "Rationale claims variant functional data but names no exact odorant; identity remains unresolved.",
+    "alternative_route": "Inspect cited assay table for exact chemical and positive receptor-specific response.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5630595/"
+  },
+  {
+    "hgnc_id": "HGNC:8077",
+    "hgnc_symbol": "NXPH3",
+    "llm_named_ligands": "Alpha-neurexins",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Cited binding is localized to neurexin LNS2 domain, not residue-level NXPH3 epitope.",
+    "alternative_route": "Extract domain-range binding evidence and species before searching co-complexes.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/9856994/"
+  },
+  {
+    "hgnc_id": "HGNC:24003",
+    "hgnc_symbol": "HTR3C",
+    "llm_named_ligands": "Serotonin in HTR3 complexes",
+    "primary_gap": "llm_claim_needs_correction",
+    "assessment": "Heteromeric receptor activity does not establish direct ligand-contact residues on HTR3C; ledger homomer claim is not supported by the primary coassembly study.",
+    "alternative_route": "Preserve complex-level agonism; require subunit-specific contacts.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/17392525/"
+  },
+  {
+    "hgnc_id": "HGNC:18797",
+    "hgnc_symbol": "KREMEN2",
+    "llm_named_ligands": "DKK1",
+    "primary_gap": "species_or_paralog_evidence",
+    "assessment": "Binding is supported but cited 5FWW ternary structure is KREMEN1, not KREMEN2.",
+    "alternative_route": "Retain binding evidence; label paralog-transferred sites explicitly.",
+    "supporting_source": "https://www.rcsb.org/structure/5FWW"
+  },
+  {
+    "hgnc_id": "HGNC:1753",
+    "hgnc_symbol": "CDH13",
+    "llm_named_ligands": "High-molecular-weight adiponectin; LDL",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Cell binding/endocytosis evidence lacks a residue-defined complex in the probe; GPI context alone cannot supply a site.",
+    "alternative_route": "Mine binding-domain and competition experiments with ligand oligomer state.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10864391/"
+  },
+  {
+    "hgnc_id": "HGNC:16920",
+    "hgnc_symbol": "CIB1",
+    "llm_named_ligands": "ITGA2B cytoplasmic tail",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Claimed interaction is explicitly on integrin cytoplasmic tail; existing peptide sites do not imply EC location.",
+    "alternative_route": "Keep intracellular adaptor binding out of EC denominator.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2063547/"
+  },
+  {
+    "hgnc_id": "HGNC:29480",
+    "hgnc_symbol": "LRG1",
+    "llm_named_ligands": "ADGRL2/LPHN2",
+    "primary_gap": "topology_annotation_gap",
+    "assessment": "Existing antibody complex 7Q4Q is mapped but unknown topology for a secreted mature protein; it is not the LPHN2 interface.",
+    "alternative_route": "Add secreted/mature-chain site context separately from membrane anchoring; mine LPHN2 binding paper.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10238393/"
+  },
+  {
+    "hgnc_id": "HGNC:33823",
+    "hgnc_symbol": "ERVFRD-1",
+    "llm_named_ligands": "MFSD2A",
+    "primary_gap": "structural_retrieval_gap",
+    "assessment": "Direct PDBe query recovers EC interface in 7OIX; no prior IUPHAR target observation. Construct is engineered and must retain that annotation.",
+    "alternative_route": "Add reverse-orientation protein-pair search and preserve construct mutations.",
+    "supporting_source": "https://pdbj.org/mine/summary/7oix"
+  },
+  {
+    "hgnc_id": "HGNC:1689",
+    "hgnc_symbol": "CD59",
+    "llm_named_ligands": "C8; C9",
+    "primary_gap": "topology_annotation_gap",
+    "assessment": "Mapped BioLiP site and direct C8/C9 PDBe interfaces exist; no explicit topological-domain annotation in restricted query despite mature GPI chain.",
+    "alternative_route": "Use mature-chain/GPI plus pair-specific structural evidence for EC context.",
+    "supporting_source": "https://www.nature.com/articles/s41467-023-36441-z"
+  },
+  {
+    "hgnc_id": "HGNC:11010",
+    "hgnc_symbol": "SLC2A5",
+    "llm_named_ligands": "Fructose",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Transport is validated; UniProt fructose residues are transferred by similarity and do not establish a human EC structure.",
+    "alternative_route": "Import UniProt binding residues with ECO provenance in ortholog-supported pocket tier.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/P22732/entry"
+  },
+  {
+    "hgnc_id": "HGNC:26868",
+    "hgnc_symbol": "CCNYL1",
+    "llm_named_ligands": "CDK14",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Cyclin-CDK partnership is intracellular; frozen rationale provides no linked evidence IDs.",
+    "alternative_route": "Curate intracellular partner identity; do not infer extracellular ligand.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/Q8N7R7/entry"
+  },
+  {
+    "hgnc_id": "HGNC:44208",
+    "hgnc_symbol": "LYPD8",
+    "llm_named_ligands": "Bacterial flagella",
+    "primary_gap": "functional_pair_no_exact_site",
+    "assessment": "Binding/motility assays name a bacterial structure, not an exact protein epitope or residue-defined complex.",
+    "alternative_route": "Resolve flagellin species/identity and domain experiments; keep microbial binding context.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5725809/"
+  },
+  {
+    "hgnc_id": "HGNC:18259",
+    "hgnc_symbol": "ITLN1",
+    "llm_named_ligands": "Microbial glycans",
+    "primary_gap": "topology_annotation_gap",
+    "assessment": "BioLiP glycan site 6USC is mapped but topology is unknown; full UniProt supports secreted/GPI mature-chain context.",
+    "alternative_route": "Use glycan identity and mature-chain context; keep soluble versus anchored exposure distinct.",
+    "supporting_source": "https://www.rcsb.org/structure/6USC"
+  },
+  {
+    "hgnc_id": "HGNC:17283",
+    "hgnc_symbol": "RIMS2",
+    "llm_named_ligands": "RAB3; RAPGEF4; PCLO; calcium-channel subunits",
+    "primary_gap": "intracellular_or_organelle",
+    "assessment": "Interactions occur on the cytoplasmic presynaptic/exocytosis machinery.",
+    "alternative_route": "Exclude from extracellular ligand denominator.",
+    "supporting_source": "https://pubmed.ncbi.nlm.nih.gov/14660679/"
+  },
+  {
+    "hgnc_id": "HGNC:2159",
+    "hgnc_symbol": "CNR1",
+    "llm_named_ligands": "2-AG; anandamide",
+    "primary_gap": "existing_site_wrong_context",
+    "assessment": "Multiple mapped ligands already present; pockets include TM residues and fail wholly EC rule.",
+    "alternative_route": "Report extracellularly approachable membrane pockets separately from EC epitopes.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/P21554/entry"
+  },
+  {
+    "hgnc_id": "HGNC:5253",
+    "hgnc_symbol": "HSP90AA1",
+    "llm_named_ligands": "AKT1; ERBB2; TLR4; LRP1; EPHA2",
+    "primary_gap": "existing_site_wrong_context",
+    "assessment": "Existing ATP/inhibitor structures are not the claimed extracellular receptor interfaces; rationale mixes intracellular clients and extracellular HSP90 pool.",
+    "alternative_route": "Require pair- and compartment-specific evidence; do not mark all HSP90 sites extracellular.",
+    "supporting_source": "https://www.uniprot.org/uniprotkb/P07900/entry"
+  },
+  {
+    "hgnc_id": "HGNC:21092",
+    "hgnc_symbol": "TREML2",
+    "llm_named_ligands": "CD276/B7-H3",
+    "primary_gap": "llm_claim_needs_correction",
+    "assessment": "Claim relies on murine and putative receptor evidence; a primary human study found no interaction.",
+    "alternative_route": "Mark disputed/species-dependent and include negative binding evidence.",
+    "supporting_source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2978551/"
+  }
+]
