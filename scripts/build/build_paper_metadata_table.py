@@ -36,6 +36,11 @@ Usage::
     uv run python scripts/build/build_paper_metadata_table.py            # dry-run
     uv run python scripts/build/build_paper_metadata_table.py --execute  # write
     uv run python scripts/build/build_paper_metadata_table.py --limit 400 --execute
+The sweep also includes the standalone internalization evidence ledger.
+DOI-only sources use Crossref metadata for the cited DOI (never silently
+substitute a later journal article). Preprint repositories are labeled as
+preprints. Use --internalization-only for a small targeted backfill.
+
 """
 
 from __future__ import annotations
@@ -129,6 +134,49 @@ def _existing_source_ids(d1: D1Client) -> set[str]:
         if len(rows) < page:
             return out
         offset += page
+
+
+def _internalization_source_ids(d1: D1Client) -> list[str]:
+    """Internalization has its own ledger, separate from the deep-dive record."""
+    rows = d1.query("""
+        SELECT DISTINCT json_extract(sp.value, '$.source.source_id') AS sid
+          FROM surface_internalization r,
+               json_each(r.record_json, '$.literature.sources') ev,
+               json_each(ev.value, '$.spans') sp
+         WHERE r.has_literature = 1 AND sid IS NOT NULL
+    """, [])
+    return sorted({row["sid"] for row in rows})
+
+
+def _row_from_crossref(source_id: str, message: dict[str, Any]) -> dict[str, Any]:
+    """Keep the cited DOI/version, including a repository label for preprints."""
+    doi = source_id.removeprefix("DOI:")
+    if str(message.get("DOI", "")).lower() != doi.lower():
+        raise ValueError(f"Crossref returned a different DOI for {source_id}")
+    people = message.get("author") or []
+    authors = [
+        " ".join(filter(None, [p.get("given"), p.get("family")])) or p.get("name", "")
+        for p in people
+    ]
+    authors = [a for a in authors if a]
+    surnames = [p.get("family") or p.get("name") for p in people]
+    surnames = [s for s in surnames if s]
+    short = (f"{surnames[0]} et al." if len(surnames) > 2 else " & ".join(surnames)) or None
+    dates = (message.get("published") or {}).get("date-parts") or [[]]
+    date = dates[0]
+    containers = message.get("container-title") or []
+    institutions = message.get("institution") or []
+    venue = containers[0] if containers else next((p.get("name") for p in institutions if p.get("name")), None)
+    if message.get("type") == "posted-content" and venue:
+        venue += " (preprint)"
+    return {
+        "source_id": source_id, "pmid": None, "pmc_id": None, "doi": doi,
+        "title": _TAG_RE.sub("", (message.get("title") or [""])[0]).rstrip("."),
+        "authors_short": short, "authors_json": json.dumps(authors),
+        "n_authors": len(authors), "journal": venue,
+        "year": date[0] if date else None,
+        "pub_date": "-".join(str(v) for v in date) or None, "source_db": "crossref",
+    }
 
 
 def _split_by_db(source_ids: list[str]) -> tuple[list[str], list[str], list[str]]:
@@ -309,6 +357,8 @@ def main() -> int:
     ap.add_argument("--execute", action="store_true",
                     help="Actually UPSERT into public D1. Without this, fetches "
                          "metadata and reports coverage but doesn't write.")
+    ap.add_argument("--internalization-only", action="store_true",
+                    help="Only fill metadata for the standalone internalization ledger.")
     ap.add_argument("--limit", type=int, default=None,
                     help="Only process N source ids (smoke-test).")
     ap.add_argument("--workers", type=int, default=8,
@@ -325,7 +375,8 @@ def main() -> int:
         print(f"surface_annotation rows: {total}")
 
         t0 = time.time()
-        source_ids = _sweep_source_ids(d1, total_rows=int(total))
+        source_ids = [] if args.internalization_only else _sweep_source_ids(d1, total_rows=int(total))
+        source_ids = sorted(set(source_ids) | set(_internalization_source_ids(d1)))
         print(f"distinct cited papers: {len(source_ids)}  ({time.time() - t0:.1f}s)")
 
         if args.only_missing:
@@ -338,12 +389,23 @@ def main() -> int:
             print(f"--limit {args.limit} → {len(source_ids)} source ids")
 
         pmc, pmid, other = _split_by_db(source_ids)
-        print(f"  PMC: {len(pmc)}   PMID: {len(pmid)}   unrecognized: {len(other)}")
+        dois = [sid for sid in other if sid.startswith("DOI:")]
+        other = [sid for sid in other if not sid.startswith("DOI:")]
+        print(f"  PMC: {len(pmc)}   PMID: {len(pmid)}   DOI: {len(dois)}   unrecognized: {len(other)}")
         if other:
             print(f"  (skipping unrecognized prefixes, e.g. {other[:3]})")
 
         fetched: list[dict[str, Any]] = []
         with open_default_client() as http:
+            for sid in dois:
+                try:
+                    payload = http.get_json(
+                        f"https://api.crossref.org/works/{sid[4:]}",
+                        source="crossref_citation_metadata", ttl_days=CACHE_TTL_DAYS,
+                    )
+                    fetched.append(_row_from_crossref(sid, payload["message"]))
+                except Exception as exc:  # noqa: BLE001 — retain missing rows for retry
+                    print(f"  !! DOI metadata failed for {sid}: {exc}")
             for db, ids in (("pmc", pmc), ("pubmed", pmid)):
                 for start in range(0, len(ids), BATCH_SIZE):
                     batch = ids[start : start + BATCH_SIZE]

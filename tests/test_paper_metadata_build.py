@@ -30,6 +30,22 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
 
+def test_crossref_preprint_keeps_cited_version_and_repository():
+    row = _mod._row_from_crossref("DOI:10.1234/preprint", {
+        "DOI": "10.1234/preprint", "title": ["An uptake assay."],
+        "author": [{"given": "Alex", "family": "Smith"}],
+        "published": {"date-parts": [[2025, 6, 8]]},
+        "container-title": [], "institution": [{"name": "bioRxiv"}],
+        "type": "posted-content",
+    })
+    assert row["title"] == "An uptake assay"
+    assert row["authors_short"] == "Smith"
+    assert row["journal"] == "bioRxiv (preprint)"
+    assert row["year"] == 2025
+    assert row["pmc_id"] is None
+    assert row["source_db"] == "crossref"
+
+
 # ── uid parsing ───────────────────────────────────────────────────────────
 
 

@@ -907,7 +907,7 @@ CREATE TABLE IF NOT EXISTS paper_metadata (
     journal       TEXT,               -- NLM abbreviation ('Sci Rep'), which is what a citation line wants
     year          INTEGER,            -- publication year parsed out of NCBI's free-text pubdate
     pub_date      TEXT,               -- NCBI's raw pubdate string, kept for provenance
-    source_db     TEXT NOT NULL,      -- 'pmc' | 'pubmed' — which E-utilities db answered
+    source_db     TEXT NOT NULL,      -- 'pmc' | 'pubmed' | 'crossref' — citation metadata provider
     fetched_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

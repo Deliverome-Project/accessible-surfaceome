@@ -188,3 +188,15 @@ Required secrets (`wrangler secret put`):
 - `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile secret for token verification.
 - `MAGIC_LINK_SECRET` — 32-byte secret used as HMAC key for magic links.
 - `MAINTAINER_EMAIL` — destination + From address for notification e-mails.
+
+### Internalization citations
+
+`GET /v1/internalization/{symbol}` includes a `papers` metadata map keyed by
+the source IDs in `literature.sources`, matching the deep-dive evidence
+endpoint. The map carries title, authors, journal/repository, and year;
+missing metadata leaves the original source link available. DOI-only
+preprints retain their cited version and are labeled as preprints.
+
+Refresh missing citation metadata with
+`uv run python scripts/build/build_paper_metadata_table.py --internalization-only --execute`
+(omit `--execute` to preview). Existing analysis grades and evidence are unchanged.
