@@ -2779,7 +2779,9 @@ async function handleInternalization(env, symbol) {
   } catch {
     return json(null, { ttl: CACHE_TTL_SHORT });
   }
-  return json(record, { ttl: CACHE_TTL_LONG });
+  const sources = Array.isArray(record?.literature?.sources) ? record.literature.sources : [];
+  const papers = await fetchPaperMetadata(env, collectSourceIds(sources));
+  return json({ ...record, papers }, { ttl: CACHE_TTL_LONG });
 }
 
 // Per-(gene, model, variant) replicate detail — backs the benchmark

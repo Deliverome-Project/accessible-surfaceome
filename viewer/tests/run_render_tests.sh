@@ -13,6 +13,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 tests=(
+  evidence_drawer_sources.test.tsx
+  evidence_ledger_citation.test.tsx
   biological_context_card_rationale.test.tsx
   accessibility_risks_card_rationale.test.tsx
   biological_context_card_sort.test.tsx
