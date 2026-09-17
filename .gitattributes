@@ -162,4 +162,12 @@ data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
 # gist invariant). Exempted from LFS so the bundled copy + the
 # raw.githubusercontent.com fallback both resolve to plain text. Small (~5 KB
 # ~30 KB long-form), well under the 5 MB practical cap.
-data/processed/figures/positive_control_db_coverage_bars.tsv  -filter -diff -merge text
+# Every per-figure TSV is LFS-EXEMPT so raw.githubusercontent.com serves it
+# as plain text. A reader doing pd.read_csv(<raw url>) against an LFS-tracked
+# path gets the pointer stub instead of data, which silently breaks the
+# reanalysis path the figure-TSV convention exists to support. Verified:
+# positive_control (already exempt) served real TSV while every other figure
+# TSV served "version https://git-lfs.github.com/spec/v1".
+# Sizes are comfortable — 17 files, 11.3 MB total, largest 1.76 MB, against
+# GitHub's 100 MB non-LFS cap and the ~5 MB practical cap in CLAUDE.md.
+data/processed/figures/*.tsv  -filter -diff -merge text
