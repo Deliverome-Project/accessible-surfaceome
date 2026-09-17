@@ -131,3 +131,8 @@ The [all-source comparison table](../../data/analysis/deep_dive_binding_sites/al
 adds true source exclusivity and extracellular coverage for both denominators,
 with SurfaceBind shown separately. Unlike sequential incremental counts,
 exclusivity asks whether any other displayed source covers the same gene.
+
+The subsequent [therapeutic-antibody/AACDB audit](2026-09-17-therapeutic-antibody-audit.md)
+adds one experimentally covered gene (IL31RA) and identifies 161 therapeutic
+names with mapped interfaces. The linked all-source comparison now reflects
+that extension; the BioLiP/GPCRdb results above remain their original snapshot.

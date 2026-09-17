@@ -1,6 +1,6 @@
 """Compare audited source coverage and exclusivity across the frozen cohort.
 
-Uniqueness is computed across all eight displayed evidence streams, including
+Uniqueness is computed across all ten displayed evidence streams, including
 SurfaceBind predictions. A separate field excludes predictions for experimental
 source prioritization. Entirely extracellular means all mapped site residues;
 SurfaceBind anchor-only data cannot establish this criterion.
@@ -20,6 +20,16 @@ SOURCES = [
         "SAbDab: antibody contacts",
         "sabdab_mapped_contacts",
         "sabdab_mapped_contacts_extracellular",
+    ),
+    (
+        "Thera-SAbDab: exact therapeutic domains",
+        "therapeutic_mapped_contacts",
+        "therapeutic_mapped_contacts_extracellular",
+    ),
+    (
+        "AACDB: antibody contacts",
+        "aacdb_mapped_contacts",
+        "aacdb_mapped_contacts_extracellular",
     ),
     ("IEDB: exact epitopes", "iedb_exact_epitope", "iedb_exact_epitope_extracellular"),
     (
@@ -44,7 +54,7 @@ SOURCES = [
 
 
 def main():
-    path = OUT / "biolip_gpcrdb_genes.tsv"
+    path = OUT / "therapeutic_aacdb_genes.tsv"
     genes = list(csv.DictReader(path.open(), delimiter="\t"))
     assert len(genes) == len({g["hgnc_id"] for g in genes}) == 5130
     yes = {g["hgnc_id"] for g in genes if g["llm_known_ligand"] == "yes"}
@@ -84,7 +94,16 @@ def main():
     ec_union = {
         g["hgnc_id"] for g in genes if any(ec and g[ec] == "1" for _, _, ec in SOURCES)
     }
-    assert len(experimental) == 1135 and len(ec_union) == 384
+    assert experimental == {
+        g["hgnc_id"]
+        for g in genes
+        if g["all_experimental_union_after_antibody_extension"] == "1"
+    }
+    assert ec_union == {
+        g["hgnc_id"]
+        for g in genes
+        if g["all_experimental_ec_union_after_antibody_extension"] == "1"
+    }
     rows.append(
         dict(
             source="Experimental union",
@@ -134,7 +153,7 @@ def main():
         )
     text = "\n".join(lines)
     notes = (
-        "\n\n¹ Unique = covered by this evidence stream and none of the other seven displayed streams, "
+        "\n\n¹ Unique = covered by this evidence stream and none of the other nine displayed streams, "
         "including SurfaceBind. This is exclusivity, not the order-dependent incremental counts in the earlier audit. "
         "The TSV also reports uniqueness ignoring prediction overlap.\n\n"
         "EC = all mapped contact residues annotated extracellular by UniProt; not demonstrated live-cell accessibility. "
@@ -144,6 +163,7 @@ def main():
         "BioLiP and SAbDab representative-site selection can undercount EC coverage.\n\n"
         "Only qualifying mapped-site evidence is included: broader IEDB regions, uncorroborated PDBe chemical contacts, "
         "ChEMBL identity links and GPCRdb mutation records are excluded from this comparison. "
+        "Thera-SAbDab matches therapeutic domains to SAbDab/AACDB structures and is not an independent experimental corpus. "
         "SurfaceBind predictions remain separate from experimental evidence. "
         "Shared-accession gene records stay in the denominator without gene-specific credit.\n"
     )
@@ -154,7 +174,7 @@ def main():
                 input_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                 denominator=5130,
                 ligand_yes_denominator=3157,
-                unique_definition="Exclusive across all eight displayed source/evidence streams, including SurfaceBind",
+                unique_definition="Exclusive across all ten displayed source/evidence streams, including SurfaceBind",
                 extracellular_definition="All mapped residues extracellular; not assessed for SurfaceBind anchors",
             ),
             indent=2,

@@ -1,11 +1,13 @@
 source	covered_all	unique_all_sources	covered_ligand_yes	extracellular_all	extracellular_ligand_yes	unique_excluding_prediction_competition	unique_ligand_yes
-SAbDab: antibody contacts	411	56	371	249	236	116	44
-IEDB: exact epitopes	183	4	167	125	120	4	3
+SAbDab: antibody contacts	411	39	371	249	236	77	30
+Thera-SAbDab: exact therapeutic domains	80	0	71	60	57	1	0
+AACDB: antibody contacts	211	0	196	151	147	0	0
+IEDB: exact epitopes	183	3	167	125	120	3	2
 PDBe + IUPHAR: chemical sites	209	11	192	34	32	18	10
 PDBe + IUPHAR: natural protein-ligand sites	120	4	120	54	54	13	4
 BioGRID-linked literature: minibinders	1	0	1	0	0	0	0
 BioLiP: biological ligand sites	853	335	713	174	167	458	244
 GPCRdb: experimental contacts	190	17	182	15	14	21	14
-SurfaceBind: predicted sites	1609	1167	1249	NA	NA	1167	837
-Experimental union	1135	NA	969	384	364	NA	NA
+SurfaceBind: predicted sites	1609	1166	1249	NA	NA	1166	836
+Experimental union	1136	NA	970	386	365	NA	NA
 Experimental or predicted union	2302	NA	1806	NA	NA	NA	NA

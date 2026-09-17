@@ -175,3 +175,6 @@ data/analysis/deep_dive_binding_sites/prior_observations.tsv
 
 data/external/binder_resource_extension/
 data/analysis/deep_dive_binding_sites/biolip_gpcrdb_evidence.tsv
+
+data/external/therapeutic_antibody_audit/
+data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
