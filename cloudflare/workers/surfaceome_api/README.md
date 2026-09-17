@@ -30,6 +30,8 @@ Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → 
 
 | Method | Path | Returns |
 |---|---|---|
+| `GET` | `/v1/internalization/:symbol` | Saved sequence-prior and literature internalization tracks; `null` when no analysis exists. Catalog rows carry `intern`, `intern_lit`, and `intern_lit_grade`. |
+| `GET` | `/v1/tag-sites/:symbol` | Engineered tag insertion sites from `tag_site_public`. |
 | `GET` | `/v1/genes/:symbol` | `SurfaceomeRecord` JSON (latest schema_version): executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks. The citation ledger is **no longer inlined** here (moved to `/evidence`; record ~45% smaller). |
 | `GET` | `/v1/genes/:symbol/evidence` | The citation ledger for one gene — verbatim quotes + provenance as `{ gene, evidence[], papers{} }`, split out of the core record and served via KV read-through. `papers` is NCBI citation metadata (title, byline, journal, year) joined in from `paper_metadata` and keyed by the same `source_id` the spans carry; the stored records hold only an accession, so this is where a readable reference line comes from. Empty `{}` when the join finds nothing — consumers must treat every field as optional. |
 | `GET` | `/v1/orthologs/:symbol` | Mouse + cyno orthologs for any gene from latest Compara release (broad genome-wide raw Compara — full-length identity; distinct from the deep ECD/topology orthologs inside the per-gene record) |

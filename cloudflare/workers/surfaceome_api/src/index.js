@@ -170,6 +170,15 @@ function checkSymbol(sym) {
 // always-on L7 DDoS protection covers the volumetric case underneath.
 async function checkRate(env, request, path) {
   if (path === "/v1/health") return null;
+  // Trusted-build bypass: the Cloudflare Pages build pre-fetches ~5k per-gene
+  // records from ONE egress IP and would otherwise trip the per-IP limiter
+  // (~10 min of forced pacing). A request carrying the shared
+  // BUILD_BYPASS_TOKEN secret in `X-Build-Bypass` skips the limiter so the build
+  // fetches at full concurrency. If the secret isn't configured (env var unset)
+  // there is NO bypass; public traffic can't reach this path without the exact
+  // secret, so it stays rate-limited.
+  const bypass = env.BUILD_BYPASS_TOKEN;
+  if (bypass && request.headers.get("X-Build-Bypass") === bypass) return null;
   const heavy = path === "/v1/catalog" || path.endsWith(".tsv");
   const limiter = heavy ? env.RATE_LIMITER_HEAVY : env.RATE_LIMITER;
   if (!limiter) return null;
@@ -1625,10 +1634,30 @@ async function handleCatalog(env, request) {
             sa.ddf_homo_oligomerization AS sa_ddf_homo_oligomerization,
             sa.ddf_topo_tm_helix_count AS sa_ddf_topo_tm_helix_count,
             sa.ddf_topo_signal_peptide_length AS sa_ddf_topo_signal_peptide_length,
+            si.intern_grade AS intern_grade,
+            si.intern_has_lit AS intern_has_lit,
+            si.intern_lit_grade AS intern_lit_grade,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       -- Internalization sequence-prior grade (separate standalone pass;
+       -- scalar grade columns only — never record_json, which carries the
+       -- per-residue topology string that would blow D1's isolate memory
+       -- cap at catalog scale, same rationale as the canonical_topology
+       -- scalars above). One row per gene (publish drops stale schema
+       -- versions); the MAX(schema_version) guard is belt-and-suspenders.
+       LEFT JOIN (
+         SELECT gene_symbol,
+                seq_canonical_grade AS intern_grade,
+                has_literature AS intern_has_lit,
+                lit_overall_grade AS intern_lit_grade
+           FROM surface_internalization sii1
+          WHERE schema_version = (
+            SELECT MAX(schema_version) FROM surface_internalization sii2
+             WHERE sii2.gene_symbol = sii1.gene_symbol
+          )
+       ) si ON si.gene_symbol = u.gene_symbol
        LEFT JOIN (
          -- One row per gene: the latest (schema_version, prompt_corpus_version)
          -- combo. The schema_version match is load-bearing today (the
@@ -1845,6 +1874,17 @@ async function handleCatalog(env, request) {
     if (t) row.tr = t;
     if (u.has_deep_dive) row.deep_dive = true;
     if (u.sb_n_sites != null) row.sb = u.sb_n_sites;
+    // Internalization sequence-prior grade (SeqGrade: very_high|high|moderate|
+    // low|very_low|unknown). Separate standalone pass — a top-level field, NOT
+    // inside `ddf`, because it exists for the full internalization cohort
+    // independent of deep-dive coverage (viewer filters it as its own category).
+    if (u.intern_grade) row.intern = u.intern_grade;
+    if (u.intern_has_lit) row.intern_lit = 1;
+    // Literature-track overall grade (Grade: high|moderate|low|no|unknown) —
+    // distinct from the seq prior above, so the catalog can render a SEPARATE
+    // "Internalization (literature)" column + filter. Only present once a gene
+    // has had a literature run; older viewers ignore this unknown field.
+    if (u.intern_lit_grade) row.intern_lit_grade = u.intern_lit_grade;
     // Slim deep-dive filter projection — only the 21 fields the catalog
     // UI actually filters on. Skips continuous fields (max_paralog_ecd_
     // pct_identity, ortholog identities) and `has_restricted_subdomain`
@@ -1877,9 +1917,13 @@ async function handleCatalog(env, request) {
             -- Canonical-topology SCALARS only (see main catalog query).
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
-            gi.uniprot_acc AS uniprot_acc
+            gi.uniprot_acc AS uniprot_acc,
+            si.seq_canonical_grade AS intern_grade,
+            si.has_literature AS intern_has_lit,
+            si.lit_overall_grade AS intern_lit_grade
        FROM surface_annotation sa1
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = sa1.gene_symbol
+       LEFT JOIN surface_internalization si ON si.gene_symbol = sa1.gene_symbol
       WHERE sa1.schema_version = (
         SELECT MAX(schema_version) FROM surface_annotation sa2
          WHERE sa2.gene_symbol = sa1.gene_symbol
@@ -1897,6 +1941,9 @@ async function handleCatalog(env, request) {
     deepSet.add(sym);
     const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
     if (r.uniprot_acc) row.uniprot = r.uniprot_acc;
+    if (r.intern_grade) row.intern = r.intern_grade;
+    if (r.intern_has_lit) row.intern_lit = 1;
+    if (r.intern_lit_grade) row.intern_lit_grade = r.intern_lit_grade;
     const t = packTriage(sym);
     if (t) row.tr = t;
     const dd = projectDeepDiveFiltersFromParts(ddfPartsFromRow(r, "ddf_"));
@@ -1986,7 +2033,19 @@ async function handleCatalog(env, request) {
       //   v7 = adds deterministic transmembrane-topology facets derived
       //        from deterministic_features.canonical_topology (DeepTMHMM):
       //        `ddf.has_tm` and `ddf.tm_count_band` (none/single/multi).
-      row_schema: 7,
+      //   v8 = adds top-level `intern` (internalization sequence-prior
+      //        SeqGrade: very_high|high|moderate|low|very_low|unknown) from
+      //        surface_internalization, present only for the internalization
+      //        cohort; plus optional `intern_lit`=1 when a literature grade
+      //        also exists. A SEPARATE catalog facet, independent of `ddf` /
+      //        deep-dive coverage. Older viewers ignore unknown fields.
+      //   v9 = adds optional top-level `intern_lit_grade` (literature-track
+      //        overall Grade: high|moderate|low|no|unknown), distinct from the
+      //        seq-prior `intern`, so the catalog can show a SEPARATE
+      //        internalization-literature column + filter. Present only once a
+      //        gene has a literature run; `intern_lit`=1 stays as the has-lit
+      //        flag for back-compat. Older viewers ignore the new field.
+      row_schema: 9,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
@@ -2293,6 +2352,8 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/evidence", summary: "The gene's evidence ledger (quote+span items) split out of the record: { gene, evidence[], papers{} } — papers carries NCBI citation metadata (title, byline, journal, year) keyed by source_id" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
+  { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
+  { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
   { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
 ];
@@ -2691,6 +2752,34 @@ async function handleTriage(env, symbol) {
     count: rows.results.length,
     runs: rows.results,
   }, { ttl: CACHE_TTL_SHORT });
+}
+
+// Per-gene internalization record — the standalone internalization pass
+// (surface_internalization). Serves the full InternalizationRecord JSON so the
+// gene page's InternalizationCard renders the sequence-prior (+ literature,
+// once present) tracks for ANY swept gene, not just the handful of committed
+// static snapshots the card used to fall back to. One row per gene (publish
+// drops stale schema_versions); the MAX(schema_version) guard is
+// belt-and-suspenders. Returns `null` on a miss (short TTL so a later sweep
+// surfaces without a day-long stale "no record" cache); the card treats null
+// as "no record for {symbol} yet".
+async function handleInternalization(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const rows = await env.DB.prepare(
+    `SELECT record_json FROM surface_internalization
+      WHERE gene_symbol = ? COLLATE NOCASE
+      ORDER BY schema_version DESC LIMIT 1`
+  ).bind(sym).all();
+  const row = rows.results[0];
+  if (!row) return json(null, { ttl: CACHE_TTL_SHORT });
+  let record;
+  try {
+    record = JSON.parse(row.record_json);
+  } catch {
+    return json(null, { ttl: CACHE_TTL_SHORT });
+  }
+  return json(record, { ttl: CACHE_TTL_LONG });
 }
 
 // Per-(gene, model, variant) replicate detail — backs the benchmark
@@ -3225,6 +3314,65 @@ async function handleCatalogOne(env, symbol) {
   });
 }
 
+// Tag-insertion sites for one gene (deterministic + literature), from
+// tag_site_public. Returns a TaggedSitesFile (viewer/lib/tag-sites-types.ts) so
+// the viewer's fetchTaggedSites -> parseTaggedSitesFile consumes it unchanged.
+// Empty-but-200 on no rows: absence is not an error (same contract the static
+// asset had).
+async function handleTagSites(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return notFound("gene_not_found");
+  // Resilient to deploy order: if tag_site_public isn't provisioned yet (Worker
+  // shipped before the sync), or any transient DB error, return an empty
+  // TaggedSitesFile rather than a 500 — the viewer then falls back to the static
+  // asset. Backwards-compatible: no existing route or table is touched.
+  let rows = [];
+  try {
+    const res = await env.DB.prepare(
+      `SELECT * FROM tag_site_public WHERE gene_symbol = ? COLLATE NOCASE
+        ORDER BY provenance, insert_after_residue`
+    )
+      .bind(sym)
+      .all();
+    rows = res?.results ?? [];
+  } catch {
+    rows = [];
+  }
+  const sites = rows.map((r) => ({
+    site_id: r.site_id,
+    gene_symbol: r.gene_symbol,
+    uniprot_acc: r.uniprot_acc,
+    provenance: r.provenance,
+    det_path: r.det_path ?? null,
+    site_kind: r.site_kind,
+    insert_after_residue: r.insert_after_residue ?? null,
+    residue_before: r.residue_before ?? null,
+    residue_after: r.residue_after ?? null,
+    residue_label: r.residue_label ?? null,
+    residue_range: r.residue_range ?? null,
+    topology_state: r.topology_state ?? null,
+    extracellular: r.extracellular === 1,
+    compartment: r.compartment ?? null,
+    tag_type: r.tag_type ?? null,
+    tag_length_aa: r.tag_length_aa ?? null,
+    linker: r.linker ?? null,
+    evidence_type: r.evidence_type ?? null,
+    functional_impact_measured: r.functional_impact_measured ?? null,
+    confidence: r.confidence ?? null,
+    rationale: r.rationale ?? null,
+    sources: JSON.parse(r.sources_json || "[]"),
+    plddt: r.plddt ?? null,
+    conservation_rank: r.conservation_rank ?? null,
+    median_conservation: r.median_conservation ?? null,
+  }));
+  return json({
+    has_data: sites.length > 0,
+    gene_symbol: rows[0]?.gene_symbol ?? sym,
+    uniprot_acc: rows[0]?.uniprot_acc ?? "",
+    sites,
+  });
+}
+
 // Serve the pre-generated rich Markdown export for a gene from R2.
 // Unlike the JSON record (assembled live from D1), the .md bundles
 // reanalysis extras NOT in D1 — canonical/isoform/ortholog sequences,
@@ -3331,6 +3479,8 @@ export default {
     // Single-gene catalog row (DB-vote strip on the gene page). `/v1/catalog`
     // (exact) is matched above; this is the per-symbol variant.
     if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleCatalogOne(env, m[1]));
+    if ((m = path.match(/^\/v1\/internalization\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleInternalization(env, m[1]));
+    if ((m = path.match(/^\/v1\/tag-sites\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTagSites(env, m[1]));
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
