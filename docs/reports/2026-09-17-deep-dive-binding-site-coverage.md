@@ -154,3 +154,6 @@ Reproduce with `scripts/audit/compare_binder_resources.py --fetch` (read-only);
 omit `--fetch` to reuse the cached snapshots. Per-gene flags and subset totals
 are in `resource_comparison_genes.tsv` and `resource_comparison.tsv`, with input
 hashes, snapshot dates and query text in `resource_comparison_manifest.json`.
+
+
+Follow-up completed: [BioLiP and GPCRdb audit](2026-09-17-biolip-gpcrdb-audit.md) adds 504 genes under a curated biological ligand-site criterion, bringing the expanded union to 1,135/5,130 (22.12%). See that report for the evidence-tier differences and subset results.
