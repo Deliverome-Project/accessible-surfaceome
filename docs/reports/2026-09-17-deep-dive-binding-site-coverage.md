@@ -76,3 +76,81 @@ uv run python scripts/audit/summarize_binding_sites.py --deep-dives
 For an empty shared audit cache, first run the bulk and IEDB retrieval steps documented in the preceding report. Batch cache names now include hashes of queried identifiers, so adding a cohort cannot accidentally reuse an unrelated metadata page.
 
 Validation: 14 focused tests pass, including new shared-identifier regression tests. Repository-wide Ruff and scoped type checks pass. The full repository check remains blocked by the existing missing `pydssp` dependency; no full-suite pass is claimed. No live D1, viewer, prompts, paid model calls or deployment were changed.
+
+## Resource comparison and the LLM natural-ligand denominator
+
+Read-only public-D1 refresh on 2026-09-17: among the frozen 5,130 HGNC records,
+3,157 have explicit `filters.has_known_ligand=true`, 1,973 have false, and none
+are missing. Every true record has a nonempty rationale. This is an LLM label,
+not independent validation of an endogenous ligand. No schema default was
+substituted for missing values. All joins use HGNC IDs or unambiguous canonical
+UniProt accessions; the same 24 shared-accession gene records remain uncredited.
+
+| Resource / evidence counted | All 5,130 | LLM ligand=yes, 3,157 |
+|---|---:|---:|
+| SAbDab: antibody complexes with mapped contacts | 411 (8.01%) | 371 (11.75%) |
+| IEDB: exact mapped epitopes | 183 (3.57%) | 167 (5.29%) |
+| IEDB: broader epitope regions | 201 (3.92%) | 168 (5.32%) |
+| PDBe + IUPHAR: chemical binder/site pairs | 209 (4.07%) | 192 (6.08%) |
+| PDBe + IUPHAR: endogenous protein ligand interfaces | 120 (2.34%) | 120 (3.80%) |
+| BioGRID-linked literature: mapped minibinders, limited extraction | 1 (0.02%) | 1 (0.03%) |
+| **Deduplicated experimental mapped-site union** | **631 (12.30%)** | **575 (18.21%)** |
+| Union allowing broader epitope regions | 726 (14.15%) | 646 (20.46%) |
+| Mapped-site union with all contact residues extracellular | 302 (5.89%) | 287 (9.09%) |
+| **SURFACE-Bind: at least one predicted site** | **1,609 (31.36%)** | **1,249 (39.56%)** |
+| SURFACE-Bind: at least one predicted design seed | 1,575 (30.70%) | 1,222 (38.71%) |
+| PDBe: chemical contacts before pharmacology confirmation | 976 (19.03%) | 820 (25.97%) |
+| PDBe chemical-contact target with ChEMBL compound cross-link | 830 (16.18%) | 711 (22.52%) |
+
+Rows overlap and must not be summed. The ligand=yes denominator restricts
+which genes are counted; its numerators still include *any* qualifying binder,
+not exclusively the endogenous ligand. The 120 endogenous-protein-ligand row
+is a narrower analysis and does not include all classes of natural ligands.
+
+SURFACE-Bind is already integrated into this repository. Its mirrored release
+is `2024-08-09` (2,708 protein entries), not a fresh upstream release audit.
+2,620 cohort genes are listed, but only 1,609 have a positive site count; mere
+membership would overstate coverage. The public model exposes site anchors,
+patch properties and design-seed counts, not experimentally validated binder
+identities with complete epitopes. These are predicted design opportunities,
+so they are excluded from the experimental union. See the
+[official methodology](https://surface-bind.inria.fr/about.html).
+If predicted and experimental opportunities are intentionally combined, their
+deduplicated union is 1,929/5,130 (37.60%), or 1,530/3,157 (48.46%); this must
+never be described as experimental binder coverage.
+
+### Could additional sources yield more?
+
+Yes. The experimental union is a conservative measured lower bound, not a
+claim of exhaustive coverage or the largest database available. The audit
+already finds chemical contacts for 976 genes, substantially more than the
+209 passing the current IUPHAR pair check. Some are cofactors, detergents or
+other incidental contacts, so all 976 cannot be promoted to useful binders.
+
+The next priority is [BioLiP2](https://pmc.ncbi.nlm.nih.gov/articles/PMC10767969/),
+which supplies biologically relevant ligand classifications, binding residues,
+and affinity annotations for PDB-derived interactions. It could help validate
+more of those existing chemical contacts and add ligand classes excluded from
+the current chemical/protein rules. Its incremental cohort coverage has **not**
+yet been measured. More structure databases do not automatically mean more
+unique targets because they draw on overlapping PDB structures.
+
+ChEMBL is also worth adding as *binding-assay corroboration* for exact
+target–compound pairs that already have structural sites. The 830-target row
+is only compound identity cross-link coverage, not ChEMBL affinity coverage.
+A genuine ChEMBL audit must retrieve assays, check target attribution and
+binding endpoints, and match the exact compound before claiming an uplift.
+ChEMBL alone does not satisfy a residue-level epitope requirement.
+
+Further gains can come from completing antibody-complex processing beyond
+three attempted representatives per target, resolving IEDB mapping failures,
+and extracting published minibinder coordinates and epitope experiments.
+The one-gene BioGRID literature result is a limited validated extraction, not
+the coverage ceiling of that literature. Confidence must remain evidence-type
+specific: coordinate contacts, experimentally mapped epitope regions,
+pharmacological corroboration, and predicted patches are different claims.
+
+Reproduce with `scripts/audit/compare_binder_resources.py --fetch` (read-only);
+omit `--fetch` to reuse the cached snapshots. Per-gene flags and subset totals
+are in `resource_comparison_genes.tsv` and `resource_comparison.tsv`, with input
+hashes, snapshot dates and query text in `resource_comparison_manifest.json`.
