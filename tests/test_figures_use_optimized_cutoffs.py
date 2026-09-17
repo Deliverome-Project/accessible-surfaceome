@@ -46,7 +46,11 @@ RECALIBRATED_OPTIMIZED_FLAGS = ("uniprot_optimized", "cspa_optimized")
 # The ONLY published figure permitted to use the native recalibrated-DB flags:
 # Figure 1 (the five-DB overlap Venn), which by design shows each source's
 # native, pre-recalibration membership (see its caption + 01_db_overlap_venn.md).
-ALLOWED_INITIAL_CUTOFF_FIGURES = {"db_overlap_upset"}
+ALLOWED_INITIAL_CUTOFF_FIGURES = {
+    "db_overlap_upset",
+    # Same five native DB flags, shown as a Venn for blog/talk use.
+    "blog_db_overlap_venn",
+}
 
 # Published figures that score/gate on UniProt or CSPA membership and therefore
 # MUST read the optimized columns (from the figure audits, 2026-06-30).

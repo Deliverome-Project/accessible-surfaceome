@@ -6,6 +6,14 @@
 #   "venn>=0.1.3",
 # ]
 # ///
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "matplotlib>=3.9",
+#   "seaborn>=0.13",
+#   "venn>=0.1.3",
+# ]
+# ///
 """Blog figure — 5-way DB-overlap Venn with count-scaled labels.
 
 NOT a numbered paper figure. Figure 1 is now ``db_overlap_upset`` (an
@@ -31,8 +39,7 @@ The exaggeration is stronger here than in the paper-figure lineage:
 1.6x) and a wider font band, so the size difference reads across a
 room. See ``LABEL_SCALE`` below.
 
-Outputs:
-  data/analysis/blog/blog_db_overlap_venn.{pdf,png}
+Standalone — ``uv run make_blog_db_overlap_venn.py``.
 """
 
 from __future__ import annotations
@@ -51,6 +58,7 @@ from venn import venn
 
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
+BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # Dedicated per-figure TSV: the five databases' INITIAL (pre-recalibration)
 # surface flags, union members only, with stable IDs — NOT the
 # whole-proteome catalog. Figure 1 is a databases-overlap figure, so it
@@ -59,8 +67,14 @@ BRANCH = "main"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
-# No gist: d655abfc now serves the UpSet (Figure 1). A blog figure is
-# reproduced from this in-repo script.
+# Published reproduction gist (embedded into the PNG Source / PDF Subject
+# metadata). Its own gist — d655abfc serves the UpSet that replaced this
+# figure as Figure 1.
+GIST_URL = "https://gist.github.com/beccajcarlson/1a06ed9a3ef017ffb91f5f6922d271f3"
+
+# Single bundled data source (one TSV per gist — see
+# tests/test_gist_single_tsv.py). Read sibling-first by _fetch_csv_text.
+DATA_TSV = f"{BASE}/data/processed/figures/blog_db_overlap_venn.tsv"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
@@ -179,20 +193,25 @@ PALETTE_BY_LABEL = {label: BRAND_PALETTE[i] for i, (_, label) in enumerate(DB_FL
 
 
 def _fetch_csv_text(_url: str = "") -> str:
-    """Read the per-figure TSV from the repo.
-
-    This is an in-repo canonical generator, not a gist mirror, so the
-    sibling-first / network fallback the mirrors carry does not apply —
-    the TSV is always a fixed path relative to the repo root.
-    """
-    tsv = Path(__file__).resolve().parents[2] / "data/processed/figures/blog_db_overlap_venn.tsv"
-    if not tsv.is_file():
-        raise FileNotFoundError(f"figure TSV not found at {tsv}")
-    return tsv.read_text(encoding="utf-8")
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the whole
+    reproduction unit (script + data + README), so this must never read a
+    different TSV than the one bundled. Sibling-first (gist case), then the
+    in-repo path (dev case). No network fetch by design."""
+    name = Path(DATA_TSV).name
+    sibling = Path(__file__).parent / name
+    if sibling.is_file():
+        return sibling.read_text(encoding="utf-8")
+    local = Path(__file__).resolve().parents[3] / "data/processed/figures" / name
+    if local.is_file():
+        return local.read_text(encoding="utf-8")
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({name}) or local ({local}). "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 def main() -> None:
     _apply_brand_style()
-    text = _fetch_csv_text()
+    text = _fetch_csv_text(DATA_TSV)
     sets: dict[str, set[str]] = {label: set() for _, label in DB_FLAGS}
     reader = csv.DictReader(io.StringIO(text), delimiter="\t")
     for row in reader:
@@ -466,20 +485,21 @@ def main() -> None:
         fontsize=21,
     )
 
-    out_dir = Path(__file__).resolve().parents[2] / "data/analysis/blog"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir = Path(__file__).parent
     out_pdf = out_dir / "blog_db_overlap_venn.pdf"
     out_png = out_dir / "blog_db_overlap_venn.png"
     fig.savefig(
         out_pdf,
         bbox_inches="tight",
         pad_inches=0.3,
+        metadata={"Subject": GIST_URL},
     )
     fig.savefig(
         out_png,
         bbox_inches="tight",
         pad_inches=0.3,
         dpi=600,
+        metadata={"Source": GIST_URL},
     )
     print(
         f"Wrote {out_pdf} + {out_png}  ({sum(len(s) for s in sets.values()):,} "
