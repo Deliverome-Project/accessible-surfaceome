@@ -82,7 +82,27 @@ test("row leads with the paper title when metadata resolves", () => {
     /Structural insights into the transporter TAPL/,
     "title must render on the row itself, not only in the drawer",
   );
-  assert.match(html, /Bock et al\. · Sci Rep 2018 · PMC6199259/, "byline + accession trail");
+  assert.match(html, /Bock et al\. · Sci Rep 2018/, "byline");
+  assert.match(html, /PMC6199259/, "accession");
+});
+
+test("the whole citation is one link, with no dead text beside the arrow", () => {
+  // Regression: the title was the only anchor, so the byline and the
+  // accession were dead text — while the accession carried the ↗, making
+  // the least clickable part look the most clickable.
+  const html = render(PAPERS);
+  const anchor = /<a[^>]*href="https:\/\/www\.ncbi\.nlm\.nih\.gov[^"]*"[^>]*>([\s\S]*?)<\/a>/.exec(html);
+  assert.ok(anchor, "citation must be wrapped in an anchor to the paper");
+  const inner = anchor[1];
+  assert.match(inner, /Structural insights into the transporter TAPL/, "title inside the link");
+  assert.match(inner, /Bock et al\./, "byline inside the link");
+  assert.match(inner, /PMC6199259/, "accession inside the link");
+  assert.match(inner, /↗/, "the arrow belongs to the same link");
+  assert.doesNotMatch(
+    html,
+    /<\/a>\s*<span[^>]*>\s*Bock/,
+    "byline must not sit outside the anchor",
+  );
 });
 
 test("row keeps the bare accession when no metadata is passed", () => {
