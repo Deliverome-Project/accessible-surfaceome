@@ -12,6 +12,9 @@ Left to right:
 * **Five reference databases** — genes any of UniProt / GO CC / HPA /
   SURFY / CSPA flags as surface under the bench-optimized cutoffs (the
   thresholds the accuracy figures use, not Figure 1's native flags).
+  That provenance is NOT on the canvas and has to be in the caption:
+  under Figure 1's native flags the same union is 5,546, so a reader
+  who meets 5,626 with no note will think the two figures disagree.
 * **Accessibility Triage agent, both passes** — stage 1 reads NCBI gene
   and protein records for every gene; stage 2 re-reads the subset
   rejected for an ambiguous reason with a literature pass, flipping some
@@ -96,7 +99,7 @@ RESCUE_FILL = "#FBEFF0"
 TRIM_EDGE = "#8A8A8A"
 
 # Canvas in Figure 4's coordinate space (viewBox 0 0 1260 460).
-CANVAS_W, CANVAS_H = 1600.0, 560.0
+CANVAS_W, CANVAS_H = 1600.0, 600.0
 
 POSITIVE_VERDICTS = ("yes", "contextual")
 
@@ -266,7 +269,7 @@ def _eyebrow(ax, x, y, text, color=EYEBROW):
 
 
 def build(counts: Counts):
-    fig, ax = plt.subplots(figsize=(16.0, 5.6))
+    fig, ax = plt.subplots(figsize=(16.0, 6.0))
     ax.set_xlim(0, CANVAS_W)
     ax.set_ylim(0, CANVAS_H)
     ax.invert_yaxis()  # top-left origin, like the SVG
@@ -274,31 +277,27 @@ def build(counts: Counts):
 
     # ---- Box A: the input cohort -------------------------------------
     ax.text(
-        20, 232, "Human protein-coding genes",
+        20, 252, "Human protein-coding genes",
         ha="left", va="center", fontsize=13.5, color=MUTED, zorder=5,
     )
     ax.text(
-        20, 276, f"{counts.proteome:,}",
+        20, 298, f"{counts.proteome:,}",
         ha="left", va="center", fontsize=42, fontweight="bold",
         color=INK, zorder=5,
-    )
-    ax.text(
-        20, 314, "every gene enters both lanes",
-        ha="left", va="center", fontsize=12.5, color=EYEBROW, zorder=5,
     )
 
     # ---- Split from A into the two lanes -----------------------------
     # Each lane is entered at its card's own summary row, so the
     # connectors never cut through a card's inner panel.
-    top, bottom = 116.0, 430.0
+    top, bottom = 116.0, 450.0
     junction = 320.0
-    ax.plot([286, junction], [273, 273], color=INK, lw=2.6, zorder=4)
+    ax.plot([286, junction], [283, 283], color=INK, lw=2.6, zorder=4)
     ax.plot([junction, junction], [top, bottom], color=INK, lw=2.6, zorder=4)
     _arrow(ax, (junction, top), (396, top))
     _arrow(ax, (junction, bottom), (396, bottom))
 
     # ---- Box B: the database lane ------------------------------------
-    _card(ax, 400, 52, 430, 128)
+    _card(ax, 400, 52, 450, 128)
     _eyebrow(ax, 424, 76, "FIVE REFERENCE DATABASES")
     _run(
         ax, 424, 118,
@@ -311,15 +310,14 @@ def build(counts: Counts):
         424, 154, "UniProt \u00b7 GO CC \u00b7 HPA \u00b7 SURFY \u00b7 CSPA",
         ha="left", va="center", fontsize=12.5, color=MUTED, zorder=5,
     )
-    _pill(ax, 776, 76, "no LLM", fill=TEAL, size=10)
+    _pill(ax, 796, 76, "no LLM", fill=TEAL, size=10)
 
-    # ---- Box C: the triage lane, both stages on the canvas -----------
-    _card(ax, 400, 212, 430, 300)
+    # ---- Box C: the triage lane, both passes on the canvas -----------
+    _card(ax, 400, 212, 450, 346)
     _eyebrow(ax, 424, 236, "ACCESSIBILITY TRIAGE AGENT")
-    _pill(ax, 780, 236, "Sonnet", fill=MAROON_DARK, size=10)
+    _pill(ax, 800, 236, "Sonnet", fill=MAROON_DARK, size=10)
 
-    # The two passes, in Figure 4's pale inner panel.
-    _card(ax, 422, 254, 386, 118, edge=PANEL_EDGE, fill=PANEL_FILL,
+    _card(ax, 422, 254, 406, 162, edge=PANEL_EDGE, fill=PANEL_FILL,
           lw=1.2, radius=6, z=3)
     ax.text(
         440, 276, "STAGE 1  NCBI gene + protein records",
@@ -332,35 +330,44 @@ def build(counts: Counts):
         ha="left", va="center", fontsize=12, color=MUTED, zorder=5,
     )
     ax.text(
-        440, 324, "STAGE 2  literature pass on ambiguous rejects",
+        440, 328, "STAGE 2  literature pass on the ambiguous tail",
         ha="left", va="center", fontsize=11, fontweight="bold",
         color=TEAL, zorder=5,
     )
-    ax.text(
-        440, 344,
-        f"{counts.stage2_reexamined:,} re-read \u2192 "
-        f"{counts.stage2_rescued:,} more surface",
-        ha="left", va="center", fontsize=12, color=MUTED, zorder=5,
-    )
+    # "Ambiguous" is a specific slice, not a vibe: zero-database
+    # rejections whose stated reason was a near miss. The confidently
+    # intracellular buckets were deliberately left out of the re-read.
+    for i, line in enumerate(
+        (
+            f"{counts.stage2_reexamined:,} zero-database rejects called",
+            "endomembrane, secreted or inner-leaflet",
+            "\u2014 not confidently intracellular",
+            f"\u2192 {counts.stage2_rescued:,} more called surface",
+        )
+    ):
+        ax.text(
+            440, 348 + 18 * i, line,
+            ha="left", va="center", fontsize=12, color=MUTED, zorder=5,
+        )
 
     _run(
-        ax, 424, 424,
+        ax, 424, 444,
         [
             (f"{counts.triage_positive:,}", 34, "bold", INK),
             ("   called surface", 13, "normal", MUTED),
         ],
     )
     ax.text(
-        424, 456,
+        424, 476,
         f"{counts.triage_yes:,} yes \u00b7 {counts.triage_contextual:,} contextual",
         ha="left", va="center", fontsize=12.5, color=MUTED, zorder=5,
     )
 
     # The rescue slice, called out inside the triage card.
-    _card(ax, 424, 470, 322, 42, edge=MAROON, fill=RESCUE_FILL,
+    _card(ax, 424, 500, 322, 42, edge=MAROON, fill=RESCUE_FILL,
           lw=1.6, radius=6, z=3)
     _run(
-        ax, 442, 491,
+        ax, 442, 521,
         [
             (f"{counts.rescued:,}", 21, "bold", MAROON_DARK),
             ("  flagged by no database", 12.5, "normal", MAROON_DARK),
@@ -368,56 +375,43 @@ def build(counts: Counts):
     )
 
     # ---- Merge, then the trim gate -----------------------------------
-    merge = 886.0
-    _arrow(ax, (834, top), (merge, top))
-    _arrow(ax, (834, bottom), (merge, bottom))
+    merge = 906.0
+    _arrow(ax, (854, top), (merge, top))
+    _arrow(ax, (854, bottom), (merge, bottom))
     ax.plot([merge, merge], [top, bottom], color=INK, lw=2.6, zorder=4)
-    _arrow(ax, (merge, 273), (912, 273))
+    _arrow(ax, (merge, 283), (932, 283))
 
-    _card(ax, 916, 206, 286, 134, edge=TRIM_EDGE, fill="white", lw=1.8,
+    _card(ax, 936, 196, 306, 174, edge=TRIM_EDGE, fill="white", lw=1.8,
           ls=(0, (5, 3)))
-    _eyebrow(ax, 940, 232, "TRIMMED FROM THE UNION", color=TRIM_EDGE)
+    _eyebrow(ax, 960, 222, "TRIMMED FROM THE UNION", color=TRIM_EDGE)
     ax.text(
-        940, 274, f"\u2212{counts.trimmed:,}",
+        960, 264, f"\u2212{counts.trimmed:,}",
         ha="left", va="center", fontsize=30, fontweight="bold",
         color=TRIM_EDGE, zorder=5,
     )
-    ax.text(
-        940, 304, "high-confidence \u201cno\u201d with a",
-        ha="left", va="center", fontsize=11.5, color=TRIM_EDGE, zorder=5,
-    )
-    ax.text(
-        940, 322, "single database flag",
-        ha="left", va="center", fontsize=11.5, color=TRIM_EDGE, zorder=5,
-    )
-    _arrow(ax, (1206, 273), (1250, 273))
+    # "High confidence" is the agent's own three-level scale: high is
+    # reserved for explicit, unambiguous evidence, so a rejection that
+    # rested on absence of evidence is medium or low and survives.
+    for i, line in enumerate(
+        (
+            "one database flag, and a \u201cno\u201d",
+            "the agent rested on explicit",
+            "evidence, not on absence of it",
+        )
+    ):
+        ax.text(
+            960, 300 + 18 * i, line,
+            ha="left", va="center", fontsize=11.5, color=TRIM_EDGE, zorder=5,
+        )
+    _arrow(ax, (1246, 283), (1288, 283))
 
     # ---- Box D: the deep dive ----------------------------------------
-    _card(ax, 1254, 191, 342, 164, fill=PANEL_FILL, edge=MAROON)
-    _eyebrow(ax, 1278, 219, "PER-GENE DEEP DIVE", color=TEAL)
+    _card(ax, 1292, 218, 300, 130, fill=PANEL_FILL, edge=MAROON)
+    _eyebrow(ax, 1316, 248, "PER-GENE DEEP DIVE", color=TEAL)
     ax.text(
-        1278, 263, f"{counts.deep_dive:,}",
+        1316, 300, f"{counts.deep_dive:,}",
         ha="left", va="center", fontsize=42, fontweight="bold",
         color=INK, zorder=5,
-    )
-    ax.text(
-        1278, 301, "genes with a validated record",
-        ha="left", va="center", fontsize=12.5, color=MUTED, zorder=5,
-    )
-    ax.text(
-        1278, 327, f"including all {counts.rescued:,} triage rescues",
-        ha="left", va="center", fontsize=12.5, fontweight="bold",
-        color=MAROON_DARK, zorder=5,
-    )
-
-    # Cutoff provenance: the union above is the bench-optimized one, not
-    # Figure 1's native flags (5,546) \u2014 say so rather than let the two
-    # figures look like they disagree.
-    ax.text(
-        20, 544,
-        "Database flags use the SurfaceBench-optimized cutoffs, as in the "
-        "accuracy figures.",
-        ha="left", va="center", fontsize=11, color=EYEBROW, zorder=5,
     )
 
     fig.tight_layout()
