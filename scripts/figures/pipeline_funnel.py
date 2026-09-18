@@ -24,9 +24,10 @@ Left to right:
   were excluded as unlikely to flip. The rescue slice (agent-positive,
   flagged by no database) is called out inside the card.
 * **The trim** — the union of the two lanes is not the deep-dive cohort.
-  Genes carrying exactly one database flag and a high-confidence
-  non-surface call are dropped. High is the top of the agent's own
-  three-level scale and requires explicit localization evidence, so a
+  Genes carrying exactly one database flag and a non-surface call the
+  agent made at high confidence are dropped. The canvas says what that
+  confidence level means rather than naming it: high requires explicit
+  evidence for a specific alternative compartment, so a non-surface
   call made where the literature is silent scores medium or low and
   survives the trim — which is why 316 single-database non-surface
   genes are still in the cohort. The gate is ``is_trim`` in
@@ -296,9 +297,9 @@ def build(counts: Counts):
     # ---- Split from A into the two lanes -----------------------------
     # Each lane is entered at its card's own summary row, so the
     # connectors never cut through a card's inner panel.
-    top, bottom = 116.0, 450.0
+    top, bottom = 116.0, 430.0
     junction = 320.0
-    ax.plot([286, junction], [283, 283], color=INK, lw=2.6, zorder=4)
+    ax.plot([286, junction], [273, 273], color=INK, lw=2.6, zorder=4)
     ax.plot([junction, junction], [top, bottom], color=INK, lw=2.6, zorder=4)
     _arrow(ax, (junction, top), (396, top))
     _arrow(ax, (junction, bottom), (396, bottom))
@@ -320,11 +321,11 @@ def build(counts: Counts):
     _pill(ax, 796, 76, "no LLM", fill=TEAL, size=10)
 
     # ---- Box C: the triage lane, both passes on the canvas -----------
-    _card(ax, 400, 212, 450, 346)
+    _card(ax, 400, 212, 450, 332)
     _eyebrow(ax, 424, 236, "ACCESSIBILITY TRIAGE AGENT")
     _pill(ax, 800, 236, "Sonnet", fill=MAROON_DARK, size=10)
 
-    _card(ax, 422, 254, 406, 162, edge=PANEL_EDGE, fill=PANEL_FILL,
+    _card(ax, 422, 254, 406, 146, edge=PANEL_EDGE, fill=PANEL_FILL,
           lw=1.2, radius=6, z=3)
     ax.text(
         440, 276, "STAGE 1  NCBI gene + protein records",
@@ -346,9 +347,8 @@ def build(counts: Counts):
     # Cytoplasmic / nuclear / mitochondrial calls were excluded.
     for i, line in enumerate(
         (
-            f"{counts.stage2_reexamined:,} zero-database non-surface calls",
-            "with a near-miss reason (endomembrane,",
-            "secreted, inner-leaflet)",
+            f"{counts.stage2_reexamined:,} zero-database near-miss calls",
+            "(endomembrane, secreted, inner-leaflet)",
             f"\u2192 {counts.stage2_rescued:,} reclassified as surface",
         )
     ):
@@ -358,23 +358,23 @@ def build(counts: Counts):
         )
 
     _run(
-        ax, 424, 444,
+        ax, 424, 430,
         [
             (f"{counts.triage_positive:,}", 34, "bold", INK),
             ("   called surface", 13, "normal", MUTED),
         ],
     )
     ax.text(
-        424, 476,
+        424, 462,
         f"{counts.triage_yes:,} yes \u00b7 {counts.triage_contextual:,} contextual",
         ha="left", va="center", fontsize=12.5, color=MUTED, zorder=5,
     )
 
     # The rescue slice, called out inside the triage card.
-    _card(ax, 424, 500, 322, 42, edge=MAROON, fill=RESCUE_FILL,
+    _card(ax, 424, 486, 322, 42, edge=MAROON, fill=RESCUE_FILL,
           lw=1.6, radius=6, z=3)
     _run(
-        ax, 442, 521,
+        ax, 442, 507,
         [
             (f"{counts.rescued:,}", 21, "bold", MAROON_DARK),
             ("  flagged by no database", 12.5, "normal", MAROON_DARK),
@@ -386,13 +386,13 @@ def build(counts: Counts):
     _arrow(ax, (854, top), (merge, top))
     _arrow(ax, (854, bottom), (merge, bottom))
     ax.plot([merge, merge], [top, bottom], color=INK, lw=2.6, zorder=4)
-    _arrow(ax, (merge, 283), (932, 283))
+    _arrow(ax, (merge, 273), (932, 273))
 
-    _card(ax, 936, 196, 306, 174, edge=TRIM_EDGE, fill="white", lw=1.8,
+    _card(ax, 936, 186, 306, 174, edge=TRIM_EDGE, fill="white", lw=1.8,
           ls=(0, (5, 3)))
-    _eyebrow(ax, 960, 222, "TRIMMED FROM THE UNION", color=TRIM_EDGE)
+    _eyebrow(ax, 960, 212, "TRIMMED FROM THE UNION", color=TRIM_EDGE)
     ax.text(
-        960, 264, f"\u2212{counts.trimmed:,}",
+        960, 254, f"\u2212{counts.trimmed:,}",
         ha="left", va="center", fontsize=30, fontweight="bold",
         color=TRIM_EDGE, zorder=5,
     )
@@ -401,23 +401,23 @@ def build(counts: Counts):
     # the literature is simply silent scores medium or low and is kept.
     for i, line in enumerate(
         (
-            "one database flag plus a",
-            "high-confidence non-surface call,",
-            "the level requiring explicit",
-            "localization evidence",
+            "one database flag, and a",
+            "non-surface call backed by",
+            "explicit evidence for another",
+            "compartment",
         )
     ):
         ax.text(
-            960, 300 + 18 * i, line,
+            960, 290 + 17 * i, line,
             ha="left", va="center", fontsize=11.5, color=TRIM_EDGE, zorder=5,
         )
-    _arrow(ax, (1246, 283), (1288, 283))
+    _arrow(ax, (1246, 273), (1288, 273))
 
     # ---- Box D: the deep dive ----------------------------------------
-    _card(ax, 1292, 218, 300, 130, fill=PANEL_FILL, edge=MAROON)
-    _eyebrow(ax, 1316, 248, "PER-GENE DEEP DIVE", color=TEAL)
+    _card(ax, 1292, 208, 300, 130, fill=PANEL_FILL, edge=MAROON)
+    _eyebrow(ax, 1316, 238, "PER-GENE DEEP DIVE", color=TEAL)
     ax.text(
-        1316, 300, f"{counts.deep_dive:,}",
+        1316, 290, f"{counts.deep_dive:,}",
         ha="left", va="center", fontsize=42, fontweight="bold",
         color=INK, zorder=5,
     )
