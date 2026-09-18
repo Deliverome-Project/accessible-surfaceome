@@ -234,6 +234,356 @@
       "observations": 28,
       "original_fields_sha256": "25b01a4ac25afab637d07ef222fe56aa79ba6ce52c43bfd48fc1cd1a8bd5ec15",
       "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P01375",
+      "symbol": "TNF",
+      "observations": 51,
+      "original_fields_sha256": "e6e8c2959d849e6465994c9664029d9437f15a8a550f7af3bd5bd6405e22b8c9",
+      "ec_partners_before": 13
+    },
+    {
+      "uniprot_acc": "P60033",
+      "symbol": "CD81",
+      "observations": 14,
+      "original_fields_sha256": "b852edb88f3ee079b73f465c84843ccf3d80c631bf19ae18547cb60fe52e90b0",
+      "ec_partners_before": 10
+    },
+    {
+      "uniprot_acc": "P19235",
+      "symbol": "EPOR",
+      "observations": 32,
+      "original_fields_sha256": "3abe972fe62deb07517bb1bcfcf9c36857b29fabbde1dd41dfe489a2d4193dc2",
+      "ec_partners_before": 10
+    },
+    {
+      "uniprot_acc": "P32927",
+      "symbol": "CSF2RB",
+      "observations": 14,
+      "original_fields_sha256": "9af82d875dc7a3d5bec0680694ff439962e5bac621b31d78e6f42e187236aa89",
+      "ec_partners_before": 9
+    },
+    {
+      "uniprot_acc": "P13747",
+      "symbol": "HLA-E",
+      "observations": 83,
+      "original_fields_sha256": "dd96c248cb979ab27d9d0dadff45d369f963a6847f5f4a5ab00b5fb04ec99474",
+      "ec_partners_before": 8
+    },
+    {
+      "uniprot_acc": "P31785",
+      "symbol": "IL2RG",
+      "observations": 25,
+      "original_fields_sha256": "fefebc774bc242a927ff27155cee66bfed72a463c91067bd61147bdb37c79325",
+      "ec_partners_before": 8
+    },
+    {
+      "uniprot_acc": "Q14416",
+      "symbol": "GRM2",
+      "observations": 59,
+      "original_fields_sha256": "2210540eda4261dcb3a393a8fb063a2e0957d8430ddb90ea9e9e77eb27871c16",
+      "ec_partners_before": 8
+    },
+    {
+      "uniprot_acc": "Q9Y5Z0",
+      "symbol": "BACE2",
+      "observations": 27,
+      "original_fields_sha256": "3c96613bfc5ad3c433d0d6c10401539419c0810f6c603b9074086dfe55296eb8",
+      "ec_partners_before": 8
+    },
+    {
+      "uniprot_acc": "P05106",
+      "symbol": "ITGB3",
+      "observations": 135,
+      "original_fields_sha256": "2bf33c3ac92c1100b39cebeae1ff90342cd3b57847749583567977e1a56bd8c4",
+      "ec_partners_before": 8
+    },
+    {
+      "uniprot_acc": "P20701",
+      "symbol": "ITGAL",
+      "observations": 19,
+      "original_fields_sha256": "78e941879124ac87ff9e1a96221bea27d660617bc8007df5bc27af09d62ccc04",
+      "ec_partners_before": 8
+    },
+    {
+      "uniprot_acc": "P18507",
+      "symbol": "GABRG2",
+      "observations": 186,
+      "original_fields_sha256": "0b9894e79b7ea25db5e39fac89b238953e1239910ee59cface8c2be0835ea24d",
+      "ec_partners_before": 7
+    },
+    {
+      "uniprot_acc": "P26012",
+      "symbol": "ITGB8",
+      "observations": 21,
+      "original_fields_sha256": "2cdb5b3823657581dccc3601e20ca43fd13e8915c34102c4c1dc6018fe432713",
+      "ec_partners_before": 7
+    },
+    {
+      "uniprot_acc": "Q16602",
+      "symbol": "CALCRL",
+      "observations": 43,
+      "original_fields_sha256": "691a2e988505f07755eb25525cf794fbfa73b605fe954bf0c31e8483ebf4b386",
+      "ec_partners_before": 7
+    },
+    {
+      "uniprot_acc": "O75581",
+      "symbol": "LRP6",
+      "observations": 31,
+      "original_fields_sha256": "815c066b72efb6030e5eb421753bc3bb2e9be2e46a2d53e3a6e5ac8432e15a69",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "P01732",
+      "symbol": "CD8A",
+      "observations": 11,
+      "original_fields_sha256": "ec1e6b879ea4bdcdffe6dd4852892304e21c86834a1a1319e0f5996cd5157b95",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "P04156",
+      "symbol": "PRNP",
+      "observations": 23,
+      "original_fields_sha256": "490556eab7d0d564fa92f74ab196d0f8428afb94fa7f2668c16a11ba941d9340",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "P05556",
+      "symbol": "ITGB1",
+      "observations": 23,
+      "original_fields_sha256": "68c6f85936b56d8dea4413e3f96f80ef07dec7eaf0ded6e21fcf89d5974835f8",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "P22223",
+      "symbol": "CDH3",
+      "observations": 9,
+      "original_fields_sha256": "3c9bf1320e373541b20bbe4ac922a2e91189be017a97be240d39744f0c6b18a8",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "Q13635",
+      "symbol": "PTCH1",
+      "observations": 18,
+      "original_fields_sha256": "0215492d6233f4738a098f3796a1cba8aee32b9762bd2682b6c68114a6e1d23b",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "Q14832",
+      "symbol": "GRM3",
+      "observations": 40,
+      "original_fields_sha256": "ecd7b61425975ae448f39134c64aa6bce967db5d398f405128ff246d50086d54",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "Q92542",
+      "symbol": "NCSTN",
+      "observations": 86,
+      "original_fields_sha256": "997fcee8246469854a3ea822d78b79175246715ff50e4b7c6a9079be8cc952c6",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "O14786",
+      "symbol": "NRP1",
+      "observations": 12,
+      "original_fields_sha256": "3cdbd5f895f719fc1bf4ad7ecbbbb908aea7c0adcb5a7c2eb5b3c566e5e690d4",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "O60894",
+      "symbol": "RAMP1",
+      "observations": 25,
+      "original_fields_sha256": "cac2e680e239168c82a3b530012ccf12250166d57d3a773bd34f2d5ac03b3789",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "Q13477",
+      "symbol": "MADCAM1",
+      "observations": 11,
+      "original_fields_sha256": "1fc20fad72ef7c47aadd1cbba1415821caac54dbf5d62eb4be28978f3295fa6d",
+      "ec_partners_before": 6
+    },
+    {
+      "uniprot_acc": "O00481",
+      "symbol": "BTN3A1",
+      "observations": 45,
+      "original_fields_sha256": "04393dd0c1ba3c4a29b485b184f05fc4c504484a3e519e5f0ff5ea84ec8e7f40",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P01909",
+      "symbol": "HLA-DQA1",
+      "observations": 18,
+      "original_fields_sha256": "9c9255d6729418fec33d1ab1a1345ed630b108a64d917848ba4221d9f1c4dad7",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P04234",
+      "symbol": "CD3D",
+      "observations": 137,
+      "original_fields_sha256": "33bc84e2792001d2f9c71e355c9346528c95075f5417824dd9b0cd5bb77936c7",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P07949",
+      "symbol": "RET",
+      "observations": 15,
+      "original_fields_sha256": "104f444e502d9be720ab10c5088ceed49a47557d581247b96479b1e3009cb8a1",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P10321",
+      "symbol": "HLA-C",
+      "observations": 25,
+      "original_fields_sha256": "87b3a71515e4419c0474184ad425ab7c37ff3bd936fc05dcf612355b1c7f8975",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P11215",
+      "symbol": "ITGAM",
+      "observations": 28,
+      "original_fields_sha256": "ce2f850fe4a1560ccea5b944ac056d7671cf06d3e43b1028226e18ade2ae83b9",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P12821",
+      "symbol": "ACE",
+      "observations": 11,
+      "original_fields_sha256": "a69acbfa31856f8f421f15768f2752b0f21d9cb04a95baa884816053aa3977ba",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P14784",
+      "symbol": "IL2RB",
+      "observations": 18,
+      "original_fields_sha256": "147fb430be6de2591f2d8bcf9361cf0d9d3b15d1f44ba812bd2864832c28da90",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P14867",
+      "symbol": "GABRA1",
+      "observations": 168,
+      "original_fields_sha256": "ad432c1d20881a75a316ff59b061cee07fcd4fb5dea6c965eadab89197154fc0",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P21926",
+      "symbol": "CD9",
+      "observations": 8,
+      "original_fields_sha256": "04a7b7c1cf5e62a82cc024efafbfa233b65ba423d1af8df068c602a5a8180d83",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P26010",
+      "symbol": "ITGB7",
+      "observations": 17,
+      "original_fields_sha256": "509fec624bb5a7918c8e79685ac11840a0a0b288fa0bfea24bbaaadb6062c192",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P54289",
+      "symbol": "CACNA2D1",
+      "observations": 29,
+      "original_fields_sha256": "40bf38193bc33b2388b9a1cc03790ed1d285cf7093e2cc6fce3e310cdcfd1002",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P54764",
+      "symbol": "EPHA4",
+      "observations": 8,
+      "original_fields_sha256": "4ffe1186889d9bcbacd1eb94502b0fcd375b0d0c680f6e0197279ac10f42480f",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "Q05586",
+      "symbol": "GRIN1",
+      "observations": 86,
+      "original_fields_sha256": "cf89d0a76279a2d8ad12d22be68c27a3b634da48543006853779c1c9b5a9c879",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "Q15109",
+      "symbol": "AGER",
+      "observations": 10,
+      "original_fields_sha256": "25e160e13ab1a3b93d1ec7dbf92c43f7ddb13ee23d06aeb82af9c20f25ccf768",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "Q95460",
+      "symbol": "MR1",
+      "observations": 105,
+      "original_fields_sha256": "1ae5781dcfd69633b6e2cef965051fab10e5694c490ced2048ccbf398113d11b",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "Q9UM47",
+      "symbol": "NOTCH3",
+      "observations": 11,
+      "original_fields_sha256": "5069b31b4dc60e97a5cfbbe31eb9f5183927a1518c5dbc0c6fc9c970f6740e45",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "P01135",
+      "symbol": "TGFA",
+      "observations": 9,
+      "original_fields_sha256": "859e57260061eb6f001d1b6bf2a53d79e2f77d082cc65816d5ac3dd2e8a7c9f5",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "Q9Y275",
+      "symbol": "TNFSF13B",
+      "observations": 17,
+      "original_fields_sha256": "5fa9b622c7dcfe3589027be5d7cb25a2d64a95f60317ee6ca72072d304c5d8c0",
+      "ec_partners_before": 5
+    },
+    {
+      "uniprot_acc": "O00222",
+      "symbol": "GRM8",
+      "observations": 10,
+      "original_fields_sha256": "5f5ee67d1b19903e25fc0d528884b57c3cd33139a0d01cf3e5b46ca7374cae85",
+      "ec_partners_before": 4
+    },
+    {
+      "uniprot_acc": "O15393",
+      "symbol": "TMPRSS2",
+      "observations": 25,
+      "original_fields_sha256": "ea8b528dd838ff59985fa26af2574e1f8094b5857a90c95dacee347a5ad374a9",
+      "ec_partners_before": 4
+    },
+    {
+      "uniprot_acc": "O60462",
+      "symbol": "NRP2",
+      "observations": 13,
+      "original_fields_sha256": "091e19f844f2fffc29488ebfe4efb2af5fdd0fb3e99d69839ca9fa4d59246112",
+      "ec_partners_before": 4
+    },
+    {
+      "uniprot_acc": "P04233",
+      "symbol": "CD74",
+      "observations": 32,
+      "original_fields_sha256": "4a74bc069045979b72b6eae177ebf7fe51b66128de61603f8745f82ecf70c7d6",
+      "ec_partners_before": 4
+    },
+    {
+      "uniprot_acc": "P12830",
+      "symbol": "CDH1",
+      "observations": 17,
+      "original_fields_sha256": "d215e4865819ddf69410eb72411abf590aed5b5c0814af9305349396a463e111",
+      "ec_partners_before": 4
+    },
+    {
+      "uniprot_acc": "P17693",
+      "symbol": "HLA-G",
+      "observations": 14,
+      "original_fields_sha256": "da8b65b0f5b015ceefc0afa721066efeb98bf991d97d62e202882c95ce524ec2",
+      "ec_partners_before": 4
+    },
+    {
+      "uniprot_acc": "P18564",
+      "symbol": "ITGB6",
+      "observations": 19,
+      "original_fields_sha256": "065da66cd4aa3d12c4ff589ad8b66888c0e8907f4a131bc44ac64f6640cab2d8",
+      "ec_partners_before": 4
     }
   ]
 }
