@@ -1,7 +1,7 @@
 /** Build API summaries with exactly the same identity/footprint rules as the viewer. */
 import {readFileSync, readdirSync, writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {browsingContacts, filterContacts, ligandName, namedLigand} from '../../viewer/lib/contact-sites.ts';
+import {browsingContacts, filterContacts, ligandName} from '../../viewer/lib/contact-sites.ts';
 const root = new URL('../../', import.meta.url);
 const read = path => readFileSync(new URL(path, root), 'utf8');
 const hash = text => createHash('sha256').update(text).digest('hex');
@@ -25,10 +25,11 @@ for (const [acc,gene] of Object.entries(genes).sort()) {
  const observations=gene.sites.map(site=>{
   if (!site.positions.length || site.positions.some(p=>!Number.isInteger(p)||p<1||p>sequence.length)) throw Error('Invalid residue: '+acc);
   // Freeze the audited display identity for this release; raw construct/source IDs remain in each observation.
-  const name=ligandName(site); const identityKey=namedLigand(site)?name.toLowerCase():`${site.source}:${site.partner}`;
+  const name=ligandName(site); const identityKey=site.ligand_identity_key;
+  if (!identityKey || !site.identity_basis) throw Error('Missing scoped identity: '+acc);
   const ligand_id='lig-'+hash(identityKey).slice(0,24);
   const observation_id='obs-'+hash(canonical([acc,site])).slice(0,32);
-  if (!identities.has(ligand_id)) identities.set(ligand_id,{ligand_id,name,aliases:[],source_ids:[],identity_basis:'audited_alias_rules_v1'});
+  if (!identities.has(ligand_id)) identities.set(ligand_id,{ligand_id,name,aliases:[],source_ids:[],identity_basis:site.identity_basis});
   const identity=identities.get(ligand_id);
   for(const [key,value] of [['aliases',site.partner_label??site.partner],['source_ids',site.source+':'+site.partner]]) if(!identity[key].includes(value)) identity[key].push(value);
   return {...site,ligand_id,observation_id};
@@ -37,7 +38,7 @@ for (const [acc,gene] of Object.entries(genes).sort()) {
  const all=summarize(false), ec=summarize(true);
  output.push({uniprot_acc:acc,hgnc_id:gene.hgnc_id,symbol:gene.symbol,overview_note:gene.overview_note,overview_label:gene.overview_label,audit_status:observations.length?'mapped':'no_mapped_evidence',reference_sequence_sha256:sequence?hash(sequence):null,reference_sequence_length:sequence?.length??null,all_ligand_count:all.length,all,extracellular:ec,observations});
 }
-const bundle={release_id:releaseId,manifest:{...manifest,release_id:releaseId,api_schema_version:1,identity_rules:'audited_alias_rules_v1',cohort_rows:denominator.length,excluded_identifiers:excluded,observation_count:output.reduce((n,g)=>n+g.observations.length,0)},ligands:[...identities.values()].sort((a,b)=>a.ligand_id.localeCompare(b.ligand_id)),genes:output};
+const bundle={release_id:releaseId,manifest:{...manifest,release_id:releaseId,api_schema_version:1,identity_rules:'scoped_identity_v2',cohort_rows:denominator.length,excluded_identifiers:excluded,observation_count:output.reduce((n,g)=>n+g.observations.length,0)},ligands:[...identities.values()].sort((a,b)=>a.ligand_id.localeCompare(b.ligand_id)),genes:output};
 writeFileSync(process.argv[2]??'/private/tmp/contact-release.json',canonical(bundle));
 writeFileSync(new URL(dir+'api-release.json',root),canonical({release_id:releaseId})+'\n');
 console.log(JSON.stringify({release_id:releaseId,genes:output.length,observations:bundle.manifest.observation_count,excluded:excluded.length,largest_summary_bytes:Math.max(...output.map(({observations,...g})=>Buffer.byteLength(canonical(g))))}));

@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "partner_review_sha256": "5038872b7def8ec5e7c7254cb6c3856d9ac3ad5d063049c0f2928a564b6ff923",
+  "partner_review_sha256": "a0c8a02a20f6b63800eb41cf449b244366d09b54f01a6c448b1d16b27a489f9e",
+  "accepted_constructs_sha256": "2f915b930721be30ebfed3e03c88043f48a6e8f510d6653aee803634bfd72d25",
   "categories_sha256": "29f0351a31b63974ce5009fab03e523f389c18e78b85e347b546c816cc96ccd2",
   "observation_names_sha256": "202dc9e73934ebb1bd1efd8a103e5480ebc43fe6742ede7e5d05ccacba9c4911",
   "ligand_names_sha256": "f65a1e43403877a311fd66197a3e5afea90f9f988ad4842d2de92ead02bf0988",
@@ -11,15 +12,17 @@
   },
   "denominator_sha256": "c03deeb0c2bf44ffd646be33d6299f73f766599ce0e6423776e65cfe8cb9cff7",
   "input_sha256": "062941b5a9a72b96f79ccb7e7fa1c1b12127b991e70318dc77f77ee57bf9ffa1",
-  "reviewed_chemical_sha256": "403249606bc230f96b5f1d4a190732a94bea45e12ba5e190a965a9b95da4d871",
+  "reviewed_chemical_sha256": "40aaf99f845faafd88b23dcd172a1be134637df2dd47beb0013f1a12eeb28a00",
+  "coordinate_validation_sha256": "e19c5e84cea1a2bab1e8af3ae9d6c82d4aa061af16d74d78f46c868d98278bf7",
+  "identity_policy": "scoped_identity_v2: chemical IDs, verified constructs, target-reviewed aliases, catalogue IDs, parent protein groups and source-scoped groups; groups are not complete molecule equivalence",
   "audited_genes": 5106,
-  "covered_genes": 1685,
+  "covered_genes": 1711,
   "site_definition": "Unique source, partner, PDB, canonical residue set, context and reference; sources may describe the same interface. Audit snapshot, not exhaustive DB coverage.",
-  "excluded": "IntAct regions and mutation effects; invalid mappings; removed processing segments; ambiguous gene mappings",
+  "excluded": "IntAct regions and mutation effects; invalid mappings; ambiguous gene mappings. Processing-segment contacts are retained only outside the extracellular overview.",
   "sources": {
     "AACDB": {
-      "genes": 210,
-      "sites": 879,
+      "genes": 211,
+      "sites": 886,
       "ec_genes": 156,
       "ec_sites": 667
     },
@@ -30,8 +33,8 @@
       "ec_sites": 0
     },
     "BioLiP": {
-      "genes": 851,
-      "sites": 851,
+      "genes": 853,
+      "sites": 853,
       "ec_genes": 186,
       "ec_sites": 186
     },
@@ -42,8 +45,8 @@
       "ec_sites": 56
     },
     "IEDB": {
-      "genes": 182,
-      "sites": 897,
+      "genes": 183,
+      "sites": 909,
       "ec_genes": 129,
       "ec_sites": 639
     },
@@ -54,8 +57,8 @@
       "ec_sites": 212
     },
     "PDB/PDBe": {
-      "genes": 1331,
-      "sites": 22890,
+      "genes": 1358,
+      "sites": 23027,
       "ec_genes": 512,
       "ec_sites": 5481
     },
@@ -66,14 +69,14 @@
       "ec_sites": 118
     },
     "SAbDab": {
-      "genes": 409,
-      "sites": 409,
+      "genes": 411,
+      "sites": 411,
       "ec_genes": 259,
       "ec_sites": 259
     },
     "Thera-SAbDab": {
       "genes": 80,
-      "sites": 419,
+      "sites": 428,
       "ec_genes": 61,
       "ec_sites": 352
     }

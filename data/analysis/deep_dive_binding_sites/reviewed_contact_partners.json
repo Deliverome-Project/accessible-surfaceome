@@ -93,7 +93,23 @@
     "P42262",
     "Q07075",
     "Q9HB14",
-    "Q9ULK0"
+    "Q9ULK0",
+    "O00400",
+    "O75751",
+    "O76082",
+    "P09769",
+    "P48029",
+    "P48065",
+    "P50443",
+    "Q13393",
+    "Q4U2R8",
+    "Q5U3C3",
+    "Q7Z2H8",
+    "Q8N323",
+    "Q8TF71",
+    "Q9BY76",
+    "Q9NYB5",
+    "Q9Y289"
   ],
   "rules": [
     {
@@ -1852,7 +1868,7 @@
       "names": [
         "N1C"
       ],
-      "canonical_name": "N1-cyclic inosine 5′-diphosphoribose",
+      "canonical_name": "N1-cyclic inosine 5\u2032-diphosphoribose",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/2PGJ",
@@ -2120,11 +2136,11 @@
         "P78324",
         "SIRPA"
       ],
-      "canonical_name": "SIRPα",
+      "canonical_name": "SIRP\u03b1",
       "category": "receptor_partner",
       "pdb": "2jjs",
       "reference": "https://www.rcsb.org/structure/2JJS",
-      "reason": "Native SIRPα receptor-partner contact in the specified CD47 complex; separate from the engineered IMM01 domain.",
+      "reason": "Native SIRP\u03b1 receptor-partner contact in the specified CD47 complex; separate from the engineered IMM01 domain.",
       "exclude_from_overview": false
     },
     {
@@ -2133,11 +2149,11 @@
         "P78324",
         "SIRPA"
       ],
-      "canonical_name": "SIRPα",
+      "canonical_name": "SIRP\u03b1",
       "category": "receptor_partner",
       "pdb": "2jjt",
       "reference": "https://www.rcsb.org/structure/2JJT",
-      "reason": "Native SIRPα receptor-partner contact in the specified CD47 complex; separate from the engineered IMM01 domain.",
+      "reason": "Native SIRP\u03b1 receptor-partner contact in the specified CD47 complex; separate from the engineered IMM01 domain.",
       "exclude_from_overview": false
     },
     {
@@ -2146,11 +2162,11 @@
         "P78324",
         "SIRPA"
       ],
-      "canonical_name": "SIRPα",
+      "canonical_name": "SIRP\u03b1",
       "category": "receptor_partner",
       "pdb": "4cmm",
       "reference": "https://www.rcsb.org/structure/4CMM",
-      "reason": "Native SIRPα receptor-partner contact in the specified CD47 complex; separate from the engineered IMM01 domain.",
+      "reason": "Native SIRP\u03b1 receptor-partner contact in the specified CD47 complex; separate from the engineered IMM01 domain.",
       "exclude_from_overview": false
     },
     {
@@ -2159,11 +2175,11 @@
         "P78324",
         "SIRPA"
       ],
-      "canonical_name": "IMM01 SIRPα D1 N80A binding domain",
+      "canonical_name": "IMM01 SIRP\u03b1 D1 N80A binding domain",
       "category": "therapeutic",
       "pdb": "7ygg",
       "reference": "https://doi.org/10.3390/molecules27175574",
-      "reason": "Deposited engineered SIRPα D1(N80A) domain from the IMM01 program; not wild-type SIRPα or a structure of the complete Fc-fusion drug.",
+      "reason": "Deposited engineered SIRP\u03b1 D1(N80A) domain from the IMM01 program; not wild-type SIRP\u03b1 or a structure of the complete Fc-fusion drug.",
       "exclude_from_overview": false
     },
     {
@@ -2873,7 +2889,7 @@
       "names": [
         "m266, solanezumab"
       ],
-      "canonical_name": "m266 — murine solanezumab precursor",
+      "canonical_name": "m266 \u2014 murine solanezumab precursor",
       "category": "tool",
       "pdb": "",
       "reference": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5913127/",
@@ -2885,7 +2901,7 @@
       "names": [
         "6E10-A5"
       ],
-      "canonical_name": "6E10-A5 — APP-tag Fab",
+      "canonical_name": "6E10-A5 \u2014 APP-tag Fab",
       "category": "tool",
       "pdb": "6hga",
       "reference": "https://www.rcsb.org/structure/6HGA",
@@ -2897,7 +2913,7 @@
       "names": [
         "peptide"
       ],
-      "canonical_name": "Engineered APPI fragment — same-target construct contact",
+      "canonical_name": "Engineered APPI fragment \u2014 same-target construct contact",
       "category": "unclassified",
       "pdb": "5nx1",
       "reference": "https://www.rcsb.org/structure/5NX1",
@@ -2910,7 +2926,7 @@
         "Q92876",
         "KLK6"
       ],
-      "canonical_name": "KLK6 — engineered APPI complex",
+      "canonical_name": "KLK6 \u2014 engineered APPI complex",
       "category": "unclassified",
       "pdb": "5nx1",
       "reference": "https://www.rcsb.org/structure/5NX1",
@@ -2923,7 +2939,7 @@
         "Q92876",
         "KLK6"
       ],
-      "canonical_name": "KLK6 — engineered APPI complex",
+      "canonical_name": "KLK6 \u2014 engineered APPI complex",
       "category": "unclassified",
       "pdb": "5nx3",
       "reference": "https://www.rcsb.org/structure/5NX3",
@@ -3079,7 +3095,7 @@
         "V2 IgG",
         "V2 IgG Fab"
       ],
-      "canonical_name": "V2 IgG — KRAS G12V/HLA-A*03:01",
+      "canonical_name": "V2 IgG \u2014 KRAS G12V/HLA-A*03:01",
       "category": "tool",
       "pdb": "7stf",
       "reference": "https://www.rcsb.org/structure/7STF",
@@ -3092,7 +3108,7 @@
         "2Q1",
         "2Q1 Fab"
       ],
-      "canonical_name": "2Q1 — IDH2 R140Q/HLA-B*07:02",
+      "canonical_name": "2Q1 \u2014 IDH2 R140Q/HLA-B*07:02",
       "category": "tool",
       "pdb": "6uj9",
       "reference": "https://www.rcsb.org/structure/6UJ9",
@@ -3105,7 +3121,7 @@
         "HLA-DRA",
         "P01903"
       ],
-      "canonical_name": "HLA-DRA — HLA-A-derived peptide presentation",
+      "canonical_name": "HLA-DRA \u2014 HLA-A-derived peptide presentation",
       "category": "unclassified",
       "pdb": "1aqd",
       "reference": "https://www.rcsb.org/structure/1AQD",
@@ -3118,7 +3134,7 @@
         "HLA-DRA",
         "P01903"
       ],
-      "canonical_name": "HLA-DRA — HLA-A-derived peptide presentation",
+      "canonical_name": "HLA-DRA \u2014 HLA-A-derived peptide presentation",
       "category": "unclassified",
       "pdb": "4ov5",
       "reference": "https://www.rcsb.org/structure/4OV5",
@@ -3131,7 +3147,7 @@
         "HLA-DRB1",
         "P01911"
       ],
-      "canonical_name": "HLA-DRB1 — HLA-A-derived peptide presentation",
+      "canonical_name": "HLA-DRB1 \u2014 HLA-A-derived peptide presentation",
       "category": "unclassified",
       "pdb": "1aqd",
       "reference": "https://www.rcsb.org/structure/1AQD",
@@ -3144,7 +3160,7 @@
         "HLA-DRB1",
         "P01911"
       ],
-      "canonical_name": "HLA-DRB1 — HLA-A-derived peptide presentation",
+      "canonical_name": "HLA-DRB1 \u2014 HLA-A-derived peptide presentation",
       "category": "unclassified",
       "pdb": "4ov5",
       "reference": "https://www.rcsb.org/structure/4OV5",
@@ -3157,7 +3173,7 @@
         "CALR",
         "P27797"
       ],
-      "canonical_name": "CALR — ER peptide-loading complex",
+      "canonical_name": "CALR \u2014 ER peptide-loading complex",
       "category": "unclassified",
       "pdb": "7qpd",
       "reference": "https://www.rcsb.org/structure/7QPD",
@@ -3171,7 +3187,7 @@
         "PDIA3",
         "P30101"
       ],
-      "canonical_name": "PDIA3 — ER peptide-loading complex",
+      "canonical_name": "PDIA3 \u2014 ER peptide-loading complex",
       "category": "unclassified",
       "pdb": "7qpd",
       "reference": "https://www.rcsb.org/structure/7QPD",
@@ -3186,7 +3202,7 @@
         "ENO1",
         "P06733"
       ],
-      "canonical_name": "ENO1 peptide KRIAKAVNEKSCNCL — 5NI9",
+      "canonical_name": "ENO1 peptide KRIAKAVNEKSCNCL \u2014 5NI9",
       "category": "unclassified",
       "pdb": "5ni9",
       "reference": "https://www.rcsb.org/structure/5NI9",
@@ -3212,7 +3228,7 @@
       "names": [
         "CCD:1YT"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 1YT",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 1YT",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/4LXK",
@@ -3224,7 +3240,7 @@
       "names": [
         "CCD:60X"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 60X",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 60X",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/5HE7",
@@ -3236,7 +3252,7 @@
       "names": [
         "CCD:0K9"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 0K9",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 0K9",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/4DI2",
@@ -3248,7 +3264,7 @@
       "names": [
         "CCD:0V6"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 0V6",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 0V6",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/4FRS",
@@ -3272,7 +3288,7 @@
       "names": [
         "CCD:3LL"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 3LL",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 3LL",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/4RCD",
@@ -3296,7 +3312,7 @@
       "names": [
         "CCD:5HA"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 5HA",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 5HA",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/2B8L",
@@ -3308,7 +3324,7 @@
       "names": [
         "CCD:C6U"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD C6U",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD C6U",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/6JSG",
@@ -3344,7 +3360,7 @@
       "names": [
         "CCD:1HL"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 1HL",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 1HL",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/4J1F",
@@ -3356,7 +3372,7 @@
       "names": [
         "CCD:66F"
       ],
-      "canonical_name": "BACE1 inhibitor — CCD 66F",
+      "canonical_name": "BACE1 inhibitor \u2014 CCD 66F",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/5HU1",
@@ -3368,7 +3384,7 @@
       "names": [
         "QKA"
       ],
-      "canonical_name": "BACE1 compound 32 — CCD QKA",
+      "canonical_name": "BACE1 compound 32 \u2014 CCD QKA",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/structure/6UWP",
@@ -3629,7 +3645,7 @@
         "GTOPDB:5012",
         "P01318"
       ],
-      "canonical_name": "Insulin with Ala-B30 — 6CE series",
+      "canonical_name": "Insulin with Ala-B30 \u2014 6CE series",
       "category": "unclassified",
       "pdb": "6ce7",
       "reference": "https://www.rcsb.org/structure/6CE7",
@@ -3644,7 +3660,7 @@
         "GTOPDB:5012",
         "P01318"
       ],
-      "canonical_name": "Insulin with Ala-B30 — 6CE series",
+      "canonical_name": "Insulin with Ala-B30 \u2014 6CE series",
       "category": "unclassified",
       "pdb": "6ce9",
       "reference": "https://www.rcsb.org/structure/6CE9",
@@ -3659,7 +3675,7 @@
         "GTOPDB:5012",
         "P01318"
       ],
-      "canonical_name": "Insulin with Ala-B30 — 6CE series",
+      "canonical_name": "Insulin with Ala-B30 \u2014 6CE series",
       "category": "unclassified",
       "pdb": "6ceb",
       "reference": "https://www.rcsb.org/structure/6CEB",
@@ -3673,7 +3689,7 @@
         "P01308",
         "GTOPDB:5012"
       ],
-      "canonical_name": "Insulin fusion — 7BW series",
+      "canonical_name": "Insulin fusion \u2014 7BW series",
       "category": "unclassified",
       "pdb": "7bw7",
       "reference": "https://www.rcsb.org/structure/7BW7",
@@ -3687,7 +3703,7 @@
         "P01308",
         "GTOPDB:5012"
       ],
-      "canonical_name": "Insulin fusion — 7BW series",
+      "canonical_name": "Insulin fusion \u2014 7BW series",
       "category": "unclassified",
       "pdb": "7bw8",
       "reference": "https://www.rcsb.org/structure/7BW8",
@@ -3701,7 +3717,7 @@
         "P01308",
         "GTOPDB:5012"
       ],
-      "canonical_name": "Insulin fusion — 7BW series",
+      "canonical_name": "Insulin fusion \u2014 7BW series",
       "category": "unclassified",
       "pdb": "7bwa",
       "reference": "https://www.rcsb.org/structure/7BWA",
@@ -3804,7 +3820,7 @@
       "names": [
         "A1A6H"
       ],
-      "canonical_name": "Integrin compound 30 — CCD A1A6H",
+      "canonical_name": "Integrin compound 30 \u2014 CCD A1A6H",
       "category": "tool",
       "pdb": "9czd",
       "reference": "https://www.rcsb.org/structure/9CZD",
@@ -3830,7 +3846,7 @@
         "P02751",
         "FN1"
       ],
-      "canonical_name": "Engineered fibronectin 10FN3 — 4MMY",
+      "canonical_name": "Engineered fibronectin 10FN3 \u2014 4MMY",
       "category": "tool",
       "pdb": "4mmy",
       "reference": "https://www.rcsb.org/structure/4MMY",
@@ -3843,7 +3859,7 @@
         "P02751",
         "FN1"
       ],
-      "canonical_name": "Engineered fibronectin 10FN3 — 4MMZ",
+      "canonical_name": "Engineered fibronectin 10FN3 \u2014 4MMZ",
       "category": "tool",
       "pdb": "4mmz",
       "reference": "https://www.rcsb.org/structure/4MMZ",
@@ -3869,7 +3885,7 @@
         "P14735",
         "IDE"
       ],
-      "canonical_name": "Engineered IDE E111Q — Aβ fragment complex (2G47)",
+      "canonical_name": "Engineered IDE E111Q \u2014 A\u03b2 fragment complex (2G47)",
       "category": "unclassified",
       "pdb": "2g47",
       "reference": "https://www.rcsb.org/structure/2G47",
@@ -3882,7 +3898,7 @@
         "P14735",
         "IDE"
       ],
-      "canonical_name": "Engineered IDE E111Q — Aβ fragment complex (4M1C)",
+      "canonical_name": "Engineered IDE E111Q \u2014 A\u03b2 fragment complex (4M1C)",
       "category": "unclassified",
       "pdb": "4m1c",
       "reference": "https://www.rcsb.org/structure/4M1C",
@@ -3895,7 +3911,7 @@
         "P08253",
         "MMP2"
       ],
-      "canonical_name": "Engineered MMP2 catalytic domain — APP fragment complex (3AYU)",
+      "canonical_name": "Engineered MMP2 catalytic domain \u2014 APP fragment complex (3AYU)",
       "category": "unclassified",
       "pdb": "3ayu",
       "reference": "https://www.rcsb.org/structure/3AYU",
@@ -3960,7 +3976,7 @@
         "P28067",
         "HLA-DMA"
       ],
-      "canonical_name": "HLA-DMA — endosomal HLA-DM peptide editor (4FQX)",
+      "canonical_name": "HLA-DMA \u2014 endosomal HLA-DM peptide editor (4FQX)",
       "category": "unclassified",
       "pdb": "4fqx",
       "reference": "https://www.rcsb.org/structure/4FQX",
@@ -3974,7 +3990,7 @@
         "P28068",
         "HLA-DMB"
       ],
-      "canonical_name": "HLA-DMB — endosomal HLA-DM peptide editor (4FQX)",
+      "canonical_name": "HLA-DMB \u2014 endosomal HLA-DM peptide editor (4FQX)",
       "category": "unclassified",
       "pdb": "4fqx",
       "reference": "https://www.rcsb.org/structure/4FQX",
@@ -3988,7 +4004,7 @@
         "P28068",
         "HLA-DMB"
       ],
-      "canonical_name": "HLA-DMB — endosomal HLA-DM peptide editor (4FQX)",
+      "canonical_name": "HLA-DMB \u2014 endosomal HLA-DM peptide editor (4FQX)",
       "category": "unclassified",
       "pdb": "4fqx",
       "reference": "https://www.rcsb.org/structure/4FQX",
@@ -4052,8 +4068,8 @@
       "uniprot_acc": "P06756",
       "names": [
         "P10600",
-        "TGFβ3",
-        "TGFβ3 (TGFB3)"
+        "TGF\u03b23",
+        "TGF\u03b23 (TGFB3)"
       ],
       "canonical_name": "Capped TGFB3-derived LAP peptide Ac-HGRGDLGRLKK-NH2 (4UM9)",
       "category": "tool",
@@ -4066,8 +4082,8 @@
       "uniprot_acc": "P06756",
       "names": [
         "P10600",
-        "TGFβ3",
-        "TGFβ3 (TGFB3)"
+        "TGF\u03b23",
+        "TGF\u03b23 (TGFB3)"
       ],
       "canonical_name": "TGFB3 latent proprotein construct (8VS6)",
       "category": "endogenous_large",
@@ -4082,11 +4098,11 @@
         "P12821",
         "ACE"
       ],
-      "canonical_name": "Engineered ACE N-domain — Aβ fragment complex (5AM8)",
+      "canonical_name": "Engineered ACE N-domain \u2014 A\u03b2 fragment complex (5AM8)",
       "category": "unclassified",
       "pdb": "5am8",
       "reference": "https://files.rcsb.org/header/5AM8.pdb",
-      "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30–658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is Aβ(4–10), not intact cell-surface APP; header reports only Asp7–Ser8 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
+      "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30\u2013658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is A\u03b2(4\u201310), not intact cell-surface APP; header reports only Asp7\u2013Ser8 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
       "exclude_from_overview": false
     },
     {
@@ -4095,11 +4111,11 @@
         "P12821",
         "ACE"
       ],
-      "canonical_name": "Engineered ACE N-domain — Aβ fragment complex (5AMB)",
+      "canonical_name": "Engineered ACE N-domain \u2014 A\u03b2 fragment complex (5AMB)",
       "category": "unclassified",
       "pdb": "5amb",
       "reference": "https://files.rcsb.org/header/5AMB.pdb",
-      "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30–658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N160Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is Aβ(35–42), not intact cell-surface APP; header reports only Ile41–Ala42 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
+      "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30\u2013658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N160Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is A\u03b2(35\u201342), not intact cell-surface APP; header reports only Ile41\u2013Ala42 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
       "exclude_from_overview": false
     },
     {
@@ -4108,11 +4124,11 @@
         "P14735",
         "IDE"
       ],
-      "canonical_name": "Engineered cysteine-substituted IDE E111Q — Aβ42 complex (2WK3)",
+      "canonical_name": "Engineered cysteine-substituted IDE E111Q \u2014 A\u03b242 complex (2WK3)",
       "category": "unclassified",
       "pdb": "2wk3",
       "reference": "https://files.rcsb.org/header/2WK3.pdb",
-      "reason": "Deposited IDE sequence has 13 cysteine substitutions plus E111Q: C110L, E111Q, C171S, C178A, C257V, C414L, C573N, C590S, C789S, C812A, C819A, C904S, C966N, C974A, in verified P14735 numbering. The 1019-residue deposited polymer still contains C32; avoid claiming this entire deposited polymer literally lacks cysteine. Keep separate from E111Q-only IDE. Target is Aβ(1–42), P05067 residues 672–713, not intact cell-surface APP. Primary citation: https://pmc.ncbi.nlm.nih.gov/articles/PMC2813390/",
+      "reason": "Deposited IDE sequence has 13 cysteine substitutions plus E111Q: C110L, E111Q, C171S, C178A, C257V, C414L, C573N, C590S, C789S, C812A, C819A, C904S, C966N, C974A, in verified P14735 numbering. The 1019-residue deposited polymer still contains C32; avoid claiming this entire deposited polymer literally lacks cysteine. Keep separate from E111Q-only IDE. Target is A\u03b2(1\u201342), P05067 residues 672\u2013713, not intact cell-surface APP. Primary citation: https://pmc.ncbi.nlm.nih.gov/articles/PMC2813390/",
       "exclude_from_overview": false
     },
     {
@@ -4121,11 +4137,11 @@
         "P01730",
         "CD4"
       ],
-      "canonical_name": "Engineered CD4 D1–D2 Q40Y/T45W (3S4S)",
+      "canonical_name": "Engineered CD4 D1\u2013D2 Q40Y/T45W (3S4S)",
       "category": "tool",
       "pdb": "3s4s",
       "reference": "https://files.rcsb.org/header/3S4S.pdb",
-      "reason": "Affinity-engineered CD4 D1–D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26–203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
+      "reason": "Affinity-engineered CD4 D1\u2013D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26\u2013203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
       "exclude_from_overview": false
     },
     {
@@ -4134,11 +4150,11 @@
         "P01730",
         "CD4"
       ],
-      "canonical_name": "Engineered CD4 D1–D2 Q40Y/T45W (3S4S)",
+      "canonical_name": "Engineered CD4 D1\u2013D2 Q40Y/T45W (3S4S)",
       "category": "tool",
       "pdb": "3s4s",
       "reference": "https://files.rcsb.org/header/3S4S.pdb",
-      "reason": "Affinity-engineered CD4 D1–D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26–203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
+      "reason": "Affinity-engineered CD4 D1\u2013D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26\u2013203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
       "exclude_from_overview": false
     },
     {
@@ -4271,7 +4287,7 @@
       "names": [
         "P08709"
       ],
-      "canonical_name": "Factor VIIa–trypsin YT chimera",
+      "canonical_name": "Factor VIIa\u2013trypsin YT chimera",
       "category": "tool",
       "pdb": "4z6a",
       "reference": "https://www.rcsb.org/structure/4Z6A",
@@ -4283,7 +4299,7 @@
       "names": [
         "P08709"
       ],
-      "canonical_name": "Factor VIIa–trypsin ST chimera",
+      "canonical_name": "Factor VIIa\u2013trypsin ST chimera",
       "category": "tool",
       "pdb": "4zma",
       "reference": "https://www.rcsb.org/structure/4ZMA",
@@ -4677,13 +4693,13 @@
     {
       "uniprot_acc": "P01589",
       "names": [
-        "CD25‑IL‑2 Fab"
+        "CD25\u2011IL\u20112 Fab"
       ],
       "canonical_name": "BT942",
       "category": "tool",
       "pdb": "7f9w",
       "reference": "https://doi.org/10.1038/s41598-021-02449-y",
-      "reason": "The primary publication identifies the crystallized/cryo-EM Fab as BT942. CD25–IL-2 is an erroneous/generic source construct label, not the antibody identity; do not merge with IL-2 or BA9.",
+      "reason": "The primary publication identifies the crystallized/cryo-EM Fab as BT942. CD25\u2013IL-2 is an erroneous/generic source construct label, not the antibody identity; do not merge with IL-2 or BA9.",
       "exclude_from_overview": false
     },
     {
@@ -4843,7 +4859,7 @@
         "CCD:A12",
         "PHOSPHOMETHYLPHOSPHONIC ACID ADENOSYL ESTER"
       ],
-      "canonical_name": "AMPCP (adenosine 5′-methylenediphosphate)",
+      "canonical_name": "AMPCP (adenosine 5\u2032-methylenediphosphate)",
       "category": "tool",
       "pdb": "",
       "reference": "https://www.rcsb.org/ligand/A12",
@@ -4939,7 +4955,7 @@
       "names": [
         "P12506"
       ],
-      "canonical_name": "HIV-1 Tat(1–9) peptide",
+      "canonical_name": "HIV-1 Tat(1\u20139) peptide",
       "category": "unclassified",
       "pdb": "2bgr",
       "reference": "https://www.rcsb.org/structure/2BGR",
@@ -4951,7 +4967,7 @@
       "names": [
         "P12506"
       ],
-      "canonical_name": "HIV-1 Tat(1–9) Trp2 variant",
+      "canonical_name": "HIV-1 Tat(1\u20139) Trp2 variant",
       "category": "tool",
       "pdb": "2bgn",
       "reference": "https://www.rcsb.org/structure/2BGN",
@@ -4963,7 +4979,7 @@
       "names": [
         "Q9XSW6"
       ],
-      "canonical_name": "Neuropeptide Y(1–10) substrate fragment",
+      "canonical_name": "Neuropeptide Y(1\u201310) substrate fragment",
       "category": "tool",
       "pdb": "1r9n",
       "reference": "https://www.rcsb.org/structure/1R9N",
@@ -5675,11 +5691,11 @@
       "names": [
         "peptide"
       ],
-      "canonical_name": "Amyloid-beta 1–46 substrate fragment",
+      "canonical_name": "Amyloid-beta 1\u201346 substrate fragment",
       "category": "endogenous_large",
       "pdb": "8oqz",
       "reference": "https://www.rcsb.org/structure/8OQZ",
-      "reason": "Entity 5 is explicitly amyloid-beta 1–46. Deposited sequence is unresolved X characters; name comes from depositor, not sequence confirmation; not an antibody called Ab46.",
+      "reason": "Entity 5 is explicitly amyloid-beta 1\u201346. Deposited sequence is unresolved X characters; name comes from depositor, not sequence confirmation; not an antibody called Ab46.",
       "exclude_from_overview": false
     },
     {
@@ -5692,7 +5708,7 @@
       "category": "tool",
       "pdb": "6iyc",
       "reference": "https://www.rcsb.org/structure/6IYC",
-      "reason": "Deposited sequence alignment to canonical APP P05067 verifies indicated precursor substitution (respectively AβV24C/K28C/I31C). 8X52/8X54 mutation-count zero conflicts with sequence; title describes substrate processing state, not entire deposited entity. Additional primary sources: https://www.uniprot.org/uniprotkb/P05067/entry",
+      "reason": "Deposited sequence alignment to canonical APP P05067 verifies indicated precursor substitution (respectively A\u03b2V24C/K28C/I31C). 8X52/8X54 mutation-count zero conflicts with sequence; title describes substrate processing state, not entire deposited entity. Additional primary sources: https://www.uniprot.org/uniprotkb/P05067/entry",
       "exclude_from_overview": false
     },
     {
@@ -5701,11 +5717,11 @@
         "P05067",
         "APP"
       ],
-      "canonical_name": "APP-derived Aβ49 K699C construct",
+      "canonical_name": "APP-derived A\u03b249 K699C construct",
       "category": "tool",
       "pdb": "8x52",
       "reference": "https://www.rcsb.org/structure/8X52",
-      "reason": "Deposited sequence alignment to canonical APP P05067 verifies indicated precursor substitution (respectively AβV24C/K28C/I31C). 8X52/8X54 mutation-count zero conflicts with sequence; title describes substrate processing state, not entire deposited entity. Additional primary sources: https://www.uniprot.org/uniprotkb/P05067/entry",
+      "reason": "Deposited sequence alignment to canonical APP P05067 verifies indicated precursor substitution (respectively A\u03b2V24C/K28C/I31C). 8X52/8X54 mutation-count zero conflicts with sequence; title describes substrate processing state, not entire deposited entity. Additional primary sources: https://www.uniprot.org/uniprotkb/P05067/entry",
       "exclude_from_overview": false
     },
     {
@@ -5718,7 +5734,7 @@
       "category": "tool",
       "pdb": "8x54",
       "reference": "https://www.rcsb.org/structure/8X54",
-      "reason": "Deposited sequence alignment to canonical APP P05067 verifies indicated precursor substitution (respectively AβV24C/K28C/I31C). 8X52/8X54 mutation-count zero conflicts with sequence; title describes substrate processing state, not entire deposited entity. Additional primary sources: https://www.uniprot.org/uniprotkb/P05067/entry",
+      "reason": "Deposited sequence alignment to canonical APP P05067 verifies indicated precursor substitution (respectively A\u03b2V24C/K28C/I31C). 8X52/8X54 mutation-count zero conflicts with sequence; title describes substrate processing state, not entire deposited entity. Additional primary sources: https://www.uniprot.org/uniprotkb/P05067/entry",
       "exclude_from_overview": false
     },
     {
@@ -5764,10 +5780,10 @@
       "uniprot_acc": "Q16602",
       "names": [
         "P06881",
-        "α-CGRP",
+        "\u03b1-CGRP",
         "Calcitonin gene-related peptide 1"
       ],
-      "canonical_name": "α-CGRP",
+      "canonical_name": "\u03b1-CGRP",
       "category": "endogenous_large",
       "pdb": "7knu",
       "reference": "https://www.rcsb.org/structure/7KNU",
@@ -5778,10 +5794,10 @@
       "uniprot_acc": "Q16602",
       "names": [
         "P06881",
-        "α-CGRP",
+        "\u03b1-CGRP",
         "Calcitonin gene-related peptide 1"
       ],
-      "canonical_name": "α-CGRP",
+      "canonical_name": "\u03b1-CGRP",
       "category": "endogenous_large",
       "pdb": "6e3y",
       "reference": "https://www.rcsb.org/structure/6E3Y",
@@ -5822,11 +5838,11 @@
         "P35318",
         "PAMP-20"
       ],
-      "canonical_name": "Adrenomedullin 25–52 fragment",
+      "canonical_name": "Adrenomedullin 25\u201352 fragment",
       "category": "endogenous_large",
       "pdb": "4rwf",
       "reference": "https://www.rcsb.org/structure/4RWF",
-      "reason": "Entity 2 sequence KLAHQIYQFTDKDKDNVAPRSKISPQGY plus terminal modification denotes AM25–52, not PAMP20. Target is MBP-RAMP2-CLR fusion.",
+      "reason": "Entity 2 sequence KLAHQIYQFTDKDKDNVAPRSKISPQGY plus terminal modification denotes AM25\u201352, not PAMP20. Target is MBP-RAMP2-CLR fusion.",
       "exclude_from_overview": false
     },
     {
@@ -5835,7 +5851,7 @@
         "P35318",
         "PAMP-20"
       ],
-      "canonical_name": "AM(37–52) S45W/K46L/Q50W/Y52F antagonist",
+      "canonical_name": "AM(37\u201352) S45W/K46L/Q50W/Y52F antagonist",
       "category": "tool",
       "pdb": "5v6y",
       "reference": "https://www.rcsb.org/structure/5V6Y",
@@ -5848,7 +5864,7 @@
         "P35318",
         "PAMP-20"
       ],
-      "canonical_name": "Adrenomedullin 37–52 S45R/K46L/S48G/Q50W variant",
+      "canonical_name": "Adrenomedullin 37\u201352 S45R/K46L/S48G/Q50W variant",
       "category": "tool",
       "pdb": "6v2e",
       "reference": "https://www.rcsb.org/structure/6V2E",
@@ -5865,7 +5881,7 @@
       "category": "endogenous_large",
       "pdb": "6d1u",
       "reference": "https://www.rcsb.org/structure/6D1U",
-      "reason": "Deposited ADM2/intermedin; 6D1U is C-terminal fragment (precursor129–147) in MBP-RAMP1-CLR fusion.",
+      "reason": "Deposited ADM2/intermedin; 6D1U is C-terminal fragment (precursor129\u2013147) in MBP-RAMP1-CLR fusion.",
       "exclude_from_overview": false
     },
     {
@@ -5878,7 +5894,7 @@
       "category": "endogenous_large",
       "pdb": "6uva",
       "reference": "https://www.rcsb.org/structure/6UVA",
-      "reason": "Deposited ADM2/intermedin; 6D1U is C-terminal fragment (precursor129–147) in MBP-RAMP1-CLR fusion.",
+      "reason": "Deposited ADM2/intermedin; 6D1U is C-terminal fragment (precursor129\u2013147) in MBP-RAMP1-CLR fusion.",
       "exclude_from_overview": false
     },
     {
@@ -5959,7 +5975,7 @@
       "category": "tool",
       "pdb": "4m76",
       "reference": "https://www.rcsb.org/structure/4M76",
-      "reason": "Structure is C3d, not C3a. Entity 1 spans precursor994–1288 and has C1010A. Mixed mutation field also lists receptor C144A/I332G; these are not C3 substitutions.",
+      "reason": "Structure is C3d, not C3a. Entity 1 spans precursor994\u20131288 and has C1010A. Mixed mutation field also lists receptor C144A/I332G; these are not C3 substitutions.",
       "exclude_from_overview": false
     },
     {
@@ -5981,7 +5997,7 @@
         "P01024",
         "C3a (C3)"
       ],
-      "canonical_name": "C3dg–nanobody fusion construct",
+      "canonical_name": "C3dg\u2013nanobody fusion construct",
       "category": "tool",
       "pdb": "9t3y",
       "reference": "https://www.rcsb.org/structure/9T3Y",
@@ -5997,7 +6013,7 @@
       "category": "endogenous_large",
       "pdb": "8voh",
       "reference": "https://www.rcsb.org/structure/8VOH",
-      "reason": "Native-sequence PTN N-domain33–90 or C-domain90–146, respectively; fragment-based binding evidence.",
+      "reason": "Native-sequence PTN N-domain33\u201390 or C-domain90\u2013146, respectively; fragment-based binding evidence.",
       "exclude_from_overview": false
     },
     {
@@ -6009,7 +6025,7 @@
       "category": "endogenous_large",
       "pdb": "8voi",
       "reference": "https://www.rcsb.org/structure/8VOI",
-      "reason": "Native-sequence PTN N-domain33–90 or C-domain90–146, respectively; fragment-based binding evidence.",
+      "reason": "Native-sequence PTN N-domain33\u201390 or C-domain90\u2013146, respectively; fragment-based binding evidence.",
       "exclude_from_overview": false
     },
     {
@@ -6055,11 +6071,11 @@
       "uniprot_acc": "P14784",
       "names": [
         "IL2Rb-binding Nanobody",
-        "IL-2Rß-VHH6",
+        "IL-2R\u00df-VHH6",
         "sabdab2_H038RL0000",
         "sabdab2_H038RL0000 (SD-H)"
       ],
-      "canonical_name": "IL-2Rβ-VHH6",
+      "canonical_name": "IL-2R\u03b2-VHH6",
       "category": "tool",
       "pdb": "7s2s",
       "reference": "https://www.rcsb.org/structure/7S2S",
@@ -6785,7 +6801,7 @@
       "category": "tool",
       "pdb": "3e50",
       "reference": "https://www.rcsb.org/structure/3E50",
-      "reason": "Entity1 explicitly E111Q; binds mature soluble TGFalpha40–89 in catalytic chamber. Does not establish accessibility of membrane-tethered precursor. Retain EC overview: target fragment alone is insufficient to establish non-extracellular localization; accessibility remains a contextual caveat.",
+      "reason": "Entity1 explicitly E111Q; binds mature soluble TGFalpha40\u201389 in catalytic chamber. Does not establish accessibility of membrane-tethered precursor. Retain EC overview: target fragment alone is insufficient to establish non-extracellular localization; accessibility remains a contextual caveat.",
       "exclude_from_overview": false
     },
     {
@@ -7468,7 +7484,7 @@
         "GABRB3",
         "P0ABE7"
       ],
-      "canonical_name": "GABRB3–cytochrome b562 fusion",
+      "canonical_name": "GABRB3\u2013cytochrome b562 fusion",
       "category": "receptor_partner",
       "pdb": "9qjp",
       "reference": "https://www.rcsb.org/structure/9QJP",
@@ -7482,7 +7498,7 @@
         "GABRB3",
         "P0ABE7"
       ],
-      "canonical_name": "GABRB3–cytochrome b562 fusion",
+      "canonical_name": "GABRB3\u2013cytochrome b562 fusion",
       "category": "receptor_partner",
       "pdb": "9qjx",
       "reference": "https://www.rcsb.org/structure/9QJX",
@@ -7496,7 +7512,7 @@
         "GABRB3",
         "P0ABE7"
       ],
-      "canonical_name": "GABRB3–cytochrome b562 fusion",
+      "canonical_name": "GABRB3\u2013cytochrome b562 fusion",
       "category": "receptor_partner",
       "pdb": "9qjy",
       "reference": "https://www.rcsb.org/structure/9QJY",
@@ -7510,7 +7526,7 @@
         "GABRB3",
         "P0ABE7"
       ],
-      "canonical_name": "GABRB3–cytochrome b562 fusion",
+      "canonical_name": "GABRB3\u2013cytochrome b562 fusion",
       "category": "receptor_partner",
       "pdb": "9qk0",
       "reference": "https://www.rcsb.org/structure/9QK0",
@@ -7524,7 +7540,7 @@
         "GABRB3",
         "P0ABE7"
       ],
-      "canonical_name": "GABRB3–cytochrome b562 fusion",
+      "canonical_name": "GABRB3\u2013cytochrome b562 fusion",
       "category": "receptor_partner",
       "pdb": "9tpq",
       "reference": "https://www.rcsb.org/structure/9TPQ",
@@ -8576,7 +8592,7 @@
       "category": "tool",
       "pdb": "3sov",
       "reference": "https://files.rcsb.org/header/3SOV.pdb",
-      "reason": "COMPND and DBREF identify SOST residues115–121; SEQADV records terminal acetylation/amidation. Synthetic capped peptide, not full native sclerostin. Generic peptide alias is restricted to this PDB.",
+      "reason": "COMPND and DBREF identify SOST residues115\u2013121; SEQADV records terminal acetylation/amidation. Synthetic capped peptide, not full native sclerostin. Generic peptide alias is restricted to this PDB.",
       "exclude_from_overview": false
     },
     {
@@ -8588,7 +8604,7 @@
       "category": "tool",
       "pdb": "3soq",
       "reference": "https://files.rcsb.org/header/3SOQ.pdb",
-      "reason": "Deposited DKK1 residues38–44 with acetyl/amidated caps; separate this synthetic peptide from larger DKK1 domains.",
+      "reason": "Deposited DKK1 residues38\u201344 with acetyl/amidated caps; separate this synthetic peptide from larger DKK1 domains.",
       "exclude_from_overview": false
     },
     {
@@ -8648,7 +8664,7 @@
       "category": "unclassified",
       "pdb": "6l6r",
       "reference": "https://files.rcsb.org/header/6L6R.pdb",
-      "reason": "DBREF maps SOST24–177. Preserve domain construct rather than conflating with synthetic capped peptideS.",
+      "reason": "DBREF maps SOST24\u2013177. Preserve domain construct rather than conflating with synthetic capped peptideS.",
       "exclude_from_overview": false
     },
     {
@@ -8661,7 +8677,7 @@
       "category": "receptor_partner",
       "pdb": "5fww",
       "reference": "https://www.rcsb.org/structure/5FWW",
-      "reason": "Human KREMEN1 residues30–322 in a DKK1/LRP6 ternary assembly. Receptor-partner role does not certify a binary interaction independent of the bridge.",
+      "reason": "Human KREMEN1 residues30\u2013322 in a DKK1/LRP6 ternary assembly. Receptor-partner role does not certify a binary interaction independent of the bridge.",
       "exclude_from_overview": false
     },
     {
@@ -8670,7 +8686,7 @@
         "Q9H461",
         "FZD8"
       ],
-      "canonical_name": "FZD8–FKBP fusion construct (21KR)",
+      "canonical_name": "FZD8\u2013FKBP fusion construct (21KR)",
       "category": "receptor_partner",
       "pdb": "21kr",
       "reference": "https://www.rcsb.org/structure/21KR",
@@ -8683,7 +8699,7 @@
         "Q9H461",
         "FZD8"
       ],
-      "canonical_name": "FZD8–FKBP fusion construct (21KS)",
+      "canonical_name": "FZD8\u2013FKBP fusion construct (21KS)",
       "category": "receptor_partner",
       "pdb": "21ks",
       "reference": "https://www.rcsb.org/structure/21KS",
@@ -9146,11 +9162,11 @@
         "P02751",
         "FN1"
       ],
-      "canonical_name": "Fibronectin FN7–10 construct (9P6S)",
+      "canonical_name": "Fibronectin FN7\u201310 construct (9P6S)",
       "category": "unclassified",
       "pdb": "9p6s",
       "reference": "https://www.rcsb.org/structure/9P6S",
-      "reason": "Deposit studies FN7–10 fragment; DBREF resolves only the modeled mapped segment. Keep domain/fragment construct explicit, not full native fibronectin.",
+      "reason": "Deposit studies FN7\u201310 fragment; DBREF resolves only the modeled mapped segment. Keep domain/fragment construct explicit, not full native fibronectin.",
       "exclude_from_overview": false
     },
     {
@@ -9300,8 +9316,8 @@
       "uniprot_acc": "P18564",
       "names": [
         "P10600",
-        "TGFβ3",
-        "TGFβ3 (TGFB3)"
+        "TGF\u03b23",
+        "TGF\u03b23 (TGFB3)"
       ],
       "canonical_name": "Capped TGFB3-derived LAP peptide Ac-HGRGDLGRLKK-NH2 (4UM9)",
       "category": "tool",
@@ -9667,7 +9683,7 @@
       "category": "tool",
       "pdb": "4zte",
       "reference": "https://www.rcsb.org/structure/4ZTE",
-      "reason": "Exact deposited peptidomimetic, not an endogenous peptide; target is isolated E-cadherin residues3–213.",
+      "reason": "Exact deposited peptidomimetic, not an endogenous peptide; target is isolated E-cadherin residues3\u2013213.",
       "exclude_from_overview": false
     },
     {
@@ -9743,7 +9759,7 @@
       "category": "tool",
       "pdb": "5dn2",
       "reference": "https://doi.org/10.1111/febs.13711",
-      "reason": "Deposited VEGF-A165-HBD peptide maps P15692 residues205–232. Experimental fragment, not intact VEGFA.",
+      "reason": "Deposited VEGF-A165-HBD peptide maps P15692 residues205\u2013232. Experimental fragment, not intact VEGFA.",
       "exclude_from_overview": false
     },
     {
@@ -9849,7 +9865,7 @@
       "category": "unclassified",
       "pdb": "8i9m",
       "reference": "https://files.rcsb.org/header/8I9M.pdb",
-      "reason": "DBREF maps P09429 residues89–163, an isolated B-box fragment rather than intact HMGB1. Deposit primary citation is to-be-published; no unsupported full-protein claim.",
+      "reason": "DBREF maps P09429 residues89\u2013163, an isolated B-box fragment rather than intact HMGB1. Deposit primary citation is to-be-published; no unsupported full-protein claim.",
       "exclude_from_overview": false
     },
     {
@@ -10770,9 +10786,9 @@
       "uniprot_acc": "O60894",
       "names": [
         "P06881",
-        "α-CGRP"
+        "\u03b1-CGRP"
       ],
-      "canonical_name": "α-CGRP",
+      "canonical_name": "\u03b1-CGRP",
       "category": "endogenous_large",
       "pdb": "6e3y",
       "reference": "https://www.rcsb.org/structure/6E3Y",
@@ -10783,9 +10799,9 @@
       "uniprot_acc": "O60894",
       "names": [
         "P06881",
-        "α-CGRP"
+        "\u03b1-CGRP"
       ],
-      "canonical_name": "α-CGRP",
+      "canonical_name": "\u03b1-CGRP",
       "category": "endogenous_large",
       "pdb": "7knu",
       "reference": "https://www.rcsb.org/structure/7KNU",
@@ -10796,9 +10812,9 @@
       "uniprot_acc": "O60894",
       "names": [
         "P06881",
-        "α-CGRP"
+        "\u03b1-CGRP"
       ],
-      "canonical_name": "α-CGRP",
+      "canonical_name": "\u03b1-CGRP",
       "category": "endogenous_large",
       "pdb": "9auc",
       "reference": "https://www.rcsb.org/structure/9AUC",
@@ -10811,7 +10827,7 @@
         "P35318",
         "PAMP-20"
       ],
-      "canonical_name": "AM(37–52) S45W/K46L/Q50W/Y52F antagonist",
+      "canonical_name": "AM(37\u201352) S45W/K46L/Q50W/Y52F antagonist",
       "category": "tool",
       "pdb": "5v6y",
       "reference": "https://www.rcsb.org/structure/5V6Y",
@@ -10990,7 +11006,7 @@
       "uniprot_acc": "P26012",
       "names": [
         "P10600",
-        "TGFβ3 (TGFB3)",
+        "TGF\u03b23 (TGFB3)",
         "peptide"
       ],
       "canonical_name": "Latent TGFB3 proprotein construct (8VS6)",
@@ -11255,11 +11271,11 @@
         "Q5T4W7",
         "Q12306"
       ],
-      "canonical_name": "Artemin–SUMO fusion construct (6Q2S)",
+      "canonical_name": "Artemin\u2013SUMO fusion construct (6Q2S)",
       "category": "tool",
       "pdb": "6q2s",
       "reference": "https://www.rcsb.org/structure/6Q2S",
-      "reason": "Both source accessions map to the same deposited artemin–SUMO fusion entity. Not two independent native ligands; retain fusion chemistry and raw accession provenance.",
+      "reason": "Both source accessions map to the same deposited artemin\u2013SUMO fusion entity. Not two independent native ligands; retain fusion chemistry and raw accession provenance.",
       "exclude_from_overview": false
     },
     {
@@ -11493,7 +11509,7 @@
         "P05067",
         "APP"
       ],
-      "canonical_name": "APP-derived Aβ(4–10) fragment",
+      "canonical_name": "APP-derived A\u03b2(4\u201310) fragment",
       "category": "unclassified",
       "pdb": "5am8",
       "reference": "https://www.rcsb.org/structure/5AM8",
@@ -11506,7 +11522,7 @@
         "P05067",
         "APP"
       ],
-      "canonical_name": "APP-derived Aβ(35–42) fragment",
+      "canonical_name": "APP-derived A\u03b2(35\u201342) fragment",
       "category": "unclassified",
       "pdb": "5amb",
       "reference": "https://www.rcsb.org/structure/5AMB",
@@ -11750,6 +11766,294 @@
       "category": "endogenous_small",
       "reference": "https://www.rcsb.org/structure/8BN5",
       "reason": "GABA bound to the human GluD1 ligand-binding domain, supported by biochemical, structural and functional evidence. https://doi.org/10.1126/science.adf3406",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "O00400",
+      "names": [
+        "CCD:ACO"
+      ],
+      "pdb": "9m0s",
+      "canonical_name": "Acetyl-CoA",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9M0S",
+      "reason": "Separate oxidized glutathione 9MUN and acetyl-CoA 9M0S transport complexes explicitly supported by primary studies; ER transporter topology must not imply cell-surface exposure.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "O00400",
+      "names": [
+        "CCD:GDS"
+      ],
+      "pdb": "9mun",
+      "canonical_name": "Oxidized glutathione",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9MUN",
+      "reason": "Separate oxidized glutathione 9MUN and acetyl-CoA 9M0S transport complexes explicitly supported by primary studies; ER transporter topology must not imply cell-surface exposure.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "O75751",
+      "names": [
+        "CCD:C0R"
+      ],
+      "pdb": "7zh6",
+      "canonical_name": "Corticosterone",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/7ZH6",
+      "reason": "7ZH6 explicitly models corticosterone as OCT3 inhibitor. Endogenous steroid with an experimental inhibitory role.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "O76082",
+      "names": [
+        "CCD:152"
+      ],
+      "pdb": "9pdq",
+      "canonical_name": "Carnitine",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9PDQ",
+      "reason": "9PFB ipratropium and 9PDQ carnitine are explicitly modeled OCTN2 inhibitor/substrate complexes.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "O76082",
+      "names": [
+        "CCD:X8M"
+      ],
+      "pdb": "9pfb",
+      "canonical_name": "Ipratropium",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/9PFB",
+      "reason": "9PFB ipratropium and 9PDQ carnitine are explicitly modeled OCTN2 inhibitor/substrate complexes.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P09769",
+      "names": [
+        "CCD:VSE"
+      ],
+      "pdb": "7uy0",
+      "canonical_name": "A-419259",
+      "category": "tool",
+      "reference": "https://www.rcsb.org/structure/7UY0",
+      "reason": "7UY0 explicitly names A-419259 inhibitor of Fgr kinase; research inhibitor, not a marketed therapeutic. Citrate in HAL2 regulatory domains is distinct additive.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P48029",
+      "names": [
+        "CCD:CRN"
+      ],
+      "pdb": "9v8x",
+      "canonical_name": "Creatine",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9V8X",
+      "reason": "CRN is creatine, not carnitine; substrate identity supported by the creatine-transporter structural study.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P48065",
+      "names": [
+        "CCD:ABU"
+      ],
+      "pdb": "9w9a",
+      "canonical_name": "GABA",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9W9A",
+      "reason": "Betaine and GABA are explicit substrate complexes. Cholesterol records are separate and remain held.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P48065",
+      "names": [
+        "CCD:BET"
+      ],
+      "pdb": "9w99",
+      "canonical_name": "Betaine",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9W99",
+      "reason": "Betaine and GABA are explicit substrate complexes. Cholesterol records are separate and remain held.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P50443",
+      "names": [
+        "CCD:OXL"
+      ],
+      "pdb": "8tnx",
+      "canonical_name": "Oxalate",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/8TNX",
+      "reason": "Oxalate source CCD and substrate-binding primary study support a transported anion; verify canonical footprint before acceptance.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q13393",
+      "names": [
+        "CCD:MKG"
+      ],
+      "pdb": "6ohr",
+      "canonical_name": "PLD1 inhibitor compound 5 (CCD MKG)",
+      "category": "tool",
+      "reference": "https://www.rcsb.org/structure/6OHR",
+      "reason": "6OHR explicitly models compound 5 in PLD1 catalytic domain; retain exact paper-local name and CCD MKG, no speculative clinical alias.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q4U2R8",
+      "names": [
+        "CCD:5HG"
+      ],
+      "pdb": "9m9v",
+      "canonical_name": "Adefovir",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/9M9V",
+      "reason": "OAT1 entries explicitly name adefovir, cidofovir, glibenclamide and olmesartan. Transporter binding does not establish the drugs therapeutic mechanism at this target.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q4U2R8",
+      "names": [
+        "CCD:GBM"
+      ],
+      "pdb": "9j06",
+      "canonical_name": "Glibenclamide",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/9J06",
+      "reason": "OAT1 entries explicitly name adefovir, cidofovir, glibenclamide and olmesartan. Transporter binding does not establish the drugs therapeutic mechanism at this target.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q4U2R8",
+      "names": [
+        "CCD:L8P"
+      ],
+      "pdb": "9j04",
+      "canonical_name": "Cidofovir",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/9J04",
+      "reason": "OAT1 entries explicitly name adefovir, cidofovir, glibenclamide and olmesartan. Transporter binding does not establish the drugs therapeutic mechanism at this target.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q4U2R8",
+      "names": [
+        "CCD:OLM"
+      ],
+      "pdb": "9klz",
+      "canonical_name": "Olmesartan",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/9KLZ",
+      "reason": "OAT1 entries explicitly name adefovir, cidofovir, glibenclamide and olmesartan. Transporter binding does not establish the drugs therapeutic mechanism at this target.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q5U3C3",
+      "names": [
+        "CCD:LPC"
+      ],
+      "pdb": "9lw1",
+      "canonical_name": "1-myristoyl lysophosphatidylcholine",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9LW1",
+      "reason": "Myristoyl-LPC exact molecular species in substrate-bound phospholipid-remodeling TMEM164 study; cholesterol distinct. Native physiological chain distribution not inferred.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q7Z2H8",
+      "names": [
+        "CCD:4AX"
+      ],
+      "pdb": "9v3v",
+      "canonical_name": "D-cycloserine",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/9V3V",
+      "reason": "9V3V explicitly models D-cycloserine; CCD 4AX is the R stereoisomer. Drug bound to transporter, not an efficacy claim.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q8N323",
+      "names": [
+        "CCD:ACO"
+      ],
+      "pdb": "9pja",
+      "canonical_name": "Acetyl-CoA",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9PJA",
+      "reason": "Acetyl-CoA contact in NXPE1 sialic-acid O-acetyltransferase supports catalytic donor role; coordinate acceptance still required.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q8TF71",
+      "names": [
+        "CCD:T44"
+      ],
+      "pdb": "9gsz",
+      "canonical_name": "L-thyroxine",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9GSZ",
+      "reason": "9GSZ explicitly names L-thyroxine bound to MCT10.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9BY76",
+      "names": [
+        "CCD:MYR"
+      ],
+      "pdb": "6u73",
+      "canonical_name": "Myristic acid",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/6U73",
+      "reason": "ANGPTL4 C-terminal structures explicitly model myristic and palmitic acid; binding-pocket evidence, not proof of systemic physiological ligand function. PEG remains additive.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9BY76",
+      "names": [
+        "CCD:PLM"
+      ],
+      "pdb": "6u1u",
+      "canonical_name": "Palmitic acid",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/6U1U",
+      "reason": "ANGPTL4 C-terminal structures explicitly model myristic and palmitic acid; binding-pocket evidence, not proof of systemic physiological ligand function. PEG remains additive.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NYB5",
+      "names": [
+        "CCD:T44"
+      ],
+      "pdb": "9dxp",
+      "canonical_name": "L-thyroxine",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/9DXP",
+      "reason": "WT thyroxine 9DXP prioritized. Estrone sulfate/glucuronide 9DXO/9MR5 are F240A complexes and remain construct-qualified held candidates.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9Y289",
+      "names": [
+        "CCD:BTN"
+      ],
+      "pdb": "26va",
+      "canonical_name": "Biotin",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/26VA",
+      "reason": "26VA and 26VC explicitly distinguish biotin and alpha-lipoic acid substrates. CCD LPA here is lipoic acid, not lysophosphatidic acid.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9Y289",
+      "names": [
+        "CCD:LPA"
+      ],
+      "pdb": "26vc",
+      "canonical_name": "Alpha-lipoic acid",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/26VC",
+      "reason": "26VA and 26VC explicitly distinguish biotin and alpha-lipoic acid substrates. CCD LPA here is lipoic acid, not lysophosphatidic acid.",
       "exclude_from_overview": false
     }
   ],

@@ -1,5 +1,9 @@
 /** Canonical UniProt numbering; never project these onto isoforms or PDB chains. */
 export interface ContactSite {
+  ligand_identity_key?: string;
+  identity_basis?: string;
+  identity_display_label?: string;
+  processing_status?: string;
   exclude_from_overview?: boolean;
   exclude_from_ec_overview?: boolean;
   identity_evidence?: string;
@@ -48,6 +52,7 @@ export function contactShard(accession: string): string {
     .toString(16).padStart(2, "0");
 }
 export function contactContext(context: string): string {
+  if (context === "removed_processing_segment") return "Processed domain / precursor; surface eligibility unresolved";
   if (context.startsWith("extracellular_")) return "Extracellular";
   if (context === "secreted_mature") return "Secreted";
   if (context === "membrane_spanning_site") return "Membrane-spanning";
@@ -65,13 +70,13 @@ export function filterContacts(sites: ContactSite[], source: string, ecOnly: boo
 
 /** Display identity only: preserve source IDs and every original observation. */
 export function ligandName(site: ContactSite): string {
+  if (site.identity_display_label) return site.identity_display_label;
   // Reviewed names retain construct qualifiers; stripping these can merge variants.
   if (site.canonical_partner_label?.trim()) return site.canonical_partner_label.trim();
   const label = site.partner_label ?? site.partner;
-  // IEDB names retain the parenthetical aliases in the evidence records.
+  // Short display aliases do not determine identity; the exported key does.
   if (/^cetuximab(?:\s|$)/i.test(label)) return "Cetuximab";
   const name = label.replace(/\s*\([^)]*\)\s*$/, "").replace(/\s+(Fab|Fv|VHH)$/i, "").trim();
-  // IEDB calls this necitumumab (11F8); AACDB uses IMC-11F8 Fab.
   if (/^(IMC-)?11F8$/i.test(name)) return "necitumumab";
   return name;
 }
@@ -99,7 +104,7 @@ export function browsingContacts(sites: ContactSite[], _grouped: boolean, query:
   const byLigand = new Map<string, ContactGroup>();
   for (const site of [...sites].filter(site => query.trim() || namedLigand(site)).sort((a,b) => b.positions.length-a.positions.length)) {
     const name = ligandName(site);
-    const key = name.toLowerCase();
+    const key = site.ligand_identity_key ?? site.ligand_id ?? name.toLowerCase();
     const existing = byLigand.get(key);
     if (existing) existing.supportingSites.push(site);
     else byLigand.set(key, {...site, partner_label: name, supportingSites: site.supportingSites ?? [site]});
@@ -146,6 +151,7 @@ export function groupContactSites(sites: ContactSite[], enabled = true): Contact
     const residues = new Set(site.positions);
     const group = enabled ? groups.find(candidate =>
       candidate.partner === site.partner && candidate.source === site.source &&
+      candidate.ligand_identity_key === site.ligand_identity_key &&
       candidate.context === site.context && candidate.supportingSites.every(other => {
         const intersection = other.positions.filter(position => residues.has(position)).length;
         return intersection / (residues.size + other.positions.length - intersection) >= 0.7;

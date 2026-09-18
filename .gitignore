@@ -190,3 +190,8 @@ data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
 
 # Curated binder denominator source caches
 /data/external/binder_denominators/
+
+# Reproducible contact identity / coordinate audit caches (hashes in committed ledgers)
+/data/external/contact_construct_audit/
+/data/external/remaining_chemical_candidates/
+/data/external/reviewed_chemical_contacts/

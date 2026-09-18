@@ -15,6 +15,12 @@ from itertools import chain
 from pathlib import Path
 from typing import TypedDict
 
+from accessible_surfaceome.binders.contact_identity import annotate_identities
+from accessible_surfaceome.binders.contact_constructs import (
+    accepted_construct_updates,
+    load_accepted_constructs,
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 INPUT = ROOT / "data/analysis/deep_dive_binding_sites"
 OUTPUT = ROOT / "viewer/public/data/contact-sites"
@@ -29,19 +35,36 @@ class SourceCounts(TypedDict):
 
 def reviewed_chemical_rows():
     """Accept only individually reviewed, canonical-coordinate chemical pairs."""
-    payload = json.loads((INPUT / "reviewed_chemical_contacts.json").read_text())
+    review_bytes = (INPUT / "reviewed_chemical_contacts.json").read_bytes()
+    payload = json.loads(review_bytes)
     for row in payload["records"]:
         if row["mapping_issues"] or row["tier"] != "reviewed_chemical_contacts":
             raise ValueError("Reviewed chemical contacts must have valid mappings")
-        yield row
+    ledger = json.loads((INPUT / "reviewed_chemical_validation.json").read_text())
+    if (
+        ledger.get("review_sha256") != hashlib.sha256(review_bytes).hexdigest()
+        or ledger.get("validator_sha256")
+        != hashlib.sha256(
+            (
+                ROOT / "src/accessible_surfaceome/binders/contact_coordinates.py"
+            ).read_bytes()
+        ).hexdigest()
+        or not ledger.get("ok")
+        or ledger.get("errors")
+        or len(ledger.get("records", [])) != len(payload["records"])
+        or any(item.get("status") != "verified" for item in ledger["records"])
+        or [item.get("record_index") for item in ledger["records"]]
+        != list(range(len(payload["records"])))
+    ):
+        raise ValueError(
+            "Reviewed chemicals require a current successful coordinate validation ledger"
+        )
+    yield from payload["records"]
 
 
 def normalize(row):
     """Keep mapped contacts/epitopes; never turn IntAct constructs into contacts."""
-    if row["tier"].startswith("intact_") or row["context"] in {
-        "invalid_mapping",
-        "removed_processing_segment",
-    }:
+    if row["tier"].startswith("intact_") or row["context"] == "invalid_mapping":
         return None
     positions = sorted({int(p) for p in row["positions"].split(",") if p})
     if not positions or positions[0] < 1:
@@ -54,7 +77,7 @@ def normalize(row):
         reference = f"https://doi.org/{reference}"
     if not reference.startswith("https://"):
         reference = ""
-    return dict(
+    site = dict(
         source=source,
         partner=html.unescape(re.sub(r"<[^>]+>", "", row["partner"])),
         pdb=row["pdb_id"].lower(),
@@ -68,6 +91,13 @@ def normalize(row):
         confidence=row["confidence"]
         or "Mapped residue evidence; no calibrated confidence score",
     )
+    if row["context"] == "removed_processing_segment":
+        site.update(
+            exclude_from_ec_overview=True,
+            processing_status="overlaps_annotated_processing_segment",
+            identity_note="Experimental contacts overlap an annotated signal, transit or propeptide segment. Retained as processed-domain/precursor evidence; mature extracellular accessibility is not established.",
+        )
+    return site
 
 
 def apply_partner_review(site, acc, reviews, matches):
@@ -145,6 +175,9 @@ def apply_partner_review(site, acc, reviews, matches):
 
 
 def main():
+    constructs = load_accepted_constructs(
+        INPUT / "accepted_constructs.json", INPUT / "contact_construct_suggestions.json"
+    )
     reviews = json.loads((INPUT / "reviewed_contact_partners.json").read_text())
     matches = defaultdict(list)
     with gzip.open(INPUT / "therapeutic_aacdb_evidence.tsv.gz", "rt") as stream:
@@ -244,19 +277,34 @@ def main():
                 site["category_reference"] = (
                     "https://opig.stats.ox.ac.uk/webapps/therasabdab/"
                 )
+                site["catalogue_identity_key"] = "therasabdab:" + category_name
             endogenous = categories["endogenous_pairs"].get(f"{acc}|{site['partner']}")
             if endogenous:
                 site["category"] = endogenous
                 site["category_reference"] = (
                     "https://www.guidetopharmacology.org/download.jsp"
                 )
+                if ligand:
+                    site["catalogue_identity_key"] = "iuphar:" + (
+                        ligand.get("uniprot_acc") or site["partner"]
+                    )
             if review:
+                site["reviewed_identity_label"] = category_name
                 site["category"] = review["category"]
                 site["category_reference"] = review["reference"]
                 site["category_reason"] = review["reason"]
                 if review.get("canonical_name"):
                     site["canonical_partner_label"] = review["canonical_name"]
             apply_partner_review(site, acc, reviews, matches)
+            updates = accepted_construct_updates(site, acc, constructs)
+            if updates:
+                previous_note = site.get("identity_note", "")
+                site.update(updates)
+                if previous_note:
+                    site["identity_note"] = previous_note + " " + site["identity_note"]
+            if site.get("processing_status"):
+                note = "Contacts overlap an annotated processing segment; mature extracellular accessibility is not established."
+                site["identity_note"] = site.get("identity_note", "") + " " + note
             assert genes[acc]["hgnc_id"] == row["hgnc_id"]
             key = (
                 site["source"],
@@ -269,6 +317,7 @@ def main():
             if key not in seen[acc]:
                 genes[acc]["sites"].append(site)
                 seen[acc].add(key)
+    annotate_identities(genes)
     shards = [{} for _ in range(64)]
     stats = defaultdict(
         lambda: SourceCounts(genes=set(), sites=0, ec_genes=set(), ec_sites=0)
@@ -305,6 +354,9 @@ def main():
         partner_review_sha256=hashlib.sha256(
             (INPUT / "reviewed_contact_partners.json").read_bytes()
         ).hexdigest(),
+        accepted_constructs_sha256=hashlib.sha256(
+            (INPUT / "accepted_constructs.json").read_bytes()
+        ).hexdigest(),
         categories_sha256=hashlib.sha256(
             (INPUT / "ligand_categories.json").read_bytes()
         ).hexdigest(),
@@ -328,10 +380,14 @@ def main():
         reviewed_chemical_sha256=hashlib.sha256(
             (INPUT / "reviewed_chemical_contacts.json").read_bytes()
         ).hexdigest(),
+        coordinate_validation_sha256=hashlib.sha256(
+            (INPUT / "reviewed_chemical_validation.json").read_bytes()
+        ).hexdigest(),
+        identity_policy="scoped_identity_v2: chemical IDs, verified constructs, target-reviewed aliases, catalogue IDs, parent protein groups and source-scoped groups; groups are not complete molecule equivalence",
         audited_genes=len(genes),
         covered_genes=sum(bool(g["sites"]) for g in genes.values()),
         site_definition="Unique source, partner, PDB, canonical residue set, context and reference; sources may describe the same interface. Audit snapshot, not exhaustive DB coverage.",
-        excluded="IntAct regions and mutation effects; invalid mappings; removed processing segments; ambiguous gene mappings",
+        excluded="IntAct regions and mutation effects; invalid mappings; ambiguous gene mappings. Processing-segment contacts are retained only outside the extracellular overview.",
         sources=summary,
     )
     (OUTPUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

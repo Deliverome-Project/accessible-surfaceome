@@ -129,11 +129,12 @@ test('reviewed EGFR aliases consolidate GC1118 while preserving both source name
 test('reviewed six-target cleanup preserves observations and fixes identities', async () => {
   const {browsingContacts} = await import('../lib/contact-sites.ts');
   const gene = acc => JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard(acc)}.json`,import.meta.url)))[acc];
-  for (const [acc,count,records] of [['P04626',29,121],['Q15116',26,85],['P08581',5,52],['P08887',6,21],['Q9NZQ7',15,31],['P35968',4,24]]) {
+  for (const [acc,count,records] of [['P04626',30,121],['Q15116',26,85],['P08581',5,52],['P08887',6,21],['Q9NZQ7',16,31],['P35968',4,24]]) {
     const g=gene(acc), sites=browsingContacts(filterContacts(g.sites,'',true,''),true,'');
-    assert.equal(g.sites.length,records); assert.equal(sites.length,count);
+    assert.equal(g.sites.filter(s=>!s.processing_status).length,records); assert.equal(sites.length,count);
     for(const s of g.sites.filter(s=>s.source==='Thera-SAbDab')) {assert.equal(s.identity_evidence,'sequence_matched_antibody_arm'); assert.ok(s.identity_matches.length);}
   }
+  // Unreviewed cross-source clone aliases remain distinct until verified.
   const her2=gene('P04626');
   assert.ok(her2.sites.some(s=>s.partner_label==='CMJ112' && s.exclude_from_overview));
   assert.ok(her2.sites.some(s=>s.partner==='Herceptin Fab' && s.canonical_partner_label==='Trastuzumab'));

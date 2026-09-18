@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-09-18",
+  "policy": "Only three independently peer-reviewed deposited-construct pairs; no automatic acceptance of other suggestions. Preserve every raw observation and target context.",
+  "suggestions_sha256": "adacb80168af1287f549793037d07a82f512c1dd436506ff1a4d182ab1c399ac",
+  "groups": [
+    {
+      "canonical_partner_label": "FZD8–FKBP fusion construct (21KR/21KS)",
+      "construct_fingerprint": "6d317a1659e85c67f9493f8080e37d9233a836fa9fad9c1d106777c79573108a",
+      "identity_note": "Reviewed equal deposited271-residue fusion, including tags/linker and five intrachain disulfides. Both FZD8 and FKBP1A accession spans match. Same deposited C178S annotation; no inferred numbering equivalence. LRP6 target constructs differ and remain in their original PDB evidence. This does not establish identical unmodeled chemistry.",
+      "primary_references": [
+        "https://doi.org/10.1016/j.cell.2026.05.006"
+      ],
+      "members": [
+        {
+          "target": "O75581",
+          "partner": "Q9H461",
+          "pdb": "21kr",
+          "coordinate_sha256": "13859ed290d86f8dc4f29373a0b4117dccf72a9b385a2a065398845d24036ed1",
+          "mapping_sha256": "9ad6f395b11b6e5ac98a9cf12330e02fd9069e73d51a005204ded8ffbaf277e4"
+        },
+        {
+          "target": "O75581",
+          "partner": "Q9H461",
+          "pdb": "21ks",
+          "coordinate_sha256": "1b5f7ac7b06ae891e84c1d176dccd633aba26ac395ece199f1ee897a47815c8c",
+          "mapping_sha256": "42b8712e977eed5fda76957e467f3ccbd9791f7cb1a64fefefe03fe74e27b510"
+        }
+      ]
+    },
+    {
+      "canonical_partner_label": "CTNND1 isoform4A deletion construct (3L6X/3L6Y)",
+      "construct_fingerprint": "7d473ea6be9271ee52cbde4386ffffb726f8019bb0a6449fa43a71211047494f",
+      "identity_note": "Reviewed equal584-residue deposited p120-catenin isoform4A construct with deletion613–643 in depositor numbering. Preserve intracellular target18-residue E-cadherin fragment context and each source footprint; not full native CTNND1 or surface accessibility.",
+      "primary_references": [
+        "https://doi.org/10.1016/j.cell.2010.01.017"
+      ],
+      "members": [
+        {
+          "target": "P12830",
+          "partner": "O60716",
+          "pdb": "3l6x",
+          "coordinate_sha256": "600a30bad417153f0c5d822c0668ab3074392f87adb1cffdf293cae369559893",
+          "mapping_sha256": "d77ed09e89cdc29e87ccb30649714e8e8d494914060c36c6d41f661dce03fc53"
+        },
+        {
+          "target": "P12830",
+          "partner": "O60716",
+          "pdb": "3l6y",
+          "coordinate_sha256": "1fe201be28a8997ea84b247c3453a29aa55e6dc8ec8cab8353f9e8478ffd6c9a",
+          "mapping_sha256": "e7420f42d6e7602e2ecce4a435b115ca542fd8eb625ab5cd2c75f55c78787505"
+        }
+      ]
+    },
+    {
+      "canonical_partner_label": "H2AX-derived presented peptide RIIPRHLQL (9-mer)",
+      "construct_fingerprint": "c4d51caab13d1345653f02f341ca524a0baeae172ca5f324dc617029c8cd11da",
+      "identity_note": "Reviewed exact deposited nine-mer RIIPRHLQL, same P16104 mapping78–86 and no deposited covalent attachment. HLA-G target dimer and C42S/LILRB2 contexts differ and remain source-specific. Full histone identity is not asserted; the8-mer IIPRHLQL in9RWI remains distinct.",
+      "primary_references": [
+        "https://doi.org/10.1074/jbc.M512305200",
+        "https://doi.org/10.1073/pnas.0605228103"
+      ],
+      "members": [
+        {
+          "target": "P17693",
+          "partner": "P16104",
+          "pdb": "2d31",
+          "coordinate_sha256": "d84ca36db944810c05db7b3d9770fe728420b653b2feee87e93b8cd3720b387d",
+          "mapping_sha256": "eae7af40dc7199da4212b67f820540fc195e5954db4e44d30b1a9af04d654933"
+        },
+        {
+          "target": "P17693",
+          "partner": "P16104",
+          "pdb": "2dyp",
+          "coordinate_sha256": "fa9e651210fc336349ffa82848381b181c3e46c6d21c91b0274d54992a8f6630",
+          "mapping_sha256": "0a3b13cd1780e87ad034096e24b508e79b332b1742890440d3c74453b815f8e4"
+        }
+      ]
+    }
+  ]
+}

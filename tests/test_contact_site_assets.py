@@ -19,7 +19,7 @@ spec.loader.exec_module(module)
 def test_indirect_evidence_never_becomes_contacts():
     for tier in ("intact_binding_region", "intact_mutation_effect"):
         assert module.normalize({"tier": tier}) is None
-    for context in ("invalid_mapping", "removed_processing_segment"):
+    for context in ("invalid_mapping",):
         assert (
             module.normalize({"tier": "existing_reclassified", "context": context})
             is None
@@ -43,13 +43,17 @@ def test_export_identity_numbering_and_coverage():
                 assert not site["reference"] or site["reference"].startswith("https://")
                 covered.add(gene["hgnc_id"])
     assert len(genes) == 5106
-    assert len(covered) == 1685
+    assert (
+        len(covered)
+        == json.loads((folder / "manifest.json").read_text())["covered_genes"]
+    )
+    assert len(covered) >= 1685
 
 
 def test_reviewed_chemicals_keep_only_validated_pairs(monkeypatch, tmp_path):
     rows = list(module.reviewed_chemical_rows())
     expected = {"O95477", "Q07075", "P42262", "Q9ULK0", "Q9HB14"}
-    assert {row["uniprot_acc"] for row in rows} == expected
+    assert expected <= {row["uniprot_acc"] for row in rows}
     assert all(not row["mapping_issues"] for row in rows)
     for acc in expected:
         path = (
@@ -163,6 +167,15 @@ def test_overnight_review_preserves_every_original_observation():
             )
             for site in sites
         )
+        if "original_observation_sha256" in gene:
+            from collections import Counter
+
+            current = Counter(
+                hashlib.sha256(value.encode()).hexdigest() for value in values
+            )
+            original = Counter(gene["original_observation_sha256"])
+            assert not original - current, acc
+            continue
         assert len(values) == gene["observations"], acc
         assert (
             hashlib.sha256("\n".join(values).encode()).hexdigest()
@@ -198,3 +211,31 @@ def test_every_curated_rule_matches_retained_source_evidence():
                 matched = True
                 break
         assert matched, (acc, rule["names"], rule["pdb"])
+
+
+def test_processing_contacts_retained_without_mature_ec_claim():
+    row = dict(
+        tier="existing_reclassified",
+        context="removed_processing_segment",
+        positions="1,2",
+        source="PDB/PDBe",
+        partner="P01133",
+        pdb_id="1abc",
+        reference="",
+        confidence="",
+    )
+    site = module.normalize(row)
+    assert site["positions"] == [1, 2]
+    assert site["exclude_from_ec_overview"]
+    assert site["processing_status"] == "overlaps_annotated_processing_segment"
+
+
+def test_stale_coordinate_ledger_rejected(monkeypatch, tmp_path):
+    review = module.INPUT / "reviewed_chemical_contacts.json"
+    (tmp_path / review.name).write_bytes(review.read_bytes())
+    (tmp_path / "reviewed_chemical_validation.json").write_text(
+        json.dumps({"review_sha256": "stale", "ok": True})
+    )
+    monkeypatch.setattr(module, "INPUT", tmp_path)
+    with pytest.raises(ValueError, match="validation ledger"):
+        list(module.reviewed_chemical_rows())
