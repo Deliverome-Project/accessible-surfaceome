@@ -9,7 +9,7 @@ import type { ContactSite, LigandCategory } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
 const SOURCE_INFO: Record<string, string> = {
-  "PDB/PDBe": "Contacts between protein partners in experimental PDB structures, mapped to canonical UniProt positions by PDBe. Proximity alone does not establish physiological binding.",
+  "PDB/PDBe": "Protein interfaces and individually reviewed small-molecule contacts in experimental PDB structures, mapped to canonical UniProt positions using PDBe/SIFTS. Evidence details distinguish reported contacts from recalculated footprints. Proximity alone does not establish physiological binding.",
   "IUPHAR+PDBe": "Guide to Pharmacology identifies the ligand–target relationship; PDBe supplies residue contacts from experimental structures. These can duplicate PDB/PDBe observations of the same complex.",
   "PDBe": "Experimental small-molecule contacts linked to Guide to Pharmacology annotations. Contact residues are mapped to the canonical protein sequence.",
   "Thera-SAbDab": "Therapeutic identities linked to structural contacts by antibody sequence/arm matches. The deposited complex may contain a shared arm rather than the complete named drug. Includes investigational and discontinued agents.",
