@@ -300,7 +300,8 @@ def main() -> None:
     if bad:
         raise RuntimeError(f"Callouts not found in rescue slice: {bad}")
 
-    # ─── Figure ─── 2×2: top row = per-reason bar panels (shared y-axis);
+    # ─── Figure ─── 2×2: top row = per-reason bar panels (independent
+    # y-axes — see the y_max_yes / y_max_ctx note below);
     # bottom row = callout columns.
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     # Brand-style-v3 font sizes (mirror parity). The gist mirror at
@@ -330,7 +331,7 @@ def main() -> None:
         top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
-    ax_ctx = fig.add_subplot(gs[0, 1], sharey=ax_yes)
+    ax_ctx = fig.add_subplot(gs[0, 1])
     ax_callouts_yes = fig.add_subplot(gs[1, 0])
     ax_callouts_ctx = fig.add_subplot(gs[1, 1])
 
@@ -345,27 +346,32 @@ def main() -> None:
             fontsize=32, fontweight=800, color=COLORS["dark"],
         )
 
-    max_count = max(
-        max(yes_counts.values(), default=0),
-        max(ctx_counts.values(), default=0),
-    )
-    y_max = max_count * 1.18
-    ax_yes.set_ylim(0, y_max)
+    # Each panel scales to its own data. A shared axis put both panels on
+    # the contextual slice's range: contextual's tallest reason is 316
+    # against yes's 36, so every yes bar sat in the bottom tenth of the
+    # panel and the ordering among them was unreadable. The cost is that
+    # bar heights no longer compare across panels, which is why both
+    # panels now carry their own tick labels and y-axis title rather than
+    # the left panel labelling for both.
+    y_max_yes = max(yes_counts.values(), default=0) * 1.18
+    y_max_ctx = max(ctx_counts.values(), default=0) * 1.18
+    ax_yes.set_ylim(0, y_max_yes)
+    ax_ctx.set_ylim(0, y_max_ctx)
 
     _draw_reason_bars(
         ax_yes, yes_counts, YES_REASONS, YES_PALETTE,
         header_label=f"yes — definite surface  (n = {n_yes})",
-        header_color=YES_HEADER_COLOR, y_max=y_max,
+        header_color=YES_HEADER_COLOR, y_max=y_max_yes,
     )
     _draw_reason_bars(
         ax_ctx, ctx_counts, CONTEXTUAL_REASONS, CONTEXTUAL_PALETTE,
         header_label=f"contextual — state / lineage dependent  (n = {n_ctx})",
-        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
+        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max_ctx,
     )
 
-    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
-    ax_yes.tick_params(axis="y", labelsize=16)
-    plt.setp(ax_ctx.get_yticklabels(), visible=False)
+    for ax in (ax_yes, ax_ctx):
+        ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
+        ax.tick_params(axis="y", labelsize=16)
 
     _draw_callouts(
         ax_callouts_yes, YES_CALLOUTS, YES_PALETTE,

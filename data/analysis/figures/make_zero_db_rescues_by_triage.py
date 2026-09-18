@@ -384,7 +384,7 @@ def main() -> None:
         top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
-    ax_ctx = fig.add_subplot(gs[0, 1], sharey=ax_yes)
+    ax_ctx = fig.add_subplot(gs[0, 1])
     ax_callouts_yes = fig.add_subplot(gs[1, 0])
     ax_callouts_ctx = fig.add_subplot(gs[1, 1])
 
@@ -398,27 +398,28 @@ def main() -> None:
             fontsize=32, fontweight=800, color=BRAND_INK,
         )
 
-    max_count = max(
-        max(yes_counts.values(), default=0),
-        max(ctx_counts.values(), default=0),
-    )
-    y_max = max_count * 1.18
-    ax_yes.set_ylim(0, y_max)
+    # Independent y-axes: contextual's tallest reason is 316 against yes's
+    # 36, so a shared axis squashed every yes bar into the bottom tenth of
+    # its panel. Both panels therefore carry their own ticks and title.
+    y_max_yes = max(yes_counts.values(), default=0) * 1.18
+    y_max_ctx = max(ctx_counts.values(), default=0) * 1.18
+    ax_yes.set_ylim(0, y_max_yes)
+    ax_ctx.set_ylim(0, y_max_ctx)
 
     _draw_reason_bars(
         ax_yes, yes_counts, YES_REASONS, YES_PALETTE,
         header_label=f"yes — definite surface  (n = {n_yes})",
-        header_color=YES_HEADER_COLOR, y_max=y_max,
+        header_color=YES_HEADER_COLOR, y_max=y_max_yes,
     )
     _draw_reason_bars(
         ax_ctx, ctx_counts, CONTEXTUAL_REASONS, CONTEXTUAL_PALETTE,
         header_label=f"contextual — state / lineage dependent  (n = {n_ctx})",
-        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
+        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max_ctx,
     )
 
-    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
-    ax_yes.tick_params(axis="y", labelsize=20)
-    plt.setp(ax_ctx.get_yticklabels(), visible=False)
+    for ax in (ax_yes, ax_ctx):
+        ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
+        ax.tick_params(axis="y", labelsize=20)
 
     _draw_callouts(ax_callouts_yes, YES_CALLOUTS, YES_PALETTE, title="Select yes rescues")
     _draw_callouts(ax_callouts_ctx, CONTEXTUAL_CALLOUTS, CONTEXTUAL_PALETTE, title="Select contextual rescues")
