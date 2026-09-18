@@ -62,3 +62,41 @@ export function groupContactSites(sites: ContactSite[], enabled = true): Contact
   }
   return groups;
 }
+
+export interface ContactAtom { x: number; y: number; z: number; resi: number }
+
+/** Select up to three footprints, each sharing <=20% of its smaller residue
+ * set with every other selected footprint. This is a display heuristic only:
+ * low residue overlap does not establish simultaneous binding. */
+export function comparisonContacts(groups: ContactGroup[], selected: number, compare: boolean): ContactGroup[] {
+  if (!groups[selected]) return [];
+  const result = [groups[selected]];
+  if (!compare) return result;
+  for (const candidate of groups) {
+    if (result.length === 3) break;
+    if (result.every(other => {
+      const positions = new Set(other.positions);
+      const shared = candidate.positions.filter(p => positions.has(p)).length;
+      return shared / Math.min(candidate.positions.length, other.positions.length) <= 0.2;
+    })) result.push(candidate);
+  }
+  return result;
+}
+
+/** Convex outline of projected C-alpha coordinates; not a molecular surface. */
+export function contactHull(points: [number, number][]): [number, number][] {
+  const sorted = [...new Map(points.map(p => [p.join(","), p])).values()]
+    .sort((a,b) => a[0]-b[0] || a[1]-b[1]);
+  if (sorted.length <= 2) return sorted;
+  const cross = (a: number[], b: number[], c: number[]) =>
+    (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+  const half = (rows: [number,number][]) => {
+    const hull: [number,number][] = [];
+    for(const point of rows) {
+      while(hull.length >= 2 && cross(hull[hull.length-2], hull[hull.length-1],point) <= 0) hull.pop();
+      hull.push(point);
+    }
+    return hull.slice(0,-1);
+  };
+  return [...half(sorted),...half([...sorted].reverse())];
+}

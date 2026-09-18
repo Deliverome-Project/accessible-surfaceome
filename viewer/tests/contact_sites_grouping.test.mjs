@@ -25,3 +25,20 @@ test('EGFR EGF grouping retains every structural record without synthesizing res
   for(const g of groups) assert.ok(records.some(s=>s.positions===g.positions));
   assert.equal(groupContactSites(records,false).length,10);
 });
+
+test('comparison keeps the selected group, caps at three, and rejects overlapping subsets', async () => {
+  const { comparisonContacts } = await import('../lib/contact-sites.ts');
+  const groups=groupContactSites([
+    site([1,2,3,4,5],'a'), site([1,2],'b'), site([10,11,12],'c'),
+    site([20,21,22],'d'), site([30,31,32],'e'),
+  ],false);
+  assert.deepEqual(comparisonContacts(groups,0,true).map(s=>s.pdb),['a','c','d']);
+  assert.deepEqual(comparisonContacts(groups,2,false).map(s=>s.pdb),['c']);
+  assert.deepEqual(comparisonContacts([],0,true),[]);
+});
+test('projected outline excludes interior and duplicate points and handles short sites', async () => {
+  const { contactHull } = await import('../lib/contact-sites.ts');
+  assert.deepEqual(contactHull([[0,0],[2,0],[2,2],[0,2],[1,1],[0,0]]),[[0,0],[2,0],[2,2],[0,2]]);
+  assert.deepEqual(contactHull([[1,1]]),[[1,1]]);
+  assert.deepEqual(contactHull([[0,0],[1,0],[2,0]]),[[0,0],[2,0]]);
+});

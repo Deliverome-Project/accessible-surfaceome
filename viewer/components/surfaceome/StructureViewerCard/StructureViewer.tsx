@@ -16,8 +16,8 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
-import { CONTACT_COLORS, contactShard, filterContacts, groupContactSites } from "../../../lib/contact-sites";
-import type { ContactGene } from "../../../lib/contact-sites";
+import { CONTACT_COLORS, contactShard, filterContacts, groupContactSites, comparisonContacts } from "../../../lib/contact-sites";
+import type { ContactGene, ContactAtom } from "../../../lib/contact-sites";
 import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
@@ -1130,6 +1130,8 @@ export function StructureViewer({
   const [contactRetry, setContactRetry] = useState(0);
   const [contactIndex, setContactIndex] = useState(0);
   const [contactSource, setContactSource] = useState("");
+  const [compareContacts, setCompareContacts] = useState(true);
+  const [contactAtoms, setContactAtoms] = useState<ContactAtom[]>([]);
   const [groupContacts, setGroupContacts] = useState(true);
   const [contactQuery, setContactQuery] = useState("");
   const [contactsEcOnly, setContactsEcOnly] = useState(true);
@@ -1155,21 +1157,25 @@ export function StructureViewer({
       .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
     return () => controller.abort();
   }, [data.uniprot_acc, viewMode, contactRetry]);
-  const selectedContact = contactStatus === "ready" ? groupContactSites(filterContacts(
-    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), groupContacts)[contactIndex] : undefined;
+  const contactGroups = useMemo(() => contactStatus === "ready" ? groupContactSites(filterContacts(
+    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), groupContacts) : [],
+    [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery, groupContacts]);
+  const visibleContacts = useMemo(() => comparisonContacts(contactGroups, contactIndex, compareContacts),
+    [contactGroups, contactIndex, compareContacts]);
   // Update only styles when scrubbing: preserve camera and avoid reloading the model.
   useEffect(() => {
     const viewer = viewerRef.current;
     if (viewMode !== "contacts" || variantIdx !== 0 || status !== "ready" || !viewer) return;
     viewer.setStyle({}, { cartoon: { color: "#D6D9DE" } });
-    if (selectedContact) {
-      const color = CONTACT_COLORS[selectedContact.source] ?? "#666666";
-      viewer.setStyle({ resi: selectedContact.positions }, {
-        cartoon: { color }, stick: { color, radius: 0.2 },
+    for (const contact of visibleContacts) {
+      const color = CONTACT_COLORS[contact.source] ?? "#666666";
+      viewer.setStyle({ resi: contact.positions }, {
+        cartoon: { color }, stick: { color, radius: 0.3 },
+        sphere: { color, radius: 1.3, opacity: 0.35 },
       });
     }
     viewer.render();
-  }, [viewMode, variantIdx, status, selectedContact]);
+  }, [viewMode, variantIdx, status, visibleContacts]);
 
 
   // Per-AFDB-accession availability (canonical + isoform/ortholog
@@ -2395,6 +2401,9 @@ export function StructureViewer({
         viewer.render();
       }
       viewerRef.current = viewer as ViewerInstance;
+      setContactAtoms(isCanonicalActive ? viewer.selectedAtoms({ atom: "CA" }).flatMap(atom =>
+        typeof atom.x === "number" && typeof atom.y === "number" && typeof atom.z === "number" && typeof atom.resi === "number"
+          ? [{ x: atom.x, y: atom.y, z: atom.z, resi: atom.resi }] : []) : []);
 
       // Capture the post-initial-render camera pose so the reset
       // button can restore both rotation AND zoom (not just zoom).
@@ -2740,6 +2749,8 @@ export function StructureViewer({
         </div>
       ) : null}
       {viewMode === "contacts" && isCanonicalActive ? <ContactSites
+        atoms={status === "ready" ? contactAtoms : []} visibleSites={visibleContacts}
+        compare={compareContacts} onCompare={setCompareContacts}
         grouped={groupContacts} onGrouped={value => { setGroupContacts(value); setContactIndex(0); }}
         query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
         sites={contactGene?.sites ?? []} selected={contactIndex} onSelect={setContactIndex}
@@ -2853,16 +2864,7 @@ export function StructureViewer({
             ),
           )}
         </ul>
-      ) : viewMode === "contacts" ? (
-        <ul className={styles.sitesLegend} aria-label="Contact-source color legend">
-          {Array.from(new Set((contactGene?.sites ?? []).map(site => site.source))).sort().map(source => (
-            <li key={source} className={styles.sitesLegendItem}>
-              <span className={styles.sitesLegendSwatch} style={{ background: CONTACT_COLORS[source] }} aria-hidden="true" />
-              <span className={styles.sitesLegendLabel}>{source}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
+      ) : viewMode === "contacts" ? null : (
         <TopologyLegend
           presentStates={legendPresentStates}
           globular={activeDeepTMHMMType === "GLOB"}

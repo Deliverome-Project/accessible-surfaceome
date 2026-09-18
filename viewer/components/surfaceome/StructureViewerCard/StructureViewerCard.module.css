@@ -528,3 +528,11 @@
 .contactSlider button:disabled { cursor: default; opacity: .4; }
 .contactResidues { overflow-wrap: anywhere; max-height: 100px; overflow: auto; }
 .contactNote { color: var(--text-muted, #666); font-size: 12px; margin-bottom: 0; }
+
+.contactViews { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.contactView { margin: 0; padding: 3px; border: 1px solid #e4e4e4; border-radius: 6px; background: #fafafa; text-align: center; font-size: 11px; }
+.contactView svg { display: block; width: 100%; height: auto; }
+.contactComparisonList { list-style: none; padding: 0; margin: 8px 0; font-size: 12px; }
+.contactComparisonList li { border-left: 3px solid; padding-left: 7px; margin-bottom: 4px; }
+.contactEvidence { margin-top: 8px; font-size: 12px; }
+.contactEvidence summary { cursor: pointer; }
