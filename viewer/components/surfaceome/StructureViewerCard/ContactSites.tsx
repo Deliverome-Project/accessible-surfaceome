@@ -12,7 +12,7 @@ const SOURCE_INFO: Record<string, string> = {
   "PDB/PDBe": "Contacts between protein partners in experimental PDB structures, mapped to canonical UniProt positions by PDBe. Proximity alone does not establish physiological binding.",
   "IUPHAR+PDBe": "Guide to Pharmacology identifies the ligand–target relationship; PDBe supplies residue contacts from experimental structures. These can duplicate PDB/PDBe observations of the same complex.",
   "PDBe": "Experimental small-molecule contacts linked to Guide to Pharmacology annotations. Contact residues are mapped to the canonical protein sequence.",
-  "Thera-SAbDab": "Therapeutic antibody identities linked to structural antibody contacts. Includes investigational and discontinued agents, not only approved medicines.",
+  "Thera-SAbDab": "Therapeutic identities linked to structural contacts by antibody sequence/arm matches. The deposited complex may contain a shared arm rather than the complete named drug. Includes investigational and discontinued agents.",
   "SAbDab": "Structural Antibody Database: antibody–antigen interfaces in experimental structures. This audit retains one mapped representative interface per gene.",
   "AACDB": "Antibody–antigen complex structures with mapped contact residues. Multiple structures can describe the same antibody and binding footprint.",
   "IEDB": "Immune Epitope Database: experimentally mapped antibody epitopes and assay references. Only exact mapped epitopes are included here; assay conditions and native accessibility vary.",
@@ -100,6 +100,7 @@ export function ContactSites({ gene, sites, selected, source, ecOnly, status, on
         <SourceInfo source={site.source} /> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
         {LIGAND_CATEGORIES[site.category ?? "unclassified"].label}{site.category_reference && <> · <a href={site.category_reference} target="_blank" rel="noreferrer">Category source ↗</a></>}<br />
         {site.category_reason && <p>{site.category_reason}</p>}
+        {site.identity_note && <p>{site.identity_note}</p>}
         {contactContext(site.context)} · {site.positions.length} residues · {site.evidence}
         <p>{site.confidence}. Contacts are projected onto the canonical AlphaFold model; this is not a model of the bound complex.</p>
         {site.pdb && <a href={`https://www.rcsb.org/structure/${site.pdb}`} target="_blank" rel="noreferrer">PDB {site.pdb.toUpperCase()} ↗</a>}
@@ -107,7 +108,7 @@ export function ContactSites({ gene, sites, selected, source, ecOnly, status, on
         {evidence.length > 0 && <details><summary>Alternative observations ({evidenceCount})</summary>
           <p>One representative observed footprint is shown on the structure. Records below preserve alternative residue measurements and duplicate reports across sources; they are not additional ligands.</p>
           <ul>{evidence.map((support, index) => <li key={index}>
-            <SourceInfo source={support.source} /> · {support.pdb ? <a href={`https://www.rcsb.org/structure/${support.pdb}`} target="_blank" rel="noreferrer">{support.pdb.toUpperCase()}</a> : "No PDB"} · {support.positions.length} residues
+            <SourceInfo source={support.source} />{support.identity_evidence && <> · {support.identity_evidence === "sequence_matched_antibody_arm" ? "Sequence-matched arm" : "Catalogue link"}</>} · {support.pdb ? <a href={`https://www.rcsb.org/structure/${support.pdb}`} target="_blank" rel="noreferrer">{support.pdb.toUpperCase()}</a> : "No PDB"} · {support.positions.length} residues
             <details><summary>Contact residues</summary><p className={styles.contactResidues}>{support.positions.join(", ")}</p></details>
             {support.reference && <> · <a href={support.reference} target="_blank" rel="noreferrer">Evidence</a></>}
           </li>)}</ul>

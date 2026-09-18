@@ -1,5 +1,8 @@
 /** Canonical UniProt numbering; never project these onto isoforms or PDB chains. */
 export interface ContactSite {
+  exclude_from_overview?: boolean;
+  identity_evidence?: string;
+  identity_note?: string;
   ligand_id?: string;
   observation_id?: string;
   evidence_count?: number;
@@ -70,6 +73,7 @@ export function ligandName(site: ContactSite): string {
   return name;
 }
 export function namedLigand(site: ContactSite): boolean {
+  if (site.exclude_from_overview) return false;
   if (/^sabdab2_/i.test(ligandName(site))) return false;
   return !/^([A-Z0-9]{6,10}|\d+|CCD:.*|sabdab2_.*)$/.test(site.partner) ||
     Boolean(site.partner_label && site.partner_label !== site.partner);

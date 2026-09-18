@@ -2700,6 +2700,7 @@ export function StructureViewer({
             {selectedContact.positions.length} contact residues · {selectedContact.evidence_count ?? selectedContact.supportingSites.length} evidence records.<br />
             Sources: {(selectedContact.evidence_sources ?? Array.from(new Set(selectedContact.supportingSites.map(site => site.source)))).join(", ")}.<br />
             {selectedContact.category_reason || selectedContact.confidence}
+            {selectedContact.identity_note && <><br />{selectedContact.identity_note}</>}
             {selectedContact.reference && <> <a href={selectedContact.reference} target="_blank" rel="noreferrer">Evidence ↗</a></>}
           </InfoTip></strong>
           <span><i style={{background: LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].color}} /> {LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].label}</span>

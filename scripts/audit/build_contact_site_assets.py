@@ -60,7 +60,80 @@ def normalize(row):
     )
 
 
+def apply_partner_review(site, acc, reviews, matches):
+    """Apply explicit stable-target/label/structure decisions; preserve source labels."""
+    if acc not in reviews["targets"]:
+        return
+    for rule in reviews["rules"]:
+
+        def identity_label(value):
+            value = re.sub(r"\s+(Fab|Fv|VHH)$", "", value, flags=re.I)
+            return re.sub(r"\s*\([^)]*\)\s*$", "", value).strip().casefold()
+
+        names = {identity_label(name) for name in rule["names"]}
+        if rule["uniprot_acc"] != acc or not names.intersection(
+            {
+                identity_label(site["partner"]),
+                identity_label(site.get("partner_label", "")),
+            }
+        ):
+            continue
+        if rule["pdb"] and rule["pdb"] != site["pdb"]:
+            continue
+        site.update(
+            canonical_partner_label=rule["canonical_name"],
+            category=rule["category"],
+            category_reference=rule["reference"],
+            category_reason=rule["reason"],
+        )
+        if rule["exclude_from_overview"]:
+            site["exclude_from_overview"] = True
+        site["review_date"] = reviews["review_date"]
+    if site["source"] == "Thera-SAbDab":
+        hits = matches.get((acc, site["partner"].casefold(), site["pdb"]), [])
+        site["identity_evidence"] = (
+            "sequence_matched_antibody_arm" if hits else "therapeutic_catalogue_link"
+        )
+        site["identity_matches"] = hits
+        site["evidence"] = (
+            "Contacts from a sequence-matched antibody arm"
+            if hits
+            else "Therapeutic-linked structural contacts (match unresolved)"
+        )
+        site["identity_note"] = (
+            "The deposited complex supplies the contact residues. The therapeutic link is based on an antibody variable-region/arm match, not proof that the complete named drug was crystallized."
+        )
+    elif site["category"] == "unclassified" and not site.get("category_reason"):
+        site["category_reason"] = (
+            "Reviewed source label retained; its role or clinical identity is not established by the available record."
+        )
+
+
 def main():
+    reviews = json.loads((INPUT / "reviewed_contact_partners.json").read_text())
+    matches = defaultdict(list)
+    with gzip.open(INPUT / "therapeutic_aacdb_evidence.tsv.gz", "rt") as stream:
+        for row in csv.DictReader(stream, delimiter="\t"):
+            if (
+                row["source"] == "Thera-SAbDab"
+                and row["uniprot_acc"] in reviews["targets"]
+            ):
+                hit = {
+                    key: row[key]
+                    for key in [
+                        "match_method",
+                        "arm",
+                        "antibody_chains",
+                        "antigen_chain",
+                    ]
+                }
+                key = (
+                    row["uniprot_acc"],
+                    row["therapeutic"].casefold(),
+                    row["pdb_id"].lower(),
+                )
+                if hit not in matches[key]:
+                    matches[key].append(hit)
     categories = json.loads((INPUT / "ligand_categories.json").read_text())
     ligand_names = json.loads((INPUT / "ligand_names.json").read_text())["ligands"]
     observation_names = {}
@@ -143,6 +216,7 @@ def main():
                 site["category_reason"] = review["reason"]
                 if review.get("canonical_name"):
                     site["canonical_partner_label"] = review["canonical_name"]
+            apply_partner_review(site, acc, reviews, matches)
             assert genes[acc]["hgnc_id"] == row["hgnc_id"]
             key = (
                 site["source"],
@@ -188,6 +262,9 @@ def main():
     }
     manifest = dict(
         schema_version=1,
+        partner_review_sha256=hashlib.sha256(
+            (INPUT / "reviewed_contact_partners.json").read_bytes()
+        ).hexdigest(),
         categories_sha256=hashlib.sha256(
             (INPUT / "ligand_categories.json").read_bytes()
         ).hexdigest(),

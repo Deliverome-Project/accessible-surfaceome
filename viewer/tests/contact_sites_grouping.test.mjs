@@ -125,3 +125,20 @@ test('reviewed EGFR aliases consolidate GC1118 while preserving both source name
     assert.ok(group.category_reason && group.category_reference);
   }
 });
+
+test('reviewed six-target cleanup preserves observations and fixes identities', async () => {
+  const {browsingContacts} = await import('../lib/contact-sites.ts');
+  const gene = acc => JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard(acc)}.json`,import.meta.url)))[acc];
+  for (const [acc,count,records] of [['P04626',29,121],['Q15116',26,85],['P08581',5,52],['P08887',6,21],['Q9NZQ7',15,31],['P35968',4,24]]) {
+    const g=gene(acc), sites=browsingContacts(filterContacts(g.sites,'',true,''),true,'');
+    assert.equal(g.sites.length,records); assert.equal(sites.length,count);
+    for(const s of g.sites.filter(s=>s.source==='Thera-SAbDab')) {assert.equal(s.identity_evidence,'sequence_matched_antibody_arm'); assert.ok(s.identity_matches.length);}
+  }
+  const her2=gene('P04626');
+  assert.ok(her2.sites.some(s=>s.partner_label==='CMJ112' && s.exclude_from_overview));
+  assert.ok(her2.sites.some(s=>s.partner==='Herceptin Fab' && s.canonical_partner_label==='Trastuzumab'));
+  const pdl1=gene('Q9NZQ7');
+  assert.ok(pdl1.sites.some(s=>s.partner==='P33681' && s.category==='therapeutic' && s.canonical_partner_label==='Davoceticept (ALPN-202)'));
+  assert.ok(pdl1.sites.some(s=>s.partner==='CCD:6GX' && s.canonical_partner_label==='BMS-202'));
+  assert.ok(gene('P08887').sites.some(s=>s.partner==='CYS' && s.exclude_from_overview));
+});
