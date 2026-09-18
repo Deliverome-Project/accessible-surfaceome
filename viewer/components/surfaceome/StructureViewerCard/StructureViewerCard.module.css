@@ -321,7 +321,7 @@
 .viewerCanvas {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: clamp(240px, 46svh, 440px);
   border-radius: 8px;
   background: var(--surface-soft, #f6f1ef);
   border: 1px solid var(--line-soft, #e8d6d2);

@@ -125,3 +125,10 @@ Category counts now sit in a compact translucent overlay at the top-left of the 
 ## Wider structure layout
 
 The structure slot uses 46% of the desktop header and the full available width below 1000px, removing the old 320px cap. A 4:3 canvas and single-row, horizontally scrolling variant tabs give the model more horizontal space. Accession details remain in tab tooltips; Mouse and Cyno labels are shortened. Production build/export passed; browser checks verified the wider layout, contact shortcut, and canonical/Mouse switching.
+
+
+## Above-the-fold structure access
+
+The gene title now precedes the header grid. Below 1000px the structure appears before the summary and metadata, with its height bounded by the viewport (240–440px). Browser verification at 719×730 shows the title, variant tabs, entire canvas and mode controls without scrolling; rotation remains interactive. Production build passed.
+
+Contact evidence is currently exported to static `/data/contact-sites/*.json` shards and fetched directly by the viewer. The exporter explicitly performs no API or annotation writes. These contact records are not integrated into the public-D1/API publication pipeline; main gene annotations separately use that pipeline.
