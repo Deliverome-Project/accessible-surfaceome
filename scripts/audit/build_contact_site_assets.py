@@ -1,0 +1,147 @@
+"""Export audited canonical residue evidence for the static contact-site viewer.
+
+Run after audit_structural_intact_extension.py. No API or annotation writes.
+Counts are snapshot evidence sites, not exhaustive database inventories.
+"""
+
+import csv
+import gzip
+import hashlib
+import html
+import json
+import re
+from collections import defaultdict
+from pathlib import Path
+from typing import TypedDict
+
+ROOT = Path(__file__).resolve().parents[2]
+INPUT = ROOT / "data/analysis/deep_dive_binding_sites"
+OUTPUT = ROOT / "viewer/public/data/contact-sites"
+
+
+class SourceCounts(TypedDict):
+    genes: set[str]
+    sites: int
+    ec_genes: set[str]
+    ec_sites: int
+
+
+def normalize(row):
+    """Keep mapped contacts/epitopes; never turn IntAct constructs into contacts."""
+    if row["tier"].startswith("intact_") or row["context"] in {
+        "invalid_mapping",
+        "removed_processing_segment",
+    }:
+        return None
+    positions = sorted({int(p) for p in row["positions"].split(",") if p})
+    if not positions or positions[0] < 1:
+        raise ValueError("Invalid canonical residue mapping")
+    source = "PDB/PDBe" if row["tier"] == "unrestricted_structural" else row["source"]
+    reference = row["reference"]
+    if reference.isdigit():
+        reference = f"https://pubmed.ncbi.nlm.nih.gov/{reference}/"
+    elif reference.startswith("10."):
+        reference = f"https://doi.org/{reference}"
+    if not reference.startswith("https://"):
+        reference = ""
+    return dict(
+        source=source,
+        partner=html.unescape(re.sub(r"<[^>]+>", "", row["partner"])),
+        pdb=row["pdb_id"].lower(),
+        positions=positions,
+        context=row["context"],
+        reference=reference,
+        method=row["source"],
+        evidence="Experimentally mapped epitope"
+        if source == "IEDB"
+        else "Structure-derived contacts",
+        confidence=row["confidence"]
+        or "Mapped residue evidence; no calibrated confidence score",
+    )
+
+
+def main():
+    genes = {}
+    with (INPUT / "binder_denominator_genes.tsv").open() as handle:
+        for row in csv.DictReader(handle, delimiter="\t"):
+            if row["identifier_status"] == "unique":
+                acc = row["uniprot_acc"]
+                assert acc not in genes
+                genes[acc] = dict(
+                    hgnc_id=row["hgnc_id"], symbol=row["hgnc_symbol"], sites=[]
+                )
+    seen = defaultdict(set)
+    with gzip.open(INPUT / "structural_intact_evidence.tsv.gz", "rt") as handle:
+        for row in csv.DictReader(handle, delimiter="\t"):
+            site = normalize(row)
+            if site is None:
+                continue
+            acc = row["uniprot_acc"]
+            assert genes[acc]["hgnc_id"] == row["hgnc_id"]
+            key = (
+                site["source"],
+                site["partner"],
+                site["pdb"],
+                tuple(site["positions"]),
+                site["context"],
+                site["reference"],
+            )
+            if key not in seen[acc]:
+                genes[acc]["sites"].append(site)
+                seen[acc].add(key)
+    shards = [{} for _ in range(64)]
+    stats = defaultdict(
+        lambda: SourceCounts(genes=set(), sites=0, ec_genes=set(), ec_sites=0)
+    )
+    for acc, gene in sorted(genes.items()):
+        gene["sites"].sort(
+            key=lambda s: (
+                not s["context"].startswith("extracellular_"),
+                s["source"],
+                s["partner"],
+                s["pdb"],
+                s["positions"],
+            )
+        )
+        shards[sum(map(ord, acc)) % 64][acc] = gene
+        for site in gene["sites"]:
+            stat = stats[site["source"]]
+            stat["genes"].add(gene["hgnc_id"])
+            stat["sites"] += 1
+            if site["context"].startswith("extracellular_"):
+                stat["ec_genes"].add(gene["hgnc_id"])
+                stat["ec_sites"] += 1
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    for i, shard in enumerate(shards):
+        (OUTPUT / f"{i:02x}.json").write_text(
+            json.dumps(shard, separators=(",", ":")) + "\n"
+        )
+    summary = {
+        source: {k: len(v) if isinstance(v, set) else v for k, v in stat.items()}
+        for source, stat in sorted(stats.items())
+    }
+    manifest = dict(
+        schema_version=1,
+        audit_snapshot_date="2026-09-17",
+        sampling={
+            "SAbDab": "One representative mapped interface per gene",
+            "BioLiP": "One representative mapped site per gene",
+        },
+        denominator_sha256=hashlib.sha256(
+            (INPUT / "binder_denominator_genes.tsv").read_bytes()
+        ).hexdigest(),
+        input_sha256=hashlib.sha256(
+            (INPUT / "structural_intact_evidence.tsv.gz").read_bytes()
+        ).hexdigest(),
+        audited_genes=len(genes),
+        covered_genes=sum(bool(g["sites"]) for g in genes.values()),
+        site_definition="Unique source, partner, PDB, canonical residue set, context and reference; sources may describe the same interface. Audit snapshot, not exhaustive DB coverage.",
+        excluded="IntAct regions and mutation effects; invalid mappings; removed processing segments; ambiguous gene mappings",
+        sources=summary,
+    )
+    (OUTPUT / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    print(json.dumps(manifest, indent=2))
+
+
+if __name__ == "__main__":
+    main()

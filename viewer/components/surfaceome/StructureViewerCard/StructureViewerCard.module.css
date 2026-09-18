@@ -519,3 +519,12 @@
 .attributionLink:hover {
   color: var(--accent, #dd5955);
 }
+
+.contactPanel { padding: 16px; margin: 8px 0; border: 1px solid var(--border, #ddd); border-radius: 8px; font-size: 13px; line-height: 1.6; }
+.contactFilters, .contactSlider { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+.contactFilters select { max-width: 180px; padding: 4px; }
+.contactSlider input { flex: 1; min-width: 80px; }
+.contactSlider button { padding: 4px 12px; cursor: pointer; }
+.contactSlider button:disabled { cursor: default; opacity: .4; }
+.contactResidues { overflow-wrap: anywhere; max-height: 100px; overflow: auto; }
+.contactNote { color: var(--text-muted, #666); font-size: 12px; margin-bottom: 0; }

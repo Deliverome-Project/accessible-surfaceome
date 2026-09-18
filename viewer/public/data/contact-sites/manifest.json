@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "audit_snapshot_date": "2026-09-17",
+  "sampling": {
+    "SAbDab": "One representative mapped interface per gene",
+    "BioLiP": "One representative mapped site per gene"
+  },
+  "denominator_sha256": "c03deeb0c2bf44ffd646be33d6299f73f766599ce0e6423776e65cfe8cb9cff7",
+  "input_sha256": "062941b5a9a72b96f79ccb7e7fa1c1b12127b991e70318dc77f77ee57bf9ffa1",
+  "audited_genes": 5106,
+  "covered_genes": 1680,
+  "site_definition": "Unique source, partner, PDB, canonical residue set, context and reference; sources may describe the same interface. Audit snapshot, not exhaustive DB coverage.",
+  "excluded": "IntAct regions and mutation effects; invalid mappings; removed processing segments; ambiguous gene mappings",
+  "sources": {
+    "AACDB": {
+      "genes": 210,
+      "sites": 879,
+      "ec_genes": 156,
+      "ec_sites": 667
+    },
+    "BioGRID+literature": {
+      "genes": 1,
+      "sites": 2,
+      "ec_genes": 0,
+      "ec_sites": 0
+    },
+    "BioLiP": {
+      "genes": 851,
+      "sites": 851,
+      "ec_genes": 186,
+      "ec_sites": 186
+    },
+    "GPCRdb": {
+      "genes": 190,
+      "sites": 1521,
+      "ec_genes": 15,
+      "ec_sites": 56
+    },
+    "IEDB": {
+      "genes": 182,
+      "sites": 897,
+      "ec_genes": 129,
+      "ec_sites": 639
+    },
+    "IUPHAR+PDBe": {
+      "genes": 120,
+      "sites": 471,
+      "ec_genes": 54,
+      "ec_sites": 212
+    },
+    "PDB/PDBe": {
+      "genes": 1326,
+      "sites": 22883,
+      "ec_genes": 507,
+      "ec_sites": 5474
+    },
+    "PDBe": {
+      "genes": 209,
+      "sites": 850,
+      "ec_genes": 36,
+      "ec_sites": 118
+    },
+    "SAbDab": {
+      "genes": 409,
+      "sites": 409,
+      "ec_genes": 259,
+      "ec_sites": 259
+    },
+    "Thera-SAbDab": {
+      "genes": 80,
+      "sites": 419,
+      "ec_genes": 61,
+      "ec_sites": 352
+    }
+  }
+}

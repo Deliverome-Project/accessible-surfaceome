@@ -16,6 +16,9 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
+import { CONTACT_COLORS, contactShard } from "../../../lib/contact-sites";
+import type { ContactGene } from "../../../lib/contact-sites";
+import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -440,7 +443,7 @@ interface StructureViewerProps {
  *  beefs up the spheres so a reader scanning specifically for
  *  SURFACE-Bind sites can see them at a glance against the membrane
  *  + EC/IC labels. */
-type ViewMode = "topology" | "sites" | "tags";
+type ViewMode = "topology" | "sites" | "tags" | "contacts";
 
 /** Single sphere radius across both modes. Previously sites mode
  *  doubled the radius for emphasis, but the user wanted consistent
@@ -994,6 +997,7 @@ type LoadStatus = "loading" | "ready" | "error" | "nomodel" | "unavailable";
 
 interface ViewerInstance {
   clear: () => void;
+  setStyle: (selection: object, style: object) => void;
   resize: () => void;
   render: () => void;
   zoomTo: (sel?: object) => void;
@@ -1121,6 +1125,51 @@ export function StructureViewer({
   // sequences once alternative splicing or species differences
   // shift positions.
   const [variantIdx, setVariantIdx] = useState<number>(0);
+  const [contactGene, setContactGene] = useState<ContactGene | null>(null);
+  const [contactStatus, setContactStatus] = useState("loading");
+  const [contactRetry, setContactRetry] = useState(0);
+  const [contactIndex, setContactIndex] = useState(0);
+  const [contactSource, setContactSource] = useState("");
+  const [contactsEcOnly, setContactsEcOnly] = useState(true);
+  useEffect(() => {
+    setContactGene(null);
+    setContactIndex(0);
+    setContactSource("");
+    setContactStatus("loading");
+  }, [data.uniprot_acc]);
+  useEffect(() => {
+    if (viewMode !== "contacts") return;
+    const controller = new AbortController();
+    setContactStatus("loading");
+    fetch(`/data/contact-sites/${contactShard(data.uniprot_acc)}.json`, { signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error("Contact data unavailable"); return response.json(); })
+      .then((shard: Record<string, ContactGene>) => {
+        if (controller.signal.aborted) return;
+        const gene = shard[data.uniprot_acc] ?? null;
+        setContactGene(gene);
+        setContactStatus(gene ? "ready" : "unaudited");
+      })
+      .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
+    return () => controller.abort();
+  }, [data.uniprot_acc, viewMode, contactRetry]);
+  const selectedContact = contactStatus === "ready" ? contactGene?.sites.filter(site =>
+    (!contactsEcOnly || site.context.startsWith("extracellular_")) &&
+    (!contactSource || site.source === contactSource))[contactIndex] : undefined;
+  // Update only styles when scrubbing: preserve camera and avoid reloading the model.
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (viewMode !== "contacts" || variantIdx !== 0 || status !== "ready" || !viewer) return;
+    viewer.setStyle({}, { cartoon: { color: "#D6D9DE" } });
+    if (selectedContact) {
+      const color = CONTACT_COLORS[selectedContact.source] ?? "#666666";
+      viewer.setStyle({ resi: selectedContact.positions }, {
+        cartoon: { color }, stick: { color, radius: 0.2 },
+      });
+    }
+    viewer.render();
+  }, [viewMode, variantIdx, status, selectedContact]);
+
+
   // Per-AFDB-accession availability (canonical + isoform/ortholog
   // variants), probed on mount. `false` ⟹ AFDB has no model for that
   // protein (e.g. megalin/LRP2, beyond AFDB's per-entry size limit) — its
@@ -1397,7 +1446,7 @@ export function StructureViewer({
   // ortholog's own fold) that has its own pins.
   useEffect(() => {
     if (variantIdx === 0) return;
-    if (viewMode === "sites") {
+    if (viewMode === "sites" || viewMode === "contacts") {
       setViewMode("topology");
     } else if (
       viewMode === "tags" &&
@@ -2003,7 +2052,7 @@ export function StructureViewer({
             });
           });
         });
-      } else if (viewMode === "sites" || viewMode === "tags") {
+      } else if (viewMode === "sites" || viewMode === "tags" || viewMode === "contacts") {
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
@@ -2634,7 +2683,7 @@ export function StructureViewer({
           SURFACE-Bind anchors; the link-out is suppressed too so we
           don't promise the reader a SURFACE-Bind entry that has
           nothing to show. */}
-      {hasAnchors || hasTagSites ? (
+      {hasAnchors || hasTagSites || isCanonicalActive ? (
         <div className={styles.controls}>
           <div
             className={styles.modeToggle}
@@ -2672,6 +2721,9 @@ export function StructureViewer({
                 SURFACE-Bind [d]
               </button>
             ) : null}
+            {isCanonicalActive ? <button type="button" className={styles.modeButton}
+              data-active={viewMode === "contacts"} aria-pressed={viewMode === "contacts"}
+              onClick={() => setViewMode("contacts")}>Contact sites</button> : null}
             <InfoTip label="Viewer keyboard shortcuts">
               <strong>a</strong> topology, <strong>s</strong> tag sites,{" "}
               <strong>d</strong> SURFACE-Bind. <strong>1</strong>–<strong>9</strong>{" "}
@@ -2685,6 +2737,12 @@ export function StructureViewer({
               duplicate it next to the mode toggle. */}
         </div>
       ) : null}
+      {viewMode === "contacts" && isCanonicalActive ? <ContactSites
+        sites={contactGene?.sites ?? []} selected={contactIndex} onSelect={setContactIndex}
+        source={contactSource} onSource={value => { setContactSource(value); setContactIndex(0); }}
+        ecOnly={contactsEcOnly} onEcOnly={value => { setContactsEcOnly(value); setContactIndex(0); }}
+        status={contactStatus} onRetry={() => setContactRetry(n => n + 1)}
+      /> : null}
       {/* Per-variant caption — sits directly below the canvas (above
           the legend) and shows the structure's title + pLDDT /
           resolution + a link out to AFDB or RCSB for the ACTIVE
@@ -2790,6 +2848,15 @@ export function StructureViewer({
               </li>
             ),
           )}
+        </ul>
+      ) : viewMode === "contacts" ? (
+        <ul className={styles.sitesLegend} aria-label="Contact-source color legend">
+          {Array.from(new Set((contactGene?.sites ?? []).map(site => site.source))).sort().map(source => (
+            <li key={source} className={styles.sitesLegendItem}>
+              <span className={styles.sitesLegendSwatch} style={{ background: CONTACT_COLORS[source] }} aria-hidden="true" />
+              <span className={styles.sitesLegendLabel}>{source}</span>
+            </li>
+          ))}
         </ul>
       ) : (
         <TopologyLegend
