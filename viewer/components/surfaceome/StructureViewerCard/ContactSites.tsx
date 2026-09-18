@@ -1,17 +1,19 @@
 "use client";
-import { CONTACT_COLORS, contactContext } from "../../../lib/contact-sites";
+import { CONTACT_COLORS, contactContext, filterContacts } from "../../../lib/contact-sites";
 import type { ContactSite } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
-export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry }: {
+export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery }: {
+  query: string; onQuery: (query: string) => void;
   sites: ContactSite[]; selected: number; onSelect: (index: number) => void;
   source: string; onSource: (source: string) => void; ecOnly: boolean;
   onEcOnly: (value: boolean) => void; status: string; onRetry: () => void;
 }) {
-  const filtered = sites.filter(s => (!ecOnly || s.context.startsWith("extracellular_")) && (!source || s.source === source));
+  const filtered = filterContacts(sites, source, ecOnly, query);
   const site = filtered[selected];
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     <div className={styles.contactFilters}>
+      <label>Binder or ligand <input type="search" placeholder="Name or identifier" value={query} onChange={e => onQuery(e.target.value)} /></label>
       <label>Source <select value={source} onChange={e => onSource(e.target.value)}>
         <option value="">All sources</option>
         {Array.from(new Set(sites.map(s => s.source))).sort().map(s => <option key={s}>{s}</option>)}
@@ -25,14 +27,14 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
       <div className={styles.contactSlider}>
         <button aria-label="Previous contact site" disabled={selected === 0} onClick={() => onSelect(selected - 1)}>←</button>
         <input type="range" aria-label="Contact site" min={0} max={Math.max(0, filtered.length - 1)} value={selected}
-          aria-valuetext={`${selected + 1} of ${filtered.length}: ${site.source}, ${site.partner}`}
+          aria-valuetext={`${selected + 1} of ${filtered.length}: ${site.source}, ${site.partner_label ?? site.partner}`}
           disabled={filtered.length === 1} onChange={e => onSelect(Number(e.target.value))}
           style={{ accentColor: CONTACT_COLORS[site.source] }} />
         <button aria-label="Next contact site" disabled={selected === filtered.length - 1} onClick={() => onSelect(selected + 1)}>→</button>
         <span>{selected + 1} / {filtered.length}</span>
       </div>
       <div aria-live="polite">
-        <strong style={{ color: CONTACT_COLORS[site.source] }}>● {site.source}</strong> · {site.partner}<br />
+        <strong style={{ color: CONTACT_COLORS[site.source] }}>● {site.source}</strong> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
         {contactContext(site.context)} · {site.positions.length} residues · {site.evidence}
         <p>{site.confidence}. Contacts are projected onto the canonical AlphaFold model; this is not a model of the bound complex.</p>
         {site.pdb && <a href={`https://www.rcsb.org/structure/${site.pdb}`} target="_blank" rel="noreferrer">PDB {site.pdb.toUpperCase()} ↗</a>}

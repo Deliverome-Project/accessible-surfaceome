@@ -2,6 +2,7 @@
 export interface ContactSite {
   source: string;
   partner: string;
+  partner_label?: string;
   pdb: string;
   positions: number[];
   context: string;
@@ -27,4 +28,11 @@ export function contactContext(context: string): string {
   if (context === "membrane_spanning_site") return "Membrane-spanning";
   if (context.startsWith("unknown")) return "Location uncertain";
   return context.replace("non_extracellular:", "Non-extracellular: ").replace(/_/g, " ");
+}
+
+export function filterContacts(sites: ContactSite[], source: string, ecOnly: boolean, query: string): ContactSite[] {
+  const search = query.trim().toLowerCase();
+  return sites.filter(site => (!ecOnly || site.context.startsWith("extracellular_")) &&
+    (!source || site.source === source) &&
+    (!search || `${site.partner_label ?? ""} ${site.partner}`.toLowerCase().includes(search)));
 }

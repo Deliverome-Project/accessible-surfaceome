@@ -30,3 +30,9 @@ The static assets are separate from annotation JSON/D1. This PR makes no product
 Validation: targeted biological-evidence/export tests, TypeScript, and browser checks on EGFR (122 EC records; Thera-SAbDab filter yields 14 records including cetuximab; next-site navigation and isoform suppression).
 
 The offline production build passed (987 exported files, including all 64 contact shards); the live EGFR and ABCB9 record previews were checked separately. Full-cohort regeneration and exhaustive SAbDab/BioLiP site ingestion are not implied by this snapshot.
+
+## EGFR example
+
+The binder/ligand filter now searches readable gene names as well as stable partner identifiers. Labels come from the existing unambiguous UniProt-to-HGNC cohort mapping; identifiers are retained. EGFR (P00533) has ten PDB/PDBe records for EGF (P01133), all classified extracellular. Searching EGF selects these records, starting with 1IVO (37 canonical EGFR contact residues). These are ten structural observations, not ten distinct binding pockets. Names outside the cohort and IUPHAR ligand IDs remain as source identifiers pending broader label enrichment.
+
+Validation: three export tests including the EGFR–EGF regression, name/identifier/source-filter checks, TypeScript, scoped Ruff/ty, and browser confirmation of the ten EGF results and 1IVO residue count.

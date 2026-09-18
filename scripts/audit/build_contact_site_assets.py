@@ -76,6 +76,9 @@ def main():
             site = normalize(row)
             if site is None:
                 continue
+            partner_gene = genes.get(site["partner"])
+            if partner_gene:
+                site["partner_label"] = partner_gene["symbol"]
             acc = row["uniprot_acc"]
             assert genes[acc]["hgnc_id"] == row["hgnc_id"]
             key = (

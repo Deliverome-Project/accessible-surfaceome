@@ -16,7 +16,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
-import { CONTACT_COLORS, contactShard } from "../../../lib/contact-sites";
+import { CONTACT_COLORS, contactShard, filterContacts } from "../../../lib/contact-sites";
 import type { ContactGene } from "../../../lib/contact-sites";
 import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -1130,11 +1130,13 @@ export function StructureViewer({
   const [contactRetry, setContactRetry] = useState(0);
   const [contactIndex, setContactIndex] = useState(0);
   const [contactSource, setContactSource] = useState("");
+  const [contactQuery, setContactQuery] = useState("");
   const [contactsEcOnly, setContactsEcOnly] = useState(true);
   useEffect(() => {
     setContactGene(null);
     setContactIndex(0);
     setContactSource("");
+    setContactQuery("");
     setContactStatus("loading");
   }, [data.uniprot_acc]);
   useEffect(() => {
@@ -1152,9 +1154,8 @@ export function StructureViewer({
       .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
     return () => controller.abort();
   }, [data.uniprot_acc, viewMode, contactRetry]);
-  const selectedContact = contactStatus === "ready" ? contactGene?.sites.filter(site =>
-    (!contactsEcOnly || site.context.startsWith("extracellular_")) &&
-    (!contactSource || site.source === contactSource))[contactIndex] : undefined;
+  const selectedContact = contactStatus === "ready" ? filterContacts(
+    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery)[contactIndex] : undefined;
   // Update only styles when scrubbing: preserve camera and avoid reloading the model.
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -2738,6 +2739,7 @@ export function StructureViewer({
         </div>
       ) : null}
       {viewMode === "contacts" && isCanonicalActive ? <ContactSites
+        query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
         sites={contactGene?.sites ?? []} selected={contactIndex} onSelect={setContactIndex}
         source={contactSource} onSource={value => { setContactSource(value); setContactIndex(0); }}
         ecOnly={contactsEcOnly} onEcOnly={value => { setContactsEcOnly(value); setContactIndex(0); }}

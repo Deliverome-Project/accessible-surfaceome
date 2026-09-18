@@ -41,3 +41,18 @@ def test_export_identity_numbering_and_coverage():
                 covered.add(gene["hgnc_id"])
     assert len(genes) == 5106
     assert len(covered) == 1680
+
+
+def test_egfr_has_named_egf_contacts():
+    acc = "P00533"
+    path = (
+        ROOT
+        / "viewer/public/data/contact-sites"
+        / f"{sum(map(ord, acc)) % 64:02x}.json"
+    )
+    sites = json.loads(path.read_text())[acc]["sites"]
+    egf = [s for s in sites if s["partner"] == "P01133"]
+    assert len(egf) == 10
+    assert all(s["partner_label"] == "EGF" for s in egf)
+    assert all(s["context"] == "extracellular_explicit" for s in egf)
+    assert any(s["pdb"] == "1ivo" and len(s["positions"]) == 37 for s in egf)
