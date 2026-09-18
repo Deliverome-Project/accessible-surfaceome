@@ -1,0 +1,305 @@
+{
+  "new_release": "contacts-a263bf5f433dba68c0c4",
+  "reviewed_observations": 3042,
+  "before_ec_groups": 349,
+  "after_ec_groups": 332,
+  "held_scopes": {},
+  "resolved_scopes": [
+    "APP/5AM8",
+    "APP/5AMB",
+    "APP/2WK3",
+    "HLA-DRA/3S4S",
+    "HLA-DRB1/3S4S"
+  ],
+  "hla_schema": "preparatory only; 18 original observations / 16 deposition-local construct-context groups; no API migration",
+  "proteins": [
+    {
+      "uniprot_acc": "P16410",
+      "symbol": "CTLA4",
+      "observations": 80,
+      "original_fields_sha256": "934648247399629ef6affec29f095623987a07c6de667f0aa42fed780df11477",
+      "ec_partners_before": 18,
+      "ec_partners_after": 18,
+      "unclassified": 1
+    },
+    {
+      "uniprot_acc": "P25942",
+      "symbol": "CD40",
+      "observations": 35,
+      "original_fields_sha256": "0963a439b471799a89e258b405c7088ee9b0470d2577e914fc0fc3e1b3523b71",
+      "ec_partners_before": 14,
+      "ec_partners_after": 9,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P43489",
+      "symbol": "TNFRSF4",
+      "observations": 21,
+      "original_fields_sha256": "976402e0df4762396155341573cfab2e6c61fd00a16968604cf4b86ba058db9d",
+      "ec_partners_before": 10,
+      "ec_partners_after": 5,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "Q07011",
+      "symbol": "TNFRSF9",
+      "observations": 36,
+      "original_fields_sha256": "f03a1d5a7e1adfefe170c1ff7e4bd868c2abb9ed09c3f78c79c80b0d0252c97d",
+      "ec_partners_before": 8,
+      "ec_partners_after": 7,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "Q495A1",
+      "symbol": "TIGIT",
+      "observations": 19,
+      "original_fields_sha256": "d20ce77ace896b25dfac483644b89f4d971622cef50b9fe31a331075ea142229",
+      "ec_partners_before": 8,
+      "ec_partners_after": 8,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P26842",
+      "symbol": "CD27",
+      "observations": 18,
+      "original_fields_sha256": "a9caf4e2cd8dc9bdaf75ebd4c77506a04673390150bfc0f30f684ca20cef70d2",
+      "ec_partners_before": 8,
+      "ec_partners_after": 5,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "Q7Z6A9",
+      "symbol": "BTLA",
+      "observations": 8,
+      "original_fields_sha256": "782253da8f80ced8a1924b020d8c52ad7c97415193e1519e3d72fb0d2899db44",
+      "ec_partners_before": 7,
+      "ec_partners_after": 5,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P29965",
+      "symbol": "CD40LG",
+      "observations": 15,
+      "original_fields_sha256": "6cfb0903c50b4eda87a1c85b5f712395a1eb6f1a5debc60277ae0169838f4b96",
+      "ec_partners_before": 10,
+      "ec_partners_after": 8,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P28907",
+      "symbol": "CD38",
+      "observations": 26,
+      "original_fields_sha256": "be825b817660bdf4cf9132819d9a8f16e77ee13a2bc6c0fa08c4dea0f1b86073",
+      "ec_partners_before": 16,
+      "ec_partners_after": 11,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P21860",
+      "symbol": "ERBB3",
+      "observations": 42,
+      "original_fields_sha256": "11973a097172b16584b1aae38724729047d0d6242d15c5ddf9fb70559dfb9525",
+      "ec_partners_before": 11,
+      "ec_partners_after": 9,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "Q08722",
+      "symbol": "CD47",
+      "observations": 24,
+      "original_fields_sha256": "4b55f000f68e4b5d0a69f8a0906a524407b0835bb2abb63fb0b8034498c9c2c9",
+      "ec_partners_before": 11,
+      "ec_partners_after": 11,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P78324",
+      "symbol": "SIRPA",
+      "observations": 24,
+      "original_fields_sha256": "03ffb15769cadc888bcb79cd58444c2bad4645ed5839e5065efc3c3d23e4ad18",
+      "ec_partners_before": 10,
+      "ec_partners_after": 9,
+      "unclassified": 1
+    },
+    {
+      "uniprot_acc": "Q02223",
+      "symbol": "TNFRSF17",
+      "observations": 15,
+      "original_fields_sha256": "8ef7ec13058e8ccbbf978074c393395332471c3e40bba01f2e58a2c7e98a4982",
+      "ec_partners_before": 9,
+      "ec_partners_after": 9,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "Q13421",
+      "symbol": "MSLN",
+      "observations": 18,
+      "original_fields_sha256": "aa0738189f9943882289e72f9a0fbd3b76b3e091b2a2ff67fbb66eb77561563f",
+      "ec_partners_before": 9,
+      "ec_partners_after": 5,
+      "unclassified": 1
+    },
+    {
+      "uniprot_acc": "P11836",
+      "symbol": "MS4A1",
+      "observations": 57,
+      "original_fields_sha256": "38b8e76d5c8aa29846f5053fe8da15d34de085cbb5a5be64b57896a0cc5df776",
+      "ec_partners_before": 8,
+      "ec_partners_after": 7,
+      "unclassified": 1
+    },
+    {
+      "uniprot_acc": "O14763",
+      "symbol": "TNFRSF10B",
+      "observations": 41,
+      "original_fields_sha256": "04be1580791152c1cafc0ca1c43c5ebc8467a7c8c11033e320f5e35f7ba0a4f8",
+      "ec_partners_before": 15,
+      "ec_partners_after": 10,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P05067",
+      "symbol": "APP",
+      "observations": 159,
+      "original_fields_sha256": "2b6c7830a0f4fbde28c4946ce0a2f27880892e2abcfbead010e3fd76cd0661b0",
+      "ec_partners_before": 30,
+      "ec_partners_after": 29,
+      "unclassified": 9
+    },
+    {
+      "uniprot_acc": "P01903",
+      "symbol": "HLA-DRA",
+      "observations": 312,
+      "original_fields_sha256": "5270235b2433c66cb50a0955e4fdb813818a5271b986116e2b09a8eedc2bedb4",
+      "ec_partners_before": 23,
+      "ec_partners_after": 23,
+      "unclassified": 16
+    },
+    {
+      "uniprot_acc": "P04439",
+      "symbol": "HLA-A",
+      "observations": 792,
+      "original_fields_sha256": "7d91385183907215e8430186af690a3f26e15953ce3e99d01f038780afeca7a0",
+      "ec_partners_before": 19,
+      "ec_partners_after": 16,
+      "unclassified": 11
+    },
+    {
+      "uniprot_acc": "P01911",
+      "symbol": "HLA-DRB1",
+      "observations": 227,
+      "original_fields_sha256": "17559ca368a4de253beda3cad916c9d7f79f4d771d052e54d66ab306a54245da",
+      "ec_partners_before": 13,
+      "ec_partners_after": 14,
+      "unclassified": 10
+    },
+    {
+      "uniprot_acc": "P01889",
+      "symbol": "HLA-B",
+      "observations": 447,
+      "original_fields_sha256": "b65a23d1de46b0ce1e5fcaf2dc338ce657327fdae1fb44ee8473fc1ec5254b1c",
+      "ec_partners_before": 8,
+      "ec_partners_after": 8,
+      "unclassified": 5
+    },
+    {
+      "uniprot_acc": "P56817",
+      "symbol": "BACE1",
+      "observations": 24,
+      "original_fields_sha256": "bd584ce83420519344f0d193477857cb07e3204d1cbfa4adfd4adf5fdce36e10",
+      "ec_partners_before": 16,
+      "ec_partners_after": 15,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P06213",
+      "symbol": "INSR",
+      "observations": 143,
+      "original_fields_sha256": "0bbe2b1cf695c68aeb2bce83ca82ea8797c8a89ef823f076ac027c8d64e59b0a",
+      "ec_partners_before": 8,
+      "ec_partners_after": 14,
+      "unclassified": 2
+    },
+    {
+      "uniprot_acc": "P06756",
+      "symbol": "ITGAV",
+      "observations": 85,
+      "original_fields_sha256": "0ac99228af902252e8cf7cdbd38948f8be801294037c0eafde9e08fdff0486ca",
+      "ec_partners_before": 11,
+      "ec_partners_after": 18,
+      "unclassified": 1
+    },
+    {
+      "uniprot_acc": "P13726",
+      "symbol": "F3",
+      "observations": 21,
+      "original_fields_sha256": "4f443df8d5e8238d298ea71faf0682b129547e6017fcf0035a93df9f8b4ebc91",
+      "ec_partners_before": 7,
+      "ec_partners_after": 10,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P21589",
+      "symbol": "NT5E",
+      "observations": 15,
+      "original_fields_sha256": "b615a63f2e2f9a865c0c87cfb8a500368460a664a392ef6f7ed79eae7cfc3346",
+      "ec_partners_before": 7,
+      "ec_partners_after": 5,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P27487",
+      "symbol": "DPP4",
+      "observations": 25,
+      "original_fields_sha256": "ffd688bd23cf9fbe60a79a916f0e9f774e5065df28e68f16b054a2158fcf6eb6",
+      "ec_partners_before": 7,
+      "ec_partners_after": 12,
+      "unclassified": 3
+    },
+    {
+      "uniprot_acc": "P26951",
+      "symbol": "IL3RA",
+      "observations": 15,
+      "original_fields_sha256": "c7e7f776542fa008f9a53b90197f27594efa5ec2fc3acd4f1d965710e2159942",
+      "ec_partners_before": 6,
+      "ec_partners_after": 6,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P55899",
+      "symbol": "FCGRT",
+      "observations": 61,
+      "original_fields_sha256": "6b16f5ec52cf25052d6a14c7ee97e3254c67e5b08d489fac610100a431762ae3",
+      "ec_partners_before": 6,
+      "ec_partners_after": 12,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P07766",
+      "symbol": "CD3E",
+      "observations": 186,
+      "original_fields_sha256": "1bc1ebb8c3e6828888667611d5e210961dbd82f0d67d8c78564f59922b3841bb",
+      "ec_partners_before": 6,
+      "ec_partners_after": 5,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P01589",
+      "symbol": "IL2RA",
+      "observations": 23,
+      "original_fields_sha256": "c64ca0b1a8508262a8ad99aaf0cb3a1503918d6ad843ca3256174703070ed77d",
+      "ec_partners_before": 5,
+      "ec_partners_after": 6,
+      "unclassified": 0
+    },
+    {
+      "uniprot_acc": "P10721",
+      "symbol": "KIT",
+      "observations": 28,
+      "original_fields_sha256": "25b01a4ac25afab637d07ef222fe56aa79ba6ce52c43bfd48fc1cd1a8bd5ec15",
+      "ec_partners_before": 5,
+      "ec_partners_after": 3,
+      "unclassified": 0
+    }
+  ]
+}

@@ -9,7 +9,7 @@ import type { ContactSite, LigandCategory } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
 const SOURCE_INFO: Record<string, string> = {
-  "PDB/PDBe": "Contacts between protein partners in experimental PDB structures, mapped to canonical UniProt positions by PDBe. Proximity alone does not establish physiological binding.",
+  "PDB/PDBe": "Protein interfaces and individually reviewed small-molecule contacts in experimental PDB structures, mapped to canonical UniProt positions using PDBe/SIFTS. Evidence details distinguish reported contacts from recalculated footprints. Proximity alone does not establish physiological binding.",
   "IUPHAR+PDBe": "Guide to Pharmacology identifies the ligand–target relationship; PDBe supplies residue contacts from experimental structures. These can duplicate PDB/PDBe observations of the same complex.",
   "PDBe": "Experimental small-molecule contacts linked to Guide to Pharmacology annotations. Contact residues are mapped to the canonical protein sequence.",
   "Thera-SAbDab": "Therapeutic identities linked to structural contacts by antibody sequence/arm matches. The deposited complex may contain a shared arm rather than the complete named drug. Includes investigational and discontinued agents.",
@@ -62,7 +62,7 @@ export function ContactSites({ gene, sites, selected, source, ecOnly, status, on
   const overview = filtered.length > 1;
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     {status === "ready" && <header className={styles.contactOverview}>
-      <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span> <InfoTip label="About ligand coverage" align="start">Mapped partners only; coverage is incomplete. One footprint per ligand. Colors indicate role, not confidence.</InfoTip></strong>
+      <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} {gene?.overview_label ?? "ligands / binders"}</span> <InfoTip label="About ligand coverage" align="start">Mapped partners only; coverage is incomplete. One observed footprint per entry. Colors indicate role, not confidence.{gene?.overview_note && <><br />{gene.overview_note}</>}</InfoTip></strong>
       {ecOnly && <small>· {allCompartmentCount} total</small>}
     </header>}
     {gene?.data_origin === "snapshot" && <small role="status">Offline snapshot · {gene.release_id}</small>}
@@ -99,6 +99,7 @@ export function ContactSites({ gene, sites, selected, source, ecOnly, status, on
       <div className={styles.contactSourceRow}>Sources {(site.evidence_sources ?? Array.from(new Set(evidence.map(s => s.source)))).map(source => <SourceInfo key={source} source={source} />)}</div>
         <SourceInfo source={site.source} /> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
         {LIGAND_CATEGORIES[site.category ?? "unclassified"].label}{site.category_reference && <> · <a href={site.category_reference} target="_blank" rel="noreferrer">Category source ↗</a></>}<br />
+        {gene?.overview_note && <p>{gene.overview_note}</p>}
         {site.category_reason && <p>{site.category_reason}</p>}
         {site.identity_note && <p>{site.identity_note}</p>}
         {contactContext(site.context)} · {site.positions.length} residues · {site.evidence}

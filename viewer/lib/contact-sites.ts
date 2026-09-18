@@ -1,6 +1,11 @@
 /** Canonical UniProt numbering; never project these onto isoforms or PDB chains. */
 export interface ContactSite {
+  ligand_identity_key?: string;
+  identity_basis?: string;
+  identity_display_label?: string;
+  processing_status?: string;
   exclude_from_overview?: boolean;
+  exclude_from_ec_overview?: boolean;
   identity_evidence?: string;
   identity_note?: string;
   ligand_id?: string;
@@ -23,7 +28,7 @@ export interface ContactSite {
   evidence: string;
   confidence: string;
 }
-export interface ContactGene { hgnc_id: string; symbol: string; sites: ContactSite[]; uniprot_acc?: string; release_id?: string; data_origin?: "api" | "snapshot"; all_ligand_count?: number; audit_status?: "mapped" | "no_mapped_evidence" | "not_audited" }
+export interface ContactGene { overview_note?: string; overview_label?: string; hgnc_id: string; symbol: string; sites: ContactSite[]; uniprot_acc?: string; release_id?: string; data_origin?: "api" | "snapshot"; all_ligand_count?: number; audit_status?: "mapped" | "no_mapped_evidence" | "not_audited" }
 export const LIGAND_CATEGORIES = {
   endogenous_large: { label: "Endogenous · large molecule", color: "#3d6b60" },
   endogenous_small: { label: "Endogenous · small molecule", color: "#b17a26" },
@@ -47,6 +52,7 @@ export function contactShard(accession: string): string {
     .toString(16).padStart(2, "0");
 }
 export function contactContext(context: string): string {
+  if (context === "removed_processing_segment") return "Processed domain / precursor; surface eligibility unresolved";
   if (context.startsWith("extracellular_")) return "Extracellular";
   if (context === "secreted_mature") return "Secreted";
   if (context === "membrane_spanning_site") return "Membrane-spanning";
@@ -57,48 +63,76 @@ export function contactContext(context: string): string {
 export function filterContacts(sites: ContactSite[], source: string, ecOnly: boolean, query: string): ContactSite[] {
   const search = query.trim().toLowerCase();
   const exactName = search && sites.some(site => ligandName(site).toLowerCase() === search);
-  return sites.filter(site => (!ecOnly || site.context.startsWith("extracellular_")) &&
+  return sites.filter(site => (!ecOnly || (site.context.startsWith("extracellular_") && !site.exclude_from_ec_overview)) &&
     (!source || site.source === source) &&
     (!search || (exactName ? ligandName(site).toLowerCase() === search : `${ligandName(site)} ${site.partner_label ?? ""} ${site.partner}`.toLowerCase().includes(search))));
 }
 
 /** Display identity only: preserve source IDs and every original observation. */
 export function ligandName(site: ContactSite): string {
-  const label = site.canonical_partner_label ?? site.partner_label ?? site.partner;
-  // IEDB names retain the parenthetical aliases in the evidence records.
+  if (site.identity_display_label) return site.identity_display_label;
+  // Reviewed names retain construct qualifiers; stripping these can merge variants.
+  if (site.canonical_partner_label?.trim()) return site.canonical_partner_label.trim();
+  const label = site.partner_label ?? site.partner;
+  // Short display aliases do not determine identity; the exported key does.
   if (/^cetuximab(?:\s|$)/i.test(label)) return "Cetuximab";
   const name = label.replace(/\s*\([^)]*\)\s*$/, "").replace(/\s+(Fab|Fv|VHH)$/i, "").trim();
-  // IEDB calls this necitumumab (11F8); AACDB uses IMC-11F8 Fab.
   if (/^(IMC-)?11F8$/i.test(name)) return "necitumumab";
   return name;
 }
 export function namedLigand(site: ContactSite): boolean {
   if (site.exclude_from_overview) return false;
+  if (site.canonical_partner_label?.trim()) return true;
   if (/^sabdab2_/i.test(ligandName(site))) return false;
   return !/^([A-Z0-9]{6,10}|\d+|CCD:.*|sabdab2_.*)$/.test(site.partner) ||
     Boolean(site.partner_label && site.partner_label !== site.partner);
 }
 export function ligandOptions(sites: ContactSite[]): string[] {
-  const names = new Map<string, string>();
-  for (const site of sites.filter(namedLigand)) {
-    const name = ligandName(site);
-    if (!names.has(name.toLowerCase())) names.set(name.toLowerCase(), name);
-  }
-  return [...names.values()].sort((a,b) => a.localeCompare(b));
+  return browsingContacts(sites, true, "").map(ligandName);
 }
+
+/** Anchor site navigation along canonical numbering without letting a single
+ * distant contact dominate the location of a discontinuous footprint. */
+function contactSitePosition(site: ContactSite): number {
+  const positions = [...site.positions].sort((a, b) => a - b);
+  if (!positions.length) return Number.POSITIVE_INFINITY;
+  const middle = Math.floor(positions.length / 2);
+  return positions.length % 2 ? positions[middle] : (positions[middle - 1] + positions[middle]) / 2;
+}
+
 export function browsingContacts(sites: ContactSite[], _grouped: boolean, query: string): ContactGroup[] {
   const byLigand = new Map<string, ContactGroup>();
   for (const site of [...sites].filter(site => query.trim() || namedLigand(site)).sort((a,b) => b.positions.length-a.positions.length)) {
     const name = ligandName(site);
-    const key = name.toLowerCase();
+    const key = site.ligand_identity_key ?? site.ligand_id ?? name.toLowerCase();
     const existing = byLigand.get(key);
     if (existing) existing.supportingSites.push(site);
     else byLigand.set(key, {...site, partner_label: name, supportingSites: site.supportingSites ?? [site]});
   }
-  const order = Object.keys(LIGAND_CATEGORIES);
-  return [...byLigand.values()].sort((a,b) =>
-    order.indexOf(a.category ?? "unclassified") - order.indexOf(b.category ?? "unclassified") ||
-    (a.partner_label ?? "").localeCompare(b.partner_label ?? ""));
+  // Within each category, visit the most overlapping footprint next. This is
+  // navigation only: no antibody identities or contact observations are merged.
+  const result: ContactGroup[] = [];
+  for (const category of Object.keys(LIGAND_CATEGORIES)) {
+    const remaining = [...byLigand.values()]
+      .filter(site => (site.category ?? "unclassified") === category)
+      .sort((a, b) => contactSitePosition(a) - contactSitePosition(b) || ligandName(a).localeCompare(ligandName(b)));
+    if (!remaining.length) continue;
+    result.push(remaining.shift()!);
+    while (remaining.length) {
+      const previous = result[result.length - 1];
+      const residues = new Set(previous.positions);
+      const overlap = (site: ContactSite) => {
+        const shared = site.positions.filter(position => residues.has(position)).length;
+        const union = residues.size + site.positions.length - shared;
+        return union ? shared / union : 0;
+      };
+      remaining.sort((a, b) => overlap(b) - overlap(a) ||
+        Math.abs(contactSitePosition(a) - contactSitePosition(previous)) - Math.abs(contactSitePosition(b) - contactSitePosition(previous)) ||
+        contactSitePosition(a) - contactSitePosition(b) || ligandName(a).localeCompare(ligandName(b)));
+      result.push(remaining.shift()!);
+    }
+  }
+  return result;
 }
 
 export interface ContactGroup extends ContactSite { supportingSites: ContactSite[] }
@@ -117,6 +151,7 @@ export function groupContactSites(sites: ContactSite[], enabled = true): Contact
     const residues = new Set(site.positions);
     const group = enabled ? groups.find(candidate =>
       candidate.partner === site.partner && candidate.source === site.source &&
+      candidate.ligand_identity_key === site.ligand_identity_key &&
       candidate.context === site.context && candidate.supportingSites.every(other => {
         const intersection = other.positions.filter(position => residues.has(position)).length;
         return intersection / (residues.size + other.positions.length - intersection) >= 0.7;
