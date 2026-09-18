@@ -39,5 +39,5 @@ for (const [acc,gene] of Object.entries(genes).sort()) {
 }
 const bundle={release_id:releaseId,manifest:{...manifest,release_id:releaseId,api_schema_version:1,identity_rules:'audited_alias_rules_v1',cohort_rows:denominator.length,excluded_identifiers:excluded,observation_count:output.reduce((n,g)=>n+g.observations.length,0)},ligands:[...identities.values()].sort((a,b)=>a.ligand_id.localeCompare(b.ligand_id)),genes:output};
 writeFileSync(process.argv[2]??'/private/tmp/contact-release.json',canonical(bundle));
-writeFileSync(new URL(dir+'api-release.json',root),canonical({release_id:releaseId}));
+writeFileSync(new URL(dir+'api-release.json',root),canonical({release_id:releaseId})+'\n');
 console.log(JSON.stringify({release_id:releaseId,genes:output.length,observations:bundle.manifest.observation_count,excluded:excluded.length,largest_summary_bytes:Math.max(...output.map(({observations,...g})=>Buffer.byteLength(canonical(g))))}));
