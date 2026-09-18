@@ -201,6 +201,7 @@ YES_CALLOUTS = [
     ("STEAP3",  "Six-TM metalloreductase; STEAP family", "multipass_with_exposed_loops"),
     ("NYX",     "GPI-anchored nyctalopin (retinal SLRP)", "gpi_anchored"),
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
+    ("NEU3",    "Sialidase-3 — outer-leaflet ganglioside sialidase", "other"),
 ]
 CONTEXTUAL_CALLOUTS = [
     ("IL15",    "Secreted + surface trans-presentation via IL-15Rα", "dual_localization"),
