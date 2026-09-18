@@ -1,0 +1,1309 @@
+therapeutic	target_annotation	arm_group	component	status	candidate_hgnc_ids	exclusion_reference
+Abagovomab	MUC16/CA125	0	MUC16/CA125	anti_idiotype_mimics_antigen_not_direct_target_binder	HGNC:15582	https://pmc.ncbi.nlm.nih.gov/articles/PMC5795662/
+Abazistobart	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Abciximab	ITGA2B/CD41	0	ITGA2B/CD41	approved_symbol	HGNC:6138	
+Abelacimab	F11	0	F11	approved_symbol	HGNC:3529	
+Abiprubart	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Abituzumab	ITGAV/CD51	0	ITGAV/CD51	approved_symbol	HGNC:6150	
+Abrezekimab	IL13	0	IL13	approved_symbol	HGNC:5973	
+Abrilumab	ITGA4B7	0	ITGA4B7	complex_target_not_direct_subunit		
+Acapatamab	FOLH1/GCPII/PSMA;CD3E	0	FOLH1/GCPII/PSMA	approved_symbol	HGNC:3788	
+Acapatamab	FOLH1/GCPII/PSMA;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Acasunlimab	PDL1/CD274;TNFRSF9/CD137/4-1BB	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Acasunlimab	PDL1/CD274;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Acimtamig	FCGR3A/CD16/CD16A;TNFRSF8/CD30	0	FCGR3A/CD16/CD16A	approved_symbol	HGNC:3619	
+Acimtamig	FCGR3A/CD16/CD16A;TNFRSF8/CD30	1	TNFRSF8/CD30	approved_symbol	HGNC:11923	
+Acrixolimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Actoxumab	Clostridium difficile Toxin A	0	Clostridium difficile Toxin A	unresolved_or_nonprotein		
+Adakitug	CXCL8	0	CXCL8	approved_symbol	HGNC:6025	
+Adalimumab	TNF/TNFA	0	TNF/TNFA	approved_symbol	HGNC:11892	
+Adebrelimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Adecatumumab	EPCAM/CD326	0	EPCAM/CD326	approved_symbol	HGNC:11529	
+Adezkibart	FLT3LG	0	FLT3LG	approved_symbol	HGNC:3766	
+Adimanebart	MUSK	0	MUSK	approved_symbol	HGNC:7525	
+Adintrevimab	SARS-CoV-2 Spike	0	SARS-CoV-2 Spike	unresolved_or_nonprotein		
+Aducanumab	APP	0	APP	approved_symbol	HGNC:620	
+Afasevikumab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Afimkibart	TNFSF15/TL1A/VEGI	0	TNFSF15/TL1A/VEGI	approved_symbol	HGNC:11931	
+Alacizumab	KDR/CD309/VEGFR2	0	KDR/CD309/VEGFR2	approved_symbol	HGNC:6307	
+Alcestobart	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Aldastotug	SIGLEC15/CD33L3	0	SIGLEC15/CD33L3	approved_symbol	HGNC:27596	
+Alemtuzumab	CD52	0	CD52	approved_symbol	HGNC:1804	
+Aletekitug	IL18	0	IL18	approved_symbol	HGNC:5986	
+Alextatug	RNP complex containing PABPC1	0	RNP complex containing PABPC1	unresolved_or_nonprotein		
+Alirocumab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Alomfilimab	ICOS/CD278	0	ICOS/CD278	approved_symbol	HGNC:5351	
+Alnuctamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Alnuctamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Alpitatug	KLK2/KLK2A2/hGK-1/hK2	0	KLK2/KLK2A2/hGK-1/hK2	approved_symbol	HGNC:6363	
+Alsevalimab	VTCN1/B7H4	0	VTCN1/B7H4	approved_symbol	HGNC:28873	
+Amatuximab	MSLN	0	MSLN	approved_symbol	HGNC:7371	
+Amdokitug	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Amtabafusp	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Amivantamab	EGFR/ERBB1/HER1;MET/HGFR	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Amivantamab	EGFR/ERBB1/HER1;MET/HGFR	1	MET/HGFR	approved_symbol	HGNC:7029	
+Amlenetug	SNCA/PARK1/PARK4	0	SNCA/PARK1/PARK4	approved_symbol	HGNC:11138	
+Amlitelimab	TNFSF4/CD134/CD252/OX40L	0	TNFSF4/CD134/CD252/OX40L	approved_symbol	HGNC:11934	
+Amostomig	IAP/CD47/MER6/OA3;PDL1/CD274	0	IAP/CD47/MER6/OA3	approved_symbol	HGNC:1682	
+Amostomig	IAP/CD47/MER6/OA3;PDL1/CD274	1	PDL1/CD274	approved_symbol	HGNC:17635	
+Amrecibart	F11	0	F11	approved_symbol	HGNC:3529	
+Amubarvimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Amulirafusp	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Anbenitamab	ERBB2/CD340/HER2 (Domain II);ERBB2/CD340/HER2 (Domain IV)	0	ERBB2/CD340/HER2 (Domain II)	approved_symbol	HGNC:3430	
+Anbenitamab	ERBB2/CD340/HER2 (Domain II);ERBB2/CD340/HER2 (Domain IV)	1	ERBB2/CD340/HER2 (Domain IV)	approved_symbol	HGNC:3430	
+Andecaliximab	MMP9/GELB	0	MMP9/GELB	approved_symbol	HGNC:7176	
+Anetumab	MSLN	0	MSLN	approved_symbol	HGNC:7371	
+Anifrolumab	IFNAR1	0	IFNAR1	approved_symbol	HGNC:5432	
+Anivovetmab	Minor Capsid VP2 (Canine)	0	Minor Capsid VP2 (Canine)	nonhuman_target		
+Anrukinzumab	IL13	0	IL13	approved_symbol	HGNC:5973	
+Anselamimab	Light Chain Amyloid Fibrils	0	Light Chain Amyloid Fibrils	unresolved_or_nonprotein		
+Ansipastobart	NT5E/CALJA/CD73	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Ansuvimab	Zaire Ebolavirus Glycoprotein	0	Zaire Ebolavirus Glycoprotein	unresolved_or_nonprotein		
+Anumigilimab	CSF3R/CD114	0	CSF3R/CD114	approved_symbol	HGNC:2439	
+Anvatabart	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Anzurstobart	SIRPA	0	SIRPA	approved_symbol	HGNC:9662	
+Apamistamab	PTPRC/CD45	0	PTPRC/CD45	approved_symbol	HGNC:9666	
+Apitegromab	pro-MSTN/GDF8/GDF-8/pro-GDF8	0	pro-MSTN/GDF8/GDF-8/pro-GDF8	reviewed_gene_product	HGNC:4223	
+Aplitabart	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Aprutumab	FGFR2/CD332	0	FGFR2/CD332	approved_symbol	HGNC:3689	
+Arcitumomab	CEA/CEACAM	0	CEA/CEACAM	ambiguous_alias	HGNC:1817;HGNC:1819;HGNC:9519	
+Armocibart	TFPI	0	TFPI	approved_symbol	HGNC:11760	
+Arumakimig	IL18;IL1B	0	IL18	approved_symbol	HGNC:5986	
+Arumakimig	IL18;IL1B	1	IL1B	approved_symbol	HGNC:5992	
+Ascrinvacumab	ACVRL1/SKR3	0	ACVRL1/SKR3	approved_symbol	HGNC:175	
+Aselizumab	L-Selectin	0	L-Selectin	unresolved_or_nonprotein		
+Astegolimab	IL1RL1/ST2	0	IL1RL1/ST2	approved_symbol	HGNC:5998	
+Atenastobart	TNFRSF9/CD137/4-1BB	0	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Atezolizumab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Atibuclimab	CD14	0	CD14	approved_symbol	HGNC:1628	
+Atidortoxumab	Staphylococcus aureus Toxin A	0	Staphylococcus aureus Toxin A	unresolved_or_nonprotein		
+Atigotatug	Fucosyl-GM1	0	Fucosyl-GM1	unresolved_or_nonprotein		
+Atinumab	RTN4/Nogo	0	RTN4/Nogo	approved_symbol	HGNC:14085	
+Atisnolerbart	Bet v 1	0	Bet v 1	unresolved_or_nonprotein		
+Atoltivimab	Zaire Ebolavirus Glycoprotein	0	Zaire Ebolavirus Glycoprotein	unresolved_or_nonprotein		
+Avdoralimab	C5AR1/CD88	0	C5AR1/CD88	approved_symbol	HGNC:1338	
+Avelumab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Avitotamig	SIGLEC3/CD33/p67	0	SIGLEC3/CD33/p67	approved_symbol	HGNC:1659	
+Avizakimab	IL21	0	IL21	approved_symbol	HGNC:6005	
+Axatilimab	CSF1R/CD115/M-CSFR	0	CSF1R/CD115/M-CSFR	approved_symbol	HGNC:2433	
+Azerutamig	KLRK1/NKG2D/CD314;ERBB2/CD340/HER2	0	KLRK1/NKG2D/CD314	approved_symbol	HGNC:18788	
+Azerutamig	KLRK1/NKG2D/CD314;ERBB2/CD340/HER2	1	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Azintuxizumab	SLAMF7/CD319	0	SLAMF7/CD319	approved_symbol	HGNC:21394	
+Azirkitug	CCR8/CKR-L1/CDw198	0	CCR8/CKR-L1/CDw198	approved_symbol	HGNC:1609	
+Bafisontamab	EGFR/ERBB1/HER1;MET/HGFR	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Bafisontamab	EGFR/ERBB1/HER1;MET/HGFR	1	MET/HGFR	approved_symbol	HGNC:7029	
+Balertatug	CD70	0	CD70	approved_symbol	HGNC:11937	
+Balonkibart	NPR1/ANPRA/ANPa/GUC2A/GUCY2A/NPRA	0	NPR1/ANPRA/ANPa/GUC2A/GUCY2A/NPRA	approved_symbol	HGNC:7943	
+Balstilimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Bamlanivimab	SARS-CoV-2 Spike	0	SARS-CoV-2 Spike	unresolved_or_nonprotein		
+Bapineuzumab	APP	0	APP	approved_symbol	HGNC:620	
+Bapotulimab	ILDR2	0	ILDR2	approved_symbol	HGNC:18131	
+Barecetamab	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Barzolvolimab	KIT/CD117	0	KIT/CD117	approved_symbol	HGNC:6342	
+Basiliximab	IL2RA/CD25	0	IL2RA/CD25	approved_symbol	HGNC:6008	
+Batoclimab	FCGRT/FcRn	0	FCGRT/FcRn	approved_symbol	HGNC:3621	
+Bavituximab	Phosphatidylserine	0	Phosphatidylserine	unresolved_or_nonprotein		
+Bavunalimab	LAG3/CD223;CTLA4/CD152	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Bavunalimab	LAG3/CD223;CTLA4/CD152	1	CTLA4/CD152	approved_symbol	HGNC:2505	
+Bebtelovimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Becotatug	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Bedinvetmab	NGFB (Canine)	0	NGFB (Canine)	nonhuman_target		
+Befovacimab	TFPI	0	TFPI	approved_symbol	HGNC:11760	
+Begelomab	DPP4/ADCP2/CD26	0	DPP4/ADCP2/CD26	approved_symbol	HGNC:3009	
+Belantamab	TNFRSF17/CD269/BCMA/TNFRSF13A	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Belimumab	TNFSF13B/CD257/BAFF	0	TNFSF13B/CD257/BAFF	approved_symbol	HGNC:11929	
+Belrestotug	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Beludavimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Bemarituzumab	FGFR2/CD332	0	FGFR2/CD332	approved_symbol	HGNC:3689	
+Bempikibart	IL7R/CD127	0	IL7R/CD127	approved_symbol	HGNC:6024	
+Benmelstobart	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Benralizumab	IL5RA/CD125	0	IL5RA/CD125	approved_symbol	HGNC:6017	
+Bentracimab	AR-C124910XX	0	AR-C124910XX	unresolved_or_nonprotein		
+Benufutamab	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Bepranemab	MAPT	0	MAPT	approved_symbol	HGNC:6893	
+Berlimatoxumab	Staphylococcus aureus Toxin A	0	Staphylococcus aureus Toxin A	unresolved_or_nonprotein		
+Bermekimab	IL1A	0	IL1A	approved_symbol	HGNC:5991	
+Bersanlimab	ICAM1/CD54	0	ICAM1/CD54	approved_symbol	HGNC:5344	
+Besufetamig	PDCD1/CD279/PD1;CD3E	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Besufetamig	PDCD1/CD279/PD1;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Betinukibart	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Betifisolimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Bevacizumab	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Bexatamig	IL3RA/CD123;NCR1/NKP46/NKp46/LY94/CD335	0	IL3RA/CD123	approved_symbol	HGNC:6012	
+Bexatamig	IL3RA/CD123;NCR1/NKP46/NKp46/LY94/CD335	1	NCR1/NKP46/NKp46/LY94/CD335	approved_symbol	HGNC:6731	
+Bexmarilimab	STAB1	0	STAB1	approved_symbol	HGNC:18628	
+Bezetabart	CD74/HLA class II histocompatibility antigen gamma chain	0	CD74/HLA class II histocompatibility antigen gamma chain	approved_symbol	HGNC:1697	
+Bezlotoxumab	Clostridium difficile Toxin A	0	Clostridium difficile Toxin A	unresolved_or_nonprotein		
+Bifikafusp	FN extracellular domain B	0	FN extracellular domain B	unresolved_or_nonprotein		
+Bimagrumab	ACVR2B	0	ACVR2B	approved_symbol	HGNC:174	
+Bimekizumab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Bintrafusp	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Birinkibart	CSF2RB/CD131/IL3RB/IL5RB	0	CSF2RB/CD131/IL3RB/IL5RB	approved_symbol	HGNC:2436	
+Birtamimab	SAA1	0	SAA1	approved_symbol	HGNC:10513	
+Bleselumab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Blinatumomab	CD19;CD3E	0	CD19	approved_symbol	HGNC:1633	
+Blinatumomab	CD19;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Blontuvetmab	MS4A1/CD20	0	MS4A1/CD20	nonhuman_target	HGNC:7315	
+Blosozumab	SOST	0	SOST	approved_symbol	HGNC:13771	
+Bococizumab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Bocunebart	ADCYAP1/PACAP	0	ADCYAP1/PACAP	approved_symbol	HGNC:241	
+Bosakitug	TSLP	0	TSLP	approved_symbol	HGNC:30743	
+Boserolimab	TNFRSF7/CD27	0	TNFRSF7/CD27	approved_symbol	HGNC:11922	
+Botensilimab	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Brazikumab	IL23A	0	IL23A	approved_symbol	HGNC:15488	
+Bremzalerbart	Bet v 1	0	Bet v 1	unresolved_or_nonprotein		
+Brenetafusp	CD3	0	CD3	complex_target_not_direct_subunit		
+Brentuximab	TNFRSF8/CD30	0	TNFRSF8/CD30	approved_symbol	HGNC:11923	
+Briakinumab	IL12B/CLMFp40	0	IL12B/CLMFp40	approved_symbol	HGNC:5970	
+Briquilimab	KIT/CD117	0	KIT/CD117	approved_symbol	HGNC:6342	
+Brivekimig1	TNFSF4/CD134/CD252/OX40L;TNF/TNFA	0	TNFSF4/CD134/CD252/OX40L	approved_symbol	HGNC:11934	
+Brivekimig1	TNFSF4/CD134/CD252/OX40L;TNF/TNFA	1	TNF/TNFA	approved_symbol	HGNC:11892	
+Brivekimig2	ALB	0	ALB	approved_symbol	HGNC:399	
+Brivestobart	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Brodalumab	IL17RA/CD217	0	IL17RA/CD217	approved_symbol	HGNC:5985	
+Brolucizumab	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Brontictuzumab	NOTCH1	0	NOTCH1	approved_symbol	HGNC:7881	
+Budigalimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Budoprutug	CD19	0	CD19	approved_symbol	HGNC:1633	
+Bulumtatug	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Burfiralimab	VIM	0	VIM	approved_symbol	HGNC:12692	
+Burosumab	FGF23	0	FGF23	approved_symbol	HGNC:3680	
+Cabiralizumab	CSF1R/CD115/M-CSFR	0	CSF1R/CD115/M-CSFR	approved_symbol	HGNC:2433	
+Cabotamig	CDH17;CD3E	0	CDH17	approved_symbol	HGNC:1756	
+Cabotamig	CDH17;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Cadonilimab	PDCD1/CD279/PD1;CTLA4/CD152	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Cadonilimab	PDCD1/CD279/PD1;CTLA4/CD152	1	CTLA4/CD152	approved_symbol	HGNC:2505	
+Cafelkibart	CCR8/CKR-L1/CDw198	0	CCR8/CKR-L1/CDw198	approved_symbol	HGNC:1609	
+Calpurbatug	Bacteria Proteins HU and IHF	0	Bacteria Proteins HU	unresolved_or_nonprotein		
+Calpurbatug	Bacteria Proteins HU and IHF	0	IHF	unresolved_or_nonprotein		
+Calotatug	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Camidanlumab	IL2RA/CD25	0	IL2RA/CD25	approved_symbol	HGNC:6008	
+Camoteskimab	IL18	0	IL18	approved_symbol	HGNC:5986	
+Camrelizumab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Canakinumab	IL1B	0	IL1B	approved_symbol	HGNC:5992	
+Canrivitug	SARS-CoV-2 RBD	0	SARS-CoV-2 RBD	unresolved_or_nonprotein		
+Cantuzumab	MUC1/PEM/EMA	0	MUC1/PEM/EMA	approved_symbol	HGNC:7508	
+Caplacizumab	VWF	0	VWF	approved_symbol	HGNC:12726	
+Carlumab	CCL2/MCP1	0	CCL2/MCP1	approved_symbol	HGNC:10618	
+Carotuximab	ENG/CD105	0	ENG/CD105	approved_symbol	HGNC:3349	
+Casdozokitug	IL27	0	IL27	approved_symbol	HGNC:19157	
+Caxmotabart	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Cemavafusp	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Cemiplimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Cendakimab	IL13	0	IL13	approved_symbol	HGNC:5973	
+Cenvacibart	F11	0	F11	approved_symbol	HGNC:3529	
+Cenzestotug	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Cepeprubart	SELPLG/CD162/PSGL1	0	SELPLG/CD162/PSGL1	approved_symbol	HGNC:10722	
+Cergutuzumab	CEACAM5/CD66e	0	CEACAM5/CD66e	approved_symbol	HGNC:1817	
+Certolizumab	TNF/TNFA	0	TNF/TNFA	approved_symbol	HGNC:11892	
+Cetrelimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Cetuximab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Cevostamab	FCRL5/CD307;CD3	0	FCRL5/CD307	approved_symbol	HGNC:18508	
+Cevostamab	FCRL5/CD307;CD3	1	CD3	complex_target_not_direct_subunit		
+Cibisatamab	CEACAM5/CD66e and CD3E;CD3E	0	CEACAM5/CD66e	approved_symbol	HGNC:1817	
+Cibisatamab	CEACAM5/CD66e and CD3E;CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Cibisatamab	CEACAM5/CD66e and CD3E;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Ciduvectamig	TMEFF2;CD3E	0	TMEFF2	approved_symbol	HGNC:11867	
+Ciduvectamig	TMEFF2;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Cifurtilimab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Ciletatug	CLDN18	0	CLDN18	approved_symbol	HGNC:2039	
+Cilgavimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Ciltistotug	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Cinpanemab	SNCA/PARK1/PARK4	0	SNCA/PARK1/PARK4	approved_symbol	HGNC:11138	
+Cinrebafusp	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Cirevetmab	TGFB1 (Canine)	0	TGFB1 (Canine)	nonhuman_target		
+Citatuzumab	EPCAM/CD326	0	EPCAM/CD326	approved_symbol	HGNC:11529	
+Cixutumumab	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Cizutamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Cizutamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Claseprubart	C1S	0	C1S	approved_symbol	HGNC:1247	
+Clazakizumab	IL6	0	IL6	approved_symbol	HGNC:6018	
+Clervonafusp	SLC29A2	0	SLC29A2	approved_symbol	HGNC:11004	
+Clesitamig	DLL3;CD3&TNFRSF9/CD137/4-1BB	0	DLL3	approved_symbol	HGNC:2909	
+Clesitamig	DLL3;CD3&TNFRSF9/CD137/4-1BB	1	CD3	complex_target_not_direct_subunit		
+Clesitamig	DLL3;CD3&TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Clesrovimab	RSV gpF	0	RSV gpF	unresolved_or_nonprotein		
+Cliramitug	Misfolded TTR	0	Misfolded TTR	reviewed_gene_product	HGNC:12405	
+Clivatuzumab	MUC1/PEM/EMA	0	MUC1/PEM/EMA	approved_symbol	HGNC:7508	
+Cobolimab	HAVCR2/TIM3	0	HAVCR2/TIM3	approved_symbol	HGNC:18437	
+Codrituzumab	GPC3	0	GPC3	approved_symbol	HGNC:4451	
+Cofetuzumab	PTK7	0	PTK7	approved_symbol	HGNC:9618	
+Coltuximab	CD19	0	CD19	approved_symbol	HGNC:1633	
+Comekibart	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Conatumumab	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Concizumab	TFPI	0	TFPI	approved_symbol	HGNC:11760	
+Coprelotamab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Coramitug	Misfolded TTR	0	Misfolded TTR	reviewed_gene_product	HGNC:12405	
+Cosfroviximab	Zaire Ebolavirus Glycoprotein	0	Zaire Ebolavirus Glycoprotein	unresolved_or_nonprotein		
+Cosibelimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Crebankitug	IL7R/CD127	0	IL7R/CD127	approved_symbol	HGNC:6024	
+Crefmirlimab	CD8A	0	CD8A	approved_symbol	HGNC:1706	
+Crenezumab	APP	0	APP	approved_symbol	HGNC:620	
+Crexavibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Crizanlizumab	SELP/CD62	0	SELP/CD62	approved_symbol	HGNC:10721	
+Crotedumab	GCGR	0	GCGR	approved_symbol	HGNC:4192	
+Crovalimab	C5	0	C5	approved_symbol	HGNC:1331	
+Crusekitug	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Cudarolimab	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Cugrastomig	LAG3/CD223;PDCD1/CD279/PD1	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Cugrastomig	LAG3/CD223;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Cusatuzumab	CD70	0	CD70	approved_symbol	HGNC:11937	
+Dacetuzumab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Daclizumab	IL2RA/CD25	0	IL2RA/CD25	approved_symbol	HGNC:6008	
+Dafsolimab	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Dalidnetug	APP	0	APP	approved_symbol	HGNC:620	
+Dalnicastobart	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Dalotuzumab	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Dalutrafusp	TGFBR2	0	TGFBR2	approved_symbol	HGNC:11773	
+Danburstotug	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Danvilostomig	CTLA4/CD152;PDCD1/CD279/PD1	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Danvilostomig	CTLA4/CD152;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Dapirolizumab	CD40LG/CD154	0	CD40LG/CD154	approved_symbol	HGNC:11935	
+Daratumumab	ADPRC1/CD38	0	ADPRC1/CD38	approved_symbol	HGNC:1667	
+Daretabart	Ganglioside GD2	0	Ganglioside GD2	unresolved_or_nonprotein		
+Dargistotug	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Datopotamab	TACSTD2/TROP2/EGP1	0	TACSTD2/TROP2/EGP1	approved_symbol	HGNC:11530	
+Davutamig	MET/HGFR;MET/HGFR	0	MET/HGFR	approved_symbol	HGNC:7029	
+Davutamig	MET/HGFR;MET/HGFR	1	MET/HGFR	approved_symbol	HGNC:7029	
+Daxdilimab	LILRA4/CD85g	0	LILRA4/CD85g	approved_symbol	HGNC:15503	
+Dazukibart	IFNB1	0	IFNB1	approved_symbol	HGNC:5434	
+Dectrekumab	IL13	0	IL13	approved_symbol	HGNC:5973	
+Delpacibart	TFRC/CD71	0	TFRC/CD71	approved_symbol	HGNC:11763	
+Demcizumab	DLL4	0	DLL4	approved_symbol	HGNC:2910	
+Demupitamab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Denecimig	F9;F10	0	F9	approved_symbol	HGNC:3551	
+Denecimig	F9;F10	1	F10	approved_symbol	HGNC:3528	
+Denikitug	CCR8/CKR-L1/CDw198	0	CCR8/CKR-L1/CDw198	approved_symbol	HGNC:1609	
+Denintuzumab	CD19	0	CD19	approved_symbol	HGNC:1633	
+Denosumab	TNFSF11/CD254/RANKL/TRANCE/OPGL/ODF	0	TNFSF11/CD254/RANKL/TRANCE/OPGL/ODF	approved_symbol	HGNC:11926	
+Denrakibart	CCL17/ABCD-2/SCYA17/TARC	0	CCL17/ABCD-2/SCYA17/TARC	approved_symbol	HGNC:10615	
+Depatuxizumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Depemokimab	IL5	0	IL5	approved_symbol	HGNC:6016	
+Derlotuximab	DNA/H1 Complex	0	DNA/H1 Complex	unresolved_or_nonprotein		
+Devextinetug	Metamphetamine	0	Metamphetamine	unresolved_or_nonprotein		
+Dezamizumab	APCS/SAP	0	APCS/SAP	approved_symbol	HGNC:584	
+Dibotatug	KLRD1/CD94	0	KLRD1/CD94	approved_symbol	HGNC:6378	
+Dilpacimab	DLL4;VEGFA	0	DLL4	approved_symbol	HGNC:2910	
+Dilpacimab	DLL4;VEGFA	1	VEGFA	approved_symbol	HGNC:12680	
+Dinutuximab	Ganglioside GD2	0	Ganglioside GD2	unresolved_or_nonprotein		
+Diridavumab	Influenza A HA2	0	Influenza A HA2	unresolved_or_nonprotein		
+Disitamab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Divozilimab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Docaravimab	Rabies Virus Strain ERA Glycoprotein Ectodomain Epitope G-III	0	Rabies Virus Strain ERA Glycoprotein Ectodomain Epitope G-III	unresolved_or_nonprotein		
+Domagrozumab	MSTN/GDF8/GDF-8	0	MSTN/GDF8/GDF-8	approved_symbol	HGNC:4223	
+Domvanalimab	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Donanemab	APP	0	APP	approved_symbol	HGNC:620	
+Donitabart	Ganglioside GD2	0	Ganglioside GD2	unresolved_or_nonprotein		
+Donzakimig1	IL22;ALB	0	IL22	approved_symbol	HGNC:14900	
+Donzakimig1	IL22;ALB	1	ALB	approved_symbol	HGNC:399	
+Donzakimig2	IL13	0	IL13	approved_symbol	HGNC:5973	
+Dostarlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Dovanvetmab	IL31 (Feline)	0	IL31 (Feline)	nonhuman_target		
+Dresbuxelimab	NT5E/CALJA/CD73	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Drotokibart	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Drozitumab	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Duligotuzumab	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Dupilumab	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Durvalumab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Dusigitumab	IGF1 and IGF2	0	IGF1	approved_symbol	HGNC:5464	
+Dusigitumab	IGF1 and IGF2	0	IGF2	approved_symbol	HGNC:5466	
+Duvakitug	TNFSF15/TL1A/VEGI	0	TNFSF15/TL1A/VEGI	approved_symbol	HGNC:11931	
+Duvortuxizumab	CD19;CD3E	0	CD19	approved_symbol	HGNC:1633	
+Duvortuxizumab	CD19;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Ebdarokimab	IL12B/CLMFp40	0	IL12B/CLMFp40	approved_symbol	HGNC:5970	
+Eblasakimab	IL13RA1/CD213A1	0	IL13RA1/CD213A1	approved_symbol	HGNC:5974	
+Ebrasodebart	TMEM219/IGFBP-3R	0	TMEM219/IGFBP-3R	approved_symbol	HGNC:25201	
+Ebribafusp	C3d	0	C3d	unresolved_or_nonprotein		
+Ebronucimab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Eciskafusp	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Ecleralimab	TSLP	0	TSLP	approved_symbol	HGNC:30743	
+Eclutatug	CLDN1	0	CLDN1	approved_symbol	HGNC:2032	
+Ecromeximab	GD3 ganglioside	0	GD3 ganglioside	unresolved_or_nonprotein		
+Eculizumab	C5	0	C5	approved_symbol	HGNC:1331	
+Edrecolomab	EPCAM/CD326	0	EPCAM/CD326	approved_symbol	HGNC:11529	
+Efalizumab	ITGAL/CD11A/LFA1A	0	ITGAL/CD11A/LFA1A	approved_symbol	HGNC:6148	
+Efungumab	Heat Shock Protein 90 Homolog	0	Heat Shock Protein 90 Homolog	unresolved_or_nonprotein		
+Eglatoprutug	KIT/CD117	0	KIT/CD117	approved_symbol	HGNC:6342	
+Eldelumab	CXCL10/IP10	0	CXCL10/IP10	approved_symbol	HGNC:10637	
+Elegrobart	TBC	0	TBC	unique_alias	HGNC:11578	
+Elezanumab	RGMA	0	RGMA	approved_symbol	HGNC:30308	
+Elgemtumab	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Elipovimab	HIV-1 gp120	0	HIV-1 gp120	unresolved_or_nonprotein		
+Elotuzumab	SLAMF7/CD319	0	SLAMF7/CD319	approved_symbol	HGNC:21394	
+Elranatamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Elranatamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Eltivutabart	ENTPD1/CD39	0	ENTPD1/CD39	approved_symbol	HGNC:3363	
+Eltrekibart	CXCL1/CXCL2/CXCL3/CXCL5/CXCL6/CXCL7/CXCL8	0	CXCL1/CXCL2/CXCL3/CXCL5/CXCL6/CXCL7/CXCL8	ambiguous_slash_group	HGNC:10642;HGNC:10643;HGNC:4602;HGNC:4603;HGNC:4604;HGNC:6025	
+Eluvixtamab	SIGLEC3/CD33/p67;CD3E	0	SIGLEC3/CD33/p67	approved_symbol	HGNC:1659	
+Eluvixtamab	SIGLEC3/CD33/p67;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Emactuzumab	CSF1R/CD115/M-CSFR	0	CSF1R/CD115/M-CSFR	approved_symbol	HGNC:2433	
+Emapalumab	IFNG	0	IFNG	approved_symbol	HGNC:5438	
+Emerfetamab	SIGLEC3/CD33/p67;CD3E	0	SIGLEC3/CD33/p67	approved_symbol	HGNC:1659	
+Emerfetamab	SIGLEC3/CD33/p67;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Emfizatamab1	CD3E;CD19	0	CD3E	approved_symbol	HGNC:1674	
+Emfizatamab1	CD3E;CD19	1	CD19	approved_symbol	HGNC:1633	
+Emfizatamab2	PDL1/CD274;TNFRSF9/CD137/4-1BB	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Emfizatamab2	PDL1/CD274;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Emicizumab	F9;F10	0	F9	approved_symbol	HGNC:3551	
+Emicizumab	F9;F10	1	F10	approved_symbol	HGNC:3528	
+Emibetuzumab	MET/HGFR	0	MET/HGFR	approved_symbol	HGNC:7029	
+Emiltatug	VTCN1/B7H4	0	VTCN1/B7H4	approved_symbol	HGNC:28873	
+Emirodatamab	FLT3/CD135/FLK2;CD3E	0	FLT3/CD135/FLK2	approved_symbol	HGNC:3765	
+Emirodatamab	FLT3/CD135/FLK2;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Empasiprubart	C2	0	C2	approved_symbol	HGNC:1248	
+Emugrobart	ENTPD1/CD39	0	ENTPD1/CD39	approved_symbol	HGNC:3363	
+Emunkitug	TNFRSF1B/TNFR2/CD120b/TNFR80/p75	0	TNFRSF1B/TNFR2/CD120b/TNFR80/p75	approved_symbol	HGNC:11917	
+Enapotamab	AXL/UFO	0	AXL/UFO	approved_symbol	HGNC:905	
+Enavatuzumab	TNFRSF12A/CD266/TWEAKR	0	TNFRSF12A/CD266/TWEAKR	approved_symbol	HGNC:18152	
+Encelimab	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Enfortumab	PVRL4/Nectin-4	0	PVRL4/Nectin-4	unique_alias	HGNC:19688	
+Englumafusp	CD19	0	CD19	approved_symbol	HGNC:1633	
+Enibarcimab	ADM	0	ADM	approved_symbol	HGNC:259	
+Enlonstobart	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Enoblituzumab	B7H3/CD276	0	B7H3/CD276	approved_symbol	HGNC:19137	
+Enokizumab	IL9	0	IL9	approved_symbol	HGNC:6029	
+Enoticumab	DLL4	0	DLL4	approved_symbol	HGNC:2910	
+Enristomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Enristomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Ensituximab	MUC5AC	0	MUC5AC	approved_symbol	HGNC:7515	
+Enuzovimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Envafolimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Enzelkitug	CCR8/CKR-L1/CDw198	0	CCR8/CKR-L1/CDw198	approved_symbol	HGNC:1609	
+Epacmarstobart	SIRPA	0	SIRPA	approved_symbol	HGNC:9662	
+Epcoritamab	CD3E;MS4A1/CD20	0	CD3E	approved_symbol	HGNC:1674	
+Epcoritamab	CD3E;MS4A1/CD20	1	MS4A1/CD20	approved_symbol	HGNC:7315	
+Epratuzumab	SIGLEC2/CD22	0	SIGLEC2/CD22	approved_symbol	HGNC:1643	
+Eptinezumab	CALCA and CALCB	0	CALCA	approved_symbol	HGNC:1437	
+Eptinezumab	CALCA and CALCB	0	CALCB	approved_symbol	HGNC:1438	
+Etuptamig	NCR3LG1/B7-H6;CD3E	0	NCR3LG1/B7-H6	approved_symbol	HGNC:42400	
+Etuptamig	NCR3LG1/B7-H6;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Eramkafusp	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Erenumab	CALCRL	0	CALCRL	approved_symbol	HGNC:16709	
+Erfonrilimab	PDL1/CD274;CTLA4/CD152	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Erfonrilimab	PDL1/CD274;CTLA4/CD152	1	CTLA4/CD152	approved_symbol	HGNC:2505	
+Erlizumab	ITGB2/CD18	0	ITGB2/CD18	approved_symbol	HGNC:6155	
+Ersodetug	INSR/CD220	0	INSR/CD220	approved_symbol	HGNC:6091	
+Erzotabart	ADPRC1/CD38	0	ADPRC1/CD38	approved_symbol	HGNC:1667	
+Etakafusp	CD8	0	CD8	complex_target_not_direct_subunit		
+Etalanetug	MAPT	0	MAPT	approved_symbol	HGNC:6893	
+Etaracizumab	ITGAVB3/CD61/VNR	0	ITGAVB3/CD61/VNR	complex_target_not_direct_subunit		
+Etentamig	CD3E;TNFRSF17/CD269/BCMA/TNFRSF13A	0	CD3E	approved_symbol	HGNC:1674	
+Etentamig	CD3E;TNFRSF17/CD269/BCMA/TNFRSF13A	1	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Etesevimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Etevritamab	EGFR/ERBB1/HER1;CD3E	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Etevritamab	EGFR/ERBB1/HER1;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Etigilimab	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Etokimab	IL13	0	IL13	approved_symbol	HGNC:5973	
+Etrolizumab	ITGA4B7 and ITGAEB7	0	ITGA4B7	complex_target_not_direct_subunit		
+Etrolizumab	ITGA4B7 and ITGAEB7	0	ITGAEB7	complex_target_not_direct_subunit		
+Eurestobart	ENTPD1/CD39	0	ENTPD1/CD39	approved_symbol	HGNC:3363	
+Evalstotug	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Evinacumab	ANGPTL3	0	ANGPTL3	approved_symbol	HGNC:491	
+Evolocumab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Evunzekibart	TNFRSF9/CD137/4-1BB	0	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Exbivirumab	Hepatitis B Surface Antigen	0	Hepatitis B Surface Antigen	unresolved_or_nonprotein		
+Exerenibart	TMPRSS6/MT2	0	TMPRSS6/MT2	approved_symbol	HGNC:16517	
+Exidavnemab	SNCA/PARK1/PARK4	0	SNCA/PARK1/PARK4	approved_symbol	HGNC:11138	
+Exlinkibart	TNFRSF9/CD137/4-1BB	0	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Ezabenlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Falbikitug	LIF	0	LIF	approved_symbol	HGNC:6596	
+Fanastomig	LAG3/CD223;PDCD1/CD279/PD1	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Fanastomig	LAG3/CD223;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Faricimab	VEGFA;ANGPT2	0	VEGFA	approved_symbol	HGNC:12680	
+Faricimab	VEGFA;ANGPT2	1	ANGPT2	approved_symbol	HGNC:485	
+Farletuzumab	FOLR1	0	FOLR1	approved_symbol	HGNC:3791	
+Fasinumab	NGFB	0	NGFB	unique_alias	HGNC:7808	
+Favezelimab	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Fazpilodemab	KLB;FGFR1/CD331/BFGFR	0	KLB	approved_symbol	HGNC:15527	
+Fazpilodemab	KLB;FGFR1/CD331/BFGFR	1	FGFR1/CD331/BFGFR	approved_symbol	HGNC:3688	
+Feladilimab	ICOS/CD278	0	ICOS/CD278	approved_symbol	HGNC:5351	
+Felmetatug	VTCN1/B7H4	0	VTCN1/B7H4	approved_symbol	HGNC:28873	
+Felzartamab	ADPRC1/CD38	0	ADPRC1/CD38	approved_symbol	HGNC:1667	
+Fepixnebart	EREG	0	EREG	approved_symbol	HGNC:3443	
+Fezakinumab	IL22	0	IL22	approved_symbol	HGNC:14900	
+Fianlimab	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Ficerafusp	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Ficlatuzumab	HGF/SF	0	HGF/SF	approved_symbol	HGNC:4893	
+Fidasimtamab	PDCD1/CD279/PD1;ERBB2/CD340/HER2	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Fidasimtamab	PDCD1/CD279/PD1;ERBB2/CD340/HER2	1	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Figitumumab	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Finotonlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Firastotug	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Firivumab	Influenza A HA	0	Influenza A HA	unresolved_or_nonprotein		
+Firsekibart	IL1B	0	IL1B	approved_symbol	HGNC:5992	
+Fiztasovimab	Human Herpesvirus Glycoprotein B AD-1	0	Human Herpesvirus Glycoprotein B AD-1	unresolved_or_nonprotein		
+Flanvotumab	TYRP1	0	TYRP1	approved_symbol	HGNC:12450	
+Fletikumab	IL20	0	IL20	approved_symbol	HGNC:6002	
+Flotetuzumab	IL3RA/CD123;CD3E	0	IL3RA/CD123	approved_symbol	HGNC:6012	
+Flotetuzumab	IL3RA/CD123;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Fontolizumab	IFNG	0	IFNG	approved_symbol	HGNC:5438	
+Foralumab	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Foravirumab	Rabies Virus Antigenic Site III	0	Rabies Virus Antigenic Site III	unresolved_or_nonprotein		
+Forimtamig	GPRC5D;CD3E	0	GPRC5D	approved_symbol	HGNC:13310	
+Forimtamig	GPRC5D;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Fremanezumab	CALCA and CALCB	0	CALCA	approved_symbol	HGNC:1437	
+Fremanezumab	CALCA and CALCB	0	CALCB	approved_symbol	HGNC:1438	
+Freneslerbart	Fel d 1	0	Fel d 1	unresolved_or_nonprotein		
+Fresolimumab	TGFB	0	TGFB	unique_alias	HGNC:11766	
+Frexalimab	CD40LG/CD154	0	CD40LG/CD154	approved_symbol	HGNC:11935	
+Frovocimab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Frunevetmab	NGFB	0	NGFB	nonhuman_target	HGNC:7808	
+Fulranumab	NGFB	0	NGFB	unique_alias	HGNC:7808	
+Futermestotug	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Futuximab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Gacovetug	F4+ ETEC (Veterinary Application)	0	F4+ ETEC (Veterinary Application)	nonhuman_target		
+Galcanezumab	CALCA and CALCB	0	CALCA	approved_symbol	HGNC:1437	
+Galcanezumab	CALCA and CALCB	0	CALCB	approved_symbol	HGNC:1438	
+Galegenimab	HTRA1	0	HTRA1	approved_symbol	HGNC:9476	
+Galiximab	B7/CD80/CD28LG	0	B7/CD80/CD28LG	approved_symbol	HGNC:1700	
+Galvokimig1	IL17A and IL17F;ALB	0	IL17A	approved_symbol	HGNC:5981	
+Galvokimig1	IL17A and IL17F;ALB	0	IL17F	approved_symbol	HGNC:16404	
+Galvokimig1	IL17A and IL17F;ALB	1	ALB	approved_symbol	HGNC:399	
+Galvokimig2	IL13	0	IL13	approved_symbol	HGNC:5973	
+Gancotamab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Ganitumab	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Gantenerumab	APP	0	APP	approved_symbol	HGNC:620	
+Garadacimab	F12	0	F12	approved_symbol	HGNC:3530	
+Garetatug	CLDN18	0	CLDN18	approved_symbol	HGNC:2039	
+Garetosmab	INHBA	0	INHBA	approved_symbol	HGNC:6066	
+Garivulimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Gatipotuzumab	MUC1/PEM/EMA	0	MUC1/PEM/EMA	approved_symbol	HGNC:7508	
+Gatralimab	CD52	0	CD52	approved_symbol	HGNC:1804	
+Gedivumab	Influenza A HA	0	Influenza A HA	unresolved_or_nonprotein		
+Gefurulimab	C5;ALB	0	C5	approved_symbol	HGNC:1331	
+Gefurulimab	C5;ALB	1	ALB	approved_symbol	HGNC:399	
+Gemtuzumab	SIGLEC3/CD33/p67	0	SIGLEC3/CD33/p67	approved_symbol	HGNC:1659	
+Geptanolimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Gevokizumab	IL1B	0	IL1B	approved_symbol	HGNC:5992	
+Giloralimab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Gilvetmab	PDCD1/CD279/PD1 (Canine)	0	PDCD1/CD279/PD1 (Canine)	nonhuman_target		
+Gimistotug	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Gimsilumab	CSF2	0	CSF2	approved_symbol	HGNC:2434	
+Ginisortamab	GREM1	0	GREM1	approved_symbol	HGNC:2001	
+Girentuximab	CA9	0	CA9	approved_symbol	HGNC:1383	
+Givastomig	CLDN18;TNFRSF9/CD137/4-1BB	0	CLDN18	approved_symbol	HGNC:2039	
+Givastomig	CLDN18;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Glembatumumab	GPNMB	0	GPNMB	approved_symbol	HGNC:4462	
+Glenzocimab	GP6	0	GP6	approved_symbol	HGNC:14388	
+Glofitamab	CD3E;MS4A1/CD20	0	CD3E	approved_symbol	HGNC:1674	
+Glofitamab	CD3E;MS4A1/CD20	1	MS4A1/CD20	approved_symbol	HGNC:7315	
+Gocatamig1	CD3E;ALB	0	CD3E	approved_symbol	HGNC:1674	
+Gocatamig1	CD3E;ALB	1	ALB	approved_symbol	HGNC:399	
+Gocatamig2	DLL3	0	DLL3	approved_symbol	HGNC:2909	
+Golimumab	TNF/TNFA	0	TNF/TNFA	approved_symbol	HGNC:11892	
+Golocdacimab	OLR1/LOX1	0	OLR1/LOX1	approved_symbol	HGNC:8133	
+Gontivimab	Respiratory Syncytial Virus Glycoprotein F;Respiratory Syncytial Virus Glycoprotein F	0	Respiratory Syncytial Virus Glycoprotein F	unresolved_or_nonprotein		
+Gontivimab	Respiratory Syncytial Virus Glycoprotein F;Respiratory Syncytial Virus Glycoprotein F	1	Respiratory Syncytial Virus Glycoprotein F	unresolved_or_nonprotein		
+Gorivitug	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Gosuranemab	MAPT	0	MAPT	approved_symbol	HGNC:6893	
+Gotistobart	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Gremubamab	PcrV type III secretion system;Polysaccharide synthesis locus (Pseudomonas)	0	PcrV type III secretion system	unresolved_or_nonprotein		
+Gremubamab	PcrV type III secretion system;Polysaccharide synthesis locus (Pseudomonas)	1	Polysaccharide synthesis locus (Pseudomonas)	unresolved_or_nonprotein		
+Gresonitamab	CLDN18;CD3E	0	CLDN18	approved_symbol	HGNC:2039	
+Gresonitamab	CLDN18;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Greziprubart	C5	0	C5	approved_symbol	HGNC:1331	
+Grisnilimab	CD7	0	CD7	approved_symbol	HGNC:1695	
+Gruticibart	F11	0	F11	approved_symbol	HGNC:3529	
+Gulgafafusp	GLP1R	0	GLP1R	approved_symbol	HGNC:4324	
+Gumokimab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Guselkumab	IL23A	0	IL23A	approved_symbol	HGNC:15488	
+Ianalumab	TNFRSF13C/CD268/BAFFR/BR3	0	TNFRSF13C/CD268/BAFFR/BR3	approved_symbol	HGNC:17755	
+Ibalizumab	CD4	0	CD4	approved_symbol	HGNC:1678	
+Ibramvibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Ibentatug	CSP1	0	CSP1	approved_symbol	HGNC:54777	
+Ibritumomab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Icrucumab	FLT1	0	FLT1	approved_symbol	HGNC:3763	
+Idactamab	SLC1A5	0	SLC1A5	approved_symbol	HGNC:10943	
+Idarucizumab	Dabigatran	0	Dabigatran	unresolved_or_nonprotein		
+Ieramilimab	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Ifabotuzumab	EPHA3	0	EPHA3	approved_symbol	HGNC:3387	
+Ifinatamab	B7H3/CD276	0	B7H3/CD276	approved_symbol	HGNC:19137	
+Iladatuzumab	AGM6/CD79B	0	AGM6/CD79B	approved_symbol	HGNC:1699	
+Iluzanebart	TREM2	0	TREM2	approved_symbol	HGNC:17761	
+Imalumab	MIF	0	MIF	approved_symbol	HGNC:7097	
+Imaprelimab	MCAM/CD146/MUC18	0	MCAM/CD146/MUC18	approved_symbol	HGNC:6934	
+Imeroprubart	FCGRT/FcRn	0	FCGRT/FcRn	approved_symbol	HGNC:3621	
+Imgatuzumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Imneskibart	IL2RA/CD25	0	IL2RA/CD25	approved_symbol	HGNC:6008	
+Imsidolimab	IL36R	0	IL36R	unresolved_or_nonprotein		
+Imvotamab	CD3E;MS4A1/CD20	0	CD3E	approved_symbol	HGNC:1674	
+Imvotamab	CD3E;MS4A1/CD20	1	MS4A1/CD20	approved_symbol	HGNC:7315	
+Imzokitug	CCR8/CKR-L1/CDw198	0	CCR8/CKR-L1/CDw198	approved_symbol	HGNC:1609	
+Inclacumab	SELP/CD62	0	SELP/CD62	approved_symbol	HGNC:10721	
+Indatuximab	SDC1/CD138	0	SDC1/CD138	approved_symbol	HGNC:10658	
+Indematug	IFNG 	0	IFNG	approved_symbol	HGNC:5438	
+Indenebart	SNCA/PARK1/PARK4	0	SNCA/PARK1/PARK4	approved_symbol	HGNC:11138	
+Indusatumab	GUCY2C	0	GUCY2C	approved_symbol	HGNC:4688	
+Inebilizumab	CD19	0	CD19	approved_symbol	HGNC:1633	
+Inezetamab	CD40;MSLN	0	CD40	approved_symbol	HGNC:11919	
+Inezetamab	CD40;MSLN	1	MSLN	approved_symbol	HGNC:7371	
+Infliximab	TNF/TNFA	0	TNF/TNFA	approved_symbol	HGNC:11892	
+Ingitamig	TNFRSF17/CD269/BCMA/TNFRSF13A;KLRK1/NKG2D/CD314	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Ingitamig	TNFRSF17/CD269/BCMA/TNFRSF13A;KLRK1/NKG2D/CD314	1	KLRK1/NKG2D/CD314	approved_symbol	HGNC:18788	
+Inlecitug	KDR/CD309/VEGFR2	0	KDR/CD309/VEGFR2	approved_symbol	HGNC:6307	
+Inotuzumab	SIGLEC2/CD22	0	SIGLEC2/CD22	approved_symbol	HGNC:1643	
+Intetumumab	ITGAVB3/CD61/VNR	0	ITGAVB3/CD61/VNR	complex_target_not_direct_subunit		
+Invikafusp	TRBV6&TRBV10	0	TRBV6	unresolved_or_nonprotein		
+Invikafusp	TRBV6&TRBV10	0	TRBV10	unresolved_or_nonprotein		
+Iparomlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Ipilimumab	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Iratumumab	TNFRSF8/CD30	0	TNFRSF8/CD30	approved_symbol	HGNC:11923	
+Isatuximab	ADPRC1/CD38	0	ADPRC1/CD38	approved_symbol	HGNC:1667	
+Iscalimab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Isecarosmab	ADAMTSL5;ALB	0	ADAMTSL5	approved_symbol	HGNC:27912	
+Isecarosmab	ADAMTSL5;ALB	1	ALB	approved_symbol	HGNC:399	
+Ispectamab	TNFRSF17/CD269/BCMA/TNFRSF13A	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Istiratumab	IGF1R/CD221;ERBB3/HER3	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Istiratumab	IGF1R/CD221;ERBB3/HER3	1	ERBB3/HER3	approved_symbol	HGNC:3431	
+Isuventatug	MICA&MICB	0	MICA	approved_symbol	HGNC:7090	
+Isuventatug	MICA&MICB	0	MICB	approved_symbol	HGNC:7091	
+Itanistomig	PDL1/CD274;IAP/CD47	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Itanistomig	PDL1/CD274;IAP/CD47	1	IAP/CD47	approved_symbol	HGNC:1682	
+Itepekimab	IL33	0	IL33	approved_symbol	HGNC:16028	
+Itolizumab	CD6	0	CD6	approved_symbol	HGNC:1691	
+Ivicentamab	CD37;CD37	0	CD37	approved_symbol	HGNC:1666	
+Ivicentamab	CD37;CD37	1	CD37	approved_symbol	HGNC:1666	
+Ivonescimab	VEGFA;PDCD1/CD279/PD1	0	VEGFA	approved_symbol	HGNC:12680	
+Ivonescimab	VEGFA;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Ivuxolimab	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Ixekizumab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Ixotatug	CLDN6	0	CLDN6	approved_symbol	HGNC:2048	
+Izalontamab	EGFR/ERBB1/HER1;ERBB3/HER3	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Izalontamab	EGFR/ERBB1/HER1;ERBB3/HER3	1	ERBB3/HER3	approved_symbol	HGNC:3431	
+Izastobart	C5AR1/CD88	0	C5AR1/CD88	approved_symbol	HGNC:1338	
+Izeltabart	ADAM9	0	ADAM9	approved_symbol	HGNC:216	
+Izenivetmab	NGFB (Canine)	0	NGFB (Canine)	nonhuman_target		
+Izuralimab	ICOS/CD278;PDCD1/CD279/PD1	0	ICOS/CD278	approved_symbol	HGNC:5351	
+Izuralimab	ICOS/CD278;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Labetuzumab	CEACAM5/CD66e	0	CEACAM5/CD66e	approved_symbol	HGNC:1817	
+Lacnotuzumab	CSF1	0	CSF1	approved_symbol	HGNC:2432	
+Lacutamab	KIR3DL2/CD158K	0	KIR3DL2/CD158K	approved_symbol	HGNC:6339	
+Ladiratuzumab	SLC39A6/ZIP6	0	SLC39A6/ZIP6	approved_symbol	HGNC:18607	
+Lampalizumab	CFD	0	CFD	approved_symbol	HGNC:2771	
+Lanadelumab	KLKB1	0	KLKB1	approved_symbol	HGNC:6371	
+Lancastotug	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Landogrozumab	MSTN/GDF8/GDF-8	0	MSTN/GDF8/GDF-8	approved_symbol	HGNC:4223	
+Lanerkitug	CCR8/CKR-L1/CDw198	0	CCR8/CKR-L1/CDw198	approved_symbol	HGNC:1609	
+Laprituximab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Larcaviximab	Zaire Ebolavirus Glycoprotein	0	Zaire Ebolavirus Glycoprotein	unresolved_or_nonprotein		
+Lasrekibart	IL5	0	IL5	approved_symbol	HGNC:6016	
+Latikafusp	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Latozinemab	SORT1/Gp95/NT3	0	SORT1/Gp95/NT3	approved_symbol	HGNC:11186	
+Laventatug	SLC39A6/ZIP6	0	SLC39A6/ZIP6	approved_symbol	HGNC:18607	
+Lebrikizumab	IL13	0	IL13	approved_symbol	HGNC:5973	
+Lecanemab	APP	0	APP	approved_symbol	HGNC:620	
+Lecankitug	IL17A&IL17F	0	IL17A	approved_symbol	HGNC:5981	
+Lecankitug	IL17A&IL17F	0	IL17F	approved_symbol	HGNC:16404	
+Ledostomig	NT5E/CALJA/CD73;PDCD1/CD279/PD1	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Ledostomig	NT5E/CALJA/CD73;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Lemalesomab	NCA90/p95	0	NCA90/p95	unresolved_or_nonprotein		
+Lemzoparlimab	IAP/CD47	0	IAP/CD47	approved_symbol	HGNC:1682	
+Lenvervimab	Hepatitis B Virus	0	Hepatitis B Virus	unresolved_or_nonprotein		
+Lenzilumab	CSF2	0	CSF2	approved_symbol	HGNC:2434	
+Lepunafusp	TfR1/CD71	0	TfR1/CD71	unique_alias	HGNC:11763	
+Lerdelimumab	TGFB1	0	TGFB1	approved_symbol	HGNC:11766	
+Leronlimab	CCR5/CD195	0	CCR5/CD195	approved_symbol	HGNC:1606	
+Lesabelimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Lesofavumab	Influenza B Virus	0	Influenza B Virus	unresolved_or_nonprotein		
+Letaplimab	IAP/CD47	0	IAP/CD47	approved_symbol	HGNC:1682	
+Letolizumab	CD40LG/CD154	0	CD40LG/CD154	approved_symbol	HGNC:11935	
+Levilimab	IL6R/CD126	0	IL6R/CD126	approved_symbol	HGNC:6019	
+Lexatumumab	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Libevitug	Hepatitis B Virus Surface Antigen	0	Hepatitis B Virus Surface Antigen	unresolved_or_nonprotein		
+Libivirumab	Hepatitis B Virus Surface Antigen	0	Hepatitis B Virus Surface Antigen	unresolved_or_nonprotein		
+Licaminlimab	TNF/TNFA	0	TNF/TNFA	approved_symbol	HGNC:11892	
+Lifastuzumab	SLC34A2	0	SLC34A2	approved_symbol	HGNC:11020	
+Ligelizumab	IGHE	0	IGHE	approved_symbol	HGNC:5522	
+Ligufalimab	IAP/CD47	0	IAP/CD47	approved_symbol	HGNC:1682	
+Lilotomab	CD37	0	CD37	approved_symbol	HGNC:1666	
+Linavonkibart	TGFB1	0	TGFB1	approved_symbol	HGNC:11766	
+Linclatamig	LY6G6D/G6D/NG25/LY6-D/MEGT1/C6orf23;CD3E	0	LY6G6D/G6D/NG25/LY6-D/MEGT1/C6orf23	approved_symbol	HGNC:13935	
+Linclatamig	LY6G6D/G6D/NG25/LY6-D/MEGT1/C6orf23;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Lintuzumab	SIGLEC3/CD33/p67	0	SIGLEC3/CD33/p67	approved_symbol	HGNC:1659	
+Linvoseltamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Linvoseltamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Lipustobart	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Lirentelimab	SIGLEC8/SAF2	0	SIGLEC8/SAF2	approved_symbol	HGNC:10877	
+Lirilumab	KIRD2	0	KIRD2	unresolved_or_nonprotein		
+Litifilimab	CLEC4C	0	CLEC4C	approved_symbol	HGNC:13258	
+Livmoniplimab	LRRC32	0	LRRC32	approved_symbol	HGNC:4161	
+Lixudebart	CLDN1	0	CLDN1	approved_symbol	HGNC:2032	
+Lodapolimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Lodelcizumab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Lofacimig	F11;F11	0	F11	approved_symbol	HGNC:3529	
+Lofacimig	F11;F11	1	F11	approved_symbol	HGNC:3529	
+Lokivetmab	IL31	0	IL31	nonhuman_target	HGNC:19372	
+Lomtegovimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Lomvastomig	PDCD1/CD279/PD1;HAVCR2/TIM3	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Lomvastomig	PDCD1/CD279/PD1;HAVCR2/TIM3	1	HAVCR2/TIM3	approved_symbol	HGNC:18437	
+Loncastuximab	CD19	0	CD19	approved_symbol	HGNC:1633	
+Lonigutamab	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Lorigerlimab	PDCD1/CD279/PD1;CTLA4/CD152	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Lorigerlimab	PDCD1/CD279/PD1;CTLA4/CD152	1	CTLA4/CD152	approved_symbol	HGNC:2505	
+Lorukafusp	Ganglioside GD2	0	Ganglioside GD2	unresolved_or_nonprotein		
+Lorvotuzumab	NCAM1/CD56	0	NCAM1/CD56	approved_symbol	HGNC:7656	
+Losatuxizumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Lotivibart	HIV-1 gp120	0	HIV-1 gp120	unresolved_or_nonprotein		
+Lucatumumab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Lucorafusp	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Lulizumab	CD28	0	CD28	approved_symbol	HGNC:1653	
+Lumiliximab	FCER2/CD23	0	FCER2/CD23	approved_symbol	HGNC:3612	
+Lumistobart	SIRPA	0	SIRPA	approved_symbol	HGNC:9662	
+Lumrotatug	ADPRC1/CD38	0	ADPRC1/CD38	approved_symbol	HGNC:1667	
+Lumretuzumab	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Lunaxafusp	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Lunlekitug	IL1A	0	IL1A	approved_symbol	HGNC:5991	
+Lunsekimig1	IL13;IL13	0	IL13	approved_symbol	HGNC:5973	
+Lunsekimig1	IL13;IL13	1	IL13	approved_symbol	HGNC:5973	
+Lunsekimig2	TSLP;ALB	0	TSLP	approved_symbol	HGNC:30743	
+Lunsekimig2	TSLP;ALB	1	ALB	approved_symbol	HGNC:399	
+Lunsekimig3	TSLP	0	TSLP	approved_symbol	HGNC:30743	
+Lupartumab	LYPD3	0	LYPD3	approved_symbol	HGNC:24880	
+Lusvertikimab	IL7R/CD127	0	IL7R/CD127	approved_symbol	HGNC:6024	
+Lutikizumab	IL1A;IL1B	0	IL1A	approved_symbol	HGNC:5991	
+Lutikizumab	IL1A;IL1B	1	IL1B	approved_symbol	HGNC:5992	
+Luvagrobart	NGF	0	NGF	approved_symbol	HGNC:7808	
+Luveltamab	FOLR1	0	FOLR1	approved_symbol	HGNC:3791	
+Maftivimab	Zaire Ebolavirus Glycoprotein	0	Zaire Ebolavirus Glycoprotein	unresolved_or_nonprotein		
+Magrolimab	IAP/CD47	0	IAP/CD47	approved_symbol	HGNC:1682	
+Manelimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Manfidokimab	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Margetuximab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Maridebart	GIPR	0	GIPR	approved_symbol	HGNC:4271	
+Marlotamig	EGFR/ERBB1/HER1;CD28	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Marlotamig	EGFR/ERBB1/HER1;CD28	1	CD28	approved_symbol	HGNC:1653	
+Marstacimab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Masavibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Matuzumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Mavrilimumab	CSF2RA/CD116	0	CSF2RA/CD116	approved_symbol	HGNC:2435	
+Mavrostobart	NT5E/CALJA/CD73	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Mazorelvimab	Rabies Virus Spike Glycoprotein G	0	Rabies Virus Spike Glycoprotein G	unresolved_or_nonprotein		
+Mecbotamab	AXL/UFO	0	AXL/UFO	approved_symbol	HGNC:905	
+Melredableukin	Non-Binding	0	Non-Binding	unresolved_or_nonprotein		
+Melrilimab	IL1RL1/ST2	0	IL1RL1/ST2	approved_symbol	HGNC:5998	
+Metelimumab	TGFB1	0	TGFB1	approved_symbol	HGNC:11766	
+Mepolizumab	IL5	0	IL5	approved_symbol	HGNC:6016	
+Mevonlerbart	Fel d 1	0	Fel d 1	unresolved_or_nonprotein		
+Mezagitamab	ADPRC1/CD38	0	ADPRC1/CD38	approved_symbol	HGNC:1667	
+Mibavademab	LEPR/CD295/OBR	0	LEPR/CD295/OBR	approved_symbol	HGNC:6554	
+Micvotabart	FN extracellular domain B	0	FN extracellular domain B	unresolved_or_nonprotein		
+Milatuzumab	CD74/HLA class II histocompatibility antigen gamma chain	0	CD74/HLA class II histocompatibility antigen gamma chain	approved_symbol	HGNC:1697	
+Mipasetamab	AXL/UFO	0	AXL/UFO	approved_symbol	HGNC:905	
+Mipletamig	IL3RA/CD123;CD3E	0	IL3RA/CD123	approved_symbol	HGNC:6012	
+Mipletamig	IL3RA/CD123;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Miptenalimab	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Mirikizumab	IL23A	0	IL23A	approved_symbol	HGNC:15488	
+Miromavimab	Rabies Virus Strain ERA Glycoprotein Ectodomain Epitope G-II	0	Rabies Virus Strain ERA Glycoprotein Ectodomain Epitope G-II	unresolved_or_nonprotein		
+Mirvetuximab	FOLR1	0	FOLR1	approved_symbol	HGNC:3791	
+Mirzotamab	B7H3/CD276	0	B7H3/CD276	approved_symbol	HGNC:19137	
+Misitatug	MSLN	0	MSLN	approved_symbol	HGNC:7371	
+Mitazalimab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Modakafusp	ADPRC1/CD38	0	ADPRC1/CD38	approved_symbol	HGNC:1667	
+Modotuximab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Moflerafusp	SIRPA	0	SIRPA	approved_symbol	HGNC:9662	
+Mogamulizumab	CCR4/CD194	0	CCR4/CD194	approved_symbol	HGNC:1605	
+Monalizumab	KLRC1	0	KLRC1	approved_symbol	HGNC:6374	
+Mosunetuzumab	CD3E;MS4A1/CD20	0	CD3E	approved_symbol	HGNC:1674	
+Mosunetuzumab	CD3E;MS4A1/CD20	1	MS4A1/CD20	approved_symbol	HGNC:7315	
+Motavizumab	Respiratory Syncytial Virus Glycoprotein F	0	Respiratory Syncytial Virus Glycoprotein F	unresolved_or_nonprotein		
+Moxetumomab	SIGLEC2/CD22	0	SIGLEC2/CD22	approved_symbol	HGNC:1643	
+Mozistobart	SIGLEC2/CD22	0	SIGLEC2/CD22	approved_symbol	HGNC:1643	
+Murlentamab	AMHR2	0	AMHR2	approved_symbol	HGNC:465	
+Mupadolimab	NT5E/CALJA/CD73	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Muromonab	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Muzastotug	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Nadecnemab	GFRA3	0	GFRA3	approved_symbol	HGNC:4245	
+Nadunolimab	IL1RAP	0	IL1RAP	approved_symbol	HGNC:5995	
+Namilumab	CSF2	0	CSF2	approved_symbol	HGNC:2434	
+Naptumomab	TPBG/WAIF1	0	TPBG/WAIF1	approved_symbol	HGNC:12004	
+Naratuximab	CD37	0	CD37	approved_symbol	HGNC:1666	
+Narlumosbart	TNFSF11/CD254/RANKL/TRANCE/OPGL/ODF	0	TNFSF11/CD254/RANKL/TRANCE/OPGL/ODF	approved_symbol	HGNC:11926	
+Narnatumab	MST1R/CD136	0	MST1R/CD136	approved_symbol	HGNC:7381	
+Narsoplimab	MASP2	0	MASP2	approved_symbol	HGNC:6902	
+Natalizumab	ITGA4/CD49D	0	ITGA4/CD49D	approved_symbol	HGNC:6140	
+Navenibart	KLKB1	0	KLKB1	approved_symbol	HGNC:6371	
+Navivumab	Influenza A HA	0	Influenza A HA	unresolved_or_nonprotein		
+Navicixizumab	DLL4;VEGFA	0	DLL4	approved_symbol	HGNC:2910	
+Navicixizumab	DLL4;VEGFA	1	VEGFA	approved_symbol	HGNC:12680	
+Naxitamab	Ganglioside GD2	0	Ganglioside GD2	unresolved_or_nonprotein		
+Nebokitug	CCL24/SCYA24/Ckb-6/MPIF-2/eotaxin-2	0	CCL24/SCYA24/Ckb-6/MPIF-2/eotaxin-2	approved_symbol	HGNC:10623	
+Nebratamig1	TNFRSF9/CD137/4-1BB;PDL1/CD274	0	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Nebratamig1	TNFRSF9/CD137/4-1BB;PDL1/CD274	1	PDL1/CD274	approved_symbol	HGNC:17635	
+Nebratamig2	ROR1;CD3D and CD3E	0	ROR1	approved_symbol	HGNC:10256	
+Nebratamig2	ROR1;CD3D and CD3E	1	CD3D	complex_target_not_direct_subunit	HGNC:1673	
+Nebratamig2	ROR1;CD3D and CD3E	1	CD3E	complex_target_not_direct_subunit	HGNC:1674	
+Necitumumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Negalstobart	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Nelmastobart	BTN1A1	0	BTN1A1	approved_symbol	HGNC:1135	
+Nelistotug	TACTILE/CD96	0	TACTILE/CD96	approved_symbol	HGNC:16892	
+Nemolizumab	IL31RA	0	IL31RA	approved_symbol	HGNC:18969	
+Nepuvibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Nesfrotamig	ERBB2/CD340/HER2;TNFRSF9/CD137/4-1BB	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Nesfrotamig	ERBB2/CD340/HER2;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Nesvacumab	ANGPT2	0	ANGPT2	approved_symbol	HGNC:485	
+Netakimab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Nezastomig	FOLH1/GCPII/PSMA;CD28	0	FOLH1/GCPII/PSMA	approved_symbol	HGNC:3788	
+Nezastomig	FOLH1/GCPII/PSMA;CD28	1	CD28	approved_symbol	HGNC:1653	
+Nezutatug	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Nimacimab	CNR1/CB1	0	CNR1/CB1	approved_symbol	HGNC:2159	
+Nimotuzumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Nipocalimab	FCGRT/FcRn	0	FCGRT/FcRn	approved_symbol	HGNC:3621	
+Nirsevimab	Respiratory Syncytial Virus	0	Respiratory Syncytial Virus	unresolved_or_nonprotein		
+Nisevokitug	TGFB1/TGFB2	0	TGFB1/TGFB2	ambiguous_slash_group	HGNC:11766;HGNC:11768	
+Nivatrotamab	GD2;CD3E	0	GD2	unresolved_or_nonprotein		
+Nivatrotamab	GD2;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Nivisnebart	SORT1/Gp95/NT3	0	SORT1/Gp95/NT3	approved_symbol	HGNC:11186	
+Nivolumab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Nofazinlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Nolavetbart	IL31RA (Canine)	0	IL31RA (Canine)	nonhuman_target		
+Nurulimab	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Nuvustotug	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Oberotatug	LY75/CD205/DEC205	0	LY75/CD205/DEC205	approved_symbol	HGNC:6729	
+Obertamig	CD3E;HLA-G	0	CD3E	approved_symbol	HGNC:1674	
+Obertamig	CD3E;HLA-G	1	HLA-G	approved_symbol	HGNC:4964	
+Obexelimab	CD19	0	CD19	approved_symbol	HGNC:1633	
+Obiltoxaximab	Anthrax Protective Antigen	0	Anthrax Protective Antigen	unresolved_or_nonprotein		
+Obinutuzumab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Obrindatamab	B7H3/CD276;CD3E	0	B7H3/CD276	approved_symbol	HGNC:19137	
+Obrindatamab	B7H3/CD276;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Obrixtamig	DLL3;CD3E	0	DLL3	approved_symbol	HGNC:2909	
+Obrixtamig	DLL3;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Ocankitug	TSLP	0	TSLP	approved_symbol	HGNC:30743	
+Ocaratuzumab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Ociperlimab	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Ocrelizumab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Odesivimab	Zaire Ebolavirus Glycoprotein	0	Zaire Ebolavirus Glycoprotein	unresolved_or_nonprotein		
+Odronextamab	MS4A1/CD20;CD3E	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Odronextamab	MS4A1/CD20;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Ofatumumab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Ogalvibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Olaratumab	PDGFRA/CD140A	0	PDGFRA/CD140A	approved_symbol	HGNC:8803	
+Oleclumab	NT5E/CALJA/CD73	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Olendalizumab	C5	0	C5	approved_symbol	HGNC:1331	
+Olintatug	KAAG1/RU2AS	0	KAAG1/RU2AS	approved_symbol	HGNC:21031	
+Olinvacimab	KDR/CD309/VEGFR2	0	KDR/CD309/VEGFR2	approved_symbol	HGNC:6307	
+Oloctinebart	LGALS3/GAL3	0	LGALS3/GAL3	approved_symbol	HGNC:6563	
+Olokizumab	IL6	0	IL6	approved_symbol	HGNC:6018	
+Omalizumab	IGHE	0	IGHE	approved_symbol	HGNC:5522	
+Omburtamab	B7H3/CD276	0	B7H3/CD276	approved_symbol	HGNC:19137	
+Omectatug	CLDN18	0	CLDN18	approved_symbol	HGNC:2039	
+Omoprubart	C5	0	C5	approved_symbol	HGNC:1331	
+Omodenbamab	Staphylococcus aureus Protein A	0	Staphylococcus aureus Protein A	unresolved_or_nonprotein		
+Ompekimig1	IL13;IL4	0	IL13	approved_symbol	HGNC:5973	
+Ompekimig1	IL13;IL4	1	IL4	approved_symbol	HGNC:6014	
+Ompekimig2	IL33	0	IL33	approved_symbol	HGNC:16028	
+Onartuzumab	MET/HGFR	0	MET/HGFR	approved_symbol	HGNC:7029	
+Onfekafusp	FN extracellular domain B	0	FN extracellular domain B	unresolved_or_nonprotein		
+Ongericimab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Ontamalimab	MADCAM1	0	MADCAM1	approved_symbol	HGNC:6765	
+Ontuxizumab	CD248/CD164L1	0	CD248/CD164L1	approved_symbol	HGNC:18219	
+Onvatilimab	VSIR/VISTA/B7H5/PD1H/SISP1	0	VSIR/VISTA/B7H5/PD1H/SISP1	approved_symbol	HGNC:30085	
+Opamistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Opamistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Opelkibart	KIT/CD117	0	KIT/CD117	approved_symbol	HGNC:6342	
+Opicinumab	LINGO1	0	LINGO1	approved_symbol	HGNC:21205	
+Oportuzumab	EPCAM/CD326	0	EPCAM/CD326	approved_symbol	HGNC:11529	
+Opucolimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Opugotamig	FOLR1;FOLR1	0	FOLR1	approved_symbol	HGNC:3791	
+Opugotamig	FOLR1;FOLR1	1	FOLR1	approved_symbol	HGNC:3791	
+Ordesekimab	IL15	0	IL15	approved_symbol	HGNC:5977	
+Orilanolimab	FCGRT/FcRn	0	FCGRT/FcRn	approved_symbol	HGNC:3621	
+Ormutivimab	Rabies Virus Surface Glycoprotein 4 (gp4) Epitope 1	0	Rabies Virus Surface Glycoprotein 4 (gp4) Epitope 1	unresolved_or_nonprotein		
+Orticumab	OxLDL	0	OxLDL	unresolved_or_nonprotein		
+Osemitamab	CLDN18	0	CLDN18	approved_symbol	HGNC:2039	
+Osocimab	F11	0	F11	approved_symbol	HGNC:3529	
+Otelixizumab	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Otilimab	CSF2	0	CSF2	approved_symbol	HGNC:2434	
+Otlertuzumab	CD37	0	CD37	approved_symbol	HGNC:1666	
+Oturkibart	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Oxelumab	TNFSF4/CD134/CD252/OX40L	0	TNFSF4/CD134/CD252/OX40L	approved_symbol	HGNC:11934	
+Ozanezumab	RTN4/Nogo	0	RTN4/Nogo	approved_symbol	HGNC:14085	
+Ozekibart	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Ozoralizumab	TNF/TNFA;ALB	0	TNF/TNFA	approved_symbol	HGNC:11892	
+Ozoralizumab	TNF/TNFA;ALB	1	ALB	approved_symbol	HGNC:399	
+Ozureprubart	IGHE	0	IGHE	approved_symbol	HGNC:5522	
+Ozuriftamab	ROR2	0	ROR2	approved_symbol	HGNC:10257	
+Pabinafusp	TFRC/CD71	0	TFRC/CD71	approved_symbol	HGNC:11763	
+Pacanalotamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Pacanalotamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Pacibekitug	IL6	0	IL6	approved_symbol	HGNC:6018	
+Pacmilimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Palivizumab	Respiratory Syncytial Virus Glycoprotein F	0	Respiratory Syncytial Virus Glycoprotein F	unresolved_or_nonprotein		
+Palverafusp	VEGF	0	VEGF	unique_alias	HGNC:12680	
+Pamlectabart	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Pamlectabart	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Pamrevlumab	CTGF/CCN2	0	CTGF/CCN2	approved_symbol	HGNC:2500	
+Pamvatamig	MET/HGFR;EGFR/ERBB1/HER1	0	MET/HGFR	approved_symbol	HGNC:7029	
+Pamvatamig	MET/HGFR;EGFR/ERBB1/HER1	1	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Panitumumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Panobacumab	Serotype IATS O11	0	Serotype IATS O11	unresolved_or_nonprotein		
+Paridiprubart	TLR4/CD284	0	TLR4/CD284	approved_symbol	HGNC:11850	
+Parsatuzumab	EGFL7	0	EGFL7	approved_symbol	HGNC:20594	
+Pasotuxizumab	FOLH1/GCPII/PSMA;CD3E	0	FOLH1/GCPII/PSMA	approved_symbol	HGNC:3788	
+Pasotuxizumab	FOLH1/GCPII/PSMA;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Pasritamig	KLK2/KLK2A2/hGK-1/hK2;CD3E	0	KLK2/KLK2A2/hGK-1/hK2	approved_symbol	HGNC:6363	
+Pasritamig	KLK2/KLK2A2/hGK-1/hK2;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Patecibart	EDNRA	0	EDNRA	approved_symbol	HGNC:3179	
+Pateclizumab	LTA	0	LTA	approved_symbol	HGNC:6709	
+Patritumab	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Pavurutamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Pavurutamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Pegrizeprument	CD28	0	CD28	approved_symbol	HGNC:1653	
+Pelgifatamab	FOLH1/GCPII/PSMA	0	FOLH1/GCPII/PSMA	approved_symbol	HGNC:3788	
+Peluntamig	IAP/CD47;DLL3	0	IAP/CD47	approved_symbol	HGNC:1682	
+Peluntamig	IAP/CD47;DLL3	1	DLL3	approved_symbol	HGNC:2909	
+Pembrolizumab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Pemivibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Penpulimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Pepinemab	SEMA4D/CD100	0	SEMA4D/CD100	approved_symbol	HGNC:10732	
+Perakizumab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Perenostobart	ENTPD1/CD39	0	ENTPD1/CD39	approved_symbol	HGNC:3363	
+Peresolimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Pertuzumab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Petosemtamab	EGFR/ERBB1/HER1;LGR5	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Petosemtamab	EGFR/ERBB1/HER1;LGR5	1	LGR5	approved_symbol	HGNC:4504	
+Pexelizumab	C5	0	C5	approved_symbol	HGNC:1331	
+Picankibart	IL23A	0	IL23A	approved_symbol	HGNC:15488	
+Pidilizumab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Pimivalimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Pimurutamab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Pinatuzumab	SIGLEC2/CD22	0	SIGLEC2/CD22	approved_symbol	HGNC:1643	
+Pivekimab	IL3RA/CD123	0	IL3RA/CD123	approved_symbol	HGNC:6012	
+Placulumab	TNF/TNFA	0	TNF/TNFA	approved_symbol	HGNC:11892	
+Plamotamab	MS4A1/CD20;CD3E	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Plamotamab	MS4A1/CD20;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Plonmarlimab	CSF2	0	CSF2	approved_symbol	HGNC:2434	
+Plozalizumab	CCR2/CD192	0	CCR2/CD192	approved_symbol	HGNC:1603	
+Podentamig1	TNFRSF17/BCM/BCMA/CD269/TNFRSF13A;ALB	0	TNFRSF17/BCM/BCMA/CD269/TNFRSF13A	approved_symbol	HGNC:11913	
+Podentamig1	TNFRSF17/BCM/BCMA/CD269/TNFRSF13A;ALB	1	ALB	approved_symbol	HGNC:399	
+Podentamig2	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Polatuzumab	AGM6/CD79B	0	AGM6/CD79B	approved_symbol	HGNC:1699	
+Polzastobart	LILRB2	0	LILRB2	approved_symbol	HGNC:6606	
+Ponezumab	APP	0	APP	approved_symbol	HGNC:620	
+Ponsegromab	GDF15/MIC1/MIC-1/NAG1/NAG-1/PTGFB	0	GDF15/MIC1/MIC-1/NAG1/NAG-1/PTGFB	approved_symbol	HGNC:30142	
+Porustobart	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Posnafusp	TFRC/CD71	0	TFRC/CD71	approved_symbol	HGNC:11763	
+Posdinemab	MAPT	0	MAPT	approved_symbol	HGNC:6893	
+Potravitug	BK polyomavirus VP1	0	BK polyomavirus VP1	unresolved_or_nonprotein		
+Pozelimab	C5	0	C5	approved_symbol	HGNC:1331	
+Plutavimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Porgaviximab	Zaire Ebolavirus Glycoprotein	0	Zaire Ebolavirus Glycoprotein	unresolved_or_nonprotein		
+Pradusinstobart	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Prafnosbart	ACVR1	0	ACVR1	approved_symbol	HGNC:171	
+Praluzatamab	ALCAM/CD166	0	ALCAM/CD166	approved_symbol	HGNC:400	
+Prasinezumab	SNCA/PARK1/PARK4	0	SNCA/PARK1/PARK4	approved_symbol	HGNC:11138	
+Precemtabart	CEACAM5/CD66e	0	CEACAM5/CD66e	approved_symbol	HGNC:1817	
+Prezalumab	ICOSLG	0	ICOSLG	approved_symbol	HGNC:17087	
+Pritoxaximab	Shiga Toxin Type 1	0	Shiga Toxin Type 1	unresolved_or_nonprotein		
+Pritumumab	VIM	0	VIM	approved_symbol	HGNC:12692	
+Produvofusp	TBC	0	TBC	unique_alias	HGNC:11578	
+Prolgolimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Pucotenlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Pulocimab	KDR/CD309/VEGFR2	0	KDR/CD309/VEGFR2	approved_symbol	HGNC:6307	
+Pumitamig1	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Pumitamig2	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Puxitatug	VTCN1/B7H4	0	VTCN1/B7H4	approved_symbol	HGNC:28873	
+Quavonlimab	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Quetmolimab	CX3CL1	0	CX3CL1	approved_symbol	HGNC:10647	
+Quilizumab	IGHE	0	IGHE	approved_symbol	HGNC:5522	
+Quisovalimab	TNFSF14/CD258	0	TNFSF14/CD258	approved_symbol	HGNC:11930	
+Racotumomab	Idiotope of anti-NeuGc-ganliosides	0	Idiotope of anti-NeuGc-ganliosides	unresolved_or_nonprotein		
+Rademikibart	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Radretumab	FN extracellular domain B	0	FN extracellular domain B	unresolved_or_nonprotein		
+Rafivirumab	Rabies Virus Antigenic Site III	0	Rabies Virus Antigenic Site III	unresolved_or_nonprotein		
+Ragifilimab	TNFRSF18/CD357/GITR	0	TNFRSF18/CD357/GITR	approved_symbol	HGNC:11914	
+Ragistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Ragistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Ralpancizumab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Raludotatug	CDH6	0	CDH6	approved_symbol	HGNC:1765	
+Ralzapastotug	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Ramantamig1	CD3E;GPRC5D	0	CD3E	approved_symbol	HGNC:1674	
+Ramantamig1	CD3E;GPRC5D	1	GPRC5D	approved_symbol	HGNC:13310	
+Ramantamig2	TNFRSF17/CD269/BCMA/TNFRSF13A	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Ramucirumab	KDR/CD309/VEGFR2	0	KDR/CD309/VEGFR2	approved_symbol	HGNC:6307	
+Ranevetmab	NGFB	0	NGFB	nonhuman_target	HGNC:7808	
+Ranibizumab	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Rapaprutug	KARS1	0	KARS1	approved_symbol	HGNC:6215	
+Ravagalimab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Ravulizumab	C5	0	C5	approved_symbol	HGNC:1331	
+Recaticimab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Recibokibart	IL1RL2/IL1Rrp2/IL1RRP2/IL-36R/IL36R	0	IL1RL2/IL1Rrp2/IL1RRP2/IL-36R/IL36R	approved_symbol	HGNC:5999	
+Refanezumab	SIGLEC4/MAG	0	SIGLEC4/MAG	approved_symbol	HGNC:6783	
+Reflocibart	VEGFB	0	VEGFB	approved_symbol	HGNC:12681	
+Regdanvimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Relatlimab	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Relfovetmab	NGFB	0	NGFB	nonhuman_target	HGNC:7808	
+Remternetug	APP	0	APP	approved_symbol	HGNC:620	
+Remtolumab	IL17A;TNF/TNFA	0	IL17A	approved_symbol	HGNC:5981	
+Remtolumab	IL17A;TNF/TNFA	1	TNF/TNFA	approved_symbol	HGNC:11892	
+Remzistotug	PVRIG/NECTIN2 receptor/CD112R	0	PVRIG/NECTIN2 receptor/CD112R	approved_symbol	HGNC:32190	
+Renvistobart	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Reozalimab	PDCD1/CD279/PD1;PDL1/CD274	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Reozalimab	PDCD1/CD279/PD1;PDL1/CD274	1	PDL1/CD274	approved_symbol	HGNC:17635	
+Reslizumab	IL5	0	IL5	approved_symbol	HGNC:6016	
+Resugosbart	SOST	0	SOST	approved_symbol	HGNC:13771	
+Retavibart	RSV gpF	0	RSV gpF	unresolved_or_nonprotein		
+Retifanlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Retlirafusp	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Revdofilimab	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Rezetamig	CD3;SIGLEC2/CD22	0	CD3	complex_target_not_direct_subunit		
+Rezetamig	CD3;SIGLEC2/CD22	1	SIGLEC2/CD22	approved_symbol	HGNC:1643	
+Rezorstobart	KLRB1	0	KLRB1	approved_symbol	HGNC:6373	
+Riliprubart	C1S	0	C1S	approved_symbol	HGNC:1247	
+Rilogrotug	GDF15/MIC1/MIC-1/NAG1/NAG-1/PTGFB	0	GDF15/MIC1/MIC-1/NAG1/NAG-1/PTGFB	approved_symbol	HGNC:30142	
+Rilotumumab	HGF/SF	0	HGF/SF	approved_symbol	HGNC:4893	
+Riltovetbart	IL31 (Canine)	0	IL31 (Canine)	nonhuman_target		
+Rilvegostomig	PDCD1/CD279/PD1;TIGIT/WUCAM/VSTM3	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Rilvegostomig	PDCD1/CD279/PD1;TIGIT/WUCAM/VSTM3	1	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Rimteravimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Rinatabart	FOLR1	0	FOLR1	approved_symbol	HGNC:3791	
+Rinucumab	PDGFRB/CD140B	0	PDGFRB/CD140B	approved_symbol	HGNC:8804	
+Ripertamab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Risankizumab	IL23A	0	IL23A	approved_symbol	HGNC:15488	
+Rituximab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Rivabazumab	PcrV type III secretion system	0	PcrV type III secretion system	unresolved_or_nonprotein		
+Robatumumab	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Rocatinlimab	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Roconkibart	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Roledumab	RhD/CD240D/RhPI	0	RhD/CD240D/RhPI	approved_symbol	HGNC:10009	
+Rolinsatamab	PRLR	0	PRLR	approved_symbol	HGNC:9446	
+Rolistobart	LILRB4/CD85K	0	LILRB4/CD85K	approved_symbol	HGNC:6608	
+Romilkimab	IL13;IL4	0	IL13	approved_symbol	HGNC:5973	
+Romilkimab	IL13;IL4	1	IL4	approved_symbol	HGNC:6014	
+Romlusevimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Romosozumab	SOST	0	SOST	approved_symbol	HGNC:13771	
+Rontalizumab	IFNA1	0	IFNA1	approved_symbol	HGNC:5417	
+Rosmantuzumab	RSPO3	0	RSPO3	approved_symbol	HGNC:20866	
+Rosnilimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Rosopatamab	FOLH1/GCPII/PSMA	0	FOLH1/GCPII/PSMA	approved_symbol	HGNC:3788	
+Rovalpituzumab	DLL3	0	DLL3	approved_symbol	HGNC:2909	
+Rovelizumab	ITGAL/CD11A/LFA1A and ITGB2/CD18	0	ITGAL/CD11A/LFA1A	complex_target_not_direct_subunit	HGNC:6148	
+Rovelizumab	ITGAL/CD11A/LFA1A and ITGB2/CD18	0	ITGB2/CD18	complex_target_not_direct_subunit	HGNC:6155	
+Rozanolixizumab	FCGRT/FcRn	0	FCGRT/FcRn	approved_symbol	HGNC:3621	
+Rozibafusp	ICOS/CD278	0	ICOS/CD278	approved_symbol	HGNC:5351	
+Rulonilimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Runimotamab	ERBB2/CD340/HER2;CD3E	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Runimotamab	ERBB2/CD340/HER2;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Ruplizumab	CD40LG/CD154	0	CD40LG/CD154	approved_symbol	HGNC:11935	
+Ruxoprubart	CFB/BFD	0	CFB/BFD	approved_symbol	HGNC:1037	
+Ruzaltatug	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Sabatolimab	HAVCR2/TIM3	0	HAVCR2/TIM3	approved_symbol	HGNC:18437	
+Sabestomig	PDCD1/CD279/PD1;HAVCR2/TIM3	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Sabestomig	PDCD1/CD279/PD1;HAVCR2/TIM3	1	HAVCR2/TIM3	approved_symbol	HGNC:18437	
+Sabirnetug	APP	0	APP	approved_symbol	HGNC:620	
+Sacituzumab	TACSTD2/TROP2/EGP1	0	TACSTD2/TROP2/EGP1	approved_symbol	HGNC:11530	
+Safimestomig	IAP/CD47;PDL1/CD274	0	IAP/CD47	approved_symbol	HGNC:1682	
+Safimestomig	IAP/CD47;PDL1/CD274	1	PDL1/CD274	approved_symbol	HGNC:17635	
+Samalizumab	MOX2/CD200	0	MOX2/CD200	approved_symbol	HGNC:7203	
+Samatatug	F3/CD142	0	F3/CD142	approved_symbol	HGNC:3541	
+Samrotamab	LRRC15	0	LRRC15	approved_symbol	HGNC:20818	
+Sarilumab	IL6R/CD126	0	IL6R/CD126	approved_symbol	HGNC:6019	
+Sasanlimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Satralizumab	IL6R/CD126	0	IL6R/CD126	approved_symbol	HGNC:6019	
+Satumomab	TAG72	0	TAG72	unresolved_or_nonprotein		
+Secukinumab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Selicrelumab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Semorinemab	MAPT	0	MAPT	approved_symbol	HGNC:6893	
+Semzuvolimab	CD4	0	CD4	approved_symbol	HGNC:1678	
+Seniprutug	TRBV9	0	TRBV9	approved_symbol	HGNC:12246	
+Serclutamab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Seribantumab	ERBB3/HER3	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Serplulimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Setoxaximab	Shiga Toxin Type 2	0	Shiga Toxin Type 2	unresolved_or_nonprotein		
+Setrusumab	SOST	0	SOST	approved_symbol	HGNC:13771	
+Sibeprenlimab	TNFSF13/CD256/APRIL	0	TNFSF13/CD256/APRIL	approved_symbol	HGNC:11928	
+Sifalimumab	IFNA1	0	IFNA1	approved_symbol	HGNC:5417	
+Sigvotatug	ITGB6	0	ITGB6	approved_symbol	HGNC:6161	
+Silevimig	Rabies Lyssavirus Glycoprotein G epitope III;Rabies Lyssavirus Glycoprotein G epitope I	0	Rabies Lyssavirus Glycoprotein G epitope III	unresolved_or_nonprotein		
+Silevimig	Rabies Lyssavirus Glycoprotein G epitope III;Rabies Lyssavirus Glycoprotein G epitope I	1	Rabies Lyssavirus Glycoprotein G epitope I	unresolved_or_nonprotein		
+Siltartoxatug	Clostridium tetani tetanus toxin (TeNT)	0	Clostridium tetani tetanus toxin (TeNT)	unresolved_or_nonprotein		
+Siltuximab	IL6	0	IL6	approved_symbol	HGNC:6018	
+Simaravibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Simlukafusp	FAP	0	FAP	approved_symbol	HGNC:3590	
+Simridarlimab	IAP/CD47;PDL1/CD274	0	IAP/CD47	approved_symbol	HGNC:1682	
+Simridarlimab	IAP/CD47;PDL1/CD274	1	PDL1/CD274	approved_symbol	HGNC:17635	
+Simtuzumab	LOXL2	0	LOXL2	approved_symbol	HGNC:6666	
+Sintilimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Sipavibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Sirexatamab	DKK1	0	DKK1	approved_symbol	HGNC:2891	
+Sirtratumab	SLITRK6	0	SLITRK6	approved_symbol	HGNC:23503	
+Sirukumab	IL6	0	IL6	approved_symbol	HGNC:6018	
+Socazolimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Sofituzumab	MUC16/CA125	0	MUC16/CA125	approved_symbol	HGNC:15582	
+Solabafusp	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Solanezumab	APP	0	APP	approved_symbol	HGNC:620	
+Solitomab	EPCAM/CD326;CD3E	0	EPCAM/CD326	approved_symbol	HGNC:11529	
+Solitomab	EPCAM/CD326;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Solnerstotug	VSIR/VISTA/B7H5/PD1H/SISP1	0	VSIR/VISTA/B7H5/PD1H/SISP1	approved_symbol	HGNC:30085	
+Solrikitug	TSLP	0	TSLP	approved_symbol	HGNC:30743	
+Sonavibart	Influenza A HA	0	Influenza A HA	unresolved_or_nonprotein		
+Sonelokimab1	IL17A;ALB	0	IL17A	approved_symbol	HGNC:5981	
+Sonelokimab1	IL17A;ALB	1	ALB	approved_symbol	HGNC:399	
+Sonelokimab2	IL17F	0	IL17F	approved_symbol	HGNC:16404	
+Sonesitatug	CLDN18	0	CLDN18	approved_symbol	HGNC:2039	
+Sotiburafusp	VEGFR-1	0	VEGFR-1	unresolved_or_nonprotein		
+Sotigalimab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Sotevtamab	CLU	0	CLU	approved_symbol	HGNC:2095	
+Sotrovimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Sovipostobart	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Spartalizumab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Spesolimab	IL36RN	0	IL36RN	approved_symbol	HGNC:15561	
+Spevatamig	IAP/CD47;CLDN18	0	IAP/CD47	approved_symbol	HGNC:1682	
+Spevatamig	IAP/CD47;CLDN18	1	CLDN18	approved_symbol	HGNC:2039	
+Stamulumab	MSTN/GDF8/GDF-8/GDF8	0	MSTN/GDF8/GDF-8/GDF8	approved_symbol	HGNC:4223	
+Stapokibart	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Suciraslimab	SIGLEC2/CD22	0	SIGLEC2/CD22	approved_symbol	HGNC:1643	
+Sudubrilimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Sugemalimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Suptavumab	Respiratory Syncytial Virus Glycoprotein F	0	Respiratory Syncytial Virus Glycoprotein F	unresolved_or_nonprotein		
+Surovatamig	CD3D&CD3E;CD19	0	CD3D	complex_target_not_direct_subunit	HGNC:1673	
+Surovatamig	CD3D&CD3E;CD19	0	CD3E	complex_target_not_direct_subunit	HGNC:1674	
+Surovatamig	CD3D&CD3E;CD19	1	CD19	approved_symbol	HGNC:1633	
+Surzebiclimab	HAVCR2/TIM3	0	HAVCR2/TIM3	approved_symbol	HGNC:18437	
+Sutacimig	F7a/F7A/FVIIa/FVIIA;TREML1/GLTL1825/PRO3438/TLT-1/TLT1	0	F7a/F7A/FVIIa/FVIIA	reviewed_gene_product	HGNC:3544	
+Sutacimig	F7a/F7A/FVIIa/FVIIA;TREML1/GLTL1825/PRO3438/TLT-1/TLT1	1	TREML1/GLTL1825/PRO3438/TLT-1/TLT1	approved_symbol	HGNC:20434	
+Sutimlimab	C1S	0	C1S	approved_symbol	HGNC:1247	
+Suvemcitug	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Suvizumab	HIV-1 gp120	0	HIV-1 gp120	unresolved_or_nonprotein		
+Suvonstobart	CD24	0	CD24	approved_symbol	HGNC:1645	
+Suvratoxumab	Staphylococcus aureus Toxin A	0	Staphylococcus aureus Toxin A	unresolved_or_nonprotein		
+Tabalumab	TNFSF13B/CD257/BAFF	0	TNFSF13B/CD257/BAFF	approved_symbol	HGNC:11929	
+Tabirafusp	IL6	0	IL6	approved_symbol	HGNC:6018	
+Tabituximab	FZD10/CD350	0	FZD10/CD350	approved_symbol	HGNC:4039	
+Tacatuzumab	Alpha Ferroprotein	0	Alpha Ferroprotein	unresolved_or_nonprotein		
+Tadocizumab	ITGA2B and ITGB3	0	ITGA2B	complex_target_not_direct_subunit	HGNC:6138	
+Tadocizumab	ITGA2B and ITGB3	0	ITGB3	complex_target_not_direct_subunit	HGNC:6156	
+Tafasitamab	CD19	0	CD19	approved_symbol	HGNC:1633	
+Tafolecimab	PCSK9	0	PCSK9	approved_symbol	HGNC:20001	
+Tagitanlimab	PDL1/CD274	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Talacotuzumab	IL3RA/CD123	0	IL3RA/CD123	approved_symbol	HGNC:6012	
+Talizumab	IgE	0	IgE	unresolved_or_nonprotein		
+Talquetamab	GPRC5D;CD3E	0	GPRC5D	approved_symbol	HGNC:13310	
+Talquetamab	GPRC5D;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Tamgiblimab	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Tamrintamab	DPEP3	0	DPEP3	approved_symbol	HGNC:23029	
+Tamtuvetmab	CD52	0	CD52	nonhuman_target	HGNC:1804	
+Tanezumab	NGFB	0	NGFB	unique_alias	HGNC:7808	
+Tanruprubart	C1q	0	C1q	unresolved_or_nonprotein		
+Tarcocimab	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Tarextumab	NOTCH2 and NOTCH3	0	NOTCH2	approved_symbol	HGNC:7882	
+Tarextumab	NOTCH2 and NOTCH3	0	NOTCH3	approved_symbol	HGNC:7883	
+Tarlatamab	DLL3;CD3E	0	DLL3	approved_symbol	HGNC:2909	
+Tarlatamab	DLL3;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Tarperprumig	ALB;CFP	0	ALB	approved_symbol	HGNC:399	
+Tarperprumig	ALB;CFP	1	CFP	approved_symbol	HGNC:8864	
+Tavolimab	TNFSF4/CD134/CD252/OX40L	0	TNFSF4/CD134/CD252/OX40L	approved_symbol	HGNC:11934	
+Tazlestobart	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Tebentafusp	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Tebotelimab	PDCD1/CD279/PD1;LAG3/CD223	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Tebotelimab	PDCD1/CD279/PD1;LAG3/CD223	1	LAG3/CD223	approved_symbol	HGNC:6476	
+Tecaginlimab	CD40;TNFRSF9/CD137/4-1BB	0	CD40	approved_symbol	HGNC:11919	
+Tecaginlimab	CD40;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Teclistamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Teclistamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Tecotabart	CLDN18	0	CLDN18	approved_symbol	HGNC:2039	
+Tegoprubart	CD40LG/CD154	0	CD40LG/CD154	approved_symbol	HGNC:11935	
+Telazorlimab	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Telikibart	IL4R/CD124	0	IL4R/CD124	approved_symbol	HGNC:6015	
+Telisotuzumab	MET/HGFR	0	MET/HGFR	approved_symbol	HGNC:7029	
+Temelimab	MS-associated Retrovirus Envelope Protein	0	MS-associated Retrovirus Envelope Protein	unresolved_or_nonprotein		
+Temtokibart	IL22RA1	0	IL22RA1	approved_symbol	HGNC:13700	
+Tenatumomab	TNC	0	TNC	approved_symbol	HGNC:5318	
+Teneliximab	TNFRSF5/CD40	0	TNFRSF5/CD40	approved_symbol	HGNC:11919	
+Teplizumab	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Tepoditamab	CLEC12A;CD3E	0	CLEC12A	approved_symbol	HGNC:31713	
+Tepoditamab	CLEC12A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Teprotumumab	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Teropavimab	HIV-1 gp120 CD4bs	0	HIV-1 gp120 CD4bs	unresolved_or_nonprotein		
+Tesidolumab	C5	0	C5	approved_symbol	HGNC:1331	
+Tesnatilimab	KLRK1/NKG2D/CD314	0	KLRK1/NKG2D/CD314	approved_symbol	HGNC:18788	
+Tezepelumab	TSLP	0	TSLP	approved_symbol	HGNC:30743	
+Tibulizumab	TNFSF13B/CD257/BAFF;IL17A	0	TNFSF13B/CD257/BAFF	approved_symbol	HGNC:11929	
+Tibulizumab	TNFSF13B/CD257/BAFF;IL17A	1	IL17A	approved_symbol	HGNC:5981	
+Tidutamab	SSTR2;CD3E	0	SSTR2	approved_symbol	HGNC:11331	
+Tidutamab	SSTR2;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Tifcemalimab	BTLA/CD272	0	BTLA/CD272	approved_symbol	HGNC:21087	
+Tigatuzumab	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Tilatamig	MET/HGFR;EGFR/ERBB1/HER1	0	MET/HGFR	approved_symbol	HGNC:7029	
+Tilatamig	MET/HGFR;EGFR/ERBB1/HER1	1	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Tilavonemab	MAPT	0	MAPT	approved_symbol	HGNC:6893	
+Tildrakizumab	IL23A	0	IL23A	approved_symbol	HGNC:15488	
+Tilogotamab	TNFRSF10B/CD262/DR5/TRAILR2	0	TNFRSF10B/CD262/DR5/TRAILR2	approved_symbol	HGNC:11905	
+Tilvestamab	AXL/UFO	0	AXL/UFO	approved_symbol	HGNC:905	
+Tilrekimig1	IL13;IL4	0	IL13	approved_symbol	HGNC:5973	
+Tilrekimig1	IL13;IL4	1	IL4	approved_symbol	HGNC:6014	
+Tilrekimig2	TSLP	0	TSLP	approved_symbol	HGNC:30743	
+Timigutuzumab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Timolumab	AOC3/VAP1	0	AOC3/VAP1	approved_symbol	HGNC:550	
+Timcevibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Tinurilimab	CEACAM6/CD66c	0	CEACAM6/CD66c	approved_symbol	HGNC:1818	
+Tiragolumab	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Tirnovetmab	IL31 (Canine)	0	IL31 (Canine)	nonhuman_target		
+Tislelizumab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Tisotumab	F3/CD142	0	F3/CD142	approved_symbol	HGNC:3541	
+Tixagevimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Tixentamig	CD3E;CLDN18	0	CD3E	approved_symbol	HGNC:1674	
+Tixentamig	CD3E;CLDN18	1	CLDN18	approved_symbol	HGNC:2039	
+Tixestobart	TNFRSF7/CD27	0	TNFRSF7/CD27	approved_symbol	HGNC:11922	
+Tizetatug	TACSTD2/TROP2/EGP1	0	TACSTD2/TROP2/EGP1	approved_symbol	HGNC:11530	
+Tobemstomig	PDCD1/CD279/PD1;LAG3/CD223	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Tobemstomig	PDCD1/CD279/PD1;LAG3/CD223	1	LAG3/CD223	approved_symbol	HGNC:6476	
+Tobevibart	Human Papillomavirus Envelope Protein	0	Human Papillomavirus Envelope Protein	unresolved_or_nonprotein		
+Tocilizumab	IL6R/CD126	0	IL6R/CD126	approved_symbol	HGNC:6019	
+Tomaralimab	TLR2/CD282	0	TLR2/CD282	approved_symbol	HGNC:11848	
+Tomuzotuximab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Toripalimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Torudokimab	IL33	0	IL33	approved_symbol	HGNC:16028	
+Torvutatug	FOLR1	0	FOLR1	approved_symbol	HGNC:3791	
+Tosatoxumab	Staphylococcus aureus Toxin A	0	Staphylococcus aureus Toxin A	unresolved_or_nonprotein		
+Tovecimig	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Tovetumab	PDGFRA/CD140A	0	PDGFRA/CD140A	approved_symbol	HGNC:8803	
+Tozorakimab	IL33	0	IL33	approved_symbol	HGNC:16028	
+Trabikibart	CSF2RB/CD131/IL3RB/IL5RB	0	CSF2RB/CD131/IL3RB/IL5RB	approved_symbol	HGNC:2436	
+Tralokinumab	IL13	0	IL13	approved_symbol	HGNC:5973	
+Trastuzumab	ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Traxivitug	BK Polyomavirus Major Capsid Protein VP1	0	BK Polyomavirus Major Capsid Protein VP1	unresolved_or_nonprotein		
+Tregalizumab	CD4	0	CD4	approved_symbol	HGNC:1678	
+Tremelimumab	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Trevogrumab	MSTN/GDF8/GDF-8	0	MSTN/GDF8/GDF-8	approved_symbol	HGNC:4223	
+Trevotamig	EPCAM/CD326;CD3E	0	EPCAM/CD326	approved_symbol	HGNC:11529	
+Trevotamig	EPCAM/CD326;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Trinbelimab	RhD/CD240D/RhPI	0	RhD/CD240D/RhPI	approved_symbol	HGNC:10009	
+Trontinemab	APP Abeta 1-40/42;TFRC/CD71	0	APP Abeta 1-40/42	reviewed_gene_product	HGNC:620	
+Trontinemab	APP Abeta 1-40/42;TFRC/CD71	1	TFRC/CD71	approved_symbol	HGNC:11763	
+Trosunilimab	ITGA4B7	0	ITGA4B7	complex_target_not_direct_subunit		
+Trovostobart	VSIR/VISTA/B7H5/PD1H/SISP1	0	VSIR/VISTA/B7H5/PD1H/SISP1	approved_symbol	HGNC:30085	
+Tucotuzumab	EPCAM/CD326	0	EPCAM/CD326	approved_symbol	HGNC:11529	
+Tulisokibart	TNFSF15/TL1A/VEGI	0	TNFSF15/TL1A/VEGI	approved_symbol	HGNC:11931	
+Tuparstobart	LAG3/CD223	0	LAG3/CD223	approved_symbol	HGNC:6476	
+Turenkibart	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Tusamitamab	CEACAM5/CD66e	0	CEACAM5/CD66e	approved_symbol	HGNC:1817	
+Tuvonralimab	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Ubamatamab	MUC16/CA125;CD3E	0	MUC16/CA125	approved_symbol	HGNC:15582	
+Ubamatamab	MUC16/CA125;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Ubletamig	MUC16/CA125;CD28	0	MUC16/CA125	approved_symbol	HGNC:15582	
+Ubletamig	MUC16/CA125;CD28	1	CD28	approved_symbol	HGNC:1653	
+Ublituximab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Ucenprubart	MOX2R/CD200R1	0	MOX2R/CD200R1	approved_symbol	HGNC:24235	
+Ulenistamab	PAUF	0	PAUF	unresolved_or_nonprotein		
+Uliledlimab	NT5E/CALJA/CD73	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Ulocuplumab	CXCR4/CD184	0	CXCR4/CD184	approved_symbol	HGNC:2561	
+Ulviprubart	KLRG1	0	KLRG1	approved_symbol	HGNC:6380	
+Umesolerbart	Bet v 1	0	Bet v 1	unresolved_or_nonprotein		
+Umikibart	HGF	0	HGF	approved_symbol	HGNC:4893	
+Umizortamig1	EGFRvIII;CD3E	0	EGFRvIII	reviewed_gene_product	HGNC:3236	
+Umizortamig1	EGFRvIII;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Umizortamig2	PDL1/CD274;TNFRSF9/CD137/4-1BB	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Umizortamig2	PDL1/CD274;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Unasnemab	RGMA	0	RGMA	approved_symbol	HGNC:30308	
+Upanovimab	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Uprevstobart	NT5E/CALJA/CD73	0	NT5E/CALJA/CD73	approved_symbol	HGNC:8021	
+Upinitatug	SLC34A2	0	SLC34A2	approved_symbol	HGNC:11020	
+Urabrelimab	IAP/CD47	0	IAP/CD47	approved_symbol	HGNC:1682	
+Urelumab	TNFRSF9/CD137/4-1BB	0	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Urtoxazumab	Shiga-like Toxin II	0	Shiga-like Toxin II	unresolved_or_nonprotein		
+Usilnetug	APP Abeta N3pGlu	0	APP Abeta N3pGlu	reviewed_gene_product	HGNC:620	
+Ustekinumab	IL12B/CLMFp40	0	IL12B/CLMFp40	approved_symbol	HGNC:5970	
+Utomilumab	TNFRSF9/CD137/4-1BB	0	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Vadastuximab	SIGLEC3/CD33/p67	0	SIGLEC3/CD33/p67	approved_symbol	HGNC:1659	
+Valanafusp	INSR/CD220	0	INSR/CD220	approved_symbol	HGNC:6091	
+Vamikibart	IL6	0	IL6	approved_symbol	HGNC:6018	
+Vandortuzumab	STEAP1	0	STEAP1	approved_symbol	HGNC:11378	
+Vantictumab	FZD	0	FZD	unresolved_or_nonprotein		
+Vanucizumab	ANGPT2;VEGFA	0	ANGPT2	approved_symbol	HGNC:485	
+Vanucizumab	ANGPT2;VEGFA	1	VEGFA	approved_symbol	HGNC:12680	
+Varisacumab	VEGFA	0	VEGFA	approved_symbol	HGNC:12680	
+Varlilumab	TNFRSF7/CD27	0	TNFRSF7/CD27	approved_symbol	HGNC:11922	
+Varokibart	IL5	0	IL5	approved_symbol	HGNC:6016	
+Vatelizumab	ITGA2/CD49B	0	ITGA2/CD49B	approved_symbol	HGNC:6137	
+Vebanvibart	SARS-CoV-2 Spike RBD	0	SARS-CoV-2 Spike RBD	unresolved_or_nonprotein		
+Vecantoxatug	Clostridium tetani tetanus toxin (TeNT)	0	Clostridium tetani tetanus toxin (TeNT)	unresolved_or_nonprotein		
+Vedolizumab	ITGA4B7	0	ITGA4B7	complex_target_not_direct_subunit		
+Velaprumig	ALB;CD40LG/CD154	0	ALB	approved_symbol	HGNC:399	
+Velaprumig	ALB;CD40LG/CD154	1	CD40LG/CD154	approved_symbol	HGNC:11935	
+Veligrotug	IGF1R/CD221	0	IGF1R/CD221	approved_symbol	HGNC:5465	
+Velinotamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Velinotamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Veltuzumab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Venanprubart	BTLA/CD272	0	BTLA/CD272	approved_symbol	HGNC:21087	
+Vensobafusp	C5	0	C5	approved_symbol	HGNC:1331	
+Vepsitamab	MUC17;CD3E	0	MUC17	approved_symbol	HGNC:16800	
+Vepsitamab	MUC17;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Vesencumab	NRP1	0	NRP1	approved_symbol	HGNC:8004	
+Verekitug	CRLF2	0	CRLF2	approved_symbol	HGNC:14281	
+Verenafusp	INSR/CD220	0	INSR/CD220	approved_symbol	HGNC:6091	
+Verzistobart	HAVCR2/TIM3	0	HAVCR2/TIM3	approved_symbol	HGNC:18437	
+Vibecotamab	IL3RA/CD123;CD3E	0	IL3RA/CD123	approved_symbol	HGNC:6012	
+Vibecotamab	IL3RA/CD123;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Vibostolimab	TIGIT/WUCAM/VSTM3	0	TIGIT/WUCAM/VSTM3	approved_symbol	HGNC:26838	
+Vilamakitug	IL1A	0	IL1A	approved_symbol	HGNC:5991	
+Vilastobart	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Vilobelimab	C5	0	C5	approved_symbol	HGNC:1331	
+Vipalanebart	ADCYAP1/PACAP	0	ADCYAP1/PACAP	approved_symbol	HGNC:241	
+Visilizumab	CD3E	0	CD3E	approved_symbol	HGNC:1674	
+Vislarafusp	SIRPA	0	SIRPA	approved_symbol	HGNC:9662	
+Visugromab	GDF15/MIC1/MIC-1/NAG1/NAG-1/PTGFB	0	GDF15/MIC1/MIC-1/NAG1/NAG-1/PTGFB	approved_symbol	HGNC:30142	
+Vixarelimab	OSMR	0	OSMR	approved_symbol	HGNC:8507	
+Vixticibart	NPR1/ANPRA/ANPa/GUC2A/GUCY2A/NPRA	0	NPR1/ANPRA/ANPa/GUC2A/GUCY2A/NPRA	approved_symbol	HGNC:7943	
+Vixtimotamab	CD3E;SIGLEC3/CD33/p67	0	CD3E	approved_symbol	HGNC:1674	
+Vixtimotamab	CD3E;SIGLEC3/CD33/p67	1	SIGLEC3/CD33/p67	approved_symbol	HGNC:1659	
+Vobarilizumab	IL6R/CD126;ALB	0	IL6R/CD126	approved_symbol	HGNC:6019	
+Vobarilizumab	IL6R/CD126;ALB	1	ALB	approved_symbol	HGNC:399	
+Vobramitamab	B7H3/CD276	0	B7H3/CD276	approved_symbol	HGNC:19137	
+Vofatamab	FGFR3/CD333	0	FGFR3/CD333	approved_symbol	HGNC:3690	
+Volagidemab	GCCR/NR3C1	0	GCCR/NR3C1	approved_symbol	HGNC:7978	
+Volociximab	ITGA5B1	0	ITGA5B1	complex_target_not_direct_subunit		
+Volrustomig	CTLA4/CD152;PDCD1/CD279/PD1	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Volrustomig	CTLA4/CD152;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Vonlerolizumab	TNFRSF4/CD134/OX40	0	TNFRSF4/CD134/OX40	approved_symbol	HGNC:11918	
+Vonsetamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	0	TNFRSF17/CD269/BCMA/TNFRSF13A	approved_symbol	HGNC:11913	
+Vonsetamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Vopikitug	IL2RA/CD25	0	IL2RA/CD25	approved_symbol	HGNC:6008	
+Vopratelimab	ICOS/CD278	0	ICOS/CD278	approved_symbol	HGNC:5351	
+Vorsetuzumab	TNFSF7/CD70/CD27LG	0	TNFSF7/CD70/CD27LG	approved_symbol	HGNC:11937	
+Voxalatamab	FOLH1/GCPII/PSMA;CD3E	0	FOLH1/GCPII/PSMA	approved_symbol	HGNC:3788	
+Voxalatamab	FOLH1/GCPII/PSMA;CD3E	1	CD3E	approved_symbol	HGNC:1674	
+Vudalimab	CTLA4/CD152;PDCD1/CD279/PD1	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Vudalimab	CTLA4/CD152;PDCD1/CD279/PD1	1	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Vulinacimab	KDR/CD309/VEGFR2	0	KDR/CD309/VEGFR2	approved_symbol	HGNC:6307	
+Vunakizumab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Xaluritamig	STEAP1;CD3	0	STEAP1	approved_symbol	HGNC:11378	
+Xaluritamig	STEAP1;CD3	1	CD3	complex_target_not_direct_subunit		
+Xeligekimab	IL17A	0	IL17A	approved_symbol	HGNC:5981	
+Xentuzumab	IGF1 and IGF2	0	IGF1	approved_symbol	HGNC:5464	
+Xentuzumab	IGF1 and IGF2	0	IGF2	approved_symbol	HGNC:5466	
+Xirestomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	0	PDL1/CD274	approved_symbol	HGNC:17635	
+Xirestomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	1	TNFRSF9/CD137/4-1BB	approved_symbol	HGNC:11924	
+Zadoprubart	BTLA/CD272	0	BTLA/CD272	approved_symbol	HGNC:21087	
+Zagotenemab	MAPT	0	MAPT	approved_symbol	HGNC:6893	
+Zalifrelimab	CTLA4/CD152	0	CTLA4/CD152	approved_symbol	HGNC:2505	
+Zaltenibart	MASP3	0	MASP3	unresolved_or_nonprotein		
+Zalutumumab	EGFR/ERBB1/HER1	0	EGFR/ERBB1/HER1	approved_symbol	HGNC:3236	
+Zamerovimab	Rabies Virus Spike Glycoprotein G	0	Rabies Virus Spike Glycoprotein G	unresolved_or_nonprotein		
+Zampilimab	TGM2	0	TGM2	approved_symbol	HGNC:11778	
+Zamubafusp	Human variable immunoglobulin light chain (N-terminal cryptic neo-epitope)	0	Human variable immunoglobulin light chain (N-terminal cryptic neo-epitope)	unresolved_or_nonprotein		
+Zanidatamab	ERBB2/CD340/HER2;ERBB2/CD340/HER2	0	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Zanidatamab	ERBB2/CD340/HER2;ERBB2/CD340/HER2	1	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Zanolimumab	CD4	0	CD4	approved_symbol	HGNC:1678	
+Zansecimab	ANGPT2	0	ANGPT2	approved_symbol	HGNC:485	
+Zeleciment	TFRC/CD71	0	TFRC/CD71	approved_symbol	HGNC:11763	
+Zelminemab	ADCYAP1R1/PAC1	0	ADCYAP1R1/PAC1	approved_symbol	HGNC:242	
+Zeluvalimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Zemocimig	F9a;F10	0	F9a	reviewed_gene_product	HGNC:3551	
+Zemocimig	F9a;F10	1	F10	approved_symbol	HGNC:3528	
+Zenocutuzumab	ERBB3/HER3;ERBB2/CD340/HER2	0	ERBB3/HER3	approved_symbol	HGNC:3431	
+Zenocutuzumab	ERBB3/HER3;ERBB2/CD340/HER2	1	ERBB2/CD340/HER2	approved_symbol	HGNC:3430	
+Zeripatamig	IAP/CD47;CD19	0	IAP/CD47	approved_symbol	HGNC:1682	
+Zeripatamig	IAP/CD47;CD19	1	CD19	approved_symbol	HGNC:1633	
+Zifibancimig	ANPT2;VEGFA	0	ANPT2	unresolved_or_nonprotein		
+Zifibancimig	ANPT2;VEGFA	1	VEGFA	approved_symbol	HGNC:12680	
+Zigakibart	TNFSF13/CD256/APRIL	0	TNFSF13/CD256/APRIL	approved_symbol	HGNC:11928	
+Ziltivekimab	IL6	0	IL6	approved_symbol	HGNC:6018	
+Zilovertamab	ROR1	0	ROR1	approved_symbol	HGNC:10256	
+Zimberelimab	PDCD1/CD279/PD1	0	PDCD1/CD279/PD1	approved_symbol	HGNC:8760	
+Zinlirvimab	HIV-1 gp120 V3	0	HIV-1 gp120 V3	unresolved_or_nonprotein		
+Zolbetuximab	CLDN18	0	CLDN18	approved_symbol	HGNC:2039	
+Zovostotug	CD163	0	CD163	approved_symbol	HGNC:1631	
+Zuberitamab	MS4A1/CD20	0	MS4A1/CD20	approved_symbol	HGNC:7315	
+Zubotamig	VTCN1/B7H4;CD3E	0	VTCN1/B7H4	approved_symbol	HGNC:28873	
+Zubotamig	VTCN1/B7H4;CD3E	1	CD3E	approved_symbol	HGNC:1674	

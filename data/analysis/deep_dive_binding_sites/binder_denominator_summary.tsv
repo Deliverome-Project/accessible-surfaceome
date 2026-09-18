@@ -1,0 +1,57 @@
+benchmark	location	metric	covered	denominator	percent
+CellPhoneDB single-protein targets	all_locations	any_binder_external_site	308	714	43.14
+CellPhoneDB single-protein targets	all_locations	cpdb_same_protein_pair_external_site	164	714	22.97
+CellPhoneDB single-protein targets	all_locations	cpdb_same_protein_pair_external_site_or_region	232	714	32.49
+CellPhoneDB single-protein targets	membrane	any_binder_external_site	276	621	44.44
+CellPhoneDB single-protein targets	membrane	cpdb_same_protein_pair_external_site	149	621	23.99
+CellPhoneDB single-protein targets	membrane	cpdb_same_protein_pair_external_site_or_region	212	621	34.14
+CellPhoneDB single-protein targets	secreted_only	any_binder_external_site	30	84	35.71
+CellPhoneDB single-protein targets	secreted_only	cpdb_same_protein_pair_external_site	15	84	17.86
+CellPhoneDB single-protein targets	secreted_only	cpdb_same_protein_pair_external_site_or_region	19	84	22.62
+CellPhoneDB single-protein targets	other_or_uncertain	any_binder_external_site	2	9	22.22
+CellPhoneDB single-protein targets	other_or_uncertain	cpdb_same_protein_pair_external_site	0	9	0.0
+CellPhoneDB single-protein targets	other_or_uncertain	cpdb_same_protein_pair_external_site_or_region	1	9	11.11
+CellPhoneDB assessed protein-pair genes	all_locations	cpdb_same_protein_pair_external_site	164	579	28.32
+CellPhoneDB assessed protein-pair genes	all_locations	cpdb_same_protein_pair_external_site_or_region	232	579	40.07
+CellPhoneDB assessed protein-pair genes	membrane	cpdb_same_protein_pair_external_site	149	511	29.16
+CellPhoneDB assessed protein-pair genes	membrane	cpdb_same_protein_pair_external_site_or_region	212	511	41.49
+CellPhoneDB assessed protein-pair genes	secreted_only	cpdb_same_protein_pair_external_site	15	60	25.0
+CellPhoneDB assessed protein-pair genes	secreted_only	cpdb_same_protein_pair_external_site_or_region	19	60	31.67
+CellPhoneDB assessed protein-pair genes	other_or_uncertain	cpdb_same_protein_pair_external_site	0	8	0.0
+CellPhoneDB assessed protein-pair genes	other_or_uncertain	cpdb_same_protein_pair_external_site_or_region	1	8	12.5
+CellPhoneDB including complex components	all_locations	any_binder_external_site	425	888	47.86
+CellPhoneDB including complex components	membrane	any_binder_external_site	391	784	49.87
+CellPhoneDB including complex components	secreted_only	any_binder_external_site	32	89	35.96
+CellPhoneDB including complex components	other_or_uncertain	any_binder_external_site	2	15	13.33
+Thera-SAbDab named-binder genes	all_locations	any_antibody_external_site	121	269	44.98
+Thera-SAbDab named-binder genes	all_locations	thera_same_therapeutic_external_site	57	269	21.19
+Thera-SAbDab named-binder genes	all_locations	thera_same_therapeutic_any_site	69	269	25.65
+Thera-SAbDab named-binder genes	membrane	any_antibody_external_site	116	244	47.54
+Thera-SAbDab named-binder genes	membrane	thera_same_therapeutic_external_site	53	244	21.72
+Thera-SAbDab named-binder genes	membrane	thera_same_therapeutic_any_site	60	244	24.59
+Thera-SAbDab named-binder genes	secreted_only	any_antibody_external_site	5	21	23.81
+Thera-SAbDab named-binder genes	secreted_only	thera_same_therapeutic_external_site	4	21	19.05
+Thera-SAbDab named-binder genes	secreted_only	thera_same_therapeutic_any_site	8	21	38.1
+Thera-SAbDab named-binder genes	other_or_uncertain	any_antibody_external_site	0	4	0.0
+Thera-SAbDab named-binder genes	other_or_uncertain	thera_same_therapeutic_external_site	0	4	0.0
+Thera-SAbDab named-binder genes	other_or_uncertain	thera_same_therapeutic_any_site	1	4	25.0
+CellPhoneDB exact protein pairs	all_locations	same_pair_structural_external_site	211	1349	15.64
+CellPhoneDB exact protein pairs	all_locations	same_pair_structural_or_region_external	340	1349	25.2
+CellPhoneDB exact protein pairs	all_locations	same_pair_structural_any_site	313	1349	23.2
+CellPhoneDB exact protein pairs	membrane	same_pair_structural_external_site	192	1199	16.01
+CellPhoneDB exact protein pairs	membrane	same_pair_structural_or_region_external	314	1199	26.19
+CellPhoneDB exact protein pairs	membrane	same_pair_structural_any_site	291	1199	24.27
+CellPhoneDB exact protein pairs	secreted_only	same_pair_structural_external_site	19	142	13.38
+CellPhoneDB exact protein pairs	secreted_only	same_pair_structural_or_region_external	25	142	17.61
+CellPhoneDB exact protein pairs	secreted_only	same_pair_structural_any_site	21	142	14.79
+CellPhoneDB exact protein pairs	other_or_uncertain	same_pair_structural_external_site	0	8	0.0
+CellPhoneDB exact protein pairs	other_or_uncertain	same_pair_structural_or_region_external	1	8	12.5
+CellPhoneDB exact protein pairs	other_or_uncertain	same_pair_structural_any_site	1	8	12.5
+Thera-SAbDab therapeutic-target pairs	all_locations	same_therapeutic_external_site	137	917	14.94
+Thera-SAbDab therapeutic-target pairs	all_locations	same_therapeutic_any_site	154	917	16.79
+Thera-SAbDab therapeutic-target pairs	membrane	same_therapeutic_external_site	133	875	15.2
+Thera-SAbDab therapeutic-target pairs	membrane	same_therapeutic_any_site	143	875	16.34
+Thera-SAbDab therapeutic-target pairs	secreted_only	same_therapeutic_external_site	4	37	10.81
+Thera-SAbDab therapeutic-target pairs	secreted_only	same_therapeutic_any_site	10	37	27.03
+Thera-SAbDab therapeutic-target pairs	other_or_uncertain	same_therapeutic_external_site	0	5	0.0
+Thera-SAbDab therapeutic-target pairs	other_or_uncertain	same_therapeutic_any_site	1	5	20.0

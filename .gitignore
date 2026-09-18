@@ -187,3 +187,6 @@ data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
 
 /data/analysis/deep_dive_binding_sites/structural_intact_evidence.tsv
 /data/analysis/deep_dive_binding_sites/structural_intact_attempts.tsv
+
+# Curated binder denominator source caches
+/data/external/binder_denominators/
