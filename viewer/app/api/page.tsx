@@ -277,6 +277,15 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
     ],
   },
   {
+    label: "Contact sites",
+    blurb: "Versioned mapped ligand and antibody contacts from public D1. Coverage is an audit snapshot, not an exhaustive ligand census. Coordinates use canonical UniProt numbering.",
+    endpoints: [
+      { method: "GET", path: "/v1/contact-sites/releases/current", summary: "Current release, source provenance, coverage and excluded identifiers.", curl: "curl -s https://api.deliverome.org/surfaceome/v1/contact-sites/releases/current" },
+      { method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}", summary: "Ligand identities, category metadata and one observed footprint per named ligand. scope=extracellular by default; scope=all includes other compartments. Audited empty results differ from not_audited.", curl: "curl -s 'https://api.deliverome.org/surfaceome/v1/contact-sites/releases/RELEASE_ID/proteins/P00533'" },
+      { method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}/ligands/{ligandId}/evidence", summary: "Up to 100 original observations per page; pass next_cursor as cursor. Keep the same release and scope on every request. Omit ligands/{ligandId}/ to retrieve all observations, including unnamed partners.", curl: "curl -s 'https://api.deliverome.org/surfaceome/v1/contact-sites/releases/RELEASE_ID/proteins/P00533/evidence?scope=all'" },
+    ],
+  },
+  {
     label: "Discovery & utility",
     blurb:
       "Self-describing entry points for agents and tooling. Start at /v1 to walk the whole surface without scraping this page; the site root also serves an llms.txt that points here.",

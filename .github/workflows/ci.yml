@@ -38,3 +38,13 @@ jobs:
         run: bash scripts/check-py.sh
       - name: Run pre-commit hooks
         run: uv run --frozen pre-commit run --all-files --config .pre-commit-config.yaml
+
+  contact-api-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Contact API and viewer contract tests
+        run: node --test cloudflare/workers/surfaceome_api/tests/contact-sites.test.mjs viewer/tests/contact_api.test.mjs viewer/tests/contact_sites_grouping.test.mjs

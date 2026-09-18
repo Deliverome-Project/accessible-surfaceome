@@ -21,6 +21,10 @@ def test_internalization_routes_and_catalog(tmp_path: Path) -> None:
         "const deepDiveTier = () => ({tier: 'no', facet: null}); "
         "const isLowLiteratureSurface = () => false;",
     )
+    shutil.copy2(
+        root / "cloudflare/workers/surfaceome_api/src/contact-sites.js",
+        tmp_path / "contact-sites.js",
+    )
     (tmp_path / "worker.mjs").write_text(source)
     (tmp_path / "test.mjs").write_text(r'''
 import assert from "node:assert/strict";

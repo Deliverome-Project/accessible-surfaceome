@@ -164,3 +164,29 @@ paper/*.xml
 data/backups/
 # AlphaFold model PDBs downloaded by the tag-site benchmark (local cache; AFDB is the source of truth)
 data/cache/afdb_pdb/
+
+# Reproducible binder pilot downloads and uncompressed observation export.
+data/external/binder_coverage/
+data/analysis/binder_coverage/observations.tsv
+data/external/binding_site_audit/
+data/analysis/binding_site_audit/observations.tsv
+data/analysis/deep_dive_binding_sites/observations.tsv
+data/analysis/deep_dive_binding_sites/prior_observations.tsv
+
+data/external/binder_resource_extension/
+data/analysis/deep_dive_binding_sites/biolip_gpcrdb_evidence.tsv
+
+data/external/therapeutic_antibody_audit/
+data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
+
+# Read-only ligand-gap diagnostic caches
+/data/external/ligand_gap_audit/
+
+# Structural and IntAct extension source caches
+/data/external/structural_intact_extension/
+
+/data/analysis/deep_dive_binding_sites/structural_intact_evidence.tsv
+/data/analysis/deep_dive_binding_sites/structural_intact_attempts.tsv
+
+# Curated binder denominator source caches
+/data/external/binder_denominators/

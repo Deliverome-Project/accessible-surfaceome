@@ -1,0 +1,18 @@
+source	all_genes	unique_genes	cellphonedb_any_binder	therasabdab_any_ab_epitope	extracellular_all	extracellular_cellphonedb	extracellular_therasabdab_ab	unique_among_mapped_sources	evidence_tier
+SAbDab: antibody contacts	409	9	157	126	259	116	111	25	mapped
+Thera-SAbDab: named antibody contacts	80	0	44	62	61	40	55	0	mapped
+AACDB: antibody contacts	210	0	92	88	156	81	83	0	mapped
+IEDB: exact antibody epitopes	182	0	88	82	129	75	79	0	mapped
+PDBe + IUPHAR: chemical sites	209	0	91	NA	36	10	NA	3	mapped
+PDBe + IUPHAR: protein ligands	120	0	111	NA	54	48	NA	0	mapped
+BioGRID-linked minibinders	1	0	0	NA	0	0	NA	0	mapped
+BioLiP: biological ligand sites	851	102	208	NA	186	56	NA	213	mapped
+GPCRdb: experimental contacts	190	3	147	NA	15	10	NA	4	mapped
+PDB/PDBe: expanded protein interfaces	1326	127	412	NA	507	235	NA	547	mapped
+IntAct: binding regions	1610	387	384	NA	501	239	NA	NA	region
+IntAct: interaction-changing mutations	494	28	134	NA	125	66	NA	NA	mutation
+SurfaceBind: predicted sites	1609	619	382	NA	NA	NA	NA	NA	predicted
+Mapped-site union	1680	NA	451	131	661	276	116	NA	union
+Mapped sites OR IntAct regions	2391	NA	539	131	855	343	116	NA	union
+Also including mutation effects	2431	NA	539	131	871	348	116	NA	union
+Mapped sites OR SurfaceBind predictions	2587	NA	566	131	NA	NA	116	NA	union

@@ -1,4 +1,5 @@
 "use client";
+import { loadContactGene } from "../../../lib/contact-api";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
@@ -16,6 +17,9 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
+import { LIGAND_CATEGORIES, contactResidueLayers, filterContacts, browsingContacts } from "../../../lib/contact-sites";
+import type { ContactGene, ContactAtom } from "../../../lib/contact-sites";
+import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -440,7 +444,7 @@ interface StructureViewerProps {
  *  beefs up the spheres so a reader scanning specifically for
  *  SURFACE-Bind sites can see them at a glance against the membrane
  *  + EC/IC labels. */
-type ViewMode = "topology" | "sites" | "tags";
+type ViewMode = "topology" | "sites" | "tags" | "contacts";
 
 /** Single sphere radius across both modes. Previously sites mode
  *  doubled the radius for emphasis, but the user wanted consistent
@@ -994,6 +998,7 @@ type LoadStatus = "loading" | "ready" | "error" | "nomodel" | "unavailable";
 
 interface ViewerInstance {
   clear: () => void;
+  setStyle: (selection: object, style: object) => void;
   resize: () => void;
   render: () => void;
   zoomTo: (sel?: object) => void;
@@ -1121,6 +1126,60 @@ export function StructureViewer({
   // sequences once alternative splicing or species differences
   // shift positions.
   const [variantIdx, setVariantIdx] = useState<number>(0);
+  const [contactGene, setContactGene] = useState<ContactGene | null>(null);
+  const [contactStatus, setContactStatus] = useState("loading");
+  const [contactRetry, setContactRetry] = useState(0);
+  const [contactIndex, setContactIndex] = useState(0);
+  const [contactSource, setContactSource] = useState("");
+  const [contactAtoms, setContactAtoms] = useState<ContactAtom[]>([]);
+  const [contactQuery, setContactQuery] = useState("");
+  const [contactsEcOnly, setContactsEcOnly] = useState(true);
+  useEffect(() => {
+    setContactGene(null);
+    setContactIndex(0);
+    setContactSource("");
+    setContactQuery("");
+    setContactStatus("loading");
+  }, [data.uniprot_acc]);
+  useEffect(() => {
+    if (viewMode !== "contacts") return;
+    const controller = new AbortController();
+    setContactStatus("loading");
+    loadContactGene(data.uniprot_acc, controller.signal)
+      .then(gene => {
+        if (controller.signal.aborted) return;
+        setContactGene(gene);
+        setContactStatus(gene.audit_status === "not_audited" ? "unaudited" : "ready");
+      })
+      .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
+    return () => controller.abort();
+  }, [data.uniprot_acc, viewMode, contactRetry]);
+  const contactGroups = useMemo(() => contactStatus === "ready" ? browsingContacts(filterContacts(
+    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), true, contactQuery) : [],
+    [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery]);
+  const visibleContacts = contactGroups;
+  const selectedContact = contactQuery.trim() && contactGroups.length === 1 ? contactGroups[0] : null;
+  const contactLegend = useMemo(() => {
+    const ligands = browsingContacts(filterContacts(contactGene?.sites ?? [], "", contactsEcOnly, ""), true, "");
+    return Object.entries(LIGAND_CATEGORIES).map(([key, category]) => ({
+      ...category, key, count: ligands.filter(site => (site.category ?? "unclassified") === key).length,
+    }));
+  }, [contactGene, contactsEcOnly]);
+  // Update only styles when scrubbing: preserve camera and avoid reloading the model.
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (viewMode !== "contacts" || variantIdx !== 0 || status !== "ready" || !viewer) return;
+    viewer.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 0.55 } });
+    for (const {color, positions} of contactResidueLayers(visibleContacts)) {
+      viewer.setStyle({ resi: positions }, {
+        cartoon: { color }, stick: { color, radius: 0.3 },
+        sphere: { color, scale: 1.05, opacity: 0.95 },
+      });
+    }
+    viewer.render();
+  }, [viewMode, variantIdx, status, visibleContacts]);
+
+
   // Per-AFDB-accession availability (canonical + isoform/ortholog
   // variants), probed on mount. `false` ⟹ AFDB has no model for that
   // protein (e.g. megalin/LRP2, beyond AFDB's per-entry size limit) — its
@@ -1397,7 +1456,7 @@ export function StructureViewer({
   // ortholog's own fold) that has its own pins.
   useEffect(() => {
     if (variantIdx === 0) return;
-    if (viewMode === "sites") {
+    if (viewMode === "sites" || viewMode === "contacts") {
       setViewMode("topology");
     } else if (
       viewMode === "tags" &&
@@ -1458,7 +1517,7 @@ export function StructureViewer({
   // Keyboard shortcuts (same guarded-window-listener pattern as GeneDetail's
   // prev/next-gene nav): 1-9 pick a structure tile (1 = Canonical, then each
   // variant tile left-to-right), a/s/d pick the viewer mode (a = topology,
-  // s = tag sites, d = SURFACE-Bind). Guarded against typing in inputs and
+  // s = tag sites, d = SURFACE-Bind, f = contacts). Guarded against typing in inputs and
   // against modifier chords so it never hijacks a browser/OS shortcut. A mode
   // key is a no-op when that mode isn't available for the current gene/tab.
   useEffect(() => {
@@ -1483,6 +1542,9 @@ export function StructureViewer({
       } else if (k === "s" && hasTagSites) {
         setViewMode("tags");
         e.preventDefault();
+      } else if (k === "f" && isCanonicalActive) {
+        setViewMode("contacts");
+        e.preventDefault();
       } else if (k === "d" && hasAnchors) {
         setViewMode("sites");
         e.preventDefault();
@@ -1490,7 +1552,7 @@ export function StructureViewer({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [effectiveVariants.length, hasTagSites, hasAnchors]);
+  }, [effectiveVariants.length, hasTagSites, hasAnchors, isCanonicalActive]);
 
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
@@ -2003,7 +2065,7 @@ export function StructureViewer({
             });
           });
         });
-      } else if (viewMode === "sites" || viewMode === "tags") {
+      } else if (viewMode === "sites" || viewMode === "tags" || viewMode === "contacts") {
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
@@ -2344,6 +2406,9 @@ export function StructureViewer({
         viewer.render();
       }
       viewerRef.current = viewer as ViewerInstance;
+      setContactAtoms(isCanonicalActive ? viewer.selectedAtoms({ atom: "CA" }).flatMap(atom =>
+        typeof atom.x === "number" && typeof atom.y === "number" && typeof atom.z === "number" && typeof atom.resi === "number"
+          ? [{ x: atom.x, y: atom.y, z: atom.z, resi: atom.resi }] : []) : []);
 
       // Capture the post-initial-render camera pose so the reset
       // button can restore both rotation AND zoom (not just zoom).
@@ -2531,7 +2596,7 @@ export function StructureViewer({
                 aria-selected={isActive}
               >
                 <span className={styles.variantTabLabel}>
-                  {v.label}
+                  {v.label.replace(/ ortholog$/i, "")}
                   {i + 2 <= 9 ? ` [${i + 2}]` : ""}
                 </span>
                 {v.sublabel ? (
@@ -2542,6 +2607,7 @@ export function StructureViewer({
           })}
         </div>
       )}
+      <div className={styles.contactCanvasFrame}>
       <div
         ref={containerRef}
         className={styles.viewerCanvas}
@@ -2628,13 +2694,26 @@ export function StructureViewer({
           ↺
         </button>
       </div>
+      {viewMode === "contacts" && isCanonicalActive && status === "ready" && contactStatus === "ready" && <div className={styles.contactCanvasLegend} aria-label={selectedContact ? "Selected ligand" : "Ligand categories and counts"}>
+        {selectedContact ? <section className={styles.contactSelectedLegend}>
+          <strong>{selectedContact.partner_label ?? selectedContact.partner} <InfoTip label={`About ${selectedContact.partner_label ?? selectedContact.partner}`} align="start">
+            {selectedContact.positions.length} contact residues · {selectedContact.evidence_count ?? selectedContact.supportingSites.length} evidence records.<br />
+            Sources: {(selectedContact.evidence_sources ?? Array.from(new Set(selectedContact.supportingSites.map(site => site.source)))).join(", ")}.<br />
+            {selectedContact.category_reason || selectedContact.confidence}
+            {selectedContact.identity_note && <><br />{selectedContact.identity_note}</>}
+            {selectedContact.reference && <> <a href={selectedContact.reference} target="_blank" rel="noreferrer">Evidence ↗</a></>}
+          </InfoTip></strong>
+          <span><i style={{background: LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].color}} /> {LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].label}</span>
+        </section> : contactLegend.map(category => <div key={category.key}><i style={{background: category.color}} /><span>{category.label}</span><b>{category.count}</b></div>)}
+      </div>}
+      </div>
       {/* Controls row — mode toggle + SURFACE-Bind external link.
           Reset is the inlaid ↺ symbol inside the canvas (above), no
           longer in this row. Only rendered when the gene has
           SURFACE-Bind anchors; the link-out is suppressed too so we
           don't promise the reader a SURFACE-Bind entry that has
           nothing to show. */}
-      {hasAnchors || hasTagSites ? (
+      {hasAnchors || hasTagSites || isCanonicalActive ? (
         <div className={styles.controls}>
           <div
             className={styles.modeToggle}
@@ -2672,9 +2751,13 @@ export function StructureViewer({
                 SURFACE-Bind [d]
               </button>
             ) : null}
+            {isCanonicalActive ? <button type="button" className={styles.modeButton}
+              data-active={viewMode === "contacts"} aria-pressed={viewMode === "contacts"}
+              aria-keyshortcuts="f" title="Show ligand contact sites on the canonical structure. Shortcut: f"
+              onClick={() => setViewMode("contacts")}>Contact sites [f]</button> : null}
             <InfoTip label="Viewer keyboard shortcuts">
               <strong>a</strong> topology, <strong>s</strong> tag sites,{" "}
-              <strong>d</strong> SURFACE-Bind. <strong>1</strong>–<strong>9</strong>{" "}
+              <strong>d</strong> SURFACE-Bind, <strong>f</strong> contact sites. <strong>1</strong>–<strong>9</strong>{" "}
               switch the structure (Canonical = 1, then each variant tile left to
               right: isoforms, mouse / cyno orthologs, experimental).
             </InfoTip>
@@ -2685,6 +2768,15 @@ export function StructureViewer({
               duplicate it next to the mode toggle. */}
         </div>
       ) : null}
+      {viewMode === "contacts" && isCanonicalActive ? <ContactSites
+        onFocus={() => { const viewer = viewerRef.current; if (viewer && visibleContacts[0]) { viewer.zoomTo({ resi: [...new Set(visibleContacts.flatMap(site => site.positions))] }); viewer.render(); } }}
+        onReset={() => { const viewer = viewerRef.current; if (viewer) { viewer.zoomTo({}); viewer.render(); } }}
+        query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
+        gene={contactGene} sites={contactGene?.sites ?? []} selected={contactIndex}
+        source={contactSource}
+        ecOnly={contactsEcOnly}
+        status={contactStatus} onRetry={() => setContactRetry(n => n + 1)}
+      /> : null}
       {/* Per-variant caption — sits directly below the canvas (above
           the legend) and shows the structure's title + pLDDT /
           resolution + a link out to AFDB or RCSB for the ACTIVE
@@ -2791,7 +2883,7 @@ export function StructureViewer({
             ),
           )}
         </ul>
-      ) : (
+      ) : viewMode === "contacts" ? null : (
         <TopologyLegend
           presentStates={legendPresentStates}
           globular={activeDeepTMHMMType === "GLOB"}

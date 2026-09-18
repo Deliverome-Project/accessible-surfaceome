@@ -1,0 +1,1656 @@
+source	record_id	pdb_id	uniprot_acc	therapeutic	arm	status	error
+AACDB	5	1ahw	P13726			mapped	
+AACDB	6	1ahw	P13726			mapped	
+AACDB	28	1egj	P32927			mapped	
+AACDB	53	1h0d	P03950			mapped	
+AACDB	54	1i9r	P29965			mapped	
+AACDB	55	1i9r	P29965			mapped	
+AACDB	56	1i9r	P29965			mapped	
+AACDB	68	1jps	P13726			mapped	
+AACDB	69	1jrh	P15260			mapped	
+AACDB	105	1n8z	P04626			mapped	
+AACDB	159	1s78	P04626			mapped	
+AACDB	160	1s78	P04626			mapped	
+AACDB	162	1sy6	P07766			mapped	
+AACDB	174	1uj3	P13726			mapped	
+AACDB	188	1xiw	P07766			mapped	
+AACDB	189	1xiw	P07766			mapped	
+AACDB	190	1yjd	P10747			mapped	
+AACDB	194	1yy9	P00533			mapped	
+AACDB	201	1za3	O14763			mapped	
+AACDB	202	1za3	O14763			mapped	
+AACDB	246	2fd6	Q03405			mapped	
+AACDB	264	2h9g	O14763			mapped	
+AACDB	265	2h9g	O14763			mapped	
+AACDB	267	2hfg	Q96RJ3			no_unambiguous_canonical_site	
+AACDB	290	2jix	P19235			mapped	
+AACDB	291	2jix	P19235			mapped	
+AACDB	310	2oz4	P05362			mapped	
+AACDB	328	2qqk	O60462			mapped	
+AACDB	329	2qql	O60462			mapped	
+AACDB	330	2qqn	O14786			mapped	
+AACDB	342	2r4r	P07550			mapped	
+AACDB	343	2r4s	P07550			mapped	
+AACDB	347	2vc2	P08514			mapped	
+AACDB	348	2vdk	P08514			mapped	
+AACDB	349	2vdl	P08514			mapped	
+AACDB	350	2vdm	P08514			mapped	
+AACDB	351	2vdn	P08514			mapped	
+AACDB	352	2vdo	P08514			mapped	
+AACDB	353	2vdp	P08514			mapped	
+AACDB	354	2vdq	P08514			mapped	
+AACDB	355	2vdr	P08514			mapped	
+AACDB	360	2vwe	P49765			mapped	
+AACDB	361	2vwe	P49765			mapped	
+AACDB	373	2w9e	P04156			mapped	
+AACDB	383	2x89	P61769			mapped	
+AACDB	384	2x89	P61769			mapped	
+AACDB	385	2x89	P61769			mapped	
+AACDB	386	2xqb	P40933			mapped	
+AACDB	391	2xtj	Q8NBP7			mapped	
+AACDB	394	2xwt	P16473			mapped	
+AACDB	403	2zch	P07288			no_unambiguous_canonical_site	
+AACDB	404	2zck	P07288			no_unambiguous_canonical_site	
+AACDB	405	2zcl	P07288			no_unambiguous_canonical_site	
+AACDB	418	3b2u	P00533			mapped	
+AACDB	419	3b2u	P00533			mapped	
+AACDB	420	3b2u	P00533			mapped	
+AACDB	421	3b2u	P00533			mapped	
+AACDB	422	3b2u	P00533			mapped	
+AACDB	423	3b2u	P00533			mapped	
+AACDB	424	3b2u	P00533			mapped	
+AACDB	425	3b2u	P00533			mapped	
+AACDB	426	3b2v	P00533			mapped	
+AACDB	430	3be1	P04626			mapped	
+AACDB	433	3bn9	Q9Y5Y6			no_unambiguous_canonical_site	
+AACDB	434	3bn9	Q9Y5Y6			no_unambiguous_canonical_site	
+AACDB	438	3bt2	Q03405			mapped	
+AACDB	439	3c09	P00533			mapped	
+AACDB	440	3c09	P00533			mapped	
+AACDB	465	3eo1	P10600			mapped	
+AACDB	466	3eo1	P10600			mapped	
+AACDB	467	3eo1	P10600			mapped	
+AACDB	468	3eo1	P10600			mapped	
+AACDB	469	3eoa	P20701			mapped	
+AACDB	470	3eoa	P20701			mapped	
+AACDB	471	3eob	P20701			mapped	
+AACDB	472	3eob	P20701			mapped	
+AACDB	490	3g04	P16473			mapped	
+AACDB	492	3g6j	P01024			mapped	
+AACDB	493	3g6j	P01024			mapped	
+AACDB	498	3h3b	P04626			mapped	
+AACDB	499	3h3b	P04626			mapped	
+AACDB	502	3hae	P04439			no_unambiguous_canonical_site	
+AACDB	503	3hae	P04439			no_unambiguous_canonical_site	
+AACDB	504	3hae	P04439			no_unambiguous_canonical_site	
+AACDB	505	3hae	P04439			no_unambiguous_canonical_site	
+AACDB	510	3hi6	P20701			mapped	
+AACDB	511	3hi6	P20701			mapped	
+AACDB	519	3iu3	P01589			mapped	
+AACDB	520	3iu3	P01589			mapped	
+AACDB	521	3iu3	P01589			mapped	
+AACDB	565	3kj6	P07550			mapped	
+AACDB	572	3l95	P46531			mapped	
+AACDB	573	3l95	P46531			mapped	
+AACDB	588	3mxw	Q15465			mapped	
+AACDB	589	3n85	P04626			mapped	
+AACDB	590	3nfp	P01589			mapped	
+AACDB	591	3nfp	P01589			mapped	
+AACDB	596	3nh7	P36894			mapped	
+AACDB	597	3nh7	P36894			mapped	
+AACDB	598	3nh7	P36894			mapped	
+AACDB	599	3nh7	P36894			mapped	
+AACDB	600	3nid	P08514			mapped	
+AACDB	601	3nid	P08514			mapped	
+AACDB	602	3nif	P08514			mapped	
+AACDB	603	3nif	P08514			mapped	
+AACDB	604	3nig	P08514			mapped	
+AACDB	605	3nig	P08514			mapped	
+AACDB	606	3nps	Q9Y5Y6			no_unambiguous_canonical_site	
+AACDB	607	3o2d	P01730			mapped	
+AACDB	614	3p0y	P00533			mapped	
+AACDB	615	3p11	P21860			mapped	
+AACDB	626	3q3g	P11215			mapped	
+AACDB	627	3q3g	P11215			mapped	
+AACDB	628	3q3g	P11215			mapped	
+AACDB	629	3q3g	P11215			mapped	
+AACDB	630	3qa3	P11215			mapped	
+AACDB	631	3qa3	P11215			mapped	
+AACDB	632	3qa3	P11215			mapped	
+AACDB	633	3qa3	P11215			mapped	
+AACDB	635	3qum	P07288			no_unambiguous_canonical_site	
+AACDB	636	3qum	P07288			mapped	
+AACDB	637	3qum	P07288			mapped	
+AACDB	638	3qum	P07288			mapped	
+AACDB	640	3r1g	P56817			mapped	
+AACDB	641	3raj	P28907			mapped	
+AACDB	646	3s35	P35968			mapped	
+AACDB	647	3s37	P35968			mapped	
+AACDB	650	3skj	P29317			mapped	
+AACDB	651	3skj	P29317			mapped	
+AACDB	654	3t2n	P05981			mapped	
+AACDB	655	3t2n	P05981			mapped	
+AACDB	656	3thm	P25445			mapped	
+AACDB	657	3tje	P25445			mapped	
+AACDB	665	3u9u	Q15303			mapped	
+AACDB	670	3ulu	O15455			mapped	
+AACDB	671	3ulu	O15455			mapped	
+AACDB	672	3ulu	O15455			mapped	
+AACDB	680	3v4p	P26010			mapped	
+AACDB	681	3v4p	P26010			mapped	
+AACDB	682	3v6o	P48357			mapped	
+AACDB	683	3v6o	P48357			mapped	
+AACDB	686	3vg9	P29274			mapped	
+AACDB	687	3vga	P29274			mapped	
+AACDB	690	3w11	P06213			mapped	
+AACDB	693	3wih	Q9Y6N7			mapped	
+AACDB	694	3wih	Q9Y6N7			mapped	
+AACDB	695	3wsq	P04626			mapped	
+AACDB	696	3x3f	O14763			mapped	
+AACDB	709	4cmh	P28907			mapped	
+AACDB	712	4dtg	P10646			mapped	
+AACDB	720	4f9l	O00481			mapped	
+AACDB	721	4f9l	O00481			mapped	
+AACDB	722	4f9p	O00481			mapped	
+AACDB	758	4ht1	O43508			mapped	
+AACDB	759	4hwb	P78552			mapped	
+AACDB	764	4ij3	O00391			mapped	
+AACDB	778	4k94	P10721			mapped	
+AACDB	780	4kml	P04156			mapped	
+AACDB	781	4krl	P00533			mapped	
+AACDB	782	4krm	P00533			mapped	
+AACDB	783	4krm	P00533			mapped	
+AACDB	784	4krm	P00533			mapped	
+AACDB	785	4krm	P00533			mapped	
+AACDB	786	4krm	P00533			mapped	
+AACDB	787	4krm	P00533			mapped	
+AACDB	788	4kro	P00533			mapped	
+AACDB	789	4kro	P00533			mapped	
+AACDB	790	4krp	P00533			mapped	
+AACDB	791	4krp	P00533			mapped	
+AACDB	794	4kv5	P01137			mapped	
+AACDB	795	4kv5	P01137			mapped	
+AACDB	796	4kv5	P01137			mapped	
+AACDB	797	4kv5	P01137			mapped	
+AACDB	813	4lmq	P48061			mapped	
+AACDB	814	4lmq	P48061			mapped	
+AACDB	828	4m7l	P13726			mapped	
+AACDB	844	4n90	O14763			mapped	
+AACDB	845	4n90	O14763			mapped	
+AACDB	846	4n90	O14763			mapped	
+AACDB	851	4n9o	P04156			mapped	
+AACDB	858	4o02	P06756			mapped	
+AACDB	867	4od2	O14763			mapped	
+AACDB	892	4q6i	P01730			mapped	
+AACDB	893	4q6i	P01730			mapped	
+AACDB	894	4q6i	P01730			mapped	
+AACDB	895	4q6i	P01730			mapped	
+AACDB	896	4qci	P01127			mapped	
+AACDB	897	4qci	P01127			mapped	
+AACDB	905	4qti	Q03405			mapped	
+AACDB	952	4s10	P06396			no_unambiguous_canonical_site	
+AACDB	953	4s10	P06396			mapped	
+AACDB	1002	4uu9	P01031			mapped	
+AACDB	1003	4uu9	P01031			mapped	
+AACDB	1021	4wfe	Q9NYG8			mapped	
+AACDB	1022	4wfe	Q9NYG8			mapped	
+AACDB	1023	4wff	Q9NYG8			mapped	
+AACDB	1024	4wff	Q9NYG8			mapped	
+AACDB	1025	4wfg	Q9NYG8			mapped	
+AACDB	1026	4wfg	Q9NYG8			mapped	
+AACDB	1027	4wfh	Q9NYG8			mapped	
+AACDB	1028	4wfh	Q9NYG8			mapped	
+AACDB	1029	4wv1	P21802			mapped	
+AACDB	1030	4wv1	P21802			mapped	
+AACDB	1091	4y5v	P19235			mapped	
+AACDB	1092	4y5v	P19235			mapped	
+AACDB	1093	4y5v	P19235			mapped	
+AACDB	1094	4y5x	P19235			mapped	
+AACDB	1095	4y5x	P19235			mapped	
+AACDB	1096	4y5x	P19235			mapped	
+AACDB	1097	4y5x	P19235			mapped	
+AACDB	1098	4y5y	P19235			mapped	
+AACDB	1099	4y5y	P19235			mapped	
+AACDB	1131	4yzf	P02730			mapped	
+AACDB	1132	4yzf	P02730			mapped	
+AACDB	1133	4yzf	P02730			mapped	
+AACDB	1134	4yzf	P02730			mapped	
+AACDB	1143	4z7n	P08514			mapped	
+AACDB	1144	4z7n	P08514			mapped	
+AACDB	1145	4z7o	P08514			mapped	
+AACDB	1146	4z7o	P08514			mapped	
+AACDB	1147	4z7q	P08514			mapped	
+AACDB	1148	4z7q	P08514			mapped	
+AACDB	1153	4zfo	Q02223			mapped	
+AACDB	1154	4zfo	Q02223			mapped	
+AACDB	1162	4zso	Q68D85			mapped	
+AACDB	1163	4zso	Q68D85			mapped	
+AACDB	1164	4zxb	P06213			mapped	
+AACDB	1165	4zxb	P06213			mapped	
+AACDB	1193	5b71	P01031			mapped	
+AACDB	1194	5b71	P01031			mapped	
+AACDB	1195	5b8c	Q15116			mapped	
+AACDB	1196	5b8c	Q15116			mapped	
+AACDB	1197	5b8c	Q15116			mapped	
+AACDB	1198	5b8c	Q15116			mapped	
+AACDB	1205	5bo1	P78504			mapped	
+AACDB	1206	5bo1	P78504			mapped	
+AACDB	1233	5cus	P21860			mapped	
+AACDB	1234	5cus	P21860			mapped	
+AACDB	1235	5cus	P21860			mapped	
+AACDB	1236	5cus	P21860			mapped	
+AACDB	1237	5czv	Q9UM47			mapped	
+AACDB	1238	5czx	Q9UM47			mapped	
+AACDB	1239	5czx	Q9UM47			mapped	
+AACDB	1256	5dfv	P60033			mapped	
+AACDB	1257	5dfv	P60033			mapped	
+AACDB	1258	5dfw	P60033			mapped	
+AACDB	1264	5dmi	P25942			mapped	
+AACDB	1265	5dmj	P25942			mapped	
+AACDB	1266	5dmj	P25942			mapped	
+AACDB	1281	5e8d	O14944			mapped	
+AACDB	1282	5e8e	P00734			mapped	
+AACDB	1283	5e94	P43220			mapped	
+AACDB	1284	5e94	P43220			mapped	
+AACDB	1299	5f1k	P28907			mapped	
+AACDB	1300	5f1k	P28907			mapped	
+AACDB	1301	5f1o	P28907			mapped	
+AACDB	1302	5f21	P28907			mapped	
+AACDB	1343	5fb8	Q14005			mapped	
+AACDB	1350	5fuc	P08887			mapped	
+AACDB	1351	5fuc	P08887			mapped	
+AACDB	1370	5ggr	Q15116			mapped	
+AACDB	1371	5ggr	Q15116			mapped	
+AACDB	1372	5ggs	Q15116			mapped	
+AACDB	1373	5ggs	Q15116			mapped	
+AACDB	1374	5ggt	Q9NZQ7			mapped	
+AACDB	1375	5ggv	P16410			mapped	
+AACDB	1380	5gs0	O15455			mapped	
+AACDB	1381	5gs0	O15455			mapped	
+AACDB	1394	5hbt	P02708			mapped	
+AACDB	1398	5hdb	P08514			mapped	
+AACDB	1399	5hdb	P08514			mapped	
+AACDB	1401	5hgg	P00749			no_unambiguous_canonical_site	
+AACDB	1402	5hgg	P00749			no_unambiguous_canonical_site	
+AACDB	1432	5ihl	P25942			mapped	
+AACDB	1433	5ihl	P25942			mapped	
+AACDB	1434	5ihl	P25942			mapped	
+AACDB	1435	5ihl	P25942			mapped	
+AACDB	1438	5imk	Q9Y279			mapped	
+AACDB	1439	5iml	Q9Y279			mapped	
+AACDB	1442	5iwl	Q08722			mapped	
+AACDB	1443	5iwl	Q08722			mapped	
+AACDB	1450	5j3h	P06213			mapped	
+AACDB	1460	5jmo	P09958			mapped	
+AACDB	1461	5jmo	P09958			mapped	
+AACDB	1478	5jyl	P22223			mapped	
+AACDB	1479	5jyl	P22223			mapped	
+AACDB	1480	5jym	P22223			mapped	
+AACDB	1481	5jym	P22223			mapped	
+AACDB	1526	5kqv	P06213			no_unambiguous_canonical_site	
+AACDB	1527	5kqv	P06213			no_unambiguous_canonical_site	
+AACDB	1554	5lsp	P08581			mapped	
+AACDB	1555	5lsp	P08581			mapped	
+AACDB	1558	5lwy	Q86V24			no_unambiguous_canonical_site	
+AACDB	1559	5lxg	Q96A54			no_unambiguous_canonical_site	
+AACDB	1580	5mo9	Q16620			mapped	
+AACDB	1588	5my6	P04626			mapped	
+AACDB	1598	5ngv	Q13705			mapped	
+AACDB	1599	5nh3	P27037			mapped	
+AACDB	1600	5nh3	P27037			mapped	
+AACDB	1601	5nhr	Q13705			mapped	
+AACDB	1602	5nhr	Q13705			mapped	
+AACDB	1603	5nj3	Q9UNQ0			mapped	
+AACDB	1604	5nj3	Q9UNQ0			mapped	
+AACDB	1612	5njg	Q9UNQ0			mapped	
+AACDB	1613	5njg	Q9UNQ0			mapped	
+AACDB	1614	5nmv	P10646			mapped	
+AACDB	1630	5o4g	P04626			mapped	
+AACDB	1631	5o4o	P21860			mapped	
+AACDB	1634	5o7p	P21860			mapped	
+AACDB	1647	5sx4	P00533			no_unambiguous_canonical_site	
+AACDB	1648	5sx4	P00533			no_unambiguous_canonical_site	
+AACDB	1649	5sx5	P00533			no_unambiguous_canonical_site	
+AACDB	1650	5sx5	P00533			no_unambiguous_canonical_site	
+AACDB	1675	5th9	P14780			mapped	
+AACDB	1676	5th9	P14780			mapped	
+AACDB	1677	5th9	P14780			mapped	
+AACDB	1686	5tl5	P26842			mapped	
+AACDB	1687	5tlj	P26842			mapped	
+AACDB	1688	5tlj	P26842			mapped	
+AACDB	1689	5tlk	P26842			mapped	
+AACDB	1690	5tlk	P26842			mapped	
+AACDB	1691	5tlk	P26842			mapped	
+AACDB	1692	5tlk	P26842			mapped	
+AACDB	1700	5tru	P16410			mapped	
+AACDB	1701	5tru	P16410			mapped	
+AACDB	1705	5tz2	Q08722			mapped	
+AACDB	1706	5tzt	Q08722			mapped	
+AACDB	1707	5tzt	Q08722			mapped	
+AACDB	1708	5tzu	Q08722			mapped	
+AACDB	1805	5veb	P55285			mapped	
+AACDB	1806	5veb	P55285			mapped	
+AACDB	1827	5vl3	P20273			mapped	
+AACDB	1828	5vl3	P20273			mapped	
+AACDB	1829	5vl3	P20273			mapped	
+AACDB	1830	5vl3	P20273			mapped	
+AACDB	1831	5vl7	Q8NBP7			mapped	
+AACDB	1832	5vlp	Q8NBP7			mapped	
+AACDB	1856	5w06	P13726			mapped	
+AACDB	1922	5whk	P55899			mapped	
+AACDB	1923	5wi9	Q86Z14			mapped	
+AACDB	1924	5wi9	Q86Z14			mapped	
+AACDB	1929	5wt9	Q15116			mapped	
+AACDB	1931	5wux	P01375			mapped	
+AACDB	1932	5wux	P01375			mapped	
+AACDB	1933	5wux	P01375			mapped	
+AACDB	1934	5x0t	P35613			mapped	
+AACDB	1935	5x0t	P35613			mapped	
+AACDB	1944	5x8l	Q9NZQ7			mapped	
+AACDB	1945	5x8l	Q9NZQ7			mapped	
+AACDB	1946	5x8l	Q9NZQ7			mapped	
+AACDB	1947	5x8l	Q9NZQ7			mapped	
+AACDB	1948	5x8l	Q9NZQ7			mapped	
+AACDB	1949	5x8m	Q9NZQ7			mapped	
+AACDB	1954	5xbm	Q14108			mapped	
+AACDB	1955	5xbm	Q14108			mapped	
+AACDB	1958	5xj3	P16410			mapped	
+AACDB	1959	5xj3	P16410			mapped	
+AACDB	1960	5xj3	P16410			mapped	
+AACDB	1961	5xj3	P16410			mapped	
+AACDB	1962	5xj4	Q9NZQ7			no_unambiguous_canonical_site	
+AACDB	1966	5xwd	P00533			mapped	
+AACDB	1967	5xxy	Q9NZQ7			mapped	
+AACDB	1979	5y9j	Q9Y275			mapped	
+AACDB	1980	5yhl	P35408			mapped	
+AACDB	1981	5yoy	P01375			mapped	
+AACDB	1982	5yoy	P01375			mapped	
+AACDB	1983	5yoy	P01375			mapped	
+AACDB	1984	5yoy	P01375			mapped	
+AACDB	1985	5yoy	P01375			mapped	
+AACDB	1986	5yoy	P01375			mapped	
+AACDB	1989	5ywy	P35408			mapped	
+AACDB	1992	6a3w	Q07011			mapped	
+AACDB	1993	6a3w	Q07011			mapped	
+AACDB	1994	6a3w	Q07011			mapped	
+AACDB	1995	6a3w	Q07011			mapped	
+AACDB	2002	6a77	Q9Y6N7			mapped	
+AACDB	2003	6a78	Q9Y6N7			mapped	
+AACDB	2004	6a78	Q9Y6N7			mapped	
+AACDB	2005	6a79	Q9Y6N7			mapped	
+AACDB	2006	6a79	Q9Y6N7			mapped	
+AACDB	2020	6al5	P15391			mapped	
+AACDB	2031	6aru	P00533			mapped	
+AACDB	2032	6att	P04626			mapped	
+AACDB	2033	6avq	P05106			mapped	
+AACDB	2034	6avr	P05106			mapped	
+AACDB	2035	6avu	P05106			mapped	
+AACDB	2051	6b3s	P00533			no_unambiguous_canonical_site	
+AACDB	2052	6b3s	P00533			no_unambiguous_canonical_site	
+AACDB	2053	6b3s	P00533			no_unambiguous_canonical_site	
+AACDB	2054	6b3s	P00533			no_unambiguous_canonical_site	
+AACDB	2057	6ba5	Q01973			mapped	
+AACDB	2058	6ba5	Q01973			mapped	
+AACDB	2059	6ba5	Q01973			mapped	
+AACDB	2060	6ba5	Q01973			mapped	
+AACDB	2061	6ban	Q01973			mapped	
+AACDB	2062	6ban	Q01973			mapped	
+AACDB	2063	6ban	Q01973			mapped	
+AACDB	2064	6ban	Q01973			mapped	
+AACDB	2066	6bdz	O14672			mapped	
+AACDB	2076	6bgt	P04626			mapped	
+AACDB	2077	6bit	P78324			mapped	
+AACDB	2078	6bit	P78324			mapped	
+AACDB	2117	6cnj	P17787			mapped	
+AACDB	2118	6cnj	P17787			mapped	
+AACDB	2119	6cnj	P17787			mapped	
+AACDB	2120	6cnk	P17787			mapped	
+AACDB	2121	6cnk	P17787			mapped	
+AACDB	2136	6cxy	P12830			mapped	
+AACDB	2160	6dkj	P48546			mapped	
+AACDB	2161	6dkj	P48546			mapped	
+AACDB	2164	6dzv	P31645			mapped	
+AACDB	2165	6dzw	P31645			mapped	
+AACDB	2166	6dzw	P31645			mapped	
+AACDB	2167	6dzy	P31645			mapped	
+AACDB	2168	6dzy	P31645			mapped	
+AACDB	2169	6dzz	P31645			mapped	
+AACDB	2179	6ehg	P01024			mapped	
+AACDB	2196	6fax	P25942			mapped	
+AACDB	2208	6fn1	P08183			mapped	
+AACDB	2209	6fn4	P08183			mapped	
+AACDB	2210	6fxn	Q9Y275			mapped	
+AACDB	2211	6fxn	Q9Y275			mapped	
+AACDB	2212	6fxn	Q9Y275			mapped	
+AACDB	2213	6fxn	Q9Y275			mapped	
+AACDB	2214	6fxn	Q9Y275			mapped	
+AACDB	2215	6fxn	Q9Y275			mapped	
+AACDB	2221	6gjq	P13569			mapped	
+AACDB	2222	6gjq	P13569			mapped	
+AACDB	2223	6gjq	P13569			mapped	
+AACDB	2224	6gjq	P13569			mapped	
+AACDB	2225	6gjs	P13569			mapped	
+AACDB	2226	6gjs	P13569			mapped	
+AACDB	2227	6gju	P13569			mapped	
+AACDB	2228	6gju	P13569			mapped	
+AACDB	2229	6gk4	P13569			mapped	
+AACDB	2230	6gk4	P13569			mapped	
+AACDB	2231	6gk4	P13569			mapped	
+AACDB	2232	6gk4	P13569			mapped	
+AACDB	2233	6gkd	P13569			mapped	
+AACDB	2234	6gkd	P13569			mapped	
+AACDB	2235	6gkd	P13569			mapped	
+AACDB	2236	6gkd	P13569			mapped	
+AACDB	2237	6gkd	P13569			mapped	
+AACDB	2238	6gkd	P13569			mapped	
+AACDB	2239	6gkd	P13569			mapped	
+AACDB	2240	6gkd	P13569			mapped	
+AACDB	2241	6gkd	P13569			mapped	
+AACDB	2242	6gkd	P13569			mapped	
+AACDB	2243	6gkd	P13569			mapped	
+AACDB	2244	6gkd	P13569			mapped	
+AACDB	2251	6gwq	P05121			mapped	
+AACDB	2252	6h15	O75581			mapped	
+AACDB	2253	6h15	O75581			mapped	
+AACDB	2254	6h16	O75581			mapped	
+AACDB	2255	6h1f	P06396			mapped	
+AACDB	2278	6hga	Q8NAC3			no_unambiguous_canonical_site	
+AACDB	2282	6hig	Q15116			mapped	
+AACDB	2285	6hxw	P21589			mapped	
+AACDB	2286	6hxw	P21589			mapped	
+AACDB	2287	6i04	P08581			mapped	
+AACDB	2288	6i04	P08581			mapped	
+AACDB	2289	6i07	P16422			no_unambiguous_canonical_site	
+AACDB	2290	6i07	P16422			no_unambiguous_canonical_site	
+AACDB	2295	6i8s	P05121			mapped	
+AACDB	2296	6i8s	P05121			mapped	
+AACDB	2297	6i8s	P05121			mapped	
+AACDB	2298	6i8s	P05121			mapped	
+AACDB	2301	6iap	O76036			mapped	
+AACDB	2302	6iap	O76036			mapped	
+AACDB	2340	6ion	O95274			mapped	
+AACDB	2357	6j14	Q15116			mapped	
+AACDB	2358	6j15	Q15116			no_unambiguous_canonical_site	
+AACDB	2359	6j15	Q15116			no_unambiguous_canonical_site	
+AACDB	2363	6j6y	P22455			mapped	
+AACDB	2364	6j6y	P22455			mapped	
+AACDB	2365	6j71	P04626			mapped	
+AACDB	2369	6jbt	Q15116			mapped	
+AACDB	2372	6jjp	Q15116			mapped	
+AACDB	2373	6jjp	Q15116			mapped	
+AACDB	2374	6jmq	P08195			mapped	
+AACDB	2375	6jmr	P08195			mapped	
+AACDB	2376	6jmr	P08195			mapped	
+AACDB	2377	6jod	P50052			mapped	
+AACDB	2378	6k0y	Q15116			mapped	
+AACDB	2399	6k7o	Q8NHJ6			mapped	
+AACDB	2400	6k7o	Q8NHJ6			mapped	
+AACDB	2401	6k7o	Q8NHJ6			mapped	
+AACDB	2402	6k7o	Q8NHJ6			mapped	
+AACDB	2403	6kn9	O95256			mapped	
+AACDB	2404	6kn9	O95256			mapped	
+AACDB	2405	6kn9	O95256			mapped	
+AACDB	2408	6krz	Q96A54			no_unambiguous_canonical_site	
+AACDB	2409	6krz	Q96A54			no_unambiguous_canonical_site	
+AACDB	2410	6krz	Q96A54			no_unambiguous_canonical_site	
+AACDB	2411	6ks0	Q96A54			no_unambiguous_canonical_site	
+AACDB	2412	6ks1	Q86V24			no_unambiguous_canonical_site	
+AACDB	2438	6lyn	P43121			mapped	
+AACDB	2439	6lyn	P43121			mapped	
+AACDB	2470	6mhr	Q07011			mapped	
+AACDB	2471	6mhr	Q07011			mapped	
+AACDB	2472	6mi2	Q07011			mapped	
+AACDB	2473	6mi2	Q07011			mapped	
+AACDB	2493	6mvl	Q9H7M9			mapped	
+AACDB	2516	6n48	P07550			no_unambiguous_canonical_site	
+AACDB	2551	6nmr	P78324			mapped	
+AACDB	2552	6nmr	P78324			mapped	
+AACDB	2553	6nmr	P78324			mapped	
+AACDB	2554	6nmr	P78324			mapped	
+AACDB	2555	6nms	P78324			mapped	
+AACDB	2556	6nms	P78324			mapped	
+AACDB	2557	6nmt	P78324			mapped	
+AACDB	2558	6nmu	P78324			no_unambiguous_canonical_site	
+AACDB	2559	6nmu	P78324			no_unambiguous_canonical_site	
+AACDB	2560	6nmv	P78324			mapped	
+AACDB	2566	6o1f	Q15661			no_unambiguous_canonical_site	
+AACDB	2567	6o39	Q13467			mapped	
+AACDB	2568	6o3a	O75084			mapped	
+AACDB	2569	6o3b	O75084			mapped	
+AACDB	2570	6o3b	O75084			mapped	
+AACDB	2571	6o8d	P10747			mapped	
+AACDB	2594	6oge	P04626			mapped	
+AACDB	2595	6oge	P04626			mapped	
+AACDB	2596	6ogx	P43489			mapped	
+AACDB	2597	6ogx	P43489			mapped	
+AACDB	2648	6osh	Q01974			mapped	
+AACDB	2649	6osv	Q01974			mapped	
+AACDB	2674	6p50	P16871			mapped	
+AACDB	2681	6p67	P16871			mapped	
+AACDB	2682	6p67	P16871			mapped	
+AACDB	2683	6p67	P16871			mapped	
+AACDB	2684	6p67	P16871			mapped	
+AACDB	2700	6pe8	P25942			mapped	
+AACDB	2701	6pe8	P25942			mapped	
+AACDB	2702	6pe9	P25942			mapped	
+AACDB	2703	6pe9	P25942			mapped	
+AACDB	2704	6pe9	P25942			mapped	
+AACDB	2718	6pv7	P32297			mapped	
+AACDB	2719	6pv7	P30926			mapped	
+AACDB	2720	6pv7	P32297			mapped	
+AACDB	2721	6pv7	P30926			mapped	
+AACDB	2722	6pv8	P32297			mapped	
+AACDB	2723	6pv8	P30926			mapped	
+AACDB	2724	6pv8	P32297			mapped	
+AACDB	2725	6pv8	P30926			mapped	
+AACDB	2768	6qex	P08183			mapped	
+AACDB	2780	6r0x	O95866			no_unambiguous_canonical_site	
+AACDB	2781	6r0x	O95866			no_unambiguous_canonical_site	
+AACDB	2791	6rlo	P21926			mapped	
+AACDB	2792	6rlo	P21926			mapped	
+AACDB	2793	6rlo	P21926			mapped	
+AACDB	2794	6rlo	P21926			mapped	
+AACDB	2796	6rp8	P16410			mapped	
+AACDB	2797	6rp8	P16410			mapped	
+AACDB	2798	6rpj	P16410			mapped	
+AACDB	2799	6rpj	P16410			mapped	
+AACDB	2800	6rpj	P16410			mapped	
+AACDB	2801	6rpj	P16410			mapped	
+AACDB	2802	6rps	O43570			no_unambiguous_canonical_site	
+AACDB	2803	6rps	O43570			no_unambiguous_canonical_site	
+AACDB	2804	6rqm	P16410			mapped	
+AACDB	2805	6rtw	Q13635			mapped	
+AACDB	2806	6rty	Q13635			mapped	
+AACDB	2807	6rvc	Q13635			mapped	
+AACDB	2808	6rvc	Q13635			mapped	
+AACDB	2809	6rvc	Q13635			mapped	
+AACDB	2845	6suz	P04156			mapped	
+AACDB	2846	6sv2	P04156			mapped	
+AACDB	2847	6svl	Q969H8			mapped	
+AACDB	2848	6svl	Q969H8			mapped	
+AACDB	2849	6svl	Q969H8			mapped	
+AACDB	2850	6svl	Q969H8			mapped	
+AACDB	2851	6svl	Q969H8			mapped	
+AACDB	2852	6svl	Q969H8			mapped	
+AACDB	2856	6t3j	O14763			mapped	
+AACDB	2857	6t3j	O14763			mapped	
+AACDB	2858	6t3j	O14763			mapped	
+AACDB	2859	6t3j	O14763			mapped	
+AACDB	2866	6txz	Q8TDQ0			mapped	
+AACDB	2867	6txz	Q8TDQ0			mapped	
+AACDB	2868	6txz	Q8TDQ0			mapped	
+AACDB	2869	6txz	Q8TDQ0			mapped	
+AACDB	2891	6u2f	Q8NBP7			mapped	
+AACDB	2892	6u36	Q8NBP7			mapped	
+AACDB	2893	6u38	Q8NBP7			mapped	
+AACDB	2894	6u3i	Q8NBP7			mapped	
+AACDB	2900	6u6u	Q9HB29			mapped	
+AACDB	2901	6u9s	P60033			no_unambiguous_canonical_site	
+AACDB	2902	6u9s	P60033			no_unambiguous_canonical_site	
+AACDB	2922	6uj9	P01889			mapped	
+AACDB	2923	6ujb	P06756			mapped	
+AACDB	2924	6ujb	P26012			mapped	
+AACDB	2925	6ujc	P06756			mapped	
+AACDB	2926	6ujc	P26012			mapped	
+AACDB	2975	6v4p	P08514			mapped	
+AACDB	2976	6v4p	P05106			mapped	
+AACDB	2990	6vc9	P21589			mapped	
+AACDB	2991	6vca	P21589			mapped	
+AACDB	2992	6vca	P21589			mapped	
+AACDB	2993	6vca	P21589			mapped	
+AACDB	2994	6vca	P21589			mapped	
+AACDB	2996	6vep	P06213			mapped	
+AACDB	2997	6vep	P06213			mapped	
+AACDB	2998	6vep	P06213			mapped	
+AACDB	2999	6vep	P06213			mapped	
+AACDB	3000	6veq	P06213			mapped	
+AACDB	3001	6veq	P06213			mapped	
+AACDB	3002	6vgr	Q9H4B8			mapped	
+AACDB	3003	6vgr	Q9H4B8			mapped	
+AACDB	3007	6vi4	P41145			mapped	
+AACDB	3008	6vi4	P41145			mapped	
+AACDB	3009	6vja	P11836			mapped	
+AACDB	3010	6vja	P11836			mapped	
+AACDB	3047	6vrh	P31645			mapped	
+AACDB	3048	6vrk	P31645			mapped	
+AACDB	3049	6vrl	P31645			mapped	
+AACDB	3054	6vvu	Q15661			no_unambiguous_canonical_site	
+AACDB	3055	6vvu	Q15661			no_unambiguous_canonical_site	
+AACDB	3056	6vvu	Q15661			no_unambiguous_canonical_site	
+AACDB	3057	6vvu	Q15661			no_unambiguous_canonical_site	
+AACDB	3090	6w2b	P31645			mapped	
+AACDB	3091	6w2c	P31645			mapped	
+AACDB	3094	6w4s	Q9NP59			mapped	
+AACDB	3095	6w9g	P29965			mapped	
+AACDB	3096	6w9g	P29965			mapped	
+AACDB	3097	6w9g	P29965			mapped	
+AACDB	3109	6wbv	Q9NP59			mapped	
+AACDB	3116	6wgl	P24394			mapped	
+AACDB	3127	6wjl	Q8N158			no_unambiguous_canonical_site	
+AACDB	3128	6wjl	Q8N158			no_unambiguous_canonical_site	
+AACDB	3131	6wmw	Q6UXV0			mapped	
+AACDB	3132	6wmw	Q6UXV0			mapped	
+AACDB	3166	6wvz	P08581			mapped	
+AACDB	3176	6x4t	O75144			mapped	
+AACDB	3177	6x4t	O75144			mapped	
+AACDB	3206	6xkr	Q15116			mapped	
+AACDB	3207	6xlq	O00481			mapped	
+AACDB	3208	6xlq	O00481			mapped	
+AACDB	3209	6xlq	O00481			mapped	
+AACDB	3210	6xlq	O00481			mapped	
+AACDB	3231	6xr0	P08582			mapped	
+AACDB	3234	6xsw	Q9UM47			mapped	
+AACDB	3235	6xsw	Q9UM47			mapped	
+AACDB	3236	6xsw	Q9UM47			mapped	
+AACDB	3237	6xsw	Q9UM47			mapped	
+AACDB	3248	6xy2	P16410			mapped	
+AACDB	3252	6y90	P11836			mapped	
+AACDB	3253	6y90	P11836			mapped	
+AACDB	3254	6y92	P11836			mapped	
+AACDB	3255	6y92	P11836			mapped	
+AACDB	3256	6y9b	Q9UHE8			mapped	
+AACDB	3257	6y9b	Q9UHE8			mapped	
+AACDB	3258	6y9b	Q9UHE8			mapped	
+AACDB	3264	6yio	P01589			mapped	
+AACDB	3268	6ymq	Q9NZC2			no_unambiguous_canonical_site	
+AACDB	3269	6ymq	Q9NZC2			no_unambiguous_canonical_site	
+AACDB	3271	6ymq	Q9NZC2			no_unambiguous_canonical_site	
+AACDB	3273	6ymq	Q9NZC2			no_unambiguous_canonical_site	
+AACDB	3280	6yxf	Q86V24			no_unambiguous_canonical_site	
+AACDB	3281	6yxg	Q86V24			no_unambiguous_canonical_site	
+AACDB	3282	6yye	Q9NZC2			mapped	
+AACDB	3283	6yye	Q9NZC2			mapped	
+AACDB	3291	6z1v	P21926			mapped	
+AACDB	3292	6z20	P21926			mapped	
+AACDB	3293	6z20	P21926			mapped	
+AACDB	3304	6zbv	P48067			mapped	
+AACDB	3312	6ze1	P13569			no_unambiguous_canonical_site	
+AACDB	3326	6zpl	P48067			mapped	
+AACDB	3327	6zpl	P48067			mapped	
+AACDB	3328	6zrv	P05121			mapped	
+AACDB	3329	6ztr	P22223			mapped	
+AACDB	3330	6ztr	P22223			mapped	
+AACDB	3354	7a65	P08183			mapped	
+AACDB	3355	7a69	P08183			mapped	
+AACDB	3356	7a6c	P08183			mapped	
+AACDB	3357	7a6e	P08183			mapped	
+AACDB	3358	7a6f	P08183			mapped	
+AACDB	3370	7azb	Q16832			mapped	
+AACDB	3375	7b2m	P0C0L4			mapped	
+AACDB	3376	7b2m	P0C0L4			mapped	
+AACDB	3377	7b2p	P0C0L4			mapped	
+AACDB	3378	7b2p	P0C0L4			mapped	
+AACDB	3379	7b2q	P0C0L4			mapped	
+AACDB	3380	7b2q	P0C0L4			mapped	
+AACDB	3387	7bbj	P21589			mapped	
+AACDB	3388	7bbj	P21589			mapped	
+AACDB	3423	7bxa	Q15116			mapped	
+AACDB	3424	7bxa	Q15116			mapped	
+AACDB	3430	7c4s	Q99500			mapped	
+AACDB	3431	7c4s	Q99500			mapped	
+AACDB	3435	7c88	Q9NZQ7			mapped	
+AACDB	3436	7c88	Q9NZQ7			mapped	
+AACDB	3449	7cgw	Q15116			mapped	
+AACDB	3450	7cgw	Q15116			mapped	
+AACDB	3481	7cu5	Q15116			mapped	
+AACDB	3482	7cu5	Q15116			mapped	
+AACDB	3526	7czd	Q9NZQ7			no_unambiguous_canonical_site	
+AACDB	3527	7czd	Q9NZQ7			no_unambiguous_canonical_site	
+AACDB	3566	7d4b	Q07011			no_unambiguous_canonical_site	
+AACDB	3572	7d85	P21860			mapped	
+AACDB	3573	7d85	P21860			mapped	
+AACDB	3576	7daa	P35613			mapped	
+AACDB	3577	7dc8	P08887			mapped	
+AACDB	3578	7dc8	P08887			mapped	
+AACDB	3597	7dge	Q13255			no_unambiguous_canonical_site	
+AACDB	3598	7dge	Q13255			no_unambiguous_canonical_site	
+AACDB	3599	7dha	P28907			mapped	
+AACDB	3624	7duo	P28907			mapped	
+AACDB	3654	7e6u	P41180			mapped	
+AACDB	3655	7e6u	P41180			mapped	
+AACDB	3656	7e72	Q02763			mapped	
+AACDB	3657	7e72	Q02763			mapped	
+AACDB	3709	7elx	P16410			mapped	
+AACDB	3710	7elx	P16410			mapped	
+AACDB	3737	7f9w	P01589			mapped	
+AACDB	3758	7fci	Q14973			mapped	
+AACDB	3782	7jic	P15391			mapped	
+AACDB	3795	7joo	Q9Y6W8			mapped	
+AACDB	3796	7jr7	Q9H221			mapped	
+AACDB	3797	7jr7	Q9H221			mapped	
+AACDB	3897	7kd6	P06213			mapped	
+AACDB	3898	7kd6	P06213			mapped	
+AACDB	3899	7kd6	P06213			mapped	
+AACDB	3900	7kd6	P06213			mapped	
+AACDB	3986	7kpg	P78324			mapped	
+AACDB	3989	7kq7	Q9HBE5			mapped	
+AACDB	3999	7kql	Q8TDQ0			mapped	
+AACDB	4126	7lf7	O14791			mapped	
+AACDB	4127	7lf7	O14791			mapped	
+AACDB	4128	7lfa	O14791			mapped	
+AACDB	4129	7lfa	O14791			mapped	
+AACDB	4130	7lfb	O14791			mapped	
+AACDB	4134	7lj4	Q9NYG8			mapped	
+AACDB	4135	7lj4	Q9NYG8			mapped	
+AACDB	4136	7lj5	Q9NYG8			mapped	
+AACDB	4137	7lj5	Q9NYG8			mapped	
+AACDB	4138	7lja	Q9NYG8			mapped	
+AACDB	4139	7lja	Q9NYG8			mapped	
+AACDB	4140	7ljb	Q9NYG8			mapped	
+AACDB	4141	7ljb	Q9NYG8			mapped	
+AACDB	4215	7lwd	P31645			mapped	
+AACDB	4456	7niu	P21439			mapped	
+AACDB	4457	7niu	P21439			mapped	
+AACDB	4458	7niv	P21439			mapped	
+AACDB	4459	7niv	P21439			mapped	
+AACDB	4460	7niw	P21439			mapped	
+AACDB	4504	7o52	P20273			mapped	
+AACDB	4506	7o9w	P08183			mapped	
+AACDB	4517	7om4	P00533			mapped	
+AACDB	4627	7pqg	Q14973			no_unambiguous_canonical_site	
+AACDB	4661	7q6c	P13671			mapped	
+AACDB	4694	7qiv	P01024			mapped	
+AACDB	4715	7r58	Q9HCN6			mapped	
+AACDB	4722	7r87	Q9H221			mapped	
+AACDB	4723	7r88	Q9H221			mapped	
+AACDB	4724	7r89	Q9H221			mapped	
+AACDB	4725	7r8a	Q9H221			mapped	
+AACDB	4726	7r8b	Q9H221			mapped	
+AACDB	4747	7rd5	O95858			mapped	
+AACDB	4748	7rd5	O95858			mapped	
+AACDB	4769	7rnn	P78348			mapped	
+AACDB	4871	7seg	P08637			mapped	
+AACDB	4872	7seg	P08637			mapped	
+AACDB	4886	7sgm	P29965			mapped	
+AACDB	4887	7sgm	P29965			mapped	
+AACDB	4888	7sgm	P29965			mapped	
+AACDB	4892	7sjn	Q92743			mapped	
+AACDB	4893	7sjn	Q92743			mapped	
+AACDB	4894	7sjn	Q92743			mapped	
+AACDB	4895	7sjo	Q92743			mapped	
+AACDB	4896	7sjo	Q92743			mapped	
+AACDB	4897	7sjo	Q92743			mapped	
+AACDB	4898	7sk3	P25106			mapped	
+AACDB	4899	7sk3	P25106			mapped	
+AACDB	4900	7sk4	P25106			mapped	
+AACDB	4901	7sk4	P25106			mapped	
+AACDB	4902	7sk5	P25106			mapped	
+AACDB	4903	7sk6	P25106			mapped	
+AACDB	4904	7sk7	P25106			mapped	
+AACDB	4905	7sk8	P25106			mapped	
+AACDB	4906	7sk8	P25106			mapped	
+AACDB	4907	7sk9	P25106			mapped	
+AACDB	4935	7srs	P41595			mapped	
+AACDB	4940	7st5	P78324			mapped	
+AACDB	4941	7st5	P78324			mapped	
+AACDB	4942	7st8	Q6HA08			mapped	
+AACDB	4943	7stf	P04439			mapped	
+AACDB	4944	7stz	P12830			mapped	
+AACDB	4945	7stz	P12830			mapped	
+AACDB	4946	7su0	P16410			mapped	
+AACDB	4947	7su0	P16410			mapped	
+AACDB	4948	7su1	P16410			mapped	
+AACDB	4956	7t0l	P61769			mapped	
+AACDB	4958	7t0l	P61769			mapped	
+AACDB	4959	7t0r	P01730			mapped	
+AACDB	4960	7t0r	P01730			mapped	
+AACDB	4986	7t9m	P16473			mapped	
+AACDB	4987	7t9n	P16473			mapped	
+AACDB	5097	7tzg	P18627			mapped	
+AACDB	5098	7tzg	P18627			mapped	
+AACDB	5099	7tzh	P18627			mapped	
+AACDB	5100	7tzh	P18627			mapped	
+AACDB	5108	7u8g	P04839			mapped	
+AACDB	5149	7ue9	P01024			no_unambiguous_canonical_site	
+AACDB	5150	7ued	Q13421			mapped	
+AACDB	5214	7urv	P15391			mapped	
+AACDB	5215	7urx	P15391			mapped	
+AACDB	5220	7uvf	P01732			mapped	
+AACDB	5221	7uvf	P01732			mapped	
+AACDB	5279	7vad	Q14973			mapped	
+AACDB	5282	7vag	Q14973			mapped	
+AACDB	5283	7vbh	P63092			no_unambiguous_canonical_site	
+AACDB	5295	7vux	Q15116			mapped	
+AACDB	5298	7vyt	Q495A1			mapped	
+AACDB	5299	7vyt	Q495A1			mapped	
+AACDB	5368	7wn8	Q08722			mapped	
+AACDB	5369	7wn8	Q08722			mapped	
+AACDB	5461	7wsi	Q14973			mapped	
+AACDB	5462	7wsl	Q15116			mapped	
+AACDB	5486	7wvf	O15455			mapped	
+AACDB	5488	7wvm	Q15116			mapped	
+AACDB	5489	7wvm	Q15116			mapped	
+AACDB	5576	7x8p	Q14332			mapped	
+AACDB	5577	7x8p	Q14332			mapped	
+AACDB	5578	7x8q	Q9ULW2			mapped	
+AACDB	5579	7x8q	Q9ULW2			mapped	
+AACDB	5580	7x8t	Q9ULW2			mapped	
+AACDB	5581	7x8t	Q9ULW2			mapped	
+AACDB	5582	7x8t	Q9ULW2			mapped	
+AACDB	5583	7x8t	Q9ULW2			mapped	
+AACDB	5610	7xjf	Q08722			mapped	
+AACDB	5642	7xy8	P35613			mapped	
+AACDB	5643	7xy8	P35613			mapped	
+AACDB	5697	7yru	Q04771			mapped	
+AACDB	5699	7yxu	Q07011			mapped	
+AACDB	5782	7zmk	P55083			mapped	
+AACDB	5783	7zmk	P55083			mapped	
+AACDB	5784	7zmk	P55083			mapped	
+AACDB	5785	7zmk	P55083			mapped	
+AACDB	5786	7zmk	P55083			mapped	
+AACDB	5787	7zmk	P55083			mapped	
+AACDB	5788	7zmk	P55083			mapped	
+AACDB	5789	7zmk	P55083			mapped	
+AACDB	5790	7zoz	Q6ZMC9			mapped	
+AACDB	5811	7zyi	Q14973			mapped	
+AACDB	5824	8aok	Q9NZQ7			mapped	
+AACDB	5825	8aom	Q9NZQ7			mapped	
+AACDB	5826	8as0	Q15116			mapped	
+AACDB	5827	8as0	Q15116			mapped	
+AACDB	5828	8as0	Q15116			mapped	
+AACDB	5829	8as0	Q15116			mapped	
+AACDB	5830	8as0	Q15116			mapped	
+AACDB	5831	8as0	Q15116			mapped	
+AACDB	5832	8as0	Q15116			mapped	
+AACDB	5833	8as0	Q15116			mapped	
+AACDB	5836	8ath	P11279			mapped	
+AACDB	5837	8ath	P11279			mapped	
+AACDB	5854	8byu	P28907			mapped	
+AACDB	5855	8c7h	Q14392			mapped	
+AACDB	5857	8c9x	P36544			mapped	
+AACDB	5858	8c9x	P36544			mapped	
+AACDB	5859	8c9x	P36544			mapped	
+AACDB	5860	8c9x	P36544			mapped	
+AACDB	5861	8c9x	P36544			mapped	
+AACDB	5864	8cau	P36544			mapped	
+AACDB	5865	8cau	P36544			mapped	
+AACDB	5866	8cau	P36544			mapped	
+AACDB	5867	8cau	P36544			mapped	
+AACDB	5868	8cau	P36544			mapped	
+AACDB	5871	8ce4	P36544			mapped	
+AACDB	5872	8ce4	P36544			mapped	
+AACDB	5873	8ce4	P36544			mapped	
+AACDB	5874	8ce4	P36544			mapped	
+AACDB	5875	8ce4	P36544			mapped	
+AACDB	5876	8ci1	P36544			mapped	
+AACDB	5877	8ci1	P36544			mapped	
+AACDB	5878	8ci1	P36544			mapped	
+AACDB	5879	8ci1	P36544			mapped	
+AACDB	5880	8ci1	P36544			mapped	
+AACDB	5881	8ci2	P36544			mapped	
+AACDB	5882	8ci2	P36544			mapped	
+AACDB	5883	8ci2	P36544			mapped	
+AACDB	5887	8cml	P01031			mapped	
+AACDB	5888	8cml	P01031			mapped	
+AACDB	5906	8cxc	Q13421			mapped	
+AACDB	5907	8cxc	Q13421			mapped	
+AACDB	5933	8cyh	Q13421			mapped	
+AACDB	5939	8cz8	Q13421			mapped	
+AACDB	5940	8cz8	Q13421			mapped	
+AACDB	5941	8cz8	Q13421			mapped	
+AACDB	5942	8cz8	Q13421			mapped	
+AACDB	5947	8d7e	P26992			mapped	
+AACDB	5995	8dke	O60931			mapped	
+AACDB	5996	8dki	O60931			mapped	
+AACDB	5997	8dkm	O60931			mapped	
+AACDB	5998	8dkw	O60931			mapped	
+AACDB	5999	8dkx	O60931			mapped	
+AACDB	6000	8dl6	Q9NP59			mapped	
+AACDB	6033	8ds5	P26842			mapped	
+AACDB	6078	8dyp	O60931			no_unambiguous_canonical_site	
+AACDB	6097	8e7m	Q9BYF1			mapped	
+AACDB	6104	8e99	Q12879			mapped	
+AACDB	6149	8epa	P31785			mapped	
+AACDB	6150	8epa	P31785			mapped	
+AACDB	6151	8eq6	Q15116			mapped	
+AACDB	6155	8euq	P01903			no_unambiguous_canonical_site	
+AACDB	6156	8euq	P01903			no_unambiguous_canonical_site	
+AACDB	6166	8ew6	P01732			mapped	
+AACDB	6181	8f60	Q7Z6A9			no_unambiguous_canonical_site	
+AACDB	6182	8f6l	Q7Z6A9			mapped	
+AACDB	6183	8f6o	Q7Z6A9			mapped	
+AACDB	6252	8ghp	P25092			mapped	
+AACDB	6259	8gng	P29274			mapped	
+AACDB	6260	8gng	P29274			mapped	
+AACDB	6399	8il3	P28907			mapped	
+AACDB	6411	8ivx	O60462			no_unambiguous_canonical_site	
+AACDB	6425	8pe9	Q08345			mapped	
+AACDB	6434	8so3	P18627			mapped	
+AACDB	6435	8so3	P18627			mapped	
+AACDB	6436	8sr0	P18627			mapped	
+AACDB	6437	8sr0	P18627			mapped	
+AACDB	6438	8szy	Q495A1			mapped	
+AACDB	6439	8szy	Q495A1			mapped	
+AACDB	6440	8szy	Q495A1			no_unambiguous_canonical_site	
+AACDB	6441	8szy	Q495A1			no_unambiguous_canonical_site	
+AACDB	6467	8trs	P29317			mapped	
+AACDB	6468	8trt	P29317			mapped	
+AACDB	6469	8trt	P29317			mapped	
+AACDB	6476	8ucd	Q9UHE8			mapped	
+AACDB	6479	8w83	P01909			mapped	
+AACDB	6480	8w83	P01909			mapped	
+AACDB	6481	8w83	P01909			mapped	
+AACDB	6482	8w83	P01909			mapped	
+AACDB	6487	8w84	P01909			mapped	
+AACDB	6489	8w85	P01909			mapped	
+AACDB	6490	8w85	P01909			mapped	
+AACDB	6491	8w86	P01909			mapped	
+AACDB	6492	8w86	P01909			mapped	
+AACDB	6493	8x0t	Q9H461			mapped	
+AACDB	6494	7quh	Q9NYZ4			mapped	
+AACDB	6526	7s2r	P31785			mapped	
+AACDB	6527	7s2s	P14784			mapped	
+AACDB	6528	7s2s	P14784			mapped	
+AACDB	6562	7sl8	P13866			no_unambiguous_canonical_site	
+AACDB	6563	7sl9	Q8N695			mapped	
+AACDB	6564	7sla	P13866			no_unambiguous_canonical_site	
+AACDB	6574	1w72	P04439			no_unambiguous_canonical_site	
+AACDB	6575	1w72	P04439			no_unambiguous_canonical_site	
+AACDB	6619	3gjf	P04439			no_unambiguous_canonical_site	
+AACDB	6620	3gjf	P04439			no_unambiguous_canonical_site	
+AACDB	6621	3h42	Q8NBP7			mapped	
+AACDB	6622	3h42	Q8NBP7			mapped	
+AACDB	6682	3s36	P35968			no_unambiguous_canonical_site	
+AACDB	6687	3so3	Q9Y5Y6			no_unambiguous_canonical_site	
+AACDB	6688	3sob	O75581			mapped	
+AACDB	6689	3sqo	Q8NBP7			mapped	
+AACDB	6692	3t3m	P08514			mapped	
+AACDB	6693	3t3m	P08514			mapped	
+AACDB	6694	3t3p	P08514			mapped	
+AACDB	6695	3t3p	P08514			mapped	
+AACDB	6704	3ulv	O15455			mapped	
+AACDB	6705	3ulv	O15455			mapped	
+AACDB	6706	3ulv	O15455			mapped	
+AACDB	6707	3v4v	P26010			mapped	
+AACDB	6708	3v4v	P26010			mapped	
+AACDB	6713	3vi3	P05556			mapped	
+AACDB	6714	3vi3	P05556			mapped	
+AACDB	6715	3vi4	P05556			mapped	
+AACDB	6716	3vi4	P05556			mapped	
+AACDB	6717	3w12	P06213			mapped	
+AACDB	6718	3w13	P06213			mapped	
+AACDB	6719	3wd5	P01375			mapped	
+AACDB	6742	3wlw	P04626			mapped	
+AACDB	6743	3wlw	P04626			mapped	
+AACDB	6744	3zdx	P08514			mapped	
+AACDB	6745	3zdx	P08514			mapped	
+AACDB	6746	3zdy	P08514			mapped	
+AACDB	6747	3zdy	P08514			mapped	
+AACDB	6748	3zdz	P08514			mapped	
+AACDB	6749	3zdz	P08514			mapped	
+AACDB	6750	3ze0	P08514			mapped	
+AACDB	6751	3ze0	P08514			mapped	
+AACDB	6752	3ze1	P08514			mapped	
+AACDB	6753	3ze1	P08514			mapped	
+AACDB	6754	3ze2	P08514			mapped	
+AACDB	6755	3ze2	P08514			mapped	
+AACDB	6761	3zkm	Q9Y5Z0			mapped	
+AACDB	6762	3zkm	Q9Y5Z0			mapped	
+AACDB	6763	3zkn	Q9Y5Z0			mapped	
+AACDB	6764	3zkn	Q9Y5Z0			mapped	
+AACDB	6788	4dgi	P04156			mapped	
+AACDB	6801	4ers	P47871			mapped	
+AACDB	6808	4f3f	Q13421			mapped	
+AACDB	6823	4g3y	P01375			mapped	
+AACDB	6834	4hc1	Q13477			mapped	
+AACDB	6835	4hc1	Q13477			mapped	
+AACDB	6836	4hcr	Q13477			mapped	
+AACDB	6837	4hcr	Q13477			mapped	
+AACDB	6855	4hj0	P48546			mapped	
+AACDB	6856	4hj0	P48546			mapped	
+AACDB	6869	4i18	P16471			mapped	
+AACDB	6870	4i18	P16471			mapped	
+AACDB	6871	4i2x	Q9P1W8			mapped	
+AACDB	6872	4i2x	Q9P1W8			mapped	
+AACDB	6876	4i9w	Q9NYG8			mapped	
+AACDB	6877	4i9w	Q9NYG8			mapped	
+AACDB	6879	4iof	P14735			mapped	
+AACDB	6880	4iof	P14735			mapped	
+AACDB	6897	4jzj	P26951			mapped	
+AACDB	6898	4jzj	P26951			mapped	
+AACDB	6899	4k24	Q03405			mapped	
+AACDB	6900	4k3j	P08581			mapped	
+AACDB	6901	4k8r	Q8NBP7			mapped	
+AACDB	6902	4k8r	Q8NBP7			no_unambiguous_canonical_site	
+AACDB	6903	4k9e	P10721			mapped	
+AACDB	6904	4kdt	P61769			mapped	
+AACDB	6905	4kdt	P61769			mapped	
+AACDB	6937	4leo	P21860			mapped	
+AACDB	6938	4lf3	P47871			mapped	
+AACDB	6939	4lf3	P47871			mapped	
+AACDB	6940	4liq	P07333			mapped	
+AACDB	6950	4m1c	P14735			mapped	
+AACDB	6951	4m1c	P14735			mapped	
+AACDB	6966	4mqs	P08172			mapped	
+AACDB	6967	4mqt	P08172			mapped	
+AACDB	6971	4mxv	P01374			mapped	
+AACDB	6972	4mxv	P01374			mapped	
+AACDB	6973	4mxv	P01374			mapped	
+AACDB	6974	4mxw	P01374			no_unambiguous_canonical_site	
+AACDB	6975	4mxw	P01374			mapped	
+AACDB	7004	4oga	P06213			mapped	
+AACDB	7009	4oqt	Q96FE5			mapped	
+AACDB	7015	4p59	P21860			mapped	
+AACDB	7051	4uv7	P00533			mapped	
+AACDB	7079	5cjo	P14735			mapped	
+AACDB	7096	5dwu	P32927			mapped	
+AACDB	7097	5dwu	P32927			mapped	
+AACDB	7113	5grj	Q9NZQ7			mapped	
+AACDB	7126	5i5k	P01031			mapped	
+AACDB	7127	5i5k	P01031			mapped	
+AACDB	7128	5i6x	P31645			mapped	
+AACDB	7129	5i6z	P31645			mapped	
+AACDB	7130	5i71	P31645			mapped	
+AACDB	7131	5i73	P31645			mapped	
+AACDB	7132	5i74	P31645			mapped	
+AACDB	7133	5i75	P31645			mapped	
+AACDB	7137	5jds	Q9NZQ7			mapped	
+AACDB	7138	5jxe	Q15116			mapped	
+AACDB	7139	5jxe	Q15116			mapped	
+AACDB	7143	5lx9	Q86V24			no_unambiguous_canonical_site	
+AACDB	7144	5lxa	Q86V24			no_unambiguous_canonical_site	
+AACDB	7145	5m2i	P01375			mapped	
+AACDB	7146	5m2i	P01375			mapped	
+AACDB	7147	5m2i	P01375			mapped	
+AACDB	7148	5m2i	P01375			mapped	
+AACDB	7149	5m2i	P01375			mapped	
+AACDB	7150	5m2i	P01375			mapped	
+AACDB	7151	5m2j	P01375			mapped	
+AACDB	7152	5m2m	P01375			mapped	
+AACDB	7153	5m2m	P01375			mapped	
+AACDB	7154	5m2m	P01375			mapped	
+AACDB	7155	5m2m	P01375			mapped	
+AACDB	7156	5m2m	P01375			mapped	
+AACDB	7157	5m2m	P01375			mapped	
+AACDB	7179	5oca	Q8NBP7			mapped	
+AACDB	7180	5oca	Q8NBP7			mapped	
+AACDB	7181	5occ	P31994			mapped	
+AACDB	7192	5wob	P14735			mapped	
+AACDB	7193	5wob	P14735			mapped	
+AACDB	7194	5wob	P14735			mapped	
+AACDB	7195	5wob	P14735			mapped	
+AACDB	7196	5wob	P14735			mapped	
+AACDB	7197	5wob	P14735			mapped	
+AACDB	7198	5wob	P14735			mapped	
+AACDB	7199	5wob	P14735			mapped	
+AACDB	7202	7mbx	P63092			no_unambiguous_canonical_site	
+AACDB	7221	7mgw	P31645			mapped	
+AACDB	7263	7na7	P62873			no_unambiguous_canonical_site	
+AACDB	7265	7na8	P62873			no_unambiguous_canonical_site	
+AACDB	7269	7neq	Q9UNQ0			mapped	
+AACDB	7270	7neq	Q9UNQ0			mapped	
+AACDB	7271	7nez	Q9UNQ0			mapped	
+AACDB	7272	7nez	Q9UNQ0			mapped	
+AACDB	7273	7nfd	Q9UNQ0			mapped	
+AACDB	7274	7nfd	Q9UNQ0			mapped	
+AACDB	7286	7noz	P27918			mapped	
+AACDB	7287	7noz	P27918			mapped	
+AACDB	7294	7nwl	P05556			mapped	
+AACDB	7295	7nx0	P29376			mapped	
+AACDB	7296	7nx0	P29376			mapped	
+AACDB	7297	7nx3	Q9UM73			mapped	
+AACDB	7298	7nx3	Q9UM73			mapped	
+AACDB	7319	7p2d	P11215			mapped	
+AACDB	7374	7piu	P63092			mapped	
+AACDB	7376	7piv	P63092			mapped	
+AACDB	7396	6b70	P14735			mapped	
+AACDB	7397	6b70	P14735			mapped	
+AACDB	7400	6b7z	P14735			mapped	
+AACDB	7401	6b7z	P14735			mapped	
+AACDB	7402	6bf7	P14735			mapped	
+AACDB	7403	6bf7	P14735			mapped	
+AACDB	7404	6bf9	P14735			mapped	
+AACDB	7405	6bf9	P14735			mapped	
+AACDB	7421	6djp	P26012			mapped	
+AACDB	7422	6ejg	P60033			mapped	
+AACDB	7423	6ejg	P60033			mapped	
+AACDB	7424	6ejm	P60033			no_unambiguous_canonical_site	
+AACDB	7425	6ejm	P60033			no_unambiguous_canonical_site	
+AACDB	7426	6ek2	P60033			mapped	
+AACDB	7427	6ek2	P60033			mapped	
+AACDB	7428	6eti	Q9UNQ0			mapped	
+AACDB	7429	6eti	Q9UNQ0			mapped	
+AACDB	7430	6eti	Q9UNQ0			mapped	
+AACDB	7431	6eti	Q9UNQ0			mapped	
+AACDB	7436	7anq	Q8NBP7			mapped	
+AACDB	7442	6feq	Q9UNQ0			mapped	
+AACDB	7443	6feq	Q9UNQ0			mapped	
+AACDB	7444	6feq	Q9UNQ0			mapped	
+AACDB	7445	6feq	Q9UNQ0			mapped	
+AACDB	7446	6fgb	P55899			mapped	
+AACDB	7447	6gwp	P05121			no_unambiguous_canonical_site	
+AACDB	7448	6gwp	P05121			mapped	
+AACDB	7471	6id4	P04439			no_unambiguous_canonical_site	
+AACDB	7472	6id4	P04439			no_unambiguous_canonical_site	
+AACDB	7473	6id4	P61769			mapped	
+AACDB	7474	6id4	P61769			mapped	
+AACDB	7491	6okm	P43489			mapped	
+AACDB	7492	6okn	P43489			mapped	
+AACDB	7493	6okn	P43489			mapped	
+AACDB	7498	6v7y	P15813			mapped	
+Thera-SAbDab	pdb_000012er-D-E	12er	Q02223	Teclistamab	0	mapped	
+Thera-SAbDab	pdb_000013fj-H-L	13fj	P01137	Nisevokitug	0	mapped	
+Thera-SAbDab	pdb_000013fj-H-L	13fj	P01137	Nisevokitug	0	mapped	
+Thera-SAbDab	pdb_000013fj-I-M	13fj	P01137	Nisevokitug	0	mapped	
+Thera-SAbDab	pdb_000013fj-I-M	13fj	P01137	Nisevokitug	0	mapped	
+Thera-SAbDab	pdb_00001i9r-H-L	1i9r	P29965	Velaprumig	1	mapped	
+Thera-SAbDab	pdb_00001i9r-H-L	1i9r	P29965	Ruplizumab	0	mapped	
+Thera-SAbDab	pdb_00001i9r-H-L	1i9r	P29965	Tegoprubart	0	mapped	
+Thera-SAbDab	pdb_00001i9r-K-M	1i9r	P29965	Velaprumig	1	mapped	
+Thera-SAbDab	pdb_00001i9r-K-M	1i9r	P29965	Ruplizumab	0	mapped	
+Thera-SAbDab	pdb_00001i9r-K-M	1i9r	P29965	Tegoprubart	0	mapped	
+Thera-SAbDab	pdb_00001i9r-X-Y	1i9r	P29965	Velaprumig	1	mapped	
+Thera-SAbDab	pdb_00001i9r-X-Y	1i9r	P29965	Ruplizumab	0	mapped	
+Thera-SAbDab	pdb_00001i9r-X-Y	1i9r	P29965	Tegoprubart	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Anbenitamab	1	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Timigutuzumab	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Cinrebafusp	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Nesfrotamig	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Caxmotabart	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Fidasimtamab	1	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Zanidatamab	1	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Coprelotamab	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Trastuzumab	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Runimotamab	0	mapped	
+Thera-SAbDab	pdb_00001n8z-B-A	1n8z	P04626	Anvatabart	0	mapped	
+Thera-SAbDab	pdb_00001s78-D-C	1s78	P04626	Pertuzumab	0	mapped	
+Thera-SAbDab	pdb_00001s78-F-E	1s78	P04626	Pertuzumab	0	mapped	
+Thera-SAbDab	pdb_00001sy6-H-L	1sy6	P07766	Muromonab	0	mapped	
+Thera-SAbDab	pdb_00001yy9-D-C	1yy9	P00533	Cetuximab	0	mapped	
+Thera-SAbDab	pdb_00001yy9-D-C	1yy9	P00533	Ficerafusp	0	mapped	
+Thera-SAbDab	pdb_000021tv-A1	21tv	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_000021tv-A1	21tv	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_000021tv-A3	21tv	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_000021tv-A3	21tv	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_000021tw-A1	21tw	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_000021tw-A1	21tw	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_000021tw-A2	21tw	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_000021tw-A2	21tw	P01375	Ozoralizumab	0	variable_domain_not_exactly_located	
+Thera-SAbDab	pdb_00002osl-A-B	2osl	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00002osl-A-B	2osl	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00002osl-A-B	2osl	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00002osl-H-L	2osl	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00002osl-H-L	2osl	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00002osl-H-L	2osl	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00002qqn-H-L	2qqn	O14786	Vesencumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-C-D	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-F-G	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-H-L	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-J-K	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-N-O	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-Q-R	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-T-U	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2u-W-X	3b2u	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003b2v-H-L	3b2v	P00533	Necitumumab	0	mapped	
+Thera-SAbDab	pdb_00003bky-H-L	3bky	P11836	Ibritumomab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-B-A	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-B-A	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-E-D	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-E-D	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-H-G	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-H-G	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-K-J	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eo1-K-J	3eo1	P10600	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00003eoa-B-A	3eoa	P20701	Efalizumab	0	mapped	
+Thera-SAbDab	pdb_00003eoa-H-L	3eoa	P20701	Efalizumab	0	mapped	
+Thera-SAbDab	pdb_00003eob-B-A	3eob	P20701	Efalizumab	0	mapped	
+Thera-SAbDab	pdb_00003eob-H-L	3eob	P20701	Efalizumab	0	mapped	
+Thera-SAbDab	pdb_00003iu3-A-B	3iu3	P01589	Basiliximab	0	mapped	
+Thera-SAbDab	pdb_00003iu3-C-D	3iu3	P01589	Basiliximab	0	mapped	
+Thera-SAbDab	pdb_00003iu3-H-L	3iu3	P01589	Basiliximab	0	mapped	
+Thera-SAbDab	pdb_00003nfp-A-B	3nfp	P01589	Daclizumab	0	mapped	
+Thera-SAbDab	pdb_00003nfp-H-L	3nfp	P01589	Daclizumab	0	mapped	
+Thera-SAbDab	pdb_00003o2d-H-L	3o2d	P01730	Ibalizumab	0	mapped	
+Thera-SAbDab	pdb_00003pp4-H-L	3pp4	P11836	Glofitamab	1	mapped	
+Thera-SAbDab	pdb_00003pp4-H-L	3pp4	P11836	Obinutuzumab	0	mapped	
+Thera-SAbDab	pdb_00003s36-H-L	3s36	P35968	Ramucirumab	0	mapped	
+Thera-SAbDab	pdb_00003s37-H-L	3s37	P35968	Ramucirumab	0	mapped	
+Thera-SAbDab	pdb_00003sqo-H-L	3sqo	Q8NBP7	Bococizumab	0	mapped	
+Thera-SAbDab	pdb_00003u0t-B-A	3u0t	P05067	Ponezumab	0	mapped	
+Thera-SAbDab	pdb_00003u0t-D-C	3u0t	P05067	Ponezumab	0	mapped	
+Thera-SAbDab	pdb_00004cmh-B-C	4cmh	P28907	Isatuximab	0	mapped	
+Thera-SAbDab	pdb_00004dtg-H-L	4dtg	P10646	Concizumab	0	mapped	
+Thera-SAbDab	pdb_00004f3f-B-A	4f3f	Q13421	Amatuximab	0	mapped	
+Thera-SAbDab	pdb_00004g3y-H-L	4g3y	P01375	Infliximab	0	mapped	
+Thera-SAbDab	pdb_00004hcr-H-L	4hcr	Q13477	Ontamalimab	0	mapped	
+Thera-SAbDab	pdb_00004hcr-M-N	4hcr	Q13477	Ontamalimab	0	mapped	
+Thera-SAbDab	pdb_00004jzj-A-B	4jzj	P26951	Talacotuzumab	0	mapped	
+Thera-SAbDab	pdb_00004jzj-A-B	4jzj	P26951	Bexatamig	0	mapped	
+Thera-SAbDab	pdb_00004jzj-H-L	4jzj	P26951	Talacotuzumab	0	mapped	
+Thera-SAbDab	pdb_00004jzj-H-L	4jzj	P26951	Bexatamig	0	mapped	
+Thera-SAbDab	pdb_00004k3j-H-L	4k3j	P08581	Onartuzumab	0	mapped	
+Thera-SAbDab	pdb_00004kro-D-C	4kro	P00533	Cetuximab	0	mapped	
+Thera-SAbDab	pdb_00004kro-D-C	4kro	P00533	Ficerafusp	0	mapped	
+Thera-SAbDab	pdb_00004krp-D-C	4krp	P00533	Cetuximab	0	mapped	
+Thera-SAbDab	pdb_00004krp-D-C	4krp	P00533	Ficerafusp	0	mapped	
+Thera-SAbDab	AACDB:794	4kv5	P01137	Fresolimumab	0	mapped	
+Thera-SAbDab	AACDB:795	4kv5	P01137	Fresolimumab	0	mapped	
+Thera-SAbDab	AACDB:796	4kv5	P01137	Fresolimumab	0	mapped	
+Thera-SAbDab	AACDB:797	4kv5	P01137	Fresolimumab	0	mapped	
+Thera-SAbDab	pdb_00004leo-A-B	4leo	P21860	Lumretuzumab	0	mapped	
+Thera-SAbDab	pdb_00004liq-H-L	4liq	P07333	Emactuzumab	0	mapped	
+Thera-SAbDab	pdb_00004mxv-F-E	4mxv	P01374	Pateclizumab	0	mapped	
+Thera-SAbDab	pdb_00004mxv-H-L	4mxv	P01374	Pateclizumab	0	mapped	
+Thera-SAbDab	pdb_00004mxv-Y-X	4mxv	P01374	Pateclizumab	0	mapped	
+Thera-SAbDab	pdb_00004mxw-H-L	4mxw	P01374	Pateclizumab	0	mapped	
+Thera-SAbDab	pdb_00004mxw-W-V	4mxw	P01374	Pateclizumab	0	mapped	
+Thera-SAbDab	pdb_00004n90-D-E	4n90	P50591	Conatumumab	0	mapped	
+Thera-SAbDab	pdb_00004n90-D-E	4n90	O14763	Conatumumab	0	mapped	
+Thera-SAbDab	pdb_00004n90-F-G	4n90	P50591	Conatumumab	0	mapped	
+Thera-SAbDab	pdb_00004n90-F-G	4n90	O14763	Conatumumab	0	mapped	
+Thera-SAbDab	pdb_00004n90-H-I	4n90	P50591	Conatumumab	0	mapped	
+Thera-SAbDab	pdb_00004n90-H-I	4n90	O14763	Conatumumab	0	mapped	
+Thera-SAbDab	pdb_00004od2-B-A	4od2	O14763	Drozitumab	0	mapped	
+Thera-SAbDab	pdb_00004oqt-H-L	4oqt	Q96FE5	Opicinumab	0	mapped	
+Thera-SAbDab	pdb_00005b71-B-A	5b71	P01031	Crovalimab	0	mapped	
+Thera-SAbDab	pdb_00005b71-D-C	5b71	P01031	Crovalimab	0	mapped	
+Thera-SAbDab	pdb_00005b8c-B-A	5b8c	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005b8c-E-D	5b8c	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005b8c-H-G	5b8c	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005b8c-K-J	5b8c	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005csz-A-B	5csz	P05067	Trontinemab	0	mapped	
+Thera-SAbDab	pdb_00005csz-A-B	5csz	P05067	Gantenerumab	0	mapped	
+Thera-SAbDab	pdb_00005csz-H-L	5csz	P05067	Trontinemab	0	mapped	
+Thera-SAbDab	pdb_00005csz-H-L	5csz	P05067	Gantenerumab	0	mapped	
+Thera-SAbDab	pdb_00005dmi-H-L	5dmi	P25942	Teneliximab	0	mapped	
+Thera-SAbDab	pdb_00005dwu-H-L	5dwu	P32927	Trabikibart	0	mapped	
+Thera-SAbDab	pdb_00005dwu-H-L	5dwu	P32927	Trabikibart	0	mapped	
+Thera-SAbDab	pdb_00005ggr-A-B	5ggr	Q15116	Nivolumab	0	mapped	
+Thera-SAbDab	pdb_00005ggr-H-L	5ggr	Q15116	Nivolumab	0	mapped	
+Thera-SAbDab	pdb_00005ggs-A-B	5ggs	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005ggs-C-D	5ggs	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005ggt-H-L	5ggt	Q9NZQ7	Itanistomig	0	mapped	
+Thera-SAbDab	pdb_00005ggv-H-L	5ggv	P16410	Tremelimumab	0	mapped	
+Thera-SAbDab	pdb_00005ggv-H-L	5ggv	P16410	Volrustomig	0	mapped	
+Thera-SAbDab	pdb_00005grj-H-L	5grj	Q9NZQ7	Avelumab	0	mapped	
+Thera-SAbDab	pdb_00005grj-H-L	5grj	Q9NZQ7	Bintrafusp	0	mapped	
+Thera-SAbDab	pdb_00005i5k-H-L	5i5k	P01031	Eculizumab	0	mapped	
+Thera-SAbDab	pdb_00005i5k-X-Y	5i5k	P01031	Eculizumab	0	mapped	
+Thera-SAbDab	pdb_00005iwl-A1-B2	5iwl	Q08722	Magrolimab	0	mapped	
+Thera-SAbDab	pdb_00005iwl-B1-A2	5iwl	Q08722	Magrolimab	0	mapped	
+Thera-SAbDab	AACDB:1442	5iwl	Q08722	Magrolimab	0	mapped	
+Thera-SAbDab	AACDB:1443	5iwl	Q08722	Magrolimab	0	mapped	
+Thera-SAbDab	pdb_00005jxe-D-C	5jxe	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005jxe-G-F	5jxe	Q15116	Pembrolizumab	0	mapped	
+Thera-SAbDab	pdb_00005kn5-A-B	5kn5	P01135	Fepixnebart	0	mapped	
+Thera-SAbDab	pdb_00005kn5-D-E	5kn5	P01135	Fepixnebart	0	mapped	
+Thera-SAbDab	pdb_00005ngv-H-L	5ngv	Q13705	Bimagrumab	0	mapped	
+Thera-SAbDab	pdb_00005nh3-H-L	5nh3	P27037	Bimagrumab	0	mapped	
+Thera-SAbDab	pdb_00005nh3-I-M	5nh3	P27037	Bimagrumab	0	mapped	
+Thera-SAbDab	pdb_00005nhr-A-B	5nhr	Q13705	Bimagrumab	0	mapped	
+Thera-SAbDab	pdb_00005nhr-H-L	5nhr	Q13705	Bimagrumab	0	mapped	
+Thera-SAbDab	pdb_00005o4g-B-A	5o4g	P04626	Zenocutuzumab	1	mapped	
+Thera-SAbDab	pdb_00005o4o-B-A	5o4o	P21860	Zenocutuzumab	0	mapped	
+Thera-SAbDab	pdb_00005o7p-B-A	5o7p	P21860	Zenocutuzumab	0	mapped	
+Thera-SAbDab	pdb_00005sx4-H-L	5sx4	P00533	Bafisontamab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005sx4-H-L	5sx4	P00533	Panitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005sx4-J-I	5sx4	P00533	Bafisontamab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005sx4-J-I	5sx4	P00533	Panitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005sx5-H-L	5sx5	P00533	Bafisontamab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005sx5-H-L	5sx5	P00533	Panitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005sx5-J-K	5sx5	P00533	Bafisontamab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005sx5-J-K	5sx5	P00533	Panitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00005th9-H-L	5th9	P14780	Andecaliximab	0	mapped	
+Thera-SAbDab	pdb_00005th9-I-M	5th9	P14780	Andecaliximab	0	mapped	
+Thera-SAbDab	pdb_00005th9-J-N	5th9	P14780	Andecaliximab	0	mapped	
+Thera-SAbDab	pdb_00005tru-H-L	5tru	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	pdb_00005tru-H-L	5tru	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	pdb_00005tru-H-L	5tru	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	pdb_00005tru-H-L	5tru	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	pdb_00005tru-h-l	5tru	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	pdb_00005tru-h-l	5tru	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	pdb_00005tru-h-l	5tru	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	pdb_00005tru-h-l	5tru	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	pdb_00005vzy-H-L	5vzy	P05067	Crenezumab	0	mapped	
+Thera-SAbDab	pdb_00005wt9-H-L	5wt9	Q15116	Nivolumab	0	mapped	
+Thera-SAbDab	pdb_00005wux-A-B	5wux	P01375	Certolizumab	0	mapped	
+Thera-SAbDab	pdb_00005wux-C-D	5wux	P01375	Certolizumab	0	mapped	
+Thera-SAbDab	pdb_00005wux-H-L	5wux	P01375	Certolizumab	0	mapped	
+Thera-SAbDab	pdb_00005x8l-F-K	5x8l	Q9NZQ7	Atezolizumab	0	mapped	
+Thera-SAbDab	pdb_00005x8l-F-K	5x8l	Q9NZQ7	Palverafusp	0	mapped	
+Thera-SAbDab	pdb_00005x8l-G-L	5x8l	Q9NZQ7	Atezolizumab	0	mapped	
+Thera-SAbDab	pdb_00005x8l-G-L	5x8l	Q9NZQ7	Palverafusp	0	mapped	
+Thera-SAbDab	pdb_00005x8l-H-M	5x8l	Q9NZQ7	Atezolizumab	0	mapped	
+Thera-SAbDab	pdb_00005x8l-H-M	5x8l	Q9NZQ7	Palverafusp	0	mapped	
+Thera-SAbDab	pdb_00005x8l-J-O	5x8l	Q9NZQ7	Atezolizumab	0	mapped	
+Thera-SAbDab	pdb_00005x8l-J-O	5x8l	Q9NZQ7	Palverafusp	0	mapped	
+Thera-SAbDab	pdb_00005x8l-S-N	5x8l	Q9NZQ7	Atezolizumab	0	mapped	
+Thera-SAbDab	pdb_00005x8l-S-N	5x8l	Q9NZQ7	Palverafusp	0	mapped	
+Thera-SAbDab	pdb_00005x8m-B-C	5x8m	Q9NZQ7	Durvalumab	0	mapped	
+Thera-SAbDab	AACDB:1958	5xj3	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	AACDB:1958	5xj3	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	AACDB:1958	5xj3	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	AACDB:1958	5xj3	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	AACDB:1959	5xj3	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	AACDB:1959	5xj3	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	AACDB:1959	5xj3	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	AACDB:1959	5xj3	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	AACDB:1960	5xj3	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	AACDB:1960	5xj3	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	AACDB:1960	5xj3	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	AACDB:1960	5xj3	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	AACDB:1961	5xj3	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	AACDB:1961	5xj3	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	AACDB:1961	5xj3	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	AACDB:1961	5xj3	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	AACDB:1962	5xj4	Q9NZQ7	Durvalumab	0	mapped	
+Thera-SAbDab	pdb_00005y9j-H-L	5y9j	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00005yoy-G-D	5yoy	P01375	Golimumab	0	mapped	
+Thera-SAbDab	pdb_00005yoy-H-E	5yoy	P01375	Golimumab	0	mapped	
+Thera-SAbDab	pdb_00005yoy-I-F	5yoy	P01375	Golimumab	0	mapped	
+Thera-SAbDab	pdb_00005yoy-P-M	5yoy	P01375	Golimumab	0	mapped	
+Thera-SAbDab	pdb_00005yoy-Q-N	5yoy	P01375	Golimumab	0	mapped	
+Thera-SAbDab	pdb_00005yoy-R-O	5yoy	P01375	Golimumab	0	mapped	
+Thera-SAbDab	pdb_00006a3w-A-B	6a3w	Q07011	Utomilumab	0	mapped	
+Thera-SAbDab	pdb_00006a3w-D-E	6a3w	Q07011	Utomilumab	0	mapped	
+Thera-SAbDab	pdb_00006a3w-G-H	6a3w	Q07011	Utomilumab	0	mapped	
+Thera-SAbDab	pdb_00006a3w-J-K	6a3w	Q07011	Utomilumab	0	mapped	
+Thera-SAbDab	pdb_00006b3s-C-D	6b3s	P00533	Necitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00006b3s-F-G	6b3s	P00533	Necitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00006b3s-H-L	6b3s	P00533	Necitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00006b3s-J-K	6b3s	P00533	Necitumumab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00006co3-H-L	6co3	P05067	Aducanumab	0	mapped	
+Thera-SAbDab	pdb_00006ct7-A-B	6ct7	P37840	Cinpanemab	0	mapped	
+Thera-SAbDab	pdb_00006ct7-H-L	6ct7	P37840	Cinpanemab	0	mapped	
+Thera-SAbDab	pdb_00006dkj-A-B	6dkj	P48546	Maridebart	0	mapped	
+Thera-SAbDab	pdb_00006dkj-H-L	6dkj	P48546	Maridebart	0	mapped	
+Thera-SAbDab	pdb_00006fgb-H-L	6fgb	P55899	Rozanolixizumab	0	mapped	
+Thera-SAbDab	pdb_00006fgb-H-L	6fgb	P61769	Rozanolixizumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-D-E	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-D-E	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-F-G	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-F-G	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-H-I	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-H-I	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-M-N	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-M-N	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-O-P	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-O-P	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-Q-R	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006fxn-Q-R	6fxn	Q9Y275	Belimumab	0	mapped	
+Thera-SAbDab	pdb_00006iap-H-L	6iap	O76036	Bexatamig	1	mapped	
+Thera-SAbDab	pdb_00006jbt-H-L	6jbt	Q15116	Toripalimab	0	mapped	
+Thera-SAbDab	pdb_00006mhr-A-B	6mhr	Q07011	Urelumab	0	mapped	
+Thera-SAbDab	pdb_00006mhr-D-E	6mhr	Q07011	Urelumab	0	mapped	
+Thera-SAbDab	pdb_00006mi2-A-B	6mi2	Q07011	Utomilumab	0	mapped	
+Thera-SAbDab	pdb_00006mi2-D-E	6mi2	Q07011	Utomilumab	0	mapped	
+Thera-SAbDab	pdb_00006nha-H-L	6nha	P55899	Orilanolimab	0	mapped	
+Thera-SAbDab	pdb_00006nha-H-L	6nha	P61769	Orilanolimab	0	mapped	
+Thera-SAbDab	pdb_00006obd-B-A	6obd	P31358	Gatralimab	0	mapped	
+Thera-SAbDab	pdb_00006obd-H-L	6obd	P31358	Gatralimab	0	mapped	
+Thera-SAbDab	pdb_00006oge-C-B	6oge	P04626	Pertuzumab	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Anbenitamab	1	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Timigutuzumab	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Cinrebafusp	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Nesfrotamig	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Caxmotabart	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Fidasimtamab	1	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Zanidatamab	1	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Coprelotamab	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Trastuzumab	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Runimotamab	0	mapped	
+Thera-SAbDab	pdb_00006oge-E-D	6oge	P04626	Anvatabart	0	mapped	
+Thera-SAbDab	pdb_00006ogx-C-D	6ogx	P43489	Vonlerolizumab	0	mapped	
+Thera-SAbDab	pdb_00006okn-A-B	6okn	P43489	Vonlerolizumab	0	mapped	
+Thera-SAbDab	pdb_00006okn-C-D	6okn	P43489	Vonlerolizumab	0	mapped	
+Thera-SAbDab	pdb_00006pe8-A-B	6pe8	P25942	Ravagalimab	0	mapped	
+Thera-SAbDab	pdb_00006pe8-H-L	6pe8	P25942	Ravagalimab	0	mapped	
+Thera-SAbDab	pdb_00006rp8-H-L	6rp8	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	pdb_00006rp8-H-L	6rp8	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	pdb_00006rp8-H-L	6rp8	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	pdb_00006rp8-H-L	6rp8	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	pdb_00006rp8-h-l	6rp8	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	pdb_00006rp8-h-l	6rp8	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	pdb_00006rp8-h-l	6rp8	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	pdb_00006rp8-h-l	6rp8	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	pdb_00006rqm-B	6rqm	P16410	Erfonrilimab	1	mapped	
+Thera-SAbDab	pdb_00006t3j-A-B	6t3j	O14763	Benufutamab	0	mapped	
+Thera-SAbDab	pdb_00006t3j-C-D	6t3j	O14763	Tilogotamab	0	mapped	
+Thera-SAbDab	pdb_00006t3j-F-G	6t3j	O14763	Benufutamab	0	mapped	
+Thera-SAbDab	pdb_00006t3j-H-I	6t3j	O14763	Tilogotamab	0	mapped	
+Thera-SAbDab	pdb_00006u6u-H-L	6u6u	Q9HB29	Spesolimab	0	mapped	
+Thera-SAbDab	pdb_00006umg-H-L	6umg	Q16602	Erenumab	0	mapped	
+Thera-SAbDab	pdb_00006umg-H-L	6umg	O60894	Erenumab	0	mapped	
+Thera-SAbDab	pdb_00006umg-h-l	6umg	Q16602	Erenumab	0	mapped	
+Thera-SAbDab	pdb_00006umg-h-l	6umg	O60894	Erenumab	0	mapped	
+Thera-SAbDab	pdb_00006v4p-C-D	6v4p	P08514	Abciximab	0	mapped	
+Thera-SAbDab	pdb_00006v4p-C-D	6v4p	P05106	Abciximab	0	mapped	
+Thera-SAbDab	pdb_00006vgr-C-D	6vgr	Q9H4B8	Tamrintamab	0	mapped	
+Thera-SAbDab	pdb_00006vgr-C-D	6vgr	Q9H4B8	Tamrintamab	0	mapped	
+Thera-SAbDab	pdb_00006vgr-H-L	6vgr	Q9H4B8	Tamrintamab	0	mapped	
+Thera-SAbDab	pdb_00006vgr-H-L	6vgr	Q9H4B8	Tamrintamab	0	mapped	
+Thera-SAbDab	pdb_00006vja-H-L	6vja	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006vja-H-L	6vja	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006vja-H-L	6vja	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006vja-H-L	6vja	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006vja-H-L	6vja	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006vja-H-L	6vja	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006vja-I-M	6vja	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006vja-I-M	6vja	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006vja-I-M	6vja	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006vja-I-M	6vja	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006vja-I-M	6vja	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006vja-I-M	6vja	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006wgl-A-B	6wgl	P24394	Dupilumab	0	mapped	
+Thera-SAbDab	pdb_00006wvz-H-L	6wvz	P08581	Amivantamab	1	mapped	
+Thera-SAbDab	pdb_00006x4t-B-E	6x4t	O75144	Rozibafusp	0	mapped	
+Thera-SAbDab	pdb_00006x4t-B-E	6x4t	O75144	Prezalumab	0	mapped	
+Thera-SAbDab	pdb_00006x4t-D-F	6x4t	O75144	Rozibafusp	0	mapped	
+Thera-SAbDab	pdb_00006x4t-D-F	6x4t	O75144	Prezalumab	0	mapped	
+Thera-SAbDab	pdb_00006xkr-H-L	6xkr	Q15116	Sasanlimab	0	mapped	
+Thera-SAbDab	pdb_00006xy2-H-L	6xy2	P16410	Gotistobart	0	mapped	
+Thera-SAbDab	pdb_00006y90-C-D	6y90	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006y90-C-D	6y90	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006y90-C-D	6y90	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006y90-C-D	6y90	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006y90-C-D	6y90	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006y90-C-D	6y90	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006y90-H-L	6y90	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006y90-H-L	6y90	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006y90-H-L	6y90	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006y90-H-L	6y90	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00006y90-H-L	6y90	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00006y90-H-L	6y90	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00006y92-C-D	6y92	P11836	Ofatumumab	0	no_variable_domain_contacts	
+Thera-SAbDab	pdb_00006y92-C-D	6y92	P11836	Ofatumumab	0	mapped	
+Thera-SAbDab	pdb_00006y92-H-L	6y92	P11836	Ofatumumab	0	mapped	
+Thera-SAbDab	pdb_00006y92-H-L	6y92	P11836	Ofatumumab	0	no_variable_domain_contacts	
+Thera-SAbDab	pdb_00006yio-H-L	6yio	P01589	Vopikitug	0	mapped	
+Thera-SAbDab	pdb_00007bxa-B-C	7bxa	Q15116	Tislelizumab	0	mapped	
+Thera-SAbDab	pdb_00007bxa-H-L	7bxa	Q15116	Tislelizumab	0	mapped	
+Thera-SAbDab	pdb_00007cgw-A-B	7cgw	Q15116	Tislelizumab	0	mapped	
+Thera-SAbDab	pdb_00007cgw-H-L	7cgw	Q15116	Tislelizumab	0	mapped	
+Thera-SAbDab	pdb_00007cu5-A1-B2	7cu5	Q15116	Camrelizumab	0	mapped	
+Thera-SAbDab	pdb_00007cu5-B1-A2	7cu5	Q15116	Camrelizumab	0	mapped	
+Thera-SAbDab	AACDB:3481	7cu5	Q15116	Camrelizumab	0	mapped	
+Thera-SAbDab	AACDB:3482	7cu5	Q15116	Camrelizumab	0	mapped	
+Thera-SAbDab	pdb_00007czd-A	7czd	Q9NZQ7	Pumitamig2	0	mapped	
+Thera-SAbDab	pdb_00007czd-C	7czd	Q9NZQ7	Pumitamig2	0	mapped	
+Thera-SAbDab	pdb_00007d85-B-C	7d85	P21860	Barecetamab	0	mapped	
+Thera-SAbDab	pdb_00007d85-E-F	7d85	P21860	Barecetamab	0	mapped	
+Thera-SAbDab	pdb_00007dha-C-B	7dha	P28907	Daratumumab	0	mapped	
+Thera-SAbDab	pdb_00007duo-H-L	7duo	P28907	Daratumumab	0	mapped	
+Thera-SAbDab	pdb_00007dv4-B	7dv4	P16410	Porustobart	0	mapped	
+Thera-SAbDab	pdb_00007dv4-D	7dv4	P16410	Porustobart	0	mapped	
+Thera-SAbDab	pdb_00007dv4-F	7dv4	P16410	Porustobart	0	mapped	
+Thera-SAbDab	pdb_00007dv4-F	7dv4	P16410	Porustobart	0	mapped	
+Thera-SAbDab	pdb_00007dv4-H	7dv4	P16410	Porustobart	0	mapped	
+Thera-SAbDab	pdb_00007dv4-H	7dv4	P16410	Porustobart	0	mapped	
+Thera-SAbDab	pdb_00007e9b-H-L	7e9b	Q15116	Serplulimab	0	mapped	
+Thera-SAbDab	pdb_00007elx-H-L	7elx	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	pdb_00007elx-H-L	7elx	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	pdb_00007elx-H-L	7elx	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	pdb_00007elx-H-L	7elx	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	pdb_00007elx-h-l	7elx	P16410	Tazlestobart	0	mapped	
+Thera-SAbDab	pdb_00007elx-h-l	7elx	P16410	Ipilimumab	0	mapped	
+Thera-SAbDab	pdb_00007elx-h-l	7elx	P16410	Danvilostomig	0	mapped	
+Thera-SAbDab	pdb_00007elx-h-l	7elx	P16410	Sovipostobart	0	mapped	
+Thera-SAbDab	pdb_00007joo-H-L	7joo	Q9Y6W8	Alomfilimab	0	mapped	
+Thera-SAbDab	pdb_00007r58-H-L	7r58	Q9HCN6	Glenzocimab	0	mapped	
+Thera-SAbDab	pdb_00007r8u-HHH-LLL	7r8u	P78380	Golocdacimab	0	mapped	
+Thera-SAbDab	pdb_00007r8u-HHH-LLL	7r8u	P78380	Golocdacimab	0	mapped	
+Thera-SAbDab	pdb_00007sjn-D-E	7sjn	Q92743	Galegenimab	0	mapped	
+Thera-SAbDab	pdb_00007sjn-F-G	7sjn	Q92743	Galegenimab	0	mapped	
+Thera-SAbDab	pdb_00007sjn-H-L	7sjn	Q92743	Galegenimab	0	mapped	
+Thera-SAbDab	pdb_00007sjo-E-F	7sjo	Q92743	Galegenimab	0	mapped	
+Thera-SAbDab	pdb_00007sjo-H-L	7sjo	Q92743	Galegenimab	0	mapped	
+Thera-SAbDab	pdb_00007sjo-I-J	7sjo	Q92743	Galegenimab	0	mapped	
+Thera-SAbDab	pdb_00007sjp-H-L	7sjp	Q92743	Galegenimab	0	mapped	
+Thera-SAbDab	pdb_00007st5-H-L	7st5	P78324	Anzurstobart	0	mapped	
+Thera-SAbDab	pdb_00007st5-h-l	7st5	P78324	Anzurstobart	0	mapped	
+Thera-SAbDab	pdb_00007t0r-C-B	7t0r	P01730	Ibalizumab	0	mapped	
+Thera-SAbDab	pdb_00007t0r-H-L	7t0r	P01730	Ibalizumab	0	mapped	
+Thera-SAbDab	pdb_00007ue9-H-L	7ue9	P01024	Ebribafusp	0	mapped	
+Thera-SAbDab	AACDB:5150	7ued	Q13421	Amatuximab	0	mapped	
+Thera-SAbDab	pdb_00007vux-H-L	7vux	Q15116	Abazistobart	0	mapped	
+Thera-SAbDab	pdb_00007wsl-H-L	7wsl	Q15116	Dostarlimab	0	mapped	
+Thera-SAbDab	pdb_00007wvm-A-B	7wvm	Q15116	Cemiplimab	0	mapped	
+Thera-SAbDab	pdb_00007wvm-C-D	7wvm	Q15116	Cemiplimab	0	mapped	
+Thera-SAbDab	pdb_00007xjf-A-B	7xjf	Q08722	Safimestomig	0	mapped	
+Thera-SAbDab	pdb_00007yk4-H-L	7yk4	P43489	Vonlerolizumab	0	mapped	
+Thera-SAbDab	pdb_00007yk4-I-M	7yk4	P43489	Vonlerolizumab	0	mapped	
+Thera-SAbDab	pdb_00008b7h-H-L	8b7h	O60565	Ginisortamab	0	mapped	
+Thera-SAbDab	pdb_00008b9v-H-L	8b9v	P37840	Amlenetug	0	mapped	
+Thera-SAbDab	pdb_00008bw0-H-L	8bw0	P06731	Tusamitamab	0	mapped	
+Thera-SAbDab	pdb_00008byu-H-L	8byu	P28907	Erzotabart	0	mapped	
+Thera-SAbDab	pdb_00008che-A-B	8che	Q86YW5	Sutacimig	1	mapped	
+Thera-SAbDab	pdb_00008che-H-L	8che	Q86YW5	Sutacimig	1	mapped	
+Thera-SAbDab	pdb_00008cz8-A2-A1	8cz8	Q13421	Anetumab	0	mapped	
+Thera-SAbDab	pdb_00008cz8-C2-C1	8cz8	Q13421	Anetumab	0	mapped	
+Thera-SAbDab	AACDB:5939	8cz8	Q13421	Anetumab	0	mapped	
+Thera-SAbDab	AACDB:5940	8cz8	Q13421	Anetumab	0	mapped	
+Thera-SAbDab	pdb_00008ds5-C-B	8ds5	P26842	Boserolimab	0	mapped	
+Thera-SAbDab	pdb_00008f6o-A-B	8f6o	Q7Z6A9	Venanprubart	0	mapped	
+Thera-SAbDab	pdb_00008ffj-J-Q	8ffj	P04626	Pertuzumab	0	mapped	
+Thera-SAbDab	pdb_00008gy5-A-B	8gy5	Q15116	Cemiplimab	0	mapped	
+Thera-SAbDab	pdb_00008gy5-H-L	8gy5	Q15116	Cemiplimab	0	mapped	
+Thera-SAbDab	pdb_00008iow-H-L	8iow	P08887	Sarilumab	0	mapped	
+Thera-SAbDab	pdb_00008j6f-H-L	8j6f	P08887	Tocilizumab	0	mapped	
+Thera-SAbDab	pdb_00008jel-A-B	8jel	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jel-C-D	8jel	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jel-F-G	8jel	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jel-I-K	8jel	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jen-A-B	8jen	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jen-C-D	8jen	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jen-E-F	8jen	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jen-G-H	8jen	Q495A1	Ociperlimab	0	mapped	
+Thera-SAbDab	pdb_00008jeo-B-C	8jeo	Q495A1	Tiragolumab	0	mapped	
+Thera-SAbDab	pdb_00008jeo-E-F	8jeo	Q495A1	Tiragolumab	0	mapped	
+Thera-SAbDab	pdb_00008oz3-A-B	8oz3	Q07011	Evunzekibart	0	mapped	
+Thera-SAbDab	pdb_00008oz3-H-L	8oz3	Q07011	Evunzekibart	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Anbenitamab	1	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Timigutuzumab	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Cinrebafusp	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Nesfrotamig	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Caxmotabart	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Fidasimtamab	1	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Zanidatamab	1	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Coprelotamab	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Trastuzumab	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Runimotamab	0	mapped	
+Thera-SAbDab	pdb_00008pwh-B-A	8pwh	P04626	Anvatabart	0	mapped	
+Thera-SAbDab	pdb_00008pwh-D-C	8pwh	P04626	Pertuzumab	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Anbenitamab	1	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Timigutuzumab	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Cinrebafusp	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Nesfrotamig	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Caxmotabart	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Fidasimtamab	1	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Zanidatamab	1	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Coprelotamab	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Trastuzumab	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Runimotamab	0	mapped	
+Thera-SAbDab	pdb_00008q6j-B-A	8q6j	P04626	Anvatabart	0	mapped	
+Thera-SAbDab	pdb_00008q6j-D-C	8q6j	P04626	Pertuzumab	0	mapped	
+Thera-SAbDab	pdb_00008q6r-A	8q6r	P27918	Tarperprumig	1	mapped	
+Thera-SAbDab	pdb_00008q6r-B	8q6r	P27918	Tarperprumig	1	mapped	
+Thera-SAbDab	pdb_00008qyb-H-L	8qyb	Q02223	Pamlectabart	0	mapped	
+Thera-SAbDab	pdb_00008rp8-A-B	8rp8	Q08722	Zeripatamig	0	mapped	
+Thera-SAbDab	pdb_00008rp8-H-L	8rp8	Q08722	Zeripatamig	0	mapped	
+Thera-SAbDab	pdb_00008szy-H-L	8szy	Q495A1	Renvistobart	0	mapped	
+Thera-SAbDab	pdb_00008szy-I-M	8szy	Q495A1	Renvistobart	0	mapped	
+Thera-SAbDab	pdb_00008tg9-E-F	8tg9	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00008tg9-H-L	8tg9	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00008tga-E-F	8tga	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00008tga-H-L	8tga	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00008tui-H-L	8tui	P43628	Lirilumab	0	mapped	
+Thera-SAbDab	pdb_00008ucd-H-L	8ucd	Q9UHE8	Xaluritamig	0	mapped	
+Thera-SAbDab	pdb_00008ucd-H-L	8ucd	Q9UHE8	Xaluritamig	0	mapped	
+Thera-SAbDab	pdb_00008ucd-H-L	8ucd	Q9UHE8	Xaluritamig	0	mapped	
+Thera-SAbDab	pdb_00008vgn-A-B	8vgn	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-A-B	8vgn	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-A-B	8vgn	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00008vgn-A-B	8vgn	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-A-B	8vgn	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-A-B	8vgn	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00008vgn-H-L	8vgn	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-H-L	8vgn	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-H-L	8vgn	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00008vgn-H-L	8vgn	P11836	Ripertamab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-H-L	8vgn	P11836	Rituximab	0	mapped	
+Thera-SAbDab	pdb_00008vgn-H-L	8vgn	P11836	Eramkafusp	0	mapped	
+Thera-SAbDab	pdb_00008vtd-B-A	8vtd	Q495A1	Vibostolimab	0	mapped	
+Thera-SAbDab	pdb_00008vte-B-A	8vte	Q495A1	Tiragolumab	0	mapped	
+Thera-SAbDab	pdb_00008vte-D-C	8vte	Q495A1	Tiragolumab	0	mapped	
+Thera-SAbDab	pdb_00008yx1-A-B	8yx1	P25942	Bleselumab	0	mapped	
+Thera-SAbDab	pdb_00008yx1-H-L	8yx1	P25942	Bleselumab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-B-C	8yx9	P25942	Dacetuzumab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-B-C	8yx9	P25942	Cifurtilimab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-E-F	8yx9	P25942	Dacetuzumab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-E-F	8yx9	P25942	Cifurtilimab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-G-I	8yx9	P25942	Dacetuzumab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-G-I	8yx9	P25942	Cifurtilimab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-H-L	8yx9	P25942	Dacetuzumab	0	mapped	
+Thera-SAbDab	pdb_00008yx9-H-L	8yx9	P25942	Cifurtilimab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-B	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-B	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-D	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-D	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-F	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-F	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-H	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-H	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-J	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-J	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-L	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00008z8m-L	8z8m	P01375	Ozoralizumab	0	mapped	
+Thera-SAbDab	pdb_00009dzh-H-L	9dzh	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00009dzj-G-K	9dzj	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00009dzj-H-L	9dzj	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00009dzk-H-L	9dzk	P16066	Vixticibart	0	mapped	
+Thera-SAbDab	pdb_00009eht-B-A	9eht	Q15116	Tebotelimab	0	mapped	
+Thera-SAbDab	pdb_00009eht-B-A	9eht	Q15116	Lorigerlimab	0	mapped	
+Thera-SAbDab	pdb_00009eht-B-A	9eht	Q15116	Retifanlimab	0	mapped	
+Thera-SAbDab	pdb_00009eht-E-D	9eht	Q15116	Tebotelimab	0	mapped	
+Thera-SAbDab	pdb_00009eht-E-D	9eht	Q15116	Lorigerlimab	0	mapped	
+Thera-SAbDab	pdb_00009eht-E-D	9eht	Q15116	Retifanlimab	0	mapped	
+Thera-SAbDab	pdb_00009eth-H-L	9eth	Q9HB29	Spesolimab	0	mapped	
+Thera-SAbDab	pdb_00009eti-H-L	9eti	Q9HB29	Spesolimab	0	mapped	
+Thera-SAbDab	pdb_00009eza-A1-C2	9eza	Q8NI17	Nemolizumab	0	mapped	
+Thera-SAbDab	pdb_00009eza-C1-A2	9eza	Q8NI17	Nemolizumab	0	mapped	
+Thera-SAbDab	pdb_00009ima-C-D	9ima	Q9NZD1	Talquetamab	0	mapped	
+Thera-SAbDab	pdb_00009irs-H-L	9irs	P07766	Muromonab	0	mapped	
+Thera-SAbDab	pdb_00009irs-S-T	9irs	P07766	Muromonab	0	mapped	
+Thera-SAbDab	pdb_00009kkj-H-L	9kkj	Q96NY8	Bulumtatug	0	mapped	
+Thera-SAbDab	pdb_00009mi6-H-L	9mi6	P55899	Nipocalimab	0	mapped	
+Thera-SAbDab	pdb_00009mi6-H-L	9mi6	P61769	Nipocalimab	0	mapped	
+Thera-SAbDab	pdb_00009nrc-H-L	9nrc	Q8IU80	Exerenibart	0	mapped	
+Thera-SAbDab	pdb_00009pi9-A-B	9pi9	P09758	Sacituzumab	0	mapped	
+Thera-SAbDab	pdb_00009pi9-A-B	9pi9	P09758	Sacituzumab	0	mapped	
+Thera-SAbDab	pdb_00009pi9-C-D	9pi9	P09758	Sacituzumab	0	mapped	
+Thera-SAbDab	pdb_00009pi9-C-D	9pi9	P09758	Sacituzumab	0	mapped	
+Thera-SAbDab	pdb_00009t46-H-L	9t46	P07766	Mosunetuzumab	0	mapped	
+Thera-SAbDab	pdb_00009ull-A-B	9ull	P51679	Mogamulizumab	0	mapped	
+Thera-SAbDab	pdb_00009ull-C-D	9ull	P51679	Mogamulizumab	0	mapped	
+Thera-SAbDab	pdb_00009ulm-A-B	9ulm	P51679	Mogamulizumab	0	mapped	
+Thera-SAbDab	pdb_00009ulm-C-D	9ulm	P51679	Mogamulizumab	0	mapped	
+Thera-SAbDab	pdb_00009v2u-H-L	9v2u	P56856	Osemitamab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00009v31-C-D	9v31	P56856	Osemitamab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00009v31-H-L	9v31	P56856	Osemitamab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00009v32-H-L	9v32	P56856	Zolbetuximab	0	noncanonical_contact_residue	
+Thera-SAbDab	pdb_00009wwh-A-B	9wwh	O95760	Tozorakimab	0	mapped	
+Thera-SAbDab	pdb_00009wwh-H-L	9wwh	O95760	Tozorakimab	0	mapped	
+Thera-SAbDab	pdb_00009x05-B-E	9x05	O95760	Itepekimab	0	mapped	
+Thera-SAbDab	pdb_00009x05-D-C	9x05	O95760	Tozorakimab	0	mapped	
+Thera-SAbDab	pdb_00009x0j-E-B	9x0j	O95760	Etokimab	0	mapped	
+Thera-SAbDab	pdb_00009x0j-F-C	9x0j	O95760	Tozorakimab	0	mapped	

@@ -1,0 +1,43 @@
+metric	subset	genes	denominator	percent	beyond_previous_ec	beyond_previous_any_site	beyond_revised_structural_ec
+existing_reclassified	all	1133	5130	22.09		0	
+existing_reclassified	llm_ligand_yes	967	3157	30.63		0	
+existing_reclassified_ec	all	407	5130	7.93	21	0	0
+existing_reclassified_ec	llm_ligand_yes	384	3157	12.16	19	0	0
+existing_reclassified_exoplasmic	all	484	5130	9.43		0	
+existing_reclassified_exoplasmic	llm_ligand_yes	451	3157	14.29		0	
+intact_binding_region	all	1610	5130	31.38		1035	
+intact_binding_region	llm_ligand_yes	1234	3157	39.09		722	
+intact_binding_region_ec	all	501	5130	9.77	320	297	194
+intact_binding_region_ec	llm_ligand_yes	465	3157	14.73	284	261	162
+intact_binding_region_exoplasmic	all	612	5130	11.93		381	
+intact_binding_region_exoplasmic	llm_ligand_yes	555	3157	17.58		325	
+intact_mutation_effect	all	494	5130	9.63		241	
+intact_mutation_effect	llm_ligand_yes	399	3157	12.64		180	
+intact_mutation_effect_ec	all	125	5130	2.44	79	66	35
+intact_mutation_effect_ec	llm_ligand_yes	118	3157	3.74	73	60	31
+intact_mutation_effect_exoplasmic	all	154	5130	3.0		80	
+intact_mutation_effect_exoplasmic	llm_ligand_yes	142	3157	4.5		70	
+previous_strict_ec	all	386	5130	7.52	0	0	0
+previous_strict_ec	llm_ligand_yes	365	3157	11.56	0	0	0
+previous_structural_union	all	1136	5130	22.14		0	
+previous_structural_union	llm_ligand_yes	970	3157	30.73		0	
+reclassified_plus_structural	all	1680	5130	32.75		547	
+reclassified_plus_structural	llm_ligand_yes	1409	3157	44.63		442	
+reclassified_plus_structural_ec	all	661	5130	12.88	275	216	0
+reclassified_plus_structural_ec	llm_ligand_yes	621	3157	19.67	256	204	0
+reclassified_plus_structural_exoplasmic	all	781	5130	15.22		259	
+reclassified_plus_structural_exoplasmic	llm_ligand_yes	720	3157	22.81		236	
+structural_or_region_ec	all	855	5130	16.67	469	403	194
+structural_or_region_ec	llm_ligand_yes	783	3157	24.8	418	359	162
+structural_region_or_mutation_ec	all	871	5130	16.98	485	416	210
+structural_region_or_mutation_ec	llm_ligand_yes	796	3157	25.21	431	369	175
+structural_with_intact_feature_support	all	489	5130	9.53		202	
+structural_with_intact_feature_support	llm_ligand_yes	446	3157	14.13		179	
+structural_with_intact_feature_support_ec	all	266	5130	5.19	119	105	0
+structural_with_intact_feature_support_ec	llm_ligand_yes	261	3157	8.27	115	101	0
+unrestricted_structural	all	1326	5130	25.85		547	
+unrestricted_structural	llm_ligand_yes	1132	3157	35.86		442	
+unrestricted_structural_ec	all	507	5130	9.88	260	216	0
+unrestricted_structural_ec	llm_ligand_yes	484	3157	15.33	243	204	0
+unrestricted_structural_exoplasmic	all	590	5130	11.5		259	
+unrestricted_structural_exoplasmic	llm_ligand_yes	552	3157	17.48		236	

@@ -84,13 +84,9 @@ export function Shell({ children }: ShellProps) {
             </span>
             <Link href="/" className={styles.brandLocal}>
               <span className={styles.brandLocalText}>Surfaceome</span>
-              {/* Major-release mark. v1.0 is the first cohort that ships
-               *  with a stable schema + the SurfaceBench truth set, so
-               *  the version sits inline with the wordmark rather than
-               *  buried in the footer. Bump the literal when we cut a
-               *  later major. */}
-              <span className={styles.brandVersion} aria-label="version 1.0">
-                v1.0
+              {/* Latest published repository release; update when cutting a release. */}
+              <span className={styles.brandVersion} aria-label="version 1.2.0" title="Latest published release: v1.2.0">
+                v1.2.0
               </span>
             </Link>
           </div>

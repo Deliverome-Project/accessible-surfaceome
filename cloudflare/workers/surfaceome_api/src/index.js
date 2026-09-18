@@ -1,3 +1,4 @@
+import { handleContactSites } from "./contact-sites.js";
 // Cloudflare Worker — public read-only Surfaceome API.
 //
 // Reads from the `surfaceome_public` D1 (bound as env.DB in wrangler.toml).
@@ -2329,6 +2330,9 @@ const REASONING_COLUMNS = ["predicted_key_uncertainty", "verdict_reasoning"];
 // so an agent that lands on the API base discovers the whole surface
 // (method + path template + summary) without scraping the docs page.
 const V1_ENDPOINTS = [
+  { group: "Contact sites", method: "GET", path: "/v1/contact-sites/releases/current", summary: "Current contact release, provenance, audited denominator and exclusions" },
+  { group: "Contact sites", method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}", summary: "Version-pinned ligand summaries and representative footprints; scope=extracellular (default) or all" },
+  { group: "Contact sites", method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}/ligands/{ligandId}/evidence", summary: "Original observations, paginated with next_cursor; omit ligands/{ligandId}/ to retrieve every observation including unnamed partners" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark", summary: "147 ground-truth labels for the current bench_version" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/{symbol}", summary: "One gene's ground-truth label + rationale" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant]" },
@@ -3447,6 +3451,7 @@ export default {
       return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
     }
 
+    if (path.startsWith("/v1/contact-sites/")) return handleContactSites(request, env, path);
     if (path === "/v1" || path === "") return handleV1Index(env);
     // Cacheable static / list endpoints — wrapped in withEdgeCache so the
     // second-and-subsequent hits per POP serve from caches.default rather

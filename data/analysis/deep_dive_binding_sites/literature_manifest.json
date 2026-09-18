@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-09-17T17:01:55.040376+00:00",
+  "generator_sha256": "aeafae462a6e0a9b1e93b7396990ad27cf08059aef097fc6fbc6f22773ced5a0",
+  "observations_sha256": "77ec6adab4e39b78288c1ccb9dd3338f02070495b6d5b476cd0150f4ecd8f02c",
+  "requests": [
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
+      "params": {
+        "query": "SRC:MED AND (EXT_ID:16963452 OR EXT_ID:17466328 OR EXT_ID:18654624 OR EXT_ID:18706916 OR EXT_ID:20124480 OR EXT_ID:20190562 OR EXT_ID:20357770 OR EXT_ID:21963989 OR EXT_ID:22325775 OR EXT_ID:22328160 OR EXT_ID:22948047 OR EXT_ID:23090647 OR EXT_ID:24087882 OR EXT_ID:24095059 OR EXT_ID:24917546 OR EXT_ID:25391547 OR EXT_ID:26177208 OR EXT_ID:28584151 OR EXT_ID:29792401 OR EXT_ID:30529748 OR EXT_ID:30626941 OR EXT_ID:31239342 OR EXT_ID:33738081 OR EXT_ID:33850121 OR EXT_ID:33879614)",
+        "format": "json",
+        "resultType": "core",
+        "pageSize": 100
+      },
+      "path": "data/external/binder_coverage/literature/metadata_batch_0e62a5edfae63c2b.json",
+      "sha256": "3d20603d2a768e42a8caf2808901e2cd1b723a2d1cff3adc0905697b8e66d2d5"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
+      "params": {
+        "query": "SRC:MED AND (EXT_ID:34174312 OR EXT_ID:34194040 OR EXT_ID:34199835 OR EXT_ID:34260945 OR EXT_ID:34433901 OR EXT_ID:34561620 OR EXT_ID:34896364 OR EXT_ID:34937906 OR EXT_ID:35217653 OR EXT_ID:35273620 OR EXT_ID:35332283 OR EXT_ID:35595746 OR EXT_ID:35762713 OR EXT_ID:35969734 OR EXT_ID:36288716 OR EXT_ID:36901829 OR EXT_ID:37100904 OR EXT_ID:37148874 OR EXT_ID:37176076 OR EXT_ID:37279405 OR EXT_ID:37368504 OR EXT_ID:37622108 OR EXT_ID:37704610 OR EXT_ID:37875551 OR EXT_ID:38032933)",
+        "format": "json",
+        "resultType": "core",
+        "pageSize": 100
+      },
+      "path": "data/external/binder_coverage/literature/metadata_batch_4699210e0dba4405.json",
+      "sha256": "e89a63e05dbc0db812fef81de185239a44e71944e73af0e795f6045ee9e6a7d4"
+    },
+    {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/search",
+      "params": {
+        "query": "SRC:MED AND (EXT_ID:38503834 OR EXT_ID:38799672 OR EXT_ID:38842931 OR EXT_ID:38926478 OR EXT_ID:38936360 OR EXT_ID:39012010 OR EXT_ID:39152100 OR EXT_ID:39322662 OR EXT_ID:39361640 OR EXT_ID:39420062 OR EXT_ID:39636970 OR EXT_ID:39743082 OR EXT_ID:39841846 OR EXT_ID:39890776 OR EXT_ID:39922190 OR EXT_ID:40223692 OR EXT_ID:40243822 OR EXT_ID:40272315 OR EXT_ID:40429825 OR EXT_ID:40483936)",
+        "format": "json",
+        "resultType": "core",
+        "pageSize": 100
+      },
+      "path": "data/external/binder_coverage/literature/metadata_batch_ca9a10b939e25756.json",
+      "sha256": "2e99f33d9b45ed8a3495352b1ec6688012f6e52c72d66bc33fe1f2f2a0c8f5b9"
+    }
+  ],
+  "summary": {
+    "papers": 70,
+    "metadata_found": 70,
+    "fulltexts_retrieved": 35,
+    "papers_with_epitope_leads": 27,
+    "papers_with_structure_leads": 24,
+    "supplement_flag_yes": 48
+  },
+  "limitation": "Keyword hits are paper-level triage leads, not validated target-specific epitopes. Supplements flagged but not downloaded. No paid model calls."
+}

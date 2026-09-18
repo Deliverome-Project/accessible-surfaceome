@@ -1,0 +1,918 @@
+hgnc_id	hgnc_symbol	uniprot_acc	ensembl_gene	ncbi_gene_id	binder_target_location	therapeutic	target_annotation	format	development_status_in_source	same_therapeutic_any_site	same_therapeutic_external_site	support_pdb_ids	mapping_method	target_qualifier
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Abazistobart	PDCD1/CD279/PD1	Whole mAb	TBC	1	1	7vux	approved_symbol	
+HGNC:6138	ITGA2B	P08514	ENSG00000005961	3674	membrane	Abciximab	ITGA2B/CD41	Fab	NFD	1	1	6v4p	approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Abiprubart	TNFRSF5/CD40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6150	ITGAV	P06756	ENSG00000138448	3685	membrane	Abituzumab	ITGAV/CD51	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3788	FOLH1	Q04609	ENSG00000086205	2346	membrane	Acapatamab	FOLH1/GCPII/PSMA;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Acapatamab	FOLH1/GCPII/PSMA;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Acasunlimab	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Acasunlimab	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3619	FCGR3A	P08637	ENSG00000203747	2214	membrane_and_secreted	Acimtamig	FCGR3A/CD16/CD16A;TNFRSF8/CD30	Bispecific (VH-VK-VH'-VL Homodimer)	Active	0	0		approved_symbol	
+HGNC:11923	TNFRSF8	P28908	ENSG00000120949	943	membrane	Acimtamig	FCGR3A/CD16/CD16A;TNFRSF8/CD30	Bispecific (VH-VK-VH'-VL Homodimer)	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Acrixolimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Adalimumab	TNF/TNFA	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Adebrelimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11529	EPCAM	P16422	ENSG00000119888	4072	membrane	Adecatumumab	EPCAM/CD326	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3766	FLT3LG	P49771	ENSG00000090554	2323	membrane_and_secreted	Adezkibart	FLT3LG	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:7525	MUSK	O15146	ENSG00000030304	4593	membrane	Adimanebart	MUSK	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Aducanumab	APP	Whole mAb	NFD	1	1	6co3	approved_symbol	
+HGNC:11931	TNFSF15	O95150	ENSG00000181634	9966	membrane_inferred_and_secreted	Afimkibart	TNFSF15/TL1A/VEGI	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6307	KDR	P35968	ENSG00000128052	3791	membrane_and_secreted	Alacizumab	KDR/CD309/VEGFR2	di-Fab	Discontinued	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Alcestobart	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:27596	SIGLEC15	Q6ZMC9	ENSG00000197046	284266	membrane_inferred	Aldastotug	SIGLEC15/CD33L3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1804	CD52	P31358	ENSG00000169442	1043	membrane	Alemtuzumab	CD52	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Alirocumab	PCSK9	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5351	ICOS	Q9Y6W8	ENSG00000163600	29851	membrane_and_secreted	Alomfilimab	ICOS/CD278	Whole mAb	Discontinued	1	1	7joo	approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Alnuctamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb with Domain Crossover	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Alnuctamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb with Domain Crossover	Active	0	0		approved_symbol	
+HGNC:6363	KLK2	P20151	ENSG00000167751	3817	other_or_uncertain	Alpitatug	KLK2/KLK2A2/hGK-1/hK2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:28873	VTCN1	Q7Z7D3	ENSG00000134258	79679	membrane	Alsevalimab	VTCN1/B7H4	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:7371	MSLN	Q13421	ENSG00000102854	10232	membrane_and_secreted	Amatuximab	MSLN	Whole mAb	Discontinued	1	1	4f3f;7ued	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Amtabafusp	CD3E	Whole mAb Fusion	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Amivantamab	EGFR/ERBB1/HER1;MET/HGFR	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Amivantamab	EGFR/ERBB1/HER1;MET/HGFR	Bispecific mAb	Active	1	1	6wvz	approved_symbol	
+HGNC:11138	SNCA	P37840	ENSG00000145335	6622	secreted_only	Amlenetug	SNCA/PARK1/PARK4	Whole mAb	Active	1	0	8b9v	approved_symbol	
+HGNC:11934	TNFSF4	P23510	ENSG00000117586	7292	membrane_inferred	Amlitelimab	TNFSF4/CD134/CD252/OX40L	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Amostomig	IAP/CD47/MER6/OA3;PDL1/CD274	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Amostomig	IAP/CD47/MER6/OA3;PDL1/CD274	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Amulirafusp	MS4A1/CD20	Whole mAb Fusion	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Anbenitamab	ERBB2/CD340/HER2 (Domain II);ERBB2/CD340/HER2 (Domain IV)	Bispecific mAb	Active	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:7176	MMP9	P14780	ENSG00000100985	4318	secreted_only	Andecaliximab	MMP9/GELB	Whole mAb	Discontinued	1	1	5th9	approved_symbol	
+HGNC:7371	MSLN	Q13421	ENSG00000102854	10232	membrane_and_secreted	Anetumab	MSLN	Whole mAb ADC	Discontinued	1	1	8cz8	approved_symbol	
+HGNC:5432	IFNAR1	P17181	ENSG00000142166	3454	membrane	Anifrolumab	IFNAR1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Ansipastobart	NT5E/CALJA/CD73	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2439	CSF3R	Q99062	ENSG00000119535	1441	membrane_and_secreted	Anumigilimab	CSF3R/CD114	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Anvatabart	ERBB2/CD340/HER2	Whole mAb ADC	Active	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:9662	SIRPA	P78324	ENSG00000198053	140885	membrane_inferred	Anzurstobart	SIRPA	Whole mAb	Active	1	1	7st5	approved_symbol	
+HGNC:9666	PTPRC	P08575	ENSG00000081237	5788	membrane	Apamistamab	PTPRC/CD45	Whole mAb Radiolabelled	Active	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Aplitabart	TNFRSF10B/CD262/DR5/TRAILR2	Whole IgM+J Chain (Cyclic Pentamer)	Active	0	0		approved_symbol	
+HGNC:3689	FGFR2	P21802	ENSG00000066468	2263	membrane_and_secreted	Aprutumab	FGFR2/CD332	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:11760	TFPI	P10646	ENSG00000003436	7035	secreted_only	Armocibart	TFPI	Whole mAb	Active	0	0		approved_symbol	
+HGNC:175	ACVRL1	P37023	ENSG00000139567	94	membrane	Ascrinvacumab	ACVRL1/SKR3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:5998	IL1RL1	Q01638	ENSG00000115602	9173	membrane_and_secreted	Astegolimab	IL1RL1/ST2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Atenastobart	TNFRSF9/CD137/4-1BB	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Atezolizumab	PDL1/CD274	Whole mAb	Active	1	1	5x8l	approved_symbol	
+HGNC:1628	CD14	P08571	ENSG00000170458	929	membrane_and_secreted	Atibuclimab	CD14	Whole mAb	Active	0	0		approved_symbol	
+HGNC:14085	RTN4	Q9NQC3	ENSG00000115310	57142	membrane	Atinumab	RTN4/Nogo	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1338	C5AR1	P21730	ENSG00000197405	728	membrane	Avdoralimab	C5AR1/CD88	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Avelumab	PDL1/CD274	Whole mAb	Active	1	1	5grj	approved_symbol	
+HGNC:1659	CD33	P20138	ENSG00000105383	945	membrane	Avitotamig	SIGLEC3/CD33/p67	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2433	CSF1R	P07333	ENSG00000182578	1436	membrane	Axatilimab	CSF1R/CD115/M-CSFR	Whole mAb	Active	0	0		approved_symbol	
+HGNC:18788	KLRK1	P26718	ENSG00000213809	22914	membrane	Azerutamig	KLRK1/NKG2D/CD314;ERBB2/CD340/HER2	Bispecific Mixed mAb and scFv-CH2-CH3	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Azerutamig	KLRK1/NKG2D/CD314;ERBB2/CD340/HER2	Bispecific Mixed mAb and scFv-CH2-CH3	Active	0	0		approved_symbol	
+HGNC:21394	SLAMF7	Q9NQ25	ENSG00000026751	57823	membrane_inferred	Azintuxizumab	SLAMF7/CD319	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:1609	CCR8	P51685	ENSG00000179934	1237	membrane	Azirkitug	CCR8/CKR-L1/CDw198	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Bafisontamab	EGFR/ERBB1/HER1;MET/HGFR	Bispecific Mixed mAb and Fab	Active	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Bafisontamab	EGFR/ERBB1/HER1;MET/HGFR	Bispecific Mixed mAb and Fab	Active	0	0		approved_symbol	
+HGNC:11937	CD70	P32970	ENSG00000125726	970	membrane	Balertatug	CD70	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:7943	NPR1	P16066	ENSG00000169418	4881	membrane_inferred	Balonkibart	NPR1/ANPRA/ANPa/GUC2A/GUCY2A/NPRA	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Balstilimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Bapineuzumab	APP	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:18131	ILDR2	Q71H61	ENSG00000143195	387597	other_or_uncertain	Bapotulimab	ILDR2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Barecetamab	ERBB3/HER3	Whole mAb	Discontinued	1	1	7d85	approved_symbol	
+HGNC:6342	KIT	P10721	ENSG00000157404	3815	membrane	Barzolvolimab	KIT/CD117	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6008	IL2RA	P01589	ENSG00000134460	3559	membrane_inferred	Basiliximab	IL2RA/CD25	Whole mAb	NFD	1	1	3iu3	approved_symbol	
+HGNC:3621	FCGRT	P55899	ENSG00000104870	2217	membrane	Batoclimab	FCGRT/FcRn	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Bavunalimab	LAG3/CD223;CTLA4/CD152	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Bavunalimab	LAG3/CD223;CTLA4/CD152	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Becotatug	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11760	TFPI	P10646	ENSG00000003436	7035	secreted_only	Befovacimab	TFPI	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3009	DPP4	P27487	ENSG00000197635	1803	membrane_and_secreted	Begelomab	DPP4/ADCP2/CD26	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Belantamab	TNFRSF17/CD269/BCMA/TNFRSF13A	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:11929	TNFSF13B	Q9Y275	ENSG00000102524	10673	membrane_and_secreted	Belimumab	TNFSF13B/CD257/BAFF	Whole mAb	Active	1	1	5y9j;6fxn	approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Belrestotug	TIGIT/WUCAM/VSTM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3689	FGFR2	P21802	ENSG00000066468	2263	membrane_and_secreted	Bemarituzumab	FGFR2/CD332	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6024	IL7R	P16871	ENSG00000168685	3575	membrane_and_secreted	Bempikibart	IL7R/CD127	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Benmelstobart	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6017	IL5RA	Q01344	ENSG00000091181	3568	membrane_inferred	Benralizumab	IL5RA/CD125	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Benufutamab	TNFRSF10B/CD262/DR5/TRAILR2	Whole mAb	Active	1	1	6t3j	approved_symbol	
+HGNC:6893	MAPT	P10636	ENSG00000186868	4137	membrane_and_secreted	Bepranemab	MAPT	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5991	IL1A	P01583	ENSG00000115008	3552	secreted_only	Bermekimab	IL1A	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5344	ICAM1	P05362	ENSG00000090339	3383	membrane	Bersanlimab	ICAM1/CD54	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Besufetamig	PDCD1/CD279/PD1;CD3E	Bispecific mAb	TBC	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Besufetamig	PDCD1/CD279/PD1;CD3E	Bispecific mAb	TBC	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Betifisolimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6012	IL3RA	P26951	ENSG00000185291	3563	membrane	Bexatamig	IL3RA/CD123;NCR1/NKP46/NKp46/LY94/CD335	Bispecific (H-gamma1-VH-G1CH1h_L-kappa)_L-kappa-G1hCH2CH3	Active	1	1	4jzj	approved_symbol	
+HGNC:6731	NCR1	O76036	ENSG00000189430	9437	membrane	Bexatamig	IL3RA/CD123;NCR1/NKP46/NKp46/LY94/CD335	Bispecific (H-gamma1-VH-G1CH1h_L-kappa)_L-kappa-G1hCH2CH3	Active	1	1	6iap	approved_symbol	
+HGNC:18628	STAB1	Q9NY15	ENSG00000010327	23166	membrane_inferred	Bexmarilimab	STAB1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1697	CD74	P04233	ENSG00000019582	972	membrane_and_secreted	Bezetabart	CD74/HLA class II histocompatibility antigen gamma chain	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:174	ACVR2B	Q13705	ENSG00000114739	93	membrane	Bimagrumab	ACVR2B	Whole mAb	Active	1	1	5ngv;5nhr	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Bintrafusp	PDL1/CD274	Whole mAb Fusion	Active	1	1	5grj	approved_symbol	
+HGNC:2436	CSF2RB	P32927	ENSG00000100368	1439	membrane_inferred	Birinkibart	CSF2RB/CD131/IL3RB/IL5RB	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Bleselumab	TNFRSF5/CD40	Whole mAb	Discontinued	1	1	8yx1	approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Blinatumomab	CD19;CD3E	Bispecific T-Cell Engager	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Blinatumomab	CD19;CD3E	Bispecific T-Cell Engager	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Bococizumab	PCSK9	Whole mAb	Discontinued	1	0	3sqo	approved_symbol	
+HGNC:11922	CD27	P26842	ENSG00000139193	939	membrane	Boserolimab	TNFRSF7/CD27	Whole mAb	Active	1	1	8ds5	approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Botensilimab	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11923	TNFRSF8	P28908	ENSG00000120949	943	membrane	Brentuximab	TNFRSF8/CD30	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:6342	KIT	P10721	ENSG00000157404	3815	membrane	Briquilimab	KIT/CD117	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11934	TNFSF4	P23510	ENSG00000117586	7292	membrane_inferred	Brivekimig1	TNFSF4/CD134/CD252/OX40L;TNF/TNFA	Trispecific Single Domains (VH-VH-VH'-VH''-VH'); Bispecific entry	Active	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Brivekimig1	TNFSF4/CD134/CD252/OX40L;TNF/TNFA	Trispecific Single Domains (VH-VH-VH'-VH''-VH'); Bispecific entry	Active	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Brivestobart	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5985	IL17RA	Q96F46	ENSG00000177663	23765	membrane_and_secreted	Brodalumab	IL17RA/CD217	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7881	NOTCH1	P46531	ENSG00000148400	4851	membrane	Brontictuzumab	NOTCH1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Budigalimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Budoprutug	CD19	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Bulumtatug	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:12692	VIM	P08670	ENSG00000026025	7431	membrane	Burfiralimab	VIM	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2433	CSF1R	P07333	ENSG00000182578	1436	membrane	Cabiralizumab	CSF1R/CD115/M-CSFR	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1756	CDH17	Q12864	ENSG00000079112	1015	membrane	Cabotamig	CDH17;CD3E	Bispecific (VH-G1CH1h-G4CH2CH3-scFv)	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Cabotamig	CDH17;CD3E	Bispecific (VH-G1CH1h-G4CH2CH3-scFv)	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Cadonilimab	PDCD1/CD279/PD1;CTLA4/CD152	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Cadonilimab	PDCD1/CD279/PD1;CTLA4/CD152	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:1609	CCR8	P51685	ENSG00000179934	1237	membrane	Cafelkibart	CCR8/CKR-L1/CDw198	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Calotatug	ERBB2/CD340/HER2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6008	IL2RA	P01589	ENSG00000134460	3559	membrane_inferred	Camidanlumab	IL2RA/CD25	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Camrelizumab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	7cu5	approved_symbol	
+HGNC:7508	MUC1	P15941	ENSG00000185499	4582	membrane_and_secreted	Cantuzumab	MUC1/PEM/EMA	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:3349	ENG	P17813	ENSG00000106991	2022	membrane	Carotuximab	ENG/CD105	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Caxmotabart	ERBB2/CD340/HER2	Whole mAb	Active	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Cemavafusp	PDL1/CD274	Fusion Protein (Toxin fused to an scFv)	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Cemiplimab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	7wvm;8gy5	approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Cenzestotug	TNFRSF4/CD134/OX40	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:10722	SELPLG	Q14242	ENSG00000110876	6404	membrane_inferred	Cepeprubart	SELPLG/CD162/PSGL1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1817	CEACAM5	P06731	ENSG00000105388	1048	membrane	Cergutuzumab	CEACAM5/CD66e	Whole mAb Fusion	Discontinued	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Certolizumab	TNF/TNFA	Fab	Active	1	1	5wux	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Cetrelimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Cetuximab	EGFR/ERBB1/HER1	Whole mAb	Active	1	1	1yy9;4kro;4krp	approved_symbol	
+HGNC:18508	FCRL5	Q96RD9	ENSG00000143297	83416	membrane	Cevostamab	FCRL5/CD307;CD3	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1817	CEACAM5	P06731	ENSG00000105388	1048	membrane	Cibisatamab	CEACAM5/CD66e and CD3E;CD3E	Bispecific mAb with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Cibisatamab	CEACAM5/CD66e and CD3E;CD3E	Bispecific mAb with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:11867	TMEFF2	Q9UIK5	ENSG00000144339	23671	membrane_inferred_and_secreted	Ciduvectamig	TMEFF2;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Ciduvectamig	TMEFF2;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Cifurtilimab	TNFRSF5/CD40	Whole mAb	Active	1	1	8yx9	approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Ciletatug	CLDN18	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Ciltistotug	TNFRSF5/CD40	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:11138	SNCA	P37840	ENSG00000145335	6622	secreted_only	Cinpanemab	SNCA/PARK1/PARK4	Whole mAb	Discontinued	1	0	6ct7	approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Cinrebafusp	ERBB2/CD340/HER2	Fusion Protein	Active	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:11529	EPCAM	P16422	ENSG00000119888	4072	membrane	Citatuzumab	EPCAM/CD326	Fab Fusion	Discontinued	0	0		approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Cixutumumab	IGF1R/CD221	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Cizutamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific Mixed Domains (L-kappa-H-gamma1_[VH-G1(CH1-h)]_L-kappa)	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Cizutamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific Mixed Domains (L-kappa-H-gamma1_[VH-G1(CH1-h)]_L-kappa)	Active	0	0		approved_symbol	
+HGNC:11004	SLC29A2	Q14542	ENSG00000174669	3177	membrane	Clervonafusp	SLC29A2	di-Fab Fusion	Active	0	0		approved_symbol	
+HGNC:2909	DLL3	Q9NYJ7	ENSG00000090932	10683	membrane_inferred	Clesitamig	DLL3;CD3&TNFRSF9/CD137/4-1BB	Bispecific Mixed Domains ((V-kappa-G4CH1-G1h-H-gamma1_L-kappa)_L-kappa)]_(H-gamma1_L-kappa)); Trispecific through dual targetting Fv2	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Clesitamig	DLL3;CD3&TNFRSF9/CD137/4-1BB	Bispecific Mixed Domains ((V-kappa-G4CH1-G1h-H-gamma1_L-kappa)_L-kappa)]_(H-gamma1_L-kappa)); Trispecific through dual targetting Fv2	Active	0	0		approved_symbol	
+HGNC:7508	MUC1	P15941	ENSG00000185499	4582	membrane_and_secreted	Clivatuzumab	MUC1/PEM/EMA	Whole mAb Radiolabelled	Discontinued	0	0		approved_symbol	
+HGNC:18437	HAVCR2	Q8TDQ0	ENSG00000135077	84868	membrane	Cobolimab	HAVCR2/TIM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:4451	GPC3	P51654	ENSG00000147257	2719	membrane	Codrituzumab	GPC3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:9618	PTK7	Q13308	ENSG00000112655	5754	membrane	Cofetuzumab	PTK7	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Coltuximab	CD19	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Comekibart	IL4R/CD124	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Conatumumab	TNFRSF10B/CD262/DR5/TRAILR2	Whole mAb	Discontinued	1	1	4n90	approved_symbol	
+HGNC:11760	TFPI	P10646	ENSG00000003436	7035	secreted_only	Concizumab	TFPI	Whole mAb	Active	1	0	4dtg	approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Coprelotamab	ERBB2/CD340/HER2	Whole mAb	Active	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Cosibelimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6024	IL7R	P16871	ENSG00000168685	3575	membrane_and_secreted	Crebankitug	IL7R/CD127	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1706	CD8A	P01732	ENSG00000153563	925	membrane_and_secreted	Crefmirlimab	CD8A	scFv Engineered Dimer	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Crenezumab	APP	Whole mAb	Discontinued	1	1	5vzy	approved_symbol	
+HGNC:10721	SELP	P16109	ENSG00000174175	6403	membrane	Crizanlizumab	SELP/CD62	Whole mAb	Active	0	0		approved_symbol	
+HGNC:4192	GCGR	P47871	ENSG00000215644	2642	membrane	Crotedumab	GCGR	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Crovalimab	C5	Whole mAb	Active	1	0	5b71	approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Cudarolimab	TNFRSF4/CD134/OX40	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Cugrastomig	LAG3/CD223;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Cugrastomig	LAG3/CD223;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:11937	CD70	P32970	ENSG00000125726	970	membrane	Cusatuzumab	CD70	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Dacetuzumab	TNFRSF5/CD40	Whole mAb	Discontinued	1	1	8yx9	approved_symbol	
+HGNC:6008	IL2RA	P01589	ENSG00000134460	3559	membrane_inferred	Daclizumab	IL2RA/CD25	Whole mAb	Active	1	1	3nfp	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Dafsolimab	CD3E	Whole mAb	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Dalidnetug	APP	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Dalnicastobart	TNFRSF5/CD40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Dalotuzumab	IGF1R/CD221	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11773	TGFBR2	P37173	ENSG00000163513	7048	membrane_and_secreted	Dalutrafusp	TGFBR2	Whole mAb Fusion	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Danburstotug	PDL1/CD274	Whole mAb Fusion	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Danvilostomig	CTLA4/CD152;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Discontinued	1	1	5tru;5xj3;6rp8;7elx	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Danvilostomig	CTLA4/CD152;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:11935	CD40LG	P29965	ENSG00000102245	959	membrane_and_secreted	Dapirolizumab	CD40LG/CD154	Fab	Active	0	0		approved_symbol	
+HGNC:1667	CD38	P28907	ENSG00000004468	952	membrane	Daratumumab	ADPRC1/CD38	Whole mAb	Active	1	1	7dha;7duo	approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Dargistotug	TIGIT/WUCAM/VSTM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11530	TACSTD2	P09758	ENSG00000184292	4070	membrane_inferred	Datopotamab	TACSTD2/TROP2/EGP1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Davutamig	MET/HGFR;MET/HGFR	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:15503	LILRA4	P59901	ENSG00000239961	23547	membrane	Daxdilimab	LILRA4/CD85g	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11763	TFRC	P02786	ENSG00000072274	7037	membrane_and_secreted	Delpacibart	TFRC/CD71	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2910	DLL4	Q9NR61	ENSG00000128917	54567	membrane	Demcizumab	DLL4	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Demupitamab	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1609	CCR8	P51685	ENSG00000179934	1237	membrane	Denikitug	CCR8/CKR-L1/CDw198	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Denintuzumab	CD19	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:11926	TNFSF11	O14788	ENSG00000120659	8600	membrane_and_secreted	Denosumab	TNFSF11/CD254/RANKL/TRANCE/OPGL/ODF	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Depatuxizumab	EGFR/ERBB1/HER1	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:584	APCS	P02743	ENSG00000132703	325	secreted_only	Dezamizumab	APCS/SAP	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6378	KLRD1	Q13241	ENSG00000134539	3824	membrane	Dibotatug	KLRD1/CD94	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2910	DLL4	Q9NR61	ENSG00000128917	54567	membrane	Dilpacimab	DLL4;VEGFA	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Disitamab	ERBB2/CD340/HER2	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Divozilimab	MS4A1/CD20	Whole mAb	Active	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Domvanalimab	TIGIT/WUCAM/VSTM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Donanemab	APP	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Dostarlimab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	7wsl	approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Dresbuxelimab	NT5E/CALJA/CD73	Whole  mAb	Active	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Drotokibart	IL4R/CD124	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Drozitumab	TNFRSF10B/CD262/DR5/TRAILR2	Whole mAb	Discontinued	1	1	4od2	approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Duligotuzumab	ERBB3/HER3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Dupilumab	IL4R/CD124	Whole mAb	Active	1	1	6wgl	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Durvalumab	PDL1/CD274	Whole mAb	Active	1	1	5x8m;5xj4	approved_symbol	
+HGNC:11931	TNFSF15	O95150	ENSG00000181634	9966	membrane_inferred_and_secreted	Duvakitug	TNFSF15/TL1A/VEGI	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Duvortuxizumab	CD19;CD3E	Bispecific scFv with Crossover	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Duvortuxizumab	CD19;CD3E	Bispecific scFv with Crossover	Discontinued	0	0		approved_symbol	
+HGNC:5974	IL13RA1	P78552	ENSG00000131724	3597	membrane_inferred	Eblasakimab	IL13RA1/CD213A1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:25201	TMEM219	Q86XT9	ENSG00000149932	124446	membrane	Ebrasodebart	TMEM219/IGFBP-3R	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Ebronucimab	PCSK9	Whole mAb	NFD	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Eciskafusp	PDCD1/CD279/PD1	Fusion Protein	Active	0	0		approved_symbol	
+HGNC:2032	CLDN1	O95832	ENSG00000163347	9076	membrane	Eclutatug	CLDN1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Eculizumab	C5	Whole mAb	Active	1	0	5i5k	approved_symbol	
+HGNC:11529	EPCAM	P16422	ENSG00000119888	4072	membrane	Edrecolomab	EPCAM/CD326	Whole mAb	NFD	0	0		approved_symbol	
+HGNC:6148	ITGAL	P20701	ENSG00000005844	3683	membrane	Efalizumab	ITGAL/CD11A/LFA1A	Whole mAb	NFD	1	1	3eoa;3eob	approved_symbol	
+HGNC:6342	KIT	P10721	ENSG00000157404	3815	membrane	Eglatoprutug	KIT/CD117	Whole mAb	Active	0	0		approved_symbol	
+HGNC:30308	RGMA	Q96B86	ENSG00000182175	56963	membrane	Elezanumab	RGMA	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Elgemtumab	ERBB3/HER3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:21394	SLAMF7	Q9NQ25	ENSG00000026751	57823	membrane_inferred	Elotuzumab	SLAMF7/CD319	Whole mAb	NFD	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Elranatamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Elranatamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3363	ENTPD1	P49961	ENSG00000138185	953	membrane_inferred	Eltivutabart	ENTPD1/CD39	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1659	CD33	P20138	ENSG00000105383	945	membrane	Eluvixtamab	SIGLEC3/CD33/p67;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Eluvixtamab	SIGLEC3/CD33/p67;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:2433	CSF1R	P07333	ENSG00000182578	1436	membrane	Emactuzumab	CSF1R/CD115/M-CSFR	Whole mAb	Active	1	1	4liq	approved_symbol	
+HGNC:1659	CD33	P20138	ENSG00000105383	945	membrane	Emerfetamab	SIGLEC3/CD33/p67;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Emerfetamab	SIGLEC3/CD33/p67;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Emfizatamab1	CD3E;CD19	Tetraspecific (scFv-IgG-scFv-scFv; Bispecific entry 1)	Active	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Emfizatamab1	CD3E;CD19	Tetraspecific (scFv-IgG-scFv-scFv; Bispecific entry 1)	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Emfizatamab2	PDL1/CD274;TNFRSF9/CD137/4-1BB	Tetraspecific (scFv-IgG-scFv-scFv; Bispecific entry 2)	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Emfizatamab2	PDL1/CD274;TNFRSF9/CD137/4-1BB	Tetraspecific (scFv-IgG-scFv-scFv; Bispecific entry 2)	Active	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Emibetuzumab	MET/HGFR	Whole mAb	Active	0	0		approved_symbol	
+HGNC:28873	VTCN1	Q7Z7D3	ENSG00000134258	79679	membrane	Emiltatug	VTCN1/B7H4	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3765	FLT3	P36888	ENSG00000122025	2322	membrane_inferred	Emirodatamab	FLT3/CD135/FLK2;CD3E	Bispecific scFv-scFv-scFc	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Emirodatamab	FLT3/CD135/FLK2;CD3E	Bispecific scFv-scFv-scFc	Discontinued	0	0		approved_symbol	
+HGNC:3363	ENTPD1	P49961	ENSG00000138185	953	membrane_inferred	Emugrobart	ENTPD1/CD39	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11917	TNFRSF1B	P20333	ENSG00000028137	7133	membrane_and_secreted	Emunkitug	TNFRSF1B/TNFR2/CD120b/TNFR80/p75	Whole mAb	Active	0	0		approved_symbol	
+HGNC:905	AXL	P30530	ENSG00000167601	558	membrane	Enapotamab	AXL/UFO	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:18152	TNFRSF12A	Q9NP84	ENSG00000006327	51330	membrane_inferred	Enavatuzumab	TNFRSF12A/CD266/TWEAKR	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Encelimab	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:19688	NECTIN4	Q96NY8	ENSG00000143217	81607	membrane_and_secreted	Enfortumab	PVRL4/Nectin-4	Whole mAb ADC	NFD	0	0		unique_alias	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Englumafusp	CD19	Fusion Protein	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Enlonstobart	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:19137	CD276	Q5ZPR3	ENSG00000103855	80381	membrane_inferred	Enoblituzumab	B7H3/CD276	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2910	DLL4	Q9NR61	ENSG00000128917	54567	membrane	Enoticumab	DLL4	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Enristomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific Single Domains (VH-VH'-G1(h-CH2-CH3) Dimer)	Discontinued	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Enristomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific Single Domains (VH-VH'-G1(h-CH2-CH3) Dimer)	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Envafolimab	PDL1/CD274	Single Domain Variable Fragment;H	Active	0	0		approved_symbol	
+HGNC:1609	CCR8	P51685	ENSG00000179934	1237	membrane	Enzelkitug	CCR8/CKR-L1/CDw198	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:9662	SIRPA	P78324	ENSG00000198053	140885	membrane_inferred	Epacmarstobart	SIRPA	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Epcoritamab	CD3E;MS4A1/CD20	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Epcoritamab	CD3E;MS4A1/CD20	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1643	CD22	P20273	ENSG00000012124	933	membrane	Epratuzumab	SIGLEC2/CD22	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:42400	NCR3LG1	Q68D85	ENSG00000188211	374383	membrane	Etuptamig	NCR3LG1/B7-H6;CD3E	Bispecific mAb	TBC	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Etuptamig	NCR3LG1/B7-H6;CD3E	Bispecific mAb	TBC	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Eramkafusp	MS4A1/CD20	Whole mAb Fusion	Discontinued	1	1	2osl;6vja;6y90;8vgn	approved_symbol	
+HGNC:16709	CALCRL	Q16602	ENSG00000064989	10203	membrane	Erenumab	CALCRL	Whole mAb	NFD	1	1	6umg	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Erfonrilimab	PDL1/CD274;CTLA4/CD152	Bispecific Single Domains (VH-VH'-CH)	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Erfonrilimab	PDL1/CD274;CTLA4/CD152	Bispecific Single Domains (VH-VH'-CH)	Active	1	1	6rqm	approved_symbol	
+HGNC:6155	ITGB2	P05107	ENSG00000160255	3689	membrane	Erlizumab	ITGB2/CD18	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6091	INSR	P06213	ENSG00000171105	3643	membrane	Ersodetug	INSR/CD220	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1667	CD38	P28907	ENSG00000004468	952	membrane	Erzotabart	ADPRC1/CD38	Whole mAb	Active	1	1	8byu	approved_symbol	
+HGNC:6893	MAPT	P10636	ENSG00000186868	4137	membrane_and_secreted	Etalanetug	MAPT	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Etentamig	CD3E;TNFRSF17/CD269/BCMA/TNFRSF13A	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Etentamig	CD3E;TNFRSF17/CD269/BCMA/TNFRSF13A	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Etevritamab	EGFR/ERBB1/HER1;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Etevritamab	EGFR/ERBB1/HER1;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Etigilimab	TIGIT/WUCAM/VSTM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3363	ENTPD1	P49961	ENSG00000138185	953	membrane_inferred	Eurestobart	ENTPD1/CD39	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Evalstotug	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Evolocumab	PCSK9	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Evunzekibart	TNFRSF9/CD137/4-1BB	Whole mAb	Active	1	1	8oz3	approved_symbol	
+HGNC:16517	TMPRSS6	Q8IU80	ENSG00000187045	164656	membrane	Exerenibart	TMPRSS6/MT2	Whole mAb	TBC	1	1	9nrc	approved_symbol	
+HGNC:11138	SNCA	P37840	ENSG00000145335	6622	secreted_only	Exidavnemab	SNCA/PARK1/PARK4	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Exlinkibart	TNFRSF9/CD137/4-1BB	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Ezabenlimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Fanastomig	LAG3/CD223;PDCD1/CD279/PD1	Bispecific (L-kappa-H-gamma1_G1(VH-CH1-h)_L-kappa)	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Fanastomig	LAG3/CD223;PDCD1/CD279/PD1	Bispecific (L-kappa-H-gamma1_G1(VH-CH1-h)_L-kappa)	Active	0	0		approved_symbol	
+HGNC:3791	FOLR1	P15328	ENSG00000110195	2348	membrane_and_secreted	Farletuzumab	FOLR1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Favezelimab	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:15527	KLB	Q86Z14	ENSG00000134962	152831	membrane	Fazpilodemab	KLB;FGFR1/CD331/BFGFR	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3688	FGFR1	P11362	ENSG00000077782	2260	membrane	Fazpilodemab	KLB;FGFR1/CD331/BFGFR	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:5351	ICOS	Q9Y6W8	ENSG00000163600	29851	membrane_and_secreted	Feladilimab	ICOS/CD278	Whole mAb	Active	0	0		approved_symbol	
+HGNC:28873	VTCN1	Q7Z7D3	ENSG00000134258	79679	membrane	Felmetatug	VTCN1/B7H4	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1667	CD38	P28907	ENSG00000004468	952	membrane	Felzartamab	ADPRC1/CD38	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3443	EREG	O14944	ENSG00000124882	2069	membrane_and_secreted	Fepixnebart	EREG	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Fianlimab	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Ficerafusp	EGFR/ERBB1/HER1	Fusion Protein	Active	1	1	1yy9;4kro;4krp	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Fidasimtamab	PDCD1/CD279/PD1;ERBB2/CD340/HER2	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Fidasimtamab	PDCD1/CD279/PD1;ERBB2/CD340/HER2	Bispecific mAb	Discontinued	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Figitumumab	IGF1R/CD221	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Finotonlimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Firastotug	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:12450	TYRP1	P17643	ENSG00000107165	7306	other_or_uncertain	Flanvotumab	TYRP1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6012	IL3RA	P26951	ENSG00000185291	3563	membrane	Flotetuzumab	IL3RA/CD123;CD3E	Bispecific scFv with Crossover	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Flotetuzumab	IL3RA/CD123;CD3E	Bispecific scFv with Crossover	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Foralumab	CD3E	Whole mAb	Active	0	0		approved_symbol	
+HGNC:13310	GPRC5D	Q9NZD1	ENSG00000111291	55507	membrane	Forimtamig	GPRC5D;CD3E	Bispecific mAb with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Forimtamig	GPRC5D;CD3E	Bispecific mAb with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:11766	TGFB1	P01137	ENSG00000105329	7040	secreted_only	Fresolimumab	TGFB	Whole mAb	Discontinued	1	0	4kv5	unique_alias	
+HGNC:11935	CD40LG	P29965	ENSG00000102245	959	membrane_and_secreted	Frexalimab	CD40LG/CD154	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Frovocimab	PCSK9	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Futermestotug	CTLA4/CD152	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Futuximab	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:9476	HTRA1	Q92743	ENSG00000166033	5654	membrane_and_secreted	Galegenimab	HTRA1	Whole mAb	Discontinued	1	0	7sjn;7sjo;7sjp	approved_symbol	
+HGNC:1700	CD80	P33681	ENSG00000121594	941	membrane	Galiximab	B7/CD80/CD28LG	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Gancotamab	ERBB2/CD340/HER2	scFv	Discontinued	0	0		approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Ganitumab	IGF1R/CD221	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Gantenerumab	APP	Whole mAb	Discontinued	1	1	5csz	approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Garetatug	CLDN18	Whole mAb ADC	TBC	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Garivulimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7508	MUC1	P15941	ENSG00000185499	4582	membrane_and_secreted	Gatipotuzumab	MUC1/PEM/EMA	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1804	CD52	P31358	ENSG00000169442	1043	membrane	Gatralimab	CD52	Whole mAb	Discontinued	1	0	6obd	approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Gefurulimab	C5;ALB	Bispecific Single Domains (VH-VH')	Active	0	0		approved_symbol	
+HGNC:1659	CD33	P20138	ENSG00000105383	945	membrane	Gemtuzumab	SIGLEC3/CD33/p67	Whole mAb ADC	NFD	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Geptanolimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Giloralimab	TNFRSF5/CD40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Gimistotug	TNFRSF4/CD134/OX40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2001	GREM1	O60565	ENSG00000166923	26585	secreted_only	Ginisortamab	GREM1	Whole mAb	Active	1	1	8b7h	approved_symbol	
+HGNC:1383	CA9	Q16790	ENSG00000107159	768	membrane	Girentuximab	CA9	Whole mAb Radiolabelled	Discontinued	0	0		approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Givastomig	CLDN18;TNFRSF9/CD137/4-1BB	Bispecific (G1-scFv_L-kappa)	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Givastomig	CLDN18;TNFRSF9/CD137/4-1BB	Bispecific (G1-scFv_L-kappa)	Active	0	0		approved_symbol	
+HGNC:4462	GPNMB	Q14956	ENSG00000136235	10457	membrane	Glembatumumab	GPNMB	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:14388	GP6	Q9HCN6	ENSG00000088053	51206	membrane	Glenzocimab	GP6	Fab	Active	1	1	7r58	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Glofitamab	CD3E;MS4A1/CD20	Bispecific mAb with Domain Crossover	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Glofitamab	CD3E;MS4A1/CD20	Bispecific mAb with Domain Crossover	Active	1	1	3pp4	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Gocatamig1	CD3E;ALB	Trispecific Mixed scFv and Single Domains (scFvhl-VH-VH'); Bispecific entry	Active	0	0		approved_symbol	
+HGNC:2909	DLL3	Q9NYJ7	ENSG00000090932	10683	membrane_inferred	Gocatamig2	DLL3	Trispecific Mixed scFv and Single Domains (scFvhl-VH-VH'); Monospecific entry	Active	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Golimumab	TNF/TNFA	Whole mAb	Active	1	1	5yoy	approved_symbol	
+HGNC:8133	OLR1	P78380	ENSG00000173391	4973	membrane_and_secreted	Golocdacimab	OLR1/LOX1	Whole mAb	Discontinued	1	1	7r8u	approved_symbol	
+HGNC:6893	MAPT	P10636	ENSG00000186868	4137	membrane_and_secreted	Gosuranemab	MAPT	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Gotistobart	CTLA4/CD152	Whole mAb	Active	1	1	6xy2	approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Gresonitamab	CLDN18;CD3E	Bispecific scFv-scFv-scFc	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Gresonitamab	CLDN18;CD3E	Bispecific scFv-scFv-scFc	Discontinued	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Greziprubart	C5	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1695	CD7	P09564	ENSG00000173762	924	membrane_inferred	Grisnilimab	CD7	Whole mAb	Active	0	0		approved_symbol	
+HGNC:4324	GLP1R	P43220	ENSG00000112164	2740	membrane	Gulgafafusp	GLP1R	Fusion Protein (whole mAb with protein)	Active	0	0		approved_symbol	
+HGNC:17755	TNFRSF13C	Q96RJ3	ENSG00000159958	115650	membrane_inferred	Ianalumab	TNFRSF13C/CD268/BAFFR/BR3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1678	CD4	P01730	ENSG00000010610	920	membrane	Ibalizumab	CD4	Whole mAb	NFD	1	1	3o2d;7t0r	approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Ibritumomab	MS4A1/CD20	Whole mAb	NFD	1	1	3bky	approved_symbol	
+HGNC:3763	FLT1	P17948	ENSG00000102755	2321	membrane_and_secreted	Icrucumab	FLT1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:10943	SLC1A5	Q15758	ENSG00000105281	6510	membrane	Idactamab	SLC1A5	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Ieramilimab	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3387	EPHA3	P29320	ENSG00000044524	2042	membrane_and_secreted	Ifabotuzumab	EPHA3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:19137	CD276	Q5ZPR3	ENSG00000103855	80381	membrane_inferred	Ifinatamab	B7H3/CD276	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1699	CD79B	P40259	ENSG00000007312	974	membrane	Iladatuzumab	AGM6/CD79B	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:17761	TREM2	Q9NZC2	ENSG00000095970	54209	membrane_and_secreted	Iluzanebart	TREM2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7097	MIF	P14174	ENSG00000240972	4282	secreted_only	Imalumab	MIF	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6934	MCAM	P43121	ENSG00000076706	4162	membrane_inferred	Imaprelimab	MCAM/CD146/MUC18	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3621	FCGRT	P55899	ENSG00000104870	2217	membrane	Imeroprubart	FCGRT/FcRn	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Imgatuzumab	EGFR/ERBB1/HER1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6008	IL2RA	P01589	ENSG00000134460	3559	membrane_inferred	Imneskibart	IL2RA/CD25	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Imvotamab	CD3E;MS4A1/CD20	Pentameric IgM with Fused scFv (Bispecific)	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Imvotamab	CD3E;MS4A1/CD20	Pentameric IgM with Fused scFv (Bispecific)	Active	0	0		approved_symbol	
+HGNC:1609	CCR8	P51685	ENSG00000179934	1237	membrane	Imzokitug	CCR8/CKR-L1/CDw198	Whole mAb	Active	0	0		approved_symbol	
+HGNC:10721	SELP	P16109	ENSG00000174175	6403	membrane	Inclacumab	SELP/CD62	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:10658	SDC1	P18827	ENSG00000115884	6382	membrane_inferred_and_secreted	Indatuximab	SDC1/CD138	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:11138	SNCA	P37840	ENSG00000145335	6622	secreted_only	Indenebart	SNCA/PARK1/PARK4	Whole mAb	Active	0	0		approved_symbol	
+HGNC:4688	GUCY2C	P25092	ENSG00000070019	2984	membrane	Indusatumab	GUCY2C	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Inebilizumab	CD19	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Inezetamab	CD40;MSLN	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:7371	MSLN	Q13421	ENSG00000102854	10232	membrane_and_secreted	Inezetamab	CD40;MSLN	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Infliximab	TNF/TNFA	Whole mAb	NFD	1	1	4g3y	approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Ingitamig	TNFRSF17/CD269/BCMA/TNFRSF13A;KLRK1/NKG2D/CD314	Bispecific Mixed mAb and tandem mAb/scFv	Active	0	0		approved_symbol	
+HGNC:18788	KLRK1	P26718	ENSG00000213809	22914	membrane	Ingitamig	TNFRSF17/CD269/BCMA/TNFRSF13A;KLRK1/NKG2D/CD314	Bispecific Mixed mAb and tandem mAb/scFv	Active	0	0		approved_symbol	
+HGNC:6307	KDR	P35968	ENSG00000128052	3791	membrane_and_secreted	Inlecitug	KDR/CD309/VEGFR2	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:1643	CD22	P20273	ENSG00000012124	933	membrane	Inotuzumab	SIGLEC2/CD22	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Iparomlimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Ipilimumab	CTLA4/CD152	Whole mAb	Active	1	1	5tru;5xj3;6rp8;7elx	approved_symbol	
+HGNC:11923	TNFRSF8	P28908	ENSG00000120949	943	membrane	Iratumumab	TNFRSF8/CD30	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1667	CD38	P28907	ENSG00000004468	952	membrane	Isatuximab	ADPRC1/CD38	Whole mAb	Active	1	1	4cmh	approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Iscalimab	TNFRSF5/CD40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Ispectamab	TNFRSF17/CD269/BCMA/TNFRSF13A	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Istiratumab	IGF1R/CD221;ERBB3/HER3	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Istiratumab	IGF1R/CD221;ERBB3/HER3	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:7090	MICA	Q29983	ENSG00000204520	100507436	membrane	Isuventatug	MICA&MICB	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:7091	MICB	Q29980	ENSG00000204516	4277	membrane	Isuventatug	MICA&MICB	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Itanistomig	PDL1/CD274;IAP/CD47	Bispecific Mixed Domains (VH-G1CH1-h)-H-gamma1_L-kappa-L-kappa)	Active	1	1	5ggt	approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Itanistomig	PDL1/CD274;IAP/CD47	Bispecific Mixed Domains (VH-G1CH1-h)-H-gamma1_L-kappa-L-kappa)	Active	0	0		approved_symbol	
+HGNC:16028	IL33	O95760	ENSG00000137033	90865	secreted_only	Itepekimab	IL33	Whole mAb	Active	1	0	9x05	approved_symbol	
+HGNC:1691	CD6	P30203	ENSG00000013725	923	membrane_and_secreted	Itolizumab	CD6	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1666	CD37	P11049	ENSG00000104894	951	membrane	Ivicentamab	CD37;CD37	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Ivonescimab	VEGFA;PDCD1/CD279/PD1	Bispecific (G1-kappa_scFv)	Active	0	0		approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Ivuxolimab	TNFRSF4/CD134/OX40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2048	CLDN6	P56747	ENSG00000184697	9074	membrane	Ixotatug	CLDN6	Whole mAb ADC	TBC	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Izalontamab	EGFR/ERBB1/HER1;ERBB3/HER3	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Izalontamab	EGFR/ERBB1/HER1;ERBB3/HER3	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:1338	C5AR1	P21730	ENSG00000197405	728	membrane	Izastobart	C5AR1/CD88	Whole mAb	Active	0	0		approved_symbol	
+HGNC:216	ADAM9	Q13443	ENSG00000168615	8754	membrane_and_secreted	Izeltabart	ADAM9	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:5351	ICOS	Q9Y6W8	ENSG00000163600	29851	membrane_and_secreted	Izuralimab	ICOS/CD278;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Izuralimab	ICOS/CD278;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:1817	CEACAM5	P06731	ENSG00000105388	1048	membrane	Labetuzumab	CEACAM5/CD66e	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:2432	CSF1	P09603	ENSG00000184371	1435	membrane_and_secreted	Lacnotuzumab	CSF1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6339	KIR3DL2	P43630	ENSG00000240403	3812	membrane	Lacutamab	KIR3DL2/CD158K	Whole mAb	Active	0	0		approved_symbol	
+HGNC:18607	SLC39A6	Q13433	ENSG00000141424	25800	membrane	Ladiratuzumab	SLC39A6/ZIP6	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Lancastotug	TIGIT/WUCAM/VSTM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1609	CCR8	P51685	ENSG00000179934	1237	membrane	Lanerkitug	CCR8/CKR-L1/CDw198	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Laprituximab	EGFR/ERBB1/HER1	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Latikafusp	PDCD1/CD279/PD1	Whole mAb Fusion	Discontinued	0	0		approved_symbol	
+HGNC:11186	SORT1	Q99523	ENSG00000134243	6272	membrane	Latozinemab	SORT1/Gp95/NT3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:18607	SLC39A6	Q13433	ENSG00000141424	25800	membrane	Laventatug	SLC39A6/ZIP6	Whole mAb ADC	TBC	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Lecanemab	APP	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Ledostomig	NT5E/CALJA/CD73;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	TBC	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Ledostomig	NT5E/CALJA/CD73;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	TBC	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Lemzoparlimab	IAP/CD47	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11763	TFRC	P02786	ENSG00000072274	7037	membrane_and_secreted	Lepunafusp	TfR1/CD71	Whole mAb Fusion	Active	0	0		unique_alias	
+HGNC:11766	TGFB1	P01137	ENSG00000105329	7040	secreted_only	Lerdelimumab	TGFB1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1606	CCR5	P51681	ENSG00000160791	1234	membrane	Leronlimab	CCR5/CD195	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Lesabelimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Letaplimab	IAP/CD47	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11935	CD40LG	P29965	ENSG00000102245	959	membrane_and_secreted	Letolizumab	CD40LG/CD154	Single Domain Variable Fragment;H	Active	0	0		approved_symbol	
+HGNC:6019	IL6R	P08887	ENSG00000160712	3570	membrane_and_secreted	Levilimab	IL6R/CD126	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Lexatumumab	TNFRSF10B/CD262/DR5/TRAILR2	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Licaminlimab	TNF/TNFA	scFv	Active	0	0		approved_symbol	
+HGNC:11020	SLC34A2	O95436	ENSG00000157765	10568	membrane	Lifastuzumab	SLC34A2	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Ligufalimab	IAP/CD47	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1666	CD37	P11049	ENSG00000104894	951	membrane	Lilotomab	CD37	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:11766	TGFB1	P01137	ENSG00000105329	7040	secreted_only	Linavonkibart	TGFB1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:13935	LY6G6D	O95868	ENSG00000244355	58530	membrane	Linclatamig	LY6G6D/G6D/NG25/LY6-D/MEGT1/C6orf23;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Linclatamig	LY6G6D/G6D/NG25/LY6-D/MEGT1/C6orf23;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:1659	CD33	P20138	ENSG00000105383	945	membrane	Lintuzumab	SIGLEC3/CD33/p67	Whole mAb Radiolabelled	Discontinued	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Linvoseltamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Linvoseltamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Lipustobart	PDCD1/CD279/PD1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:10877	SIGLEC8	Q9NYZ4	ENSG00000105366	27181	membrane_inferred	Lirentelimab	SIGLEC8/SAF2	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:13258	CLEC4C	Q8WTT0	ENSG00000198178	170482	membrane	Litifilimab	CLEC4C	Whole mAb	Active	0	0		approved_symbol	
+HGNC:4161	LRRC32	Q14392	ENSG00000137507	2615	membrane	Livmoniplimab	LRRC32	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2032	CLDN1	O95832	ENSG00000163347	9076	membrane	Lixudebart	CLDN1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Lodapolimab	PDL1/CD274	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Lodelcizumab	PCSK9	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Lomvastomig	PDCD1/CD279/PD1;HAVCR2/TIM3	Bispecific mAb with Domain Crossover	Active	0	0		approved_symbol	
+HGNC:18437	HAVCR2	Q8TDQ0	ENSG00000135077	84868	membrane	Lomvastomig	PDCD1/CD279/PD1;HAVCR2/TIM3	Bispecific mAb with Domain Crossover	Active	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Loncastuximab	CD19	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Lonigutamab	IGF1R/CD221	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Lorigerlimab	PDCD1/CD279/PD1;CTLA4/CD152	Bispecific Mixed scFv (scFv-CH2-CH3-scFv)	Active	1	1	9eht	approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Lorigerlimab	PDCD1/CD279/PD1;CTLA4/CD152	Bispecific Mixed scFv (scFv-CH2-CH3-scFv)	Active	0	0		approved_symbol	
+HGNC:7656	NCAM1	P13591	ENSG00000149294	4684	membrane_and_secreted	Lorvotuzumab	NCAM1/CD56	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Losatuxizumab	EGFR/ERBB1/HER1	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Lucatumumab	TNFRSF5/CD40	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Lucorafusp	TIGIT/WUCAM/VSTM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1653	CD28	P10747	ENSG00000178562	940	membrane	Lulizumab	CD28	Single Domain Variable Fragment;L	Active	0	0		approved_symbol	
+HGNC:3612	FCER2	P06734	ENSG00000104921	2208	membrane_and_secreted	Lumiliximab	FCER2/CD23	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:9662	SIRPA	P78324	ENSG00000198053	140885	membrane_inferred	Lumistobart	SIRPA	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1667	CD38	P28907	ENSG00000004468	952	membrane	Lumrotatug	ADPRC1/CD38	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Lumretuzumab	ERBB3/HER3	Whole mAb	Discontinued	1	1	4leo	approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Lunaxafusp	ERBB2/CD340/HER2	Fusion Protein	Active	0	0		approved_symbol	
+HGNC:5991	IL1A	P01583	ENSG00000115008	3552	secreted_only	Lunlekitug	IL1A	Whole mAb	Active	0	0		approved_symbol	
+HGNC:24880	LYPD3	O95274	ENSG00000124466	27076	membrane	Lupartumab	LYPD3	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:6024	IL7R	P16871	ENSG00000168685	3575	membrane_and_secreted	Lusvertikimab	IL7R/CD127	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5991	IL1A	P01583	ENSG00000115008	3552	secreted_only	Lutikizumab	IL1A;IL1B	Bispecific Dual Variable Domain IG	Discontinued	0	0		approved_symbol	
+HGNC:3791	FOLR1	P15328	ENSG00000110195	2348	membrane_and_secreted	Luveltamab	FOLR1	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Magrolimab	IAP/CD47	Whole mAb	Active	1	1	5iwl	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Manelimab	PDL1/CD274	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Manfidokimab	IL4R/CD124	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Margetuximab	ERBB2/CD340/HER2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:4271	GIPR	P48546	ENSG00000010310	2696	membrane	Maridebart	GIPR	Whole mAb	Active	1	1	6dkj	approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Marlotamig	EGFR/ERBB1/HER1;CD28	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1653	CD28	P10747	ENSG00000178562	940	membrane	Marlotamig	EGFR/ERBB1/HER1;CD28	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Marstacimab	ERBB2/CD340/HER2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Matuzumab	EGFR/ERBB1/HER1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:2435	CSF2RA	P15509	ENSG00000198223	1438	membrane_and_secreted	Mavrilimumab	CSF2RA/CD116	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Mavrostobart	NT5E/CALJA/CD73	Whole mAb	Active	0	0		approved_symbol	
+HGNC:905	AXL	P30530	ENSG00000167601	558	membrane	Mecbotamab	AXL/UFO	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5998	IL1RL1	Q01638	ENSG00000115602	9173	membrane_and_secreted	Melrilimab	IL1RL1/ST2	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11766	TGFB1	P01137	ENSG00000105329	7040	secreted_only	Metelimumab	TGFB1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1667	CD38	P28907	ENSG00000004468	952	membrane	Mezagitamab	ADPRC1/CD38	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6554	LEPR	P48357	ENSG00000116678	3953	membrane_and_secreted	Mibavademab	LEPR/CD295/OBR	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1697	CD74	P04233	ENSG00000019582	972	membrane_and_secreted	Milatuzumab	CD74/HLA class II histocompatibility antigen gamma chain	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:905	AXL	P30530	ENSG00000167601	558	membrane	Mipasetamab	AXL/UFO	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6012	IL3RA	P26951	ENSG00000185291	3563	membrane	Mipletamig	IL3RA/CD123;CD3E	Bispecific Mixed scFv (scFv-CH2-CH3-scFv)	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Mipletamig	IL3RA/CD123;CD3E	Bispecific Mixed scFv (scFv-CH2-CH3-scFv)	Active	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Miptenalimab	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3791	FOLR1	P15328	ENSG00000110195	2348	membrane_and_secreted	Mirvetuximab	FOLR1	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:19137	CD276	Q5ZPR3	ENSG00000103855	80381	membrane_inferred	Mirzotamab	B7H3/CD276	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:7371	MSLN	Q13421	ENSG00000102854	10232	membrane_and_secreted	Misitatug	MSLN	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Mitazalimab	TNFRSF5/CD40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1667	CD38	P28907	ENSG00000004468	952	membrane	Modakafusp	ADPRC1/CD38	Whole mAb Fusion	Discontinued	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Modotuximab	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:9662	SIRPA	P78324	ENSG00000198053	140885	membrane_inferred	Moflerafusp	SIRPA	Fusion Protein	TBC	0	0		approved_symbol	
+HGNC:1605	CCR4	P51679	ENSG00000183813	1233	membrane	Mogamulizumab	CCR4/CD194	Whole mAb	Active	1	1	9ull;9ulm	approved_symbol	
+HGNC:6374	KLRC1	P26715	ENSG00000134545	3821	membrane	Monalizumab	KLRC1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Mosunetuzumab	CD3E;MS4A1/CD20	Bispecific mAb	Active	1	1	9t46	approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Mosunetuzumab	CD3E;MS4A1/CD20	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1643	CD22	P20273	ENSG00000012124	933	membrane	Moxetumomab	SIGLEC2/CD22	Fv Fusion	NFD	0	0		approved_symbol	
+HGNC:1643	CD22	P20273	ENSG00000012124	933	membrane	Mozistobart	SIGLEC2/CD22	Whole mAb	Active	0	0		approved_symbol	
+HGNC:465	AMHR2	Q16671	ENSG00000135409	269	membrane_inferred	Murlentamab	AMHR2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Mupadolimab	NT5E/CALJA/CD73	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Muromonab	CD3E	Whole mAb	Discontinued	1	1	1sy6;9irs	approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Muzastotug	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:4245	GFRA3	O60609	ENSG00000146013	2676	membrane	Nadecnemab	GFRA3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5995	IL1RAP	Q9NPH3	ENSG00000196083	3556	membrane_and_secreted	Nadunolimab	IL1RAP	Whole mAb	Active	0	0		approved_symbol	
+HGNC:12004	TPBG	Q13641	ENSG00000146242	7162	membrane	Naptumomab	TPBG/WAIF1	Fab Fusion	Discontinued	0	0		approved_symbol	
+HGNC:1666	CD37	P11049	ENSG00000104894	951	membrane	Naratuximab	CD37	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:11926	TNFSF11	O14788	ENSG00000120659	8600	membrane_and_secreted	Narlumosbart	TNFSF11/CD254/RANKL/TRANCE/OPGL/ODF	Whole mAb	Approved	0	0		approved_symbol	
+HGNC:7381	MST1R	Q04912	ENSG00000164078	4486	membrane_inferred	Narnatumab	MST1R/CD136	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6902	MASP2	O00187	ENSG00000009724	10747	membrane_and_secreted	Narsoplimab	MASP2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6140	ITGA4	P13612	ENSG00000115232	3676	membrane_inferred	Natalizumab	ITGA4/CD49D	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2910	DLL4	Q9NR61	ENSG00000128917	54567	membrane	Navicixizumab	DLL4;VEGFA	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Nebratamig1	TNFRSF9/CD137/4-1BB;PDL1/CD274	Tetraspecific scFv-IgG-scFv-scFv (Bispecific entry 1)	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Nebratamig1	TNFRSF9/CD137/4-1BB;PDL1/CD274	Tetraspecific scFv-IgG-scFv-scFv (Bispecific entry 1)	Active	0	0		approved_symbol	
+HGNC:10256	ROR1	Q01973	ENSG00000185483	4919	membrane	Nebratamig2	ROR1;CD3D and CD3E	Tetraspecific scFv-IgG-scFv-scFv (Bispecific entry 2)	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Necitumumab	EGFR/ERBB1/HER1	Whole mAb	Active	1	1	3b2u;3b2v	approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Negalstobart	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1135	BTN1A1	Q13410	ENSG00000124557	696	membrane_inferred_and_secreted	Nelmastobart	BTN1A1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:16892	CD96	P40200	ENSG00000153283	10225	membrane_inferred	Nelistotug	TACTILE/CD96	Whole mAb	Active	0	0		approved_symbol	
+HGNC:18969	IL31RA	Q8NI17	ENSG00000164509	133396	membrane	Nemolizumab	IL31RA	Whole mAb	Active	1	1	9eza	approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Nesfrotamig	ERBB2/CD340/HER2;TNFRSF9/CD137/4-1BB	Bispecific Mixed mAb and scFv	TBC	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Nesfrotamig	ERBB2/CD340/HER2;TNFRSF9/CD137/4-1BB	Bispecific Mixed mAb and scFv	TBC	0	0		approved_symbol	
+HGNC:3788	FOLH1	Q04609	ENSG00000086205	2346	membrane	Nezastomig	FOLH1/GCPII/PSMA;CD28	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1653	CD28	P10747	ENSG00000178562	940	membrane	Nezastomig	FOLH1/GCPII/PSMA;CD28	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Nezutatug	ERBB3/HER3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2159	CNR1	P21554	ENSG00000118432	1268	membrane	Nimacimab	CNR1/CB1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Nimotuzumab	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3621	FCGRT	P55899	ENSG00000104870	2217	membrane	Nipocalimab	FCGRT/FcRn	Whole mAb	Active	1	1	9mi6	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Nivatrotamab	GD2;CD3E	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:11186	SORT1	Q99523	ENSG00000134243	6272	membrane	Nivisnebart	SORT1/Gp95/NT3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Nivolumab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	5ggr;5wt9	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Nofazinlimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Nurulimab	CTLA4/CD152	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Nuvustotug	TNFRSF4/CD134/OX40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6729	LY75	O60449	ENSG00000054219	4065	membrane_inferred	Oberotatug	LY75/CD205/DEC205	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Obertamig	CD3E;HLA-G	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:4964	HLA-G	P17693	ENSG00000204632	3135	membrane_and_secreted	Obertamig	CD3E;HLA-G	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Obexelimab	CD19	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Obinutuzumab	MS4A1/CD20	Whole mAb	Active	1	1	3pp4	approved_symbol	
+HGNC:19137	CD276	Q5ZPR3	ENSG00000103855	80381	membrane_inferred	Obrindatamab	B7H3/CD276;CD3E	Bispecific scFv with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Obrindatamab	B7H3/CD276;CD3E	Bispecific scFv with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:2909	DLL3	Q9NYJ7	ENSG00000090932	10683	membrane_inferred	Obrixtamig	DLL3;CD3E	Bispecific mAb (L-kappa-H-gamma1_L-lambda-H-gamma1)	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Obrixtamig	DLL3;CD3E	Bispecific mAb (L-kappa-H-gamma1_L-lambda-H-gamma1)	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Ocaratuzumab	MS4A1/CD20	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Ociperlimab	TIGIT/WUCAM/VSTM3	Whole mAb	Active	1	1	8jel;8jen	approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Ocrelizumab	MS4A1/CD20	Whole mAb	NFD	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Odronextamab	MS4A1/CD20;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Odronextamab	MS4A1/CD20;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Ofatumumab	MS4A1/CD20	Whole mAb	Active	1	0	6y92	approved_symbol	
+HGNC:8803	PDGFRA	P16234	ENSG00000134853	5156	membrane	Olaratumab	PDGFRA/CD140A	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Oleclumab	NT5E/CALJA/CD73	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Olendalizumab	C5	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6307	KDR	P35968	ENSG00000128052	3791	membrane_and_secreted	Olinvacimab	KDR/CD309/VEGFR2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6563	LGALS3	P17931	ENSG00000131981	3958	secreted_only	Oloctinebart	LGALS3/GAL3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:19137	CD276	Q5ZPR3	ENSG00000103855	80381	membrane_inferred	Omburtamab	B7H3/CD276	Whole mAb Radiolabelled	Active	0	0		approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Omectatug	CLDN18	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Omoprubart	C5	Whole mAb	Active	0	0		approved_symbol	
+HGNC:16028	IL33	O95760	ENSG00000137033	90865	secreted_only	Ompekimig2	IL33	Trispecific Mixed mAb and scFv; Monospecific entry	TBC	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Onartuzumab	MET/HGFR	Fab + di-Fc	Discontinued	1	1	4k3j	approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Ongericimab	PCSK9	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6765	MADCAM1	Q13477	ENSG00000099866	8174	membrane_inferred	Ontamalimab	MADCAM1	Whole mAb	Discontinued	1	1	4hcr	approved_symbol	
+HGNC:18219	CD248	Q9HCU0	ENSG00000174807	57124	membrane_inferred	Ontuxizumab	CD248/CD164L1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:30085	VSIR	Q9H7M9	ENSG00000107738	64115	membrane	Onvatilimab	VSIR/VISTA/B7H5/PD1H/SISP1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Opamistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific Mixed mAb and scFv	TBC	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Opamistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific Mixed mAb and scFv	TBC	0	0		approved_symbol	
+HGNC:6342	KIT	P10721	ENSG00000157404	3815	membrane	Opelkibart	KIT/CD117	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:21205	LINGO1	Q96FE5	ENSG00000169783	84894	membrane	Opicinumab	LINGO1	Whole mAb	Discontinued	1	1	4oqt	approved_symbol	
+HGNC:11529	EPCAM	P16422	ENSG00000119888	4072	membrane	Oportuzumab	EPCAM/CD326	scFv	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Opucolimab	PDL1/CD274	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3791	FOLR1	P15328	ENSG00000110195	2348	membrane_and_secreted	Opugotamig	FOLR1;FOLR1	Bispecific Mixed mAb and scFv ((G1_L-kappa)_scFvkh-G1(h-CH2-CH3))	Active	0	0		approved_symbol	
+HGNC:5977	IL15	P40933	ENSG00000164136	3600	secreted_only	Ordesekimab	IL15	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3621	FCGRT	P55899	ENSG00000104870	2217	membrane	Orilanolimab	FCGRT/FcRn	Whole mAb	Discontinued	1	1	6nha	approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Osemitamab	CLDN18	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Otelixizumab	CD3E	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1666	CD37	P11049	ENSG00000104894	951	membrane	Otlertuzumab	CD37	di-scFv+Fc	Discontinued	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Oturkibart	IL4R/CD124	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:11934	TNFSF4	P23510	ENSG00000117586	7292	membrane_inferred	Oxelumab	TNFSF4/CD134/CD252/OX40L	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:14085	RTN4	Q9NQC3	ENSG00000115310	57142	membrane	Ozanezumab	RTN4/Nogo	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Ozekibart	TNFRSF10B/CD262/DR5/TRAILR2	VH-IgG	Discontinued	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Ozoralizumab	TNF/TNFA;ALB	Bispecific Single Domains (VH-VH'-VH)	NFD	1	1	8z8m	approved_symbol	
+HGNC:10257	ROR2	Q01974	ENSG00000169071	4920	membrane	Ozuriftamab	ROR2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11763	TFRC	P02786	ENSG00000072274	7037	membrane_and_secreted	Pabinafusp	TFRC/CD71	Whole mAb Fusion	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Pacanalotamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Pacanalotamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Pacmilimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Pamlectabart	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Whole mAb	Active	1	1	8qyb	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Pamlectabart	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2500	CCN2	P29279	ENSG00000118523	1490	secreted_only	Pamrevlumab	CTGF/CCN2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Pamvatamig	MET/HGFR;EGFR/ERBB1/HER1	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Pamvatamig	MET/HGFR;EGFR/ERBB1/HER1	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Panitumumab	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11850	TLR4	O00206	ENSG00000136869	7099	membrane	Paridiprubart	TLR4/CD284	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20594	EGFL7	Q9UHF1	ENSG00000172889	51162	secreted_only	Parsatuzumab	EGFL7	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3788	FOLH1	Q04609	ENSG00000086205	2346	membrane	Pasotuxizumab	FOLH1/GCPII/PSMA;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Pasotuxizumab	FOLH1/GCPII/PSMA;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:6363	KLK2	P20151	ENSG00000167751	3817	other_or_uncertain	Pasritamig	KLK2/KLK2A2/hGK-1/hK2;CD3E	Bispecific Mixed Domains ((H-gamma1_L-kappa)_scFvkh-G1(h-CH2-CH3))	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Pasritamig	KLK2/KLK2A2/hGK-1/hK2;CD3E	Bispecific Mixed Domains ((H-gamma1_L-kappa)_scFvkh-G1(h-CH2-CH3))	Active	0	0		approved_symbol	
+HGNC:3179	EDNRA	P25101	ENSG00000151617	1909	membrane	Patecibart	EDNRA	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6709	LTA	P01374	ENSG00000226979	4049	secreted_only	Pateclizumab	LTA	Whole mAb	Discontinued	1	1	4mxv;4mxw	approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Patritumab	ERBB3/HER3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Pavurutamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Pavurutamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1653	CD28	P10747	ENSG00000178562	940	membrane	Pegrizeprument	CD28	Fab (VH-G1CH1h_L-kappa)	Active	0	0		approved_symbol	
+HGNC:3788	FOLH1	Q04609	ENSG00000086205	2346	membrane	Pelgifatamab	FOLH1/GCPII/PSMA	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Peluntamig	IAP/CD47;DLL3	Bispecific Whole mAb	Active	0	0		approved_symbol	
+HGNC:2909	DLL3	Q9NYJ7	ENSG00000090932	10683	membrane_inferred	Peluntamig	IAP/CD47;DLL3	Bispecific Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Pembrolizumab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	5b8c;5ggs;5jxe	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Penpulimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:10732	SEMA4D	Q92854	ENSG00000187764	10507	membrane_and_secreted	Pepinemab	SEMA4D/CD100	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3363	ENTPD1	P49961	ENSG00000138185	953	membrane_inferred	Perenostobart	ENTPD1/CD39	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Peresolimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Pertuzumab	ERBB2/CD340/HER2	Whole mAb	Active	1	1	1s78;6oge;8ffj;8pwh;8q6j	approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Petosemtamab	EGFR/ERBB1/HER1;LGR5	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:4504	LGR5	O75473	ENSG00000139292	8549	membrane	Petosemtamab	EGFR/ERBB1/HER1;LGR5	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Pexelizumab	C5	scFv	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Pidilizumab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Pimivalimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Pimurutamab	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1643	CD22	P20273	ENSG00000012124	933	membrane	Pinatuzumab	SIGLEC2/CD22	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:6012	IL3RA	P26951	ENSG00000185291	3563	membrane	Pivekimab	IL3RA/CD123	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Placulumab	TNF/TNFA	Single Domain Variable Fragment (VL) + Fc	Discontinued	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Plamotamab	MS4A1/CD20;CD3E	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Plamotamab	MS4A1/CD20;CD3E	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:1603	CCR2	P41597	ENSG00000121807	729230	membrane	Plozalizumab	CCR2/CD192	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Podentamig1	TNFRSF17/BCM/BCMA/CD269/TNFRSF13A;ALB	Trispecific Mixed scFv and Single Domains (VH-VH'-scFvhl); Bispecific entry	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Podentamig2	CD3E	Trispecific Mixed scFv and Single Domains (VH-VH'-scFvhl); Monospecific entry	Active	0	0		approved_symbol	
+HGNC:1699	CD79B	P40259	ENSG00000007312	974	membrane	Polatuzumab	AGM6/CD79B	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:6606	LILRB2	Q8N423	ENSG00000131042	10288	membrane	Polzastobart	LILRB2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Ponezumab	APP	Whole mAb	Discontinued	1	0	3u0t	approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Porustobart	CTLA4/CD152	VH-CH2-CH3	Active	1	1	7dv4	approved_symbol	
+HGNC:11763	TFRC	P02786	ENSG00000072274	7037	membrane_and_secreted	Posnafusp	TFRC/CD71	Fab Fusion Protein	Active	0	0		approved_symbol	
+HGNC:6893	MAPT	P10636	ENSG00000186868	4137	membrane_and_secreted	Posdinemab	MAPT	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Pozelimab	C5	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Pradusinstobart	PDCD1/CD279/PD1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:171	ACVR1	Q04771	ENSG00000115170	90	membrane_inferred	Prafnosbart	ACVR1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:400	ALCAM	Q13740	ENSG00000170017	214	membrane_and_secreted	Praluzatamab	ALCAM/CD166	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11138	SNCA	P37840	ENSG00000145335	6622	secreted_only	Prasinezumab	SNCA/PARK1/PARK4	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1817	CEACAM5	P06731	ENSG00000105388	1048	membrane	Precemtabart	CEACAM5/CD66e	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17087	ICOSLG	O75144	ENSG00000160223	23308	membrane	Prezalumab	ICOSLG	Whole mAb	Discontinued	1	1	6x4t	approved_symbol	
+HGNC:12692	VIM	P08670	ENSG00000026025	7431	membrane	Pritumumab	VIM	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Prolgolimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Pucotenlimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6307	KDR	P35968	ENSG00000128052	3791	membrane_and_secreted	Pulocimab	KDR/CD309/VEGFR2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Pumitamig2	PDL1/CD274	Bispec Mixed Domains (Single domain entry;H)	TBC	1	1	7czd	approved_symbol	
+HGNC:28873	VTCN1	Q7Z7D3	ENSG00000134258	79679	membrane	Puxitatug	VTCN1/B7H4	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Quavonlimab	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:10647	CX3CL1	P78423	ENSG00000006210	6376	membrane_and_secreted	Quetmolimab	CX3CL1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11930	TNFSF14	O43557	ENSG00000125735	8740	membrane_and_secreted	Quisovalimab	TNFSF14/CD258	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Rademikibart	IL4R/CD124	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11914	TNFRSF18	Q9Y5U5	ENSG00000186891	8784	membrane_and_secreted	Ragifilimab	TNFRSF18/CD357/GITR	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Ragistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific (G1-scFv_L-kappa)	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Ragistomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific (G1-scFv_L-kappa)	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Ralpancizumab	PCSK9	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1765	CDH6	P55285	ENSG00000113361	1004	membrane	Raludotatug	CDH6	Whole mAb	Active	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Ralzapastotug	TIGIT/WUCAM/VSTM3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Ramantamig1	CD3E;GPRC5D	Trispecific Mixed mAb and scFv; Bispecific entry	TBC	0	0		approved_symbol	
+HGNC:13310	GPRC5D	Q9NZD1	ENSG00000111291	55507	membrane	Ramantamig1	CD3E;GPRC5D	Trispecific Mixed mAb and scFv; Bispecific entry	TBC	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Ramantamig2	TNFRSF17/CD269/BCMA/TNFRSF13A	Trispecific Mixed mAb and scFv; Monospecific entry	TBC	0	0		approved_symbol	
+HGNC:6307	KDR	P35968	ENSG00000128052	3791	membrane_and_secreted	Ramucirumab	KDR/CD309/VEGFR2	Whole mAb	Active	1	1	3s36;3s37	approved_symbol	
+HGNC:6215	KARS1	Q15046	ENSG00000065427	3735	membrane_and_secreted	Rapaprutug	KARS1	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Ravagalimab	TNFRSF5/CD40	Whole mAb	Active	1	1	6pe8	approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Ravulizumab	C5	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Recaticimab	PCSK9	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5999	IL1RL2	Q9HB29	ENSG00000115598	8808	membrane_inferred	Recibokibart	IL1RL2/IL1Rrp2/IL1RRP2/IL-36R/IL36R	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6783	MAG	P20916	ENSG00000105695	4099	membrane	Refanezumab	SIGLEC4/MAG	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:12681	VEGFB	P49765	ENSG00000173511	7423	secreted_only	Reflocibart	VEGFB	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Relatlimab	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Remternetug	APP	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11892	TNF	P01375	ENSG00000232810	7124	membrane_and_secreted	Remtolumab	IL17A;TNF/TNFA	Bispecific Dual Variable Domain IG	Discontinued	0	0		approved_symbol	
+HGNC:32190	PVRIG	Q6DKI7	ENSG00000213413	79037	membrane	Remzistotug	PVRIG/NECTIN2 receptor/CD112R	Whole mAb	Active	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Renvistobart	TIGIT/WUCAM/VSTM3	Whole mAb	Active	1	1	8szy	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Reozalimab	PDCD1/CD279/PD1;PDL1/CD274	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Reozalimab	PDCD1/CD279/PD1;PDL1/CD274	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Retifanlimab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	9eht	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Retlirafusp	PDL1/CD274	Whole mAb Fusion	Active	0	0		approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Revdofilimab	TNFRSF4/CD134/OX40	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1643	CD22	P20273	ENSG00000012124	933	membrane	Rezetamig	CD3;SIGLEC2/CD22	Bispecific (half G4-kappa_G4(VH-h-CH2-CH3))	Discontinued	0	0		approved_symbol	
+HGNC:6373	KLRB1	Q12918	ENSG00000111796	3820	membrane_inferred	Rezorstobart	KLRB1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Rilvegostomig	PDCD1/CD279/PD1;TIGIT/WUCAM/VSTM3	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Rilvegostomig	PDCD1/CD279/PD1;TIGIT/WUCAM/VSTM3	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3791	FOLR1	P15328	ENSG00000110195	2348	membrane_and_secreted	Rinatabart	FOLR1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8804	PDGFRB	P09619	ENSG00000113721	5159	membrane	Rinucumab	PDGFRB/CD140B	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Ripertamab	MS4A1/CD20	Whole mAb	Active	1	1	2osl;6vja;6y90;8vgn	approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Rituximab	MS4A1/CD20	Whole mAb	Active	1	1	2osl;6vja;6y90;8vgn	approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Robatumumab	IGF1R/CD221	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Rocatinlimab	TNFRSF4/CD134/OX40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:10009	RHD	Q02161	ENSG00000187010	6007	membrane	Roledumab	RhD/CD240D/RhPI	Whole mAb	Active	0	0		approved_symbol	
+HGNC:9446	PRLR	P16471	ENSG00000113494	5618	membrane_inferred_and_secreted	Rolinsatamab	PRLR	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:6608	LILRB4	Q8NHJ6	ENSG00000186818	11006	membrane	Rolistobart	LILRB4/CD85K	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20866	RSPO3	Q9BXY4	ENSG00000146374	84870	secreted_only	Rosmantuzumab	RSPO3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Rosnilimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3788	FOLH1	Q04609	ENSG00000086205	2346	membrane	Rosopatamab	FOLH1/GCPII/PSMA	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2909	DLL3	Q9NYJ7	ENSG00000090932	10683	membrane_inferred	Rovalpituzumab	DLL3	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:3621	FCGRT	P55899	ENSG00000104870	2217	membrane	Rozanolixizumab	FCGRT/FcRn	Whole mAb	Active	1	1	6fgb	approved_symbol	
+HGNC:5351	ICOS	Q9Y6W8	ENSG00000163600	29851	membrane_and_secreted	Rozibafusp	ICOS/CD278	Whole mAb Fusion	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Rulonilimab	PDCD1/CD279/PD1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Runimotamab	ERBB2/CD340/HER2;CD3E	Bispecific mAb	Active	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Runimotamab	ERBB2/CD340/HER2;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:11935	CD40LG	P29965	ENSG00000102245	959	membrane_and_secreted	Ruplizumab	CD40LG/CD154	Whole mAb	Discontinued	1	1	1i9r	approved_symbol	
+HGNC:1037	CFB	P00751	ENSG00000243649	629	membrane_and_secreted	Ruxoprubart	CFB/BFD	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Ruzaltatug	ERBB3/HER3	Whole mAb ADC	TBC	0	0		approved_symbol	
+HGNC:18437	HAVCR2	Q8TDQ0	ENSG00000135077	84868	membrane	Sabatolimab	HAVCR2/TIM3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Sabestomig	PDCD1/CD279/PD1;HAVCR2/TIM3	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:18437	HAVCR2	Q8TDQ0	ENSG00000135077	84868	membrane	Sabestomig	PDCD1/CD279/PD1;HAVCR2/TIM3	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Sabirnetug	APP	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11530	TACSTD2	P09758	ENSG00000184292	4070	membrane_inferred	Sacituzumab	TACSTD2/TROP2/EGP1	Whole mAb ADC	Active	1	1	9pi9	approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Safimestomig	IAP/CD47;PDL1/CD274	Bispecific Whole mAb	Active	1	1	7xjf	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Safimestomig	IAP/CD47;PDL1/CD274	Bispecific Whole mAb	Active	0	0		approved_symbol	
+HGNC:7203	CD200	P41217	ENSG00000091972	4345	membrane	Samalizumab	MOX2/CD200	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:3541	F3	P13726	ENSG00000117525	2152	membrane_inferred_and_secreted	Samatatug	F3/CD142	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:20818	LRRC15	Q8TF66	ENSG00000172061	131578	membrane	Samrotamab	LRRC15	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:6019	IL6R	P08887	ENSG00000160712	3570	membrane_and_secreted	Sarilumab	IL6R/CD126	Whole mAb	Active	1	1	8iow	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Sasanlimab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	6xkr	approved_symbol	
+HGNC:6019	IL6R	P08887	ENSG00000160712	3570	membrane_and_secreted	Satralizumab	IL6R/CD126	Whole mAb	NFD	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Selicrelumab	TNFRSF5/CD40	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:6893	MAPT	P10636	ENSG00000186868	4137	membrane_and_secreted	Semorinemab	MAPT	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1678	CD4	P01730	ENSG00000010610	920	membrane	Semzuvolimab	CD4	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Serclutamab	EGFR/ERBB1/HER1	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Seribantumab	ERBB3/HER3	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Serplulimab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	7e9b	approved_symbol	
+HGNC:11928	TNFSF13	O75888	ENSG00000161955	8741	secreted_only	Sibeprenlimab	TNFSF13/CD256/APRIL	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6161	ITGB6	P18564	ENSG00000115221	3694	membrane	Sigvotatug	ITGB6	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3590	FAP	Q12884	ENSG00000078098	2191	membrane_and_secreted	Simlukafusp	FAP	Whole mAb Fusion	Discontinued	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Simridarlimab	IAP/CD47;PDL1/CD274	Bispecific Mixed mAb/VH-VH-CH2-CH3	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Simridarlimab	IAP/CD47;PDL1/CD274	Bispecific Mixed mAb/VH-VH-CH2-CH3	Active	0	0		approved_symbol	
+HGNC:6666	LOXL2	Q9Y4K0	ENSG00000134013	4017	secreted_only	Simtuzumab	LOXL2	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Sintilimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:23503	SLITRK6	Q9H5Y7	ENSG00000184564	84189	membrane	Sirtratumab	SLITRK6	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Socazolimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:15582	MUC16	Q8WXI7	ENSG00000181143	94025	membrane_and_secreted	Sofituzumab	MUC16/CA125	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Solabafusp	PDL1/CD274	Antibody Fusion Protein	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Solanezumab	APP	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11529	EPCAM	P16422	ENSG00000119888	4072	membrane	Solitomab	EPCAM/CD326;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Solitomab	EPCAM/CD326;CD3E	Bispecific scFv	Discontinued	0	0		approved_symbol	
+HGNC:30085	VSIR	Q9H7M9	ENSG00000107738	64115	membrane	Solnerstotug	VSIR/VISTA/B7H5/PD1H/SISP1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Sonesitatug	CLDN18	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Sotigalimab	TNFRSF5/CD40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2095	CLU	P10909	ENSG00000120885	1191	secreted_only	Sotevtamab	CLU	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Sovipostobart	CTLA4/CD152	Whole mAb	Active	1	1	5tru;5xj3;6rp8;7elx	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Spartalizumab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Spevatamig	IAP/CD47;CLDN18	Bispecific Whole mAb	Active	0	0		approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Spevatamig	IAP/CD47;CLDN18	Bispecific Whole mAb	Active	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Stapokibart	IL4R/CD124	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1643	CD22	P20273	ENSG00000012124	933	membrane	Suciraslimab	SIGLEC2/CD22	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Sudubrilimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Sugemalimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Surovatamig	CD3D&CD3E;CD19	Bispecific Mixed Domains ((H-gamma4_L-kappa)_VH-G4(h-CH2-CH3))	Active	0	0		approved_symbol	
+HGNC:18437	HAVCR2	Q8TDQ0	ENSG00000135077	84868	membrane	Surzebiclimab	HAVCR2/TIM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20434	TREML1	Q86YW5	ENSG00000161911	340205	membrane	Sutacimig	F7a/F7A/FVIIa/FVIIA;TREML1/GLTL1825/PRO3438/TLT-1/TLT1	Bispecific Whole mAb	Active	1	1	8che	approved_symbol	
+HGNC:1645	CD24	P25063	ENSG00000272398	100133941	membrane	Suvonstobart	CD24	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:11929	TNFSF13B	Q9Y275	ENSG00000102524	10673	membrane_and_secreted	Tabalumab	TNFSF13B/CD257/BAFF	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:4039	FZD10	Q9ULW2	ENSG00000111432	11211	membrane	Tabituximab	FZD10/CD350	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Tafasitamab	CD19	Whole mAb	Active	0	0		approved_symbol	
+HGNC:20001	PCSK9	Q8NBP7	ENSG00000169174	255738	membrane_and_secreted	Tafolecimab	PCSK9	Whole mAb	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Tagitanlimab	PDL1/CD274	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6012	IL3RA	P26951	ENSG00000185291	3563	membrane	Talacotuzumab	IL3RA/CD123	Whole mAb	Active	1	1	4jzj	approved_symbol	
+HGNC:13310	GPRC5D	Q9NZD1	ENSG00000111291	55507	membrane	Talquetamab	GPRC5D;CD3E	Bispecific mAb	Active	1	0	9ima	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Talquetamab	GPRC5D;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Tamgiblimab	TIGIT/WUCAM/VSTM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:23029	DPEP3	Q9H4B8	ENSG00000141096	64180	other_or_uncertain	Tamrintamab	DPEP3	Whole mAb ADC	Discontinued	1	0	6vgr	approved_symbol	
+HGNC:7882	NOTCH2	Q04721	ENSG00000134250	4853	membrane	Tarextumab	NOTCH2 and NOTCH3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7883	NOTCH3	Q9UM47	ENSG00000074181	4854	membrane	Tarextumab	NOTCH2 and NOTCH3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2909	DLL3	Q9NYJ7	ENSG00000090932	10683	membrane_inferred	Tarlatamab	DLL3;CD3E	Bispecific scFv	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Tarlatamab	DLL3;CD3E	Bispecific scFv	Active	0	0		approved_symbol	
+HGNC:8864	CFP	P27918	ENSG00000126759	5199	secreted_only	Tarperprumig	ALB;CFP	Bispecific Single Domains (VH-VH')	Discontinued	1	1	8q6r	approved_symbol	
+HGNC:11934	TNFSF4	P23510	ENSG00000117586	7292	membrane_inferred	Tavolimab	TNFSF4/CD134/CD252/OX40L	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Tazlestobart	CTLA4/CD152	Whole mAb	Active	1	1	5tru;5xj3;6rp8;7elx	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Tebentafusp	CD3E	scFv Fusion	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Tebotelimab	PDCD1/CD279/PD1;LAG3/CD223	Bispecific scFv with Crossover	Discontinued	1	1	9eht	approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Tebotelimab	PDCD1/CD279/PD1;LAG3/CD223	Bispecific scFv with Crossover	Discontinued	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Tecaginlimab	CD40;TNFRSF9/CD137/4-1BB	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Tecaginlimab	CD40;TNFRSF9/CD137/4-1BB	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Teclistamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	1	1	12er	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Teclistamab	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Tecotabart	CLDN18	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11935	CD40LG	P29965	ENSG00000102245	959	membrane_and_secreted	Tegoprubart	CD40LG/CD154	Whole mAb	Active	1	1	1i9r	approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Telazorlimab	TNFRSF4/CD134/OX40	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6015	IL4R	P24394	ENSG00000077238	3566	membrane_and_secreted	Telikibart	IL4R/CD124	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Telisotuzumab	MET/HGFR	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:13700	IL22RA1	Q8N6P7	ENSG00000142677	58985	membrane	Temtokibart	IL22RA1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:5318	TNC	P24821	ENSG00000041982	3371	secreted_only	Tenatumomab	TNC	Whole mAb Radiolabelled	Discontinued	0	0		approved_symbol	
+HGNC:11919	CD40	P25942	ENSG00000101017	958	membrane_and_secreted	Teneliximab	TNFRSF5/CD40	Whole mAb	ND	1	1	5dmi	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Teplizumab	CD3E	Whole mAb	NFD	0	0		approved_symbol	
+HGNC:31713	CLEC12A	Q5QGZ9	ENSG00000172322	160364	membrane	Tepoditamab	CLEC12A;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Tepoditamab	CLEC12A;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Teprotumumab	IGF1R/CD221	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Tesidolumab	C5	Whole mAb	Active	0	0		approved_symbol	
+HGNC:18788	KLRK1	P26718	ENSG00000213809	22914	membrane	Tesnatilimab	KLRK1/NKG2D/CD314	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11929	TNFSF13B	Q9Y275	ENSG00000102524	10673	membrane_and_secreted	Tibulizumab	TNFSF13B/CD257/BAFF;IL17A	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:11331	SSTR2	P30874	ENSG00000180616	6752	membrane	Tidutamab	SSTR2;CD3E	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Tidutamab	SSTR2;CD3E	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:21087	BTLA	Q7Z6A9	ENSG00000186265	151888	membrane	Tifcemalimab	BTLA/CD272	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Tigatuzumab	TNFRSF10B/CD262/DR5/TRAILR2	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:7029	MET	P08581	ENSG00000105976	4233	membrane_inferred_and_secreted	Tilatamig	MET/HGFR;EGFR/ERBB1/HER1	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Tilatamig	MET/HGFR;EGFR/ERBB1/HER1	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:6893	MAPT	P10636	ENSG00000186868	4137	membrane_and_secreted	Tilavonemab	MAPT	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11905	TNFRSF10B	O14763	ENSG00000120889	8795	membrane_inferred	Tilogotamab	TNFRSF10B/CD262/DR5/TRAILR2	Whole mAb	Active	1	1	6t3j	approved_symbol	
+HGNC:905	AXL	P30530	ENSG00000167601	558	membrane	Tilvestamab	AXL/UFO	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Timigutuzumab	ERBB2/CD340/HER2	Whole mAb	NFD	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:550	AOC3	Q16853	ENSG00000131471	8639	membrane	Timolumab	AOC3/VAP1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1818	CEACAM6	P40199	ENSG00000086548	4680	membrane	Tinurilimab	CEACAM6/CD66c	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Tiragolumab	TIGIT/WUCAM/VSTM3	Whole mAb	Active	1	1	8jeo;8vte	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Tislelizumab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	7bxa;7cgw	approved_symbol	
+HGNC:3541	F3	P13726	ENSG00000117525	2152	membrane_inferred_and_secreted	Tisotumab	F3/CD142	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Tixentamig	CD3E;CLDN18	Bispecific Mixed Domains  (H-gamma1_L-kappa)_scFvhh-G1(h-CH2-CH3)	TBC	0	0		approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Tixentamig	CD3E;CLDN18	Bispecific Mixed Domains  (H-gamma1_L-kappa)_scFvhh-G1(h-CH2-CH3)	TBC	0	0		approved_symbol	
+HGNC:11922	CD27	P26842	ENSG00000139193	939	membrane	Tixestobart	TNFRSF7/CD27	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:11530	TACSTD2	P09758	ENSG00000184292	4070	membrane_inferred	Tizetatug	TACSTD2/TROP2/EGP1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Tobemstomig	PDCD1/CD279/PD1;LAG3/CD223	Bispecific mAb with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Tobemstomig	PDCD1/CD279/PD1;LAG3/CD223	Bispecific mAb with Domain Crossover	Discontinued	0	0		approved_symbol	
+HGNC:6019	IL6R	P08887	ENSG00000160712	3570	membrane_and_secreted	Tocilizumab	IL6R/CD126	Whole mAb	Active	1	1	8j6f	approved_symbol	
+HGNC:11848	TLR2	O60603	ENSG00000137462	7097	membrane_inferred	Tomaralimab	TLR2/CD282	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Tomuzotuximab	EGFR/ERBB1/HER1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Toripalimab	PDCD1/CD279/PD1	Whole mAb	Active	1	1	6jbt	approved_symbol	
+HGNC:16028	IL33	O95760	ENSG00000137033	90865	secreted_only	Torudokimab	IL33	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3791	FOLR1	P15328	ENSG00000110195	2348	membrane_and_secreted	Torvutatug	FOLR1	Whole mAb ADC	Active	0	0		approved_symbol	
+HGNC:8803	PDGFRA	P16234	ENSG00000134853	5156	membrane	Tovetumab	PDGFRA/CD140A	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:16028	IL33	O95760	ENSG00000137033	90865	secreted_only	Tozorakimab	IL33	Whole mAb	Active	1	0	9wwh;9x05;9x0j	approved_symbol	
+HGNC:2436	CSF2RB	P32927	ENSG00000100368	1439	membrane_inferred	Trabikibart	CSF2RB/CD131/IL3RB/IL5RB	Whole mAb	Active	1	1	5dwu	approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Trastuzumab	ERBB2/CD340/HER2	Whole mAb	NFD	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:1678	CD4	P01730	ENSG00000010610	920	membrane	Tregalizumab	CD4	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Tremelimumab	CTLA4/CD152	Whole mAb	Active	1	1	5ggv	approved_symbol	
+HGNC:11529	EPCAM	P16422	ENSG00000119888	4072	membrane	Trevotamig	EPCAM/CD326;CD3E	Bispecific Mixed Domains (H-gamma1_L-kappa-scFvhl)	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Trevotamig	EPCAM/CD326;CD3E	Bispecific Mixed Domains (H-gamma1_L-kappa-scFvhl)	Active	0	0		approved_symbol	
+HGNC:10009	RHD	Q02161	ENSG00000187010	6007	membrane	Trinbelimab	RhD/CD240D/RhPI	Whole mAb	Active	0	0		approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Trontinemab	APP Abeta 1-40/42;TFRC/CD71	Bispecific Mixed Format with Domain Crossover	Active	1	1	5csz	reviewed_gene_product	processed peptide
+HGNC:11763	TFRC	P02786	ENSG00000072274	7037	membrane_and_secreted	Trontinemab	APP Abeta 1-40/42;TFRC/CD71	Bispecific Mixed Format with Domain Crossover	Active	0	0		approved_symbol	
+HGNC:30085	VSIR	Q9H7M9	ENSG00000107738	64115	membrane	Trovostobart	VSIR/VISTA/B7H5/PD1H/SISP1	Whole mAb	TBC	0	0		approved_symbol	
+HGNC:11529	EPCAM	P16422	ENSG00000119888	4072	membrane	Tucotuzumab	EPCAM/CD326	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:11931	TNFSF15	O95150	ENSG00000181634	9966	membrane_inferred_and_secreted	Tulisokibart	TNFSF15/TL1A/VEGI	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6476	LAG3	P18627	ENSG00000089692	3902	membrane_and_secreted	Tuparstobart	LAG3/CD223	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1817	CEACAM5	P06731	ENSG00000105388	1048	membrane	Tusamitamab	CEACAM5/CD66e	Whole mAb	Discontinued	1	0	8bw0	approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Tuvonralimab	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:15582	MUC16	Q8WXI7	ENSG00000181143	94025	membrane_and_secreted	Ubamatamab	MUC16/CA125;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Ubamatamab	MUC16/CA125;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:15582	MUC16	Q8WXI7	ENSG00000181143	94025	membrane_and_secreted	Ubletamig	MUC16/CA125;CD28	Bispecific mAb	TBC	0	0		approved_symbol	
+HGNC:1653	CD28	P10747	ENSG00000178562	940	membrane	Ubletamig	MUC16/CA125;CD28	Bispecific mAb	TBC	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Ublituximab	MS4A1/CD20	Whole mAb	Active	0	0		approved_symbol	
+HGNC:24235	CD200R1	Q8TD46	ENSG00000163606	131450	membrane_and_secreted	Ucenprubart	MOX2R/CD200R1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Uliledlimab	NT5E/CALJA/CD73	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2561	CXCR4	P61073	ENSG00000121966	7852	membrane	Ulocuplumab	CXCR4/CD184	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6380	KLRG1	Q96E93	ENSG00000139187	10219	membrane	Ulviprubart	KLRG1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Umizortamig1	EGFRvIII;CD3E	Tetraspecific scFv-IgG-scFv-scFv (Bispecific entry 1)	Active	0	0		reviewed_gene_product	variant-specific target
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Umizortamig1	EGFRvIII;CD3E	Tetraspecific scFv-IgG-scFv-scFv (Bispecific entry 1)	Active	0	0		approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Umizortamig2	PDL1/CD274;TNFRSF9/CD137/4-1BB	Tetraspecific scFv-IgG-scFv-scFv (Bispecific entry 2)	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Umizortamig2	PDL1/CD274;TNFRSF9/CD137/4-1BB	Tetraspecific scFv-IgG-scFv-scFv (Bispecific entry 2)	Active	0	0		approved_symbol	
+HGNC:30308	RGMA	Q96B86	ENSG00000182175	56963	membrane	Unasnemab	RGMA	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8021	NT5E	P21589	ENSG00000135318	4907	membrane	Uprevstobart	NT5E/CALJA/CD73	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11020	SLC34A2	O95436	ENSG00000157765	10568	membrane	Upinitatug	SLC34A2	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Urabrelimab	IAP/CD47	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Urelumab	TNFRSF9/CD137/4-1BB	Whole mAb	Active	1	1	6mhr	approved_symbol	
+HGNC:620	APP	P05067	ENSG00000142192	351	membrane_and_secreted	Usilnetug	APP Abeta N3pGlu	Whole mAb	Active	0	0		reviewed_gene_product	modified processed peptide
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Utomilumab	TNFRSF9/CD137/4-1BB	Whole mAb	Active	1	1	6a3w;6mi2	approved_symbol	
+HGNC:1659	CD33	P20138	ENSG00000105383	945	membrane	Vadastuximab	SIGLEC3/CD33/p67	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:6091	INSR	P06213	ENSG00000171105	3643	membrane	Valanafusp	INSR/CD220	Whole mAb Fusion	Active	0	0		approved_symbol	
+HGNC:11378	STEAP1	Q9UHE8	ENSG00000164647	26872	membrane	Vandortuzumab	STEAP1	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:11922	CD27	P26842	ENSG00000139193	939	membrane	Varlilumab	TNFRSF7/CD27	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6137	ITGA2	P17301	ENSG00000164171	3673	membrane_inferred	Vatelizumab	ITGA2/CD49B	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11935	CD40LG	P29965	ENSG00000102245	959	membrane_and_secreted	Velaprumig	ALB;CD40LG/CD154	Bispecific Mixed mAb and scFv	TBC	1	1	1i9r	approved_symbol	
+HGNC:5465	IGF1R	P08069	ENSG00000140443	3480	membrane	Veligrotug	IGF1R/CD221	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Velinotamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Velinotamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific Whole mAb	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Veltuzumab	MS4A1/CD20	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:21087	BTLA	Q7Z6A9	ENSG00000186265	151888	membrane	Venanprubart	BTLA/CD272	Whole mAb	Active	1	1	8f6o	approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Vensobafusp	C5	Fusion Protein (whole mAb with protein)	Active	0	0		approved_symbol	
+HGNC:16800	MUC17	Q685J3	ENSG00000169876	140453	membrane_and_secreted	Vepsitamab	MUC17;CD3E	Bispecific (scFv-scFv-scFc)	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Vepsitamab	MUC17;CD3E	Bispecific (scFv-scFv-scFc)	Discontinued	0	0		approved_symbol	
+HGNC:8004	NRP1	O14786	ENSG00000099250	8829	membrane_and_secreted	Vesencumab	NRP1	Whole mAb	Discontinued	1	1	2qqn	approved_symbol	
+HGNC:14281	CRLF2	Q9HC73	ENSG00000205755	64109	membrane_and_secreted	Verekitug	CRLF2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6091	INSR	P06213	ENSG00000171105	3643	membrane	Verenafusp	INSR/CD220	Fab Fusion Protein	Active	0	0		approved_symbol	
+HGNC:18437	HAVCR2	Q8TDQ0	ENSG00000135077	84868	membrane	Verzistobart	HAVCR2/TIM3	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6012	IL3RA	P26951	ENSG00000185291	3563	membrane	Vibecotamab	IL3RA/CD123;CD3E	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Vibecotamab	IL3RA/CD123;CD3E	Bispecific Mixed mAb and scFv	Discontinued	0	0		approved_symbol	
+HGNC:26838	TIGIT	Q495A1	ENSG00000181847	201633	membrane	Vibostolimab	TIGIT/WUCAM/VSTM3	Whole mAb	Discontinued	1	1	8vtd	approved_symbol	
+HGNC:5991	IL1A	P01583	ENSG00000115008	3552	secreted_only	Vilamakitug	IL1A	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Vilastobart	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1331	C5	P01031	ENSG00000106804	727	membrane_and_secreted	Vilobelimab	C5	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Visilizumab	CD3E	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:9662	SIRPA	P78324	ENSG00000198053	140885	membrane_inferred	Vislarafusp	SIRPA	Fusion Protein	Active	0	0		approved_symbol	
+HGNC:8507	OSMR	Q99650	ENSG00000145623	9180	membrane_inferred	Vixarelimab	OSMR	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7943	NPR1	P16066	ENSG00000169418	4881	membrane_inferred	Vixticibart	NPR1/ANPRA/ANPa/GUC2A/GUCY2A/NPRA	Whole mAb	Active	1	1	8tg9;8tga	approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Vixtimotamab	CD3E;SIGLEC3/CD33/p67	Bispecific Homodimer (VK-VH-VL'-VH'; Tandem diabody)	Discontinued	0	0		approved_symbol	
+HGNC:1659	CD33	P20138	ENSG00000105383	945	membrane	Vixtimotamab	CD3E;SIGLEC3/CD33/p67	Bispecific Homodimer (VK-VH-VL'-VH'; Tandem diabody)	Discontinued	0	0		approved_symbol	
+HGNC:6019	IL6R	P08887	ENSG00000160712	3570	membrane_and_secreted	Vobarilizumab	IL6R/CD126;ALB	Bispecific Single Domains (VH-VH')	Discontinued	0	0		approved_symbol	
+HGNC:19137	CD276	Q5ZPR3	ENSG00000103855	80381	membrane_inferred	Vobramitamab	B7H3/CD276	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3690	FGFR3	P22607	ENSG00000068078	2261	membrane_and_secreted	Vofatamab	FGFR3/CD333	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Volrustomig	CTLA4/CD152;PDCD1/CD279/PD1	Bispecific mAb	Active	1	1	5ggv	approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Volrustomig	CTLA4/CD152;PDCD1/CD279/PD1	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:11918	TNFRSF4	P43489	ENSG00000186827	7293	membrane_inferred	Vonlerolizumab	TNFRSF4/CD134/OX40	Whole mAb	Discontinued	1	1	6ogx;6okn;7yk4	approved_symbol	
+HGNC:11913	TNFRSF17	Q02223	ENSG00000048462	608	membrane	Vonsetamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Vonsetamig	TNFRSF17/CD269/BCMA/TNFRSF13A;CD3E	Bispecific mAb	Active	0	0		approved_symbol	
+HGNC:6008	IL2RA	P01589	ENSG00000134460	3559	membrane_inferred	Vopikitug	IL2RA/CD25	Whole mAb	Active	1	1	6yio	approved_symbol	
+HGNC:5351	ICOS	Q9Y6W8	ENSG00000163600	29851	membrane_and_secreted	Vopratelimab	ICOS/CD278	Whole mAb	Active	0	0		approved_symbol	
+HGNC:11937	CD70	P32970	ENSG00000125726	970	membrane	Vorsetuzumab	TNFSF7/CD70/CD27LG	Whole mAb ADC	Discontinued	0	0		approved_symbol	
+HGNC:3788	FOLH1	Q04609	ENSG00000086205	2346	membrane	Voxalatamab	FOLH1/GCPII/PSMA;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Voxalatamab	FOLH1/GCPII/PSMA;CD3E	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Vudalimab	CTLA4/CD152;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Vudalimab	CTLA4/CD152;PDCD1/CD279/PD1	Bispecific Mixed mAb and scFv	Active	0	0		approved_symbol	
+HGNC:6307	KDR	P35968	ENSG00000128052	3791	membrane_and_secreted	Vulinacimab	KDR/CD309/VEGFR2	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11378	STEAP1	Q9UHE8	ENSG00000164647	26872	membrane	Xaluritamig	STEAP1;CD3	Bispecific Mixed mAb and scFv	Active	1	0	8ucd	approved_symbol	
+HGNC:17635	CD274	Q9NZQ7	ENSG00000120217	29126	membrane_and_secreted	Xirestomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific (G1-scFv_L2 dimer)	Active	0	0		approved_symbol	
+HGNC:11924	TNFRSF9	Q07011	ENSG00000049249	3604	membrane	Xirestomig	PDL1/CD274;TNFRSF9/CD137/4-1BB	Bispecific (G1-scFv_L2 dimer)	Active	0	0		approved_symbol	
+HGNC:21087	BTLA	Q7Z6A9	ENSG00000186265	151888	membrane	Zadoprubart	BTLA/CD272	Whole mAb	Active	0	0		approved_symbol	
+HGNC:6893	MAPT	P10636	ENSG00000186868	4137	membrane_and_secreted	Zagotenemab	MAPT	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:2505	CTLA4	P16410	ENSG00000163599	1493	membrane	Zalifrelimab	CTLA4/CD152	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3236	EGFR	P00533	ENSG00000146648	1956	membrane_and_secreted	Zalutumumab	EGFR/ERBB1/HER1	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11778	TGM2	P21980	ENSG00000198959	7052	membrane_and_secreted	Zampilimab	TGM2	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Zanidatamab	ERBB2/CD340/HER2;ERBB2/CD340/HER2	Bispecific mAb	Active	1	1	1n8z;6oge;8pwh;8q6j	approved_symbol	
+HGNC:1678	CD4	P01730	ENSG00000010610	920	membrane	Zanolimumab	CD4	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:11763	TFRC	P02786	ENSG00000072274	7037	membrane_and_secreted	Zeleciment	TFRC/CD71	Fab	Active	0	0		approved_symbol	
+HGNC:242	ADCYAP1R1	P41586	ENSG00000078549	117	membrane	Zelminemab	ADCYAP1R1/PAC1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Zeluvalimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:3431	ERBB3	P21860	ENSG00000065361	2065	membrane_and_secreted	Zenocutuzumab	ERBB3/HER3;ERBB2/CD340/HER2	Bispecific mAb	Active	1	1	5o4o;5o7p	approved_symbol	
+HGNC:3430	ERBB2	P04626	ENSG00000141736	2064	membrane	Zenocutuzumab	ERBB3/HER3;ERBB2/CD340/HER2	Bispecific mAb	Active	1	1	5o4g	approved_symbol	
+HGNC:1682	CD47	Q08722	ENSG00000196776	961	membrane	Zeripatamig	IAP/CD47;CD19	Bispecific mAb	Discontinued	1	1	8rp8	approved_symbol	
+HGNC:1633	CD19	P15391	ENSG00000177455	930	membrane	Zeripatamig	IAP/CD47;CD19	Bispecific mAb	Discontinued	0	0		approved_symbol	
+HGNC:11928	TNFSF13	O75888	ENSG00000161955	8741	secreted_only	Zigakibart	TNFSF13/CD256/APRIL	Whole mAb	Active	0	0		approved_symbol	
+HGNC:10256	ROR1	Q01973	ENSG00000185483	4919	membrane	Zilovertamab	ROR1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:8760	PDCD1	Q15116	ENSG00000188389	5133	membrane	Zimberelimab	PDCD1/CD279/PD1	Whole mAb	Active	0	0		approved_symbol	
+HGNC:2039	CLDN18	P56856	ENSG00000066405	51208	membrane	Zolbetuximab	CLDN18	Whole mAb	Active	0	0		approved_symbol	
+HGNC:1631	CD163	Q86VB7	ENSG00000177575	9332	membrane_and_secreted	Zovostotug	CD163	Whole mAb	Active	0	0		approved_symbol	
+HGNC:7315	MS4A1	P11836	ENSG00000156738	931	membrane	Zuberitamab	MS4A1/CD20	Whole mAb	Discontinued	0	0		approved_symbol	
+HGNC:28873	VTCN1	Q7Z7D3	ENSG00000134258	79679	membrane	Zubotamig	VTCN1/B7H4;CD3E	Bispecific mAb ((H-gamma1_L-kappa)_(H-gamma1_Llambda2))	Active	0	0		approved_symbol	
+HGNC:1674	CD3E	P07766	ENSG00000198851	916	membrane	Zubotamig	VTCN1/B7H4;CD3E	Bispecific mAb ((H-gamma1_L-kappa)_(H-gamma1_Llambda2))	Active	0	0		approved_symbol	

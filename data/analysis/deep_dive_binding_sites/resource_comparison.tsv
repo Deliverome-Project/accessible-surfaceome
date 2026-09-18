@@ -1,0 +1,61 @@
+subset	metric	covered	denominator	percent
+all	sabdab_mapped_contacts	411	5130	8.01
+all	iedb_exact_epitope	183	5130	3.57
+all	iedb_epitope_region	201	5130	3.92
+all	pdbe_gtopdb_supported_pair	209	5130	4.07
+all	natural_ligand_mapped_contacts	120	5130	2.34
+all	biogrid_literature_contacts	1	5130	0.02
+all	union_mapped_sites	631	5130	12.3
+all	union_including_regions	726	5130	14.15
+all	union_mapped_sites_extracellular	302	5130	5.89
+all	pdbe_chemical_contacts	976	5130	19.03
+all	pdbe_chembl_identity	830	5130	16.18
+all	surfacebind_listed	2620	5130	51.07
+all	surfacebind_predicted_sites	1609	5130	31.36
+all	surfacebind_predicted_seeds	1575	5130	30.7
+all	experimental_or_predicted_sites	1929	5130	37.6
+yes	sabdab_mapped_contacts	371	3157	11.75
+yes	iedb_exact_epitope	167	3157	5.29
+yes	iedb_epitope_region	168	3157	5.32
+yes	pdbe_gtopdb_supported_pair	192	3157	6.08
+yes	natural_ligand_mapped_contacts	120	3157	3.8
+yes	biogrid_literature_contacts	1	3157	0.03
+yes	union_mapped_sites	575	3157	18.21
+yes	union_including_regions	646	3157	20.46
+yes	union_mapped_sites_extracellular	287	3157	9.09
+yes	pdbe_chemical_contacts	820	3157	25.97
+yes	pdbe_chembl_identity	711	3157	22.52
+yes	surfacebind_listed	1875	3157	59.39
+yes	surfacebind_predicted_sites	1249	3157	39.56
+yes	surfacebind_predicted_seeds	1222	3157	38.71
+yes	experimental_or_predicted_sites	1530	3157	48.46
+no	sabdab_mapped_contacts	40	1973	2.03
+no	iedb_exact_epitope	16	1973	0.81
+no	iedb_epitope_region	33	1973	1.67
+no	pdbe_gtopdb_supported_pair	17	1973	0.86
+no	natural_ligand_mapped_contacts	0	1973	0.0
+no	biogrid_literature_contacts	0	1973	0.0
+no	union_mapped_sites	56	1973	2.84
+no	union_including_regions	80	1973	4.05
+no	union_mapped_sites_extracellular	15	1973	0.76
+no	pdbe_chemical_contacts	156	1973	7.91
+no	pdbe_chembl_identity	119	1973	6.03
+no	surfacebind_listed	745	1973	37.76
+no	surfacebind_predicted_sites	360	1973	18.25
+no	surfacebind_predicted_seeds	353	1973	17.89
+no	experimental_or_predicted_sites	399	1973	20.22
+unknown	sabdab_mapped_contacts	0	0	
+unknown	iedb_exact_epitope	0	0	
+unknown	iedb_epitope_region	0	0	
+unknown	pdbe_gtopdb_supported_pair	0	0	
+unknown	natural_ligand_mapped_contacts	0	0	
+unknown	biogrid_literature_contacts	0	0	
+unknown	union_mapped_sites	0	0	
+unknown	union_including_regions	0	0	
+unknown	union_mapped_sites_extracellular	0	0	
+unknown	pdbe_chemical_contacts	0	0	
+unknown	pdbe_chembl_identity	0	0	
+unknown	surfacebind_listed	0	0	
+unknown	surfacebind_predicted_sites	0	0	
+unknown	surfacebind_predicted_seeds	0	0	
+unknown	experimental_or_predicted_sites	0	0	

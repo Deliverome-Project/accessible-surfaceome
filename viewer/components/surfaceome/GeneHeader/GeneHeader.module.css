@@ -4,9 +4,9 @@
  */
 
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 42%);
+  gap: 4px var(--space-6);
   /* No bottom border / padding: the sticky AnchorNav strip directly
      below owns the separating hairline (its own border-top). A
      border-bottom here floated a SECOND rule ~12px above the strip —
@@ -17,16 +17,12 @@
 }
 
 .headerGrid {
-  display: grid;
-  /* 30% larger structure slot per user request — was 280px, now
-     ~365px. Text column shrinks correspondingly but stays the
-     dominant area on the page. */
-  grid-template-columns: 1fr 365px;
-  gap: var(--space-6);
-  align-items: start;
+  display: contents;
 }
 
 .headerText {
+  grid-column: 1;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
   /* `--space-4` (1rem) was too airy between the IDs row, the
@@ -40,10 +36,14 @@
 }
 
 .structureSlot {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  width: 365px;
+  width: 100%;
+  min-width: 0;
 }
 
 .structureCaption {
@@ -72,18 +72,28 @@
    The rules are deleted so the GeneHeader stylesheet stays in sync
    with what's actually in the JSX.) */
 
-@media (max-width: 760px) {
-  .headerGrid {
-    grid-template-columns: 1fr;
+@media (max-width: 1000px) {
+  .header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .headerText {
+    grid-row: 3;
   }
 
   .structureSlot {
-    width: 100%;
-    max-width: 320px;
+    grid-column: 1;
+    grid-row: 2;
+    width: 94%;
+    justify-self: center;
+    max-width: none;
   }
 }
 
 .symbol {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
   font-size: clamp(2.4rem, 5.5vw, 3.8rem);
 }
 

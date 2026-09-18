@@ -374,23 +374,19 @@ export function GeneHeader({
 
   return (
     <header className={styles.header}>
+      <h1 className={`h-gene ${styles.symbol}`}>
+        {g.hgnc_symbol}
+        {geneName?.name ? (
+          <span className={styles.geneFullName}>{geneName.name}</span>
+        ) : null}
+        {geneName?.synonyms && geneName.synonyms.length > 0 ? (
+          <span className={styles.synonyms}>
+            Synonyms: {geneName.synonyms.slice(0, 3).join(", ")}
+          </span>
+        ) : null}
+      </h1>
       <div className={styles.headerGrid}>
         <div className={styles.headerText}>
-          {/* Gene symbol + the descriptive name inline (small italics)
-              on the same baseline, with previous synonyms on a small
-              line below. */}
-          <h1 className={`h-gene ${styles.symbol}`}>
-            {g.hgnc_symbol}
-            {geneName?.name ? (
-              <span className={styles.geneFullName}>{geneName.name}</span>
-            ) : null}
-            {geneName?.synonyms && geneName.synonyms.length > 0 ? (
-              <span className={styles.synonyms}>
-                Synonyms: {geneName.synonyms.slice(0, 3).join(", ")}
-              </span>
-            ) : null}
-          </h1>
-
           {/* IDs row — small, immediately under the descriptive gene
               name. Was previously placed below the exec lede + headline
               risks; promoted here per user feedback so the external
