@@ -29,6 +29,22 @@ def test_add_to_pool_dedups_same_quote_within_source():
     assert len(pool) == 1  # identical normalized quote within source -> deduped
 
 
+def test_source_store_links_doi_only_preprint():
+    from accessible_surfaceome.tools._shared.models import Paper
+
+    sid = "DOI:10.1101/2025.06.08.658482"
+    paper = Paper(doi=sid[4:], title="Preprint", abstract="A measured uptake assay.")
+    draft = _real_draft("c1", "A measured uptake assay.", sid=sid)
+    store = build_source_store(
+        {"c1": draft}, papers_by_source_id={sid: (paper, False)},
+        http=cast(Any, object()), retraction_index=None,
+    )
+    source = store.get(sid)
+    assert source is not None
+    assert source.url == "https://doi.org/10.1101/2025.06.08.658482"
+    assert source.raw_text == paper.abstract
+
+
 def test_source_store_registers_real_body_for_fetched(monkeypatch):
     pool = {"c1": SimpleNamespace(source_id="PMID:1")}
     paper = SimpleNamespace(

@@ -234,3 +234,15 @@ and is rate limited. Build the local viewer with
 The normal viewer default remains `https://api.deliverome.org/surfaceome`; deploy
 the main Worker route before rolling out that viewer build. Do not deploy the
 preview entry point over the main Worker.
+
+### Internalization citations
+
+`GET /v1/internalization/{symbol}` includes a `papers` metadata map keyed by
+the source IDs in `literature.sources`, matching the deep-dive evidence
+endpoint. The map carries title, authors, journal/repository, and year;
+missing metadata leaves the original source link available. DOI-only
+preprints retain their cited version and are labeled as preprints.
+
+Refresh missing citation metadata with
+`uv run python scripts/build/build_paper_metadata_table.py --internalization-only --execute`
+(omit `--execute` to preview). Existing analysis grades and evidence are unchanged.

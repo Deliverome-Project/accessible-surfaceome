@@ -841,10 +841,10 @@ CREATE INDEX IF NOT EXISTS idx_surface_internalization_seq_grade ON surface_inte
 CREATE INDEX IF NOT EXISTS idx_surface_internalization_has_lit   ON surface_internalization (has_literature);
 
 
--- ===========================================================================
+-- ====================================================================
 -- tag_site_public — tag-insertion sites (see cloudflare/d1_tag_sites_schema.sql +
 -- src/accessible_surfaceome/cloud/tag_sites.py). Served at /v1/tag-sites/:symbol.
--- ===========================================================================
+-- ====================================================================
 CREATE TABLE IF NOT EXISTS tag_site_public (
   gene_symbol                TEXT NOT NULL,
   uniprot_acc                TEXT NOT NULL,
@@ -904,3 +904,49 @@ CREATE TABLE IF NOT EXISTS contact_observation (
  FOREIGN KEY(release_id,uniprot_acc,ligand_id) REFERENCES contact_gene_ligand(release_id,uniprot_acc,ligand_id)
 );
 CREATE INDEX IF NOT EXISTS contact_observation_lookup ON contact_observation(release_id,uniprot_acc,ligand_id,observation_id);
+
+
+-- ---------------------------------------------------------------------------
+-- Paper metadata (NCBI E-utilities mirror)
+-- ---------------------------------------------------------------------------
+-- Citation metadata for every paper cited by a `surface_annotation` record's
+-- evidence ledger. The records themselves carry only an identifier: the
+-- agent writes `SourceRef.title` as a placeholder equal to `source_id`
+-- ("PMC:PMC6199259"), and the schema has no author / journal / year fields at
+-- all. So a reader clicking an evidence chip used to see a bare accession and
+-- a quote, with no way to judge the source at a glance.
+--
+-- This table is the "Worker-enriches" half of the standard deterministic-
+-- feature pattern: the annotator bakes the identifier into the record, and
+-- `GET /v1/genes/{SYMBOL}/evidence` LEFT JOINs the citation metadata in at
+-- serve time. Enriching at serve time (rather than rewriting 5,130 stored
+-- records) means a metadata refresh ships without re-annotating anything.
+--
+-- Keyed on `source_id` EXACTLY as it appears in `SourceRef.source_id`
+-- ("PMC:PMC6199259" / "PMID:40482031") so the Worker joins on the string it
+-- already holds — no normalization step that could silently mis-key. `pmid`
+-- and `pmc_id` are indexed as secondary lookups for the drawer's
+-- validation-warning recovery path, which only has a bare "PMC6199259".
+--
+-- Populated by `scripts/build/build_paper_metadata_table.py` (idempotent
+-- UPSERT on `source_id`; re-runnable after any deep-dive sweep adds papers).
+-- Public by nature — NCBI citation metadata, no agent prose.
+
+CREATE TABLE IF NOT EXISTS paper_metadata (
+    source_id     TEXT PRIMARY KEY,   -- verbatim SourceRef.source_id ('PMC:PMC6199259' / 'PMID:40482031')
+    pmid          TEXT,               -- bare digits, no 'PMID:' prefix
+    pmc_id        TEXT,               -- 'PMC6199259' form (with the PMC prefix)
+    doi           TEXT,
+    title         TEXT,               -- real article title; trailing period stripped
+    authors_short TEXT,               -- reader-facing byline: 'Bock et al.' / 'Bock & Löhr' / 'Bock'
+    authors_json  TEXT,               -- JSON array of every author, NCBI order preserved
+    n_authors     INTEGER,
+    journal       TEXT,               -- NLM abbreviation ('Sci Rep'), which is what a citation line wants
+    year          INTEGER,            -- publication year parsed out of NCBI's free-text pubdate
+    pub_date      TEXT,               -- NCBI's raw pubdate string, kept for provenance
+    source_db     TEXT NOT NULL,      -- 'pmc' | 'pubmed' | 'crossref' — citation metadata provider
+    fetched_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmid ON paper_metadata (pmid);
+CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmc ON paper_metadata (pmc_id);

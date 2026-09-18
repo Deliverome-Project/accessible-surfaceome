@@ -157,11 +157,14 @@ def build_source_store(
             continue
         norm = normalize_for_quote_matching(raw)
         now = datetime.now(UTC)
-        url = (
-            f"https://pubmed.ncbi.nlm.nih.gov/{paper.pmid}/"
-            if paper.pmid
-            else f"https://www.ncbi.nlm.nih.gov/pmc/articles/{paper.pmc_id}/"
-        )
+        if paper.pmid:
+            url = f"https://pubmed.ncbi.nlm.nih.gov/{paper.pmid}/"
+        elif paper.pmc_id:
+            url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{paper.pmc_id}/"
+        elif paper.doi:
+            url = f"https://doi.org/{paper.doi}"
+        else:
+            raise ValueError(f"Paper has no PMID, PMCID or DOI: {source_id}")
         store.put(
             SourceText(
                 source_id=source_id,

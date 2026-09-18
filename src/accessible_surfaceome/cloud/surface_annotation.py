@@ -145,15 +145,34 @@ def _post(
 # schemes byte-for-byte. MUST stay in sync with
 # ``cloudflare/workers/surfaceome_api/src/index.js``:
 #   * ``withEdgeCache`` (per-gene record + gene-list index): the key is
-#     ``https://cache.internal`` + the UNSTRIPPED ``url.pathname``, which
-#     in production carries the ``PUBLIC_API_BASE`` path prefix
+#     ``https://surfaceome-api.cache`` + the UNSTRIPPED ``url.pathname``,
+#     which in production carries the ``PUBLIC_API_BASE`` path prefix
 #     (``/surfaceome``). Derived from ``PUBLIC_API_BASE`` here so the two
 #     stay pinned to the same route.
 #   * ``handleCatalog`` (genome-wide ``/v1/catalog``): its own synthetic
 #     host ``https://catalog.cache`` + a HARDCODED ``/v1/catalog`` path
 #     (no route prefix).
-_CACHE_INTERNAL_BASE = f"https://cache.internal{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
-_CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
+#
+# This host was ``https://cache.internal`` until now, which matched
+# nothing: the Worker renamed its ``withEdgeCache`` key host to
+# ``surfaceome-api.cache`` in #119/#171 and this side never followed. The
+# failure was silent in exactly the way the note above predicts —
+# Cloudflare returned ``success=true`` for every purge while evicting
+# nothing, so per-gene records served stale for up to their full 24h TTL
+# after a republish. Confirmed against production: purging the
+# ``cache.internal`` key left ``cf-cache-status: HIT`` with ``age``
+# climbing, and purging the ``surfaceome-api.cache`` key flipped the same
+# URL straight to a MISS. It is the same synthetic host ``_KV_CACHE_BASE``
+# already uses, so the two now derive from one constant and cannot drift
+# apart again.
+_EDGE_CACHE_HOST = "https://surfaceome-api.cache"
+_ROUTE_PREFIX = urlparse(PUBLIC_API_BASE).path.rstrip("/")
+# Epoch goes between host and route prefix, matching the Worker's
+# `new URL(`/${cacheEpoch(env)}${keyPath}`, ...)` — keyPath is the
+# UNSTRIPPED pathname, so the prefix comes after the epoch, not before.
+_EDGE_CACHE_BASE = f"{_EDGE_CACHE_HOST}{_ROUTE_PREFIX}"  # unepoched; reference only
+_CATALOG_CACHE_BASE = "https://catalog.cache"
+_CATALOG_CACHE_URL = f"{_CATALOG_CACHE_BASE}/v1/catalog"  # unepoched; kept for reference
 
 # Base for the Worker's KV (``RECORD_CACHE``) mirror keys. The Worker keys
 # KV on its ``caches.default`` cache-key URL verbatim —
@@ -163,10 +182,10 @@ _CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
 # ``https://surfaceome-api.cache/surfaceome/v1/genes/{SYM}`` and its
 # ``/evidence`` sibling. MUST stay in sync with ``withEdgeCache`` +
 # ``handleGeneEvidence`` in
-# ``cloudflare/workers/surfaceome_api/src/index.js`` (the synthetic host is
-# ``https://surfaceome-api.cache``, matching that file's cache key — NOT the
-# ``https://cache.internal`` host the caches.default file-purge above uses).
-_KV_CACHE_BASE = f"https://surfaceome-api.cache{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
+# ``cloudflare/workers/surfaceome_api/src/index.js``. Identical to the
+# edge-purge base above — both tiers key on the same synthetic host, so
+# this is an alias rather than a second source of truth.
+_KV_CACHE_BASE = _EDGE_CACHE_BASE
 
 
 def _kv_keys_for(sym: str) -> list[str]:
@@ -178,22 +197,71 @@ def _kv_keys_for(sym: str) -> list[str]:
     (``/v1/genes/{SYMBOL}/evidence``). Both must be purged so a republish is
     live immediately rather than on the KV entry's expiration TTL (1 day).
     """
+    epoch = _cache_epoch()
     return [
-        f"{_KV_CACHE_BASE}/v1/genes/{sym}",
-        f"{_KV_CACHE_BASE}/v1/genes/{sym}/evidence",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}/evidence",
     ]
+
+
+_EPOCH_CACHE: str | None = None
+
+
+def _cache_epoch(client: httpx.Client | None = None) -> str:
+    """The deploy token the Worker namespaces every cache key by.
+
+    Both cache keys are prefixed with the Worker's version id (see
+    ``cacheEpoch`` in index.js) so a deploy that changes the response shape
+    starts a clean cache namespace. That means this side can no longer
+    derive a key from the URL alone — it has to ask the Worker which epoch
+    is live, which ``/v1/health`` reports.
+
+    Cached for the process: a publish run purges many genes and the epoch
+    cannot change mid-run without a deploy. Falls back to ``"v0"`` — the
+    Worker's own fallback when the ``version_metadata`` binding is absent —
+    so an unreachable Worker or an older deploy degrades to the previous
+    behaviour instead of raising inside a best-effort purge.
+    """
+    global _EPOCH_CACHE
+    if _EPOCH_CACHE is not None:
+        return _EPOCH_CACHE
+    own = client is None
+    c = client or httpx.Client(timeout=10)
+    try:
+        resp = c.get(f"{PUBLIC_API_BASE}/v1/health")
+        resp.raise_for_status()
+        _EPOCH_CACHE = str(resp.json().get("cache_epoch") or "v0")
+    except Exception:  # noqa: BLE001 — purge is best-effort, never fatal
+        _EPOCH_CACHE = "v0"
+    finally:
+        if own:
+            c.close()
+    return _EPOCH_CACHE
 
 
 def _purge_urls_for(sym: str) -> list[str]:
     """The exact ``caches.default`` keys a republish of ``sym`` invalidates.
 
-    A ``surface_annotation`` write changes three cached surfaces:
+    A ``surface_annotation`` write changes four cached surfaces:
 
-    * the per-gene record (``/v1/genes/{SYMBOL}`` — ``cache.internal``),
+    * the per-gene record (``/v1/genes/{SYMBOL}``),
+    * the split-out evidence ledger (``/v1/genes/{SYMBOL}/evidence`` —
+      on the same synthetic host), which carries the verbatim quotes AND the
+      serve-time ``papers`` citation-metadata join,
     * the genome-wide catalog (``/v1/catalog`` — carries a slimmed
       ``ddf`` projection of every deep-dived gene's filters —
       ``catalog.cache``), and
-    * the gene-list index (``/v1/genes`` — ``cache.internal``).
+    * the gene-list index (``/v1/genes``).
+
+    The evidence URL was missed when the ledger was split out of the
+    record: ``_kv_keys_for`` purged its KV mirror but the
+    ``caches.default`` copy was left to expire, so a republished gene
+    could serve a fresh record alongside a day-stale ledger.
+
+    Every key is namespaced by the Worker's deploy epoch (see
+    :func:`_cache_epoch`), so these are only valid against the
+    currently-deployed Worker — which is the only one whose cache
+    entries exist.
 
     Orthologs, triage, and benchmark endpoints are NOT touched by a
     record publish, so they're deliberately excluded — a tighter purge
@@ -204,10 +272,12 @@ def _purge_urls_for(sym: str) -> list[str]:
     the path only; the catalog key is a hardcoded path), so the bare URL
     is the canonical key — there are no ``?x=`` variants to chase.
     """
+    epoch = _cache_epoch()
     return [
-        f"{_CACHE_INTERNAL_BASE}/v1/genes/{sym}",
-        _CATALOG_CACHE_URL,
-        f"{_CACHE_INTERNAL_BASE}/v1/genes",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes/{sym}/evidence",
+        f"{_CATALOG_CACHE_BASE}/{epoch}/v1/catalog",
+        f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes",
     ]
 
 

@@ -34,6 +34,7 @@ import {
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   Evidence,
+  PaperMetadataMap,
   SurfaceomeRecord,
 } from "../../lib/surfaceome-types";
 import styles from "./page.module.css";
@@ -149,7 +150,14 @@ function evidenceArrayFromPayload(j: unknown): Evidence[] {
   return Array.isArray(r?.evidence) ? (r.evidence as Evidence[]) : [];
 }
 
+function papersFromPayload(j: unknown): PaperMetadataMap | undefined {
+  const papers = (j as { papers?: unknown } | null)?.papers;
+  return papers && typeof papers === "object" && !Array.isArray(papers)
+    ? (papers as PaperMetadataMap) : undefined;
+}
+
 interface ReadyData {
+  papers?: PaperMetadataMap;
   rec: SurfaceomeRecord;
   geneName: { name: string; synonyms: string[] } | null;
   structureData: StructureViewerData | null;
@@ -360,12 +368,14 @@ export default function GeneShellPage() {
           );
           if (cancelled) return;
           const evidence = evidenceArrayFromPayload(evJson);
+          const papers = papersFromPayload(evJson);
           setState((prev) =>
             prev.kind === "ready"
               ? {
                   kind: "ready",
                   data: {
                     ...prev.data,
+                    papers,
                     // Merge the ledger in and run the deferred renumber NOW
                     // that it's present — it rewrites the record's inline
                     // `aN_evi_NN` chip tokens into the merged `evi_N`

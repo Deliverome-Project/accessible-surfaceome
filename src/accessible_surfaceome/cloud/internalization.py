@@ -19,21 +19,11 @@ from accessible_surfaceome.cloud.d1_client import D1Client
 
 logger = logging.getLogger(__name__)
 
-# Edge-cache keys the Worker uses for the internalization surfaces — MUST match
-# ``cloudflare/workers/surfaceome_api/src/index.js``. ``withEdgeCache`` keys BOTH
-# ``caches.default`` and the ``RECORD_CACHE`` KV mirror on the synthetic host
-# ``https://surfaceome-api.cache`` + the UNSTRIPPED request pathname (which
-# carries the ``/surfaceome`` route prefix); ``handleCatalog`` uses its own
-# synthetic host ``https://catalog.cache`` + a hardcoded ``/v1/catalog``.
-# NOTE: surface_annotation.py purges the per-gene ``caches.default`` key under a
-# DIFFERENT host (``cache.internal``) — that host does not match the deployed
-# Worker's key, so its file-purge silently misses (only its KV delete lands).
-# We use the correct ``surfaceome-api.cache`` host here for BOTH layers.
+# Both cache tiers use the Worker's deployment epoch before the route prefix.
 _PUBLIC_API_BASE = os.environ.get(
     "SURFACEOME_PUBLIC_API_BASE", "https://api.deliverome.org/surfaceome"
 )
-_CACHE_KEY_BASE = f"https://surfaceome-api.cache{urlparse(_PUBLIC_API_BASE).path.rstrip('/')}"
-_CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
+_ROUTE_PREFIX = urlparse(_PUBLIC_API_BASE).path.rstrip("/")
 
 
 def _purge_internalization_cache(sym: str) -> None:
@@ -64,15 +54,18 @@ def _purge_internalization_cache(sym: str) -> None:
     import httpx
 
     from accessible_surfaceome.cloud.surface_annotation import (
+        _cache_epoch,
         _delete_kv_key,
         _purge_cf_cache,
     )
 
-    rec_url = f"{_CACHE_KEY_BASE}/v1/internalization/{sym}"
+    epoch = _cache_epoch()
+    rec_url = f"https://surfaceome-api.cache/{epoch}{_ROUTE_PREFIX}/v1/internalization/{sym}"
+    catalog_url = f"https://catalog.cache/{epoch}/v1/catalog"
     try:
         with httpx.Client(timeout=30.0) as client:
             _purge_cf_cache(
-                [rec_url, _CATALOG_CACHE_URL], zone_id=zone, token=token, client=client
+                [rec_url, catalog_url], zone_id=zone, token=token, client=client
             )
             acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
             ns = os.environ.get("CLOUDFLARE_KV_RECORD_CACHE_ID", "").strip()
