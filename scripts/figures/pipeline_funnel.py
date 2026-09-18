@@ -107,7 +107,7 @@ RESCUE_FILL = "#FBEFF0"
 TRIM_EDGE = "#8A8A8A"
 
 # Canvas in Figure 4's coordinate space (viewBox 0 0 1260 460).
-CANVAS_W, CANVAS_H = 1600.0, 600.0
+CANVAS_W, CANVAS_H = 1650.0, 600.0
 
 POSITIVE_VERDICTS = ("yes", "contextual")
 
@@ -277,7 +277,7 @@ def _eyebrow(ax, x, y, text, color=EYEBROW):
 
 
 def build(counts: Counts):
-    fig, ax = plt.subplots(figsize=(16.0, 6.0))
+    fig, ax = plt.subplots(figsize=(16.5, 6.0))
     ax.set_xlim(0, CANVAS_W)
     ax.set_ylim(0, CANVAS_H)
     ax.invert_yaxis()  # top-left origin, like the SVG
@@ -297,9 +297,9 @@ def build(counts: Counts):
     # ---- Split from A into the two lanes -----------------------------
     # Each lane is entered at its card's own summary row, so the
     # connectors never cut through a card's inner panel.
-    top, bottom = 116.0, 430.0
+    top, bottom = 116.0, 444.0
     junction = 320.0
-    ax.plot([286, junction], [273, 273], color=INK, lw=2.6, zorder=4)
+    ax.plot([286, junction], [280, 280], color=INK, lw=2.6, zorder=4)
     ax.plot([junction, junction], [top, bottom], color=INK, lw=2.6, zorder=4)
     _arrow(ax, (junction, top), (396, top))
     _arrow(ax, (junction, bottom), (396, bottom))
@@ -321,7 +321,7 @@ def build(counts: Counts):
     _pill(ax, 796, 76, "no LLM", fill=TEAL, size=10)
 
     # ---- Box C: the triage lane, both passes on the canvas -----------
-    _card(ax, 400, 212, 450, 332)
+    _card(ax, 400, 212, 450, 344)
     _eyebrow(ax, 424, 236, "ACCESSIBILITY TRIAGE AGENT")
     _pill(ax, 800, 236, "Sonnet", fill=MAROON_DARK, size=10)
 
@@ -358,23 +358,23 @@ def build(counts: Counts):
         )
 
     _run(
-        ax, 424, 430,
+        ax, 424, 444,
         [
             (f"{counts.triage_positive:,}", 34, "bold", INK),
             ("   called surface", 13, "normal", MUTED),
         ],
     )
     ax.text(
-        424, 462,
+        424, 476,
         f"{counts.triage_yes:,} yes \u00b7 {counts.triage_contextual:,} contextual",
         ha="left", va="center", fontsize=12.5, color=MUTED, zorder=5,
     )
 
     # The rescue slice, called out inside the triage card.
-    _card(ax, 424, 486, 322, 42, edge=MAROON, fill=RESCUE_FILL,
+    _card(ax, 424, 500, 322, 42, edge=MAROON, fill=RESCUE_FILL,
           lw=1.6, radius=6, z=3)
     _run(
-        ax, 442, 507,
+        ax, 442, 521,
         [
             (f"{counts.rescued:,}", 21, "bold", MAROON_DARK),
             ("  flagged by no database", 12.5, "normal", MAROON_DARK),
@@ -386,38 +386,40 @@ def build(counts: Counts):
     _arrow(ax, (854, top), (merge, top))
     _arrow(ax, (854, bottom), (merge, bottom))
     ax.plot([merge, merge], [top, bottom], color=INK, lw=2.6, zorder=4)
-    _arrow(ax, (merge, 273), (932, 273))
+    _arrow(ax, (merge, 280), (932, 280))
 
-    _card(ax, 936, 186, 306, 174, edge=TRIM_EDGE, fill="white", lw=1.8,
+    _card(ax, 936, 182, 330, 196, edge=TRIM_EDGE, fill="white", lw=1.8,
           ls=(0, (5, 3)))
-    _eyebrow(ax, 960, 212, "TRIMMED FROM THE UNION", color=TRIM_EDGE)
+    _eyebrow(ax, 960, 208, "TRIMMED FROM THE UNION", color=TRIM_EDGE)
     ax.text(
-        960, 254, f"\u2212{counts.trimmed:,}",
+        960, 248, f"\u2212{counts.trimmed:,}",
         ha="left", va="center", fontsize=30, fontweight="bold",
         color=TRIM_EDGE, zorder=5,
     )
-    # "High confidence" is the agent's own three-level scale, on which
-    # high requires explicit localization evidence; a call made where
-    # the literature is simply silent scores medium or low and is kept.
+    # "High confidence" is the agent's own self-reported level, not a
+    # claim about what evidence it had — so the card names the level and
+    # then the non-surface compartments it assigned, which is what the
+    # reader can actually check. The six listed cover 1,437 of 1,457.
     for i, line in enumerate(
         (
-            "one database flag, and a",
-            "non-surface call backed by",
-            "explicit evidence for another",
-            "compartment",
+            "one database flag, plus a",
+            "high-confidence non-surface call",
+            "(cytoplasmic, inner-leaflet,",
+            "endomembrane, secreted, nuclear,",
+            "mitochondrial)",
         )
     ):
         ax.text(
-            960, 290 + 17 * i, line,
+            960, 280 + 17 * i, line,
             ha="left", va="center", fontsize=11.5, color=TRIM_EDGE, zorder=5,
         )
-    _arrow(ax, (1246, 273), (1288, 273))
+    _arrow(ax, (1270, 280), (1312, 280))
 
     # ---- Box D: the deep dive ----------------------------------------
-    _card(ax, 1292, 208, 300, 130, fill=PANEL_FILL, edge=MAROON)
-    _eyebrow(ax, 1316, 238, "PER-GENE DEEP DIVE", color=TEAL)
+    _card(ax, 1316, 215, 300, 130, fill=PANEL_FILL, edge=MAROON)
+    _eyebrow(ax, 1340, 245, "PER-GENE DEEP DIVE", color=TEAL)
     ax.text(
-        1316, 290, f"{counts.deep_dive:,}",
+        1340, 297, f"{counts.deep_dive:,}",
         ha="left", va="center", fontsize=42, fontweight="bold",
         color=INK, zorder=5,
     )
