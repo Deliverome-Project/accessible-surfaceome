@@ -83,7 +83,10 @@ export function browsingContacts(sites: ContactSite[], _grouped: boolean, query:
     if (existing) existing.supportingSites.push(site);
     else byLigand.set(key, {...site, partner_label: name, supportingSites: [site]});
   }
-  return [...byLigand.values()].sort((a,b) => (a.partner_label ?? "").localeCompare(b.partner_label ?? ""));
+  const order = Object.keys(LIGAND_CATEGORIES);
+  return [...byLigand.values()].sort((a,b) =>
+    order.indexOf(a.category ?? "unclassified") - order.indexOf(b.category ?? "unclassified") ||
+    (a.partner_label ?? "").localeCompare(b.partner_label ?? ""));
 }
 
 export interface ContactGroup extends ContactSite { supportingSites: ContactSite[] }

@@ -96,3 +96,9 @@ All ligands now renders all named representative footprints matching the compart
 Residue coloring aggregates category membership before rendering. Residues shared across categories use an explicit blue-gray overlap color, avoiding last-record color overwrite; the display does not establish simultaneous binding. The Unclassified info tooltip lists 059-152, DL11, ERBB2 and GC1118A for EGFR. Unclassified means a category assignment has not been verified, not that contact evidence is absent.
 
 Validation: eight viewer regression tests, including complete residue-union preservation and overlap labeling; production build/export; browser confirmation of the 17-footprint overview and the unclassified-name tooltip.
+
+## Category-ordered individual navigation
+
+An isolated named ligand now has previous/next and slider navigation through the named ligands in the active source/compartment scope. Order is endogenous large molecules, endogenous small molecules, therapeutics, research tools, then unclassified; names are alphabetical within each category. Each step selects a different ligand, never an alternative footprint of the same ligand. All ligands continues to show the combined overlay. The counter includes the current category. Verified EGFR order starts EGF → epigen → epiregulin → TGFα → Cetuximab.
+
+Validation: eight existing contact regressions, explicit category-order assertion, production build/export, and browser next-ligand navigation from EGF to epigen with category counter.
