@@ -16,13 +16,20 @@ Left to right:
   under Figure 1's native flags the same union is 5,546, so a reader
   who meets 5,626 with no note will think the two figures disagree.
 * **Accessibility Triage agent, both passes** — stage 1 reads NCBI gene
-  and protein records for every gene; stage 2 re-reads the subset
-  rejected for an ambiguous reason with a literature pass, flipping some
-  to surface. The rescue slice (agent-positive, flagged by no database)
-  is called out inside the card.
+  and protein records for every gene. Stage 2 re-reads, with a
+  literature pass, the zero-database non-surface calls whose stated
+  reason placed the protein one compartment off the surface
+  (endomembrane-resident, secreted, inner-leaflet-anchored, pMHC,
+  nuclear envelope); the cytoplasmic, nuclear and mitochondrial calls
+  were excluded as unlikely to flip. The rescue slice (agent-positive,
+  flagged by no database) is called out inside the card.
 * **The trim** — the union of the two lanes is not the deep-dive cohort.
-  Genes the agent rejected at high confidence with exactly one database
-  flag are dropped; that gate is ``is_trim`` in
+  Genes carrying exactly one database flag and a high-confidence
+  non-surface call are dropped. High is the top of the agent's own
+  three-level scale and requires explicit localization evidence, so a
+  call made where the literature is silent scores medium or low and
+  survives the trim — which is why 316 single-database non-surface
+  genes are still in the cohort. The gate is ``is_trim`` in
   ``scripts/build_candidate_universe_v3.py`` and it is drawn dashed
   because it removes rather than produces.
 * **Deep dive** — the cohort that went on to a per-gene record.
@@ -330,19 +337,19 @@ def build(counts: Counts):
         ha="left", va="center", fontsize=12, color=MUTED, zorder=5,
     )
     ax.text(
-        440, 328, "STAGE 2  literature pass on the ambiguous tail",
+        440, 328, "STAGE 2  literature pass on near-miss calls",
         ha="left", va="center", fontsize=11, fontweight="bold",
         color=TEAL, zorder=5,
     )
-    # "Ambiguous" is a specific slice, not a vibe: zero-database
-    # rejections whose stated reason was a near miss. The confidently
-    # intracellular buckets were deliberately left out of the re-read.
+    # The re-read pool was a specific slice: zero-database non-surface
+    # calls whose stated reason placed the protein one compartment away.
+    # Cytoplasmic / nuclear / mitochondrial calls were excluded.
     for i, line in enumerate(
         (
-            f"{counts.stage2_reexamined:,} zero-database rejects called",
-            "endomembrane, secreted or inner-leaflet",
-            "\u2014 not confidently intracellular",
-            f"\u2192 {counts.stage2_rescued:,} more called surface",
+            f"{counts.stage2_reexamined:,} zero-database non-surface calls",
+            "with a near-miss reason (endomembrane,",
+            "secreted, inner-leaflet)",
+            f"\u2192 {counts.stage2_rescued:,} reclassified as surface",
         )
     ):
         ax.text(
@@ -389,14 +396,15 @@ def build(counts: Counts):
         ha="left", va="center", fontsize=30, fontweight="bold",
         color=TRIM_EDGE, zorder=5,
     )
-    # "High confidence" is the agent's own three-level scale: high is
-    # reserved for explicit, unambiguous evidence, so a rejection that
-    # rested on absence of evidence is medium or low and survives.
+    # "High confidence" is the agent's own three-level scale, on which
+    # high requires explicit localization evidence; a call made where
+    # the literature is simply silent scores medium or low and is kept.
     for i, line in enumerate(
         (
-            "one database flag, and a \u201cno\u201d",
-            "the agent rested on explicit",
-            "evidence, not on absence of it",
+            "one database flag plus a",
+            "high-confidence non-surface call,",
+            "the level requiring explicit",
+            "localization evidence",
         )
     ):
         ax.text(
