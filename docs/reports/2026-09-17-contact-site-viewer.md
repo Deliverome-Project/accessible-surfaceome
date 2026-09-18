@@ -137,3 +137,8 @@ Contact evidence is currently exported to static `/data/contact-sites/*.json` sh
 ## Selected ligand overlay and continuous navigation
 
 Selecting one ligand replaces category totals on the canvas with its name, category, and a hover/focus information tooltip containing residue count, source-record count, sources, and evidence link. All ligands is position zero of the same slider: next enters individual browsing and previous from the first ligand restores the overview. Category order is preserved. Production build and nine contact regressions pass; browser checks verified All → EGF → epigen and the EGF information tooltip.
+
+
+## Tighter viewer placement
+
+On desktop the structure starts alongside the gene title, removing the separate title-height gap above it. Its column narrows from 46% to 42%. Below 1000px the title-to-viewer gap is 4px and the viewer uses 94% of the available width. Canvas height remains `clamp(240px, 46svh, 440px)` and does not grow when width decreases.
