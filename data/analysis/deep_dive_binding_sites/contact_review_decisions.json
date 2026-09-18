@@ -1,0 +1,41 @@
+{
+  "new_release": "contacts-2237ef21c0d1e257f446",
+  "reviewed_observations": 2668,
+  "before_ec_groups": 300,
+  "after_ec_groups": 273,
+  "held_scopes": {
+    "16": [
+      {
+        "pdb": "5am8",
+        "reason": "Soluble ACE-domain complex with a short APP/amyloid-beta-derived fragment. Cached entity mutation_flag is YES without verified mutation identity; insufficient evidence for a specific replacement construct. Raw contact retained; this is not intact cell-surface APP binding evidence.",
+        "reference": "https://www.rcsb.org/structure/5AM8"
+      },
+      {
+        "pdb": "5amb",
+        "reason": "Soluble ACE-domain complex with a short APP/amyloid-beta-derived fragment. Cached entity mutation_flag is YES without verified mutation identity; insufficient evidence for a specific replacement construct. Raw contact retained; this is not intact cell-surface APP binding evidence.",
+        "reference": "https://www.rcsb.org/structure/5AMB"
+      }
+    ],
+    "17": [
+      {
+        "pdb": "2wk3",
+        "reason": "IDE is marked mutant (mutation_flag YES), but the mutation identity was not verified in the bounded evidence. APP target is an amyloid-beta-derived fragment. Preserve raw observation without a new identity/category rule.",
+        "reference": "https://www.rcsb.org/structure/2WK3"
+      }
+    ],
+    "21": [
+      {
+        "pdb": "3s4s",
+        "reason": "Primary study establishes affinity-engineered CD4 (https://doi.org/10.1073/pnas.1109438108), despite a null cached mutation flag. This bounded replacement pass does not certify the complete mutation set of this exact 191-residue deposited construct. Hold exact assignment rather than invent equivalence to 3S5L or 3T0E; raw evidence remains.",
+        "reference": "https://www.rcsb.org/structure/3S4S"
+      }
+    ],
+    "28": [
+      {
+        "pdb": "3s4s",
+        "reason": "Primary study establishes affinity-engineered CD4 (https://doi.org/10.1073/pnas.1109438108), despite a null cached mutation flag. This bounded replacement pass does not certify the complete mutation set of this exact 191-residue deposited construct. Hold exact assignment rather than invent equivalence to 3S5L or 3T0E; raw evidence remains.",
+        "reference": "https://www.rcsb.org/structure/3S4S"
+      }
+    ]
+  }
+}

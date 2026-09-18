@@ -64,12 +64,13 @@ def apply_partner_review(site, acc, reviews, matches):
     """Apply explicit stable-target/label/structure decisions; preserve source labels."""
     if acc not in reviews["targets"]:
         return
+
+    def identity_label(value):
+        value = re.sub(r"\s+(Fab|Fv|VHH)$", "", value, flags=re.I)
+        return re.sub(r"\s*\([^)]*\)\s*$", "", value).strip().casefold()
+
+    matching_rules = []
     for rule in reviews["rules"]:
-
-        def identity_label(value):
-            value = re.sub(r"\s+(Fab|Fv|VHH)$", "", value, flags=re.I)
-            return re.sub(r"\s*\([^)]*\)\s*$", "", value).strip().casefold()
-
         names = {identity_label(name) for name in rule["names"]}
         if rule["uniprot_acc"] != acc or not names.intersection(
             {
@@ -80,6 +81,28 @@ def apply_partner_review(site, acc, reviews, matches):
             continue
         if rule["pdb"] and rule["pdb"] != site["pdb"]:
             continue
+        matching_rules.append(rule)
+    if matching_rules:
+        # A deposited construct correction must beat a broad parent-antibody
+        # alias regardless of the order of curated rules in the file.
+        specificity = max(bool(rule["pdb"]) for rule in matching_rules)
+        matching_rules = [
+            rule for rule in matching_rules if bool(rule["pdb"]) == specificity
+        ]
+        identities = {
+            (
+                rule["canonical_name"],
+                rule["category"],
+                rule["exclude_from_overview"],
+                bool(rule.get("exclude_from_ec_overview")),
+            )
+            for rule in matching_rules
+        }
+        if len(identities) != 1:
+            raise ValueError(
+                f"Conflicting contact reviews: {acc} {site['partner']} {site['pdb']}"
+            )
+        rule = matching_rules[0]
         site.update(
             canonical_partner_label=rule["canonical_name"],
             category=rule["category"],
@@ -88,6 +111,8 @@ def apply_partner_review(site, acc, reviews, matches):
         )
         if rule["exclude_from_overview"]:
             site["exclude_from_overview"] = True
+        if rule.get("exclude_from_ec_overview"):
+            site["exclude_from_ec_overview"] = True
         site["review_date"] = reviews["review_date"]
     if site["source"] == "Thera-SAbDab":
         hits = matches.get((acc, site["partner"].casefold(), site["pdb"]), [])
@@ -159,6 +184,7 @@ def main():
                 genes[acc] = dict(
                     hgnc_id=row["hgnc_id"], symbol=row["hgnc_symbol"], sites=[]
                 )
+                genes[acc].update(reviews.get("target_notes", {}).get(acc, {}))
     seen = defaultdict(set)
     with gzip.open(INPUT / "structural_intact_evidence.tsv.gz", "rt") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):

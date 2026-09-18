@@ -35,7 +35,7 @@ for (const [acc,gene] of Object.entries(genes).sort()) {
  });
  const summarize=ec=>browsingContacts(filterContacts(observations,'',ec,''),true,'').map(({supportingSites,...site})=>({...site,evidence_count:supportingSites.length,evidence_sources:[...new Set(supportingSites.map(s=>s.source))],supportingSites:[]}));
  const all=summarize(false), ec=summarize(true);
- output.push({uniprot_acc:acc,hgnc_id:gene.hgnc_id,symbol:gene.symbol,audit_status:observations.length?'mapped':'no_mapped_evidence',reference_sequence_sha256:sequence?hash(sequence):null,reference_sequence_length:sequence?.length??null,all_ligand_count:all.length,all,extracellular:ec,observations});
+ output.push({uniprot_acc:acc,hgnc_id:gene.hgnc_id,symbol:gene.symbol,overview_note:gene.overview_note,overview_label:gene.overview_label,audit_status:observations.length?'mapped':'no_mapped_evidence',reference_sequence_sha256:sequence?hash(sequence):null,reference_sequence_length:sequence?.length??null,all_ligand_count:all.length,all,extracellular:ec,observations});
 }
 const bundle={release_id:releaseId,manifest:{...manifest,release_id:releaseId,api_schema_version:1,identity_rules:'audited_alias_rules_v1',cohort_rows:denominator.length,excluded_identifiers:excluded,observation_count:output.reduce((n,g)=>n+g.observations.length,0)},ligands:[...identities.values()].sort((a,b)=>a.ligand_id.localeCompare(b.ligand_id)),genes:output};
 writeFileSync(process.argv[2]??'/private/tmp/contact-release.json',canonical(bundle));

@@ -1,5 +1,6 @@
 """Protect the biological meaning of the contact-only viewer export."""
 
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -56,3 +57,111 @@ def test_egfr_has_named_egf_contacts():
     assert all(s["partner_label"] == "EGF" for s in egf)
     assert all(s["context"] == "extracellular_explicit" for s in egf)
     assert any(s["pdb"] == "1ivo" and len(s["positions"]) == 37 for s in egf)
+
+
+def test_structure_specific_review_overrides_parent_independent_of_order():
+    parent = dict(
+        uniprot_acc="P00001",
+        names=["Parent Fab"],
+        pdb="",
+        canonical_name="Parent",
+        category="therapeutic",
+        reference="https://example.org/parent",
+        reason="Parent identity",
+        exclude_from_overview=False,
+    )
+    variant = dict(parent, pdb="1abc", canonical_name="Variant", category="tool")
+    for rules in ([parent, variant], [variant, parent]):
+        site = dict(
+            partner="Parent Fab", pdb="1abc", source="AACDB", category="unclassified"
+        )
+        module.apply_partner_review(
+            site,
+            "P00001",
+            dict(targets=["P00001"], rules=rules, review_date="2026-09-18"),
+            {},
+        )
+        assert site["canonical_partner_label"] == "Variant"
+        assert site["category"] == "tool"
+
+
+def test_conflicting_reviews_fail_instead_of_silently_relabeling():
+    import pytest
+
+    rule = dict(
+        uniprot_acc="P00001",
+        names=["Clone Fab"],
+        pdb="1abc",
+        canonical_name="First",
+        category="tool",
+        reference="https://example.org/first",
+        reason="Identity",
+        exclude_from_overview=False,
+    )
+    site = dict(
+        partner="Clone Fab", pdb="1abc", source="AACDB", category="unclassified"
+    )
+    reviews = dict(
+        targets=["P00001"],
+        rules=[rule, dict(rule, canonical_name="Second")],
+        review_date="2026-09-18",
+    )
+    with pytest.raises(ValueError, match="Conflicting contact reviews"):
+        module.apply_partner_review(site, "P00001", reviews, {})
+
+
+def test_overnight_review_preserves_every_original_observation():
+    baseline = json.loads(
+        (
+            ROOT
+            / "data/analysis/deep_dive_binding_sites/contact_review_preservation.json"
+        ).read_text()
+    )
+    folder = ROOT / "viewer/public/data/contact-sites"
+    for gene in baseline["proteins"]:
+        acc = gene["uniprot_acc"]
+        shard = f"{sum(map(ord, acc)) % 64:02x}.json"
+        sites = json.loads((folder / shard).read_text())[acc]["sites"]
+        values = sorted(
+            json.dumps(
+                {key: site.get(key) for key in baseline["fields"]},
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            for site in sites
+        )
+        assert len(values) == gene["observations"], acc
+        assert (
+            hashlib.sha256("\n".join(values).encode()).hexdigest()
+            == gene["original_fields_sha256"]
+        ), acc
+
+
+def test_every_curated_rule_matches_retained_source_evidence():
+    reviews = json.loads(
+        (
+            ROOT
+            / "data/analysis/deep_dive_binding_sites/reviewed_contact_partners.json"
+        ).read_text()
+    )
+    genes = {}
+    for path in (ROOT / "viewer/public/data/contact-sites").glob(
+        "[0-9a-f][0-9a-f].json"
+    ):
+        genes.update(json.loads(path.read_text()))
+    for rule in reviews["rules"]:
+        acc = rule["uniprot_acc"]
+        matched = False
+        for original in genes[acc]["sites"]:
+            site = dict(original)
+            site.pop("review_date", None)
+            module.apply_partner_review(
+                site,
+                acc,
+                dict(targets=[acc], rules=[rule], review_date=reviews["review_date"]),
+                {},
+            )
+            if "review_date" in site:
+                matched = True
+                break
+        assert matched, (acc, rule["names"], rule["pdb"])

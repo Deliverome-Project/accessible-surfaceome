@@ -175,3 +175,36 @@ test('overlapping antibody footprints stay consecutive despite interleaved seque
   assert.equal(ordered.length, records.length);
   assert.ok(ordered.every(group => group.supportingSites.length === 1));
 });
+
+
+test('reviewed canonical names can expose resolved accession or anonymous records', async () => {
+  const { namedLigand, ligandName } = await import('../lib/contact-sites.ts');
+  assert.equal(ligandName(site([1], 'a', {canonical_partner_label:'Clone (engineered variant)'})), 'Clone (engineered variant)');
+  assert.equal(namedLigand(site([1], 'a', {partner:'P43488'})), false);
+  assert.equal(namedLigand(site([1], 'a', {partner:'P43488', canonical_partner_label:'Murine OX40L'})), true);
+  assert.equal(namedLigand(site([1], 'a', {partner:'sabdab2_unknown', canonical_partner_label:'Resolved clone'})), true);
+  assert.equal(namedLigand(site([1], 'a', {canonical_partner_label:'Reviewed but excluded', exclude_from_overview:true})), false);
+});
+
+test('overnight curation distinguishes constructs and preserves all-compartment evidence', async () => {
+  const { browsingContacts, ligandName } = await import('../lib/contact-sites.ts');
+  const gene = acc => JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard(acc)}.json`,import.meta.url)))[acc];
+  const ctla4 = browsingContacts(filterContacts(gene('P16410').sites, '', true, ''), true, '').map(ligandName);
+  assert.ok(ctla4.includes('Ipilimumab') && ctla4.includes('Ipi.105') && ctla4.includes('Ipi.106'));
+  const cd47 = browsingContacts(filterContacts(gene('Q08722').sites, '', true, ''), true, '').map(ligandName);
+  assert.ok(cd47.includes('SIRPα') && cd47.includes('IMM01 SIRPα D1 N80A binding domain'));
+  assert.ok(cd47.includes('Safimestomig') && cd47.includes('Zeripatamig'));
+  const erbb3 = gene('P21860').sites;
+  const all = browsingContacts(erbb3, true, '').map(ligandName);
+  const ec = browsingContacts(filterContacts(erbb3, '', true, ''), true, '').map(ligandName);
+  assert.ok(all.includes('Bosutinib') && all.includes('EGFR'));
+  assert.ok(!ec.includes('Bosutinib') && !ec.includes('EGFR'));
+  assert.ok(ec.includes('Zenocutuzumab'));
+  const hla = gene('P04439');
+  assert.equal(hla.overview_label, 'partner groups');
+  const loading = hla.sites.filter(s => s.pdb === '7qpd' && ['CALR', 'PDIA3'].some(name => (s.canonical_partner_label ?? '').startsWith(name)));
+  assert.ok(loading.length > 0 && loading.every(s => s.exclude_from_ec_overview && !s.exclude_from_overview));
+  assert.equal(filterContacts(loading, '', true, '').length, 0);
+  assert.equal(filterContacts(loading, '', false, '').length, loading.length);
+  assert.ok(gene('P05067').overview_note.includes('fragments'));
+});

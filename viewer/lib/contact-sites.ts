@@ -1,6 +1,7 @@
 /** Canonical UniProt numbering; never project these onto isoforms or PDB chains. */
 export interface ContactSite {
   exclude_from_overview?: boolean;
+  exclude_from_ec_overview?: boolean;
   identity_evidence?: string;
   identity_note?: string;
   ligand_id?: string;
@@ -23,7 +24,7 @@ export interface ContactSite {
   evidence: string;
   confidence: string;
 }
-export interface ContactGene { hgnc_id: string; symbol: string; sites: ContactSite[]; uniprot_acc?: string; release_id?: string; data_origin?: "api" | "snapshot"; all_ligand_count?: number; audit_status?: "mapped" | "no_mapped_evidence" | "not_audited" }
+export interface ContactGene { overview_note?: string; overview_label?: string; hgnc_id: string; symbol: string; sites: ContactSite[]; uniprot_acc?: string; release_id?: string; data_origin?: "api" | "snapshot"; all_ligand_count?: number; audit_status?: "mapped" | "no_mapped_evidence" | "not_audited" }
 export const LIGAND_CATEGORIES = {
   endogenous_large: { label: "Endogenous · large molecule", color: "#3d6b60" },
   endogenous_small: { label: "Endogenous · small molecule", color: "#b17a26" },
@@ -57,14 +58,16 @@ export function contactContext(context: string): string {
 export function filterContacts(sites: ContactSite[], source: string, ecOnly: boolean, query: string): ContactSite[] {
   const search = query.trim().toLowerCase();
   const exactName = search && sites.some(site => ligandName(site).toLowerCase() === search);
-  return sites.filter(site => (!ecOnly || site.context.startsWith("extracellular_")) &&
+  return sites.filter(site => (!ecOnly || (site.context.startsWith("extracellular_") && !site.exclude_from_ec_overview)) &&
     (!source || site.source === source) &&
     (!search || (exactName ? ligandName(site).toLowerCase() === search : `${ligandName(site)} ${site.partner_label ?? ""} ${site.partner}`.toLowerCase().includes(search))));
 }
 
 /** Display identity only: preserve source IDs and every original observation. */
 export function ligandName(site: ContactSite): string {
-  const label = site.canonical_partner_label ?? site.partner_label ?? site.partner;
+  // Reviewed names retain construct qualifiers; stripping these can merge variants.
+  if (site.canonical_partner_label?.trim()) return site.canonical_partner_label.trim();
+  const label = site.partner_label ?? site.partner;
   // IEDB names retain the parenthetical aliases in the evidence records.
   if (/^cetuximab(?:\s|$)/i.test(label)) return "Cetuximab";
   const name = label.replace(/\s*\([^)]*\)\s*$/, "").replace(/\s+(Fab|Fv|VHH)$/i, "").trim();
@@ -74,6 +77,7 @@ export function ligandName(site: ContactSite): string {
 }
 export function namedLigand(site: ContactSite): boolean {
   if (site.exclude_from_overview) return false;
+  if (site.canonical_partner_label?.trim()) return true;
   if (/^sabdab2_/i.test(ligandName(site))) return false;
   return !/^([A-Z0-9]{6,10}|\d+|CCD:.*|sabdab2_.*)$/.test(site.partner) ||
     Boolean(site.partner_label && site.partner_label !== site.partner);
