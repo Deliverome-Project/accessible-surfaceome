@@ -60,6 +60,28 @@ reviewed["P00533|gc1118"] = {
     "reference": "https://pubmed.ncbi.nlm.nih.gov/31164456/",
     "reason": "Clinical phase I antibody; therapeutic includes investigational and discontinued programs.",
 }
+reviewed["P00533|059-152"] = {
+    "category": "tool",
+    "reference": "https://doi.org/10.1371/journal.pone.0193158",
+    "reason": "Research antibody fragment used in cell-free synthesis, structural analysis and antibody engineering; not labeled as a clinical therapeutic here.",
+}
+reviewed["P00533|dl11"] = {
+    "category": "tool",
+    "reference": "https://www.rcsb.org/structure/3P0Y",
+    "reason": "Research structural Fab from the dual EGFR/HER3 therapeutic-development program. This construct is not asserted to be identical to the clinical molecule.",
+}
+reviewed["P00533|erbb2"] = {
+    "category": "receptor_partner",
+    "reference": "https://www.rcsb.org/structure/8HGO",
+    "reason": "Endogenous HER2/ERBB2 receptor heterodimer partner, distinguished from a soluble activating ligand.",
+}
+for name in ["gc1118", "gc1118a"]:
+    reviewed["P00533|" + name] = {
+        "category": "therapeutic",
+        "canonical_name": "GC1118",
+        "reference": "https://db.antibodysociety.org/db0/2065/",
+        "reason": "GC1118 and GC1118A are drug-code aliases in the same Antibody Society therapeutic record; source names and observations are retained.",
+    }
 out.write_text(
     json.dumps(
         {

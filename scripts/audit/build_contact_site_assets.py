@@ -140,6 +140,9 @@ def main():
             if review:
                 site["category"] = review["category"]
                 site["category_reference"] = review["reference"]
+                site["category_reason"] = review["reason"]
+                if review.get("canonical_name"):
+                    site["canonical_partner_label"] = review["canonical_name"]
             assert genes[acc]["hgnc_id"] == row["hgnc_id"]
             key = (
                 site["source"],

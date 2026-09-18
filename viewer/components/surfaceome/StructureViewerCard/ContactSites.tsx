@@ -81,6 +81,7 @@ export function ContactSites({ sites, selected, source, ecOnly, status, onRetry,
       <div className={styles.contactSourceRow}>Sources {Array.from(new Set(site.supportingSites.map(s => s.source))).map(source => <SourceInfo key={source} source={source} />)}</div>
         <SourceInfo source={site.source} /> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
         {LIGAND_CATEGORIES[site.category ?? "unclassified"].label}{site.category_reference && <> · <a href={site.category_reference} target="_blank" rel="noreferrer">Category source ↗</a></>}<br />
+        {site.category_reason && <p>{site.category_reason}</p>}
         {contactContext(site.context)} · {site.positions.length} residues · {site.evidence}
         <p>{site.confidence}. Contacts are projected onto the canonical AlphaFold model; this is not a model of the bound complex.</p>
         {site.pdb && <a href={`https://www.rcsb.org/structure/${site.pdb}`} target="_blank" rel="noreferrer">PDB {site.pdb.toUpperCase()} ↗</a>}

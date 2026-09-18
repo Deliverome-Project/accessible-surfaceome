@@ -87,9 +87,9 @@ test('EGFR category totals are ligand counts and retain uncertain roles', async 
   const sites=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url))).P00533.sites;
   const overview=browsingContacts(filterContacts(sites,'',true,''),true,'');
   const counts=Object.fromEntries(Object.keys(LIGAND_CATEGORIES).map(c=>[c,overview.filter(s=>s.category===c).length]));
-  assert.deepEqual(counts,{endogenous_large:4,endogenous_small:0,therapeutic:5,tool:4,unclassified:4});
-  assert.equal(Object.values(counts).reduce((a,b)=>a+b,0),17);
-  assert.equal(overview.find(s=>s.partner_label==='ERBB2').category,'unclassified');
+  assert.deepEqual(counts,{endogenous_large:4,endogenous_small:0,therapeutic:5,tool:6,receptor_partner:1,unclassified:0});
+  assert.equal(Object.values(counts).reduce((a,b)=>a+b,0),16);
+  assert.equal(overview.find(s=>s.partner_label==='ERBB2').category,'receptor_partner');
   const egf=sites.filter(s=>s.partner_label==='EGF');
   assert.ok(egf.every(s=>s.category==='endogenous_large' && s.category_reference));
   assert.equal(new Set(egf.map(contactColor)).size,1);
@@ -100,7 +100,7 @@ test('all-ligand rendering retains the full residue union and marks category ove
   const { browsingContacts, contactResidueLayers, SHARED_CONTACT_COLOR } = await import('../lib/contact-sites.ts');
   const sites=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url))).P00533.sites;
   const all=browsingContacts(filterContacts(sites,'',true,''),true,'');
-  assert.equal(all.length,17);
+  assert.equal(all.length,16);
   const expected=[...new Set(all.flatMap(s=>s.positions))].sort((a,b)=>a-b);
   const layers=contactResidueLayers(all);
   assert.deepEqual(layers.flatMap(l=>l.positions).sort((a,b)=>a-b),expected);
@@ -109,4 +109,19 @@ test('all-ligand rendering retains the full residue union and marks category ove
   assert.equal(contactResidueLayers(single).length,1);
   assert.notEqual(contactResidueLayers(single)[0].color,SHARED_CONTACT_COLOR);
   assert.deepEqual(contactResidueLayers(all).flatMap(l=>l.positions).sort((a,b)=>a-b),contactResidueLayers([...all].reverse()).flatMap(l=>l.positions).sort((a,b)=>a-b));
+});
+
+test('reviewed EGFR aliases consolidate GC1118 while preserving both source names', async () => {
+  const { browsingContacts } = await import('../lib/contact-sites.ts');
+  const sites=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url))).P00533.sites;
+  const matched=browsingContacts(filterContacts(sites,'',true,'GC1118'),true,'GC1118');
+  assert.equal(matched.length,1);
+  assert.equal(matched[0].partner_label,'GC1118');
+  assert.equal(matched[0].supportingSites.length,5);
+  assert.ok(matched[0].supportingSites.some(s=>s.partner_label==='GC1118A'));
+  for (const name of ['059-152','DL11']) {
+    const group=browsingContacts(filterContacts(sites,'',true,name),true,name)[0];
+    assert.equal(group.category,'tool');
+    assert.ok(group.category_reason && group.category_reference);
+  }
 });

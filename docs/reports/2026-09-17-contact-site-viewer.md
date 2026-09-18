@@ -108,3 +108,11 @@ Validation: eight existing contact regressions, explicit category-order assertio
 F opens Contact sites on the canonical model, with the same editable-field and modifier guards as the existing A/S/D shortcuts. The mode button and shortcut tooltip advertise F. Filters & views and the separate About section are removed; coverage methodology remains in an info tooltip. Individual mode shows a short ligand/residue summary, compact Focus / Reset controls and one collapsed Evidence disclosure beneath the slider. Source explanations remain within Evidence. Evidence is keyed by ligand so an expanded previous disclosure does not carry into a newly selected ligand.
 
 Validation: eight contact regression tests, production build/export, browser verification of F activating contact mode, and compact individual controls without Filters & views.
+
+## Reviewed EGFR identity and role corrections
+
+059-152 and the structural DL11 Fab are categorized as research tools, with per-record reasons and primary structure/publication references. DL11's therapeutic-development connection is retained without asserting identity to the clinical molecule. ERBB2 receives a distinct Receptor partner category. GC1118A and GC1118 consolidate under GC1118 based on the Antibody Society drug-code record; all five source observations and original labels remain intact.
+
+The updated extracellular overview has 16 named partners: 4 endogenous large molecules, 0 endogenous small molecules, 5 therapeutics, 6 research tools, 1 receptor partner, 0 unclassified. This supersedes earlier 17-entry counts.
+
+Validation: nine viewer regressions including alias conservation and reviewed roles, three exporter tests, scoped Ruff, successful production build/export, and browser confirmation of the updated totals and categories.

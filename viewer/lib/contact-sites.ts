@@ -3,6 +3,8 @@ export interface ContactSite {
   source: string;
   partner: string;
   partner_label?: string;
+  canonical_partner_label?: string;
+  category_reason?: string;
   category?: LigandCategory;
   category_reference?: string;
   pdb: string;
@@ -19,6 +21,7 @@ export const LIGAND_CATEGORIES = {
   endogenous_small: { label: "Endogenous · small molecule", color: "#b17a26" },
   therapeutic: { label: "Therapeutic", color: "#922038" },
   tool: { label: "Research tool", color: "#75629b" },
+  receptor_partner: { label: "Receptor partner", color: "#426d92" },
   unclassified: { label: "Unclassified", color: "#777777" },
 } as const;
 export type LigandCategory = keyof typeof LIGAND_CATEGORIES;
@@ -53,7 +56,7 @@ export function filterContacts(sites: ContactSite[], source: string, ecOnly: boo
 
 /** Display identity only: preserve source IDs and every original observation. */
 export function ligandName(site: ContactSite): string {
-  const label = site.partner_label ?? site.partner;
+  const label = site.canonical_partner_label ?? site.partner_label ?? site.partner;
   // IEDB names retain the parenthetical aliases in the evidence records.
   if (/^cetuximab(?:\s|$)/i.test(label)) return "Cetuximab";
   const name = label.replace(/\s*\([^)]*\)\s*$/, "").replace(/\s+(Fab|Fv|VHH)$/i, "").trim();
