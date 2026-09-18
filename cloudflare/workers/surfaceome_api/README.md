@@ -182,3 +182,55 @@ Required secrets (`wrangler secret put`):
 - `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile secret for token verification.
 - `MAGIC_LINK_SECRET` — 32-byte secret used as HMAC key for magic links.
 - `MAINTAINER_EMAIL` — destination + From address for notification e-mails.
+
+### Versioned contact evidence
+
+`/v1/contact-sites/releases/current` returns the active release manifest. Pin its
+`release_id` when requesting `/v1/contact-sites/releases/{release}/proteins/{uniprot}`.
+This summary contains named ligand identities, reference-sequence hash/length,
+category/source metadata, evidence counts and representative residue footprints.
+Default scope is `extracellular`; `?scope=all` includes other compartments.
+
+Fetch `/v1/contact-sites/releases/{release}/proteins/{uniprot}/ligands/{ligandId}/evidence`
+for original observations. Pages contain at most 100 observations and a
+`next_cursor`; repeat the same scope/release with `?cursor=...` until null.
+Omit `ligands/{ligandId}/` to retrieve all observations, including unresolved names.
+Audit statuses are `mapped`, `no_mapped_evidence`, or `not_audited`. Unknown stable
+identifiers/releases return 404; storage failures return 503, never empty evidence.
+
+These initial routes use `Cache-Control: no-store` to avoid the existing zone rule
+that ignores query strings. Summaries include a scope-specific ETag. The active
+release pointer is uncached, so activation/rollback needs no edge/KV purge. Rate
+limiting remains in place. Add immutable response caching only with a verified
+query-aware edge rule; do not wrap these routes in the current default cache.
+
+Publish (from repository root):
+
+```sh
+node scripts/audit/export_contact_release.mjs /private/tmp/contact-release.json
+uv run python scripts/publish_contact_sites.py /private/tmp/contact-release.json
+uv run python scripts/publish_contact_sites.py /private/tmp/contact-release.json --execute --activate
+# Roll back only to a previously validated release:
+uv run python scripts/publish_contact_sites.py --execute --rollback RELEASE_ID
+```
+
+The exporter validates residue bounds against the audit's cached canonical
+sequences, records sequence hashes, reuses the viewer's identity/representative
+rules, and writes `api-release.json` for the matching static fallback. Run it after
+rebuilding contact assets. Raw source labels/construct strings remain in evidence;
+a named ligand ID denotes the audited browsing identity, not a claim that every
+construct is an identical molecule. Existing source sampling limitations remain.
+
+The publisher uses resumable INSERT OR IGNORE batches, reads back every payload
+in all four data tables, and activates with a single pointer write only after
+validation. It never deletes the current release. `contact_release` and
+`contact_active_release` provide version metadata and activation. The public D1
+backup workflow exports these tables with the rest of the database.
+
+Development API: `https://surfaceome-contact-api-dev.beccajcarlson.workers.dev`.
+The isolated `contact-preview.js` Worker exposes only read-only contact routes
+and is rate limited. Build the local viewer with
+`NEXT_PUBLIC_CONTACT_API_BASE=https://surfaceome-contact-api-dev.beccajcarlson.workers.dev`.
+The normal viewer default remains `https://api.deliverome.org/surfaceome`; deploy
+the main Worker route before rolling out that viewer build. Do not deploy the
+preview entry point over the main Worker.

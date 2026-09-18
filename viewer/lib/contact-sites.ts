@@ -1,5 +1,10 @@
 /** Canonical UniProt numbering; never project these onto isoforms or PDB chains. */
 export interface ContactSite {
+  ligand_id?: string;
+  observation_id?: string;
+  evidence_count?: number;
+  evidence_sources?: string[];
+  supportingSites?: ContactSite[];
   source: string;
   partner: string;
   partner_label?: string;
@@ -15,7 +20,7 @@ export interface ContactSite {
   evidence: string;
   confidence: string;
 }
-export interface ContactGene { hgnc_id: string; symbol: string; sites: ContactSite[] }
+export interface ContactGene { hgnc_id: string; symbol: string; sites: ContactSite[]; uniprot_acc?: string; release_id?: string; data_origin?: "api" | "snapshot"; all_ligand_count?: number; audit_status?: "mapped" | "no_mapped_evidence" | "not_audited" }
 export const LIGAND_CATEGORIES = {
   endogenous_large: { label: "Endogenous · large molecule", color: "#3d6b60" },
   endogenous_small: { label: "Endogenous · small molecule", color: "#b17a26" },
@@ -84,7 +89,7 @@ export function browsingContacts(sites: ContactSite[], _grouped: boolean, query:
     const key = name.toLowerCase();
     const existing = byLigand.get(key);
     if (existing) existing.supportingSites.push(site);
-    else byLigand.set(key, {...site, partner_label: name, supportingSites: [site]});
+    else byLigand.set(key, {...site, partner_label: name, supportingSites: site.supportingSites ?? [site]});
   }
   const order = Object.keys(LIGAND_CATEGORIES);
   return [...byLigand.values()].sort((a,b) =>

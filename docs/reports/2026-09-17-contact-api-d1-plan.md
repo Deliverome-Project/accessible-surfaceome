@@ -1,6 +1,6 @@
 # Contact evidence: public D1 and API implementation plan
 
-Status: proposed; no D1 writes or API deployment performed. Target the existing dev PR and staging environment first.
+Status: implemented for public D1 and the isolated development API. See [implementation and verification](2026-09-18-contact-api-d1-implementation.md). The main production API/Pages rollout remains in the normal dev-to-production process. The design below records the original proposal; initial cache behavior and identity limitations are clarified in the implementation report.
 
 ## Current state and scope
 

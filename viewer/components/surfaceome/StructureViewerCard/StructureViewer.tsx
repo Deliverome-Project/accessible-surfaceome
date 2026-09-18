@@ -1,4 +1,5 @@
 "use client";
+import { loadContactGene } from "../../../lib/contact-api";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
@@ -16,7 +17,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
-import { LIGAND_CATEGORIES, contactResidueLayers, contactShard, filterContacts, browsingContacts } from "../../../lib/contact-sites";
+import { LIGAND_CATEGORIES, contactResidueLayers, filterContacts, browsingContacts } from "../../../lib/contact-sites";
 import type { ContactGene, ContactAtom } from "../../../lib/contact-sites";
 import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -1144,13 +1145,11 @@ export function StructureViewer({
     if (viewMode !== "contacts") return;
     const controller = new AbortController();
     setContactStatus("loading");
-    fetch(`/data/contact-sites/${contactShard(data.uniprot_acc)}.json`, { signal: controller.signal })
-      .then(response => { if (!response.ok) throw new Error("Contact data unavailable"); return response.json(); })
-      .then((shard: Record<string, ContactGene>) => {
+    loadContactGene(data.uniprot_acc, controller.signal)
+      .then(gene => {
         if (controller.signal.aborted) return;
-        const gene = shard[data.uniprot_acc] ?? null;
         setContactGene(gene);
-        setContactStatus(gene ? "ready" : "unaudited");
+        setContactStatus(gene.audit_status === "not_audited" ? "unaudited" : "ready");
       })
       .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
     return () => controller.abort();
@@ -2698,8 +2697,8 @@ export function StructureViewer({
       {viewMode === "contacts" && isCanonicalActive && status === "ready" && contactStatus === "ready" && <div className={styles.contactCanvasLegend} aria-label={selectedContact ? "Selected ligand" : "Ligand categories and counts"}>
         {selectedContact ? <section className={styles.contactSelectedLegend}>
           <strong>{selectedContact.partner_label ?? selectedContact.partner} <InfoTip label={`About ${selectedContact.partner_label ?? selectedContact.partner}`} align="start">
-            {selectedContact.positions.length} contact residues · {selectedContact.supportingSites.length} evidence records.<br />
-            Sources: {Array.from(new Set(selectedContact.supportingSites.map(site => site.source))).join(", ")}.<br />
+            {selectedContact.positions.length} contact residues · {selectedContact.evidence_count ?? selectedContact.supportingSites.length} evidence records.<br />
+            Sources: {(selectedContact.evidence_sources ?? Array.from(new Set(selectedContact.supportingSites.map(site => site.source)))).join(", ")}.<br />
             {selectedContact.category_reason || selectedContact.confidence}
             {selectedContact.reference && <> <a href={selectedContact.reference} target="_blank" rel="noreferrer">Evidence ↗</a></>}
           </InfoTip></strong>
@@ -2772,7 +2771,7 @@ export function StructureViewer({
         onFocus={() => { const viewer = viewerRef.current; if (viewer && visibleContacts[0]) { viewer.zoomTo({ resi: [...new Set(visibleContacts.flatMap(site => site.positions))] }); viewer.render(); } }}
         onReset={() => { const viewer = viewerRef.current; if (viewer) { viewer.zoomTo({}); viewer.render(); } }}
         query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
-        sites={contactGene?.sites ?? []} selected={contactIndex}
+        gene={contactGene} sites={contactGene?.sites ?? []} selected={contactIndex}
         source={contactSource}
         ecOnly={contactsEcOnly}
         status={contactStatus} onRetry={() => setContactRetry(n => n + 1)}
