@@ -16,7 +16,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
-import { CONTACT_COLORS, contactShard, filterContacts } from "../../../lib/contact-sites";
+import { CONTACT_COLORS, contactShard, filterContacts, groupContactSites } from "../../../lib/contact-sites";
 import type { ContactGene } from "../../../lib/contact-sites";
 import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -1130,6 +1130,7 @@ export function StructureViewer({
   const [contactRetry, setContactRetry] = useState(0);
   const [contactIndex, setContactIndex] = useState(0);
   const [contactSource, setContactSource] = useState("");
+  const [groupContacts, setGroupContacts] = useState(true);
   const [contactQuery, setContactQuery] = useState("");
   const [contactsEcOnly, setContactsEcOnly] = useState(true);
   useEffect(() => {
@@ -1154,8 +1155,8 @@ export function StructureViewer({
       .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
     return () => controller.abort();
   }, [data.uniprot_acc, viewMode, contactRetry]);
-  const selectedContact = contactStatus === "ready" ? filterContacts(
-    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery)[contactIndex] : undefined;
+  const selectedContact = contactStatus === "ready" ? groupContactSites(filterContacts(
+    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), groupContacts)[contactIndex] : undefined;
   // Update only styles when scrubbing: preserve camera and avoid reloading the model.
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -2739,6 +2740,7 @@ export function StructureViewer({
         </div>
       ) : null}
       {viewMode === "contacts" && isCanonicalActive ? <ContactSites
+        grouped={groupContacts} onGrouped={value => { setGroupContacts(value); setContactIndex(0); }}
         query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
         sites={contactGene?.sites ?? []} selected={contactIndex} onSelect={setContactIndex}
         source={contactSource} onSource={value => { setContactSource(value); setContactIndex(0); }}

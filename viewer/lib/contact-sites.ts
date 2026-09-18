@@ -36,3 +36,29 @@ export function filterContacts(sites: ContactSite[], source: string, ecOnly: boo
     (!source || site.source === source) &&
     (!search || `${site.partner_label ?? ""} ${site.partner}`.toLowerCase().includes(search)));
 }
+
+export interface ContactGroup extends ContactSite { supportingSites: ContactSite[] }
+
+/** Conservative complete-link grouping: every pair shares >=70% Jaccard
+ * overlap, with identical partner ID, source and compartment. Never merge
+ * different ligands or let an intermediate site bridge distinct footprints.
+ * The largest observed site is displayed, not a synthetic union of residues.
+ */
+export function groupContactSites(sites: ContactSite[], enabled = true): ContactGroup[] {
+  const groups: ContactGroup[] = [];
+  const ordered = enabled ? [...sites].sort((a, b) =>
+    b.positions.length - a.positions.length || a.pdb.localeCompare(b.pdb) ||
+    a.positions.join(",").localeCompare(b.positions.join(","))) : sites;
+  for (const site of ordered) {
+    const residues = new Set(site.positions);
+    const group = enabled ? groups.find(candidate =>
+      candidate.partner === site.partner && candidate.source === site.source &&
+      candidate.context === site.context && candidate.supportingSites.every(other => {
+        const intersection = other.positions.filter(position => residues.has(position)).length;
+        return intersection / (residues.size + other.positions.length - intersection) >= 0.7;
+      })) : undefined;
+    if (group) group.supportingSites.push(site);
+    else groups.push({ ...site, supportingSites: [site] });
+  }
+  return groups;
+}

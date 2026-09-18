@@ -1,15 +1,17 @@
 "use client";
-import { CONTACT_COLORS, contactContext, filterContacts } from "../../../lib/contact-sites";
+import { CONTACT_COLORS, contactContext, filterContacts, groupContactSites } from "../../../lib/contact-sites";
 import type { ContactSite } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
-export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery }: {
+export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery, grouped, onGrouped }: {
+  grouped: boolean; onGrouped: (grouped: boolean) => void;
   query: string; onQuery: (query: string) => void;
   sites: ContactSite[]; selected: number; onSelect: (index: number) => void;
   source: string; onSource: (source: string) => void; ecOnly: boolean;
   onEcOnly: (value: boolean) => void; status: string; onRetry: () => void;
 }) {
-  const filtered = filterContacts(sites, source, ecOnly, query);
+  const records = filterContacts(sites, source, ecOnly, query);
+  const filtered = groupContactSites(records, grouped);
   const site = filtered[selected];
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     <div className={styles.contactFilters}>
@@ -18,12 +20,14 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         <option value="">All sources</option>
         {Array.from(new Set(sites.map(s => s.source))).sort().map(s => <option key={s}>{s}</option>)}
       </select></label>
+      <label><input type="checkbox" checked={grouped} onChange={e => onGrouped(e.target.checked)} /> Group similar sites</label>
       <label><input type="checkbox" checked={ecOnly} onChange={e => onEcOnly(e.target.checked)} /> Extracellular only</label>
     </div>
     {status === "loading" ? <p role="status">Loading contact evidence…</p> : status === "error" ?
       <p role="alert">Contact evidence could not be loaded. <button onClick={onRetry}>Retry</button></p> : status === "unaudited" ?
       <p>This protein has no unambiguous mapping in this audit.</p> : !site ?
       <p>No mapped sites in this audit match these filters. This does not establish absence of binders.</p> : <>
+      <p>{filtered.length} {grouped ? "site groups" : "records"} from {records.length} evidence records.</p>
       <div className={styles.contactSlider}>
         <button aria-label="Previous contact site" disabled={selected === 0} onClick={() => onSelect(selected - 1)}>←</button>
         <input type="range" aria-label="Contact site" min={0} max={Math.max(0, filtered.length - 1)} value={selected}
@@ -39,6 +43,13 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         <p>{site.confidence}. Contacts are projected onto the canonical AlphaFold model; this is not a model of the bound complex.</p>
         {site.pdb && <a href={`https://www.rcsb.org/structure/${site.pdb}`} target="_blank" rel="noreferrer">PDB {site.pdb.toUpperCase()} ↗</a>}
         {site.reference && <> · <a href={site.reference} target="_blank" rel="noreferrer">Evidence ↗</a></>}
+        {site.supportingSites.length > 1 && <details><summary>{site.supportingSites.length} supporting records</summary>
+          <p>Similar footprints for the same partner, source and compartment (at least 70% residue-set overlap / Jaccard similarity between every pair). Highlighted residues come from the largest observed footprint.</p>
+          <ul>{site.supportingSites.map((support, index) => <li key={index}>
+            {support.source} · {support.pdb ? <a href={`https://www.rcsb.org/structure/${support.pdb}`} target="_blank" rel="noreferrer">{support.pdb.toUpperCase()}</a> : "No PDB"} · {support.positions.length} residues
+            {support.reference && <> · <a href={support.reference} target="_blank" rel="noreferrer">Evidence</a></>}
+          </li>)}</ul>
+        </details>}
         <details><summary>Canonical residue positions</summary><p className={styles.contactResidues}>{site.positions.join(", ")}</p></details>
       </div>
     </>}

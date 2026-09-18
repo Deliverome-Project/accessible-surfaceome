@@ -36,3 +36,9 @@ The offline production build passed (987 exported files, including all 64 contac
 The binder/ligand filter now searches readable gene names as well as stable partner identifiers. Labels come from the existing unambiguous UniProt-to-HGNC cohort mapping; identifiers are retained. EGFR (P00533) has ten PDB/PDBe records for EGF (P01133), all classified extracellular. Searching EGF selects these records, starting with 1IVO (37 canonical EGFR contact residues). These are ten structural observations, not ten distinct binding pockets. Names outside the cohort and IUPHAR ligand IDs remain as source identifiers pending broader label enrichment.
 
 Validation: three export tests including the EGFR–EGF regression, name/identifier/source-filter checks, TypeScript, scoped Ruff/ty, and browser confirmation of the ten EGF results and 1IVO residue count.
+
+## Similar-site grouping
+
+The viewer now groups similar sites by default, with a toggle to restore all records. Within each source, exact partner ID and compartment, every pair in a group must have Jaccard residue-set similarity of at least 0.70. Complete-link grouping prevents an intermediate footprint from bridging two dissimilar sites. The largest observed footprint is rendered; residue sets are not unioned into a synthetic site. Every original structure/reference remains accessible under supporting records. Different partner identifiers and sources are deliberately not merged without verified identity crosswalks.
+
+EGFR extracellular records reduce from 122 to 58 groups; the ten EGF records reduce to three groups (7, 2 and 1 supporting records). These are browsing groups, not inferred distinct biological binding pockets. Validation: TypeScript, two grouping regression tests covering identity/context separation and overlap-chain prevention, and browser checks of grouped counts, expanded evidence, and restoration of all records.
