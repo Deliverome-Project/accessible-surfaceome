@@ -1,5 +1,5 @@
 "use client";
-import { CONTACT_COLORS, contactContext, filterContacts, groupContactSites } from "../../../lib/contact-sites";
+import { CONTACT_COLORS, contactContext, filterContacts, browsingContacts, ligandOptions, namedLigand } from "../../../lib/contact-sites";
 import { ContactProjections } from "./ContactProjections";
 import type { ContactSite, ContactAtom, ContactGroup } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
@@ -12,9 +12,9 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
   source: string; onSource: (source: string) => void; ecOnly: boolean;
   onEcOnly: (value: boolean) => void; status: string; onRetry: () => void;
 }) {
-  const binderNames = Array.from(new Set(sites.map(s => s.partner_label ?? s.partner))).sort((a,b) => a.localeCompare(b));
+  const binderNames = ligandOptions(filterContacts(sites, source, ecOnly, ""));
   const records = filterContacts(sites, source, ecOnly, query);
-  const filtered = groupContactSites(records, grouped);
+  const filtered = browsingContacts(records, grouped, query);
   const site = filtered[selected];
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     <div className={styles.contactFilters}>
@@ -28,7 +28,7 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         {Array.from(new Set(sites.map(s => s.source))).sort().map(s => <option key={s}>{s}</option>)}
       </select></label>
       <label><input type="checkbox" checked={compare} onChange={e => onCompare(e.target.checked)} /> Compare other binders separately</label>
-      <label><input type="checkbox" checked={grouped} onChange={e => onGrouped(e.target.checked)} /> Group similar sites</label>
+      {query.trim() && <label><input type="checkbox" checked={grouped} onChange={e => onGrouped(e.target.checked)} /> Group similar sites</label>}
       <label><input type="checkbox" checked={ecOnly} onChange={e => onEcOnly(e.target.checked)} /> Extracellular only</label>
     </div>
     {status === "loading" ? <p role="status">Loading contact evidence…</p> : status === "error" ?
@@ -42,9 +42,10 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
           disabled={filtered.length === 1} onChange={e => onSelect(Number(e.target.value))}
           style={{ accentColor: CONTACT_COLORS[site.source] }} />
         <button aria-label="Next contact site" disabled={selected === filtered.length - 1} onClick={() => onSelect(selected + 1)}>→</button>
-        <span className={styles.contactCounter}>{grouped ? "Group" : "Record"} {selected + 1} of {filtered.length}</span>
+        <span className={styles.contactCounter}>{!query.trim() ? "Ligand" : grouped ? "Group" : "Record"} {selected + 1} of {filtered.length}</span>
       </div>
-      <p><strong>{query.trim() ? `Matching “${query.trim()}”` : "All binders and ligands"}</strong> · {filtered.length} {grouped ? "similarity groups" : "records"} from {records.length} evidence records. These are not counts of distinct biological binding sites.</p>
+      <p><strong>{query.trim() ? `Matching “${query.trim()}”` : "All binders and ligands"}</strong> · {filtered.length} {!query.trim() ? "named ligands / binders" : grouped ? "similarity groups" : "records"} from {records.length} evidence records. These are not counts of distinct biological binding sites.</p>
+      {!query.trim() && <p><button onClick={() => onQuery(site.partner_label ?? site.partner)}>Show contact groups for {site.partner_label ?? site.partner}</button> · One representative footprint per named ligand. {records.filter(s => !namedLigand(s)).length} unresolved identity records remain searchable by identifier.</p>}
       <ContactProjections atoms={atoms} sites={visibleSites} />
       <details className={styles.contactEvidence}><summary>Evidence for {site.partner_label ?? site.partner} · {site.source} · {site.supportingSites.length} supporting records</summary>
       <div>
@@ -54,7 +55,7 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         {site.pdb && <a href={`https://www.rcsb.org/structure/${site.pdb}`} target="_blank" rel="noreferrer">PDB {site.pdb.toUpperCase()} ↗</a>}
         {site.reference && <> · <a href={site.reference} target="_blank" rel="noreferrer">Evidence ↗</a></>}
         {site.supportingSites.length > 1 && <details><summary>{site.supportingSites.length} supporting records</summary>
-          <p>Similar footprints for the same partner, source and compartment (at least 70% residue-set overlap / Jaccard similarity between every pair). Highlighted residues come from the largest observed footprint.</p>
+          <p>{query.trim() ? "Similar footprints for the same partner, source and compartment (at least 70% Jaccard similarity between every pair)." : "All observations for this named ligand across sources; footprints may differ."} Highlighted residues come from one observed footprint, not their union.</p>
           <ul>{site.supportingSites.map((support, index) => <li key={index}>
             {support.source} · {support.pdb ? <a href={`https://www.rcsb.org/structure/${support.pdb}`} target="_blank" rel="noreferrer">{support.pdb.toUpperCase()}</a> : "No PDB"} · {support.positions.length} residues
             {support.reference && <> · <a href={support.reference} target="_blank" rel="noreferrer">Evidence</a></>}

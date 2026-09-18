@@ -16,7 +16,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
-import { CONTACT_COLORS, contactShard, filterContacts, groupContactSites, comparisonContacts } from "../../../lib/contact-sites";
+import { CONTACT_COLORS, contactShard, filterContacts, browsingContacts, comparisonContacts } from "../../../lib/contact-sites";
 import type { ContactGene, ContactAtom } from "../../../lib/contact-sites";
 import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -1157,8 +1157,8 @@ export function StructureViewer({
       .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
     return () => controller.abort();
   }, [data.uniprot_acc, viewMode, contactRetry]);
-  const contactGroups = useMemo(() => contactStatus === "ready" ? groupContactSites(filterContacts(
-    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), groupContacts) : [],
+  const contactGroups = useMemo(() => contactStatus === "ready" ? browsingContacts(filterContacts(
+    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), groupContacts, contactQuery) : [],
     [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery, groupContacts]);
   const visibleContacts = useMemo(() => comparisonContacts(contactGroups, contactIndex, compareContacts),
     [contactGroups, contactIndex, compareContacts]);

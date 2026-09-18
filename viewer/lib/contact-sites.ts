@@ -32,9 +32,46 @@ export function contactContext(context: string): string {
 
 export function filterContacts(sites: ContactSite[], source: string, ecOnly: boolean, query: string): ContactSite[] {
   const search = query.trim().toLowerCase();
+  const exactName = search && sites.some(site => ligandName(site).toLowerCase() === search);
   return sites.filter(site => (!ecOnly || site.context.startsWith("extracellular_")) &&
     (!source || site.source === source) &&
-    (!search || `${site.partner_label ?? ""} ${site.partner}`.toLowerCase().includes(search)));
+    (!search || (exactName ? ligandName(site).toLowerCase() === search : `${ligandName(site)} ${site.partner_label ?? ""} ${site.partner}`.toLowerCase().includes(search))));
+}
+
+/** Display identity only: preserve source IDs and every original observation. */
+export function ligandName(site: ContactSite): string {
+  const label = site.partner_label ?? site.partner;
+  // IEDB names retain the parenthetical aliases in the evidence records.
+  if (/^cetuximab(?:\s|$)/i.test(label)) return "Cetuximab";
+  const name = label.replace(/\s*\([^)]*\)\s*$/, "").replace(/\s+(Fab|Fv|VHH)$/i, "").trim();
+  // IEDB calls this necitumumab (11F8); AACDB uses IMC-11F8 Fab.
+  if (/^(IMC-)?11F8$/i.test(name)) return "necitumumab";
+  return name;
+}
+export function namedLigand(site: ContactSite): boolean {
+  if (/^sabdab2_/i.test(ligandName(site))) return false;
+  return !/^([A-Z0-9]{6,10}|\d+|CCD:.*|sabdab2_.*)$/.test(site.partner) ||
+    Boolean(site.partner_label && site.partner_label !== site.partner);
+}
+export function ligandOptions(sites: ContactSite[]): string[] {
+  const names = new Map<string, string>();
+  for (const site of sites.filter(namedLigand)) {
+    const name = ligandName(site);
+    if (!names.has(name.toLowerCase())) names.set(name.toLowerCase(), name);
+  }
+  return [...names.values()].sort((a,b) => a.localeCompare(b));
+}
+export function browsingContacts(sites: ContactSite[], grouped: boolean, query: string): ContactGroup[] {
+  if (query.trim()) return groupContactSites(sites, grouped);
+  const byLigand = new Map<string, ContactGroup>();
+  for (const site of [...sites].filter(namedLigand).sort((a,b) => b.positions.length-a.positions.length)) {
+    const name = ligandName(site);
+    const key = name.toLowerCase();
+    const existing = byLigand.get(key);
+    if (existing) existing.supportingSites.push(site);
+    else byLigand.set(key, {...site, partner_label: name, supportingSites: [site]});
+  }
+  return [...byLigand.values()].sort((a,b) => (a.partner_label ?? "").localeCompare(b.partner_label ?? ""));
 }
 
 export interface ContactGroup extends ContactSite { supportingSites: ContactSite[] }

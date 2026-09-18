@@ -62,6 +62,20 @@ def normalize(row):
 
 def main():
     ligand_names = json.loads((INPUT / "ligand_names.json").read_text())["ligands"]
+    observation_names = {}
+    with gzip.open(INPUT / "observations.tsv.gz", "rt") as handle:
+        for observation in csv.DictReader(handle, delimiter="\t"):
+            if observation["binder_name"]:
+                observation_names[
+                    (
+                        observation["source"],
+                        observation["binder_id"],
+                        observation["reference"],
+                    )
+                ] = observation["binder_name"]
+    protein_ligands = {
+        v["uniprot_acc"]: v for v in ligand_names.values() if v["uniprot_acc"]
+    }
     genes = {}
     with (INPUT / "binder_denominator_genes.tsv").open() as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
@@ -77,10 +91,17 @@ def main():
             site = normalize(row)
             if site is None:
                 continue
+            name = observation_names.get(
+                (site["source"], site["partner"], site["reference"])
+            )
+            if name:
+                site["partner_label"] = name
             partner_gene = genes.get(site["partner"])
             if partner_gene:
                 site["partner_label"] = partner_gene["symbol"]
-            ligand = ligand_names.get(site["partner"])
+            ligand = ligand_names.get(site["partner"]) or protein_ligands.get(
+                site["partner"]
+            )
             if ligand:
                 site["partner_label"] = ligand["name"]
                 symbol = genes.get(ligand["uniprot_acc"], {}).get("symbol")
@@ -132,6 +153,9 @@ def main():
     }
     manifest = dict(
         schema_version=1,
+        observation_names_sha256=hashlib.sha256(
+            (INPUT / "observations.tsv.gz").read_bytes()
+        ).hexdigest(),
         ligand_names_sha256=hashlib.sha256(
             (INPUT / "ligand_names.json").read_bytes()
         ).hexdigest(),

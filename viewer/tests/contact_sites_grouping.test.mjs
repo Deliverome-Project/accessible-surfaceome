@@ -60,3 +60,20 @@ test('IUPHAR names expose EGF while TGFA and IMC Fab remain separate groups', ()
   assert.ok(tgfa.length>0);
   assert.ok(tgfa.every(g=>g.supportingSites.every(s=>s.partner===g.partner)));
 });
+
+test('default browsing shows named ligands once and searches restore footprints', async () => {
+  const { browsingContacts, ligandOptions, ligandName } = await import('../lib/contact-sites.ts');
+  const sites=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url))).P00533.sites;
+  const records=filterContacts(sites,'',true,'');
+  const overview=browsingContacts(records,true,'');
+  const names=overview.map(s=>ligandName(s).toLowerCase());
+  assert.equal(new Set(names).size,names.length);
+  assert.equal(names.filter(n=>n==='egf').length,1);
+  assert.equal(names.filter(n=>n==='cetuximab').length,1);
+  assert.equal(names.filter(n=>n==='necitumumab').length,1);
+  assert.equal(overview.find(s=>ligandName(s)==='EGF').supportingSites.length,20);
+  assert.ok(browsingContacts(filterContacts(sites,'',true,'EGF'),true,'EGF').length>1);
+  assert.ok(ligandOptions(records).every(n=>!/^\d+$|^sabdab2_/.test(n)));
+  assert.ok(records.filter(s=>s.source==='IEDB').every(s=>s.partner_label && s.partner_label!==s.partner));
+  assert.ok(!overview.find(s=>ligandName(s)==='necitumumab').supportingSites.some(s=>s.partner==='P01135'));
+});

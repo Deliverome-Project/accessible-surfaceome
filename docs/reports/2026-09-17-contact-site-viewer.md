@@ -58,3 +58,9 @@ The binder picker includes EGF (IUPHAR 4916), epiregulin/EREG (4918), epigen/EPG
 Slider controls precede changing labels and projections, with fixed columns for the arrows and a separate counter row. Cross-binder comparison is opt-in and labels each comparison binder separately. IMC-11F8 Fab's eight AACDB records form their own group; no TGFA record is merged into that group.
 
 Validation: five grouping/comparison tests, three exporter tests, scoped Ruff/ty, successful production export, and browser verification of the named EGF picker, unchecked comparison default, and next-site navigation.
+
+## Ligand-first overview
+
+Default browsing now shows one representative footprint per normalized named ligand across sources, with all source observations retained under evidence. EGFR has 17 named extracellular partner entries in this view; 11 records with unresolved identities are excluded from the overview but searchable by identifier. This is not an exhaustive biological ligand census. Selecting or searching a ligand restores its source-specific footprint groups. IEDB receptor names are restored from observations.tsv.gz using source, binder ID and reference; the manifest hashes this name source. GtoPdb protein ligands and corresponding UniProt partners share names. Case, Fab/Fv/VHH suffixes, parenthetical aliases and the audited necitumumab/IMC-11F8 alias are normalized for browsing only. GC1118 and GC1118A remain separate without a verified equivalence.
+
+Validation: six viewer regression tests, three exporter tests, production build, and browser checks of the 17-entry overview and EGF's six source-specific groups.
