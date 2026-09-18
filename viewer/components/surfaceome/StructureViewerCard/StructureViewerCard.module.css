@@ -581,3 +581,9 @@
 .contactEvidence { margin-top: .3rem; font-size: .72rem; }
 .contactCounter { font-size: .7rem; color: var(--muted); }
 .contactSlider { gap: .3rem; }
+
+.contactCanvasFrame { position: relative; }
+.contactCanvasLegend { position: absolute; z-index: 3; top: .5rem; left: .5rem; max-width: calc(100% - 1rem); padding: .35rem .45rem; border: 1px solid var(--line-soft); border-radius: 4px; background: rgb(255 255 255 / 86%); color: var(--ink); pointer-events: none; font-size: .62rem; line-height: 1.45; }
+.contactCanvasLegend > div { display: grid; grid-template-columns: 6px auto minmax(1ch, auto); align-items: center; gap: .35rem; }
+.contactCanvasLegend i { width: 6px; height: 6px; border-radius: 50%; }
+.contactCanvasLegend b { text-align: right; font-variant-numeric: tabular-nums; }

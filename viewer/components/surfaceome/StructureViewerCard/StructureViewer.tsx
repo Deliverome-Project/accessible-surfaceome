@@ -16,7 +16,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
-import { contactResidueLayers, contactShard, filterContacts, browsingContacts } from "../../../lib/contact-sites";
+import { LIGAND_CATEGORIES, contactResidueLayers, contactShard, filterContacts, browsingContacts } from "../../../lib/contact-sites";
 import type { ContactGene, ContactAtom } from "../../../lib/contact-sites";
 import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -1159,6 +1159,12 @@ export function StructureViewer({
     contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), true, contactQuery) : [],
     [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery]);
   const visibleContacts = contactGroups;
+  const contactLegend = useMemo(() => {
+    const ligands = browsingContacts(filterContacts(contactGene?.sites ?? [], "", contactsEcOnly, ""), true, "");
+    return Object.entries(LIGAND_CATEGORIES).map(([key, category]) => ({
+      ...category, key, count: ligands.filter(site => (site.category ?? "unclassified") === key).length,
+    }));
+  }, [contactGene, contactsEcOnly]);
   // Update only styles when scrubbing: preserve camera and avoid reloading the model.
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -2601,6 +2607,7 @@ export function StructureViewer({
           })}
         </div>
       )}
+      <div className={styles.contactCanvasFrame}>
       <div
         ref={containerRef}
         className={styles.viewerCanvas}
@@ -2686,6 +2693,10 @@ export function StructureViewer({
         >
           ↺
         </button>
+      </div>
+      {viewMode === "contacts" && isCanonicalActive && status === "ready" && contactStatus === "ready" && <div className={styles.contactCanvasLegend} aria-label="Ligand categories and counts">
+        {contactLegend.map(category => <div key={category.key}><i style={{background: category.color}} /><span>{category.label}</span><b>{category.count}</b></div>)}
+      </div>}
       </div>
       {/* Controls row — mode toggle + SURFACE-Bind external link.
           Reset is the inlaid ↺ symbol inside the canvas (above), no

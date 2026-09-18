@@ -46,9 +46,6 @@ export function ContactSites({ sites, selected, source, ecOnly, status, onRetry,
     {status === "ready" && <header className={styles.contactOverview}>
       <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span> <InfoTip label="About ligand coverage" align="start">Named partners with mapped contacts in this audit, not an exhaustive ligand census. Each ligand uses one observed footprint; evidence retains alternative observations. Category colors describe the partner’s role, not confidence. Therapeutic includes investigational and discontinued agents; unclassified roles are unverified.</InfoTip></strong>
       {ecOnly && <small>{allCompartmentCount} across all compartments</small>}
-      <div className={styles.contactCategories} aria-label="Ligand categories and counts">
-        {categoryCounts.map(({key, count}) => <span key={key} style={{borderLeftColor: LIGAND_CATEGORIES[key].color}}><i style={{background: LIGAND_CATEGORIES[key].color}} />{LIGAND_CATEGORIES[key].label} <b>{count}</b>{key === "unclassified" && count > 0 && <InfoTip label="Which partners are unclassified?" align="start">{allLigands.filter(s => s.category === "unclassified").map(s => s.partner_label ?? s.partner).join(", ")}. Binding evidence is present, but a role in these categories has not been verified. These may include receptor partners.</InfoTip>}</span>)}
-      </div>
     </header>}
     <div className={styles.contactFilters}>
       <ContactPicker label="Ligand" value={binderNames.includes(query) ? query : ""} placeholder="All ligands" onChange={onQuery}

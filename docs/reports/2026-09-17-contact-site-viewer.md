@@ -116,3 +116,7 @@ Validation: eight contact regression tests, production build/export, browser ver
 The updated extracellular overview has 16 named partners: 4 endogenous large molecules, 0 endogenous small molecules, 5 therapeutics, 6 research tools, 1 receptor partner, 0 unclassified. This supersedes earlier 17-entry counts.
 
 Validation: nine viewer regressions including alias conservation and reviewed roles, three exporter tests, scoped Ruff, successful production build/export, and browser confirmation of the updated totals and categories.
+
+## In-view category legend
+
+Category counts now sit in a compact translucent overlay at the top-left of the 3D canvas, removing the category chip rows below the viewer. Counts stay scoped to all named extracellular partners while an individual ligand is selected. The overlay is a sibling of the renderer-owned canvas, appears only in ready canonical contact mode, and ignores pointer events so structure rotation/zoom still works beneath it.
