@@ -1132,7 +1132,6 @@ export function StructureViewer({
   const [contactSource, setContactSource] = useState("");
   const [compareContacts, setCompareContacts] = useState(false);
   const [contactAtoms, setContactAtoms] = useState<ContactAtom[]>([]);
-  const [groupContacts, setGroupContacts] = useState(true);
   const [contactQuery, setContactQuery] = useState("");
   const [contactsEcOnly, setContactsEcOnly] = useState(true);
   useEffect(() => {
@@ -1158,8 +1157,8 @@ export function StructureViewer({
     return () => controller.abort();
   }, [data.uniprot_acc, viewMode, contactRetry]);
   const contactGroups = useMemo(() => contactStatus === "ready" ? browsingContacts(filterContacts(
-    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), groupContacts, contactQuery) : [],
-    [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery, groupContacts]);
+    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), true, contactQuery) : [],
+    [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery]);
   const visibleContacts = useMemo(() => comparisonContacts(contactGroups, contactIndex, compareContacts),
     [contactGroups, contactIndex, compareContacts]);
   // Update only styles when scrubbing: preserve camera and avoid reloading the model.
@@ -2753,7 +2752,6 @@ export function StructureViewer({
         onReset={() => { const viewer = viewerRef.current; if (viewer) { viewer.zoomTo({}); viewer.render(); } }}
         atoms={status === "ready" ? contactAtoms : []} visibleSites={visibleContacts}
         compare={compareContacts} onCompare={setCompareContacts}
-        grouped={groupContacts} onGrouped={value => { setGroupContacts(value); setContactIndex(0); }}
         query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
         sites={contactGene?.sites ?? []} selected={contactIndex} onSelect={setContactIndex}
         source={contactSource} onSource={value => { setContactSource(value); setContactIndex(0); }}

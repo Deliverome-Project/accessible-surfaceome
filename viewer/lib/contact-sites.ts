@@ -74,10 +74,9 @@ export function ligandOptions(sites: ContactSite[]): string[] {
   }
   return [...names.values()].sort((a,b) => a.localeCompare(b));
 }
-export function browsingContacts(sites: ContactSite[], grouped: boolean, query: string): ContactGroup[] {
-  if (query.trim()) return groupContactSites(sites, grouped);
+export function browsingContacts(sites: ContactSite[], _grouped: boolean, query: string): ContactGroup[] {
   const byLigand = new Map<string, ContactGroup>();
-  for (const site of [...sites].filter(namedLigand).sort((a,b) => b.positions.length-a.positions.length)) {
+  for (const site of [...sites].filter(site => query.trim() || namedLigand(site)).sort((a,b) => b.positions.length-a.positions.length)) {
     const name = ligandName(site);
     const key = name.toLowerCase();
     const existing = byLigand.get(key);

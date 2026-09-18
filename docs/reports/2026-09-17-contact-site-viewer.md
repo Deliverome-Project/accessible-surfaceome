@@ -80,3 +80,11 @@ The contact panel always displays the named-ligand total for the selected compar
 Category colors now match the main structure, slider, category legend and optional projection views; source provenance remains in evidence details. The picker is grouped by category. Metadata is rebuilt with scripts/audit/build_ligand_categories.py using the cached GtoPdb endogenous target–ligand annotations and ligand types, the Thera-SAbDab therapeutic-name catalogue, and explicit cited EGFR role reviews. The resulting committed sidecar contains source hashes and review references. Therapeutic includes investigational and discontinued programs. Absence from Thera-SAbDab never automatically makes a binder a research tool. GC1118 is therapeutic based on its phase I study (PMID 31164456); GC1118A remains unclassified without a verified identity crosswalk. ERBB2 is also unclassified rather than relabeling a receptor partner an endogenous ligand.
 
 Validation: seven viewer regression tests, three exporter tests, scoped Ruff/ty, successful production build/export, and browser checks of persistent totals, category counts, grouped picker, and EGF category labeling.
+
+## Single-entry ligand browsing and source explanations
+
+Selecting a ligand now keeps a single representative observed footprint, rather than opening a source-specific group slider. EGF has one displayed entry with ten unique structures and twenty source records; the source records and their individual residue sets remain under Alternative observations. Navigation appears only when browsing multiple ligands. This supersedes the earlier search-to-groups interaction.
+
+Ligand and source pickers use styled disclosure menus with categorized options, keyboard-accessible buttons, Escape dismissal and focus restoration. The app's existing InfoTip component explains each source's evidence and limitations, both beside the selected ligand's source list and within observation details. IUPHAR+PDBe explicitly explains overlap with PDB/PDBe.
+
+Validation: seven regression tests (including one-entry EGF browsing with all twenty observations preserved), successful production build/export, and browser verification of the styled picker, absence of an EGF slider, ten-structure/twenty-record summary, and the IUPHAR source tooltip.
