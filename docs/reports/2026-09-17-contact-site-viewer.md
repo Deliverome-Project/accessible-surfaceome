@@ -102,3 +102,9 @@ Validation: eight viewer regression tests, including complete residue-union pres
 An isolated named ligand now has previous/next and slider navigation through the named ligands in the active source/compartment scope. Order is endogenous large molecules, endogenous small molecules, therapeutics, research tools, then unclassified; names are alphabetical within each category. Each step selects a different ligand, never an alternative footprint of the same ligand. All ligands continues to show the combined overlay. The counter includes the current category. Verified EGFR order starts EGF → epigen → epiregulin → TGFα → Cetuximab.
 
 Validation: eight existing contact regressions, explicit category-order assertion, production build/export, and browser next-ligand navigation from EGF to epigen with category counter.
+
+## Compact controls and contact shortcut
+
+F opens Contact sites on the canonical model, with the same editable-field and modifier guards as the existing A/S/D shortcuts. The mode button and shortcut tooltip advertise F. Filters & views and the separate About section are removed; coverage methodology remains in an info tooltip. Individual mode shows a short ligand/residue summary, compact Focus / Reset controls and one collapsed Evidence disclosure beneath the slider. Source explanations remain within Evidence. Evidence is keyed by ligand so an expanded previous disclosure does not carry into a newly selected ligand.
+
+Validation: eight contact regression tests, production build/export, browser verification of F activating contact mode, and compact individual controls without Filters & views.

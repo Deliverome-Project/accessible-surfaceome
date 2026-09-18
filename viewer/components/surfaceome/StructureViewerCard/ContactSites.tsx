@@ -1,9 +1,8 @@
 "use client";
-import { contactColor, SHARED_CONTACT_COLOR, LIGAND_CATEGORIES, contactContext, filterContacts, browsingContacts, ligandOptions, namedLigand } from "../../../lib/contact-sites";
+import { contactColor, SHARED_CONTACT_COLOR, LIGAND_CATEGORIES, contactContext, filterContacts, browsingContacts, ligandOptions } from "../../../lib/contact-sites";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { ContactPicker } from "./ContactPicker";
-import { ContactProjections } from "./ContactProjections";
-import type { ContactSite, ContactAtom, ContactGroup, LigandCategory } from "../../../lib/contact-sites";
+import type { ContactSite, LigandCategory } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
 const SOURCE_INFO: Record<string, string> = {
@@ -22,13 +21,12 @@ function SourceInfo({source}: {source: string}) {
   return <span className={styles.contactSource}>{source}<InfoTip label={`About ${source}`} align="start">{SOURCE_INFO[source] ?? "Experimental contact evidence; see the linked source record for its methods and limitations."}</InfoTip></span>;
 }
 
-export function ContactSites({ sites, selected, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery, atoms, visibleSites, onFocus, onReset }: {
+export function ContactSites({ sites, selected, source, ecOnly, status, onRetry, query, onQuery, onFocus, onReset }: {
   onFocus: () => void; onReset: () => void;
-  atoms: ContactAtom[]; visibleSites: ContactGroup[];
   query: string; onQuery: (query: string) => void;
   sites: ContactSite[]; selected: number;
-  source: string; onSource: (source: string) => void; ecOnly: boolean;
-  onEcOnly: (value: boolean) => void; status: string; onRetry: () => void;
+  source: string; ecOnly: boolean;
+  status: string; onRetry: () => void;
 }) {
   const binderNames = ligandOptions(filterContacts(sites, source, ecOnly, ""));
   const allLigands = browsingContacts(filterContacts(sites, "", ecOnly, ""), true, "");
@@ -46,7 +44,7 @@ export function ContactSites({ sites, selected, source, onSource, ecOnly, onEcOn
   const overview = filtered.length > 1;
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     {status === "ready" && <header className={styles.contactOverview}>
-      <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span></strong>
+      <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span> <InfoTip label="About ligand coverage" align="start">Named partners with mapped contacts in this audit, not an exhaustive ligand census. Each ligand uses one observed footprint; evidence retains alternative observations. Category colors describe the partner’s role, not confidence. Therapeutic includes investigational and discontinued agents; unclassified roles are unverified.</InfoTip></strong>
       {ecOnly && <small>{allCompartmentCount} across all compartments</small>}
       <div className={styles.contactCategories} aria-label="Ligand categories and counts">
         {categoryCounts.map(({key, count}) => <span key={key} style={{borderLeftColor: LIGAND_CATEGORIES[key].color}}><i style={{background: LIGAND_CATEGORIES[key].color}} />{LIGAND_CATEGORIES[key].label} <b>{count}</b>{key === "unclassified" && count > 0 && <InfoTip label="Which partners are unclassified?" align="start">{allLigands.filter(s => s.category === "unclassified").map(s => s.partner_label ?? s.partner).join(", ")}. Binding evidence is present, but a role in these categories has not been verified. These may include receptor partners.</InfoTip>}</span>)}
@@ -74,13 +72,13 @@ export function ContactSites({ sites, selected, source, onSource, ecOnly, onEcOn
         <span className={styles.contactCounter}>{LIGAND_CATEGORIES[site.category ?? "unclassified"].label} · {navigationIndex + 1} / {navigation.length}</span>
       </div>}
       <div className={styles.contactSelection}>
-        <div><strong>{site.partner_label ?? site.partner}</strong><span><i style={{ background: contactColor(site) }} />{LIGAND_CATEGORIES[site.category ?? "unclassified"].label} · {site.positions.length} contact residues</span></div>
-        <button onClick={onFocus}>Focus site</button><button onClick={onReset}>Whole protein</button>
+        <div><strong>{site.partner_label ?? site.partner}</strong><span><i style={{ background: contactColor(site) }} />{site.positions.length} contact residues</span></div>
+        <button onClick={onFocus} aria-label="Focus contact site">Focus</button><button onClick={onReset} aria-label="Show whole protein">Reset</button>
       </div>
-      {query.trim() && <button className={styles.contactTextAction} onClick={() => onQuery("")}>← All ligands</button>}
-      <div className={styles.contactSourceRow}>Sources {Array.from(new Set(site.supportingSites.map(s => s.source))).map(source => <SourceInfo key={source} source={source} />)}</div>
-      <details className={styles.contactEvidence}><summary>Evidence · {new Set(site.supportingSites.map(s => s.pdb).filter(Boolean)).size} structures · {site.supportingSites.length} source records</summary>
+
+      <details key={site.partner_label ?? site.partner} className={styles.contactEvidence}><summary>Evidence ({site.supportingSites.length} records)</summary>
       <div>
+      <div className={styles.contactSourceRow}>Sources {Array.from(new Set(site.supportingSites.map(s => s.source))).map(source => <SourceInfo key={source} source={source} />)}</div>
         <SourceInfo source={site.source} /> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
         {LIGAND_CATEGORIES[site.category ?? "unclassified"].label}{site.category_reference && <> · <a href={site.category_reference} target="_blank" rel="noreferrer">Category source ↗</a></>}<br />
         {contactContext(site.context)} · {site.positions.length} residues · {site.evidence}
@@ -100,15 +98,5 @@ export function ContactSites({ sites, selected, source, onSource, ecOnly, onEcOn
       </details>
       </>}
     </>}
-    <details className={styles.contactEvidence}><summary>Filters &amp; views</summary>
-      <div className={styles.contactFilters}>
-      <label>Search <input type="search" placeholder="Name or identifier" value={query} onChange={e => onQuery(e.target.value)} /></label>
-      <ContactPicker label="Source" value={source} placeholder="All sources" onChange={onSource} groups={[{options: Array.from(new Set(sites.map(s => s.source))).sort()}]} />
-      <label><input type="checkbox" checked={ecOnly} onChange={e => onEcOnly(e.target.checked)} /> Extracellular only</label>
-      </div>
-      <details className={styles.contactEvidence}><summary>Three-angle view</summary><ContactProjections atoms={atoms} sites={visibleSites} /></details>
-      <p className={styles.contactNote}>{records.length} evidence records. The overview shows one observed footprint per named ligand; sources may overlap. {records.filter(s => !namedLigand(s)).length} unresolved identity records are searchable by identifier.</p>
-    </details>
-    <details className={styles.contactEvidence}><summary>About this evidence</summary><p className={styles.contactNote}>Colors indicate ligand category; database provenance is listed with the evidence. Endogenous large molecules include proteins and peptides. Therapeutic includes investigational and discontinued programs, not only approved drugs. Research tools are explicitly reviewed reagents; missing therapeutic annotation alone does not imply a tool. Unclassified entries lack a verified role. Totals count named ligands in this contact-evidence snapshot, not all known ligands. Audited contact and epitope evidence. SAbDab and BioLiP currently show one representative site per gene, not all known sites. Different sources or structures may describe the same interface. IntAct binding regions and mutation effects are excluded from this contact view. Source labels identify provenance, not confidence or therapeutic suitability. Source records may report the same experimental structure more than once. <a href="/data/contact-sites/manifest.json" target="_blank" rel="noreferrer">Snapshot provenance ↗</a></p></details>
   </section>;
 }

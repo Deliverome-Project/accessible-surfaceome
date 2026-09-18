@@ -1511,7 +1511,7 @@ export function StructureViewer({
   // Keyboard shortcuts (same guarded-window-listener pattern as GeneDetail's
   // prev/next-gene nav): 1-9 pick a structure tile (1 = Canonical, then each
   // variant tile left-to-right), a/s/d pick the viewer mode (a = topology,
-  // s = tag sites, d = SURFACE-Bind). Guarded against typing in inputs and
+  // s = tag sites, d = SURFACE-Bind, f = contacts). Guarded against typing in inputs and
   // against modifier chords so it never hijacks a browser/OS shortcut. A mode
   // key is a no-op when that mode isn't available for the current gene/tab.
   useEffect(() => {
@@ -1536,6 +1536,9 @@ export function StructureViewer({
       } else if (k === "s" && hasTagSites) {
         setViewMode("tags");
         e.preventDefault();
+      } else if (k === "f" && isCanonicalActive) {
+        setViewMode("contacts");
+        e.preventDefault();
       } else if (k === "d" && hasAnchors) {
         setViewMode("sites");
         e.preventDefault();
@@ -1543,7 +1546,7 @@ export function StructureViewer({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [effectiveVariants.length, hasTagSites, hasAnchors]);
+  }, [effectiveVariants.length, hasTagSites, hasAnchors, isCanonicalActive]);
 
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
@@ -2730,10 +2733,11 @@ export function StructureViewer({
             ) : null}
             {isCanonicalActive ? <button type="button" className={styles.modeButton}
               data-active={viewMode === "contacts"} aria-pressed={viewMode === "contacts"}
-              onClick={() => setViewMode("contacts")}>Contact sites</button> : null}
+              aria-keyshortcuts="f" title="Show ligand contact sites on the canonical structure. Shortcut: f"
+              onClick={() => setViewMode("contacts")}>Contact sites [f]</button> : null}
             <InfoTip label="Viewer keyboard shortcuts">
               <strong>a</strong> topology, <strong>s</strong> tag sites,{" "}
-              <strong>d</strong> SURFACE-Bind. <strong>1</strong>–<strong>9</strong>{" "}
+              <strong>d</strong> SURFACE-Bind, <strong>f</strong> contact sites. <strong>1</strong>–<strong>9</strong>{" "}
               switch the structure (Canonical = 1, then each variant tile left to
               right: isoforms, mouse / cyno orthologs, experimental).
             </InfoTip>
@@ -2747,11 +2751,10 @@ export function StructureViewer({
       {viewMode === "contacts" && isCanonicalActive ? <ContactSites
         onFocus={() => { const viewer = viewerRef.current; if (viewer && visibleContacts[0]) { viewer.zoomTo({ resi: [...new Set(visibleContacts.flatMap(site => site.positions))] }); viewer.render(); } }}
         onReset={() => { const viewer = viewerRef.current; if (viewer) { viewer.zoomTo({}); viewer.render(); } }}
-        atoms={status === "ready" ? contactAtoms : []} visibleSites={visibleContacts}
         query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
         sites={contactGene?.sites ?? []} selected={contactIndex}
-        source={contactSource} onSource={value => { setContactSource(value); setContactIndex(0); }}
-        ecOnly={contactsEcOnly} onEcOnly={value => { setContactsEcOnly(value); setContactIndex(0); }}
+        source={contactSource}
+        ecOnly={contactsEcOnly}
         status={contactStatus} onRetry={() => setContactRetry(n => n + 1)}
       /> : null}
       {/* Per-variant caption — sits directly below the canvas (above
