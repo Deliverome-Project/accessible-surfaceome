@@ -44,7 +44,7 @@ export function ContactSites({ sites, selected, source, ecOnly, status, onRetry,
   const overview = filtered.length > 1;
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     {status === "ready" && <header className={styles.contactOverview}>
-      <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span> <InfoTip label="About ligand coverage" align="start">Named partners with mapped contacts in this audit, not an exhaustive ligand census. Each ligand uses one observed footprint; evidence retains alternative observations. Category colors describe the partner’s role, not confidence. Therapeutic includes investigational and discontinued agents; unclassified roles are unverified.</InfoTip></strong>
+      <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span> <InfoTip label="About ligand coverage" align="start">Mapped partners only; coverage is incomplete. One footprint per ligand. Colors indicate role, not confidence.</InfoTip></strong>
       {ecOnly && <small>{allCompartmentCount} across all compartments</small>}
     </header>}
     <div className={styles.contactFilters}>
