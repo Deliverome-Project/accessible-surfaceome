@@ -301,8 +301,8 @@ def main() -> None:
     if bad:
         raise RuntimeError(f"Callouts not found in rescue slice: {bad}")
 
-    # ─── Figure ─── 2×2: top row = per-reason bar panels (independent
-    # y-axes — see the y_max_yes / y_max_ctx note below);
+    # ─── Figure ─── 2×2: top row = per-reason bar panels (shared y-axis
+    # limit, own tick labels — see the y_max note below);
     # bottom row = callout columns.
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     # Brand-style-v3 font sizes (mirror parity). The gist mirror at
@@ -347,27 +347,31 @@ def main() -> None:
             fontsize=32, fontweight=800, color=COLORS["dark"],
         )
 
-    # Each panel scales to its own data. A shared axis put both panels on
-    # the contextual slice's range: contextual's tallest reason is 316
-    # against yes's 36, so every yes bar sat in the bottom tenth of the
-    # panel and the ordering among them was unreadable. The cost is that
-    # bar heights no longer compare across panels, which is why both
-    # panels now carry their own tick labels and y-axis title rather than
-    # the left panel labelling for both.
-    y_max_yes = max(yes_counts.values(), default=0) * 1.18
-    y_max_ctx = max(ctx_counts.values(), default=0) * 1.18
-    ax_yes.set_ylim(0, y_max_yes)
-    ax_ctx.set_ylim(0, y_max_ctx)
+    # One limit across both panels so a bar in a is directly comparable to
+    # a bar in b. Independent limits were tried and rejected: they make
+    # panel a legible (its tallest reason is 36 against contextual's 316)
+    # but two same-height bars then mean different counts, which is the
+    # more confusing failure. The per-bar value labels carry the reading
+    # that the squashed heights no longer do.
+    #
+    # What the panels do NOT share is their tick labels: ``sharey`` hid
+    # panel b's, and a panel whose axis is unlabelled reads as unitless.
+    y_max = max(
+        max(yes_counts.values(), default=0),
+        max(ctx_counts.values(), default=0),
+    ) * 1.18
+    ax_yes.set_ylim(0, y_max)
+    ax_ctx.set_ylim(0, y_max)
 
     _draw_reason_bars(
         ax_yes, yes_counts, YES_REASONS, YES_PALETTE,
         header_label=f"yes — definite surface  (n = {n_yes})",
-        header_color=YES_HEADER_COLOR, y_max=y_max_yes,
+        header_color=YES_HEADER_COLOR, y_max=y_max,
     )
     _draw_reason_bars(
         ax_ctx, ctx_counts, CONTEXTUAL_REASONS, CONTEXTUAL_PALETTE,
         header_label=f"contextual — state / lineage dependent  (n = {n_ctx})",
-        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max_ctx,
+        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
     for ax in (ax_yes, ax_ctx):

@@ -399,23 +399,24 @@ def main() -> None:
             fontsize=32, fontweight=800, color=BRAND_INK,
         )
 
-    # Independent y-axes: contextual's tallest reason is 316 against yes's
-    # 36, so a shared axis squashed every yes bar into the bottom tenth of
-    # its panel. Both panels therefore carry their own ticks and title.
-    y_max_yes = max(yes_counts.values(), default=0) * 1.18
-    y_max_ctx = max(ctx_counts.values(), default=0) * 1.18
-    ax_yes.set_ylim(0, y_max_yes)
-    ax_ctx.set_ylim(0, y_max_ctx)
+    # One limit across both panels so bar heights compare directly; only
+    # the tick labels are un-shared (``sharey`` hid panel b's entirely).
+    y_max = max(
+        max(yes_counts.values(), default=0),
+        max(ctx_counts.values(), default=0),
+    ) * 1.18
+    ax_yes.set_ylim(0, y_max)
+    ax_ctx.set_ylim(0, y_max)
 
     _draw_reason_bars(
         ax_yes, yes_counts, YES_REASONS, YES_PALETTE,
         header_label=f"yes — definite surface  (n = {n_yes})",
-        header_color=YES_HEADER_COLOR, y_max=y_max_yes,
+        header_color=YES_HEADER_COLOR, y_max=y_max,
     )
     _draw_reason_bars(
         ax_ctx, ctx_counts, CONTEXTUAL_REASONS, CONTEXTUAL_PALETTE,
         header_label=f"contextual — state / lineage dependent  (n = {n_ctx})",
-        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max_ctx,
+        header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
     for ax in (ax_yes, ax_ctx):
