@@ -1,0 +1,18 @@
+{
+  "denominators": {
+    "all": 5130,
+    "cellphonedb_membrane": 621,
+    "therasabdab_membrane": 244
+  },
+  "source_streams": 13,
+  "inputs": {
+    "binder_denominator_genes.tsv": "c03deeb0c2bf44ffd646be33d6299f73f766599ce0e6423776e65cfe8cb9cff7",
+    "all_source_comparison_genes.tsv": "215b790b24ef59aef30274bffa3c4f0c1e34a6ee3d3ac307f50abc30d0e7646a",
+    "structural_intact_evidence.tsv.gz": "062941b5a9a72b96f79ccb7e7fa1c1b12127b991e70318dc77f77ee57bf9ffa1",
+    "structural_intact_genes.tsv": "21395bdfaaf088037116d5f6dd1b3832882adba2d8d51c03e281cf8d51f5fa7b"
+  },
+  "numerators": {
+    "cellphonedb": "Any audited binder; not required to match catalogue ligand",
+    "therasabdab": "Antibody-specific epitope evidence only; not required to match named therapeutic"
+  }
+}
