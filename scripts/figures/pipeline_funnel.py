@@ -107,7 +107,7 @@ RESCUE_FILL = "#FBEFF0"
 TRIM_EDGE = "#8A8A8A"
 
 # Canvas in Figure 4's coordinate space (viewBox 0 0 1260 460).
-CANVAS_W, CANVAS_H = 1650.0, 600.0
+CANVAS_W, CANVAS_H = 1650.0, 572.0
 
 POSITIVE_VERDICTS = ("yes", "contextual")
 
@@ -277,7 +277,7 @@ def _eyebrow(ax, x, y, text, color=EYEBROW):
 
 
 def build(counts: Counts):
-    fig, ax = plt.subplots(figsize=(16.5, 6.0))
+    fig, ax = plt.subplots(figsize=(16.5, 5.72))
     ax.set_xlim(0, CANVAS_W)
     ax.set_ylim(0, CANVAS_H)
     ax.invert_yaxis()  # top-left origin, like the SVG

@@ -21,7 +21,19 @@ reader notices. Equal-width panels are worth more than closing that gap;
 an earlier 0.80 here made panel a visibly the smaller of the two.
 
 Outputs:
-  paper/figures/deep_dive_flow.svg   the print asset the manifest resolves
+  paper/figures/deep_dive_flow.svg                       print asset (manifest)
+  data/analysis/figures/figure4_cohort_and_pipeline.svg  reader-facing copy
+  data/analysis/figures/figure4_cohort_and_pipeline.pdf  vector, for placing
+  data/analysis/figures/figure4_cohort_and_pipeline.png  300 dpi, for pasting
+
+The paste-ready raster exists because neither Google Docs nor Word will
+take this SVG: it has to be dropped into the manuscript as a bitmap even
+though the build ships the vector. It is rendered WeasyPrint -> PDF ->
+pdftocairo rather than through a standalone SVG rasteriser, because
+WeasyPrint is the renderer the paper build already uses, so the paste
+matches the printed figure. On macOS WeasyPrint needs its GObject
+libraries on the loader path; the exports are skipped with a warning
+rather than failing the composite if it cannot load.
 
 Panel b's own gist still serves the single-panel schematic; the composite
 is a print asset, not a new published figure.
@@ -39,12 +51,14 @@ from accessible_surfaceome.paths import REPO_ROOT
 PANEL_A_PDF = REPO_ROOT / "data/analysis/figures/pipeline_funnel.pdf"
 PANEL_B_SVG = REPO_ROOT / "data/analysis/figures/deep_dive_flow.svg"
 OUT_SVG = REPO_ROOT / "paper/figures/deep_dive_flow.svg"
+EXPORT_STEM = REPO_ROOT / "data/analysis/figures/figure4_cohort_and_pipeline"
+EXPORT_DPI = 300
 
 # Panel a's width as a fraction of panel b's. 1.0 = equal width; see the
 # module docstring for why that beats matching the type exactly.
 PANEL_A_TEXT_SCALE = 1.0
-GUTTER = 34.0          # vertical space between the panels
-LETTER_GAP = 26.0      # space a panel letter occupies above its panel
+GUTTER = 10.0          # vertical space between the panels
+LETTER_GAP = 22.0      # space a panel letter occupies above its panel
 MARGIN = 6.0
 
 LETTER_STYLE = (
@@ -64,6 +78,35 @@ def _inner(svg: str) -> str:
     """Strip the XML prolog and the outer <svg> wrapper."""
     start = svg.index(">", svg.index("<svg")) + 1
     return svg[start : svg.rindex("</svg>")]
+
+
+def _export(svg: str, w: float, h: float) -> None:
+    """Write the reader-facing SVG plus a vector PDF and a 300-dpi PNG."""
+    EXPORT_STEM.with_suffix(".svg").write_text(svg, encoding="utf-8")
+    try:
+        from weasyprint import HTML
+    except Exception as exc:  # noqa: BLE001 - any import path can fail here
+        print(f"  ! skipped PDF/PNG export: {type(exc).__name__}: {exc}")
+        print("    retry with DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib")
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        page = Path(tmp) / "page.html"
+        page.write_text(
+            "<!doctype html><html><head><meta charset='utf-8'><style>"
+            f"@page {{ size: {w}pt {h}pt; margin: 0; }}"
+            "html,body { margin:0; padding:0; background:#fff; }"
+            f"svg {{ display:block; width:{w}pt; height:{h}pt; }}"
+            f"</style></head><body>{svg[svg.index('<svg'):]}</body></html>",
+            encoding="utf-8",
+        )
+        pdf = EXPORT_STEM.with_suffix(".pdf")
+        HTML(filename=str(page)).write_pdf(str(pdf))
+        subprocess.run(
+            ["pdftocairo", "-png", "-r", str(EXPORT_DPI), "-singlefile",
+             str(pdf), str(EXPORT_STEM)],
+            check=True,
+        )
+    print(f"  exports -> {EXPORT_STEM}.{{svg,pdf,png}} ({EXPORT_DPI} dpi)")
 
 
 def main() -> None:
@@ -107,7 +150,9 @@ def main() -> None:
         "</g>",
         "</svg>",
     ]
-    OUT_SVG.write_text("\n".join(out), encoding="utf-8")
+    svg = "\n".join(out)
+    OUT_SVG.write_text(svg, encoding="utf-8")
+    _export(svg, total_w, total_h)
     print(
         f"  panel a {aw:.0f}x{ah:.0f} -> scale {sa:.4f} ({target_a_w:.0f} wide)\n"
         f"  panel b {bw:.0f}x{bh:.0f} -> scale 1.0\n"
