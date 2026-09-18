@@ -33,7 +33,7 @@ The offline production build passed (987 exported files, including all 64 contac
 
 ## EGFR example
 
-The binder/ligand filter now searches readable gene names as well as stable partner identifiers. Labels come from the existing unambiguous UniProt-to-HGNC cohort mapping; identifiers are retained. EGFR (P00533) has ten PDB/PDBe records for EGF (P01133), all classified extracellular. Searching EGF selects these records, starting with 1IVO (37 canonical EGFR contact residues). These are ten structural observations, not ten distinct binding pockets. Names outside the cohort and IUPHAR ligand IDs remain as source identifiers pending broader label enrichment.
+The binder/ligand filter now searches readable gene names as well as stable partner identifiers. Labels come from the existing unambiguous UniProt-to-HGNC cohort mapping; identifiers are retained. EGFR (P00533) has ten PDB/PDBe records for EGF (P01133), all classified extracellular. Searching EGF selects these records, starting with 1IVO (37 canonical EGFR contact residues). These are ten structural observations, not ten distinct binding pockets. IUPHAR names are now enriched from the provenance-tracked ligand catalogue sidecar; other names outside the cohort retain source identifiers.
 
 Validation: three export tests including the EGFR–EGF regression, name/identifier/source-filter checks, TypeScript, scoped Ruff/ty, and browser confirmation of the ten EGF results and 1IVO residue count.
 
@@ -50,3 +50,11 @@ The count now distinguishes all-ligand results from a ligand search and reads �
 Three fixed, orthogonal C-alpha projections (XY, ZY, XZ) are zoomed to the compared contact residues. Thick convex outlines enclose each observed residue set; enclosed gaps are explicitly not claimed as contacts or a molecular surface. The main interactive 3D view renders all compared footprints with larger translucent atom markers. Evidence details and methodology are collapsible. The projections use only validated numeric coordinates from the currently loaded canonical model and disappear on noncanonical models or when the model is unavailable.
 
 Validation: four grouping/comparison/outline regression tests; TypeScript; browser verification of all-ligand three-footprint comparison, EGF-only three-group/one-footprint display, and slider updates. EGF alternative footprints overlap and are therefore not automatically presented as independent sites.
+
+## Readable ligand names and stable navigation
+
+The binder picker includes EGF (IUPHAR 4916), epiregulin/EREG (4918), epigen/EPGN (4917), and TGFα/TGFA (5059). The committed name sidecar records the GtoPdb catalogue version, source URL and hash; asset manifests hash the sidecar. Stable partner identifiers are retained. EGF now finds 20 evidence records across IUPHAR+PDBe and PDB/PDBe, representing the same ten PDB complexes; these remain six source-specific similarity groups (three per source), not six independent biological sites.
+
+Slider controls precede changing labels and projections, with fixed columns for the arrows and a separate counter row. Cross-binder comparison is opt-in and labels each comparison binder separately. IMC-11F8 Fab's eight AACDB records form their own group; no TGFA record is merged into that group.
+
+Validation: five grouping/comparison tests, three exporter tests, scoped Ruff/ty, successful production export, and browser verification of the named EGF picker, unchecked comparison default, and next-site navigation.

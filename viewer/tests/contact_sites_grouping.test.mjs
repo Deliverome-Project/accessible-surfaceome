@@ -17,7 +17,7 @@ test('complete-link grouping keeps different footprints and biological identitie
 });
 test('EGFR EGF grouping retains every structural record without synthesizing residues', () => {
   const data=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url)));
-  const records=filterContacts(data.P00533.sites,'',true,'EGF');
+  const records=filterContacts(data.P00533.sites,'PDB/PDBe',true,'EGF');
   const groups=groupContactSites(records);
   assert.equal(records.length,10);
   assert.equal(groups.length,3);
@@ -41,4 +41,22 @@ test('projected outline excludes interior and duplicate points and handles short
   assert.deepEqual(contactHull([[0,0],[2,0],[2,2],[0,2],[1,1],[0,0]]),[[0,0],[2,0],[2,2],[0,2]]);
   assert.deepEqual(contactHull([[1,1]]),[[1,1]]);
   assert.deepEqual(contactHull([[0,0],[1,0],[2,0]]),[[0,0],[2,0]]);
+});
+
+
+test('IUPHAR names expose EGF while TGFA and IMC Fab remain separate groups', () => {
+  const data=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url)));
+  const sites=data.P00533.sites;
+  assert.equal(sites.find(s=>s.partner==='GTOPDB:4918').partner_label,'epiregulin (EREG)');
+  assert.equal(sites.find(s=>s.partner==='GTOPDB:4916').partner_label,'EGF');
+  assert.equal(sites.find(s=>s.partner==='GTOPDB:5059').partner_label,'TGFα (TGFA)');
+  assert.equal(filterContacts(sites,'',true,'EGF').length,20);
+  const groups=groupContactSites(filterContacts(sites,'',true,''));
+  assert.equal(groups.length,58);
+  const imc=groups.find(g=>g.partner==='IMC-11F8 Fab');
+  assert.equal(imc.supportingSites.length,8);
+  assert.ok(imc.supportingSites.every(s=>s.partner==='IMC-11F8 Fab'));
+  const tgfa=groups.filter(g=>g.partner==='GTOPDB:5059'||g.partner==='P01135');
+  assert.ok(tgfa.length>0);
+  assert.ok(tgfa.every(g=>g.supportingSites.every(s=>s.partner===g.partner)));
 });

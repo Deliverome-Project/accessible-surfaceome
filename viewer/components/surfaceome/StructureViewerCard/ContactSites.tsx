@@ -12,17 +12,22 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
   source: string; onSource: (source: string) => void; ecOnly: boolean;
   onEcOnly: (value: boolean) => void; status: string; onRetry: () => void;
 }) {
+  const binderNames = Array.from(new Set(sites.map(s => s.partner_label ?? s.partner))).sort((a,b) => a.localeCompare(b));
   const records = filterContacts(sites, source, ecOnly, query);
   const filtered = groupContactSites(records, grouped);
   const site = filtered[selected];
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     <div className={styles.contactFilters}>
-      <label>Binder or ligand <input type="search" placeholder="Name or identifier" value={query} onChange={e => onQuery(e.target.value)} /></label>
+      <label>Choose binder <select value={binderNames.includes(query) ? query : ""} onChange={e => onQuery(e.target.value)}>
+        <option value="">All binders and ligands</option>
+        {binderNames.map(name => <option key={name} value={name}>{name}</option>)}
+      </select></label>
+      <label>Search <input type="search" placeholder="Name or identifier" value={query} onChange={e => onQuery(e.target.value)} /></label>
       <label>Source <select value={source} onChange={e => onSource(e.target.value)}>
         <option value="">All sources</option>
         {Array.from(new Set(sites.map(s => s.source))).sort().map(s => <option key={s}>{s}</option>)}
       </select></label>
-      <label><input type="checkbox" checked={compare} onChange={e => onCompare(e.target.checked)} /> Compare distinct footprints</label>
+      <label><input type="checkbox" checked={compare} onChange={e => onCompare(e.target.checked)} /> Compare other binders separately</label>
       <label><input type="checkbox" checked={grouped} onChange={e => onGrouped(e.target.checked)} /> Group similar sites</label>
       <label><input type="checkbox" checked={ecOnly} onChange={e => onEcOnly(e.target.checked)} /> Extracellular only</label>
     </div>
@@ -30,8 +35,6 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
       <p role="alert">Contact evidence could not be loaded. <button onClick={onRetry}>Retry</button></p> : status === "unaudited" ?
       <p>This protein has no unambiguous mapping in this audit.</p> : !site ?
       <p>No mapped sites in this audit match these filters. This does not establish absence of binders.</p> : <>
-      <p><strong>{query.trim() ? `Matching “${query.trim()}”` : "All binders and ligands"}</strong> · {filtered.length} {grouped ? "similarity groups" : "records"} from {records.length} evidence records. These are not counts of distinct biological binding sites.</p>
-      <ContactProjections atoms={atoms} sites={visibleSites} />
       <div className={styles.contactSlider}>
         <button aria-label="Previous contact site" disabled={selected === 0} onClick={() => onSelect(selected - 1)}>←</button>
         <input type="range" aria-label="Contact site" min={0} max={Math.max(0, filtered.length - 1)} value={selected}
@@ -39,8 +42,10 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
           disabled={filtered.length === 1} onChange={e => onSelect(Number(e.target.value))}
           style={{ accentColor: CONTACT_COLORS[site.source] }} />
         <button aria-label="Next contact site" disabled={selected === filtered.length - 1} onClick={() => onSelect(selected + 1)}>→</button>
-        <span>{grouped ? "Group" : "Record"} {selected + 1} of {filtered.length}</span>
+        <span className={styles.contactCounter}>{grouped ? "Group" : "Record"} {selected + 1} of {filtered.length}</span>
       </div>
+      <p><strong>{query.trim() ? `Matching “${query.trim()}”` : "All binders and ligands"}</strong> · {filtered.length} {grouped ? "similarity groups" : "records"} from {records.length} evidence records. These are not counts of distinct biological binding sites.</p>
+      <ContactProjections atoms={atoms} sites={visibleSites} />
       <details className={styles.contactEvidence}><summary>Evidence for {site.partner_label ?? site.partner} · {site.source} · {site.supportingSites.length} supporting records</summary>
       <div>
         <strong style={{ color: CONTACT_COLORS[site.source] }}>● {site.source}</strong> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />

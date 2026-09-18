@@ -1130,7 +1130,7 @@ export function StructureViewer({
   const [contactRetry, setContactRetry] = useState(0);
   const [contactIndex, setContactIndex] = useState(0);
   const [contactSource, setContactSource] = useState("");
-  const [compareContacts, setCompareContacts] = useState(true);
+  const [compareContacts, setCompareContacts] = useState(false);
   const [contactAtoms, setContactAtoms] = useState<ContactAtom[]>([]);
   const [groupContacts, setGroupContacts] = useState(true);
   const [contactQuery, setContactQuery] = useState("");

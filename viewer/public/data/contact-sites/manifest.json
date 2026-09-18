@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "ligand_names_sha256": "f65a1e43403877a311fd66197a3e5afea90f9f988ad4842d2de92ead02bf0988",
   "audit_snapshot_date": "2026-09-17",
   "sampling": {
     "SAbDab": "One representative mapped interface per gene",

@@ -536,3 +536,8 @@
 .contactComparisonList li { border-left: 3px solid; padding-left: 7px; margin-bottom: 4px; }
 .contactEvidence { margin-top: 8px; font-size: 12px; }
 .contactEvidence summary { cursor: pointer; }
+
+/* Navigation stays above all changing labels/projections and uses fixed columns. */
+.contactSlider { display: grid; grid-template-columns: 36px minmax(40px, 1fr) 36px; gap: 8px; }
+.contactSlider input { min-width: 0; width: 100%; margin: 0; }
+.contactCounter { grid-column: 1 / -1; text-align: center; font-variant-numeric: tabular-nums; }

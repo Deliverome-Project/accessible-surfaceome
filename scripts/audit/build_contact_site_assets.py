@@ -61,6 +61,7 @@ def normalize(row):
 
 
 def main():
+    ligand_names = json.loads((INPUT / "ligand_names.json").read_text())["ligands"]
     genes = {}
     with (INPUT / "binder_denominator_genes.tsv").open() as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
@@ -79,6 +80,12 @@ def main():
             partner_gene = genes.get(site["partner"])
             if partner_gene:
                 site["partner_label"] = partner_gene["symbol"]
+            ligand = ligand_names.get(site["partner"])
+            if ligand:
+                site["partner_label"] = ligand["name"]
+                symbol = genes.get(ligand["uniprot_acc"], {}).get("symbol")
+                if symbol and symbol.casefold() != ligand["name"].casefold():
+                    site["partner_label"] += f" ({symbol})"
             acc = row["uniprot_acc"]
             assert genes[acc]["hgnc_id"] == row["hgnc_id"]
             key = (
@@ -125,6 +132,9 @@ def main():
     }
     manifest = dict(
         schema_version=1,
+        ligand_names_sha256=hashlib.sha256(
+            (INPUT / "ligand_names.json").read_bytes()
+        ).hexdigest(),
         audit_snapshot_date="2026-09-17",
         sampling={
             "SAbDab": "One representative mapped interface per gene",

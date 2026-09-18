@@ -50,7 +50,7 @@ export function ContactProjections({ atoms, sites }: { atoms: ContactAtom[]; sit
     <ol className={styles.contactComparisonList}>
       {sites.map((site,i) => <li key={i} style={{borderColor:CONTACT_COLORS[site.source]}}>
         <strong>{i+1}. {site.partner_label ?? site.partner}</strong> · {site.source} · {site.positions.length} residues
-        {i===0 ? " · selected" : ""}
+        {i===0 ? " · selected binder" : " · separate comparison binder"}
       </li>)}
     </ol>
     <p className={styles.contactNote}>Three fixed orthogonal views, zoomed to the compared contacts on the canonical model. Outlines enclose contact residues; enclosed gaps are not additional contacts. Compared footprints share at most 20% of the smaller residue set. This does not establish simultaneous binding.</p>

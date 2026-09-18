@@ -1,0 +1,531 @@
+{
+  "source": "https://www.guidetopharmacology.org/DATA/ligands.csv",
+  "version": "# GtoPdb Version: 2026.3 - published: 2026-09-16",
+  "source_sha256": "17602dd76f6745fd6c91e4ffaa87dcbb61f0885581fd75b9c21729fb1be8328d",
+  "ligands": {
+    "GTOPDB:5081": {
+      "name": "4-1BB ligand",
+      "uniprot_acc": "P41273"
+    },
+    "GTOPDB:681": {
+      "name": "\u03b1-CGRP",
+      "uniprot_acc": "P06881"
+    },
+    "GTOPDB:1320": {
+      "name": "\u03b1-MSH",
+      "uniprot_acc": "P01194|P01193|P01189"
+    },
+    "GTOPDB:687": {
+      "name": "amylin",
+      "uniprot_acc": "P10997"
+    },
+    "GTOPDB:4867": {
+      "name": "angiopoietin-1",
+      "uniprot_acc": "Q15389"
+    },
+    "GTOPDB:585": {
+      "name": "angiotensin III",
+      "uniprot_acc": "P01015|P11859|P01019"
+    },
+    "GTOPDB:5368": {
+      "name": "angiotensin IV",
+      "uniprot_acc": "P01019|P01015|P11859"
+    },
+    "GTOPDB:4869": {
+      "name": "atrial natriuretic peptide",
+      "uniprot_acc": "P01160"
+    },
+    "GTOPDB:5069": {
+      "name": "BAFF",
+      "uniprot_acc": "Q9Y275"
+    },
+    "GTOPDB:4891": {
+      "name": "B and T lymphocyte attenuator",
+      "uniprot_acc": "Q7Z6A9"
+    },
+    "GTOPDB:4873": {
+      "name": "betacellulin",
+      "uniprot_acc": "P35070"
+    },
+    "GTOPDB:4058": {
+      "name": "bovine adrenal medulla peptide 8-22",
+      "uniprot_acc": "P01210"
+    },
+    "GTOPDB:3640": {
+      "name": "C3a",
+      "uniprot_acc": "P01024"
+    },
+    "GTOPDB:573": {
+      "name": "C5a",
+      "uniprot_acc": "P01031"
+    },
+    "GTOPDB:685": {
+      "name": "calcitonin",
+      "uniprot_acc": "P01258"
+    },
+    "GTOPDB:864": {
+      "name": "CCK-8",
+      "uniprot_acc": "P01355|P09240|P06307"
+    },
+    "GTOPDB:754": {
+      "name": "CCL15",
+      "uniprot_acc": "Q16663"
+    },
+    "GTOPDB:810": {
+      "name": "CCL19",
+      "uniprot_acc": "Q99731"
+    },
+    "GTOPDB:771": {
+      "name": "CCL2",
+      "uniprot_acc": "P13500"
+    },
+    "GTOPDB:808": {
+      "name": "CCL20",
+      "uniprot_acc": "P78556"
+    },
+    "GTOPDB:811": {
+      "name": "CCL21",
+      "uniprot_acc": "O00585"
+    },
+    "GTOPDB:758": {
+      "name": "CCL5",
+      "uniprot_acc": "P13501"
+    },
+    "GTOPDB:5077": {
+      "name": "CD40 ligand",
+      "uniprot_acc": "P29965"
+    },
+    "GTOPDB:5079": {
+      "name": "CD70",
+      "uniprot_acc": "P32970"
+    },
+    "GTOPDB:13048": {
+      "name": "cerebral dopamine neurotrophic factor",
+      "uniprot_acc": "Q49AH0"
+    },
+    "GTOPDB:2945": {
+      "name": "chemerin",
+      "uniprot_acc": "Q99969"
+    },
+    "GTOPDB:912": {
+      "name": "corticotrophin-releasing hormone",
+      "uniprot_acc": "P06850|Q8CIT0|P01143"
+    },
+    "GTOPDB:2008": {
+      "name": "CST-17",
+      "uniprot_acc": "O00230"
+    },
+    "GTOPDB:819": {
+      "name": "CXCL1",
+      "uniprot_acc": "P09341"
+    },
+    "GTOPDB:835": {
+      "name": "CXCL10",
+      "uniprot_acc": "P02778"
+    },
+    "GTOPDB:836": {
+      "name": "CXCL11",
+      "uniprot_acc": "O14625"
+    },
+    "GTOPDB:4358": {
+      "name": "CXCL12\u03b1",
+      "uniprot_acc": "P48061"
+    },
+    "GTOPDB:845": {
+      "name": "CXCL12\u03b2",
+      "uniprot_acc": "P48061"
+    },
+    "GTOPDB:827": {
+      "name": "CXCL2",
+      "uniprot_acc": "P19875"
+    },
+    "GTOPDB:828": {
+      "name": "CXCL3",
+      "uniprot_acc": "P19876"
+    },
+    "GTOPDB:829": {
+      "name": "CXCL5",
+      "uniprot_acc": "P42830"
+    },
+    "GTOPDB:820": {
+      "name": "CXCL6",
+      "uniprot_acc": "P80162"
+    },
+    "GTOPDB:821": {
+      "name": "CXCL8",
+      "uniprot_acc": "P10145"
+    },
+    "GTOPDB:837": {
+      "name": "CXCL9",
+      "uniprot_acc": "Q07325"
+    },
+    "GTOPDB:1622": {
+      "name": "dynorphin B",
+      "uniprot_acc": "P06300|O35417|P01213"
+    },
+    "GTOPDB:6144": {
+      "name": "ectodysplasin A1",
+      "uniprot_acc": "Q92838"
+    },
+    "GTOPDB:4916": {
+      "name": "EGF",
+      "uniprot_acc": "P01133"
+    },
+    "GTOPDB:8524": {
+      "name": "Elabela/Toddler-32",
+      "uniprot_acc": "P0DMC3"
+    },
+    "GTOPDB:989": {
+      "name": "endothelin-1",
+      "uniprot_acc": "P05305|P22387|P22388"
+    },
+    "GTOPDB:1004": {
+      "name": "endothelin-3",
+      "uniprot_acc": "P13207|P48299|P14138"
+    },
+    "GTOPDB:4917": {
+      "name": "epigen",
+      "uniprot_acc": "Q6UW88"
+    },
+    "GTOPDB:4918": {
+      "name": "epiregulin",
+      "uniprot_acc": "O14944"
+    },
+    "GTOPDB:4921": {
+      "name": "erythropoietin",
+      "uniprot_acc": "P01588"
+    },
+    "GTOPDB:4932": {
+      "name": "Fms-related tyrosine kinase 3 ligand",
+      "uniprot_acc": "P49771"
+    },
+    "GTOPDB:3592": {
+      "name": "galanin",
+      "uniprot_acc": "P22466"
+    },
+    "GTOPDB:1333": {
+      "name": "\u03b3-MSH",
+      "uniprot_acc": "P01194|P01193|P01189"
+    },
+    "GTOPDB:3542": {
+      "name": "gastric inhibitory polypeptide",
+      "uniprot_acc": "P09681"
+    },
+    "GTOPDB:3566": {
+      "name": "gastrin-71",
+      "uniprot_acc": "P01350"
+    },
+    "GTOPDB:612": {
+      "name": "gastrin-releasing peptide",
+      "uniprot_acc": "P07492"
+    },
+    "GTOPDB:4934": {
+      "name": "G-CSF",
+      "uniprot_acc": "P09919"
+    },
+    "GTOPDB:1099": {
+      "name": "ghrelin",
+      "uniprot_acc": "Q9UBU3"
+    },
+    "GTOPDB:2270": {
+      "name": "GHRH",
+      "uniprot_acc": "P01286"
+    },
+    "GTOPDB:1136": {
+      "name": "glucagon",
+      "uniprot_acc": "P06883|P01275|P55095"
+    },
+    "GTOPDB:3544": {
+      "name": "glucagon-like peptide 1-(7-37)",
+      "uniprot_acc": "P06883|P01275|P55095"
+    },
+    "GTOPDB:1143": {
+      "name": "glucagon-like peptide 2-(3-33)",
+      "uniprot_acc": "P01275"
+    },
+    "GTOPDB:4942": {
+      "name": "GM-CSF",
+      "uniprot_acc": "P04141"
+    },
+    "GTOPDB:4935": {
+      "name": "growth arrest specific protein 6",
+      "uniprot_acc": "Q14393"
+    },
+    "GTOPDB:9735": {
+      "name": "growth differentiation factor 15",
+      "uniprot_acc": "Q99988"
+    },
+    "GTOPDB:4943": {
+      "name": "growth hormone 1",
+      "uniprot_acc": "P01241"
+    },
+    "GTOPDB:4949": {
+      "name": "hepatocyte growth factor",
+      "uniprot_acc": "P14210"
+    },
+    "GTOPDB:1047": {
+      "name": "humanin",
+      "uniprot_acc": "Q8IVG9"
+    },
+    "GTOPDB:4994": {
+      "name": "IL-3",
+      "uniprot_acc": "P08700"
+    },
+    "GTOPDB:8975": {
+      "name": "IL-34",
+      "uniprot_acc": "Q6ZMJ4"
+    },
+    "GTOPDB:4997": {
+      "name": "IL-5",
+      "uniprot_acc": "P05113"
+    },
+    "GTOPDB:4998": {
+      "name": "IL-6",
+      "uniprot_acc": "P05231"
+    },
+    "GTOPDB:2000": {
+      "name": "INSL5",
+      "uniprot_acc": "Q9Y5Q6"
+    },
+    "GTOPDB:5012": {
+      "name": "insulin",
+      "uniprot_acc": "P01308"
+    },
+    "GTOPDB:4971": {
+      "name": "insulin-like growth factor 1",
+      "uniprot_acc": "P05019"
+    },
+    "GTOPDB:4972": {
+      "name": "insulin-like growth factor 2",
+      "uniprot_acc": "P01344"
+    },
+    "GTOPDB:650": {
+      "name": "kallidin",
+      "uniprot_acc": "P01042"
+    },
+    "GTOPDB:1288": {
+      "name": "kisspeptin-54",
+      "uniprot_acc": "Q15726"
+    },
+    "GTOPDB:1159": {
+      "name": "LH",
+      "uniprot_acc": "P01215|P01229"
+    },
+    "GTOPDB:5070": {
+      "name": "LIGHT",
+      "uniprot_acc": "O43557"
+    },
+    "GTOPDB:5064": {
+      "name": "lymphotoxin-\u03b1",
+      "uniprot_acc": "P01374"
+    },
+    "GTOPDB:6142": {
+      "name": "lymphotoxin \u03b22\u03b11 heterotrimer",
+      "uniprot_acc": "P01374|Q06643"
+    },
+    "GTOPDB:4905": {
+      "name": "M-CSF",
+      "uniprot_acc": "P09603"
+    },
+    "GTOPDB:1298": {
+      "name": "melanin-concentrating hormone",
+      "uniprot_acc": "P14200|P56942|P20382"
+    },
+    "GTOPDB:1458": {
+      "name": "motilin",
+      "uniprot_acc": "P01307|P12872"
+    },
+    "GTOPDB:5027": {
+      "name": "neuregulin-1",
+      "uniprot_acc": "Q02297"
+    },
+    "GTOPDB:2090": {
+      "name": "neurokinin B",
+      "uniprot_acc": "P67934|P08435|P55099|Q9UHF0"
+    },
+    "GTOPDB:613": {
+      "name": "neuromedin B",
+      "uniprot_acc": "P08949|Q9CR53|P01297"
+    },
+    "GTOPDB:1468": {
+      "name": "neuromedin S-33",
+      "uniprot_acc": "Q5H8A3"
+    },
+    "GTOPDB:1470": {
+      "name": "neuromedin U-25",
+      "uniprot_acc": "P48645"
+    },
+    "GTOPDB:1479": {
+      "name": "neuropeptide FF",
+      "uniprot_acc": "Q9WVA8|O15130|Q9WVA9"
+    },
+    "GTOPDB:1504": {
+      "name": "neuropeptide Y",
+      "uniprot_acc": "P07808|P57774|P01303"
+    },
+    "GTOPDB:3627": {
+      "name": "neuropeptide Y-(3-36)",
+      "uniprot_acc": "P01303|P57774|P07808"
+    },
+    "GTOPDB:1579": {
+      "name": "neurotensin",
+      "uniprot_acc": "P01156|P30990|Q9D3P9|P20068"
+    },
+    "GTOPDB:1699": {
+      "name": "orexin-B",
+      "uniprot_acc": "O43612"
+    },
+    "GTOPDB:5076": {
+      "name": "OX-40 ligand",
+      "uniprot_acc": "P23510"
+    },
+    "GTOPDB:2174": {
+      "name": "oxytocin",
+      "uniprot_acc": "P01178|P01179|P35454"
+    },
+    "GTOPDB:2258": {
+      "name": "PACAP-38",
+      "uniprot_acc": "O70176|P18509|P13589"
+    },
+    "GTOPDB:4057": {
+      "name": "PAMP-20",
+      "uniprot_acc": "P35318"
+    },
+    "GTOPDB:1512": {
+      "name": "pancreatic polypeptide",
+      "uniprot_acc": "P01298"
+    },
+    "GTOPDB:9606": {
+      "name": "programmed cell death 1 ligand 1",
+      "uniprot_acc": "Q9NZQ7"
+    },
+    "GTOPDB:1873": {
+      "name": "PrRP-31",
+      "uniprot_acc": "P81277"
+    },
+    "GTOPDB:1790": {
+      "name": "PTHrP-(1-36)",
+      "uniprot_acc": "P12272"
+    },
+    "GTOPDB:599": {
+      "name": "[Pyr1]apelin-13",
+      "uniprot_acc": "Q9ULZ1|Q9R0R4|Q9R0R3"
+    },
+    "GTOPDB:1517": {
+      "name": "PYY-(3-36)",
+      "uniprot_acc": "P10082"
+    },
+    "GTOPDB:3665": {
+      "name": "QRFP43 (43RFa)",
+      "uniprot_acc": "P83859"
+    },
+    "GTOPDB:1990": {
+      "name": "relaxin-3",
+      "uniprot_acc": "Q8WXF3"
+    },
+    "GTOPDB:1997": {
+      "name": "relaxin-3 (B chain)",
+      "uniprot_acc": "Q8WXF3"
+    },
+    "GTOPDB:3697": {
+      "name": "R-spondin-1",
+      "uniprot_acc": "Q2MKA7"
+    },
+    "GTOPDB:3698": {
+      "name": "R-spondin-2",
+      "uniprot_acc": "Q6UXX9"
+    },
+    "GTOPDB:3643": {
+      "name": "secretin",
+      "uniprot_acc": "P09683"
+    },
+    "GTOPDB:10014": {
+      "name": "selectin P ligand",
+      "uniprot_acc": "Q14242"
+    },
+    "GTOPDB:11417": {
+      "name": "spexin-1",
+      "uniprot_acc": "Q9BT56"
+    },
+    "GTOPDB:2020": {
+      "name": "SRIF-28",
+      "uniprot_acc": "P61278|P60041|P60042"
+    },
+    "GTOPDB:5055": {
+      "name": "stem cell factor",
+      "uniprot_acc": "P21583"
+    },
+    "GTOPDB:2098": {
+      "name": "substance P",
+      "uniprot_acc": "P06767|P41539|P20366"
+    },
+    "GTOPDB:5059": {
+      "name": "TGF\u03b1",
+      "uniprot_acc": "P01135"
+    },
+    "GTOPDB:5062": {
+      "name": "TGF\u03b23",
+      "uniprot_acc": "P10600"
+    },
+    "GTOPDB:5063": {
+      "name": "thrombopoietin",
+      "uniprot_acc": "P40225"
+    },
+    "GTOPDB:639": {
+      "name": "T-kinin",
+      "uniprot_acc": "P08932|P01048|P01042"
+    },
+    "GTOPDB:5072": {
+      "name": "TL6",
+      "uniprot_acc": "Q9UNG2"
+    },
+    "GTOPDB:5065": {
+      "name": "TRAIL",
+      "uniprot_acc": "P50591"
+    },
+    "GTOPDB:5073": {
+      "name": "tumour necrosis factor membrane form",
+      "uniprot_acc": "P01375"
+    },
+    "GTOPDB:5074": {
+      "name": "tumour necrosis factor shed form",
+      "uniprot_acc": "P01375"
+    },
+    "GTOPDB:919": {
+      "name": "urocortin 1",
+      "uniprot_acc": "P55089"
+    },
+    "GTOPDB:921": {
+      "name": "urocortin 2",
+      "uniprot_acc": "Q96RP3"
+    },
+    "GTOPDB:928": {
+      "name": "urocortin 3",
+      "uniprot_acc": "Q969E3"
+    },
+    "GTOPDB:2168": {
+      "name": "vasopressin",
+      "uniprot_acc": "P01186|P35455|P01185"
+    },
+    "GTOPDB:5085": {
+      "name": "VEGFA",
+      "uniprot_acc": "P15692"
+    },
+    "GTOPDB:5086": {
+      "name": "VEGFB",
+      "uniprot_acc": "P49765"
+    },
+    "GTOPDB:5087": {
+      "name": "VEGFC",
+      "uniprot_acc": "P49767"
+    },
+    "GTOPDB:1152": {
+      "name": "VIP",
+      "uniprot_acc": "P01282|P32648|P01283"
+    },
+    "GTOPDB:3647": {
+      "name": "XCL1",
+      "uniprot_acc": "P47992"
+    }
+  }
+}
