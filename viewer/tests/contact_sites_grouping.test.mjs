@@ -142,3 +142,36 @@ test('reviewed six-target cleanup preserves observations and fixes identities', 
   assert.ok(pdl1.sites.some(s=>s.partner==='CCD:6GX' && s.canonical_partner_label==='BMS-202'));
   assert.ok(gene('P08887').sites.some(s=>s.partner==='CYS' && s.exclude_from_overview));
 });
+
+
+test('ligand navigation and picker follow site position within each category', async () => {
+  const { browsingContacts, ligandOptions, ligandName } = await import('../lib/contact-sites.ts');
+  const records = [
+    site([400, 401, 402], 'late', {partner:'Alpha', category:'therapeutic'}),
+    site([20, 21, 22, 900], 'early', {partner:'Zulu', category:'therapeutic'}),
+    site([200, 201, 202], 'middle', {partner:'Beta', category:'therapeutic'}),
+    site([950, 951], 'endogenous', {partner:'Native', category:'endogenous_large'}),
+    site([400, 401, 402], 'same-site', {partner:'Delta', category:'therapeutic'}),
+  ];
+  const expected = ['Native', 'Zulu', 'Beta', 'Alpha', 'Delta'];
+  assert.deepEqual(browsingContacts(records, true, '').map(ligandName), expected);
+  assert.deepEqual(ligandOptions(records), expected);
+  assert.deepEqual(ligandOptions([...records].reverse()), expected);
+  assert.deepEqual(records[1].positions, [20, 21, 22, 900]);
+});
+
+
+test('overlapping antibody footprints stay consecutive despite interleaved sequence centers', async () => {
+  const { browsingContacts, ligandOptions, ligandName } = await import('../lib/contact-sites.ts');
+  const records = [
+    site([1, 2, 100, 101, 102], 'a', {partner:'Antibody A', category:'therapeutic'}),
+    site([99, 100, 101, 102], 'c', {partner:'Antibody C', category:'therapeutic'}),
+    site([200, 201, 202], 'b', {partner:'Antibody B', category:'therapeutic'}),
+    site([1, 2, 100, 101, 102, 800, 801], 'd', {partner:'Antibody D', category:'therapeutic'}),
+  ];
+  const ordered = browsingContacts(records, true, '');
+  assert.deepEqual(ordered.map(ligandName), ['Antibody A', 'Antibody D', 'Antibody C', 'Antibody B']);
+  assert.deepEqual(ligandOptions([...records].reverse()), ordered.map(ligandName));
+  assert.equal(ordered.length, records.length);
+  assert.ok(ordered.every(group => group.supportingSites.length === 1));
+});
