@@ -63,8 +63,8 @@ CONTEXTUAL_REASONS = [
     "other",
 ]
 REASON_LABEL = {
-    "classical_surface_receptor":   "classical\nsurface\nreceptor",
-    "multipass_with_exposed_loops": "multipass\nw/ exposed\nloops",
+    "classical_surface_receptor":   "single-\npass",
+    "multipass_with_exposed_loops": "multi-\npass",
     "gpi_anchored":                 "GPI-\nanchored",
     "stable_complex_partner":       "stable\ncomplex\npartner",
     "dual_localization":            "dual\nlocalization",

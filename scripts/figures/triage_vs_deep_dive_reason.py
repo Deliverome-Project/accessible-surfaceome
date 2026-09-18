@@ -162,8 +162,8 @@ DIAGONAL_HIGHLIGHT = "#BC3C4C"  # maroon — diagonal border
 # Short tick labels (full enum names wrap badly). Two-line breaks
 # chosen at natural word boundaries.
 LABEL_SHORT = {
-    "classical_surface_receptor":   "classical\nsurf rcptr",
-    "multipass_with_exposed_loops": "multipass\nexp loops",
+    "classical_surface_receptor":   "single-pass",
+    "multipass_with_exposed_loops": "multi-pass",
     "gpi_anchored":                 "GPI\nanchored",
     "extracellular_face_protein":   "ECF\nprotein",
     "stable_complex_partner":       "stable cplx\npartner",
