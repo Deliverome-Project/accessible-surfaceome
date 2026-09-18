@@ -1,6 +1,9 @@
 import importlib.util
+import sys
 from pathlib import Path
 
+# Audit scripts import sibling helpers when run directly.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts/audit"))
 spec = importlib.util.spec_from_file_location(
     "audit_binder_denominators",
     Path(__file__).resolve().parents[1] / "scripts/audit/audit_binder_denominators.py",
