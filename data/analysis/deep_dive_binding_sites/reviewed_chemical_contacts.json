@@ -1,0 +1,175 @@
+{
+  "review_date": "2026-09-18",
+  "baseline_release": "contacts-b960b69373f6486dc9e9",
+  "scope": "Five explicitly reviewed chemical pairs; no general promotion of uncorroborated PDBe chemicals. Source snapshots are unchanged. Per-instance recalculated footprints may differ from PDBe aggregation.",
+  "records": [
+    {
+      "uniprot_acc": "O95477",
+      "hgnc_id": "HGNC:29",
+      "hgnc_symbol": "ABCA1",
+      "source": "PDB/PDBe",
+      "partner": "CCD:CLR",
+      "pdb_id": "7tby",
+      "positions": "272,273,275,276,278,279,458,466,484,487,488",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/7TBY",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; sterol-like density modeled as cholesterol; chemical identity uncertain",
+      "ligand_instance": [
+        "A",
+        "2501"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "c19bf84e768bb0516114d6c3f44aba4ec7e8429e3fc4bcf3bfebf2bb37cf2ce5",
+      "sifts_sha256": "7e77592100015f3c9e6e94272ef2de5f47357caaf990a8e915d17472c88be5eb",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    },
+    {
+      "uniprot_acc": "P42262",
+      "hgnc_id": "HGNC:4572",
+      "hgnc_symbol": "GRIA2",
+      "source": "PDB/PDBe",
+      "partner": "CCD:ZK1",
+      "pdb_id": "5zg2",
+      "positions": "423,426,471,499,500,501,506,671,673,674,675,676,707,723,725,726,728,729,753",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/5ZG2",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; published structure and ligand evidence; no calibrated confidence score",
+      "ligand_instance": [
+        "A",
+        "901"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "09439596dd9b636b54cfb7716e9939fcc22752ec4fd8f0a21591fd0a3121b675",
+      "sifts_sha256": "62a4e494ec4cca97d838c084c4ae1de5d2cfcd9b890c08e2a1b95b077bdfa459",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    },
+    {
+      "uniprot_acc": "P42262",
+      "hgnc_id": "HGNC:4572",
+      "hgnc_symbol": "GRIA2",
+      "source": "PDB/PDBe",
+      "partner": "CCD:ZK1",
+      "pdb_id": "5zg2",
+      "positions": "423,426,471,499,500,501,506,671,673,674,675,676,707,723,725,726,728,729,753",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/5ZG2",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; published structure and ligand evidence; no calibrated confidence score",
+      "ligand_instance": [
+        "B",
+        "901"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "09439596dd9b636b54cfb7716e9939fcc22752ec4fd8f0a21591fd0a3121b675",
+      "sifts_sha256": "62a4e494ec4cca97d838c084c4ae1de5d2cfcd9b890c08e2a1b95b077bdfa459",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    },
+    {
+      "uniprot_acc": "Q07075",
+      "hgnc_id": "HGNC:3355",
+      "hgnc_symbol": "ENPEP",
+      "source": "PDB/PDBe",
+      "partner": "CCD:BES",
+      "pdb_id": "4kxb",
+      "positions": "223,224,356,357,358,359,360,386,389,390,393,394,397,416,423,471,474,479,887",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/4KXB",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; published structure and ligand evidence; no calibrated confidence score",
+      "ligand_instance": [
+        "A",
+        "1017"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "a7552732e5a0ba77c1647b254144db86186160d0ff002e28b9f3d472bc9a7b20",
+      "sifts_sha256": "ac1c926a300988cbb8cf9ed3df1bdb2d9e0c354d6d5938dc58c9a97e95f01110",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    },
+    {
+      "uniprot_acc": "Q9HB14",
+      "hgnc_id": "HGNC:6275",
+      "hgnc_symbol": "KCNK13",
+      "source": "PDB/PDBe",
+      "partner": "CCD:HLT",
+      "pdb_id": "9m9q",
+      "positions": "50,85,91,92,98,99,100,102,103,106,115,116,246,247",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/9M9Q",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; released deposition, associated paper unpublished",
+      "ligand_instance": [
+        "A",
+        "501"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "ccb900eef30b9f194fbf0b1ec7cbe773c673a02677c00c535d941e85cd617368",
+      "sifts_sha256": "426a1897b982eb20d9dda75d2f047d59de39a5eb0368a56edad96838b65c89e7",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    },
+    {
+      "uniprot_acc": "Q9HB14",
+      "hgnc_id": "HGNC:6275",
+      "hgnc_symbol": "KCNK13",
+      "source": "PDB/PDBe",
+      "partner": "CCD:HLT",
+      "pdb_id": "9m9q",
+      "positions": "85,91,92,93,94,99,102,103,115,116,246,247",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/9M9Q",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; released deposition, associated paper unpublished",
+      "ligand_instance": [
+        "B",
+        "501"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "ccb900eef30b9f194fbf0b1ec7cbe773c673a02677c00c535d941e85cd617368",
+      "sifts_sha256": "426a1897b982eb20d9dda75d2f047d59de39a5eb0368a56edad96838b65c89e7",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    },
+    {
+      "uniprot_acc": "Q9ULK0",
+      "hgnc_id": "HGNC:4575",
+      "hgnc_symbol": "GRID1",
+      "source": "PDB/PDBe",
+      "partner": "CCD:ABU",
+      "pdb_id": "8bn5",
+      "positions": "446,492,519,520,521,526,539,686,687,741,742,770",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/8BN5",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; published structure and ligand evidence; no calibrated confidence score",
+      "ligand_instance": [
+        "A",
+        "904"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "56a43172b3a32d452d1c3ff3531486b894693fb55e4133e4ebf6a64809233060",
+      "sifts_sha256": "aecda6258247f36579af461c120e3f8eda08c59ecbe33e00b65d5f6381f43327",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    },
+    {
+      "uniprot_acc": "Q9ULK0",
+      "hgnc_id": "HGNC:4575",
+      "hgnc_symbol": "GRID1",
+      "source": "PDB/PDBe",
+      "partner": "CCD:ABU",
+      "pdb_id": "8bn5",
+      "positions": "446,492,519,520,521,526,539,686,741,742,745,770",
+      "context": "extracellular_explicit",
+      "reference": "https://www.rcsb.org/structure/8BN5",
+      "tier": "reviewed_chemical_contacts",
+      "confidence": "Canonical residue identities verified; 5 \u00c5 heavy-atom contacts; published structure and ligand evidence; no calibrated confidence score",
+      "ligand_instance": [
+        "B",
+        "904"
+      ],
+      "mapping_issues": [],
+      "coordinate_sha256": "56a43172b3a32d452d1c3ff3531486b894693fb55e4133e4ebf6a64809233060",
+      "sifts_sha256": "aecda6258247f36579af461c120e3f8eda08c59ecbe33e00b65d5f6381f43327",
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    }
+  ]
+}

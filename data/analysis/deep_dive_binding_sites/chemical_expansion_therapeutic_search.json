@@ -1,0 +1,194 @@
+[
+  {
+    "uniprot_acc": "Q02161",
+    "hgnc_id": "HGNC:10009",
+    "symbol": "RHD",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q14542",
+    "hgnc_id": "HGNC:11004",
+    "symbol": "SLC29A2",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "O95436",
+    "hgnc_id": "HGNC:11020",
+    "symbol": "SLC34A2",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q9NQC3",
+    "hgnc_id": "HGNC:14085",
+    "symbol": "RTN4",
+    "pdb_entities": [
+      "2G31_1",
+      "2JV5_1"
+    ],
+    "search_status": 200,
+    "interpretation": "No non-self protein binder complex identified among returned entries"
+  },
+  {
+    "uniprot_acc": "P59901",
+    "hgnc_id": "HGNC:15503",
+    "symbol": "LILRA4",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "P25063",
+    "hgnc_id": "HGNC:1645",
+    "symbol": "CD24",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "P11049",
+    "hgnc_id": "HGNC:1666",
+    "symbol": "CD37",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q12864",
+    "hgnc_id": "HGNC:1756",
+    "symbol": "CDH17",
+    "pdb_entities": [
+      "6ULM_1",
+      "7CYM_1",
+      "7EV1_1"
+    ],
+    "search_status": 200,
+    "interpretation": "No non-self protein binder complex identified among returned entries"
+  },
+  {
+    "uniprot_acc": "Q13433",
+    "hgnc_id": "HGNC:18607",
+    "symbol": "SLC39A6",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "O95832",
+    "hgnc_id": "HGNC:2032",
+    "symbol": "CLDN1",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "P56747",
+    "hgnc_id": "HGNC:2048",
+    "symbol": "CLDN6",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q8TF66",
+    "hgnc_id": "HGNC:20818",
+    "symbol": "LRRC15",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q9H5Y7",
+    "hgnc_id": "HGNC:23503",
+    "symbol": "SLITRK6",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q86XT9",
+    "hgnc_id": "HGNC:25201",
+    "symbol": "TMEM219",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q7Z7D3",
+    "hgnc_id": "HGNC:28873",
+    "symbol": "VTCN1",
+    "pdb_entities": [
+      "4GOS_1"
+    ],
+    "search_status": 200,
+    "interpretation": "No non-self protein binder complex identified among returned entries"
+  },
+  {
+    "uniprot_acc": "Q9NR61",
+    "hgnc_id": "HGNC:2910",
+    "symbol": "DLL4",
+    "pdb_entities": [
+      "5MVX_1"
+    ],
+    "search_status": 200,
+    "interpretation": "No non-self protein binder complex identified among returned entries"
+  },
+  {
+    "uniprot_acc": "Q96B86",
+    "hgnc_id": "HGNC:30308",
+    "symbol": "RGMA",
+    "pdb_entities": [
+      "4UHY_2",
+      "6Z3G_2"
+    ],
+    "search_status": 200,
+    "interpretation": "RGMA has BMP2/GDF5 complexes removed by processing-segment filter"
+  },
+  {
+    "uniprot_acc": "Q14956",
+    "hgnc_id": "HGNC:4462",
+    "symbol": "GPNMB",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "P43630",
+    "hgnc_id": "HGNC:6339",
+    "symbol": "KIR3DL2",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "P20916",
+    "hgnc_id": "HGNC:6783",
+    "symbol": "MAG",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "P41217",
+    "hgnc_id": "HGNC:7203",
+    "symbol": "CD200",
+    "pdb_entities": [],
+    "search_status": 204,
+    "interpretation": "No exact-accession PDB entity hit; not proof of no structure or binder"
+  },
+  {
+    "uniprot_acc": "Q13308",
+    "hgnc_id": "HGNC:9618",
+    "symbol": "PTK7",
+    "pdb_entities": [
+      "6VG3_1"
+    ],
+    "search_status": 200,
+    "interpretation": "No non-self protein binder complex identified among returned entries"
+  }
+]

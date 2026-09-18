@@ -88,7 +88,12 @@
     "P01732",
     "P12821",
     "P22223",
-    "P21926"
+    "P21926",
+    "O95477",
+    "P42262",
+    "Q07075",
+    "Q9HB14",
+    "Q9ULK0"
   ],
   "rules": [
     {
@@ -11685,6 +11690,66 @@
       "pdb": "7y1t",
       "reference": "https://www.ebi.ac.uk/pdbe/api/pdb/entry/molecules/7y1t",
       "reason": "UniProt-to-entity mapping identifies this specific assembly subunit; deposited mutation annotation is M401C. Retain depositor numbering/string without reinterpreting it as canonical coordinates. Explicit variant remains separate from the broader receptor-subunit group.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "O95477",
+      "names": [
+        "CCD:CLR"
+      ],
+      "pdb": "7tby",
+      "canonical_name": "Cholesterol",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/7TBY",
+      "reason": "Human ABCA1 in nanodiscs; endogenous sterol density is modeled as cholesterol. The paper calls it sterol-like, so exact chemical identity is not independently proven. Prefer wild-type 7TBY; not the Y482C mutant. https://doi.org/10.1038/s44161-022-00022-y",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P42262",
+      "names": [
+        "CCD:ZK1"
+      ],
+      "pdb": "5zg2",
+      "canonical_name": "ZK200775",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/5ZG2",
+      "reason": "ZK200775 antagonist bound to a human GluA2 ligand-binding-domain construct. This footprint matches canonical contact residues; equivalence of the complete construct/isoform is not asserted. https://doi.org/10.1038/s41386-018-0213-7 Investigational therapeutic: phase II stroke trial stopped for safety (https://pubmed.ncbi.nlm.nih.gov/16131799/); not an approved or recommended treatment.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q07075",
+      "names": [
+        "CCD:BES"
+      ],
+      "pdb": "4kxb",
+      "canonical_name": "Bestatin",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/4KXB",
+      "reason": "Bestatin inhibitor bound to human ENPEP. The deposited construct carries mutations; all residues in this footprint match the canonical human sequence. Bestatin (ubenimex) has clinical therapeutic use/studies (https://pubmed.ncbi.nlm.nih.gov/2224060/); this does not assert ENPEP-specific clinical approval. https://doi.org/10.1074/jbc.M113.494955",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9HB14",
+      "names": [
+        "CCD:HLT"
+      ],
+      "pdb": "9m9q",
+      "canonical_name": "Halothane",
+      "category": "therapeutic",
+      "reference": "https://www.rcsb.org/structure/9M9Q",
+      "reason": "Halothane is an anesthetic ligand in released human THIK1 coordinates. The associated deposition citation remains to be published; target-specific structural evidence is deposition-only, not a published pharmacology claim.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9ULK0",
+      "names": [
+        "CCD:ABU"
+      ],
+      "pdb": "8bn5",
+      "canonical_name": "GABA",
+      "category": "endogenous_small",
+      "reference": "https://www.rcsb.org/structure/8BN5",
+      "reason": "GABA bound to the human GluD1 ligand-binding domain, supported by biochemical, structural and functional evidence. https://doi.org/10.1126/science.adf3406",
       "exclude_from_overview": false
     }
   ],

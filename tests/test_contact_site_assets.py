@@ -5,6 +5,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location(
     "contact_assets", ROOT / "scripts/audit/build_contact_site_assets.py"
@@ -41,7 +43,38 @@ def test_export_identity_numbering_and_coverage():
                 assert not site["reference"] or site["reference"].startswith("https://")
                 covered.add(gene["hgnc_id"])
     assert len(genes) == 5106
-    assert len(covered) == 1680
+    assert len(covered) == 1685
+
+
+def test_reviewed_chemicals_keep_only_validated_pairs(monkeypatch, tmp_path):
+    rows = list(module.reviewed_chemical_rows())
+    expected = {"O95477", "Q07075", "P42262", "Q9ULK0", "Q9HB14"}
+    assert {row["uniprot_acc"] for row in rows} == expected
+    assert all(not row["mapping_issues"] for row in rows)
+    for acc in expected:
+        path = (
+            ROOT
+            / "viewer/public/data/contact-sites"
+            / f"{sum(map(ord, acc)) % 64:02x}.json"
+        )
+        sites = json.loads(path.read_text())[acc]["sites"]
+        assert sites and all(site["category"] != "unclassified" for site in sites)
+        assert all(site["context"] == "extracellular_explicit" for site in sites)
+        if acc == "Q9HB14":
+            assert all("unpublished" in site["confidence"] for site in sites)
+        if acc == "O95477":
+            assert all(
+                "chemical identity uncertain" in site["confidence"] for site in sites
+            )
+
+    # A mutated contact must not enter this canonical-only acceptance route.
+    rejected = dict(rows[0], mapping_issues=[["A", "205", "ALA", "canonical 205:T"]])
+    (tmp_path / "reviewed_chemical_contacts.json").write_text(
+        json.dumps({"records": [rejected]})
+    )
+    monkeypatch.setattr(module, "INPUT", tmp_path)
+    with pytest.raises(ValueError, match="valid mappings"):
+        list(module.reviewed_chemical_rows())
 
 
 def test_egfr_has_named_egf_contacts():

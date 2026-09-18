@@ -11,6 +11,7 @@ import html
 import json
 import re
 from collections import defaultdict
+from itertools import chain
 from pathlib import Path
 from typing import TypedDict
 
@@ -24,6 +25,15 @@ class SourceCounts(TypedDict):
     sites: int
     ec_genes: set[str]
     ec_sites: int
+
+
+def reviewed_chemical_rows():
+    """Accept only individually reviewed, canonical-coordinate chemical pairs."""
+    payload = json.loads((INPUT / "reviewed_chemical_contacts.json").read_text())
+    for row in payload["records"]:
+        if row["mapping_issues"] or row["tier"] != "reviewed_chemical_contacts":
+            raise ValueError("Reviewed chemical contacts must have valid mappings")
+        yield row
 
 
 def normalize(row):
@@ -187,10 +197,14 @@ def main():
                 genes[acc].update(reviews.get("target_notes", {}).get(acc, {}))
     seen = defaultdict(set)
     with gzip.open(INPUT / "structural_intact_evidence.tsv.gz", "rt") as handle:
-        for row in csv.DictReader(handle, delimiter="\t"):
+        for row in chain(
+            csv.DictReader(handle, delimiter="\t"), reviewed_chemical_rows()
+        ):
             site = normalize(row)
             if site is None:
                 continue
+            if row["tier"] == "reviewed_chemical_contacts":
+                site["method"] = row["method"]
             name = observation_names.get(
                 (site["source"], site["partner"], site["reference"])
             )
@@ -310,6 +324,9 @@ def main():
         ).hexdigest(),
         input_sha256=hashlib.sha256(
             (INPUT / "structural_intact_evidence.tsv.gz").read_bytes()
+        ).hexdigest(),
+        reviewed_chemical_sha256=hashlib.sha256(
+            (INPUT / "reviewed_chemical_contacts.json").read_bytes()
         ).hexdigest(),
         audited_genes=len(genes),
         covered_genes=sum(bool(g["sites"]) for g in genes.values()),
