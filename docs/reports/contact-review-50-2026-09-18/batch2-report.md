@@ -966,4 +966,3 @@ This appendix is a readable rendering of batch2-ledger.json. Each row has a one-
 | CCD:Z99 / 2-[(1S,2S)-2-carboxycyclopropyl]-3-(9H-xanthen-9-yl)-D-alanine | 9MBB | extracellular_explicit | 1 | corrected / 173 |
 | P49407 | 9MBA | non_extracellular:cytoplasmic | 1 | unresolved |
 | P63096 | 9MB9 | non_extracellular:cytoplasmic | 1 | unresolved |
-
