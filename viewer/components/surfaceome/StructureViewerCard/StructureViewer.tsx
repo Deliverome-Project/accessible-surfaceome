@@ -1159,6 +1159,7 @@ export function StructureViewer({
     contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), true, contactQuery) : [],
     [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery]);
   const visibleContacts = contactGroups;
+  const selectedContact = contactQuery.trim() && contactGroups.length === 1 ? contactGroups[0] : null;
   const contactLegend = useMemo(() => {
     const ligands = browsingContacts(filterContacts(contactGene?.sites ?? [], "", contactsEcOnly, ""), true, "");
     return Object.entries(LIGAND_CATEGORIES).map(([key, category]) => ({
@@ -2694,8 +2695,16 @@ export function StructureViewer({
           ↺
         </button>
       </div>
-      {viewMode === "contacts" && isCanonicalActive && status === "ready" && contactStatus === "ready" && <div className={styles.contactCanvasLegend} aria-label="Ligand categories and counts">
-        {contactLegend.map(category => <div key={category.key}><i style={{background: category.color}} /><span>{category.label}</span><b>{category.count}</b></div>)}
+      {viewMode === "contacts" && isCanonicalActive && status === "ready" && contactStatus === "ready" && <div className={styles.contactCanvasLegend} aria-label={selectedContact ? "Selected ligand" : "Ligand categories and counts"}>
+        {selectedContact ? <section className={styles.contactSelectedLegend}>
+          <strong>{selectedContact.partner_label ?? selectedContact.partner} <InfoTip label={`About ${selectedContact.partner_label ?? selectedContact.partner}`} align="start">
+            {selectedContact.positions.length} contact residues · {selectedContact.supportingSites.length} evidence records.<br />
+            Sources: {Array.from(new Set(selectedContact.supportingSites.map(site => site.source))).join(", ")}.<br />
+            {selectedContact.category_reason || selectedContact.confidence}
+            {selectedContact.reference && <> <a href={selectedContact.reference} target="_blank" rel="noreferrer">Evidence ↗</a></>}
+          </InfoTip></strong>
+          <span><i style={{background: LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].color}} /> {LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].label}</span>
+        </section> : contactLegend.map(category => <div key={category.key}><i style={{background: category.color}} /><span>{category.label}</span><b>{category.count}</b></div>)}
       </div>}
       </div>
       {/* Controls row — mode toggle + SURFACE-Bind external link.

@@ -40,7 +40,8 @@ export function ContactSites({ sites, selected, source, ecOnly, status, onRetry,
   const navigation = browsingContacts(filterContacts(sites, source, ecOnly, ""), true, "");
   const site = filtered[selected];
   const navigationIndex = site ? navigation.findIndex(item => item.partner_label?.toLowerCase() === site.partner_label?.toLowerCase()) : -1;
-  const navigate = (index: number) => onQuery(navigation[index].partner_label ?? navigation[index].partner);
+  const navigate = (index: number) => onQuery(index === 0 ? "" : navigation[index - 1].partner_label ?? navigation[index - 1].partner);
+  const sliderIndex = query.trim() && navigationIndex >= 0 ? navigationIndex + 1 : 0;
   const overview = filtered.length > 1;
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     {status === "ready" && <header className={styles.contactOverview}>
@@ -55,19 +56,19 @@ export function ContactSites({ sites, selected, source, ecOnly, status, onRetry,
       <p role="alert">Contact evidence could not be loaded. <button onClick={onRetry}>Retry</button></p> : status === "unaudited" ?
       <p>This protein has no unambiguous mapping in this audit.</p> : !site ?
       <p>No mapped sites in this audit match these filters. This does not establish absence of binders.</p> : <>
+      {navigation.length > 1 && <div className={styles.contactSlider}>
+        <button aria-label="Previous ligand or all ligands" disabled={sliderIndex === 0} onClick={() => navigate(sliderIndex - 1)}>←</button>
+        <input type="range" aria-label="Browse ligands" min={0} max={navigation.length} value={sliderIndex}
+          aria-valuetext={sliderIndex === 0 ? "All ligands" : `${site.partner_label}, ${sliderIndex} of ${navigation.length}`}
+          style={{accentColor: contactColor(site)}} onChange={event => navigate(Number(event.target.value))} />
+        <button aria-label={sliderIndex === 0 ? "Show first ligand" : "Next ligand"} disabled={sliderIndex === navigation.length} onClick={() => navigate(sliderIndex + 1)}>→</button>
+        <span className={styles.contactCounter}>{sliderIndex === 0 ? "All ligands · next →" : `${sliderIndex} / ${navigation.length}`}</span>
+      </div>}
       {overview ? <>
         <div className={styles.contactSelection}><div><strong>{filtered.length} ligand footprints shown together</strong><span>One observed footprint per named partner</span></div><button onClick={onFocus}>Focus sites</button><button onClick={onReset}>Whole protein</button></div>
         <p className={styles.contactNote}><i style={{display: "inline-block", width: 8, height: 8, background: SHARED_CONTACT_COLOR}} /> Blue-gray marks residues shared across categories. Overlap does not imply simultaneous binding.</p>
         <details className={styles.contactEvidence}><summary>Shown ligands &amp; evidence</summary><ul>{filtered.map(item => <li key={item.partner_label ?? item.partner}><button className={styles.contactTextAction} onClick={() => onQuery(item.partner_label ?? item.partner)}>{item.partner_label ?? item.partner}</button> · {item.positions.length} contact residues · {item.supportingSites.length} records</li>)}</ul></details>
       </> : <>
-      {query.trim() && navigationIndex >= 0 && navigation.length > 1 && <div className={styles.contactSlider}>
-        <button aria-label="Previous ligand" disabled={navigationIndex === 0} onClick={() => navigate(navigationIndex - 1)}>←</button>
-        <input type="range" aria-label="Individual ligand" min={0} max={navigation.length - 1} value={navigationIndex}
-          aria-valuetext={`${site.partner_label}: ${LIGAND_CATEGORIES[site.category ?? "unclassified"].label}, ${navigationIndex + 1} of ${navigation.length}`}
-          style={{accentColor: contactColor(site)}} onChange={event => navigate(Number(event.target.value))} />
-        <button aria-label="Next ligand" disabled={navigationIndex === navigation.length - 1} onClick={() => navigate(navigationIndex + 1)}>→</button>
-        <span className={styles.contactCounter}>{LIGAND_CATEGORIES[site.category ?? "unclassified"].label} · {navigationIndex + 1} / {navigation.length}</span>
-      </div>}
       <div className={styles.contactSelection}>
         <div><strong>{site.partner_label ?? site.partner}</strong><span><i style={{ background: contactColor(site) }} />{site.positions.length} contact residues</span></div>
         <button onClick={onFocus} aria-label="Focus contact site">Focus</button><button onClick={onReset} aria-label="Show whole protein">Reset</button>

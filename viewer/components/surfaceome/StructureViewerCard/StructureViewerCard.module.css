@@ -593,3 +593,6 @@
 .variantTab { flex: 0 0 auto; flex-direction: row; align-items: center; padding: .4rem .55rem; border-radius: 3px; }
 .variantTabLabel { font-size: .7rem; letter-spacing: 0; }
 .variantTabSub { display: none; }
+
+.contactSelectedLegend { display: flex; flex-direction: column; gap: .15rem; font-size: .75rem; pointer-events: auto; }
+.contactSelectedLegend > span { display: flex; align-items: center; gap: .3rem; font-size: .65rem; }

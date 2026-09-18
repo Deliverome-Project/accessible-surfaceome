@@ -132,3 +132,8 @@ The structure slot uses 46% of the desktop header and the full available width b
 The gene title now precedes the header grid. Below 1000px the structure appears before the summary and metadata, with its height bounded by the viewport (240–440px). Browser verification at 719×730 shows the title, variant tabs, entire canvas and mode controls without scrolling; rotation remains interactive. Production build passed.
 
 Contact evidence is currently exported to static `/data/contact-sites/*.json` shards and fetched directly by the viewer. The exporter explicitly performs no API or annotation writes. These contact records are not integrated into the public-D1/API publication pipeline; main gene annotations separately use that pipeline.
+
+
+## Selected ligand overlay and continuous navigation
+
+Selecting one ligand replaces category totals on the canvas with its name, category, and a hover/focus information tooltip containing residue count, source-record count, sources, and evidence link. All ligands is position zero of the same slider: next enters individual browsing and previous from the first ligand restores the overview. Category order is preserved. Production build and nine contact regressions pass; browser checks verified All → EGF → epigen and the EGF information tooltip.
