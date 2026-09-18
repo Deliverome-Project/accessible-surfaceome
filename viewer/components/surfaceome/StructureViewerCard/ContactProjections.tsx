@@ -1,5 +1,5 @@
 "use client";
-import { CONTACT_COLORS, contactHull } from "../../../lib/contact-sites";
+import { contactColor, contactHull } from "../../../lib/contact-sites";
 import type { ContactAtom, ContactGroup } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
@@ -34,7 +34,7 @@ export function ContactProjections({ atoms, sites }: { atoms: ContactAtom[]; sit
               if (!points.length) return null;
               const hull = contactHull(points);
               const center = [points.reduce((s,p)=>s+p[0],0)/points.length,points.reduce((s,p)=>s+p[1],0)/points.length];
-              const color=CONTACT_COLORS[site.source] ?? "#666666";
+              const color=contactColor(site);
               return <g key={i}>
                 {hull.length > 2 ? <polygon points={hull.map(p=>p.join(",")).join(" ")} fill={color} fillOpacity="0.09" stroke={color} strokeWidth="3" strokeLinejoin="round" strokeDasharray={i===0 ? undefined : i===1 ? "7 3" : "2 3"} /> :
                   <ellipse cx={center[0]} cy={center[1]} rx={Math.max(6,...points.map(p=>Math.abs(p[0]-center[0])))} ry={Math.max(6,...points.map(p=>Math.abs(p[1]-center[1])))} fill="none" stroke={color} strokeWidth="3" />}
@@ -48,7 +48,7 @@ export function ContactProjections({ atoms, sites }: { atoms: ContactAtom[]; sit
       })}
     </div>
     <ol className={styles.contactComparisonList}>
-      {sites.map((site,i) => <li key={i} style={{borderColor:CONTACT_COLORS[site.source]}}>
+      {sites.map((site,i) => <li key={i} style={{borderColor:contactColor(site)}}>
         <strong>{i+1}. {site.partner_label ?? site.partner}</strong> · {site.source} · {site.positions.length} residues
         {i===0 ? " · selected binder" : " · separate comparison binder"}
       </li>)}

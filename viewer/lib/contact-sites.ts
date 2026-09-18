@@ -3,6 +3,8 @@ export interface ContactSite {
   source: string;
   partner: string;
   partner_label?: string;
+  category?: LigandCategory;
+  category_reference?: string;
   pdb: string;
   positions: number[];
   context: string;
@@ -12,6 +14,17 @@ export interface ContactSite {
   confidence: string;
 }
 export interface ContactGene { hgnc_id: string; symbol: string; sites: ContactSite[] }
+export const LIGAND_CATEGORIES = {
+  endogenous_large: { label: "Endogenous · large molecule", color: "#3d6b60" },
+  endogenous_small: { label: "Endogenous · small molecule", color: "#b17a26" },
+  therapeutic: { label: "Therapeutic", color: "#922038" },
+  tool: { label: "Research tool", color: "#75629b" },
+  unclassified: { label: "Unclassified", color: "#777777" },
+} as const;
+export type LigandCategory = keyof typeof LIGAND_CATEGORIES;
+export function contactColor(site: ContactSite): string {
+  return LIGAND_CATEGORIES[site.category ?? "unclassified"].color;
+}
 export const CONTACT_COLORS: Record<string, string> = {
   "PDB/PDBe": "#0072b2", "SAbDab": "#cc79a7", "Thera-SAbDab": "#882255",
   "AACDB": "#009e73", "IEDB": "#d55e00", "BioLiP": "#aa7700",

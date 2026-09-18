@@ -16,7 +16,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
 import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
-import { CONTACT_COLORS, contactShard, filterContacts, browsingContacts, comparisonContacts } from "../../../lib/contact-sites";
+import { contactColor, contactShard, filterContacts, browsingContacts, comparisonContacts } from "../../../lib/contact-sites";
 import type { ContactGene, ContactAtom } from "../../../lib/contact-sites";
 import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -1168,7 +1168,7 @@ export function StructureViewer({
     if (viewMode !== "contacts" || variantIdx !== 0 || status !== "ready" || !viewer) return;
     viewer.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 0.55 } });
     for (const contact of visibleContacts) {
-      const color = CONTACT_COLORS[contact.source] ?? "#666666";
+      const color = contactColor(contact);
       viewer.setStyle({ resi: contact.positions }, {
         cartoon: { color }, stick: { color, radius: 0.3 },
         sphere: { color, scale: 1.05, opacity: 0.95 },

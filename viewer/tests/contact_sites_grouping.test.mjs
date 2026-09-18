@@ -77,3 +77,17 @@ test('default browsing shows named ligands once and searches restore footprints'
   assert.ok(records.filter(s=>s.source==='IEDB').every(s=>s.partner_label && s.partner_label!==s.partner));
   assert.ok(!overview.find(s=>ligandName(s)==='necitumumab').supportingSites.some(s=>s.partner==='P01135'));
 });
+
+test('EGFR category totals are ligand counts and retain uncertain roles', async () => {
+  const { browsingContacts, contactColor, LIGAND_CATEGORIES } = await import('../lib/contact-sites.ts');
+  const sites=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url))).P00533.sites;
+  const overview=browsingContacts(filterContacts(sites,'',true,''),true,'');
+  const counts=Object.fromEntries(Object.keys(LIGAND_CATEGORIES).map(c=>[c,overview.filter(s=>s.category===c).length]));
+  assert.deepEqual(counts,{endogenous_large:4,endogenous_small:0,therapeutic:5,tool:4,unclassified:4});
+  assert.equal(Object.values(counts).reduce((a,b)=>a+b,0),17);
+  assert.equal(overview.find(s=>s.partner_label==='ERBB2').category,'unclassified');
+  const egf=sites.filter(s=>s.partner_label==='EGF');
+  assert.ok(egf.every(s=>s.category==='endogenous_large' && s.category_reference));
+  assert.equal(new Set(egf.map(contactColor)).size,1);
+  assert.notEqual(contactColor(egf[0]),contactColor(overview.find(s=>s.partner_label==='Cetuximab')));
+});

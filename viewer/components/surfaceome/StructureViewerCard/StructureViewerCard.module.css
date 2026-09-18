@@ -549,3 +549,12 @@
 .contactSlider { display: grid; grid-template-columns: 36px minmax(40px, 1fr) 36px; gap: 8px; }
 .contactSlider input { min-width: 0; width: 100%; margin: 0; }
 .contactCounter { grid-column: 1 / -1; text-align: center; font-variant-numeric: tabular-nums; }
+
+.contactOverview { margin-bottom: var(--space-3); }
+.contactOverview > strong { display: block; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.contactOverview > strong span { font-size: .8rem; font-weight: 500; }
+.contactOverview > small { display: block; color: var(--muted); font-size: .7rem; }
+.contactCategories { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
+.contactCategories > span { display: flex; align-items: center; gap: .3rem; padding: .25rem .4rem; border: 1px solid var(--line); border-left: 3px solid; border-radius: 3px; font-size: .69rem; }
+.contactCategories i { width: 6px; height: 6px; border-radius: 50%; }
+.contactCategories b { font-variant-numeric: tabular-nums; }

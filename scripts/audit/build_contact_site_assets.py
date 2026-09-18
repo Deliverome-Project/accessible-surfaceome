@@ -61,6 +61,7 @@ def normalize(row):
 
 
 def main():
+    categories = json.loads((INPUT / "ligand_categories.json").read_text())
     ligand_names = json.loads((INPUT / "ligand_names.json").read_text())["ligands"]
     observation_names = {}
     with gzip.open(INPUT / "observations.tsv.gz", "rt") as handle:
@@ -108,6 +109,37 @@ def main():
                 if symbol and symbol.casefold() != ligand["name"].casefold():
                     site["partner_label"] += f" ({symbol})"
             acc = row["uniprot_acc"]
+            category_name = re.sub(
+                r"\s*\([^)]*\)\s*$", "", site.get("partner_label", site["partner"])
+            )
+            category_name = (
+                re.sub(r"\s+(Fab|Fv|VHH)$", "", category_name, flags=re.I)
+                .strip()
+                .lower()
+            )
+            if category_name.startswith("cetuximab"):
+                category_name = "cetuximab"
+            if category_name in {"imc-11f8", "11f8"}:
+                category_name = "necitumumab"
+            review = categories["reviewed"].get(f"{acc}|{category_name}")
+            site["category"] = "unclassified"
+            if (
+                site["source"] == "Thera-SAbDab"
+                or category_name in categories["therapeutic_names"]
+            ):
+                site["category"] = "therapeutic"
+                site["category_reference"] = (
+                    "https://opig.stats.ox.ac.uk/webapps/therasabdab/"
+                )
+            endogenous = categories["endogenous_pairs"].get(f"{acc}|{site['partner']}")
+            if endogenous:
+                site["category"] = endogenous
+                site["category_reference"] = (
+                    "https://www.guidetopharmacology.org/download.jsp"
+                )
+            if review:
+                site["category"] = review["category"]
+                site["category_reference"] = review["reference"]
             assert genes[acc]["hgnc_id"] == row["hgnc_id"]
             key = (
                 site["source"],
@@ -153,6 +185,9 @@ def main():
     }
     manifest = dict(
         schema_version=1,
+        categories_sha256=hashlib.sha256(
+            (INPUT / "ligand_categories.json").read_bytes()
+        ).hexdigest(),
         observation_names_sha256=hashlib.sha256(
             (INPUT / "observations.tsv.gz").read_bytes()
         ).hexdigest(),

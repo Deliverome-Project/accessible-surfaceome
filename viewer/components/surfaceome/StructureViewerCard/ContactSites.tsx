@@ -1,7 +1,7 @@
 "use client";
-import { CONTACT_COLORS, contactContext, filterContacts, browsingContacts, ligandOptions, namedLigand } from "../../../lib/contact-sites";
+import { contactColor, LIGAND_CATEGORIES, contactContext, filterContacts, browsingContacts, ligandOptions, namedLigand } from "../../../lib/contact-sites";
 import { ContactProjections } from "./ContactProjections";
-import type { ContactSite, ContactAtom, ContactGroup } from "../../../lib/contact-sites";
+import type { ContactSite, ContactAtom, ContactGroup, LigandCategory } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
 export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery, grouped, onGrouped, atoms, visibleSites, compare, onCompare, onFocus, onReset }: {
@@ -14,14 +14,29 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
   onEcOnly: (value: boolean) => void; status: string; onRetry: () => void;
 }) {
   const binderNames = ligandOptions(filterContacts(sites, source, ecOnly, ""));
+  const allLigands = browsingContacts(filterContacts(sites, "", ecOnly, ""), true, "");
+  const allCompartmentCount = browsingContacts(sites, true, "").length;
+  const categoryCounts = Object.keys(LIGAND_CATEGORIES).map(key => ({
+    key: key as LigandCategory,
+    count: allLigands.filter(s => (s.category ?? "unclassified") === key).length,
+  }));
   const records = filterContacts(sites, source, ecOnly, query);
   const filtered = browsingContacts(records, grouped, query);
   const site = filtered[selected];
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
+    {status === "ready" && <header className={styles.contactOverview}>
+      <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span></strong>
+      {ecOnly && <small>{allCompartmentCount} across all compartments</small>}
+      <div className={styles.contactCategories} aria-label="Ligand categories and counts">
+        {categoryCounts.map(({key, count}) => <span key={key} style={{borderLeftColor: LIGAND_CATEGORIES[key].color}}><i style={{background: LIGAND_CATEGORIES[key].color}} />{LIGAND_CATEGORIES[key].label} <b>{count}</b></span>)}
+      </div>
+    </header>}
     <div className={styles.contactFilters}>
       <label>Choose binder <select value={binderNames.includes(query) ? query : ""} onChange={e => onQuery(e.target.value)}>
         <option value="">All binders and ligands</option>
-        {binderNames.map(name => <option key={name} value={name}>{name}</option>)}
+        {categoryCounts.map(({key}) => <optgroup key={key} label={LIGAND_CATEGORIES[key].label}>
+          {binderNames.filter(name => allLigands.some(s => s.partner_label?.toLowerCase() === name.toLowerCase() && (s.category ?? "unclassified") === key)).map(name => <option key={name} value={name}>{name}</option>)}
+        </optgroup>)}
       </select></label>
     </div>
     {status === "loading" ? <p role="status">Loading contact evidence…</p> : status === "error" ?
@@ -33,18 +48,19 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         <input type="range" aria-label="Contact site" min={0} max={Math.max(0, filtered.length - 1)} value={selected}
           aria-valuetext={`${selected + 1} of ${filtered.length}: ${site.source}, ${site.partner_label ?? site.partner}`}
           disabled={filtered.length === 1} onChange={e => onSelect(Number(e.target.value))}
-          style={{ accentColor: CONTACT_COLORS[site.source] }} />
+          style={{ accentColor: contactColor(site) }} />
         <button aria-label="Next contact site" disabled={selected === filtered.length - 1} onClick={() => onSelect(selected + 1)}>→</button>
         <span className={styles.contactCounter}>{!query.trim() ? "Ligand" : grouped ? "Group" : "Record"} {selected + 1} of {filtered.length}</span>
       </div>
       <div className={styles.contactSelection}>
-        <div><strong>{site.partner_label ?? site.partner}</strong><span><i style={{ background: CONTACT_COLORS[site.source] }} />{site.source} · {site.positions.length} contact residues</span></div>
+        <div><strong>{site.partner_label ?? site.partner}</strong><span><i style={{ background: contactColor(site) }} />{LIGAND_CATEGORIES[site.category ?? "unclassified"].label} · {site.positions.length} contact residues</span></div>
         <button onClick={onFocus}>Focus site</button><button onClick={onReset}>Whole protein</button>
       </div>
       {!query.trim() ? <button className={styles.contactTextAction} onClick={() => onQuery(site.partner_label ?? site.partner)}>Explore this ligand’s contacts →</button> : <button className={styles.contactTextAction} onClick={() => onQuery("")}>← All ligands</button>}
       <details className={styles.contactEvidence}><summary>Evidence for {site.partner_label ?? site.partner} · {site.source} · {site.supportingSites.length} supporting records</summary>
       <div>
-        <strong style={{ color: CONTACT_COLORS[site.source] }}>● {site.source}</strong> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
+        <strong style={{ color: contactColor(site) }}>● {site.source}</strong> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
+        {LIGAND_CATEGORIES[site.category ?? "unclassified"].label}{site.category_reference && <> · <a href={site.category_reference} target="_blank" rel="noreferrer">Category source ↗</a></>}<br />
         {contactContext(site.context)} · {site.positions.length} residues · {site.evidence}
         <p>{site.confidence}. Contacts are projected onto the canonical AlphaFold model; this is not a model of the bound complex.</p>
         {site.pdb && <a href={`https://www.rcsb.org/structure/${site.pdb}`} target="_blank" rel="noreferrer">PDB {site.pdb.toUpperCase()} ↗</a>}
@@ -74,6 +90,6 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
       <details className={styles.contactEvidence}><summary>Three-angle view</summary><ContactProjections atoms={atoms} sites={visibleSites} /></details>
       <p className={styles.contactNote}>{records.length} evidence records. The overview shows one observed footprint per named ligand; sources may overlap. {records.filter(s => !namedLigand(s)).length} unresolved identity records are searchable by identifier.</p>
     </details>
-    <details className={styles.contactEvidence}><summary>About this evidence</summary><p className={styles.contactNote}>Audited contact and epitope evidence. SAbDab and BioLiP currently show one representative site per gene, not all known sites. Different sources or structures may describe the same interface. IntAct binding regions and mutation effects are excluded from this contact view. Source labels identify provenance, not confidence or therapeutic suitability. <a href="/data/contact-sites/manifest.json" target="_blank" rel="noreferrer">Snapshot provenance ↗</a></p></details>
+    <details className={styles.contactEvidence}><summary>About this evidence</summary><p className={styles.contactNote}>Colors indicate ligand category; database provenance is listed with the evidence. Endogenous large molecules include proteins and peptides. Therapeutic includes investigational and discontinued programs, not only approved drugs. Research tools are explicitly reviewed reagents; missing therapeutic annotation alone does not imply a tool. Unclassified entries lack a verified role. Totals count named ligands in this contact-evidence snapshot, not all known ligands. Audited contact and epitope evidence. SAbDab and BioLiP currently show one representative site per gene, not all known sites. Different sources or structures may describe the same interface. IntAct binding regions and mutation effects are excluded from this contact view. Source labels identify provenance, not confidence or therapeutic suitability. <a href="/data/contact-sites/manifest.json" target="_blank" rel="noreferrer">Snapshot provenance ↗</a></p></details>
   </section>;
 }
