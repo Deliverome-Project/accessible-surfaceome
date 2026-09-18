@@ -1,8 +1,16 @@
-import sys
+import importlib.util
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts/audit"))
-from audit_binder_denominators import endpoint, location_class, resolve_component
+spec = importlib.util.spec_from_file_location(
+    "audit_binder_denominators",
+    Path(__file__).resolve().parents[1] / "scripts/audit/audit_binder_denominators.py",
+)
+assert spec and spec.loader
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+endpoint = module.endpoint
+location_class = module.location_class
+resolve_component = module.resolve_component
 
 
 def test_proxy_enzyme_is_not_the_ligand():

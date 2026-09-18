@@ -39,3 +39,9 @@ Public D1 release `contacts-ba6680878403e6980464` passed complete payload readba
 The development API returns the six cleaned counts above. EGFR remains unchanged at 16 extracellular / 33 total partners. Production API and Pages deployment remain pending; this change does not deploy either.
 
 Validation: 10 contact-grouping tests, 6 API tests and 6 scoped Python tests passed; scoped Ruff and type checks passed; the viewer production build using the development API succeeded.
+
+### Production API rollout
+
+After explicit approval, deployed the full production Worker from the PR after merging current `dev` (including existing citation and cache fixes). Version `679bbc5c-53ed-430d-92c0-ec5212c8a977` serves `https://api.deliverome.org/surfaceome/v1/contact-sites/releases/current`; prior Worker version was `a971da9c-13b9-4b8b-855f-cc156b33de7a`. Existing bindings and variables were preserved.
+
+Live checks confirm the active release above, all six cleaned extracellular counts, unchanged EGFR 16/33 counts, and successful existing EGFR gene/internalization endpoints. Contact responses carry `Cache-Control: no-store`. The merged branch's 16 contact tests and deployment dry run passed. A CI-only import-resolution failure in the denominator test was fixed by using explicit file loading, matching the existing contact-asset test pattern.
