@@ -30,7 +30,15 @@
     "P01889",
     "P56817",
     "P06213",
-    "P06756"
+    "P06756",
+    "P13726",
+    "P21589",
+    "P27487",
+    "P26951",
+    "P55899",
+    "P07766",
+    "P01589",
+    "P10721"
   ],
   "rules": [
     {
@@ -4011,6 +4019,1080 @@
       "pdb": "8vs6",
       "reference": "https://www.rcsb.org/structure/8VS6",
       "reason": "Deposited TGFB3 proprotein entity is 389 residues; the observed integrin encounter involves the latency-associated/proprotein context. Keep separate from the capped 4UM9 peptide and from mature active TGFB3 receptor-binding evidence. A missing mutation flag is not proof every component is wild type; retain original construct/assembly annotations.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P05067",
+      "names": [
+        "P12821",
+        "ACE"
+      ],
+      "canonical_name": "Engineered ACE N-domain — Aβ fragment complex (5AM8)",
+      "category": "unclassified",
+      "pdb": "5am8",
+      "reference": "https://files.rcsb.org/header/5AM8.pdb",
+      "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30–658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is Aβ(4–10), not intact cell-surface APP; header reports only Asp7–Ser8 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P05067",
+      "names": [
+        "P12821",
+        "ACE"
+      ],
+      "canonical_name": "Engineered ACE N-domain — Aβ fragment complex (5AMB)",
+      "category": "unclassified",
+      "pdb": "5amb",
+      "reference": "https://files.rcsb.org/header/5AMB.pdb",
+      "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30–658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N160Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is Aβ(35–42), not intact cell-surface APP; header reports only Ile41–Ala42 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P05067",
+      "names": [
+        "P14735",
+        "IDE"
+      ],
+      "canonical_name": "Engineered cysteine-substituted IDE E111Q — Aβ42 complex (2WK3)",
+      "category": "unclassified",
+      "pdb": "2wk3",
+      "reference": "https://files.rcsb.org/header/2WK3.pdb",
+      "reason": "Deposited IDE sequence has 13 cysteine substitutions plus E111Q: C110L, E111Q, C171S, C178A, C257V, C414L, C573N, C590S, C789S, C812A, C819A, C904S, C966N, C974A, in verified P14735 numbering. The 1019-residue deposited polymer still contains C32; avoid claiming this entire deposited polymer literally lacks cysteine. Keep separate from E111Q-only IDE. Target is Aβ(1–42), P05067 residues 672–713, not intact cell-surface APP. Primary citation: https://pmc.ncbi.nlm.nih.gov/articles/PMC2813390/",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01903",
+      "names": [
+        "P01730",
+        "CD4"
+      ],
+      "canonical_name": "Engineered CD4 D1–D2 Q40Y/T45W (3S4S)",
+      "category": "tool",
+      "pdb": "3s4s",
+      "reference": "https://files.rcsb.org/header/3S4S.pdb",
+      "reason": "Affinity-engineered CD4 D1–D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26–203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01911",
+      "names": [
+        "P01730",
+        "CD4"
+      ],
+      "canonical_name": "Engineered CD4 D1–D2 Q40Y/T45W (3S4S)",
+      "category": "tool",
+      "pdb": "3s4s",
+      "reference": "https://files.rcsb.org/header/3S4S.pdb",
+      "reason": "Affinity-engineered CD4 D1–D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26–203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "10H10",
+        "10H10 Fab"
+      ],
+      "canonical_name": "10H10",
+      "category": "tool",
+      "pdb": "4m7l",
+      "reference": "https://www.rcsb.org/structure/4M7L",
+      "reason": "Deposited experimental antibody. M1587 is a humanized derivative of 10H10, not an identical clone; keep both separately named.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "5G9",
+        "5G9 Fab"
+      ],
+      "canonical_name": "5G9",
+      "category": "tool",
+      "pdb": "1ahw",
+      "reference": "https://www.rcsb.org/structure/1AHW",
+      "reason": "Deposited experimental antibody. M1587 is a humanized derivative of 10H10, not an identical clone; keep both separately named.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "M1587",
+        "M1587 Fab"
+      ],
+      "canonical_name": "M1587",
+      "category": "tool",
+      "pdb": "5w06",
+      "reference": "https://www.rcsb.org/structure/5W06",
+      "reason": "Deposited experimental antibody. M1587 is a humanized derivative of 10H10, not an identical clone; keep both separately named.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "D3H44 Fab",
+        "humanized D3h44"
+      ],
+      "canonical_name": "D3H44 (humanized)",
+      "category": "tool",
+      "pdb": "1jps",
+      "reference": "https://www.rcsb.org/structure/1JPS",
+      "reason": "Humanized experimental anti-tissue-factor antibody, directly deposited; no verified clinical drug identity established in this review.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "hATR-5 Fab",
+        "humanized anti-tissue factor hATR-5"
+      ],
+      "canonical_name": "hATR-5 (humanized)",
+      "category": "tool",
+      "pdb": "1uj3",
+      "reference": "https://www.rcsb.org/structure/1UJ3",
+      "reason": "Deposited humanized experimental anti-tissue-factor Fab. Both labels describe the same construct.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa",
+      "category": "endogenous_large",
+      "pdb": "1j9c",
+      "reference": "https://www.rcsb.org/structure/1J9C",
+      "reason": "Native-sequence coagulation factor VIIa partner. Active-site inhibitors and other entities in the assembly do not change this protein identity; preserve their assay context.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa",
+      "category": "endogenous_large",
+      "pdb": "2puq",
+      "reference": "https://www.rcsb.org/structure/2PUQ",
+      "reason": "Native-sequence coagulation factor VIIa partner. Active-site inhibitors and other entities in the assembly do not change this protein identity; preserve their assay context.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa",
+      "category": "endogenous_large",
+      "pdb": "8cn9",
+      "reference": "https://www.rcsb.org/structure/8CN9",
+      "reason": "Native-sequence coagulation factor VIIa partner. Active-site inhibitors and other entities in the assembly do not change this protein identity; preserve their assay context.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa",
+      "category": "endogenous_large",
+      "pdb": "8uud",
+      "reference": "https://www.rcsb.org/structure/8UUD",
+      "reason": "Native-sequence coagulation factor VIIa partner. Active-site inhibitors and other entities in the assembly do not change this protein identity; preserve their assay context.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa V158D/E296V/M298Q",
+      "category": "tool",
+      "pdb": "3ela",
+      "reference": "https://www.rcsb.org/structure/3ELA",
+      "reason": "Engineered factor VIIa construct explicitly documented in deposited entity metadata and primary publication; not wild-type factor VIIa. Mutation numbering follows the deposited construct.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa–trypsin YT chimera",
+      "category": "tool",
+      "pdb": "4z6a",
+      "reference": "https://www.rcsb.org/structure/4Z6A",
+      "reason": "Engineered factor VIIa construct explicitly documented in deposited entity metadata and primary publication; not wild-type factor VIIa. Mutation numbering follows the deposited construct.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa–trypsin ST chimera",
+      "category": "tool",
+      "pdb": "4zma",
+      "reference": "https://www.rcsb.org/structure/4ZMA",
+      "reason": "Engineered factor VIIa construct explicitly documented in deposited entity metadata and primary publication; not wild-type factor VIIa. Mutation numbering follows the deposited construct.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P13726",
+      "names": [
+        "P08709"
+      ],
+      "canonical_name": "Factor VIIa VYT variant",
+      "category": "tool",
+      "pdb": "6r2w",
+      "reference": "https://www.rcsb.org/structure/6R2W",
+      "reason": "Engineered factor VIIa construct explicitly documented in deposited entity metadata and primary publication; not wild-type factor VIIa. Mutation numbering follows the deposited construct.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P21589",
+      "names": [
+        "IPH53 Fab",
+        "IPH5301"
+      ],
+      "canonical_name": "IPH5301",
+      "category": "therapeutic",
+      "pdb": "6hxw",
+      "reference": "https://www.innate-pharma.com/sites/default/files/poster_sitc_2019_iph5301_120x120.pdf",
+      "reason": "Deposited IPH53 Fab is identified as IPH5301 in the primary study and sponsor structural figure. Clinical IPH5301 program verified; Fab evidence does not show intact Fc function.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P21589",
+      "names": [
+        "TB19",
+        "TB19 Fab"
+      ],
+      "canonical_name": "TB19",
+      "category": "tool",
+      "pdb": "6vc9",
+      "reference": "https://www.rcsb.org/structure/6VC9",
+      "reason": "Distinct experimental anti-CD73 antibody, documented in the primary structural study. Do not collapse with other anti-CD73 clones or infer a clinical drug identity.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P21589",
+      "names": [
+        "TB38",
+        "TB38 Fab"
+      ],
+      "canonical_name": "TB38",
+      "category": "tool",
+      "pdb": "6vca",
+      "reference": "https://www.rcsb.org/structure/6VCA",
+      "reason": "Distinct experimental anti-CD73 antibody, documented in the primary structural study. Do not collapse with other anti-CD73 clones or infer a clinical drug identity.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P21589",
+      "names": [
+        "mAb19",
+        "mAb19 Fab"
+      ],
+      "canonical_name": "mAb19",
+      "category": "tool",
+      "pdb": "7bbj",
+      "reference": "https://www.rcsb.org/structure/7BBJ",
+      "reason": "Distinct experimental anti-CD73 antibody, documented in the primary structural study. Do not collapse with other anti-CD73 clones or infer a clinical drug identity.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P26951",
+      "names": [
+        "Talacotuzumab",
+        "CSL362 Fab"
+      ],
+      "canonical_name": "Talacotuzumab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.cancer.gov/publications/dictionaries/cancer-drug/def/talacotuzumab",
+      "reason": "NCI identifies CSL362 as talacotuzumab. 4JZJ directly observes the Fab; cached exact VH/VL arm matches support the catalogue rows. Fc engineering is not observed.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P26951",
+      "names": [
+        "Bexatamig"
+      ],
+      "canonical_name": "Bexatamig",
+      "category": "therapeutic",
+      "pdb": "4jzj",
+      "reference": "https://opig.stats.ox.ac.uk/webapps/sabdab-sabpred/therasabdab/therasummary/?INN=Bexatamig",
+      "reason": "Retain separately named therapeutic-arm evidence to CSL362 template. Cached match tier is Thera_100pct_structure_chain; it is not a complete bispecific structure. Official Thera-SAbDab lists 100% Fv1 matches for 4JZJ AB/HL; Bexatamig is the distinct CD123/NKp46 engager.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P26951",
+      "names": [
+        "GTOPDB:4994",
+        "P08700",
+        "IL-3"
+      ],
+      "canonical_name": "IL-3 W13Y variant",
+      "category": "tool",
+      "pdb": "5uv8",
+      "reference": "https://www.rcsb.org/structure/5UV8",
+      "reason": "The deposited cytokine is engineered, not wild-type IL-3. Preserve the experimental mutation and construct numbering; source accession and GTOPDB labels are retained raw. W32Y in precursor numbering is W13Y after the 19-residue signal peptide. The 5UV8/6NMY overlapping cytokine sequence is identical; terminal construct truncation and cloning residues remain PDB-level provenance, not separate mutant identities. K116W follows the mature-numbered primary paper.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P26951",
+      "names": [
+        "GTOPDB:4994",
+        "P08700",
+        "IL-3"
+      ],
+      "canonical_name": "IL-3 W13Y/K116W variant",
+      "category": "tool",
+      "pdb": "5uwc",
+      "reference": "https://www.rcsb.org/structure/5UWC",
+      "reason": "The deposited cytokine is engineered, not wild-type IL-3. Preserve the experimental mutation and construct numbering; source accession and GTOPDB labels are retained raw. W32Y in precursor numbering is W13Y after the 19-residue signal peptide. The 5UV8/6NMY overlapping cytokine sequence is identical; terminal construct truncation and cloning residues remain PDB-level provenance, not separate mutant identities. K116W follows the mature-numbered primary paper.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P26951",
+      "names": [
+        "GTOPDB:4994",
+        "P08700",
+        "IL-3"
+      ],
+      "canonical_name": "IL-3 W13Y variant",
+      "category": "tool",
+      "pdb": "6nmy",
+      "reference": "https://www.rcsb.org/structure/6NMY",
+      "reason": "The deposited cytokine is engineered, not wild-type IL-3. Preserve the experimental mutation and construct numbering; source accession and GTOPDB labels are retained raw. W32Y in precursor numbering is W13Y after the 19-residue signal peptide. The 5UV8/6NMY overlapping cytokine sequence is identical; terminal construct truncation and cloning residues remain PDB-level provenance, not separate mutant identities. K116W follows the mature-numbered primary paper.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P26951",
+      "names": [
+        "P32927",
+        "CSF2RB"
+      ],
+      "canonical_name": "CSF2RB (6NMY engineered construct)",
+      "category": "receptor_partner",
+      "pdb": "6nmy",
+      "reference": "https://www.rcsb.org/structure/6NMY",
+      "reason": "Shared cytokine receptor beta subunit, represented by multiple deposited domain entities, one annotated N346Q. Keep receptor-partner biology but make engineered construct explicit; per-domain chain distinction exceeds the current matcher.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "Nipocalimab",
+        "Nipocalimab Fab"
+      ],
+      "canonical_name": "Nipocalimab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/9MI6",
+      "reason": "Named FcRn therapeutic Fab supported by primary structural evidence and cached exact VH/VL match. Orilanolimab is SYNT001 (6NHA); no equivalence to DX-2507 is inferred.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "Orilanolimab",
+        "Orilanolimab Fab"
+      ],
+      "canonical_name": "Orilanolimab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6NHA",
+      "reason": "Named FcRn therapeutic Fab supported by primary structural evidence and cached exact VH/VL match. Orilanolimab is SYNT001 (6NHA); no equivalence to DX-2507 is inferred.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "Rozanolixizumab",
+        "Rozanolixizumab Fab"
+      ],
+      "canonical_name": "Rozanolixizumab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6FGB",
+      "reason": "Named FcRn therapeutic Fab supported by primary structural evidence and cached exact VH/VL match. Orilanolimab is SYNT001 (6NHA); no equivalence to DX-2507 is inferred.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P61769",
+        "B2M"
+      ],
+      "canonical_name": "B2M",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/1EXU",
+      "reason": "Beta-2-microglobulin is the structural light-chain component of the FcRn receptor, not an FcRn-blocking drug.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "DX-2507 Fab",
+        "S6BAN1",
+        "Q6NS95"
+      ],
+      "canonical_name": "DX-2507",
+      "category": "tool",
+      "pdb": "5whk",
+      "reference": "https://www.rcsb.org/structure/5WHK",
+      "reason": "Deposited heavy/light antibody chains explain both generic accession rows. Preclinical anti-FcRn reagent; no verified clinical identity in this review, and no merging with DX-2504 or named FcRn drugs.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "Muromonab",
+        "OKT3 Fab",
+        "OKT3"
+      ],
+      "canonical_name": "Muromonab (OKT3)",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/1SY6",
+      "reason": "OKT3 is the therapeutic muromonab antibody; directly observed Fab contacts and exact VH/VL catalogue matches at 1SY6/9IRS. No inference of other humanized anti-CD3 drugs.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "UCHT1 Fv",
+        "UCHT1"
+      ],
+      "canonical_name": "UCHT1",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/1XIW",
+      "reason": "Distinct experimental anti-CD3 antibody; 1XIW deposits the single-chain UCHT1 antibody fragment.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "Mosunetuzumab"
+      ],
+      "canonical_name": "Mosunetuzumab",
+      "category": "therapeutic",
+      "pdb": "9t46",
+      "reference": "https://doi.org/10.1080/19420862.2026.2658902",
+      "reason": "Exact VH/VL catalogue match to parental 40G5c anti-CD3 Fab. The primary paper identifies 40G5c as the mosunetuzumab arm; 9T46 is the parental template, not a complete CD20/CD3 bispecific or the pH-engineered derivatives. Target evidence is a nine-residue CD3 epsilon peptide, not a full ectodomain accessibility experiment.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "P04234",
+        "CD3D"
+      ],
+      "canonical_name": "CD3D",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6JXR",
+      "reason": "Subunit of the TCR-CD3 receptor complex; preserve source compartment labels, including membrane-spanning observations.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "P09693",
+        "CD3G"
+      ],
+      "canonical_name": "CD3G",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6JXR",
+      "reason": "Subunit of the TCR-CD3 receptor complex; preserve source compartment labels, including membrane-spanning observations.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "P20963",
+        "CD247"
+      ],
+      "canonical_name": "CD247",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6JXR",
+      "reason": "Subunit of the TCR-CD3 receptor complex; preserve source compartment labels, including membrane-spanning observations.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "P0DSE2",
+        "TRB"
+      ],
+      "canonical_name": "TRB",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/7FJD",
+      "reason": "Subunit of the TCR-CD3 receptor complex; preserve source compartment labels, including membrane-spanning observations.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "P43405",
+        "SYK"
+      ],
+      "canonical_name": "SYK",
+      "category": "endogenous_large",
+      "pdb": "1a81",
+      "reference": "https://www.rcsb.org/structure/1A81",
+      "reason": "Native intracellular signaling protein/domain contacting a cytoplasmic CD3E peptide; retained in all-contact scope. Existing compartment annotation excludes it from extracellular scope.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "Q8TE68",
+        "EPS8L1"
+      ],
+      "canonical_name": "EPS8L1",
+      "category": "endogenous_large",
+      "pdb": "2rol",
+      "reference": "https://www.rcsb.org/structure/2ROL",
+      "reason": "Native intracellular signaling protein/domain contacting a cytoplasmic CD3E peptide; retained in all-contact scope. Existing compartment annotation excludes it from extracellular scope.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "P16333",
+        "NCK1"
+      ],
+      "canonical_name": "NCK1",
+      "category": "endogenous_large",
+      "pdb": "5qu2",
+      "reference": "https://www.rcsb.org/structure/5QU2",
+      "reason": "Native intracellular signaling protein/domain contacting a cytoplasmic CD3E peptide; retained in all-contact scope. Existing compartment annotation excludes it from extracellular scope.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "Basiliximab",
+        "basiliximab",
+        "Basiliximab Fab",
+        "basiliximab Fab",
+        "basiliximab (Simulect)"
+      ],
+      "canonical_name": "Basiliximab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3IU3",
+      "reason": "Named therapeutic antibody directly identified in the structural publication; consolidate spelling/Fab source aliases without altering raw observations.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "Daclizumab",
+        "daclizumab",
+        "Daclizumab Fab",
+        "daclizumab Fab"
+      ],
+      "canonical_name": "Daclizumab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3NFP",
+      "reason": "Named therapeutic antibody directly identified in the structural publication; consolidate spelling/Fab source aliases without altering raw observations.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "Vopikitug",
+        "RG6292 Fab"
+      ],
+      "canonical_name": "Vopikitug",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.cancer.gov/publications/dictionaries/cancer-drug/def/vopikitug",
+      "reason": "NCI identifies RG6292 as vopikitug; 6YIO observes its Fab and cached exact VH/VL links agree.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "CD25‑IL‑2 Fab"
+      ],
+      "canonical_name": "BT942",
+      "category": "tool",
+      "pdb": "7f9w",
+      "reference": "https://doi.org/10.1038/s41598-021-02449-y",
+      "reason": "The primary publication identifies the crystallized/cryo-EM Fab as BT942. CD25–IL-2 is an erroneous/generic source construct label, not the antibody identity; do not merge with IL-2 or BA9.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "P60568"
+      ],
+      "canonical_name": "IL-2",
+      "category": "endogenous_large",
+      "pdb": "1z92",
+      "reference": "https://www.rcsb.org/structure/1Z92",
+      "reason": "Native-sequence IL-2 cytokine in deposited entity metadata. Mutations in separate receptor subunits do not make the cytokine engineered.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "P60568"
+      ],
+      "canonical_name": "IL-2",
+      "category": "endogenous_large",
+      "pdb": "2b5i",
+      "reference": "https://www.rcsb.org/structure/2B5I",
+      "reason": "Native-sequence IL-2 cytokine in deposited entity metadata. Mutations in separate receptor subunits do not make the cytokine engineered.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "P60568"
+      ],
+      "canonical_name": "IL-2",
+      "category": "endogenous_large",
+      "pdb": "9kmc",
+      "reference": "https://www.rcsb.org/structure/9KMC",
+      "reason": "Native-sequence IL-2 cytokine in deposited entity metadata. Mutations in separate receptor subunits do not make the cytokine engineered.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "19 Fab",
+        "Fab19"
+      ],
+      "canonical_name": "Fab19",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/4K94",
+      "reason": "Two distinct experimental KIT-blocking antibody clones. Consolidate explicit names, including no-PDB IEDB records, without matching shared IEDB numeric identifier 543.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "79D Fab",
+        "Fab79D"
+      ],
+      "canonical_name": "Fab79D",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/4K9E",
+      "reason": "Two distinct experimental KIT-blocking antibody clones. Consolidate explicit names, including no-PDB IEDB records, without matching shared IEDB numeric identifier 543.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "GTOPDB:5055",
+        "P21583",
+        "stem cell factor",
+        "stem cell factor (KITLG)"
+      ],
+      "canonical_name": "Stem cell factor (KITLG)",
+      "category": "endogenous_large",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/2E9W",
+      "reason": "Native stem cell factor partner. 8DFP/8DFQ contain KIT target mutants, not engineered SCF; retain target construct provenance.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "STI"
+      ],
+      "canonical_name": "Imatinib",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/1T46",
+      "reason": "Direct kinase-domain ligand; retain all-contact evidence. These cytoplasmic contacts are excluded from EC by source compartment, not blanket exclusion.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "CCD:B49"
+      ],
+      "canonical_name": "Sunitinib",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3G0E",
+      "reason": "Direct kinase-domain ligand; retain all-contact evidence. These cytoplasmic contacts are excluded from EC by source compartment, not blanket exclusion.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "CCD:6T2"
+      ],
+      "canonical_name": "Crenolanib",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/8S1A",
+      "reason": "Direct kinase-domain ligand; retain all-contact evidence. These cytoplasmic contacts are excluded from EC by source compartment, not blanket exclusion.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "CCD:P31"
+      ],
+      "canonical_name": "Pexidartinib",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/7KHG",
+      "reason": "Direct kinase-domain ligand; retain all-contact evidence. These cytoplasmic contacts are excluded from EC by source compartment, not blanket exclusion.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "O14544"
+      ],
+      "canonical_name": "SOCS6",
+      "category": "endogenous_large",
+      "pdb": "2vif",
+      "reference": "https://www.rcsb.org/structure/2VIF",
+      "reason": "Intracellular native signaling protein/domain bound to a KIT phosphotyrosyl peptide; preserve all-contact evidence and existing non-extracellular context.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P10721",
+      "names": [
+        "P27986"
+      ],
+      "canonical_name": "PIK3R1",
+      "category": "endogenous_large",
+      "pdb": "2iuh",
+      "reference": "https://www.rcsb.org/structure/2IUH",
+      "reason": "Intracellular native signaling protein/domain bound to a KIT phosphotyrosyl peptide; preserve all-contact evidence and existing non-extracellular context.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P21589",
+      "names": [
+        "AP2",
+        "CCD:AP2",
+        "CCD:A12",
+        "PHOSPHOMETHYLPHOSPHONIC ACID ADENOSYL ESTER"
+      ],
+      "canonical_name": "AMPCP (adenosine 5′-methylenediphosphate)",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/ligand/A12",
+      "reason": "Synthetic nonhydrolyzable nucleotide inhibitor; AP2 and A12 have identical deposited InChIKey OLCWZBFDIYXLAA-IOSLPCCCSA-N and formula. Do not call endogenous AMP/ADP.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "CCD:715"
+      ],
+      "canonical_name": "Sitagliptin",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/1X70",
+      "reason": "Deposited DPP4 small-molecule inhibitor; drug identity follows primary structural publication and RCSB chemical-component drug mapping. Active moiety only, not a claim about the administered salt formulation.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "CCD:M51"
+      ],
+      "canonical_name": "Teneligliptin",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3VJK",
+      "reason": "Deposited DPP4 small-molecule inhibitor; drug identity follows primary structural publication and RCSB chemical-component drug mapping. Active moiety only, not a claim about the administered salt formulation.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "CCD:T22"
+      ],
+      "canonical_name": "Alogliptin",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3G0B",
+      "reason": "Deposited DPP4 small-molecule inhibitor; drug identity follows primary structural publication and RCSB chemical-component drug mapping. Active moiety only, not a claim about the administered salt formulation.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "CCD:356"
+      ],
+      "canonical_name": "Linagliptin",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/2RGU",
+      "reason": "Deposited DPP4 small-molecule inhibitor; drug identity follows primary structural publication and RCSB chemical-component drug mapping. Active moiety only, not a claim about the administered salt formulation.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "CCD:SKK"
+      ],
+      "canonical_name": "Anagliptin",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3WQH",
+      "reason": "Deposited DPP4 small-molecule inhibitor; drug identity follows primary structural publication and RCSB chemical-component drug mapping. Active moiety only, not a claim about the administered salt formulation.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "CCD:CJP"
+      ],
+      "canonical_name": "CJP indole-scaffold inhibitor",
+      "category": "tool",
+      "pdb": "4pv7",
+      "reference": "https://www.rcsb.org/structure/4PV7",
+      "reason": "Experimental indole-scaffold DPP4 inhibitor; no verified clinical drug identity. Keep distinct from approved gliptins.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "N7F"
+      ],
+      "canonical_name": "N7F heterocyclic DPP4 inhibitor",
+      "category": "tool",
+      "pdb": "4a5s",
+      "reference": "https://www.rcsb.org/structure/4A5S",
+      "reason": "Experimental heterocyclic DPP4 inhibitor from the deposited medicinal-chemistry study; no verified clinical identity.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "P12506"
+      ],
+      "canonical_name": "HIV-1 Tat(1–9) peptide",
+      "category": "unclassified",
+      "pdb": "2bgr",
+      "reference": "https://www.rcsb.org/structure/2BGR",
+      "reason": "Viral Tat-derived nonapeptide, sequence MDPVDPNIE, directly deposited. Viral/exogenous category is absent from enum; not an endogenous human ligand.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "P12506"
+      ],
+      "canonical_name": "HIV-1 Tat(1–9) Trp2 variant",
+      "category": "tool",
+      "pdb": "2bgn",
+      "reference": "https://www.rcsb.org/structure/2BGN",
+      "reason": "Engineered Tat-derived peptide MWPVDPNIE. Keep distinct from the unmodified viral peptide at 2BGR.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "Q9XSW6"
+      ],
+      "canonical_name": "Neuropeptide Y(1–10) substrate fragment",
+      "category": "tool",
+      "pdb": "1r9n",
+      "reference": "https://www.rcsb.org/structure/1R9N",
+      "reason": "Synthetic decapeptide YPSKPDNPGE (tNPY), not full endogenous NPY; accession maps rhesus NPY in SIFTS. Preserve fragment and mapping context without relabeling it as human full-length ligand.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "P56658"
+      ],
+      "canonical_name": "Bovine adenosine deaminase (2BGN construct)",
+      "category": "unclassified",
+      "pdb": "2bgn",
+      "reference": "https://www.rcsb.org/structure/2BGN",
+      "reason": "Naturally sourced bovine ADA, not an endogenous human ligand. RCSB structure page flags three sequence differences despite absent entity mutation annotation; retain a construct-qualified identity pending sequence reconciliation, as for 1W1I.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P26951",
+      "names": [
+        "EDT"
+      ],
+      "canonical_name": "EDTA (crystallographic chelator)",
+      "category": "tool",
+      "pdb": "5uwc",
+      "reference": "https://www.rcsb.org/ligand/EDT",
+      "reason": "CCD EDT is edetic acid/EDTA. Retain the raw contact observation as assay-reagent evidence, not a selective IL3RA therapeutic or native ligand.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "EQY"
+      ],
+      "canonical_name": "UCB-303",
+      "category": "tool",
+      "pdb": "6c99",
+      "reference": "https://www.rcsb.org/structure/6C99",
+      "reason": "Deposited fragment/small-molecule FcRn binder UCB-303. Experimental inhibitor, not native metabolite or verified clinical drug.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P02768"
+      ],
+      "canonical_name": "Human serum albumin",
+      "category": "endogenous_large",
+      "pdb": "4n0f",
+      "reference": "https://www.rcsb.org/structure/4N0F",
+      "reason": "Native-sequence human serum albumin directly deposited; keep separate from affinity-optimized HSA variants.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P02768"
+      ],
+      "canonical_name": "Human serum albumin",
+      "category": "endogenous_large",
+      "pdb": "4n0u",
+      "reference": "https://www.rcsb.org/structure/4N0U",
+      "reason": "Native-sequence human serum albumin directly deposited; keep separate from affinity-optimized HSA variants.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P02768"
+      ],
+      "canonical_name": "HSAopt (V418M/T420A/E505G/V547A)",
+      "category": "tool",
+      "pdb": "4k71",
+      "reference": "https://www.rcsb.org/structure/4K71",
+      "reason": "Affinity-optimized albumin with four substitutions (deposited numbering). 6QIP omits mutation metadata but its deposited sequence is identical to 6QIO and the primary publication explicitly uses HSAopt. Not native HSA or somapacitan.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P02768"
+      ],
+      "canonical_name": "HSAopt (V418M/T420A/E505G/V547A)",
+      "category": "tool",
+      "pdb": "6qio",
+      "reference": "https://www.rcsb.org/structure/6QIO",
+      "reason": "Affinity-optimized albumin with four substitutions (deposited numbering). 6QIP omits mutation metadata but its deposited sequence is identical to 6QIO and the primary publication explicitly uses HSAopt. Not native HSA or somapacitan.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P02768"
+      ],
+      "canonical_name": "HSAopt (V418M/T420A/E505G/V547A)",
+      "category": "tool",
+      "pdb": "6qip",
+      "reference": "https://www.rcsb.org/structure/6QIP",
+      "reason": "Affinity-optimized albumin with four substitutions (deposited numbering). 6QIP omits mutation metadata but its deposited sequence is identical to 6QIO and the primary publication explicitly uses HSAopt. Not native HSA or somapacitan.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P01857"
+      ],
+      "canonical_name": "IgG1 Fc YTE variant",
+      "category": "tool",
+      "pdb": "4n0u",
+      "reference": "https://www.rcsb.org/structure/4N0U",
+      "reason": "Deposited IgG1 Fc M252Y/S254T/T256E; engineered Fc-receptor ligand, not native IgG1.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P01857"
+      ],
+      "canonical_name": "Efgartigimod",
+      "category": "therapeutic",
+      "pdb": "7q15",
+      "reference": "https://www.rcsb.org/structure/7Q15",
+      "reason": "Deposited IgG1-Fc-MST-HN is explicitly efgartigimod in the structure title and primary paper; this is direct engineered Fc-drug binding evidence, not an antibody Fab match.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P01861"
+      ],
+      "canonical_name": "Engineered monomeric IgG4 Fc (6WNA)",
+      "category": "tool",
+      "pdb": "6wna",
+      "reference": "https://www.rcsb.org/structure/6WNA",
+      "reason": "Deposited monomeric IgG4 Fc has YTE plus L351F/S354E/T366R/P395K/F405R/Y407E substitutions. Keep distinct from 6WOL engineered Fc and native IgG4.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P55899",
+      "names": [
+        "P01861"
+      ],
+      "canonical_name": "Engineered monomeric IgG4 Fc (6WOL)",
+      "category": "tool",
+      "pdb": "6wol",
+      "reference": "https://www.rcsb.org/structure/6WOL",
+      "reason": "Distinct engineered Fc construct with L351F/S354E/T366R/P395K/F405R/Y407E and C-terminal substitutions/deletion; not the same sequence as 6WNA or native IgG4.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P07766",
+      "names": [
+        "peptide"
+      ],
+      "canonical_name": "Unresolved peptide partner (9CI8)",
+      "category": "unclassified",
+      "pdb": "9ci8",
+      "reference": "https://www.rcsb.org/structure/9CI8",
+      "reason": "Raw BioLiP record lacks partner-chain identity. Several short receptor chains exist in 9CI8; do not guess a clone or native subunit. Membrane-spanning source context already limits EC scope.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P01589",
+      "names": [
+        "P60568"
+      ],
+      "canonical_name": "IL-2 C125A variant",
+      "category": "tool",
+      "pdb": "2erj",
+      "reference": "https://www.rcsb.org/structure/2ERJ",
+      "reason": "Deposited IL-2 entity explicitly has C125A. Not native IL-2, and not sufficient evidence for aldesleukin despite a generic deposited synonym (aldesleukin has a different sequence modification).",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P27487",
+      "names": [
+        "P56658"
+      ],
+      "canonical_name": "Bovine adenosine deaminase (1W1I construct)",
+      "category": "unclassified",
+      "pdb": "1w1i",
+      "reference": "https://www.rcsb.org/structure/1W1I",
+      "reason": "Naturally sourced bovine ADA, not human ADA. Entry flags three sequence differences but entity has no mutation annotation; retain a construct-qualified identity pending reference-sequence reconciliation rather than declare engineered or wild-type.",
       "exclude_from_overview": false
     }
   ],
