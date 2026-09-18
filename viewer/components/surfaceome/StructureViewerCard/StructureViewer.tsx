@@ -1166,12 +1166,12 @@ export function StructureViewer({
   useEffect(() => {
     const viewer = viewerRef.current;
     if (viewMode !== "contacts" || variantIdx !== 0 || status !== "ready" || !viewer) return;
-    viewer.setStyle({}, { cartoon: { color: "#D6D9DE" } });
+    viewer.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 0.55 } });
     for (const contact of visibleContacts) {
       const color = CONTACT_COLORS[contact.source] ?? "#666666";
       viewer.setStyle({ resi: contact.positions }, {
         cartoon: { color }, stick: { color, radius: 0.3 },
-        sphere: { color, radius: 1.3, opacity: 0.35 },
+        sphere: { color, scale: 1.05, opacity: 0.95 },
       });
     }
     viewer.render();
@@ -2749,6 +2749,8 @@ export function StructureViewer({
         </div>
       ) : null}
       {viewMode === "contacts" && isCanonicalActive ? <ContactSites
+        onFocus={() => { const viewer = viewerRef.current; if (viewer && visibleContacts[0]) { viewer.zoomTo({ resi: visibleContacts[0].positions }); viewer.render(); } }}
+        onReset={() => { const viewer = viewerRef.current; if (viewer) { viewer.zoomTo({}); viewer.render(); } }}
         atoms={status === "ready" ? contactAtoms : []} visibleSites={visibleContacts}
         compare={compareContacts} onCompare={setCompareContacts}
         grouped={groupContacts} onGrouped={value => { setGroupContacts(value); setContactIndex(0); }}

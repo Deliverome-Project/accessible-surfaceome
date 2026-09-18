@@ -4,7 +4,8 @@ import { ContactProjections } from "./ContactProjections";
 import type { ContactSite, ContactAtom, ContactGroup } from "../../../lib/contact-sites";
 import styles from "./StructureViewerCard.module.css";
 
-export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery, grouped, onGrouped, atoms, visibleSites, compare, onCompare }: {
+export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery, grouped, onGrouped, atoms, visibleSites, compare, onCompare, onFocus, onReset }: {
+  onFocus: () => void; onReset: () => void;
   atoms: ContactAtom[]; visibleSites: ContactGroup[]; compare: boolean; onCompare: (value: boolean) => void;
   grouped: boolean; onGrouped: (grouped: boolean) => void;
   query: string; onQuery: (query: string) => void;
@@ -22,14 +23,6 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         <option value="">All binders and ligands</option>
         {binderNames.map(name => <option key={name} value={name}>{name}</option>)}
       </select></label>
-      <label>Search <input type="search" placeholder="Name or identifier" value={query} onChange={e => onQuery(e.target.value)} /></label>
-      <label>Source <select value={source} onChange={e => onSource(e.target.value)}>
-        <option value="">All sources</option>
-        {Array.from(new Set(sites.map(s => s.source))).sort().map(s => <option key={s}>{s}</option>)}
-      </select></label>
-      <label><input type="checkbox" checked={compare} onChange={e => onCompare(e.target.checked)} /> Compare other binders separately</label>
-      {query.trim() && <label><input type="checkbox" checked={grouped} onChange={e => onGrouped(e.target.checked)} /> Group similar sites</label>}
-      <label><input type="checkbox" checked={ecOnly} onChange={e => onEcOnly(e.target.checked)} /> Extracellular only</label>
     </div>
     {status === "loading" ? <p role="status">Loading contact evidence…</p> : status === "error" ?
       <p role="alert">Contact evidence could not be loaded. <button onClick={onRetry}>Retry</button></p> : status === "unaudited" ?
@@ -44,9 +37,11 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         <button aria-label="Next contact site" disabled={selected === filtered.length - 1} onClick={() => onSelect(selected + 1)}>→</button>
         <span className={styles.contactCounter}>{!query.trim() ? "Ligand" : grouped ? "Group" : "Record"} {selected + 1} of {filtered.length}</span>
       </div>
-      <p><strong>{query.trim() ? `Matching “${query.trim()}”` : "All binders and ligands"}</strong> · {filtered.length} {!query.trim() ? "named ligands / binders" : grouped ? "similarity groups" : "records"} from {records.length} evidence records. These are not counts of distinct biological binding sites.</p>
-      {!query.trim() && <p><button onClick={() => onQuery(site.partner_label ?? site.partner)}>Show contact groups for {site.partner_label ?? site.partner}</button> · One representative footprint per named ligand. {records.filter(s => !namedLigand(s)).length} unresolved identity records remain searchable by identifier.</p>}
-      <ContactProjections atoms={atoms} sites={visibleSites} />
+      <div className={styles.contactSelection}>
+        <div><strong>{site.partner_label ?? site.partner}</strong><span><i style={{ background: CONTACT_COLORS[site.source] }} />{site.source} · {site.positions.length} contact residues</span></div>
+        <button onClick={onFocus}>Focus site</button><button onClick={onReset}>Whole protein</button>
+      </div>
+      {!query.trim() ? <button className={styles.contactTextAction} onClick={() => onQuery(site.partner_label ?? site.partner)}>Explore this ligand’s contacts →</button> : <button className={styles.contactTextAction} onClick={() => onQuery("")}>← All ligands</button>}
       <details className={styles.contactEvidence}><summary>Evidence for {site.partner_label ?? site.partner} · {site.source} · {site.supportingSites.length} supporting records</summary>
       <div>
         <strong style={{ color: CONTACT_COLORS[site.source] }}>● {site.source}</strong> · {site.partner_label ?? site.partner}{site.partner_label ? ` (${site.partner})` : ""}<br />
@@ -65,6 +60,20 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
       </div>
       </details>
     </>}
+    <details className={styles.contactEvidence}><summary>Filters &amp; comparison</summary>
+      <div className={styles.contactFilters}>
+      <label>Search <input type="search" placeholder="Name or identifier" value={query} onChange={e => onQuery(e.target.value)} /></label>
+      <label>Source <select value={source} onChange={e => onSource(e.target.value)}>
+        <option value="">All sources</option>
+        {Array.from(new Set(sites.map(s => s.source))).sort().map(s => <option key={s}>{s}</option>)}
+      </select></label>
+      <label><input type="checkbox" checked={compare} onChange={e => onCompare(e.target.checked)} /> Compare other binders separately</label>
+      {query.trim() && <label><input type="checkbox" checked={grouped} onChange={e => onGrouped(e.target.checked)} /> Group similar sites</label>}
+      <label><input type="checkbox" checked={ecOnly} onChange={e => onEcOnly(e.target.checked)} /> Extracellular only</label>
+      </div>
+      <details className={styles.contactEvidence}><summary>Three-angle view</summary><ContactProjections atoms={atoms} sites={visibleSites} /></details>
+      <p className={styles.contactNote}>{records.length} evidence records. The overview shows one observed footprint per named ligand; sources may overlap. {records.filter(s => !namedLigand(s)).length} unresolved identity records are searchable by identifier.</p>
+    </details>
     <details className={styles.contactEvidence}><summary>About this evidence</summary><p className={styles.contactNote}>Audited contact and epitope evidence. SAbDab and BioLiP currently show one representative site per gene, not all known sites. Different sources or structures may describe the same interface. IntAct binding regions and mutation effects are excluded from this contact view. Source labels identify provenance, not confidence or therapeutic suitability. <a href="/data/contact-sites/manifest.json" target="_blank" rel="noreferrer">Snapshot provenance ↗</a></p></details>
   </section>;
 }

@@ -64,3 +64,11 @@ Validation: five grouping/comparison tests, three exporter tests, scoped Ruff/ty
 Default browsing now shows one representative footprint per normalized named ligand across sources, with all source observations retained under evidence. EGFR has 17 named extracellular partner entries in this view; 11 records with unresolved identities are excluded from the overview but searchable by identifier. This is not an exhaustive biological ligand census. Selecting or searching a ligand restores its source-specific footprint groups. IEDB receptor names are restored from observations.tsv.gz using source, binder ID and reference; the manifest hashes this name source. GtoPdb protein ligands and corresponding UniProt partners share names. Case, Fab/Fv/VHH suffixes, parenthetical aliases and the audited necitumumab/IMC-11F8 alias are normalized for browsing only. GC1118 and GC1118A remain separate without a verified equivalence.
 
 Validation: six viewer regression tests, three exporter tests, production build, and browser checks of the 17-entry overview and EGF's six source-specific groups.
+
+## Main-structure design refinement
+
+The default contact panel now uses the surrounding viewer's typography, spacing, line and accent tokens, with a ligand picker, stable navigation, and one compact source/residue summary. Search, source/compartment filters, comparison and orthogonal projections are collapsed under Filters & comparison. Evidence remains available in a separate disclosure.
+
+Selected contacts render as nearly opaque atom-sized spheres against a faded canonical backbone. Focus site frames the selected residue set on the main interactive model; Whole protein restores the full-protein framing. Scrubbing still preserves the camera. These are observed contact atoms, not a fabricated envelope or a bound-ligand structure. Browser-verified with EGF's two separated contact patches visible in the main model.
+
+Validation: six contact regressions and successful production build/export with TypeScript validation. The standalone check initially encountered stale development-route types from an earlier temporary EGFR route; the production build passed.
