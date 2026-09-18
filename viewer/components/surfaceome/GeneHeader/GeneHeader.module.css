@@ -18,10 +18,7 @@
 
 .headerGrid {
   display: grid;
-  /* 30% larger structure slot per user request — was 280px, now
-     ~365px. Text column shrinks correspondingly but stays the
-     dominant area on the page. */
-  grid-template-columns: 1fr 365px;
+  grid-template-columns: minmax(0, 1fr) minmax(400px, 46%);
   gap: var(--space-6);
   align-items: start;
 }
@@ -43,7 +40,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  width: 365px;
+  width: 100%;
+  min-width: 0;
 }
 
 .structureCaption {
@@ -72,14 +70,14 @@
    The rules are deleted so the GeneHeader stylesheet stays in sync
    with what's actually in the JSX.) */
 
-@media (max-width: 760px) {
+@media (max-width: 1000px) {
   .headerGrid {
     grid-template-columns: 1fr;
   }
 
   .structureSlot {
     width: 100%;
-    max-width: 320px;
+    max-width: none;
   }
 }
 

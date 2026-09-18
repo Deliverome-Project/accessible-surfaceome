@@ -120,3 +120,8 @@ Validation: nine viewer regressions including alias conservation and reviewed ro
 ## In-view category legend
 
 Category counts now sit in a compact translucent overlay at the top-left of the 3D canvas, removing the category chip rows below the viewer. Counts stay scoped to all named extracellular partners while an individual ligand is selected. The overlay is a sibling of the renderer-owned canvas, appears only in ready canonical contact mode, and ignores pointer events so structure rotation/zoom still works beneath it.
+
+
+## Wider structure layout
+
+The structure slot uses 46% of the desktop header and the full available width below 1000px, removing the old 320px cap. A 4:3 canvas and single-row, horizontally scrolling variant tabs give the model more horizontal space. Accession details remain in tab tooltips; Mouse and Cyno labels are shortened. Production build/export passed; browser checks verified the wider layout, contact shortcut, and canonical/Mouse switching.

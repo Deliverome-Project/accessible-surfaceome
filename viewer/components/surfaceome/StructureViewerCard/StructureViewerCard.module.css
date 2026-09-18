@@ -321,7 +321,7 @@
 .viewerCanvas {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   border-radius: 8px;
   background: var(--surface-soft, #f6f1ef);
   border: 1px solid var(--line-soft, #e8d6d2);
@@ -587,3 +587,9 @@
 .contactCanvasLegend > div { display: grid; grid-template-columns: 6px auto minmax(1ch, auto); align-items: center; gap: .35rem; }
 .contactCanvasLegend i { width: 6px; height: 6px; border-radius: 50%; }
 .contactCanvasLegend b { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* One compact, horizontally scrollable variant strip instead of stacked tiles. */
+.variantTabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; gap: 1px; padding: 1px; scrollbar-width: thin; }
+.variantTab { flex: 0 0 auto; flex-direction: row; align-items: center; padding: .4rem .55rem; border-radius: 3px; }
+.variantTabLabel { font-size: .7rem; letter-spacing: 0; }
+.variantTabSub { display: none; }

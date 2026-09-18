@@ -2596,7 +2596,7 @@ export function StructureViewer({
                 aria-selected={isActive}
               >
                 <span className={styles.variantTabLabel}>
-                  {v.label}
+                  {v.label.replace(/ ortholog$/i, "")}
                   {i + 2 <= 9 ? ` [${i + 2}]` : ""}
                 </span>
                 {v.sublabel ? (
