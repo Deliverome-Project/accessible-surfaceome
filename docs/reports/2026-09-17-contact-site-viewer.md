@@ -142,3 +142,8 @@ Selecting one ligand replaces category totals on the canvas with its name, categ
 ## Tighter viewer placement
 
 On desktop the structure starts alongside the gene title, removing the separate title-height gap above it. Its column narrows from 46% to 42%. Below 1000px the title-to-viewer gap is 4px and the viewer uses 94% of the available width. Canvas height remains `clamp(240px, 46svh, 440px)` and does not grow when width decreases.
+
+
+## Compact counts and control polish
+
+The ligand heading is smaller and places the overall total on the same line (16 extracellular ligands / binders · 33 total for EGFR). The ligand label moves inside the compact dropdown; its menu has a selected checkmark, softer border and grouped choices. Navigation/focus controls use quiet warm surfaces, and information icons no longer inherit oversized generic button styling. The Surfaceome badge now reads v1.2.0, verified against the latest stable GitHub release. Production build and browser checks passed, including the expanded dropdown.

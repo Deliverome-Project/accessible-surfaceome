@@ -550,10 +550,10 @@
 .contactSlider input { min-width: 0; width: 100%; margin: 0; }
 .contactCounter { grid-column: 1 / -1; text-align: center; font-variant-numeric: tabular-nums; }
 
-.contactOverview { margin-bottom: var(--space-3); }
-.contactOverview > strong { display: block; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
-.contactOverview > strong span { font-size: .8rem; font-weight: 500; }
-.contactOverview > small { display: block; color: var(--muted); font-size: .7rem; }
+.contactOverview { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem; margin-bottom: .35rem; }
+.contactOverview > strong { display: inline; font-size: .82rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.contactOverview > strong span { font-size: .74rem; font-weight: 400; }
+.contactOverview > small { color: var(--muted); font-size: .7rem; white-space: nowrap; }
 .contactCategories { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
 .contactCategories > span { display: flex; align-items: center; gap: .3rem; padding: .25rem .4rem; border: 1px solid var(--line); border-left: 3px solid; border-radius: 3px; font-size: .69rem; }
 .contactCategories i { width: 6px; height: 6px; border-radius: 50%; }
@@ -596,3 +596,20 @@
 
 .contactSelectedLegend { display: flex; flex-direction: column; gap: .15rem; font-size: .75rem; pointer-events: auto; }
 .contactSelectedLegend > span { display: flex; align-items: center; gap: .3rem; font-size: .65rem; }
+
+/* Compact controls share the site's quiet border and warm surface treatment. */
+.contactPanel button { border-color: var(--line-soft); border-radius: 5px; transition: background .15s, border-color .15s, color .15s; }
+.contactPanel button:hover:not(:disabled) { background: var(--surface-soft); border-color: var(--line); color: var(--ink); }
+.contactPanel :global([data-infotip]) button { padding: 0; border: 0; background: none; width: 1.1em; height: 1.1em; font-size: .65rem; }
+.contactPicker summary { padding: .35rem .55rem; border-color: var(--line-soft); border-radius: 5px; background: var(--surface-soft); font-size: .76rem; }
+.contactPicker summary:hover, .contactPicker details[open] > summary { border-color: var(--line); }
+.contactPicker summary > svg { flex-shrink: 0; color: var(--muted); transition: transform .15s; }
+.contactPicker details[open] > summary > svg { transform: rotate(180deg); }
+.contactPickerValue { display: flex; align-items: baseline; gap: .6rem; min-width: 0; }
+.contactPickerPrefix { color: var(--muted); font-size: .65rem; }
+.contactPickerMenu { border-color: var(--line-soft); border-radius: 6px; box-shadow: 0 6px 20px rgb(40 25 30 / 9%); }
+.contactPickerMenu button { border: 0; display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .74rem; }
+.contactPickerMenu button[aria-pressed="true"]::after { content: "✓"; color: var(--accent); }
+.contactSlider { grid-template-columns: 28px minmax(40px, 1fr) 28px; align-items: center; }
+.contactSlider > button { padding: 0; height: 26px; background: var(--surface-soft); border-color: transparent; font-size: .85rem; }
+.contactSelection > button { background: var(--surface-soft); }

@@ -14,11 +14,13 @@ export function ContactPicker({ label, value, placeholder, groups, onChange }: {
     disclosure.current?.querySelector("summary")?.focus();
   };
   return <div className={styles.contactPicker}>
-    <span className={styles.contactPickerLabel}>{label}</span>
     <details ref={disclosure} onKeyDown={event => {
       if (event.key === "Escape") { disclosure.current?.removeAttribute("open"); disclosure.current?.querySelector("summary")?.focus(); }
     }}>
-      <summary aria-label={`${label}: ${value || placeholder}`}>{value || placeholder}<span aria-hidden="true">⌄</span></summary>
+      <summary aria-label={`${label}: ${value || placeholder}`}>
+        <span className={styles.contactPickerValue}><span className={styles.contactPickerPrefix}>{label}</span>{value || placeholder}</span>
+        <svg aria-hidden="true" width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="m4 6 4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </summary>
       <div className={styles.contactPickerMenu}>
         <button type="button" aria-pressed={!value} onClick={() => choose("")}>{placeholder}</button>
         {groups.filter(group => group.options.length).map((group,index) => <div key={index}>

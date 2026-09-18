@@ -63,7 +63,7 @@ export function ContactSites({ gene, sites, selected, source, ecOnly, status, on
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     {status === "ready" && <header className={styles.contactOverview}>
       <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span> <InfoTip label="About ligand coverage" align="start">Mapped partners only; coverage is incomplete. One footprint per ligand. Colors indicate role, not confidence.</InfoTip></strong>
-      {ecOnly && <small>{allCompartmentCount} across all compartments</small>}
+      {ecOnly && <small>· {allCompartmentCount} total</small>}
     </header>}
     {gene?.data_origin === "snapshot" && <small role="status">Offline snapshot · {gene.release_id}</small>}
     <div className={styles.contactFilters}>
