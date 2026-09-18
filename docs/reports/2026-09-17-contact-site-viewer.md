@@ -88,3 +88,11 @@ Selecting a ligand now keeps a single representative observed footprint, rather 
 Ligand and source pickers use styled disclosure menus with categorized options, keyboard-accessible buttons, Escape dismissal and focus restoration. The app's existing InfoTip component explains each source's evidence and limitations, both beside the selected ligand's source list and within observation details. IUPHAR+PDBe explicitly explains overlap with PDB/PDBe.
 
 Validation: seven regression tests (including one-entry EGF browsing with all twenty observations preserved), successful production build/export, and browser verification of the styled picker, absence of an EGF slider, ten-structure/twenty-record summary, and the IUPHAR source tooltip.
+
+## All-ligand overlay
+
+All ligands now renders all named representative footprints matching the compartment/source scope together, rather than selecting the first entry. EGFR's default shows 17 extracellular footprints. Selecting one ligand isolates its single representative. Focus sites frames their combined residues. The overview lists all displayed ligands under evidence and no longer presents a per-ligand navigation slider.
+
+Residue coloring aggregates category membership before rendering. Residues shared across categories use an explicit blue-gray overlap color, avoiding last-record color overwrite; the display does not establish simultaneous binding. The Unclassified info tooltip lists 059-152, DL11, ERBB2 and GC1118A for EGFR. Unclassified means a category assignment has not been verified, not that contact evidence is absent.
+
+Validation: eight viewer regression tests, including complete residue-union preservation and overlap labeling; production build/export; browser confirmation of the 17-footprint overview and the unclassified-name tooltip.

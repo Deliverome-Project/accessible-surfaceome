@@ -95,3 +95,18 @@ test('EGFR category totals are ligand counts and retain uncertain roles', async 
   assert.equal(new Set(egf.map(contactColor)).size,1);
   assert.notEqual(contactColor(egf[0]),contactColor(overview.find(s=>s.partner_label==='Cetuximab')));
 });
+
+test('all-ligand rendering retains the full residue union and marks category overlap', async () => {
+  const { browsingContacts, contactResidueLayers, SHARED_CONTACT_COLOR } = await import('../lib/contact-sites.ts');
+  const sites=JSON.parse(readFileSync(new URL(`../public/data/contact-sites/${contactShard('P00533')}.json`,import.meta.url))).P00533.sites;
+  const all=browsingContacts(filterContacts(sites,'',true,''),true,'');
+  assert.equal(all.length,17);
+  const expected=[...new Set(all.flatMap(s=>s.positions))].sort((a,b)=>a-b);
+  const layers=contactResidueLayers(all);
+  assert.deepEqual(layers.flatMap(l=>l.positions).sort((a,b)=>a-b),expected);
+  assert.ok(layers.some(l=>l.color===SHARED_CONTACT_COLOR));
+  const single=browsingContacts(filterContacts(sites,'',true,'EGF'),true,'EGF');
+  assert.equal(contactResidueLayers(single).length,1);
+  assert.notEqual(contactResidueLayers(single)[0].color,SHARED_CONTACT_COLOR);
+  assert.deepEqual(contactResidueLayers(all).flatMap(l=>l.positions).sort((a,b)=>a-b),contactResidueLayers([...all].reverse()).flatMap(l=>l.positions).sort((a,b)=>a-b));
+});

@@ -149,3 +149,20 @@ export function contactHull(points: [number, number][]): [number, number][] {
   };
   return [...half(sorted),...half([...sorted].reverse())];
 }
+
+/** Resolve overlap explicitly instead of letting the last ligand overwrite earlier colors. */
+export const SHARED_CONTACT_COLOR = "#536879";
+export function contactResidueLayers(sites: ContactSite[]): {color: string; positions: number[]}[] {
+  const categories = new Map<number, Set<string>>();
+  for (const site of sites) for (const position of site.positions) {
+    const colors = categories.get(position) ?? new Set<string>();
+    colors.add(contactColor(site)); categories.set(position, colors);
+  }
+  const layers = new Map<string, number[]>();
+  for (const [position, colors] of categories) {
+    const color = colors.size > 1 ? SHARED_CONTACT_COLOR : [...colors][0];
+    const positions = layers.get(color) ?? [];
+    positions.push(position); layers.set(color, positions);
+  }
+  return [...layers].map(([color, positions]) => ({color, positions}));
+}

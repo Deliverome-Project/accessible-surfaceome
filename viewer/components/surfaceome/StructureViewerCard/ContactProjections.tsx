@@ -10,7 +10,7 @@ export function ContactProjections({ atoms, sites }: { atoms: ContactAtom[]; sit
   const contactAtoms = atoms.filter(atom => contactPositions.has(atom.resi));
   const framingAtoms = contactAtoms.length ? contactAtoms : atoms;
   return <div>
-    <p className={styles.contactNote}><strong>{sites.length} {sites.length === 1 ? "footprint shown" : "footprints shown together"}</strong> · use the slider for alternatives</p>
+    <p className={styles.contactNote}><strong>{sites.length} {sites.length === 1 ? "footprint shown" : "footprints shown together"}</strong> · select a ligand to isolate its contacts</p>
     <div className={styles.contactViews}>
       {VIEWS.map(([label, horizontal, vertical]) => {
         const xs = framingAtoms.map(a => a[horizontal]), ys = framingAtoms.map(a => a[vertical]);
@@ -50,9 +50,9 @@ export function ContactProjections({ atoms, sites }: { atoms: ContactAtom[]; sit
     <ol className={styles.contactComparisonList}>
       {sites.map((site,i) => <li key={i} style={{borderColor:contactColor(site)}}>
         <strong>{i+1}. {site.partner_label ?? site.partner}</strong> · {site.source} · {site.positions.length} residues
-        {i===0 ? " · selected binder" : " · separate comparison binder"}
+        {sites.length === 1 ? " · selected binder" : " · overview"}
       </li>)}
     </ol>
-    <p className={styles.contactNote}>Three fixed orthogonal views, zoomed to the compared contacts on the canonical model. Outlines enclose contact residues; enclosed gaps are not additional contacts. Compared footprints share at most 20% of the smaller residue set. This does not establish simultaneous binding.</p>
+    <p className={styles.contactNote}>Three fixed orthogonal views, zoomed to the compared contacts on the canonical model. Outlines enclose contact residues; enclosed gaps are not additional contacts. Overlapping footprints do not establish simultaneous binding.</p>
   </div>;
 }

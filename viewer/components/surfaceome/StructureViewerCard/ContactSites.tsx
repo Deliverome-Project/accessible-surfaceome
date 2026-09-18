@@ -1,5 +1,5 @@
 "use client";
-import { contactColor, LIGAND_CATEGORIES, contactContext, filterContacts, browsingContacts, ligandOptions, namedLigand } from "../../../lib/contact-sites";
+import { contactColor, SHARED_CONTACT_COLOR, LIGAND_CATEGORIES, contactContext, filterContacts, browsingContacts, ligandOptions, namedLigand } from "../../../lib/contact-sites";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { ContactPicker } from "./ContactPicker";
 import { ContactProjections } from "./ContactProjections";
@@ -22,11 +22,11 @@ function SourceInfo({source}: {source: string}) {
   return <span className={styles.contactSource}>{source}<InfoTip label={`About ${source}`} align="start">{SOURCE_INFO[source] ?? "Experimental contact evidence; see the linked source record for its methods and limitations."}</InfoTip></span>;
 }
 
-export function ContactSites({ sites, selected, onSelect, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery, atoms, visibleSites, compare, onCompare, onFocus, onReset }: {
+export function ContactSites({ sites, selected, source, onSource, ecOnly, onEcOnly, status, onRetry, query, onQuery, atoms, visibleSites, onFocus, onReset }: {
   onFocus: () => void; onReset: () => void;
-  atoms: ContactAtom[]; visibleSites: ContactGroup[]; compare: boolean; onCompare: (value: boolean) => void;
+  atoms: ContactAtom[]; visibleSites: ContactGroup[];
   query: string; onQuery: (query: string) => void;
-  sites: ContactSite[]; selected: number; onSelect: (index: number) => void;
+  sites: ContactSite[]; selected: number;
   source: string; onSource: (source: string) => void; ecOnly: boolean;
   onEcOnly: (value: boolean) => void; status: string; onRetry: () => void;
 }) {
@@ -40,12 +40,13 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
   const records = filterContacts(sites, source, ecOnly, query);
   const filtered = browsingContacts(records, true, query);
   const site = filtered[selected];
+  const overview = filtered.length > 1;
   return <section className={styles.contactPanel} aria-label="Contact-site evidence">
     {status === "ready" && <header className={styles.contactOverview}>
       <strong>{allLigands.length} <span>{ecOnly ? "extracellular" : "total"} ligands / binders</span></strong>
       {ecOnly && <small>{allCompartmentCount} across all compartments</small>}
       <div className={styles.contactCategories} aria-label="Ligand categories and counts">
-        {categoryCounts.map(({key, count}) => <span key={key} style={{borderLeftColor: LIGAND_CATEGORIES[key].color}}><i style={{background: LIGAND_CATEGORIES[key].color}} />{LIGAND_CATEGORIES[key].label} <b>{count}</b></span>)}
+        {categoryCounts.map(({key, count}) => <span key={key} style={{borderLeftColor: LIGAND_CATEGORIES[key].color}}><i style={{background: LIGAND_CATEGORIES[key].color}} />{LIGAND_CATEGORIES[key].label} <b>{count}</b>{key === "unclassified" && count > 0 && <InfoTip label="Which partners are unclassified?" align="start">{allLigands.filter(s => s.category === "unclassified").map(s => s.partner_label ?? s.partner).join(", ")}. Binding evidence is present, but a role in these categories has not been verified. These may include receptor partners.</InfoTip>}</span>)}
       </div>
     </header>}
     <div className={styles.contactFilters}>
@@ -56,15 +57,11 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
       <p role="alert">Contact evidence could not be loaded. <button onClick={onRetry}>Retry</button></p> : status === "unaudited" ?
       <p>This protein has no unambiguous mapping in this audit.</p> : !site ?
       <p>No mapped sites in this audit match these filters. This does not establish absence of binders.</p> : <>
-      {filtered.length > 1 && <div className={styles.contactSlider}>
-        <button aria-label="Previous contact site" disabled={selected === 0} onClick={() => onSelect(selected - 1)}>←</button>
-        <input type="range" aria-label="Contact site" min={0} max={Math.max(0, filtered.length - 1)} value={selected}
-          aria-valuetext={`${selected + 1} of ${filtered.length}: ${site.source}, ${site.partner_label ?? site.partner}`}
-          disabled={filtered.length === 1} onChange={e => onSelect(Number(e.target.value))}
-          style={{ accentColor: contactColor(site) }} />
-        <button aria-label="Next contact site" disabled={selected === filtered.length - 1} onClick={() => onSelect(selected + 1)}>→</button>
-        <span className={styles.contactCounter}>Ligand {selected + 1} of {filtered.length}</span>
-      </div>}
+      {overview ? <>
+        <div className={styles.contactSelection}><div><strong>{filtered.length} ligand footprints shown together</strong><span>One observed footprint per named partner</span></div><button onClick={onFocus}>Focus sites</button><button onClick={onReset}>Whole protein</button></div>
+        <p className={styles.contactNote}><i style={{display: "inline-block", width: 8, height: 8, background: SHARED_CONTACT_COLOR}} /> Blue-gray marks residues shared across categories. Overlap does not imply simultaneous binding.</p>
+        <details className={styles.contactEvidence}><summary>Shown ligands &amp; evidence</summary><ul>{filtered.map(item => <li key={item.partner_label ?? item.partner}><button className={styles.contactTextAction} onClick={() => onQuery(item.partner_label ?? item.partner)}>{item.partner_label ?? item.partner}</button> · {item.positions.length} contact residues · {item.supportingSites.length} records</li>)}</ul></details>
+      </> : <>
       <div className={styles.contactSelection}>
         <div><strong>{site.partner_label ?? site.partner}</strong><span><i style={{ background: contactColor(site) }} />{LIGAND_CATEGORIES[site.category ?? "unclassified"].label} · {site.positions.length} contact residues</span></div>
         <button onClick={onFocus}>Focus site</button><button onClick={onReset}>Whole protein</button>
@@ -90,12 +87,12 @@ export function ContactSites({ sites, selected, onSelect, source, onSource, ecOn
         <details><summary>Canonical residue positions</summary><p className={styles.contactResidues}>{site.positions.join(", ")}</p></details>
       </div>
       </details>
+      </>}
     </>}
-    <details className={styles.contactEvidence}><summary>Filters &amp; comparison</summary>
+    <details className={styles.contactEvidence}><summary>Filters &amp; views</summary>
       <div className={styles.contactFilters}>
       <label>Search <input type="search" placeholder="Name or identifier" value={query} onChange={e => onQuery(e.target.value)} /></label>
       <ContactPicker label="Source" value={source} placeholder="All sources" onChange={onSource} groups={[{options: Array.from(new Set(sites.map(s => s.source))).sort()}]} />
-      <label><input type="checkbox" checked={compare} onChange={e => onCompare(e.target.checked)} /> Compare other binders separately</label>
       <label><input type="checkbox" checked={ecOnly} onChange={e => onEcOnly(e.target.checked)} /> Extracellular only</label>
       </div>
       <details className={styles.contactEvidence}><summary>Three-angle view</summary><ContactProjections atoms={atoms} sites={visibleSites} /></details>
