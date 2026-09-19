@@ -29,6 +29,7 @@ usage sink the other agents use.
 """
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -49,7 +50,9 @@ from accessible_surfaceome.tools._shared.models import Evidence, Paper, paper_so
 from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty_retraction
 from accessible_surfaceome.tools._shared.retraction_watch import from_http as _retraction_from_http
 
+from .geometry import apply_geometry_pass
 from .literature_discovery import SOURCE_TIERS, discover_tag_site_papers, quote_supported
+from .normalize import signal_peptide_end
 from .prompt import SYSTEM_PROMPT, build_user_prompt, keep_validated_sites
 from .schema import VALIDATION_LEVELS, VALIDATION_RANK, TagSiteProposal, TagSiteResult
 
@@ -74,6 +77,8 @@ _TAG_SELECT_MENU_INSTRUCTION = (
     "paraphrase — the quote is auto-filled from the clip"
 )
 _TAG_EVIDENCE_ID_PREFIX = "tag_evi_"
+
+log = logging.getLogger(__name__)
 
 
 def load_tag_select_prompt() -> str:
@@ -159,12 +164,18 @@ def run_tag_site_agent(
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
     mode: str = "production",
+    sp_end: int | None = None,
     usage_sink: list[Any] | None = None,
 ) -> TagSiteResult:
     """Discover papers (+ preprints, retraction-filtered), triage, pool + span-verify
     tag-insertion clips (shared clip pipeline), then synthesize a validated, ranked
     :class:`TagSiteResult` grounded in that evidence ledger. ``aliases`` should
-    include the protein name(s)."""
+    include the protein name(s).
+
+    ``sp_end`` is the AUTHORITATIVE signal-peptide end (UniProt's ``Signal``
+    feature). Pass it whenever you have it: it beats the DeepTMHMM run encoded in
+    ``topology``, which disagrees with UniProt for a real fraction of genes, and
+    it is what both the prompt landmarks and the geometry gate key off."""
     client = client or get_client()
     http = http or open_default_client()
     usage_sink = usage_sink if usage_sink is not None else []
@@ -235,7 +246,8 @@ def run_tag_site_agent(
 
     # 6. Synthesis: the geometry/validation/snorkel rules read the span-verified ledger.
     user_prompt = build_user_prompt(
-        gene_symbol, protein_name, mode=mode, sequence=sequence, topology=topology
+        gene_symbol, protein_name, mode=mode, sequence=sequence, topology=topology,
+        sp_end=sp_end,
     )
     user_prompt = f"{user_prompt}\n\n{format_evidence_ledger(evidence)}"
 
@@ -252,8 +264,25 @@ def run_tag_site_agent(
         return _empty()
     assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
 
-    # 7. Post-process: entailment backstop against the ledger, drop non-validated, rank.
+    # 7. Post-process. Three gates, each removing a class of site that was
+    # previously shipped unchecked:
+    #   a) entailment — a quote that is not in the ledger is not evidence, so the
+    #      site is DROPPED, not merely down-ranked.
+    #   b) geometry — the junction is re-derived from the computed sequence and
+    #      topology, repaired where that is deterministic, rejected otherwise.
+    #   c) validation + ranking, as before.
     verify_entailment(result, evidence=evidence)
+    result.sites = [s for s in result.sites if s.entailment_verified]
+    if sequence and topology:
+        kept, rejected = apply_geometry_pass(
+            result.sites,
+            sequence=sequence,
+            topology=topology,
+            sp_end=signal_peptide_end(topology) if sp_end is None else sp_end,
+        )
+        for site, reason in rejected:
+            log.info("  %s: dropped %s — %s", gene_symbol, site.residue_label, reason)
+        result.sites = kept
     return rank_sites(result)
 
 
@@ -302,7 +331,11 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
                 "rationale": (
                     f"{s.rationale} [validation: {s.validation_level}; "
                     f"position: {s.position_evidence}; source: {s.source_tier}; "
-                    f"entailment_verified: {s.entailment_verified}]"
+                    f"entailment_verified: {s.entailment_verified}"
+                    # Only stated when true, so an untouched record reads exactly
+                    # as it did before this gate existed.
+                    + ("; position_repaired: true" if s.position_repaired else "")
+                    + "]"
                 ),
                 "sources": sources,
                 "plddt": None,

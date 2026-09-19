@@ -105,8 +105,27 @@ def extract_from_record(rec: dict[str, Any]) -> tuple[str, str, str]:
     return acc, seq, topo
 
 
-def fetch_uniprot_names(acc: str) -> tuple[str, list[str]]:
-    """(protein_name, alias_candidates) from the reviewed UniProt entry.
+def signal_peptide_end_from_entry(entry: dict[str, Any]) -> int:
+    """Last residue of UniProt's curated ``Signal`` feature, or 0 when the entry
+    annotates none.
+
+    This is AUTHORITATIVE over the DeepTMHMM run in the record's topology string.
+    The two disagree by 1-3 residues on a real fraction of genes, and an
+    N-terminal tag placed before the true cleavage site is cleaved off with the
+    peptide — a construct that expresses and traffics normally but carries no
+    tag. Curated beats predicted at this one boundary."""
+    for f in entry.get("features") or []:
+        if f.get("type") != "Signal":
+            continue
+        end = ((f.get("location") or {}).get("end") or {}).get("value")
+        if isinstance(end, int):
+            return end
+    return 0
+
+
+def fetch_uniprot_names(acc: str) -> tuple[str, list[str], int]:
+    """(protein_name, alias_candidates, signal_peptide_end) from the reviewed
+    UniProt entry.
 
     protein_name = recommendedName.fullName (falls back to the first
     submittedName, then the accession). alias_candidates gathers the recommended
@@ -141,7 +160,7 @@ def fetch_uniprot_names(acc: str) -> tuple[str, list[str]]:
     for g in d.get("genes") or []:
         cands += [s.get("value") for s in g.get("synonyms") or []]
 
-    return protein_name, [c for c in cands if c]
+    return protein_name, [c for c in cands if c], signal_peptide_end_from_entry(d)
 
 
 def build_aliases(gene_symbol: str, protein_name: str, candidates: list[str]) -> list[str]:
@@ -223,11 +242,19 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
                     symbol, acc, file_acc)
 
     # 2. UniProt -> protein_name + aliases.
-    protein_name, cands = fetch_uniprot_names(acc)
+    protein_name, cands, sp_end = fetch_uniprot_names(acc)
     aliases = build_aliases(symbol, protein_name, cands)
     summary["protein_name"] = protein_name
     summary["aliases"] = aliases
+    summary["sp_end"] = sp_end
     log.info("  %s (%s): protein_name=%r aliases=%r", symbol, acc, protein_name, aliases)
+
+    # Curated vs predicted cleavage site: surface the disagreement rather than
+    # silently preferring one, since it moves every terminal_n site.
+    predicted = len(topo) - len(topo.lstrip("S"))
+    if sp_end != predicted:
+        log.warning("  %s: signal peptide UniProt=%d vs DeepTMHMM=%d — using UniProt",
+                    symbol, sp_end, predicted)
 
     # 3. Run the multi-stage literature agent, convert to viewer shape.
     result = run_tag_site_agent(
@@ -237,6 +264,7 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
         aliases=aliases,
         sequence=seq,
         topology=topo,
+        sp_end=sp_end,
         mode="production",
     )
     # Use the viewer file's own acc for the site records when present, so the new

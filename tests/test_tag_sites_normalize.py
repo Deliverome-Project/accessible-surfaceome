@@ -37,3 +37,18 @@ def test_apply_partitions_with_reasons():
     kept, rejected = apply_topology_gate(sites, TYPE_II)
     assert len(kept) == 1 and len(rejected) == 1
     assert "intracellular" in rejected[0][1]
+
+
+def test_sp_end_override_beats_the_topology_strings_own_run():
+    """The real LDLR case: DeepTMHMM calls the signal peptide 1-24, UniProt calls
+    it 1-21, and UniProt is right. An authoritative sp_end must win, or the gate
+    falsely drops a correct mature-N-terminus site."""
+    # String says SP 1-20; UniProt-style override says 1-17.
+    assert topology_gate(_site("terminal_n", 17), TYPE_I_SP)[0] is False
+    assert topology_gate(_site("terminal_n", 17), TYPE_I_SP, sp_end=17)[0] is True
+
+
+def test_sp_end_override_still_rejects_a_tag_inside_the_true_peptide():
+    ok, reason = topology_gate(_site("terminal_n", 10), TYPE_I_SP, sp_end=17)
+    assert ok is False
+    assert "signal peptide" in reason

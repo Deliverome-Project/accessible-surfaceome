@@ -97,6 +97,15 @@ class TagSiteProposal(BaseModel):
         default=False,
         description="Set by the pipeline (not the model): True iff supporting_quote is found in the cited source text.",
     )
+    position_repaired: bool = Field(
+        default=False,
+        description=(
+            "Set by the pipeline (not the model): True iff the geometry pass MOVED this site's "
+            "junction — because the model's integer disagreed with the computed sequence and a "
+            "deterministic repair recovered the intended position. Keeps a rewrite auditable "
+            "instead of silent."
+        ),
+    )
     rationale: str
     confidence: str = Field(description='"high" | "medium" | "low"')
 

@@ -7,6 +7,8 @@ name exact residue junctions and have them verified against the real sequence
 """
 from __future__ import annotations
 
+from .normalize import topology_runs
+
 SYSTEM_PROMPT = """You are a protein-engineering research agent. Identify sites on ONE human
 cell-surface protein that could accommodate a SHORT epitope tag (~13-23 aa, e.g. ALFA
 `PSRLEEELRRRLTEP`, GS linkers) displayed on the EXTRACELLULAR face, without preventing the
@@ -150,6 +152,65 @@ def keep_validated_sites(result):
     return result
 
 
+_LANDMARK_NAME = {
+    "S": "SIGNAL PEPTIDE",
+    "O": "EXTRACELLULAR",
+    "M": "TRANSMEMBRANE",
+    "I": "INTRACELLULAR",
+}
+
+
+def format_topology_landmarks(topology: str, *, sp_end: int | None = None) -> str:
+    """Render the topology as NAMED SPANS WITH EXPLICIT BOUNDS.
+
+    Replaces "here is a 1200-character run-length string, work out the
+    boundaries" — a task the model demonstrably fails (a 26-residue signal
+    peptide read as 18, shifting every coordinate downstream by 8).
+
+    ``sp_end`` is AUTHORITATIVE when given (UniProt's curated ``Signal`` feature
+    beats DeepTMHMM's prediction, and they disagree by 1-3 residues often enough
+    to matter). It overrides the predicted run in both directions: a predicted
+    peptide is clipped or extended to it, and one the prediction MISSED entirely
+    is still stated. Since an N-terminal tag placed before the true cleavage site
+    is carried off with the peptide, the mature N-terminus is spelled out rather
+    than left for the model to derive."""
+    lines = [
+        "TOPOLOGY LANDMARKS (computed in code — authoritative; do NOT re-count "
+        "the topology string):"
+    ]
+    runs = topology_runs(topology)
+    if sp_end is not None and sp_end > 0:
+        lines.append(f"  SIGNAL PEPTIDE: 1-{sp_end}")
+        clipped = []
+        for ch, start, end in runs:
+            if ch == "S" or end <= sp_end:
+                continue
+            clipped.append((ch, max(start, sp_end + 1), end))
+        # A curated peptide SHORTER than the predicted one leaves residues that
+        # were called 'S' but are really mature — hand them to the span that
+        # follows rather than leaving a hole in the coordinates.
+        if clipped and clipped[0][1] > sp_end + 1:
+            ch, _, end = clipped[0]
+            clipped[0] = (ch, sp_end + 1, end)
+        runs = clipped
+    for ch, start, end in runs:
+        lines.append(f"  {_LANDMARK_NAME.get(ch, ch)}: {start}-{end}")
+    if sp_end:
+        lines.append(
+            f"  MATURE N-TERMINUS: {sp_end + 1}  (an N-terminal tag goes AFTER "
+            f"residue {sp_end}; earlier is cleaved off with the signal peptide)"
+        )
+    return "\n".join(lines)
+
+
+def numbered_sequence(sequence: str, *, width: int = 60) -> str:
+    """The sequence in position-labelled blocks, so a residue index can be READ
+    rather than counted."""
+    return "\n".join(
+        f"{i + 1:>4}  {sequence[i:i + width]}" for i in range(0, len(sequence), width)
+    )
+
+
 def build_user_prompt(
     gene_symbol: str,
     protein_name: str,
@@ -157,6 +218,7 @@ def build_user_prompt(
     mode: str = "production",
     sequence: str | None = None,
     topology: str | None = None,
+    sp_end: int | None = None,
 ) -> str:
     """Assemble the user turn. ``production`` injects the computed sequence +
     topology; ``benchmark`` withholds them (gene + name only)."""
@@ -171,13 +233,20 @@ def build_user_prompt(
             raise ValueError("production mode requires sequence and topology")
         lines += [
             "",
-            "You are given the COMPUTED canonical sequence and per-residue DeepTMHMM topology "
-            "(1 char/residue: O=extracellular, I=intracellular, M=TM, S=signal). Use them to "
-            "pin exact residue junctions and COPY residue_before/after from the sequence.",
+            "You are given the COMPUTED canonical sequence and its topology, both already "
+            "reduced to explicit coordinates. Use the LANDMARKS for every boundary decision "
+            "and READ residue identities off the NUMBERED SEQUENCE — do not count characters, "
+            "and do not re-derive spans you were handed. COPY residue_before/after from the "
+            "numbered sequence exactly; a mismatch is checked in code and drops the site.",
             f"SEQUENCE_LENGTH: {len(sequence)}",
-            "COMPUTED SEQUENCE:",
-            sequence,
-            "COMPUTED TOPOLOGY:",
+            "",
+            format_topology_landmarks(topology, sp_end=sp_end),
+            "",
+            "NUMBERED SEQUENCE (the number is the position of the FIRST residue on the line):",
+            numbered_sequence(sequence),
+            "",
+            "RAW PER-RESIDUE TOPOLOGY (O=extracellular, I=intracellular, M=TM, S=signal) — "
+            "reference only; the LANDMARKS above are authoritative:",
             topology,
         ]
     else:

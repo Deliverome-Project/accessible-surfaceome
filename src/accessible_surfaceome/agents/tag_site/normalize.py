@@ -21,6 +21,22 @@ def compartment_at(topology: str, res: int | None) -> str:
     return _COMPARTMENT.get(topology[res - 1], "unknown")
 
 
+def topology_runs(topology: str) -> list[tuple[str, int, int]]:
+    """``[(char, start, end), ...]`` — the contiguous spans of ``topology``, in
+    1-based inclusive coordinates. The authoritative boundary source: derived
+    here so neither the model nor a caller has to count the raw string."""
+    if not topology:
+        return []
+    runs: list[tuple[str, int, int]] = []
+    start = 1
+    for i in range(1, len(topology)):
+        if topology[i] != topology[i - 1]:
+            runs.append((topology[i - 1], start, i))
+            start = i + 1
+    runs.append((topology[-1], start, len(topology)))
+    return runs
+
+
 def signal_peptide_end(topology: str) -> int:
     """Length of the leading run of signal-peptide residues ('S'); 0 if none."""
     n = 0
@@ -32,14 +48,35 @@ def signal_peptide_end(topology: str) -> int:
     return n
 
 
-def topology_gate(site: dict[str, Any], topology: str) -> tuple[bool, str]:
+def first_mature_residue(topology: str, sp_end: int) -> int:
+    """The first residue at/after ``sp_end + 1`` that the topology does NOT call
+    signal peptide.
+
+    Needed because ``sp_end`` may be authoritative (UniProt) while ``topology``
+    is a prediction (DeepTMHMM), and the two disagree on the cleavage site for a
+    real fraction of genes. Skipping the residual 'S' run reads the mature
+    N-terminus's true compartment under either numbering."""
+    i = max(sp_end, 0)
+    while i < len(topology) and topology[i] == "S":
+        i += 1
+    return i + 1
+
+
+def topology_gate(
+    site: dict[str, Any], topology: str, *, sp_end: int | None = None
+) -> tuple[bool, str]:
     """(ok, reason). A site is rejected when it is not displayed extracellularly:
     an internal/terminal_c residue that isn't 'O'; a terminal_n whose mature
     N-terminus is intracellular (no extracellular N-terminus — type II); or a
-    terminal_n placed within the signal peptide (cleaved off — a silent failure)."""
+    terminal_n placed within the signal peptide (cleaved off — a silent failure).
+
+    ``sp_end`` overrides the signal-peptide length derived from ``topology``. Pass
+    the UniProt ``Signal`` feature end when you have it: DeepTMHMM and UniProt
+    disagree often enough that trusting the prediction drops correct
+    mature-N-terminus sites."""
     kind = site.get("site_type") or site.get("site_kind")
     res = site.get("insert_after_residue")
-    sp_end = signal_peptide_end(topology)
+    sp_end = signal_peptide_end(topology) if sp_end is None else sp_end
 
     if kind == "internal":
         c = compartment_at(topology, res)
@@ -56,7 +93,7 @@ def topology_gate(site: dict[str, Any], topology: str) -> tuple[bool, str]:
             if res is not None and res < sp_end:
                 return False, (f"terminal_n at residue {res} is within the signal peptide "
                                f"(1-{sp_end}) — the tag is cleaved off with the SP (silent failure)")
-            mature = compartment_at(topology, sp_end + 1)
+            mature = compartment_at(topology, first_mature_residue(topology, sp_end))
             return (mature == "extracellular", "" if mature == "extracellular"
                     else f"mature N-terminus (residue {sp_end + 1}) is {mature}, not extracellular")
         c = compartment_at(topology, 1)
@@ -66,10 +103,12 @@ def topology_gate(site: dict[str, Any], topology: str) -> tuple[bool, str]:
     return True, ""  # unknown kind → pass
 
 
-def apply_topology_gate(sites: list[dict[str, Any]], topology: str) -> tuple[list[dict[str, Any]], list[tuple[dict[str, Any], str]]]:
+def apply_topology_gate(
+    sites: list[dict[str, Any]], topology: str, *, sp_end: int | None = None
+) -> tuple[list[dict[str, Any]], list[tuple[dict[str, Any], str]]]:
     """Partition sites into (kept, rejected-with-reason) by the topology gate."""
     kept, rejected = [], []
     for s in sites:
-        ok, reason = topology_gate(s, topology)
+        ok, reason = topology_gate(s, topology, sp_end=sp_end)
         (kept if ok else rejected).append(s if ok else (s, reason))
     return kept, rejected

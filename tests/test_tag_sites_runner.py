@@ -27,11 +27,12 @@ def _site(rank, *, ev="published tag insertion at this exact site",
           val="not_measured", tier="paper", res=100):
     return TagSiteProposal(
         rank=rank, site_type="internal", insert_after_residue=res,
-        residue_before="A", residue_after="B", topology_state="extracellular",
+        residue_before="A", residue_after="A", topology_state="extracellular",
         tag_type="ALFA", evidence_type=ev, position_evidence="validated",
         cited_tag_residue=res, evidence_detail="d",
         functional_or_expression_impact_measured="x",
         validation_level=val, source_tier=tier, supporting_pmid=123,
+        supporting_quote="ALFA inserted in the ectodomain after G101.",
         rationale="r", confidence="high",
     )
 
@@ -110,6 +111,7 @@ def test_run_tag_site_agent_composes_pipeline_and_synthesis(monkeypatch):
         aliases=["x protein"], sequence="A" * 300, topology="O" * 300,
         client=cast(Anthropic, object()), http=cast(CachedHTTP, object()),
     )
+
     assert captured["label"] == "tag_site:X"
     assert "EVIDENCE LEDGER" in captured["prompt"]
     assert "PMID 55501" in captured["prompt"]       # the span-verified clip's source
@@ -170,7 +172,10 @@ def test_run_returns_empty_on_builder_failure(monkeypatch):
 
 
 def test_to_viewer_sites_shape():
-    out = R.to_viewer_sites(_result([_site(1, val="surface_and_function")]), uniprot_acc="Q0")
+    # No quote on this one: the source still carries the PMID, with claim=None.
+    bare = _site(1, val="surface_and_function")
+    bare.supporting_quote = None
+    out = R.to_viewer_sites(_result([bare]), uniprot_acc="Q0")
     s = out[0]
     assert s["provenance"] == "literature_retrieved"
     assert s["site_id"].endswith("-lit") and s["det_path"] is None
@@ -227,3 +232,84 @@ def test_verify_entailment_tiebreak_in_ranking():
     b.entailment_verified = True
     out = R.rank_sites(_result([a, b]))
     assert [s.insert_after_residue for s in out.sites] == [20, 10]
+
+
+# --- geometry + grounding gates in the production path -----------------------
+
+_SEQ = "M" + "A" * 99 + "K" + "G" + "A" * 198   # K at 101, G at 102
+_TOPO = "O" * 300
+
+
+def _wire(monkeypatch, result, *, quote="ALFA inserted after K101."):
+    monkeypatch.setattr(R, "discover_tag_site_papers",
+                        lambda **k: {"PMID:1": _paper(pmid=1, title="t")})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts", lambda *a, **k: [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [_evi(quote, source_id="PMID:1")])
+    monkeypatch.setattr(R, "call_builder", lambda client, **k: result)
+    captured = {}
+    orig = R.build_user_prompt
+    monkeypatch.setattr(R, "build_user_prompt",
+                        lambda *a, **kw: captured.setdefault("p", orig(*a, **kw)))
+    return captured
+
+
+def _run(**kw):
+    return R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X protein", uniprot_accession="Q0",
+        aliases=["x"], sequence=_SEQ, topology=_TOPO,
+        client=cast(Anthropic, object()), http=cast(CachedHTTP, object()), **kw)
+
+
+def test_run_drops_a_site_whose_residues_contradict_the_sequence(monkeypatch):
+    """The ERBB2 V643 class: a position the model never read off the sequence."""
+    bad = _site(1, res=101)
+    bad.residue_before, bad.residue_after = "V", "V"   # real: K101 / G102
+    bad.supporting_quote = "ALFA inserted after K101."
+    _wire(monkeypatch, _result([bad]))
+    assert _run().sites == []
+
+
+def test_run_repairs_a_site_the_model_mis_numbered(monkeypatch):
+    """The TMEM123 K155 class: right window in the prose, wrong integer."""
+    s = _site(1, res=55)
+    s.residue_before, s.residue_after = "K", "G"
+    s.rationale = "chosen in the linker (AAK|GAAA) region"
+    s.supporting_quote = "ALFA inserted after K101."
+    _wire(monkeypatch, _result([s]))
+    out = _run()
+    assert len(out.sites) == 1
+    assert out.sites[0].insert_after_residue == 101
+    assert out.sites[0].position_repaired is True
+
+
+def test_run_drops_a_site_whose_quote_is_not_in_the_ledger(monkeypatch):
+    """The TMEM123 I208 class: entailment_verified=False used to only down-rank."""
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "A sentence that appears in no clip."
+    _wire(monkeypatch, _result([s]))
+    assert _run().sites == []
+
+
+def test_run_passes_an_authoritative_sp_end_into_the_prompt(monkeypatch):
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "ALFA inserted after K101."
+    cap = _wire(monkeypatch, _result([s]))
+    _run(sp_end=17)
+    assert "SIGNAL PEPTIDE: 1-17" in cap["p"]
+    assert "MATURE N-TERMINUS: 18" in cap["p"]
+
+
+def test_viewer_rationale_records_that_a_position_was_repaired():
+    """A moved junction must be visible in the shipped record, not silent."""
+    s = _site(1)
+    assert "position_repaired" not in R.to_viewer_sites(
+        _result([s]), uniprot_acc="Q0")[0]["rationale"]
+    s.position_repaired = True
+    out = R.to_viewer_sites(_result([s]), uniprot_acc="Q0")[0]
+    assert "position_repaired: true" in out["rationale"]
