@@ -1,0 +1,126 @@
+# Intracellular-bucket pubmed rescue sweep — setup + results
+
+Extends the [`reconfirm_sonnet_no_zero_db_v1`](../reconfirm_sonnet_no_zero_db_v1/README.md)
+rescue lane to the population that sweep **deliberately excluded**: the
+zero-DB / Sonnet-`no` genes whose `ncbi`-variant reason was one of the
+three "confidently intracellular" buckets (`cytoplasmic`, `nuclear`,
+`mitochondrial_internal`).
+
+The original README justified skipping them on cost grounds — "pubmed_ncbi
+is unlikely to flip them, so the per-call dollars are better spent on the
+ambiguous tail." That reasoning no longer holds: the whole sweep came in at
+**$70**, and it flipped 148 genes.
+
+## Why this ran
+
+NPM1 is the motivating case. It is zero-DB across all five canonical
+sources, and the canonical `ncbi` triage called it `no` / `nuclear` at
+**high** confidence with `n_web_searches: 0` — i.e. from model priors, not
+literature. Meanwhile
+[PMID 40269321](https://pubmed.ncbi.nlm.nih.gov/40269321/) (*Nat Biotechnol*
+2026) characterizes cell-surface NPM1 (csNPM1) as an abundant surface
+protein on AML blasts and leukemic stem cells but not normal HSCs, and
+reports a monoclonal antibody with anti-tumor activity in syngeneic,
+xenograft, and PDX models.
+
+Because the reason was `nuclear`, NPM1 was routed into the excluded bucket
+and never re-examined. The `pubmed_ncbi` variant flips it to
+`contextual` / `cell_state_induced` in **3/3** replicates at $0.016/cell,
+citing PMID 40269321 by ID — so the miss was the *exclusion rule*, not
+model capability.
+
+## Scope
+
+`gene_list.tsv` — 10,287 rows. Derived as:
+
+    {zero-DB} ∩ {ncbi-variant predicted_verdict = 'no'}
+              ∖ {gene_symbols already in run_id genome_full_sonnet_pubmed_ncbi_v1}
+
+| Prior `ncbi` reason | Count |
+|---|---:|
+| cytoplasmic | 5,544 |
+| nuclear | 3,801 |
+| mitochondrial_internal | 942 |
+| **Total** | **10,287** |
+
+This is the exact complement of the earlier lane: the 2,626-cell
+`genome_full_sonnet_pubmed_ncbi_v1` run covers the other six reasons, so
+between the two sweeps every zero-DB / Sonnet-`no` gene has now had a
+literature-augmented second look.
+
+## Run config
+
+| Param | Value |
+|---|---|
+| Model | `claude-sonnet-4-6` |
+| Variant | `pubmed_ncbi` |
+| Replicates | 1 |
+| Run ID | `genome_intracellular_pubmed_ncbi_v1` |
+| Concurrency | 16 |
+| D1 | private `surfaceome_agents` only (`--d1`, no `--publish-public`) |
+
+```bash
+uv run python scripts/triage_runner.py \
+    --gene-list data/processed/intracellular_rescue_v1/gene_list.tsv \
+    --model claude-sonnet-4-6 \
+    --variants pubmed_ncbi \
+    --replicates 1 \
+    --d1 \
+    --run-id genome_intracellular_pubmed_ncbi_v1 \
+    --concurrency 16
+```
+
+## Results
+
+| Metric | Value |
+|---|---|
+| Cells executed | 10,287 |
+| Cost | **$70.06** ($0.0068/cell — cache-warm) |
+| Wall clock | 1h49m at concurrency 16 |
+| **Rescues (`yes` + `contextual`)** | **148 (1.44%)** |
+| — `yes` | 6 (BAIAP3, BLCAP, CRLF3, FNDC11, MPPED1, SYT12) |
+| — `contextual` | 142 |
+
+Rescue reason breakdown: `cell_state_induced` 72, `dual_localization` 46,
+`tissue_restricted_surface` 19, `classical_surface_receptor` 4, `other` 4,
+`multipass_with_exposed_loops` 1, `gpi_anchored` 1, `lysosomal_exocytosis` 1.
+Confidence: medium 103, low 45.
+
+The 1.44% flip rate is well below the ambiguous tail's 6.7% (177/2,626) —
+the original exclusion judgement was directionally right about *rate*, just
+wrong about whether the rate justified the spend.
+
+`rescues.tsv` carries the 148 rescued genes with prior and post reasons.
+
+### RALGDS — resolved on retry
+
+On the sweep, `RALGDS` returned `contextual` with reason
+`inner_leaflet_anchored`, which is not a legal reason for a non-`no`
+verdict, so the cell failed schema validation after retry and persisted
+as an error row. Deleting that row and re-running the single cell under
+the same `--run-id` produced a clean `no` / `inner_leaflet_anchored`
+(valid, persisted). **It is not a rescue** — the count stands at 148,
+and the sweep is now 10,287/10,287 with a valid verdict.
+
+## Downstream
+
+The 148 rescues (minus NPM1, already deep-dived ad hoc) were fed to the v2
+deep dive under `--cohort-run-id intracellular_rescue_v1_sonnet_2026_09`,
+publishing to public D1.
+
+**Caveat:** none of these genes are in the topology sweep cohort, so their
+records carry `canonical_topology.tool_version = "placeholder-no-d1-row"` —
+`tm_helix_count` / `ecd_length_residues` / `signal_peptide_length` read 0
+because nothing was measured, not because a measurement returned zero. A
+topology backfill over these accessions is outstanding.
+
+## Reconciliation
+
+The read-side rule from the original lane applies unchanged — defer to the
+more inclusive verdict — but queries must now widen the `run_id` filter to
+cover **both** rescue lanes:
+
+```sql
+AND pn.run_id IN ('genome_full_sonnet_pubmed_ncbi_v1',
+                  'genome_intracellular_pubmed_ncbi_v1')
+```

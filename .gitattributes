@@ -171,3 +171,13 @@ data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
 # Sizes are comfortable — 17 files, 11.3 MB total, largest 1.76 MB, against
 # GitHub's 100 MB non-LFS cap and the ~5 MB practical cap in CLAUDE.md.
 data/processed/figures/*.tsv  -filter -diff -merge text
+
+# Intracellular-bucket rescue sweep (10,287-row gene list, ~372 KB; 148-row
+# rescue table). Same rationale as the reconfirm gene list — plaintext inputs
+# small enough to diff inline. The README is exempted too so the PR diff shows
+# prose rather than an LFS pointer.
+data/processed/intracellular_rescue_v1/gene_list.tsv -filter -diff -merge text
+data/processed/intracellular_rescue_v1/rescues.tsv -filter -diff -merge text
+data/processed/intracellular_rescue_v1/README.md -filter -diff -merge text
+data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv -filter -diff -merge text
+data/processed/intracellular_rescue_v1/RUN_DEEP_DIVE.md -filter -diff -merge text

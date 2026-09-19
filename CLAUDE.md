@@ -302,6 +302,25 @@ script — no need to install wrangler just to peek at row counts.
   preserved**; analytics that should incorporate the fix should
   COALESCE-prefer the fix run over the original (see the
   Postgres-flavored snippet below).
+- **The two `pubmed_ncbi` rescue lanes.** Both re-examine zero-DB /
+  Sonnet-`no` genes with a literature-augmented pass, and together they
+  cover that population exhaustively — partitioned by the prior `ncbi`
+  reason, so they never overlap:
+  - `genome_full_sonnet_pubmed_ncbi_v1` — the 2,626-cell *ambiguous
+    tail* (`endomembrane_resident`, `secreted_only`,
+    `inner_leaflet_anchored`, `pmhc_only_intracellular`,
+    `nuclear_envelope`, `other`). 177 rescues (6.7%).
+  - `genome_intracellular_pubmed_ncbi_v1` — the 10,287-cell
+    *confidently-intracellular* complement (`cytoplasmic`, `nuclear`,
+    `mitochondrial_internal`), which the first lane deliberately
+    skipped. 148 rescues (1.44%), $70. Setup + results:
+    [data/processed/intracellular_rescue_v1/README.md](data/processed/intracellular_rescue_v1/README.md).
+
+  The read-side reconciliation rule (defer to the more inclusive
+  verdict) is unchanged, but **any query applying it must filter on
+  both run_ids** — a lane-specific `run_id IN (...)` list, not a single
+  equality. Missing the second lane silently reverts 148 genes to their
+  pre-rescue `no`.
 
 Composite-source SELECT that gives "latest verdict per (gene_symbol,
 model, variant), preferring fix rows over originals":
