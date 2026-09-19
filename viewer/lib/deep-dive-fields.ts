@@ -188,9 +188,9 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     // snake_case enum token. prettyEnum mangles a few of these
     // ("Pmhc Only Intracellular", "Gpi Anchored"), so spell them out.
     valueLabels: {
-      classical_surface_receptor: "Single-pass receptor",
+      classical_surface_receptor: "Single-pass",
       gpi_anchored: "GPI-anchored",
-      multipass_with_exposed_loops: "Multipass receptor",
+      multipass_with_exposed_loops: "Multi-pass",
       extracellular_face_protein: "Extracellular-face protein",
       stable_complex_partner: "Stable complex partner",
       cell_state_induced: "Cell-state induced",
