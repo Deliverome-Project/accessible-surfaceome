@@ -54,7 +54,7 @@ const ENUM_MAP: Record<string, string> = {
   // don't re-declare them here — TS rejects duplicate keys.
   classical_surface_receptor: "Single-pass receptor",
   gpi_anchored: "GPI-anchored",
-  multipass_with_exposed_loops: "Multi-pass, exposed loops",
+  multipass_with_exposed_loops: "Multipass receptor",
   extracellular_face_protein: "Extracellular-face protein",
   stable_complex_partner: "Stable complex partner",
   mitochondrial_internal: "Mitochondrial (internal)",
