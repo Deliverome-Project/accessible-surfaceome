@@ -2222,7 +2222,7 @@ function CatalogRowView({
                 aria-pressed={isSelected}
                 title={
                   cell.reason
-                    ? `${m.long}: ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for reasoning`
+                    ? `${m.long}: ${cell.verdict} (${prettyEnum(cell.reason)}) — click for reasoning`
                     : `${m.long}: ${cell.verdict} — click for reasoning`
                 }
               >
@@ -2243,7 +2243,11 @@ function CatalogRowView({
           const triageReason = row.triage_by_model[1]?.reason;
           const reason = ddReason ?? triageReason;
           if (!reason) return <span className={styles.dim}>—</span>;
-          const pretty = reason.replace(/_/g, " ");
+          // prettyEnum, not a bare underscore strip: the strip mangles
+          // the acronym reasons (gpi_anchored, pmhc_only_intracellular)
+          // and would show this column's labels differently from the
+          // filter chips above it, which already go through ENUM_MAP.
+          const pretty = prettyEnum(reason);
           const src = ddReason ? "deep dive" : "triage";
           return (
             <span className={styles.reasonText} title={`${pretty} (${src})`}>
