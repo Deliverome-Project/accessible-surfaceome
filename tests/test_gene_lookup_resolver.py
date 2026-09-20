@@ -219,3 +219,48 @@ def test_picker_drops_deleted_and_follows_merge_chains():
     # directives because the annotation is strictly typed.
     with pytest.raises(ValueError):
         _pick_canonical_uniprot([], http=None)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
+
+
+def test_universe_row_empty_cells_are_strings_not_nan():
+    """``_load_universe_row`` must never hand a caller a float.
+
+    ``pd.read_csv(dtype=str)`` does *not* stop pandas turning an empty cell
+    into ``float('nan')`` — only ``keep_default_na=False`` does. NaN is
+    truthy, so the old ``row.get("gene_symbol_resolved") or
+    row.get("gene_symbol") or ""`` chain in ``db_panel`` / ``miss_diagnosis``
+    short-circuited on the missing value and returned the float, which then
+    blew up on ``.upper()``.
+
+    SOD2 (P04179) is the pinned case: its ``candidate_universe_zero_support``
+    row has an empty ``gene_symbol_resolved``. The crash killed the gene
+    before any model call. 16 cohort rows share the empty cell (7
+    zero-support + 9 universe).
+    """
+    from accessible_surfaceome.tools.gene_lookup import _load_universe_row
+
+    row, where = _load_universe_row("P04179")
+    if row is None:  # cohort TSVs not hydrated in this worktree
+        pytest.skip("candidate-universe TSVs not present")
+
+    assert where == "zero_support"
+    assert row.get("gene_symbol_resolved") == ""
+    assert isinstance(row.get("gene_symbol_resolved"), str)
+
+
+@pytest.mark.network
+def test_db_panel_prefers_uniprot_over_unresolved_input_symbol():
+    """An unresolved ``gene_symbol`` must never be used as a lookup key.
+
+    ``gene_symbol`` holds the *input* symbol and is only ever reached when
+    ``gene_symbol_resolved`` is empty — i.e. exactly when mygene returned
+    ``not_found``/``ambiguous`` for it. P04179's input symbol is ``SOD2-2``
+    at mygene score 0.0; keying the patent-handle lookup on that is a lookup
+    on a known-bad key, and any hit would be a false match. Falling through
+    to the UniProt primary symbol answers ``SOD2``.
+    """
+    from accessible_surfaceome.tools.gene_lookup import db_panel
+
+    with open_default_client() as http:
+        assert db_panel("P04179", http=http).hgnc_symbol == "SOD2"
+        # An ``ambiguous`` row resolves the same way.
+        assert db_panel("P13385", http=http).hgnc_symbol == "CRIPTO"
