@@ -81,9 +81,8 @@ The v1 benchmark (`data/eval/triage_benchmark_v1.tsv`, 147 proteins) is **68 `ye
 Sonnet 5 / Opus 4.8), carrying the ground-truth verdict and the five baseline DB flags per
 protein.
 
-> **Stale doc, flagged separately:** `docs/evals/triage_benchmark_v1.md` still states
-> `71 yes / 27 contextual / 49 no` in its header, section titles, and per-section protein
-> lists, which no longer matches the TSV (`68 / 31 / 48`) - three proteins moved from `yes` to
-> `contextual`. Reconciling it properly means regenerating the section membership from the TSV,
-> not just editing the counts (a header-only edit would make the doc self-contradictory), so it
-> is left to a dedicated follow-up rather than this note.
+> **Related fix (done):** `docs/evals/triage_benchmark_v1.md` had drifted from the TSV — it
+> stated `71 yes / 27 contextual / 49 no` in its header, section titles, and per-section protein
+> lists, vs the TSV's `68 / 31 / 48` (three proteins moved `yes` → `contextual`). It was
+> regenerated directly from `data/eval/triage_benchmark_v1.tsv` in #238 (merged 2026-09-19), so
+> the benchmark composition the metrics above are computed on now matches the doc.
