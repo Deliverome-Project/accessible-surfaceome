@@ -176,9 +176,12 @@ data/processed/figures/*.tsv  -filter -diff -merge text
 # rescue table). Same rationale as the reconfirm gene list — plaintext inputs
 # small enough to diff inline. The README is exempted too so the PR diff shows
 # prose rather than an LFS pointer.
+# The 10,287-row gene list keeps -diff (367 KB; nobody wants it inline).
 data/processed/intracellular_rescue_v1/gene_list.tsv -filter -diff -merge text
-data/processed/intracellular_rescue_v1/rescues.tsv -filter -diff -merge text
-data/processed/intracellular_rescue_v1/README.md -filter -diff -merge text
-data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv -filter -diff -merge text
-data/processed/intracellular_rescue_v1/RUN_DEEP_DIVE.md -filter -diff -merge text
-data/processed/intracellular_rescue_v1/citation_audit.tsv -filter -diff -merge text
+# Everything else here is small and meant to be READ in review, so no -diff:
+# with -diff git reports them as "Bin 0 -> N bytes" and the prose is invisible.
+data/processed/intracellular_rescue_v1/rescues.tsv -filter -merge text
+data/processed/intracellular_rescue_v1/README.md -filter -merge text
+data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv -filter -merge text
+data/processed/intracellular_rescue_v1/RUN_DEEP_DIVE.md -filter -merge text
+data/processed/intracellular_rescue_v1/citation_audit.tsv -filter -merge text

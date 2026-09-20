@@ -142,21 +142,62 @@ the honest version of the same situation.
 
 Three quality tiers follow:
 
-* **113 genes** — ≥1 verified citation → trustworthy
-* **30 genes** — no citations → unsupported but honest
+* **113 genes** — ≥1 verified citation
+* **30 genes** — no citations → unsupported, but honest
 * **5 genes** — every citation misattributed → actively misleading
 
 All 148 were carried into the deep dive regardless, for consistency with the
-rest of the corpus (earlier runs were never citation-audited either). The tiers
-are recorded so a reader can filter.
+rest of the corpus (earlier runs were never citation-audited either).
+
+**These tiers do NOT predict deep-dive outcomes.** The obvious hypothesis —
+rank the cohort by verified citations and deep-dive the best-cited first —
+is not supported by the result:
+
+| Citation-audit bucket | n | → Likely+ |
+|---|---:|---:|
+| 4 verified | 9 | 11% |
+| 3 verified | 12 | 8% |
+| 2 verified | 35 | **0%** |
+| 1 verified | 56 | 7% |
+| no citations | 30 | 7% |
+| confabulated | 5 | 0% |
+
+Non-monotonic, and the spread is noise at these sample sizes. The 5
+confabulated genes all landed no/low, but at a 5.4% base rate 5 genes predict
+0.27 hits, so observing zero is unremarkable — the filter has no demonstrated
+predictive value either. **The audit's value is in flagging unreliable
+citations, not in triaging which rescues are worth the spend.**
+
+What the outcome *did* validate: the deep dive independently overrode every
+confabulated rescue (APOL6, BLCAP, H2BC12, NUDCD1 → `no`; PSMB4 → `low`),
+including BLCAP's `yes` built on four misattributed papers.
 
 ## Downstream
 
 The 148 rescues (minus NPM1, already deep-dived ad hoc) were fed to the v2
 deep dive under `--cohort-run-id intracellular_rescue_v1_sonnet_2026_09`,
-publishing to public D1.
+publishing to public D1. Result: **147/147 records, $145.92, 54.6 min** at
+concurrency 28 via [`scripts/run_deep_dive_sweep.py`](../../../scripts/run_deep_dive_sweep.py).
 
-**Caveat:** none of these genes are in the topology sweep cohort, so their
+**8 genes reached the `likely` tier; none reached `canonical`** — AMPD2,
+C1orf56, DCLK1, H2BC26, SNRNP200, SRRM2, SSB, TAX1BP3 (all `moderate`
+accessibility; 4 at moderate confidence, 4 at low). Yield is 5.4%, well under
+the 18.6% implied by the contextual/zero-DB conversion rate — the better prior
+would have been the observed 3.8% for zero-DB/triage-`no` genes. End-to-end
+this cost ~$219 for 8 finds (~$27/find), against ~$2.44/find on the original
+5,130-gene sweep.
+
+**Caveat — the triage prior was adverse.** The deep dive's
+`_D1_TRIAGE_PRIORITY` lists only `ncbi`-variant run_ids, so
+`_load_triage_record` never sees either pubmed rescue lane. Every one of these
+147 records therefore bakes in `triage_signal = "unlikely"` with the original
+`no` reasoning — contradicting the rescue that selected the gene. The gene page
+shows this as a `contextual` chip (live from `triage_run_public`) beside a
+drawer reading `no` (baked into the record). The bias runs conservative, so the
+8 `likely` calls were reached *against* an adverse prior; wiring the
+reconciliation rule into `_D1_TRIAGE_PRIORITY` is the fix.
+
+**Caveat — topology is a placeholder.** None of these genes are in the topology sweep cohort, so their
 records carry `canonical_topology.tool_version = "placeholder-no-d1-row"` —
 `tm_helix_count` / `ecd_length_residues` / `signal_peptide_length` read 0
 because nothing was measured, not because a measurement returned zero. A
