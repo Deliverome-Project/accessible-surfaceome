@@ -70,7 +70,11 @@
 
 .chips {
   display: flex;
-  flex-wrap: wrap;
+  /* Keep the quick-filter chips (All · Deep dive · More filters) on a single
+     row — never wrap mid-set. The download button is a sibling in
+     .chipsActions (which still wraps), so it drops to its own line on narrow
+     viewports without breaking the chip row. */
+  flex-wrap: nowrap;
   gap: var(--space-2);
 }
 
@@ -78,6 +82,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  white-space: nowrap;
   padding: 0.4rem 0.75rem;
   font-family: var(--font-sans);
   font-size: 0.85rem;

@@ -129,11 +129,11 @@ type SortKey =
   | "dd_evidence"
   | "dd_state";
 type SortDir = "asc" | "desc";
-// The "All" Quick chip was kept after the others were dropped because
-// it's the explicit "clear filters" affordance — clicking it restores
-// the unfiltered view. Deep-dive moved into the filter panel as a
-// proper binary radio so it doesn't AND-conflict with itself.
-type QuickFilter = "all";
+// The Quick-filters row is a two-view toggle over the deep-dive dimension:
+// "All" (the full cohort) vs "Deep dive" (only genes with a deep-dive
+// record — the ~5k rows carrying real content). Both drive the SAME
+// `deepDiveFilter` state that the "More filters" binary radio uses, so the
+// quick chips and the panel radio are one source of truth and can't desync.
 
 type DbKey = keyof CatalogRow["db"];
 type VerdictKey = "yes" | "contextual" | "no";
@@ -311,7 +311,6 @@ export function CatalogTable({
   universe_version,
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
-  const [quick, setQuick] = useState<QuickFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("dd_access");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   // Advanced filters. `dbFilter` is AND-semantics: a row passes only
@@ -908,7 +907,6 @@ export function CatalogTable({
   }, [
     rows,
     query,
-    quick,
     dbFilter,
     verdictFilter,
     reasonFilter,
@@ -1234,11 +1232,21 @@ export function CatalogTable({
           <div className={styles.chips} role="tablist" aria-label="Quick filters">
             <button
               type="button"
-              className={`${styles.chip} ${quick === "all" ? styles.chipOn : ""}`}
-              onClick={() => setQuick("all")}
-              aria-pressed={quick === "all"}
+              className={`${styles.chip} ${deepDiveFilter !== "yes" ? styles.chipOn : ""}`}
+              onClick={() => setDeepDiveFilter(null)}
+              aria-pressed={deepDiveFilter !== "yes"}
             >
               All <span className={styles.chipCount}>{n_rows}</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.chip} ${deepDiveFilter === "yes" ? styles.chipOn : ""}`}
+              onClick={() => setDeepDiveFilter("yes")}
+              aria-pressed={deepDiveFilter === "yes"}
+              title={`Only genes with a deep-dive record — ${n_with_deep_dive} of ${n_rows.toLocaleString()}`}
+            >
+              Deep dive{" "}
+              <span className={styles.chipCount}>{n_with_deep_dive}</span>
             </button>
             <button
               type="button"
