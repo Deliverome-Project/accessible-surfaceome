@@ -76,6 +76,17 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--allow-unmeasured-topology",
+        action="store_true",
+        help=(
+            "Annotate even when the gene has no measured DeepTMHMM topology. "
+            "OFF by default: a placeholder reports tm=0 / signal_peptide=0 / "
+            "ecd=0, the deterministic block goes into the agent's prompt, and "
+            "the model states those fabricated zeros as fact in its executive "
+            "summary. Run the topology sweep for the accession instead."
+        ),
+    )
+    parser.add_argument(
         "--cohort-run-id",
         default=None,
         help=(
@@ -91,6 +102,7 @@ def main(argv: list[str] | None = None) -> int:
         args.gene,
         persist=args.persist,
         read_phase_checkpoint=args.checkpoint,
+        require_measured_topology=not args.allow_unmeasured_topology,
     )
 
     safe_id = result.gene.replace(":", "_")

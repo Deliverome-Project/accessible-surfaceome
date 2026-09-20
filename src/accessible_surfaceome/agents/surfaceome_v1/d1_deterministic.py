@@ -52,6 +52,38 @@ from accessible_surfaceome.tools._shared.models import (
 
 logger = logging.getLogger(__name__)
 
+# ``tool_version`` markers meaning "these numbers were NOT measured".
+#
+# A placeholder topology reports ``tm_helix_count=0``,
+# ``signal_peptide_length=0`` and ``ecd_length_residues=0`` — values
+# indistinguishable from a real measurement of a soluble protein. That is not
+# a cosmetic gap: the deterministic block is interpolated into the agent's
+# prompt, so the model reads the fabricated zeros as fact and writes them into
+# its executive summary. Observed in the intracellular-rescue cohort, where
+# BLCAP's summary asserts "zero annotated transmembrane helices, no
+# extracellular domain, and no signal peptide" and C1orf115's asserts "no
+# transmembrane helix, signal peptide, or extracellular domain" — both genes
+# carry a UniProt transmembrane annotation. The verdicts rest on a false
+# premise the pipeline handed them.
+#
+# Use :func:`topology_is_measured` to gate on this rather than comparing
+# strings at call sites.
+PLACEHOLDER_TOPOLOGY_TOOL_VERSION = "placeholder-no-d1-row"
+STUB_TOPOLOGY_TOOL_VERSION = "stub-no-fetchers-v1.0.0"
+UNMEASURED_TOPOLOGY_TOOL_VERSIONS = frozenset(
+    {PLACEHOLDER_TOPOLOGY_TOOL_VERSION, STUB_TOPOLOGY_TOOL_VERSION}
+)
+
+
+def topology_is_measured(topology: Any) -> bool:
+    """True when ``topology`` carries a real DeepTMHMM measurement.
+
+    False for both the "gene not in this sweep's cohort" placeholder and the
+    "D1 unreachable" stub — the two ways a record can end up reporting
+    zeros it never measured.
+    """
+    return getattr(topology, "tool_version", None) not in UNMEASURED_TOPOLOGY_TOOL_VERSIONS
+
 # Cap how many paralogs we materialize per gene — Compara families like
 # IG / olfactory receptors have hundreds; the agent doesn't need them all
 # and the rendered record would explode. Matches the per-gene cap in
@@ -716,7 +748,7 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
             ecd_length_residues=0,
             icd_length_residues=0,
             per_residue_topology="",
-            tool_version="placeholder-no-d1-row",
+            tool_version=PLACEHOLDER_TOPOLOGY_TOOL_VERSION,
             retrieved_at=datetime.now(UTC),
         )
     # Per-cohort version threading — see the comment block above where
