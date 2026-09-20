@@ -1433,6 +1433,28 @@ async function fetchRecordWithRetry(url) {
 // the pre-fetched records from disk without hitting the Worker. This
 // path fires when the build-cache is missing / empty (e.g. dev running
 // `build:exports` in isolation) or when we need a live re-fetch.
+/** Fetch one gene's evidence ledger from `/v1/genes/{sym}/evidence`.
+ *
+ *  Returns `[]` (never throws) when the endpoint is unreachable or the
+ *  payload is malformed: a missing ledger should cost that gene its
+ *  Evidence section, not its entire Markdown export. */
+async function fetchEvidenceLedger(sym) {
+  try {
+    const payload = await fetchRecordWithRetry(
+      `${API_BASE}/v1/genes/${encodeURIComponent(sym)}/evidence`,
+    );
+    const ev = payload?.evidence;
+    if (!Array.isArray(ev)) {
+      console.warn(`  ! ${sym}: evidence payload not an array — using []`);
+      return [];
+    }
+    return ev;
+  } catch (err) {
+    console.warn(`  ! ${sym}: evidence fetch failed (${err.message}) — using []`);
+    return [];
+  }
+}
+
 async function loadRecordsFromApi() {
   const listUrl = `${API_BASE}/v1/genes`;
   const list = await fetchJson(listUrl);
@@ -1455,7 +1477,18 @@ async function loadRecordsFromApi() {
         const rec = await fetchRecordWithRetry(
           `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`,
         );
-        if (rec) out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+        if (rec) {
+          // `/v1/genes/{sym}` does NOT carry the evidence ledger — it is
+          // served separately by `/v1/genes/{sym}/evidence` (which also
+          // joins in `paper_metadata`). Without this the renderer throws
+          // `rec.evidence is not iterable` on the FIRST gene, so api mode
+          // was dead on arrival for every gene, not just new ones. Attach
+          // it here so the api and snapshots sources hand `md()` the same
+          // shape. A failed evidence fetch degrades to an empty ledger
+          // rather than dropping the gene's whole export.
+          rec.evidence = await fetchEvidenceLedger(sym);
+          out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+        }
       } catch (err) {
         console.warn(`  ! ${sym}: record fetch failed — ${err.message}`);
       }
@@ -1521,6 +1554,31 @@ async function main() {
   if (records.length === 0) {
     console.warn(`No records to export (source=${MD_SOURCE}).`);
     return;
+  }
+  // Evidence backfill. `/v1/genes/{sym}` never returns the ledger (it is
+  // served by `/v1/genes/{sym}/evidence`), so records reaching here from
+  // EITHER api path — a live fetch or the build-cache that `build:snapshot`
+  // wrote from the same endpoint — can arrive without `evidence` and blow up
+  // `md()` with "rec.evidence is not iterable". `loadRecordsFromApi` already
+  // attaches it; this catches the build-cache path and any future source.
+  const needEvidence = records.filter((r) => !Array.isArray(r.rec?.evidence));
+  if (needEvidence.length > 0) {
+    console.log(
+      `  backfilling evidence ledgers for ${needEvidence.length} record(s)`,
+    );
+    let i = 0;
+    await Promise.all(
+      Array.from(
+        { length: Math.min(RECORD_FETCH_CONCURRENCY, needEvidence.length) },
+        async () => {
+          while (i < needEvidence.length) {
+            const entry = needEvidence[i++];
+            const sym = entry.rec?.gene?.hgnc_symbol ?? entry.name.replace(/\.json$/, "");
+            entry.rec.evidence = await fetchEvidenceLedger(sym);
+          }
+        },
+      ),
+    );
   }
   console.log(`Exporting ${records.length} records (source=${MD_SOURCE}).`);
   for (const { name, rec } of records) {

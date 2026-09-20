@@ -198,6 +198,14 @@ statement:
   parent run for affected cells (originals preserved). Analytics
   that should reflect the fix must COALESCE-prefer the fix run
   over its parent; see CLAUDE.md for the canonical query.
+- **Two `pubmed_ncbi` rescue lanes**, partitioned by the prior `ncbi`
+  reason so they never overlap and together cover the whole zero-DB /
+  Sonnet-`no` population: `genome_full_sonnet_pubmed_ncbi_v1` (the
+  2,626-cell ambiguous tail, 177 rescues) and
+  `genome_intracellular_pubmed_ncbi_v1` (the 10,287-cell
+  cytoplasmic/nuclear/mitochondrial complement, 148 rescues). Any
+  query applying the defer-to-more-inclusive reconciliation rule must
+  filter on **both** run_ids — see CLAUDE.md.
 
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions
