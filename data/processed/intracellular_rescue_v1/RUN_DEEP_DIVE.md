@@ -1,7 +1,7 @@
-# Staged — deep dive over the 148 rescues
+# Deep dive over the 148 rescues
 
-**Not yet run.** This file is the launch runbook; nothing here executes
-on its own.
+Launched 2026-09-20 under `--cohort-run-id intracellular_rescue_v1_sonnet_2026_09`
+at concurrency 28, publishing to public D1.
 
 `deep_dive_cohort.tsv` is the 147-gene cohort: the 148 rescues from
 `genome_intracellular_pubmed_ncbi_v1` **minus NPM1**, which was already
@@ -10,25 +10,43 @@ deep-dived ad hoc (`run_id=npm1_adhoc_probe_2026_09_19`, private D1).
 ## Launch
 
 ```bash
-SP=<scratch dir>
-cut -f2 data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv \
-  | tail -n +2 > "$SP/ids.txt"
-
-cat > "$SP/run_one.sh" <<'SH'
-#!/usr/bin/env bash
-SP="$1"; GID="$2"
-uv run python scripts/annotate_gene.py "$GID" \
-  --publish --persist \
-  --cohort-run-id intracellular_rescue_v1_sonnet_2026_09 \
-  > "$SP/dd_logs/${GID//:/_}.log" 2>&1
-echo "$GID exit=$?"
-SH
-chmod +x "$SP/run_one.sh"; mkdir -p "$SP/dd_logs"
-
-xargs -P 8 -I{} "$SP/run_one.sh" "$SP" {} < "$SP/ids.txt"
+uv run python scripts/run_deep_dive_sweep.py \
+    --gene-list data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv \
+    --cohort-run-id intracellular_rescue_v1_sonnet_2026_09 \
+    --concurrency 28 --publish --max-total-cost-usd 400
 ```
 
-Genes are addressed by `hgnc_id`, per the gene-identifier-resolution rule.
+`--dry-run` resolves the cohort without calling the API; `--resume` (default on)
+skips genes already in `deep_dive_run` under this run_id, so an interrupted
+sweep restarts cleanly.
+
+### Why a driver and not `xargs -P N`
+
+`xargs -P N` over `scripts/annotate_gene.py` spawns N **processes**, each with
+its own in-process `RateLimiter` — so the per-host courtesy interval against
+NCBI / Europe PMC / PubTator is violated N-fold. `ratelimit.py` says the
+limiter "is intentionally in-process by default" and that "local scripts leave
+[the cross-process gate] unset"; Modal solves this with a single-container
+gate, and the local equivalent is to keep every gene in **one** process.
+`run_deep_dive_sweep.py` is a ThreadPoolExecutor for exactly that reason.
+
+It also decouples the private-D1 sinks from `--publish`, which
+`annotate_gene.py` conflates — a failed annotate is the highest-value case for
+the diagnostic trail, and there it is silently dropped.
+
+## Sizing
+
+| Source | Number |
+|---|---|
+| OTPM-safe ceiling (`resolve_gene_concurrency()`) | 66 concurrent |
+| Production sweep realized (423 genes/hr ÷ 597 s avg) | ~70 concurrent |
+| Latency tail, 5,130-gene sweep | p50 556 s · p90 1,025 s · p99 1,428 s · max 2,549 s |
+| NCBI budget (4 keys × 9 qps) vs. demand (18 calls/gene over ~600 s) | 36 qps vs. 0.03 qps/gene |
+
+OTPM and NCBI are both non-binding at any concurrency this cohort will use
+(28 genes ≈ 504k OTPM against a 1.2M headroom target). The **latency tail** is
+the real ceiling: with only 147 genes, past ~24–30 concurrent the wall clock
+converges on the single slowest gene and stops improving.
 
 ## Before you launch — three things
 
@@ -55,7 +73,5 @@ Measured on NPM1: **$2.00/gene**, 413 s. Cohort mean for the 5,130-gene
 sweep was **$1.44/gene**, 597 s.
 
 * Projected cost: **~$210–290**
-* Wall clock at `-P 8`: **~3 hours**
+* Wall clock at concurrency 28: **~60-90 min** (tail-bounded)
 
-`resolve_gene_concurrency()` returns 66 for the Modal environment; 8 is the
-conservative local figure. Raise only with rate-limit headroom.

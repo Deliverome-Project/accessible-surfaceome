@@ -181,3 +181,4 @@ data/processed/intracellular_rescue_v1/rescues.tsv -filter -diff -merge text
 data/processed/intracellular_rescue_v1/README.md -filter -diff -merge text
 data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv -filter -diff -merge text
 data/processed/intracellular_rescue_v1/RUN_DEEP_DIVE.md -filter -diff -merge text
+data/processed/intracellular_rescue_v1/citation_audit.tsv -filter -diff -merge text

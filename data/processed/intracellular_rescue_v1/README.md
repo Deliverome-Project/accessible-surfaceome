@@ -102,6 +102,54 @@ the same `--run-id` produced a clean `no` / `inner_leaflet_anchored`
 (valid, persisted). **It is not a rescue** — the count stands at 148,
 and the sweep is now 10,287/10,287 with a valid verdict.
 
+## Citation audit — 7% of citations are misattributed
+
+`pubmed_ncbi` cites PMIDs inline in `verdict_reasoning`, and nothing in the
+pipeline validates them. [`scripts/audit/audit_triage_citations.py`](../../../scripts/audit/audit_triage_citations.py)
+checks each one; results in `citation_audit.tsv`.
+
+| | count | |
+|---|---:|---|
+| Citations | 214 | across the 148 rescues |
+| PMIDs that don't resolve | **0** | no invented identifiers |
+| Resolve **and** name the gene | 200 (93%) | |
+| Resolve but the gene is absent from title+abstract | **14 (7%)** | |
+
+**The failure mode is misattribution, not fabrication.** Every cited PMID is a
+real PubMed record; 7% are real papers about something else. That is the more
+dangerous shape — an invented PMID fails the first existence check anyone runs,
+while a misattributed one resolves, renders as a working link, and reads as
+legitimate in a tooltip or reference list. Only reading the paper catches it.
+
+All 14 were checked by hand; none is the benign "abstract didn't name the
+protein" case:
+
+| Gene | Cited to support | What the papers actually are |
+|---|---|---|
+| BLCAP | TM topology + membrane IF | yeast isocitrate dehydrogenase · p53 mutants · horse heart myoglobin · lymphotoxin |
+| H2BC12 | surface histone | PVA–bacterial cellulose nanocomposite · Annexin A2/PCSK9 · ankle-fracture plating |
+| PSMB4 | surface proteasome | HBV capsid particles · glyoxalase III/DJ-1 · SERS detection in spoiled pork |
+| APOL6 | surface apolipoprotein | cohesin loading · HLA-F/NK receptors |
+| NUDCD1 | surface NudC | curcumin/chromosomal passenger complex · Pterosin B osteoarthritis |
+
+**Failures cluster completely**, which makes them cheap to detect: exactly 5
+genes have zero verified citations, and in all 5 *every* citation fails, while
+the other 143 have at least one that checks out. So **"all citations fail" is a
+usable automated signal that a rescue is confabulated** — no human read needed.
+The model appears to confabulate specifically when the literature has nothing,
+rather than returning no evidence; the 30 genes that cite nothing at all are
+the honest version of the same situation.
+
+Three quality tiers follow:
+
+* **113 genes** — ≥1 verified citation → trustworthy
+* **30 genes** — no citations → unsupported but honest
+* **5 genes** — every citation misattributed → actively misleading
+
+All 148 were carried into the deep dive regardless, for consistency with the
+rest of the corpus (earlier runs were never citation-audited either). The tiers
+are recorded so a reader can filter.
+
 ## Downstream
 
 The 148 rescues (minus NPM1, already deep-dived ad hoc) were fed to the v2
