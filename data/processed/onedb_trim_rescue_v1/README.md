@@ -68,10 +68,49 @@ sonnet_only  961 → 1,108
 **The `sonnet_only 961` figure is now stale** — it was previously agreed across
 v3 / catalog / Fig 3. Regenerate the catalog and Fig 3 before citing it.
 
-## Deep-dive cohort
+## Deep-dive cohort — run, and the trim is vindicated
 
-150 of the 204 new entrants already have records (the intracellular cohort).
-`deep_dive_cohort.tsv` holds the remaining **54**, all `m1_and_sonnet`.
+150 of the 204 new entrants already had records (the intracellular cohort);
+TPO / TMEM127 / WLS were filled separately. The remaining **52** ran under
+`--cohort-run-id universe_gapfill_2026_09` (reusing the existing gapfill run
+rather than minting a fourth run_id):
+
+| | |
+|---|---|
+| genes | 52/52 VALID, 0 INVALID, 0 ERROR |
+| cost | $70.61 + $1.23 (one re-run, below) |
+| wall clock | 19.4 min at concurrency 28 |
+| topology guard | 0 trips — every gene had measured DeepTMHMM topology |
+
+`deep_dive_run` now holds **5,333** distinct genes across 3 run_ids, and
+**every gene in the 5,332-row v3 universe has a record**. (The 5,333rd is
+BRI3BP, annotated but trimmed out of the universe.)
+
+**Result: 0 of 52 reached `likely` or better** — 37 `no`, 9 `low`, 6
+`moderate`. Against the prior batch's 8/147 (5.4%) this is a clean negative,
+and it is the strongest available evidence that **the 1-of-5-DB trim rule is
+sound**: the genes it drops really are low-yield. What was wrong was never the
+rule, only that it fired on a single unreviewed pass. Now that every trimmed
+gene has had a literature-augmented second look, the rule can be trusted
+rather than merely assumed.
+
+497 paralog entries were baked across the 52 records — the fix from the
+release-shadow section below, reaching records rather than sitting in D1.
+
+### One gene reported VALID with no run row
+
+BCHE finished, published its record and intermediates, and logged `VALID` —
+but wrote no `deep_dive_run` row, so the sweep summary read 52/52 while the
+cohort was one short. `D1DeepDiveSink.insert` documents that it "never raises
+so the worker pool keeps going": it swallows a transient D1 500 and returns
+`False`. [`run_deep_dive_sweep.py`](../../../scripts/run_deep_dive_sweep.py)
+discarded that bool, so a dropped write was indistinguishable from success —
+the same failed-lookup-as-real-result shape as the placeholder topology and
+the shadowed paralog release, this time on the write path.
+
+The driver now checks the return value and reports a distinct `NO_RUN_ROW`
+status, counted apart from both VALID and ERROR because the annotate itself
+succeeded. BCHE was re-run ($1.23) and the gap is closed.
 
 ### Deterministic-feature readiness — verified through the accessor
 
