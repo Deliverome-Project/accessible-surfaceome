@@ -120,13 +120,19 @@ def _run_one(
     cohort_run_id: str,
     sink: D1DeepDiveSink | None,
     progress: _Progress,
+    require_measured_topology: bool = True,
 ) -> None:
     if progress.aborted:
         return
     started = time.monotonic()
     status, cost = "ERROR", 0.0
     try:
-        result = annotate(ident, persist=True, read_phase_checkpoint=True)
+        result = annotate(
+            ident,
+            persist=True,
+            read_phase_checkpoint=True,
+            require_measured_topology=require_measured_topology,
+        )
         cost = float(result.total_cost_usd or 0.0)
         elapsed = time.monotonic() - started
         status = "VALID" if result.record is not None else "INVALID"
@@ -206,6 +212,15 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-total-cost-usd", type=float, default=None)
     ap.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True,
                     help="Skip genes already in deep_dive_run under this cohort-run-id.")
+    ap.add_argument(
+        "--allow-unmeasured-topology",
+        action="store_true",
+        help=(
+            "Annotate genes that have no measured DeepTMHMM topology. OFF by "
+            "default — see annotate_gene.py for why fabricated zeros are a "
+            "hard failure."
+        ),
+    )
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -250,6 +265,7 @@ def main(argv: list[str] | None = None) -> int:
                 cohort_run_id=args.cohort_run_id,
                 sink=sink,
                 progress=progress,
+                require_measured_topology=not args.allow_unmeasured_topology,
             )
             for s, i in cohort
         ]

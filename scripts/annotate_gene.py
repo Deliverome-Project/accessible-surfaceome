@@ -75,6 +75,26 @@ def main(argv: list[str] | None = None) -> int:
             "checkpoint for the next attempt."
         ),
     )
+    # NOTE: --no-publish also suppresses the PRIVATE diagnostic writes below
+    # (deep_dive_run, harvested_paper, agent_run_intermediates), because they
+    # are all gated on ``args.publish``. That is a wart, not a design: the
+    # intermediates blob is what ``scripts/audit/surfaceome_v2_replay_*.py``
+    # replay from, so a --no-publish run cannot later be replayed cheaply and
+    # needs a full re-annotate instead. It bit NPM1 (annotated --no-publish on
+    # 2026-09-19, then needed a $2 re-run rather than a $0.65 replay when its
+    # deterministic inputs were corrected). ``scripts/run_deep_dive_sweep.py``
+    # deliberately decouples the two.
+    parser.add_argument(
+        "--allow-unmeasured-topology",
+        action="store_true",
+        help=(
+            "Annotate even when the gene has no measured DeepTMHMM topology. "
+            "OFF by default: a placeholder reports tm=0 / signal_peptide=0 / "
+            "ecd=0, the deterministic block goes into the agent's prompt, and "
+            "the model states those fabricated zeros as fact in its executive "
+            "summary. Run the topology sweep for the accession instead."
+        ),
+    )
     parser.add_argument(
         "--cohort-run-id",
         default=None,
@@ -91,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         args.gene,
         persist=args.persist,
         read_phase_checkpoint=args.checkpoint,
+        require_measured_topology=not args.allow_unmeasured_topology,
     )
 
     safe_id = result.gene.replace(":", "_")
