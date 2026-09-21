@@ -108,6 +108,7 @@ ADAMTS8	Q9UP79	213	10	weak	low
 ADAMTS9	Q9P2N4	251	17	supportive_but_indirect	likely
 ADAMTSL3	P82987	197	6	weak	no
 ADAMTSL4	Q6UY14	224	10	weak	no
+ADAP1	O75689	154	11	weak	no
 ADAP2	Q9NPF8	175	4	weak	no
 ADCY1	Q08828	321	5	weak	canonical
 ADCY2	Q08462	285	2	supportive_but_indirect	likely
@@ -192,6 +193,7 @@ AKAP19	Q9BSF0	134	3	weak	no
 AKAP4	Q5JQC9	351	4	weak	low
 AKAP7	O43687	198	9	weak	no
 AKR1A1	P14550	358	2	weak	no
+AKR1B15	C9JRZ8	156	3	weak	no
 ALCAM	Q13740	251	38	direct_multi_method	canonical
 ALDOC	P09972	276	1	weak	no
 ALG10B	Q5I7T1	191	7	weak	no
@@ -216,6 +218,7 @@ AMOTL2	Q9Y2J4	225	18	weak	no
 AMPH	P49418	271	6	weak	no
 AMTN	Q6UX39	169	11	weak	no
 ANG	P03950	360	7	weak	low
+ANGPTL1	O95841	210	9	weak	no
 ANGPTL2	Q9UKU9	312	14	weak	low
 ANGPTL4	Q9BY76	303	32	weak	low
 ANGPTL7	O43827	209	15	weak	no
@@ -225,6 +228,7 @@ ANK3	Q12955	265	21	weak	no
 ANKEF1	Q9NU02	97	1	weak	low
 ANKFN1	Q8N957	302	0	weak	no
 ANKH	Q9HCJ1	284	10	supportive_but_indirect	canonical
+ANKIB1	Q9P2G1	124	2	weak	no
 ANKRD13A	Q8IZ07	123	4	weak	no
 ANKRD13B	Q86YJ7	91	3	weak	no
 ANKRD20A1	Q5TYW2	59	0	weak	no
@@ -252,6 +256,7 @@ ANXA13	P27216	329	11	direct_single_method	likely
 ANXA2	P07355	300	33	direct_multi_method	likely
 ANXA2R	Q3ZCQ2	157	14	direct_single_method	likely
 ANXA3	P12429	266	16	weak	low
+ANXA4	P09525	282	9	weak	low
 ANXA5	P08758	343	11	supportive_but_indirect	likely
 ANXA6	P08133	322	15	direct_single_method	likely
 ANXA7	P20073	268	13	weak	no
@@ -300,6 +305,7 @@ ARC	Q7LC44	332	6	weak	no
 AREG	P15514	340	25	supportive_but_indirect	canonical
 ARF5	P84085	232	16	weak	no
 ARHGAP18	Q8N392	198	12	weak	no
+ARHGAP36	Q6ZRI8	109	3	weak	no
 ARHGAP45	Q92619	318	2	weak	no
 ARHGEF18	Q6ZSZ5	216	16	weak	no
 ARID3A	Q99856	367	4	weak	no
@@ -385,6 +391,7 @@ ATP8A2	Q9NTI2	370	4	weak	no
 ATP8B1	O43520	251	19	supportive_but_indirect	likely
 ATP8B2	P98198	142	16	supportive_but_indirect	low
 ATP8B4	Q8TF62	156	4	supportive_but_indirect	low
+ATP9A	O75110	139	19	weak	low
 ATRAID	Q6UW56	278	8	supportive_but_indirect	likely
 ATRN	O75882	244	12	direct_multi_method	canonical
 ATRNL1	Q5VV63	338	3	supportive_but_indirect	canonical
@@ -408,6 +415,7 @@ BAIAP3	O94812	176	3	weak	no
 BAMBI	Q13145	308	20	direct_single_method	canonical
 BCAM	P50895	335	14	direct_multi_method	canonical
 BCAN	Q96GW7	246	25	direct_multi_method	canonical
+BCHE	P06276	309	3	weak	no
 BDKRB1	P46663	229	27	direct_multi_method	likely
 BDKRB2	P30411	267	28	direct_multi_method	canonical
 BEST1	O76090	375	8	direct_single_method	likely
@@ -435,9 +443,9 @@ BPIFB2	Q8N4F0	154	10	weak	no
 BPIFB6	Q8NFQ5	70	3	weak	no
 BPIFC	Q8NFQ6	84	1	weak	no
 BRI3	O95415	309	0	weak	low
-BRI3BP	Q8WY22	167	0	weak	no
 BRICD5	Q6PL45	54	0	weak	low
 BRINP2	Q9C0B6	125	0	weak	no
+BRK1	Q8WUW1	181	4	weak	no
 BRS3	P32247	243	12	supportive_but_indirect	canonical
 BSG	P35613	265	47	direct_multi_method	canonical
 BSND	Q8WZ55	248	13	direct_single_method	canonical
@@ -487,7 +495,9 @@ C1QTNF7	Q9BXJ2	142	3	weak	no
 C1QTNF8	P60827	98	7	weak	no
 C1QTNF9	P0C862	178	12	weak	no
 C1QTNF9B	B2RNN3	139	2	weak	no
+C1R	P00736	251	13	weak	no
 C1RL	Q9NZP8	216	5	weak	no
+C1S	P09871	260	20	weak	no
 C1orf115	Q9H7X2	105	2	weak	no
 C1orf116	Q9BW04	182	2	weak	no
 C1orf159	Q96HA4	64	1	weak	low
@@ -614,8 +624,10 @@ CCDC24	Q8N4L8	68	0	weak	no
 CCDC25	Q86WR0	180	15	direct_multi_method	canonical
 CCDC3	Q9BQI4	153	6	weak	no
 CCDC54	Q8NEL0	154	3	weak	no
+CCDC69	A6NI79	106	2	weak	no
 CCDC70	Q6NSX1	63	0	weak	low
 CCDC78	A2IDD5	126	4	weak	low
+CCDC8	Q9H0W5	199	3	weak	low
 CCDC80	Q76M96	321	0	weak	low
 CCDC81	Q6ZN84	73	0	weak	no
 CCDC85C	A6NKD9	126	7	weak	no
@@ -796,6 +808,7 @@ CELSR2	Q9HCU4	218	18	direct_multi_method	canonical
 CELSR3	Q9NYQ7	223	17	direct_multi_method	canonical
 CEMIP	Q8WUJ3	228	22	supportive_but_indirect	likely
 CEMIP2	Q9UHN6	189	22	direct_multi_method	canonical
+CEND1	Q8N111	155	3	weak	no
 CENPF	P49454	286	0	weak	no
 CERCAM	Q5T4B2	292	1	weak	low
 CFAP126	Q5VTH2	141	1	weak	no
@@ -1010,8 +1023,10 @@ COL7A1	Q02388	287	18	supportive_but_indirect	likely
 COLEC10	Q9Y6Z7	276	10	weak	no
 COLEC12	Q5KU26	237	18	direct_multi_method	canonical
 COLQ	Q9Y215	305	5	weak	low
+COMT	P21964	281	1	weak	no
 CORIN	Q9Y5Q5	236	16	direct_multi_method	canonical
 CP	P00450	373	1	weak	no
+CPA4	Q9UI42	239	2	weak	no
 CPA6	Q8N4T0	179	6	weak	low
 CPAMD8	Q8IZJ3	349	2	direct_single_method	likely
 CPD	O75976	334	17	direct_single_method	canonical
@@ -1080,6 +1095,7 @@ CTLA4	P16410	330	27	direct_multi_method	canonical
 CTNNA1	P35221	263	26	weak	no
 CTNNB1	P35222	385	20	weak	no
 CTNND1	O60716	343	19	weak	no
+CTNND2	Q9UQB3	184	7	weak	no
 CTNS	O60931	215	17	direct_multi_method	low
 CTSA	P10619	319	8	weak	low
 CTSB	P07858	344	23	direct_single_method	likely
@@ -1133,6 +1149,7 @@ CYSTM1	Q9H1C7	141	3	weak	low
 CYTH1	Q15438	218	14	weak	no
 CYTL1	Q9NRR1	312	1	weak	low
 CYYR1	Q96J86	135	4	weak	no
+DAB2	P98082	246	20	weak	no
 DAG1	Q14118	331	24	supportive_but_indirect	canonical
 DAGLA	Q9Y4D2	230	18	direct_multi_method	canonical
 DAGLB	Q8NCG7	188	12	weak	no
@@ -1158,6 +1175,7 @@ DDR1	Q08345	328	29	direct_multi_method	canonical
 DDR2	Q16832	291	35	direct_multi_method	canonical
 DDT	P30046	316	9	weak	no
 DDTL	A6NHG4	86	0	weak	no
+DDX4	Q9NQI0	267	1	weak	no
 DEFA1	P59665	339	4	weak	no
 DEFA1B	P59665	332	5	weak	no
 DEFA3	P59666	248	10	weak	no
@@ -1219,7 +1237,9 @@ DNASE1L2	Q92874	218	7	weak	low
 DNASE1L3	Q13609	345	8	weak	no
 DNASE2B	Q8WZ79	250	2	weak	no
 DNER	Q8NFT8	361	9	direct_single_method	likely
+DOC2A	Q14183	189	7	weak	no
 DOCK8	Q8NF50	278	10	weak	low
+DOK3	Q7L591	228	3	weak	no
 DPCD	Q9BVM2	174	2	weak	no
 DPEP1	P16444	304	17	direct_multi_method	canonical
 DPEP2	Q9H4A9	244	1	supportive_but_indirect	likely
@@ -1317,6 +1337,7 @@ ENDOU	P21128	316	0	weak	uncertain
 ENG	P17813	376	13	direct_multi_method	canonical
 ENHO	Q6UWT2	196	7	weak	no
 ENO1	P06733	306	21	direct_multi_method	likely
+ENO2	P09104	274	10	weak	low
 ENOX1	Q8TC92	172	8	direct_multi_method	canonical
 ENOX2	Q16206	182	25	direct_multi_method	canonical
 ENPEP	Q07075	300	11	supportive_but_indirect	canonical
@@ -1374,6 +1395,8 @@ ERFE	Q4G0M1	215	21	weak	no
 ERLIN2	O94905	190	15	weak	no
 ERMAP	Q96PL5	302	13	direct_multi_method	likely
 ERO1A	Q96HE7	204	19	weak	no
+ERP29	P30040	187	7	weak	no
+ERP44	Q9BS26	156	15	weak	no
 ERV3-1	Q14264	193	11	direct_multi_method	canonical
 ERVFRD-1	P60508	169	23	direct_single_method	likely
 ERVH48-1	M5A8F1	112	10	weak	no
@@ -1392,6 +1415,7 @@ EVC2	Q86UK5	262	2	weak	low
 EVI2A	P22794	181	4	direct_single_method	likely
 EVI2B	P34910	165	11	direct_multi_method	canonical
 EXOC3L1	Q86VI1	125	2	weak	no
+EXTL3	O43909	185	7	weak	no
 EZR	P15311	330	17	weak	no
 F11R	Q9Y624	270	41	direct_multi_method	canonical
 F2	P00734	381	3	weak	no
@@ -1401,6 +1425,7 @@ F2RL2	O00254	265	19	direct_multi_method	canonical
 F2RL3	Q96RI0	246	29	direct_multi_method	canonical
 F3	P13726	352	17	direct_multi_method	canonical
 FABP4	P15090	322	9	supportive_but_indirect	likely
+FABP5	Q01469	233	11	direct_multi_method	likely
 FAIM2	Q9BWQ8	231	12	supportive_but_indirect	low
 FAM149A	A5PLN7	88	0	weak	no
 FAM151A	Q8WW52	101	2	weak	low
@@ -1908,6 +1933,7 @@ HMGB3	O15347	207	2	weak	no
 HMGN2	P05204	230	1	weak	low
 HMMR	O75330	248	29	direct_multi_method	likely
 HNRNPU	Q00839	307	3	weak	no
+HOMER3	Q9NSC5	195	7	conflicting	low
 HPN	P05981	309	12	direct_single_method	canonical
 HPSE	Q9Y251	337	22	supportive_but_indirect	likely
 HPSE2	Q8WWQ2	237	16	supportive_but_indirect	canonical
@@ -1917,6 +1943,7 @@ HRH2	P25021	240	26	direct_multi_method	canonical
 HRH3	Q9Y5N1	224	27	direct_multi_method	canonical
 HRH4	Q9H3N8	289	6	supportive_but_indirect	likely
 HS3ST2	Q9Y278	187	20	direct_multi_method	canonical
+HSH2D	Q96JZ2	221	1	weak	no
 HSP90AA1	P07900	332	16	weak	low
 HSP90AB1	P08238	330	10	direct_single_method	likely
 HSP90B1	P14625	277	25	direct_multi_method	likely
@@ -1948,6 +1975,7 @@ HTR5A	P47898	217	10	direct_multi_method	canonical
 HTR6	P50406	226	20	direct_multi_method	likely
 HTR7	P34969	247	25	direct_multi_method	canonical
 HTRA1	Q92743	279	25	supportive_but_indirect	canonical
+HTRA2	O43464	254	5	weak	no
 HTRA3	P83110	243	12	weak	no
 HTRA4	P83105	166	14	weak	no
 HVCN1	Q96D96	230	27	direct_multi_method	canonical
@@ -2069,6 +2097,7 @@ INSL4	Q14641	174	3	weak	no
 INSL6	Q9Y581	258	2	weak	no
 INSR	P06213	317	25	direct_multi_method	canonical
 INSRR	P14616	294	15	direct_multi_method	likely
+IPCEF1	Q8WWN9	131	4	weak	no
 IQCE	Q6IPM2	121	1	weak	no
 IQCF1	Q8N6M8	58	1	weak	low
 IQGAP1	P46940	277	22	weak	low
@@ -2387,6 +2416,7 @@ LMBR1L	Q6UX01	215	9	supportive_but_indirect	canonical
 LMBRD1	Q9NUN5	234	15	weak	low
 LMBRD2	Q68DH5	99	2	supportive_but_indirect	canonical
 LMLN	Q96KR4	340	0	weak	likely
+LMO7	Q8WWI1	168	8	weak	no
 LMTK3	Q96Q04	159	9	supportive_but_indirect	likely
 LNPEP	Q9UIQ6	353	11	direct_single_method	likely
 LNX1	Q8TBB1	206	10	weak	no
@@ -2592,6 +2622,7 @@ MEST	Q5EB52	267	5	weak	no
 MET	P08581	358	30	direct_multi_method	canonical
 METRN	Q9UJH8	145	9	weak	no
 METRNL	Q641Q3	204	14	weak	no
+METTL9	Q9H1A3	212	2	weak	no
 MFAP3	P55082	112	1	weak	no
 MFAP3L	O75121	134	0	weak	low
 MFAP4	P55083	242	10	weak	no
@@ -2615,6 +2646,7 @@ MIGA1	Q8NAN2	195	1	weak	no
 MIGA2	Q7L4E1	158	6	weak	no
 MILR1	Q7Z6M3	170	8	direct_multi_method	canonical
 MINAR1	Q9UPX6	141	3	weak	low
+MINPP1	Q9UNW1	186	5	weak	low
 MIP	P30301	359	16	direct_multi_method	likely
 MLC1	Q15049	331	7	weak	low
 MLF2	Q15773	216	0	weak	no
@@ -3586,6 +3618,7 @@ PLA2G4F	Q68DD2	173	4	weak	no
 PLA2G6	O60733	288	7	conflicting	no
 PLA2G7	Q13093	277	12	weak	no
 PLA2R1	Q13018	261	23	direct_multi_method	canonical
+PLAA	Q9Y263	202	6	conflicting	low
 PLAAT3	P53816	201	8	weak	no
 PLAAT4	Q9UL19	259	6	supportive_but_indirect	low
 PLAC1	Q9HBJ0	166	16	direct_multi_method	canonical
@@ -3608,8 +3641,10 @@ PLD4	Q96BZ4	169	7	direct_single_method	likely
 PLD5	Q8N7P1	160	2	weak	no
 PLEC	Q15149	330	18	direct_single_method	likely
 PLEKHA4	Q9H4M7	147	2	weak	no
+PLEKHN1	Q494U1	105	3	weak	no
 PLEKHO2	Q8TD55	147	1	weak	no
 PLET1	Q6UQ28	160	9	direct_single_method	likely
+PLG	P00747	270	15	direct_multi_method	canonical
 PLGLB1	Q02325	202	1	weak	no
 PLGLB2	Q02325	176	0	weak	uncertain
 PLGRKT	Q9HBL7	165	19	direct_multi_method	canonical
@@ -3670,6 +3705,7 @@ POTEM	A6NI47	316	1	weak	uncertain
 PPIA	P62937	288	24	supportive_but_indirect	likely
 PPIB	P23284	383	6	weak	low
 PPP1R3F	Q6ZSY5	129	1	weak	no
+PPP2R1A	P30153	251	10	weak	low
 PPT1	P50897	279	19	direct_single_method	likely
 PPT2	Q9UMR5	249	4	weak	no
 PRADC1	Q9BSG0	94	2	weak	no
@@ -3751,6 +3787,7 @@ PTCHD1	Q96NR3	176	7	supportive_but_indirect	likely
 PTCHD3	Q3KNS1	291	0	weak	no
 PTCHD4	Q6ZW05	119	3	weak	low
 PTCRA	Q6ISU1	333	5	direct_single_method	likely
+PTEN	P60484	312	7	weak	no
 PTER	Q96BW5	242	1	weak	no
 PTGDR	Q13258	353	15	direct_multi_method	canonical
 PTGDR2	Q9Y5Y4	297	26	direct_multi_method	likely
@@ -3765,6 +3802,7 @@ PTGIR	P43119	362	23	direct_multi_method	canonical
 PTH1R	Q03431	248	36	direct_multi_method	canonical
 PTH2R	P49190	176	14	direct_multi_method	canonical
 PTK2B	Q14289	322	16	weak	no
+PTK6	Q13882	207	6	weak	no
 PTK7	Q13308	229	26	direct_multi_method	canonical
 PTMA	P06454	267	4	weak	low
 PTOV1	Q86YD1	208	0	weak	no
@@ -3848,6 +3886,7 @@ RGMB	Q6NW40	245	18	direct_multi_method	likely
 RGR	P47804	259	13	supportive_but_indirect	likely
 RGS14	O43566	200	7	weak	no
 RGS19	P49795	212	6	weak	no
+RGS7BP	Q6MZT1	123	12	weak	no
 RGS8	P57771	180	4	weak	no
 RGS9BP	Q6ZS82	301	2	direct_single_method	likely
 RHAG	Q02094	327	17	direct_multi_method	likely
@@ -4015,6 +4054,7 @@ SDC1	P18827	284	35	direct_multi_method	canonical
 SDC2	P34741	289	31	direct_multi_method	canonical
 SDC3	O75056	210	28	direct_multi_method	canonical
 SDC4	P31431	260	35	direct_multi_method	canonical
+SDCBP	O00560	255	18	weak	no
 SDIM1	Q6ZPB5	30	1	weak	no
 SDK1	Q7Z5N4	201	12	direct_multi_method	canonical
 SDK2	Q58EX2	175	10	direct_multi_method	likely
@@ -4281,6 +4321,7 @@ SLC36A1	Q7Z2H8	245	28	direct_multi_method	canonical
 SLC36A2	Q495M3	186	12	direct_single_method	likely
 SLC36A3	Q495N2	160	4	weak	no
 SLC36A4	Q6YBV0	171	13	weak	low
+SLC37A2	Q8TED4	145	10	weak	no
 SLC37A3	Q8NCC5	145	4	weak	no
 SLC38A1	Q9H2H9	309	21	direct_multi_method	canonical
 SLC38A11	Q08AI6	144	2	weak	low
@@ -4430,6 +4471,7 @@ SLCO4A1	Q96BD0	247	20	supportive_but_indirect	canonical
 SLCO4C1	Q6ZQN7	193	18	direct_multi_method	canonical
 SLCO5A1	Q9H2Y9	149	12	supportive_but_indirect	canonical
 SLCO6A1	Q86UG4	330	5	weak	likely
+SLIT1	O75093	234	12	weak	no
 SLIT2	O94813	264	32	weak	no
 SLIT3	O75094	253	26	weak	no
 SLITRK1	Q96PX8	268	8	direct_single_method	likely
@@ -4533,6 +4575,7 @@ SPEM1	Q8N4L4	117	5	weak	low
 SPEM3	A0A1B0GUW6	10	0	weak	low
 SPESP1	Q6UW49	327	3	supportive_but_indirect	likely
 SPG11	Q96JI7	207	7	weak	no
+SPHK1	Q9NYA1	278	18	weak	no
 SPHK2	Q9NRA0	226	5	weak	low
 SPINK13	Q1W4C9	82	4	weak	low
 SPINK14	Q6IE38	32	0	weak	no
@@ -4601,6 +4644,7 @@ STRC	Q7RTU9	202	12	supportive_but_indirect	likely
 STRN3	Q13033	181	9	weak	no
 STS	P08842	303	2	weak	low
 STUM	Q69YW2	128	1	weak	low
+STX11	O75558	203	16	supportive_but_indirect	likely
 STX19	Q8N4C7	86	3	weak	no
 STX1A	Q16623	243	16	weak	no
 STX3	Q13277	216	28	supportive_but_indirect	likely
@@ -4632,6 +4676,7 @@ SYNDIG1	Q9H7V2	158	13	supportive_but_indirect	likely
 SYNDIG1L	A6NDD5	113	5	weak	no
 SYNE2	Q8WXH0	344	14	weak	no
 SYNJ2BP	P57105	214	10	weak	no
+SYP	P08247	327	12	direct_single_method	low
 SYPL1	Q16563	201	11	weak	no
 SYPL2	Q5VXT5	168	6	weak	no
 SYT11	Q9BT88	181	8	weak	no
@@ -4974,6 +5019,8 @@ TMPRSS7	Q7RTY8	97	0	weak	likely
 TMPRSS9	Q7Z410	167	0	weak	likely
 TMTC2	Q8N394	146	7	weak	no
 TMUB1	Q9BVT8	277	8	weak	no
+TMX1	Q9H3N1	228	17	direct_multi_method	likely
+TMX2	Q9Y320	151	12	conflicting	low
 TMX3	Q96JJ7	157	10	direct_multi_method	likely
 TMX4	Q9H1E5	136	12	weak	no
 TNC	P24821	378	8	direct_multi_method	canonical
@@ -5019,7 +5066,7 @@ TPBG	Q13641	220	30	direct_multi_method	canonical
 TPBGL	P0DKB5	48	0	weak	low
 TPCN1	Q9ULQ1	256	23	weak	no
 TPCN2	Q8NHX9	225	27	direct_multi_method	likely
-TPO	P07202	241	10	supportive_but_indirect	likely
+TPO	P07202	245	8	direct_single_method	likely
 TPP1	O14773	277	4	weak	low
 TPRA1	Q86W33	158	4	direct_single_method	canonical
 TPRG1L	Q5T0D9	204	5	conflicting	low
@@ -5128,6 +5175,7 @@ UNC5CL	Q8IV45	135	3	weak	low
 UNC5D	Q6UXZ4	197	12	supportive_but_indirect	canonical
 UNC79	Q9P2D8	139	15	weak	no
 UNC93A	Q86WB7	89	8	supportive_but_indirect	likely
+UNC93B1	Q9H1C4	186	15	weak	no
 UPK1A	O00322	220	27	direct_multi_method	likely
 UPK1B	O75841	240	18	direct_multi_method	likely
 UPK2	O00526	224	27	direct_single_method	likely
@@ -5144,6 +5192,7 @@ UTRN	P46939	349	5	weak	no
 UTS2B	Q765I0	243	0	weak	no
 UTS2R	Q9UKP6	379	7	supportive_but_indirect	canonical
 VAMP2	P63027	294	31	weak	no
+VAMP4	O75379	296	9	weak	no
 VAMP5	O95183	164	11	supportive_but_indirect	low
 VAMP7	P51809	249	29	supportive_but_indirect	likely
 VAMP8	Q9BV40	245	19	weak	low
@@ -5195,6 +5244,7 @@ VWA5B1	Q5TIE3	74	0	weak	uncertain
 VWA7	Q9Y334	142	0	weak	no
 VWC2L	B2RUY7	168	1	weak	no
 VWDE	Q8N2E2	100	3	weak	low
+VWF	P04275	274	27	weak	low
 VXN	Q8TAG6	101	2	weak	low
 WARS1	P23381	333	3	weak	low
 WASF2	Q9Y6W5	247	17	weak	no
@@ -5248,6 +5298,7 @@ ZG16	O60844	192	12	weak	no
 ZG16B	Q96DA0	189	16	weak	low
 ZGPAT	Q8N5A5	323	0	weak	no
 ZMYND10	O75800	335	3	weak	no
+ZNF185	O15231	216	5	weak	no
 ZNF474	Q6S9Z5	64	0	weak	no
 ZNG1C	Q5JTY5	55	0	weak	no
 ZNG1E	Q5RIA9	101	0	weak	no

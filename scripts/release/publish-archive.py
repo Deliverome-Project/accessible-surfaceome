@@ -197,13 +197,34 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2",
         "filename": "triage-runs-genome-ncbi-with-reasoning.tsv",
     },
+    # Four literature-rescue lanes, not one. Each widened the pool the one
+    # before it left out, and the universe gate reconciles across all four —
+    # prefer the more inclusive verdict. All four are needed to reproduce the
+    # 5,332-gene cohort; the first two alone reproduce an older, smaller one.
     {
-        # Sonnet+pubmed_ncbi rescue sweep on the ambiguous-reason
-        # zero-DB Sonnet-no slice (~2,626 cells). Flips 177 ncbi-no
-        # to yes/contextual (KLK2 et al). Read-side reconciliation
-        # rule: prefer pubmed when verdict is more inclusive.
+        # Lane 1 — ambiguous-reason zero-DB "no" calls (~2,626 cells).
+        # Flips 177 (KLK2 et al).
         "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_pubmed_ncbi_v1",
         "filename": "triage-runs-genome-pubmed-rescue-with-reasoning.tsv",
+    },
+    {
+        # Lane 2 — the confidently intracellular buckets lane 1 skipped
+        # (cytoplasmic / nuclear / mitochondrial, 10,287 cells). Flips 148.
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_intracellular_pubmed_ncbi_v1",
+        "filename": "triage-runs-genome-intracellular-rescue-with-reasoning.tsv",
+    },
+    {
+        # Lane 3 — "no" calls carried by exactly one database (1,417 cells),
+        # the slice the conservative trim would otherwise drop unread.
+        # Flips 53.
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_1db_trim_pubmed_ncbi_v1",
+        "filename": "triage-runs-genome-1db-trim-rescue-with-reasoning.tsv",
+    },
+    {
+        # Lane 4 — zero-DB under the optimized cutoff only (74 cells).
+        # Flips 1.
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_optcut_zerodb_pubmed_ncbi_v1",
+        "filename": "triage-runs-genome-optcut-zerodb-rescue-with-reasoning.tsv",
     },
     {
         # 147-gene mainbench: Haiku/Sonnet/Opus × 4 prompt variants,
@@ -211,6 +232,13 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
     },
+    # Per-accession surface calls under both rules: each source's native
+    # flag and the SurfaceBench-recalibrated one. Deposited because the
+    # recalibrated rule now decides DB membership on the API, the viewer
+    # and the benchmark table, not just in the figure scripts. A positive
+    # list — an accession that isn't here is 0 under the optimized rule,
+    # never its native flag.
+    "data/processed/triage_bench/db_optimized_cutoffs.tsv",
     # ── PUBLICATION-WORKFLOW PLACEHOLDERS (per scripts/release/README.md) ──
     # Each is a known artifact that the publication ritual expects in
     # this Zenodo data record but isn't ready yet. Uncomment the
