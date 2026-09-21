@@ -25,6 +25,7 @@ ADAMTS6	no	no	212.0	8	6	13	5	weak
 ADAMTS7	no	no	197.0	15	13	14	4	weak
 ADAMTSL3	no	no	197.0	6	6	12	5	weak
 ADAMTSL4	no	no	224.0	10	6	14	5	weak
+ADAP1	no	no	154.0	11	9	11	5	weak
 ADAP2	no	no	175.0	4	3	10	5	weak
 ADD2	no	no	215.0	8	6	14	6	weak
 ADISSP	no	no	103.0	2	2	10	4	weak
@@ -42,6 +43,7 @@ AK1	no	no	291.0	4	3	12	2	weak
 AKAP19	no	no	134.0	3	2	12	3	weak
 AKAP7	no	no	198.0	9	7	9	5	weak
 AKR1A1	no	no	358.0	2	0	10	4	weak
+AKR1B15	no	no	156.0	3	2	11	4	weak
 ALDOC	no	no	276.0	1	1	10	2	weak
 ALG10B	no	no	191.0	7	6	11	3	weak
 ALKAL1	no	no	131.0	15	14	14	4	weak
@@ -52,11 +54,13 @@ AMBP	no	no	337.0	3	2	10	4	weak
 AMOTL2	no	no	225.0	18	14	12	6	weak
 AMPH	no	no	271.0	6	6	10	6	weak
 AMTN	no	no	169.0	11	8	14	4	weak
+ANGPTL1	no	no	210.0	9	5	13	4	weak
 ANGPTL7	no	no	209.0	15	14	13	4	weak
 ANGPTL8	no	no	189.0	18	17	14	4	weak
 ANK2	no	no	271.0	12	11	9	5	weak
 ANK3	no	no	265.0	21	16	11	4	weak
 ANKFN1	no	no	302.0	0	0	10	4	weak
+ANKIB1	no	no	124.0	2	0	11	4	weak
 ANKRD13A	no	no	123.0	4	3	10	4	weak
 ANKRD13B	no	no	91.0	3	1	11	5	weak
 ANKRD20A1	no	no	59.0	0	0	10	3	weak
@@ -74,6 +78,7 @@ ARAP1	no	no	205.0	7	6	12	5	weak
 ARC	no	no	332.0	6	4	9	2	weak
 ARF5	no	no	232.0	16	13	12	4	weak
 ARHGAP18	no	no	198.0	12	11	10	5	weak
+ARHGAP36	no	no	109.0	3	2	13	5	weak
 ARHGAP45	no	no	318.0	2	1	11	5	weak
 ARHGEF18	no	no	216.0	16	14	10	5	weak
 ARID3A	no	no	367.0	4	3	10	2	weak
@@ -108,6 +113,7 @@ B4GALNT2	no	no	324.0	2	0	11	5	weak
 BAG6	no	no	291.0	2	2	14	2	weak
 BAIAP2	no	no	233.0	19	17	13	6	weak
 BAIAP3	no	no	176.0	3	0	11	2	weak
+BCHE	no	no	309.0	3	1	13	5	weak
 BIN2	no	no	241.0	4	4	13	6	weak
 BLCAP	no	no		1	0	11	3	weak
 BLTP1	no	no	219.0	4	1	10	4	weak
@@ -124,6 +130,7 @@ BPIFB6	no	no	70.0	3	2	11	4	weak
 BPIFC	no	no	84.0	1	0	13	5	weak
 BRI3BP	no	no	167.0	0	0	10	3	weak
 BRINP2	no	no	125.0	0	0	11	5	weak
+BRK1	no	no	181.0	4	3	13	4	weak
 BTD	no	no	251.0	4	0	12	5	weak
 C11orf24	no	no	64.0	1	1	12	4	weak
 C16orf89	no	no	104.0	2	1	11	4	weak
@@ -138,7 +145,9 @@ C1QTNF7	no	no	142.0	3	3	11	6	weak
 C1QTNF8	no	no	98.0	7	5	14	4	weak
 C1QTNF9	no	no	178.0	12	10	14	3	weak
 C1QTNF9B	no	no	139.0	2	1	13	5	weak
+C1R	no	no	251.0	13	11	14	3	weak
 C1RL	no	no	216.0	5	3	13	4	weak
+C1S	no	no	260.0	20	20	14	3	weak
 C1orf115	no	no	105.0	2	2	9	2	weak
 C1orf116	no	no	182.0	2	1	12	4	weak
 C1orf54	no	no	97.0	1	1	10	3	weak
@@ -175,6 +184,7 @@ CCDC167	no	no	74.0	1	1	11	3	weak
 CCDC24	no	no	68.0	0	0	10	4	weak
 CCDC3	no	no	153.0	6	6	13	5	weak
 CCDC54	no	no	154.0	3	3	13	2	weak
+CCDC69	no	no	106.0	2	2	11	4	weak
 CCDC81	no	no	73.0	0	0	10	4	weak
 CCDC85C	no	no	126.0	7	6	14	5	weak
 CCDC97	no	no	97.0	0	0	10	3	weak
@@ -198,6 +208,7 @@ CDK16	no	no	186.0	4	0	14	5	weak
 CDRT15	no	no	38.0	0	0	10	3	weak
 CDV3	no	no	276.0	0	0	10	4	weak
 CELA1	no	no	193.0	4	4	13	4	weak
+CEND1	no	no	155.0	3	3	10	3	weak
 CENPF	no	no	286.0	0	0	9	2	weak
 CFAP126	no	no	141.0	1	0	12	3	weak
 CFAP299	no	no	83.0	0	0	10	4	weak
@@ -245,7 +256,9 @@ COL26A1	no	no	245.0	3	2	12	6	weak
 COL5A3	no	no	242.0	5	3	11	4	weak
 COL6A5	no	no	215.0	7	6	15	5	weak
 COLEC10	no	no	276.0	10	8	12	4	weak
+COMT	no	no	281.0	1	1	10	5	weak
 CP	no	no	373.0	1	0	10	4	weak
+CPA4	no	no	239.0	2	2	11	5	weak
 CPN2	no	no	243.0	1	1	13	4	weak
 CPNE7	no	no	160.0	4	3	13	5	weak
 CPNE9	no	no	103.0	2	1	10	6	weak
@@ -271,6 +284,7 @@ CT47A9	no	no	16.0	0	0	10	3	weak
 CTNNA1	no	no	263.0	26	20	14	5	weak
 CTNNB1	no	no	385.0	20	16	14	4	weak
 CTNND1	no	no	343.0	19	17	14	5	weak
+CTNND2	no	no	184.0	7	4	11	5	weak
 CTTN	no	no	286.0	18	13	11	5	weak
 CTXN2	no	no	74.0	0	0	10	4	weak
 CUTA	no	no	266.0	0	0	10	5	weak
@@ -285,6 +299,7 @@ CYP46A1	no	no	234.0	10	9	10	4	weak
 CYSRT1	no	no	80.0	1	0	12	3	weak
 CYTH1	no	no	218.0	14	12	13	5	weak
 CYYR1	no	no	135.0	4	3	15	4	weak
+DAB2	no	no	246.0	20	19	15	5	weak
 DAGLB	no	no	188.0	12	10	13	6	weak
 DAO	no	no	307.0	4	3	13	4	weak
 DAPP1	no	no	173.0	7	4	11	5	weak
@@ -294,6 +309,7 @@ DBI	no	no	320.0	9	9	12	2	weak
 DBNL	no	no	248.0	4	3	9	5	weak
 DDT	no	no	316.0	9	6	14	5	weak
 DDTL	no	no	86.0	0	0	10	4	weak
+DDX4	no	no	267.0	1	1	11	5	weak
 DEFA1	no	no	339.0	4	4	13	3	weak
 DEFA1B	no	no	332.0	5	4	11	3	weak
 DEFA3	no	no	248.0	10	8	11	3	weak
@@ -328,6 +344,8 @@ DMPK	no	no	319.0	1	0	9	6	weak
 DNAJC1	no	no	173.0	2	2	12	4	weak
 DNASE1L3	no	no	345.0	8	7	13	5	weak
 DNASE2B	no	no	250.0	2	1	10	5	weak
+DOC2A	no	no	189.0	7	6	13	5	weak
+DOK3	no	no	228.0	3	1	11	5	weak
 DPCD	no	no	174.0	2	2	12	3	weak
 DPP7	no	no	381.0	4	2	11	5	weak
 DPP9	no	no	222.0	10	10	10	2	weak
@@ -369,6 +387,8 @@ ERC1	no	no	231.0	14	12	12	5	weak
 ERFE	no	no	215.0	21	20	15	4	weak
 ERLIN2	no	no	190.0	15	10	13	5	weak
 ERO1A	no	no	204.0	19	13	13	4	weak
+ERP29	no	no	187.0	7	5	12	5	weak
+ERP44	no	no	156.0	15	13	12	4	weak
 ERVH48-1	no	no	112.0	10	10	12	2	weak
 ESR2	no	no		8	7	12	6	weak
 ESYT2	no	no	172.0	16	13	13	5	weak
@@ -376,6 +396,7 @@ ESYT3	no	no	146.0	16	14	13	6	weak
 EVA1A	no	no	170.0	9	8	11	4	weak
 EVC	no	no	227.0	3	2	15	4	weak
 EXOC3L1	no	no	125.0	2	1	10	4	weak
+EXTL3	no	no	185.0	7	4	13	5	weak
 EZR	no	no	330.0	17	15	15	5	weak
 F2	no	no	381.0	3	1	14	4	weak
 FAM149A	no	no	88.0	0	0	10	2	weak
@@ -492,8 +513,10 @@ HLA-DOA	no	no	205.0	13	9	15	6	weak
 HM13	no	no	361.0	9	8	11	6	weak
 HMGB3	no	no	207.0	2	1	14	2	weak
 HNRNPU	no	no	307.0	3	1	10	5	weak
+HSH2D	no	no	221.0	1	1	9	5	weak
 HSPB1	no	no	296.0	11	8	11	5	weak
 HSPE1	no	no	287.0	2	0	10	3	weak
+HTRA2	no	no	254.0	5	4	15	6	weak
 HTRA3	no	no	243.0	12	8	14	6	weak
 HTRA4	no	no	166.0	14	13	13	5	weak
 IER3	no	no	260.0	1	0	11	3	weak
@@ -518,6 +541,7 @@ INPP5A	no	no	188.0	6	6	12	3	weak
 INS-IGF2	no	no	202.0	2	2	11	2	weak
 INSL4	no	no	174.0	3	3	11	3	weak
 INSL6	no	no	258.0	2	1	10	3	weak
+IPCEF1	no	no	131.0	4	2	11	5	weak
 IQCE	no	no	121.0	1	1	12	5	weak
 IQGAP2	no	no	236.0	8	5	13	5	weak
 IRGC	no	no	209.0	2	0	11	4	weak
@@ -569,6 +593,7 @@ LIN7C	no	no	172.0	14	13	14	4	weak
 LIPH	no	no	337.0	1	1	12	4	weak
 LIPM	no	no	194.0	1	1	10	5	weak
 LITAF	no	no	377.0	5	3	10	5	weak
+LMO7	no	no	168.0	8	6	12	5	weak
 LNX1	no	no	206.0	10	8	13	6	weak
 LNX2	no	no	138.0	8	7	11	5	weak
 LOX	no	no	365.0	11	8	13	4	weak
@@ -616,6 +641,7 @@ MEGF6	no	no	181.0	5	3	11	5	weak
 MEST	no	no	267.0	5	5	11	3	weak
 METRN	no	no	145.0	9	6	11	4	weak
 METRNL	no	no	204.0	14	14	13	5	weak
+METTL9	no	no	212.0	2	2	9	4	weak
 MFAP3	no	no	112.0	1	0	10	6	weak
 MFAP4	no	no	242.0	10	9	14	5	weak
 MFAP5	no	no	271.0	11	11	14	5	weak
@@ -786,6 +812,7 @@ PLCXD2	no	no	99.0	1	0	10	2	weak
 PLD1	no	no	255.0	16	15	11	5	weak
 PLD5	no	no	160.0	2	2	11	7	weak
 PLEKHA4	no	no	147.0	2	2	12	5	weak
+PLEKHN1	no	no	105.0	3	1	10	5	weak
 PLEKHO2	no	no	147.0	1	0	10	5	weak
 PLGLB1	no	no	202.0	1	0	11	3	weak
 PLPP7	no	no	125.0	2	2	11	4	weak
@@ -829,9 +856,11 @@ PSG4	no	no	152.0	10	8	12	4	weak
 PSG5	no	no	298.0	4	4	12	3	weak
 PSG8	no	no	193.0	1	1	11	4	weak
 PTCHD3	no	no	291.0	0	0	10	6	weak
+PTEN	no	no	312.0	7	5	10	4	weak
 PTER	no	no	242.0	1	0	10	5	weak
 PTGDS	no	no	300.0	17	15	13	4	weak
 PTK2B	no	no	322.0	16	14	12	5	weak
+PTK6	no	no	207.0	6	5	12	5	weak
 PTOV1	no	no	208.0	0	0	10	2	weak
 PTPN22	no	no	345.0	4	3	12	5	weak
 PTPN4	no	no	285.0	9	9	11	4	weak
@@ -858,6 +887,7 @@ RFPL3	no	no	69.0	1	1	11	5	weak
 RFTN2	no	no	102.0	4	3	13	4	weak
 RGS14	no	no	200.0	7	6	11	2	weak
 RGS19	no	no	212.0	6	5	12	4	weak
+RGS7BP	no	no	123.0	12	11	13	4	weak
 RGS8	no	no	180.0	4	1	13	5	weak
 RHBDL3	no	no	143.0	4	1	13	5	weak
 RHOA	no	no	356.0	19	15	12	4	weak
@@ -904,6 +934,7 @@ SCPEP1	no	no	331.0	2	2	11	6	weak
 SCPPPQ1	no	no	33.0	9	5	13	2	weak
 SCRG1	no	no	219.0	4	4	13	3	weak
 SCRIB	no	no	254.0	28	26	14	5	weak
+SDCBP	no	no	255.0	18	15	12	6	weak
 SDIM1	no	no	30.0	1	1	10	2	weak
 SELENOF	no	no	225.0	9	7	13	5	weak
 SELENOP	no	no	329.0	14	11	13	3	weak
@@ -955,6 +986,7 @@ SLC35F4	no	no	63.0	3	1	11	6	weak
 SLC35G1	no	no	366.0	0	0	11	4	weak
 SLC35H1	no	no	110.0	4	3	11	5	weak
 SLC36A3	no	no	160.0	4	1	12	6	weak
+SLC37A2	no	no	145.0	10	9	12	5	weak
 SLC37A3	no	no	145.0	4	3	14	5	weak
 SLC38A12	no	no	70.0	4	2	14	5	weak
 SLC39A13	no	no	168.0	20	17	15	6	weak
@@ -969,6 +1001,7 @@ SLC71A2	no	no	88.0	5	3	11	5	weak
 SLC7A14	no	no	214.0	7	6	12	5	weak
 SLC8B1	no	no	217.0	18	17	11	4	weak
 SLC9D1	no	no	98.0	4	3	13	6	weak
+SLIT1	no	no	234.0	12	10	15	5	weak
 SLIT2	no	no	264.0	32	28	15	5	weak
 SLIT3	no	no	253.0	26	26	17	5	weak
 SLURP2	no	no	97.0	12	8	14	2	weak
@@ -1000,6 +1033,7 @@ SPATA31A7	no	no	113.0	2	0	11	3	weak
 SPATA31E1	no	no	45.0	1	1	9	2	weak
 SPEF1	no	no	312.0	3	3	12	6	weak
 SPG11	no	no	207.0	7	7	10	4	weak
+SPHK1	no	no	278.0	18	16	14	5	weak
 SPINK14	no	no	32.0	0	0	10	4	weak
 SPINK4	no	no	160.0	5	4	12	3	weak
 SPINK5	no	no	387.0	2	1	14	5	weak
@@ -1143,6 +1177,7 @@ UBAC2	no	no	169.0	6	4	12	6	weak
 UBALD1	no	no	71.0	0	0	10	5	weak
 UGT8	no	no	277.0	3	3	12	6	weak
 UNC79	no	no	139.0	15	13	11	4	weak
+UNC93B1	no	no	186.0	15	10	12	5	weak
 USP12	no	no	165.0	2	2	9	3	weak
 USP14	no	no	332.0	5	4	10	5	weak
 USP53	no	no	191.0	4	0	12	4	weak
@@ -1150,6 +1185,7 @@ USP6NL	no	no	177.0	3	3	12	5	weak
 UTRN	no	no	349.0	5	5	15	5	weak
 UTS2B	no	no	243.0	0	0	11	2	weak
 VAMP2	no	no	294.0	31	22	14	4	weak
+VAMP4	no	no	296.0	9	9	11	5	weak
 VASH1	no	no	207.0	11	11	13	5	weak
 VDAC2	no	no	241.0	21	16	12	2	weak
 VEZT	no	no	163.0	11	11	15	4	weak
@@ -1187,6 +1223,7 @@ ZFYVE27	no	no	177.0	12	10	12	6	weak
 ZG16	no	no	192.0	12	12	12	3	weak
 ZGPAT	no	no	323.0	0	0	10	5	weak
 ZMYND10	no	no	335.0	3	1	10	5	weak
+ZNF185	no	no	216.0	5	5	12	4	weak
 ZNF474	no	no	64.0	0	0	10	4	weak
 ZNG1C	no	no	55.0	0	0	10	4	weak
 ZNG1E	no	no	101.0	0	0	10	4	weak
@@ -1382,6 +1419,7 @@ ANXA13	likely	surface_yes	329.0	11	8	17	5	direct_single_method
 ANXA2	likely	surface_yes	300.0	33	29	17	5	direct_multi_method
 ANXA2R	likely	surface_yes	157.0	14	14	15	2	direct_single_method
 ANXA3	low	surface_yes	266.0	16	14	16	4	weak
+ANXA4	low	surface_yes	282.0	9	7	16	5	weak
 ANXA5	likely	surface_yes	343.0	11	8	15	4	supportive_but_indirect
 ANXA6	likely	surface_yes	322.0	15	11	16	5	direct_single_method
 ANXA8	likely	surface_yes	192.0	10	8	18	4	direct_single_method
@@ -1479,6 +1517,7 @@ ATP8A1	low	surface_yes	202.0	16	15	17	5	conflicting
 ATP8B1	likely	surface_yes	251.0	19	15	17	4	supportive_but_indirect
 ATP8B2	low	surface_yes	142.0	16	12	15	5	supportive_but_indirect
 ATP8B4	low	surface_yes	156.0	4	1	14	4	supportive_but_indirect
+ATP9A	low	surface_yes	139.0	19	11	14	5	weak
 ATRAID	likely	surface_yes	278.0	8	7	19	5	supportive_but_indirect
 ATRN	canonical	surface_yes	244.0	12	10	16	6	direct_multi_method
 ATRNL1	canonical	surface_yes	338.0	3	3	17	6	supportive_but_indirect
@@ -1637,6 +1676,7 @@ CCDC198	low	surface_yes	265.0	2	0	16	3	weak
 CCDC25	canonical	surface_yes	180.0	15	12	17	4	direct_multi_method
 CCDC70	low	surface_yes	63.0	0	0	11	4	weak
 CCDC78	low	surface_yes	126.0	4	3	14	5	weak
+CCDC8	low	surface_yes	199.0	3	1	15	3	weak
 CCDC80	low	surface_yes	321.0	0	0	12	4	weak
 CCKAR	canonical	surface_yes	349.0	6	4	18	5	supportive_but_indirect
 CCKBR	canonical	surface_yes	318.0	17	14	20	6	direct_multi_method
@@ -2161,6 +2201,7 @@ EMP3	canonical	surface_yes	196.0	16	14	17	6	direct_multi_method
 ENDOU	uncertain	surface_yes	316.0	0	0	12	4	weak
 ENG	canonical	surface_yes	376.0	13	12	20	6	direct_multi_method
 ENO1	likely	surface_yes	306.0	21	20	19	5	direct_multi_method
+ENO2	low	surface_yes	274.0	10	8	16	6	weak
 ENOX1	canonical	surface_yes	172.0	8	6	15	6	direct_multi_method
 ENOX2	canonical	surface_yes	182.0	25	21	16	6	direct_multi_method
 ENPEP	canonical	surface_yes	300.0	11	10	16	5	supportive_but_indirect
@@ -2222,6 +2263,7 @@ F2RL2	canonical	surface_yes	265.0	19	16	19	6	direct_multi_method
 F2RL3	canonical	surface_yes	246.0	29	26	18	5	direct_multi_method
 F3	canonical	surface_yes	352.0	17	16	17	6	direct_multi_method
 FABP4	likely	surface_yes	322.0	9	9	15	4	supportive_but_indirect
+FABP5	likely	surface_yes	233.0	11	10	18	4	direct_multi_method
 FAIM2	low	surface_yes	231.0	12	9	18	6	supportive_but_indirect
 FAM151A	low	surface_yes	101.0	2	0	13	5	weak
 FAM151B	low	surface_yes	67.0	2	0	13	4	weak
@@ -2616,6 +2658,7 @@ HMGB1	likely	surface_yes	369.0	25	22	16	4	supportive_but_indirect
 HMGB2	low	surface_yes	285.0	4	3	15	4	weak
 HMGN2	low	surface_yes	230.0	1	0	16	2	weak
 HMMR	likely	surface_yes	248.0	29	25	18	5	direct_multi_method
+HOMER3	low	surface_yes	195.0	7	6	18	6	conflicting
 HPN	canonical	surface_yes	309.0	12	9	20	4	direct_single_method
 HPSE	likely	surface_yes	337.0	22	18	17	5	supportive_but_indirect
 HPSE2	canonical	surface_yes	237.0	16	14	17	5	supportive_but_indirect
@@ -3191,6 +3234,7 @@ MICA	canonical	surface_yes	322.0	31	27	20	5	direct_multi_method
 MICB	canonical	surface_yes	267.0	39	34	19	5	direct_multi_method
 MILR1	canonical	surface_yes	170.0	8	7	17	5	direct_multi_method
 MINAR1	low	surface_yes	141.0	3	1	17	4	weak
+MINPP1	low	surface_yes	186.0	5	4	16	4	weak
 MIP	likely	surface_yes	359.0	16	12	15	6	direct_multi_method
 MLC1	low	surface_yes	331.0	7	5	17	5	weak
 MLKL	likely	surface_yes	299.0	30	28	14	6	supportive_but_indirect
@@ -4016,6 +4060,7 @@ PLA2G1B	low	surface_yes	341.0	5	3	16	4	weak
 PLA2G2A	low	surface_yes	296.0	16	14	14	3	weak
 PLA2G2F	likely	surface_yes	146.0	8	6	18	5	supportive_but_indirect
 PLA2R1	canonical	surface_yes	261.0	23	21	21	6	direct_multi_method
+PLAA	low	surface_yes	202.0	6	5	14	3	conflicting
 PLAAT4	low	surface_yes	259.0	6	5	14	4	supportive_but_indirect
 PLAC1	canonical	surface_yes	166.0	16	14	21	3	direct_multi_method
 PLAC8L1	low	surface_yes	41.0	1	0	11	4	weak
@@ -4028,6 +4073,7 @@ PLD3	low	surface_yes	225.0	12	12	16	4	weak
 PLD4	likely	surface_yes	169.0	7	6	17	5	direct_single_method
 PLEC	likely	surface_yes	330.0	18	13	19	5	direct_single_method
 PLET1	likely	surface_yes	160.0	9	8	21	3	direct_single_method
+PLG	canonical	surface_yes	270.0	15	11	17	4	direct_multi_method
 PLGLB2	uncertain	surface_yes	176.0	0	0	11	3	weak
 PLGRKT	canonical	surface_yes	165.0	19	18	17	4	direct_multi_method
 PLLP	likely	surface_yes	182.0	11	10	19	4	direct_single_method
@@ -4074,6 +4120,7 @@ POTEF	low	surface_yes	232.0	3	1	12	3	weak
 POTEM	uncertain	surface_yes	316.0	1	0	12	3	weak
 PPIA	likely	surface_yes	288.0	24	18	15	4	supportive_but_indirect
 PPIB	low	surface_yes	383.0	6	5	15	4	weak
+PPP2R1A	low	surface_yes	251.0	10	8	14	4	weak
 PPT1	likely	surface_yes	279.0	19	17	18	4	direct_single_method
 PRCP	low	surface_yes	323.0	6	6	15	6	weak
 PRDX1	likely	surface_yes	322.0	11	10	16	5	direct_single_method
@@ -4782,6 +4829,7 @@ STRA6	canonical	surface_yes	214.0	27	26	18	6	direct_multi_method
 STRC	likely	surface_yes	202.0	12	9	17	4	supportive_but_indirect
 STS	low	surface_yes	303.0	2	1	12	4	weak
 STUM	low	surface_yes	128.0	1	0	13	3	weak
+STX11	likely	surface_yes	203.0	16	14	16	4	supportive_but_indirect
 STX3	likely	surface_yes	216.0	28	24	19	5	supportive_but_indirect
 STX4	likely	surface_yes	227.0	27	25	19	5	supportive_but_indirect
 STYK1	low	surface_yes	270.0	9	8	13	4	supportive_but_indirect
@@ -4798,6 +4846,7 @@ SV2A	low	surface_yes	276.0	12	9	16	6	weak
 SVEP1	low	surface_yes	197.0	20	19	16	5	weak
 SVOPL	uncertain	surface_yes	123.0	5	3	11	6	weak
 SYNDIG1	likely	surface_yes	158.0	13	11	16	4	supportive_but_indirect
+SYP	low	surface_yes	327.0	12	10	16	6	direct_single_method
 SYT15	low	surface_yes	106.0	1	0	12	4	weak
 SYT3	likely	surface_yes	238.0	8	7	17	4	supportive_but_indirect
 SYT7	low	surface_yes	232.0	23	18	18	5	weak
@@ -5059,6 +5108,8 @@ TMPRSS5	likely	surface_yes	127.0	5	0	17	5	supportive_but_indirect
 TMPRSS6	canonical	surface_yes	296.0	18	15	18	6	direct_multi_method
 TMPRSS7	likely	surface_yes	97.0	0	0	13	5	weak
 TMPRSS9	likely	surface_yes	167.0	0	0	12	4	weak
+TMX1	likely	surface_yes	228.0	17	15	18	4	direct_multi_method
+TMX2	low	surface_yes	151.0	12	11	17	4	conflicting
 TMX3	likely	surface_yes	157.0	10	6	17	6	direct_multi_method
 TNC	canonical	surface_yes	378.0	8	8	17	5	direct_multi_method
 TNF	canonical	surface_yes	381.0	6	5	20	5	direct_multi_method
@@ -5099,7 +5150,7 @@ TP53I13	low	surface_yes	81.0	1	0	12	4	weak
 TPBG	canonical	surface_yes	220.0	30	25	18	4	direct_multi_method
 TPBGL	low	surface_yes	48.0	0	0	11	5	weak
 TPCN2	likely	surface_yes	225.0	27	24	17	5	direct_multi_method
-TPO	likely	surface_yes	241.0	10	5	17	5	supportive_but_indirect
+TPO	likely	surface_yes	245.0	8	4	17	6	direct_single_method
 TPP1	low	surface_yes	277.0	4	4	13	4	weak
 TPRA1	canonical	surface_yes	158.0	4	4	18	5	direct_single_method
 TPRG1L	low	surface_yes	204.0	5	5	16	5	conflicting
@@ -5242,6 +5293,7 @@ VSTM5	likely	surface_yes	47.0	3	2	16	5	supportive_but_indirect
 VTCN1	canonical	surface_yes	246.0	36	35	21	6	direct_multi_method
 VWA5B1	uncertain	surface_yes	74.0	0	0	11	5	weak
 VWDE	low	surface_yes	100.0	3	0	14	4	weak
+VWF	low	surface_yes	274.0	27	22	21	5	weak
 VXN	low	surface_yes	101.0	2	2	12	4	weak
 WARS1	low	surface_yes	333.0	3	3	15	6	weak
 WBP1L	low	surface_yes	142.0	4	3	12	5	weak
