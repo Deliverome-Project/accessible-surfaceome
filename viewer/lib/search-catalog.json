@@ -1,5 +1,5 @@
 {
-  "_generated_by": "scripts/build_search_catalog.py",
+  "_generated_by": "scripts/build/build_search_catalog.py",
   "_source": "evidence_retrieval._CATEGORY_SPECS + the live deterministic kickoff (plan_trim_select/kickoff_templates.build_a1/a2_kickoff)",
   "categories": {
     "ihc": {

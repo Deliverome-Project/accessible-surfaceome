@@ -2,7 +2,7 @@
 
 ## Context
 
-The current `surface_annotator` "deep dive" agent ([orchestrator.py](src/accessible_surfaceome/agents/surface_annotator/orchestrator.py), schema [models.py](src/accessible_surfaceome/tools/_shared/models.py) v0.5.1) is heavily **translational** — it emits `targetability` tiers, ADC properties, therapeutic landscape (drugs/trials/patents), and modality recommendations. These bake in commercial assumptions and aren't the right output for early target-discovery work.
+The current `surface_annotator` "deep dive" agent (`src/accessible_surfaceome/agents/surface_annotator/orchestrator.py`, schema [models.py](../../src/accessible_surfaceome/tools/_shared/models.py) v0.5.1) is heavily **translational** — it emits `targetability` tiers, ADC properties, therapeutic landscape (drugs/trials/patents), and modality recommendations. These bake in commercial assumptions and aren't the right output for early target-discovery work.
 
 We want a redesigned agent whose single job is to answer: **"Is this candidate surface protein actually accessible, and what's the evidence?"** — the question a target-discovery scientist or pharma/biotech consultant asks before committing budget. Outputs must:
 
@@ -890,8 +890,8 @@ Three new orchestrator-level fetchers (not agent tools). Each caches by `(unipro
 
 | Module | What it does | Reuses |
 |---|---|---|
-| `src/accessible_surfaceome/agents/surface_annotator/fetchers/deeptmhmm_fetcher.py` | Runs DeepTMHMM on canonical + all isoforms; extracts TM count, terminal orientation, signal peptide, ECD/ICD lengths, per-residue topology | Existing M1 pipeline at [deeptmhmm.py](src/accessible_surfaceome/sources/deeptmhmm.py) — extract prediction-parsing into a shared helper |
-| `src/accessible_surfaceome/agents/surface_annotator/fetchers/compara_fetcher.py` | Looks up Ensembl Compara one2one orthologs for mouse/rat/cynomolgus + within-species paralogs; computes ECD pct identity using topology-derived ECD boundaries | Existing Compara CSV path referenced in [deeptmhmm.py:369](src/accessible_surfaceome/sources/deeptmhmm.py:369); needs new direct-fetch path or new ingestion script if CSV is stale |
+| `src/accessible_surfaceome/agents/surface_annotator/fetchers/deeptmhmm_fetcher.py` | Runs DeepTMHMM on canonical + all isoforms; extracts TM count, terminal orientation, signal peptide, ECD/ICD lengths, per-residue topology | Existing M1 pipeline at [deeptmhmm.py](../../src/accessible_surfaceome/sources/deeptmhmm.py) — extract prediction-parsing into a shared helper |
+| `src/accessible_surfaceome/agents/surface_annotator/fetchers/compara_fetcher.py` | Looks up Ensembl Compara one2one orthologs for mouse/rat/cynomolgus + within-species paralogs; computes ECD pct identity using topology-derived ECD boundaries | Existing Compara CSV path referenced in [deeptmhmm.py:369](../../src/accessible_surfaceome/sources/deeptmhmm.py:369); needs new direct-fetch path or new ingestion script if CSV is stale |
 | `src/accessible_surfaceome/agents/surface_annotator/fetchers/alphafold_fetcher.py` | Fetches AlphaFold DB CIF + confidence JSON for canonical UniProt; computes ECD mean pLDDT and disordered fraction from the per-residue pLDDT values in `confidence.json` (no SASA / DSSP dependency). **Stamps every output with `source="AlphaFold DB"`, `license="CC BY 4.0"`, `attribution="© DeepMind / EMBL-EBI"`, and the Jumper 2021 + Varadi 2024 DOIs** — these flow through to the record's `deterministic_features.structure` block and are rendered as an attribution line in both the viewer Structure card and the per-record Data Sources footer. | New — no current AlphaFold retrieval in the repo |
 
 ### ECD-statistics methodology
@@ -936,7 +936,7 @@ The Data Sources footer in the mockup is the canonical surface; the structured `
 
 ### 4. Orchestrator flow
 
-Modify [orchestrator.py](src/accessible_surfaceome/agents/surface_annotator/orchestrator.py):
+Modify `src/accessible_surfaceome/agents/surface_annotator/orchestrator.py`:
 
 ```
 annotate_gene(symbol):
@@ -974,22 +974,22 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 ### 7. D1 + viewer
 
 - D1: drop `deep_dive_run` / `deep_dive_evidence` / `deep_dive_search_log` (mock data only), recreate them for the v1.0.0 shape, add NEW `deep_dive_features` storing the deterministic block as JSON for fast filter-by-topology queries.
-- Update [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql) + [src/accessible_surfaceome/cloud/triage_upload.py](src/accessible_surfaceome/cloud/triage_upload.py).
-- Viewer: [viewer/](viewer/) — replace the existing gene detail page with a layout that follows the mockup section order. Update `viewer/lib/surfaceome.ts` types to match new `SurfaceomeRecord` v1.0.0.
+- Update [cloudflare/d1_schema.sql](../../cloudflare/d1_schema.sql) + [src/accessible_surfaceome/cloud/triage_upload.py](../../src/accessible_surfaceome/cloud/triage_upload.py).
+- Viewer: [viewer/](../../viewer) — replace the existing gene detail page with a layout that follows the mockup section order. Update `viewer/lib/surfaceome.ts` types to match new `SurfaceomeRecord` v1.0.0.
 
 ### 8. Critical files to modify or create
 
 **New files**
 - `src/accessible_surfaceome/agents/surface_annotator/fetchers/{deeptmhmm,compara,alphafold}_fetcher.py`
-- New D1 table `deep_dive_features` in [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql)
+- New D1 table `deep_dive_features` in [cloudflare/d1_schema.sql](../../cloudflare/d1_schema.sql)
 
 **Modified**
-- [src/accessible_surfaceome/tools/_shared/models.py](src/accessible_surfaceome/tools/_shared/models.py) — replace `SurfaceomeRecord` / `SurfaceomeRecordDraft` + their nested classes (targetability, ADC, therapeutic_landscape) with the v1.0.0 shape. Keep shared primitives (`GeneIdentifier`, `Evidence`, `SourceRef`, `EvidenceSpan`, `EvidenceClaim`, `SearchEntry`).
-- [src/accessible_surfaceome/agents/surface_annotator/orchestrator.py](src/accessible_surfaceome/agents/surface_annotator/orchestrator.py) — add deterministic-prefetch phase, validate reference-FK fields resolve to `deterministic_features`, derive the `filters` block.
-- [src/accessible_surfaceome/agents/surface_annotator/agent.py](src/accessible_surfaceome/agents/surface_annotator/agent.py) — update agent definition (tools list, schema reference) so auto-sync pushes the new prompt to the Managed Agent.
-- [src/accessible_surfaceome/agents/surface_annotator/prompts/system.md](src/accessible_surfaceome/agents/surface_annotator/prompts/system.md) — full rewrite.
-- [src/accessible_surfaceome/cloud/triage_upload.py](src/accessible_surfaceome/cloud/triage_upload.py) — new payload shape, write to `deep_dive_features`.
-- [viewer/lib/surfaceome.ts](viewer/lib/surfaceome.ts) + viewer page components.
+- [src/accessible_surfaceome/tools/_shared/models.py](../../src/accessible_surfaceome/tools/_shared/models.py) — replace `SurfaceomeRecord` / `SurfaceomeRecordDraft` + their nested classes (targetability, ADC, therapeutic_landscape) with the v1.0.0 shape. Keep shared primitives (`GeneIdentifier`, `Evidence`, `SourceRef`, `EvidenceSpan`, `EvidenceClaim`, `SearchEntry`).
+- `src/accessible_surfaceome/agents/surface_annotator/orchestrator.py` — add deterministic-prefetch phase, validate reference-FK fields resolve to `deterministic_features`, derive the `filters` block.
+- `src/accessible_surfaceome/agents/surface_annotator/agent.py` — update agent definition (tools list, schema reference) so auto-sync pushes the new prompt to the Managed Agent.
+- `src/accessible_surfaceome/agents/surface_annotator/prompts/system.md` — full rewrite.
+- [src/accessible_surfaceome/cloud/triage_upload.py](../../src/accessible_surfaceome/cloud/triage_upload.py) — new payload shape, write to `deep_dive_features`.
+- [viewer/lib/surfaceome.ts](../../viewer/lib/surfaceome.ts) + viewer page components.
 - CLAUDE.md + AGENTS.md — update the "Managed Agents" + "Cloudflare D1" sections to reflect the new schema version + dropped patent_lookup tool.
 
 **Deleted**
@@ -1036,14 +1036,14 @@ This PR ([#23](https://github.com/Deliverome-Project/accessible-surfaceome/pull/
 
 Single-shot replacement of the agent side. After this PR merges, `uv run accessible-surfaceome agents annotate EGFR` produces a `SurfaceomeRecord` v1.0.0 record on disk through the 3-agent topology. No D1, no viewer changes yet — those records persist as JSON only until PR-β.
 
-- [src/accessible_surfaceome/tools/_shared/models.py](src/accessible_surfaceome/tools/_shared/models.py) — `SurfaceomeRecord` / `SurfaceomeRecordDraft` v1.0.0 rewrite; drop `targetability` / `ADCProperties` / `therapeutic_landscape` nested classes; add `executive_summary`, `filters` (17 fields incl. `max_paralog_ecd_pct_identity`), `surface_evidence`, `biological_context`, `deterministic_features`, `accessibility_risks`. Add the 9 v1.0.0 validators (deterministic_features-is-None, triage-signal consistency, all the `accessibility_modulation` sub-enum pairings, confidence-reasoning required-when-not-high). Keep shared primitives (`GeneIdentifier`, `Evidence`, `SourceRef`, `EvidenceSpan`, `EvidenceClaim`, `SearchEntry`).
+- [src/accessible_surfaceome/tools/_shared/models.py](../../src/accessible_surfaceome/tools/_shared/models.py) — `SurfaceomeRecord` / `SurfaceomeRecordDraft` v1.0.0 rewrite; drop `targetability` / `ADCProperties` / `therapeutic_landscape` nested classes; add `executive_summary`, `filters` (17 fields incl. `max_paralog_ecd_pct_identity`), `surface_evidence`, `biological_context`, `deterministic_features`, `accessibility_risks`. Add the 9 v1.0.0 validators (deterministic_features-is-None, triage-signal consistency, all the `accessibility_modulation` sub-enum pairings, confidence-reasoning required-when-not-high). Keep shared primitives (`GeneIdentifier`, `Evidence`, `SourceRef`, `EvidenceSpan`, `EvidenceClaim`, `SearchEntry`).
 - New fetchers under `src/accessible_surfaceome/agents/surface_annotator/fetchers/` (or a fresh `src/accessible_surfaceome/agents/_fetchers/` shared dir):
-  - `deeptmhmm_fetcher.py` — extract prediction-parsing from existing M1 pipeline at [deeptmhmm.py](src/accessible_surfaceome/sources/deeptmhmm.py) into a shared helper; run on canonical + all isoforms.
+  - `deeptmhmm_fetcher.py` — extract prediction-parsing from existing M1 pipeline at [deeptmhmm.py](../../src/accessible_surfaceome/sources/deeptmhmm.py) into a shared helper; run on canonical + all isoforms.
   - `compara_fetcher.py` — one2one orthologs (mouse / rat / cynomolgus) + within-species paralogs; ECD pct identity using topology-derived ECD boundaries.
   - `alphafold_fetcher.py` — AFDB CIF + confidence JSON; ECD mean pLDDT + disordered fraction (no SASA dep); stamp `source` / `license` / `attribution` / `citations` metadata.
   - Each fetcher caches by `(uniprot_acc, tool_version)`; pin tool versions.
-- Real system prompts in the three stub agent dirs ([surface_evidence_compiler/prompts/system.md](src/accessible_surfaceome/agents/surface_evidence_compiler/prompts/system.md), [biology_compiler/prompts/system.md](src/accessible_surfaceome/agents/biology_compiler/prompts/system.md), [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md)). Citation discipline carries over from the retired `surface_annotator` prompt.
-- [src/accessible_surfaceome/agents/surface_annotator/orchestrator.py](src/accessible_surfaceome/agents/surface_annotator/orchestrator.py) replaced with new `surfaceome_v1/orchestrator.py` (or in place — caller's call): deterministic-prefetch phase → parallel A1 + A2 dispatch via separate Managed Agent sessions → merge `a1_evi_*` / `a2_evi_*` ledgers + substring-quote validation → B dispatch with merged ledger → assemble `SurfaceomeRecord`. Auto-sync extends to all three agents in the registry.
+- Real system prompts in the three stub agent dirs (`src/accessible_surfaceome/agents/surface_evidence_compiler/prompts/system.md`, `src/accessible_surfaceome/agents/biology_compiler/prompts/system.md`, [surfaceome_synthesizer/prompts/system.md](../../src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md)). Citation discipline carries over from the retired `surface_annotator` prompt.
+- `src/accessible_surfaceome/agents/surface_annotator/orchestrator.py` replaced with new `surfaceome_v1/orchestrator.py` (or in place — caller's call): deterministic-prefetch phase → parallel A1 + A2 dispatch via separate Managed Agent sessions → merge `a1_evi_*` / `a2_evi_*` ledgers + substring-quote validation → B dispatch with merged ledger → assemble `SurfaceomeRecord`. Auto-sync extends to all three agents in the registry.
 - Drop `patent_lookup` custom tool (was for the dropped therapeutic_landscape).
 - Retire `src/accessible_surfaceome/agents/surface_annotator/`: delete the dir, delete mock records under `data/annotations/*.json`, drop CLI references.
 - Tests: per-fetcher unit tests against known UniProt accs (EGFR, GRP78, GPR75) with pinned tool versions; schema round-trip test for a fixture record; end-to-end smoke `annotate EGFR` produces a record that validates against v1.0.0 and includes all 4 `deterministic_features` blocks.
@@ -1068,11 +1068,11 @@ Single-shot replacement of the agent side. After this PR merges, `uv run accessi
 
 Once PR-α is producing v1.0.0 records on disk *and* the soak period has ratified the schema, this PR makes them visible end-to-end.
 
-- D1 schema: drop `deep_dive_run` / `deep_dive_evidence` / `deep_dive_search_log` (mock data only); recreate for the v1.0.0 shape; add `deep_dive_features` storing the deterministic block as JSON for fast filter-by-topology queries. Update [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql).
-- [src/accessible_surfaceome/cloud/triage_upload.py](src/accessible_surfaceome/cloud/triage_upload.py) — new payload shape; write to `deep_dive_features`.
+- D1 schema: drop `deep_dive_run` / `deep_dive_evidence` / `deep_dive_search_log` (mock data only); recreate for the v1.0.0 shape; add `deep_dive_features` storing the deterministic block as JSON for fast filter-by-topology queries. Update [cloudflare/d1_schema.sql](../../cloudflare/d1_schema.sql).
+- [src/accessible_surfaceome/cloud/triage_upload.py](../../src/accessible_surfaceome/cloud/triage_upload.py) — new payload shape; write to `deep_dive_features`.
 - Public Worker at `api.deliverome.org/surfaceome/v1/*` — new `/deep-dive/{symbol}` route reading from the new tables; same pattern as the `/benchmark/matrix` route added in [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25).
-- [viewer/lib/surfaceome.ts](viewer/lib/surfaceome.ts) — `SurfaceomeRecord` TypeScript types regenerated from the v1.0.0 Pydantic schema (or hand-rolled to match).
-- Viewer per-gene page rewrite — replace the current detail page with the section order from the §16 page mockup (header → executive → filters → §1 surface_evidence → §2 biological_context → §3 isoforms → §4 paralogs → §5 orthologs → §6 risks → structure appendix → ledger → data sources). Reuse the [StructureViewerCard](viewer/components/surfaceome/StructureViewerCard/StructureViewerCard.tsx) from [#24](https://github.com/Deliverome-Project/accessible-surfaceome/pull/24) for the structure appendix. Reuse the TSV-download pattern from [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25) for any per-gene downloads.
+- [viewer/lib/surfaceome.ts](../../viewer/lib/surfaceome.ts) — `SurfaceomeRecord` TypeScript types regenerated from the v1.0.0 Pydantic schema (or hand-rolled to match).
+- Viewer per-gene page rewrite — replace the current detail page with the section order from the §16 page mockup (header → executive → filters → §1 surface_evidence → §2 biological_context → §3 isoforms → §4 paralogs → §5 orthologs → §6 risks → structure appendix → ledger → data sources). Reuse the `viewer/components/surfaceome/StructureViewerCard/StructureViewerCard.tsx` from [#24](https://github.com/Deliverome-Project/accessible-surfaceome/pull/24) for the structure appendix. Reuse the TSV-download pattern from [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25) for any per-gene downloads.
 - CLAUDE.md + AGENTS.md — update the "Managed Agents" + "Cloudflare D1" sections to reflect the new schema version + 3-agent topology + dropped `patent_lookup` tool. Update the `.github/workflows/d1-backup.yml` paths filter to include the new uploader paths.
 - Old D1 rows dropped + recreated.
 
@@ -1302,7 +1302,7 @@ Three HTML previews co-located with the plan, each stress-testing different part
 
 ## Production architecture update (post-PR #38)
 
-The 3-Managed-Agent topology specified in §1090-1178 (A1 `surface_evidence_compiler` / A2 `biology_compiler` / B `surfaceome_synthesizer`) was implemented in [src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py:annotate](../../src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py) and is preserved as the reference path. The **production deep-dive path is v2** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](../../src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](../../scripts/surfaceome_v2_annotate.py)). v2 preserves every design principle but uses a different architecture:
+The 3-Managed-Agent topology specified in §1090-1178 (A1 `surface_evidence_compiler` / A2 `biology_compiler` / B `surfaceome_synthesizer`) was implemented in [src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py:annotate](../../src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py) and is preserved as the reference path. The **production deep-dive path is v2** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](../../src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](../../scripts/annotate_gene.py)). v2 preserves every design principle but uses a different architecture:
 
 | Design (v1) | Production (v2) | Why |
 |---|---|---|
@@ -1327,4 +1327,4 @@ The 3-Managed-Agent topology specified in §1090-1178 (A1 `surface_evidence_comp
 
 ### Stress-test panel status
 
-§1056 specified the validation stress-test set: EGFR, GRP78/HSPA5, GPR75, CD81, TNFR1, one more orphan GPCR. Committed in [data/eval/surfaceome_v2_samples/](../../data/eval/surfaceome_v2_samples/): EGFR ✓, HSPA5 ✓, GPR75 ✓, CD81 ✓. Plus extras the design didn't require: CLDN18, VIM, WT1, ATP5F1B, SRC. **Still open: TNFR1 + a second orphan GPCR** — ~$3 + 20 min wall to close.
+§1056 specified the validation stress-test set: EGFR, GRP78/HSPA5, GPR75, CD81, TNFR1, one more orphan GPCR. Committed in `../../data/eval/surfaceome_v2_samples/`: EGFR ✓, HSPA5 ✓, GPR75 ✓, CD81 ✓. Plus extras the design didn't require: CLDN18, VIM, WT1, ATP5F1B, SRC. **Still open: TNFR1 + a second orphan GPCR** — ~$3 + 20 min wall to close.

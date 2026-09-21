@@ -150,15 +150,25 @@ function evidenceArrayFromPayload(j: unknown): Evidence[] {
   return Array.isArray(r?.evidence) ? (r.evidence as Evidence[]) : [];
 }
 
+/** Pull the `papers` citation-metadata map out of the same payload. The
+ *  Worker joins it in from public D1's `paper_metadata` (the records
+ *  themselves carry only accessions), so it's absent against a pre-join
+ *  Worker and undefined on a fetch miss — the drawer treats both as "show
+ *  the bare accession". */
 function papersFromPayload(j: unknown): PaperMetadataMap | undefined {
-  const papers = (j as { papers?: unknown } | null)?.papers;
+  const r = j as { papers?: unknown } | null;
+  const papers = r?.papers;
   return papers && typeof papers === "object" && !Array.isArray(papers)
-    ? (papers as PaperMetadataMap) : undefined;
+    ? (papers as PaperMetadataMap)
+    : undefined;
 }
 
 interface ReadyData {
-  papers?: PaperMetadataMap;
   rec: SurfaceomeRecord;
+  /** Citation metadata for the ledger's papers, merged in with the lazy
+   *  `/evidence` fetch. Undefined until then (and on the inline-evidence
+   *  path, where the core record never carried it). */
+  papers?: PaperMetadataMap;
   geneName: { name: string; synonyms: string[] } | null;
   structureData: StructureViewerData | null;
   taggedSites: TaggedSitesFile | null;

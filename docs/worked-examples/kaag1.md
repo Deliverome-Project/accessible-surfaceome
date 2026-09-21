@@ -1,5 +1,9 @@
 # Worked example — KAAG1 (Q9UBP8)
 
+> **Record schema note.** This worked example predates the current record
+> shape and refers to a `surface_status` field. No shipping record has it;
+> see the README for the fields that carry the call today.
+
 > **Status (2026-05-02):** Investigated by hand as a stress test of the M1 candidate-universe assembly. KAAG1 surfaced this way: it is listed as a delivery handle in Becca's positive-control set (sourced from patent WO2024036333A2) but received **zero votes** from the six M1 input sources. This document records (a) the diagnosis of why M1 missed it, (b) the actual primary biology, (c) why this case argues for two specific schema extensions before M3 prompt design, and (d) the verbatim quotes that would populate the evidence table.
 
 ## Headline

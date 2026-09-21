@@ -1,13 +1,63 @@
-# Licensing And Redistribution Notes
+# Licensing and redistribution
 
-This file is the project-local placeholder for the M0 licensing review in the
-surface-proteome annotation plan.
+This project integrates ~15 public data sources into a derived catalogue of
+human cell-surface proteins. The **code** is MIT (see `LICENSE`). The **derived
+data** shipped in this repository (candidate-universe TSVs, per-gene deep-dive
+records, figure TSVs) is distributed under CC BY 4.0 via the Zenodo deposit
+(concept DOI `10.5281/zenodo.20805383`).
 
-Current M1 candidate-universe artifacts include UniProt, GO, SURFY/CSPA,
-DeepTMHMM-derived predictions, Human Protein Atlas, JensenLab COMPARTMENTS, and
-UniProt accession/xref snapshots. Before publishing cached corpora or derived
-exports, verify the current redistribution terms for each upstream source and
-record which cached payloads may be shipped publicly.
+This file records the upstream license for each source, what we use it for, and
+whether any upstream payload is redistributed here. Attribution strings shown to
+end users are generated per-record by
+`viewer/components/surfaceome/DataSourcesFooter/DataSourcesFooter.tsx` and the
+recurring-citation registry `viewer/lib/citations.ts`.
 
-Serper/Google payloads, future OA full text, and other retrieval-stage caches
-should not be redistributed until this file is expanded with per-source policy.
+## What we redistribute vs. what we don't
+
+- **Derived outputs.** Per-gene flags, scores, identifiers, topology
+  predictions, and short coded reasons, computed from the sources below and
+  committed under `data/processed/**` and the figure TSVs. These are
+  transformations, not copies.
+- **Upstream source files, committed as fetched.** `data/raw/` and
+  `data/external/` hold a small number of upstream files verbatim, so the
+  build is reproducible from the exact inputs it ran on — including the SURFY
+  prediction table, the CSPA supplementary tables, the HGNC complete set, the
+  HPA subcellular-location download, NCBI Gene, and the OpenCell annotation
+  CSV. Each is publicly downloadable from its source; see the per-source terms
+  below before redistributing any of them further.
+- **Not committed.** The copyright-risky retrieval caches:
+  - `data/external/blob_cache/` — publisher / OA PDFs fetched during triage.
+  - `data/external/tool_cache.sqlite*` — Serper / Google search payloads.
+  - `data/external/pubtator3/` and other full-text retrieval caches.
+  These are `.gitignore`d and excluded from every published artifact and Zenodo
+  deposit.
+
+## Per-source table
+
+| Source | Used for | Upstream license | Redistributed here? | Attribution |
+|---|---|---|---|---|
+| **UniProt** | Sequences, xrefs, ECD features, protein families, canonical isoform | CC BY 4.0 | Derived values only (identifiers, feature-derived flags) | UniProt Consortium |
+| **Gene Ontology (GO)** | Localization / surface GO-term evidence | CC BY 4.0 | Derived flags only | GO Consortium (Ashburner et al. 2000; GO Consortium 2023) |
+| **HGNC** | Gene-symbol ↔ stable-ID resolution (the `gene_identifier` table) | Free to use, EMBL-EBI/HGNC terms | Identifiers only (hgnc_id, symbol, prev/alias) | HGNC (Seal et al. 2023) |
+| **Ensembl Compara** | Ortholog / paralog relationships + ortholog ECD identity | Open (EMBL-EBI, "no restrictions" + citation requested) | Derived ortholog/paralog tables | EMBL-EBI (Howe et al. 2024; Vilella et al. 2009) |
+| **Human Protein Atlas (HPA)** | Subcellular localization + expression → surface & tumor evidence | [CC BY 4.0](https://www.proteinatlas.org/about/licence) — attribution required; note HPA may itself include third-party-constrained data | Derived flags | Human Protein Atlas (Uhlén et al. 2015; Thul et al. 2017) |
+| **Cell Surface Protein Atlas (CSPA)** | Experimental cell-surface membership evidence | [CC0](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0121314) — article and supplementary data; commercial reuse and redistribution permitted | Membership flags | Bausch-Fluck et al. 2015 (Wollscheid lab) |
+| **SURFY** | Machine-learning surfaceome prediction (SURFY score) | Published for open download at [wollscheidlab.org/SURFY](https://wollscheidlab.org/SURFY/) with no stated reuse terms; the article is [CC BY-NC-ND 4.0](https://www.pnas.org/doi/10.1073/pnas.1808790115) (PNAS) | Per-accession classifier output in the candidate universe; the source table itself is committed under `data/raw/` as the build input. We do not redistribute the article. | Bausch-Fluck et al. 2018 (PNAS) |
+| **JensenLab COMPARTMENTS** | Subcellular-localization confidence | CC BY 4.0 | Derived flags | Binder et al. 2014 (JensenLab) |
+| **DeepTMHMM** | Transmembrane-topology predictions (`canonical_topology`) | DTU Health Tech academic licence | Derived topology records only, not the tool (pinned `deeptmhmm-1.0.24`) | Hallgren et al. 2022 (bioRxiv 10.1101/2022.04.08.487609) |
+| **AlphaFold DB** | 3D structures → pLDDT, ECD geometry, structure viewer | CC BY 4.0 | Derived values; cached structures live in R2 (not git) | AlphaFold DB (Jumper et al. 2021; Varadi et al. 2022) |
+| **Schweke homo-oligomer atlas** | Homo-oligomer assembly predictions | [CC BY 4.0](https://figshare.com/s/af3c1d5969f7468f2caa) (figshare deposit) — commercial reuse, modification and redistribution permitted with attribution | Derived flags; ingested PDBs live in R2 (not git) | Schweke et al. 2024, Cell (PMID 38325366) |
+| **SURFACE-Bind** | MaSIF-based binding-site patch scoring on the AlphaFold model | We ingest the `database/` directory of the [project repo](https://github.com/hamedkhakzad/SURFACE-Bind), which is [BSD-3-Clause](https://github.com/hamedkhakzad/SURFACE-Bind/blob/main/LICENSE). The full prediction dataset is separately deposited under [CC BY 4.0](https://doi.org/10.5281/zenodo.15016859) (Zenodo). | Derived patch scores | Balbi et al. 2026, PNAS (PMID 41604262) |
+| **ADCdb** | ADC-target positive-control list | Freely accessible; publication [CC BY-NC 4.0](https://academic.oup.com/nar/article/52/D1/D1097/7311080) | Gene-list membership only | ADCdb (Shen et al. 2024, NAR) |
+| **OpenCell** | Localization / expression evidence | [CC BY-SA 4.0](https://registry.opendata.aws/czb-opencell/) (microscopy dataset) — attribution and share-alike; commercial reuse permitted | Derived flags | OpenCell / CZ Biohub (Cho et al. 2022, Science) |
+| **ViralZone** | Viral-receptor positive-control list | [CC BY 4.0](https://academic.oup.com/nar/article/52/D1/D817/7332066) — data and images; commercial reuse permitted with attribution | Gene-list membership only | ViralZone / SIB (Hulo et al. 2011) |
+
+## Before publishing a new cached corpus or export
+
+1. Confirm the current redistribution terms for each source the new artifact
+   touches.
+2. **OpenCell** is share-alike (CC BY-SA 4.0). That term can attach to a
+   derivative that substantially incorporates its data, so check before
+   shipping such an export under CC BY 4.0.
+3. Never add any `data/external/blob_cache/`, `data/external/tool_cache.sqlite*`, or PubTator payload
+   to a committed or deposited artifact.

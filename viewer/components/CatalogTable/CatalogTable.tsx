@@ -103,7 +103,7 @@ type TriageDetailState =
   | { status: "ready"; runs: TriageRun[] };
 
 // Five gating DBs. DeepTMHMM + COMPARTMENTS were demoted from the
-// M1 universe gate upstream (kept in the D1 row for fidelity but
+// candidate-universe gate upstream (kept in the D1 row for fidelity but
 // hidden in the public catalog).
 const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
@@ -140,11 +140,11 @@ type SortKey =
   | "intern"
   | "intern_lit";
 type SortDir = "asc" | "desc";
-// The "All" Quick chip was kept after the others were dropped because
-// it's the explicit "clear filters" affordance — clicking it restores
-// the unfiltered view. Deep-dive moved into the filter panel as a
-// proper binary radio so it doesn't AND-conflict with itself.
-type QuickFilter = "all";
+// The Quick-filters row is a two-view toggle over the deep-dive dimension:
+// "All" (the full cohort) vs "Deep dive" (only genes with a deep-dive
+// record — the ~5k rows carrying real content). Both drive the SAME
+// `deepDiveFilter` state that the "More filters" binary radio uses, so the
+// quick chips and the panel radio are one source of truth and can't desync.
 
 type DbKey = keyof CatalogRow["db"];
 type VerdictKey = "yes" | "contextual" | "no";
@@ -372,7 +372,6 @@ export function CatalogTable({
   universe_version,
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
-  const [quick, setQuick] = useState<QuickFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("dd_access");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   // Advanced filters. `dbFilter` is AND-semantics: a row passes only
@@ -1034,7 +1033,6 @@ export function CatalogTable({
   }, [
     rows,
     query,
-    quick,
     dbFilter,
     verdictFilter,
     reasonFilter,
@@ -1399,11 +1397,21 @@ export function CatalogTable({
           <div className={styles.chips} role="tablist" aria-label="Quick filters">
             <button
               type="button"
-              className={`${styles.chip} ${quick === "all" ? styles.chipOn : ""}`}
-              onClick={() => setQuick("all")}
-              aria-pressed={quick === "all"}
+              className={`${styles.chip} ${deepDiveFilter !== "yes" ? styles.chipOn : ""}`}
+              onClick={() => setDeepDiveFilter(null)}
+              aria-pressed={deepDiveFilter !== "yes"}
             >
               All <span className={styles.chipCount}>{n_rows}</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.chip} ${deepDiveFilter === "yes" ? styles.chipOn : ""}`}
+              onClick={() => setDeepDiveFilter("yes")}
+              aria-pressed={deepDiveFilter === "yes"}
+              title={`Only genes with a deep-dive record — ${n_with_deep_dive} of ${n_rows.toLocaleString()}`}
+            >
+              Deep dive{" "}
+              <span className={styles.chipCount}>{n_with_deep_dive}</span>
             </button>
             <button
               type="button"
@@ -2534,7 +2542,7 @@ function CatalogRowView({
                 aria-pressed={isSelected}
                 title={
                   cell.reason
-                    ? `${m.long}: ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for reasoning`
+                    ? `${m.long}: ${cell.verdict} (${prettyEnum(cell.reason)}) — click for reasoning`
                     : `${m.long}: ${cell.verdict} — click for reasoning`
                 }
               >
@@ -2555,7 +2563,11 @@ function CatalogRowView({
           const triageReason = row.triage_by_model[1]?.reason;
           const reason = ddReason ?? triageReason;
           if (!reason) return <span className={styles.dim}>—</span>;
-          const pretty = reason.replace(/_/g, " ");
+          // prettyEnum, not a bare underscore strip: the strip mangles
+          // the acronym reasons (gpi_anchored, pmhc_only_intracellular)
+          // and would show this column's labels differently from the
+          // filter chips above it, which already go through ENUM_MAP.
+          const pretty = prettyEnum(reason);
           const src = ddReason ? "deep dive" : "triage";
           return (
             <span className={styles.reasonText} title={`${pretty} (${src})`}>

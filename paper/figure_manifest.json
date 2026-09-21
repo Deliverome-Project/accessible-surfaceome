@@ -3,10 +3,9 @@
   "_numbering": "Numbering tracks '2026 Anthropic Surfaceome Technical Draft (4).docx' (7 main figures). Earlier manifest revisions numbered a 2-figure draft; re-check these keys against the caption order whenever the .docx figure set changes, because the swap keys purely off the figure-N anchor that filters/figures.lua derives from the caption.",
   "figures": {
     "1": {
-      "slug": "db_overlap_venn",
+      "slug": "db_overlap_upset",
       "format": "svg",
-      "max_width": "4in",
-      "description": "Five-way Venn of the source surface-protein databases; 188-protein core. Vector, converted from db_overlap_venn.pdf (the canonical PNG carries no DPI tEXt chunk, so it cannot pass the min_dpi gate). max_width preserves the author's sizing: this figure was 3.96in in the .docx and is nearly square, so unlike the wide panel figures it towers over the page if allowed to fill the full column-span width."
+      "description": "UpSet over the five source surface-protein databases, ordered by how many databases agree; 188-protein five-way core highlighted. Replaces the 5-way Venn, which cannot be drawn area-proportionally for five sets. Vector, converted from db_overlap_upset.pdf."
     },
     "2": {
       "slug": "db_correctness_by_class",

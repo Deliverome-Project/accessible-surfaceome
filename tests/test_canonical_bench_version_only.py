@@ -28,7 +28,10 @@ from pathlib import Path
 import pytest
 
 REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO / "scripts"))
+# augment_figure_tsvs_with_stable_ids now lives in scripts/figures/, sync_public_d1
+# in scripts/cloud/ — both dirs go on sys.path for the by-name imports below.
+sys.path.insert(0, str(REPO / "scripts" / "figures"))
+sys.path.insert(0, str(REPO / "scripts" / "cloud"))
 import augment_figure_tsvs_with_stable_ids as augment  # noqa: E402  # ty: ignore[unresolved-import]
 import sync_public_d1 as sync  # noqa: E402  # ty: ignore[unresolved-import]
 

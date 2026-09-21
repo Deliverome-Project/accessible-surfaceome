@@ -21,7 +21,7 @@ import json
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[1]
-_SCRIPT = _REPO / "scripts" / "build_search_catalog.py"
+_SCRIPT = _REPO / "scripts" / "build" / "build_search_catalog.py"
 _JSON = _REPO / "viewer" / "lib" / "search-catalog.json"
 
 
