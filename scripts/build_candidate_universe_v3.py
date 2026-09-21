@@ -41,16 +41,23 @@ from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
 
 RUN = "genome_full_sonnet_ncbi_v2"
-# Two literature-rescue runs, not one. The first re-read only the
-# ambiguous-reason "no" calls (endomembrane / secreted / inner-leaflet /
-# pMHC / nuclear-envelope, n=2,626); the second re-read the confidently
-# intracellular buckets the first deliberately skipped (cytoplasmic /
-# nuclear / mitochondrial, n=10,287) and flipped 148 more. Both are
-# rescue lanes under the same reconciliation rule — most inclusive
-# verdict wins — so both have to be in the union or those 148 genes
-# silently fall out of the universe.
-RUN_PM = "genome_full_sonnet_pubmed_ncbi_v1"
-RUN_PM2 = "genome_intracellular_pubmed_ncbi_v1"
+# Every literature-rescue lane, in the order they were run. A list, not a
+# pair of named constants: each lane widened the pool the one before it
+# had left out, and each time a lane was added the genes it rescued fell
+# silently out of the universe until this was updated. The SQL and the
+# reconciliation below are both generated from this list, so adding the
+# next lane is a one-line change.
+#
+#   ambiguous-reason zero-DB "no" calls                    n=2,626  -> 177
+#   the confidently intracellular buckets lane 1 skipped   n=10,287 -> 148
+#   "no" calls carried by exactly one database             n=1,417  ->  53
+#   zero-DB under the optimized cutoff only                n=74     ->   2
+RESCUE_RUNS = [
+    "genome_full_sonnet_pubmed_ncbi_v1",
+    "genome_intracellular_pubmed_ncbi_v1",
+    "genome_1db_trim_pubmed_ncbi_v1",
+    "genome_optcut_zerodb_pubmed_ncbi_v1",
+]
 OUT_DIR = Path("data/processed/candidate_universe")
 OUT_KEEP = OUT_DIR / "candidate_universe_v3.tsv"
 OUT_DROP = OUT_DIR / "candidate_universe_v3_dropped.tsv"
@@ -78,14 +85,7 @@ sonnet AS (
   SELECT gene_symbol, predicted_verdict, predicted_confidence, predicted_reason
   FROM triage_run_public WHERE run_id = ?
 ),
-pubmed AS (
-  SELECT gene_symbol, predicted_verdict AS pm_verdict, predicted_confidence AS pm_conf
-  FROM triage_run_public WHERE run_id = ?
-),
-pubmed2 AS (
-  SELECT gene_symbol, predicted_verdict AS pm2_verdict, predicted_confidence AS pm2_conf
-  FROM triage_run_public WHERE run_id = ?
-),
+__RESCUE_CTES__
 ids AS (
   SELECT hgnc_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id
   FROM gene_identifier_public
@@ -98,14 +98,10 @@ SELECT
   s.predicted_verdict   AS sonnet_verdict,
   s.predicted_confidence AS sonnet_confidence,
   s.predicted_reason    AS sonnet_reason,
-  p.pm_verdict          AS pubmed_verdict,
-  p.pm_conf             AS pubmed_confidence,
-  p2.pm2_verdict        AS pubmed2_verdict,
-  p2.pm2_conf           AS pubmed2_confidence
+__RESCUE_SELECTS__
 FROM base b
 LEFT JOIN sonnet s ON s.gene_symbol = b.gene_symbol
-LEFT JOIN pubmed p ON p.gene_symbol = b.gene_symbol
-LEFT JOIN pubmed2 p2 ON p2.gene_symbol = b.gene_symbol
+__RESCUE_JOINS__
 LEFT JOIN ids    i ON i.hgnc_symbol = b.gene_symbol
 """
 # NOTE: no WHERE filter — we pull ALL genes (gating happens locally on the
@@ -117,6 +113,30 @@ LEFT JOIN ids    i ON i.hgnc_symbol = b.gene_symbol
 # resolves it as a global. (Left empty at import so importing this module is
 # side-effect-free — no file read, no D1 query, no TSV write.)
 _opt: dict[str, tuple[int, int]] = {}
+
+
+def _rescue_cols() -> list[str]:
+    """Column names this module reads a lane's verdict/confidence under."""
+    return [f"rescue{i}_verdict" for i, _ in enumerate(RESCUE_RUNS)]
+
+
+def _build_sql() -> str:
+    """Expand the SQL template over RESCUE_RUNS — one CTE + join per lane."""
+    ctes, sels, joins = [], [], []
+    for i, _ in enumerate(RESCUE_RUNS):
+        ctes.append(
+            f"r{i} AS (\n"
+            f"  SELECT gene_symbol, predicted_verdict AS v, predicted_confidence AS c\n"
+            f"  FROM triage_run_public WHERE run_id = ?\n"
+            f"),"
+        )
+        sels.append(f"  r{i}.v AS rescue{i}_verdict,\n  r{i}.c AS rescue{i}_confidence")
+        joins.append(f"LEFT JOIN r{i} ON r{i}.gene_symbol = b.gene_symbol")
+    return (
+        SQL.replace("__RESCUE_CTES__", "\n".join(ctes))
+        .replace("__RESCUE_SELECTS__", ",\n".join(sels))
+        .replace("__RESCUE_JOINS__", "\n".join(joins))
+    )
 
 
 def _i(v) -> int:
@@ -151,7 +171,7 @@ def _yc(r) -> bool:
     """Most-inclusive verdict across the canonical pass and both rescue lanes."""
     return any(
         r.get(k) in ("yes", "contextual")
-        for k in ("sonnet_verdict", "pubmed_verdict", "pubmed2_verdict")
+        for k in ("sonnet_verdict", *_rescue_cols())
     )
 
 
@@ -217,8 +237,9 @@ cols = [
     "n_db_votes", "uniprot_flag", "go_flag", "surfy_flag", "cspa_flag", "hpa_flag",
     "deeptmhmm_flag", "compartments_flag",
     "sonnet_verdict", "sonnet_confidence", "sonnet_reason",
-    "pubmed_verdict", "pubmed_confidence",
-    "pubmed2_verdict", "pubmed2_confidence", "source",
+    *[c for i, _ in enumerate(RESCUE_RUNS)
+      for c in (f"rescue{i}_verdict", f"rescue{i}_confidence")],
+    "source",
 ]
 
 
@@ -249,7 +270,7 @@ def main():
                 )
 
     with D1Client(config=D1Config.from_env_public()) as d1:
-        all_rows = d1.query(SQL, [RUN, RUN_PM, RUN_PM2])
+        all_rows = d1.query(_build_sql(), [RUN, *RESCUE_RUNS])
 
     # Guard against a silently-truncated pull — the table is the full cohort.
     N_EXPECTED = 19_324

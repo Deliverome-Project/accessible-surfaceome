@@ -88,17 +88,21 @@ TRIMMED_TSV = REPO_ROOT / "data/processed/candidate_universe/candidate_universe_
 #   SELECT run_id, COUNT(DISTINCT gene_symbol) FROM triage_run
 #   WHERE run_id IN (...) GROUP BY run_id;
 #     genome_full_sonnet_pubmed_ncbi_v1     2,626   (ambiguous-reason slice)
-#     genome_intracellular_pubmed_ncbi_v1  10,287   (the rest of the no calls)
+#     genome_intracellular_pubmed_ncbi_v1  10,287   (the intracellular buckets)
+#     genome_1db_trim_pubmed_ncbi_v1        1,417   ("no" with exactly 1 DB)
+#     genome_optcut_zerodb_pubmed_ncbi_v1      74   (zero-DB under optimized only)
 #
-# The second lane removed the first's cost-saving restriction: the
-# ambiguous-reason slice deliberately skipped the confidently
-# intracellular buckets, and those were later re-read too, so the pass
-# now covers every non-surface call rather than a chosen tail.
+# Each lane removed a restriction the one before it had kept. The pass
+# now reaches every non-surface call the databases leave unsupported —
+# the ambiguous tail, the confidently intracellular buckets, and the
+# single-database calls the trim would otherwise have dropped unread.
 STAGE2_RUN_IDS = (
     "genome_full_sonnet_pubmed_ncbi_v1",
     "genome_intracellular_pubmed_ncbi_v1",
+    "genome_1db_trim_pubmed_ncbi_v1",
+    "genome_optcut_zerodb_pubmed_ncbi_v1",
 )
-STAGE2_REEXAMINED = 2_626 + 10_287
+STAGE2_REEXAMINED = 2_626 + 10_287 + 1_417 + 74
 
 # Figure 4's palette, so the two schematics read as a pair.
 INK = "#1F1718"

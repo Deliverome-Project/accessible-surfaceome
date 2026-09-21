@@ -4810,6 +4810,7 @@ TMEM120A	Q9BXJ8	192	17	supportive_but_indirect	low
 TMEM121B	Q9BXQ6	84	0	weak	no
 TMEM123	Q8N131	144	7	direct_multi_method	canonical
 TMEM125	Q96AQ2	103	0	weak	no
+TMEM127	O75204	184	11	weak	no
 TMEM130	Q8N3G9	138	1	weak	uncertain
 TMEM131L	A2VDJ0	101	3	supportive_but_indirect	likely
 TMEM132A	Q24JP5	273	7	direct_multi_method	canonical
@@ -5018,6 +5019,7 @@ TPBG	Q13641	220	30	direct_multi_method	canonical
 TPBGL	P0DKB5	48	0	weak	low
 TPCN1	Q9ULQ1	256	23	weak	no
 TPCN2	Q8NHX9	225	27	direct_multi_method	likely
+TPO	P07202	241	10	supportive_but_indirect	likely
 TPP1	O14773	277	4	weak	low
 TPRA1	Q86W33	158	4	direct_single_method	canonical
 TPRG1L	Q5T0D9	204	5	conflicting	low
@@ -5205,6 +5207,7 @@ WFDC3	Q8IUB2	124	3	weak	low
 WFDC5	Q8TCV5	149	4	weak	no
 WFDC8	Q8IUA0	62	5	weak	no
 WFS1	O76024	234	10	weak	no
+WLS	Q5T9L3	243	29	supportive_but_indirect	low
 WNT1	P04628	304	13	weak	no
 WNT2B	Q93097	252	18	weak	no
 WNT3	P56703	281	21	weak	no

@@ -44,6 +44,8 @@ _TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
 _TRIAGE_RESCUE_RUN_IDS = (
     "genome_full_sonnet_pubmed_ncbi_v1",
     "genome_intracellular_pubmed_ncbi_v1",
+    "genome_1db_trim_pubmed_ncbi_v1",
+    "genome_optcut_zerodb_pubmed_ncbi_v1",
 )
 
 # The exact twelve feature columns the deep-dive export derives (same names, so

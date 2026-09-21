@@ -52,6 +52,8 @@ RESCUE_RUNS = [
     # The confidently intracellular buckets the first lane skipped
     # (cytoplasmic / nuclear / mitochondrial), n=10,287.
     "genome_intracellular_pubmed_ncbi_v1",
+    "genome_1db_trim_pubmed_ncbi_v1",
+    "genome_optcut_zerodb_pubmed_ncbi_v1",
 ]
 
 POSITIVE = ("yes", "contextual")
