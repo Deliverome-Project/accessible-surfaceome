@@ -28,6 +28,22 @@ value is already set. After running, push the updated snapshots to public D1:
     uv run python scripts/upload_viewer_snapshots_to_d1.py --execute
 
 (then the edge cache is purged by that script's publish path).
+
+**``--from-d1`` — the D1-only genes.** The snapshot loop above only reaches the
+handful of committed ``viewer/public/data/surfaceome/*.json`` snapshots (3 today).
+The ~485 published records with a NULL discovery corpus (FAM234A / Q9H0X4 class)
+live only in public D1 with no snapshot, so the snapshot path cannot touch them.
+``--from-d1`` backfills them in place: it selects the NULL rows straight from
+``surface_annotation`` (identifier-only projection — never the whole-cohort blob),
+recomputes the corpus with the same reducer, patches ``filters.n_papers_found``,
+revalidates against ``SurfaceomeRecord``, and republishes each via
+``publish_record`` (which UPDATEs D1 and purges the edge cache). No separate
+upload step. Same ``--execute`` / ``--only`` / ``--limit`` / ``--overwrite`` flags.
+
+    # pilot one gene (dry-run — 1 discovery, no write):
+    uv run python scripts/build/backfill_n_papers_found.py --from-d1 --only FAM234A
+    # then execute the whole D1-only backlog (~485 genes; needs CLOUDFLARE_* creds):
+    uv run python scripts/build/backfill_n_papers_found.py --from-d1 --execute
 """
 
 from __future__ import annotations
@@ -79,6 +95,140 @@ def discover_n_papers_found(hgnc_id: str, *, http, retraction) -> int:
     return max(counts) if counts else 0
 
 
+def _run_from_d1(
+    args: argparse.Namespace, *, http, retraction, only: set[str] | None
+) -> int:
+    """D1-direct backfill: patch ``filters.n_papers_found`` on published
+    ``surface_annotation`` rows that have none.
+
+    The snapshot loop in :func:`main` can only reach the 3 committed
+    ``viewer/public/data/surfaceome/*.json`` snapshots; the ~485 records with
+    a NULL discovery corpus live only in D1 (FAM234A-class). This path selects
+    those rows (identifier-only projection — never the full blob), recomputes
+    the corpus with the same ``discover_n_papers_found`` reducer, and republishes
+    each patched record through ``publish_record`` so it is revalidated,
+    UPDATEd into D1, and its edge cache purged.
+    """
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
+    from accessible_surfaceome.cloud.n_papers_found_backfill import (
+        NEEDS_BACKFILL_SQL,
+        patch_n_papers_found,
+    )
+    from accessible_surfaceome.cloud.surface_annotation import publish_record
+    from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
+
+    cfg = D1Config.from_env_public()
+
+    def _backfill_one(d1: D1Client, sym: str, hgnc_id: str | None) -> str:
+        """Process one gene. Returns a status: 'written' | 'dry' | 'no_hgnc'
+        | 'failed'. Thread-safe: the shared HTTP client's limiter and the D1
+        client's httpx transport are both concurrency-safe, and publish_record
+        opens its own client + writes a distinct gene row."""
+        if not hgnc_id:
+            logger.warning("  %-14s SKIP — no gene.hgnc_id in D1 record", sym)
+            return "no_hgnc"
+        try:
+            n_found = discover_n_papers_found(hgnc_id, http=http, retraction=retraction)
+        except Exception as exc:  # noqa: BLE001 — one gene must not abort the batch
+            logger.warning(
+                "  %-14s FAILED — discovery: %s (%s)", sym, type(exc).__name__, exc
+            )
+            return "failed"
+
+        if not args.execute:
+            logger.info("  %-14s would write n_papers_found → %d", sym, n_found)
+            return "dry"
+
+        # Fetch the full record ONE row at a time (never a whole-cohort blob pull
+        # — that is the isolate-memory-cap crash), patch, revalidate, republish.
+        # publish_record does the UPDATE + edge-cache purge.
+        blob_rows = d1.query(
+            "SELECT annotation_json FROM surface_annotation "
+            "WHERE gene_symbol = ? LIMIT 1;",
+            [sym],
+        )
+        if not blob_rows:
+            logger.warning("  %-14s FAILED — no annotation_json row", sym)
+            return "failed"
+        try:
+            record = json.loads(blob_rows[0]["annotation_json"])
+            patched = patch_n_papers_found(record, n_found)
+            model = SurfaceomeRecord.model_validate(patched)
+        except Exception as exc:  # noqa: BLE001 — skip loudly, never write junk
+            logger.warning(
+                "  %-14s FAILED — patch/validate: %s (%s)",
+                sym,
+                type(exc).__name__,
+                exc,
+            )
+            return "failed"
+
+        result = publish_record(model, write_snapshot=False, push_to_d1=True)
+        if not result.d1_written:
+            logger.warning("  %-14s D1 write skipped: %s", sym, result.skipped_reason)
+            return "failed"
+        logger.info("  %-14s wrote n_papers_found → %d", sym, n_found)
+        return "written"
+
+    with D1Client(cfg) as d1:
+        if args.overwrite:
+            select_rows = (
+                "SELECT gene_symbol, "
+                "json_extract(annotation_json, '$.gene.hgnc_id') AS hgnc_id "
+                "FROM surface_annotation ORDER BY gene_symbol;"
+            )
+            rows = d1.query(select_rows, [])
+        else:
+            rows = d1.query(NEEDS_BACKFILL_SQL, [])
+
+        targets = [
+            (r["gene_symbol"], r.get("hgnc_id"))
+            for r in rows
+            if only is None or (r["gene_symbol"] or "").upper() in only
+        ]
+        if args.limit is not None:
+            targets = targets[: args.limit]
+
+        workers = max(1, args.workers)
+        logger.info(
+            "  %d D1 record(s) to backfill%s%s — %d worker(s)",
+            len(targets),
+            " (--overwrite: all rows)" if args.overwrite else " (n_papers_found IS NULL)",
+            "" if only is None else f" — filtered to --only {sorted(only)}",
+            workers,
+        )
+
+        tally = {"written": 0, "dry": 0, "no_hgnc": 0, "failed": 0}
+        if workers == 1:
+            for sym, hgnc_id in targets:
+                tally[_backfill_one(d1, sym, hgnc_id)] += 1
+        else:
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(_backfill_one, d1, sym, hgnc_id): sym
+                    for sym, hgnc_id in targets
+                }
+                for fut in as_completed(futures):
+                    tally[fut.result()] += 1
+
+    n_done = tally["written"] + tally["dry"]
+    suffix = "" if args.execute else "  (dry-run — pass --execute to write)"
+    logger.info("")
+    logger.info("  backfilled:         %d%s", n_done, suffix)
+    logger.info("  no hgnc_id:         %d", tally["no_hgnc"])
+    logger.info("  discovery/write failed: %d", tally["failed"])
+    if args.execute and tally["written"]:
+        logger.info(
+            "\n  %d record(s) UPDATEd in public D1 and their edge caches purged. "
+            "\n  Verify: uv run pytest tests/test_n_papers_found_backfill.py"
+            "::test_all_published_records_have_n_papers_found --run-network",
+            tally["written"],
+        )
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -104,6 +254,26 @@ def main() -> int:
         help="Recompute even when n_papers_found is already populated "
         "(default: only fill null/missing).",
     )
+    parser.add_argument(
+        "--from-d1",
+        action="store_true",
+        help="Backfill directly against public D1 surface_annotation instead "
+        "of the committed viewer snapshots. This is the ONLY path that reaches "
+        "the ~485 D1-only genes (FAM234A-class) — they have no committed "
+        "snapshot, so the default snapshot loop can't touch them. Recomputes "
+        "the discovery corpus, patches filters.n_papers_found into the stored "
+        "record, revalidates, and republishes via publish_record (which UPDATEs "
+        "D1 and purges the edge cache).",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=6,
+        help="Concurrent discovery workers for --from-d1 (default: 6). Discovery "
+        "is network-I/O-bound; the shared HTTP client's per-key NCBI limiter "
+        "(~9 qps/key, thread-safe) self-throttles, so more workers than the key "
+        "pool size just queue. 1 = sequential.",
+    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -112,10 +282,6 @@ def main() -> int:
     from accessible_surfaceome.tools._shared.http import open_default_client
 
     load_env()  # NCBI_API_KEYS etc. for the discovery calls
-
-    if not SNAPSHOTS.is_dir():
-        logger.error("snapshot dir not found: %s", SNAPSHOTS)
-        return 1
 
     only = (
         {s.strip().upper() for s in args.only.split(",") if s.strip()}
@@ -130,6 +296,13 @@ def main() -> int:
     # faithful and network-light default here.
     http = open_default_client()
     retraction = retraction_watch.empty()
+
+    if args.from_d1:
+        return _run_from_d1(args, http=http, retraction=retraction, only=only)
+
+    if not SNAPSHOTS.is_dir():
+        logger.error("snapshot dir not found: %s", SNAPSHOTS)
+        return 1
 
     n_written = 0
     n_skipped_present = 0
