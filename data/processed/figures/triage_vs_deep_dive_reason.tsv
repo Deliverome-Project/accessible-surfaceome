@@ -343,7 +343,7 @@ ASTL	Q6HA08	contextual	tissue_restricted_surface	cell_state_induced	canonical	0	
 ASTN1	O14525	yes	classical_surface_receptor	tissue_restricted_surface	likely	0	1	0	1	0
 ASTN2	O75129	yes	classical_surface_receptor	dual_localization	low	0	1	0	0	0
 ATAD1	Q8NBU5	no	cytoplasmic	mitochondrial_internal	no	1	0	0	1	0
-ATG9A	Q7Z3C6	no	endomembrane_resident	dual_localization	low	0	1	0	0	0
+ATG9A	Q7Z3C6	contextual	dual_localization	dual_localization	low	0	1	0	0	0
 ATP10D	Q9P241	contextual	dual_localization	dual_localization	canonical	0	0	1	1	0
 ATP11A	P98196	no	inner_leaflet_anchored	multipass_with_exposed_loops	canonical	0	0	0	1	0
 ATP11B	Q9Y2G3	no	endomembrane_resident	dual_localization	low	0	0	0	1	0
@@ -1145,7 +1145,7 @@ DAGLB	Q8NCG7	no	inner_leaflet_anchored	cytoplasmic	no	0	1	1	1	0
 DAO	P14920	contextual	dual_localization	cytoplasmic	no	0	0	0	0	0
 DAPP1	Q9UN19	contextual	cell_state_induced	inner_leaflet_anchored	no	0	0	0	0	0
 DARS2	Q6PI48	contextual	cell_state_induced	mitochondrial_internal	no	0	0	0	0	0
-DBH	P09172	no	secreted_only	endomembrane_resident	no	0	0	0	0	0
+DBH	P09172	contextual	dual_localization	endomembrane_resident	no	0	0	0	0	0
 DBI	P07108	contextual	cell_state_induced	secreted_only	no	0	0	0	0	0
 DBNL	Q9UJU6	no	inner_leaflet_anchored	inner_leaflet_anchored	no	0	0	1	0	0
 DCBLD1	Q8N8Z6	yes	classical_surface_receptor	cell_state_induced	canonical	0	1	0	1	1
@@ -4826,6 +4826,7 @@ TMEM120A	Q9BXJ8	contextual	dual_localization	dual_localization	low	0	0	0	1	0
 TMEM121B	Q9BXQ6	no	endomembrane_resident	endomembrane_resident	no	0	0	1	0	0
 TMEM123	Q8N131	yes	classical_surface_receptor	cell_state_induced	canonical	1	1	0	1	0
 TMEM125	Q96AQ2	yes	multipass_with_exposed_loops	endomembrane_resident	no	0	0	0	0	0
+TMEM127	O75204	contextual	dual_localization	endomembrane_resident	no	0	0	0	1	0
 TMEM130	Q8N3G9	no	endomembrane_resident	other	uncertain	0	0	0	1	0
 TMEM131L	A2VDJ0	contextual	dual_localization	tissue_restricted_surface	likely	0	1	0	1	1
 TMEM132A	Q24JP5	yes	classical_surface_receptor	dual_localization	canonical	0	1	0	1	1
@@ -5035,6 +5036,7 @@ TPBG	Q13641	yes	classical_surface_receptor	cell_state_induced	canonical	1	1	0	1	
 TPBGL	P0DKB5	contextual	tissue_restricted_surface	tissue_restricted_surface	low	0	1	0	1	0
 TPCN1	Q9ULQ1	no	endomembrane_resident	endomembrane_resident	no	0	1	0	1	0
 TPCN2	Q8NHX9	contextual	lysosomal_exocytosis	lysosomal_exocytosis	likely	0	0	0	1	0
+TPO	P07202	yes	classical_surface_receptor	tissue_restricted_surface	likely	0	1	0	1	0
 TPP1	O14773	contextual	lysosomal_exocytosis	lysosomal_exocytosis	low	0	0	0	0	0
 TPRA1	Q86W33	yes	multipass_with_exposed_loops	cell_state_induced	canonical	0	1	0	0	0
 TPRG1L	Q5T0D9	no	cytoplasmic	cell_state_induced	low	0	0	1	0	0
@@ -5223,6 +5225,7 @@ WFDC3	Q8IUB2	contextual	stable_surface_attachment	tissue_restricted_surface	low	
 WFDC5	Q8TCV5	contextual	other	secreted_only	no	0	0	0	0	0
 WFDC8	Q8IUA0	contextual	tissue_restricted_surface	secreted_only	no	0	0	0	0	0
 WFS1	O76024	contextual	dual_localization	endomembrane_resident	no	0	0	0	0	0
+WLS	Q5T9L3	contextual	dual_localization	dual_localization	low	0	0	0	1	0
 WNT1	P04628	contextual	dual_localization	secreted_only	no	0	0	0	0	0
 WNT2B	Q93097	contextual	dual_localization	secreted_only	no	0	0	0	0	0
 WNT3	P56703	contextual	dual_localization	secreted_only	no	0	0	0	0	0

@@ -1072,6 +1072,7 @@ TMEM102	no	no	205.0	1	1	10	5	weak
 TMEM116	no	no	100.0	4	3	12	6	weak
 TMEM121B	no	no	84.0	0	0	10	5	weak
 TMEM125	no	no	103.0	0	0	10	3	weak
+TMEM127	no	no	184.0	11	11	12	2	weak
 TMEM134	no	no	70.0	4	4	12	4	weak
 TMEM141	no	no	76.0	0	0	10	4	weak
 TMEM151A	no	no	85.0	3	2	10	4	weak
@@ -5098,6 +5099,7 @@ TP53I13	low	surface_yes	81.0	1	0	12	4	weak
 TPBG	canonical	surface_yes	220.0	30	25	18	4	direct_multi_method
 TPBGL	low	surface_yes	48.0	0	0	11	5	weak
 TPCN2	likely	surface_yes	225.0	27	24	17	5	direct_multi_method
+TPO	likely	surface_yes	241.0	10	5	17	5	supportive_but_indirect
 TPP1	low	surface_yes	277.0	4	4	13	4	weak
 TPRA1	canonical	surface_yes	158.0	4	4	18	5	direct_single_method
 TPRG1L	low	surface_yes	204.0	5	5	16	5	conflicting
@@ -5245,6 +5247,7 @@ WARS1	low	surface_yes	333.0	3	3	15	6	weak
 WBP1L	low	surface_yes	142.0	4	3	12	5	weak
 WFDC11	low	surface_yes	41.0	3	2	13	3	weak
 WFDC3	low	surface_yes	124.0	3	1	13	3	weak
+WLS	low	surface_yes	243.0	29	27	19	3	supportive_but_indirect
 WNT7A	low	surface_yes	319.0	14	12	19	4	supportive_but_indirect
 WNT7B	low	surface_yes	247.0	23	18	18	4	weak
 XCR1	likely	surface_yes	295.0	30	27	17	5	direct_multi_method

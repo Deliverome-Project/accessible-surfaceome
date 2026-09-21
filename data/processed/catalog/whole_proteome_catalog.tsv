@@ -293,7 +293,7 @@ HGNC:14631	ADAMTSL2	Q86TH1	ENSG00000197859	9719	0	0	0	0	0	0	no	secreted_only	cu_
 HGNC:14633	ADAMTSL3	P82987	ENSG00000156218	57188	0	0	0	0	0	0	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_full_sonnet_pubmed_ncbi_v1
 HGNC:19706	ADAMTSL4	Q6UY14	ENSG00000143382	54507	0	0	1	0	1	2	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:27912	ADAMTSL5	Q6ZMM2	ENSG00000185761	339366	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:16486	ADAP1	O75689	ENSG00000105963	11033	0	0	1	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:16486	ADAP1	O75689	ENSG00000105963	11033	0	0	1	0	0	1	contextual	other	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:16487	ADAP2	Q9NPF8	ENSG00000184060	55803	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_full_sonnet_pubmed_ncbi_v1
 HGNC:225	ADAR	P55265	ENSG00000160710	103	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:226	ADARB1	P78563	ENSG00000197381	104	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -519,7 +519,7 @@ HGNC:28398	AKNAD1	Q5T1N1	ENSG00000162641	254268	0	0	0	0	0	0	no	nuclear	cu_2026_0
 HGNC:380	AKR1A1	P14550	ENSG00000117448	10327	1	1	0	0	0	2	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:381	AKR1B1	P15121	ENSG00000085662	231	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:382	AKR1B10	O60218	ENSG00000198074	57016	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:37281	AKR1B15	C9JRZ8	ENSG00000227471	441282	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:37281	AKR1B15	C9JRZ8	ENSG00000227471	441282	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:384	AKR1C1	Q04828	ENSG00000187134	1645	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:385	AKR1C2	P52895	ENSG00000151632	1646	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:386	AKR1C3	P42330	ENSG00000196139	8644	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -663,7 +663,7 @@ HGNC:30534	ANGEL2	Q5VTE6	ENSG00000174606	90806	0	0	0	0	0	0	no	cytoplasmic	cu_202
 HGNC:484	ANGPT1	Q15389	ENSG00000154188	284	0	0	0	0	1	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:485	ANGPT2	O15123	ENSG00000091879	285	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:487	ANGPT4	Q9Y264	ENSG00000101280	51378	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:489	ANGPTL1	O95841	ENSG00000116194	9068	0	0	0	0	1	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:489	ANGPTL1	O95841	ENSG00000116194	9068	0	0	0	0	1	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:490	ANGPTL2	Q9UKU9	ENSG00000136859	23452	0	0	0	0	1	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:491	ANGPTL3	Q9Y5C1	ENSG00000132855	27329	0	1	0	0	0	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16039	ANGPTL4	Q9BY76	ENSG00000167772	51129	0	0	0	0	1	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -683,7 +683,7 @@ HGNC:26766	ANKFN1	Q8N957	ENSG00000153930	162282	0	0	1	0	0	1	no	cytoplasmic	cu_20
 HGNC:20763	ANKFY1	Q9P2R3	ENSG00000185722	51479	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:15492	ANKH	Q9HCJ1	ENSG00000154122	56172	1	0	0	1	0	2	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:24714	ANKHD1	Q8IWZ3	ENSG00000131503	54882	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:22215	ANKIB1	Q9P2G1	ENSG00000001629	54467	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:22215	ANKIB1	Q9P2G1	ENSG00000001629	54467	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:21027	ANKK1	Q8NFD2	ENSG00000170209	255239	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26812	ANKLE1	Q8NAG6	ENSG00000160117	126549	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:29101	ANKLE2	Q86XL3	ENSG00000176915	23141	0	0	0	0	0	0	no	nuclear_envelope	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -782,7 +782,7 @@ HGNC:536	ANXA13	P27216	ENSG00000104537	312	1	1	1	0	0	3	contextual	tissue_restric
 HGNC:537	ANXA2	P07355	ENSG00000182718	302	0	1	1	0	0	2	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:33463	ANXA2R	Q3ZCQ2	ENSG00000177721	389289	0	0	0	0	0	0	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:541	ANXA3	P12429	ENSG00000138772	306	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:542	ANXA4	P09525	ENSG00000196975	307	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:542	ANXA4	P09525	ENSG00000196975	307	0	1	0	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:543	ANXA5	P08758	ENSG00000164111	308	0	1	0	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:544	ANXA6	P08133	ENSG00000197043	309	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:545	ANXA7	P20073	ENSG00000138279	310	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_full_sonnet_pubmed_ncbi_v1
@@ -958,7 +958,7 @@ HGNC:29216	ARHGAP31	Q2M1Z3	ENSG00000031081	57514	0	0	0	0	0	0	no	cytoplasmic	cu_2
 HGNC:17399	ARHGAP32	A7KAX9	ENSG00000134909	9743	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:23085	ARHGAP33	O14559	ENSG00000004777	115703	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:4591	ARHGAP35	Q9NRY4	ENSG00000160007	2909	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:26388	ARHGAP36	Q6ZRI8	ENSG00000147256	158763	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:26388	ARHGAP36	Q6ZRI8	ENSG00000147256	158763	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:29351	ARHGAP39	Q9C0H5	ENSG00000147799	80728	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:674	ARHGAP4	P98171	ENSG00000089820	393	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16226	ARHGAP40	Q5TG30	ENSG00000124143	343578	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -1208,7 +1208,7 @@ HGNC:16040	ATG4C	Q96DT6	ENSG00000125703	84938	0	0	0	0	0	0	no	cytoplasmic	cu_2026
 HGNC:20789	ATG4D	Q86TL0	ENSG00000130734	84971	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:589	ATG5	Q9H1Y0	ENSG00000057663	9474	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16935	ATG7	O95352	ENSG00000197548	10533	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:22408	ATG9A	Q7Z3C6	ENSG00000198925	79065	0	0	0	1	1	2	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:22408	ATG9A	Q7Z3C6	ENSG00000198925	79065	0	0	0	1	1	2	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:21899	ATG9B	Q674R7	ENSG00000181652	285973	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:794	ATIC	P31939	ENSG00000138363	471	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11231	ATL1	Q8WXF7	ENSG00000198513	51062	0	0	0	0	1	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -1308,7 +1308,7 @@ HGNC:3706	ATP8B1	O43520	ENSG00000081923	5205	1	1	1	0	0	3	no	inner_leaflet_anchor
 HGNC:13534	ATP8B2	P98198	ENSG00000143515	57198	0	0	1	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:13535	ATP8B3	O60423	ENSG00000130270	148229	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:13536	ATP8B4	Q8TF62	ENSG00000104043	79895	0	0	0	0	0	0	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_full_sonnet_pubmed_ncbi_v1
-HGNC:13540	ATP9A	O75110	ENSG00000054793	10079	1	0	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:13540	ATP9A	O75110	ENSG00000054793	10079	1	0	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:13541	ATP9B	O43861	ENSG00000166377	374868	1	0	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:18803	ATPAF1	Q5TC12	ENSG00000123472	64756	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:18802	ATPAF2	Q8N5M1	ENSG00000171953	91647	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -1469,7 +1469,7 @@ HGNC:976	BCAT1	P54687	ENSG00000060982	586	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_
 HGNC:977	BCAT2	O15382	ENSG00000105552	587	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:978	BCCIP	Q9P287	ENSG00000107949	56647	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:27050	BCDIN3D	Q7Z5W3	ENSG00000186666	144233	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:983	BCHE	P06276	ENSG00000114200	590	0	0	0	0	1	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:983	BCHE	P06276	ENSG00000114200	590	0	0	0	0	1	1	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:986	BCKDHA	P12694	ENSG00000248098	593	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:987	BCKDHB	P21953	ENSG00000083123	594	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16902	BCKDK	O14874	ENSG00000103507	10295	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -1671,7 +1671,7 @@ HGNC:13746	BRINP2	Q9C0B6	ENSG00000198797	57795	0	0	0	0	0	0	contextual	stable_sur
 HGNC:22393	BRINP3	Q76B58	ENSG00000162670	339479	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:20473	BRIP1	Q9BX63	ENSG00000136492	83990	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:24170	BRIX1	Q8TDN6	ENSG00000113460	55299	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:23057	BRK1	Q8WUW1	ENSG00000254999	55845	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:23057	BRK1	Q8WUW1	ENSG00000254999	55845	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:28153	BRME1	Q0VDD7	ENSG00000132016	79173	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17262	BRMS1	Q9HCU9	ENSG00000174744	25855	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:20512	BRMS1L	Q5PSV4	ENSG00000100916	84312	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -1839,9 +1839,9 @@ HGNC:14342	C1QTNF7	Q9BXJ2	ENSG00000163145	114905	0	0	0	0	0	0	contextual	dual_loc
 HGNC:31374	C1QTNF8	P60827	ENSG00000184471	390664	0	0	0	0	0	0	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28732	C1QTNF9	P0C862	ENSG00000240654	338872	0	0	0	0	0	0	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:34072	C1QTNF9B	B2RNN3	ENSG00000205863	387911	0	0	0	0	0	0	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:1246	C1R	P00736	ENSG00000159403	715	1	0	0	0	0	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:1246	C1R	P00736	ENSG00000159403	715	1	0	0	0	0	1	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:21265	C1RL	Q9NZP8	ENSG00000139178	51279	0	0	0	0	0	0	contextual	other	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:1247	C1S	P09871	ENSG00000182326	716	1	0	0	0	0	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:1247	C1S	P09871	ENSG00000182326	716	1	0	0	0	0	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:29591	C1orf105	O95561	ENSG00000180999	92346	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:25873	C1orf115	Q9H7X2	ENSG00000162817	79762	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_intracellular_pubmed_ncbi_v1
 HGNC:28667	C1orf116	Q9BW04	ENSG00000182795	79098	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -2332,7 +2332,7 @@ HGNC:30723	CCDC62	Q6P9F0	ENSG00000130783	84660	0	0	0	0	0	0	no	nuclear	cu_2026_05
 HGNC:26669	CCDC63	Q8NA47	ENSG00000173093	160762	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:27709	CCDC66	A2RUB6	ENSG00000180376	285331	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:24350	CCDC68	Q9H2F9	ENSG00000166510	80323	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:24487	CCDC69	A6NI79	ENSG00000198624	26112	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:24487	CCDC69	A6NI79	ENSG00000198624	26112	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:26533	CCDC7	Q96M83	ENSG00000216937	79741	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:25303	CCDC70	Q6NSX1	ENSG00000123171	83446	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:25760	CCDC71	Q8IV32	ENSG00000177352	64925	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -2342,7 +2342,7 @@ HGNC:25197	CCDC74A	Q96AQ1	ENSG00000163040	90557	0	0	0	0	0	0	no	cytoplasmic	cu_20
 HGNC:25267	CCDC74B	Q96LY2	ENSG00000152076	91409	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28203	CCDC77	Q9BR77	ENSG00000120647	84318	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:14153	CCDC78	A2IDD5	ENSG00000162004	124093	0	1	0	0	0	1	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:25367	CCDC8	Q9H0W5	ENSG00000169515	83987	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:25367	CCDC8	Q9H0W5	ENSG00000169515	83987	0	0	1	0	0	1	yes	other	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:30649	CCDC80	Q76M96	ENSG00000091986	151887	0	0	0	0	1	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26281	CCDC81	Q6ZN84	ENSG00000149201	60494	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26282	CCDC82	Q8N4S0	ENSG00000149231	79780	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -2741,7 +2741,7 @@ HGNC:29213	CEMIP	Q8WUJ3	ENSG00000103888	57214	0	0	0	0	0	0	contextual	dual_locali
 HGNC:11869	CEMIP2	Q9UHN6	ENSG00000135048	23670	1	0	1	0	1	3	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:32553	CEMP1	Q6PRD7	ENSG00000205923	752014	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:30460	CENATAC	Q86UT8	ENSG00000186166	338657	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:24153	CEND1	Q8N111	ENSG00000184524	51286	1	0	0	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:24153	CEND1	Q8N111	ENSG00000184524	51286	1	0	0	0	0	1	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:1851	CENPA	P49450	ENSG00000115163	1058	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:1852	CENPB	P07199	ENSG00000125817	1059	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:1854	CENPC	Q03188	ENSG00000145241	1060	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -3390,7 +3390,7 @@ HGNC:16223	COMMD7	Q86VX2	ENSG00000149600	149951	0	0	0	0	0	0	no	inner_leaflet_anc
 HGNC:26036	COMMD8	Q9NX08	ENSG00000169019	54951	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:25014	COMMD9	Q9P000	ENSG00000110442	29099	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2227	COMP	P49747	ENSG00000105664	1311	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:2228	COMT	P21964	ENSG00000093010	1312	1	0	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:2228	COMT	P21964	ENSG00000093010	1312	1	0	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:26309	COMTD1	Q86VU5	ENSG00000165644	118881	0	0	1	0	0	1	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17440	COP1	Q8NHY2	ENSG00000143207	64326	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2230	COPA	P53621	ENSG00000122218	1314	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -3467,7 +3467,7 @@ HGNC:2295	CP	P00450	ENSG00000047457	1356	0	0	0	0	1	1	contextual	tissue_restricte
 HGNC:2296	CPA1	P15085	ENSG00000091704	1357	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2297	CPA2	P48052	ENSG00000158516	1358	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2298	CPA3	P15088	ENSG00000163751	1359	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:15740	CPA4	Q9UI42	ENSG00000128510	51200	0	0	1	0	0	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:15740	CPA4	Q9UI42	ENSG00000128510	51200	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:15722	CPA5	Q8WXQ8	ENSG00000158525	93979	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17245	CPA6	Q8N4T0	ENSG00000165078	57094	0	0	0	0	0	0	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:23228	CPAMD8	Q8IZJ3	ENSG00000160111	27151	0	0	0	0	0	0	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -3744,7 +3744,7 @@ HGNC:2514	CTNNB1	P35222	ENSG00000168036	1499	0	1	1	0	0	2	no	inner_leaflet_anchor
 HGNC:16913	CTNNBIP1	Q9NSA3	ENSG00000178585	56998	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:15879	CTNNBL1	Q8WYA6	ENSG00000132792	56259	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2515	CTNND1	O60716	ENSG00000198561	1500	0	1	1	0	0	2	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:2516	CTNND2	Q9UQB3	ENSG00000169862	1501	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:2516	CTNND2	Q9UQB3	ENSG00000169862	1501	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:2518	CTNS	O60931	ENSG00000040531	1497	0	0	0	1	1	2	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2519	CTPS1	P17812	ENSG00000171793	1503	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2520	CTPS2	Q9NRF8	ENSG00000047230	56474	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -3938,7 +3938,7 @@ HGNC:28358	D2HGDH	Q8N465	ENSG00000180902	728294	0	0	0	0	0	0	no	mitochondrial_int
 HGNC:18142	DAAM1	Q9Y4D1	ENSG00000100592	23002	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:18143	DAAM2	Q86T65	ENSG00000146122	23500	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2661	DAB1	O75553	ENSG00000173406	1600	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:2662	DAB2	P98082	ENSG00000153071	1601	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:2662	DAB2	P98082	ENSG00000153071	1601	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:17294	DAB2IP	Q5VWQ8	ENSG00000136848	153090	0	1	0	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2663	DACH1	Q9UI36	ENSG00000276644	1602	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16814	DACH2	Q96NX9	ENSG00000126733	117154	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -3973,7 +3973,7 @@ HGNC:2684	DAZAP2	Q15038	ENSG00000183283	9802	0	0	0	0	0	0	no	nuclear	cu_2026_05_1
 HGNC:2685	DAZL	Q92904	ENSG00000092345	1618	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17364	DBF4	Q9UBU7	ENSG00000006634	10926	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17883	DBF4B	Q8NFT6	ENSG00000161692	80174	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:2689	DBH	P09172	ENSG00000123454	1621	0	0	0	0	1	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:2689	DBH	P09172	ENSG00000123454	1621	0	0	0	0	1	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_optcut_zerodb_pubmed_ncbi_v1
 HGNC:2690	DBI	P07108	ENSG00000155368	1622	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_intracellular_pubmed_ncbi_v1
 HGNC:2695	DBN1	Q16643	ENSG00000113758	1627	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28455	DBNDD1	Q9H9R9	ENSG00000003249	79007	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -4088,7 +4088,7 @@ HGNC:17821	DDX39A	O00148	ENSG00000123136	10212	0	0	0	0	0	0	no	cytoplasmic	cu_202
 HGNC:13917	DDX39B	Q13838	ENSG00000198563	7919	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2745	DDX3X	O00571	ENSG00000215301	1654	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2699	DDX3Y	O15523	ENSG00000067048	8653	0	0	1	0	0	1	no	pmhc_only_intracellular	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:18700	DDX4	Q9NQI0	ENSG00000152670	54514	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:18700	DDX4	Q9NQI0	ENSG00000152670	54514	0	0	1	0	0	1	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:18674	DDX41	Q9UJV9	ENSG00000183258	51428	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:18676	DDX42	Q86XP3	ENSG00000198231	11325	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:18677	DDX43	Q9NXZ2	ENSG00000080007	55510	0	0	0	0	0	0	no	pmhc_only_intracellular	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -4448,7 +4448,7 @@ HGNC:21218	DNPH1	O43598	ENSG00000112667	10591	0	0	0	0	0	0	no	cytoplasmic	cu_2026
 HGNC:2983	DNTT	P04053	ENSG00000107447	1791	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16160	DNTTIP1	Q9H147	ENSG00000101457	116092	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:24013	DNTTIP2	Q5QJE6	ENSG00000067334	30836	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:2985	DOC2A	Q14183	ENSG00000149927	8448	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:2985	DOC2A	Q14183	ENSG00000149927	8448	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:2986	DOC2B	Q14184	ENSG00000272636	8447	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2987	DOCK1	Q14185	ENSG00000150760	1793	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:23479	DOCK10	Q96BY6	ENSG00000135905	55619	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -4464,7 +4464,7 @@ HGNC:14132	DOCK9	Q9BZ29	ENSG00000088387	23348	0	0	0	0	0	0	no	inner_leaflet_ancho
 HGNC:28662	DOHH	Q9BU89	ENSG00000129932	83475	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2990	DOK1	Q99704	ENSG00000115325	1796	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:2991	DOK2	O60496	ENSG00000147443	9046	0	0	1	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:24583	DOK3	Q7L591	ENSG00000146094	79930	0	0	1	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:24583	DOK3	Q7L591	ENSG00000146094	79930	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:19868	DOK4	Q8TEW6	ENSG00000125170	55715	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16173	DOK5	Q9P104	ENSG00000101134	55816	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28301	DOK6	Q6PKX4	ENSG00000206052	220164	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -4952,7 +4952,7 @@ HGNC:24838	ENHO	Q6UWT2	ENSG00000168913	375704	0	0	0	0	0	0	contextual	dual_locali
 HGNC:25246	ENKD1	Q9H0I2	ENSG00000124074	84080	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28388	ENKUR	Q8TC29	ENSG00000151023	219670	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3350	ENO1	P06733	ENSG00000074800	2023	0	1	1	0	1	3	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:3353	ENO2	P09104	ENSG00000111674	2026	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:3353	ENO2	P09104	ENSG00000111674	2026	0	0	1	0	0	1	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:3354	ENO3	P13929	ENSG00000108515	2027	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:31670	ENO4	A6NNW6	ENSG00000188316	387712	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:24599	ENOPH1	Q9UHY7	ENSG00000145293	58478	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -5095,8 +5095,8 @@ HGNC:16942	ERN2	Q76MJ5	ENSG00000134398	10595	0	0	0	0	0	0	no	endomembrane_residen
 HGNC:13280	ERO1A	Q96HE7	ENSG00000197930	30001	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:14355	ERO1B	Q86YB8	ENSG00000086619	56605	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26495	ERP27	Q96DN0	ENSG00000139055	121506	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:13799	ERP29	P30040	ENSG00000089248	10961	0	1	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:18311	ERP44	Q9BS26	ENSG00000023318	23071	0	1	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:13799	ERP29	P30040	ENSG00000089248	10961	0	1	0	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
+HGNC:18311	ERP44	Q9BS26	ENSG00000023318	23071	0	1	0	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:18185	ERRFI1	Q9UJM3	ENSG00000116285	54206	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3454	ERV3-1	Q14264	ENSG00000213462	2086	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:33823	ERVFRD-1	P60508	ENSG00000244476	405754	1	0	0	1	0	2	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -5199,7 +5199,7 @@ HGNC:3512	EXT1	Q16394	ENSG00000182197	2131	0	0	0	0	0	0	no	endomembrane_resident	
 HGNC:3513	EXT2	Q93063	ENSG00000151348	2132	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3515	EXTL1	Q92935	ENSG00000158008	2134	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3516	EXTL2	Q9UBQ6	ENSG00000162694	2135	0	0	0	0	1	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:3518	EXTL3	O43909	ENSG00000012232	2137	0	0	0	0	1	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:3518	EXTL3	O43909	ENSG00000012232	2137	0	0	0	0	1	1	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:3519	EYA1	Q99502	ENSG00000104313	2138	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3520	EYA2	O00167	ENSG00000064655	2139	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3521	EYA3	Q99504	ENSG00000158161	2140	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -5239,7 +5239,7 @@ HGNC:34524	FABP12	A6NFH5	ENSG00000197416	646486	0	0	0	0	0	0	no	cytoplasmic	cu_20
 HGNC:3556	FABP2	P12104	ENSG00000145384	2169	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3557	FABP3	P05413	ENSG00000121769	2170	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3559	FABP4	P15090	ENSG00000170323	2167	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:3560	FABP5	Q01469	ENSG00000164687	2171	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:3560	FABP5	Q01469	ENSG00000164687	2171	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:3561	FABP6	P51161	ENSG00000170231	2172	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3562	FABP7	O15540	ENSG00000164434	2173	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:3563	FABP9	Q0Z7S8	ENSG00000205186	646480	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -7170,7 +7170,7 @@ HGNC:25061	HOATZ	Q6PI97	ENSG00000183644	399949	0	0	0	0	0	0	no	cytoplasmic	cu_202
 HGNC:25155	HOGA1	Q86XE5	ENSG00000241935	112817	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17512	HOMER1	Q86YM7	ENSG00000152413	9456	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17513	HOMER2	Q9NSB8	ENSG00000103942	9455	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:17514	HOMER3	Q9NSC5	ENSG00000051128	9454	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:17514	HOMER3	Q9NSC5	ENSG00000051128	9454	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:20164	HOMEZ	Q8IX15	ENSG00000290292	57594	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:19884	HOOK1	Q9UJC3	ENSG00000134709	51361	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:19885	HOOK2	Q96ED9	ENSG00000095066	29911	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -7297,7 +7297,7 @@ HGNC:52395	HSFX3	A0A1B0GWH4	ENSG00000283697	101928917	0	0	0	0	0	0	no	nuclear	cu_
 HGNC:52398	HSFX4	A0A1B0GTS1	ENSG00000283463	101927685	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:18568	HSFY1	Q96LI6	ENSG00000172468	86614	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:23950	HSFY2	Q96LI6	ENSG00000169953	159119	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:24920	HSH2D	Q96JZ2	ENSG00000196684	84941	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:24920	HSH2D	Q96JZ2	ENSG00000196684	84941	0	0	1	0	0	1	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:5253	HSP90AA1	P07900	ENSG00000080824	3320	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:5258	HSP90AB1	P08238	ENSG00000096384	3326	1	0	1	0	0	2	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12028	HSP90B1	P14625	ENSG00000166598	7184	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -7351,7 +7351,7 @@ HGNC:5300	HTR5A	P47898	ENSG00000157219	3361	1	0	0	1	0	2	yes	multipass_with_expos
 HGNC:5301	HTR6	P50406	ENSG00000158748	3362	1	0	0	1	0	2	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:5302	HTR7	P34969	ENSG00000148680	3363	1	0	1	1	0	3	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9476	HTRA1	Q92743	ENSG00000166033	5654	0	0	1	0	0	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:14348	HTRA2	O43464	ENSG00000115317	27429	0	1	0	0	0	1	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:14348	HTRA2	O43464	ENSG00000115317	27429	0	1	0	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:30406	HTRA3	P83110	ENSG00000170801	94031	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26909	HTRA4	P83105	ENSG00000169495	203100	0	0	0	0	0	0	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:4851	HTT	P42858	ENSG00000197386	3064	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -7718,7 +7718,7 @@ HGNC:17870	INVS	Q9Y283	ENSG00000119509	27130	0	0	0	0	0	0	no	cytoplasmic	cu_2026_
 HGNC:18360	IP6K1	Q92551	ENSG00000176095	9807	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17313	IP6K2	Q9UHH9	ENSG00000068745	51447	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17269	IP6K3	Q96PC2	ENSG00000161896	117283	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:21204	IPCEF1	Q8WWN9	ENSG00000074706	26034	0	0	1	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:21204	IPCEF1	Q8WWN9	ENSG00000074706	26034	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:20739	IPMK	Q8NFU5	ENSG00000151151	253430	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:20628	IPO11	Q9UI26	ENSG00000086200	51194	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16853	IPO13	O94829	ENSG00000117408	9670	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -8790,7 +8790,7 @@ HGNC:6641	LMO1	P25800	ENSG00000166407	4004	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_
 HGNC:6642	LMO2	P25791	ENSG00000135363	4005	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:6643	LMO3	Q8TAP4	ENSG00000048540	55885	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:6644	LMO4	P61968	ENSG00000143013	8543	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:6646	LMO7	Q8WWI1	ENSG00000136153	4008	0	1	0	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:6646	LMO7	Q8WWI1	ENSG00000136153	4008	0	1	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:6647	LMOD1	P29536	ENSG00000163431	25802	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:6648	LMOD2	Q6P5Q4	ENSG00000170807	442721	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:6649	LMOD3	Q0VAK6	ENSG00000163380	56203	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -9495,7 +9495,7 @@ HGNC:24726	METTL4	Q8N3J2	ENSG00000101574	64863	0	0	0	0	0	0	no	nuclear	cu_2026_05
 HGNC:25006	METTL5	Q9NRN9	ENSG00000138382	29081	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28343	METTL6	Q8TCB7	ENSG00000206562	131965	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:25856	METTL8	Q9H825	ENSG00000123600	79828	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:24586	METTL9	Q9H1A3	ENSG00000197006	51108	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:24586	METTL9	Q9H1A3	ENSG00000197006	51108	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:33482	MEX3A	A1L020	ENSG00000254726	92312	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:25297	MEX3B	Q6ZN04	ENSG00000183496	84206	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28040	MEX3C	Q5U5Q3	ENSG00000176624	51320	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -9586,7 +9586,7 @@ HGNC:23578	MINDY3	Q9H8M7	ENSG00000148481	80013	0	0	0	0	0	0	no	cytoplasmic	cu_202
 HGNC:21916	MINDY4	Q4G0A6	ENSG00000106125	84182	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:35475	MINDY4B	A8MYZ0	ENSG00000214237	646951	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17565	MINK1	Q8N4C8	ENSG00000141503	50488	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:7102	MINPP1	Q9UNW1	ENSG00000107789	9562	0	0	0	0	1	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:7102	MINPP1	Q9UNW1	ENSG00000107789	9562	0	0	0	0	1	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:21905	MIOS	Q9NXC5	ENSG00000164654	54468	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:14522	MIOX	Q9UGB7	ENSG00000100253	55586	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:7103	MIP	P30301	ENSG00000135517	4284	1	1	0	1	0	3	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -12292,7 +12292,7 @@ HGNC:9038	PLA2G5	P39877	ENSG00000127472	5322	0	0	0	0	0	0	no	secreted_only	cu_202
 HGNC:9039	PLA2G6	O60733	ENSG00000184381	8398	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9040	PLA2G7	Q13093	ENSG00000146070	7941	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9042	PLA2R1	Q13018	ENSG00000153246	22925	1	1	0	1	1	4	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:9043	PLAA	Q9Y263	ENSG00000137055	9373	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:9043	PLAA	Q9Y263	ENSG00000137055	9373	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:14922	PLAAT1	Q9HDD0	ENSG00000127252	57110	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17824	PLAAT2	Q9NWW9	ENSG00000133328	54979	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17825	PLAAT3	P53816	ENSG00000176485	11145	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -12366,12 +12366,12 @@ HGNC:18211	PLEKHJ1	Q9NW61	ENSG00000104886	55111	0	0	0	0	0	0	no	cytoplasmic	cu_20
 HGNC:29017	PLEKHM1	Q9Y4G2	ENSG00000225190	9842	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:29131	PLEKHM2	Q8IWE5	ENSG00000116786	23207	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:34006	PLEKHM3	Q6ZWE6	ENSG00000178385	389072	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:25284	PLEKHN1	Q494U1	ENSG00000187583	84069	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:25284	PLEKHN1	Q494U1	ENSG00000187583	84069	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:24310	PLEKHO1	Q53GL0	ENSG00000023902	51177	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:30026	PLEKHO2	Q8TD55	ENSG00000241839	80301	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26285	PLEKHS1	Q5SXH7	ENSG00000148735	79949	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:30053	PLET1	Q6UQ28	ENSG00000188771	349633	1	1	0	1	0	3	yes	other	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:9071	PLG	P00747	ENSG00000122194	5340	0	1	0	0	0	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:9071	PLG	P00747	ENSG00000122194	5340	0	1	0	0	0	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:9072	PLGLB1	Q02325	ENSG00000183281	5343	0	0	0	0	0	0	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9073	PLGLB2	Q02325	ENSG00000125551	5342	0	0	0	0	0	0	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:23633	PLGRKT	Q9HBL7	ENSG00000107020	55848	1	0	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -12720,7 +12720,7 @@ HGNC:14946	PPP1R9A	Q9ULJ8	ENSG00000158528	55607	0	0	1	0	0	1	no	cytoplasmic	cu_20
 HGNC:9298	PPP1R9B	Q96SB3	ENSG00000108819	84687	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9299	PPP2CA	P67775	ENSG00000113575	5515	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9300	PPP2CB	P62714	ENSG00000104695	5516	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:9302	PPP2R1A	P30153	ENSG00000105568	5518	0	1	0	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:9302	PPP2R1A	P30153	ENSG00000105568	5518	0	1	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:9303	PPP2R1B	P30154	ENSG00000137713	5519	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9304	PPP2R2A	P63151	ENSG00000221914	5520	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9305	PPP2R2B	Q00005	ENSG00000156475	5521	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -13119,7 +13119,7 @@ HGNC:21345	PTCHD4	Q6ZW05	ENSG00000244694	442213	0	0	1	1	0	2	contextual	lysosomal
 HGNC:21290	PTCRA	Q6ISU1	ENSG00000171611	171558	1	0	0	1	0	2	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9587	PTDSS1	P48651	ENSG00000156471	9791	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:15463	PTDSS2	Q9BVG9	ENSG00000174915	81490	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:9588	PTEN	P60484	ENSG00000171862	5728	0	1	0	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:9588	PTEN	P60484	ENSG00000171862	5728	0	1	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:9590	PTER	Q96BW5	ENSG00000165983	9317	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:23734	PTF1A	Q7RTS3	ENSG00000168267	256297	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9591	PTGDR	Q13258	ENSG00000168229	5729	1	0	1	1	0	3	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -13149,7 +13149,7 @@ HGNC:9609	PTH2R	P49190	ENSG00000144407	5746	1	0	0	1	0	2	yes	multipass_with_expos
 HGNC:9607	PTHLH	P12272	ENSG00000087494	5744	0	0	0	0	0	0	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9611	PTK2	Q05397	ENSG00000169398	5747	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9612	PTK2B	Q14289	ENSG00000120899	2185	0	1	1	0	0	2	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:9617	PTK6	Q13882	ENSG00000101213	5753	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:9617	PTK6	Q13882	ENSG00000101213	5753	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:9618	PTK7	Q13308	ENSG00000112655	5754	1	0	1	1	1	4	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9623	PTMA	P06454	ENSG00000187514	5757	0	0	0	0	0	0	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:9629	PTMS	P20962	ENSG00000159335	5763	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -13744,7 +13744,7 @@ HGNC:10000	RGS4	P49798	ENSG00000117152	5999	0	1	0	0	0	1	no	inner_leaflet_anchore
 HGNC:10001	RGS5	O15539	ENSG00000143248	8490	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:10002	RGS6	P49758	ENSG00000182732	9628	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:10003	RGS7	P49802	ENSG00000182901	6000	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:23271	RGS7BP	Q6MZT1	ENSG00000186479	401190	0	0	1	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:23271	RGS7BP	Q6MZT1	ENSG00000186479	401190	0	0	1	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:16810	RGS8	P57771	ENSG00000135824	85397	0	1	1	0	0	2	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:10004	RGS9	O75916	ENSG00000108370	8787	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:30304	RGS9BP	Q6ZS82	ENSG00000186326	388531	1	0	1	0	0	2	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -14473,7 +14473,7 @@ HGNC:10658	SDC1	P18827	ENSG00000115884	6382	1	1	0	1	0	3	yes	classical_surface_re
 HGNC:10659	SDC2	P34741	ENSG00000169439	6383	1	1	1	1	0	4	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:10660	SDC3	O75056	ENSG00000162512	9672	1	1	0	0	0	2	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:10661	SDC4	P31431	ENSG00000124145	6385	1	1	1	0	0	3	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:10662	SDCBP	O00560	ENSG00000137575	6386	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:10662	SDCBP	O00560	ENSG00000137575	6386	0	1	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:15756	SDCBP2	Q9H190	ENSG00000125775	27111	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:10671	SDCCAG8	Q86SQ7	ENSG00000054282	10806	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26643	SDE2	Q6IQ49	ENSG00000143751	163859	0	0	1	0	0	1	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -15140,7 +15140,7 @@ HGNC:18762	SLC36A2	Q495M3	ENSG00000186335	153201	1	0	0	1	0	2	yes	multipass_with_
 HGNC:19659	SLC36A3	Q495N2	ENSG00000186334	285641	1	0	0	1	0	2	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:19660	SLC36A4	Q6YBV0	ENSG00000180773	120103	0	0	1	1	1	3	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11024	SLC37A1	P57057	ENSG00000160190	54020	0	0	0	1	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:20644	SLC37A2	Q8TED4	ENSG00000134955	219855	0	0	0	1	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:20644	SLC37A2	Q8TED4	ENSG00000134955	219855	0	0	0	1	0	1	contextual	lysosomal_exocytosis	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:20651	SLC37A3	Q8NCC5	ENSG00000157800	84255	0	0	0	1	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:4061	SLC37A4	O43826	ENSG00000137700	2542	0	0	0	1	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:13447	SLC38A1	Q9H2H9	ENSG00000111371	81539	1	1	0	1	1	4	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -15309,7 +15309,7 @@ HGNC:32689	SLFN14	P0C7P3	ENSG00000236320	342618	0	0	0	0	0	0	no	cytoplasmic	cu_20
 HGNC:28286	SLFN5	Q08AF3	ENSG00000166750	162394	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26313	SLFNL1	Q499Z3	ENSG00000171790	200172	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:20495	SLIRP	Q9GZT3	ENSG00000119705	81892	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:11085	SLIT1	O75093	ENSG00000187122	6585	0	0	1	0	0	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:11085	SLIT1	O75093	ENSG00000187122	6585	0	0	1	0	0	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:11086	SLIT2	O94813	ENSG00000145147	9353	0	1	0	0	1	2	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11087	SLIT3	O75094	ENSG00000184347	6586	0	0	1	0	1	2	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:20297	SLITRK1	Q96PX8	ENSG00000178235	114798	1	1	0	1	0	3	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -15727,7 +15727,7 @@ HGNC:15570	SPESP1	Q6UW49	ENSG00000258484	246777	0	0	0	0	0	0	contextual	tissue_re
 HGNC:11226	SPG11	Q96JI7	ENSG00000104133	80208	0	0	1	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:20373	SPG21	Q9NZD8	ENSG00000090487	51324	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11237	SPG7	Q9UQ90	ENSG00000197912	6687	0	0	0	0	0	0	no	mitochondrial_internal	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:11240	SPHK1	Q9NYA1	ENSG00000176170	8877	0	0	1	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:11240	SPHK1	Q9NYA1	ENSG00000176170	8877	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:18859	SPHK2	Q9NRA0	ENSG00000063176	56848	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_intracellular_pubmed_ncbi_v1
 HGNC:30619	SPHKAP	Q2M3C7	ENSG00000153820	80309	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11241	SPI1	P17947	ENSG00000066336	6688	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -16079,7 +16079,7 @@ HGNC:30611	STT3B	Q8TCJ2	ENSG00000163527	201595	0	0	0	1	1	2	no	endomembrane_resid
 HGNC:11427	STUB1	Q9UNE7	ENSG00000103266	10273	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:30491	STUM	Q69YW2	ENSG00000203685	375057	0	0	0	0	0	0	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11428	STX10	O60499	ENSG00000104915	8677	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:11429	STX11	O75558	ENSG00000135604	8676	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:11429	STX11	O75558	ENSG00000135604	8676	0	1	0	0	0	1	contextual	tissue_restricted_surface	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:11430	STX12	Q86Y82	ENSG00000117758	23673	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11431	STX16	O14662	ENSG00000124222	8675	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11432	STX17	P56962	ENSG00000136874	55014	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -16220,7 +16220,7 @@ HGNC:17732	SYNPO2	Q9UMS6	ENSG00000172403	171024	0	0	0	0	0	0	no	cytoplasmic	cu_20
 HGNC:23532	SYNPO2L	Q9H987	ENSG00000166317	79933	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16507	SYNPR	Q8TBG9	ENSG00000163630	132204	0	0	0	1	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:557	SYNRG	Q9UMZ2	ENSG00000275066	11276	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:11506	SYP	P08247	ENSG00000102003	6855	0	0	0	1	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:11506	SYP	P08247	ENSG00000102003	6855	0	0	0	1	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:11507	SYPL1	Q16563	ENSG00000008282	6856	0	0	0	1	1	2	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:27638	SYPL2	Q5VXT5	ENSG00000143028	284612	0	0	1	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:16162	SYS1	Q8N2H4	ENSG00000204070	90196	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -17146,8 +17146,8 @@ HGNC:26899	TMTC3	Q6ZXV5	ENSG00000139324	160418	1	0	0	0	0	1	no	endomembrane_resid
 HGNC:25904	TMTC4	Q5T4D3	ENSG00000125247	84899	1	0	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:21709	TMUB1	Q9BVT8	ENSG00000164897	83590	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:28459	TMUB2	Q71RG4	ENSG00000168591	79089	0	0	0	0	0	0	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:15487	TMX1	Q9H3N1	ENSG00000139921	81542	1	0	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:30739	TMX2	Q9Y320	ENSG00000213593	51075	1	0	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:15487	TMX1	Q9H3N1	ENSG00000139921	81542	1	0	0	0	0	1	yes	classical_surface_receptor	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
+HGNC:30739	TMX2	Q9Y320	ENSG00000213593	51075	1	0	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:24718	TMX3	Q96JJ7	ENSG00000166479	54495	0	1	0	1	1	3	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:25237	TMX4	Q9H1E5	ENSG00000125827	56255	0	0	0	1	1	2	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:5318	TNC	P24821	ENSG00000041982	3371	0	0	0	0	1	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -17947,7 +17947,7 @@ HGNC:18634	UNC5D	Q6UXZ4	ENSG00000156687	137970	1	0	0	1	0	2	yes	classical_surface
 HGNC:19966	UNC79	Q9P2D8	ENSG00000133958	57578	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26582	UNC80	Q8N2C7	ENSG00000144406	285175	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12570	UNC93A	Q86WB7	ENSG00000112494	54346	0	0	0	1	0	1	yes	multipass_with_exposed_loops	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:13481	UNC93B1	Q9H1C4	ENSG00000110057	81622	0	0	0	1	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:13481	UNC93B1	Q9H1C4	ENSG00000110057	81622	0	0	0	1	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:33194	UNCX	A6NJT0	ENSG00000164853	340260	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12572	UNG	P13051	ENSG00000076248	7374	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:29369	UNK	Q9C0B0	ENSG00000132478	85451	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -18106,7 +18106,7 @@ HGNC:25507	VAC14	Q08AM6	ENSG00000103043	55697	0	0	0	0	0	0	no	cytoplasmic	cu_2026
 HGNC:12642	VAMP1	P23763	ENSG00000139190	6843	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12643	VAMP2	P63027	ENSG00000220205	6844	0	1	0	0	0	1	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12644	VAMP3	Q15836	ENSG00000049245	9341	0	0	0	0	0	0	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:12645	VAMP4	O75379	ENSG00000117533	8674	0	1	0	0	0	1	no	endomembrane_resident	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:12645	VAMP4	O75379	ENSG00000117533	8674	0	1	0	0	0	1	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:12646	VAMP5	O95183	ENSG00000168899	10791	0	1	1	0	1	3	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:11486	VAMP7	P51809	ENSG00000124333	6845	0	0	0	0	0	0	contextual	lysosomal_exocytosis	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12647	VAMP8	Q9BV40	ENSG00000118640	8673	0	1	1	0	0	2	no	inner_leaflet_anchored	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -18263,7 +18263,7 @@ HGNC:30200	VWC2	Q2TAL6	ENSG00000188730	375567	0	1	0	0	0	1	no	secreted_only	cu_20
 HGNC:37203	VWC2L	B2RUY7	ENSG00000174453	402117	0	1	0	0	0	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:26487	VWCE	Q96DN2	ENSG00000167992	220001	0	0	0	0	0	0	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:21897	VWDE	Q8N2E2	ENSG00000146530	221806	0	1	0	0	0	1	contextual	stable_surface_attachment	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:12726	VWF	P04275	ENSG00000110799	7450	0	0	0	0	1	1	no	secreted_only	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:12726	VWF	P04275	ENSG00000110799	7450	0	0	0	0	1	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:28498	VXN	Q8TAG6	ENSG00000169085	254778	0	0	0	0	0	0	contextual	dual_localization	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:17327	WAC	Q9BTA9	ENSG00000095787	51322	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:23293	WAPL	Q7Z5K2	ENSG00000062650	23063	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
@@ -18786,7 +18786,7 @@ HGNC:12970	ZNF180	Q9UJW8	ENSG00000167384	7733	0	0	0	0	0	0	no	nuclear	cu_2026_05_
 HGNC:12971	ZNF181	Q2M3W8	ENSG00000197841	339318	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:13001	ZNF182	P17025	ENSG00000147118	7569	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12975	ZNF184	Q99676	ENSG00000096654	7738	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
-HGNC:12976	ZNF185	O15231	ENSG00000147394	7739	0	0	1	0	0	1	no	cytoplasmic	cu_2026_05_12_post_silentdrop_fix	ncbi	
+HGNC:12976	ZNF185	O15231	ENSG00000147394	7739	0	0	1	0	0	1	contextual	cell_state_induced	cu_2026_05_12_post_silentdrop_fix	pubmed_rescue	genome_1db_trim_pubmed_ncbi_v1
 HGNC:12980	ZNF189	O75820	ENSG00000136870	7743	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12981	ZNF19	P17023	ENSG00000157429	7567	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	
 HGNC:12986	ZNF195	O14628	ENSG00000005801	7748	0	0	0	0	0	0	no	nuclear	cu_2026_05_12_post_silentdrop_fix	ncbi	

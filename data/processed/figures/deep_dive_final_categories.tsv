@@ -2790,6 +2790,7 @@ TMPRSS3	HGNC:11877	P57727	ENSG00000160183	64699.0	likely	cell_type_restricted	ce
 TMPRSS5	HGNC:14908	Q9H3S3	ENSG00000166682	80975.0	likely	cell_type_restricted	cell_type_restricted	tissue_restricted_surface	none	0	moderate
 TMX3	HGNC:24718	Q96JJ7	ENSG00000166479	54495.0	likely	cell_type_restricted	cell_type_restricted	tissue_restricted_surface	immune	1	high
 TNFSF12	HGNC:11927	O43508	ENSG00000239697	8742.0	likely	cell_type_restricted	cell_type_restricted	tissue_restricted_surface	none	0	moderate
+TPO	HGNC:12015	P07202	ENSG00000115705	7173.0	likely	cell_type_restricted	cell_type_restricted	tissue_restricted_surface	none	0	moderate
 TRAT1	HGNC:30698	Q6PIZ9	ENSG00000163519	50852.0	likely	cell_type_restricted	cell_type_restricted	tissue_restricted_surface	immune	0	moderate
 TRB	HGNC:12155	P0DSE2		6957.0	likely	cell_type_restricted	cell_type_restricted	tissue_restricted_surface	none	0	moderate
 TRHDE	HGNC:30748	Q9UKU6	ENSG00000072657	29953.0	likely	cell_type_restricted	cell_type_restricted	tissue_restricted_surface	other	0	moderate
@@ -4019,6 +4020,7 @@ WARS1	HGNC:12729	P23381	ENSG00000140105	7453.0	low	all	none	cell_state_induced	i
 WBP1L	HGNC:23510	Q9NX94	ENSG00000166272	54838.0	low	all	none	dual_localization	none	0	unclear
 WFDC11	HGNC:20478	Q8NEX6	ENSG00000180083	259239.0	low	all	none	tissue_restricted_surface	other	0	high
 WFDC3	HGNC:15957	Q8IUB2	ENSG00000124116	140686.0	low	all	none	tissue_restricted_surface	none	0	moderate
+WLS	HGNC:30238	Q5T9L3	ENSG00000116729	79971.0	low	all	none	dual_localization	oncogenic	0	high
 WNT7A	HGNC:12786	O00755	ENSG00000154764	7476.0	low	all	none	cell_state_induced	oncogenic	0	high
 WNT7B	HGNC:12787	P56706	ENSG00000188064	7477.0	low	all	none	cell_state_induced	none	0	high
 XKR5	HGNC:20782	Q6UX68	ENSG00000275591	389610.0	low	all	none	cell_state_induced	oncogenic	1	moderate
@@ -5104,6 +5106,7 @@ TMEM102	HGNC:26722	Q8N9M5	ENSG00000181284	284114.0	no	all	none	inner_leaflet_anc
 TMEM116	HGNC:25084	Q8NCL8	ENSG00000198270	89894.0	no	all	none	endomembrane_resident	oncogenic	1	unclear
 TMEM121B	HGNC:1844	Q9BXQ6	ENSG00000183307	27439.0	no	all	none	endomembrane_resident	none	1	unclear
 TMEM125	HGNC:28275	Q96AQ2	ENSG00000179178	128218.0	no	all	none	endomembrane_resident	none	1	unclear
+TMEM127	HGNC:26038	O75204	ENSG00000135956	55654.0	no	all	none	endomembrane_resident	infection	0	unclear
 TMEM134	HGNC:26142	Q9H6X4	ENSG00000172663	80194.0	no	all	none	endomembrane_resident	oncogenic	1	unclear
 TMEM141	HGNC:28211	Q96I45	ENSG00000244187	85014.0	no	all	none	mitochondrial_internal	none	1	unclear
 TMEM151A	HGNC:28497	Q8N4L1	ENSG00000179292	256472.0	no	all	none	endomembrane_resident	none	1	unclear
