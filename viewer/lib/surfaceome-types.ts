@@ -29,6 +29,8 @@ export interface GeneIdentifier {
   uniprot_acc: string;
   ncbi_gene_id: number;
   ensembl_gene: string;
+  /** Canonical protein (ENSP) from the stable-ID cache. */
+  ensembl_canonical_protein?: string | null;
 }
 
 export type TriageSignal =
@@ -401,6 +403,14 @@ export interface IsoformTopology {
    *  insertions are dropped. Optional — absent on pre-backfill records, where
    *  TopologyBar falls back to raw length-scaling. */
   per_residue_topology_canonical_frame?: string | null;
+  /** DeepTMHMM's own top-level call, carried verbatim rather than
+   *  re-derived from the ECD/ICD numbers. ``null`` on pre-2.14.4 records
+   *  means unknown, not false. */
+  predicted_surface_membrane?: boolean | null;
+  predicted_secreted?: boolean | null;
+  beta_strand_count?: number | null;
+  /** Residue length the topology string indexes 1:1. */
+  protein_length?: number | null;
 }
 
 export interface OrthologEntry {
@@ -540,6 +550,20 @@ export interface SurfaceBindSite {
   /** Eisenberg-style hydrophobicity score. Positive = hydrophobic /
    *  lipid-facing-style; negative = polar / solvent-exposed-style. */
   hydrophobicity: number;
+  /** Which side of the membrane the anchor residue sits on, from
+   *  DeepTMHMM's per-residue topology. SURFACE-Bind scores the whole
+   *  solved structure, so a scored patch is NOT necessarily reachable
+   *  from outside the cell — 23% of sites cohort-wide anchor elsewhere
+   *  (EGFR alone has three kinase-domain sites). Only ``extracellular``
+   *  is antibody-accessible; ``signal_peptide`` is ambiguous because the
+   *  peptide is cleaved; ``null`` means the topology was unavailable,
+   *  which is distinct from any determinate answer. */
+  anchor_topology?:
+    | "extracellular"
+    | "intracellular"
+    | "membrane"
+    | "signal_peptide"
+    | null;
 }
 
 /**

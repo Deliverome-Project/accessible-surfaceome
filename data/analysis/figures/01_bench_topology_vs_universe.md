@@ -57,7 +57,7 @@ The canonical generator that produces both this gist mirror's
 inputs and the in-repo
 [`data/analysis/figures/bench_topology_vs_universe.pdf`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/analysis/figures/bench_topology_vs_universe.pdf)
 lives at
-[`scripts/bench_topology_vs_universe.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/bench_topology_vs_universe.py)
+[`scripts/figures/bench_topology_vs_universe.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/bench_topology_vs_universe.py)
 in the project repo. It pulls
 [`data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv)
 from raw.githubusercontent.com, filters to Sonnet 2-tier

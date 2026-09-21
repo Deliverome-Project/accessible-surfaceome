@@ -16,13 +16,15 @@ data/analysis/**/make_*.py -filter text
 data/analysis/**/01_*.md -filter text
 data/analysis/figures/*.py -filter text
 data/analysis/figures/*.md -filter text
+data/analysis/README.md -filter -diff -merge text
 # Gist registry + SWHID map are small JSON read by Python test code
 # at collection time — LFS pointer reads as text that fails json.loads.
 data/analysis/figures/gist_map.json -filter -diff -merge text
 data/analysis/figures/swhid_map.json -filter -diff -merge text
+data/analysis/figures/figure_swhids.json -filter -diff -merge text
 
 # Figure outputs themselves ship as plain git too — each PDF is
-# 20–60 KB and each PNG is 130–500 KB, well under the CLAUDE.md
+# 20–60 KB and each PNG is 130 KB–6.5 MB, still under the CLAUDE.md
 # "LFS-track raster outputs ≥10 MB" threshold. Committing them
 # directly means PR reviewers see the rendered artifacts inline
 # (LFS pointers render as text blobs in GitHub's diff view), and
@@ -159,9 +161,30 @@ data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
 # into its slug's gist as the single source the mirror reads (single-TSV-per-
 # gist invariant). Exempted from LFS so the bundled copy + the
 # raw.githubusercontent.com fallback both resolve to plain text. Small (~5 KB
-# mock placeholder / ~30 KB long-form), well under the 5 MB practical cap.
-data/processed/figures/positive_control_db_coverage_bars.tsv  -filter -diff -merge text
-data/processed/figures/surfaceome_deterministic_features_placeholder.tsv -filter -diff -merge text
+# ~30 KB long-form), well under the 5 MB practical cap.
+# Every per-figure TSV is LFS-EXEMPT so raw.githubusercontent.com serves it
+# as plain text. A reader doing pd.read_csv(<raw url>) against an LFS-tracked
+# path gets the pointer stub instead of data, which silently breaks the
+# reanalysis path the figure-TSV convention exists to support. Verified:
+# positive_control (already exempt) served real TSV while every other figure
+# TSV served "version https://git-lfs.github.com/spec/v1".
+# Sizes are comfortable — 17 files, 11.3 MB total, largest 1.76 MB, against
+# GitHub's 100 MB non-LFS cap and the ~5 MB practical cap in CLAUDE.md.
+data/processed/figures/*.tsv  -filter -diff -merge text
+
+# Intracellular-bucket rescue sweep (10,287-row gene list, ~372 KB; 148-row
+# rescue table). Same rationale as the reconfirm gene list — plaintext inputs
+# small enough to diff inline. The README is exempted too so the PR diff shows
+# prose rather than an LFS pointer.
+# The 10,287-row gene list keeps -diff (367 KB; nobody wants it inline).
+data/processed/intracellular_rescue_v1/gene_list.tsv -filter -diff -merge text
+# Everything else here is small and meant to be READ in review, so no -diff:
+# with -diff git reports them as "Bin 0 -> N bytes" and the prose is invisible.
+data/processed/intracellular_rescue_v1/rescues.tsv -filter -merge text
+data/processed/intracellular_rescue_v1/README.md -filter -merge text
+data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv -filter -merge text
+data/processed/intracellular_rescue_v1/RUN_DEEP_DIVE.md -filter -merge text
+data/processed/intracellular_rescue_v1/citation_audit.tsv -filter -merge text
 
 # Draft binder coverage audit: small, reader-accessible tables and provenance.
 data/analysis/binder_coverage/* -filter -diff -merge

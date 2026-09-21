@@ -28,8 +28,8 @@ from accessible_surfaceome._provenance import (
 )
 
 # Import the registry from the embed script. The script lives in
-# ``scripts/`` so add it to the path.
-SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
+# ``scripts/figures/`` so add it to the path.
+SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts" / "figures"
 sys.path.insert(0, str(SCRIPTS_DIR))
 from embed_figure_gist_metadata import FIGURE_PROVENANCE, FIGURES_DIR  # noqa: E402  # ty: ignore[unresolved-import]
 

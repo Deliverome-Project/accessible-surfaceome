@@ -85,7 +85,7 @@ zone_name = "deliverome.org"
 name = "RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1001"
-simple = { limit = 600, period = 60 }   # 600 req / 60s / IP on the route
+simple = { limit = 1800, period = 60 }  # 1800 req / 60s / IP on the route (raised from 600 so the viewer build's 5,130-record snapshot can run at higher concurrency without 429s)
 
 [[unsafe.bindings]]
 name = "RATE_LIMITER_HEAVY"
@@ -155,6 +155,15 @@ id = "REPLACE_WITH_FEEDBACK_RATELIMIT_KV_ID"
 # Values come from the root .env (RESEND_API_KEY, TURNSTILE_SECRET_KEY,
 # MAGIC_LINK_SECRET, MAINTAINER_EMAIL respectively).
 
-# Namespace cached responses by deployment so changed routes go live immediately.
+# Deploy epoch for the cache keys. ``id`` changes on every deploy, and
+# ``withEdgeCache`` / ``handleCatalog`` namespace every caches.default + KV
+# key by it — so a deploy that changes the RESPONSE SHAPE starts a clean
+# cache namespace instead of serving the old shape until each entry's own
+# TTL (up to 1h for a KV read, up to a day for caches.default).
+#
+# OPTIONAL: without this binding the Worker falls back to a fixed token and
+# behaves exactly as it did before, so an older wrangler.toml still deploys
+# — it just loses deploy-scoped invalidation. Old-epoch keys need no
+# cleanup; every KV write already carries an expirationTtl.
 [version_metadata]
 binding = "CF_VERSION_METADATA"

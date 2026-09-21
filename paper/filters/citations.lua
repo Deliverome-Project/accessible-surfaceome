@@ -324,7 +324,7 @@ end
 -- Order and labels are driven by the prefix each paragraph starts
 -- with, so re-ordering them in the .docx re-orders the row.
 local RESOURCE_LINES = {
-  {prefix = "code (zenodo)", icon = "zenodo.svg", label = "Code DOI"},
+  {prefix = "code (zenodo)", icon = "zenodo.svg", label = "Deposited code"},
   {prefix = "code (github)", icon = "github.svg", label = "Code"},
   {prefix = "code:",         icon = "github.svg", label = "Code"},
   {prefix = "data:",         icon = "zenodo.svg", label = "Data"},
@@ -364,11 +364,17 @@ local function icon_link(icon, label, url)
   -- own font and lets CSS colour the capital R, which is the whole of
   -- the mark's identity.
   if label == "bioRxiv" then
-    inlines:insert(pandoc.Str("bio"))
-    inlines:insert(pandoc.Span({pandoc.Str("R")}, pandoc.Attr("", {"biorxiv-r"})))
-    inlines:insert(pandoc.Str("xiv"))
+    -- Real bioRxiv logo (the official public-domain wordmark lockup),
+    -- sized down in CSS. A fixed image reads as the brand and — unlike
+    -- the old typeset wordmark — doesn't depend on the page's fonts.
+    local src = ASSETS_DIR and (ASSETS_DIR .. "/biorxiv_logo.png")
+      or "biorxiv_logo.png"
+    local logo = pandoc.Image(
+      {pandoc.Str("bioRxiv")}, src, "",
+      pandoc.Attr("", {"resource-biorxiv-logo"})
+    )
     return pandoc.Link(
-      inlines, url, "", pandoc.Attr("", {"resource-link", "resource-biorxiv"})
+      {logo}, url, "", pandoc.Attr("", {"resource-link", "resource-biorxiv"})
     )
   end
   if icon and ASSETS_DIR then
@@ -424,6 +430,16 @@ local function build_resource_row(doc)
   for i, item in ipairs(collected) do
     if i > 1 or WEB_EXTRAS then row:insert(pandoc.Space()) end
     row:insert(icon_link(item.rule.icon, item.rule.label, item.url))
+  end
+  if WEB_EXTRAS then
+    -- Web only, LAST in the row (next to Data): a jump-to-comments
+    -- affordance styled as a small button. The comment form lives at the
+    -- foot of the page; this scrolls the reader there.
+    row:insert(pandoc.Space())
+    row:insert(pandoc.Link(
+      {pandoc.Str("Post a comment")}, "#comments", "",
+      pandoc.Attr("", {"resource-link", "resource-comment"})
+    ))
   end
 
   local row_div = pandoc.Div(

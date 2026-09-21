@@ -94,7 +94,7 @@ Read every "excluded," "filtered," or "tightened" phrase below in that light: th
 
 **Assembly steps** (all pre-LLM, one-time):
 
-1. **SURFY** — ingest current snapshot into `surfy_surfaceome_snapshot_rows` (pattern: [packages/schemas/src/drizzle/reference/surfy.ts](packages/schemas/src/drizzle/reference/surfy.ts)).
+1. **SURFY** — ingest current snapshot into `surfy_surfaceome_snapshot_rows` (pattern: `packages/schemas/src/drizzle/reference/surfy.ts`).
 2. **CSPA** — download Wollscheid lab Table S3; normalize to UniProt + HGNC.
 3. **UniProt** — **targeted-but-permissive query** that pulls plasma-membrane and extracellular-topology entries without demanding UniProt be the primary compartment call:
    ```
@@ -133,7 +133,7 @@ is_negative_control, is_positive_control, exclusion_reasons,
 expected_db_disagreement
 ```
 
-Reuse gene-ID normalization pattern from [packages/schemas/src/drizzle/reference/gene-resolutions.ts](packages/schemas/src/drizzle/reference/gene-resolutions.ts).
+Reuse gene-ID normalization pattern from `packages/schemas/src/drizzle/reference/gene-resolutions.ts`.
 
 ---
 
@@ -604,11 +604,11 @@ data/audit/{gene}.jsonl            # retrieval → extraction → synthesis trac
 
 ## Critical files / patterns to reuse
 
-- **PydanticAI structured-output pattern**: [apps/bff/src/bff/agents/question_generator.py:158](apps/bff/src/bff/agents/question_generator.py:158) — copy the `run_structured_output()` convention and `output_type=` usage.
+- **PydanticAI structured-output pattern**: `apps/bff/src/bff/agents/question_generator.py` — copy the `run_structured_output()` convention and `output_type=` usage.
 - **NCBI E-utils throttling + retry**: `apps/workers/src/lib/retrieval/` — port concurrency + exp-backoff to Python (httpx + `asyncio.Semaphore`). Respect `RETRIEVAL_NCBI_MAX_CONCURRENCY`-style env vars.
-- **Fan-out with checkpointing**: [apps/workers/src/inngest/question-run.ts:954](apps/workers/src/inngest/question-run.ts:954) — replicate the `mapWithConcurrency` + per-item durability pattern in Python using `asyncio.TaskGroup` + per-gene JSONL checkpoint for resume-from-failure.
-- **Gene-ID normalization**: [packages/schemas/src/drizzle/reference/gene-resolutions.ts](packages/schemas/src/drizzle/reference/gene-resolutions.ts) — three-tier status model (`exact` / `normalized_alias` / `ambiguous`).
-- **SURFY snapshot ingestion**: [packages/schemas/src/drizzle/reference/surfy.ts](packages/schemas/src/drizzle/reference/surfy.ts) — reuse column set for SURFY layer of `candidates.parquet`.
+- **Fan-out with checkpointing**: `apps/workers/src/inngest/question-run.ts` — replicate the `mapWithConcurrency` + per-item durability pattern in Python using `asyncio.TaskGroup` + per-gene JSONL checkpoint for resume-from-failure.
+- **Gene-ID normalization**: `packages/schemas/src/drizzle/reference/gene-resolutions.ts` — three-tier status model (`exact` / `normalized_alias` / `ambiguous`).
+- **SURFY snapshot ingestion**: `packages/schemas/src/drizzle/reference/surfy.ts` — reuse column set for SURFY layer of `candidates.parquet`.
 
 ---
 

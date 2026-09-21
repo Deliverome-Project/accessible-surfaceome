@@ -124,10 +124,10 @@ body > h1:first-of-type {
    * follow get the same beige wash and butt up directly against
    * this block to form one continuous title band. */
   margin: -0.85in -0.75in 0 -0.75in;
-  /* Padding absorbs the page-margin space + adds a tighter top
-   * gutter (1.05in → 0.5in extra over the bleed) so the title
-   * sits closer to the top of the page per review. */
-  padding: 0.95in 0.95in 0.3em 0.95in;
+  /* Padding absorbs the page-margin space (-0.85in bleed) + a small
+   * top gutter so the title sits high on the page with little
+   * whitespace above it. */
+  padding: 0.5in 0.95in 0.3em 0.95in;
   break-after: avoid-page;
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 600;
@@ -221,6 +221,13 @@ h2 {
   margin: 1.4em 0 0.5em 0;
 }
 
+/* The first section heading (Abstract) sits at the very top of the body
+ * columns, directly under the title band — drop its top margin so it
+ * doesn't render with an empty line above it. */
+body > h2:first-of-type {
+  margin-top: 0;
+}
+
 /* SUBSECTION headings — Manrope (NOT serif). User feedback: serif
  * is reserved for the title only; everything below stays in the body
  * font for scan consistency. */
@@ -243,6 +250,20 @@ h4 {
   color: var(--maroon-dark, #6e1428);
   margin: 0.9em 0 0.2em 0;
   letter-spacing: 0.005em;
+}
+
+/* DEEPEST heading (h6). This manuscript reserves h5 for figure captions,
+ * so its fifth-level headings (e.g. "Discovery" under a Methods subsection)
+ * come through as h6 — which otherwise falls to WeasyPrint's tiny default
+ * and renders as near-body-size text. Style it one clear step below h4. */
+h6 {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 9.5pt;
+  color: var(--maroon-dark, #6e1428);
+  margin: 0.8em 0 0.15em 0;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 /* ============================================================
@@ -333,8 +354,8 @@ img {
 
 /* Figure captions — current docx convention is Heading 5 in Word,
  * which pandoc emits as <h5>. Style it as the figure caption (NOT
- * as a section heading): beige card, side bar, Manrope, with a
- * bold first-line treatment for the "Figure N. Title" lead clause.
+ * as a section heading): beige card, side bar, Manrope, with the
+ * "Figure N. Title" lead clause picked out below.
  *
  * Heading semantics are overridden first (font-family / weight /
  * text-transform / letter-spacing) so this h5 doesn't get the
@@ -361,7 +382,37 @@ h5 {
   text-align: left;
 }
 
-h5::first-line {
+/* The Pioneer-style lead clause — "Figure N. Title sentence." set
+ * bold + brand maroon.
+ *
+ * The extent is decided structurally, in paper/filters/figures.lua,
+ * which wraps that clause in <span class="caption-lead">. It used to
+ * be `::first-line`, which paints whatever text happens to fit on the
+ * first rendered LINE: the accent stopped mid-sentence on one caption
+ * and ran on into the body sentence on the next, entirely as a
+ * function of where the column broke. A line box is not a sentence,
+ * and no amount of CSS can make it one. */
+.caption-lead {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
+}
+
+/* The .docx marks the lead clause bold, so the span usually wraps a
+ * <strong> — and the global `strong { font-weight: 600 }` above then
+ * beats the span's inherited 700, printing the lead a notch lighter
+ * than an unbolded one. Colour and letter-spacing inherit on their
+ * own; only the weight needs saying. */
+.caption-lead strong {
+  font-weight: inherit;
+}
+
+/* Fallback for a caption the filter could not resolve (it reports
+ * each one at build time). Scoped OFF any caption that did get a
+ * lead span — otherwise ::first-line, which the spec applies as the
+ * innermost fictional wrapper, would repaint the first line straight
+ * back over the span and reinstate the bug. */
+h5:not(:has(.caption-lead))::first-line {
   font-weight: 700;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
@@ -413,13 +464,13 @@ h2#references ~ p a.doi {
  * itself (it'd otherwise inherit nothing special — but the global
  * h2 rule above already handles it). */
 
-/* The Pioneer-style "Figure N." prefix — bold + brand maroon, set
- * with `::first-line` so the lead phrase reads as a stylized
- * label even though pandoc emits it as plain prose. ::first-line
- * matches only what fits on the first rendered line, which for
- * a typical "Figure 1. Title text. Body explanation…" caption
- * means the leading title clause reads emphasized. */
-p:has(> img) + p::first-line {
+/* Same lead treatment for the other caption shape: a plain <p>
+ * caption directly under the image paragraph, which is what pandoc
+ * emits when the .docx didn't style the caption as Heading 5.
+ * figures.lua only marks heading captions, so this shape still
+ * relies on the ::first-line approximation — see the note on
+ * `.caption-lead` above for why that is the weaker treatment. */
+p:has(> img) + p:not(:has(.caption-lead))::first-line {
   font-weight: 700;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
@@ -449,7 +500,7 @@ figcaption {
   border-radius: 2px;
 }
 
-figcaption::first-line {
+figcaption:not(:has(.caption-lead))::first-line {
   font-weight: 700;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
@@ -577,8 +628,18 @@ a.footnote-back {
  * .docx's four raw-URL paragraphs into one row of brand-marked
  * links, placed under the corresponding-author line.
  * ============================================================ */
+/* Sits inside the cream title band (full-bleed beige, butted up against
+ * the author-metadata paragraphs) so the resource links read as part of
+ * the banner — matching the site — rather than floating on the page.
+ * Carries the closing maroon rule that ends the title block. */
 .resource-row {
-  margin: 0.35em 0 0.2em 0;
+  column-span: all;
+  background: var(--title-beige);
+  /* Tight bottom margin so the abstract follows the band closely rather
+   * than sitting too low on the page. */
+  margin: 0 -0.75in 0.16in -0.75in;
+  padding: 0.1em 0.95in 0.2in 0.95in;
+  border-bottom: 4px solid var(--maroon-mid, #922038);
 }
 
 .resource-row p {
