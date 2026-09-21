@@ -37,6 +37,14 @@ from accessible_surfaceome.env import load_env
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data/processed/deep_dive/sonnet_universe_det_features.tsv"
 _TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
+# The literature-rescue lanes. Without them this pool is the canonical
+# run alone and every gene a rescue lane reclassified is missing its
+# deterministic features in S14 — which is how the pool froze at 4,236
+# while the live triage-positive set moved to 4,574.
+_TRIAGE_RESCUE_RUN_IDS = (
+    "genome_full_sonnet_pubmed_ncbi_v1",
+    "genome_intracellular_pubmed_ncbi_v1",
+)
 
 # The exact twelve feature columns the deep-dive export derives (same names, so
 # build_figure_tsvs can union the Sonnet rows straight into the S14 frame).
@@ -56,11 +64,14 @@ def main() -> int:
     load_env()
     with D1Client(D1Config.from_env_public()) as d1:
         # 1. Sonnet-flagged surface pool (yes + contextual).
+        placeholders = ", ".join("?" for _ in (_TRIAGE_RUN_ID, *_TRIAGE_RESCUE_RUN_IDS))
         son = pd.DataFrame(d1.query(
             "SELECT DISTINCT gene_symbol, uniprot_acc FROM triage_run_public "
-            "WHERE run_id = ? AND predicted_verdict IN ('yes','contextual')",
-            [_TRIAGE_RUN_ID],
+            f"WHERE run_id IN ({placeholders}) "
+            "AND predicted_verdict IN ('yes','contextual')",
+            [_TRIAGE_RUN_ID, *_TRIAGE_RESCUE_RUN_IDS],
         ))
+        son = son.drop_duplicates(subset=["gene_symbol"])
         syms = set(son["gene_symbol"])
         print(f"Sonnet-flagged surface genes: {len(son)}")
 
