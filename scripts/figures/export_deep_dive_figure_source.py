@@ -167,8 +167,19 @@ _N_LLM_EVIDENCE_SQL = "(" + " + ".join(
 _DET_EXPRS: list[tuple[str, str]] = [
     ("tm_helix_count",
      f"CAST(json_extract(annotation_json,'{_CT}.tm_helix_count') AS INT)"),
+    # protein_length has no field of its own in the record — it is derived
+    # from the canonical sequence blob, which 65 records omit entirely (the
+    # field is absent, not empty: json_extract returns NULL, so length() is
+    # NULL). Fall back to topology_public, which carries protein_length for
+    # every one of them. Correlated subquery rather than a join so the
+    # ORDER BY and the one-row-per-gene shape are untouched.
     ("protein_length",
-     f"length(json_extract(annotation_json,'{_CT}.sequence'))"),
+     f"COALESCE(length(json_extract(annotation_json,'{_CT}.sequence')), "
+     "(SELECT tp.protein_length FROM topology_public tp "
+     " WHERE tp.gene_symbol = surface_annotation.gene_symbol "
+     "   AND tp.species = 'human' AND tp.cohort = 'human_canonical' "
+     "   AND tp.is_canonical IN ('1', 1) "
+     " ORDER BY tp.protein_length DESC LIMIT 1))"),
     ("ecd_length_residues",
      f"CAST(json_extract(annotation_json,'{_CT}.ecd_length_residues') AS INT)"),
     ("has_signal_peptide",

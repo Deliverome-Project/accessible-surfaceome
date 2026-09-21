@@ -447,7 +447,6 @@ BPIFB2	Q8N4F0	contextual	dual_localization	secreted_only	no	0	0	0	0	0
 BPIFB6	Q8NFQ5	contextual	stable_surface_attachment	endomembrane_resident	no	0	0	0	0	0
 BPIFC	Q8NFQ6	contextual	other	secreted_only	no	0	0	0	0	0
 BRI3	O95415	contextual	dual_localization	dual_localization	low	0	0	0	0	0
-BRI3BP	Q8WY22	no	mitochondrial_internal	mitochondrial_internal	no	0	0	0	0	0
 BRICD5	Q6PL45	contextual	dual_localization	other	low	0	0	0	1	0
 BRINP2	Q9C0B6	contextual	stable_surface_attachment	secreted_only	no	0	0	0	0	0
 BRK1	Q8WUW1	contextual	cell_state_induced	cytoplasmic	no	0	0	1	0	0

@@ -129,6 +129,21 @@ def _join_truth_into_preds(preds: pd.DataFrame, bench: pd.DataFrame) -> pd.DataF
     return out
 
 
+def _stamp_optimized_cutoffs(df: pd.DataFrame, opt: pd.DataFrame) -> pd.DataFrame:
+    """Add uniprot/cspa optimized-cutoff flags, keyed on uniprot_acc.
+
+    POSITIVE LIST: an accession absent from ``opt`` is 0 for both, never a
+    fallback to the native flag — the tightened CSPA rule exists to drop
+    exactly those members.
+    """
+    out = df.copy()
+    acc = out["uniprot_acc"].astype(str)
+    for col in ("uniprot_optimized", "cspa_optimized"):
+        positives = set(opt.loc[opt[col] == 1, "accession"].astype(str))
+        out[col] = acc.isin(positives).astype(int)
+    return out
+
+
 def _join_truth_into_reps(reps: pd.DataFrame, bench: pd.DataFrame) -> pd.DataFrame:
     out = reps.copy()
     if "ground_truth_verdict" not in out.columns:
@@ -177,18 +192,23 @@ def build_db_correctness_by_class(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
     We start from mainbench_replicates_v2 (per-rep), join in optimized
     cutoffs by uniprot_acc."""
-    df = _join_truth_into_reps(src["reps"], src["bench"])
-    uniprot_opt = set(src["opt"].loc[src["opt"]["uniprot_optimized"] == 1, "accession"].astype(str))
-    cspa_opt    = set(src["opt"].loc[src["opt"]["cspa_optimized"]    == 1, "accession"].astype(str))
-    df["uniprot_optimized"] = df["uniprot_acc"].astype(str).isin(uniprot_opt).astype(int)
-    df["cspa_optimized"]    = df["uniprot_acc"].astype(str).isin(cspa_opt).astype(int)
-    return df
+    return _stamp_optimized_cutoffs(
+        _join_truth_into_reps(src["reps"], src["bench"]), src["opt"]
+    )
 
 
 def build_db_correctness_overall(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Same shape as by_class but the figure only needs the overall
-    accuracy, no per-bucket breakdown. Same TSV works."""
-    return _join_truth_into_reps(src["reps"], src["bench"])
+    accuracy, no per-bucket breakdown. Same TSV works.
+
+    Carries the optimized-cutoff flags even though this figure plots model
+    accuracy from ``is_match`` and never reads a DB column. Its sibling
+    by_class does score the DBs, and both ship their TSV as a bundled gist —
+    a reanalyst picking this one up would otherwise get the native flags and
+    silently reproduce a different comparison than the paper's."""
+    return _stamp_optimized_cutoffs(
+        _join_truth_into_reps(src["reps"], src["bench"]), src["opt"]
+    )
 
 
 def build_db_vs_sonnet_whole_proteome(src: dict[str, pd.DataFrame]) -> pd.DataFrame:

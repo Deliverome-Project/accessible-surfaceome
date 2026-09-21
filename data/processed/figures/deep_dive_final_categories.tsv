@@ -4177,7 +4177,6 @@ BPIFA3	HGNC:16204	Q9BQP9	ENSG00000131059	128861.0	no	all	none	secreted_only	none
 BPIFB2	HGNC:16177	Q8N4F0	ENSG00000078898	80341.0	no	all	none	secreted_only	none	1	unclear
 BPIFB6	HGNC:16504	Q8NFQ5	ENSG00000167104	128859.0	no	all	none	endomembrane_resident	none	1	unclear
 BPIFC	HGNC:16503	Q8NFQ6	ENSG00000184459	254240.0	no	all	none	secreted_only	none	1	unclear
-BRI3BP	HGNC:14251	Q8WY22	ENSG00000184992	140707.0	no	all	none	mitochondrial_internal	none	1	unclear
 BRINP2	HGNC:13746	Q9C0B6	ENSG00000198797	57795.0	no	all	none	secreted_only	none	1	unclear
 BRK1	HGNC:23057	Q8WUW1	ENSG00000254999	55845.0	no	all	none	cytoplasmic	immune	1	unclear
 BTD	HGNC:1122	P43251	ENSG00000169814	686.0	no	all	none	secreted_only	other	0	unclear
