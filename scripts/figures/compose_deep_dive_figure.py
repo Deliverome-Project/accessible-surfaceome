@@ -150,7 +150,12 @@ def main() -> None:
         "</g>",
         "</svg>",
     ]
-    svg = "\n".join(out)
+    # Strip per-line trailing whitespace and end with a newline: panel b is
+    # an Illustrator export that carries both, and the repo's pre-commit
+    # hooks (trailing-whitespace, end-of-file-fixer) rewrite the file
+    # otherwise — which fails CI on a generated artifact that would just be
+    # regenerated dirty again. Normalise here so the output is hook-clean.
+    svg = "\n".join(line.rstrip() for line in "\n".join(out).split("\n")) + "\n"
     OUT_SVG.write_text(svg, encoding="utf-8")
     _export(svg, total_w, total_h)
     print(
