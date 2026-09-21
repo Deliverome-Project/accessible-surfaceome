@@ -66,7 +66,9 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
 ## Before you run it
 
 1. **Review `EXTRA_FILES`** in `publish-archive.py`. The default set is
-   three data files plus a generated in-deposit README. All joins
+   the genome-wide triage sweeps (the canonical run plus all four
+   literature-rescue lanes), the benchmark export, the database cutoffs,
+   and a generated in-deposit README. All joins
    happen server-side in the Cloudflare Worker — the publish script
    just fetches pre-joined endpoints, so deposit bytes are atomic
    snapshots:
@@ -78,6 +80,20 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
      Sonnet + Opus × 4 prompt variants × 147 bench genes, with DB
      votes + truth labels joined in by the Worker. From
      `/v1/benchmark/export.tsv`.
+   - `db_optimized_cutoffs.tsv` — one row per UniProt accession with
+     each source's native surface call and its SurfaceBench-recalibrated
+     one. UniProt is expanded (TM > 0, signal peptide, or a strict
+     subcellular term) and CSPA tightened to high-confidence only; GO,
+     SURFY and HPA are unchanged. A positive list of the 4,171
+     accessions passing at least one optimized cutoff — an accession
+     that isn't in the file is 0 under the optimized rule, not its
+     native flag. Read from the repo, not the Worker.
+
+     CLAUDE.md says not to push figure-input TSVs into this deposit.
+     This one is a deliberate exception: since 2026-09 the recalibrated
+     rule decides DB membership on the API, the viewer and the benchmark
+     table, so it is a serving-side reference now rather than a figure
+     input. The rule stands for everything else.
    - `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
      per published `SurfaceomeRecord`; built by fetching `/v1/genes`
      for the index, then `/v1/genes/<SYMBOL>` per gene.

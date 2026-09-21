@@ -950,3 +950,27 @@ CREATE TABLE IF NOT EXISTS paper_metadata (
 
 CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmid ON paper_metadata (pmid);
 CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmc ON paper_metadata (pmc_id);
+
+-- Optimized (SurfaceBench-recalibrated) DB cutoffs, per UniProt accession.
+--
+-- The paper scores DB membership on recalibrated rules everywhere — UniProt
+-- expanded to TM>0 OR signal-peptide>0 OR a strict subcellular term, CSPA
+-- tightened to high-confidence only — but those rules were only ever computed
+-- repo-side from the raw UniProt and CSPA dumps
+-- (scripts/figures/triage_bench_db_barplot.py::_optimized_uniprot_accs /
+-- _optimized_cspa_accs). D1 carried each source's NATIVE flag and nothing
+-- else, so the Worker could not reproduce a single optimized call and the
+-- viewer's low-literature badge silently gated on the un-recalibrated flag
+-- while the figures beside it used the recalibrated one.
+--
+-- POSITIVE LIST: an accession absent from this table is (0, 0) — NOT
+-- "fall back to the native flag". Falling back resurrects exactly the
+-- low-confidence CSPA-only proteins the tightening exists to drop. Loaded by
+-- scripts/cloud/load_db_optimized_cutoffs_to_d1.py; because absence means
+-- zero, the table must be populated BEFORE a Worker that reads it is
+-- deployed, or every gene reads 0 and the badge disappears site-wide.
+CREATE TABLE IF NOT EXISTS db_optimized_cutoff_public (
+  accession          TEXT PRIMARY KEY,
+  uniprot_optimized  INTEGER NOT NULL DEFAULT 0,
+  cspa_optimized     INTEGER NOT NULL DEFAULT 0
+);

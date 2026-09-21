@@ -309,12 +309,20 @@ export function GeneHeader({
   // 5-DB strip (catalogRow.db.uniprot) — absent → no badge (graceful, like the
   // strip). UniProt (not SURFY) because it captures the understudied
   // olfactory/taste GPCR class SURFY structurally misses.
+  // Prefer the Worker's own verdict: it evaluates the badge against the
+  // SurfaceBench-OPTIMIZED UniProt cutoff, and `db.uniprot` here is the
+  // NATIVE 5-DB strip flag, which cannot express that rule. Recomputing
+  // locally from the native flag is exactly why this page used to show no
+  // badge for genes the catalog badged (LY6L: native 0, optimized 1).
+  // The local predicate stays as the fallback for rows served before the
+  // field shipped, or from the fs snapshot.
   const lowLitSurface =
     !!catalogRow &&
-    isLowLiteratureSurface(
-      rec.filters as unknown as DeepDiveFilters,
-      catalogRow.db.uniprot === 1,
-    );
+    (catalogRow.low_lit_uniprot ??
+      isLowLiteratureSurface(
+        rec.filters as unknown as DeepDiveFilters,
+        catalogRow.db.uniprot === 1,
+      ));
   // Deep-dive tier callout — the same five-tier classification the catalog +
   // Figure 5 use, so the reader sees which shortlist this gene lands in
   // (Canonical / Likely / …) plus its Cell-state-induced / Cell-type-restricted

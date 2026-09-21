@@ -56,12 +56,27 @@ def main() -> int:
             "WHERE species='human' AND is_canonical IN ('1', 1) "
             "AND cohort='human_canonical'", []))
         # 1:1 ortholog % identity (best per species).
-        orth = pd.DataFrame(d1.query(
+        # Same two-table union as the sonnet-universe export: compara_ortholog
+        # alone misses genes later Compara pulls added (NPM1 among them), and
+        # compara_ortholog_ecd is what the Worker serves from. Prefer the
+        # full-length identity when present, fall back to BioMart's.
+        orth_full = pd.DataFrame(d1.query(
             "SELECT human_gene_symbol AS gene_symbol, species, "
             "MAX(CAST(percent_identity AS REAL)) AS pct FROM compara_ortholog "
             "WHERE orthology_type='ortholog_one2one' "
             "AND species IN ('mouse','cynomolgus') "
             "GROUP BY human_gene_symbol, species", []))
+        orth_ecd = pd.DataFrame(d1.query(
+            "SELECT human_gene_symbol AS gene_symbol, "
+            "CASE WHEN species='cyno' THEN 'cynomolgus' ELSE species END AS species, "
+            "MAX(CAST(biomart_percent_identity AS REAL)) AS pct "
+            "FROM compara_ortholog_ecd "
+            "WHERE species IN ('mouse','cynomolgus','cyno') "
+            "GROUP BY human_gene_symbol, species", []))
+        orth = pd.concat([orth_full, orth_ecd], ignore_index=True)
+        if not orth.empty:
+            orth = (orth.sort_values("pct", ascending=False, na_position="last")
+                        .drop_duplicates(subset=["gene_symbol", "species"]))
         # Schweke homomer stoichiometry (largest model if several).
         hom = pd.DataFrame(d1.query(
             "SELECT gene_symbol, MAX(CAST(stoichiometry AS INT)) AS homomer_stoichiometry "

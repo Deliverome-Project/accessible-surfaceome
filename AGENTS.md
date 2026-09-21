@@ -203,14 +203,17 @@ statement:
   parent run for affected cells (originals preserved). Analytics
   that should reflect the fix must COALESCE-prefer the fix run
   over its parent; see CLAUDE.md for the canonical query.
-- **Two `pubmed_ncbi` rescue lanes**, partitioned by the prior `ncbi`
-  reason so they never overlap and together cover the whole zero-DB /
-  Sonnet-`no` population: `genome_full_sonnet_pubmed_ncbi_v1` (the
-  2,626-cell ambiguous tail, 177 rescues) and
-  `genome_intracellular_pubmed_ncbi_v1` (the 10,287-cell
-  cytoplasmic/nuclear/mitochondrial complement, 148 rescues). Any
-  query applying the defer-to-more-inclusive reconciliation rule must
-  filter on **both** run_ids — see CLAUDE.md.
+- **Four `pubmed_ncbi` rescue lanes**, disjoint by construction, together
+  giving every Sonnet-`no` gene that the universe gate can drop a
+  literature-augmented second look: `genome_full_sonnet_pubmed_ncbi_v1`
+  (2,626-cell zero-DB ambiguous tail, 177 rescues),
+  `genome_intracellular_pubmed_ncbi_v1` (10,287-cell zero-DB
+  cytoplasmic/nuclear/mitochondrial complement, 148 rescues),
+  `genome_1db_trim_pubmed_ncbi_v1` (1,417-cell 1-of-5-DB trim set, 53
+  rescues) and `genome_optcut_zerodb_pubmed_ncbi_v1` (74 genes the
+  optimized cutoffs moved from 1-DB to 0-DB, 2 rescues). Any query
+  applying the defer-to-more-inclusive reconciliation rule must filter on
+  **all four** run_ids — see CLAUDE.md.
 
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions

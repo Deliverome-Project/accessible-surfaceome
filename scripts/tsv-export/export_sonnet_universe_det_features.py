@@ -37,6 +37,16 @@ from accessible_surfaceome.env import load_env
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data/processed/deep_dive/sonnet_universe_det_features.tsv"
 _TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
+# The literature-rescue lanes. Without them this pool is the canonical
+# run alone and every gene a rescue lane reclassified is missing its
+# deterministic features in S14 — which is how the pool froze at 4,236
+# while the live triage-positive set moved to 4,574.
+_TRIAGE_RESCUE_RUN_IDS = (
+    "genome_full_sonnet_pubmed_ncbi_v1",
+    "genome_intracellular_pubmed_ncbi_v1",
+    "genome_1db_trim_pubmed_ncbi_v1",
+    "genome_optcut_zerodb_pubmed_ncbi_v1",
+)
 
 # The exact twelve feature columns the deep-dive export derives (same names, so
 # build_figure_tsvs can union the Sonnet rows straight into the S14 frame).
@@ -56,11 +66,14 @@ def main() -> int:
     load_env()
     with D1Client(D1Config.from_env_public()) as d1:
         # 1. Sonnet-flagged surface pool (yes + contextual).
+        placeholders = ", ".join("?" for _ in (_TRIAGE_RUN_ID, *_TRIAGE_RESCUE_RUN_IDS))
         son = pd.DataFrame(d1.query(
             "SELECT DISTINCT gene_symbol, uniprot_acc FROM triage_run_public "
-            "WHERE run_id = ? AND predicted_verdict IN ('yes','contextual')",
-            [_TRIAGE_RUN_ID],
+            f"WHERE run_id IN ({placeholders}) "
+            "AND predicted_verdict IN ('yes','contextual')",
+            [_TRIAGE_RUN_ID, *_TRIAGE_RESCUE_RUN_IDS],
         ))
+        son = son.drop_duplicates(subset=["gene_symbol"])
         syms = set(son["gene_symbol"])
         print(f"Sonnet-flagged surface genes: {len(son)}")
 
@@ -96,14 +109,33 @@ def main() -> int:
             if (others != ct).any():
                 alt_diff.add(gsym)
 
-        # 4. 1:1 orthologs (mouse / cynomolgus) — presence of a one2one row.
+        # 4. 1:1 orthologs (mouse / cynomolgus).
+        #
+        # Union of TWO tables, deliberately. compara_ortholog alone is what
+        # this used to read, and it misses genes the later Compara pulls
+        # added — NPM1 has a mouse one2one in the served record and no
+        # compara_ortholog row at all, so the export reported
+        # mouse_has_one2one=0 for a gene the API correctly shows as 1.
+        # compara_ortholog_ecd is the table the Worker enriches from, so it
+        # is the authoritative set; compara_ortholog is kept in the union so
+        # nothing previously counted is dropped.
         orth = pd.DataFrame(d1.query(
             "SELECT DISTINCT human_gene_symbol, species FROM compara_ortholog "
             "WHERE orthology_type = 'ortholog_one2one'",
             [],
         ))
-        mouse_o2o = set(orth[orth["species"] == "mouse"]["human_gene_symbol"])
-        cyno_o2o = set(orth[orth["species"] == "cynomolgus"]["human_gene_symbol"])
+        orth_ecd = pd.DataFrame(d1.query(
+            "SELECT DISTINCT human_gene_symbol, species FROM compara_ortholog_ecd",
+            [],
+        ))
+        def _species(df, name):
+            if df.empty:
+                return set()
+            col = df["species"].astype(str)
+            aliases = {"cynomolgus": ("cynomolgus", "cyno")}.get(name, (name,))
+            return set(df.loc[col.isin(aliases), "human_gene_symbol"])
+        mouse_o2o = _species(orth, "mouse") | _species(orth_ecd, "mouse")
+        cyno_o2o = _species(orth, "cynomolgus") | _species(orth_ecd, "cynomolgus")
 
         # 5. Homo-oligomer (Schweke) — presence in the atlas.
         homomer = {r["gene_symbol"] for r in d1.query(
