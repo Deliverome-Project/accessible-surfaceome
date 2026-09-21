@@ -124,6 +124,7 @@ CONTEXTUAL_CALLOUTS = [
     ("LRG1",    "Leucine-rich α2-glycoprotein; cell-surface/ECM-tethered", "stable_surface_attachment"),
     ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
+    ("NPM1",    "csNPM1 — surface nucleophosmin on AML blasts", "cell_state_induced"),
     ("HPSE",    "Heparanase; surface on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
