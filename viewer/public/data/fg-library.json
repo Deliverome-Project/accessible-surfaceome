@@ -1,5 +1,5 @@
 {
-  "n_genes": 2344,
+  "n_genes": 2348,
   "genes": {
     "ABCA8": {
       "tier": "T2",
@@ -3128,6 +3128,18 @@
         },
         {
           "symbol": "CASR",
+          "species": "cyno"
+        }
+      ]
+    },
+    "CATSPERE": {
+      "tier": "LL",
+      "surface_isoform_ids": [
+        "Q5SY80-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "CATSPERE",
           "species": "cyno"
         }
       ]
@@ -17589,6 +17601,11 @@
         }
       ]
     },
+    "OR1N1": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
     "OR2A1": {
       "tier": "LL",
       "surface_isoform_ids": [],
@@ -18467,6 +18484,11 @@
           "species": "cyno"
         }
       ]
+    },
+    "OR6B2": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
     },
     "OR6B3": {
       "tier": "LL",
@@ -26990,6 +27012,11 @@
           "species": "cyno"
         }
       ]
+    },
+    "TMEM139": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
     },
     "TMEM145": {
       "tier": "T2",
