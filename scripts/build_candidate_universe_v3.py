@@ -3,7 +3,7 @@ Build candidate_universe_v3.tsv = v2 universe minus Sonnet=no/high-conf rows
 that are present in only 1 of the 5 gating DBs (UniProt/GO/SURFY/CSPA/HPA).
 
 v3 = (Sonnet yes/contextual on canonical run UNION ≥1 of 5 gating DBs UNION
-      Sonnet yes/contextual on pubmed_ncbi rescue run)
+      Sonnet yes/contextual on EITHER pubmed_ncbi rescue run)
      MINUS (Sonnet=no high-conf AND only 1 of 5 gating DBs)
      MINUS (dangling rows whose HGNC id fails to resolve to any stable id).
 
@@ -41,7 +41,16 @@ from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
 
 RUN = "genome_full_sonnet_ncbi_v2"
+# Two literature-rescue runs, not one. The first re-read only the
+# ambiguous-reason "no" calls (endomembrane / secreted / inner-leaflet /
+# pMHC / nuclear-envelope, n=2,626); the second re-read the confidently
+# intracellular buckets the first deliberately skipped (cytoplasmic /
+# nuclear / mitochondrial, n=10,287) and flipped 148 more. Both are
+# rescue lanes under the same reconciliation rule — most inclusive
+# verdict wins — so both have to be in the union or those 148 genes
+# silently fall out of the universe.
 RUN_PM = "genome_full_sonnet_pubmed_ncbi_v1"
+RUN_PM2 = "genome_intracellular_pubmed_ncbi_v1"
 OUT_DIR = Path("data/processed/candidate_universe")
 OUT_KEEP = OUT_DIR / "candidate_universe_v3.tsv"
 OUT_DROP = OUT_DIR / "candidate_universe_v3_dropped.tsv"
@@ -73,6 +82,10 @@ pubmed AS (
   SELECT gene_symbol, predicted_verdict AS pm_verdict, predicted_confidence AS pm_conf
   FROM triage_run_public WHERE run_id = ?
 ),
+pubmed2 AS (
+  SELECT gene_symbol, predicted_verdict AS pm2_verdict, predicted_confidence AS pm2_conf
+  FROM triage_run_public WHERE run_id = ?
+),
 ids AS (
   SELECT hgnc_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id
   FROM gene_identifier_public
@@ -86,10 +99,13 @@ SELECT
   s.predicted_confidence AS sonnet_confidence,
   s.predicted_reason    AS sonnet_reason,
   p.pm_verdict          AS pubmed_verdict,
-  p.pm_conf             AS pubmed_confidence
+  p.pm_conf             AS pubmed_confidence,
+  p2.pm2_verdict        AS pubmed2_verdict,
+  p2.pm2_conf           AS pubmed2_confidence
 FROM base b
 LEFT JOIN sonnet s ON s.gene_symbol = b.gene_symbol
 LEFT JOIN pubmed p ON p.gene_symbol = b.gene_symbol
+LEFT JOIN pubmed2 p2 ON p2.gene_symbol = b.gene_symbol
 LEFT JOIN ids    i ON i.hgnc_symbol = b.gene_symbol
 """
 # NOTE: no WHERE filter — we pull ALL genes (gating happens locally on the
@@ -132,7 +148,11 @@ def _opt_votes(r) -> int:
 
 
 def _yc(r) -> bool:
-    return r["sonnet_verdict"] in ("yes", "contextual") or r["pubmed_verdict"] in ("yes", "contextual")
+    """Most-inclusive verdict across the canonical pass and both rescue lanes."""
+    return any(
+        r.get(k) in ("yes", "contextual")
+        for k in ("sonnet_verdict", "pubmed_verdict", "pubmed2_verdict")
+    )
 
 
 def _resolves_to_stable_ids(r) -> bool:
@@ -163,10 +183,21 @@ def partition_unresolved(rows):
 
 
 def is_trim(r):
+    """Confident non-surface call carried by a single database.
+
+    ``not _yc(r)`` is load-bearing and was missing: the union gate admits a
+    gene any lane called positive, but this test used to read only the
+    canonical verdict, so a gene the literature pass rescued was admitted
+    and then trimmed right back out. Three genes sat in that gap —
+    RNF144A, TMEM127 and WLS — each a canonical no/high with one database
+    that a PubMed lane had reclassified contextual. A rescued gene is no
+    longer a confident non-surface call, so it is no longer trimmable.
+    """
     return (
         r["sonnet_verdict"] == "no"
         and r["sonnet_confidence"] == "high"
         and r["n_db_votes"] == 1
+        and not _yc(r)
     )
 
 
@@ -186,7 +217,8 @@ cols = [
     "n_db_votes", "uniprot_flag", "go_flag", "surfy_flag", "cspa_flag", "hpa_flag",
     "deeptmhmm_flag", "compartments_flag",
     "sonnet_verdict", "sonnet_confidence", "sonnet_reason",
-    "pubmed_verdict", "pubmed_confidence", "source",
+    "pubmed_verdict", "pubmed_confidence",
+    "pubmed2_verdict", "pubmed2_confidence", "source",
 ]
 
 
@@ -217,7 +249,7 @@ def main():
                 )
 
     with D1Client(config=D1Config.from_env_public()) as d1:
-        all_rows = d1.query(SQL, [RUN, RUN_PM])
+        all_rows = d1.query(SQL, [RUN, RUN_PM, RUN_PM2])
 
     # Guard against a silently-truncated pull — the table is the full cohort.
     N_EXPECTED = 19_324

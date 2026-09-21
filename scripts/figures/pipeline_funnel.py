@@ -82,15 +82,23 @@ DEEP_DIVE_TSV = REPO_ROOT / "data/processed/figures/deep_dive_final_categories.t
 TRIMMED_TSV = REPO_ROOT / "data/processed/candidate_universe/candidate_universe_v3_dropped.tsv"
 
 # The one number on the canvas that no committed TSV carries: how many
-# genes the second triage pass re-read. It lives only in D1, and only as
-# a frozen historical run, so it cannot drift under us:
+# genes the literature pass re-read. It lives only in D1, and only as
+# frozen historical runs, so it cannot drift under us:
 #
-#   SELECT COUNT(DISTINCT gene_symbol) FROM triage_run
-#   WHERE run_id = 'genome_full_sonnet_pubmed_ncbi_v1';   -- 2,626
+#   SELECT run_id, COUNT(DISTINCT gene_symbol) FROM triage_run
+#   WHERE run_id IN (...) GROUP BY run_id;
+#     genome_full_sonnet_pubmed_ncbi_v1     2,626   (ambiguous-reason slice)
+#     genome_intracellular_pubmed_ncbi_v1  10,287   (the rest of the no calls)
 #
-# Verdicts on that run: 19 yes, 158 contextual, 2,447 no, 2 null.
-STAGE2_RUN_ID = "genome_full_sonnet_pubmed_ncbi_v1"
-STAGE2_REEXAMINED = 2_626
+# The second lane removed the first's cost-saving restriction: the
+# ambiguous-reason slice deliberately skipped the confidently
+# intracellular buckets, and those were later re-read too, so the pass
+# now covers every non-surface call rather than a chosen tail.
+STAGE2_RUN_IDS = (
+    "genome_full_sonnet_pubmed_ncbi_v1",
+    "genome_intracellular_pubmed_ncbi_v1",
+)
+STAGE2_REEXAMINED = 2_626 + 10_287
 
 # Figure 4's palette, so the two schematics read as a pair.
 INK = "#1F1718"
@@ -338,17 +346,17 @@ def build(counts: Counts):
         ha="left", va="center", fontsize=12, color=MUTED, zorder=5,
     )
     ax.text(
-        440, 328, "STAGE 2  literature pass on near-miss calls",
+        440, 328, "STAGE 2  literature pass on the non-surface calls",
         ha="left", va="center", fontsize=11, fontweight="bold",
         color=TEAL, zorder=5,
     )
-    # The re-read pool was a specific slice: zero-database non-surface
-    # calls whose stated reason placed the protein one compartment away.
-    # Cytoplasmic / nuclear / mitochondrial calls were excluded.
+    # Every non-surface call with no database flag now gets re-read, in
+    # two sweeps — the ambiguous-reason slice first, then the
+    # confidently intracellular buckets it had skipped.
     for i, line in enumerate(
         (
-            f"{counts.stage2_reexamined:,} zero-database near-miss calls",
-            "(endomembrane, secreted, inner-leaflet)",
+            f"{counts.stage2_reexamined:,} zero-database non-surface calls",
+            "re-read against the literature",
             f"\u2192 {counts.stage2_rescued:,} reclassified as surface",
         )
     ):
