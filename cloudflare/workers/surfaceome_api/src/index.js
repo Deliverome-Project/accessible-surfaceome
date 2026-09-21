@@ -1624,6 +1624,7 @@ async function handleCatalog(env, request) {
             u.n_sources_surface,
             u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
             u.cspa_surface_flag, u.hpa_surface_flag,
+            COALESCE(oc.uniprot_optimized, 0) AS uniprot_optimized,
             sb.n_sites AS sb_n_sites,
             sa.ddf_filters AS sa_ddf_filters,
             sa.ddf_evidence_grade_summary AS sa_ddf_evidence_grade_summary,
@@ -1641,6 +1642,13 @@ async function handleCatalog(env, request) {
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       -- SurfaceBench-recalibrated DB cutoffs. A POSITIVE LIST: no row means
+       -- (0, 0), never "fall back to the native flag" -- a fallback
+       -- resurrects the low-confidence CSPA-only proteins the tightening
+       -- drops. Hence the COALESCE to 0 above, and hence the table must be
+       -- loaded before this Worker deploys.
+       LEFT JOIN db_optimized_cutoff_public oc
+         ON oc.accession = COALESCE(gi.uniprot_acc, u.uniprot_acc)
        -- Internalization sequence-prior grade (separate standalone pass;
        -- scalar grade columns only — never record_json, which carries the
        -- per-residue topology string that would blow D1's isolate memory
@@ -1895,7 +1903,13 @@ async function handleCatalog(env, request) {
       const ddf = projectDeepDiveFiltersFromParts(ddfPartsFromRow(u, "sa_ddf_"));
       if (ddf) {
         row.ddf = ddf;
-        attachDeepDiveClassification(row, ddf, !!u.uniprot_surface_flag);
+        // Low-literature badge gates on the OPTIMIZED UniProt call, not the
+        // native flag. The badge's own rationale is that UniProt outperformed
+        // the other sources on our positive controls -- and that result is
+        // measured under the recalibrated cutoff, which is what every figure
+        // and the paper score membership on. Gating on the native flag made
+        // the live badge disagree with the published numbers.
+        attachDeepDiveClassification(row, ddf, !!u.uniprot_optimized);
       }
     }
     return row;
