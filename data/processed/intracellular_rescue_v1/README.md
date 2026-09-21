@@ -197,11 +197,47 @@ drawer reading `no` (baked into the record). The bias runs conservative, so the
 8 `likely` calls were reached *against* an adverse prior; wiring the
 reconciliation rule into `_D1_TRIAGE_PRIORITY` is the fix.
 
-**Caveat — topology is a placeholder.** None of these genes are in the topology sweep cohort, so their
+**Caveat — topology was a placeholder at annotate time (since fixed).** 73 of
+the 147 were absent from the topology sweep cohort, so their
 records carry `canonical_topology.tool_version = "placeholder-no-d1-row"` —
 `tm_helix_count` / `ecd_length_residues` / `signal_peptide_length` read 0
 because nothing was measured, not because a measurement returned zero. A
 topology backfill over these accessions is outstanding.
+
+## Deterministic-feature backfill (2026-09-20)
+
+Run after the fact, so the records above were annotated without it:
+
+| Fact | Action |
+|---|---|
+| topology | 571 DeepTMHMM records (148 canonical + 184 isoform + 126 mouse + 113 cyno) merged into `topo_2026_05_16` / `topo_2026_05_25` |
+| orthologs | BioMart pull → 126 mouse + 113 cyno one2one high-confidence; 239 ECD rows into `orthologecd_topo_2026_05_16_idfix` |
+| paralogs | 1,066 rows; `ecd_pct_identity` NULL for the 134 of 148 genes with no ECD (the SRC pattern) |
+| Schweke homomer | 34 cohort genes + 48 genome-wide were false negatives from the candidate-universe join at ingest; appended via `add_schweke_genes.py` |
+| surface_bind | 0/148 — genuinely absent from SURFACE-Bind's 2,708 accessions, correctly reported |
+
+**Merge into the dominant release, never a parallel one.** Both version pickers
+punish a cohort-specific release, in opposite directions:
+`_latest_topology_version_for_cohort` takes the NEWEST, so a 148-gene release
+shadowed the 11k-row global one and made every other gene resolve to a
+placeholder; `_latest_ortholog_ecd_version` takes the LARGEST by row count, so a
+239-row release is never selected at all. `add_schweke_genes.py` exists for
+exactly this reason — append to the live table.
+
+**Serve-time enrichment is per-gene cached.** The Worker enriches topology from
+`topology_public` at request time, so a D1 backfill does not reach readers until
+the per-gene edge + KV cache is purged (`scripts/cloud/purge_gene_cache.py`).
+Known outstanding: the Worker's paralog / ortholog enrichment does not pick up
+the merged releases (the annotator's loader does), and C1orf115 still serves a
+placeholder topology despite having a row.
+
+**21 records were re-run** after the backfill — the ones whose deterministic
+facts materially changed AND whose tier or prose depended on it: 4 `likely`
+(AMPD2, C1orf56, TAX1BP3, NPM1), 7 `low`, 6 genome-wide Schweke false negatives,
+BLCAP + TOMM40 (summaries asserting the placeholder as fact), and MYO18A. NPM1
+needed a full re-annotate rather than a replay because `--no-publish` had
+suppressed its intermediates. The other 25 changed records were left: their
+prose is accurate and only `epitope_masking` understates, on `no`-tier genes.
 
 ## Reconciliation
 
