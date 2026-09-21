@@ -73,30 +73,43 @@ v3 / catalog / Fig 3. Regenerate the catalog and Fig 3 before citing it.
 150 of the 204 new entrants already have records (the intracellular cohort).
 `deep_dive_cohort.tsv` holds the remaining **54**, all `m1_and_sonnet`.
 
-### Deterministic-feature readiness — the 54 are ready
+### Deterministic-feature readiness — verified through the accessor
 
-Canonical topology is **54/54**, so the `require_measured_topology` guard will
-not fire. Coverage meets or beats the genome base rate on every fact:
+**Verify with `fetch_deterministic_features()`, not with table queries.** The
+first pass here reported paralogs at 45/54 by querying
+`paralog_topo_2026_05_16` directly, on the assumption it was authoritative.
+It was not: `_latest_paralog_version()` was returning a 123-gene shadow
+release at the time and none of this cohort is in it, so the annotator would
+have seen **0**. A raw-table count answers "what is in the release I chose";
+only the accessor answers "what will the agent actually read".
 
-| Fact | 54-cohort | genome rate | verdict |
-|---|---:|---:|---|
-| canonical topology | 54/54 (100%) | — | complete |
-| isoform topology | 35/54 (65%) | 35% | above rate |
-| paralogs | 45/54 (83%) | 51% | above rate |
-| ortholog ECD | 50/54 (93%) | 53% | above rate |
-| schweke homomer | 8/54 (15%) | 11% | above rate |
-| surface_bind | 2/54 (4%) | 24% | genuine absence — SURFACE-Bind carries 2,708 accessions and these are mostly non-classical surface proteins |
+Numbers below are from the accessor, after the shadow was fixed and merged:
 
-`deterministic_gaps.tsv` lists the **11** genes with an ortholog or paralog
-gap. TMEM127 and WLS appear there because they were never in the universe
-before defect 2 was fixed, so no sweep has ever covered them; the other 9 are
-likely true absences (a gene with no paralogs legitimately has no rows), but a
-BioMart re-pull is free and settles it either way.
+| Fact | 52-cohort | notes |
+|---|---:|---|
+| canonical topology (MEASURED) | **52/52** | none will trip `require_measured_topology` |
+| orthologs | 52/52 | |
+| structure | 52/52 | AlphaFold, baked at annotate time |
+| paralogs | 45/52 | |
+| isoform topologies | 34/52 | absent = single-isoform gene |
+| homo-oligomerization | 8/52 | `is_homo_oligomer` true; absent = not a predicted homomer |
+| surface_bind | 2/52 | genuine absence — SURFACE-Bind carries 2,708 accessions total |
 
-## Blocked: the paralog release shadow
+`paralogs_checked` and `isoform_topologies_checked` are **true for all 52**, so
+a zero is a measured zero rather than a skipped lookup. The 7 genes with no
+paralogs (BRK1, CEND1, ERP29, METTL9, MINPP1, PLAA, TMX2) therefore render as
+"no paralogs" without fabricating a negative — the distinction that the
+`checked` flags exist to preserve.
 
-Investigating the above surfaced a **live production regression** on the
-paralog axis, identical to the topology one this repo already fixed:
+Topology is not what limits paralog ECD identity: **9,896 of 10,103** distinct
+paralog partner accessions (98.0%) carry `human_canonical` topology.
+`ecd_pct_identity` is NULL on 20.7% of pairs because the protein has no ECD to
+align (the SRC pattern), not because a measurement is missing.
+
+## The paralog release shadow (resolved)
+
+Investigating readiness surfaced a live regression on the paralog axis,
+identical to the topology one this repo already fixed:
 
 ```
 paralog_topo_2026_05_16     91,103 pairs / 5,790 human genes   <- global
@@ -104,32 +117,44 @@ paralog_2026_09_20_rescue    1,066 pairs /   123 human genes   <- cohort backfil
 ```
 
 `_latest_paralog_version()` selected on `fetched_at DESC LIMIT 1`, so the
-123-gene release shadowed the global one — **every deep dive since 2026-09-21
-01:38 saw paralogs for 2% of the cohort**, and an empty paralog list renders as
-"this protein has no paralogs": a fabricated negative, the same failure class
-as the placeholder-topology zeros.
+123-gene release shadowed the global one. An empty paralog list renders as
+"this protein has no paralogs" — a fabricated negative, the same class as the
+placeholder-topology zeros.
 
-Fixed in [`d1_deterministic.py`](../../../src/accessible_surfaceome/agents/surfaceome_v1/d1_deterministic.py)
-— the picker now selects by distinct-gene coverage, tie-breaking on recency,
-matching `_latest_ortholog_ecd_version`. Pinned by
-`test_paralog_version_prefers_coverage_over_recency`. All four pickers now
-resolve to the dominant releases.
+**Blast radius: 4 records**, not the whole corpus. The shadow began
+2026-09-21 01:38:24 and the 5,130-gene sweep and 148-gene rescue cohort both
+predate it. Of the four:
 
-**Outstanding.** The picker fix makes the 123 rescue-cohort genes' paralog rows
-unreachable, since they exist only under the shadowed version. They must be
-merged into the dominant release — the additive half of the same
-"merge into the dominant release, never a parallel one" rule:
+| Gene | carried | should have | |
+|---|---:|---:|---|
+| NPM1 | 2 | 2 | inside the 123, unaffected |
+| **TPO** | **0** | **5** | lost 5 paralogs; re-annotated ($1.53), now correct |
+| TMEM127 | 0 | 0 | no loss |
+| WLS | 0 | 0 | no loss |
 
-```bash
-uv run python scripts/cloud/merge_paralog_release.py --execute   # not yet written
-```
+Fixes, all landed:
 
-Until that merge runs, those 123 genes read as having no paralogs. The merge is
-`INSERT OR IGNORE` on `(paralog_version, human_ensembl_gene,
-paralog_ensembl_gene)` against both D1s; only 4 of the 123 genes already exist
-in the dominant release, so ~119 genes / ~1,000 pairs move.
+1. **Picker** — [`d1_deterministic.py`](../../../src/accessible_surfaceome/agents/surfaceome_v1/d1_deterministic.py)
+   now selects on distinct-gene coverage with a recency tie-break, matching
+   `_latest_ortholog_ecd_version`. Pinned by
+   `test_paralog_version_prefers_coverage_over_recency`.
+2. **Merge** — coverage-based selection stops a small release shadowing a
+   large one but makes it *unreachable*, so its rows still had to be folded
+   in. [`merge_paralog_release.py`](../../../scripts/cloud/merge_paralog_release.py)
+   did that against both D1s: **92,122 pairs / 5,909 genes**, all 123 rescue
+   genes reachable, idempotent on re-run.
+3. **Schema drift** — the merge's two-way column reconciliation caught that
+   private `compara_paralog` lacked `ecd_pct_similarity` although
+   `cloudflare/d1_schema.sql` declares it. Repaired by
+   [`backfill_private_paralog_similarity.py`](../../../scripts/cloud/backfill_private_paralog_similarity.py)
+   (ALTER + 683/683 values copied from public). This never gated a run — the
+   deterministic loader reads the PUBLIC mirror — but private is the restore
+   source, so a recovery from the R2 dumps would have reintroduced it.
 
-Separately, `topo_2026_09_rescue` still holds 571 orphan rows in
-`topology_public` with no `topology_release` row. Harmless — the topology
-picker intersects against `topology_release`, so an unlisted version can never
-be selected — but it is dead weight.
+**The rule, restated:** a backfill is appended to the live release, never
+uploaded beside it. Both pickers punish a parallel cohort-scoped release, in
+opposite directions, so there is no upload strategy that is safe under both.
+
+`topo_2026_09_rescue` still holds 571 orphan rows in `topology_public` with no
+`topology_release` row. Harmless — the topology picker intersects against that
+table, so an unlisted version can never be selected — but it is dead weight.
