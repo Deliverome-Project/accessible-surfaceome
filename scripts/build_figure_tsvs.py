@@ -261,8 +261,20 @@ def build_bench_topology_vs_universe(src: dict[str, pd.DataFrame]) -> pd.DataFra
         3 and let Sonnet false-positives on ground-truth-no genes leak in.)
     NOT cutoff-dependent — scores no DB membership."""
     yc = {"yes", "contextual"}
-    feat = src["features"]
-    in_universe = feat["sonnet_verdict"].isin(yc) | feat["pubmed_verdict"].isin(yc)
+    # Prefer the FULL any-yes-vote export, same as S9 does. ``features``
+    # carries only sonnet_verdict + pubmed_verdict — the canonical run and
+    # the FIRST rescue lane — so its universe froze at 4,426 and misses
+    # every gene the later lanes rescued. ``features_full``'s src_sonnet
+    # is rebuilt from the catalog each time it is exported, so it tracks
+    # all lanes. Fall back to the two-column form only if the full export
+    # is absent (partial checkout).
+    full = src.get("features_full")
+    if full is not None and "src_sonnet" in full.columns:
+        feat = full
+        in_universe = feat["src_sonnet"].fillna(0).astype(int) == 1
+    else:
+        feat = src["features"]
+        in_universe = feat["sonnet_verdict"].isin(yc) | feat["pubmed_verdict"].isin(yc)
     bench = src["bench"]
     gt_col = "ground_truth_verdict" if "ground_truth_verdict" in bench.columns else "verdict"
     bench_yc = set(

@@ -86,8 +86,8 @@ BUCKET_COLOR = {"yes": "#2E7A55", "contextual": "#C07830", "no": "#6F5D5A"}
 DIAGONAL_HIGHLIGHT = "#BC3C4C"
 
 LABEL_SHORT = {
-    "classical_surface_receptor":   "classical\nsurf rcptr",
-    "multipass_with_exposed_loops": "multipass\nexp loops",
+    "classical_surface_receptor":   "single-pass",
+    "multipass_with_exposed_loops": "multi-pass",
     "gpi_anchored":                 "GPI\nanchored",
     "extracellular_face_protein":   "extracell. face\n(other YES)",
     "stable_complex_partner":       "stable cplx\npartner",
