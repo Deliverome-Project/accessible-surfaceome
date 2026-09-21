@@ -107,14 +107,33 @@ def main() -> int:
             if (others != ct).any():
                 alt_diff.add(gsym)
 
-        # 4. 1:1 orthologs (mouse / cynomolgus) — presence of a one2one row.
+        # 4. 1:1 orthologs (mouse / cynomolgus).
+        #
+        # Union of TWO tables, deliberately. compara_ortholog alone is what
+        # this used to read, and it misses genes the later Compara pulls
+        # added — NPM1 has a mouse one2one in the served record and no
+        # compara_ortholog row at all, so the export reported
+        # mouse_has_one2one=0 for a gene the API correctly shows as 1.
+        # compara_ortholog_ecd is the table the Worker enriches from, so it
+        # is the authoritative set; compara_ortholog is kept in the union so
+        # nothing previously counted is dropped.
         orth = pd.DataFrame(d1.query(
             "SELECT DISTINCT human_gene_symbol, species FROM compara_ortholog "
             "WHERE orthology_type = 'ortholog_one2one'",
             [],
         ))
-        mouse_o2o = set(orth[orth["species"] == "mouse"]["human_gene_symbol"])
-        cyno_o2o = set(orth[orth["species"] == "cynomolgus"]["human_gene_symbol"])
+        orth_ecd = pd.DataFrame(d1.query(
+            "SELECT DISTINCT human_gene_symbol, species FROM compara_ortholog_ecd",
+            [],
+        ))
+        def _species(df, name):
+            if df.empty:
+                return set()
+            col = df["species"].astype(str)
+            aliases = {"cynomolgus": ("cynomolgus", "cyno")}.get(name, (name,))
+            return set(df.loc[col.isin(aliases), "human_gene_symbol"])
+        mouse_o2o = _species(orth, "mouse") | _species(orth_ecd, "mouse")
+        cyno_o2o = _species(orth, "cynomolgus") | _species(orth_ecd, "cynomolgus")
 
         # 5. Homo-oligomer (Schweke) — presence in the atlas.
         homomer = {r["gene_symbol"] for r in d1.query(

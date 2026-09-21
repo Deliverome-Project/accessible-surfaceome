@@ -5259,7 +5259,7 @@ ABHD2	sonnet_dual_triage	1	425.0	12	0	1	0	1	1	0	0	0	0	99.8	98.8		ABHD1	15.4
 ABHD6	sonnet_dual_triage	0	337.0	0	0	0	0	1	1	0	0	0	0	99.4	93.8				
 ABI3BP	sonnet_dual_triage	0	1068.0	1047	1	1	1	1	1	0	0	0	0	95.8	68.9		FNDC1	37.2	
 ABRA	sonnet_dual_triage	0	381.0	0	0	0	0	1	1	0	0	0	0	96.9	78.7				
-ACAA2	sonnet_dual_triage	0	397.0	0	0	0	0	0	0	1	0	0	0			2.0			
+ACAA2	sonnet_dual_triage	0	397.0	0	0	0	0	1	1	1	0	0	0			2.0			
 ACE	sonnet_dual_triage	1	1306.0	1230	1	1	0	1	1	0	1	1	0	97.9	83.3		ACE2	24.8	4.0
 ACE2	sonnet_dual_triage	1	805.0	726	1	1	0	1	1	1	0	1	0	95.2	82.1	2.0	ACE	25.1	2.0
 ACHE	sonnet_dual_triage	0	614.0	583	1	1	1	1	1	1	0	1	1	91.5	88.4	2.0	BCHE	52.7	2.0
@@ -5377,8 +5377,8 @@ ADTRP	sonnet_dual_triage	6	230.0	52	0	0	0	1	1	0	0	0	0	93.0	65.7		AIG1	38.9
 AEBP1	sonnet_dual_triage	0	1158.0	1133	1	1	1	1	1	0	0	0	0	82.6	82.6		CPXM2	37.3	
 AFAP1L2	sonnet_dual_triage	0	818.0	0	0	0	0	1	0	0	0	0	0		83.5				
 AGER	sonnet_dual_triage	1	404.0	317	1	1	0	1	1	0	1	1	0	95.5	78.2		MCAM	19.6	3.0
-AGGF1	sonnet_dual_triage	0	714.0	0	0	0	0	0	0	1	0	0	0			2.0			
-AGK	sonnet_dual_triage	0	422.0	0	0	0	0	0	0	0	0	0	0						
+AGGF1	sonnet_dual_triage	0	714.0	0	0	0	0	1	1	1	0	0	0			2.0			
+AGK	sonnet_dual_triage	0	422.0	0	0	0	0	1	1	0	0	0	0						
 AGMO	sonnet_dual_triage	9	445.0	76	0	1	0	1	1	0	0	0	0	91.2	83.4				
 AGPAT1	sonnet_dual_triage	3	283.0	7	0	1	0	1	1	0	0	0	0	98.9	91.2		AGPAT2	36.4	
 AGR2	sonnet_dual_triage	0	175.0	155	1	1	1	1	1	1	0	0	1	90.3	91.4	2.0	AGR3	65.2	
@@ -5393,11 +5393,11 @@ AIFM2	sonnet_dual_triage	0	373.0	0	0	0	0	1	1	0	0	0	0	98.9	90.3
 AIMP1	sonnet_dual_triage	0	312.0	0	0	0	0	1	1	0	0	0	0	96.5	83.3				
 AJAP1	sonnet_dual_triage	1	411.0	239	1	1	0	1	1	0	0	0	0	79.1	79.1				
 AJM1	sonnet_dual_triage	0	976.0	0	0	0	0	1	0	0	0	0	0		86.8				
-AK1	sonnet_dual_triage	0	194.0	0	0	0	0	0	0	0	0	0	0						
+AK1	sonnet_dual_triage	0	194.0	0	0	0	0	1	1	0	0	0	0						
 AKAP19	sonnet_dual_triage	0	95.0	0	0	0	0	1	1	0	0	0	0	96.8	56.8				
 AKAP4	sonnet_dual_triage	0	854.0	0	0	0	0	1	1	0	0	0	0	96.0	78.2				
 ALCAM	sonnet_dual_triage	1	583.0	500	1	1	0	1	1	1	1	1	0	98.8	93.0	2.0	AGER	19.0	3.0
-ALDOC	sonnet_dual_triage	0	364.0	0	0	0	0	0	0	1	0	0	0			2.0			
+ALDOC	sonnet_dual_triage	0	364.0	0	0	0	0	1	1	1	0	0	0			2.0			
 ALK	sonnet_dual_triage	1	1620.0	1016	1	1	0	1	1	0	0	1	0	98.4	87.2		LTK	21.3	4.0
 ALKAL2	sonnet_dual_triage	0	152.0	130	1	1	1	0	0	0	0	0	0						
 ALOX5AP	sonnet_dual_triage	4	161.0	51	0	1	1	1	1	1	0	0	0	98.1	91.9	3.0	MGST2	23.5	
@@ -5412,7 +5412,7 @@ AMIGO2	sonnet_dual_triage	1	522.0	359	1	1	0	1	1	1	0	1	1	98.9	88.1	2.0	AMIGO1	41.
 AMIGO3	sonnet_dual_triage	1	504.0	364	1	1	0	1	1	1	0	1	0	94.8	76.4	2.0	AMIGO1	38.2	1.0
 AMN	sonnet_dual_triage	1	453.0	341	1	1	0	1	1	0	0	1	0	72.4	66.0				2.0
 AMOT	sonnet_dual_triage	0	1084.0	0	0	0	0	1	1	0	0	0	0	93.3	87.3				
-AMPD2	sonnet_dual_triage	0	825.0	0	0	0	0	0	0	1	0	0	0			2.0			
+AMPD2	sonnet_dual_triage	0	825.0	0	0	0	0	1	1	1	0	0	0			2.0			
 AMTN	sonnet_dual_triage	0	209.0	193	1	1	1	1	1	0	0	0	0	92.3	60.3				
 ANG	sonnet_dual_triage	0	147.0	123	1	1	1	0	0	0	0	0	0				RNASE4	39.0	
 ANGPTL2	sonnet_dual_triage	0	493.0	471	1	1	1	1	1	0	0	0	1	99.6	95.3		ANGPTL1	60.9	
@@ -5422,7 +5422,7 @@ ANGPTL8	sonnet_dual_triage	0	198.0	177	1	1	1	1	0	1	0	0	0		72.7	2.0
 ANKH	sonnet_dual_triage	12	492.0	90	0	0	0	1	1	0	1	0	0	100.0	98.4				
 ANKRD20A1	sonnet_dual_triage	0	823.0	0	0	0	0	0	0	0	0	0	0						
 ANKRD24	sonnet_dual_triage	0	1146.0	0	0	0	0	1	1	0	0	0	0	77.5	54.5				
-ANKRD26	sonnet_dual_triage	0	1710.0	0	0	0	0	0	0	0	0	0	0						
+ANKRD26	sonnet_dual_triage	0	1710.0	0	0	0	0	0	1	0	0	0	0						
 ANO1	sonnet_dual_triage	8	986.0	263	0	0	0	1	1	1	1	1	1	97.9	91.5	2.0	ANO2	66.9	1.0
 ANO2	sonnet_dual_triage	8	998.0	260	0	0	0	1	1	1	0	1	1	97.9	92.2	2.0	ANO1	66.9	2.0
 ANO4	sonnet_dual_triage	8	955.0	267	0	0	0	1	1	1	1	0	1	99.8	98.3	2.0	ANO3	62.2	
@@ -5449,7 +5449,7 @@ AOC1	sonnet_dual_triage	0	751.0	732	1	1	1	0	1	1	0	0	1	95.5		2.0	AOC2	43.0
 AOC2	sonnet_dual_triage	1	756.0	731	0	0	1	1	1	1	0	0	1	98.5	81.0	2.0	AOC3	65.8	
 AOC3	sonnet_dual_triage	1	763.0	737	0	0	1	1	1	1	1	1	1	96.9	83.1	2.0	AOC2	65.8	1.0
 AOPEP	sonnet_dual_triage	0	819.0	0	0	0	0	1	1	0	0	0	0	94.0	76.7				
-APBA1	sonnet_dual_triage	0	837.0	0	0	0	0	0	0	0	0	0	0						
+APBA1	sonnet_dual_triage	0	837.0	0	0	0	0	1	0	0	0	0	0						
 APCDD1	sonnet_dual_triage	0	514.0	488	1	1	1	1	1	1	0	1	1	99.2	91.8	2.0	APCDD1L	46.9	2.0
 APCDD1L	sonnet_dual_triage	0	501.0	479	1	1	1	0	0	1	0	0	1			2.0	APCDD1	47.5	
 APCS	sonnet_dual_triage	0	223.0	204	1	1	1	1	1	1	0	0	1	91.5	68.6	5.0	CRP	51.0	
@@ -5461,7 +5461,7 @@ APOBR	sonnet_dual_triage	0	1097.0	0	0	0	0	0	0	0	0	0	0
 APOE	sonnet_dual_triage	0	317.0	299	1	1	1	1	1	0	0	0	0	76.3	70.7		APOA4	21.3	
 APOH	sonnet_dual_triage	0	345.0	326	1	1	1	1	0	0	0	0	0		76.5		CSMD3	4.5	
 APOL1	sonnet_dual_triage	0	398.0	371	1	1	1	0	0	0	0	0	1						
-APOL6	sonnet_dual_triage	0	343.0	0	0	0	0	0	0	0	0	0	0						
+APOL6	sonnet_dual_triage	0	343.0	0	0	0	0	0	1	0	0	0	0						
 APOLD1	sonnet_dual_triage	0	279.0	0	0	0	0	1	1	0	0	0	0	98.4	87.5				
 APOM	sonnet_dual_triage	0	188.0	166	1	1	1	1	1	0	0	0	0	58.5	80.9				
 APP	sonnet_dual_triage	1	770.0	683	1	1	0	1	1	0	1	1	1	99.5	94.8		APLP2	51.4	3.0
@@ -5477,11 +5477,11 @@ AQP7	sonnet_dual_triage	6	342.0	74	0	0	0	0	0	1	1	0	1			4.0	AQP7B	91.9
 AQP7B	sonnet_dual_triage	6	346.0	73	0	0	0	0	0	1	0	0	1			4.0	AQP7	90.5	
 AQP8	sonnet_dual_triage	6	261.0	58	0	0	0	1	1	1	0	0	1	95.8	76.2	4.0	AQP5	41.4	
 AQP9	sonnet_dual_triage	6	295.0	73	0	0	0	1	1	1	0	0	1	95.6	75.6	4.0	AQP10	55.8	
-ARC	sonnet_dual_triage	0	396.0	0	0	0	0	0	0	0	0	0	0						
+ARC	sonnet_dual_triage	0	396.0	0	0	0	0	1	0	0	0	0	0						
 AREG	sonnet_dual_triage	1	252.0	172	1	1	0	1	1	0	0	0	0	86.9	69.8		HBEGF	26.7	
 ARF5	sonnet_dual_triage	0	180.0	0	0	0	0	1	1	0	0	0	0	100.0	100.0				
 ARHGAP18	sonnet_dual_triage	0	663.0	0	0	0	0	1	1	0	0	0	0	97.0	84.8				
-ARID3A	sonnet_dual_triage	0	593.0	0	0	0	0	0	0	0	0	0	0						
+ARID3A	sonnet_dual_triage	0	593.0	0	0	0	0	1	1	0	0	0	0						
 ARL15	sonnet_dual_triage	0	204.0	0	0	0	0	1	1	0	0	0	0	99.0	97.1				
 ARMH1	sonnet_dual_triage	0	440.0	0	0	0	0	1	1	0	0	0	0	96.1	77.0				
 ARMH2	sonnet_dual_triage	0	230.0	0	0	0	0	1	1	0	0	0	0	90.4	53.5				
@@ -5529,7 +5529,7 @@ ATP2B4	sonnet_dual_triage	10	1241.0	102	0	0	0	1	1	0	0	0	1	98.3	84.6		ATP2B3	71.6
 ATP2C2	sonnet_dual_triage	10	946.0	66	0	0	0	1	1	0	0	0	1	96.7	84.5		ATP2C1	57.6	
 ATP4A	sonnet_dual_triage	10	1035.0	112	0	0	0	1	1	0	0	0	1	89.1	98.0		ATP12A	41.1	
 ATP4B	sonnet_dual_triage	1	291.0	229	0	0	1	1	1	0	0	0	0	96.9	83.5		ATP1B2	38.9	
-ATP5F1A	sonnet_dual_triage	0	553.0	0	0	0	0	0	0	0	0	0	0						
+ATP5F1A	sonnet_dual_triage	0	553.0	0	0	0	0	1	1	0	0	0	0						
 ATP5F1B	sonnet_dual_triage	0	529.0	0	0	0	0	1	1	1	0	0	0	98.9	96.2	6.0			
 ATP5IF1	sonnet_dual_triage	0	106.0	0	0	0	0	1	1	1	0	0	0	98.1	51.9	2.0			
 ATP5PF	sonnet_dual_triage	0	108.0	0	0	0	0	1	1	0	0	0	0	82.4	80.6				
@@ -5538,7 +5538,7 @@ ATP6AP2	sonnet_dual_triage	1	350.0	295	1	1	0	1	1	0	0	0	0	98.9	93.7
 ATP6V0A2	sonnet_dual_triage	8	856.0	135	0	0	0	1	1	0	0	1	1	98.6	91.6		ATP6V0A1	55.6	1.0
 ATP6V0D2	sonnet_dual_triage	0	350.0	0	0	0	0	1	1	0	0	0	0	98.9	93.1				
 ATP6V0E2	sonnet_dual_triage	2	81.0	32	0	1	1	0	0	0	0	0	1				ATP6V0E1	68.8	
-ATP6V1A	sonnet_dual_triage	0	617.0	0	0	0	0	0	0	0	0	0	0						
+ATP6V1A	sonnet_dual_triage	0	617.0	0	0	0	0	1	0	0	0	0	0						
 ATP7A	sonnet_dual_triage	8	1500.0	97	0	0	0	1	1	0	1	0	1	97.9	89.3		ATP7B	47.4	
 ATP8B4	sonnet_dual_triage	10	1192.0	83	0	0	0	1	1	0	0	0	1	97.2	86.4		ATP8B2	59.0	
 ATRAID	sonnet_dual_triage	1	229.0	169	1	1	0	1	1	0	0	1	0	95.6	62.4				1.0
@@ -5555,8 +5555,8 @@ B4GALNT2	sonnet_dual_triage	1	566.0	474	0	0	1	1	1	1	1	0	1	94.3	73.5	2.0	B4GALNT1
 B4GALT1	sonnet_dual_triage	1	398.0	355	0	0	1	1	1	0	0	0	1	95.0	86.7		B4GALT2	55.5	
 BACE1	sonnet_dual_triage	1	501.0	435	1	1	0	1	1	0	0	1	1	99.6	96.4		BACE2	51.2	2.0
 BACE2	sonnet_dual_triage	1	518.0	447	1	1	0	1	1	0	1	1	1	83.8	88.6		BACE1	51.9	1.0
-BAG6	sonnet_dual_triage	0	1132.0	0	0	0	0	0	0	0	0	0	0						
-BAIAP3	sonnet_dual_triage	0	1187.0	0	0	0	0	0	0	0	0	0	0						
+BAG6	sonnet_dual_triage	0	1132.0	0	0	0	0	1	1	0	0	0	0						
+BAIAP3	sonnet_dual_triage	0	1187.0	0	0	0	0	1	1	0	0	0	0						
 BAMBI	sonnet_dual_triage	1	260.0	126	1	1	0	1	1	0	0	0	0	98.5	93.1				
 BCAM	sonnet_dual_triage	1	628.0	520	1	1	0	1	1	0	0	1	0	95.9	72.6		MCAM	31.9	2.0
 BCAN	sonnet_dual_triage	0	911.0	889	1	1	1	1	1	0	0	1	0	96.5	80.4		ACAN	17.6	4.0
@@ -5565,7 +5565,7 @@ BDKRB2	sonnet_dual_triage	7	391.0	121	0	1	0	1	1	0	0	0	0	95.4	79.8		AGTR1	22.3
 BEST2	sonnet_dual_triage	4	509.0	38	0	0	0	1	0	1	0	0	1		89.4	5.0	BEST3	76.3	
 BEST4	sonnet_dual_triage	4	473.0	48	0	0	0	0	1	1	0	0	0	81.2		5.0	BEST1	31.2	
 BGN	sonnet_dual_triage	0	368.0	352	1	1	1	1	1	0	0	0	1	99.2	95.9		DCN	56.2	
-BLCAP	sonnet_dual_triage	1	87.0	2	1	1	0	0	0	0	0	0	0						
+BLCAP	sonnet_dual_triage	1	87.0	2	1	1	0	1	1	0	0	0	0						
 BLVRB	sonnet_dual_triage	0	206.0	0	0	0	0	1	1	0	0	0	0	85.9	93.2				
 BMP1	sonnet_dual_triage	0	986.0	964	1	1	1	1	1	0	0	0	1	99.4	96.0		TLL2	73.9	
 BMP10	sonnet_dual_triage	0	424.0	403	1	1	1	1	1	1	0	0	1	97.9	85.1	2.0	GDF2	44.5	
@@ -5604,16 +5604,16 @@ BTNL2	sonnet_dual_triage	1	482.0	431	1	1	0	1	0	0	1	0	0		62.2		ERMAP	26.7
 BTNL3	sonnet_dual_triage	1	466.0	221	1	1	0	0	0	1	0	1	1			2.0	BTNL8	71.0	1.0
 BTNL8	sonnet_dual_triage	1	500.0	218	1	1	0	0	1	1	0	0	1	70.2		2.0	BTNL3	70.1	
 BTNL9	sonnet_dual_triage	1	535.0	223	1	1	0	1	0	1	0	1	1		69.0	2.0	BTN2A1	43.9	1.0
-C11orf24	sonnet_dual_triage	1	449.0	381	1	1	0	0	0	0	0	0	0				MANSC4	18.6	
+C11orf24	sonnet_dual_triage	1	449.0	381	1	1	0	0	1	0	0	0	0				MANSC4	18.6	
 C14orf180	sonnet_dual_triage	1	160.0	39	0	0	1	0	0	0	0	0	0						
-C16orf54	sonnet_dual_triage	1	224.0	31	0	1	0	0	0	0	0	0	0						
-C16orf89	sonnet_dual_triage	0	402.0	382	1	1	1	0	0	0	0	0	0						
-C17orf58	sonnet_dual_triage	0	339.0	322	1	1	1	0	0	0	0	0	0						
-C17orf67	sonnet_dual_triage	0	90.0	70	1	1	1	0	0	0	0	0	0						
-C17orf78	sonnet_dual_triage	1	275.0	166	1	1	0	0	0	0	1	0	0						
-C17orf99	sonnet_dual_triage	0	265.0	245	1	1	1	0	0	0	0	0	0				FCRL5	9.9	
-C18orf54	sonnet_dual_triage	0	372.0	0	0	0	0	0	0	0	0	0	0						
-C19orf38	sonnet_dual_triage	1	230.0	103	1	1	0	0	0	0	0	1	0						1.0
+C16orf54	sonnet_dual_triage	1	224.0	31	0	1	0	1	0	0	0	0	0						
+C16orf89	sonnet_dual_triage	0	402.0	382	1	1	1	1	1	0	0	0	0						
+C17orf58	sonnet_dual_triage	0	339.0	322	1	1	1	1	0	0	0	0	0						
+C17orf67	sonnet_dual_triage	0	90.0	70	1	1	1	1	1	0	0	0	0						
+C17orf78	sonnet_dual_triage	1	275.0	166	1	1	0	1	0	0	1	0	0						
+C17orf99	sonnet_dual_triage	0	265.0	245	1	1	1	0	1	0	0	0	0				FCRL5	9.9	
+C18orf54	sonnet_dual_triage	0	372.0	0	0	0	0	1	1	0	0	0	0						
+C19orf38	sonnet_dual_triage	1	230.0	103	1	1	0	1	1	0	0	1	0						1.0
 C1QB	sonnet_dual_triage	0	253.0	226	1	1	1	1	0	1	0	0	1		80.1	3.0	C1QC	50.0	
 C1QBP	sonnet_dual_triage	0	282.0	0	0	0	0	1	0	1	0	0	0		85.8	3.0			
 C1QL1	sonnet_dual_triage	0	258.0	243	1	1	1	1	1	1	0	0	1	98.8	98.4	3.0	C1QL3	74.9	
@@ -5632,30 +5632,30 @@ C1QTNF8	sonnet_dual_triage	0	252.0	235	1	1	1	0	0	1	0	0	1			3.0	C1QTNF6	51.9
 C1QTNF9	sonnet_dual_triage	0	333.0	314	1	1	1	0	0	1	0	0	1			3.0	C1QTNF9B	97.5	
 C1QTNF9B	sonnet_dual_triage	0	333.0	314	1	1	1	0	0	1	0	0	1			3.0	C1QTNF9	97.5	
 C1RL	sonnet_dual_triage	0	487.0	447	1	1	1	1	1	0	0	0	0	93.8	72.9		C1R	36.5	
-C1orf115	sonnet_dual_triage	0	142.0	0	0	0	0	0	0	0	0	0	0						
-C1orf116	sonnet_dual_triage	0	601.0	0	0	0	0	0	0	0	0	0	0						
-C1orf185	sonnet_dual_triage	1	199.0	12	0	1	0	0	0	0	0	0	0						
-C1orf210	sonnet_dual_triage	1	113.0	32	0	1	0	0	0	0	0	0	0						
-C1orf54	sonnet_dual_triage	0	131.0	115	1	1	1	0	0	0	0	0	0						
-C1orf56	sonnet_dual_triage	0	341.0	318	1	1	1	0	0	0	0	0	0						
+C1orf115	sonnet_dual_triage	0	142.0	0	0	0	0	1	1	0	0	0	0						
+C1orf116	sonnet_dual_triage	0	601.0	0	0	0	0	1	1	0	0	0	0						
+C1orf185	sonnet_dual_triage	1	199.0	12	0	1	0	0	1	0	0	0	0						
+C1orf210	sonnet_dual_triage	1	113.0	32	0	1	0	1	1	0	0	0	0						
+C1orf54	sonnet_dual_triage	0	131.0	115	1	1	1	1	1	0	0	0	0						
+C1orf56	sonnet_dual_triage	0	341.0	318	1	1	1	1	0	0	0	0	0						
 C2CD4A	sonnet_dual_triage	0	369.0	0	0	0	0	0	0	0	0	0	0				SYT12	0.0	
 C2CD4B	sonnet_dual_triage	0	364.0	0	0	0	0	0	0	0	0	0	0				SYT12	0.0	
-C2orf74	sonnet_dual_triage	1	187.0	9	0	1	0	0	0	0	0	0	0						
-C2orf92	sonnet_dual_triage	1	265.0	167	1	1	0	0	0	0	0	0	0						
+C2orf74	sonnet_dual_triage	1	187.0	9	0	1	0	1	1	0	0	0	0						
+C2orf92	sonnet_dual_triage	1	265.0	167	1	1	0	0	1	0	0	0	0						
 C3AR1	sonnet_dual_triage	7	482.0	233	0	1	0	1	1	0	0	0	0	88.8	64.7		FPR3	15.5	
-C3orf18	sonnet_dual_triage	1	162.0	58	0	1	0	0	0	0	1	0	0				SMIM29	8.6	
-C3orf52	sonnet_dual_triage	1	217.0	130	0	0	1	0	0	0	0	0	0						
-C3orf80	sonnet_dual_triage	1	247.0	40	1	1	0	0	0	0	0	1	0						1.0
+C3orf18	sonnet_dual_triage	1	162.0	58	0	1	0	1	1	0	1	0	0				SMIM29	8.6	
+C3orf52	sonnet_dual_triage	1	217.0	130	0	0	1	1	1	0	0	0	0						
+C3orf80	sonnet_dual_triage	1	247.0	40	1	1	0	1	0	0	0	1	0						1.0
 C5AR1	sonnet_dual_triage	7	350.0	80	0	1	0	1	1	1	0	0	0	90.0	65.7	2.0	C5AR2	27.4	
 C5AR2	sonnet_dual_triage	7	337.0	95	0	1	0	1	1	0	0	0	0	90.5	61.7		C5AR1	31.6	
-C5orf15	sonnet_dual_triage	1	265.0	153	1	1	0	0	0	0	0	0	0						
-C5orf46	sonnet_dual_triage	0	87.0	64	1	1	1	0	0	0	0	0	0						
-C6orf120	sonnet_dual_triage	0	191.0	162	1	1	1	0	0	0	0	0	0						
-C6orf58	sonnet_dual_triage	0	330.0	310	1	1	1	0	0	0	0	0	0						
+C5orf15	sonnet_dual_triage	1	265.0	153	1	1	0	1	0	0	0	0	0						
+C5orf46	sonnet_dual_triage	0	87.0	64	1	1	1	1	1	0	0	0	0						
+C6orf120	sonnet_dual_triage	0	191.0	162	1	1	1	1	1	0	0	0	0						
+C6orf58	sonnet_dual_triage	0	330.0	310	1	1	1	1	1	0	0	0	0						
 C8B	sonnet_dual_triage	0	591.0	559	1	1	1	1	1	0	0	0	0	95.3	75.1		SUSD6	11.8	
 C8G	sonnet_dual_triage	0	202.0	182	1	1	1	1	0	0	0	0	0		73.8				
 C9	sonnet_dual_triage	0	559.0	538	1	1	1	1	1	0	0	0	0	91.8	58.0		SUSD6	14.7	
-C9orf85	sonnet_dual_triage	0	179.0	0	0	0	0	0	0	0	0	0	0						
+C9orf85	sonnet_dual_triage	0	179.0	0	0	0	0	1	1	0	0	0	0						
 CA10	sonnet_dual_triage	0	328.0	307	1	1	1	1	1	1	0	0	1	94.8	100.0	2.0	CA11	55.0	
 CA12	sonnet_dual_triage	1	354.0	279	1	1	0	1	1	0	0	1	1	96.0	81.9		CA14	46.6	1.0
 CA14	sonnet_dual_triage	1	337.0	278	1	1	0	1	1	0	0	1	1	96.4	84.0		CA12	46.2	1.0
@@ -5729,11 +5729,11 @@ CBLN2	sonnet_dual_triage	0	224.0	173	1	1	1	1	1	1	0	0	1	67.9	94.2	3.0	CBLN1	84.4
 CBLN3	sonnet_dual_triage	0	205.0	173	1	1	1	1	1	1	0	0	1	99.5	88.8	3.0	CBLN1	61.3	
 CBX3	sonnet_dual_triage	0	183.0	0	0	0	0	0	0	1	0	0	0			2.0			
 CCDC167	sonnet_dual_triage	1	97.0	1	0	0	1	1	0	0	0	0	0		79.4				
-CCDC188	sonnet_dual_triage	1	402.0	39	0	0	1	0	0	0	0	0	0						
+CCDC188	sonnet_dual_triage	1	402.0	39	0	0	1	1	1	0	0	0	0						
 CCDC198	sonnet_dual_triage	0	296.0	0	0	0	0	1	1	0	0	0	0	92.2	63.2				
 CCDC25	sonnet_dual_triage	0	208.0	0	0	0	0	1	1	0	0	0	0	99.5	95.2				
 CCDC3	sonnet_dual_triage	0	270.0	249	1	1	1	1	1	1	0	0	0	86.7	90.4	2.0			
-CCDC54	sonnet_dual_triage	0	328.0	0	0	0	0	0	0	1	0	0	0			2.0			
+CCDC54	sonnet_dual_triage	0	328.0	0	0	0	0	1	1	1	0	0	0			2.0			
 CCDC70	sonnet_dual_triage	0	222.0	0	0	0	0	1	1	0	0	0	0	92.8	83.3				
 CCDC78	sonnet_dual_triage	0	438.0	0	0	0	0	1	1	1	0	0	0	90.4	53.8	2.0			
 CCDC80	sonnet_dual_triage	0	950.0	927	1	1	1	1	1	0	0	0	0	98.0	84.0				
@@ -5749,7 +5749,7 @@ CCN2	sonnet_dual_triage	0	349.0	323	1	1	1	1	1	0	0	0	1	89.4	90.5		CCN3	52.5
 CCN3	sonnet_dual_triage	0	357.0	326	1	1	1	1	1	0	0	0	1	98.9	80.1		CCN2	52.5	
 CCN5	sonnet_dual_triage	0	250.0	227	1	1	1	1	1	0	0	0	0	95.6	73.2		CCN2	35.0	
 CCN6	sonnet_dual_triage	0	354.0	331	1	1	1	1	1	0	0	0	1	97.5	78.2		CCN4	43.5	
-CCNY	sonnet_dual_triage	0	341.0	0	0	0	0	0	0	0	0	0	0						
+CCNY	sonnet_dual_triage	0	341.0	0	0	0	0	1	1	0	0	0	0						
 CCNYL1	sonnet_dual_triage	0	359.0	0	0	0	0	1	1	0	0	0	0	99.2	92.8				
 CCNYL1B	sonnet_dual_triage	0	285.0	0	0	0	0	0	0	0	0	0	0						
 CCPG1	sonnet_dual_triage	1	757.0	522	0	0	1	1	1	1	0	0	0	93.7	70.0	2.0			
@@ -5764,8 +5764,8 @@ CCR7	sonnet_dual_triage	7	378.0	79	1	1	0	1	1	0	0	0	0	98.9	87.0		CCR10	25.0
 CCR8	sonnet_dual_triage	7	355.0	87	0	1	0	1	1	0	1	0	0	94.1	70.4		CCR4	30.0	
 CCR9	sonnet_dual_triage	7	369.0	98	0	1	0	1	1	0	0	0	0	98.6	85.6		CXCR6	22.4	
 CCRL2	sonnet_dual_triage	7	344.0	99	0	1	0	0	1	0	0	0	0	91.9			CCR2	31.4	
-CCT5	sonnet_dual_triage	0	541.0	0	0	0	0	0	0	1	0	0	0			9.0			
-CCT7	sonnet_dual_triage	0	543.0	0	0	0	0	0	0	1	0	0	0			9.0			
+CCT5	sonnet_dual_triage	0	541.0	0	0	0	0	1	1	1	0	0	0			9.0			
+CCT7	sonnet_dual_triage	0	543.0	0	0	0	0	1	1	1	0	0	0			9.0			
 CD101	sonnet_dual_triage	1	1021.0	934	1	1	0	1	1	0	0	1	0	95.1	70.4		IGSF3	33.8	4.0
 CD109	sonnet_dual_triage	0	1445.0	1424	1	1	1	1	1	0	0	1	0	95.8	72.1		CPAMD8	26.9	7.0
 CD14	sonnet_dual_triage	0	375.0	356	1	1	1	1	1	0	0	1	0	95.2	65.3				2.0
@@ -5855,7 +5855,7 @@ CD93	sonnet_dual_triage	1	652.0	558	1	1	0	1	1	0	0	1	0	94.8	67.6		DLK2	20.1	3.0
 CD96	sonnet_dual_triage	1	585.0	499	1	1	0	1	1	1	0	1	0	91.7	61.2	2.0			4.0
 CD99	sonnet_dual_triage	1	185.0	105	1	1	0	0	1	0	0	0	0	83.2			CD99L2	29.4	
 CD99L2	sonnet_dual_triage	1	262.0	160	1	1	0	1	1	0	1	0	0	95.0	65.3		CD99	29.4	
-CDC37	sonnet_dual_triage	0	378.0	0	0	0	0	0	0	0	0	0	0						
+CDC37	sonnet_dual_triage	0	378.0	0	0	0	0	1	1	0	0	0	0						
 CDC50A	sonnet_dual_triage	2	361.0	254	0	0	0	1	1	0	1	1	1	98.9	88.9		CDC50B	54.6	1.0
 CDC50B	sonnet_dual_triage	2	351.0	260	0	0	0	1	0	0	0	0	1		90.3		CDC50A	54.2	
 CDCP1	sonnet_dual_triage	1	836.0	638	1	1	0	1	1	0	1	1	0	95.8	81.0				2.0
@@ -5910,7 +5910,7 @@ CELSR2	sonnet_dual_triage	7	2923.0	2381	1	1	0	1	0	0	0	1	1		95.6		CELSR1	59.4	10.
 CELSR3	sonnet_dual_triage	7	3312.0	2545	1	1	0	1	1	0	0	1	1	96.6	92.3		CELSR2	54.5	7.0
 CEMIP	sonnet_dual_triage	0	1361.0	1331	1	1	1	1	1	0	0	0	1	93.7	91.3		CEMIP2	44.0	
 CEMIP2	sonnet_dual_triage	1	1383.0	1280	0	0	1	1	1	0	0	0	1	98.8	86.8		CEMIP	44.1	
-CENPF	sonnet_dual_triage	0	3114.0	0	0	0	0	0	0	0	0	0	0						
+CENPF	sonnet_dual_triage	0	3114.0	0	0	0	0	1	1	0	0	0	0						
 CERCAM	sonnet_dual_triage	0	595.0	573	1	1	1	1	1	0	0	0	1	97.1	83.2		COLGALT1	56.3	
 CFAP95	sonnet_dual_triage	0	229.0	0	0	0	0	1	1	0	0	0	0	93.0	62.4				
 CFC1	sonnet_dual_triage	0	223.0	198	1	1	1	0	0	1	0	1	1			2.0	CFC1B	99.5	1.0
@@ -5922,16 +5922,16 @@ CFTR	sonnet_dual_triage	12	1480.0	102	0	0	0	1	1	0	1	0	0	98.4	78.5		ABCC5	16.7
 CGAS	sonnet_dual_triage	0	522.0	0	0	0	0	1	1	0	0	0	0	83.3	54.8				
 CGB1	sonnet_dual_triage	0	187.0	137	1	1	1	0	0	0	0	0	1				CGB3	94.5	
 CGB2	sonnet_dual_triage	0	163.0	145	1	1	1	0	0	0	0	0	1				CGB3	99.3	
-CHAT	sonnet_dual_triage	0	748.0	0	0	0	0	0	0	0	0	0	0						
+CHAT	sonnet_dual_triage	0	748.0	0	0	0	0	1	1	0	0	0	0						
 CHGB	sonnet_dual_triage	0	677.0	657	1	1	1	1	1	0	0	0	0	91.1	63.8		CHGA	22.7	
 CHIA	sonnet_dual_triage	0	476.0	455	1	1	1	0	1	0	0	0	1	87.6			CHIT1	52.7	
 CHIC2	sonnet_dual_triage	0	165.0	0	0	0	0	1	1	0	0	0	0	100.0	99.4				
 CHID1	sonnet_dual_triage	0	393.0	374	1	1	1	1	1	0	0	0	0	99.2	89.8		OVGP1	15.1	
 CHL1	sonnet_dual_triage	1	1208.0	1058	1	1	0	1	1	0	0	1	0	97.4	83.7		NRCAM	37.6	8.0
 CHLSN	sonnet_dual_triage	0	194.0	0	0	0	0	1	1	0	0	0	0	89.7	61.3				
-CHMP2B	sonnet_dual_triage	0	213.0	0	0	0	0	0	0	1	0	0	0			2.0			
-CHMP5	sonnet_dual_triage	0	219.0	0	0	0	0	0	0	0	0	0	0						
-CHMP6	sonnet_dual_triage	0	201.0	0	0	0	0	0	0	0	0	0	0						
+CHMP2B	sonnet_dual_triage	0	213.0	0	0	0	0	1	1	1	0	0	0			2.0			
+CHMP5	sonnet_dual_triage	0	219.0	0	0	0	0	1	1	0	0	0	0						
+CHMP6	sonnet_dual_triage	0	201.0	0	0	0	0	1	0	0	0	0	0						
 CHODL	sonnet_dual_triage	1	273.0	198	1	1	0	1	1	0	1	1	1	98.9	85.3		LAYN	52.6	1.0
 CHRDL1	sonnet_dual_triage	0	456.0	429	1	1	1	1	1	0	0	0	0	99.6	88.4		FCGBP	3.9	
 CHRFAM7A	sonnet_dual_triage	4	412.0	167	0	1	1	0	0	1	0	0	1			5.0	CHRNA7	63.0	
@@ -5959,12 +5959,12 @@ CHRNG	sonnet_dual_triage	4	517.0	256	1	1	1	1	1	1	0	1	1	97.5	90.5	5.0	CHRND	57.0	
 CHST15	sonnet_dual_triage	1	561.0	463	0	0	1	1	1	0	0	0	0	98.6	92.5				
 CIMIP2C	sonnet_dual_triage	0	201.0	0	0	0	0	1	1	0	0	0	0	96.0	68.2				
 CIP2A	sonnet_dual_triage	0	905.0	0	0	0	0	1	1	1	0	0	0	99.0	86.7	2.0			
-CIRBP	sonnet_dual_triage	0	172.0	0	0	0	0	0	0	0	0	0	0						
+CIRBP	sonnet_dual_triage	0	172.0	0	0	0	0	1	1	0	0	0	0						
 CIROP	sonnet_dual_triage	1	788.0	717	1	1	0	1	1	0	0	0	0	94.0	66.0				
 CIROZ	sonnet_dual_triage	0	823.0	801	1	1	1	1	1	0	0	0	0	71.1	50.5				
 CIST1	sonnet_dual_triage	1	234.0	156	1	1	0	0	1	0	0	0	0	84.2					
 CKAP4	sonnet_dual_triage	1	602.0	475	0	0	1	1	1	0	0	0	0	96.7	80.1				
-CKAP5	sonnet_dual_triage	0	2032.0	0	0	0	0	0	0	0	0	0	0						
+CKAP5	sonnet_dual_triage	0	2032.0	0	0	0	0	1	1	0	0	0	0						
 CKLF	sonnet_dual_triage	4	152.0	15	0	0	0	1	1	0	1	0	0	72.4	57.9		MAL2	11.8	
 CLCA1	sonnet_dual_triage	0	914.0	893	1	1	1	1	0	0	0	0	1		75.5		CLCA4	61.7	
 CLCA2	sonnet_dual_triage	1	943.0	869	1	1	0	1	0	0	0	1	1		72.2		CLCA1	45.8	3.0
@@ -6133,10 +6133,10 @@ CRISPLD1	sonnet_dual_triage	0	500.0	477	1	1	1	1	1	0	0	0	1	58.2	94.6		CRISPLD2	60
 CRISPLD2	sonnet_dual_triage	0	497.0	475	1	1	1	1	1	0	0	0	1	97.8	77.5		CRISPLD1	60.6	
 CRLF1	sonnet_dual_triage	1	422.0	326	1	1	0	1	1	0	0	0	0	86.7	95.0		PRLR	31.9	
 CRLF2	sonnet_dual_triage	1	371.0	209	1	1	0	0	0	0	1	1	0				LEPR	9.1	1.0
-CRLF3	sonnet_dual_triage	0	442.0	0	0	0	0	0	0	1	0	0	0			2.0			
+CRLF3	sonnet_dual_triage	0	442.0	0	0	0	0	1	1	1	0	0	0			2.0			
 CRTAM	sonnet_dual_triage	1	393.0	272	1	1	0	1	1	1	0	1	0	94.4	71.5	2.0	SMAGP	6.2	2.0
 CRYAB	sonnet_dual_triage	0	175.0	0	0	0	0	1	1	0	0	0	0	98.9	97.7				
-CSE1L	sonnet_dual_triage	0	971.0	0	0	0	0	0	0	0	0	0	0						
+CSE1L	sonnet_dual_triage	0	971.0	0	0	0	0	1	1	0	0	0	0						
 CSF1	sonnet_dual_triage	1	554.0	464	1	1	0	1	1	1	0	1	0	95.3	70.0	2.0			1.0
 CSF1R	sonnet_dual_triage	1	972.0	500	1	1	0	1	1	0	1	1	0	87.3	75.1		ROS1	9.0	3.0
 CSF2RA	sonnet_dual_triage	1	400.0	305	1	1	0	0	1	0	1	1	0	88.8			IL3RA	32.1	1.0
@@ -6181,12 +6181,12 @@ CXCR3	sonnet_dual_triage	7	368.0	112	0	1	0	1	1	0	1	0	0	99.2	85.6		CCR4	31.2
 CXCR4	sonnet_dual_triage	7	352.0	94	0	1	0	1	1	0	0	0	0	97.2	91.2		CXCR2	29.1	
 CXCR5	sonnet_dual_triage	7	372.0	113	0	1	0	1	1	0	0	0	0	97.0	83.3		CXCR1	31.0	
 CXCR6	sonnet_dual_triage	7	342.0	75	0	1	0	1	1	0	0	0	0	94.7	74.6		CCR6	18.8	
-CXorf66	sonnet_dual_triage	1	361.0	29	1	1	0	0	0	0	0	0	0						
+CXorf66	sonnet_dual_triage	1	361.0	29	1	1	0	0	1	0	0	0	0						
 CYB561	sonnet_dual_triage	6	251.0	50	0	0	0	1	1	1	1	0	1	97.6	88.0	2.0	CYBRD1	48.0	
 CYB561D1	sonnet_dual_triage	6	229.0	36	0	0	0	1	1	0	1	0	1	93.9	90.4		CYB561D2	44.4	
-CYB5B	sonnet_dual_triage	1	150.0	10	0	0	1	0	0	0	0	0	0						
+CYB5B	sonnet_dual_triage	1	150.0	10	0	0	1	1	1	0	0	0	0						
 CYB5D2	sonnet_dual_triage	0	264.0	236	1	1	1	1	1	0	0	0	0	95.8	80.3		PGRMC2	22.0	
-CYB5R3	sonnet_dual_triage	0	301.0	0	0	0	0	0	0	0	0	0	0						
+CYB5R3	sonnet_dual_triage	0	301.0	0	0	0	0	1	1	0	0	0	0						
 CYBA	sonnet_dual_triage	4	195.0	9	0	0	0	1	0	0	0	0	0		86.7				
 CYBB	sonnet_dual_triage	6	570.0	115	0	0	0	1	1	0	0	0	1	96.7	93.2		NOX3	43.5	
 CYBRD1	sonnet_dual_triage	6	286.0	46	0	0	0	1	1	1	1	0	1	94.1	75.2	2.0	CYB561A3	42.0	
@@ -6204,7 +6204,7 @@ DAG1	sonnet_dual_triage	1	895.0	725	1	1	0	1	1	0	0	1	0	97.4	93.2				3.0
 DAGLA	sonnet_dual_triage	4	1042.0	30	0	0	0	1	1	0	0	1	0	99.5	97.5		DAGLB	23.3	1.0
 DAO	sonnet_dual_triage	0	347.0	0	0	0	0	1	1	1	0	0	0	94.2	80.4	2.0			
 DAPP1	sonnet_dual_triage	0	280.0	0	0	0	0	1	1	1	0	0	0	98.6	93.2	2.0			
-DARS2	sonnet_dual_triage	0	645.0	0	0	0	0	0	0	1	0	0	0			2.0			
+DARS2	sonnet_dual_triage	0	645.0	0	0	0	0	1	1	1	0	0	0			2.0			
 DBI	sonnet_dual_triage	0	87.0	0	0	0	0	0	0	0	0	0	0						
 DCBLD1	sonnet_dual_triage	1	715.0	424	1	1	0	1	1	0	0	1	0	96.9	54.5		RS1	17.5	1.0
 DCBLD2	sonnet_dual_triage	1	775.0	471	1	1	0	1	1	0	0	1	0	87.1	84.1		CUBN	4.6	3.0
@@ -6212,7 +6212,7 @@ DCC	sonnet_dual_triage	1	1447.0	1068	1	1	0	1	1	0	0	1	1	99.3	96.5		NEO1	54.9	5.0
 DCD	sonnet_dual_triage	0	110.0	91	1	1	1	0	0	0	0	0	0				LACRT	22.7	
 DCHS1	sonnet_dual_triage	1	3298.0	2895	1	1	0	1	1	0	0	1	0	86.6	92.5		CDH15	9.9	12.0
 DCHS2	sonnet_dual_triage	1	3371.0	2935	1	1	0	1	0	0	1	1	0		74.1		CDH20	10.3	13.0
-DCLK1	sonnet_dual_triage	0	740.0	0	0	0	0	0	0	0	0	0	0						
+DCLK1	sonnet_dual_triage	0	740.0	0	0	0	0	1	1	0	0	0	0						
 DCST1	sonnet_dual_triage	6	706.0	326	0	0	0	1	1	0	1	0	0	94.8	71.5		OCSTAMP	15.0	
 DCST2	sonnet_dual_triage	6	773.0	285	0	0	0	1	1	0	0	0	0	97.3	66.0		DCSTAMP	16.8	
 DCSTAMP	sonnet_dual_triage	6	470.0	162	0	0	0	1	1	1	1	1	0	95.3	74.3	2.0	DCST2	14.7	1.0
@@ -6245,7 +6245,7 @@ DEFB126	sonnet_dual_triage	0	111.0	91	1	1	1	0	1	0	0	0	0	68.5
 DEFB130B	sonnet_dual_triage	0	79.0	57	1	1	1	0	0	0	0	0	1				DEFB130A	100.0	
 DEFB131B	sonnet_dual_triage	0	70.0	48	1	1	1	0	0	0	0	0	1				DEFB131A	95.8	
 DEFB132	sonnet_dual_triage	0	95.0	73	1	1	1	0	1	0	0	0	0	87.4			DEFB121	26.0	
-DEK	sonnet_dual_triage	0	375.0	0	0	0	0	0	0	0	0	0	0						
+DEK	sonnet_dual_triage	0	375.0	0	0	0	0	1	1	0	0	0	0						
 DGCR2	sonnet_dual_triage	1	550.0	326	1	1	0	1	0	0	1	1	0		93.3				2.0
 DHH	sonnet_dual_triage	0	396.0	374	1	1	1	1	1	0	0	0	1	98.5	96.5		SHH	54.2	
 DHRSX	sonnet_dual_triage	0	330.0	0	0	0	0	0	0	0	0	0	0						
@@ -6253,7 +6253,7 @@ DIO1	sonnet_dual_triage	0	249.0	0	0	0	0	1	1	0	0	0	0	96.4	79.1
 DIO3	sonnet_dual_triage	0	304.0	0	0	0	0	1	0	0	0	0	0		94.7				
 DIPK2A	sonnet_dual_triage	0	430.0	393	1	1	1	1	1	0	0	0	0	98.8	97.7		DIPK2B	32.8	
 DIPK2B	sonnet_dual_triage	0	433.0	402	1	1	1	1	1	0	0	0	0	95.8	80.8		DIPK2A	33.1	
-DIRAS3	sonnet_dual_triage	0	229.0	0	0	0	0	0	0	0	0	0	0						
+DIRAS3	sonnet_dual_triage	0	229.0	0	0	0	0	0	1	0	0	0	0						
 DISP1	sonnet_dual_triage	12	1524.0	573	0	0	0	1	1	0	0	0	1	97.4	84.1		DISP2	44.3	
 DISP2	sonnet_dual_triage	12	1401.0	573	0	0	0	1	1	0	0	0	1	94.1	73.3		DISP1	44.5	
 DKKL1	sonnet_dual_triage	0	242.0	212	1	1	1	1	1	0	0	0	0	94.2	60.3				
@@ -6263,7 +6263,7 @@ DLK2	sonnet_dual_triage	1	383.0	281	1	1	0	1	1	0	0	1	0	99.5	92.2		CD248	16.1	2.0
 DLL1	sonnet_dual_triage	1	723.0	524	1	1	0	1	1	0	1	1	1	92.5	88.5		DLL4	54.4	3.0
 DLL3	sonnet_dual_triage	1	618.0	465	1	1	0	1	1	0	0	1	0	95.1	83.5		DLK2	26.2	5.0
 DLL4	sonnet_dual_triage	1	685.0	505	1	1	0	1	1	0	0	1	1	99.0	86.4		DLL1	54.8	6.0
-DLST	sonnet_dual_triage	0	453.0	0	0	0	0	0	0	1	0	0	0			3.0			
+DLST	sonnet_dual_triage	0	453.0	0	0	0	0	1	1	1	0	0	0			3.0			
 DMBT1	sonnet_dual_triage	0	2413.0	2394	1	1	1	0	1	0	0	0	0	52.3			LGALS3BP	9.9	
 DMKN	sonnet_dual_triage	0	476.0	455	1	1	1	1	1	0	0	0	0	85.1	55.0				
 DMP1	sonnet_dual_triage	0	513.0	497	1	1	1	1	1	0	0	0	0	91.0	64.7				
@@ -6280,7 +6280,7 @@ DPEP3	sonnet_dual_triage	0	488.0	452	1	1	1	1	1	1	0	1	1	94.1	71.7	2.0	DPEP2	71.4	
 DPP10	sonnet_dual_triage	1	796.0	741	0	0	1	1	1	1	1	1	1	97.2	87.6	2.0	DPP6	51.4	1.0
 DPP4	sonnet_dual_triage	1	766.0	739	0	0	1	1	1	1	0	1	1	98.0	84.5	2.0	FAP	52.5	2.0
 DPP6	sonnet_dual_triage	1	865.0	749	0	0	1	1	1	1	0	1	1	98.0	92.3	2.0	DPP10	51.4	1.0
-DPP9	sonnet_dual_triage	0	863.0	0	0	0	0	0	0	1	0	0	0			2.0			
+DPP9	sonnet_dual_triage	0	863.0	0	0	0	0	1	1	1	0	0	0			2.0			
 DRAM1	sonnet_dual_triage	6	238.0	51	0	0	0	1	1	1	1	0	1	98.3	94.5	2.0	DRAM2	42.6	
 DRAXIN	sonnet_dual_triage	0	349.0	324	1	1	1	1	1	0	0	0	0	97.1	76.8				
 DRD1	sonnet_dual_triage	7	446.0	89	0	1	0	1	1	0	0	1	0	99.8	91.0		DRD5	32.0	1.0
@@ -6300,7 +6300,7 @@ DSG4	sonnet_dual_triage	1	1040.0	608	1	1	0	1	1	0	0	1	1	96.3	82.5		DSG1	48.4	7.0
 DUOX1	sonnet_dual_triage	7	1551.0	623	1	1	0	1	1	0	0	0	1	94.4	91.0		DUOX2	80.4	
 DUOX2	sonnet_dual_triage	7	1548.0	626	1	1	0	1	1	0	0	1	1	96.6	84.9		DUOX1	80.5	1.0
 DUOXA1	sonnet_dual_triage	5	343.0	144	0	1	0	1	1	0	0	0	1	95.6	82.8		DUOXA2	64.1	
-DUT	sonnet_dual_triage	0	252.0	0	0	0	0	0	0	1	0	0	0			3.0			
+DUT	sonnet_dual_triage	0	252.0	0	0	0	0	1	0	1	0	0	0			3.0			
 DYNAP	sonnet_dual_triage	1	184.0	76	0	0	1	0	1	0	0	0	0	61.4					
 DYSF	sonnet_dual_triage	1	2080.0	14	0	0	1	1	1	0	1	0	1	97.9	93.0		MYOF	53.3	
 EBAG9	sonnet_dual_triage	0	213.0	0	0	0	0	1	1	0	0	0	0	99.1	97.7				
@@ -6335,7 +6335,7 @@ EGFL7	sonnet_dual_triage	0	273.0	254	1	1	1	1	1	0	0	0	0	94.1	76.2		EGFL8	38.1
 EGFL8	sonnet_dual_triage	0	293.0	268	1	1	1	1	1	0	0	0	0	92.2	80.2		EGFL7	38.1	
 EGFLAM	sonnet_dual_triage	0	1017.0	993	1	1	1	1	1	0	0	0	0	92.4	88.3		USH2A	7.5	
 EGFR	sonnet_dual_triage	1	1210.0	621	1	1	0	1	1	0	1	1	1	99.3	90.5		ERBB4	48.5	5.0
-EIF3A	sonnet_dual_triage	0	1382.0	0	0	0	0	0	0	0	0	0	0						
+EIF3A	sonnet_dual_triage	0	1382.0	0	0	0	0	1	1	0	0	0	0						
 EIF4A1	sonnet_dual_triage	0	406.0	0	0	0	0	1	1	0	0	0	0	98.8	100.0				
 ELANE	sonnet_dual_triage	0	267.0	240	1	1	1	1	0	1	0	0	1		71.9	2.0	PRTN3	51.7	
 ELAPOR1	sonnet_dual_triage	1	1013.0	869	1	1	0	1	0	0	0	0	1		90.3		ELAPOR2	53.6	
@@ -6351,7 +6351,7 @@ EMID1	sonnet_dual_triage	0	441.0	420	1	1	1	1	1	0	0	0	1	71.1	80.1		COL7A1	8.0
 EMP1	sonnet_dual_triage	4	157.0	57	0	0	0	1	0	0	1	0	0		77.1		EMP2	34.4	
 EMP2	sonnet_dual_triage	4	167.0	64	0	0	0	1	0	0	0	1	0		77.8		EMP1	32.8	1.0
 EMP3	sonnet_dual_triage	4	163.0	56	0	0	0	1	1	1	0	0	0	73.6	92.0	2.0	EMP2	31.2	
-EN1	sonnet_dual_triage	0	392.0	0	0	0	0	0	0	0	0	0	0						
+EN1	sonnet_dual_triage	0	392.0	0	0	0	0	1	1	0	0	0	0						
 ENDOD1	sonnet_dual_triage	0	500.0	479	1	1	1	1	1	0	0	0	0	96.8	76.4				
 ENDOU	sonnet_dual_triage	0	410.0	392	1	1	1	1	1	0	0	0	0	96.8	82.2				
 ENG	sonnet_dual_triage	1	658.0	567	1	1	0	1	1	0	0	1	0	87.4	71.6		TGFBR3L	13.9	3.0
@@ -6393,7 +6393,7 @@ EPHB4	sonnet_dual_triage	1	987.0	525	1	1	0	1	1	0	1	1	1	99.4	92.9		EPHB3	45.7	3.0
 EPHB6	sonnet_dual_triage	1	1021.0	568	1	1	0	1	0	0	1	1	1		91.9		LMTK2	25.5	2.0
 EPHX1	sonnet_dual_triage	1	455.0	2	0	1	0	1	0	1	0	0	0		83.5	2.0			
 EPHX3	sonnet_dual_triage	0	360.0	0	0	0	0	1	1	0	0	0	0	96.1	82.8				
-EPM2A	sonnet_dual_triage	0	331.0	0	0	0	0	0	0	0	0	0	0						
+EPM2A	sonnet_dual_triage	0	331.0	0	0	0	0	1	0	0	0	0	0						
 EPOR	sonnet_dual_triage	1	508.0	225	1	1	0	1	1	0	1	1	0	96.7	81.7		CSF2RB	17.3	2.0
 EPPIN	sonnet_dual_triage	0	133.0	112	1	1	1	1	1	0	0	0	1	90.2	61.7		WFDC6	49.1	
 EQTN	sonnet_dual_triage	1	294.0	167	1	1	0	0	1	0	1	1	0	88.4					2.0
@@ -6414,7 +6414,7 @@ ERVV-1	sonnet_dual_triage	0	477.0	456	1	1	1	0	0	1	0	1	1			2.0	ERVV-2	96.5	1.0
 ERVV-2	sonnet_dual_triage	1	535.0	438	1	1	0	0	0	0	0	1	1				ERVV-1	93.6	1.0
 ERVW-1	sonnet_dual_triage	1	538.0	434	1	1	0	0	1	0	0	1	0	83.3			ERVFRD-1	29.0	3.0
 ESAM	sonnet_dual_triage	1	390.0	219	1	1	0	1	1	0	0	1	0	95.9	72.8		GPA33	33.8	3.0
-ESR2	sonnet_dual_triage	0	530.0	0	0	0	0	0	0	1	0	0	0			2.0			
+ESR2	sonnet_dual_triage	0	530.0	0	0	0	0	1	1	1	0	0	0			2.0			
 EVA1A	sonnet_dual_triage	1	152.0	33	0	1	0	1	1	0	0	0	1	98.0	86.8		EVA1B	42.4	
 EVA1B	sonnet_dual_triage	1	165.0	27	0	1	0	1	1	0	0	0	1	97.0	89.7		EVA1A	42.4	
 EVA1C	sonnet_dual_triage	1	441.0	273	1	1	0	1	1	0	1	1	0	96.8	86.2		ADGRA1	24.9	2.0
@@ -6428,7 +6428,7 @@ F2RL3	sonnet_dual_triage	7	385.0	121	1	1	0	1	0	0	0	0	0		76.6		GPR17	26.4
 F3	sonnet_dual_triage	1	295.0	219	1	1	0	1	1	0	1	1	0	86.4	52.9		IFNAR2	30.6	1.0
 FABP4	sonnet_dual_triage	0	132.0	0	0	0	0	1	1	0	0	0	0	97.7	91.7				
 FAIM2	sonnet_dual_triage	7	316.0	32	0	0	1	1	1	0	0	0	1	96.5	92.1		TMBIM1	43.8	
-FAM149A	sonnet_dual_triage	0	773.0	0	0	0	0	0	0	0	0	0	0						
+FAM149A	sonnet_dual_triage	0	773.0	0	0	0	0	1	1	0	0	0	0						
 FAM151A	sonnet_dual_triage	1	585.0	553	0	0	1	1	1	0	0	0	0	95.2	71.3				
 FAM151B	sonnet_dual_triage	0	276.0	0	0	0	0	1	1	0	0	0	0	97.1	84.8				
 FAM153A	sonnet_dual_triage	0	310.0	0	0	0	0	0	0	0	0	0	0						
@@ -6484,7 +6484,7 @@ FCRL5	sonnet_dual_triage	1	977.0	832	1	1	0	0	1	0	1	1	0	88.8			FCRL1	19.7	8.0
 FCRL6	sonnet_dual_triage	1	434.0	291	1	1	0	0	1	0	0	1	0	91.2			FCRL5	15.3	2.0
 FER1L5	sonnet_dual_triage	1	2057.0	77	0	0	1	1	0	0	0	0	0		73.2		DYSF	9.1	
 FER1L6	sonnet_dual_triage	1	1857.0	13	0	0	1	1	1	0	0	0	0	97.1	88.4		MYOF	33.3	
-FEZ1	sonnet_dual_triage	0	392.0	0	0	0	0	0	0	0	0	0	0						
+FEZ1	sonnet_dual_triage	0	392.0	0	0	0	0	1	1	0	0	0	0						
 FFAR1	sonnet_dual_triage	7	300.0	61	0	1	0	1	1	0	0	0	0	95.0	83.0		GPR42	33.8	
 FFAR2	sonnet_dual_triage	7	330.0	57	0	1	0	1	1	0	0	0	0	96.7	84.5		GPR42	32.3	
 FFAR3	sonnet_dual_triage	7	346.0	65	0	1	0	0	0	1	0	0	1			2.0	GPR42	98.5	
@@ -6505,7 +6505,7 @@ FIBCD1	sonnet_dual_triage	1	461.0	410	0	0	1	1	1	0	1	0	0	88.9	90.2		MFAP4	31.5
 FIBIN	sonnet_dual_triage	0	211.0	193	1	1	1	1	1	0	0	0	0	98.6	93.4				
 FKBP8	sonnet_dual_triage	0	412.0	0	0	0	0	1	1	0	0	0	0	99.8	90.6				
 FKBPL	sonnet_dual_triage	0	349.0	0	0	0	0	1	1	0	0	0	0	96.3	73.1				
-FLII	sonnet_dual_triage	0	1269.0	0	0	0	0	0	0	0	0	0	0						
+FLII	sonnet_dual_triage	0	1269.0	0	0	0	0	1	1	0	0	0	0						
 FLRT1	sonnet_dual_triage	1	674.0	503	1	1	0	1	1	0	0	1	1	99.0	96.1		FLRT3	61.0	1.0
 FLRT2	sonnet_dual_triage	1	660.0	506	1	1	0	1	1	0	0	1	1	99.5	97.3		FLRT1	47.6	3.0
 FLRT3	sonnet_dual_triage	1	649.0	501	1	1	0	1	1	0	0	1	1	99.8	96.3		FLRT1	60.8	1.0
@@ -6520,7 +6520,7 @@ FMR1NB	sonnet_dual_triage	2	255.0	93	0	0	0	0	1	0	0	0	0	77.6
 FN1	sonnet_dual_triage	0	2477.0	2451	1	1	1	1	1	0	0	0	0	98.8	92.0		FGL1	5.7	
 FNDC1	sonnet_dual_triage	2	1894.0	1130	1	1	1	1	1	0	1	0	0	94.4	69.5		ABI3BP	28.1	
 FNDC10	sonnet_dual_triage	1	226.0	164	1	1	0	1	0	0	0	0	0		83.2				
-FNDC11	sonnet_dual_triage	0	318.0	0	0	0	0	0	0	0	0	0	0						
+FNDC11	sonnet_dual_triage	0	318.0	0	0	0	0	1	0	0	0	0	0						
 FNDC4	sonnet_dual_triage	1	234.0	125	1	1	0	1	1	1	0	1	1	94.0	94.4	2.0	FNDC5	41.5	1.0
 FNDC5	sonnet_dual_triage	1	260.0	142	1	1	0	1	1	1	0	1	1	99.5	97.6	2.0	FNDC4	44.4	1.0
 FNDC7	sonnet_dual_triage	0	733.0	708	1	1	1	1	1	0	0	0	0	95.9	85.5		TNXB	6.5	
@@ -6529,7 +6529,7 @@ FOLH1	sonnet_dual_triage	1	750.0	707	0	0	1	1	1	1	1	1	1	97.6	85.2	2.0	NAALAD2	70.
 FOLR1	sonnet_dual_triage	0	257.0	235	1	1	1	0	1	0	0	1	1	97.3			FOLR2	76.2	1.0
 FOLR2	sonnet_dual_triage	0	255.0	234	1	1	1	1	1	0	0	1	1	96.1	76.9		FOLR3	79.9	2.0
 FOLR3	sonnet_dual_triage	0	245.0	223	1	1	1	0	1	0	0	0	1	88.6			FOLR2	80.8	
-FOXR2	sonnet_dual_triage	0	311.0	0	0	0	0	0	0	0	0	0	0						
+FOXR2	sonnet_dual_triage	0	311.0	0	0	0	0	1	1	0	0	0	0						
 FPR1	sonnet_dual_triage	7	350.0	104	0	1	0	1	1	1	0	0	1	89.1	76.0	2.0	FPR2	51.4	
 FPR2	sonnet_dual_triage	7	351.0	107	0	1	0	0	1	1	0	0	1	95.7		2.0	FPR3	68.2	
 FPR3	sonnet_dual_triage	7	353.0	107	0	1	0	0	1	1	0	0	1	87.8		2.0	FPR2	68.2	
@@ -6598,7 +6598,7 @@ GBA1	sonnet_dual_triage	0	536.0	497	1	1	1	1	1	0	0	0	0	96.6	83.2
 GBA2	sonnet_dual_triage	0	927.0	0	0	0	0	1	1	0	0	0	0	97.3	86.7				
 GC	sonnet_dual_triage	0	474.0	458	1	1	1	1	1	0	0	0	0	93.7	77.8		ALB	21.8	
 GCGR	sonnet_dual_triage	7	477.0	159	1	1	0	1	0	0	0	0	0		81.8		ADGRG4	2.4	
-GCSAM	sonnet_dual_triage	0	178.0	0	0	0	0	0	0	0	0	0	0						
+GCSAM	sonnet_dual_triage	0	178.0	0	0	0	0	1	1	0	0	0	0						
 GDAP2	sonnet_dual_triage	0	497.0	0	0	0	0	1	1	0	0	0	0	97.0	94.8				
 GDE1	sonnet_dual_triage	0	331.0	0	0	0	0	1	1	0	0	0	0	99.1	87.3				
 GDPD5	sonnet_dual_triage	6	605.0	322	0	0	0	1	1	0	1	1	1	98.2	90.6		GDPD2	47.5	1.0
@@ -6646,13 +6646,13 @@ GLRA1	sonnet_dual_triage	4	457.0	249	1	1	1	1	1	1	0	1	1	99.8	98.9	5.0	GLRA3	88.8	
 GLRA2	sonnet_dual_triage	4	452.0	251	1	1	1	1	1	1	0	1	1	99.8	98.7	5.0	GLRA3	86.9	1.0
 GLRA3	sonnet_dual_triage	4	464.0	251	1	1	1	1	1	1	0	1	1	100.0	98.9	5.0	GLRA1	88.8	1.0
 GLRB	sonnet_dual_triage	4	497.0	259	1	1	1	1	1	1	1	1	1	99.8	96.8	5.0	GLRA3	57.9	2.0
-GMFB	sonnet_dual_triage	0	142.0	0	0	0	0	0	0	0	0	0	0						
+GMFB	sonnet_dual_triage	0	142.0	0	0	0	0	1	1	0	0	0	0						
 GMFG	sonnet_dual_triage	0	142.0	0	0	0	0	1	0	0	0	0	0		93.7				
 GML	sonnet_dual_triage	0	158.0	141	1	1	1	0	0	0	0	1	0				LY6K	27.0	3.0
 GNRHR	sonnet_dual_triage	7	328.0	90	0	1	0	1	1	0	1	0	0	97.6	89.3		GALR3	20.0	
 GOLGA7B	sonnet_dual_triage	0	167.0	0	0	0	0	1	1	0	0	0	0	80.8	83.8				
 GOLM1	sonnet_dual_triage	1	401.0	367	0	0	1	1	1	1	0	0	0	82.3	63.6	2.0	GOLM2	26.1	
-GOT2	sonnet_dual_triage	0	430.0	0	0	0	0	0	0	1	0	0	0			2.0			
+GOT2	sonnet_dual_triage	0	430.0	0	0	0	0	1	1	1	0	0	0			2.0			
 GP1BA	sonnet_dual_triage	1	652.0	516	1	1	0	1	0	0	0	1	0		61.5		LRRC19	16.5	1.0
 GP1BB	sonnet_dual_triage	1	206.0	124	1	1	0	1	0	0	0	1	1		87.4		GP9	41.7	1.0
 GP2	sonnet_dual_triage	0	537.0	509	1	1	1	1	1	0	0	1	1	93.1	61.4		UMOD	43.6	4.0
@@ -6803,7 +6803,7 @@ GYPC	sonnet_dual_triage	1	128.0	60	0	1	0	1	0	0	0	0	0		53.1
 GYPE	sonnet_dual_triage	1	78.0	38	1	1	0	0	0	0	0	0	1				GYPB	65.9	
 H2BC12	sonnet_dual_triage	0	126.0	0	0	0	0	0	0	0	0	0	0						
 H2BC12L	sonnet_dual_triage	0	126.0	0	0	0	0	0	0	0	0	0	0						
-H2BC26	sonnet_dual_triage	0	126.0	0	0	0	0	0	0	0	0	0	0						
+H2BC26	sonnet_dual_triage	0	126.0	0	0	0	0	1	1	0	0	0	0						
 H2BC4	sonnet_dual_triage	0	126.0	0	0	0	0	0	0	0	0	0	0						
 H4C3	sonnet_dual_triage	0	103.0	0	0	0	0	0	0	0	0	0	0						
 HABP2	sonnet_dual_triage	0	560.0	537	1	1	1	1	1	0	0	0	0	97.3	77.9		GZMK	19.6	
@@ -6811,7 +6811,7 @@ HAPLN1	sonnet_dual_triage	0	354.0	339	1	1	1	1	1	1	0	0	1	97.7	96.3	2.0	HAPLN3	51.
 HAPLN3	sonnet_dual_triage	0	360.0	343	1	1	1	1	1	0	0	0	1	92.8	80.6		HAPLN1	51.9	
 HAPLN4	sonnet_dual_triage	0	402.0	373	1	1	1	1	1	1	0	0	1	96.5	90.8	2.0	HAPLN1	46.1	
 HARBI1	sonnet_dual_triage	0	349.0	0	0	0	0	1	1	0	0	0	0	64.5	90.0				
-HARS1	sonnet_dual_triage	0	509.0	0	0	0	0	0	0	1	0	0	0			2.0			
+HARS1	sonnet_dual_triage	0	509.0	0	0	0	0	1	1	1	0	0	0			2.0			
 HAS3	sonnet_dual_triage	8	553.0	30	0	0	0	1	1	0	1	0	1	99.5	97.1		HAS2	60.0	
 HAVCR1	sonnet_dual_triage	1	364.0	275	1	1	0	0	1	0	0	0	0	77.7			TIMD4	37.9	
 HAVCR2	sonnet_dual_triage	1	301.0	181	1	1	0	1	1	0	1	1	0	85.7	60.8		TIMD4	24.8	1.0
@@ -6826,7 +6826,7 @@ HCN4	sonnet_dual_triage	6	1203.0	87	0	0	0	1	1	0	0	0	1	96.3	95.1		HCN3	83.1
 HCRTR1	sonnet_dual_triage	7	425.0	96	0	1	0	1	1	0	0	0	1	97.6	91.8		HCRTR2	57.1	
 HCRTR2	sonnet_dual_triage	7	444.0	98	0	1	0	1	0	0	0	1	1		94.4		HCRTR1	53.1	1.0
 HCST	sonnet_dual_triage	1	93.0	30	1	1	0	1	1	0	0	0	0	96.8	66.7				
-HDAC3	sonnet_dual_triage	0	428.0	0	0	0	0	0	0	0	0	0	0						
+HDAC3	sonnet_dual_triage	0	428.0	0	0	0	0	1	1	0	0	0	0						
 HEG1	sonnet_dual_triage	1	1381.0	1219	1	1	0	1	1	0	1	1	0	86.6	61.2				2.0
 HEPACAM	sonnet_dual_triage	1	416.0	207	1	1	0	1	1	0	0	1	0	90.4	94.7		HEPACAM2	21.3	2.0
 HEPACAM2	sonnet_dual_triage	1	462.0	319	1	1	0	1	1	1	0	1	0	79.0	85.5	2.0	CEACAM3	17.6	3.0
@@ -6861,7 +6861,7 @@ HLA-G	sonnet_dual_triage	1	338.0	283	1	1	0	0	0	0	1	1	1				HLA-A	83.7	2.0
 HMGB1	sonnet_dual_triage	0	215.0	0	0	0	0	1	1	0	0	0	0	74.4	99.1				
 HMGB2	sonnet_dual_triage	0	209.0	0	0	0	0	1	0	0	0	0	0		97.1				
 HMGB3	sonnet_dual_triage	0	200.0	0	0	0	0	0	0	0	0	0	0						
-HMGN2	sonnet_dual_triage	0	90.0	0	0	0	0	0	0	0	0	0	0						
+HMGN2	sonnet_dual_triage	0	90.0	0	0	0	0	0	1	0	0	0	0						
 HMMR	sonnet_dual_triage	0	724.0	0	0	0	0	1	1	1	0	0	0	95.0	74.8	2.0			
 HPN	sonnet_dual_triage	1	417.0	378	0	0	1	1	1	0	0	0	0	99.0	87.8		TMPRSS15	14.9	
 HPSE	sonnet_dual_triage	0	543.0	508	1	1	1	1	1	0	0	0	1	95.4	75.7		HPSE2	43.6	
@@ -6877,7 +6877,7 @@ HSP90AB1	sonnet_dual_triage	0	724.0	0	0	0	0	1	1	1	0	0	0	99.9	99.6	2.0
 HSP90B1	sonnet_dual_triage	1	803.0	62	1	1	0	1	1	1	0	0	0	97.0	97.3	2.0			
 HSPA1A	sonnet_dual_triage	0	641.0	641	0	1	1	0	0	1	0	0	1			2.0	HSPA1B	100.0	
 HSPA1B	sonnet_dual_triage	0	641.0	641	0	1	1	0	0	1	0	0	1			2.0	HSPA1A	100.0	
-HSPA1L	sonnet_dual_triage	0	641.0	641	0	1	1	0	0	1	0	0	0			2.0			
+HSPA1L	sonnet_dual_triage	0	641.0	641	0	1	1	1	1	1	0	0	0			2.0			
 HSPA5	sonnet_dual_triage	0	654.0	636	1	1	1	1	1	1	0	0	1	100.0	98.6	2.0	HSPA8	63.8	
 HSPA8	sonnet_dual_triage	0	646.0	646	0	1	1	1	0	1	0	0	1		99.8	2.0	HSPA2	86.7	
 HSPA9	sonnet_dual_triage	0	679.0	0	0	0	0	1	1	1	0	0	0	96.8	98.4	2.0			
@@ -6917,7 +6917,7 @@ ICAM5	sonnet_dual_triage	1	924.0	805	1	1	0	1	1	0	0	1	0	85.2	84.8		ICAM3	33.5	7.0
 ICOS	sonnet_dual_triage	1	199.0	120	1	1	0	1	1	0	0	1	0	79.4	68.3				1.0
 ICOSLG	sonnet_dual_triage	1	302.0	240	1	1	0	0	1	0	0	1	0	91.4			CD276	19.0	3.0
 IDE	sonnet_dual_triage	0	1019.0	0	0	0	0	1	1	1	0	0	0	99.3	95.2	2.0			
-IDO2	sonnet_dual_triage	0	407.0	0	0	0	0	0	0	0	0	0	0						
+IDO2	sonnet_dual_triage	0	407.0	0	0	0	0	1	1	0	0	0	0						
 IFI16	sonnet_dual_triage	0	785.0	0	0	0	0	0	1	0	0	0	0	80.4					
 IFI35	sonnet_dual_triage	0	286.0	0	0	0	0	1	1	1	0	0	0	75.5	71.7	2.0			
 IFITM1	sonnet_dual_triage	1	125.0	19	0	0	1	0	1	0	0	0	0	86.4			IFITM2	10.5	
@@ -7069,10 +7069,10 @@ JAM2	sonnet_dual_triage	1	298.0	211	1	1	0	1	1	1	0	0	0	97.3	76.5	2.0	F11R	38.4
 JAM3	sonnet_dual_triage	1	310.0	212	1	1	0	1	1	0	0	1	0	94.8	86.5		JAM2	36.8	1.0
 JAML	sonnet_dual_triage	1	394.0	256	1	1	0	0	1	0	1	0	0	93.1			MPZL2	17.2	
 JCAD	sonnet_dual_triage	0	1359.0	0	0	0	0	1	1	0	0	0	0	90.6	53.1				
-JMJD6	sonnet_dual_triage	0	403.0	0	0	0	0	0	0	0	0	0	0						
-JOSD1	sonnet_dual_triage	0	202.0	0	0	0	0	0	0	0	0	0	0						
+JMJD6	sonnet_dual_triage	0	403.0	0	0	0	0	1	1	0	0	0	0						
+JOSD1	sonnet_dual_triage	0	202.0	0	0	0	0	1	1	0	0	0	0						
 JPT2	sonnet_dual_triage	0	190.0	0	0	0	0	0	1	0	0	0	0	93.7					
-KANK2	sonnet_dual_triage	0	851.0	0	0	0	0	0	0	0	0	0	0						
+KANK2	sonnet_dual_triage	0	851.0	0	0	0	0	1	1	0	0	0	0						
 KARS1	sonnet_dual_triage	0	597.0	0	0	0	0	1	1	1	0	0	0	96.1	90.1	2.0			
 KAZN	sonnet_dual_triage	0	775.0	0	0	0	0	1	0	1	0	0	0		94.3	2.0			
 KCNA1	sonnet_dual_triage	6	495.0	101	0	0	0	1	1	1	0	0	1	99.6	98.4	4.0	KCNA3	63.2	
@@ -7230,7 +7230,7 @@ LAMP3	sonnet_dual_triage	1	416.0	354	1	1	0	0	1	0	0	0	0	85.8
 LAMP5	sonnet_dual_triage	1	280.0	210	1	1	0	1	1	0	0	1	0	97.9	85.7		LAMP1	16.1	2.0
 LANCL1	sonnet_dual_triage	0	399.0	0	0	0	0	1	1	0	0	0	0	99.7	91.5				
 LANCL3	sonnet_dual_triage	0	420.0	0	0	0	0	1	1	0	0	0	0	74.0	95.7				
-LAP3	sonnet_dual_triage	0	519.0	0	0	0	0	0	0	1	0	0	0			2.0			
+LAP3	sonnet_dual_triage	0	519.0	0	0	0	0	1	1	1	0	0	0			2.0			
 LAPTM4B	sonnet_dual_triage	4	317.0	55	0	0	0	1	1	0	0	0	0	87.6	92.5		LAPTM4A	37.9	
 LAPTM5	sonnet_dual_triage	6	262.0	58	0	0	0	1	1	0	0	0	0	94.7	79.0		LAPTM4A	17.2	
 LAT2	sonnet_dual_triage	1	243.0	6	0	1	0	1	1	0	0	0	0	88.1	50.2				
@@ -7312,7 +7312,7 @@ LPAR4	sonnet_dual_triage	7	370.0	90	0	1	0	1	1	0	0	0	0	99.2	98.4		LPAR6	35.6
 LPAR5	sonnet_dual_triage	7	372.0	90	0	1	0	1	1	0	0	0	0	56.2	80.9		GPR68	31.1	
 LPAR6	sonnet_dual_triage	7	344.0	73	0	1	0	1	0	1	0	0	0		93.0	2.0	LPAR4	37.8	
 LPL	sonnet_dual_triage	0	475.0	455	1	1	1	1	1	0	0	1	1	99.4	92.8		LIPG	46.5	3.0
-LPXN	sonnet_dual_triage	0	386.0	0	0	0	0	0	0	0	0	0	0						
+LPXN	sonnet_dual_triage	0	386.0	0	0	0	0	1	1	0	0	0	0						
 LRATD2	sonnet_dual_triage	0	310.0	0	0	0	0	1	1	0	0	0	0	98.1	92.6				
 LRCH4	sonnet_dual_triage	1	683.0	5	0	0	1	1	1	0	0	0	1	96.8	79.2		LRRC8D	0.7	
 LRCOL1	sonnet_dual_triage	0	159.0	137	1	1	1	0	0	0	0	0	0				CLPSL2	21.2	
@@ -7376,7 +7376,7 @@ LRTM1	sonnet_dual_triage	1	345.0	268	1	1	0	1	1	0	0	1	0	93.0	66.4		PODN	17.7	1.0
 LRTM2	sonnet_dual_triage	1	370.0	275	1	1	0	1	1	0	0	1	0	97.8	92.2		SLIT3	8.5	1.0
 LRTM3	sonnet_dual_triage	1	7081.0	37	0	1	0	0	0	0	0	0	0						
 LSAMP	sonnet_dual_triage	0	338.0	307	1	1	1	1	1	1	0	1	1	95.0	98.5	2.0	NEGR1	54.2	4.0
-LSM4	sonnet_dual_triage	0	139.0	0	0	0	0	0	0	0	0	0	0						
+LSM4	sonnet_dual_triage	0	139.0	0	0	0	0	1	1	0	0	0	0						
 LSMEM1	sonnet_dual_triage	1	131.0	48	0	0	1	1	1	0	1	1	0	96.9	81.7				1.0
 LSMEM2	sonnet_dual_triage	1	164.0	46	0	0	1	1	1	0	0	0	0	88.4	75.6				
 LSR	sonnet_dual_triage	2	649.0	180	0	0	0	1	1	0	1	0	1	94.5	77.9		ILDR2	46.1	
@@ -7413,7 +7413,7 @@ LYPD5	sonnet_dual_triage	0	251.0	226	1	1	1	1	1	0	0	1	0	95.2	70.5		LYPD3	23.1	1.0
 LYPD6	sonnet_dual_triage	0	171.0	149	1	1	1	1	1	0	0	0	1	99.4	94.7		LYPD6B	43.6	
 LYPD6B	sonnet_dual_triage	0	183.0	144	1	1	1	1	1	0	0	1	1	96.6	72.5		LYPD6	42.3	2.0
 LYPD8	sonnet_dual_triage	0	237.0	218	1	1	1	0	1	0	0	1	0	86.5			PINLYP	22.9	1.0
-LYSMD2	sonnet_dual_triage	0	215.0	0	0	0	0	0	0	0	0	0	0						
+LYSMD2	sonnet_dual_triage	0	215.0	0	0	0	0	1	1	0	0	0	0						
 LYSMD3	sonnet_dual_triage	1	306.0	68	0	0	1	1	1	0	1	0	0	97.7	80.1		LYSMD4	23.5	
 LYVE1	sonnet_dual_triage	1	322.0	215	1	1	0	1	1	0	0	0	0	94.1	68.6		CD44	13.2	
 LYZL1	sonnet_dual_triage	0	148.0	129	1	1	1	0	0	0	0	0	1				LYZL2	96.9	
@@ -7433,7 +7433,7 @@ MAMDC4	sonnet_dual_triage	1	1216.0	1136	1	1	0	1	1	0	1	1	0	80.4	73.3		MALRD1	17.9
 MAN2B1	sonnet_dual_triage	0	1011.0	962	1	1	1	1	1	1	0	0	0	88.1	75.6	2.0	MAN2A2	27.5	
 MANF	sonnet_dual_triage	0	182.0	158	1	1	1	1	1	0	0	0	1	97.8	96.2		CDNF	62.7	
 MANSC4	sonnet_dual_triage	1	340.0	262	1	1	0	1	1	1	0	1	0	89.4	61.5	2.0	MANSC1	20.4	1.0
-MAP1B	sonnet_dual_triage	0	2468.0	0	0	0	0	0	0	0	0	0	0						
+MAP1B	sonnet_dual_triage	0	2468.0	0	0	0	0	1	1	0	0	0	0						
 MARCKS	sonnet_dual_triage	0	332.0	0	0	0	0	1	0	0	0	0	0		69.9				
 MARCO	sonnet_dual_triage	1	520.0	455	0	0	1	1	1	0	1	0	0	91.9	67.7		MSR1	28.6	
 MARCOL	sonnet_dual_triage	0	285.0	266	1	1	1	0	0	0	0	0	0						
@@ -7455,7 +7455,7 @@ MCHR2	sonnet_dual_triage	7	340.0	87	0	1	0	0	1	0	0	0	0	97.6			MCHR1	30.5
 MCOLN1	sonnet_dual_triage	6	580.0	266	0	0	0	1	1	1	0	0	1	98.4	91.4	4.0	MCOLN3	53.8	
 MCOLN2	sonnet_dual_triage	6	566.0	255	0	0	0	1	1	1	0	0	1	94.7	79.5	4.0	MCOLN3	53.3	
 MCTP1	sonnet_dual_triage	4	999.0	2	0	0	0	1	1	0	1	0	0	97.8	87.5		MCTP2	33.3	
-MDFIC	sonnet_dual_triage	0	246.0	0	0	0	0	0	0	0	0	0	0						
+MDFIC	sonnet_dual_triage	0	246.0	0	0	0	0	1	1	0	0	0	0						
 MDGA1	sonnet_dual_triage	0	955.0	937	1	1	1	1	1	0	0	1	1	96.3	96.3		MDGA2	53.4	6.0
 MDGA2	sonnet_dual_triage	0	956.0	936	1	1	1	1	1	0	0	1	1	99.5	97.1		MDGA1	53.4	5.0
 MEGF10	sonnet_dual_triage	1	1140.0	832	1	1	0	1	1	0	1	1	1	98.7	94.6		MEGF11	68.4	7.0
@@ -7467,7 +7467,7 @@ MELTF	sonnet_dual_triage	0	738.0	719	1	1	1	1	1	0	0	1	1	91.9	83.7		SRPRB	12.5	3.0
 MEP1A	sonnet_dual_triage	1	746.0	697	1	1	0	0	1	1	0	1	1	95.4		2.0	MEP1B	42.8	2.0
 MEP1B	sonnet_dual_triage	1	701.0	630	1	1	0	1	1	1	0	1	1	94.2	77.6	2.0	MEP1A	42.8	2.0
 MERTK	sonnet_dual_triage	1	999.0	478	1	1	0	1	1	0	0	1	0	96.0	81.1		ROS1	8.2	2.0
-MEST	sonnet_dual_triage	0	335.0	0	0	0	0	0	0	0	0	0	0						
+MEST	sonnet_dual_triage	0	335.0	0	0	0	0	1	0	0	0	0	0						
 MET	sonnet_dual_triage	1	1390.0	909	1	1	0	1	1	0	1	1	0	98.1	88.9		ROR1	13.6	2.0
 METRN	sonnet_dual_triage	0	293.0	270	1	1	1	1	1	0	0	0	1	92.8	80.5		METRNL	47.4	
 METRNL	sonnet_dual_triage	0	311.0	266	1	1	1	1	1	0	0	0	1	95.5	77.2		METRN	47.4	
@@ -7482,7 +7482,7 @@ MFSD6L	sonnet_dual_triage	12	586.0	197	0	0	0	1	1	0	0	0	0	91.8	67.6		MFSD6	24.9
 MFSD8	sonnet_dual_triage	12	518.0	120	0	0	0	1	1	0	1	0	0	94.6	81.7		SLC71A2	15.0	
 MGAM	sonnet_dual_triage	1	2753.0	2719	0	0	1	1	1	0	0	0	1	65.0	79.9		SI	39.6	
 MGAM2	sonnet_dual_triage	1	2515.0	2485	0	0	1	1	1	0	0	0	1	92.0	59.4		SI	40.8	
-MGRN1	sonnet_dual_triage	0	552.0	0	0	0	0	0	0	0	0	0	0						
+MGRN1	sonnet_dual_triage	0	552.0	0	0	0	0	1	1	0	0	0	0						
 MICA	sonnet_dual_triage	1	383.0	284	1	1	0	0	0	0	0	1	1				MICB	84.8	2.0
 MICB	sonnet_dual_triage	1	383.0	289	1	1	0	0	0	0	1	1	1				MICA	85.1	2.0
 MIF	sonnet_dual_triage	0	115.0	0	0	0	0	1	1	1	0	0	0	100.0	89.6	3.0			
@@ -7521,7 +7521,7 @@ MPEG1	sonnet_dual_triage	1	716.0	646	1	1	0	0	1	1	0	1	0	92.0		2.0			4.0
 MPIG6B	sonnet_dual_triage	1	241.0	125	1	1	0	1	1	0	1	1	0	76.8	71.4				2.0
 MPL	sonnet_dual_triage	1	635.0	472	1	1	0	1	1	0	0	1	0	96.5	81.1		IL4R	23.9	1.0
 MPO	sonnet_dual_triage	0	745.0	697	1	1	1	1	1	0	0	0	1	96.1	83.2		EPX	69.9	
-MPPED1	sonnet_dual_triage	0	326.0	0	0	0	0	0	0	0	0	0	0						
+MPPED1	sonnet_dual_triage	0	326.0	0	0	0	0	1	0	0	0	0	0						
 MPZ	sonnet_dual_triage	1	248.0	126	1	1	0	1	1	0	0	0	1	98.8	94.0		MPZL1	42.0	
 MPZL1	sonnet_dual_triage	1	269.0	131	1	1	0	1	1	1	1	1	1	96.3	83.3	2.0	MPZ	43.5	1.0
 MPZL2	sonnet_dual_triage	1	215.0	126	1	1	0	1	1	0	0	1	0	99.1	81.4		MPZL1	38.2	1.0
@@ -7561,7 +7561,7 @@ MSMP	sonnet_dual_triage	0	139.0	103	1	1	1	1	1	0	0	0	0	99.3	91.4		MSMB	21.4
 MSR1	sonnet_dual_triage	1	451.0	380	0	0	1	1	1	0	0	1	0	95.1	71.4		SCARA5	33.8	2.0
 MST1R	sonnet_dual_triage	1	1400.0	935	1	1	0	1	1	0	1	1	0	95.9	74.3		FGFR3	14.4	2.0
 MTDH	sonnet_dual_triage	1	582.0	49	0	1	0	1	0	0	0	0	0		91.1				
-MTMR6	sonnet_dual_triage	0	621.0	0	0	0	0	0	0	1	0	0	0			2.0			
+MTMR6	sonnet_dual_triage	0	621.0	0	0	0	0	1	1	1	0	0	0			2.0			
 MTNR1A	sonnet_dual_triage	7	350.0	84	0	1	0	1	1	0	0	0	1	95.4	85.1		MTNR1B	46.4	
 MTNR1B	sonnet_dual_triage	7	362.0	97	0	1	0	1	1	0	0	0	1	95.6	79.0		MTNR1A	46.4	
 MTUS1	sonnet_dual_triage	0	1270.0	0	0	0	0	1	1	0	1	0	0	94.1	62.8				
@@ -7604,15 +7604,15 @@ NBL1	sonnet_dual_triage	0	181.0	164	1	1	1	1	1	1	0	0	0	98.9	92.8	2.0	GREM2	24.4
 NCAM1	sonnet_dual_triage	1	858.0	704	1	1	0	1	1	0	1	1	1	97.9	93.8		NCAM2	44.0	3.0
 NCAM2	sonnet_dual_triage	1	837.0	685	1	1	0	1	1	1	1	1	1	98.4	93.7	2.0	NCAM1	44.0	3.0
 NCMAP	sonnet_dual_triage	1	102.0	30	0	1	0	1	1	0	0	0	0	96.1	78.4				
-NCOA4	sonnet_dual_triage	0	614.0	0	0	0	0	0	0	1	0	0	0			2.0			
+NCOA4	sonnet_dual_triage	0	614.0	0	0	0	0	1	1	1	0	0	0			2.0			
 NCR1	sonnet_dual_triage	1	304.0	234	1	1	0	1	1	0	0	1	1	85.9	61.2		LILRB3	25.4	2.0
 NCR2	sonnet_dual_triage	1	276.0	172	1	1	0	0	1	0	0	1	0	89.9			TREML4	36.7	1.0
 NCR3	sonnet_dual_triage	1	201.0	121	1	1	0	0	1	0	0	1	0	68.7			NECTIN2	15.2	1.0
 NCR3LG1	sonnet_dual_triage	1	454.0	240	1	1	0	0	0	0	0	1	0				TAPBPL	17.6	1.0
 NCSTN	sonnet_dual_triage	1	709.0	633	1	1	0	1	1	0	0	1	0	94.5	88.7				2.0
 NDNF	sonnet_dual_triage	0	568.0	549	1	1	1	1	1	0	0	0	0	98.1	87.5				
-NDRG2	sonnet_dual_triage	0	371.0	0	0	0	0	0	0	0	0	0	0						
-NECAB2	sonnet_dual_triage	0	386.0	0	0	0	0	0	0	1	0	0	0			2.0			
+NDRG2	sonnet_dual_triage	0	371.0	0	0	0	0	1	1	0	0	0	0						
+NECAB2	sonnet_dual_triage	0	386.0	0	0	0	0	1	1	1	0	0	0			2.0			
 NECTIN1	sonnet_dual_triage	1	517.0	325	1	1	0	1	1	1	1	0	0	89.7	94.6	2.0	SMAGP	4.6	
 NECTIN2	sonnet_dual_triage	1	538.0	329	1	1	0	1	1	1	0	0	1	96.5	74.0	2.0	PVR	52.3	
 NECTIN3	sonnet_dual_triage	1	549.0	349	1	1	0	1	1	1	1	0	0	99.5	68.3	2.0	SMAGP	3.2	
@@ -7622,7 +7622,7 @@ NELL1	sonnet_dual_triage	0	810.0	789	1	1	1	1	1	0	0	0	1	98.5	93.3		NELL2	56.4
 NELL2	sonnet_dual_triage	0	816.0	795	1	1	1	1	1	0	0	0	1	97.3	94.0		NELL1	56.4	
 NENF	sonnet_dual_triage	0	172.0	141	1	1	1	1	1	0	0	0	0	83.7	90.7				
 NEO1	sonnet_dual_triage	1	1461.0	1072	1	1	0	1	1	0	0	1	1	98.6	94.5		DCC	55.1	4.0
-NET1	sonnet_dual_triage	0	596.0	0	0	0	0	0	0	0	0	0	0						
+NET1	sonnet_dual_triage	0	596.0	0	0	0	0	1	1	0	0	0	0						
 NETO1	sonnet_dual_triage	1	533.0	321	1	1	0	1	1	0	1	1	1	99.6	95.7		NETO2	65.9	1.0
 NETO2	sonnet_dual_triage	1	525.0	323	1	1	0	1	1	0	0	1	1	99.6	95.0		NETO1	66.3	2.0
 NEU1	sonnet_dual_triage	0	415.0	368	1	1	1	1	1	0	0	0	0	97.1	81.7				
@@ -7637,7 +7637,7 @@ NIPA1	sonnet_dual_triage	9	329.0	83	0	1	0	1	1	1	1	0	0	98.2	97.0	2.0	NIPA2	24.1
 NIPA2	sonnet_dual_triage	9	360.0	58	0	1	0	1	1	1	0	0	0	98.6	95.6	2.0	NIPAL1	31.2	
 NIPAL3	sonnet_dual_triage	9	406.0	86	0	1	0	1	1	0	1	0	0	97.8	90.1		NIPAL2	34.3	
 NIPAL4	sonnet_dual_triage	9	404.0	104	0	1	0	1	1	1	0	0	0	98.8	84.9	2.0	NIPA2	31.7	
-NIPSNAP1	sonnet_dual_triage	0	284.0	0	0	0	0	0	0	1	0	0	0			4.0			
+NIPSNAP1	sonnet_dual_triage	0	284.0	0	0	0	0	1	1	1	0	0	0			4.0			
 NKAIN2	sonnet_dual_triage	4	208.0	71	0	0	0	1	1	0	0	0	1	100.0	97.6		NKAIN1	66.2	
 NKAIN3	sonnet_dual_triage	4	197.0	68	0	0	0	1	1	0	0	0	1	86.2	79.8		NKAIN1	55.7	
 NKAIN4	sonnet_dual_triage	4	208.0	70	0	0	0	1	1	0	0	0	1	88.0	83.2		NKAIN1	50.0	
@@ -7674,7 +7674,7 @@ NPFFR2	sonnet_dual_triage	7	522.0	216	0	1	0	1	1	0	1	0	0	95.5	78.8		NPFFR1	20.8
 NPHS1	sonnet_dual_triage	1	1241.0	1042	1	1	0	1	1	0	0	1	0	95.4	81.5		KIRREL2	21.8	8.0
 NPHS2	sonnet_dual_triage	2	383.0	1	0	0	0	1	1	1	0	0	0	89.3	86.4	2.0	STOML3	0.0	
 NPIPB11	sonnet_dual_triage	1	1161.0	70	0	1	0	0	0	0	0	0	1				NPIPB5	95.8	
-NPM1	sonnet_dual_triage	0	294.0	0	0	0	0	0	0	1	0	0	0			5.0			
+NPM1	sonnet_dual_triage	0	294.0	0	0	0	0	1	1	1	0	0	0			5.0			
 NPNT	sonnet_dual_triage	0	565.0	546	1	1	1	1	1	0	0	0	1	96.6	87.4		EGFL6	40.1	
 NPR1	sonnet_dual_triage	1	1061.0	441	1	1	0	1	1	1	0	1	1	75.5	90.9	2.0	ADCY1	23.8	1.0
 NPR2	sonnet_dual_triage	1	1047.0	439	1	1	0	1	1	0	0	1	1	100.0	98.7		ADCY5	27.1	1.0
@@ -7720,7 +7720,7 @@ NTRK3	sonnet_dual_triage	1	839.0	402	1	1	0	1	1	0	0	1	0	99.4	95.6		NTRK2	38.8	1.0
 NTSR1	sonnet_dual_triage	7	418.0	130	0	1	0	1	0	0	0	0	0		85.4		NTSR2	33.8	
 NTSR2	sonnet_dual_triage	7	410.0	98	0	1	0	1	1	1	0	0	0	83.4	78.8	2.0	NTSR1	30.0	
 NUCB2	sonnet_dual_triage	0	420.0	396	1	1	1	1	1	0	0	0	1	99.8	86.0		NUCB1	57.5	
-NUDCD1	sonnet_dual_triage	0	583.0	0	0	0	0	0	0	0	0	0	0						
+NUDCD1	sonnet_dual_triage	0	583.0	0	0	0	0	1	1	0	0	0	0						
 NUP62	sonnet_dual_triage	0	522.0	0	0	0	0	1	1	0	0	0	0	96.7	80.1				
 NUS1	sonnet_dual_triage	0	293.0	0	0	0	0	1	1	1	0	0	0	98.0	90.4	2.0			
 NXNL1	sonnet_dual_triage	0	212.0	0	0	0	0	1	0	0	0	0	0		77.8				
@@ -8208,7 +8208,7 @@ P4HB	sonnet_dual_triage	0	508.0	491	1	1	1	1	0	0	0	0	1		93.7		PDIA2	48.2
 PACC1	sonnet_dual_triage	2	350.0	216	0	0	0	1	1	0	0	0	0	97.7	90.6				
 PAEP	sonnet_dual_triage	0	180.0	162	1	1	1	0	1	0	0	0	0	81.1			LCN8	24.7	
 PAG1	sonnet_dual_triage	1	432.0	15	0	1	0	1	1	0	0	0	0	96.5	78.7				
-PAK6	sonnet_dual_triage	0	681.0	0	0	0	0	0	0	0	0	0	0						
+PAK6	sonnet_dual_triage	0	681.0	0	0	0	0	1	0	0	0	0	0						
 PALM2AKAP2	sonnet_dual_triage	0	1103.0	0	0	0	0	1	1	0	0	0	0	96.9	67.5				
 PAM	sonnet_dual_triage	1	973.0	846	1	1	0	1	1	0	1	1	0	98.4	81.0				2.0
 PAMR1	sonnet_dual_triage	0	720.0	699	1	1	1	1	1	0	0	0	0	98.1	90.1		F2	22.6	
@@ -8297,7 +8297,7 @@ PCDHGC3	sonnet_dual_triage	1	934.0	662	1	1	0	1	0	0	0	1	1		92.1		PCDHGA4	47.3	7.0
 PCDHGC4	sonnet_dual_triage	1	938.0	663	1	1	0	1	0	0	0	1	1		98.2		PCDHGC5	51.2	5.0
 PCDHGC5	sonnet_dual_triage	1	944.0	664	1	1	0	1	0	0	0	1	1		93.1		PCDHGC4	51.2	4.0
 PCED1B	sonnet_dual_triage	0	432.0	0	0	0	0	1	1	0	0	0	0	91.7	57.6				
-PCMT1	sonnet_dual_triage	0	227.0	0	0	0	0	0	0	0	0	0	0						
+PCMT1	sonnet_dual_triage	0	227.0	0	0	0	0	1	1	0	0	0	0						
 PCNX2	sonnet_dual_triage	14	2137.0	81	0	0	0	1	1	0	1	0	1	92.2	80.4		PCNX3	46.9	
 PCNX3	sonnet_dual_triage	14	2034.0	72	0	0	0	1	1	0	1	0	1	98.5	94.6		PCNX2	40.7	
 PCSK4	sonnet_dual_triage	1	755.0	687	1	1	0	1	0	1	0	0	1		69.4	2.0	FURIN	57.0	
@@ -8306,7 +8306,7 @@ PCSK7	sonnet_dual_triage	1	785.0	627	1	1	0	1	1	0	0	0	0	98.2	85.9		PCSK6	31.5
 PCSK9	sonnet_dual_triage	0	692.0	662	1	1	1	1	1	1	0	0	0	96.4	76.7	2.0	PCSK5	12.7	
 PDCD1	sonnet_dual_triage	1	288.0	146	1	1	0	1	0	0	0	1	0		59.7				1.0
 PDCD1LG2	sonnet_dual_triage	1	273.0	202	1	1	0	1	1	0	1	1	1	95.2	63.0		CD274	41.8	2.0
-PDCD5	sonnet_dual_triage	0	125.0	0	0	0	0	0	0	0	0	0	0						
+PDCD5	sonnet_dual_triage	0	125.0	0	0	0	0	1	1	0	0	0	0						
 PDGFA	sonnet_dual_triage	0	211.0	191	1	1	1	1	0	1	0	0	0		92.3	2.0	PDGFB	38.9	
 PDGFB	sonnet_dual_triage	0	241.0	221	1	1	1	1	1	1	0	0	0	99.6	89.6	2.0	PDGFA	38.9	
 PDGFC	sonnet_dual_triage	0	345.0	323	1	1	1	1	1	0	0	0	1	98.8	87.0		PDGFD	44.6	
@@ -8319,17 +8319,17 @@ PDIA4	sonnet_dual_triage	0	645.0	621	1	1	1	1	1	0	0	0	0	97.8	87.9		PDIA3	33.0
 PDIA6	sonnet_dual_triage	0	440.0	421	1	1	1	1	1	1	0	0	0	97.5	95.2	2.0	TMX1	16.9	
 PDPN	sonnet_dual_triage	1	162.0	111	1	1	0	0	1	0	0	0	0	92.6					
 PDZD2	sonnet_dual_triage	0	2839.0	0	0	0	0	1	1	0	0	0	0	94.3	68.7				
-PDZD7	sonnet_dual_triage	0	1033.0	0	0	0	0	0	0	0	0	0	0						
+PDZD7	sonnet_dual_triage	0	1033.0	0	0	0	0	1	1	0	0	0	0						
 PDZK1IP1	sonnet_dual_triage	1	114.0	13	1	1	0	1	1	0	0	0	0	99.1	82.5		SMIM24	38.5	
 PEAR1	sonnet_dual_triage	1	1037.0	737	1	1	0	1	1	0	0	1	0	85.5	83.9		DLK1	16.3	7.0
 PEBP4	sonnet_dual_triage	0	227.0	205	1	1	1	0	1	0	0	0	0	89.4					
 PECAM1	sonnet_dual_triage	1	738.0	574	1	1	0	1	1	0	0	1	0	91.6	63.3		FCER1A	12.5	5.0
 PEG10	sonnet_dual_triage	0	708.0	0	0	0	0	0	0	1	0	0	0			2.0			
-PEPD	sonnet_dual_triage	0	493.0	0	0	0	0	0	0	1	0	0	0			2.0			
+PEPD	sonnet_dual_triage	0	493.0	0	0	0	0	1	1	1	0	0	0			2.0			
 PERP	sonnet_dual_triage	4	193.0	70	0	0	0	1	1	0	0	0	0	99.0	90.7		TMEM47	25.7	
-PEX5	sonnet_dual_triage	0	639.0	0	0	0	0	0	0	0	0	0	0						
-PFKL	sonnet_dual_triage	0	780.0	0	0	0	0	0	0	1	0	0	0			2.0			
-PFKP	sonnet_dual_triage	0	784.0	0	0	0	0	0	0	1	0	0	0			2.0			
+PEX5	sonnet_dual_triage	0	639.0	0	0	0	0	1	1	0	0	0	0						
+PFKL	sonnet_dual_triage	0	780.0	0	0	0	0	1	1	1	0	0	0			2.0			
+PFKP	sonnet_dual_triage	0	784.0	0	0	0	0	1	0	1	0	0	0			2.0			
 PGAP6	sonnet_dual_triage	7	771.0	544	1	1	0	1	1	1	0	0	0	94.0	75.4	2.0	TMEM8B	22.2	
 PGK1	sonnet_dual_triage	0	417.0	0	0	0	0	1	0	0	0	0	0		97.8				
 PGLYRP3	sonnet_dual_triage	0	341.0	324	1	1	1	1	1	1	0	0	1	96.2	73.3	2.0	PGLYRP4	61.8	
@@ -8337,7 +8337,7 @@ PGRMC1	sonnet_dual_triage	1	195.0	31	0	1	0	1	1	0	0	0	0	83.1	95.4		CYB5D2	1.7
 PHB1	sonnet_dual_triage	0	272.0	245	1	1	1	1	0	1	0	0	1		99.6	2.0	PHB2	49.4	
 PHB2	sonnet_dual_triage	1	299.0	263	0	0	1	1	1	1	0	0	1	100.0	100.0	2.0	PHB1	49.4	
 PHEX	sonnet_dual_triage	1	749.0	709	0	0	1	1	1	1	0	1	0	98.8	96.0	2.0	ECE1	38.9	1.0
-PHLPP1	sonnet_dual_triage	0	1717.0	0	0	0	0	0	0	0	0	0	0						
+PHLPP1	sonnet_dual_triage	0	1717.0	0	0	0	0	1	1	0	0	0	0						
 PI15	sonnet_dual_triage	0	258.0	239	1	1	1	1	1	0	0	0	1	99.6	93.4		R3HDML	58.6	
 PI16	sonnet_dual_triage	0	463.0	436	1	1	1	1	1	1	0	1	0	70.8	66.3	2.0			2.0
 PI3	sonnet_dual_triage	0	117.0	95	1	1	1	0	1	0	0	0	0	94.0			WFDC5	19.5	
@@ -8387,7 +8387,7 @@ PLAUR	sonnet_dual_triage	0	335.0	313	1	1	1	1	1	0	0	1	0	90.7	61.2		LYPD5	21.7	2.0
 PLB1	sonnet_dual_triage	1	1458.0	1396	1	1	0	1	1	0	1	1	0	94.6	68.8				6.0
 PLBD1	sonnet_dual_triage	0	553.0	521	1	1	1	1	1	1	0	0	0	86.4	77.4	2.0	PLBD2	35.2	
 PLBD2	sonnet_dual_triage	0	589.0	548	1	1	1	1	1	0	0	0	0	96.3	81.2		PLBD1	35.2	
-PLCXD2	sonnet_dual_triage	0	305.0	0	0	0	0	0	0	0	0	0	0						
+PLCXD2	sonnet_dual_triage	0	305.0	0	0	0	0	1	0	0	0	0	0						
 PLD2	sonnet_dual_triage	0	933.0	0	0	0	0	1	1	0	0	0	0	97.2	90.0				
 PLD3	sonnet_dual_triage	1	490.0	431	0	0	1	1	1	0	0	0	1	88.6	93.3		PLD4	45.5	
 PLD4	sonnet_dual_triage	1	506.0	455	0	0	1	1	1	1	0	0	1	92.1	73.9	2.0	PLD3	45.5	
@@ -8457,7 +8457,7 @@ PRCP	sonnet_dual_triage	0	496.0	475	1	1	1	1	1	1	0	0	1	97.8	77.0	2.0	DPP7	42.9
 PRDX1	sonnet_dual_triage	0	199.0	0	0	0	0	1	1	1	0	0	0	99.5	95.5	2.0			
 PRDX2	sonnet_dual_triage	0	198.0	0	0	0	0	1	0	1	0	0	0		92.4	2.0			
 PRDX4	sonnet_dual_triage	0	271.0	234	1	1	1	1	1	1	0	0	1	85.2	89.7	2.0			
-PREP	sonnet_dual_triage	0	710.0	0	0	0	0	0	0	0	0	0	0						
+PREP	sonnet_dual_triage	0	710.0	0	0	0	0	1	1	0	0	0	0						
 PRG2	sonnet_dual_triage	0	222.0	206	1	1	1	1	1	0	0	0	1	89.2	59.9		PRG3	49.5	
 PRG3	sonnet_dual_triage	0	225.0	208	1	1	1	1	1	0	0	0	1	87.6	61.3		PRG2	49.5	
 PRG4	sonnet_dual_triage	0	1404.0	1380	1	1	1	1	1	0	0	0	0	79.5	62.5		VTN	11.0	
@@ -8474,7 +8474,7 @@ PROM1	sonnet_dual_triage	5	865.0	623	1	1	0	1	1	0	0	1	0	95.8	60.9		PROM2	23.0	1.0
 PROM2	sonnet_dual_triage	5	834.0	609	1	1	0	1	1	0	1	1	0	93.5	73.3		PROM1	23.1	1.0
 PROS1	sonnet_dual_triage	0	676.0	652	1	1	1	1	1	0	0	0	0	95.9	79.6		SHBG	18.9	
 PRPH2	sonnet_dual_triage	4	346.0	159	0	0	0	1	1	1	0	0	1	98.3	91.0	2.0	ROM1	44.0	
-PRR15L	sonnet_dual_triage	0	103.0	0	0	0	0	0	0	0	0	0	0						
+PRR15L	sonnet_dual_triage	0	103.0	0	0	0	0	1	1	0	0	0	0						
 PRR27	sonnet_dual_triage	0	219.0	204	1	1	1	0	1	0	0	0	0	88.1					
 PRRG1	sonnet_dual_triage	1	218.0	80	0	1	0	1	1	0	1	0	1	98.2	92.7		PRRG3	53.8	
 PRRG2	sonnet_dual_triage	1	202.0	92	1	1	0	1	1	0	0	0	0	78.2	78.7		MASP2	4.3	
@@ -8488,7 +8488,7 @@ PRSS16	sonnet_dual_triage	0	514.0	490	1	1	1	1	1	1	0	0	0	96.1	78.8	2.0	DPP7	30.4
 PRSS21	sonnet_dual_triage	0	314.0	295	1	1	1	0	1	0	0	1	1	86.3			PRSS41	51.5	1.0
 PRSS22	sonnet_dual_triage	0	317.0	285	1	1	1	1	1	0	0	0	0	82.6	74.4		TMPRSS6	15.8	
 PRSS23	sonnet_dual_triage	0	383.0	360	1	1	1	1	1	0	0	0	1	99.0	90.6		PRSS35	49.9	
-PRSS33	sonnet_dual_triage	0	280.0	258	1	1	1	0	0	0	0	0	0						
+PRSS33	sonnet_dual_triage	0	280.0	258	1	1	1	1	1	0	0	0	0						
 PRSS35	sonnet_dual_triage	0	413.0	393	1	1	1	1	1	0	0	0	1	96.1	77.2		PRSS23	49.9	
 PRSS37	sonnet_dual_triage	0	235.0	216	1	1	1	1	1	0	0	0	0	97.0	83.0		KLK15	31.2	
 PRSS38	sonnet_dual_triage	0	326.0	294	1	1	1	1	1	0	0	0	0	92.0	57.1		CTRL	33.3	
@@ -8510,7 +8510,7 @@ PSG4	sonnet_dual_triage	0	419.0	385	1	1	1	0	0	0	0	0	1				PSG7	90.4
 PSG5	sonnet_dual_triage	0	335.0	301	1	1	1	0	0	0	0	0	1				PSG3	68.0	
 PSG8	sonnet_dual_triage	0	426.0	392	1	1	1	0	0	0	0	0	1				PSG1	90.6	
 PSG9	sonnet_dual_triage	0	426.0	392	1	1	1	0	0	0	0	0	1				PSG6	84.3	
-PSMB4	sonnet_dual_triage	0	264.0	0	0	0	0	0	0	0	0	0	0						
+PSMB4	sonnet_dual_triage	0	264.0	0	0	0	0	1	1	0	0	0	0						
 PTAFR	sonnet_dual_triage	7	342.0	71	0	1	0	1	1	0	0	0	0	96.8	81.6		GPR34	20.9	
 PTCH1	sonnet_dual_triage	12	1447.0	610	0	0	0	1	1	0	1	0	1	94.5	95.5		PTCH2	55.7	
 PTCH2	sonnet_dual_triage	12	1203.0	606	0	0	0	1	1	0	0	0	1	97.4	89.4		PTCH1	55.4	
@@ -8532,7 +8532,7 @@ PTH1R	sonnet_dual_triage	7	593.0	227	1	1	0	1	1	0	0	0	0	90.1	90.2		PTH2R	36.6
 PTH2R	sonnet_dual_triage	7	550.0	187	1	1	0	1	1	0	0	1	0	83.6	82.9		PTH1R	37.0	1.0
 PTK7	sonnet_dual_triage	1	1070.0	674	1	1	0	1	1	0	0	1	0	96.4	91.8				4.0
 PTMA	sonnet_dual_triage	0	111.0	0	0	0	0	1	0	0	0	0	0		96.4				
-PTOV1	sonnet_dual_triage	0	416.0	0	0	0	0	0	0	0	0	0	0						
+PTOV1	sonnet_dual_triage	0	416.0	0	0	0	0	1	1	0	0	0	0						
 PTP4A1	sonnet_dual_triage	0	173.0	0	0	0	0	1	1	0	0	0	0	100.0	100.0				
 PTP4A3	sonnet_dual_triage	0	173.0	0	0	0	0	1	0	0	0	0	0		96.5				
 PTPRA	sonnet_dual_triage	1	802.0	132	1	1	0	1	1	0	0	0	0	99.3	94.9		PTPRB	2.9	
@@ -8564,7 +8564,7 @@ PVR	sonnet_dual_triage	1	417.0	317	1	1	0	0	1	1	1	1	1	72.4		2.0	NECTIN2	52.3	1.0
 PVRIG	sonnet_dual_triage	1	326.0	132	1	1	0	0	0	0	0	0	0						
 PXDN	sonnet_dual_triage	0	1479.0	1450	1	1	1	1	0	0	0	0	1		90.9		PXDNL	61.0	
 PXDNL	sonnet_dual_triage	0	1463.0	1440	1	1	1	0	1	0	0	0	1	92.2			PXDN	60.9	
-PYCARD	sonnet_dual_triage	0	195.0	0	0	0	0	0	0	0	0	0	0						
+PYCARD	sonnet_dual_triage	0	195.0	0	0	0	0	1	1	0	0	0	0						
 QPCT	sonnet_dual_triage	0	361.0	333	1	1	1	1	1	0	0	0	1	97.2	82.0		QPCTL	49.8	
 QRFPR	sonnet_dual_triage	7	431.0	107	0	1	0	0	1	0	0	0	0	98.6			GALR3	18.7	
 QSOX1	sonnet_dual_triage	1	747.0	680	1	1	0	1	1	0	1	1	0	93.0	72.8		QSOX2	37.6	2.0
@@ -8596,7 +8596,7 @@ RFTN2	sonnet_dual_triage	0	501.0	0	0	0	0	1	1	0	0	0	0	97.2	79.4
 RGMA	sonnet_dual_triage	0	450.0	403	1	1	1	1	1	1	0	1	1	98.4	92.2	2.0	RGMB	52.4	1.0
 RGMB	sonnet_dual_triage	0	437.0	389	1	1	1	1	1	0	0	1	1	96.6	89.2		RGMA	52.9	3.0
 RGR	sonnet_dual_triage	7	291.0	69	0	1	0	1	1	1	1	0	0	98.3	81.1	2.0	XCR1	27.6	
-RGS14	sonnet_dual_triage	0	566.0	0	0	0	0	0	0	0	0	0	0						
+RGS14	sonnet_dual_triage	0	566.0	0	0	0	0	1	1	0	0	0	0						
 RGS9BP	sonnet_dual_triage	1	235.0	4	0	0	1	1	0	0	0	0	0		83.4				
 RHAG	sonnet_dual_triage	12	409.0	75	0	0	0	1	1	1	1	0	0	89.0	77.3	3.0	RHBG	27.4	
 RHBDF2	sonnet_dual_triage	7	856.0	286	0	0	1	1	1	0	0	1	1	83.8	91.9		RHBDF1	69.6	2.0
@@ -8621,7 +8621,7 @@ RNASET2	sonnet_dual_triage	0	256.0	232	1	1	1	0	1	0	0	0	0	96.1
 RNF11	sonnet_dual_triage	0	154.0	0	0	0	0	0	0	0	0	0	0						
 RNF128	sonnet_dual_triage	1	428.0	169	1	1	0	1	1	0	0	0	1	96.7	95.3		RNF148	51.5	
 RNF130	sonnet_dual_triage	2	419.0	181	1	1	1	1	1	0	1	0	1	100.0	90.7		RNF150	45.9	
-RNF144A	sonnet_dual_triage	0	292.0	0	0	0	0	0	0	0	0	0	0						
+RNF144A	sonnet_dual_triage	0	292.0	0	0	0	0	1	1	0	0	0	0						
 RNF146	sonnet_dual_triage	0	359.0	0	0	0	0	1	1	0	0	0	0	98.6	92.5				
 RNF152	sonnet_dual_triage	1	203.0	16	0	0	1	1	1	1	0	0	1	99.5	97.5	2.0	CD274	1.8	
 RNF217	sonnet_dual_triage	0	542.0	0	0	0	0	1	1	0	0	0	0	98.2	79.0				
@@ -8645,13 +8645,13 @@ RPS3	sonnet_dual_triage	0	243.0	0	0	0	0	1	0	0	0	0	0		99.6
 RPSA	sonnet_dual_triage	0	295.0	0	0	0	0	0	0	0	0	0	0						
 RPSA2	sonnet_dual_triage	0	295.0	0	0	0	0	0	0	0	0	0	0						
 RRH	sonnet_dual_triage	7	337.0	78	0	1	0	1	1	0	0	0	0	98.5	78.6		OPN5	31.0	
-RRM2	sonnet_dual_triage	0	389.0	0	0	0	0	0	0	1	0	0	0			2.0			
+RRM2	sonnet_dual_triage	0	389.0	0	0	0	0	1	1	1	0	0	0			2.0			
 RRP12	sonnet_dual_triage	0	1297.0	0	0	0	0	1	1	0	0	0	0	97.7	90.4				
 RSPO3	sonnet_dual_triage	0	272.0	251	1	1	1	1	1	0	0	0	1	95.6	89.3		RSPO2	42.2	
 RSPO4	sonnet_dual_triage	0	234.0	217	1	1	1	1	1	0	0	0	1	95.7	82.1		RSPO2	43.2	
 RSPRY1	sonnet_dual_triage	0	576.0	0	0	0	0	1	1	0	0	0	0	99.3	96.7				
-RTL5	sonnet_dual_triage	0	569.0	0	0	0	0	0	0	0	0	0	0						
-RTL6	sonnet_dual_triage	0	239.0	0	0	0	0	0	0	0	0	0	0						
+RTL5	sonnet_dual_triage	0	569.0	0	0	0	0	1	0	0	0	0	0						
+RTL6	sonnet_dual_triage	0	239.0	0	0	0	0	1	1	0	0	0	0						
 RTL8C	sonnet_dual_triage	0	209.0	0	0	0	0	0	0	0	0	0	0						
 RTN3	sonnet_dual_triage	4	1032.0	2	0	0	0	1	1	0	1	0	1	84.8	63.9		RTN1	100.0	
 RTN4	sonnet_dual_triage	4	1192.0	5	0	0	0	1	1	0	0	0	1	96.0	75.4		RTN1	80.0	
@@ -8666,7 +8666,7 @@ RXFP1	sonnet_dual_triage	7	757.0	449	1	1	0	1	1	0	1	0	1	98.7	85.2		RXFP2	53.7
 RXFP2	sonnet_dual_triage	7	754.0	446	1	1	0	1	1	0	0	0	1	96.4	80.5		RXFP1	53.9	
 RXFP3	sonnet_dual_triage	7	469.0	138	0	1	0	0	1	0	0	0	0	93.8			GPR132	20.3	
 RXFP4	sonnet_dual_triage	7	374.0	101	0	1	0	1	0	0	0	0	0		75.4		AGTR2	26.4	
-RXRB	sonnet_dual_triage	0	533.0	0	0	0	0	0	0	1	0	0	0			2.0			
+RXRB	sonnet_dual_triage	0	533.0	0	0	0	0	1	1	1	0	0	0			2.0			
 RYK	sonnet_dual_triage	1	607.0	184	1	1	0	1	1	0	0	1	0	99.0	93.1		ROS1	4.0	1.0
 S100A1	sonnet_dual_triage	0	94.0	0	0	0	0	1	1	1	0	0	0	100.0	93.6	2.0			
 S100A10	sonnet_dual_triage	0	97.0	0	0	0	0	1	1	1	0	0	0	100.0	91.8	2.0			
@@ -8793,9 +8793,9 @@ SGCZ	sonnet_dual_triage	1	299.0	241	0	0	1	1	1	1	0	1	1	99.0	95.2	2.0	SGCG	56.4	1.
 SGMS2	sonnet_dual_triage	6	365.0	73	0	0	0	1	1	1	0	0	1	99.2	91.5	2.0	SGMS1	68.4	
 SGPL1	sonnet_dual_triage	1	568.0	39	0	1	0	1	1	1	0	0	0	99.6	84.7	2.0			
 SGSH	sonnet_dual_triage	0	502.0	482	1	1	1	1	1	1	0	0	0	96.6	88.2	2.0	ARSA	30.5	
-SGSM2	sonnet_dual_triage	0	1006.0	0	0	0	0	0	0	0	0	0	0						
+SGSM2	sonnet_dual_triage	0	1006.0	0	0	0	0	1	1	0	0	0	0						
 SH3BGRL3	sonnet_dual_triage	0	93.0	0	0	0	0	1	1	0	0	0	0	100.0	95.7				
-SH3TC2	sonnet_dual_triage	0	1288.0	0	0	0	0	0	0	0	0	0	0						
+SH3TC2	sonnet_dual_triage	0	1288.0	0	0	0	0	1	1	0	0	0	0						
 SHBG	sonnet_dual_triage	0	402.0	373	1	1	1	1	1	1	0	0	0	87.3	66.2	2.0	PROS1	18.1	
 SHH	sonnet_dual_triage	0	462.0	439	1	1	1	1	1	0	0	0	1	66.5	87.4		IHH	59.5	
 SHISA2	sonnet_dual_triage	1	295.0	84	1	1	0	1	1	0	0	0	1	98.3	92.5		SHISA3	60.7	
@@ -8830,7 +8830,7 @@ SIRPB1	sonnet_dual_triage	1	398.0	341	1	1	0	0	0	0	0	1	1				SIRPA	84.5	2.0
 SIRPB2	sonnet_dual_triage	1	342.0	260	1	1	0	0	1	0	1	1	0	93.6			SIRPD	20.4	2.0
 SIRPD	sonnet_dual_triage	0	197.0	168	1	1	1	0	0	0	0	0	0				SIRPA	22.4	
 SIRPG	sonnet_dual_triage	1	387.0	341	1	1	0	0	0	0	0	1	1				SIRPA	77.8	3.0
-SIRT2	sonnet_dual_triage	0	389.0	0	0	0	0	0	0	0	0	0	0						
+SIRT2	sonnet_dual_triage	0	389.0	0	0	0	0	1	0	0	0	0	0						
 SIT1	sonnet_dual_triage	1	196.0	18	1	1	0	1	1	0	0	0	0	95.4	70.4				
 SLAMF1	sonnet_dual_triage	1	335.0	217	1	1	0	1	1	1	0	1	0	89.9	61.5	2.0	LY9	16.4	2.0
 SLAMF6	sonnet_dual_triage	1	332.0	204	1	1	0	0	1	1	0	1	0	67.2		2.0	CD84	36.3	2.0
@@ -9155,8 +9155,8 @@ SNCA	sonnet_dual_triage	0	140.0	0	0	0	0	1	1	0	0	0	0	75.7	95.0
 SND1	sonnet_dual_triage	0	910.0	0	0	0	0	1	1	0	0	0	0	99.6	97.4				
 SNN	sonnet_dual_triage	1	88.0	11	0	1	0	1	1	0	0	0	0	100.0	97.7				
 SNORC	sonnet_dual_triage	1	121.0	67	1	1	0	1	1	0	0	0	0	98.3	81.0				
-SNRNP200	sonnet_dual_triage	0	2136.0	0	0	0	0	0	0	0	0	0	0						
-SOD2	sonnet_dual_triage	0	222.0	0	0	0	0	0	0	1	0	0	0			2.0			
+SNRNP200	sonnet_dual_triage	0	2136.0	0	0	0	0	1	1	0	0	0	0						
+SOD2	sonnet_dual_triage	0	222.0	0	0	0	0	1	1	1	0	0	0			2.0			
 SOD3	sonnet_dual_triage	0	240.0	222	1	1	1	1	1	1	0	0	0	94.6	65.8	2.0			
 SOFU1	sonnet_dual_triage	0	122.0	94	1	1	1	0	0	0	0	0	0						
 SORCS1	sonnet_dual_triage	1	1168.0	1069	1	1	0	1	1	0	0	1	1	75.8	90.9		SORCS3	66.5	5.0
@@ -9174,11 +9174,11 @@ SPACA6	sonnet_dual_triage	1	324.0	268	1	1	0	1	1	0	1	0	0	96.3	63.6
 SPACA7	sonnet_dual_triage	0	195.0	171	1	1	1	0	1	0	0	0	0	84.1					
 SPACDR	sonnet_dual_triage	0	206.0	0	0	0	0	0	0	0	0	0	0						
 SPADH	sonnet_dual_triage	0	137.0	116	1	1	1	0	0	0	0	0	0						
-SPAG1	sonnet_dual_triage	0	926.0	0	0	0	0	0	0	0	0	0	0						
+SPAG1	sonnet_dual_triage	0	926.0	0	0	0	0	1	1	0	0	0	0						
 SPAG11A	sonnet_dual_triage	0	123.0	98	1	1	1	0	0	0	0	0	1				SPAG11B	76.5	
 SPAG11B	sonnet_dual_triage	0	103.0	78	1	1	1	0	0	0	0	0	1				SPAG11A	76.5	
 SPAG8	sonnet_dual_triage	0	485.0	0	0	0	0	1	1	0	0	0	0	90.9	58.1				
-SPAG9	sonnet_dual_triage	0	1321.0	0	0	0	0	0	0	0	0	0	0						
+SPAG9	sonnet_dual_triage	0	1321.0	0	0	0	0	1	1	0	0	0	0						
 SPAM1	sonnet_dual_triage	0	509.0	474	1	1	1	0	1	0	0	1	1	87.8			HYAL4	44.1	1.0
 SPART	sonnet_dual_triage	0	666.0	0	0	0	0	1	1	0	0	0	0	98.3	86.2				
 SPATA31A3	sonnet_dual_triage	1	1347.0	24	0	1	0	0	0	0	0	0	1				SPATA31C2	95.8	
@@ -9190,7 +9190,7 @@ SPATA9	sonnet_dual_triage	0	254.0	0	0	0	0	1	1	0	0	0	0	96.9	78.3
 SPEM1	sonnet_dual_triage	1	309.0	28	0	1	0	1	1	0	0	0	0	90.0	68.0				
 SPEM3	sonnet_dual_triage	1	1196.0	26	0	1	0	0	0	0	0	0	0						
 SPESP1	sonnet_dual_triage	0	350.0	331	1	1	1	0	1	0	0	0	0	92.3					
-SPHK2	sonnet_dual_triage	0	654.0	0	0	0	0	0	0	0	0	0	0						
+SPHK2	sonnet_dual_triage	0	654.0	0	0	0	0	1	1	0	0	0	0						
 SPINK13	sonnet_dual_triage	0	94.0	71	1	1	1	1	0	0	0	0	0		52.1		SPINK14	37.0	
 SPINK14	sonnet_dual_triage	0	97.0	73	1	1	1	1	1	0	0	0	1	92.8	64.9		SPINK7	45.2	
 SPINK2	sonnet_dual_triage	0	84.0	64	1	1	1	0	0	0	0	0	0				SPINK7	35.9	
@@ -9211,11 +9211,11 @@ SPOCK3	sonnet_dual_triage	0	436.0	415	1	1	1	1	1	0	0	0	1	99.1	85.7		SPOCK1	53.8
 SPPL2B	sonnet_dual_triage	9	592.0	201	1	1	0	1	1	0	1	0	1	75.5	77.4		SPPL2C	47.2	
 SPPL3	sonnet_dual_triage	9	384.0	77	0	1	0	1	1	0	1	0	0	98.2	100.0		SPPL2B	13.9	
 SPRN	sonnet_dual_triage	0	151.0	127	1	1	1	1	1	0	0	0	0	96.0	78.8				
-SQSTM1	sonnet_dual_triage	0	440.0	0	0	0	0	0	0	0	0	0	0						
+SQSTM1	sonnet_dual_triage	0	440.0	0	0	0	0	1	1	0	0	0	0						
 SRGN	sonnet_dual_triage	0	158.0	131	1	1	1	1	1	0	0	0	0	92.4	50.0				
 SRPX2	sonnet_dual_triage	0	465.0	442	1	1	1	1	0	0	0	0	1		93.8		SRPX	45.9	
-SRRM2	sonnet_dual_triage	0	2752.0	0	0	0	0	0	0	0	0	0	0						
-SSB	sonnet_dual_triage	0	408.0	0	0	0	0	0	0	0	0	0	0						
+SRRM2	sonnet_dual_triage	0	2752.0	0	0	0	0	1	1	0	0	0	0						
+SSB	sonnet_dual_triage	0	408.0	0	0	0	0	1	0	0	0	0	0						
 SSC4D	sonnet_dual_triage	0	575.0	528	1	1	1	1	1	0	0	0	0	97.4	87.7		DMBT1	12.4	
 SSC5D	sonnet_dual_triage	0	1573.0	1557	1	1	1	1	1	0	0	0	0	80.5	64.3		LGALS3BP	12.5	
 SSMEM1	sonnet_dual_triage	1	244.0	37	0	1	0	1	1	0	0	0	0	93.9	67.6				
@@ -9260,8 +9260,8 @@ SVEP1	sonnet_dual_triage	0	3571.0	3552	1	1	1	1	1	0	0	0	0	94.0	81.8		SUSD6	4.0
 SVOPL	sonnet_dual_triage	12	492.0	75	0	0	0	1	1	0	1	0	0	97.2	91.9		SLC22A17	15.5	
 SYCP1	sonnet_dual_triage	0	976.0	0	0	0	0	1	1	0	0	0	0	96.8	74.3				
 SYNDIG1	sonnet_dual_triage	3	258.0	12	0	0	1	1	1	0	0	0	1	82.6	93.0		SYNDIG1L	58.3	
-SYNJ2BP	sonnet_dual_triage	1	145.0	6	0	0	1	0	0	0	0	0	0						
-SYT12	sonnet_dual_triage	1	421.0	20	0	1	0	0	0	0	0	0	1				SYT9	18.9	
+SYNJ2BP	sonnet_dual_triage	1	145.0	6	0	0	1	1	1	0	0	0	0						
+SYT12	sonnet_dual_triage	1	421.0	20	0	1	0	1	1	0	0	0	1				SYT9	18.9	
 SYT15	sonnet_dual_triage	1	421.0	5	0	1	0	0	0	0	1	0	1				SYT9	3.8	
 SYT7	sonnet_dual_triage	1	403.0	16	0	1	0	1	1	0	0	0	1	87.8	98.0		SYT5	27.6	
 SYT8	sonnet_dual_triage	1	387.0	35	0	1	0	1	1	0	0	0	1	89.1	75.2		SYT13	11.4	
@@ -9274,7 +9274,7 @@ TACR1	sonnet_dual_triage	7	407.0	82	0	1	0	1	1	0	0	0	0	99.5	94.6		TACR3	28.1
 TACR2	sonnet_dual_triage	7	398.0	92	0	1	0	1	1	0	0	0	0	95.0	82.4		TACR3	28.1	
 TACR3	sonnet_dual_triage	7	465.0	139	0	1	0	1	1	0	0	0	0	97.8	85.8		TACR1	29.5	
 TACSTD2	sonnet_dual_triage	1	323.0	246	1	1	0	1	0	0	0	1	1		78.6		EPCAM	49.2	1.0
-TAF15	sonnet_dual_triage	0	592.0	0	0	0	0	0	0	0	0	0	0						
+TAF15	sonnet_dual_triage	0	592.0	0	0	0	0	1	1	0	0	0	0						
 TAPBPL	sonnet_dual_triage	1	468.0	387	1	1	0	1	1	0	1	0	0	83.1	65.0		TAPBP	30.3	
 TARM1	sonnet_dual_triage	1	271.0	215	1	1	0	0	1	0	0	1	0	86.3			VSTM1	34.0	1.0
 TAS1R1	sonnet_dual_triage	7	841.0	584	1	1	0	1	1	1	1	1	0	93.2	73.7	2.0	TAS1R2	38.4	2.0
@@ -9307,7 +9307,7 @@ TAS2R60	sonnet_dual_triage	7	318.0	71	0	1	0	1	1	0	0	0	0	89.9	56.9		TAS2R46	19.7
 TAS2R7	sonnet_dual_triage	7	318.0	66	0	1	0	1	1	0	0	0	0	94.0	67.0		TAS2R8	34.8	
 TAS2R8	sonnet_dual_triage	7	309.0	53	0	1	0	0	1	0	0	0	0	86.1			TAS2R7	25.8	
 TAS2R9	sonnet_dual_triage	7	312.0	50	0	1	0	0	1	0	0	0	0	91.7			TAS2R13	25.0	
-TAX1BP3	sonnet_dual_triage	0	124.0	0	0	0	0	0	0	1	0	0	0			2.0			
+TAX1BP3	sonnet_dual_triage	0	124.0	0	0	0	0	1	1	1	0	0	0			2.0			
 TBC1D3D	sonnet_dual_triage	0	549.0	0	0	0	0	0	0	0	0	0	0						
 TBC1D3E	sonnet_dual_triage	0	549.0	0	0	0	0	0	0	0	0	0	0						
 TBC1D3K	sonnet_dual_triage	0	549.0	0	0	0	0	0	0	0	0	0	0						
@@ -9333,7 +9333,7 @@ TEX38	sonnet_dual_triage	1	206.0	14	0	1	0	1	1	0	0	0	0	88.3	66.0
 TEX46	sonnet_dual_triage	1	121.0	1	1	1	0	0	1	0	1	0	0	94.2					
 TEX50	sonnet_dual_triage	1	177.0	51	1	1	0	1	1	0	0	0	0	90.4	59.3				
 TEX51	sonnet_dual_triage	0	166.0	151	1	1	1	0	1	0	0	0	0	84.9					
-TFAM	sonnet_dual_triage	0	246.0	0	0	0	0	0	0	0	0	0	0						
+TFAM	sonnet_dual_triage	0	246.0	0	0	0	0	1	1	0	0	0	0						
 TFPI	sonnet_dual_triage	0	304.0	276	1	1	1	1	1	0	0	1	0	90.5	59.2		TFPI2	30.1	2.0
 TFPI2	sonnet_dual_triage	0	235.0	213	1	1	1	1	1	0	0	0	0	93.2	52.3		TFPI	30.1	
 TFR2	sonnet_dual_triage	1	801.0	697	0	0	1	1	1	1	1	0	1	97.9	84.8	2.0	TFRC	46.5	
@@ -9366,7 +9366,7 @@ TIMP2	sonnet_dual_triage	0	220.0	194	1	1	1	1	1	0	0	0	1	100.0	98.2		TIMP4	50.3
 TIMP3	sonnet_dual_triage	0	211.0	188	1	1	1	1	1	0	0	0	1	100.0	96.2		TIMP4	48.7	
 TIMP4	sonnet_dual_triage	0	224.0	195	1	1	1	1	1	0	0	0	1	96.9	88.8		TIMP3	48.7	
 TINAGL1	sonnet_dual_triage	0	467.0	446	1	1	1	1	1	0	0	0	1	93.8	88.9		TINAG	47.5	
-TK1	sonnet_dual_triage	0	234.0	0	0	0	0	0	0	1	0	0	0			2.0			
+TK1	sonnet_dual_triage	0	234.0	0	0	0	0	1	1	1	0	0	0			2.0			
 TLCD1	sonnet_dual_triage	7	247.0	39	0	1	0	1	1	0	1	0	0	95.1	87.0		TLCD4	14.0	
 TLCD2	sonnet_dual_triage	7	264.0	36	0	1	0	1	0	0	0	0	0		72.0		TLCD3A	16.0	
 TLL2	sonnet_dual_triage	0	1015.0	990	1	1	1	1	1	0	0	0	1	97.4	90.0		BMP1	74.1	
@@ -9447,7 +9447,7 @@ TMEM192	sonnet_dual_triage	4	271.0	38	0	0	0	1	1	1	0	0	0	97.4	77.5	2.0
 TMEM198	sonnet_dual_triage	7	360.0	80	0	1	0	1	1	0	0	0	0	98.9	97.8				
 TMEM200A	sonnet_dual_triage	2	491.0	42	0	0	0	1	1	0	0	0	0	98.2	90.6		TMEM200C	17.6	
 TMEM200B	sonnet_dual_triage	2	307.0	39	0	0	0	1	1	0	0	0	0	88.6	84.4		TMEM200C	19.8	
-TMEM200C	sonnet_dual_triage	2	621.0	91	0	0	0	0	0	0	0	0	0				TMEM200B	20.9	
+TMEM200C	sonnet_dual_triage	2	621.0	91	0	0	0	1	0	0	0	0	0				TMEM200B	20.9	
 TMEM202	sonnet_dual_triage	4	273.0	57	0	0	0	0	0	0	0	0	0				CLDND2	21.1	
 TMEM204	sonnet_dual_triage	4	226.0	88	0	0	0	1	1	0	0	0	0	97.8	88.1				
 TMEM205	sonnet_dual_triage	4	189.0	30	0	1	1	1	1	1	0	0	0	98.4	79.4	2.0			
@@ -9538,7 +9538,7 @@ TMPRSS9	sonnet_dual_triage	1	1059.0	1009	0	0	1	1	0	0	0	0	0		79.7		PRSS21	13.5
 TNC	sonnet_dual_triage	0	2201.0	2179	1	1	1	1	1	0	0	0	0	97.3	84.1		MFAP4	5.4	
 TNF	sonnet_dual_triage	1	233.0	182	0	0	1	1	1	1	0	0	0	76.8	79.4	3.0	LTA	32.4	
 TNFAIP6	sonnet_dual_triage	0	277.0	260	1	1	1	1	1	0	0	0	0	97.1	90.3		STAB1	3.7	
-TNFAIP8	sonnet_dual_triage	0	198.0	0	0	0	0	0	0	0	0	0	0						
+TNFAIP8	sonnet_dual_triage	0	198.0	0	0	0	0	1	1	0	0	0	0						
 TNFRSF10A	sonnet_dual_triage	1	468.0	226	1	1	0	0	1	0	0	0	1	84.6			TNFRSF10B	46.5	
 TNFRSF10B	sonnet_dual_triage	1	440.0	160	1	1	0	0	1	0	1	0	1	83.9			TNFRSF10D	54.4	
 TNFRSF10C	sonnet_dual_triage	1	259.0	218	1	1	0	0	0	0	0	0	1				TNFRSF10D	56.9	
@@ -9571,7 +9571,7 @@ TNFSF4	sonnet_dual_triage	1	183.0	138	0	0	1	0	1	1	1	1	0	98.9		3.0			1.0
 TNFSF8	sonnet_dual_triage	1	234.0	173	0	0	1	1	1	1	0	1	0	96.6	71.4	2.0			1.0
 TNFSF9	sonnet_dual_triage	1	254.0	204	0	0	1	0	0	0	0	0	0						
 TNMD	sonnet_dual_triage	1	317.0	268	0	0	1	1	1	0	1	0	0	99.4	96.2		CNMD	39.6	
-TOMM40	sonnet_dual_triage	0	361.0	134	1	0	0	0	0	0	0	0	0						
+TOMM40	sonnet_dual_triage	0	361.0	134	1	0	0	1	1	0	0	0	0						
 TPBG	sonnet_dual_triage	1	420.0	323	1	1	0	1	1	0	0	1	0	96.4	83.6				1.0
 TPBGL	sonnet_dual_triage	1	382.0	281	1	1	0	1	0	0	0	1	0		85.6		SLIT3	6.4	1.0
 TPCN2	sonnet_dual_triage	12	752.0	173	0	0	0	1	1	1	0	0	0	86.7	73.0	2.0	TPCN1	28.3	
@@ -9647,7 +9647,7 @@ TSPAN7	sonnet_dual_triage	4	249.0	119	0	0	0	1	1	0	0	1	1	99.2	98.4		TSPAN6	44.5	1
 TSPAN8	sonnet_dual_triage	4	237.0	120	0	0	0	1	1	0	0	1	0	81.4	70.0		TSPAN11	29.3	1.0
 TSPAN9	sonnet_dual_triage	4	239.0	114	0	0	0	1	0	0	0	1	1		97.1		TSPAN4	55.3	1.0
 TSPEAR	sonnet_dual_triage	0	669.0	652	1	1	1	1	1	0	0	0	0	82.8	81.9				
-TSPO	sonnet_dual_triage	5	169.0	24	0	1	0	0	0	0	0	0	0						
+TSPO	sonnet_dual_triage	5	169.0	24	0	1	0	1	1	0	0	0	0						
 TSPO2	sonnet_dual_triage	5	170.0	20	0	1	0	1	1	0	1	0	0	96.5	65.3		TSPO	20.8	
 TTLL12	sonnet_dual_triage	0	644.0	0	0	0	0	1	1	0	0	0	0	96.7	85.1				
 TTYH1	sonnet_dual_triage	5	450.0	276	0	1	0	1	1	1	1	1	1	77.3	88.9	2.0	TTYH3	42.0	1.0
@@ -9679,7 +9679,7 @@ UPK3B	sonnet_dual_triage	0	320.0	293	1	1	1	1	1	0	1	1	0	92.8	78.3		UPK3BL1	27.6	1
 UPK3BL1	sonnet_dual_triage	1	263.0	171	1	1	0	0	0	0	0	1	1				UPK3BL2	100.0	1.0
 UPK3BL2	sonnet_dual_triage	1	263.0	171	1	1	0	0	0	0	0	0	1				UPK3BL1	100.0	
 USH2A	sonnet_dual_triage	1	5202.0	5008	1	1	0	1	1	0	1	1	0	95.8	71.3		TMEFF1	3.3	7.0
-USP12	sonnet_dual_triage	0	370.0	0	0	0	0	0	0	0	0	0	0						
+USP12	sonnet_dual_triage	0	370.0	0	0	0	0	1	1	0	0	0	0						
 USP6NL	sonnet_dual_triage	0	828.0	0	0	0	0	1	0	0	0	0	0		82.1				
 UTS2B	sonnet_dual_triage	0	119.0	91	1	1	1	0	1	0	0	0	0	84.0					
 UTS2R	sonnet_dual_triage	7	389.0	102	0	1	0	0	0	0	0	0	0				LTB4R2	28.4	
@@ -9693,7 +9693,7 @@ VASH1	sonnet_dual_triage	0	365.0	0	0	0	0	1	1	0	0	0	0	81.1	93.2
 VASN	sonnet_dual_triage	1	673.0	552	1	1	0	1	0	0	0	1	0		83.5		LRRC3C	14.3	2.0
 VCAM1	sonnet_dual_triage	1	739.0	674	1	1	0	1	1	0	0	1	0	94.0	75.8		HMCN2	6.0	4.0
 VDAC1	sonnet_dual_triage	0	283.0	61	1	0	0	1	0	0	0	0	1		98.6				
-VDAC2	sonnet_dual_triage	0	294.0	0	0	0	0	0	0	0	0	0	0						
+VDAC2	sonnet_dual_triage	0	294.0	0	0	0	0	1	1	0	0	0	0						
 VEGFB	sonnet_dual_triage	0	207.0	188	1	1	1	1	1	1	0	0	0	86.0	62.3	2.0	VEGFC	16.5	
 VIM	sonnet_dual_triage	0	466.0	0	0	0	0	1	1	1	0	0	0	99.4	97.4	2.0			
 VIPR1	sonnet_dual_triage	7	457.0	157	1	1	0	1	1	0	1	0	0	88.2	84.7		ADGRG4	2.4	
@@ -9742,9 +9742,9 @@ WNT2B	sonnet_dual_triage	0	391.0	333	1	1	1	1	1	0	0	0	1	76.5	94.9		WNT2	70.1
 WNT3	sonnet_dual_triage	0	355.0	334	1	1	1	1	1	0	0	0	1	100.0	98.9		WNT3A	87.1	
 WNT7A	sonnet_dual_triage	0	349.0	318	1	1	1	1	1	0	0	0	1	99.7	99.4		WNT7B	80.2	
 WNT7B	sonnet_dual_triage	0	349.0	323	1	1	1	1	1	0	0	0	1	83.4	74.5		WNT7A	81.7	
-WWOX	sonnet_dual_triage	0	414.0	0	0	0	0	0	0	0	0	0	0						
+WWOX	sonnet_dual_triage	0	414.0	0	0	0	0	1	1	0	0	0	0						
 XCR1	sonnet_dual_triage	7	333.0	76	0	1	0	1	1	0	0	0	0	96.4	69.1		ACKR2	27.6	
-XDH	sonnet_dual_triage	0	1333.0	0	0	0	0	0	0	0	0	0	0						
+XDH	sonnet_dual_triage	0	1333.0	0	0	0	0	1	1	0	0	0	0						
 XG	sonnet_dual_triage	1	180.0	121	1	1	0	0	1	0	0	0	0	86.2					
 XK	sonnet_dual_triage	12	444.0	48	0	0	0	1	1	0	0	0	0	98.4	82.4		XKRX	34.0	
 XKR3	sonnet_dual_triage	12	459.0	44	0	0	0	0	1	0	0	0	1	78.2			XKRX	54.0	
@@ -9758,11 +9758,11 @@ XKRX	sonnet_dual_triage	12	449.0	50	0	0	0	1	1	0	1	0	1	98.4	92.0		XKR3	56.0
 XPNPEP2	sonnet_dual_triage	0	674.0	653	1	1	1	1	1	1	0	1	1	98.1	81.3	2.0			2.0
 XPR1	sonnet_dual_triage	10	696.0	74	0	0	0	1	1	0	1	0	0	99.9	95.3				
 XRCC5	sonnet_dual_triage	0	732.0	0	0	0	0	1	1	1	0	0	0	98.8	78.4	2.0			
-XRCC6	sonnet_dual_triage	0	609.0	0	0	0	0	0	0	1	0	0	0			2.0			
+XRCC6	sonnet_dual_triage	0	609.0	0	0	0	0	1	1	1	0	0	0			2.0			
 YARS1	sonnet_dual_triage	0	528.0	0	0	0	0	1	1	1	0	0	0	92.8	96.6	2.0			
 YBX1	sonnet_dual_triage	0	324.0	0	0	0	0	1	0	0	0	0	0		98.1				
 YIPF4	sonnet_dual_triage	5	244.0	11	0	0	1	1	1	0	0	0	1	99.6	98.0		YIPF6	10.7	
-YWHAB	sonnet_dual_triage	0	246.0	0	0	0	0	0	0	1	0	0	0			2.0			
+YWHAB	sonnet_dual_triage	0	246.0	0	0	0	0	1	1	1	0	0	0			2.0			
 ZACN	sonnet_dual_triage	4	412.0	240	1	1	1	0	1	1	1	0	0	91.0		5.0	GABRR2	24.8	
 ZAN	sonnet_dual_triage	1	2812.0	2744	1	1	0	0	1	0	1	1	0	84.6			VWC2L	3.8	3.0
 ZBED3	sonnet_dual_triage	0	234.0	0	0	0	0	1	1	1	0	0	0	68.4	50.9	2.0			
@@ -9779,7 +9779,7 @@ ZP4	sonnet_dual_triage	1	540.0	486	1	1	0	0	1	0	0	1	0	92.4			ZP1	34.5	4.0
 ZPBP	sonnet_dual_triage	0	351.0	307	1	1	1	1	1	0	0	0	0	89.7	78.3		ZPBP2	37.4	
 ZPBP2	sonnet_dual_triage	0	338.0	318	1	1	1	1	1	1	0	0	0	91.1	70.4	5.0	ZPBP	37.1	
 ZPLD1	sonnet_dual_triage	1	415.0	353	1	1	0	1	1	0	0	1	0	98.1	91.6		UMOD	19.3	2.0
-ZZEF1	sonnet_dual_triage	0	2961.0	0	0	0	0	0	0	0	0	0	0						
+ZZEF1	sonnet_dual_triage	0	2961.0	0	0	0	0	1	0	0	0	0	0						
 AADACL2	uncertain	0	401.0	0	0	0	0	0	0	0	0	0	0	98.0	79.1				
 C17orf67	uncertain	0	90.0	70	1	1	1	1	1	0	0	0	0						
 C17orf78	uncertain	1	275.0	166	1	1	0	1	0	0	1	0	0						
