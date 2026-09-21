@@ -222,12 +222,42 @@ def _latest_topology_version_for_cohort(cohort: str) -> str:
 
 
 def _latest_paralog_version() -> str:
-    rows = _query_public(
-        "SELECT paralog_version FROM compara_paralog_release "
-        "ORDER BY fetched_at DESC LIMIT 1",
+    """Paralog version with the WIDEST actual coverage, not merely the newest.
+
+    Same hazard as :func:`_latest_ortholog_ecd_version`, and it fired in
+    production: a 123-gene cohort backfill (``paralog_2026_09_20_rescue``)
+    landed with a newer ``fetched_at`` than the 5,790-gene global release, so
+    the previous ``ORDER BY fetched_at DESC LIMIT 1`` selected it and every
+    deep dive saw paralogs for 2% of the cohort. A gene with no paralog row
+    reads as "this protein has no paralogs" — a fabricated negative
+    indistinguishable from the real thing, the same failure class as the
+    placeholder-topology zeros.
+
+    Counting the genes actually present per version makes a cohort-scoped
+    release unable to shadow the global one. It does NOT make such a release
+    reachable, so a backfill must still be merged into the dominant release
+    rather than uploaded beside it.
+    """
+    counts = _query_public(
+        "SELECT paralog_version AS v, "
+        "COUNT(DISTINCT human_ensembl_gene) AS n "
+        "FROM compara_paralog GROUP BY paralog_version",
         [],
     )
-    return rows[0]["paralog_version"] if rows else ""
+    if not counts:
+        return ""
+    fetched_at = {
+        r["paralog_version"]: (r.get("fetched_at") or "")
+        for r in _query_public(
+            "SELECT paralog_version, fetched_at FROM compara_paralog_release",
+            [],
+        )
+    }
+    counts.sort(
+        key=lambda r: (int(r["n"] or 0), fetched_at.get(r["v"], "")),
+        reverse=True,
+    )
+    return counts[0]["v"]
 
 
 def _latest_ortholog_ecd_version() -> str:

@@ -82,6 +82,7 @@ class _Progress:
         self.valid = 0
         self.invalid = 0
         self.failed = 0
+        self.no_run_row = 0
         self.cost = 0.0
         self.aborted = False
 
@@ -93,6 +94,11 @@ class _Progress:
                 self.valid += 1
             elif status == "INVALID":
                 self.invalid += 1
+            elif status == "NO_RUN_ROW":
+                # Record published, deep_dive_run row missing. Counted apart
+                # from ERROR because the annotate itself succeeded — but it
+                # must not count as VALID, or the summary overstates coverage.
+                self.no_run_row += 1
             else:
                 self.failed += 1
             if (
@@ -106,9 +112,10 @@ class _Progress:
                     self.max_total_cost_usd, self.done,
                 )
             logger.info(
-                "[%4d/%d] %-12s %-8s %6.1fs $%.3f  (running $%.2f | ok=%d bad=%d err=%d)",
+                "[%4d/%d] %-12s %-10s %6.1fs $%.3f  "
+                "(running $%.2f | ok=%d bad=%d err=%d norow=%d)",
                 self.done, self.total, symbol, status, elapsed, cost,
-                self.cost, self.valid, self.invalid, self.failed,
+                self.cost, self.valid, self.invalid, self.failed, self.no_run_row,
             )
 
 
@@ -148,8 +155,20 @@ def _run_one(
         # Private-D1 sinks. Deliberately NOT gated on --publish: a failed
         # annotate is the highest-value case for the diagnostic trail, and
         # annotate_gene.py's coupling of the two is a wart this driver avoids.
+        #
+        # `insert` NEVER RAISES — it returns False on D1 failure so a transient
+        # 500 can't kill the pool. Discarding that bool made a missing
+        # deep_dive_run row indistinguishable from success: BCHE published its
+        # record and its intermediates, reported VALID, and left no run row, so
+        # the sweep summary read 52/52 while the cohort was one short.
         if sink is not None and result.record is not None:
-            sink.insert(result.record, cost_usd=cost, latency_s=elapsed)
+            if not sink.insert(result.record, cost_usd=cost, latency_s=elapsed):
+                status = "NO_RUN_ROW"
+                logger.error(
+                    "deep_dive_run insert FAILED for %s — record is published "
+                    "but the run row is missing; re-run this gene",
+                    symbol,
+                )
 
         if result.dual is not None:
             try:
@@ -281,6 +300,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  VALID:     {progress.valid}")
     print(f"  INVALID:   {progress.invalid}")
     print(f"  ERROR:     {progress.failed}")
+    if progress.no_run_row:
+        print(f"  NO_RUN_ROW:{progress.no_run_row}  <- published but no "
+              f"deep_dive_run row; RE-RUN these genes")
     print(f"cost:        ${progress.cost:.2f}")
     print(f"wall clock:  {wall / 60:.1f} min")
     return 0
