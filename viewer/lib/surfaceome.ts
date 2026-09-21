@@ -311,6 +311,14 @@ export interface CatalogRow {
    *  DeepDiveFilters docstring for the field set; the catalog
    *  filter panel reads this for the "Deep Dive" filter group. */
   deep_dive_filters?: DeepDiveFilters;
+  /** Worker-computed low-literature badge. Authoritative: the Worker
+   *  evaluates it against the SurfaceBench-OPTIMIZED UniProt cutoff,
+   *  which `db.uniprot` (the native 5-DB strip flag) cannot express.
+   *  Recomputing it client-side from `db.uniprot` is what made the
+   *  gene page disagree with the catalog — prefer this field and fall
+   *  back to the local predicate only when the Worker hasn't shipped
+   *  it (pre-deploy interim / fs snapshot). */
+  low_lit_uniprot?: boolean;
 }
 
 export interface Catalog {
@@ -553,6 +561,8 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     deep_dive: Boolean(r.deep_dive),
     surface_bind_sites: typeof sb === "number" ? sb : undefined,
     deep_dive_filters: ddf,
+    low_lit_uniprot:
+      typeof r.low_lit_uniprot === "boolean" ? r.low_lit_uniprot : undefined,
   };
 }
 

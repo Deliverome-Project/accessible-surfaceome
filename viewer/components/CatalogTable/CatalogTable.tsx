@@ -877,7 +877,12 @@ export function CatalogTable({
       // structural-surface candidates the deep dive couldn't confidently call.
       if (lowLitSurfy) {
         const ddf = r.deep_dive_filters;
-        if (!ddf || !isLowLiteratureSurface(ddf, r.db.uniprot === 1)) return false;
+        // Worker verdict first (optimized cutoff); local predicate is the
+        // pre-deploy / snapshot fallback. See CatalogRow.low_lit_uniprot.
+        const lowLit =
+          r.low_lit_uniprot ??
+          (!!ddf && isLowLiteratureSurface(ddf, r.db.uniprot === 1));
+        if (!lowLit) return false;
       }
       // Deep-dive filter group. Any active filter here implies
       // deep_dive=true — rows without a deep_dive_filters payload
@@ -1059,7 +1064,11 @@ export function CatalogTable({
             </p>
           </InfoTip>
         </div>
-        {PRESETS.map((p) => {
+        {/* "All" is omitted here: de-selecting every chip already yields the
+            unfiltered view, and the reader has an All control further down
+            beside Deep dive / More filters. Two of them invited the reading
+            that they were different scopes. */}
+        {PRESETS.filter((p) => p.key !== "all").map((p) => {
           const count = p.key === "all"
             ? rows.length
             : rows.reduce(
@@ -1125,7 +1134,8 @@ export function CatalogTable({
           const count = rows.reduce(
             (n, r) =>
               r.deep_dive_filters &&
-              isLowLiteratureSurface(r.deep_dive_filters, r.db.uniprot === 1)
+              (r.low_lit_uniprot ??
+                isLowLiteratureSurface(r.deep_dive_filters, r.db.uniprot === 1))
                 ? n + 1
                 : n,
             0,
