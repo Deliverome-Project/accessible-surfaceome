@@ -1,5 +1,5 @@
 {
-  "n_genes": 2348,
+  "n_genes": 2369,
   "genes": {
     "ABCA8": {
       "tier": "T2",
@@ -2717,10 +2717,50 @@
       ],
       "surface_orthologs": []
     },
+    "C11orf24": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "C11orf24",
+          "species": "cyno"
+        }
+      ]
+    },
+    "C11orf87": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "AI593442",
+          "species": "mouse"
+        }
+      ]
+    },
+    "C14orf180": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
     "C16orf54": {
       "tier": "T1",
       "surface_isoform_ids": [],
       "surface_orthologs": []
+    },
+    "C19orf18": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
+    "C19orf38": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "C19orf38",
+          "species": "cyno"
+        }
+      ]
     },
     "C3AR1": {
       "tier": "T2",
@@ -2763,6 +2803,11 @@
           "species": "cyno"
         }
       ]
+    },
+    "C5orf15": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
     },
     "CA12": {
       "tier": "T1",
@@ -6310,6 +6355,16 @@
       "tier": "T2",
       "surface_isoform_ids": [],
       "surface_orthologs": []
+    },
+    "CXorf66": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "CXorf66",
+          "species": "cyno"
+        }
+      ]
     },
     "CYBB": {
       "tier": "T2",
@@ -11409,6 +11464,16 @@
       "tier": "T1",
       "surface_isoform_ids": [],
       "surface_orthologs": []
+    },
+    "IGSF23": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "IGSF23",
+          "species": "cyno"
+        }
+      ]
     },
     "IGSF3": {
       "tier": "T1",
@@ -17616,6 +17681,11 @@
       "surface_isoform_ids": [],
       "surface_orthologs": []
     },
+    "OR2A42": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
     "OR2A7": {
       "tier": "T3",
       "surface_isoform_ids": [],
@@ -21117,6 +21187,20 @@
         }
       ]
     },
+    "RELL2": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Rell2",
+          "species": "mouse"
+        },
+        {
+          "symbol": "RELL2",
+          "species": "cyno"
+        }
+      ]
+    },
     "RELT": {
       "tier": "T1",
       "surface_isoform_ids": [],
@@ -22082,6 +22166,16 @@
         {
           "symbol": "SERINC5",
           "species": "cyno"
+        }
+      ]
+    },
+    "SERTM2": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "Sertm2",
+          "species": "mouse"
         }
       ]
     },
@@ -23836,6 +23930,11 @@
         }
       ]
     },
+    "SLC33A2": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
     "SLC34A1": {
       "tier": "T2",
       "surface_isoform_ids": [
@@ -25409,6 +25508,23 @@
         }
       ]
     },
+    "SLC9D1": {
+      "tier": "LL",
+      "surface_isoform_ids": [
+        "Q6UWJ1-2",
+        "Q6UWJ1-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Tmco3",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TMCO3",
+          "species": "cyno"
+        }
+      ]
+    },
     "SLCO1A2": {
       "tier": "T2",
       "surface_isoform_ids": [
@@ -26465,6 +26581,11 @@
         }
       ]
     },
+    "TEX38": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
     "TFPI": {
       "tier": "T1",
       "surface_isoform_ids": [
@@ -26666,6 +26787,11 @@
           "species": "cyno"
         }
       ]
+    },
+    "TLCD2": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
     },
     "TLR1": {
       "tier": "T1",
@@ -27183,6 +27309,11 @@
         }
       ]
     },
+    "TMEM198": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
+    },
     "TMEM204": {
       "tier": "T2",
       "surface_isoform_ids": [],
@@ -27307,6 +27438,23 @@
         },
         {
           "symbol": "TMEM266",
+          "species": "cyno"
+        }
+      ]
+    },
+    "TMEM268": {
+      "tier": "LL",
+      "surface_isoform_ids": [
+        "Q5VZI3-2",
+        "Q5VZI3-3"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Tmem268",
+          "species": "mouse"
+        },
+        {
+          "symbol": "TMEM268",
           "species": "cyno"
         }
       ]
@@ -27997,6 +28145,23 @@
         }
       ]
     },
+    "TPO": {
+      "tier": "T1",
+      "surface_isoform_ids": [
+        "P07202-2",
+        "P07202-3",
+        "P07202-4",
+        "P07202-5",
+        "P07202-7",
+        "P07202-8"
+      ],
+      "surface_orthologs": [
+        {
+          "symbol": "Tpo",
+          "species": "mouse"
+        }
+      ]
+    },
     "TPRA1": {
       "tier": "T3",
       "surface_isoform_ids": [
@@ -28618,6 +28783,16 @@
         }
       ]
     },
+    "TSPO2": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": [
+        {
+          "symbol": "TSPO2",
+          "species": "cyno"
+        }
+      ]
+    },
     "TTYH1": {
       "tier": "T3",
       "surface_isoform_ids": [
@@ -29146,6 +29321,13 @@
       "surface_isoform_ids": [],
       "surface_orthologs": []
     },
+    "XKR5": {
+      "tier": "LL",
+      "surface_isoform_ids": [
+        "Q6UX68-3"
+      ],
+      "surface_orthologs": []
+    },
     "XKR6": {
       "tier": "T3",
       "surface_isoform_ids": [
@@ -29161,6 +29343,11 @@
           "species": "cyno"
         }
       ]
+    },
+    "XKR7": {
+      "tier": "LL",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
     },
     "XKR8": {
       "tier": "T3",
