@@ -149,7 +149,22 @@ After the D1 write, `publish_record` purges the Worker's edge cache for
 `purge_everything` — shared `deliverome.org` zone) so the record goes live
 immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
 Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
-either soft-skips with a warning. The zone **cache rule** (ignore query
+either soft-skips with a warning.
+
+`scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
+rewrites whole tables that back cohort endpoints — and it purges those
+after a successful sync via `purge_cohort_surfaces` (`--no-purge` to skip).
+Only the 1-day surfaces are in the map: `/v1/triage/export.tsv` (plus its
+published `?run_id=` variants — it is the one route wrapped with
+`includeQuery: true`, so it keys per query string), `/v1/benchmark`,
+`/v1/benchmark/matrix`, `/v1/benchmark/export.tsv`. The 60-second ones
+(`/v1/catalog`, `/v1/genes`, `/v1/triage/{SYMBOL}`) self-heal and are
+deliberately excluded. `stale-while-revalidate=86400` sits on top of every
+TTL, so an unpurged 1-day surface can answer stale for a second day.
+`tests/test_cohort_cache_purge.py` pins the map against both the sync
+script's table groups and the Worker's `CACHE_TTL_LONG` routes.
+
+The zone **cache rule** (ignore query
 strings) is applied by `scripts/cloud/apply_cf_edge_rules.py` (dry-run by
 default, `--execute`; Cache Rules are on every plan). **Per-IP rate
 limiting is in the Worker** (native Rate Limiting binding `env.RATE_LIMITER`

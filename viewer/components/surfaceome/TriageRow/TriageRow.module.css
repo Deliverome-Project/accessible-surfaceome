@@ -54,6 +54,17 @@
   letter-spacing: 0.04em;
 }
 
+/* Third state: triage said the protein reaches the surface and the deep
+ * dive agreed but restricted the call to specific states / lineages.
+ * Deliberately --muted, not --warning: nothing is wrong, the deep dive
+ * just qualified the first pass, and amber would read as a problem on
+ * the 928 genes (18% of the cohort) that land here. */
+.triageNarrowed {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
 /* Triage-row reasoning trigger. The shared ReasoningDrawer trigger
  * carries a `margin: var(--space-2) 0 0` so it sits below a vital
  * value; here it's an inline sibling on a baseline-aligned flex row,

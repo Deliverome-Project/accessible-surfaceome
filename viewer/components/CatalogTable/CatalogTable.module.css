@@ -1146,11 +1146,17 @@
 
 @media (max-width: 720px) {
   .row {
-    /* Same 14-column order as the desktop template: …Reason | Deep-dive
-       flag | Access | Conf | Evidence | State (Conf widened to match). */
+    /* Same column order as the desktop template: …Triage reason |
+       Deep-dive reason | Deep-dive flag | Access | Conf | Evidence |
+       State | Intern · seq | Intern · lit (Conf widened to match). The two
+       reason columns stay separate here too — coalescing them is what made
+       the triage verdict look like it contradicted its own reason code.
+       The two trailing intern tracks were never added when dev introduced
+       those columns, so they fell to implicit auto tracks; made explicit
+       here to match the desktop template's track count. */
     grid-template-columns:
-      1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(9rem, 1fr)
-      5.5rem 5.5rem 5rem 5.5rem;
+      1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(6.5rem, 1fr)
+      minmax(6.5rem, 1fr) 5.5rem 5.5rem 5rem 5.5rem 6rem 6rem;
   }
   .uniprotCell,
   .headerRow .headerCell:nth-child(3) {

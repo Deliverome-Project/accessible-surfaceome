@@ -402,7 +402,17 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push(`| Surface accessibility | ${prettyEnum(e.surface_accessibility)} |`);
   lines.push(`| Confidence | ${prettyEnum(e.confidence)} |`);
   lines.push(`| Evidence grade | ${prettyEnum(e.evidence_grade_summary)} |`);
-  lines.push(`| Triage signal | ${prettyEnum(rec.triage_signal)} |`);
+  // Triage verdict AND its own reason code, on one row. Keeping the two
+  // together matters: the deep-dive `surface_call_reason` further down is
+  // a DIFFERENT agent's call and disagrees with triage for roughly a third
+  // of deep-dived genes. Showing a bare "Triage signal: Yes" here and an
+  // unlabelled "reason=..." below reads as a self-contradiction (reported
+  // on OR11H6: triage yes + deep-dive tissue_restricted_surface).
+  lines.push(
+    `| Triage signal | ${prettyEnum(rec.triage_signal)}${
+      rec.triage_reason ? ` · reason=${prettyEnum(rec.triage_reason)}` : ""
+    } |`,
+  );
   if (e.headline_risks.length > 0) {
     lines.push(
       `| Headline risks | ${e.headline_risks.map(prettyEnum).join(", ")} |`,
@@ -446,7 +456,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     `| Accessibility | overall=${prettyEnum(f.surface_accessibility)} · conf=${prettyEnum(f.confidence)} · subcategory=${prettyEnum(f.subcategory)} · ecd=${prettyEnum(f.ecd_accessibility_class)} |`,
   );
   lines.push(
-    `| Classification | reason=${prettyEnum(f.surface_call_reason)} · family=${prettyEnum(f.llm_family)} · state-dependence=${prettyEnum(f.state_dependence)} · induction-trigger=${prettyEnum(f.induction_trigger)} |`,
+    `| Classification | deep-dive reason=${prettyEnum(f.surface_call_reason)} · family=${prettyEnum(f.llm_family)} · state-dependence=${prettyEnum(f.state_dependence)} · induction-trigger=${prettyEnum(f.induction_trigger)} |`,
   );
   lines.push(
     `| Expression | level=${prettyEnum(f.expression_level)} · breadth=${prettyEnum(f.expression_breadth)} · specificity=${prettyEnum(f.surface_specificity)} · low-endogenous=${f.low_endogenous_expression} · tumor-associated=${f.tumor_associated ?? "—"} · orphan-receptor=${f.has_known_ligand === false} · OE-precedent=${f.overexpression_surface_localization_observed} |`,
