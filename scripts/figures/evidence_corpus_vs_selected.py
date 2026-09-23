@@ -135,7 +135,13 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     # their labels clipped or stretch the canvas vertically. Keep only
     # the two rates the bulk of the data actually crosses.
     x_ref = np.geomspace(25, 600, 200)
-    for rate, label in [(0.05, "5%"), (0.10, "10%")]:
+    # Label each iso-line with what the percentage MEANS, not a bare "5%".
+    # A reviewer asked "specify what the curves indicated with percentages
+    # are" — they are constant selection rates (selected / found), so a
+    # gene sitting on the 10% line had one paper in ten promoted from the
+    # discovery corpus to the evidence ledger. The bare percentage read as
+    # an unexplained third variable.
+    for rate, label in [(0.05, "5% selected"), (0.10, "10% selected")]:
         ax.plot(x_ref, rate * x_ref, ls=":", lw=1.0, color=COLORS["neutral"], alpha=0.5, zorder=2)
         y_at_right = rate * 540
         ax.text(540, y_at_right - 1.5, label, color=COLORS["neutral"],
@@ -166,6 +172,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
 
     fig.text(
         0.5, -0.04,
+        f"Dotted lines mark a constant selection rate (papers selected \u00f7 papers found). "
         f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
         f"median {int(np.median(selected))} selected); n={len(found)} genes "
         f"(full deep-dive cohort).",
