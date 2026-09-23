@@ -29,6 +29,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -279,6 +280,155 @@ def _purge_urls_for(sym: str) -> list[str]:
         f"{_CATALOG_CACHE_BASE}/{epoch}/v1/catalog",
         f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes",
     ]
+
+
+# ---------------------------------------------------------------------------
+# Cohort-level cache surfaces (invalidated by a public-D1 SYNC, not a publish)
+# ---------------------------------------------------------------------------
+#
+# ``publish_record`` purges the surfaces ONE gene's record changes. A
+# ``scripts/cloud/sync_public_d1.py`` run is the other writer into public
+# D1 — it rewrites whole tables (``triage_run_public``,
+# ``benchmark_version``) that back cohort-level endpoints, and it had no
+# purge path at all.
+#
+# That gap only bites on the 1-DAY surfaces. The Worker's per-gene and
+# index endpoints (``/v1/triage/{SYMBOL}``, ``/v1/catalog``, ``/v1/genes``)
+# carry ``CACHE_TTL_SHORT`` (60s), so they self-heal in a minute and are
+# deliberately NOT enumerated here — purging 19k per-gene triage URLs to
+# save 60 seconds would burn purge quota on a shared zone for nothing.
+# The export / matrix endpoints carry ``CACHE_TTL_LONG`` (86400s) plus
+# ``stale-while-revalidate=86400``, and they are exactly the surfaces the
+# "live consumers (notebooks, agents)" arm of the data-flow diagram in
+# CLAUDE.md points at. Those are worth purging.
+_COHORT_SURFACES_BY_TABLE: dict[str, tuple[str, ...]] = {
+    # ``/v1/catalog`` joins triage_run_public, but at 60s TTL — omitted
+    # per the note above. ``export.tsv`` is the 1-day surface.
+    "triage_run": (
+        "/v1/triage/export.tsv",
+        # ``handleTriageExport`` is the ONE route wrapped with
+        # ``includeQuery: true``, so each query string is its own cache
+        # key and the bare path does not cover them. These are the
+        # variants the Worker's own ``/v1/meta/sizes`` examples publish,
+        # i.e. the ones readers actually have URLs for.
+        "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1",
+        "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1",
+    ),
+    "benchmark": (
+        "/v1/benchmark",
+        "/v1/benchmark/matrix",
+        "/v1/benchmark/export.tsv",
+    ),
+    # ``compara`` backs ``/v1/orthologs/{SYMBOL}`` and ``gene_identifier``
+    # backs no cached cohort endpoint. Ortholog URLs are per-gene, so they
+    # need a gene-scoped sweep (``scripts/cloud/purge_gene_cache.py``'s
+    # shape) rather than a fixed list — deliberately out of scope here so
+    # this helper never claims to have purged something it didn't.
+}
+
+
+def cohort_purge_paths(tables: Iterable[str]) -> list[str]:
+    """Cohort endpoint paths invalidated by syncing ``tables``.
+
+    ``tables`` are ``sync_public_d1.py`` group names (``triage_run``,
+    ``benchmark``, ``compara``, ``gene_identifier``). Unknown or
+    no-cached-surface groups contribute nothing.
+    """
+    out: list[str] = []
+    for t in tables:
+        for path in _COHORT_SURFACES_BY_TABLE.get(t, ()):
+            if path not in out:
+                out.append(path)
+    return out
+
+
+def _cohort_cache_key(path: str) -> str:
+    """The Worker's synthetic cache key for a cohort endpoint ``path``.
+
+    Mirrors ``withEdgeCache`` in ``index.js``: the key is the deploy epoch
+    plus the request pathname (plus the query string on the one route that
+    sets ``includeQuery``), hung off the synthetic ``surfaceome-api.cache``
+    host. Both the ``caches.default`` entry and the KV mirror use this same
+    string, so one builder serves both tiers.
+    """
+    return f"{_EDGE_CACHE_HOST}/{_cache_epoch()}{_ROUTE_PREFIX}{path}"
+
+
+def purge_cohort_surfaces(
+    tables: Iterable[str], *, client: httpx.Client | None = None
+) -> bool | None:
+    """Best-effort purge of the cohort surfaces a public-D1 sync invalidated.
+
+    Same posture as :func:`_maybe_purge` — soft-skips with a warning when
+    the Cloudflare config is absent (CI / offline dev), never raises, and
+    a failure only means readers see the previous export until its 1-day
+    TTL expires. Returns ``True`` on a clean purge of both tiers, ``False``
+    on a partial / failed purge, and ``None`` when there was nothing to do
+    or the config was missing.
+    """
+    paths = cohort_purge_paths(tables)
+    if not paths:
+        return None
+    cfg = _public_config_from_env()
+    if cfg is None:
+        logger.warning(
+            "Cloudflare config missing — skipping cohort cache purge for %s. "
+            "Readers keep the previous copy until the Worker's 1-day TTL.",
+            ", ".join(paths),
+        )
+        return None
+    zone = os.environ.get("CLOUDFLARE_ZONE_ID", "").strip()
+    ns_id = os.environ.get("CLOUDFLARE_KV_RECORD_CACHE_ID", "").strip()
+    if not zone and not ns_id:
+        logger.warning(
+            "neither CLOUDFLARE_ZONE_ID nor CLOUDFLARE_KV_RECORD_CACHE_ID is "
+            "set — skipping cohort cache purge for %s.",
+            ", ".join(paths),
+        )
+        return None
+
+    own = client is None
+    c = client or httpx.Client(timeout=30)
+    ok = True
+    try:
+        keys = [_cohort_cache_key(p) for p in paths]
+        if zone:
+            try:
+                ok &= _purge_cf_cache(
+                    [f"{PUBLIC_API_BASE}{p}" for p in paths],
+                    zone_id=zone,
+                    token=cfg.api_token,
+                    client=c,
+                )
+            except Exception as exc:  # noqa: BLE001 — best-effort
+                logger.warning("cohort edge purge failed (%s)", exc)
+                ok = False
+        if ns_id:
+            try:
+                ok &= all(
+                    _delete_kv_key(
+                        key,
+                        account_id=cfg.account_id,
+                        namespace_id=ns_id,
+                        token=cfg.api_token,
+                        client=c,
+                    )
+                    for key in keys
+                )
+            except Exception as exc:  # noqa: BLE001 — best-effort
+                logger.warning("cohort KV purge failed (%s)", exc)
+                ok = False
+        if ok:
+            logger.info("cohort cache purged: %s", ", ".join(paths))
+        else:
+            logger.warning(
+                "cohort cache purge incomplete for %s — stale until TTL",
+                ", ".join(paths),
+            )
+        return ok
+    finally:
+        if own:
+            c.close()
 
 
 def _purge_cf_cache(
