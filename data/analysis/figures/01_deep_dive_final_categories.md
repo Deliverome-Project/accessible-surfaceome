@@ -2,17 +2,17 @@
 
 Two-panel summary of how the deep-dive agent sorts the surface cohort, and
 the cross-cutting cell-type and cell-state facets that overlay the surface
-tiers. Computed over the full deep-dive cohort (**5,130 genes**).
+tiers. Computed over the full deep-dive cohort (**5,332 genes**).
 
 ## Panel a — five-tier confidence spectrum
 
 Each deep-dived gene is placed on a confidence spectrum:
 
-- **canonical** (1,782) — the strict gold-standard surface tier
-- **likely** (1,243) — the broader passes-likely surface set
-- **low** (973) — low/moderate accessibility but weak evidence (maybe surface)
-- **no** (1,078) — leaned not-surface
-- **uncertain** (54) — ambiguous
+- **canonical** (1,783) — the strict gold-standard surface tier
+- **likely** (1,252) — the broader passes-likely surface set
+- **low** (1,014) — low/moderate accessibility but weak evidence (maybe surface)
+- **no** (1,228) — leaned not-surface
+- **uncertain** (55) — ambiguous
 
 `canonical` and `likely` are exactly the frontend catalog-preset predicates
 (`passesCanonical` / `passesLikely`); the low/no/uncertain split of the
@@ -31,8 +31,8 @@ calls that land in `low`. Each tier bar stacks three categories:
   lysosomal_exocytosis}` with `induction_trigger == 'oncogenic'`
 - **Induced — other** — the same induced reasons with any other trigger
 
-Totals across the three tiers: **1,314 cell-type restricted** and **600
-cell-state induced** (416 oncogenic, 184 other). Canonical carries no cell-type
+Totals across the three tiers: **1,323 cell-type restricted** and **632
+cell-state induced** (434 oncogenic, 198 other). Canonical carries no cell-type
 restricted by construction (the canonical gate excludes
 `tissue_restricted_surface`).
 

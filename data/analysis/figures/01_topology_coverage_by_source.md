@@ -2,7 +2,7 @@
 
 A single **bubble matrix** of the 7 surface-call sources (rows) × 9 topology
 features (columns), across the FULL any-yes-vote candidate-surfaceome universe
-(6,586 genes — Sonnet yes/contextual incl. the PubMed rescue, OR any
+(6,734 genes — Sonnet yes/contextual incl. the PubMed rescue, OR any
 optimized-DB vote). Each cell's dot encodes both metrics that differ only by
 denominator:
 

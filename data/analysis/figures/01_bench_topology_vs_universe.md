@@ -1,21 +1,21 @@
 # Supplementary Figure 8 — SurfaceBench topology composition vs the Sonnet 2-tier yes/contextual universe
 
-**97-of-147 SurfaceBench genes that join the per-protein features
-TSV, plotted against the 4,426-gene Sonnet 2-tier yes/contextual
+**99-of-147 SurfaceBench genes that join the per-protein features
+TSV, plotted against the 4,628-gene Sonnet 2-tier yes/contextual
 universe.** Grouped bars over the same 9 topology categories the
 `topology_coverage_by_source` 3x3 figure breaks out, with two hues:
 
-- **Sonnet 2-tier yes/contextual universe** (teal) — the genes the
+- **Sonnet 2-tier yes/contextual universe** (light warm-grey, `#C7BDB6`) — the genes the
   production pipeline calls accessible after the Sonnet+NCBI sweep
   plus the Sonnet+PubMed rescue lane (NCBI=no → PubMed=yes/contextual
   flips). This is what the catalog *actually ships*, NOT the broader
   "any-DB-voted-yes" union.
-- **SurfaceBench** (maroon) — the 97 bench-member genes that survive
+- **SurfaceBench** (teal, `#3D6B60`) — the 99 bench-member genes that survive
   the join into the per-protein features TSV (out of the 147 curated
   bench rows).
 
 Bench bars carry Wilson 95% binomial confidence intervals; the
-universe is a population, not a sample, so no CI on the teal bars.
+universe is a population, not a sample, so no CI on the grey bars.
 Above each pair sits the bench-minus-universe delta in percentage
 points and Bonferroni-corrected exact 2-tailed binomial significance
 stars (`*` p<0.05, `**` p<0.01, `***` p<0.001 after 9-test
