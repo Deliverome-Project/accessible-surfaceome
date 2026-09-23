@@ -61,6 +61,10 @@ from typing import Any
 
 import httpx
 
+from accessible_surfaceome.cloud.surface_annotation import (
+    cohort_purge_paths,
+    purge_cohort_surfaces,
+)
 from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
@@ -346,6 +350,8 @@ def main() -> int:
                     help="Limit sync to these table groups (default: all)")
     ap.add_argument("--since", help="ISO timestamp; only sync triage_run rows created at or after")
     ap.add_argument("--dry-run", action="store_true", help="Print row counts but don't write")
+    ap.add_argument("--no-purge", action="store_true",
+                    help="Skip the post-sync cohort cache purge (see purge note in main)")
     args = ap.parse_args()
 
     priv = _from_env("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID")
@@ -367,6 +373,28 @@ def main() -> int:
         # records are written direct to public D1 by the agent
         # (cloud.surface_annotation.publish_record); syncing from local
         # data/annotations/*.json would clobber those authoritative writes.
+
+        # Purge the cohort surfaces this sync invalidated. Without it a
+        # sweep lands in public D1 and the Worker keeps serving the previous
+        # export for up to a day (CACHE_TTL_LONG) plus another day of
+        # stale-while-revalidate — on an arbitrary subset of POPs, which
+        # reads as "the TSV disagrees with the API" rather than as a cache.
+        # ``publish_record`` has always purged the surfaces a single record
+        # changes; this is the same guarantee for the other writer into
+        # public D1. Per-gene and index endpoints are 60s TTL and are
+        # deliberately not purged — see the note on
+        # ``_COHORT_SURFACES_BY_TABLE``.
+        if args.dry_run:
+            paths = cohort_purge_paths(targets)
+            logger.info(
+                "[dry-run] would purge %d cohort surface(s): %s",
+                len(paths),
+                ", ".join(paths) or "(none)",
+            )
+        elif args.no_purge:
+            logger.info("--no-purge set — skipping cohort cache purge")
+        else:
+            purge_cohort_surfaces(targets, client=client)
     return 0
 
 
