@@ -1,6 +1,6 @@
 # Deep-dive vs Sonnet+NCBI accuracy on SurfaceBench (Supp. Fig. S11)
 
-On the SurfaceBench benchmark genes deep-dived so far (**n = 27 of 147**,
+On the SurfaceBench benchmark genes deep-dived so far (**n = 113 of 147**,
 the intersection), the evidence-anchored deep dive matches the
 Sonnet+NCBI triage's soft-credit accuracy, and its confidence tier
 tracks ground-truth difficulty. Each protein's deep-dive surface call
@@ -17,7 +17,7 @@ contextually-surface protein counts correct when called surface.
   **mean of three mainbench replicates** (one dot per replicate; error
   bar = SEM across replicates); the deep dive runs once per gene.
 
-Deep dive and Sonnet are near-identical overall (**96% vs 96%**), and
+Deep dive and Sonnet are near-identical overall (**97% vs 97%**), and
 Sonnet's SEM overlaps the deep-dive bar in every bucket.
 
 > Computed over the 113 benchmark genes that carry both a Sonnet verdict

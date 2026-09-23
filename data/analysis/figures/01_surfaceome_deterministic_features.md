@@ -15,7 +15,7 @@ fraction bars.
 | Facet | Definition | Feature source |
 |---|---|---|
 | `canonical` / `likely` / `low` / `uncertain·no` | Deep-dive tier (`_dd_assign_bucket`), pooling the two weakest tiers | Deep-dive **records** (full coverage per deep-dived gene) |
-| `Sonnet dual triage` | Every gene the genome-wide Sonnet triage (`genome_full_sonnet_ncbi_v2`) called `yes`/`contextual` (~4,236 with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
+| `Sonnet dual triage` | Every gene the genome-wide Sonnet triage (`genome_full_sonnet_ncbi_v2`) called `yes`/`contextual` (4,612 with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
 
 The Sonnet facet is a broader, *different* category from the tiers — its det
 features come from the genome-wide tables (the same DeepTMHMM / Compara /
@@ -26,8 +26,8 @@ is a real negative (no 1:1 ortholog / not a homomer / no concerning paralog / no
 extracellular surface-bind site), matching how the records encode it. `pending`
 (not-yet-deep-dived) genes are excluded from the deep-dive tiers.
 
-The deep-dive tiers cover the full deep-dive cohort (5,130 genes); the Sonnet
-pool is the complete triage-flagged set (~4,236 with topology).
+The deep-dive tiers cover the full deep-dive cohort (5,332 genes); the Sonnet
+pool is the complete triage-flagged set (4,612 with topology).
 
 ## Run
 

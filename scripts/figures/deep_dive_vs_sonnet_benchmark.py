@@ -52,8 +52,15 @@ _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
 # read as one palette.
 _TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
-    "canonical": "#3D6B60",  # deep teal — strict tier (swapped w/ likely for contrast)
-    "likely":    "#2E7A55",  # brighter green — broader tier
+    # MUST match deep_dive_final_categories (Fig 5a) and
+    # triage_vs_deep_dive_reason (Supp S13), which both use
+    # canonical=green / likely=teal. This figure had them swapped
+    # "for contrast" — a local call that made the same tier name carry
+    # different colours across three figures in one paper, which a
+    # reviewer caught. Contrast is unaffected (the two are adjacent in
+    # the stack either way), so consistency wins.
+    "canonical": "#2E7A55",  # success green — strict tier
+    "likely":    "#3D6B60",  # teal-mid — broader tier
     "low":       "#C99A5B",  # amber-tan — low/moderate, weak evidence
     "uncertain": "#C7BDB6",  # light warm-grey — ambiguous
     "no":        "#9C8C88",  # lifted neutral — leaned not-surface
