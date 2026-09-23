@@ -193,3 +193,14 @@ data/analysis/binding_site_audit/* -filter -diff -merge
 data/analysis/binding_site_audit/*.tsv text
 data/analysis/deep_dive_binding_sites/* -filter -diff -merge
 data/analysis/deep_dive_binding_sites/*.tsv text
+# onedb_trim_rescue_v1 — same rationale as intracellular_rescue_v1 above:
+# data/processed/** is blanket-LFS, so without these the README commits as a
+# 3-line pointer and renders as one on GitHub.
+# The 1,417-row gene list keeps -diff (100 KB; nobody wants it inline).
+data/processed/onedb_trim_rescue_v1/gene_list.tsv -filter -diff -merge text
+# Everything else here is small and meant to be READ in review, so no -diff:
+# with -diff git reports them as "Bin 0 -> N bytes" and the prose is invisible.
+data/processed/onedb_trim_rescue_v1/README.md -filter -merge text
+data/processed/onedb_trim_rescue_v1/deep_dive_cohort.tsv -filter -merge text
+data/processed/onedb_trim_rescue_v1/deterministic_gaps.tsv -filter -merge text
+data/processed/onedb_trim_rescue_v1/gene_list_optcut_zerodb.tsv -filter -merge text

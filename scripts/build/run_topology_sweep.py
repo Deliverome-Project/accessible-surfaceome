@@ -1055,7 +1055,9 @@ def _expand_candidates_with_paralogs(
     return list(candidates) + new_candidates
 
 
-def maybe_pull_paralogs(*, override_ensembl_ids: list[str]) -> Path | None:
+def maybe_pull_paralogs(
+    *, override_ensembl_ids: list[str], compara_version: str
+) -> Path | None:
     """Pull paralogs from BioMart, reusing the cached CSV only if it covers
     all requested Ensembl IDs.
 
@@ -1071,16 +1073,35 @@ def maybe_pull_paralogs(*, override_ensembl_ids: list[str]) -> Path | None:
     """
     if COMPARA_PARALOG_BY_GENE_CSV.exists() and override_ensembl_ids:
         cached_ensgs: set[str] = set()
-        try:
-            with COMPARA_PARALOG_BY_GENE_CSV.open() as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    ensg = (row.get("query_ensembl_gene") or "").strip().upper()
-                    if ensg:
-                        cached_ensgs.add(ensg)
-        except OSError as exc:
-            logger.warning("could not read cached paralog CSV: %s", exc)
-            cached_ensgs = set()
+        # Prefer the download manifest's QUERIED id list over the output CSV's
+        # query column. A gene with no paralogs yields no output row, so the
+        # CSV alone cannot distinguish "never pulled" from "pulled, genuinely
+        # has none" — and the difference decides whether we wipe a complete
+        # cache. That mistake destroyed a valid 1,066-row pull over 25
+        # paralog-free genes. Falls back to the CSV for manifests written
+        # before ``queried_ensembl_gene_ids`` existed.
+        manifest = COMPARA_PARALOG_BY_GENE_CSV.parent / "download_traceability.json"
+        if manifest.exists():
+            try:
+                queried = (
+                    json.loads(manifest.read_text()).get("extras", {})
+                    .get("queried_ensembl_gene_ids")
+                )
+                if queried:
+                    cached_ensgs = {str(e).strip().upper() for e in queried if e}
+            except (OSError, ValueError) as exc:
+                logger.warning("could not read paralog manifest: %s", exc)
+        if not cached_ensgs:
+            try:
+                with COMPARA_PARALOG_BY_GENE_CSV.open() as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        ensg = (row.get("query_ensembl_gene") or "").strip().upper()
+                        if ensg:
+                            cached_ensgs.add(ensg)
+            except OSError as exc:
+                logger.warning("could not read cached paralog CSV: %s", exc)
+                cached_ensgs = set()
         wanted = {e.upper() for e in override_ensembl_ids if e}
         missing = wanted - cached_ensgs
         if not missing:
@@ -1103,7 +1124,7 @@ def maybe_pull_paralogs(*, override_ensembl_ids: list[str]) -> Path | None:
     logger.info("running ensembl_compara_paralogs download (%d Ensembl IDs)",
                 len(override_ensembl_ids))
     from accessible_surfaceome.sources.ensembl_compara_paralogs import download_main
-    args: list[str] = []
+    args: list[str] = ["--compara-version", compara_version]
     if override_ensembl_ids:
         args += ["--override-ensembl-ids", ",".join(override_ensembl_ids)]
     download_main(args)
@@ -1775,7 +1796,10 @@ def main() -> int:
             "paralog pull: %d candidates → %d Ensembl gene IDs going to BioMart",
             len(candidates), len(override_ensembl_ids),
         )
-        paralog_csv = maybe_pull_paralogs(override_ensembl_ids=override_ensembl_ids)
+        paralog_csv = maybe_pull_paralogs(
+            override_ensembl_ids=override_ensembl_ids,
+            compara_version=args.compara_version,
+        )
         if paralog_csv is not None:
             n_before = len(candidates)
             candidates = _expand_candidates_with_paralogs(candidates, paralog_csv)
@@ -2097,7 +2121,7 @@ def main() -> int:
         for j in cohort_jsonl_paths.values():
             jsonl_args.extend(["--jsonl", str(j)])
         cmd = [
-            "uv", "run", "python", "scripts/upload_topology_to_d1.py",
+            "uv", "run", "python", "scripts/cloud/upload_topology_to_d1.py",
             "--topology-version", args.topology_version,
             "--cohorts-present", ",".join(cohort_jsonl_paths.keys()),
             "--source-run-dir", str(run_dir.relative_to(REPO_ROOT)),
@@ -2111,7 +2135,7 @@ def main() -> int:
         if paralog_jsonl is not None:
             paralog_version = args.paralog_version or f"paralog_{args.topology_version}"
             cmd = [
-                "uv", "run", "python", "scripts/upload_paralogs_to_d1.py",
+                "uv", "run", "python", "scripts/cloud/upload_paralogs_to_d1.py",
                 "--paralog-version", paralog_version,
                 "--compara-release", args.compara_version,
                 "--jsonl", str(paralog_jsonl),

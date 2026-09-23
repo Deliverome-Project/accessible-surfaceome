@@ -157,8 +157,8 @@ CONTEXTUAL_REASONS = [
     "other",
 ]
 REASON_LABEL = {
-    "classical_surface_receptor":   "classical\nsurface\nreceptor",
-    "multipass_with_exposed_loops": "multipass\nw/ exposed\nloops",
+    "classical_surface_receptor":   "single-\npass",
+    "multipass_with_exposed_loops": "multi-\npass",
     "gpi_anchored":                 "GPI-\nanchored",
     "stable_complex_partner":       "stable\ncomplex\npartner",
     "dual_localization":            "dual\nlocalization",
@@ -201,6 +201,7 @@ YES_CALLOUTS = [
     ("STEAP3",  "Six-TM metalloreductase; STEAP family", "multipass_with_exposed_loops"),
     ("NYX",     "GPI-anchored nyctalopin (retinal SLRP)", "gpi_anchored"),
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
+    ("NEU3",    "Sialidase-3 — outer-leaflet ganglioside sialidase", "other"),
 ]
 CONTEXTUAL_CALLOUTS = [
     ("IL15",    "Secreted + surface trans-presentation via IL-15Rα", "dual_localization"),
@@ -209,6 +210,7 @@ CONTEXTUAL_CALLOUTS = [
     ("LRG1",    "Leucine-rich α2-glycoprotein; cell-surface/ECM-tethered", "stable_surface_attachment"),
     ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
+    ("NPM1",    "csNPM1 — surface nucleophosmin on AML blasts", "cell_state_induced"),
     ("HPSE",    "Heparanase; surface on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
@@ -384,7 +386,7 @@ def main() -> None:
         top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
-    ax_ctx = fig.add_subplot(gs[0, 1], sharey=ax_yes)
+    ax_ctx = fig.add_subplot(gs[0, 1])
     ax_callouts_yes = fig.add_subplot(gs[1, 0])
     ax_callouts_ctx = fig.add_subplot(gs[1, 1])
 
@@ -398,12 +400,14 @@ def main() -> None:
             fontsize=32, fontweight=800, color=BRAND_INK,
         )
 
-    max_count = max(
+    # One limit across both panels so bar heights compare directly; only
+    # the tick labels are un-shared (``sharey`` hid panel b's entirely).
+    y_max = max(
         max(yes_counts.values(), default=0),
         max(ctx_counts.values(), default=0),
-    )
-    y_max = max_count * 1.18
+    ) * 1.18
     ax_yes.set_ylim(0, y_max)
+    ax_ctx.set_ylim(0, y_max)
 
     _draw_reason_bars(
         ax_yes, yes_counts, YES_REASONS, YES_PALETTE,
@@ -416,9 +420,9 @@ def main() -> None:
         header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
-    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
-    ax_yes.tick_params(axis="y", labelsize=20)
-    plt.setp(ax_ctx.get_yticklabels(), visible=False)
+    for ax in (ax_yes, ax_ctx):
+        ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
+        ax.tick_params(axis="y", labelsize=20)
 
     _draw_callouts(ax_callouts_yes, YES_CALLOUTS, YES_PALETTE, title="Select yes rescues")
     _draw_callouts(ax_callouts_ctx, CONTEXTUAL_CALLOUTS, CONTEXTUAL_PALETTE, title="Select contextual rescues")

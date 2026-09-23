@@ -72,6 +72,9 @@ from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _TRIAGE_VERDICT_TO_SIGNAL,
     _stub_deterministic_features,
 )
+from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+    topology_is_measured,
+)
 from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
@@ -120,6 +123,17 @@ from accessible_surfaceome.tools._shared.normalize import normalize_for_quote_ma
 from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTextStore
 
 logger = logging.getLogger(__name__)
+
+
+class UnmeasuredTopologyError(RuntimeError):
+    """The gene has no measured DeepTMHMM topology, so annotating it would
+    feed the agent fabricated zeros.
+
+    Raised before the synthesizer runs. See
+    ``d1_deterministic.UNMEASURED_TOPOLOGY_TOOL_VERSIONS`` for why this is a
+    hard failure rather than a warning.
+    """
+
 
 # Env-overridable via SURFACEOME_DEEP_DIVE_MODEL (default claude-sonnet-4-6).
 # Single knob shared by plan_trim_select + builders + synthesizer.
@@ -1002,6 +1016,7 @@ def annotate(
     skip_if_fresh: bool = False,
     cached_dual: DualPlanTrimSelectResult | None = None,
     read_phase_checkpoint: bool = True,
+    require_measured_topology: bool = True,
 ) -> AnnotateResultV2:
     """Run the v2 deep-dive pipeline on one gene.
 
@@ -1083,6 +1098,7 @@ def annotate(
             persist=persist,
             timing=timing,
             cached_dual=cached_dual,
+            require_measured_topology=require_measured_topology,
         )
     finally:
         if own_http:
@@ -1168,6 +1184,7 @@ def _annotate(
     persist: bool,
     timing: TimingRecorder,
     cached_dual: DualPlanTrimSelectResult | None = None,
+    require_measured_topology: bool = True,
 ) -> AnnotateResultV2:
     builder_usage: dict[str, BlockBuilderUsage] = {}
 
@@ -1613,6 +1630,33 @@ def _annotate(
                 exc,
             )
             det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+
+    # Fail loudly rather than annotate on fabricated topology. Placeholder and
+    # stub topologies report tm=0 / sp=0 / ecd=0, which is indistinguishable
+    # from a measured soluble protein — and the deterministic block goes into
+    # the agent's prompt, so the model states those zeros as fact in its
+    # executive summary. See ``UNMEASURED_TOPOLOGY_TOOL_VERSIONS`` for the two
+    # observed cases where that produced false claims in published records.
+    if require_measured_topology and not topology_is_measured(
+        det_features.canonical_topology
+    ):
+        raise UnmeasuredTopologyError(
+            f"{gene_id.hgnc_symbol} ({gene_id.uniprot_acc}): no measured "
+            f"DeepTMHMM topology "
+            f"(tool_version={det_features.canonical_topology.tool_version!r}). "
+            "The agent would be told tm=0 / signal_peptide=0 / ecd=0 and would "
+            "assert that in its summary. Run the topology sweep for this "
+            "accession first:\n"
+            "  uv run python scripts/build/build_topology_candidate_set.py "
+            "--topology-version <ver> --override-hgnc-ids "
+            f"{gene_id.hgnc_id}\n"
+            "  uv run python scripts/build/run_topology_sweep.py "
+            "--topology-version <ver> --cohorts human_canonical,human_isoforms "
+            "--compara-version <ver> --skip-paralogs\n"
+            "Pass require_measured_topology=False (CLI: "
+            "--allow-unmeasured-topology) to annotate anyway, accepting that "
+            "the topology fields are fabricated."
+        )
 
     # ---- step 4.6: risks builder (cross-focus; needs det_features) ---------
     # The risks builder is CROSS-FOCUS: it reads the MERGED A1+A2 ledger plus

@@ -149,7 +149,22 @@ After the D1 write, `publish_record` purges the Worker's edge cache for
 `purge_everything` — shared `deliverome.org` zone) so the record goes live
 immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
 Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
-either soft-skips with a warning. The zone **cache rule** (ignore query
+either soft-skips with a warning.
+
+`scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
+rewrites whole tables that back cohort endpoints — and it purges those
+after a successful sync via `purge_cohort_surfaces` (`--no-purge` to skip).
+Only the 1-day surfaces are in the map: `/v1/triage/export.tsv` (plus its
+published `?run_id=` variants — it is the one route wrapped with
+`includeQuery: true`, so it keys per query string), `/v1/benchmark`,
+`/v1/benchmark/matrix`, `/v1/benchmark/export.tsv`. The 60-second ones
+(`/v1/catalog`, `/v1/genes`, `/v1/triage/{SYMBOL}`) self-heal and are
+deliberately excluded. `stale-while-revalidate=86400` sits on top of every
+TTL, so an unpurged 1-day surface can answer stale for a second day.
+`tests/test_cohort_cache_purge.py` pins the map against both the sync
+script's table groups and the Worker's `CACHE_TTL_LONG` routes.
+
+The zone **cache rule** (ignore query
 strings) is applied by `scripts/cloud/apply_cf_edge_rules.py` (dry-run by
 default, `--execute`; Cache Rules are on every plan). **Per-IP rate
 limiting is in the Worker** (native Rate Limiting binding `env.RATE_LIMITER`
@@ -203,14 +218,17 @@ statement:
   parent run for affected cells (originals preserved). Analytics
   that should reflect the fix must COALESCE-prefer the fix run
   over its parent; see CLAUDE.md for the canonical query.
-- **Two `pubmed_ncbi` rescue lanes**, partitioned by the prior `ncbi`
-  reason so they never overlap and together cover the whole zero-DB /
-  Sonnet-`no` population: `genome_full_sonnet_pubmed_ncbi_v1` (the
-  2,626-cell ambiguous tail, 177 rescues) and
-  `genome_intracellular_pubmed_ncbi_v1` (the 10,287-cell
-  cytoplasmic/nuclear/mitochondrial complement, 148 rescues). Any
-  query applying the defer-to-more-inclusive reconciliation rule must
-  filter on **both** run_ids — see CLAUDE.md.
+- **Four `pubmed_ncbi` rescue lanes**, disjoint by construction, together
+  giving every Sonnet-`no` gene that the universe gate can drop a
+  literature-augmented second look: `genome_full_sonnet_pubmed_ncbi_v1`
+  (2,626-cell zero-DB ambiguous tail, 177 rescues),
+  `genome_intracellular_pubmed_ncbi_v1` (10,287-cell zero-DB
+  cytoplasmic/nuclear/mitochondrial complement, 148 rescues),
+  `genome_1db_trim_pubmed_ncbi_v1` (1,417-cell 1-of-5-DB trim set, 53
+  rescues) and `genome_optcut_zerodb_pubmed_ncbi_v1` (74 genes the
+  optimized cutoffs moved from 1-DB to 0-DB, 2 rescues). Any query
+  applying the defer-to-more-inclusive reconciliation rule must filter on
+  **all four** run_ids — see CLAUDE.md.
 
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions

@@ -1625,6 +1625,8 @@ async function handleCatalog(env, request) {
             u.n_sources_surface,
             u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
             u.cspa_surface_flag, u.hpa_surface_flag,
+            COALESCE(oc.uniprot_optimized, 0) AS uniprot_optimized,
+            COALESCE(oc.cspa_optimized, 0) AS cspa_optimized,
             sb.n_sites AS sb_n_sites,
             sa.ddf_filters AS sa_ddf_filters,
             sa.ddf_evidence_grade_summary AS sa_ddf_evidence_grade_summary,
@@ -1642,6 +1644,13 @@ async function handleCatalog(env, request) {
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       -- SurfaceBench-recalibrated DB cutoffs. A POSITIVE LIST: no row means
+       -- (0, 0), never "fall back to the native flag" -- a fallback
+       -- resurrects the low-confidence CSPA-only proteins the tightening
+       -- drops. Hence the COALESCE to 0 above, and hence the table must be
+       -- loaded before this Worker deploys.
+       LEFT JOIN db_optimized_cutoff_public oc
+         ON oc.accession = COALESCE(gi.uniprot_acc, u.uniprot_acc)
        -- Internalization sequence-prior grade (separate standalone pass;
        -- scalar grade columns only — never record_json, which carries the
        -- per-residue topology string that would blow D1's isolate memory
@@ -1859,15 +1868,29 @@ async function handleCatalog(env, request) {
   const rows = enrichedRows.results.map((u) => {
     covered.add(u.gene_symbol);
     if (u.has_deep_dive) deepSet.add(u.gene_symbol);
+      // UniProt and CSPA are scored on the SurfaceBench-recalibrated cutoffs,
+      // the same rule the paper and every figure use: UniProt expanded to
+      // TM>0 / signal-peptide>0 / strict subcellular term, CSPA tightened to
+      // high-confidence only. GO, SURFY and HPA are not recalibrated and
+      // keep their native flag. db_optimized_cutoff_public is a POSITIVE
+      // LIST — absent means 0, never "fall back to native", or the tightened
+      // CSPA members it exists to drop come straight back.
+    const upOpt = u.uniprot_optimized ? 1 : 0;
+    const cspaOpt = u.cspa_optimized ? 1 : 0;
+    const goFlag = u.go_surface_flag ? 1 : 0;
+    const surfyFlag = u.surfy_surface_flag ? 1 : 0;
+    const hpaFlag = u.hpa_surface_flag ? 1 : 0;
     const db =
-      (u.uniprot_surface_flag ? 1 : 0) |
-      (u.go_surface_flag ? 2 : 0) |
-      (u.surfy_surface_flag ? 4 : 0) |
-      (u.cspa_surface_flag ? 8 : 0) |
-      (u.hpa_surface_flag ? 16 : 0);
+      (upOpt ? 1 : 0) |
+      (goFlag ? 2 : 0) |
+      (surfyFlag ? 4 : 0) |
+      (cspaOpt ? 8 : 0) |
+      (hpaFlag ? 16 : 0);
     const row = {
       symbol: u.gene_symbol,
-      n_sources: u.n_sources_surface,
+      // Recomputed, not u.n_sources_surface: that column is the native
+      // 5-vote and would contradict the flags beside it.
+      n_sources: upOpt + goFlag + surfyFlag + cspaOpt + hpaFlag,
       db,
     };
     if (u.uniprot_acc) row.uniprot = u.uniprot_acc;
@@ -1896,7 +1919,13 @@ async function handleCatalog(env, request) {
       const ddf = projectDeepDiveFiltersFromParts(ddfPartsFromRow(u, "sa_ddf_"));
       if (ddf) {
         row.ddf = ddf;
-        attachDeepDiveClassification(row, ddf, !!u.uniprot_surface_flag);
+        // Low-literature badge gates on the OPTIMIZED UniProt call, not the
+        // native flag. The badge's own rationale is that UniProt outperformed
+        // the other sources on our positive controls -- and that result is
+        // measured under the recalibrated cutoff, which is what every figure
+        // and the paper score membership on. Gating on the native flag made
+        // the live badge disagree with the published numbers.
+        attachDeepDiveClassification(row, ddf, !!u.uniprot_optimized);
       }
     }
     return row;
@@ -2132,20 +2161,32 @@ async function handleBenchmarkMatrix(env) {
   const dbByGene = new Map();
   if (universeVersion) {
     const universeRows = await env.DB.prepare(
-      `SELECT gene_symbol, uniprot_surface_flag, go_surface_flag,
-              surfy_surface_flag, cspa_surface_flag, hpa_surface_flag,
-              n_sources_surface
-         FROM candidate_universe_public
-        WHERE universe_version = ?`
+      // SurfaceBench scores each database at its BEST — the recalibrated
+      // cutoff — because that is what the accuracy figures compare the agent
+      // against. Serving native flags here would have the benchmark table
+      // disagree with the benchmark figures. Positive list: absent -> 0.
+      `SELECT c.gene_symbol, c.uniprot_surface_flag, c.go_surface_flag,
+              c.surfy_surface_flag, c.cspa_surface_flag, c.hpa_surface_flag,
+              c.n_sources_surface,
+              COALESCE(oc.uniprot_optimized, 0) AS uniprot_optimized,
+              COALESCE(oc.cspa_optimized, 0) AS cspa_optimized
+         FROM candidate_universe_public c
+         LEFT JOIN db_optimized_cutoff_public oc ON oc.accession = c.uniprot_acc
+        WHERE c.universe_version = ?`
     ).bind(universeVersion).all();
     for (const u of universeRows.results) {
+      const upOpt = u.uniprot_optimized ? 1 : 0;
+      const cspaOpt = u.cspa_optimized ? 1 : 0;
+      const goFlag = u.go_surface_flag ? 1 : 0;
+      const surfyFlag = u.surfy_surface_flag ? 1 : 0;
+      const hpaFlag = u.hpa_surface_flag ? 1 : 0;
       dbByGene.set(u.gene_symbol, {
-        uniprot: u.uniprot_surface_flag ? 1 : 0,
-        go: u.go_surface_flag ? 1 : 0,
-        surfy: u.surfy_surface_flag ? 1 : 0,
-        cspa: u.cspa_surface_flag ? 1 : 0,
-        hpa: u.hpa_surface_flag ? 1 : 0,
-        n_sources_surface: u.n_sources_surface ?? 0,
+        uniprot: upOpt,
+        go: goFlag,
+        surfy: surfyFlag,
+        cspa: cspaOpt,
+        hpa: hpaFlag,
+        n_sources_surface: upOpt + goFlag + surfyFlag + cspaOpt + hpaFlag,
       });
     }
   }
@@ -2601,18 +2642,26 @@ async function handleTriageExport(env, url) {
     `       COALESCE(t.uniprot_acc, gi.uniprot_acc) AS uniprot_acc,`,
     `       COALESCE(t.hgnc_id, gi.hgnc_id) AS hgnc_id,`,
     `       COALESCE(t.ensembl_gene, gi.ensembl_gene) AS ensembl_gene,`,
-    `       COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,`,
+    // Recalibrated UniProt + CSPA, matching the catalog, the gene page and
+    // the benchmark matrix. n_db_surface is recomputed rather than read
+    // from n_sources_surface, which is the native count and would
+    // contradict the flags in the same row.
+    `       COALESCE(oc.uniprot_optimized, 0)   AS db_uniprot,`,
     `       COALESCE(c.go_surface_flag, 0)      AS db_go,`,
     `       COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,`,
-    `       COALESCE(c.cspa_surface_flag, 0)    AS db_cspa,`,
+    `       COALESCE(oc.cspa_optimized, 0)      AS db_cspa,`,
     `       COALESCE(c.hpa_surface_flag, 0)     AS db_hpa,`,
-    `       COALESCE(c.n_sources_surface, 0)    AS n_db_surface,`,
+    `       COALESCE(oc.uniprot_optimized, 0) + COALESCE(c.go_surface_flag, 0)`,
+    `         + COALESCE(c.surfy_surface_flag, 0) + COALESCE(oc.cspa_optimized, 0)`,
+    `         + COALESCE(c.hpa_surface_flag, 0)   AS n_db_surface,`,
     `       ${[...EXPORT_COLUMNS.slice(1), ...extraCols].map((c) => `t.${c}`).join(", ")}`,
     `  FROM triage_run_public t`,
     `  LEFT JOIN gene_identifier_public gi`,
     `         ON gi.hgnc_symbol = t.gene_symbol`,
     `  LEFT JOIN candidate_universe_public c`,
     `         ON c.gene_symbol = t.gene_symbol`,
+    `  LEFT JOIN db_optimized_cutoff_public oc`,
+    `         ON oc.accession = COALESCE(t.uniprot_acc, gi.uniprot_acc)`,
     `        AND c.universe_version = ?`,
     ` WHERE t.run_id = ?`,
   ];
@@ -2694,12 +2743,14 @@ async function handleBenchmarkExport(env) {
           AND t.model IN (${modelPlaceholders})
      )
      SELECT r.gene_symbol, bv.uniprot_acc,
-            COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,
+            COALESCE(oc.uniprot_optimized, 0)   AS db_uniprot,
             COALESCE(c.go_surface_flag, 0)      AS db_go,
             COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,
-            COALESCE(c.cspa_surface_flag, 0)    AS db_cspa,
+            COALESCE(oc.cspa_optimized, 0)      AS db_cspa,
             COALESCE(c.hpa_surface_flag, 0)     AS db_hpa,
-            COALESCE(c.n_sources_surface, 0)    AS n_db_surface,
+            COALESCE(oc.uniprot_optimized, 0) + COALESCE(c.go_surface_flag, 0)
+              + COALESCE(c.surfy_surface_flag, 0) + COALESCE(oc.cspa_optimized, 0)
+              + COALESCE(c.hpa_surface_flag, 0)  AS n_db_surface,
             bv.truth_verdict, bv.truth_signal, bv.truth_reason,
             r.model, r.prompt_variant, r.replicate,
             r.predicted_verdict, r.predicted_reason, r.predicted_confidence,
@@ -2711,6 +2762,8 @@ async function handleBenchmarkExport(env) {
                ON bv.gene_symbol = r.gene_symbol AND bv.bench_version = ?
        LEFT  JOIN candidate_universe_public c
                ON c.gene_symbol = r.gene_symbol AND c.universe_version = ?
+       LEFT  JOIN db_optimized_cutoff_public oc
+               ON oc.accession = bv.uniprot_acc
       WHERE r.rn = 1
       ORDER BY r.gene_symbol, r.model, r.prompt_variant`
   ).bind(
@@ -3290,11 +3343,17 @@ async function handleCatalogOne(env, symbol) {
             u.n_sources_surface,
             u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
             u.cspa_surface_flag, u.hpa_surface_flag,
+            COALESCE(oc.uniprot_optimized, 0) AS uniprot_optimized,
+            COALESCE(oc.cspa_optimized, 0) AS cspa_optimized,
             sb.n_sites AS sb_n_sites,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       -- Recalibrated UniProt + CSPA membership, matching handleCatalog.
+       -- Positive list: absent -> 0, never a native fallback.
+       LEFT JOIN db_optimized_cutoff_public oc
+              ON oc.accession = COALESCE(gi.uniprot_acc, u.uniprot_acc)
        LEFT JOIN (SELECT DISTINCT gene_symbol FROM surface_annotation) sa
               ON sa.gene_symbol = u.gene_symbol
       WHERE u.gene_symbol = ? COLLATE NOCASE
@@ -3303,16 +3362,22 @@ async function handleCatalogOne(env, symbol) {
   ).bind(sym, release.universe_version).first();
   if (!r) return notFound("gene_not_in_universe");
   const flag = (v) => (v ? 1 : 0);
+  const upOpt = flag(r.uniprot_optimized);
+  const cspaOpt = flag(r.cspa_optimized);
+  const goFlag = flag(r.go_surface_flag);
+  const surfyFlag = flag(r.surfy_surface_flag);
+  const hpaFlag = flag(r.hpa_surface_flag);
   return json({
     symbol: r.gene_symbol,
     uniprot: r.uniprot_acc ?? "",
-    n_sources: r.n_sources_surface ?? 0,
+    // Recomputed from the recalibrated flags, not the table's native count.
+    n_sources: upOpt + goFlag + surfyFlag + cspaOpt + hpaFlag,
     db: {
-      uniprot: flag(r.uniprot_surface_flag),
-      go: flag(r.go_surface_flag),
-      surfy: flag(r.surfy_surface_flag),
-      cspa: flag(r.cspa_surface_flag),
-      hpa: flag(r.hpa_surface_flag),
+      uniprot: upOpt,
+      go: goFlag,
+      surfy: surfyFlag,
+      cspa: cspaOpt,
+      hpa: hpaFlag,
     },
     deep_dive: r.has_deep_dive === 1,
     surface_bind_sites:

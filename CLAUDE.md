@@ -104,6 +104,8 @@ The Worker's `/v1/catalog` endpoint (`row_schema 6+`) bakes `ddf.n_papers_select
 
 **A Worker deploy that changes a response's SHAPE needs a manual purge.** `publish_record`'s purge only fires when a *record* is republished, so a deploy that adds a field to an endpoint leaves every already-cached gene serving the old shape for up to a day — on an arbitrary subset of genes, which reads as a bug rather than a cache. [`scripts/cloud/purge_gene_cache.py`](scripts/cloud/purge_gene_cache.py) purges the per-gene surfaces (edge + KV) across the whole cohort for exactly this case — `--surfaces record` for `/v1/genes/{SYMBOL}`, `evidence` for its ledger, `both` by default. It reuses `_purge_urls_for` / `_kv_keys_for` so the synthetic cache-key hosts can't drift from the publish path. Dry-run by default, `--execute` to purge, `--genes A,B` to scope it. Caching is per-POP, so a skipped purge shows up as the same gene answering differently depending on which datacenter served it — purge the surface the deploy touched, not just the gene you spot-checked. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/cloud/apply_cf_edge_rules.py`](scripts/cloud/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
 
+**A public-D1 sync purges the cohort surfaces it staled.** `publish_record` covers what ONE gene's record changes; [`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py) is the other writer into public D1 and rewrites whole tables (`triage_run_public`, `benchmark_version`) that back cohort-level endpoints. It now calls `accessible_surfaceome.cloud.surface_annotation.purge_cohort_surfaces` after a successful sync (`--no-purge` to skip; a dry-run prints what it would purge). Only the **1-day** surfaces are in the map — `/v1/triage/export.tsv` (plus its published `?run_id=` variants, since it is the one route wrapped with `includeQuery: true` and so keys per query string), `/v1/benchmark`, `/v1/benchmark/matrix`, `/v1/benchmark/export.tsv`. The 60-second surfaces (`/v1/catalog`, `/v1/genes`, `/v1/triage/{SYMBOL}`) are deliberately excluded: they self-heal in a minute, and enumerating 19k per-gene triage URLs would burn purge quota on a shared zone for nothing. Note that `stale-while-revalidate=86400` sits on top of every TTL, so an unpurged 1-day surface can keep answering with the previous bytes for a second day. [tests/test_cohort_cache_purge.py](tests/test_cohort_cache_purge.py) pins the map to both things it drifts from — a new `--only` group must be classified, and every `CACHE_TTL_LONG` cohort route in the Worker must be covered (it caught `/v1/benchmark` missing on the first run).
+
 ## Prompt provenance is mandatory for every agentic pipeline
 
 **Any pipeline that runs an LLM prompt to produce a persisted record MUST stamp, per record, the exact prompt that produced it.** Three fields, always:
@@ -320,25 +322,44 @@ script — no need to install wrangler just to peek at row counts.
   preserved**; analytics that should incorporate the fix should
   COALESCE-prefer the fix run over the original (see the
   Postgres-flavored snippet below).
-- **The two `pubmed_ncbi` rescue lanes.** Both re-examine zero-DB /
-  Sonnet-`no` genes with a literature-augmented pass, and together they
-  cover that population exhaustively — partitioned by the prior `ncbi`
-  reason, so they never overlap:
-  - `genome_full_sonnet_pubmed_ncbi_v1` — the 2,626-cell *ambiguous
-    tail* (`endomembrane_resident`, `secreted_only`,
+- **The four `pubmed_ncbi` rescue lanes.** Each re-examines a slice of the
+  Sonnet-`no` population with a literature-augmented pass. They are
+  disjoint by construction, and together they cover **every gene the
+  universe gate is capable of dropping** — which is the invariant to
+  preserve when adding a lane:
+  - `genome_full_sonnet_pubmed_ncbi_v1` — the 2,626-cell zero-DB
+    *ambiguous tail* (`endomembrane_resident`, `secreted_only`,
     `inner_leaflet_anchored`, `pmhc_only_intracellular`,
     `nuclear_envelope`, `other`). 177 rescues (6.7%).
-  - `genome_intracellular_pubmed_ncbi_v1` — the 10,287-cell
+  - `genome_intracellular_pubmed_ncbi_v1` — the 10,287-cell zero-DB
     *confidently-intracellular* complement (`cytoplasmic`, `nuclear`,
     `mitochondrial_internal`), which the first lane deliberately
     skipped. 148 rescues (1.44%), $70. Setup + results:
     [data/processed/intracellular_rescue_v1/README.md](data/processed/intracellular_rescue_v1/README.md).
+  - `genome_1db_trim_pubmed_ncbi_v1` — the 1,417-cell **1-of-5-DB trim
+    set**: genes `build_candidate_universe_v3.py` drops for being
+    Sonnet-`no`/high with a single DB vote. 53 rescues (3.7%), $10.80.
+  - `genome_optcut_zerodb_pubmed_ncbi_v1` — 74 genes the bench-optimized
+    CSPA tightening moved from 1-DB to 0-DB *after* the first two lanes
+    were scoped on initial votes, so they fell through both. 2 rescues,
+    $0.58.
 
   The read-side reconciliation rule (defer to the more inclusive
-  verdict) is unchanged, but **any query applying it must filter on
-  both run_ids** — a lane-specific `run_id IN (...)` list, not a single
-  equality. Missing the second lane silently reverts 148 genes to their
-  pre-rescue `no`.
+  verdict) is unchanged, but **any query applying it must filter on all
+  four run_ids** — a lane-specific `run_id IN (...)` list, not a single
+  equality. This is not hypothetical: `build_candidate_universe_v3.py`
+  bound only the first lane, which kept all 148 intracellular rescues
+  out of the candidate universe even though their deep-dive records
+  were live on the public API.
+
+  **Two rules a new lane has to follow.** (a) Scope it on the same DB-vote
+  cutoffs the universe gate uses — the first two lanes were scoped on
+  *initial* votes while the gate runs on *optimized* ones, which is
+  exactly how the 74 orphans appeared. (b) Add its run_id to `RUNS_PM`
+  in [scripts/build_candidate_universe_v3.py](scripts/build_candidate_universe_v3.py)
+  in the same change, and don't filter the lane on
+  `prompt_variant='pubmed_ncbi'` — a few cells fall back to `naive` when
+  the PubMed fetch fails, and they are still that gene's second look.
 
 Composite-source SELECT that gives "latest verdict per (gene_symbol,
 model, variant), preferring fix rows over originals":

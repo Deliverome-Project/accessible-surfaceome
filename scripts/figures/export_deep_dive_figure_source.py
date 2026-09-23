@@ -44,6 +44,17 @@ TRIAGE_OUT = ROOT / "data/processed/deep_dive/triage_verdicts.tsv"
 # the same closed `TriageReason` enum the deep-dive re-derives, so the two
 # reasons are directly comparable in the S12 confusion matrix.
 _TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
+# The two literature-rescue lanes, overlaid on the canonical verdict under
+# the same most-inclusive rule the catalog applies. Without them a gene the
+# literature pass reclassified still reads as its canonical "no" here, so
+# S13's triage-vs-deep-dive matrix would score 325 genes against a verdict
+# the project no longer holds.
+_TRIAGE_RESCUE_RUN_IDS = (
+    "genome_full_sonnet_pubmed_ncbi_v1",
+    "genome_intracellular_pubmed_ncbi_v1",
+    "genome_1db_trim_pubmed_ncbi_v1",
+    "genome_optcut_zerodb_pubmed_ncbi_v1",
+)
 
 # Per-replicate benchmark Sonnet+NCBI triage (the mainbench run, 3 replicates
 # per gene) for the deep_dive_vs_sonnet_benchmark figure — its Sonnet accuracy
@@ -156,8 +167,19 @@ _N_LLM_EVIDENCE_SQL = "(" + " + ".join(
 _DET_EXPRS: list[tuple[str, str]] = [
     ("tm_helix_count",
      f"CAST(json_extract(annotation_json,'{_CT}.tm_helix_count') AS INT)"),
+    # protein_length has no field of its own in the record — it is derived
+    # from the canonical sequence blob, which 65 records omit entirely (the
+    # field is absent, not empty: json_extract returns NULL, so length() is
+    # NULL). Fall back to topology_public, which carries protein_length for
+    # every one of them. Correlated subquery rather than a join so the
+    # ORDER BY and the one-row-per-gene shape are untouched.
     ("protein_length",
-     f"length(json_extract(annotation_json,'{_CT}.sequence'))"),
+     f"COALESCE(length(json_extract(annotation_json,'{_CT}.sequence')), "
+     "(SELECT tp.protein_length FROM topology_public tp "
+     " WHERE tp.gene_symbol = surface_annotation.gene_symbol "
+     "   AND tp.species = 'human' AND tp.cohort = 'human_canonical' "
+     "   AND tp.is_canonical IN ('1', 1) "
+     " ORDER BY tp.protein_length DESC LIMIT 1))"),
     ("ecd_length_residues",
      f"CAST(json_extract(annotation_json,'{_CT}.ecd_length_residues') AS INT)"),
     ("has_signal_peptide",
@@ -255,6 +277,33 @@ def _triage_sql() -> str:
     )
 
 
+def _apply_triage_rescues(d1, triage_rows: list[dict]) -> int:
+    """Fold the rescue lanes into the canonical triage verdicts in place.
+
+    Same reconciliation as the catalog overlay: a lane wins only where it is
+    strictly more inclusive, so a lane ``no`` never overturns a canonical
+    positive. Returns the number of rows rescued.
+    """
+    positive = ("yes", "contextual")
+    rescued = 0
+    for run_id in _TRIAGE_RESCUE_RUN_IDS:
+        lane = {
+            r["gene_symbol"]: (r["predicted_verdict"], r["predicted_reason"])
+            for r in d1.query(
+                "SELECT gene_symbol, predicted_verdict, predicted_reason "
+                "FROM triage_run_public WHERE run_id = ? "
+                "AND predicted_verdict IS NOT NULL;",
+                [run_id],
+            )
+        }
+        for row in triage_rows:
+            v, reason = lane.get(row["gene_symbol"], (None, None))
+            if v in positive and row.get("triage_verdict") == "no":
+                row["triage_verdict"], row["triage_reason"] = v, reason
+                rescued += 1
+    return rescued
+
+
 def _bench_sonnet_sql() -> str:
     """One row per (bench gene x replicate) from the mainbench Sonnet+NCBI run —
     the per-replicate triage predictions the benchmark figure aggregates into an
@@ -272,6 +321,7 @@ def main() -> int:
     with D1Client(D1Config.from_env_public()) as d1:
         rows = d1.query(_select_sql(), [])
         triage_rows = d1.query(_triage_sql(), [_TRIAGE_RUN_ID])
+        n_rescued = _apply_triage_rescues(d1, triage_rows)
         bench_sonnet_rows = d1.query(
             _bench_sonnet_sql(),
             [_MAINBENCH_RUN, _MAINBENCH_MODEL, _MAINBENCH_VARIANT],
@@ -284,7 +334,8 @@ def main() -> int:
     triage = pd.DataFrame(triage_rows)
     triage.to_csv(TRIAGE_OUT, sep="\t", index=False)
     print(f"wrote {TRIAGE_OUT.relative_to(ROOT)}: {len(triage)} triage verdicts "
-          f"(run_id={_TRIAGE_RUN_ID})")
+          f"(run_id={_TRIAGE_RUN_ID}; {n_rescued:,} rescued by "
+          f"{len(_TRIAGE_RESCUE_RUN_IDS)} literature lanes)")
 
     bench_sonnet = pd.DataFrame(bench_sonnet_rows)
     bench_sonnet.to_csv(BENCH_SONNET_OUT, sep="\t", index=False)

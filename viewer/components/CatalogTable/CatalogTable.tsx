@@ -57,19 +57,41 @@ const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
 // CSS Grid template — gene | DB-votes count | 5 DB dots | Triage
-// verdict | Reason (flex) | Deep dive | Conf | Evidence | State dep.
+// verdict | Triage reason (flex) | Deep-dive reason (flex) | Deep dive |
+// Conf | Evidence | State dep.
 // "Deep dive" is the deep-dive agent's headline surface-accessibility
 // call, mirroring the "Triage" verdict column; Conf / Evidence /
-// State dep. are its supporting vitals. The "reason" column takes the
+// State dep. are its supporting vitals. Both reason columns share the
 // remaining horizontal space via `minmax(.., 1fr)`. Haiku and Opus calls
 // live on /benchmark, not here.
-// 14 columns: Symbol | DB votes | U G S C H | Triage verdict | Reason |
-// Deep dive | Conf | Evidence | State dep. | Internalization. The 4 deep-dive
-// columns reuse the gene-page traffic-light tones, are sortable, and each
-// links to the gene's deep-dive page. The trailing Internalization column is a
-// SEPARATE facet (the opus-5 sequence prior), independent of deep-dive coverage.
+//
+// The two reason columns are deliberately SEPARATE rather than one
+// coalesced column. They come from different agents at different stages
+// — triage reads abstracts, the deep dive re-derives from the full
+// evidence ledger — and their verdict buckets disagree for ~37% of
+// deep-dived genes (e.g. triage `yes` / multipass_with_exposed_loops vs
+// deep-dive `tissue_restricted_surface`). A single column that silently
+// preferred the deep-dive value read as a verdict/reason contradiction
+// against the adjacent triage verdict. Each layer is internally
+// bucket-validated (`_check_reason_matches_verdict` for triage,
+// `_check_surface_call_reason_aligns_with_accessibility` for the deep
+// dive) — only the juxtaposition was misleading.
+//
+// 16 columns: Symbol | DB votes | U G S C H | Triage verdict |
+// Triage reason | Deep-dive reason | Deep dive | Conf | Evidence |
+// State dep. | Intern · seq | Intern · lit. The 4 deep-dive vital columns
+// reuse the gene-page traffic-light tones, are sortable, and each links to
+// the gene's deep-dive page. The two trailing Internalization columns are a
+// SEPARATE facet (the opus-5 sequence prior + the literature grade),
+// independent of deep-dive coverage.
+//
+// NOTE: dev carried 15 columns against a 14-entry template, so `Intern ·
+// lit` fell to an implicit auto track. Merging the reason split in made
+// that 16 vs 15, so every track is now explicit — which is what the
+// shared-template contract at the top of this file exists to guarantee.
+// If 7.5rem is the wrong width for `Intern · lit`, change it here.
 const GRID_TEMPLATE =
-  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 6rem 6.5rem 5.6rem 6rem 7.5rem";
+  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(7.5rem, 1fr) minmax(7.5rem, 1fr) 6rem 6.5rem 5.6rem 6rem 7.5rem 7.5rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -836,7 +858,21 @@ export function CatalogTable({
     setSelectedSymbol((prev) => (prev === symbol ? null : symbol));
     if (triageDetails[symbol]) return;
     setTriageDetails((prev) => ({ ...prev, [symbol]: { status: "loading" } }));
-    fetch(`${TRIAGE_API_BASE}/v1/triage/${symbol}`, { cache: "force-cache" })
+    // `cache: "default"`, NOT "force-cache". This fetch runs in the
+    // BROWSER (unlike the gene page's build-time fetch, where
+    // force-cache just means Next's per-build data cache and every
+    // deploy re-fetches). "force-cache" tells the browser to reuse a
+    // stored response regardless of staleness, and the Worker serves
+    // `cache-control: public, max-age=0` — storable but immediately
+    // stale — so a reader who opened a gene's drawer once kept that
+    // run list forever, across deploys. NPM1 was the report: a
+    // 2026-09-19 pubmed_ncbi `contextual` rescue landed in D1 and the
+    // catalog column picked it up, but the drawer kept replaying the
+    // cached 2026-06-01 ncbi `no`. `default` revalidates against
+    // max-age=0 (cheap 304s); the `triageDetails` map above already
+    // prevents refetching the same symbol within a session, which is
+    // all force-cache was buying.
+    fetch(`${TRIAGE_API_BASE}/v1/triage/${symbol}`, { cache: "default" })
       .then(async (res) => {
         if (!res.ok) throw new Error(`status ${res.status}`);
         const data = (await res.json()) as { runs: TriageRun[] };
@@ -1003,7 +1039,12 @@ export function CatalogTable({
       // structural-surface candidates the deep dive couldn't confidently call.
       if (lowLitSurfy) {
         const ddf = r.deep_dive_filters;
-        if (!ddf || !isLowLiteratureSurface(ddf, r.db.uniprot === 1)) return false;
+        // Worker verdict first (optimized cutoff); local predicate is the
+        // pre-deploy / snapshot fallback. See CatalogRow.low_lit_uniprot.
+        const lowLit =
+          r.low_lit_uniprot ??
+          (!!ddf && isLowLiteratureSurface(ddf, r.db.uniprot === 1));
+        if (!lowLit) return false;
       }
       // Deep-dive filter group. Any active filter here implies
       // deep_dive=true — rows without a deep_dive_filters payload
@@ -1188,7 +1229,11 @@ export function CatalogTable({
             </p>
           </InfoTip>
         </div>
-        {PRESETS.map((p) => {
+        {/* "All" is omitted here: de-selecting every chip already yields the
+            unfiltered view, and the reader has an All control further down
+            beside Deep dive / More filters. Two of them invited the reading
+            that they were different scopes. */}
+        {PRESETS.filter((p) => p.key !== "all").map((p) => {
           const count = p.key === "all"
             ? rows.length
             : rows.reduce(
@@ -1254,7 +1299,8 @@ export function CatalogTable({
           const count = rows.reduce(
             (n, r) =>
               r.deep_dive_filters &&
-              isLowLiteratureSurface(r.deep_dive_filters, r.db.uniprot === 1)
+              (r.low_lit_uniprot ??
+                isLowLiteratureSurface(r.deep_dive_filters, r.db.uniprot === 1))
                 ? n + 1
                 : n,
             0,
@@ -2084,7 +2130,26 @@ export function CatalogTable({
             />
           ))}
           <div className={styles.headerCell} role="columnheader">
-            Reason
+            Triage reason
+            <InfoTip align="end" label="About the Triage reason column">
+              The first-pass triage agent&rsquo;s mechanism code, paired with
+              the Triage verdict to its left. The pairing is schema-enforced:
+              a <code>yes</code> verdict can only carry a yes-bucket reason.
+              This is also the reason the filter chips above filter on.
+            </InfoTip>
+          </div>
+          <div className={styles.headerCell} role="columnheader">
+            Deep-dive reason
+            <InfoTip align="end" label="About the Deep-dive reason column">
+              The deep-dive agent&rsquo;s mechanism code
+              (<code>surface_call_reason</code>), re-derived from the full
+              evidence ledger rather than abstracts. It is bound to the
+              deep-dive verdict and state-dependence, <em>not</em> to the
+              triage verdict, so it legitimately disagrees with triage for
+              roughly a third of deep-dived genes — that disagreement is the
+              deep dive doing its job, not a data error. Blank where no deep
+              dive has run.
+            </InfoTip>
           </div>
           <SortableHeader
             label="Deep dive"
@@ -2554,28 +2619,47 @@ function CatalogRowView({
           </div>
         );
       })}
-      <div className={`${styles.cell} ${styles.reasonCell}`} role="cell">
-        {(() => {
-          // Prefer the DEEP-DIVE reason (surface_call_reason — re-derived
-          // from the full evidence ledger) when a deep dive exists; fall
-          // back to the first-pass triage reason otherwise.
-          const ddReason = row.deep_dive_filters?.surface_call_reason;
-          const triageReason = row.triage_by_model[1]?.reason;
-          const reason = ddReason ?? triageReason;
-          if (!reason) return <span className={styles.dim}>—</span>;
-          // prettyEnum, not a bare underscore strip: the strip mangles
-          // the acronym reasons (gpi_anchored, pmhc_only_intracellular)
-          // and would show this column's labels differently from the
-          // filter chips above it, which already go through ENUM_MAP.
-          const pretty = prettyEnum(reason);
-          const src = ddReason ? "deep dive" : "triage";
-          return (
-            <span className={styles.reasonText} title={`${pretty} (${src})`}>
-              {pretty}
+      {/* Two reason columns, one per agent — never coalesced. See the
+          GRID_TEMPLATE comment for why: the two layers disagree on bucket
+          for ~37% of deep-dived genes, and folding them into one column
+          made the surviving value read as a contradiction against the
+          triage verdict beside it. */}
+      {(
+        [
+          ["triage", row.triage_by_model[1]?.reason],
+          ["deep dive", row.deep_dive_filters?.surface_call_reason],
+        ] as const
+      ).map(([src, reason]) => (
+        <div
+          key={src}
+          className={`${styles.cell} ${styles.reasonCell}`}
+          role="cell"
+        >
+          {reason ? (
+            // prettyEnum, not a bare underscore strip: the strip mangles
+            // the acronym reasons (gpi_anchored, pmhc_only_intracellular)
+            // and would show these columns' labels differently from the
+            // filter chips above them, which already go through ENUM_MAP.
+            <span
+              className={styles.reasonText}
+              title={`${prettyEnum(reason)} (${src})`}
+            >
+              {prettyEnum(reason)}
             </span>
-          );
-        })()}
-      </div>
+          ) : (
+            <span
+              className={styles.dim}
+              title={
+                src === "triage"
+                  ? "No triage run on file"
+                  : "No deep dive on file"
+              }
+            >
+              —
+            </span>
+          )}
+        </div>
+      ))}
       {(() => {
         // 4 deep-dive vitals — "Deep dive" (the headline accessibility call,
         // mirroring Triage) · Conf · Evidence · State dep., toned with the
