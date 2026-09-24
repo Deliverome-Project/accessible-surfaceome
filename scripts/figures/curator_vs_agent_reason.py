@@ -132,11 +132,26 @@ def _representative_reason(group: pd.DataFrame) -> str:
       2. Pick the majority surface-vote side (True/False) via Counter.most_common.
       3. Among reps in the winning side, pick the most-common predicted_verdict
          (Counter.most_common breaks ties by insertion/encounter order).
-      4. Take the first rep (in original row order) whose verdict matches.
-    This diverges from a plain vote-on-reason approach for cells where the
-    verdict majority and the reason mode disagree (ATG9A/haiku/web_ncbi is the
-    known case: 1×no + 1×contextual + 1×yes; surface-vote majority = True, so
-    the no rep is excluded; reason = contextual/dual_localization wins)."""
+      4. Among the reps carrying THAT verdict, take the most-common reason.
+
+    Step 4 used to take the *first* such rep in row order and use its reason.
+    That was defensible when the reps disagreed on verdict — the earlier steps
+    had already done the real work — but it silently degraded to "whatever
+    replicate 1 said" in the common case where every rep agrees on the verdict
+    and differs only on the reason. Three bench genes hit that and were scored
+    on a MINORITY reason: JAK2 (1× cytoplasmic, 2× inner_leaflet_anchored) was
+    counted correct, while FN1 and LAMP3 (each 2/3 correct) were counted wrong.
+    Taking the mode scores all three on what the cell actually said.
+
+    The mode is taken within the winning verdict, not across all winning-side
+    reps, so the reason stays inside the verdict's bucket — a ``yes`` verdict
+    can never come back carrying a NO-bucket reason. Counter breaks ties by
+    first-encounter order, so a 1-1 split stays deterministic.
+
+    Still diverges from a plain vote-on-reason for cells where the verdict
+    majority and the reason mode disagree (ATG9A/haiku/web_ncbi: 1×no +
+    1×contextual + 1×yes; surface-vote majority = True, so the ``no`` rep is
+    excluded before any reason is counted)."""
     valid = group[group["predicted_verdict"].map(_surface_vote).notna()]
     if valid.empty:
         return group.iloc[0]["predicted_reason"]
@@ -144,8 +159,8 @@ def _representative_reason(group: pd.DataFrame) -> str:
     win_side = votes.most_common(1)[0][0]
     win_reps = valid[valid["predicted_verdict"].map(_surface_vote) == win_side]
     rep_verdict = Counter(win_reps["predicted_verdict"].tolist()).most_common(1)[0][0]
-    representative = win_reps[win_reps["predicted_verdict"] == rep_verdict].iloc[0]
-    return representative["predicted_reason"]
+    same_verdict = win_reps[win_reps["predicted_verdict"] == rep_verdict]
+    return Counter(same_verdict["predicted_reason"].tolist()).most_common(1)[0][0]
 
 
 def _load_curator_reasons(data: pd.DataFrame) -> dict[str, str]:

@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 3.** The triage agent's localization reasoning matches the manual curator on 87.1% of protein-coding genes, with nearly all residual disagreement being reassignment within the same surface-verdict bucket rather than a flipped verdict. Each SurfaceBench protein-coding gene carries a curator-assigned and an agent-assigned reason, both from one shared closed set of reason categories grouped into surface-accessible (yes), context-dependent (contextual), and not-accessible (no) buckets. a) Bucket-strict accuracy across all model-and-configuration cells (Haiku 4.5, Sonnet 4.6, Opus 4.8), with per-replicate dots and SEM; this strict axis gives no partial credit for a Yes-versus-Contextual mismatch. b) Per-reason exact agreement for four frontier configurations (best Haiku, Sonnet with identifiers, Sonnet with PubMed, best Opus), ordered Yes to Contextual to No. c) The Sonnet 4.6 plus NCBI confusion matrix, blocked by bucket; the largest off-diagonal is a within-No-bucket swap that leaves the surface verdict unchanged.
+> **Supplementary Figure 3.** The triage agent's localization reasoning matches the manual curator on 87.8% of protein-coding genes, with nearly all residual disagreement being reassignment within the same surface-verdict bucket rather than a flipped verdict. Each SurfaceBench protein-coding gene carries a curator-assigned and an agent-assigned reason, both from one shared closed set of reason categories grouped into surface-accessible (yes), context-dependent (contextual), and not-accessible (no) buckets. a) Bucket-strict accuracy across all model-and-configuration cells (Haiku 4.5, Sonnet 4.6, Opus 4.8), with per-replicate dots and SEM; this strict axis gives no partial credit for a Yes-versus-Contextual mismatch. b) Per-reason exact agreement for four frontier configurations (best Haiku, Sonnet with identifiers, Sonnet with PubMed, best Opus), ordered Yes to Contextual to No. c) The Sonnet 4.6 plus NCBI confusion matrix, blocked by bucket; the largest off-diagonal is a within-No-bucket swap that leaves the surface verdict unchanged.
 <!-- END manuscript-legend -->
 
 **147-gene SurfaceBench, Sonnet 4.6 + NCBI context.** For each gene
@@ -23,7 +23,7 @@ Bucket separators are drawn after `stable_complex_partner` (yes →
 contextual) and after `dual_localization` (contextual → no). Axis
 labels are colored by bucket so the eye locks on the partitions.
 
-**Headline**: 128/147 = **87.1 %** exact-reason agreement.
+**Headline**: 129/147 = **87.8 %** exact-reason agreement.
 
 The **biggest single disagreement bucket** (3 of 19 disagreements) is
 cytoplasmic kinases — BTK, JAK1, AKT2 — that the curator called

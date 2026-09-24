@@ -235,7 +235,15 @@ def _representative_reason(group: pd.DataFrame) -> str:
       2. Pick the majority surface-vote side via Counter.most_common.
       3. Among reps on the winning side, pick the most-common
          predicted_verdict (ties broken by encounter order).
-      4. Take the first rep (original row order) whose verdict matches.
+      4. Among the reps carrying THAT verdict, take the most-common
+         reason.
+
+    Step 4 used to take the first such rep in row order. Row order is
+    meaningless once the verdict is settled, so that scored a cell on a
+    MINORITY reason whenever every rep agreed on the verdict and split on
+    the reason — three bench genes (JAK2, FN1, LAMP3). The mode is taken
+    within the winning verdict so the reason stays inside that verdict's
+    bucket.
     """
     valid = group[group["predicted_verdict"].map(_surface_vote).notna()]
     if valid.empty:
@@ -244,8 +252,8 @@ def _representative_reason(group: pd.DataFrame) -> str:
     win_side = votes.most_common(1)[0][0]
     win_reps = valid[valid["predicted_verdict"].map(_surface_vote) == win_side]
     rep_verdict = Counter(win_reps["predicted_verdict"].tolist()).most_common(1)[0][0]
-    representative = win_reps[win_reps["predicted_verdict"] == rep_verdict].iloc[0]
-    return representative["predicted_reason"]
+    same_verdict = win_reps[win_reps["predicted_verdict"] == rep_verdict]
+    return Counter(same_verdict["predicted_reason"].tolist()).most_common(1)[0][0]
 
 
 def _load_curator_reasons(data: pd.DataFrame) -> dict[str, str]:
