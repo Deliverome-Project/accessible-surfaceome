@@ -143,8 +143,10 @@ After the D1 write, `publish_record` purges the Worker's edge cache for
 `/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes` (targeted by-URL, never
 `purge_everything` — shared `deliverome.org` zone) so the record goes live
 immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
-Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
-either soft-skips with a warning.
+Publish also archives the record to record history (below), which purges
+`/v1/genes/{SYMBOL}/revisions` and `/v1/releases` so the revision list is
+never served stale either. Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache
+Purge token scope; missing either soft-skips with a warning.
 
 **Record history + numbered data releases.** Every distinct state the API
 served for a gene (record, `/evidence` ledger, `.md` export) is archived
@@ -157,7 +159,16 @@ actual change in public D1
 that writes `surface_annotation` directly, or bulk-updates a deterministic
 table the Worker joins at serve time, must be followed by
 `uv run python scripts/cloud/sweep_record_history.py --execute` or those
-states never enter history. Numbered releases
+states never enter history — including
+[`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py):
+`handleGene` overlays live `triage_run_public` (and other synced tables)
+onto the served record, so a sync that changes those rows changes what's
+served without touching `surface_annotation`. `sweep_record_history.py
+--check-stability [--sample N]` (default 50, seeded random sample,
+`--genes` honoured) is a read-only mode — fetches each gene twice and
+diffs the three content hashes, never touches the store/R2/D1 — for
+catching a serve-time field the hasher doesn't yet ignore before it reads
+as content drift on every sweep. Numbered releases
 (`data_release`/`data_release_member`) are cut with
 `scripts/release/cut_data_release.py --version X.Y.Z` (after bumping
 `pyproject.toml`); it drafts, never publishes, the Zenodo data-record

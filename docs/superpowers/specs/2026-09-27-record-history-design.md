@@ -1,7 +1,7 @@
 # Public record history and numbered data releases — design
 
 **Date:** 2026-09-27
-**Status:** approved in brainstorming, pending spec review
+**Status:** approved; implemented on `claude/record-history-api`
 
 ## Problem
 
@@ -36,6 +36,8 @@ and the records it contains.
 - History for triage (already queryable by `run_id`), the benchmark, or
   the catalog endpoint.
 - Re-enriching old records with historical deterministic-table versions.
+- Linking histories across HGNC symbol renames (revisions are keyed by
+  symbol; `hgnc_id` is stored for a future join).
 
 ## Key decisions
 
@@ -167,17 +169,30 @@ token → normal cached path (no error, no signal).
 
 ## 3. Write paths
 
-**`src/accessible_surfaceome/cloud/record_history.py`**
+**`src/accessible_surfaceome/cloud/record_history/`** (package: `hashing.py`,
+`store.py`, `archive.py`, `releases.py`, `zenodo.py`).
 
-- `volatile_fields()` / `content_hash_json(body) -> str` /
-  `content_hash_md(text) -> str`.
-- `archive_gene(symbol, *, source, http, store) -> ArchiveResult` —
-  fetch the live record, evidence ledger and `.md` with the bypass header; hash; `head_object` →
-  `put_object` for any missing object; insert the revision with a single
-  statement that computes `MAX(revision)+1` and only inserts when the
-  latest row's hashes differ (idempotent, race-safe); purge
-  `/v1/genes/{sym}/revisions` and `/v1/releases`. `ArchiveResult` reports
-  `created | unchanged | failed` and the revision number.
+- `hashing.py`: `content_hash_record(body) -> str` / `content_hash_evidence(body)
+  -> str` / `content_hash_md(text) -> str`. Volatile fields are two pinned
+  constants — `VOLATILE_RECORD_FIELDS` (top-level keys dropped before
+  hashing, e.g. `record_generated_at`) and `VOLATILE_NESTED_KEYS`
+  (`retrieved_at`, stripped recursively at any depth — the Worker stamps a
+  fresh `retrieved_at` into several `deterministic_features` sub-objects at
+  serve time when the underlying D1 row has none, which would otherwise look
+  like a content change on every fetch).
+- `archive.py::archive_gene(symbol, *, source, http, store, token) ->
+  ArchiveResult` — fetch the live record, evidence ledger and `.md` with the
+  `X-Archive-Bypass` header; hash; `head_object` → `put_object` for any
+  missing object; insert the revision with a single statement that computes
+  `MAX(revision)+1` and only inserts when the latest row's hashes differ
+  (idempotent, race-safe); purge `/v1/genes/{sym}/revisions` and
+  `/v1/releases`. `ArchiveResult` reports `created | unchanged |
+  not_annotated` and the revision number. The Worker echoes
+  `X-Archive-Bypass-Honored: 1` on every response (including 404s) when the
+  bypass secret matched; `archive_gene` refuses to archive (raises
+  `ArchiveError`) if that header is absent, so a wrong token or an old
+  Worker that doesn't know the header can never be mistaken for a
+  successful, uncached fetch.
 
 **Callers**
 
@@ -191,14 +206,26 @@ token → normal cached path (no error, no signal).
 - `scripts/cloud/sweep_record_history.py` — `archive_gene(source="sweep")`
   over every symbol from `/v1/genes`; thread pool; dry-run default,
   `--execute`, `--genes A,B`. Run after any bulk deterministic-table sync.
-- `scripts/cloud/seed_record_history.py` (one-off, refuses to run if
-  `record_revision` is non-empty) — download `deep_dives_all.tar.gz` from
-  Zenodo record 20805384; write each record as revision 1
+- `scripts/cloud/seed_record_history.py` (one-off, **resumable, not
+  refuse-on-nonempty**) — download `deep_dives_all.tar.gz` from Zenodo
+  record 20805384; write each record as revision 1
   (`source='seed:zenodo-1.0.0'`, `md_hash` NULL, `published_at` =
   2026-08-15); create release `1.0.0` (`cut_at` 2026-08-15,
   `zenodo_version_doi` `10.5281/zenodo.20805384`, `github_tag` NULL,
   members = all seeded genes). Then run the sweep: changed genes get
   revision 2; genes annotated after 2026-08-15 start at revision 1.
+
+  A re-run first reads every existing `record_revision` row (read-only) and
+  refuses — naming the offending genes — if any row isn't exactly what this
+  seed itself would have written: a `source` other than
+  `seed:zenodo-1.0.0`, a `revision` other than 1, a symbol the tarball
+  doesn't carry, or a `json_hash` that doesn't match what this tarball's
+  record hashes to (a stale or swapped-out tarball). Rows that pass are
+  "already done"; only the remaining genes get written. R2 puts are
+  separately idempotent (content-addressed, `head_object`-gated). If
+  `data_release` 1.0.0 already exists with every tarball gene accounted
+  for, the script prints "already seeded" and exits 0 having written
+  nothing.
 
 Revision 1 from the seed is the stored record as deposited (never
 enriched, evidence inline); its `source` says so.
@@ -264,11 +291,18 @@ revisions remain.
 ## Rollout
 
 1. Apply the DDL to public D1 (`D1Client.query`, one statement per call).
-2. Create the R2 bucket; set `ARCHIVE_BYPASS_TOKEN` as a Worker secret and
-   in `.env`.
+2. Create the R2 bucket; set `ARCHIVE_BYPASS_TOKEN` as a Worker secret.
+   **Do not set it in the local `.env` yet** — `seed_record_history.py`
+   writes revision 1 straight to D1/R2 via `CloudRevisionStore`, not
+   through the Worker's bypass header, and the seed must complete
+   *before* anything archives a *served* record for these genes (a
+   `sweep_record_history.py --execute` run with the token already set
+   would land the served shape as "revision 1" instead of the Zenodo
+   deposit's shape). Add the token to `.env` only after the seed finishes,
+   right before running the sweep.
 3. Deploy the Worker — check `origin/main` first and reconcile with dev
    (shared API).
-4. Seed, then sweep; spot-check.
+4. Seed, then set `ARCHIVE_BYPASS_TOKEN` locally, then sweep; spot-check.
 5. Cut 1.3.0 (pyproject bump, release script, Zenodo version, GitHub
    release).
 6. Viewer PR (badge + citation strip).
