@@ -204,6 +204,29 @@ def head_object(
         return None
 
 
+def get_object(
+    *,
+    key: str,
+    cfg: R2Config | None = None,
+) -> bytes | None:
+    """Download one object. ``None`` on a 404; raises on any other failure.
+
+    Unlike :func:`put_object` this is not best-effort: the only caller (the
+    record-history release export) must not silently ship a tarball with a
+    missing record, so non-404 errors propagate.
+    """
+    cfg = cfg or R2Config.from_env()
+    with httpx.Client(timeout=_R2_OBJECT_TIMEOUT_S) as c:
+        resp = c.get(
+            _object_url(cfg, key),
+            headers={"Authorization": f"Bearer {cfg.api_token}"},
+        )
+    if resp.status_code == 404:
+        return None
+    resp.raise_for_status()
+    return resp.content
+
+
 def intermediates_object_key(
     *,
     gene_symbol: str,
@@ -230,5 +253,6 @@ __all__ = [
     "R2Config",
     "put_object",
     "head_object",
+    "get_object",
     "intermediates_object_key",
 ]
