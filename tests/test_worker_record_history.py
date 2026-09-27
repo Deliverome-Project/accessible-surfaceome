@@ -100,6 +100,10 @@ def test_record_history_routes(tmp_path: Path) -> None:
         'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
         "const deepDiveTier = () => ({tier: 'no', facet: null}); const isLowLiteratureSurface = () => false;",
     )
+    shutil.copy2(
+        root / "cloudflare/workers/surfaceome_api/src/contact-sites.js",
+        tmp_path / "contact-sites.js",
+    )
     (tmp_path / "worker.mjs").write_text(source)
 
     schema_sql = (root / "cloudflare/d1_public_schema.sql").read_text()
