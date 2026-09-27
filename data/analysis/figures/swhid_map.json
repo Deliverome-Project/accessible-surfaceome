@@ -13,7 +13,7 @@
   "deep_dive_record_richness": "swh:1:rev:b35cb0fa19833193350c41c69107409c9ef453a1",
   "deep_dive_vs_sonnet_benchmark": "swh:1:rev:29136bc5b9b27c942998d816cc4e3e4d93955bd6",
   "ensemble_vs_best_db_vs_sonnet": "swh:1:rev:b12e68885f5aac8a717c2e26b1872d7986450fa4",
-  "evidence_corpus_vs_selected": "swh:1:rev:f019aa24e274dddb613b9913c89613fae27e6760",
+  "evidence_corpus_vs_selected": "swh:1:rev:244dda8a595d8b8fd7bebf0a8281273ed1c8f897",
   "paywall_bot_block_compare": "swh:1:rev:2a6a860f6c85eb4aa624e414ddb0faf14ae6dce2",
   "positive_control_db_coverage_bars": "swh:1:rev:82448484ba6a2fc12c58e9b5a93b5ebc50af2196",
   "surface_evidence_assay_types": "swh:1:rev:1e0dde250145e44b5b384787277a0c56944aa134",

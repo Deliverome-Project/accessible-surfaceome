@@ -22,6 +22,29 @@ selected ÷ papers found), drawn at 5 % and 10 %. They are reference
 lines, not fits: a gene sitting on the 10 % line had one paper in ten
 promoted from the discovery corpus into the evidence ledger.
 
+## Panel b — tier composition by literature size
+
+Stacked share of each discovery-corpus stratum by deep-dive surface tier.
+Panel a shows that selection scales sub-linearly with corpus size; panel b
+shows what the pipeline *concluded* at each corpus size, which is the part
+that separates "well studied" from "strong evidence".
+
+| papers found | n | canonical | likely | low | no | uncertain |
+|---|---|---|---|---|---|---|
+| <75 | 622 | 1% | 18% | **60%** | 17% | 5% |
+| 75–100 | 218 | 7% | 28% | 28% | 34% | 3% |
+| 100–150 | 551 | 15% | 28% | 21% | 34% | 1% |
+| 150–200 | 819 | 30% | 28% | 13% | 28% | 0% |
+| >200 | 3,103 | **46%** | 22% | 11% | 20% | 0% |
+
+The clearest signal is `low` collapsing from 60% to 11%: sparse literature
+produces *weak* calls, not negative ones — the `no` share is roughly flat
+across strata (17–34%). Canonical rises 1% → 46% over the same range.
+
+Tier colours match Figure 5a and Supp S13. A tier name carrying a different
+colour across figures is exactly the inconsistency a reviewer caught on S11,
+so the three share one map.
+
 ## What each axis measures
 
 - **x-axis — Papers found per gene (discovery corpus).** The size of
