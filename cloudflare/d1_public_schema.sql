@@ -948,7 +948,7 @@ CREATE TABLE IF NOT EXISTS db_optimized_cutoff_public (
 -- scripts/cloud/apply_record_history_ddl.py). Keep the two identical.
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS record_revision (
-    gene_symbol           TEXT NOT NULL,
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,  -- two casings of one gene share a sequence
     hgnc_id               TEXT,
     revision              INTEGER NOT NULL,   -- 1, 2, 3 … per gene
     json_hash             TEXT NOT NULL,      -- sha256 of the served record
@@ -974,7 +974,7 @@ CREATE TABLE IF NOT EXISTS data_release (
 
 CREATE TABLE IF NOT EXISTS data_release_member (
     version     TEXT NOT NULL,
-    gene_symbol TEXT NOT NULL,
+    gene_symbol TEXT NOT NULL COLLATE NOCASE,
     revision    INTEGER NOT NULL,
     PRIMARY KEY (version, gene_symbol)
 );

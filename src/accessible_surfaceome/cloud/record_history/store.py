@@ -3,9 +3,12 @@
 R2 holds each distinct served part once, named by its content hash
 (write-once; nothing overwrites or deletes). D1's ``record_revision`` has
 one row per actual change. The insert statement numbers the revision and
-skips unchanged content in ONE statement, so re-runs and concurrent
-archivers are safe (a lost race surfaces as a PK conflict the caller
-retries).
+skips unchanged content in ONE statement, so re-runs are safe. D1 executes
+statements serially, so the MAX(revision)+1 computation can't actually race
+across concurrent archivers within a single statement — the composite
+``PRIMARY KEY (gene_symbol, revision)`` (declared ``COLLATE NOCASE`` on
+``gene_symbol`` so two casings of one gene can't independently land
+revision 1) is a defensive backstop, not something callers need to handle.
 """
 
 from __future__ import annotations
@@ -22,7 +25,7 @@ BUCKET = "surfaceome-record-history"
 
 DDL: list[str] = [
     """CREATE TABLE IF NOT EXISTS record_revision (
-    gene_symbol           TEXT NOT NULL,
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,
     hgnc_id               TEXT,
     revision              INTEGER NOT NULL,
     json_hash             TEXT NOT NULL,
@@ -45,7 +48,7 @@ DDL: list[str] = [
 )""",
     """CREATE TABLE IF NOT EXISTS data_release_member (
     version     TEXT NOT NULL,
-    gene_symbol TEXT NOT NULL,
+    gene_symbol TEXT NOT NULL COLLATE NOCASE,
     revision    INTEGER NOT NULL,
     PRIMARY KEY (version, gene_symbol)
 )""",
@@ -56,7 +59,9 @@ DDL: list[str] = [
 # Inserts MAX(revision)+1 unless the gene's latest row already has these
 # exact hashes (`IS` so NULL == NULL). Returns the new revision, or no
 # row when unchanged. Symbols compare COLLATE NOCASE like every other
-# per-gene lookup (the mixed-case `Cxorf` class).
+# per-gene lookup (the mixed-case `Cxorf` class) — kept explicit here even
+# though the column itself is now declared COLLATE NOCASE, so the query
+# reads correctly on its own.
 INSERT_REVISION_SQL = """
 INSERT INTO record_revision (
     gene_symbol, hgnc_id, revision, json_hash, evidence_hash, md_hash,
@@ -79,6 +84,15 @@ WHERE NOT EXISTS (
 RETURNING revision
 """
 
+# The latest-revision lookup `CloudRevisionStore.latest` runs. A module-level
+# constant so tests can pin its query plan (composite PK on
+# (gene_symbol, revision) should make this an index SEARCH, never a SCAN)
+# without duplicating the SQL text.
+LATEST_REVISION_SQL = (
+    "SELECT revision, json_hash, evidence_hash, md_hash FROM record_revision "
+    "WHERE gene_symbol = ? COLLATE NOCASE ORDER BY revision DESC LIMIT 1"
+)
+
 
 def blob_key(digest: str, ext: str) -> str:
     """R2 key for one content-addressed part (``ext``: ``json`` or ``md``)."""
@@ -94,7 +108,12 @@ class LatestRevision:
 
 
 class ArchiveError(RuntimeError):
-    """A revision could not be archived (R2 write or D1 insert failed)."""
+    """An R2 blob write failed while archiving a revision.
+
+    Covers ``put_blob`` only. A D1 insert failure propagates unwrapped as
+    :class:`~accessible_surfaceome.cloud.d1_client.D1Error` from
+    ``insert_revision`` — it is not translated into an ``ArchiveError``.
+    """
 
 
 class RevisionStore(Protocol):
@@ -117,6 +136,12 @@ class CloudRevisionStore:
 
     @classmethod
     def from_env(cls) -> CloudRevisionStore:
+        # D1Client.public() is documented as reads-only-by-convention
+        # elsewhere in this codebase, but record history intentionally
+        # WRITES to the public mirror here — the Worker only ever reads
+        # surfaceome_public, so history has to live there too. The
+        # CLOUDFLARE_API_TOKEN therefore needs D1:Edit scope on
+        # surfaceome_public, not just the private surfaceome_agents DB.
         return cls(D1Client.public(), R2Config.from_env())
 
     @property
@@ -130,11 +155,7 @@ class CloudRevisionStore:
         self._d1.close()
 
     def latest(self, gene_symbol: str) -> LatestRevision | None:
-        rows = self._d1.query(
-            "SELECT revision, json_hash, evidence_hash, md_hash FROM record_revision "
-            "WHERE gene_symbol = ? COLLATE NOCASE ORDER BY revision DESC LIMIT 1",
-            [gene_symbol],
-        )
+        rows = self._d1.query(LATEST_REVISION_SQL, [gene_symbol])
         if not rows:
             return None
         r = rows[0]
@@ -156,5 +177,16 @@ class CloudRevisionStore:
             raise ArchiveError(f"R2 write failed for {key}")
 
     def insert_revision(self, params: list[object]) -> int | None:
+        """Insert the next revision if the hashes changed, else no-op.
+
+        Returns the new revision number, or ``None`` when the content is
+        unchanged from the gene's latest row. Note: the underlying
+        ``D1Client`` retries transient HTTP failures; if a retry fires
+        after a write actually committed but its response was lost, the
+        retried attempt sees identical hashes already present and reports
+        ``None`` ("unchanged") rather than raising — harmless (no
+        duplicate row, no lost data), just worth knowing when debugging
+        why an expected new revision didn't show up.
+        """
         rows = self._d1.query(INSERT_REVISION_SQL, list(params))
         return int(rows[0]["revision"]) if rows else None
