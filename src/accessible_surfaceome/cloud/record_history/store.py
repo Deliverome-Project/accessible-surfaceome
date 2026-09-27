@@ -108,11 +108,16 @@ class LatestRevision:
 
 
 class ArchiveError(RuntimeError):
-    """An R2 blob write failed while archiving a revision.
+    """A record-history write or refusal failed outside of D1.
 
-    Covers ``put_blob`` only. A D1 insert failure propagates unwrapped as
-    :class:`~accessible_surfaceome.cloud.d1_client.D1Error` from
-    ``insert_revision`` — it is not translated into an ``ArchiveError``.
+    Covers ``put_blob`` (an R2 write failure) as well as the refusals
+    ``archive_gene`` raises directly before ever writing anything: a
+    missing ``ARCHIVE_BYPASS_TOKEN``, the Worker not echoing the
+    bypass-honoured header, an unexpected 404 reason on a served route, or
+    a malformed record/evidence body. A D1 insert failure propagates
+    unwrapped as :class:`~accessible_surfaceome.cloud.d1_client.D1Error`
+    from ``insert_revision`` — it is not translated into an
+    ``ArchiveError``.
     """
 
 

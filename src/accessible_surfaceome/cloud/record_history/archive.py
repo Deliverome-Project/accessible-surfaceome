@@ -3,7 +3,11 @@
 This is the ONLY code that writes record-history revisions (publish,
 sweep, and backfills all call it), so dedup and numbering live in one
 place. It reads the Worker with the ``X-Archive-Bypass`` secret so the
-bytes are the current D1 state + today's enrichment, not a cached copy.
+bytes are the current D1 state + today's enrichment, not a cached copy,
+and refuses to proceed unless the Worker echoes back
+``X-Archive-Bypass-Honored: 1`` confirming the secret actually matched
+(an old Worker or a wrong token would otherwise look like a quiet,
+possibly-cached success).
 """
 
 from __future__ import annotations
@@ -32,10 +36,12 @@ logger = logging.getLogger(__name__)
 
 PUBLIC_API_BASE = "https://api.deliverome.org/surfaceome"
 BYPASS_HEADER = "X-Archive-Bypass"
+BYPASS_HONORED_HEADER = "X-Archive-Bypass-Honored"
 
 
 @dataclass(frozen=True)
 class Served:
+    gene_symbol: str
     record_bytes: bytes
     record: dict[str, Any]
     evidence_bytes: bytes | None
@@ -50,10 +56,61 @@ class ArchiveResult:
     revision: int | None
 
 
-def _get(http: httpx.Client, url: str, token: str) -> httpx.Response | None:
-    resp = http.get(url, headers={BYPASS_HEADER: token})
-    if resp.status_code == 404:
+def _get(http: httpx.Client, url: str, token: str) -> httpx.Response:
+    return http.get(url, headers={BYPASS_HEADER: token})
+
+
+def _safe_json(resp: httpx.Response) -> Any:
+    try:
+        return resp.json()
+    except ValueError:
         return None
+
+
+def _matches_404_reason(resp: httpx.Response, expected_error: str) -> bool:
+    body = _safe_json(resp)
+    return isinstance(body, dict) and body.get("error") == expected_error
+
+
+def _fetch_record(http: httpx.Client, url: str, token: str) -> httpx.Response | None:
+    """The record route: also enforces the bypass-honoured contract.
+
+    Any non-404 error status raises before we ever look at the honoured
+    header, so a plain 5xx from a broken/unreachable Worker still surfaces
+    as ``httpx.HTTPStatusError`` rather than being mistaken for an
+    un-honoured bypass.
+    """
+    resp = _get(http, url, token)
+    if resp.status_code != 404:
+        resp.raise_for_status()
+    if resp.headers.get(BYPASS_HONORED_HEADER) != "1":
+        raise ArchiveError(
+            "archive bypass not honoured — wrong ARCHIVE_BYPASS_TOKEN or old Worker; "
+            "refusing to archive possibly-cached bytes"
+        )
+    if resp.status_code == 404:
+        if _matches_404_reason(resp, "gene_not_annotated"):
+            return None
+        raise ArchiveError(
+            "unexpected 404 from record route "
+            f"(expected error='gene_not_annotated'): {resp.text!r}"
+        )
+    return resp
+
+
+def _fetch_optional(
+    http: httpx.Client, url: str, token: str, *, expected_404_error: str, route: str
+) -> httpx.Response | None:
+    """A route the API may 404 for a known reason; any other status either
+    passes through (2xx) or raises (5xx / unexpected 4xx)."""
+    resp = _get(http, url, token)
+    if resp.status_code == 404:
+        if _matches_404_reason(resp, expected_404_error):
+            return None
+        raise ArchiveError(
+            f"unexpected 404 from {route} route "
+            f"(expected error={expected_404_error!r}): {resp.text!r}"
+        )
     resp.raise_for_status()
     return resp
 
@@ -61,18 +118,56 @@ def _get(http: httpx.Client, url: str, token: str) -> httpx.Response | None:
 def fetch_served(
     symbol: str, *, http: httpx.Client, token: str, base: str = PUBLIC_API_BASE
 ) -> Served | None:
-    """The three parts the API serves for ``symbol``; ``None`` if not annotated."""
-    rec = _get(http, f"{base}/v1/genes/{symbol}", token)
-    if rec is None:
+    """The three parts the API serves for ``symbol``; ``None`` if not annotated.
+
+    The record fetch uses the caller's ``symbol`` as given; the evidence
+    and Markdown fetches use the *canonical* ``gene.hgnc_symbol`` the
+    record itself reports, since the Markdown route is matched exactly
+    against its R2 key and a caller-supplied casing (e.g. ``egfr``) would
+    silently 404 there even though the record route resolved fine.
+    """
+    rec_resp = _fetch_record(http, f"{base}/v1/genes/{symbol}", token)
+    if rec_resp is None:
         return None
-    ev = _get(http, f"{base}/v1/genes/{symbol}/evidence", token)
-    md = _get(http, f"{base}/v1/genes/{symbol}.md", token)
+    rec = rec_resp.json()
+    if not isinstance(rec, dict) or "error" in rec:
+        raise ArchiveError(f"malformed record body served for {symbol!r}")
+    gene = rec.get("gene")
+    if not isinstance(gene, dict) or not gene.get("hgnc_symbol"):
+        raise ArchiveError(f"record for {symbol!r} is missing gene.hgnc_symbol")
+    sym: str = gene["hgnc_symbol"]
+
+    ev_resp = _fetch_optional(
+        http,
+        f"{base}/v1/genes/{sym}/evidence",
+        token,
+        expected_404_error="gene_not_annotated",
+        route="evidence",
+    )
+    evidence: dict[str, Any] | None = None
+    evidence_bytes: bytes | None = None
+    if ev_resp is not None:
+        evidence = ev_resp.json()
+        if not isinstance(evidence, dict):
+            raise ArchiveError(f"malformed evidence body served for {sym!r}")
+        evidence_bytes = ev_resp.content
+
+    md_resp = _fetch_optional(
+        http,
+        f"{base}/v1/genes/{sym}.md",
+        token,
+        expected_404_error="markdown_not_found",
+        route="markdown",
+    )
+    md_bytes = md_resp.content if md_resp is not None else None
+
     return Served(
-        record_bytes=rec.content,
-        record=rec.json(),
-        evidence_bytes=ev.content if ev else None,
-        evidence=ev.json() if ev else None,
-        md_bytes=md.content if md else None,
+        gene_symbol=sym,
+        record_bytes=rec_resp.content,
+        record=rec,
+        evidence_bytes=evidence_bytes,
+        evidence=evidence,
+        md_bytes=md_bytes,
     )
 
 
@@ -94,9 +189,9 @@ def archive_gene(
     if served is None:
         return ArchiveResult(symbol, "not_annotated", None)
 
+    sym = served.gene_symbol
     rec = served.record
-    gene = rec.get("gene") or {}
-    sym = gene.get("hgnc_symbol") or symbol
+    gene = rec["gene"]
     json_hash = content_hash_record(rec)
     evidence_hash = (
         content_hash_evidence(served.evidence) if served.evidence is not None else None
@@ -131,7 +226,7 @@ def archive_gene(
         json_hash,
         evidence_hash,
         md_hash,
-        datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
         source,
         rec.get("schema_version"),
         rec.get("prompt_corpus_version"),
@@ -145,10 +240,17 @@ def archive_gene(
             raise
         revision = store.insert_revision(params)
 
+    urls = [f"/v1/genes/{sym}/revisions", "/v1/releases"]
     if revision is None:
+        # Another writer (or a retried-but-already-committed insert) beat
+        # us to this exact content. Nothing of ours landed, but the gene's
+        # cached surfaces may still be stale relative to that other write,
+        # so purge unconditionally rather than only on our own inserts.
         latest = store.latest(sym)
+        if purge is not None:
+            purge(urls)
         return ArchiveResult(sym, "unchanged", latest.revision if latest else None)
     if purge is not None:
-        purge([f"/v1/genes/{sym}/revisions", "/v1/releases"])
+        purge(urls)
     logger.info("archived %s revision %d (%s)", sym, revision, source)
     return ArchiveResult(sym, "created", revision)

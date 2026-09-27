@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import cast
 
 import httpx
 import pytest
@@ -10,6 +11,7 @@ import pytest
 from accessible_surfaceome.cloud.d1_client import D1Error
 from accessible_surfaceome.cloud.record_history.archive import (
     BYPASS_HEADER,
+    BYPASS_HONORED_HEADER,
     archive_gene,
 )
 from accessible_surfaceome.cloud.record_history.hashing import content_hash_record
@@ -52,22 +54,46 @@ class FakeStore:
         return (self._latest.revision if self._latest else 0) + 1
 
 
+def _latest_from(params: list[object], *, revision: int) -> LatestRevision:
+    """Typed reconstruction of a `LatestRevision` from a captured insert's
+    params list (whose element type is `object`, since `RevisionStore` is a
+    structural Protocol) — avoids `ty` flagging `object` where `str | None`
+    is expected."""
+    return LatestRevision(
+        revision=revision,
+        json_hash=cast(str, params[2]),
+        evidence_hash=cast("str | None", params[3]),
+        md_hash=cast("str | None", params[4]),
+    )
+
+
 def _http(
-    record=RECORD, evidence=EVIDENCE, md=MD, seen: list | None = None
+    record=RECORD,
+    evidence=EVIDENCE,
+    md=MD,
+    seen: list | None = None,
+    honored: bool = True,
 ) -> httpx.Client:
     def handler(req: httpx.Request) -> httpx.Response:
         if seen is not None:
             seen.append(req)
         path = req.url.path
         if path.endswith("/v1/genes/EGFR"):
-            return httpx.Response(200, json=record) if record else httpx.Response(404)
-        if path.endswith("/v1/genes/EGFR/evidence"):
-            return (
-                httpx.Response(200, json=evidence) if evidence else httpx.Response(404)
+            headers = {BYPASS_HONORED_HEADER: "1"} if honored else {}
+            if record:
+                return httpx.Response(200, json=record, headers=headers)
+            return httpx.Response(
+                404, json={"error": "gene_not_annotated"}, headers=headers
             )
+        if path.endswith("/v1/genes/EGFR/evidence"):
+            if evidence:
+                return httpx.Response(200, json=evidence)
+            return httpx.Response(404, json={"error": "gene_not_annotated"})
         if path.endswith("/v1/genes/EGFR.md"):
-            return httpx.Response(200, text=md) if md else httpx.Response(404)
-        return httpx.Response(404)
+            if md:
+                return httpx.Response(200, text=md)
+            return httpx.Response(404, json={"error": "markdown_not_found"})
+        return httpx.Response(404, json={"error": "route_not_found"})
 
     return httpx.Client(transport=httpx.MockTransport(handler))
 
@@ -97,10 +123,7 @@ def test_first_archive_writes_three_blobs_and_revision_one() -> None:
 def test_unchanged_writes_nothing() -> None:
     first = FakeStore()
     _run(first, _http())
-    p = first.inserts[0]
-    latest = LatestRevision(
-        revision=4, json_hash=p[2], evidence_hash=p[3], md_hash=p[4]
-    )
+    latest = _latest_from(first.inserts[0], revision=4)
     store = FakeStore(latest)
     result = _run(store, _http())
     assert (result.status, result.revision) == ("unchanged", 4)
@@ -110,10 +133,7 @@ def test_unchanged_writes_nothing() -> None:
 def test_timestamp_only_change_is_unchanged() -> None:
     first = FakeStore()
     _run(first, _http())
-    p = first.inserts[0]
-    latest = LatestRevision(
-        revision=1, json_hash=p[2], evidence_hash=p[3], md_hash=p[4]
-    )
+    latest = _latest_from(first.inserts[0], revision=1)
     bumped = {**RECORD, "record_generated_at": "2026-10-01T00:00:00Z"}
     md2 = MD.replace("2026-09-27T00:00:00Z", "2026-10-01T00:00:00Z")
     assert _run(FakeStore(latest), _http(record=bumped, md=md2)).status == "unchanged"
@@ -135,7 +155,10 @@ def test_not_annotated_gene() -> None:
 def test_lost_race_is_retried_once() -> None:
     store = FakeStore()
     store.fail_insert_once = True
-    assert _run(store, _http()).status == "created"
+    result = _run(store, _http())
+    assert result.status == "created"
+    assert result.revision == 1
+    assert len(store.inserts) == 1
 
 
 def test_missing_token_refuses() -> None:
@@ -149,3 +172,128 @@ def test_server_error_propagates() -> None:
     http = httpx.Client(transport=httpx.MockTransport(lambda _: httpx.Response(503)))
     with pytest.raises(httpx.HTTPStatusError):
         _run(FakeStore(), http)
+
+
+def test_uses_canonical_symbol_for_followup_fetches() -> None:
+    """The record route may be reached with a non-canonical casing (e.g. a
+    caller-supplied "egfr"), but the Markdown route is matched exactly
+    against its R2 key — so evidence and .md must be re-fetched with the
+    record's own gene.hgnc_symbol, not the caller's symbol."""
+    seen_syms: list[str] = []
+
+    class TrackingStore(FakeStore):
+        def latest(self, gene_symbol: str) -> LatestRevision | None:
+            seen_syms.append(gene_symbol)
+            return super().latest(gene_symbol)
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        path = req.url.path
+        if path.endswith("/v1/genes/egfr"):
+            return httpx.Response(
+                200, json=RECORD, headers={BYPASS_HONORED_HEADER: "1"}
+            )
+        if path.endswith("/v1/genes/EGFR/evidence"):
+            return httpx.Response(200, json=EVIDENCE)
+        if path.endswith("/v1/genes/EGFR.md"):
+            return httpx.Response(200, text=MD)
+        return httpx.Response(404, json={"error": "route_not_found"})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    store = TrackingStore()
+    result = archive_gene(
+        "egfr", source="sweep", http=http, store=store, token="tok", base=BASE
+    )
+    assert result.status == "created"
+    assert seen_syms == ["EGFR"]
+    assert store.inserts[0][0] == "EGFR"
+    assert store.inserts[0][4] is not None  # md_hash
+    assert len(store.blobs) == 3
+
+
+def test_missing_bypass_honored_header_raises() -> None:
+    store = FakeStore()
+    with pytest.raises(ArchiveError, match="bypass not honoured"):
+        _run(store, _http(honored=False))
+    assert store.blobs == {} and store.inserts == []
+
+
+def test_wrong_404_reason_on_record_raises() -> None:
+    def handler(req: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            404, json={"error": "route_not_found"}, headers={BYPASS_HONORED_HEADER: "1"}
+        )
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    store = FakeStore()
+    with pytest.raises(ArchiveError, match="unexpected 404"):
+        _run(store, http)
+    assert store.blobs == {} and store.inserts == []
+
+
+def test_wrong_404_reason_on_md_raises() -> None:
+    def handler(req: httpx.Request) -> httpx.Response:
+        path = req.url.path
+        if path.endswith("/v1/genes/EGFR"):
+            return httpx.Response(
+                200, json=RECORD, headers={BYPASS_HONORED_HEADER: "1"}
+            )
+        if path.endswith("/v1/genes/EGFR/evidence"):
+            return httpx.Response(200, json=EVIDENCE)
+        if path.endswith("/v1/genes/EGFR.md"):
+            return httpx.Response(404, json={"error": "markdown_unavailable"})
+        return httpx.Response(404, json={"error": "route_not_found"})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    store = FakeStore()
+    with pytest.raises(ArchiveError, match="unexpected 404"):
+        _run(store, http)
+    assert store.blobs == {} and store.inserts == []
+
+
+def test_evidence_5xx_aborts() -> None:
+    def handler(req: httpx.Request) -> httpx.Response:
+        path = req.url.path
+        if path.endswith("/v1/genes/EGFR"):
+            return httpx.Response(
+                200, json=RECORD, headers={BYPASS_HONORED_HEADER: "1"}
+            )
+        if path.endswith("/v1/genes/EGFR/evidence"):
+            return httpx.Response(503)
+        return httpx.Response(404, json={"error": "route_not_found"})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    store = FakeStore()
+    with pytest.raises(httpx.HTTPStatusError):
+        _run(store, http)
+    assert store.blobs == {} and store.inserts == []
+
+
+def test_non_unique_d1_error_propagates() -> None:
+    class ExplodingStore(FakeStore):
+        def insert_revision(self, params: list[object]) -> int | None:
+            raise D1Error("SQLITE_ERROR: database is locked")
+
+    with pytest.raises(D1Error, match="database is locked"):
+        _run(ExplodingStore(), _http())
+
+
+def test_insert_returns_none_calls_purge_and_reads_latest() -> None:
+    """A ``None`` from ``insert_revision`` without an exception means
+    another writer (or a retried-but-already-committed insert) landed the
+    identical content between our `latest()` check and our insert attempt.
+    We report the now-current revision as unchanged, but still purge —
+    that other writer's content may not have been purged yet."""
+
+    class RacedStore(FakeStore):
+        def insert_revision(self, params: list[object]) -> int | None:
+            self.inserts.append(params)
+            return None
+
+    latest = LatestRevision(
+        revision=7, json_hash="stale", evidence_hash=None, md_hash=None
+    )
+    store = RacedStore(latest)
+    purged: list[list[str]] = []
+    result = _run(store, _http(), purge=purged.append)
+    assert (result.status, result.revision) == ("unchanged", 7)
+    assert purged == [["/v1/genes/EGFR/revisions", "/v1/releases"]]
