@@ -146,6 +146,25 @@ immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
 Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
 either soft-skips with a warning.
 
+**Record history + numbered data releases.** Every distinct state the API
+served for a gene (record, `/evidence` ledger, `.md` export) is archived
+write-once to R2 bucket `surfaceome-record-history`
+(`records/sha256/{hash}.{json|md}`), with one `record_revision` row per
+actual change in public D1
+([`cloud/record_history/`](src/accessible_surfaceome/cloud/record_history/)).
+`publish_record` archives after every publish (needs
+`ARCHIVE_BYPASS_TOKEN`; a miss warns, never fails the publish). Anything
+that writes `surface_annotation` directly, or bulk-updates a deterministic
+table the Worker joins at serve time, must be followed by
+`uv run python scripts/cloud/sweep_record_history.py --execute` or those
+states never enter history. Numbered releases
+(`data_release`/`data_release_member`) are cut with
+`scripts/release/cut_data_release.py --version X.Y.Z` (after bumping
+`pyproject.toml`); it drafts, never publishes, the Zenodo data-record
+version. History endpoints are path-based only (the zone cache rule
+ignores query strings): `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`,
+`/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]`.
+
 `scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
 rewrites whole tables that back cohort endpoints — and it purges those
 after a successful sync via `purge_cohort_surfaces` (`--no-purge` to skip).
@@ -157,7 +176,10 @@ published `?run_id=` variants — it is the one route wrapped with
 deliberately excluded. `stale-while-revalidate=86400` sits on top of every
 TTL, so an unpurged 1-day surface can answer stale for a second day.
 `tests/test_cohort_cache_purge.py` pins the map against both the sync
-script's table groups and the Worker's `CACHE_TTL_LONG` routes.
+script's table groups and the Worker's `CACHE_TTL_LONG` routes. The shared
+`purge_paths` helper purges the Worker's synthetic edge cache keys, not the
+public URLs — a purge that targeted the public URL used to silently evict
+nothing.
 
 The zone **cache rule** (ignore query
 strings) is applied by `scripts/cloud/apply_cf_edge_rules.py` (dry-run by

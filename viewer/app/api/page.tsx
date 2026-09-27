@@ -261,6 +261,52 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
     ],
   },
   {
+    label: "History",
+    blurb:
+      "Record history + numbered data releases. Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/revisions",
+        anchor: "history",
+        summary:
+          "Every archived revision of this gene's served record (newest first), with the releases each belongs to.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions | jq '.current_revision, .revisions[0]'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/revisions/{n}",
+        summary:
+          "Revision n of the record, byte-for-byte as served; also /evidence and .md.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions/1 | jq '.gene.hgnc_symbol'",
+      },
+      {
+        method: "GET",
+        path: "/v1/releases",
+        summary:
+          "Numbered data releases with their GitHub tag and Zenodo version DOI.",
+        curl: "curl -s https://api.deliverome.org/surfaceome/v1/releases | jq '.releases'",
+      },
+      {
+        method: "GET",
+        path: "/v1/releases/{version}",
+        summary: "One release: metadata + the revision of every gene in it.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/releases/1.0.0 | jq '.n_genes, .zenodo_version_doi'",
+      },
+      {
+        method: "GET",
+        path: "/v1/releases/{version}/genes/{SYMBOL}",
+        summary:
+          "A gene as it was in that release; also /evidence and .md.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/ERBB2 | jq '.gene.hgnc_symbol'",
+      },
+    ],
+  },
+  {
     label: "Discovery & utility",
     blurb:
       "Self-describing entry points for agents and tooling. Start at /v1 to walk the whole surface without scraping this page; the site root also serves an llms.txt that points here.",
