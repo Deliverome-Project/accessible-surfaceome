@@ -76,11 +76,13 @@ DEFAULT_STABILITY_SAMPLE = 50
 STABILITY_SAMPLE_SEED = 0
 
 
-def annotated_genes(http: httpx.Client, token: str) -> list[str]:
+def annotated_genes(
+    http: httpx.Client, token: str, base: str = PUBLIC_API_BASE
+) -> list[str]:
     # /v1/genes is a public route — only attach the bypass header when a
     # token is actually configured, so the dry-run listing works tokenless.
     headers = {BYPASS_HEADER: token} if token else None
-    resp = http.get(f"{PUBLIC_API_BASE}/v1/genes", headers=headers)
+    resp = http.get(f"{base}/v1/genes", headers=headers)
     resp.raise_for_status()
     return [g["gene_symbol"] for g in resp.json()["genes"]]
 
@@ -238,14 +240,16 @@ def _served_hashes(served: Served) -> tuple[str, str | None, str | None]:
     return json_hash, evidence_hash, md_hash
 
 
-def _check_gene_stability(symbol: str, *, http: httpx.Client, token: str) -> list[str]:
+def _check_gene_stability(
+    symbol: str, *, http: httpx.Client, token: str, base: str = PUBLIC_API_BASE
+) -> list[str]:
     """Fetches ``symbol`` twice and returns the parts whose hash disagreed.
 
     Read-only: only calls ``fetch_served`` (a GET), never touches the
     store/R2/D1. An empty list means the two fetches hashed identically.
     """
-    first = fetch_served(symbol, http=http, token=token)
-    second = fetch_served(symbol, http=http, token=token)
+    first = fetch_served(symbol, http=http, token=token, base=base)
+    second = fetch_served(symbol, http=http, token=token, base=base)
     if first is None and second is None:
         return []
     if first is None or second is None:
@@ -269,6 +273,7 @@ def check_stability(
     http: httpx.Client,
     token: str,
     workers: int,
+    base: str = PUBLIC_API_BASE,
 ) -> dict[str, list[str]]:
     """Read-only stability check: never touches the store/R2/D1.
 
@@ -287,7 +292,7 @@ def check_stability(
     if genes is not None:
         todo = genes
     else:
-        all_genes = annotated_genes(http, token)
+        all_genes = annotated_genes(http, token, base)
         if sample >= len(all_genes):
             todo = all_genes
         else:
@@ -295,7 +300,7 @@ def check_stability(
     unstable: dict[str, list[str]] = {}
     with ThreadPoolExecutor(workers) as pool:
         futs = {
-            pool.submit(_check_gene_stability, g, http=http, token=token): g
+            pool.submit(_check_gene_stability, g, http=http, token=token, base=base): g
             for g in todo
         }
         for fut in as_completed(futs):
@@ -332,7 +337,17 @@ def main() -> None:
         default=DEFAULT_STABILITY_SAMPLE,
         help="genes to sample for --check-stability (ignored when --genes is given)",
     )
+    ap.add_argument(
+        "--base",
+        default=PUBLIC_API_BASE,
+        help=(
+            "API base for --check-stability only (e.g. a local `wrangler dev` of an "
+            "undeployed Worker); a real sweep always archives the public API"
+        ),
+    )
     args = ap.parse_args()
+    if args.base != PUBLIC_API_BASE and not args.check_stability:
+        ap.error("--base is only allowed with --check-stability")
     genes = [g.strip() for g in args.genes.split(",")] if args.genes else None
     if args.check_stability:
         load_env()
@@ -345,6 +360,7 @@ def main() -> None:
                 http=http,
                 token=token,
                 workers=args.workers,
+                base=args.base.rstrip("/"),
             )
         raise SystemExit(1 if unstable else 0)
     counts = sweep(genes, execute=args.execute, workers=args.workers)

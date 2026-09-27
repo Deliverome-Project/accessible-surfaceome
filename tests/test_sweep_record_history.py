@@ -50,7 +50,9 @@ class _FakeCloudRevisionStore:
 
 def test_dry_run_does_not_call_archive_gene(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(_mod, "load_env", lambda: None)
-    monkeypatch.setattr(_mod, "annotated_genes", lambda http, token: ["EGFR", "CD63"])
+    monkeypatch.setattr(
+        _mod, "annotated_genes", lambda http, token, base=None: ["EGFR", "CD63"]
+    )
 
     def _boom(*_a: object, **_kw: object) -> None:
         raise AssertionError("archive_gene must not be called during a dry-run")
@@ -69,7 +71,9 @@ def test_dry_run_works_without_a_token(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(_mod, "load_env", lambda: None)
     seen_tokens: list[str] = []
 
-    def _fake_annotated_genes(http: object, token: str) -> list[str]:
+    def _fake_annotated_genes(
+        http: object, token: str, base: str | None = None
+    ) -> list[str]:
         seen_tokens.append(token)
         return ["EGFR"]
 
@@ -131,7 +135,9 @@ def test_aborts_after_n_consecutive_failures_of_any_kind(
 
     monkeypatch.setenv("ARCHIVE_BYPASS_TOKEN", "tok")
     monkeypatch.setattr(_mod, "load_env", lambda: None)
-    monkeypatch.setattr(_mod, "annotated_genes", lambda http, token: list(genes))
+    monkeypatch.setattr(
+        _mod, "annotated_genes", lambda http, token, base=None: list(genes)
+    )
     monkeypatch.setattr(_mod, "archive_gene", _fake_archive_gene)
     monkeypatch.setattr(_mod, "CloudRevisionStore", _FakeCloudRevisionStore)
     monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
@@ -167,7 +173,9 @@ def test_check_stability_all_stable_returns_empty(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.setattr(
-        _mod, "fetch_served", lambda symbol, *, http, token: _served(symbol, 1)
+        _mod,
+        "fetch_served",
+        lambda symbol, *, http, token, base=None: _served(symbol, 1),
     )
 
     with httpx.Client() as http:
@@ -184,7 +192,9 @@ def test_check_stability_names_the_gene_that_flips(
 ) -> None:
     calls: dict[str, int] = {}
 
-    def _fake_fetch_served(symbol: str, *, http: object, token: str) -> Served:
+    def _fake_fetch_served(
+        symbol: str, *, http: object, token: str, base: str | None = None
+    ) -> Served:
         calls[symbol] = calls.get(symbol, 0) + 1
         # CD63's second fetch differs from its first; EGFR is stable.
         value = calls[symbol] if symbol == "CD63" else 1
@@ -221,7 +231,9 @@ def test_check_stability_never_touches_the_store(
         _mod, "purge_paths", lambda *a, **kw: (_ for _ in ()).throw(AssertionError())
     )
     monkeypatch.setattr(
-        _mod, "fetch_served", lambda symbol, *, http, token: _served(symbol, 1)
+        _mod,
+        "fetch_served",
+        lambda symbol, *, http, token, base=None: _served(symbol, 1),
     )
 
     with httpx.Client() as http:
@@ -236,12 +248,17 @@ def test_check_stability_sample_is_seeded_and_reproducible(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     all_genes = [f"GENE{i}" for i in range(20)]
-    monkeypatch.setattr(_mod, "annotated_genes", lambda http, token: list(all_genes))
+    monkeypatch.setattr(
+        _mod, "annotated_genes", lambda http, token, base=None: list(all_genes)
+    )
     seen: list[str] = []
     monkeypatch.setattr(
         _mod,
         "fetch_served",
-        lambda symbol, *, http, token: (seen.append(symbol), _served(symbol, 1))[1],
+        lambda symbol, *, http, token, base=None: (
+            seen.append(symbol),
+            _served(symbol, 1),
+        )[1],
     )
 
     with httpx.Client() as http:
@@ -273,7 +290,9 @@ def test_main_check_stability_honours_genes_and_exits_nonzero_when_unstable(
     )
     calls = {"n": 0}
 
-    def _fake_fetch_served(symbol: str, *, http: object, token: str) -> Served:
+    def _fake_fetch_served(
+        symbol: str, *, http: object, token: str, base: str | None = None
+    ) -> Served:
         calls["n"] += 1
         return _served(symbol, calls["n"])  # differs across the two fetches
 
@@ -294,7 +313,9 @@ def test_main_check_stability_exits_zero_when_stable(
         sys, "argv", ["sweep_record_history.py", "--check-stability", "--genes", "EGFR"]
     )
     monkeypatch.setattr(
-        _mod, "fetch_served", lambda symbol, *, http, token: _served(symbol, 1)
+        _mod,
+        "fetch_served",
+        lambda symbol, *, http, token, base=None: _served(symbol, 1),
     )
 
     with pytest.raises(SystemExit) as exc_info:
@@ -322,3 +343,14 @@ def test_annotated_genes_sends_bypass_header_only_when_token_set() -> None:
         genes = _mod.annotated_genes(http, "t")
         assert genes == ["EGFR", "CD63"]
         assert seen_headers[-1][_mod.BYPASS_HEADER] == "t"
+
+
+def test_base_only_allowed_with_check_stability(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        sys, "argv", ["sweep", "--base", "http://127.0.0.1:1", "--execute"]
+    )
+    with pytest.raises(SystemExit) as exc:
+        _mod.main()
+    assert exc.value.code == 2
