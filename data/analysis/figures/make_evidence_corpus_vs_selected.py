@@ -255,27 +255,12 @@ def main() -> None:
         mask = verdicts == verdict
         ax.scatter(
             found[mask], selected[mask],
-            s=70, alpha=0.5, edgecolor="white", linewidth=0.6,
+            s=70, alpha=0.72, edgecolor="white", linewidth=0.6,
             color=VERDICT_COLOR[verdict],
             label=f"{VERDICT_LABEL[verdict]}  (n={counts.get(verdict, 0)})",
             zorder=3 + VERDICT_ORDER.index(verdict),
         )
 
-    # Reference lines at canonical selection rates (5%, 10%) — higher
-    # rates would exit the visible window at x≪600 and either need
-    # their labels clipped or stretch the canvas vertically. Keep only
-    # the two rates the bulk of the data actually crosses.
-    x_ref = np.geomspace(25, 600, 200)
-    # Label each iso-line with what the percentage MEANS, not a bare "5%".
-    # A reviewer asked "specify what the curves indicated with percentages
-    # are" — they are constant selection rates (selected / found), so a
-    # gene sitting on the 10% line had one paper in ten promoted from the
-    # discovery corpus to the evidence ledger.
-    for rate, label in [(0.05, "5% selected"), (0.10, "10% selected")]:
-        ax.plot(x_ref, rate * x_ref, ls=":", lw=1.0, color=BRAND_NEUTRAL, alpha=0.5, zorder=2)
-        y_at_right = rate * 540
-        ax.text(540, y_at_right - 1.5, label, color=BRAND_NEUTRAL,
-                fontsize=11, ha="right", va="top", alpha=0.75)
 
     ax.set_xscale("log")
     ax.set_xlim(25, 600)
@@ -302,7 +287,6 @@ def main() -> None:
 
     fig.text(
         0.5, -0.04,
-        f"Dotted lines mark a constant selection rate (papers selected \u00f7 papers found). "
         f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
         f"median {int(np.median(selected))} selected); n={len(data)} genes "
         f"(full deep-dive cohort).",
