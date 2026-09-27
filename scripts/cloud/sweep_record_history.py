@@ -14,11 +14,13 @@ Two guardrails on top of the plain per-gene archive:
   clear error instead of walking the whole cohort and recording ~5,000
   identical per-gene ``ArchiveError`` failures (``archive_gene`` itself
   would raise one per gene for a missing token).
-* If ``ABORT_AFTER_N_CONSECUTIVE_ARCHIVE_ERRORS`` genes in a row come back
-  with ``ArchiveError`` (wrong token, or a Worker too old to echo the
-  bypass-honoured header), the sweep stops calling the API for the rest of
-  the cohort — a misconfiguration should fail loud after a handful of
-  genes, not grind through every gene making the same doomed request.
+* If ``ABORT_AFTER_N_CONSECUTIVE_FAILURES`` genes in a row raise ANY
+  exception — ``ArchiveError`` (wrong token, or a Worker too old to echo
+  the bypass-honoured header), a ``D1Error`` (public D1 down/misbehaving),
+  an ``httpx.HTTPError`` (Worker unreachable or 5xx-ing), or anything else
+  — the sweep stops calling the API for the rest of the cohort. A
+  misconfiguration OR an outage should fail loud after a handful of genes,
+  not grind through every remaining gene making the same doomed request.
 
 The dry-run genes list (``/v1/genes``) is a public route, so it works
 without any token; the bypass header is only sent when one is configured.
@@ -42,14 +44,13 @@ from accessible_surfaceome.cloud.record_history.archive import (
     archive_gene,
 )
 from accessible_surfaceome.cloud.record_history.store import (
-    ArchiveError,
     CloudRevisionStore,
     RevisionStore,
 )
 from accessible_surfaceome.cloud.surface_annotation import purge_paths
 from accessible_surfaceome.env import load_env
 
-ABORT_AFTER_N_CONSECUTIVE_ARCHIVE_ERRORS = 5
+ABORT_AFTER_N_CONSECUTIVE_FAILURES = 5
 
 
 def annotated_genes(http: httpx.Client, token: str) -> list[str]:
@@ -61,14 +62,18 @@ def annotated_genes(http: httpx.Client, token: str) -> list[str]:
     return [g["gene_symbol"] for g in resp.json()["genes"]]
 
 
-class _ConsecutiveArchiveErrorGuard:
-    """Trips once, after ``threshold`` consecutive ``ArchiveError``s.
+class _ConsecutiveFailureGuard:
+    """Trips once, after ``threshold`` consecutive failures of ANY kind.
 
-    Checked at the top of every submitted task rather than only observed
-    after the fact from the orchestrating thread — so once it trips, every
-    task still queued behind it skips its HTTP call deterministically, even
-    with a single worker, instead of racing the main thread's bookkeeping
-    loop to decide who gets there first.
+    Deliberately not scoped to ``ArchiveError`` — a down public D1
+    (``D1Error``) or an unreachable/5xx-ing Worker (``httpx.HTTPError``) is
+    exactly the kind of systemic failure this guard exists to catch, same
+    as a bad ``ARCHIVE_BYPASS_TOKEN``. Checked at the top of every submitted
+    task rather than only observed after the fact from the orchestrating
+    thread — so once it trips, every task still queued behind it skips its
+    HTTP call deterministically, even with a single worker, instead of
+    racing the main thread's bookkeeping loop to decide who gets there
+    first.
     """
 
     def __init__(self, threshold: int) -> None:
@@ -83,18 +88,18 @@ class _ConsecutiveArchiveErrorGuard:
         with self._lock:
             return self._tripped
 
-    def record_archive_error(self, exc: Exception) -> None:
+    def record_failure(self, exc: Exception) -> None:
         with self._lock:
             self._streak += 1
             if self._streak >= self._threshold and not self._tripped:
                 self._tripped = True
                 self._trip_message = (
-                    f"{self._threshold} genes in a row failed with ArchiveError — "
-                    f"aborting the rest of the sweep instead of repeating the same "
-                    f"failure across the cohort. Last error: {exc}"
+                    f"{self._threshold} genes in a row failed — aborting the rest "
+                    f"of the sweep instead of repeating the same failure across "
+                    f"the cohort. Last error ({type(exc).__name__}): {exc}"
                 )
 
-    def record_other(self) -> None:
+    def record_success(self) -> None:
         with self._lock:
             self._streak = 0
 
@@ -110,7 +115,7 @@ def _archive_or_skip(
     http: httpx.Client,
     store: RevisionStore,
     token: str,
-    guard: _ConsecutiveArchiveErrorGuard,
+    guard: _ConsecutiveFailureGuard,
 ) -> ArchiveResult | None:
     """Runs inside the pool. Returns ``None`` for a gene skipped post-abort."""
     if guard.tripped:
@@ -119,11 +124,11 @@ def _archive_or_skip(
         result = archive_gene(
             symbol, source="sweep", http=http, store=store, token=token
         )
-    except ArchiveError as exc:
-        guard.record_archive_error(exc)
+    except Exception as exc:  # noqa: BLE001 — any failure counts toward the abort guard
+        guard.record_failure(exc)
         raise
     else:
-        guard.record_other()
+        guard.record_success()
         return result
 
 
@@ -144,7 +149,7 @@ def sweep(genes: list[str] | None, *, execute: bool, workers: int) -> Counter[st
         if not execute:
             print(f"[dry-run] would archive {len(todo)} genes; pass --execute.")
             return counts
-        guard = _ConsecutiveArchiveErrorGuard(ABORT_AFTER_N_CONSECUTIVE_ARCHIVE_ERRORS)
+        guard = _ConsecutiveFailureGuard(ABORT_AFTER_N_CONSECUTIVE_FAILURES)
         with (
             CloudRevisionStore.from_env() as store,
             ThreadPoolExecutor(workers) as pool,
@@ -173,7 +178,16 @@ def sweep(genes: list[str] | None, *, execute: bool, workers: int) -> Counter[st
                     print(f"FAILED {g}: {exc}")
                 else:
                     if result is None:
+                        # A gene skipped post-abort is a sweep failure, not
+                        # merely a no-op — count it into "failed" explicitly
+                        # (not just relying on the N real failures that
+                        # tripped the guard already being >0) so a caller
+                        # reading `counts["failed"]` alone sees the full
+                        # blast radius of the abort, and so main()'s exit
+                        # code reflects it without depending on that
+                        # invariant either.
                         counts["skipped_after_abort"] += 1
+                        counts["failed"] += 1
                     else:
                         counts[result.status] += 1
                 msg = guard.pop_trip_message()

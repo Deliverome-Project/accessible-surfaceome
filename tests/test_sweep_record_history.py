@@ -12,8 +12,10 @@ from __future__ import annotations
 
 import importlib.util
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 
+import httpx
 import pytest
 
 from accessible_surfaceome.cloud.record_history.store import ArchiveError
@@ -98,9 +100,24 @@ def test_execute_without_token_exits_nonzero(monkeypatch: pytest.MonkeyPatch) ->
     assert exc_info.value.code != 0
 
 
-def test_aborts_after_n_consecutive_archive_errors(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+@pytest.mark.parametrize(
+    "make_error",
+    [
+        lambda symbol: ArchiveError(f"bad bypass token for {symbol}"),
+        lambda symbol: httpx.ConnectError(f"connection refused for {symbol}"),
+    ],
+    ids=["archive_error", "non_archive_error__httpx_connect_error"],
+)
+def test_aborts_after_n_consecutive_failures_of_any_kind(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    make_error: Callable[[str], Exception],
 ) -> None:
+    # The guard must trip on ANY exception type — ArchiveError (a bad
+    # bypass token) and, just as importantly, something like
+    # httpx.ConnectError (the Worker itself is down/unreachable) or a
+    # D1Error (public D1 down). It's the systemic-failure signal, not the
+    # exception class, that matters.
     genes = [f"GENE{i}" for i in range(20)]
     calls: list[str] = []
 
@@ -108,7 +125,7 @@ def test_aborts_after_n_consecutive_archive_errors(
         symbol: str, *, source: str, http: object, store: object, token: str
     ) -> None:
         calls.append(symbol)
-        raise ArchiveError(f"bad bypass token for {symbol}")
+        raise make_error(symbol)
 
     monkeypatch.setenv("ARCHIVE_BYPASS_TOKEN", "tok")
     monkeypatch.setattr(_mod, "load_env", lambda: None)
@@ -123,8 +140,32 @@ def test_aborts_after_n_consecutive_archive_errors(
     # a race against the orchestrating thread's own bookkeeping.
     counts = _mod.sweep(None, execute=True, workers=1)
 
-    n = _mod.ABORT_AFTER_N_CONSECUTIVE_ARCHIVE_ERRORS
+    n = _mod.ABORT_AFTER_N_CONSECUTIVE_FAILURES
     assert len(calls) == n
-    assert counts["failed"] == n
+    # Every skipped-after-abort gene is folded into "failed" too (not just
+    # the n real failures that tripped the guard), so the aborted sweep is
+    # explicitly a failure end to end.
+    assert counts["failed"] == len(genes)
     assert counts["skipped_after_abort"] == len(genes) - n
     assert "ABORTING" in capsys.readouterr().out
+
+
+def test_annotated_genes_sends_bypass_header_only_when_token_set() -> None:
+    seen_headers: list[httpx.Headers] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen_headers.append(request.headers)
+        return httpx.Response(
+            200,
+            json={"genes": [{"gene_symbol": "EGFR"}, {"gene_symbol": "CD63"}]},
+        )
+
+    transport = httpx.MockTransport(handler)
+    with httpx.Client(transport=transport) as http:
+        genes = _mod.annotated_genes(http, "")
+        assert genes == ["EGFR", "CD63"]
+        assert _mod.BYPASS_HEADER not in seen_headers[-1]
+
+        genes = _mod.annotated_genes(http, "t")
+        assert genes == ["EGFR", "CD63"]
+        assert seen_headers[-1][_mod.BYPASS_HEADER] == "t"
