@@ -104,18 +104,85 @@ def _load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     found = data["papers_found"].to_numpy()
     selected = data["papers_selected"].to_numpy()
     verdicts = data["evidence_grade"].to_numpy()
-    return found, selected, verdicts
+    return found, selected, verdicts, data
 
 
-def make_plot() -> tuple[plt.Figure, plt.Axes]:
+
+# ── Panel b: tier composition within literature-size strata ────────────────
+# A reviewer asked to separate "well studied" from "strong evidence": the
+# low-literature flag says which genes are sparse, but not what the pipeline
+# concluded about them. The manuscript reports the canonical rate per stratum
+# in prose; showing the full composition makes the other tiers visible, and
+# the clearest signal is `low` collapsing from ~60% to ~11% across strata —
+# sparse literature produces weak calls, not negative ones.
+#
+# Tier colours MUST match Figure 5a and Supp S13; a tier name carrying a
+# different colour across figures is exactly the inconsistency a reviewer
+# caught on S11.
+_STRATA_EDGES = [0, 75, 100, 150, 200, 10**9]
+_STRATA_LABELS = ["<75", "75-100", "100-150", "150-200", ">200"]
+_TIER_ORDER_B = ["canonical", "likely", "low", "no", "uncertain"]
+_TIER_COLOR_B = {
+    "canonical": "#2E7A55",   # success green — strict tier
+    "likely":    "#3D6B60",   # teal-mid — broader tier
+    "low":       "#C99A5B",   # amber-tan — weak evidence
+    "no":        "#9C8C88",   # lifted neutral — leaned not-surface
+    "uncertain": "#C7BDB6",   # light warm grey — undetermined
+}
+
+
+def _draw_tier_composition(ax, data) -> None:
+    import pandas as _pd
+
+    strata = _pd.cut(data["papers_found"], bins=_STRATA_EDGES,
+                     labels=_STRATA_LABELS, right=False)
+    ct = _pd.crosstab(strata, data["tier"], normalize="index") * 100
+    n_per = strata.value_counts().reindex(_STRATA_LABELS)
+
+    bottom = [0.0] * len(_STRATA_LABELS)
+    x = range(len(_STRATA_LABELS))
+    for tier in _TIER_ORDER_B:
+        if tier not in ct.columns:
+            continue
+        vals = ct.reindex(_STRATA_LABELS)[tier].fillna(0).to_numpy()
+        ax.bar(x, vals, bottom=bottom, width=0.72,
+               color=_TIER_COLOR_B[tier], edgecolor="white", linewidth=0.8,
+               label=tier, zorder=2)
+        for xi, (v, b) in enumerate(zip(vals, bottom, strict=True)):
+            if v >= 6:  # only label a segment tall enough to hold the text
+                ax.text(xi, b + v / 2, f"{v:.0f}%", ha="center", va="center",
+                        fontsize=12, color="white", fontweight="semibold")
+        bottom = [b + v for b, v in zip(bottom, vals, strict=True)]
+
+    ax.set_xticks(list(x))
+    ax.set_xticklabels([f"{lab}\n(n={int(n_per[lab]):,})" for lab in _STRATA_LABELS],
+                       fontsize=14)
+    ax.set_xlabel("Papers found per gene  (discovery corpus)")
+    ax.set_ylabel("Share of genes\nin stratum (%)")
+    ax.set_ylim(0, 100)
+    ax.grid(axis="x", visible=False)
+    ax.legend(title="deep-dive surface tier", loc="upper center",
+              bbox_to_anchor=(0.5, -0.20), ncol=5, frameon=False,
+              fontsize=13, title_fontsize=14)
+
+
+def _panel_letter(ax, letter: str) -> None:
+    ax.text(-0.02, 1.04, letter, transform=ax.transAxes, fontsize=24,
+            fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
+
+
+def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
         "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
         "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 14,
     })
-    found, selected, verdicts = _load_data()
+    found, selected, verdicts, data = _load_data()
 
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, (ax, ax_b) = plt.subplots(
+        1, 2, figsize=(22, 8),
+        gridspec_kw={"width_ratios": [1.15, 1.0], "wspace": 0.22},
+    )
 
     # Plot in worst → best verdict order so the strong verdicts land on
     # top of the weak ones and aren't occluded.
@@ -179,9 +246,13 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 
-    sns.despine(ax=ax, top=True, right=True)
+    _draw_tier_composition(ax_b, data)
+    _panel_letter(ax, "a")
+    _panel_letter(ax_b, "b")
+    for _a in (ax, ax_b):
+        sns.despine(ax=_a, top=True, right=True)
     fig.tight_layout()
-    return fig, ax
+    return fig, (ax, ax_b)
 
 
 def main() -> None:
