@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -18,6 +19,26 @@ function resolveGitSha() {
   } catch {
     return "unknown";
   }
+}
+
+// Resolve the release version shown in the site-header badge from the
+// repo-root pyproject.toml — the single version string bumped ahead of
+// every GitHub release tag (mirrored into CITATION.cff + .zenodo.json).
+// Reading it at build time keeps the badge in step with the current
+// release instead of a literal that has to be remembered. Cloudflare
+// Pages clones the whole repo, so ../pyproject.toml is present there
+// too; RELEASE_VERSION overrides for builds outside a full checkout.
+function resolveReleaseVersion() {
+  if (process.env.RELEASE_VERSION) return process.env.RELEASE_VERSION.replace(/^v/, "");
+  try {
+    const toml = readFileSync(join(__dirname, "..", "pyproject.toml"), "utf8");
+    const m = toml.match(/^version\s*=\s*"([^"]+)"/m);
+    if (m) return m[1];
+  } catch {
+    // fall through
+  }
+  console.warn("[next.config] could not resolve release version; header badge hidden");
+  return "";
 }
 
 /** @type {import('next').NextConfig} */
@@ -50,6 +71,7 @@ const nextConfig = {
       process.env.NEXT_PUBLIC_FEEDBACK_API_BASE
       ?? "https://api.deliverome.org/surfaceome",
     NEXT_PUBLIC_GIT_SHA: resolveGitSha(),
+    NEXT_PUBLIC_RELEASE_VERSION: resolveReleaseVersion(),
   },
 };
 
