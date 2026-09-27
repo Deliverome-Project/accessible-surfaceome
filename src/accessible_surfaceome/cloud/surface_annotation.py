@@ -33,7 +33,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, urlparse
 
 import httpx
@@ -41,6 +41,9 @@ import httpx
 from accessible_surfaceome.cloud.d1_client import D1Config
 from accessible_surfaceome.paths import REPO_ROOT
 from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
+
+if TYPE_CHECKING:
+    from accessible_surfaceome.cloud.record_history.store import CloudRevisionStore
 
 logger = logging.getLogger(__name__)
 
@@ -883,7 +886,7 @@ def _heal_family_in_place(rec_dict: dict[str, Any]) -> bool:
     return healed
 
 
-def _open_revision_store():  # indirection so tests can stub it
+def _open_revision_store() -> CloudRevisionStore:  # indirection so tests can stub it
     from accessible_surfaceome.cloud.record_history.store import CloudRevisionStore
 
     return CloudRevisionStore.from_env()
