@@ -154,6 +154,150 @@ function checkSymbol(sym) {
   return sym.toUpperCase();
 }
 
+// --- Record history (spec docs/superpowers/specs/2026-09-27-record-history-design.md) ---
+// Archived bodies live write-once in the RECORD_HISTORY R2 bucket, named by
+// content hash, so they are cacheable forever. They are read straight from
+// R2 rather than through withEdgeCache, which would rebuild the response
+// with only Content-Type + Cache-Control and drop ETag / X-Surfaceome-*.
+const CACHE_TTL_IMMUTABLE = 31536000;  // 1 year
+const RELEASE_VERSION_OK = /^v?(\d+\.\d+\.\d+)$/;
+const REVISION_OK = /^[1-9]\d{0,5}$/;
+const HISTORY_BASE = "https://api.deliverome.org/surfaceome/v1";
+const REVISION_PARTS = {
+  record:   { col: "json_hash",     ext: "json", ct: "application/json; charset=utf-8" },
+  evidence: { col: "evidence_hash", ext: "json", ct: "application/json; charset=utf-8", missing: "evidence_not_archived" },
+  md:       { col: "md_hash",       ext: "md",   ct: "text/markdown; charset=utf-8",   missing: "markdown_not_archived" },
+};
+
+// The archiver (accessible_surfaceome.cloud.record_history) must see the
+// current D1 state, not a cached copy, and sweeps ~5k genes from one IP.
+// A request carrying the ARCHIVE_BYPASS_TOKEN secret skips both cache tiers
+// and the rate limiter. Without the exact secret nothing changes.
+function isArchiveBypass(request, env) {
+  const token = env?.ARCHIVE_BYPASS_TOKEN;
+  return Boolean(token) && request.headers.get("X-Archive-Bypass") === token;
+}
+
+function normalizeVersion(v) {
+  const m = RELEASE_VERSION_OK.exec(v || "");
+  return m ? m[1] : null;
+}
+
+async function archivedPart(env, row, part) {
+  const p = REVISION_PARTS[part];
+  const hash = row[p.col];
+  if (!hash) return notFound(p.missing);
+  if (!env.RECORD_HISTORY) return json({ error: "history_unavailable" }, { status: 503, ttl: 0 });
+  const obj = await env.RECORD_HISTORY.get(`records/sha256/${hash}.${p.ext}`);
+  if (!obj) return json({ error: "archive_body_missing" }, { status: 500, ttl: 0 });
+  return new Response(obj.body, {
+    status: 200,
+    headers: {
+      "Content-Type": p.ct,
+      "Cache-Control": `public, max-age=${CACHE_TTL_IMMUTABLE}, s-maxage=${CACHE_TTL_IMMUTABLE}, immutable`,
+      "ETag": `"${hash}"`,
+      "X-Surfaceome-Revision": String(row.revision),
+      "X-Surfaceome-Content-Hash": hash,
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+async function handleRevisionList(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const { results } = await env.DB.prepare(
+    `SELECT r.gene_symbol, r.hgnc_id, r.revision, r.published_at, r.source,
+            r.json_hash, r.evidence_hash, r.md_hash, r.schema_version, r.prompt_corpus_version,
+            (SELECT json_group_array(json_object('version', m.version,
+                                                 'zenodo_version_doi', d.zenodo_version_doi))
+               FROM data_release_member m JOIN data_release d ON d.version = m.version
+              WHERE m.gene_symbol = r.gene_symbol COLLATE NOCASE AND m.revision = r.revision) AS releases
+       FROM record_revision r
+      WHERE r.gene_symbol = ? COLLATE NOCASE
+      ORDER BY r.revision DESC`
+  ).bind(sym).all();
+  if (!results.length) return notFound("gene_not_annotated");
+  const g = results[0];
+  const base = `${HISTORY_BASE}/genes/${g.gene_symbol}/revisions`;
+  return json({
+    gene_symbol: g.gene_symbol,
+    hgnc_id: g.hgnc_id,
+    current_revision: g.revision,
+    revisions: results.map((r) => ({
+      revision: r.revision,
+      published_at: r.published_at,
+      source: r.source,
+      json_hash: r.json_hash,
+      evidence_hash: r.evidence_hash,
+      md_hash: r.md_hash,
+      schema_version: r.schema_version,
+      prompt_corpus_version: r.prompt_corpus_version,
+      releases: r.releases ? JSON.parse(r.releases) : [],
+      url: `${base}/${r.revision}`,
+      evidence_url: r.evidence_hash ? `${base}/${r.revision}/evidence` : null,
+      md_url: r.md_hash ? `${base}/${r.revision}.md` : null,
+    })),
+  });
+}
+
+async function handleRevisionBody(env, symbol, n, part) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  if (!REVISION_OK.test(n)) return badRequest("invalid_revision");
+  const row = await env.DB.prepare(
+    `SELECT revision, json_hash, evidence_hash, md_hash FROM record_revision
+      WHERE gene_symbol = ? COLLATE NOCASE AND revision = ?`
+  ).bind(sym, Number(n)).first();
+  if (!row) return notFound("revision_not_found");
+  return archivedPart(env, row, part);
+}
+
+async function handleReleaseList(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes
+       FROM data_release ORDER BY cut_at DESC`
+  ).all();
+  return json({ releases: results });
+}
+
+async function handleRelease(env, ver) {
+  const v = normalizeVersion(ver);
+  if (!v) return badRequest("invalid_version");
+  const rel = await env.DB.prepare(
+    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes
+       FROM data_release WHERE version = ?`
+  ).bind(v).first();
+  if (!rel) return notFound("release_not_found");
+  const { results } = await env.DB.prepare(
+    `SELECT m.gene_symbol, r.hgnc_id, m.revision, r.json_hash, r.evidence_hash, r.md_hash
+       FROM data_release_member m
+       JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
+      WHERE m.version = ? ORDER BY m.gene_symbol`
+  ).bind(v).all();
+  // Immutable once its Zenodo version is published; until then a short TTL
+  // so --set-doi shows up promptly.
+  const ttl = rel.zenodo_version_doi ? CACHE_TTL_IMMUTABLE : CACHE_TTL_SHORT;
+  return json({ ...rel, members: results }, { ttl });
+}
+
+async function handleReleaseGene(env, ver, symbol, part) {
+  const v = normalizeVersion(ver);
+  if (!v) return badRequest("invalid_version");
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const rel = await env.DB.prepare(`SELECT version FROM data_release WHERE version = ?`).bind(v).first();
+  if (!rel) return notFound("release_not_found");
+  const row = await env.DB.prepare(
+    `SELECT r.revision, r.json_hash, r.evidence_hash, r.md_hash
+       FROM data_release_member m
+       JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
+      WHERE m.version = ? AND m.gene_symbol = ? COLLATE NOCASE`
+  ).bind(v, sym).first();
+  if (!row) return notFound("gene_not_in_release");
+  return archivedPart(env, row, part);
+}
+
 // Per-IP rate limiting via the native Workers Rate Limiting binding
 // (configured in wrangler.toml). In-colo + in-memory — NOT KV, so there's
 // no per-request storage read/write and no storage cost. The data is
@@ -179,7 +323,10 @@ async function checkRate(env, request, path) {
   // secret, so it stays rate-limited.
   const bypass = env.BUILD_BYPASS_TOKEN;
   if (bypass && request.headers.get("X-Build-Bypass") === bypass) return null;
-  const heavy = path === "/v1/catalog" || path.endsWith(".tsv");
+  // Archive bypass (see isArchiveBypass) also skips the rate limiter — the
+  // archiver sweeps ~5k genes from one IP just like the build does above.
+  if (isArchiveBypass(request, env)) return null;
+  const heavy = path === "/v1/catalog" || path.endsWith(".tsv") || /^\/v1\/releases\/[^/]+$/.test(path);
   const limiter = heavy ? env.RATE_LIMITER_HEAVY : env.RATE_LIMITER;
   if (!limiter) return null;
   const ip = request.headers.get("CF-Connecting-IP") || "anon";
@@ -262,6 +409,17 @@ function cacheEpoch(env) {
 
 
 async function withEdgeCache(request, env, ctx, handler, { includeQuery = false } = {}) {
+  // Archiver reads the live state: no cache read, no cache write. The echo
+  // header lets the archiver refuse to archive if the bypass was NOT honoured
+  // (wrong token / old Worker) instead of silently archiving cached bytes.
+  if (isArchiveBypass(request, env)) {
+    const fresh = await handler();
+    const headers = new Headers(fresh.headers);
+    headers.set("X-Archive-Bypass-Honored", "1");
+    headers.set("Cache-Control", "no-store");
+    return new Response(fresh.body, { status: fresh.status, headers });
+  }
+
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
@@ -2392,6 +2550,11 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON (WITHOUT `evidence` — fetch that from /v1/genes/{symbol}/evidence)" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/evidence", summary: "The gene's evidence ledger (quote+span items) split out of the record: { gene, evidence[], papers{} } — papers carries NCBI citation metadata (title, byline, journal, year) keyed by source_id" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
+  { group: "History", method: "GET", path: "/v1/genes/{symbol}/revisions", summary: "Every archived revision of this gene's served record (newest first), with the releases each belongs to" },
+  { group: "History", method: "GET", path: "/v1/genes/{symbol}/revisions/{n}", summary: "Revision n of the record, byte-for-byte as served; also /evidence and .md" },
+  { group: "History", method: "GET", path: "/v1/releases", summary: "Numbered data releases with their GitHub tag and Zenodo version DOI" },
+  { group: "History", method: "GET", path: "/v1/releases/{version}", summary: "One release: metadata + the revision of every gene in it" },
+  { group: "History", method: "GET", path: "/v1/releases/{version}/genes/{symbol}", summary: "A gene as it was in that release; also /evidence and .md" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
@@ -3529,11 +3692,21 @@ export default {
     // params are cache-busting noise the zone Cache Rule already strips).
     if (path === "/v1/triage/export.tsv") return withEdgeCache(request, env, ctx, () => handleTriageExport(env, url), { includeQuery: true });
     if (path === "/v1/meta/sizes") return withEdgeCache(request, env, ctx, () => handleMetaSizes(env));
+    if (path === "/v1/releases") return withEdgeCache(request, env, ctx, () => handleReleaseList(env));
     // Feedback endpoints are user-specific / write-adjacent — never cache.
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
+    // Record history — more specific than every /v1/genes/{sym}… route below.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions$/))) return withEdgeCache(request, env, ctx, () => handleRevisionList(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\.md$/))) return handleRevisionBody(env, m[1], m[2], "md");
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\/evidence$/))) return handleRevisionBody(env, m[1], m[2], "evidence");
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)$/))) return handleRevisionBody(env, m[1], m[2], "record");
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\.md$/))) return handleReleaseGene(env, m[1], m[2], "md");
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\/evidence$/))) return handleReleaseGene(env, m[1], m[2], "evidence");
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)$/))) return handleReleaseGene(env, m[1], m[2], "record");
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleRelease(env, m[1]));
     // `.md` must be tested before the bare record route: `([^/]+)` would
     // otherwise swallow the `.md` suffix and route to handleGene.
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, env, ctx, () => handleGeneMarkdown(env, m[1]));
