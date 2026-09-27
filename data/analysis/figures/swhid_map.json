@@ -16,6 +16,7 @@
   "evidence_corpus_vs_selected": "swh:1:rev:f019aa24e274dddb613b9913c89613fae27e6760",
   "paywall_bot_block_compare": "swh:1:rev:2a6a860f6c85eb4aa624e414ddb0faf14ae6dce2",
   "positive_control_db_coverage_bars": "swh:1:rev:82448484ba6a2fc12c58e9b5a93b5ebc50af2196",
+  "surface_evidence_assay_types": "swh:1:rev:1e0dde250145e44b5b384787277a0c56944aa134",
   "surfaceome_deterministic_features": "swh:1:rev:f43bdcfe5edcd8846a0b95d558e3141b93feca39",
   "topology_coverage_by_source": "swh:1:rev:242fc106dd71c12eaa4b4d4dc66ab5610449cfc5",
   "triage_vs_deep_dive_reason": "swh:1:rev:90566f6a04a1e9a72488343d3fc938786bddf514",

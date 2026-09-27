@@ -143,6 +143,9 @@ TSV_BUNDLE: dict[str, list[str]] = {
         # so the slug matches the bundled basename per the invariant.
         "data/processed/figures/positive_control_db_coverage_bars.tsv",
     ],
+    "surface_evidence_assay_types": [
+        "data/processed/figures/surface_evidence_assay_types.tsv",
+    ],
     "surfaceome_deterministic_features": [
         # MOCK-grouped per-gene deterministic features (Supp Fig 13).
         # Single pre-joined TSV built by build_figure_tsvs.py.
