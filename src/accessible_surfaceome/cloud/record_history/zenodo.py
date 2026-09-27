@@ -41,8 +41,14 @@ def create_draft_version(
     version: str,
     http: httpx.Client,
     api: str = ZENODO_API,
+    concept_recid: str = DATA_CONCEPT_RECID,
 ) -> str:
-    """Create the draft; return its web URL for review."""
+    """Create the draft; return its web URL for review.
+
+    ``concept_recid`` defaults to the real data record's concept id; pass
+    a sandbox concept record id together with ``api="https://sandbox.
+    zenodo.org/api"`` to rehearse this against sandbox instead.
+    """
     # House pattern (matches scripts/release/publish-archive.py): the
     # token travels as an ``Authorization: Bearer`` header, never as an
     # ``access_token`` query param — a query param lands the secret in
@@ -52,7 +58,7 @@ def create_draft_version(
     # No auth at all on this call: it reads the public records API, which
     # needs none.
     latest = http.get(
-        f"{api}/records/{DATA_CONCEPT_RECID}/versions/latest", follow_redirects=True
+        f"{api}/records/{concept_recid}/versions/latest", follow_redirects=True
     )
     latest.raise_for_status()
     latest_id = latest.json()["id"]
@@ -66,7 +72,7 @@ def create_draft_version(
             "Zenodo refused to start a new version (HTTP 400) — this usually "
             "means an unpublished draft already exists for this record. "
             "Publish or discard the existing draft in the Zenodo web UI, "
-            "then re-run."
+            "then re-run cut_data_release.py with --resume."
         )
     nv.raise_for_status()
     draft_url = nv.json().get("links", {}).get("latest_draft")
@@ -75,7 +81,7 @@ def create_draft_version(
             "Zenodo's newversion response had no links.latest_draft — this "
             "usually means an unpublished draft already exists for this "
             "record. Publish or discard the existing draft in the Zenodo "
-            "web UI, then re-run."
+            "web UI, then re-run cut_data_release.py with --resume."
         )
     draft = http.get(draft_url, headers=auth_header)
     draft.raise_for_status()
