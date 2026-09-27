@@ -35,6 +35,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from collections import Counter
+
 import pandas as pd
 
 from accessible_surfaceome.release import catalog_presets
@@ -54,6 +56,7 @@ FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_featu
 # while the network pulls live in the export. Supersedes the M1-limited FEATURES_TSV
 # for S9 (which under-covered the zero-DB Sonnet rescues 794 vs 960 + lacked their topology).
 FEATURES_FULL_TSV = ROOT / "data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv"
+EVIDENCE_TYPES_TSV = ROOT / "data/processed/deep_dive/surface_evidence_types.tsv"
 POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
 # Per-gene deep-dive record facets, exported from public D1 by
 # scripts/export_deep_dive_figure_source.py. Re-run that after a sweep batch to
@@ -98,6 +101,8 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         src["det_detail"] = pd.read_csv(DET_DETAIL_TSV, sep="\t")
     if FEATURES_FULL_TSV.is_file():
         src["features_full"] = pd.read_csv(FEATURES_FULL_TSV, sep="\t")
+    if EVIDENCE_TYPES_TSV.is_file():
+        src["evidence_types"] = pd.read_csv(EVIDENCE_TYPES_TSV, sep="\t")
     return src
 
 
@@ -944,6 +949,82 @@ def build_surfaceome_deterministic_features(
         ["group", "gene_symbol"], kind="stable").reset_index(drop=True)
 
 
+
+def build_surface_evidence_assay_types(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Per-assay-type prevalence, and how often each assay stood alone.
+
+    One row per ``evidence_type`` seen on a SUPPORTING surface-expression
+    claim, restricted to genes the deep dive placed in a surface-positive
+    tier (canonical / likely / low). Three counts per assay:
+
+    * ``genes_used``  — genes with at least one supporting row of this assay.
+    * ``genes_sole``  — genes where it is the ONLY assay supporting the
+      surface call. This is the "only evidence" measure.
+    * ``genes_sole_primary`` — the same restricted to primary-tier rows: the
+      assay is the only one carrying *direct* support, so removing it leaves
+      the call with no primary evidence. This is the "decisive" measure, and
+      it is deliberately separate from ``genes_sole`` because an assay can be
+      the lone primary source while secondary rows corroborate it.
+
+    Scoping matters here. ``claim_type='surface_expression'`` is applied
+    upstream in the exporter — tissue-expression and topology rows reuse the
+    same assay vocabulary but say nothing about surface accessibility, so
+    counting them would inflate every assay uniformly. ``direction='supports'``
+    excludes refuting and ambiguous rows, since an assay that argues *against*
+    surface localization is not evidence the call rests on. The tier filter
+    keeps the denominator to genes that actually have a surface call to be
+    decisive about.
+
+    Columns: ``evidence_type, genes_used, genes_sole, genes_sole_primary,
+    pct_sole, pct_sole_primary, n_rows``.
+    """
+    cols = ["evidence_type", "genes_used", "genes_sole", "genes_sole_primary",
+            "pct_sole", "pct_sole_primary", "n_rows"]
+    ev = src.get("evidence_types")
+    dd = src.get("deep_dive")
+    if ev is None or ev.empty or dd is None or dd.empty:
+        return pd.DataFrame(columns=cols)
+
+    tier_of = {str(r["gene_symbol"]): _dd_tier(r) for _, r in dd.iterrows()}
+    SURFACE_TIERS = {"canonical", "likely", "low"}
+
+    ev = ev.copy()
+    ev["tier"] = ev["gene_symbol"].astype(str).map(tier_of)
+    sup = ev[(ev["direction"] == "supports") & ev["tier"].isin(SURFACE_TIERS)]
+    if sup.empty:
+        return pd.DataFrame(columns=cols)
+
+    by_gene = sup.groupby("gene_symbol")["evidence_type"].apply(set)
+    prim = sup[sup["evidence_tier"] == "primary"]
+    by_gene_primary = prim.groupby("gene_symbol")["evidence_type"].apply(set)
+
+    used: Counter = Counter()
+    sole: Counter = Counter()
+    for types in by_gene:
+        used.update(types)
+        if len(types) == 1:
+            sole[next(iter(types))] += 1
+    sole_primary: Counter = Counter()
+    for types in by_gene_primary:
+        if len(types) == 1:
+            sole_primary[next(iter(types))] += 1
+
+    n_rows = sup.groupby("evidence_type")["n_rows"].sum().to_dict()
+    out = pd.DataFrame([
+        {
+            "evidence_type": t,
+            "genes_used": used[t],
+            "genes_sole": sole.get(t, 0),
+            "genes_sole_primary": sole_primary.get(t, 0),
+            "pct_sole": round(100.0 * sole.get(t, 0) / used[t], 2),
+            "pct_sole_primary": round(100.0 * sole_primary.get(t, 0) / used[t], 2),
+            "n_rows": int(n_rows.get(t, 0)),
+        }
+        for t in used
+    ])
+    return out.sort_values("genes_used", ascending=False).reset_index(drop=True)
+
+
 BUILDERS: dict[str, callable] = {
     "db_overlap_venn":               build_db_overlap_venn,
     "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
@@ -963,6 +1044,7 @@ BUILDERS: dict[str, callable] = {
     "positive_control_db_coverage_bars":  build_positive_control_db_coverage_bars,
     "surfaceome_deterministic_features":
         build_surfaceome_deterministic_features,
+    "surface_evidence_assay_types": build_surface_evidence_assay_types,
 }
 
 
