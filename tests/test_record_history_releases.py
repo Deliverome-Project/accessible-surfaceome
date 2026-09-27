@@ -52,6 +52,12 @@ class FlakySqliteD1(SqliteD1):
         return super().query(sql, params)
 
 
+def _member(tf: tarfile.TarFile, name: str) -> bytes:
+    fh = tf.extractfile(name)
+    assert fh is not None, f"{name} missing from export"
+    return fh.read()
+
+
 def _rev(d1: SqliteD1, sym: str, n: int, j: str) -> None:
     d1.query(
         "INSERT INTO record_revision VALUES (?,?,?,?,?,?,?,?,?,?)",
@@ -280,8 +286,8 @@ def test_export_release_writes_parts_and_manifest(tmp_path: Path) -> None:
     assert out.name == "deep_dives_1.3.0.tar.gz"
     with tarfile.open(out) as tf:
         names = sorted(tf.getnames())
-        manifest = tf.extractfile("manifest.tsv").read().decode()
-        record = json.loads(tf.extractfile("genes/A.json").read())
+        manifest = _member(tf, "manifest.tsv").decode()
+        record = json.loads(_member(tf, "genes/A.json"))
     assert names == [
         "genes/A.evidence.json",
         "genes/A.json",
