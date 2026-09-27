@@ -7,6 +7,19 @@ not caught by publish-time archiving) and as step 1 of every release.
     uv run python scripts/cloud/sweep_record_history.py                 # list genes
     uv run python scripts/cloud/sweep_record_history.py --execute
     uv run python scripts/cloud/sweep_record_history.py --execute --genes EGFR,CD63
+    uv run python scripts/cloud/sweep_record_history.py --check-stability
+    uv run python scripts/cloud/sweep_record_history.py --check-stability --sample 200
+
+``--check-stability`` is a separate, read-only mode: it fetches each gene
+TWICE (needs ``ARCHIVE_BYPASS_TOKEN``, same as ``--execute``) and compares
+the three content hashes across the two fetches, to catch a served part
+that changes on every request without the underlying record changing
+(e.g. a serve-time enrichment stamp the hasher doesn't yet strip — see
+``VOLATILE_NESTED_KEYS`` in ``record_history/hashing.py``). It NEVER
+touches the store, R2, or D1 — no revision is written and nothing is
+purged. Defaults to a random sample of 50 genes (seeded, so the sample is
+reproducible run to run); ``--genes`` overrides the sample with an exact
+list, same as the archiving mode.
 
 Two guardrails on top of the plain per-gene archive:
 
@@ -30,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import random
 import sys
 import threading
 from collections import Counter
@@ -41,7 +55,14 @@ from accessible_surfaceome.cloud.record_history.archive import (
     BYPASS_HEADER,
     PUBLIC_API_BASE,
     ArchiveResult,
+    Served,
     archive_gene,
+    fetch_served,
+)
+from accessible_surfaceome.cloud.record_history.hashing import (
+    content_hash_evidence,
+    content_hash_md,
+    content_hash_record,
 )
 from accessible_surfaceome.cloud.record_history.store import (
     CloudRevisionStore,
@@ -51,6 +72,8 @@ from accessible_surfaceome.cloud.surface_annotation import purge_paths
 from accessible_surfaceome.env import load_env
 
 ABORT_AFTER_N_CONSECUTIVE_FAILURES = 5
+DEFAULT_STABILITY_SAMPLE = 50
+STABILITY_SAMPLE_SEED = 0
 
 
 def annotated_genes(http: httpx.Client, token: str) -> list[str]:
@@ -201,13 +224,129 @@ def sweep(genes: list[str] | None, *, execute: bool, workers: int) -> Counter[st
     return counts
 
 
+def _served_hashes(served: Served) -> tuple[str, str | None, str | None]:
+    """The three content hashes ``archive_gene`` would compute for ``served``."""
+    json_hash = content_hash_record(served.record)
+    evidence_hash = (
+        content_hash_evidence(served.evidence) if served.evidence is not None else None
+    )
+    md_hash = (
+        content_hash_md(served.md_bytes.decode("utf-8"))
+        if served.md_bytes is not None
+        else None
+    )
+    return json_hash, evidence_hash, md_hash
+
+
+def _check_gene_stability(symbol: str, *, http: httpx.Client, token: str) -> list[str]:
+    """Fetches ``symbol`` twice and returns the parts whose hash disagreed.
+
+    Read-only: only calls ``fetch_served`` (a GET), never touches the
+    store/R2/D1. An empty list means the two fetches hashed identically.
+    """
+    first = fetch_served(symbol, http=http, token=token)
+    second = fetch_served(symbol, http=http, token=token)
+    if first is None and second is None:
+        return []
+    if first is None or second is None:
+        # The gene flipped between annotated/not-annotated mid-check — a
+        # real instability, just not one a hash-part name describes.
+        return ["annotated_status"]
+    diffs = []
+    for part, a, b in zip(
+        ("record", "evidence", "md"), _served_hashes(first), _served_hashes(second)
+    ):
+        if a != b:
+            diffs.append(part)
+    return diffs
+
+
+def check_stability(
+    genes: list[str] | None,
+    *,
+    sample: int,
+    seed: int,
+    http: httpx.Client,
+    token: str,
+    workers: int,
+) -> dict[str, list[str]]:
+    """Read-only stability check: never touches the store/R2/D1.
+
+    Fetches each of ``genes`` (or a seeded random sample of ``sample``
+    annotated genes, if ``genes`` is ``None``) twice and compares content
+    hashes. Returns ``{gene_symbol: [differing parts]}`` for every gene
+    that was unstable; an empty dict means every checked gene was stable.
+    """
+    if not token:
+        print(
+            "ARCHIVE_BYPASS_TOKEN is unset — --check-stability needs it to fetch "
+            "the un-cached bypass response twice per gene; export it and try again.",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+    if genes is not None:
+        todo = genes
+    else:
+        all_genes = annotated_genes(http, token)
+        if sample >= len(all_genes):
+            todo = all_genes
+        else:
+            todo = random.Random(seed).sample(all_genes, sample)
+    unstable: dict[str, list[str]] = {}
+    with ThreadPoolExecutor(workers) as pool:
+        futs = {
+            pool.submit(_check_gene_stability, g, http=http, token=token): g
+            for g in todo
+        }
+        for fut in as_completed(futs):
+            g = futs[fut]
+            try:
+                diffs = fut.result()
+            except Exception as exc:  # noqa: BLE001 — report and keep checking
+                print(f"ERROR {g}: {exc}")
+                unstable[g] = ["error"]
+                continue
+            if diffs:
+                unstable[g] = diffs
+                print(f"UNSTABLE {g}: {', '.join(diffs)}")
+    print(f"checked {len(todo)} genes, {len(unstable)} unstable")
+    return unstable
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--execute", action="store_true")
     ap.add_argument("--genes", help="comma-separated symbols (default: all annotated)")
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument(
+        "--check-stability",
+        action="store_true",
+        help=(
+            "read-only: fetch each gene twice and diff content hashes; "
+            "never touches the store/R2/D1 (see module docstring)"
+        ),
+    )
+    ap.add_argument(
+        "--sample",
+        type=int,
+        default=DEFAULT_STABILITY_SAMPLE,
+        help="genes to sample for --check-stability (ignored when --genes is given)",
+    )
     args = ap.parse_args()
     genes = [g.strip() for g in args.genes.split(",")] if args.genes else None
+    if args.check_stability:
+        load_env()
+        token = os.environ.get("ARCHIVE_BYPASS_TOKEN", "").strip()
+        with httpx.Client(timeout=60) as http:
+            unstable = check_stability(
+                genes,
+                sample=args.sample,
+                seed=STABILITY_SAMPLE_SEED,
+                http=http,
+                token=token,
+                workers=args.workers,
+            )
+        raise SystemExit(1 if unstable else 0)
     counts = sweep(genes, execute=args.execute, workers=args.workers)
     raise SystemExit(1 if counts["failed"] else 0)
 

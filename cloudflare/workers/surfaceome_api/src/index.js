@@ -267,7 +267,7 @@ async function handleRevisionList(env, symbol) {
                  SELECT m.version AS v, d.zenodo_version_doi AS doi
                    FROM data_release_member m JOIN data_release d ON d.version = m.version
                   WHERE m.gene_symbol = r.gene_symbol COLLATE NOCASE AND m.revision = r.revision
-                  ORDER BY m.version
+                  ORDER BY d.cut_at
                )) AS releases
        FROM record_revision r
       WHERE r.gene_symbol = ? COLLATE NOCASE

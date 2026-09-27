@@ -157,6 +157,14 @@ insert(
       zenodo_version_doi: "10.5281/zenodo.20805384", n_genes: 1 },
     // No DOI yet — exercises the pre-DOI short-TTL / non-immutable branch.
     { version: "2.0.0", cut_at: "2026-09-20T00:00:00Z", n_genes: 1 },
+    // 1.9.0 / 1.10.0: a STRING sort of the version column orders these
+    // "1.10.0" before "1.9.0" (comparing "10" < "9" char-by-char), which is
+    // backwards chronologically — 1.9.0 (Sep 10) actually cut before 1.10.0
+    // (Sep 25). Both handleRevisionList's correlated releases[] subquery and
+    // handleReleaseList must sort by cut_at, not the version string, to get
+    // these right.
+    { version: "1.9.0", cut_at: "2026-09-10T00:00:00Z", n_genes: 1 },
+    { version: "1.10.0", cut_at: "2026-09-25T00:00:00Z", n_genes: 1 },
   ],
 );
 
@@ -167,11 +175,13 @@ insert(
     // Deliberately out of version order and non-canonically cased
     // ("egfr") — together these exercise the two fixes under test:
     // handleRevisionList's correlated releases[] subquery must ORDER BY
-    // version regardless of insertion order, and handleRelease must report
+    // cut_at regardless of insertion order, and handleRelease must report
     // the CANONICAL record_revision.gene_symbol in `members`, not whatever
     // casing data_release_member happens to store.
     { version: "2.0.0", gene_symbol: "EGFR", revision: 1 },
     { version: "1.0.0", gene_symbol: "egfr", revision: 1 },
+    { version: "1.10.0", gene_symbol: "EGFR", revision: 1 },
+    { version: "1.9.0", gene_symbol: "egfr", revision: 1 },
   ],
 );
 
@@ -247,10 +257,11 @@ const list = await (await call("/v1/genes/egfr/revisions")).json();
 assert.equal(list.current_revision, 2);
 assert.deepEqual(list.revisions.map(r => r.revision), [2, 1]);
 assert.equal(list.revisions[1].releases[0].version, "1.0.0");
-// ORDER BY version inside the correlated subquery: rev 1 belongs to both
-// releases (inserted 2.0.0-then-1.0.0 above), so a working ORDER BY must
-// still come back sorted ascending, not insertion order.
-assert.deepEqual(list.revisions[1].releases.map(r => r.version), ["1.0.0", "2.0.0"]);
+// ORDER BY cut_at inside the correlated subquery: rev 1 belongs to all four
+// releases (inserted out of both version and chronological order above), so
+// a working ORDER BY must come back sorted by cut_at ascending — NOT by the
+// version string, which would put "1.10.0" before "1.9.0".
+assert.deepEqual(list.revisions[1].releases.map(r => r.version), ["1.0.0", "1.9.0", "2.0.0", "1.10.0"]);
 assert.equal(list.revisions[1].evidence_url, null);
 assert.match(list.revisions[0].url, /\/v1\/genes\/EGFR\/revisions\/2$/);
 // A revision that belongs to no release at all gets releases: [], not null
@@ -288,8 +299,10 @@ blobs["records/sha256/j1.json"] = '{"v":1}';
 
 // releases
 const rl = await (await call("/v1/releases")).json();
-// ORDER BY cut_at DESC — "2.0.0" (2026-09-20) is newer than "1.0.0" (2026-08-15).
-assert.deepEqual(rl.releases.map(r => r.version), ["2.0.0", "1.0.0"]);
+// ORDER BY cut_at DESC — 1.10.0 (Sep 25) is the newest cut, then 2.0.0
+// (Sep 20), then 1.9.0 (Sep 10), then 1.0.0 (Aug 15). A string sort on
+// version would instead put "2.0.0" first and "1.10.0" before "1.9.0".
+assert.deepEqual(rl.releases.map(r => r.version), ["1.10.0", "2.0.0", "1.9.0", "1.0.0"]);
 
 // v-prefix redirects (301, no-store) to the bare canonical path — one cache
 // key per release so cut_data_release's (bare-only) purge always hits.

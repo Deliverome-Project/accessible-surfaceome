@@ -166,7 +166,7 @@ def test_paths_are_deduplicated() -> None:
 # ---------------------------------------------------------------------------
 #
 # Regression test for a pre-existing bug (from #253, inherited by the
-# record-history purge path added in #Task6): the edge tier purged
+# record-history purge path): the edge tier purged
 # ``PUBLIC_API_BASE + path`` — a URL Cloudflare accepts and reports
 # ``success: true`` for, but ``caches.default`` never keys the Worker's
 # responses on that host (see the long comment above ``_EDGE_CACHE_HOST``
