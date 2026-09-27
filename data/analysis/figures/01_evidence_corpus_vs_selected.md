@@ -17,10 +17,29 @@ cohort (5,332) minus 19 legacy records written before schema 2.14.0 that
 carry a null `n_papers_found` — both axes must be present to plot a
 point. Median 219 papers found/gene, median 10 selected.
 
-The two dotted diagonals are **constant selection rates** (papers
-selected ÷ papers found), drawn at 5 % and 10 %. They are reference
-lines, not fits: a gene sitting on the 10 % line had one paper in ten
-promoted from the discovery corpus into the evidence ledger.
+
+## How selection actually scales
+
+Stated rather than drawn, because the shape is not what a single reference
+line would suggest. Median values by corpus size:
+
+| papers found | n | median selected | median rate |
+|---|---|---|---|
+| <50 | 403 | 1 | 2.6 % |
+| 50–100 | 437 | 2 | 2.1 % |
+| 100–150 | 551 | 5 | 3.8 % |
+| 150–200 | 819 | 10 | 6.0 % |
+| **200–250** | 1,145 | **18** | **7.9 %** |
+| 250–300 | 1,035 | 20 | 7.5 % |
+| 300–350 | 707 | 14 | 4.3 % |
+| >350 | 216 | 9 | 2.5 % |
+
+Selection is **non-monotone**: both the count and the rate rise to a peak
+around a 200–300-paper corpus and fall away on either side. Genes with very
+small corpora have little worth keeping; genes with very large ones are
+trimmed harder. Note this does not match a simple "grows sub-linearly"
+reading — sub-linear growth requires the rate to fall throughout, and it
+rises across the first half of the range.
 
 ## Panel b — tier composition by literature size
 
@@ -69,10 +88,12 @@ so the three share one map.
   - `conflicting` — direct evidence on both sides
   - `weak` — sparse or low-quality evidence
 
-Reading the diagonals: well-evidenced surface targets sit above the
-10 % line in the upper-right (rich corpus *and* rich selection →
-`direct_multi_method`), while weak-evidence calls cluster below the 5 %
-line in the lower-left.
+Earlier versions carried two dotted diagonals marking constant selection
+rates (5 % and 10 %). They were removed: readers consistently read them as
+fitted trends rather than reference contours, and on a log-x / linear-y
+plot a constant rate renders as an upward curve, which compounded the
+confusion. The relationship they were meant to convey is better stated
+than drawn — see below.
 
 ## Reproducibility
 
