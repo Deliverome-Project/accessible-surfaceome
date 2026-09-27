@@ -137,11 +137,11 @@ def _apply_brand_style() -> None:
 _FOUR = ["canonical", "likely", "low", "no"]
 _THREE = ["canonical", "likely", "low"]
 PANELS = [
-    ("papers_found",       "Papers found (discovery corpus)",          _FOUR),
-    ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
-    ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
-    ("n_filters_evidence", "LLM filters with a positive finding",      _THREE),
-    ("n_det_features",     "Deterministic features (derived, 0-7)",    _THREE),
+    ("papers_found",       "Papers found (discovery corpus)",       _FOUR,  "Papers per protein"),
+    ("papers_selected",    "Papers selected (into evidence list)",  _FOUR,  "Papers per protein"),
+    ("papers_with_ec",     "Papers with extracellular evidence",    _THREE, "Papers per protein"),
+    ("n_filters_evidence", "LLM filters with a positive finding",   _THREE, "Filters per protein"),
+    ("n_det_features",     "Deterministic features (derived, 0-7)", _THREE, "Features per protein"),
 ]
 
 FIGSIZE = (25, 6.5)
@@ -209,10 +209,11 @@ def main() -> None:
     fig, axes = plt.subplots(1, 5, figsize=FIGSIZE)
     panel_letters = ["a", "b", "c", "d", "e"]
 
-    for idx, (ax, (key, subtitle, tiers)) in enumerate(
+    for idx, (ax, (key, subtitle, tiers, ylabel)) in enumerate(
         zip(axes, PANELS, strict=True)
     ):
         _draw_panel(ax, data, key, tiers)
+        ax.set_ylabel(ylabel)
 
         # setup_plotting_style monkey-patches set_title/suptitle to NO-OPS, so
         # render the per-panel subtitle as centered text above each panel.
@@ -231,14 +232,8 @@ def main() -> None:
 
         sns.despine(ax=ax, top=True, right=True)
 
-    # suptitle is monkey-patched to a no-op; use fig.text for the figure title.
-    fig.text(
-        0.5, 0.995, "Deep-dive record richness scales with confidence tier",
-        ha="center", va="top", fontsize=18, fontweight="semibold",
-        color=BRAND_INK,
-    )
 
-    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    fig.tight_layout(rect=(0, 0, 1, 0.99))
 
     out_pdf = Path("deep_dive_record_richness.pdf")
     out_png = Path("deep_dive_record_richness.png")
