@@ -112,8 +112,9 @@ bucket_name = "surfaceome-gene-md"
 
 # --- Record history (write-once, content-addressed) ---
 #
-# Archived bodies live at RECORD_HISTORY read-only here; written by
-# accessible_surfaceome.cloud.record_history. Create once with:
+# Archived bodies live in this R2 bucket, written by
+# accessible_surfaceome.cloud.record_history; the Worker only reads from it
+# (via the RECORD_HISTORY binding below). Create the bucket once with:
 #   npx --yes wrangler r2 bucket create surfaceome-record-history
 # The archiver's cache/rate-limit bypass secret is set separately:
 #   npx --yes wrangler secret put ARCHIVE_BYPASS_TOKEN

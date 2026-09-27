@@ -88,9 +88,14 @@ const CACHE_SWR       = 86400;     // serve-stale window (revalidate / on-error)
 // purge-on-publish (cloud/surface_annotation.publish_record), so the long
 // TTL + serve-stale window costs nothing in staleness. ttl === 0 (e.g. a 400
 // on bad input) opts out — a non-cacheable error must not be served stale.
-function cacheControl(ttl) {
+// `immutable` is an opt-in for content that's genuinely permanent (e.g. a
+// data release once its Zenodo DOI is set) — it replaces the
+// stale-while-revalidate/stale-if-error pair (which imply the content MAY
+// still change) with the `immutable` directive instead.
+function cacheControl(ttl, { immutable = false } = {}) {
   const base = `public, max-age=${ttl}, s-maxage=${ttl}`;
   if (ttl <= 0) return base;
+  if (immutable) return `${base}, immutable`;
   return `${base}, stale-while-revalidate=${CACHE_SWR}, stale-if-error=${CACHE_SWR}`;
 }
 
@@ -100,12 +105,12 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-function json(data, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
+function json(data, { status = 200, ttl = CACHE_TTL_SHORT, immutable = false } = {}) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": cacheControl(ttl),
+      "Cache-Control": cacheControl(ttl, { immutable }),
       ...CORS_HEADERS,
     },
   });
@@ -169,18 +174,66 @@ const REVISION_PARTS = {
   md:       { col: "md_hash",       ext: "md",   ct: "text/markdown; charset=utf-8",   missing: "markdown_not_archived" },
 };
 
+// Constant-time byte comparison for the fallback path below (equal-length
+// arrays only — callers check .length first).
+function timingSafeEqualFallback(a, b) {
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
 // The archiver (accessible_surfaceome.cloud.record_history) must see the
 // current D1 state, not a cached copy, and sweeps ~5k genes from one IP.
 // A request carrying the ARCHIVE_BYPASS_TOKEN secret skips both cache tiers
 // and the rate limiter. Without the exact secret nothing changes.
-function isArchiveBypass(request, env) {
+//
+// The comparison is timing-safe: a naive `===` leaks the token length and
+// the position of the first mismatched byte through response-time
+// variance, which over enough requests is a practical side channel for
+// guessing a long-lived secret. `crypto.subtle.timingSafeEqual` is a
+// Cloudflare Workers-runtime-specific (non-standard) addition to
+// SubtleCrypto; Node's webcrypto (used by the offline test harness below)
+// doesn't implement it, so we fall back to a manual constant-time compare.
+async function isArchiveBypass(request, env) {
   const token = env?.ARCHIVE_BYPASS_TOKEN;
-  return Boolean(token) && request.headers.get("X-Archive-Bypass") === token;
+  if (!token) return false;
+  const given = request.headers.get("X-Archive-Bypass");
+  if (!given) return false;
+  const enc = new TextEncoder();
+  const tokenBytes = enc.encode(token);
+  const givenBytes = enc.encode(given);
+  if (tokenBytes.length !== givenBytes.length) return false;
+  const subtle = globalThis.crypto && globalThis.crypto.subtle;
+  if (subtle && typeof subtle.timingSafeEqual === "function") {
+    return await subtle.timingSafeEqual(tokenBytes, givenBytes);
+  }
+  return timingSafeEqualFallback(tokenBytes, givenBytes);
 }
 
 function normalizeVersion(v) {
   const m = RELEASE_VERSION_OK.exec(v || "");
   return m ? m[1] : null;
+}
+
+// `/v1/releases/v1.0.0...` and `/v1/releases/1.0.0...` must resolve to ONE
+// cache key (the bare form) so cut_data_release's purge — which only ever
+// targets the bare path — always invalidates the live entry. A v-prefixed
+// request redirects (301, no-store) to the canonical bare path rather than
+// ever being handled or cached under its own key. Returns null (no
+// redirect needed) for an already-bare version or a not-quite-version
+// string (the handler's own badRequest("invalid_version") covers that).
+function bareVersionRedirect(rawVer, suffix = "") {
+  if (!/^v/i.test(rawVer || "")) return null;
+  const bare = rawVer.slice(1);
+  if (!RELEASE_VERSION_OK.test(bare)) return null;
+  return new Response(null, {
+    status: 301,
+    headers: {
+      Location: `${HISTORY_BASE}/releases/${bare}${suffix}`,
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS,
+    },
+  });
 }
 
 async function archivedPart(env, row, part) {
@@ -209,10 +262,13 @@ async function handleRevisionList(env, symbol) {
   const { results } = await env.DB.prepare(
     `SELECT r.gene_symbol, r.hgnc_id, r.revision, r.published_at, r.source,
             r.json_hash, r.evidence_hash, r.md_hash, r.schema_version, r.prompt_corpus_version,
-            (SELECT json_group_array(json_object('version', m.version,
-                                                 'zenodo_version_doi', d.zenodo_version_doi))
-               FROM data_release_member m JOIN data_release d ON d.version = m.version
-              WHERE m.gene_symbol = r.gene_symbol COLLATE NOCASE AND m.revision = r.revision) AS releases
+            (SELECT json_group_array(json_object('version', v, 'zenodo_version_doi', doi))
+               FROM (
+                 SELECT m.version AS v, d.zenodo_version_doi AS doi
+                   FROM data_release_member m JOIN data_release d ON d.version = m.version
+                  WHERE m.gene_symbol = r.gene_symbol COLLATE NOCASE AND m.revision = r.revision
+                  ORDER BY m.version
+               )) AS releases
        FROM record_revision r
       WHERE r.gene_symbol = ? COLLATE NOCASE
       ORDER BY r.revision DESC`
@@ -270,15 +326,16 @@ async function handleRelease(env, ver) {
   ).bind(v).first();
   if (!rel) return notFound("release_not_found");
   const { results } = await env.DB.prepare(
-    `SELECT m.gene_symbol, r.hgnc_id, m.revision, r.json_hash, r.evidence_hash, r.md_hash
+    `SELECT r.gene_symbol, r.hgnc_id, m.revision, r.json_hash, r.evidence_hash, r.md_hash
        FROM data_release_member m
        JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
-      WHERE m.version = ? ORDER BY m.gene_symbol`
+      WHERE m.version = ? ORDER BY r.gene_symbol`
   ).bind(v).all();
   // Immutable once its Zenodo version is published; until then a short TTL
   // so --set-doi shows up promptly.
-  const ttl = rel.zenodo_version_doi ? CACHE_TTL_IMMUTABLE : CACHE_TTL_SHORT;
-  return json({ ...rel, members: results }, { ttl });
+  const hasDoi = Boolean(rel.zenodo_version_doi);
+  const ttl = hasDoi ? CACHE_TTL_IMMUTABLE : CACHE_TTL_SHORT;
+  return json({ ...rel, members: results }, { ttl, immutable: hasDoi });
 }
 
 async function handleReleaseGene(env, ver, symbol, part) {
@@ -325,7 +382,7 @@ async function checkRate(env, request, path) {
   if (bypass && request.headers.get("X-Build-Bypass") === bypass) return null;
   // Archive bypass (see isArchiveBypass) also skips the rate limiter — the
   // archiver sweeps ~5k genes from one IP just like the build does above.
-  if (isArchiveBypass(request, env)) return null;
+  if (await isArchiveBypass(request, env)) return null;
   const heavy = path === "/v1/catalog" || path.endsWith(".tsv") || /^\/v1\/releases\/[^/]+$/.test(path);
   const limiter = heavy ? env.RATE_LIMITER_HEAVY : env.RATE_LIMITER;
   if (!limiter) return null;
@@ -412,7 +469,7 @@ async function withEdgeCache(request, env, ctx, handler, { includeQuery = false 
   // Archiver reads the live state: no cache read, no cache write. The echo
   // header lets the archiver refuse to archive if the bypass was NOT honoured
   // (wrong token / old Worker) instead of silently archiving cached bytes.
-  if (isArchiveBypass(request, env)) {
+  if (await isArchiveBypass(request, env)) {
     const fresh = await handler();
     const headers = new Headers(fresh.headers);
     headers.set("X-Archive-Bypass-Honored", "1");
@@ -3703,10 +3760,22 @@ export default {
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\.md$/))) return handleRevisionBody(env, m[1], m[2], "md");
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\/evidence$/))) return handleRevisionBody(env, m[1], m[2], "evidence");
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)$/))) return handleRevisionBody(env, m[1], m[2], "record");
-    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\.md$/))) return handleReleaseGene(env, m[1], m[2], "md");
-    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\/evidence$/))) return handleReleaseGene(env, m[1], m[2], "evidence");
-    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)$/))) return handleReleaseGene(env, m[1], m[2], "record");
-    if ((m = path.match(/^\/v1\/releases\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleRelease(env, m[1]));
+    // Each /v1/releases/{version}... match checks bareVersionRedirect first
+    // (301 to the bare form on a `v`-prefixed version) before dispatching —
+    // see bareVersionRedirect's comment for why that has to happen BEFORE
+    // withEdgeCache/handler, not inside the handler.
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\.md$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}.md`) || handleReleaseGene(env, m[1], m[2], "md");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\/evidence$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}/evidence`) || handleReleaseGene(env, m[1], m[2], "evidence");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}`) || handleReleaseGene(env, m[1], m[2], "record");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)$/))) {
+      return bareVersionRedirect(m[1]) || withEdgeCache(request, env, ctx, () => handleRelease(env, m[1]));
+    }
     // `.md` must be tested before the bare record route: `([^/]+)` would
     // otherwise swallow the `.md` suffix and route to handleGene.
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, env, ctx, () => handleGeneMarkdown(env, m[1]));
