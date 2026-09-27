@@ -21,6 +21,8 @@ import re
 
 import pytest
 
+from accessible_surfaceome.cloud import surface_annotation as sa
+from accessible_surfaceome.cloud.d1_client import D1Config
 from accessible_surfaceome.cloud.surface_annotation import (
     _COHORT_SURFACES_BY_TABLE,
     cohort_purge_paths,
@@ -157,3 +159,50 @@ def test_paths_are_deduplicated() -> None:
     once = cohort_purge_paths(["triage_run"])
     twice = cohort_purge_paths(["triage_run", "triage_run"])
     assert once == twice
+
+
+# ---------------------------------------------------------------------------
+# Edge tier must purge the Worker's SYNTHETIC cache key, not the public URL
+# ---------------------------------------------------------------------------
+#
+# Regression test for a pre-existing bug (from #253, inherited by the
+# record-history purge path added in #Task6): the edge tier purged
+# ``PUBLIC_API_BASE + path`` — a URL Cloudflare accepts and reports
+# ``success: true`` for, but ``caches.default`` never keys the Worker's
+# responses on that host (see the long comment above ``_EDGE_CACHE_HOST``
+# in surface_annotation.py), so the purge silently evicted nothing.
+
+
+def test_edge_purge_targets_synthetic_cache_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CLOUDFLARE_ZONE_ID", "zone123")
+    monkeypatch.setenv("CLOUDFLARE_KV_RECORD_CACHE_ID", "ns123")
+    monkeypatch.setattr(sa, "_cache_epoch", lambda *a, **k: "v7")
+    monkeypatch.setattr(
+        sa,
+        "_public_config_from_env",
+        lambda *a, **k: D1Config(account_id="acct", database_id="db", api_token="tok"),
+    )
+
+    edge_calls: list[list[str]] = []
+
+    def fake_purge_cf_cache(urls, *, zone_id, token, client):  # noqa: ANN001
+        edge_calls.append(list(urls))
+        return True
+
+    kv_calls: list[str] = []
+
+    def fake_delete_kv_key(key, *, account_id, namespace_id, token, client):  # noqa: ANN001
+        kv_calls.append(key)
+        return True
+
+    monkeypatch.setattr(sa, "_purge_cf_cache", fake_purge_cf_cache)
+    monkeypatch.setattr(sa, "_delete_kv_key", fake_delete_kv_key)
+
+    result = sa.purge_paths(["/v1/releases"])
+
+    assert result is True
+    expected_key = f"{sa._EDGE_CACHE_HOST}/v7{sa._ROUTE_PREFIX}/v1/releases"
+    assert edge_calls == [[expected_key]]
+    assert kv_calls == [expected_key]

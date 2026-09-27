@@ -399,8 +399,15 @@ def purge_paths(
         keys = [_cohort_cache_key(p) for p in paths]
         if zone:
             try:
+                # Purge the Worker's SYNTHETIC caches.default keys (see the
+                # long comment above ``_EDGE_CACHE_HOST``), not the public
+                # ``PUBLIC_API_BASE`` URL — Cloudflare accepts a purge of the
+                # public host and reports success, but evicts nothing,
+                # because ``withEdgeCache`` never keys on that host. Reuse
+                # the same ``keys`` list the KV tier below purges so the two
+                # tiers can't drift apart.
                 ok &= _purge_cf_cache(
-                    [f"{PUBLIC_API_BASE}{p}" for p in paths],
+                    keys,
                     zone_id=zone,
                     token=cfg.api_token,
                     client=c,
