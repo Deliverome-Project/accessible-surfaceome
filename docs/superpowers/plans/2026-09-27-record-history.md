@@ -2078,8 +2078,10 @@ cacheReads = 0;
 await call("/v1/genes/EGFR/revisions", { "X-Archive-Bypass": "wrong" });
 assert.equal(cacheReads, 1);
 cacheReads = 0;
-await call("/v1/genes/EGFR/revisions", { "X-Archive-Bypass": "secret" });
+const bypassed = await call("/v1/genes/EGFR/revisions", { "X-Archive-Bypass": "secret" });
 assert.equal(cacheReads, 0);
+assert.equal(bypassed.headers.get("X-Archive-Bypass-Honored"), "1");
+assert.equal((await call("/v1/genes/EGFR/revisions", { "X-Archive-Bypass": "wrong" })).headers.get("X-Archive-Bypass-Honored"), null);
 
 // index lists the new endpoints
 const idx = await (await call("/v1")).json();
@@ -2264,8 +2266,16 @@ and extend the heavy test:
 (c) First lines of `withEdgeCache`:
 
 ```js
-  // Archiver reads the live state: no cache read, no cache write.
-  if (isArchiveBypass(request, env)) return handler();
+  // Archiver reads the live state: no cache read, no cache write. The echo
+  // header lets the archiver refuse to archive if the bypass was NOT honoured
+  // (wrong token / old Worker) instead of silently archiving cached bytes.
+  if (isArchiveBypass(request, env)) {
+    const fresh = await handler();
+    const headers = new Headers(fresh.headers);
+    headers.set("X-Archive-Bypass-Honored", "1");
+    headers.set("Cache-Control", "no-store");
+    return new Response(fresh.body, { status: fresh.status, headers });
+  }
 ```
 
 (d) In the router, immediately **before** the existing `.md` route (`/^\/v1\/genes\/([^/]+)\.md$/`):
