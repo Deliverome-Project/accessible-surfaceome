@@ -39,6 +39,7 @@ from pathlib import Path
 import matplotlib.font_manager as fm
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+from matplotlib.transforms import blended_transform_factory
 import pandas as pd
 import seaborn as sns
 
@@ -211,6 +212,41 @@ def _panel_label(ax, letter: str) -> None:
             fontweight=800, va="bottom", ha="right", color=BRAND_INK)
 
 
+
+# Which tiers roll up to one surface call. `uncertain` is deliberately NOT
+# folded in with `no`: all 55 carry evidence_grade=weak, state_dependence
+# =unclear, a median of 0 selected papers (39 of 55 have none), and are
+# mostly orphan ORFs. The agent declined to call them, which is a different
+# statement from calling them non-surface, and a bracket reading "not
+# surface" over them would assert something the evidence does not support.
+_TIER_GROUPS = [
+    ((0, 2), "surface"),
+    ((3, 3), "undetermined"),
+    ((4, 4), "not surface"),
+]
+
+
+def _tier_group_brackets(ax) -> None:
+    """Draw grouping brackets under panel a's tick labels.
+
+    Blended transform: x in data coords (so the bracket tracks the bars),
+    y in axes coords (so it sits a fixed distance below the axis regardless
+    of the y-scale). Drawn with clip_on=False because it lives outside the
+    axes box.
+    """
+    trans = blended_transform_factory(ax.transData, ax.transAxes)
+    y_bar, y_txt = -0.15, -0.205
+    for (i0, i1), label in _TIER_GROUPS:
+        x0, x1 = i0 - 0.37, i1 + 0.37
+        ax.plot([x0, x1], [y_bar, y_bar], transform=trans, color=BRAND_NEUTRAL,
+                lw=1.4, clip_on=False, solid_capstyle="butt")
+        for x in (x0, x1):
+            ax.plot([x, x], [y_bar, y_bar + 0.022], transform=trans,
+                    color=BRAND_NEUTRAL, lw=1.4, clip_on=False)
+        ax.text((x0 + x1) / 2, y_txt, label, transform=trans, ha="center",
+                va="top", fontsize=13, color=BRAND_NEUTRAL)
+
+
 def main() -> None:
     _apply_brand_style()
 
@@ -234,11 +270,17 @@ def main() -> None:
 
     # ── Panel a: the five-tier confidence spectrum ──────────────────────────
     tiers = [
-        ("canonical\n(strict)", canon, _COLOR_CANONICAL),
+        ("canonical", canon, _COLOR_CANONICAL),
         ("likely", likely_total, _COLOR_LIKELY),
         ("low", low_total, _COLOR_LOW),
-        ("no", no_total, _COLOR_NO),
+        # `uncertain` sits BETWEEN the positive and negative sides, not at
+        # the end: it is the least-confident point on the axis, and
+        # confidence rises outward from it in both directions (reviewer
+        # note). Putting it last implied it was a weaker `no`, which it is
+        # not — the agent declined to call these, it did not call them
+        # negative.
         ("uncertain", unc_total, _COLOR_UNCERTAIN),
+        ("no", no_total, _COLOR_NO),
     ]
     tier_max = max(t[1] for t in tiers)
     for i, (label, n, color) in enumerate(tiers):
@@ -248,6 +290,14 @@ def main() -> None:
     axA.set_xticks(range(len(tiers)))
     axA.set_xticklabels([t[0] for t in tiers], fontsize=15)
     axA.set_ylabel("Proteins in\ndeep-dive cohort")
+    # Panel b labels its axis and panel a did not, which reads as an
+    # oversight when the two sit side by side (reviewer note). "Surface
+    # tier" rather than "confidence tier": canonical / likely / low are
+    # confidence in a surface call, but `no` and `uncertain` are the
+    # absence of one, so calling the whole axis a confidence scale would
+    # mislabel two of its five categories.
+    axA.set_xlabel("Deep-dive surface tier", labelpad=82)
+    _tier_group_brackets(axA)
     axA.set_ylim(0, tier_max * 1.16)
     axA.set_xlim(-0.6, len(tiers) - 0.4)
     sns.despine(ax=axA, top=True, right=True)
