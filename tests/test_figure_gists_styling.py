@@ -55,8 +55,20 @@ LEGACY_BAD_COLORS = (
 )
 
 
+# Figures that are not matplotlib plots. The whole contract above is about
+# inlined *plotting* style — palette, Manrope, despine, savefig DPI — so it
+# is meaningless for a gist that never imports matplotlib. `web_preview`
+# (Figure 7) is a composite of two live-viewer screenshots laid out as SVG;
+# its brand styling comes from the viewer's own CSS, not from rcParams.
+# Keep this set tiny and justified: anything that draws axes belongs under
+# the guard.
+NON_PLOT_GISTS = {"make_web_preview.py"}
+
+
 def _gist_files() -> list[Path]:
-    return sorted(GISTS_DIR.glob("make_*.py"))
+    return sorted(
+        p for p in GISTS_DIR.glob("make_*.py") if p.name not in NON_PLOT_GISTS
+    )
 
 
 def test_gists_dir_exists():
