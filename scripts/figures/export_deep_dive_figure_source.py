@@ -61,6 +61,11 @@ _TRIAGE_RESCUE_RUN_IDS = (
 # bar shows one dot per replicate + SEM across them, matching the other accuracy
 # figures. One row per (bench gene x replicate).
 BENCH_SONNET_OUT = ROOT / "data/processed/deep_dive/benchmark_sonnet_replicates.tsv"
+# Per-(gene x evidence_type x tier x direction) counts over the SURFACE-
+# EXPRESSION claims only. One row per combination, so the downstream figure
+# can ask both "how many genes used this assay" and "for how many was it the
+# only assay" without pulling 120 KB annotation blobs per gene.
+EVIDENCE_TYPES_OUT = ROOT / "data/processed/deep_dive/surface_evidence_types.tsv"
 _MAINBENCH_RUN = "mainbench_canonical_v2"
 _MAINBENCH_MODEL = "claude-sonnet-4-6"
 _MAINBENCH_VARIANT = "ncbi"
@@ -316,6 +321,31 @@ def _bench_sonnet_sql() -> str:
     )
 
 
+def _evidence_types_sql() -> str:
+    """Per-gene assay-type tally over surface-expression claims.
+
+    Restricted to ``claim_type='surface_expression'`` because that is the
+    claim that establishes surface accessibility — tissue-expression and
+    topology rows use the same ``evidence_type`` vocabulary but say nothing
+    about whether the protein is on the surface, so counting them would
+    inflate every assay uniformly and wash out the contrast.
+
+    Grouped rather than one-row-per-evidence so the export stays small
+    (~27k rows instead of ~58k) while still supporting the per-gene set
+    operations the figure needs.
+    """
+    return (
+        "SELECT sa.gene_symbol AS gene_symbol, "
+        "       json_extract(j.value,'$.evidence_type')  AS evidence_type, "
+        "       json_extract(j.value,'$.evidence_tier')  AS evidence_tier, "
+        "       json_extract(j.value,'$.direction')      AS direction, "
+        "       COUNT(*) AS n_rows "
+        "FROM surface_annotation sa, json_each(sa.annotation_json,'$.evidence') j "
+        "WHERE json_extract(j.value,'$.claim_type') = 'surface_expression' "
+        "GROUP BY gene_symbol, evidence_type, evidence_tier, direction;"
+    )
+
+
 def main() -> int:
     load_env()
     with D1Client(D1Config.from_env_public()) as d1:
@@ -326,6 +356,7 @@ def main() -> int:
             _bench_sonnet_sql(),
             [_MAINBENCH_RUN, _MAINBENCH_MODEL, _MAINBENCH_VARIANT],
         )
+        evidence_type_rows = d1.query(_evidence_types_sql(), [])
     df = pd.DataFrame(rows)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT, sep="\t", index=False)
@@ -341,6 +372,12 @@ def main() -> int:
     bench_sonnet.to_csv(BENCH_SONNET_OUT, sep="\t", index=False)
     print(f"wrote {BENCH_SONNET_OUT.relative_to(ROOT)}: {len(bench_sonnet)} bench "
           f"Sonnet replicate cells ({_MAINBENCH_RUN}/{_MAINBENCH_MODEL}/{_MAINBENCH_VARIANT})")
+
+    ev_types = pd.DataFrame(evidence_type_rows)
+    ev_types.to_csv(EVIDENCE_TYPES_OUT, sep="\t", index=False)
+    n_genes = ev_types["gene_symbol"].nunique() if not ev_types.empty else 0
+    print(f"wrote {EVIDENCE_TYPES_OUT.relative_to(ROOT)}: {len(ev_types)} "
+          f"(gene x assay x tier x direction) rows over {n_genes} genes")
     return 0
 
 

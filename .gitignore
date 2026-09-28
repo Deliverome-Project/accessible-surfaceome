@@ -48,6 +48,8 @@ data/external/doi_ra_cache.json
 # Per-DOI body-fetch outcome cache populated by scripts/paywall_bot_block_compare.py's
 # ``upgrade_datacite_pdf_bucket`` step. Idempotent; safe to delete.
 data/external/probe_body_fetch_outcomes.json
+# Zenodo tarballs, large, reproducible from the deposit
+data/external/zenodo/
 
 # PubTator3 FTP dumps and derived local indexes. Reproducible from
 # ftp.ncbi.nlm.nih.gov/pub/lu/PubTator3/; keep out of git to avoid committing

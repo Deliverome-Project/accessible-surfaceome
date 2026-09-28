@@ -26,6 +26,7 @@ source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
     { name = "biopython" },
+    { name = "boto3" },
     { name = "goatools" },
     { name = "httpx" },
     { name = "matplotlib" },
@@ -69,6 +70,7 @@ dev = [
 requires-dist = [
     { name = "anthropic", specifier = ">=0.99.0" },
     { name = "biopython", specifier = ">=1.84" },
+    { name = "boto3", specifier = ">=1.42,<2" },
     { name = "goatools", specifier = ">=1.6.4" },
     { name = "httpx", specifier = ">=0.28.0" },
     { name = "matplotlib", specifier = "==3.9.4" },

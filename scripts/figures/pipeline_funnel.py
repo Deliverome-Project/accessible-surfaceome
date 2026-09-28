@@ -17,7 +17,7 @@ Left to right:
   who meets 5,626 with no note will think the two figures disagree.
 * **Accessibility Triage agent, both passes** — stage 1 reads NCBI gene
   and protein records for every gene. Stage 2 re-reads, with a
-  literature pass, the zero-database non-surface calls whose stated
+  literature pass, the non-surface calls whose stated
   reason placed the protein one compartment off the surface
   (endomembrane-resident, secreted, inner-leaflet-anchored, pMHC,
   nuclear envelope); the cytoplasmic, nuclear and mitochondrial calls
@@ -102,7 +102,15 @@ STAGE2_RUN_IDS = (
     "genome_1db_trim_pubmed_ncbi_v1",
     "genome_optcut_zerodb_pubmed_ncbi_v1",
 )
-STAGE2_REEXAMINED = 2_626 + 10_287 + 1_417 + 74
+# Split by database support, because the two halves are re-read for
+# different reasons. The zero-DB genes have nothing to fall back on if
+# triage says no; the 1-DB genes are the ones the universe gate's trim
+# would drop (single DB vote + high-confidence non-surface). Together they
+# are exactly the set the gate is capable of dropping — that, not a
+# DB-count description, is the actual selection rule.
+STAGE2_ZERO_DB = 2_626 + 10_287 + 74   # ambiguous tail + intracellular + optcut
+STAGE2_ONE_DB = 1_417                  # the 1-of-5-DB trim set
+STAGE2_REEXAMINED = STAGE2_ZERO_DB + STAGE2_ONE_DB
 
 # Figure 4's palette, so the two schematics read as a pair.
 INK = "#1F1718"
@@ -354,13 +362,19 @@ def build(counts: Counts):
         ha="left", va="center", fontsize=11, fontweight="bold",
         color=TEAL, zorder=5,
     )
-    # Every non-surface call with no database flag now gets re-read, in
-    # two sweeps — the ambiguous-reason slice first, then the
-    # confidently intracellular buckets it had skipped.
+    # Broken out by database support. "Zero-database" alone was wrong — the
+    # 1,417 in the trim lane carry a flag by definition — but the bare total
+    # hid that the second pass covers two different populations. Showing
+    # both makes the selection rule legible: every call the universe gate
+    # could drop, whether for having no DB support at all or for having
+    # exactly one alongside a high-confidence non-surface verdict.
+    # "against the literature" is dropped; the STAGE 2 header above already
+    # says "literature pass", and the line is needed for the split.
     for i, line in enumerate(
         (
-            f"{counts.stage2_reexamined:,} zero-database non-surface calls",
-            "re-read against the literature",
+            f"{counts.stage2_reexamined:,} non-surface calls re-read",
+            f"{STAGE2_ZERO_DB:,} with no database flag \u00b7 "
+            f"{STAGE2_ONE_DB:,} with one",
             f"\u2192 {counts.stage2_rescued:,} reclassified as surface",
         )
     ):

@@ -17,10 +17,52 @@ cohort (5,332) minus 19 legacy records written before schema 2.14.0 that
 carry a null `n_papers_found` — both axes must be present to plot a
 point. Median 219 papers found/gene, median 10 selected.
 
-The two dotted diagonals are **constant selection rates** (papers
-selected ÷ papers found), drawn at 5 % and 10 %. They are reference
-lines, not fits: a gene sitting on the 10 % line had one paper in ten
-promoted from the discovery corpus into the evidence ledger.
+
+## How selection actually scales
+
+Stated rather than drawn, because the shape is not what a single reference
+line would suggest. Median values by corpus size:
+
+| papers found | n | median selected | median rate |
+|---|---|---|---|
+| <50 | 403 | 1 | 2.6 % |
+| 50–100 | 437 | 2 | 2.1 % |
+| 100–150 | 551 | 5 | 3.8 % |
+| 150–200 | 819 | 10 | 6.0 % |
+| **200–250** | 1,145 | **18** | **7.9 %** |
+| 250–300 | 1,035 | 20 | 7.5 % |
+| 300–350 | 707 | 14 | 4.3 % |
+| >350 | 216 | 9 | 2.5 % |
+
+Selection is **non-monotone**: both the count and the rate rise to a peak
+around a 200–300-paper corpus and fall away on either side. Genes with very
+small corpora have little worth keeping; genes with very large ones are
+trimmed harder. Note this does not match a simple "grows sub-linearly"
+reading — sub-linear growth requires the rate to fall throughout, and it
+rises across the first half of the range.
+
+## Panel b — tier composition by literature size
+
+Stacked share of each discovery-corpus stratum by deep-dive surface tier.
+Panel a shows that selection scales sub-linearly with corpus size; panel b
+shows what the pipeline *concluded* at each corpus size, which is the part
+that separates "well studied" from "strong evidence".
+
+| papers found | n | canonical | likely | low | no | uncertain |
+|---|---|---|---|---|---|---|
+| <75 | 622 | 1% | 18% | **60%** | 17% | 5% |
+| 75–100 | 218 | 7% | 28% | 28% | 34% | 3% |
+| 100–150 | 551 | 15% | 28% | 21% | 34% | 1% |
+| 150–200 | 819 | 30% | 28% | 13% | 28% | 0% |
+| >200 | 3,103 | **46%** | 22% | 11% | 20% | 0% |
+
+The clearest signal is `low` collapsing from 60% to 11%: sparse literature
+produces *weak* calls, not negative ones — the `no` share is roughly flat
+across strata (17–34%). Canonical rises 1% → 46% over the same range.
+
+Tier colours match Figure 5a and Supp S13. A tier name carrying a different
+colour across figures is exactly the inconsistency a reviewer caught on S11,
+so the three share one map.
 
 ## What each axis measures
 
@@ -46,10 +88,12 @@ promoted from the discovery corpus into the evidence ledger.
   - `conflicting` — direct evidence on both sides
   - `weak` — sparse or low-quality evidence
 
-Reading the diagonals: well-evidenced surface targets sit above the
-10 % line in the upper-right (rich corpus *and* rich selection →
-`direct_multi_method`), while weak-evidence calls cluster below the 5 %
-line in the lower-left.
+Earlier versions carried two dotted diagonals marking constant selection
+rates (5 % and 10 %). They were removed: readers consistently read them as
+fitted trends rather than reference contours, and on a log-x / linear-y
+plot a constant rate renders as an upward curve, which compounded the
+confusion. The relationship they were meant to convey is better stated
+than drawn — see below.
 
 ## Reproducibility
 

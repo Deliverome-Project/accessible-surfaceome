@@ -207,6 +207,7 @@ def _run_worker() -> dict[str, Any]:
 
     with tempfile.TemporaryDirectory() as td:
         d = Path(td)
+        shutil.copy2(WORKER_SRC.with_name("contact-sites.js"), d / "contact-sites.js")
         (d / "worker.mjs").write_text(_patched_worker_source(), encoding="utf-8")
         (d / "harness.mjs").write_text(_HARNESS, encoding="utf-8")
         proc = subprocess.run(  # noqa: S603 — fixed argv, temp files we wrote

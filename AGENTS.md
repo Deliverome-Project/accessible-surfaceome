@@ -31,7 +31,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run tests: `uv run pytest -q`
 - Run hooks: `uv run pre-commit run --all-files --config .pre-commit-config.yaml`
 - Run viewer dev server: `cd viewer && npm install && npm run dev` (http://localhost:3000)
-- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export)
+- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export). Its per-gene record pre-fetch, AND the standalone `build:exports` ops job (`build-markdown-exports.mjs`, NOT part of `npm run build` — run separately after a deep-dive sweep), are both paced (concurrency + rate capped, `viewer/scripts/lib/build-fetch.mjs`) and never publish a degraded record (a 200 carrying `X-Surfaceome-Degraded` is retried, then skipped if it never clears) — see `viewer/README.md`'s "Build gotcha" section.
 - Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
 
 ## Deep-dive agents run in-process with local prompts (no managed-agent sync)
@@ -143,8 +143,53 @@ After the D1 write, `publish_record` purges the Worker's edge cache for
 `/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes` (targeted by-URL, never
 `purge_everything` — shared `deliverome.org` zone) so the record goes live
 immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
-Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
-either soft-skips with a warning.
+Publish also archives the record to record history (below), which purges
+`/v1/genes/{SYMBOL}/revisions` and `/v1/releases` so the revision list is
+never served stale either. Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache
+Purge token scope; missing either soft-skips with a warning.
+
+**Record history + numbered data releases.** Every distinct state the API
+served for a gene (record, `/evidence` ledger, `.md` export) is archived
+write-once to R2 bucket `surfaceome-record-history`
+(`records/sha256/{hash}.{json|md}`), with one `record_revision` row per
+actual change in public D1
+([`cloud/record_history/`](src/accessible_surfaceome/cloud/record_history/)).
+`publish_record` archives after every publish (needs
+`ARCHIVE_BYPASS_TOKEN`; a miss warns, never fails the publish). Anything
+that writes `surface_annotation` directly, or bulk-updates a deterministic
+table the Worker joins at serve time, must be followed by
+`uv run python scripts/cloud/sweep_record_history.py --execute` or those
+states never enter history — including
+[`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py):
+`handleGene` overlays live `triage_run_public` (and other synced tables)
+onto the served record, so a sync that changes those rows changes what's
+served without touching `surface_annotation`. `sweep_record_history.py
+--check-stability [--sample N]` (default 50, seeded random sample,
+`--genes` honoured) is a read-only mode — fetches each gene twice and
+diffs the three content hashes, never touches the store/R2/D1 — for
+catching a serve-time field the hasher doesn't yet ignore before it reads
+as content drift on every sweep. A response whose serve-time enrichment
+hit a real (non-"no such table") D1 error carries `X-Surfaceome-Degraded`
++ `Cache-Control: no-store`; `withEdgeCache` never caches it, and
+`archive.py`'s `fetch_served`/`archive_gene` refuse to archive it
+(`--check-stability` reports it as an error) so a transient D1 hiccup
+never lands in history permanently. Numbered releases
+(`data_release`/`data_release_member`) are cut with
+`scripts/release/cut_data_release.py --version X.Y.Z` (after bumping
+`pyproject.toml`); it drafts, never publishes, the Zenodo data-record
+version. History endpoints are path-based only (the zone cache rule
+ignores query strings): `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`,
+`/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]`. Cohort-scale I/O (the
+seed, the sweep) is kept off the shared Cloudflare account API budget
+(1,200 requests / 5 min across every `api.cloudflare.com` call, R2 REST
+ops and D1 queries alike): R2 writes go through the S3-compatible API
+([`cloud/r2_s3.py`](src/accessible_surfaceome/cloud/r2_s3.py)) using
+credentials derived from `CLOUDFLARE_API_TOKEN`, and D1 calls made
+through `CloudRevisionStore` are throttled via `RECORD_HISTORY_D1_QPS`
+(default 2.5 qps, `0` disables). Separately, the sweep paces Worker fetches
+(`--max-genes-per-second`, default 2) because each bypassed record fetch
+costs ~17 queries on the shared public D1; never raise it during business
+hours.
 
 `scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
 rewrites whole tables that back cohort endpoints — and it purges those
@@ -157,7 +202,10 @@ published `?run_id=` variants — it is the one route wrapped with
 deliberately excluded. `stale-while-revalidate=86400` sits on top of every
 TTL, so an unpurged 1-day surface can answer stale for a second day.
 `tests/test_cohort_cache_purge.py` pins the map against both the sync
-script's table groups and the Worker's `CACHE_TTL_LONG` routes.
+script's table groups and the Worker's `CACHE_TTL_LONG` routes. The shared
+`purge_paths` helper purges the Worker's synthetic edge cache keys, not the
+public URLs — a purge that targeted the public URL used to silently evict
+nothing.
 
 The zone **cache rule** (ignore query
 strings) is applied by `scripts/cloud/apply_cf_edge_rules.py` (dry-run by

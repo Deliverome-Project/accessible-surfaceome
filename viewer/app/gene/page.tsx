@@ -6,6 +6,7 @@ import { Shell } from "../../components/Shell/Shell";
 import { NotFoundNotice } from "../../components/NotFoundNotice/NotFoundNotice";
 import { GeneDetail } from "../../components/surfaceome/GeneDetail/GeneDetail";
 import { renumberEvidenceIds } from "../../lib/evidenceRenumber";
+import { parseRevisions, type Revisions } from "../../lib/revisions";
 import {
   loadSchwekeHomomer,
   structureViewerDataFromRecord,
@@ -159,6 +160,11 @@ interface ReadyData {
   catalogRow: CatalogRow | null;
   benchmarkRow: BenchmarkRowPayload | null;
   triageHeadline: TriageHeadlinePayload | null;
+  /** Latest archived revision (record history), from
+   *  `/v1/genes/{sym}/revisions`. Null until fetched or on a miss (network
+   *  error, 404, or a gene the archiver hasn't seen yet) — the strip is
+   *  then omitted. */
+  revisions: Revisions | null;
   /** Lazy loader for the GeneJump typeahead universe — the ~1.7 MB
    *  `/v1/genes` index is fetched only when the reader opens the jump box,
    *  never on the gene page's initial load. */
@@ -278,6 +284,7 @@ export default function GeneShellPage() {
           catalogRow: null,
           benchmarkRow: null,
           triageHeadline: null,
+          revisions: null,
           loadGenes,
         },
       });
@@ -323,14 +330,19 @@ export default function GeneShellPage() {
       // ── Secondary enrichments — small, fast, null-tolerant. Fetched after
       // first paint and merged in progressively; a miss degrades gracefully
       // rather than failing (or delaying) the page. ─────────────────────
-      const [triageJson, benchJson, catalogJson] = await Promise.all([
-        fetchJson(`${API_BASE}/v1/triage/${symbol}`),
-        fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
-        // Slim per-gene DB-vote row from /v1/catalog/{sym} — the 5-DB
-        // presence strip. Null-tolerant: 404 for genes outside the
-        // candidate universe → strip omitted.
-        fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
-      ]);
+      const [triageJson, benchJson, catalogJson, revisionsJson] =
+        await Promise.all([
+          fetchJson(`${API_BASE}/v1/triage/${symbol}`),
+          fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
+          // Slim per-gene DB-vote row from /v1/catalog/{sym} — the 5-DB
+          // presence strip. Null-tolerant: 404 for genes outside the
+          // candidate universe → strip omitted.
+          fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
+          // Record-history strip. Null-tolerant: 404 when the archiver
+          // hasn't seen this gene yet, or the endpoint doesn't exist yet
+          // in production — the strip is then simply omitted.
+          fetchJson(`${API_BASE}/v1/genes/${symbol}/revisions`),
+        ]);
       if (cancelled) return;
       setState((prev) =>
         prev.kind === "ready"
@@ -343,6 +355,7 @@ export default function GeneShellPage() {
                 triageHeadline: triageJson
                   ? parseTriageHeadline(triageJson as TriageRunsPayload)
                   : null,
+                revisions: parseRevisions(revisionsJson),
               },
             }
           : prev,

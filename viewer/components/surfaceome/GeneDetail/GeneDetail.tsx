@@ -19,6 +19,7 @@ import { FEATURE_TAB_LABEL } from "../FeatureChips/FeatureChips";
 import { FiltersCard } from "../FiltersCard/FiltersCard";
 import { GeneHeader } from "../GeneHeader/GeneHeader";
 import { GeneJump } from "../GeneJump/GeneJump";
+import { RevisionStrip } from "../RevisionStrip/RevisionStrip";
 // IsoformsCard now subsumes the old standalone OrthologsCard +
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
@@ -37,6 +38,7 @@ import type {
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
+import type { Revisions } from "../../../lib/revisions";
 import styles from "./GeneDetail.module.css";
 
 interface GeneDetailProps {
@@ -75,6 +77,9 @@ interface GeneDetailProps {
    *  on a fetch miss — GeneHeader / TriageRow then fall back to
    *  `rec.triage_signal`. */
   triageHeadline: TriageHeadlinePayload | null;
+  /** Latest archived revision (record history); null until fetched or on a
+   *  miss — the strip is then omitted. */
+  revisions: Revisions | null;
   /** Lazy loader for the toolbar's GeneJump typeahead universe. Deferred so
    *  the ~1.7 MB gene index is fetched only when the reader opens the jump
    *  box, not on the gene page's initial load. */
@@ -98,6 +103,7 @@ export function GeneDetail({
   catalogRow,
   benchmarkRow,
   triageHeadline,
+  revisions,
   loadGenes,
 }: GeneDetailProps) {
   // v1.0.0 section order mirrors the EGFR mockup in
@@ -246,6 +252,8 @@ export function GeneDetail({
             </a>
           </span>
         </nav>
+
+        {revisions ? <RevisionStrip revisions={revisions} /> : null}
 
         <Reveal>
           <GeneHeader

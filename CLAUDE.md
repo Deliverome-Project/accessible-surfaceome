@@ -100,11 +100,13 @@ The same `publish_record` helper backs `scripts/cloud/upload_viewer_snapshots_to
 
 The Worker's `/v1/catalog` endpoint (`row_schema 6+`) bakes `ddf.n_papers_selected_band ∈ {low (≤p10), moderate (p10–p90), high (≥p90)}` per row using cohort percentiles, and surfaces the cutoffs as top-level `n_papers_selected_cutoffs: {p10, p90, n}` so the viewer's filter tooltip can show concrete thresholds. Pre-existing `Filters.evidence_density` (citation-row count, 3-bucket) stays for back-compat as the "evidence depth / quality gate" axis — semantically distinct from n_papers_selected; keep both filters in the UI.
 
-**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges.
+**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). Publish also archives the record to record history (below), which purges `/v1/genes/{SYMBOL}/revisions` and `/v1/releases` so the new revision's list view is never served stale either. The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges.
+
+**Record history + numbered data releases.** Every distinct state the API served for a gene — record, `/evidence` ledger, `.md` export — is archived write-once to R2 bucket `surfaceome-record-history` (`records/sha256/{hash}.{json|md}`) with one `record_revision` row per actual change in public D1 ([`cloud/record_history/`](src/accessible_surfaceome/cloud/record_history/)). `publish_record` archives after every publish (needs `ARCHIVE_BYPASS_TOKEN`; a miss is a warning, never a failed publish). **Anything that writes `surface_annotation` directly, or bulk-updates a deterministic table the Worker joins at serve time, must be followed by** `uv run python scripts/cloud/sweep_record_history.py --execute`, or those states never enter history — this includes [`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py): `handleGene` overlays live `triage_run_public` (and other synced tables) onto the served record at serve time, so a sync that changes those rows changes what's served without changing `surface_annotation` itself. `sweep_record_history.py --check-stability [--sample N]` (default 50, seeded random sample, `--genes` honoured) is a read-only mode that fetches each gene twice and diffs the three content hashes — never touches the store/R2/D1 — to catch a serve-time field the hasher hasn't learned to ignore yet before it's mistaken for real content drift on every sweep; run it after any Worker change that touches serve-time enrichment. A response whose serve-time enrichment hit a real (non-"no such table") D1 error carries `X-Surfaceome-Degraded` + `Cache-Control: no-store` (`handleGene`/`handleGeneEvidence`'s `soft()` helper in `index.js`); `withEdgeCache` never persists it to either cache tier, and `fetch_served`/`archive_gene` in `cloud/record_history/archive.py` refuse to archive it (raising `ArchiveError`, which `--check-stability` reports as an error) so a transient D1 hiccup never gets written into history as if it were the record's real content. Releases (`data_release` / `data_release_member`) are cut with `scripts/release/cut_data_release.py --version X.Y.Z` after bumping `pyproject.toml` (which is also what the viewer badge shows); it drafts — never publishes — the Zenodo data-record version. History endpoints: `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`, `/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]` — path-based only, because the zone cache rule ignores query strings. **Cohort-scale I/O (the seed, the sweep) is deliberately kept off the shared Cloudflare account API budget** (1,200 requests / 5 min across every `api.cloudflare.com` call, R2 REST ops and D1 queries alike): R2 writes go through the S3-compatible API ([`cloud/r2_s3.py`](src/accessible_surfaceome/cloud/r2_s3.py)) using credentials derived from `CLOUDFLARE_API_TOKEN` (a separate API surface, so it doesn't touch that budget at all), and D1 calls made through `CloudRevisionStore` are throttled via `RECORD_HISTORY_D1_QPS` (default 2.5 qps, `0` disables). Separately, the sweep paces Worker fetches (`--max-genes-per-second`, default 2) because each bypassed record fetch costs ~17 queries on the shared public D1; never raise it during business hours.
 
 **A Worker deploy that changes a response's SHAPE needs a manual purge.** `publish_record`'s purge only fires when a *record* is republished, so a deploy that adds a field to an endpoint leaves every already-cached gene serving the old shape for up to a day — on an arbitrary subset of genes, which reads as a bug rather than a cache. [`scripts/cloud/purge_gene_cache.py`](scripts/cloud/purge_gene_cache.py) purges the per-gene surfaces (edge + KV) across the whole cohort for exactly this case — `--surfaces record` for `/v1/genes/{SYMBOL}`, `evidence` for its ledger, `both` by default. It reuses `_purge_urls_for` / `_kv_keys_for` so the synthetic cache-key hosts can't drift from the publish path. Dry-run by default, `--execute` to purge, `--genes A,B` to scope it. Caching is per-POP, so a skipped purge shows up as the same gene answering differently depending on which datacenter served it — purge the surface the deploy touched, not just the gene you spot-checked. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/cloud/apply_cf_edge_rules.py`](scripts/cloud/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
 
-**A public-D1 sync purges the cohort surfaces it staled.** `publish_record` covers what ONE gene's record changes; [`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py) is the other writer into public D1 and rewrites whole tables (`triage_run_public`, `benchmark_version`) that back cohort-level endpoints. It now calls `accessible_surfaceome.cloud.surface_annotation.purge_cohort_surfaces` after a successful sync (`--no-purge` to skip; a dry-run prints what it would purge). Only the **1-day** surfaces are in the map — `/v1/triage/export.tsv` (plus its published `?run_id=` variants, since it is the one route wrapped with `includeQuery: true` and so keys per query string), `/v1/benchmark`, `/v1/benchmark/matrix`, `/v1/benchmark/export.tsv`. The 60-second surfaces (`/v1/catalog`, `/v1/genes`, `/v1/triage/{SYMBOL}`) are deliberately excluded: they self-heal in a minute, and enumerating 19k per-gene triage URLs would burn purge quota on a shared zone for nothing. Note that `stale-while-revalidate=86400` sits on top of every TTL, so an unpurged 1-day surface can keep answering with the previous bytes for a second day. [tests/test_cohort_cache_purge.py](tests/test_cohort_cache_purge.py) pins the map to both things it drifts from — a new `--only` group must be classified, and every `CACHE_TTL_LONG` cohort route in the Worker must be covered (it caught `/v1/benchmark` missing on the first run).
+**A public-D1 sync purges the cohort surfaces it staled.** `publish_record` covers what ONE gene's record changes; [`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py) is the other writer into public D1 and rewrites whole tables (`triage_run_public`, `benchmark_version`) that back cohort-level endpoints. It now calls `accessible_surfaceome.cloud.surface_annotation.purge_cohort_surfaces` after a successful sync (`--no-purge` to skip; a dry-run prints what it would purge). Only the **1-day** surfaces are in the map — `/v1/triage/export.tsv` (plus its published `?run_id=` variants, since it is the one route wrapped with `includeQuery: true` and so keys per query string), `/v1/benchmark`, `/v1/benchmark/matrix`, `/v1/benchmark/export.tsv`. The 60-second surfaces (`/v1/catalog`, `/v1/genes`, `/v1/triage/{SYMBOL}`) are deliberately excluded: they self-heal in a minute, and enumerating 19k per-gene triage URLs would burn purge quota on a shared zone for nothing. Note that `stale-while-revalidate=86400` sits on top of every TTL, so an unpurged 1-day surface can keep answering with the previous bytes for a second day. [tests/test_cohort_cache_purge.py](tests/test_cohort_cache_purge.py) pins the map to both things it drifts from — a new `--only` group must be classified, and every `CACHE_TTL_LONG` cohort route in the Worker must be covered (it caught `/v1/benchmark` missing on the first run). `purge_paths` (the shared helper both `purge_cohort_surfaces` and record-history archiving call) purges the Worker's *synthetic* `caches.default`/KV cache keys, not the public URLs — an earlier version targeted the public URL and silently evicted nothing.
 
 ## Triage body-fetch: Unpaywall + PDF fallback
 
@@ -712,8 +714,17 @@ schema in `src/accessible_surfaceome/tools/_shared/models.py`. See
 ### Per-gene markdown exports — D1-sourced at build time
 
 The downloadable `{SYMBOL}.md` briefs are rendered by
-`viewer/scripts/build-markdown-exports.mjs` (wired into `npm run build` via
-`build:exports`). It has two record sources, selected by `SURFACEOME_MD_SOURCE`:
+`viewer/scripts/build-markdown-exports.mjs`, run via the `build:exports`
+npm script. **`build:exports` is a standalone ops job, not part of
+`npm run build`** — `viewer/package.json`'s `build` script is
+`build:snapshot && next build --webpack && node scripts/prune-export.mjs`,
+which never invokes `build:exports`. Run it manually (or from a separate
+scheduled job) after a deep-dive sweep changes the published set:
+`SURFACEOME_MD_SOURCE=api node scripts/build-markdown-exports.mjs` for
+the default `public` target (writes `{SYMBOL}.json` + `.md` under
+`viewer/public/data/surfaceome/`), or with `MD_TARGET=r2` for the R2
+`.md`-only populate job (see below). It has two record sources, selected
+by `SURFACEOME_MD_SOURCE`:
 
 - **`snapshots`** (default) — renders `.md` next to each committed
   `viewer/public/data/surfaceome/*.json`. Offline-safe; used by CI, local
@@ -725,11 +736,16 @@ The downloadable `{SYMBOL}.md` briefs are rendered by
   caps the count (testing / incremental builds); `SURFACEOME_API_BASE`
   overrides the Worker base.
 
-**Set `SURFACEOME_MD_SOURCE=api` on the Cloudflare Pages `build:exports`
-step** so a large deep-dive sweep that publishes only to D1 still ships a
-`.md` (+ a materialized fs fallback) for every gene, without committing
-thousands of snapshots. Commit only a small curated snapshot set as the
-Worker-down offline fallback.
+**Run `build:exports` with `SURFACEOME_MD_SOURCE=api`** (the default) so a
+large deep-dive sweep that publishes only to D1 still ships a `.md` (+ a
+materialized fs fallback) for every gene, without committing thousands of
+snapshots. Commit only a small curated snapshot set as the Worker-down
+offline fallback. Because this ops job is NOT part of the Pages build, a
+newly-published gene's `.md` download only exists after someone runs this
+job — that's expected, not a bug to fix by wiring it into `npm run build`
+(the whole point of pulling it out was to keep the Pages 20k-file cap and
+build time under control; see the script's own header comment for the
+history).
 
 Consequently the old "every D1-published gene needs a committed in-tree
 snapshot" rule is **retired** — a published gene with no committed snapshot
@@ -737,6 +753,28 @@ is expected, not drift. `tests/test_d1_records_schema_drift.py` now guards
 the exporter's api-source *wiring* (static
 `test_markdown_exporter_supports_d1_source`) instead of requiring a
 per-gene snapshot.
+
+Both this exporter's record + evidence-ledger fetches and
+`build-data-snapshot.mjs`'s per-gene record pre-fetch are paced through a
+shared concurrency/rate limiter (`viewer/scripts/lib/build-fetch.mjs`,
+default 8 concurrent / 8 req/s, `SURFACEOME_BUILD_FETCH_CONCURRENCY` /
+`_RPS` — the rate cap is the binding constraint, not concurrency) and
+never publish a record still carrying `X-Surfaceome-Degraded` after
+retries — a persistently degraded/failing gene is skipped (existing
+R2/`.md` artifact left untouched) and logged rather than baked into the
+build. Both scripts also abort the whole run early (before any R2 upload
+for this exporter), mid-fetch, once the running failure count exceeds
+`floor(SURFACEOME_BUILD_MAX_FAILED_FRAC × total genes)` — an outage is
+caught within a handful of genes, not only after every one of ~5,300 has
+individually exhausted retries — and separately exits non-zero if more
+than
+`SURFACEOME_BUILD_MAX_FAILED_FRAC` (default 1%) of genes failed. When run
+with `MD_TARGET=r2` or `SURFACEOME_MD_GENES` set (a targeted re-export of
+specific genes, comma-separated), this exporter always fetches live from
+the Worker and never reads the local `viewer/build-cache/records` snapshot
+— that cache can be stale (e.g. left over in another worktree from before
+this pacing fix), and both of those modes are ops jobs republishing to a
+live surface, so they must never risk shipping stale bytes.
 
 ## Cloudflare D1 + R2 backups for agent runs
 

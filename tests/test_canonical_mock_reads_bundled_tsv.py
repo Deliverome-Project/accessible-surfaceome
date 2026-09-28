@@ -46,6 +46,7 @@ SCRIPTS = REPO_ROOT / "scripts" / "figures"
 #     optimized-cutoff TSV (their old initial-flag reads from the raw
 #     catalog / per-protein-features were the drift hazard).
 READS_BUNDLED_TSV = [
+    "surface_evidence_assay_types",
     "deep_dive_final_categories",
     "deep_dive_record_richness",
     "deep_dive_replicate_kappa",

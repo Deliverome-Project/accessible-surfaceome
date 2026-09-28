@@ -19,6 +19,9 @@ const PARENT_SITE = (
   process.env.NEXT_PUBLIC_DELIVEROME_SITE_URL ?? "https://deliverome.org"
 ).replace(/\/$/, "");
 
+/** Current GitHub release (e.g. "1.2.0"), injected by next.config.mjs. */
+const RELEASE_VERSION = process.env.NEXT_PUBLIC_RELEASE_VERSION ?? "";
+
 function parentHref(path: string): string {
   return `${PARENT_SITE}${path}`;
 }
@@ -84,14 +87,18 @@ export function Shell({ children }: ShellProps) {
             </span>
             <Link href="/" className={styles.brandLocal}>
               <span className={styles.brandLocalText}>Surfaceome</span>
-              {/* Major-release mark. v1.0 is the first cohort that ships
-               *  with a stable schema + the SurfaceBench truth set, so
-               *  the version sits inline with the wordmark rather than
-               *  buried in the footer. Bump the literal when we cut a
-               *  later major. */}
-              <span className={styles.brandVersion} aria-label="version 1.0">
-                v1.0
-              </span>
+              {/* Release mark — the current GitHub release version,
+               *  read from the repo-root pyproject.toml at build time
+               *  (next.config.mjs), so it tracks each release tag
+               *  without a hand-edited literal. */}
+              {RELEASE_VERSION && (
+                <span
+                  className={styles.brandVersion}
+                  aria-label={`version ${RELEASE_VERSION}`}
+                >
+                  v{RELEASE_VERSION}
+                </span>
+              )}
             </Link>
           </div>
           <nav id="primary-nav" className={styles.nav} aria-label="Surfaceome sections">
