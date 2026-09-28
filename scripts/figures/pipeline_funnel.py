@@ -17,7 +17,7 @@ Left to right:
   who meets 5,626 with no note will think the two figures disagree.
 * **Accessibility Triage agent, both passes** — stage 1 reads NCBI gene
   and protein records for every gene. Stage 2 re-reads, with a
-  literature pass, the zero-database non-surface calls whose stated
+  literature pass, the non-surface calls whose stated
   reason placed the protein one compartment off the surface
   (endomembrane-resident, secreted, inner-leaflet-anchored, pMHC,
   nuclear envelope); the cytoplasmic, nuclear and mitochondrial calls
@@ -354,13 +354,18 @@ def build(counts: Counts):
         ha="left", va="center", fontsize=11, fontweight="bold",
         color=TEAL, zorder=5,
     )
-    # Every non-surface call with no database flag now gets re-read, in
-    # two sweeps — the ambiguous-reason slice first, then the
-    # confidently intracellular buckets it had skipped.
+    # NOT all zero-database, despite how this used to read. The 14,404 is
+    # four lanes: the zero-DB ambiguous tail (2,626), the zero-DB
+    # confidently-intracellular complement (10,287) and the 74 the
+    # optimized cutoffs moved from 1-DB to 0-DB — but also the 1-of-5-DB
+    # trim set (1,417), which by definition carries a database flag. That
+    # lane exists precisely to re-read the genes the trim would otherwise
+    # drop, so calling the whole set "zero-database" mislabels it and
+    # understates what the second pass covers.
     for i, line in enumerate(
         (
-            f"{counts.stage2_reexamined:,} zero-database non-surface calls",
-            "re-read against the literature",
+            f"{counts.stage2_reexamined:,} non-surface calls re-read",
+            "against the literature",
             f"\u2192 {counts.stage2_rescued:,} reclassified as surface",
         )
     ):
