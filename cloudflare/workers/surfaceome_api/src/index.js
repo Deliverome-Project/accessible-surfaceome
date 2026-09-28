@@ -184,6 +184,11 @@ function tsvCell(v) {
   return String(v).replace(/[\t\r\n]+/g, " ");
 }
 
+// D1 cost note (2026-09-28): the topology release lookups below use EXISTS
+// probes on idx_topology_public_cohort_version instead of
+// `IN (SELECT DISTINCT topology_version FROM topology_public WHERE cohort=…)`,
+// which read every row of the cohort (6k–23k rows, 3× per record) and made
+// public D1 fragile under load. Same result, ~7 rows read.
 // Light gene-symbol validation: alnum + dash + dot, ≤30 chars.
 const SYMBOL_OK = /^[A-Za-z0-9][A-Za-z0-9._-]{0,29}$/;
 
@@ -868,21 +873,23 @@ async function handleGene(env, symbol) {
     const [topoCanonRow, topoIsoRow, paralogRelRow, orthoEcdRelRow] = await Promise.all([
       soft(
         env.DB.prepare(
-          `SELECT topology_version FROM topology_release
-              WHERE topology_version IN (
-                SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_canonical'
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'human_canonical' AND p.topology_version = r.topology_version
               )
-              ORDER BY loaded_at DESC LIMIT 1`
+              ORDER BY r.loaded_at DESC LIMIT 1`
         ).first(),
         "topology_release_canonical",
       ),
       soft(
         env.DB.prepare(
-          `SELECT topology_version FROM topology_release
-              WHERE topology_version IN (
-                SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_isoforms'
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'human_isoforms' AND p.topology_version = r.topology_version
               )
-              ORDER BY loaded_at DESC LIMIT 1`
+              ORDER BY r.loaded_at DESC LIMIT 1`
         ).first(),
         "topology_release_isoform",
       ),
@@ -1146,11 +1153,12 @@ async function handleGene(env, symbol) {
       // canonical topology_version if no mouse-cohort row exists.
       const mouseTopoRow = await soft(
         env.DB.prepare(
-          `SELECT topology_version FROM topology_release
-              WHERE topology_version IN (
-                SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'mouse_ortholog'
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'mouse_ortholog' AND p.topology_version = r.topology_version
               )
-              ORDER BY loaded_at DESC LIMIT 1`
+              ORDER BY r.loaded_at DESC LIMIT 1`
         ).first(),
         "topology_release_ortholog",
       );
