@@ -41,6 +41,9 @@ class _FakeStore:
     def __exit__(self, *_exc: object) -> None:
         return None
 
+    def prefetch_latest(self) -> None:
+        return None
+
 
 class _FakeCloudRevisionStore:
     @classmethod

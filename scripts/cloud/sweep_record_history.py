@@ -37,6 +37,18 @@ Two guardrails on top of the plain per-gene archive:
 
 The dry-run genes list (``/v1/genes``) is a public route, so it works
 without any token; the bypass header is only sent when one is configured.
+
+Before archiving, ``--execute`` calls ``CloudRevisionStore.prefetch_latest()``
+once — every gene's latest revision in a single D1 query instead of one
+``latest()`` query per gene, which at cohort scale (~5,130 genes) is most of
+this sweep's D1 call volume. Every D1 call made through the store (including
+that prefetch) is paced via ``RECORD_HISTORY_D1_QPS`` (default 2.5 qps, ``0``
+disables) so a sweep doesn't compete with concurrent sessions for the shared
+Cloudflare account API budget (1,200 requests / 5 min across every
+``api.cloudflare.com`` call — R2 REST ops and D1 queries both count). R2
+writes (via ``archive_gene`` → ``put_blob``) go through the S3-compatible API
+(``cloud/r2_s3.py``) first, a separate API surface that doesn't touch that
+budget at all.
 """
 
 from __future__ import annotations
@@ -179,6 +191,12 @@ def sweep(genes: list[str] | None, *, execute: bool, workers: int) -> Counter[st
             CloudRevisionStore.from_env() as store,
             ThreadPoolExecutor(workers) as pool,
         ):
+            # One query for every gene's latest revision instead of one
+            # `latest()` query per gene — at cohort scale (~5,130 genes)
+            # this alone is most of the sweep's D1 call volume. `latest()`
+            # then serves from this in-memory cache for the rest of the
+            # sweep; a successful `insert_revision` keeps it current.
+            store.prefetch_latest()
             # Per-gene `/revisions` purges are skipped during a sweep (no
             # `purge=` passed through, so `archive_gene`'s default `None`
             # applies) to spare purge quota on the shared zone; those lists

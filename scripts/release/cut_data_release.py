@@ -40,7 +40,6 @@ ever trusting it against the real, publish-is-irreversible data record.
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import os
 import re
 import sys
@@ -51,11 +50,10 @@ from pathlib import Path
 import httpx
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from accessible_surfaceome.cloud import r2_client
 from accessible_surfaceome.cloud.d1_client import D1Client
-from accessible_surfaceome.cloud.r2_client import R2Config
+from accessible_surfaceome.cloud.r2_s3 import r2_s3_client
 from accessible_surfaceome.cloud.record_history import releases as rel
-from accessible_surfaceome.cloud.record_history.store import BUCKET
+from accessible_surfaceome.cloud.record_history.store import BUCKET, is_missing_s3_object
 from accessible_surfaceome.cloud.record_history.zenodo import (
     DATA_CONCEPT_RECID,
     ZENODO_API,
@@ -86,6 +84,13 @@ def _retryable_r2_error(exc: BaseException) -> bool:
         return True
     if isinstance(exc, httpx.HTTPStatusError):
         return exc.response.status_code >= 500
+    from botocore.exceptions import ClientError, EndpointConnectionError
+
+    if isinstance(exc, EndpointConnectionError):
+        return True
+    if isinstance(exc, ClientError):
+        status = (exc.response.get("ResponseMetadata") or {}).get("HTTPStatusCode")
+        return bool(status) and status >= 500
     return False
 
 
@@ -95,8 +100,23 @@ def _retryable_r2_error(exc: BaseException) -> bool:
     wait=wait_exponential(multiplier=0.5, max=5),
     reraise=True,
 )
-def _get_object_with_retry(key: str, cfg: R2Config) -> bytes | None:
-    return r2_client.get_object(key=key, cfg=cfg)
+def _get_object_with_retry(key: str) -> bytes | None:
+    """Read one archived object via the R2 S3-compatible API.
+
+    ``None`` on a 404 (a real "missing" — ``export_release`` hard-fails on
+    it, per the module docstring); any other error either retries
+    (transient, per ``_retryable_r2_error``) or propagates.
+    """
+    from botocore.exceptions import ClientError
+
+    client = r2_s3_client()
+    try:
+        resp = client.get_object(Bucket=BUCKET, Key=key)
+    except ClientError as exc:
+        if is_missing_s3_object(exc):
+            return None
+        raise
+    return resp["Body"].read()
 
 
 def main() -> None:
@@ -207,10 +227,9 @@ def main() -> None:
             )
             print(f"release {version}: {len(members)} genes")
             purge_paths(["/v1/releases", f"/v1/releases/{version}"])
-        r2cfg = dataclasses.replace(R2Config.from_env(), bucket=BUCKET)
 
         def get_blob(key: str) -> bytes:
-            data = _get_object_with_retry(key, r2cfg)
+            data = _get_object_with_retry(key)
             if data is None:
                 raise SystemExit(f"archived object missing: {key}")
             return data

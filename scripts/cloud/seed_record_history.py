@@ -20,10 +20,10 @@ revision other than 1, a symbol this tarball doesn't carry, or a
 ``json_hash`` that doesn't match what this tarball's record hashes to
 (a stale or swapped-out tarball). Everything that passes that check is
 "already done"; only the remaining genes get written. R2 puts are
-separately idempotent (content-addressed, ``head_object``-gated inside
-``CloudRevisionStore.put_blob``). If ``data_release`` already has
-1.0.0 with every tarball gene accounted for, the script prints
-"already seeded" and exits 0 having written nothing.
+separately idempotent (content-addressed, ``put_blob(..., skip_head=True)``
+— see below). If ``data_release`` already has 1.0.0 with every tarball
+gene accounted for, the script prints "already seeded" and exits 0 having
+written nothing.
 
 Ordering matters for the rest of the record-history rollout: this seed
 must run BEFORE anything ever archives a *served* record for these
@@ -42,6 +42,29 @@ feature enrichment has landed since the deposit, and a Markdown export
 now exists where the deposit had none — so the hashes will differ for
 essentially every gene on that first sweep. That's expected, not a bug
 in this script or in the hashing.
+
+Write path (both R2 and D1 favor few, wide round trips over cohort-scale
+per-gene ones — the account's shared Cloudflare API budget is 1,200
+requests / 5 min, covering every ``api.cloudflare.com`` call including
+R2 REST ops and D1 queries):
+
+* **R2** — each record is uploaded through the S3-compatible API
+  (``CloudRevisionStore.put_blob(..., skip_head=True)``; see
+  ``cloud/r2_s3.py``), a separate API surface from ``api.cloudflare.com``
+  that doesn't touch the shared budget at all. ``skip_head=True`` skips
+  the existence probe: the seed runs against keys that are overwhelmingly
+  new, and a content-addressed write is idempotent even on the rare
+  collision, so there's nothing to check for. Runs from a
+  ``POOL_WORKERS``-wide thread pool.
+* **D1** — revision-1 rows are written with multi-row
+  ``INSERT ... VALUES (...),(...) ON CONFLICT(gene_symbol, revision) DO
+  NOTHING`` statements (see ``bulk_insert_seed_rows``), sized to D1's
+  100-bound-parameter cap, instead of one ``insert_revision`` call per
+  gene. ``CloudRevisionStore`` also paces every D1 call through
+  ``RECORD_HISTORY_D1_QPS`` (default 2.5 qps) so a seed run doesn't
+  compete with concurrent sessions for the shared budget. A single
+  verification query afterwards (``verify_seeded_rows``) confirms every
+  tarball symbol landed at revision 1 with the expected ``json_hash``.
 """
 
 from __future__ import annotations
@@ -49,7 +72,6 @@ from __future__ import annotations
 import argparse
 import json
 import tarfile
-import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
@@ -67,11 +89,27 @@ SEED_SOURCE = "seed:zenodo-1.0.0"
 SEED_AT = "2026-08-15T00:00:00Z"
 SEED_DOI = "10.5281/zenodo.20805384"
 
-# Number of D1 / R2 round trips to run concurrently. Serial writes at
-# cohort scale (5,130 records) would be 5,130+ blocking HTTP calls each
-# way; a small pool amortizes the per-request latency without hammering
-# either service the way an unbounded fan-out would.
-POOL_WORKERS = 8
+# Number of R2 upload round trips to run concurrently. R2 uploads now go
+# through the S3-compatible API (a separate API surface from
+# api.cloudflare.com, with its own — much higher — limits), so this can run
+# wider than the old REST-API pool did.
+POOL_WORKERS = 16
+
+# record_revision has 10 columns; D1 caps a statement at 100 bound
+# parameters, so this is the widest multi-row INSERT that stays legal.
+SEED_COLUMNS = (
+    "gene_symbol",
+    "hgnc_id",
+    "revision",
+    "json_hash",
+    "evidence_hash",
+    "md_hash",
+    "published_at",
+    "source",
+    "schema_version",
+    "prompt_corpus_version",
+)
+SEED_ROWS_PER_INSERT = 100 // len(SEED_COLUMNS)
 
 
 def read_records(tarball: Path) -> list[tuple[str, bytes, dict]]:
@@ -142,6 +180,82 @@ def refuse_on_stale_existing_rows(
         )
 
 
+def _seed_insert_sql(n_rows: int) -> str:
+    row_placeholder = "(" + ",".join(["?"] * len(SEED_COLUMNS)) + ")"
+    return (
+        f"INSERT INTO record_revision ({', '.join(SEED_COLUMNS)}) "
+        f"VALUES {','.join([row_placeholder] * n_rows)} "
+        "ON CONFLICT(gene_symbol, revision) DO NOTHING"
+    )
+
+
+def bulk_insert_seed_rows(
+    d1: Any,
+    todo: list[tuple[str, bytes, dict]],
+    *,
+    expected_hash: dict[str, str],
+) -> None:
+    """Write revision-1 rows for ``todo`` in wide multi-row INSERTs.
+
+    Batches sized to D1's 100-bound-parameter cap (see ``SEED_ROWS_PER_
+    INSERT``, and ``releases.MEMBER_ROWS_PER_INSERT`` /
+    ``build_paper_metadata_table.py`` for the same pattern elsewhere).
+    ``ON CONFLICT(gene_symbol, revision) DO NOTHING`` makes a replayed
+    batch (an at-least-once HTTP retry replaying a statement that already
+    landed) a harmless no-op rather than an error or a duplicate.
+    """
+    for i in range(0, len(todo), SEED_ROWS_PER_INSERT):
+        chunk = todo[i : i + SEED_ROWS_PER_INSERT]
+        params: list[Any] = []
+        for sym, _raw, rec in chunk:
+            params += [
+                sym,
+                rec["gene"].get("hgnc_id"),
+                1,
+                expected_hash[sym.casefold()],
+                None,
+                None,
+                SEED_AT,
+                SEED_SOURCE,
+                rec.get("schema_version"),
+                rec.get("prompt_corpus_version"),
+            ]
+        d1.query(_seed_insert_sql(len(chunk)), params)
+
+
+def verify_seeded_rows(
+    d1: Any,
+    *,
+    expected_hash: dict[str, str],
+    display_symbol: dict[str, str],
+) -> None:
+    """ONE query confirming every tarball symbol has revision 1 with the
+    expected ``json_hash``. Raises, listing every mismatch, if not.
+
+    Covers the whole tarball (not just genes written this run) — a
+    resumed seed's earlier-written rows get the same confirmation a fresh
+    run's rows do, in the same single query.
+    """
+    rows = d1.query(
+        "SELECT gene_symbol, json_hash FROM record_revision "
+        "WHERE revision = 1 AND source = ?",
+        [SEED_SOURCE],
+    )
+    have = {r["gene_symbol"].casefold(): r["json_hash"] for r in rows}
+    bad: list[str] = []
+    for key, expected in expected_hash.items():
+        actual = have.get(key)
+        sym = display_symbol[key]
+        if actual is None:
+            bad.append(f"{sym}: missing revision 1")
+        elif actual != expected:
+            bad.append(f"{sym}: json_hash mismatch (got {actual!r})")
+    if bad:
+        raise SystemExit(
+            "seed verification failed for: " + "; ".join(sorted(bad))
+        )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tarball", type=Path, required=True)
@@ -158,6 +272,7 @@ def main() -> None:
     expected_hash = {
         sym.casefold(): content_hash_record(rec) for sym, _raw, rec in records
     }
+    display_symbol = {sym.casefold(): sym for sym, _raw, _rec in records}
     tarball_symbols = set(expected_hash)
 
     load_env()
@@ -193,71 +308,20 @@ def main() -> None:
         def put(item: tuple[str, bytes, dict]) -> None:
             _, raw, rec = item
             store.put_blob(
-                blob_key(content_hash_record(rec), "json"), raw, "application/json"
+                blob_key(content_hash_record(rec), "json"),
+                raw,
+                "application/json",
+                skip_head=True,
             )
 
         with ThreadPoolExecutor(POOL_WORKERS) as pool:
             list(pool.map(put, todo))
         print("R2 blobs written" if todo else "R2: nothing left to write")
 
-        # Stop-on-first-failure: the shared Event is checked at the top of
-        # every worker call, so once it trips (any exception, from any
-        # thread) every task still queued behind it becomes a no-op instead
-        # of racing ahead to write more partial state. The pool draining
-        # (the `with` block exiting) happens before we look at `errors`, so
-        # every worker has either finished or skipped by the time we
-        # re-raise.
-        stop_event = threading.Event()
-        errors: list[BaseException] = []
-        errors_lock = threading.Lock()
-
-        def insert_one(item: tuple[str, bytes, dict]) -> None:
-            if stop_event.is_set():
-                return
-            sym, _, rec = item
-            try:
-                expected = expected_hash[sym.casefold()]
-                rev = store.insert_revision(
-                    [
-                        sym,
-                        rec["gene"].get("hgnc_id"),
-                        expected,
-                        None,
-                        None,
-                        SEED_AT,
-                        SEED_SOURCE,
-                        rec.get("schema_version"),
-                        rec.get("prompt_corpus_version"),
-                    ]
-                )
-                if rev is None:
-                    # Unchanged per insert_revision's own dedup — accept iff
-                    # the latest row it saw really is our expected revision
-                    # 1, e.g. a retried at-least-once write that actually
-                    # landed. Anything else is a genuine conflict.
-                    latest = store.latest(sym)
-                    if (
-                        latest is None
-                        or latest.revision != 1
-                        or latest.json_hash != expected
-                    ):
-                        raise RuntimeError(
-                            f"{sym}: insert_revision returned None (unchanged) but "
-                            "store.latest() doesn't confirm revision 1 with this "
-                            "tarball's hash"
-                        )
-                elif rev != 1:
-                    raise RuntimeError(f"{sym}: expected revision 1, got {rev}")
-            except BaseException as exc:  # noqa: BLE001 — captured, re-raised below
-                stop_event.set()
-                with errors_lock:
-                    errors.append(exc)
-
-        with ThreadPoolExecutor(POOL_WORKERS) as pool:
-            list(pool.map(insert_one, todo))
-
-        if errors:
-            raise errors[0]
+        bulk_insert_seed_rows(store.d1, todo, expected_hash=expected_hash)
+        verify_seeded_rows(
+            store.d1, expected_hash=expected_hash, display_symbol=display_symbol
+        )
 
         members: list[tuple[str, int]] = [(sym, 1) for sym, _, _ in records]
         create_release(
