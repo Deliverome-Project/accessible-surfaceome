@@ -104,6 +104,9 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+  // Let cross-origin clients read the record-history / degraded headers the
+  // API docs tell them to act on (browsers hide non-safelisted headers).
+  "Access-Control-Expose-Headers": "ETag, X-Surfaceome-Degraded, X-Surfaceome-Revision, X-Surfaceome-Content-Hash",
 };
 
 // The header a serve-time-enrichment failure sets on an otherwise-200
@@ -112,8 +115,9 @@ const CORS_HEADERS = {
 // passes `degraded` gets the same two behaviors for free: the header itself,
 // and forcing `Cache-Control: no-store` so `withEdgeCache` never persists
 // the degraded bytes (edge or KV) even though it still returns them to this
-// one caller. Exported so the Python archiver's header check can't drift
-// from the literal string the Worker actually sets.
+// one caller. Mirrored as DEGRADED_HEADER in
+// src/accessible_surfaceome/cloud/record_history/archive.py; a test pins the
+// two literals together so the archiver's check can't drift.
 const DEGRADED_HEADER = "X-Surfaceome-Degraded";
 
 function json(data, { status = 200, ttl = CACHE_TTL_SHORT, immutable = false, degraded = null } = {}) {
@@ -148,8 +152,15 @@ function badRequest(msg) {
 // provisioned yet...") and fetchPaperMetadata's comment ("or when the table
 // hasn't been created yet") — same intentional case, now applied uniformly
 // via `soft()` instead of ad hoc per callsite.
+// Schema-rollout errors (a table or column the Worker reads before its
+// migration/sync has landed) are persistent, not transient: flagging them as
+// degraded would force no-store on every gene and disable caching
+// cohort-wide. Treat them as "absent" like before, but log loudly.
 function isMissingTable(e) {
-  return /no such table/i.test(String(e?.message ?? e ?? ""));
+  const msg = String(e?.message ?? e ?? "");
+  if (!/no such (table|column)/i.test(msg)) return false;
+  if (/no such column/i.test(msg)) console.error("schema_rollout_missing_column", msg);
+  return true;
 }
 
 // TSV response — same cache/CORS posture as `json` but text/tsv.

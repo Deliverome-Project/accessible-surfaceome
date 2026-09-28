@@ -48,7 +48,9 @@ import pytest
 
 from accessible_surfaceome.paths import REPO_ROOT
 
-WORKER_SRC = REPO_ROOT / "cloudflare" / "workers" / "surfaceome_api" / "src" / "index.js"
+WORKER_SRC = (
+    REPO_ROOT / "cloudflare" / "workers" / "surfaceome_api" / "src" / "index.js"
+)
 
 # A healthy /v1/genes/TESTG response, fully deterministic: `uniprot_acc` is
 # set so the enrichment blocks under test actually run, but every OTHER
@@ -256,6 +258,22 @@ def test_missing_table_error_is_silent_and_caches_normally() -> None:
         "/v1/genes/TESTG",
         throw_table="schweke_homomer_public",
         throw_message="D1_ERROR: no such table: schweke_homomer_public: SQLITE_ERROR",
+    )
+    assert out["status"] == 200
+    assert out["degraded"] is None
+    assert out["cacheControl"] == HEALTHY_CACHE_CONTROL
+    assert out["cachePuts"] == 1
+    assert out["kvPuts"] == 1
+
+
+def test_missing_column_error_is_silent_and_caches_normally() -> None:
+    """A 'no such column' error is a schema-rollout mismatch (the Worker reads
+    a column before its migration lands). Flagging it would force no-store on
+    every gene, so it is treated like a missing table."""
+    out = _run_scenario(
+        "/v1/genes/TESTG",
+        throw_table="schweke_homomer_public",
+        throw_message="D1_ERROR: no such column: new_col: SQLITE_ERROR",
     )
     assert out["status"] == 200
     assert out["degraded"] is None
