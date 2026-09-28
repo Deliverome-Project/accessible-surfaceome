@@ -104,17 +104,31 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+  // Let cross-origin clients read the record-history / degraded headers the
+  // API docs tell them to act on (browsers hide non-safelisted headers).
+  "Access-Control-Expose-Headers": "ETag, X-Surfaceome-Degraded, X-Surfaceome-Revision, X-Surfaceome-Content-Hash",
 };
 
-function json(data, { status = 200, ttl = CACHE_TTL_SHORT, immutable = false } = {}) {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": cacheControl(ttl, { immutable }),
-      ...CORS_HEADERS,
-    },
-  });
+// The header a serve-time-enrichment failure sets on an otherwise-200
+// response (see the `soft`/`degraded` machinery around handleGene /
+// handleGeneEvidence below). `json()` centralizes it so every caller that
+// passes `degraded` gets the same two behaviors for free: the header itself,
+// and forcing `Cache-Control: no-store` so `withEdgeCache` never persists
+// the degraded bytes (edge or KV) even though it still returns them to this
+// one caller. Mirrored as DEGRADED_HEADER in
+// src/accessible_surfaceome/cloud/record_history/archive.py; a test pins the
+// two literals together so the archiver's check can't drift.
+const DEGRADED_HEADER = "X-Surfaceome-Degraded";
+
+function json(data, { status = 200, ttl = CACHE_TTL_SHORT, immutable = false, degraded = null } = {}) {
+  const isDegraded = Array.isArray(degraded) && degraded.length > 0;
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": isDegraded ? "no-store" : cacheControl(ttl, { immutable }),
+    ...CORS_HEADERS,
+  };
+  if (isDegraded) headers[DEGRADED_HEADER] = degraded.join(",");
+  return new Response(JSON.stringify(data, null, 2), { status, headers });
 }
 
 function notFound(msg = "not_found") {
@@ -123,6 +137,30 @@ function notFound(msg = "not_found") {
 
 function badRequest(msg) {
   return json({ error: msg }, { status: 400, ttl: 0 });
+}
+
+// A D1 error whose message names a missing table is a PERSISTENT,
+// intentional condition (the table hasn't been provisioned by this point in
+// a rollout — e.g. deploying the Worker before a new table's sync has run
+// once), not a transient hiccup. It reads the same on every request until
+// the table exists, so treating it as "degraded" would permanently poison
+// the cache for that route (every request forced to no-store) instead of
+// just degrading gracefully to nulls, same as today. Real transient errors
+// (timeout, isolate reset, temporary D1 unavailability) do NOT match this
+// and fall through to the degraded path. Mirrors the existing tolerance in
+// handleTagSites ("Resilient to deploy order: if tag_site_public isn't
+// provisioned yet...") and fetchPaperMetadata's comment ("or when the table
+// hasn't been created yet") — same intentional case, now applied uniformly
+// via `soft()` instead of ad hoc per callsite.
+// Schema-rollout errors (a table or column the Worker reads before its
+// migration/sync has landed) are persistent, not transient: flagging them as
+// degraded would force no-store on every gene and disable caching
+// cohort-wide. Treat them as "absent" like before, but log loudly.
+function isMissingTable(e) {
+  const msg = String(e?.message ?? e ?? "");
+  if (!/no such (table|column)/i.test(msg)) return false;
+  if (/no such column/i.test(msg)) console.error("schema_rollout_missing_column", msg);
+  return true;
 }
 
 // TSV response — same cache/CORS posture as `json` but text/tsv.
@@ -518,7 +556,18 @@ async function withEdgeCache(request, env, ctx, handler, { includeQuery = false 
 
   // (3) full miss — run the handler (D1) and populate both tiers.
   const response = await handler();
-  if (response.status === 200 || response.status === 404) {
+  // A response whose serve-time enrichment hit a real (non-missing-table)
+  // D1 error carries DEGRADED_HEADER and Cache-Control: no-store (see
+  // `json()`'s `degraded` param). Never persist those bytes to either cache
+  // tier — the whole point of the header is that this response reflects a
+  // transient failure, not the record's actual content, and caching it
+  // would serve the degraded shape to every other reader for up to a day
+  // (S100A7A revision 3's null topology fields were exactly this). The
+  // response is still returned to THIS caller below, degraded header and
+  // all — same posture as the archive-bypass path above, which also never
+  // caches.
+  const isDegraded = response.headers.has(DEGRADED_HEADER);
+  if (!isDegraded && (response.status === 200 || response.status === 404)) {
     if (kv) {
       const ttl = maxAgeFromCacheControl(response.headers.get("Cache-Control"));
       const meta = {
@@ -672,6 +721,27 @@ async function handleGene(env, symbol) {
   } catch (e) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
+  // Every enrichment query below used to swallow its own errors with a bare
+  // `.catch(() => null)` — including a genuine D1 hiccup, not just "this
+  // gene has no row here". That meant a transient failure silently served
+  // (and, via withEdgeCache, PERMANENTLY cached for up to a day) a record
+  // with those fields null even though D1 actually had the data — exactly
+  // what happened to S100A7A's revision 3 (canonical_topology.protein_length
+  // etc. archived null despite the topology_public row existing). `soft()`
+  // still degrades a failed query to null (never breaks the endpoint), but
+  // now records WHICH query failed in `degraded`, unless the failure is a
+  // "no such table" error — that's a persistent, intentional condition (see
+  // `isMissingTable`), not a transient one, and stays silent. `degraded` is
+  // read at the end of this handler to set DEGRADED_HEADER + force
+  // Cache-Control: no-store, so withEdgeCache never caches the response.
+  const degraded = [];
+  const soft = (p, label) =>
+    p.catch((e) => {
+      if (isMissingTable(e)) return null;
+      degraded.push(label);
+      console.warn("enrichment_failed", label, e?.message);
+      return null;
+    });
   // Enrich with Schweke 2024 homo-oligomer prediction at serve time.
   // The annotator already bakes ``deterministic_features.homo_oligomerization``
   // into newly-annotated records (consistent with how the other deterministic
@@ -689,15 +759,18 @@ async function handleGene(env, symbol) {
     const existing = record?.deterministic_features?.homo_oligomerization;
     const needsEnrichment = !existing || existing.is_homo_oligomer === false;
     if (needsEnrichment) {
-      const schwekeRow = await env.DB.prepare(
-        `SELECT stoichiometry, af_model_num, is_ecd_only,
-                has_higher_order_complex, dimer_pdb_filename,
-                complex_pdb_filename
-           FROM schweke_homomer_public
-          WHERE uniprot_acc = ?
-          ORDER BY universe_version DESC
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
+      const schwekeRow = await soft(
+        env.DB.prepare(
+          `SELECT stoichiometry, af_model_num, is_ecd_only,
+                  has_higher_order_complex, dimer_pdb_filename,
+                  complex_pdb_filename
+             FROM schweke_homomer_public
+            WHERE uniprot_acc = ?
+            ORDER BY universe_version DESC
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "schweke_homomer_public",
+      );
       if (schwekeRow) {
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.homo_oligomerization = {
@@ -793,28 +866,40 @@ async function handleGene(env, symbol) {
     // null on a missing release row or D1 hiccup; the per-feature blocks
     // below skip enrichment when their version is absent.
     const [topoCanonRow, topoIsoRow, paralogRelRow, orthoEcdRelRow] = await Promise.all([
-      env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_canonical'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_isoforms'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT paralog_version FROM compara_paralog_release
-            ORDER BY fetched_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
-            ORDER BY computed_at DESC LIMIT 1`
-      ).first().catch(() => null),
+      soft(
+        env.DB.prepare(
+          `SELECT topology_version FROM topology_release
+              WHERE topology_version IN (
+                SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_canonical'
+              )
+              ORDER BY loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_canonical",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT topology_version FROM topology_release
+              WHERE topology_version IN (
+                SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_isoforms'
+              )
+              ORDER BY loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_isoform",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT paralog_version FROM compara_paralog_release
+              ORDER BY fetched_at DESC LIMIT 1`
+        ).first(),
+        "compara_paralog_release",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
+              ORDER BY computed_at DESC LIMIT 1`
+        ).first(),
+        "compara_ortholog_ecd_release",
+      ),
     ]);
     const canonicalTopoVersion = topoCanonRow?.topology_version ?? null;
     const isoformTopoVersion = topoIsoRow?.topology_version ?? null;
@@ -838,18 +923,21 @@ async function handleGene(env, symbol) {
     const canonTopoNeedsEnrich =
       !existingCanonTopo || canonTopoIsPlaceholder || canonTopoLacksCall;
     if (canonTopoNeedsEnrich && canonicalTopoVersion) {
-      const tr = await env.DB.prepare(
-        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
-                n_terminal_orientation, c_terminal_orientation,
-                signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at,
-                predicted_surface_membrane, predicted_secreted,
-                beta_strand_count, protein_length
-           FROM topology_public
-          WHERE uniprot_acc = ? AND cohort = 'human_canonical'
-            AND topology_version = ?
-          LIMIT 1`
-      ).bind(uniprot, canonicalTopoVersion).first().catch(() => null);
+      const tr = await soft(
+        env.DB.prepare(
+          `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                  n_terminal_orientation, c_terminal_orientation,
+                  signal_peptide_length, ecd_length_residues, icd_length_residues,
+                  per_residue_topology, sequence, tool_version, retrieved_at,
+                  predicted_surface_membrane, predicted_secreted,
+                  beta_strand_count, protein_length
+             FROM topology_public
+            WHERE uniprot_acc = ? AND cohort = 'human_canonical'
+              AND topology_version = ?
+            LIMIT 1`
+        ).bind(uniprot, canonicalTopoVersion).first(),
+        "topology_public_canonical",
+      );
       if (tr) {
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.canonical_topology = {
@@ -886,12 +974,15 @@ async function handleGene(env, symbol) {
     // references a specific protein isoform". Enrich rather than require a
     // re-annotation, and only when absent so a baked value always wins.
     if (record?.gene && record.gene.ensembl_canonical_protein == null) {
-      const giRow = await env.DB.prepare(
-        `SELECT ensembl_canonical_protein
-           FROM gene_identifier_public
-          WHERE uniprot_acc = ?
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
+      const giRow = await soft(
+        env.DB.prepare(
+          `SELECT ensembl_canonical_protein
+             FROM gene_identifier_public
+            WHERE uniprot_acc = ?
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "gene_identifier_public",
+      );
       if (giRow?.ensembl_canonical_protein) {
         record.gene.ensembl_canonical_protein = giRow.ensembl_canonical_protein;
       }
@@ -911,16 +1002,19 @@ async function handleGene(env, symbol) {
     const isoTopoNeedsEnrich = !Array.isArray(existingIsoTopo)
       || (existingIsoTopo.length === 0 && !isoTopoChecked);
     if (isoTopoNeedsEnrich && isoformTopoVersion) {
-      const isoRows = await env.DB.prepare(
-        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
-                n_terminal_orientation, c_terminal_orientation,
-                signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at
-           FROM topology_public
-          WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
-            AND topology_version = ?
-          ORDER BY uniprot_acc_full ASC`
-      ).bind(uniprot, isoformTopoVersion).all().catch(() => null);
+      const isoRows = await soft(
+        env.DB.prepare(
+          `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                  n_terminal_orientation, c_terminal_orientation,
+                  signal_peptide_length, ecd_length_residues, icd_length_residues,
+                  per_residue_topology, sequence, tool_version, retrieved_at
+             FROM topology_public
+            WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
+              AND topology_version = ?
+            ORDER BY uniprot_acc_full ASC`
+        ).bind(uniprot, isoformTopoVersion).all(),
+        "topology_public_isoform",
+      );
       // Belt-and-suspenders dedup: even though the query filters by
       // topology_version, a stale topology_release row would let multiple
       // versions slip through and produce duplicate isoform rows (one per
@@ -968,23 +1062,26 @@ async function handleGene(env, symbol) {
     const paralogsNeedEnrich = !Array.isArray(existingParalogs)
       || (existingParalogs.length === 0 && !paralogsChecked);
     if (paralogsNeedEnrich && paralogVersion) {
-      const paralogRows = await env.DB.prepare(
-        `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
-                cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
-                cp.compara_version, cp.rank_by_ecd_identity,
-                tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
-                tp.ecd_length_residues, tp.icd_length_residues,
-                tp.n_terminal_orientation, tp.c_terminal_orientation,
-                tp.signal_peptide_length, tp.sequence
-           FROM compara_paralog cp
-           LEFT JOIN topology_public tp
-             ON tp.uniprot_acc = cp.paralog_uniprot_acc
-            AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
-          WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
-            AND cp.paralog_gene_symbol IS NOT NULL
-            AND cp.paralog_uniprot_acc IS NOT NULL
-          ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
-      ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all().catch(() => null);
+      const paralogRows = await soft(
+        env.DB.prepare(
+          `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
+                  cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
+                  cp.compara_version, cp.rank_by_ecd_identity,
+                  tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
+                  tp.ecd_length_residues, tp.icd_length_residues,
+                  tp.n_terminal_orientation, tp.c_terminal_orientation,
+                  tp.signal_peptide_length, tp.sequence
+             FROM compara_paralog cp
+             LEFT JOIN topology_public tp
+               ON tp.uniprot_acc = cp.paralog_uniprot_acc
+              AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
+            WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
+              AND cp.paralog_gene_symbol IS NOT NULL
+              AND cp.paralog_uniprot_acc IS NOT NULL
+            ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
+        ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all(),
+        "compara_paralog",
+      );
       // Belt-and-suspenders dedup: the LEFT JOIN against topology_public
       // is keyed on (uniprot_acc, cohort, topology_version); a stale
       // topology_release would let multiple cohort/version rows survive
@@ -1047,39 +1144,45 @@ async function handleGene(env, symbol) {
       // annotator resolves mouse_topo_version specifically; in practice
       // mouse_ortholog + cyno_ortholog share a version. Default to the
       // canonical topology_version if no mouse-cohort row exists.
-      const mouseTopoRow = await env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'mouse_ortholog'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null);
+      const mouseTopoRow = await soft(
+        env.DB.prepare(
+          `SELECT topology_version FROM topology_release
+              WHERE topology_version IN (
+                SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'mouse_ortholog'
+              )
+              ORDER BY loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_ortholog",
+      );
       const orthoTopoVersion = mouseTopoRow?.topology_version ?? canonicalTopoVersion ?? "";
-      const orthologRows = await env.DB.prepare(
-        `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
-                eo.ortholog_gene_symbol, eo.ecd_pct_identity,
-                co.percent_identity AS full_length_pct_identity,
-                tp.tm_helix_count, tp.ecd_length_residues,
-                tp.per_residue_topology, tp.deeptmhmm_label,
-                tp.sequence AS ortholog_sequence,
-                eo.compara_release
-           FROM compara_ortholog_ecd eo
-           LEFT JOIN topology_public tp
-             ON tp.uniprot_acc = eo.ortholog_uniprot_acc
-            AND tp.topology_version = ?
-            AND (
-              (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
-              (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
-            )
-           LEFT JOIN compara_ortholog co
-             ON co.release_version = eo.compara_release
-            AND co.human_ensembl_gene = eo.human_ensembl_gene
-            AND co.species = eo.species
-            AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
-          WHERE eo.human_uniprot_acc = ?
-            AND eo.ortholog_ecd_version = ?
-          ORDER BY eo.species ASC`
-      ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all().catch(() => null);
+      const orthologRows = await soft(
+        env.DB.prepare(
+          `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
+                  eo.ortholog_gene_symbol, eo.ecd_pct_identity,
+                  co.percent_identity AS full_length_pct_identity,
+                  tp.tm_helix_count, tp.ecd_length_residues,
+                  tp.per_residue_topology, tp.deeptmhmm_label,
+                  tp.sequence AS ortholog_sequence,
+                  eo.compara_release
+             FROM compara_ortholog_ecd eo
+             LEFT JOIN topology_public tp
+               ON tp.uniprot_acc = eo.ortholog_uniprot_acc
+              AND tp.topology_version = ?
+              AND (
+                (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
+                (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
+              )
+             LEFT JOIN compara_ortholog co
+               ON co.release_version = eo.compara_release
+              AND co.human_ensembl_gene = eo.human_ensembl_gene
+              AND co.species = eo.species
+              AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
+            WHERE eo.human_uniprot_acc = ?
+              AND eo.ortholog_ecd_version = ?
+            ORDER BY eo.species ASC`
+        ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all(),
+        "compara_ortholog_ecd",
+      );
       // Belt-and-suspenders dedup: the LEFT JOIN against topology_public is
       // gated on topology_version; a stale topology_release lets multiple
       // versions slip through and produce two rows per (species, ortholog).
@@ -1164,22 +1267,28 @@ async function handleGene(env, symbol) {
       || existingSurfaceBind.has_data === false
       || sbSitesLackTopology;
     if (sbNeedsEnrichment) {
-      const sbProteinRow = await env.DB.prepare(
-        `SELECT chain, main_class, sub_class, protein_name, n_sites,
-                n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
-           FROM surface_bind_protein
-          WHERE uniprot_acc = ?
-          ORDER BY surfacebind_version DESC
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
-      if (sbProteinRow) {
-        const sbSiteRows = await env.DB.prepare(
-          `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
-                  n_seeds_beta, hydrophobicity
-             FROM surface_bind_site
+      const sbProteinRow = await soft(
+        env.DB.prepare(
+          `SELECT chain, main_class, sub_class, protein_name, n_sites,
+                  n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
+             FROM surface_bind_protein
             WHERE uniprot_acc = ?
-            ORDER BY site_id`
-        ).bind(uniprot).all().catch(() => null);
+            ORDER BY surfacebind_version DESC
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "surface_bind_protein",
+      );
+      if (sbProteinRow) {
+        const sbSiteRows = await soft(
+          env.DB.prepare(
+            `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
+                    n_seeds_beta, hydrophobicity
+               FROM surface_bind_site
+              WHERE uniprot_acc = ?
+              ORDER BY site_id`
+          ).bind(uniprot).all(),
+          "surface_bind_site",
+        );
         // Which side of the membrane each anchor residue sits on.
         // SURFACE-Bind scores the whole solved structure, so a scored
         // patch is not necessarily reachable from outside the cell:
@@ -1188,13 +1297,16 @@ async function handleGene(env, symbol) {
         // sites). Served as its own scalar pull rather than a JOIN so a
         // missing topology row degrades to nulls instead of dropping the
         // whole surface_bind block.
-        const sbTopoRow = await env.DB.prepare(
-          `SELECT per_residue_topology
-             FROM topology_public
-            WHERE uniprot_acc = ? AND species = 'human'
-              AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
-            LIMIT 1`
-        ).bind(uniprot).first().catch(() => null);
+        const sbTopoRow = await soft(
+          env.DB.prepare(
+            `SELECT per_residue_topology
+               FROM topology_public
+              WHERE uniprot_acc = ? AND species = 'human'
+                AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
+              LIMIT 1`
+          ).bind(uniprot).first(),
+          "topology_public_surface_bind",
+        );
         const prt = sbTopoRow?.per_residue_topology ?? null;
         // DeepTMHMM alphabet, per the per_residue_topology column comment
         // in cloudflare/d1_public_schema.sql ("O/M/I/S/B chars").
@@ -1281,7 +1393,12 @@ async function handleGene(env, symbol) {
   // Posture matches the other enrich steps: fail-open on a D1 hiccup
   // (don't break the per-gene endpoint), and don't overwrite a
   // populated record with null (a brand-new gene the triage sweep
-  // hasn't covered yet leaves the annotator's call intact).
+  // hasn't covered yet leaves the annotator's call intact). A real
+  // (non-missing-table) failure here now also marks the response
+  // degraded, same as the `soft()`-wrapped queries above — this is a
+  // plain try/catch rather than a promise chain because
+  // `fetchTriagePrior` walks a priority list of queries internally,
+  // not a single one `soft()` could wrap directly.
   try {
     const triagePrior = await fetchTriagePrior(env, sym);
     if (triagePrior) {
@@ -1292,7 +1409,10 @@ async function handleGene(env, symbol) {
       }
     }
   } catch (e) {
-    // Best-effort — never break the endpoint over a triage miss.
+    if (!isMissingTable(e)) {
+      degraded.push("triage_run_public");
+      console.warn("enrichment_failed", "triage_run_public", e?.message);
+    }
   }
   // Store the shared deep-dive classification on the record so the gene page
   // AND the Zenodo deposit tarball (raw /v1/genes responses) carry the same
@@ -1312,7 +1432,7 @@ async function handleGene(env, symbol) {
   // GET /v1/genes/{SYMBOL}/evidence (handleGeneEvidence) so the gene
   // page's initial record load isn't dominated by the evidence array.
   if (record && "evidence" in record) delete record.evidence;
-  return json(record, { ttl: CACHE_TTL_LONG });
+  return json(record, { ttl: CACHE_TTL_LONG, degraded });
 }
 
 // Max distinct papers we'll look up citation metadata for in one request.
@@ -1353,7 +1473,14 @@ function collectSourceIds(evidence) {
 // Returns {} on any failure or when the table hasn't been created yet: the
 // drawer degrades to the bare accession it showed before, which is a worse
 // reading experience but never a broken page.
-async function fetchPaperMetadata(env, sourceIds) {
+//
+// `onError`, when given, is called with the caught error for a REAL failure
+// (i.e. one `isMissingTable` doesn't recognize as the persistent/intentional
+// "table not provisioned yet" case) — handleGeneEvidence uses it to fold
+// this query into its own `degraded` list. Callers that don't need that
+// (handleInternalization) simply omit it and keep today's silent-degrade
+// behavior unchanged.
+async function fetchPaperMetadata(env, sourceIds, { onError } = {}) {
   if (!sourceIds.length) return {};
   const statements = [];
   for (let i = 0; i < sourceIds.length; i += PAPER_METADATA_CHUNK) {
@@ -1372,6 +1499,7 @@ async function fetchPaperMetadata(env, sourceIds) {
   try {
     batches = await env.DB.batch(statements);
   } catch (e) {
+    if (onError && !isMissingTable(e)) onError(e);
     return {};
   }
   const papers = {};
@@ -1431,8 +1559,14 @@ async function handleGeneEvidence(env, symbol) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
   const evidence = Array.isArray(record?.evidence) ? record.evidence : [];
-  const papers = await fetchPaperMetadata(env, collectSourceIds(evidence));
-  return json({ gene: sym, evidence, papers }, { ttl: CACHE_TTL_LONG });
+  const degraded = [];
+  const papers = await fetchPaperMetadata(env, collectSourceIds(evidence), {
+    onError: (e) => {
+      degraded.push("paper_metadata");
+      console.warn("enrichment_failed", "paper_metadata", e?.message);
+    },
+  });
+  return json({ gene: sym, evidence, papers }, { ttl: CACHE_TTL_LONG, degraded });
 }
 
 async function handleOrthologs(env, symbol) {

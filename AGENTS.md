@@ -168,7 +168,12 @@ served without touching `surface_annotation`. `sweep_record_history.py
 `--genes` honoured) is a read-only mode — fetches each gene twice and
 diffs the three content hashes, never touches the store/R2/D1 — for
 catching a serve-time field the hasher doesn't yet ignore before it reads
-as content drift on every sweep. Numbered releases
+as content drift on every sweep. A response whose serve-time enrichment
+hit a real (non-"no such table") D1 error carries `X-Surfaceome-Degraded`
++ `Cache-Control: no-store`; `withEdgeCache` never caches it, and
+`archive.py`'s `fetch_served`/`archive_gene` refuse to archive it
+(`--check-stability` reports it as an error) so a transient D1 hiccup
+never lands in history permanently. Numbered releases
 (`data_release`/`data_release_member`) are cut with
 `scripts/release/cut_data_release.py --version X.Y.Z` (after bumping
 `pyproject.toml`); it drafts, never publishes, the Zenodo data-record

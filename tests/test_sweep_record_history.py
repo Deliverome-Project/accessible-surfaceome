@@ -264,6 +264,37 @@ def test_check_stability_names_the_gene_that_flips(
     assert "UNSTABLE CD63: record" in capsys.readouterr().out
 
 
+def test_check_stability_reports_degraded_gene_as_error(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A gene whose served response carries X-Surfaceome-Degraded makes
+    ``fetch_served`` raise ``ArchiveError`` (see
+    ``archive._reject_degraded``); ``_check_gene_stability`` doesn't catch
+    that itself, so it must surface through ``check_stability`` as an
+    ``"error"`` entry — same posture as any other fetch failure — rather
+    than being silently compared/diffed."""
+
+    def _fake_fetch_served(
+        symbol: str, *, http: object, token: str, base: str | None = None
+    ) -> Served:
+        if symbol == "S100A7A":
+            raise ArchiveError(
+                "degraded response for S100A7A (topology_public_canonical) — "
+                "not archiving; retry later"
+            )
+        return _served(symbol, 1)
+
+    monkeypatch.setattr(_mod, "fetch_served", _fake_fetch_served)
+
+    with httpx.Client() as http:
+        unstable = _mod.check_stability(
+            ["EGFR", "S100A7A"], sample=50, seed=0, http=http, token="tok", workers=1
+        )
+
+    assert unstable == {"S100A7A": ["error"]}
+    assert "ERROR S100A7A: degraded response for S100A7A" in capsys.readouterr().out
+
+
 def test_check_stability_requires_a_token() -> None:
     with httpx.Client() as http:
         with pytest.raises(SystemExit) as exc_info:

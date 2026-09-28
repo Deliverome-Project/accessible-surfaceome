@@ -12,7 +12,9 @@ from accessible_surfaceome.cloud.d1_client import D1Error
 from accessible_surfaceome.cloud.record_history.archive import (
     BYPASS_HEADER,
     BYPASS_HONORED_HEADER,
+    DEGRADED_HEADER,
     archive_gene,
+    fetch_served,
 )
 from accessible_surfaceome.cloud.record_history.hashing import content_hash_record
 from accessible_surfaceome.cloud.record_history.store import (
@@ -275,6 +277,73 @@ def test_non_unique_d1_error_propagates() -> None:
 
     with pytest.raises(D1Error, match="database is locked"):
         _run(ExplodingStore(), _http())
+
+
+def test_degraded_record_response_refuses_to_archive() -> None:
+    """A record whose serve-time enrichment hit a real D1 error carries
+    DEGRADED_HEADER — archive_gene must refuse it rather than write nulls
+    into history permanently (the S100A7A revision-3 bug this fix closes)."""
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        if req.url.path.endswith("/v1/genes/EGFR"):
+            return httpx.Response(
+                200,
+                json=RECORD,
+                headers={
+                    BYPASS_HONORED_HEADER: "1",
+                    DEGRADED_HEADER: "topology_public_canonical",
+                },
+            )
+        return httpx.Response(404, json={"error": "route_not_found"})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    store = FakeStore()
+    with pytest.raises(ArchiveError, match="degraded response for EGFR"):
+        _run(store, http)
+    assert store.blobs == {} and store.inserts == []
+
+
+def test_degraded_evidence_response_refuses_to_archive() -> None:
+    """Same refusal, but the degraded header comes back on the /evidence
+    route instead of the record route."""
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        path = req.url.path
+        if path.endswith("/v1/genes/EGFR"):
+            return httpx.Response(
+                200, json=RECORD, headers={BYPASS_HONORED_HEADER: "1"}
+            )
+        if path.endswith("/v1/genes/EGFR/evidence"):
+            return httpx.Response(
+                200, json=EVIDENCE, headers={DEGRADED_HEADER: "paper_metadata"}
+            )
+        return httpx.Response(404, json={"error": "route_not_found"})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    store = FakeStore()
+    with pytest.raises(ArchiveError, match="degraded response for EGFR"):
+        _run(store, http)
+    assert store.blobs == {} and store.inserts == []
+
+
+def test_fetch_served_degraded_record_raises_for_check_stability() -> None:
+    """``--check-stability`` (scripts/cloud/sweep_record_history.py) calls
+    ``fetch_served`` directly, not ``archive_gene`` — confirm the refusal
+    also fires on that entry point so a degraded gene is reported as an
+    error rather than silently diffed against itself."""
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        if req.url.path.endswith("/v1/genes/EGFR"):
+            return httpx.Response(
+                200,
+                json=RECORD,
+                headers={BYPASS_HONORED_HEADER: "1", DEGRADED_HEADER: "surface_bind_protein"},
+            )
+        return httpx.Response(404, json={"error": "route_not_found"})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    with pytest.raises(ArchiveError, match="degraded response for EGFR"):
+        fetch_served("EGFR", http=http, token="tok", base=BASE)
 
 
 def test_insert_returns_none_calls_purge_and_reads_latest() -> None:

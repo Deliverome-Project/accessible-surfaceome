@@ -38,6 +38,19 @@ PUBLIC_API_BASE = "https://api.deliverome.org/surfaceome"
 BYPASS_HEADER = "X-Archive-Bypass"
 BYPASS_HONORED_HEADER = "X-Archive-Bypass-Honored"
 
+# Set by the Worker (cloudflare/workers/surfaceome_api/src/index.js, the
+# DEGRADED_HEADER constant next to `json()`) on an otherwise-200 response
+# whose serve-time enrichment hit a real D1 error — i.e. NOT the persistent
+# "no such table" deploy-order case, which the Worker keeps silent. A
+# degraded response's fields are null where D1 actually has data (this is
+# exactly what shipped S100A7A revision 3 with a null canonical_topology
+# despite the topology_public row existing), so it must never be archived as
+# if it were the record's real content. The Worker also forces
+# ``Cache-Control: no-store`` on the same response, so a retry a moment
+# later — after the transient D1 error clears — sees fresh, non-degraded
+# bytes rather than a cached copy of the failure.
+DEGRADED_HEADER = "X-Surfaceome-Degraded"
+
 
 @dataclass(frozen=True)
 class Served:
@@ -72,7 +85,21 @@ def _matches_404_reason(resp: httpx.Response, expected_error: str) -> bool:
     return isinstance(body, dict) and body.get("error") == expected_error
 
 
-def _fetch_record(http: httpx.Client, url: str, token: str) -> httpx.Response | None:
+def _reject_degraded(resp: httpx.Response, symbol: str) -> None:
+    """Refuse to treat a serve-time-enrichment-degraded response as archivable.
+
+    See ``DEGRADED_HEADER``'s docstring for why: the response's fields can be
+    null where D1 actually has data, so archiving it would write that gap in
+    permanently instead of leaving it to self-heal on the next sweep pass.
+    """
+    labels = resp.headers.get(DEGRADED_HEADER)
+    if labels:
+        raise ArchiveError(
+            f"degraded response for {symbol} ({labels}) — not archiving; retry later"
+        )
+
+
+def _fetch_record(http: httpx.Client, url: str, token: str, *, symbol: str) -> httpx.Response | None:
     """The record route: also enforces the bypass-honoured contract.
 
     Any non-404 error status raises before we ever look at the honoured
@@ -88,6 +115,7 @@ def _fetch_record(http: httpx.Client, url: str, token: str) -> httpx.Response | 
             "archive bypass not honoured — wrong ARCHIVE_BYPASS_TOKEN or old Worker; "
             "refusing to archive possibly-cached bytes"
         )
+    _reject_degraded(resp, symbol)
     if resp.status_code == 404:
         if _matches_404_reason(resp, "gene_not_annotated"):
             return None
@@ -99,7 +127,13 @@ def _fetch_record(http: httpx.Client, url: str, token: str) -> httpx.Response | 
 
 
 def _fetch_optional(
-    http: httpx.Client, url: str, token: str, *, expected_404_error: str, route: str
+    http: httpx.Client,
+    url: str,
+    token: str,
+    *,
+    expected_404_error: str,
+    route: str,
+    symbol: str,
 ) -> httpx.Response | None:
     """A route the API may 404 for a known reason; any other status either
     passes through (2xx) or raises (5xx / unexpected 4xx)."""
@@ -112,6 +146,7 @@ def _fetch_optional(
             f"(expected error={expected_404_error!r}): {resp.text!r}"
         )
     resp.raise_for_status()
+    _reject_degraded(resp, symbol)
     return resp
 
 
@@ -126,7 +161,7 @@ def fetch_served(
     against its R2 key and a caller-supplied casing (e.g. ``egfr``) would
     silently 404 there even though the record route resolved fine.
     """
-    rec_resp = _fetch_record(http, f"{base}/v1/genes/{symbol}", token)
+    rec_resp = _fetch_record(http, f"{base}/v1/genes/{symbol}", token, symbol=symbol)
     if rec_resp is None:
         return None
     rec = rec_resp.json()
@@ -143,6 +178,7 @@ def fetch_served(
         token,
         expected_404_error="gene_not_annotated",
         route="evidence",
+        symbol=sym,
     )
     evidence: dict[str, Any] | None = None
     evidence_bytes: bytes | None = None
@@ -158,6 +194,7 @@ def fetch_served(
         token,
         expected_404_error="markdown_not_found",
         route="markdown",
+        symbol=sym,
     )
     md_bytes = md_resp.content if md_resp is not None else None
 
