@@ -148,15 +148,33 @@ def test_outer_membrane_sense_is_inverted():
     assert pred.ecd_length_residues == 3
 
 
-def test_side_characters_of_the_wrong_membrane_are_refused():
-    """A string whose sides belong to another compartment is an error, not a guess.
+def test_the_topology_string_decides_the_membrane_not_the_probabilities():
+    """The string wins over the reported probabilities. This is the H3BTG2 case.
 
-    Plasma-membrane 'E'/'e' against a Golgi main type means the record is inconsistent;
-    silently treating 'E' as "some inside" would make the ECD/ICD lengths fiction.
+    predictions.json stores membrane_types_probabilities already rounded to 2dp, so ties
+    are common and the predictor's own argmax is not recoverable from them. H3BTG2 has ER
+    and nuclear inner membrane both at 0.39; the predictor translated with nuclear, and
+    re-deriving from the rounded values picks ER, after which every side character in the
+    string is unreadable and the whole row is wrong.
     """
-    rec = _record("EEEMMMeee", "Alpha TM", ["Golgi membrane"], {"Golgi membrane": 0.85})
-    with pytest.raises(d2.Deeptmhmm2Error, match="neither a state nor a side"):
-        _ = d2.parse_record(rec).sides
+    rec = _record(
+        "nnnMMMNNN",
+        "Alpha TM",
+        ["Endoplasmic reticulum membrane", "Nuclear inner membrane"],
+        {"Endoplasmic reticulum membrane": 0.39, "Nuclear inner membrane": 0.39},
+    )
+    pred = d2.parse_record(rec)
+    assert pred.main_membrane_type == "Nuclear inner membrane"  # 'n'/'N' are index 9
+    assert pred.main_membrane_type_idx == 9
+    assert pred.membrane_types[0] == "Nuclear inner membrane"
+    assert pred.sides == "OOOMMMIII"
+
+
+def test_side_characters_from_two_membranes_are_refused():
+    """A string cannot be written in two compartments at once; that is corrupt input."""
+    rec = _record("EEEMMMlll", "Alpha TM", [PM, "Golgi membrane"], {PM: 0.9})
+    with pytest.raises(d2.Deeptmhmm2Error, match="mixes side characters"):
+        d2.parse_record(rec)
 
 
 def test_unknown_character_is_refused_not_guessed():
@@ -212,16 +230,17 @@ def test_transit_peptide_is_not_counted_as_signal_peptide():
 # --------------------------------------------------------------------------- #
 
 
-def test_multi_label_types_are_ordered_by_probability():
+def test_multi_label_types_reported_with_the_strings_membrane_first():
+    """All types over threshold are kept; the one the string is written in leads."""
     rec = _record(
-        "EEEMMMeee",
+        "LLLMMMlll",
         "Alpha TM",
         [PM, "Golgi membrane"],
         {PM: 0.40, "Golgi membrane": 0.85},
     )
     pred = d2.parse_record(rec)
-    assert pred.membrane_types == ["Golgi membrane", PM]
     assert pred.main_membrane_type == "Golgi membrane"
+    assert pred.membrane_types == ["Golgi membrane", PM]
     assert pred.plasma_membrane is True  # still a member of the set
     assert pred.plasma_membrane_prob == 0.40
 

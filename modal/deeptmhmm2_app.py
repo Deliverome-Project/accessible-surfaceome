@@ -283,6 +283,12 @@ def _payloads(records: list[dict], run_id: str, size: int, prefix: str) -> list[
 
 
 @app.local_entrypoint()
+def fingerprint() -> None:
+    """Print the tool_version string the publish step must record."""
+    print(weights_fingerprint.remote())
+
+
+@app.local_entrypoint()
 def canary(n: int = 50, cohorts: str = "human_canonical,human_isoforms") -> None:
     """Run a small sample, report measured throughput and a projected full-sweep cost.
 

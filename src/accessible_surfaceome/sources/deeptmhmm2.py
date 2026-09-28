@@ -101,6 +101,13 @@ CYTOPLASMIC_SIDE: dict[int, str] = {
     20: "a",
 }
 
+# Side character -> membrane index. Unambiguous: no membrane shares a character with
+# another, and no state character (S, M, B, R, F, >) collides with a side character.
+SIDE_CHAR_TO_MEMBRANE: dict[str, int] = {
+    char: idx for idx, sides in MEMBRANE_TOPOLOGY_MAP.items() for char in sides.values()
+}
+
+
 DISPLAY_TO_TYPE_CODE: dict[str, str] = {
     "Alpha TM": "M",
     "Alpha TM + SP": "M+S",
@@ -358,6 +365,8 @@ def parse_record(record: dict[str, Any]) -> Prediction:
     type_code = _type_code(display)
 
     names = list(record["membrane_types"])
+    # Already rounded to 2dp by the predictor; stored as-is, but never used to pick
+    # the main membrane (see below).
     raw_probs = record["membrane_types_probabilities"]
     probs = {
         name: round(float(raw_probs[idx]), 2)
@@ -386,13 +395,39 @@ def parse_record(record: dict[str, Any]) -> Prediction:
     if unknown:
         raise Deeptmhmm2Error(f"{accession}: unrecognised membrane type(s) {unknown}")
     ordered = sorted(names, key=lambda n: probs.get(n, 0.0), reverse=True)
+
+    # The main membrane comes from the topology string's own side characters, NOT from
+    # re-running the argmax over membrane_types_probabilities. predictions.json stores
+    # those already rounded to 2dp, so ties are common and unresolvable: H3BTG2 has ER and
+    # nuclear inner membrane both at 0.39, the predictor translated the string with
+    # nuclear, and re-deriving from the rounded values picks ER -- after which every side
+    # character in the string is unreadable. The string is the authority.
+    found = {SIDE_CHAR_TO_MEMBRANE[c] for c in topology if c in SIDE_CHAR_TO_MEMBRANE}
+    if len(found) > 1:
+        raise Deeptmhmm2Error(
+            f"{accession}: topology mixes side characters from membranes {sorted(found)}"
+        )
+    if found:
+        main_idx = found.pop()
+        main_name = MEMBRANE_TYPE_NAMES.get(main_idx)
+    else:
+        # All-membrane or I/O-only string: fall back to the probability ranking.
+        main_name = ordered[0]
+        main_idx = by_name[main_name]
+    if main_name is not None and main_name not in ordered:
+        # Keep membrane_types consistent with the string: the translated membrane must be
+        # in the reported set, and first, since it is the one the prediction is written in.
+        ordered = [main_name] + ordered
+    elif main_name is not None:
+        ordered = [main_name] + [n for n in ordered if n != main_name]
+
     return Prediction(
         accession=accession,
         type_code=type_code,
         structural_type=display,
         topology_string=topology,
-        main_membrane_type=ordered[0],
-        main_membrane_type_idx=by_name[ordered[0]],
+        main_membrane_type=main_name,
+        main_membrane_type_idx=main_idx,
         membrane_types=ordered,
         membrane_type_probs=probs,
     )

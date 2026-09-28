@@ -78,8 +78,13 @@ runs = modal.Volume.from_name("signalp6-runs", create_if_missing=True)
 MODELS_MOUNT = "/models"
 RUNS_MOUNT = "/runs"
 
-# 73 fixed tokens per sequence, so batches are bounded by count, not by residues.
-SHARD_SIZE = 2_000
+# 73 fixed tokens per sequence, so batches are bounded by count, not by residues. Sized
+# from the canary's measured 2.8 GPU-s/sequence: 2,000 would take 93 min against the
+# 60-min timeout below, i.e. every shard would have died. 1,000 runs ~47 min, and the
+# timeout is raised to 3 h so a slow container still finishes rather than being lost.
+# Larger shards are cheaper (the six 1.63 GB models load once per container), so this is
+# the largest size that keeps a wide margin rather than the smallest that parallelises.
+SHARD_SIZE = 1_000
 BATCH_SIZE = 64
 USD_PER_GPU_SECOND = {"T4": 0.000164}
 
@@ -189,10 +194,10 @@ def convert_models(force: bool = False) -> str:
 @app.function(
     image=image,
     gpu="T4",
-    timeout=60 * 60,
+    timeout=3 * 60 * 60,
     retries=modal.Retries(max_retries=2, backoff_coefficient=2.0),
     volumes={MODELS_MOUNT: models, RUNS_MOUNT: runs},
-    max_containers=20,
+    max_containers=25,
 )
 def predict_shard(payload: dict) -> dict:
     """Run SignalP 6 slow-sequential over one shard."""
