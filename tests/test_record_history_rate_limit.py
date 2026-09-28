@@ -10,9 +10,12 @@ import pytest
 
 from accessible_surfaceome.cloud.record_history.rate_limit import (
     DEFAULT_D1_QPS,
+    DEFAULT_SWEEP_GPS,
     QPS_ENV_VAR,
+    SWEEP_GPS_ENV_VAR,
     RateLimiter,
     d1_qps_from_env,
+    sweep_gps_from_env,
 )
 
 
@@ -178,3 +181,52 @@ def test_concurrent_acquires_are_serialized_and_all_paced() -> None:
 
     # 20 distinct scheduled slots, each 0.01s apart (100 qps).
     assert len(set(results)) == 20
+
+
+# ---------------------------------------------------------------------------
+# sweep_gps_from_env — the independent pacing axis for the record-history
+# sweep's Worker fetches (RECORD_HISTORY_SWEEP_GPS). Same parsing contract
+# as d1_qps_from_env (they share _qps_from_env), so this is a light pass
+# confirming the sweep-specific constant/env-var wiring, not a re-test of
+# every edge case already covered above for the D1 axis.
+# ---------------------------------------------------------------------------
+
+
+def test_default_sweep_gps_is_two(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv(SWEEP_GPS_ENV_VAR, raising=False)
+    assert sweep_gps_from_env() == DEFAULT_SWEEP_GPS == 2.0
+
+
+def test_sweep_gps_env_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(SWEEP_GPS_ENV_VAR, "0")
+    assert sweep_gps_from_env() == 0.0
+
+    monkeypatch.setenv(SWEEP_GPS_ENV_VAR, "3.5")
+    assert sweep_gps_from_env() == 3.5
+
+
+def test_sweep_gps_is_independent_of_the_d1_qps_env_var(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Setting RECORD_HISTORY_D1_QPS must not move the sweep pacing default
+    (and vice versa) — the two axes pace different things (D1 writes vs.
+    Worker fetch starts) and must be tunable independently."""
+    monkeypatch.setenv(QPS_ENV_VAR, "9")
+    monkeypatch.delenv(SWEEP_GPS_ENV_VAR, raising=False)
+    assert sweep_gps_from_env() == DEFAULT_SWEEP_GPS
+
+    monkeypatch.delenv(QPS_ENV_VAR, raising=False)
+    monkeypatch.setenv(SWEEP_GPS_ENV_VAR, "9")
+    assert d1_qps_from_env() == DEFAULT_D1_QPS
+
+
+def test_sweep_gps_garbage_falls_back_to_default_with_warning(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    import logging
+
+    monkeypatch.setenv(SWEEP_GPS_ENV_VAR, "not-a-number")
+    with caplog.at_level(logging.WARNING):
+        value = sweep_gps_from_env()
+    assert value == DEFAULT_SWEEP_GPS
+    assert any(SWEEP_GPS_ENV_VAR in r.message for r in caplog.records)
