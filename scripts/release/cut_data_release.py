@@ -160,6 +160,16 @@ def main() -> None:
         default=DATA_CONCEPT_RECID,
         help="Zenodo concept-record id to draft a new version under.",
     )
+    ap.add_argument(
+        "--max-genes-per-second",
+        type=float,
+        default=None,
+        help=(
+            "passed straight through to the pre-cut sweep — see "
+            "sweep_record_history.py's --max-genes-per-second (same default: "
+            "2.0, or $RECORD_HISTORY_SWEEP_GPS; 0 disables pacing)."
+        ),
+    )
     args = ap.parse_args()
     load_env()
 
@@ -217,7 +227,12 @@ def main() -> None:
         return
 
     if not args.resume:
-        counts = sweep(None, execute=True, workers=8)
+        counts = sweep(
+            None,
+            execute=True,
+            workers=8,
+            max_genes_per_second=args.max_genes_per_second,
+        )
         if counts["failed"]:
             raise SystemExit(
                 f"sweep had {counts['failed']} failures — fix and re-run before cutting"

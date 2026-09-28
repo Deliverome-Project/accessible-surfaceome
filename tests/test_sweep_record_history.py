@@ -19,7 +19,11 @@ from pathlib import Path
 import httpx
 import pytest
 
-from accessible_surfaceome.cloud.record_history.archive import Served
+from accessible_surfaceome.cloud.d1_client import D1Error
+from accessible_surfaceome.cloud.record_history.archive import (
+    ArchiveResult,
+    Served,
+)
 from accessible_surfaceome.cloud.record_history.store import ArchiveError
 
 _SCRIPT = (
@@ -52,6 +56,38 @@ class _FakeCloudRevisionStore:
     def from_env(cls, *, require_s3: bool = False) -> _FakeStore:
         cls.require_s3_seen.append(require_s3)
         return _FakeStore()
+
+
+class FakeClock:
+    """A monotonically-advancing fake clock; `sleep` just advances it.
+
+    Same shape as ``tests/test_record_history_rate_limit.py``'s — duplicated
+    here (rather than imported) to keep this test file self-contained, per
+    house convention for standalone ``scripts/`` entry-point tests.
+    """
+
+    def __init__(self, start: float = 0.0) -> None:
+        self.now = start
+        self.slept: list[float] = []
+
+    def clock(self) -> float:
+        return self.now
+
+    def sleep(self, seconds: float) -> None:
+        self.slept.append(seconds)
+        self.now += seconds
+
+
+def _patch_sweep_prereqs(monkeypatch: pytest.MonkeyPatch, genes: list[str]) -> None:
+    """Common plumbing for a fake ``--execute`` sweep: token, gene listing,
+    S3-client stub, and a fake ``CloudRevisionStore``/``purge_paths``."""
+    monkeypatch.setenv("ARCHIVE_BYPASS_TOKEN", "tok")
+    monkeypatch.setattr(_mod, "load_env", lambda: None)
+    monkeypatch.setattr(_mod, "annotated_genes", lambda http, token, base=None: list(genes))
+    monkeypatch.setattr(_mod, "r2_s3_client", lambda: object())
+    _FakeCloudRevisionStore.require_s3_seen = []
+    monkeypatch.setattr(_mod, "CloudRevisionStore", _FakeCloudRevisionStore)
+    monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
 
 
 def test_dry_run_does_not_call_archive_gene(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -196,7 +232,7 @@ def test_aborts_after_n_consecutive_failures_of_any_kind(
     # guard's trip-then-skip transition land inside the SAME thread that
     # runs the very next task, so the call count below is exact rather than
     # a race against the orchestrating thread's own bookkeeping.
-    counts = _mod.sweep(None, execute=True, workers=1)
+    counts = _mod.sweep(None, execute=True, workers=1, max_genes_per_second=0)
 
     n = _mod.ABORT_AFTER_N_CONSECUTIVE_FAILURES
     assert len(calls) == n
@@ -233,7 +269,8 @@ def test_check_stability_all_stable_returns_empty(
 
     with httpx.Client() as http:
         unstable = _mod.check_stability(
-            ["EGFR", "CD63"], sample=50, seed=0, http=http, token="tok", workers=1
+            ["EGFR", "CD63"], sample=50, seed=0, http=http, token="tok", workers=1,
+            max_genes_per_second=0,
         )
 
     assert unstable == {}
@@ -257,7 +294,8 @@ def test_check_stability_names_the_gene_that_flips(
 
     with httpx.Client() as http:
         unstable = _mod.check_stability(
-            ["EGFR", "CD63"], sample=50, seed=0, http=http, token="tok", workers=1
+            ["EGFR", "CD63"], sample=50, seed=0, http=http, token="tok", workers=1,
+            max_genes_per_second=0,
         )
 
     assert unstable == {"CD63": ["record"]}
@@ -288,7 +326,8 @@ def test_check_stability_reports_degraded_gene_as_error(
 
     with httpx.Client() as http:
         unstable = _mod.check_stability(
-            ["EGFR", "S100A7A"], sample=50, seed=0, http=http, token="tok", workers=1
+            ["EGFR", "S100A7A"], sample=50, seed=0, http=http, token="tok", workers=1,
+            max_genes_per_second=0,
         )
 
     assert unstable == {"S100A7A": ["error"]}
@@ -299,7 +338,8 @@ def test_check_stability_requires_a_token() -> None:
     with httpx.Client() as http:
         with pytest.raises(SystemExit) as exc_info:
             _mod.check_stability(
-                None, sample=50, seed=0, http=http, token="", workers=1
+                None, sample=50, seed=0, http=http, token="", workers=1,
+                max_genes_per_second=0,
             )
     assert exc_info.value.code == 1
 
@@ -322,7 +362,8 @@ def test_check_stability_never_touches_the_store(
 
     with httpx.Client() as http:
         unstable = _mod.check_stability(
-            ["EGFR"], sample=50, seed=0, http=http, token="tok", workers=1
+            ["EGFR"], sample=50, seed=0, http=http, token="tok", workers=1,
+            max_genes_per_second=0,
         )
 
     assert unstable == {}
@@ -346,11 +387,17 @@ def test_check_stability_sample_is_seeded_and_reproducible(
     )
 
     with httpx.Client() as http:
-        _mod.check_stability(None, sample=5, seed=42, http=http, token="tok", workers=1)
+        _mod.check_stability(
+            None, sample=5, seed=42, http=http, token="tok", workers=1,
+            max_genes_per_second=0,
+        )
     first = sorted(set(seen))
     seen.clear()
     with httpx.Client() as http:
-        _mod.check_stability(None, sample=5, seed=42, http=http, token="tok", workers=1)
+        _mod.check_stability(
+            None, sample=5, seed=42, http=http, token="tok", workers=1,
+            max_genes_per_second=0,
+        )
     second = sorted(set(seen))
 
     assert first == second
@@ -363,7 +410,16 @@ def test_main_check_stability_honours_genes_and_exits_nonzero_when_unstable(
     monkeypatch.setenv("ARCHIVE_BYPASS_TOKEN", "tok")
     monkeypatch.setattr(_mod, "load_env", lambda: None)
     monkeypatch.setattr(
-        sys, "argv", ["sweep_record_history.py", "--check-stability", "--genes", "EGFR"]
+        sys,
+        "argv",
+        [
+            "sweep_record_history.py",
+            "--check-stability",
+            "--genes",
+            "EGFR",
+            "--max-genes-per-second",
+            "0",
+        ],
     )
     monkeypatch.setattr(
         _mod,
@@ -394,7 +450,16 @@ def test_main_check_stability_exits_zero_when_stable(
     monkeypatch.setenv("ARCHIVE_BYPASS_TOKEN", "tok")
     monkeypatch.setattr(_mod, "load_env", lambda: None)
     monkeypatch.setattr(
-        sys, "argv", ["sweep_record_history.py", "--check-stability", "--genes", "EGFR"]
+        sys,
+        "argv",
+        [
+            "sweep_record_history.py",
+            "--check-stability",
+            "--genes",
+            "EGFR",
+            "--max-genes-per-second",
+            "0",
+        ],
     )
     monkeypatch.setattr(
         _mod,
@@ -438,3 +503,246 @@ def test_base_only_allowed_with_check_stability(
     with pytest.raises(SystemExit) as exc:
         _mod.main()
     assert exc.value.code == 2
+
+
+# ---------------------------------------------------------------------------
+# --max-genes-per-second pacing + server-error back-off
+# ---------------------------------------------------------------------------
+
+
+def test_sweep_paces_gene_starts_regardless_of_worker_count(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """N genes must take >= (N-1)/gps of *simulated* time to archive, even
+    with a large worker pool — RateLimiter paces gene STARTS, not the pool's
+    throughput, which is the whole point (8 idle workers must not let the
+    sweep burst past the pace)."""
+    fc = FakeClock()
+    genes = [f"GENE{i}" for i in range(6)]
+    _patch_sweep_prereqs(monkeypatch, genes)
+    monkeypatch.setattr(
+        _mod,
+        "archive_gene",
+        lambda symbol, *, source, http, store, token: _mod.ArchiveResult(
+            symbol, "unchanged", 1
+        ),
+    )
+
+    gps = 2.0
+    counts = _mod.sweep(
+        None,
+        execute=True,
+        workers=8,
+        max_genes_per_second=gps,
+        clock=fc.clock,
+        sleep=fc.sleep,
+    )
+
+    assert counts["unchanged"] == len(genes)
+    assert fc.now >= (len(genes) - 1) / gps - 1e-9
+
+
+def test_check_stability_paces_each_fetch_call_as_its_own_unit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """--check-stability fetches each gene TWICE; each fetch_served call
+    must pace as its own unit so a stability run costs the shared D1 exactly
+    as much per gene as an --execute sweep costs per two genes, at the same
+    per-unit rate."""
+    fc = FakeClock()
+    genes = ["EGFR", "CD63"]
+    monkeypatch.setattr(
+        _mod,
+        "fetch_served",
+        lambda symbol, *, http, token, base=None: _served(symbol, 1),
+    )
+
+    gps = 2.0
+    with httpx.Client() as http:
+        unstable = _mod.check_stability(
+            genes,
+            sample=50,
+            seed=0,
+            http=http,
+            token="tok",
+            workers=8,
+            max_genes_per_second=gps,
+            clock=fc.clock,
+            sleep=fc.sleep,
+        )
+
+    assert unstable == {}
+    n_fetch_units = 2 * len(genes)
+    assert fc.now >= (n_fetch_units - 1) / gps - 1e-9
+
+
+def test_max_genes_per_second_zero_disables_pacing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fc = FakeClock()
+    genes = [f"GENE{i}" for i in range(5)]
+    _patch_sweep_prereqs(monkeypatch, genes)
+    monkeypatch.setattr(
+        _mod,
+        "archive_gene",
+        lambda symbol, *, source, http, store, token: _mod.ArchiveResult(
+            symbol, "unchanged", 1
+        ),
+    )
+
+    _mod.sweep(
+        None,
+        execute=True,
+        workers=1,
+        max_genes_per_second=0,
+        clock=fc.clock,
+        sleep=fc.sleep,
+    )
+
+    assert fc.slept == []
+    assert fc.now == 0.0
+
+
+def test_is_server_error_classification() -> None:
+    request = httpx.Request("GET", "https://x")
+
+    def status(code: int) -> httpx.HTTPStatusError:
+        return httpx.HTTPStatusError(
+            "x", request=request, response=httpx.Response(code, request=request)
+        )
+
+    assert _mod._is_server_error(status(500)) is True
+    assert _mod._is_server_error(status(503)) is True
+    assert _mod._is_server_error(status(404)) is False
+    assert _mod._is_server_error(status(400)) is False
+    assert _mod._is_server_error(D1Error("d1 down")) is True
+    assert _mod._is_server_error(ArchiveError("bad token")) is False
+    assert _mod._is_server_error(ValueError("unrelated")) is False
+
+
+def test_server_error_backoff_grows_and_resets_after_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """G1 and G2 5xx (pauses 5s, then 10s scheduled before the NEXT gene
+    starts); G3 pays the 10s pause and then succeeds, resetting the streak;
+    G4 pays no pause. Pacing is disabled (max_genes_per_second=0) so every
+    recorded sleep is attributable to the back-off alone. workers=1 makes
+    execution strictly sequential in submission order, so the pause
+    schedule is deterministic (same pattern already relied on by
+    test_aborts_after_n_consecutive_failures_of_any_kind)."""
+    fc = FakeClock()
+    genes = ["G1", "G2", "G3", "G4"]
+    request = httpx.Request("GET", "https://api.test/x")
+
+    def _fake_archive_gene(
+        symbol: str, *, source: str, http: object, store: object, token: str
+    ) -> ArchiveResult:
+        if symbol in ("G1", "G2"):
+            response = httpx.Response(500, request=request)
+            raise httpx.HTTPStatusError("boom", request=request, response=response)
+        return _mod.ArchiveResult(symbol, "unchanged", 1)
+
+    _patch_sweep_prereqs(monkeypatch, genes)
+    monkeypatch.setattr(_mod, "archive_gene", _fake_archive_gene)
+
+    counts = _mod.sweep(
+        None,
+        execute=True,
+        workers=1,
+        max_genes_per_second=0,
+        clock=fc.clock,
+        sleep=fc.sleep,
+    )
+
+    assert counts["failed"] == 2
+    assert counts["unchanged"] == 2
+    assert fc.slept == [pytest.approx(5.0), pytest.approx(10.0)]
+
+
+def test_server_error_backoff_caps_at_60s_and_resets_on_success() -> None:
+    """Direct unit test of ``_ServerErrorBackoff`` (bypassing ``sweep()``'s
+    abort-after-5-consecutive-failures guard, which would itself trip and
+    stop feeding it new genes long before the interval reaches the 60s cap —
+    the growth/cap/reset behavior is a property of the class on its own)."""
+    fc = FakeClock()
+    backoff = _mod._ServerErrorBackoff(clock=fc.clock, sleep=fc.sleep)
+
+    backoff.before_gene()
+    assert fc.slept == []  # nothing pending yet
+
+    for expected in (5.0, 10.0, 20.0, 40.0, 60.0, 60.0):  # 5th+ streak caps at 60s
+        backoff.record_server_error()
+        backoff.before_gene()
+        assert fc.slept[-1] == pytest.approx(expected)
+
+    backoff.record_success()
+    backoff.before_gene()
+    assert fc.slept[-1] == pytest.approx(60.0)  # no NEW sleep recorded post-reset
+
+    # After a reset, the next server error starts back at the base interval.
+    backoff.record_server_error()
+    backoff.before_gene()
+    assert fc.slept[-1] == pytest.approx(5.0)
+
+
+def test_d1_error_also_triggers_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+    fc = FakeClock()
+    genes = ["G1", "G2"]
+
+    def _fake_archive_gene(
+        symbol: str, *, source: str, http: object, store: object, token: str
+    ) -> ArchiveResult:
+        if symbol == "G1":
+            raise D1Error("d1 down")
+        return _mod.ArchiveResult(symbol, "unchanged", 1)
+
+    _patch_sweep_prereqs(monkeypatch, genes)
+    monkeypatch.setattr(_mod, "archive_gene", _fake_archive_gene)
+
+    _mod.sweep(
+        None,
+        execute=True,
+        workers=1,
+        max_genes_per_second=0,
+        clock=fc.clock,
+        sleep=fc.sleep,
+    )
+
+    assert fc.slept == [pytest.approx(5.0)]
+
+
+def test_check_stability_also_backs_off_on_server_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fc = FakeClock()
+    genes = ["G1", "G2"]
+    request = httpx.Request("GET", "https://api.test/x")
+    calls: dict[str, int] = {}
+
+    def _fake_fetch_served(
+        symbol: str, *, http: object, token: str, base: str | None = None
+    ) -> Served:
+        calls[symbol] = calls.get(symbol, 0) + 1
+        if symbol == "G1" and calls[symbol] == 1:
+            response = httpx.Response(503, request=request)
+            raise httpx.HTTPStatusError("boom", request=request, response=response)
+        return _served(symbol, 1)
+
+    monkeypatch.setattr(_mod, "fetch_served", _fake_fetch_served)
+
+    with httpx.Client() as http:
+        unstable = _mod.check_stability(
+            genes,
+            sample=50,
+            seed=0,
+            http=http,
+            token="tok",
+            workers=1,
+            max_genes_per_second=0,
+            clock=fc.clock,
+            sleep=fc.sleep,
+        )
+
+    assert unstable == {"G1": ["error"]}
+    # G1's failure schedules a 5s pause before G2 starts.
+    assert fc.slept == [pytest.approx(5.0)]

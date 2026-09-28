@@ -186,7 +186,10 @@ ops and D1 queries alike): R2 writes go through the S3-compatible API
 ([`cloud/r2_s3.py`](src/accessible_surfaceome/cloud/r2_s3.py)) using
 credentials derived from `CLOUDFLARE_API_TOKEN`, and D1 calls made
 through `CloudRevisionStore` are throttled via `RECORD_HISTORY_D1_QPS`
-(default 2.5 qps, `0` disables).
+(default 2.5 qps, `0` disables). Separately, the sweep paces Worker fetches
+(`--max-genes-per-second`, default 2) because each bypassed record fetch
+costs ~17 queries on the shared public D1; never raise it during business
+hours.
 
 `scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
 rewrites whole tables that back cohort endpoints — and it purges those

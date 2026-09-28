@@ -446,3 +446,77 @@ def test_get_object_with_retry_missing_object_returns_none_no_retry(
 
     assert _mod._get_object_with_retry("records/sha256/missing.json") is None
     assert client.calls == 1  # a real miss is never retried
+
+
+# ---------------------------------------------------------------------------
+# --max-genes-per-second threading through to the pre-cut sweep.
+# ---------------------------------------------------------------------------
+
+
+def test_max_genes_per_second_defaults_to_none_so_sweep_inherits_its_own_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No --max-genes-per-second on the CLI must pass ``None`` through to
+    ``sweep(...)`` — not, say, a hardcoded 2.0 here — so a bump to
+    sweep_record_history's own default/env fallback is automatically
+    inherited here too, per the module docstring's "thread the parameter
+    through with the same default" note."""
+    d1 = _FakeD1(release_rows=[])
+    monkeypatch.setattr(_mod, "load_env", lambda: None)
+    monkeypatch.setattr(_mod.D1Client, "public", classmethod(lambda cls: d1))
+    monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "test-account")
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "test-token")
+    sweep_calls: list[dict[str, Any]] = []
+
+    def _fake_sweep(*_a: Any, **kw: Any) -> Counter[str]:
+        sweep_calls.append(kw)
+        return Counter({"failed": 1})  # short-circuits before create_release
+
+    monkeypatch.setattr(_mod, "sweep", _fake_sweep)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["cut_data_release.py", "--version", _REAL_PYPROJECT_VERSION, "--execute"],
+    )
+
+    with pytest.raises(SystemExit, match="sweep had 1 failures"):
+        _mod.main()
+
+    assert len(sweep_calls) == 1
+    assert sweep_calls[0]["max_genes_per_second"] is None
+
+
+def test_max_genes_per_second_cli_flag_is_threaded_through_to_sweep(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    d1 = _FakeD1(release_rows=[])
+    monkeypatch.setattr(_mod, "load_env", lambda: None)
+    monkeypatch.setattr(_mod.D1Client, "public", classmethod(lambda cls: d1))
+    monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "test-account")
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "test-token")
+    sweep_calls: list[dict[str, Any]] = []
+
+    def _fake_sweep(*_a: Any, **kw: Any) -> Counter[str]:
+        sweep_calls.append(kw)
+        return Counter({"failed": 1})
+
+    monkeypatch.setattr(_mod, "sweep", _fake_sweep)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "cut_data_release.py",
+            "--version",
+            _REAL_PYPROJECT_VERSION,
+            "--execute",
+            "--max-genes-per-second",
+            "5",
+        ],
+    )
+
+    with pytest.raises(SystemExit, match="sweep had 1 failures"):
+        _mod.main()
+
+    assert sweep_calls[0]["max_genes_per_second"] == 5.0
