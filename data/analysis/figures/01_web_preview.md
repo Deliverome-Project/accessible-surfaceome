@@ -20,8 +20,14 @@ AlphaFold pLDDT + structure links, orthologs, paralogs ≥ 80 % ECD
 identity, SURFACE-Bind MaSIF patches, Schweke 2024 homo-oligomer
 state).
 
-This figure is an author-drawn SVG mockup — there is no reproduction
-script or data TSV. The gist bundles the SVG alone for embedding.
+Reproduce it with `uv run --with playwright make_web_preview.py`, which
+screenshots the live site and rebuilds the SVG. There is no data TSV —
+the inputs are the two pages themselves, so a re-run reproduces the
+figure as the viewer looks *today* rather than byte-for-byte as
+published. That is deliberate: it is how the panels get caught going
+stale. The canonical generator is
+[`scripts/figures/web_preview.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/web_preview.py).
+Playwright drives a real browser, so Chrome must be installed.
 The viewer's code lives at
 [`viewer/`](https://github.com/Deliverome-Project/accessible-surfaceome/tree/main/viewer)
 in the project repo and ships as its own Cloudflare Pages project;
