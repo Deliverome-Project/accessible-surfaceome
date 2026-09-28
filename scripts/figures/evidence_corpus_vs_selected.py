@@ -191,7 +191,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
         mask = verdicts == verdict
         ax.scatter(
             found[mask], selected[mask],
-            s=70, alpha=0.72, edgecolor="white", linewidth=0.6,
+            s=70, alpha=0.32, edgecolor="white", linewidth=0.6,
             color=VERDICT_COLOR[verdict],
             label=f"{VERDICT_LABEL[verdict]}  (n={counts.get(verdict, 0)})",
             zorder=3 + VERDICT_ORDER.index(verdict),
