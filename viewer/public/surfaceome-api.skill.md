@@ -72,6 +72,16 @@ Every distinct state the API served for a gene (record, evidence ledger, Markdow
 | `GET` | `/v1/releases/{version}` | One release: metadata + the revision of every gene in it | 60s until published, then immutable |
 | `GET` | `/v1/releases/{version}/genes/{SYMBOL}` | A gene as it was in that release; also `/evidence` and `.md` | immutable |
 
+### Reproducibility replicates
+
+**Not published records** — never use these in place of `/v1/genes/{SYMBOL}`. For the run-to-run reproducibility analysis (Supplementary Figure 15), 50 deep-dive genes drawn at random were re-analysed, and each is held three ways: `published_snapshot` (the published record as served when the study ran), `full_rerun` (the whole pipeline from scratch, same prompts) and `fixed_evidence_replay` (section builders + synthesizer re-run on the published evidence). Every response carries `reproducibility_replicate: true`.
+
+| Method | Path | Returns | TTL |
+|---|---|---|---|
+| `GET` | `/v1/replicates` | Every replicate study with its kinds and genes (metadata only) | 60s |
+| `GET` | `/v1/genes/{SYMBOL}/replicates` | The replicates held for one gene, with a link to each; 404 `no_replicates` if not sampled | 1 day |
+| `GET` | `/v1/genes/{SYMBOL}/replicates/{study}/{kind}` | One replicate record in full (evidence included) under `.record`, plus study / kind / run ids and the shared `deep_dive_tier` | 1 day |
+
 Gene symbols are case-insensitive on the wire (the Worker uppercases them) but the canonical HGNC form is upper-case.
 
 ## SurfaceomeRecord shape (per-gene deep-dive)

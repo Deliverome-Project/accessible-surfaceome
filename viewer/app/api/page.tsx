@@ -307,6 +307,38 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
     ],
   },
   {
+    label: "Reproducibility",
+    blurb:
+      "Reproducibility replicates — NOT published records. For the run-to-run reproducibility analysis (Supplementary Figure 15), 50 deep-dive genes drawn at random were re-analysed; each is held three ways: the published record as served when the study ran (published_snapshot), a full from-scratch re-run with the same prompts (full_rerun), and a fixed-evidence replay that re-ran only the section builders and synthesizer on the published evidence (fixed_evidence_replay). Every response carries reproducibility_replicate: true and a link back to the published record, which stays at /v1/genes/{SYMBOL}. The same records are deposited on Zenodo.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/replicates",
+        anchor: "replicates",
+        summary:
+          "Every replicate study with its kinds and genes (metadata only).",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/replicates | jq '.studies[] | {study_id, n_genes, kinds: (.kinds | keys)}'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/replicates",
+        summary:
+          "The replicates held for one gene, with a link to each; 404 if the gene was not sampled.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates | jq '.replicates[] | {replicate_kind, url}'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/replicates/{study}/{kind}",
+        summary:
+          "One replicate SurfaceomeRecord in full (evidence included) under .record, wrapped with its study, kind, run ids and the deep-dive tier computed by the same rule as the published record. kind is published_snapshot, full_rerun or fixed_evidence_replay.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates/deep_dive_concordance_v1/full_rerun | jq '.reproducibility_replicate, .deep_dive_tier, .record.filters.surface_accessibility'",
+      },
+    ],
+  },
+  {
     label: "Discovery & utility",
     blurb:
       "Self-describing entry points for agents and tooling. Start at /v1 to walk the whole surface without scraping this page; the site root also serves an llms.txt that points here.",

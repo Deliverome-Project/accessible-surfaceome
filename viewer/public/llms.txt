@@ -38,6 +38,14 @@ Every distinct state the API served for a gene (record, evidence ledger, Markdow
 - [One release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0): one release's metadata + the revision of every gene in it.
 - [A gene in a release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/ERBB2): a gene as it was in that release; also `/evidence` and `.md`.
 
+## Reproducibility replicates
+
+Not published records. 50 deep-dive genes drawn at random were re-analysed for the run-to-run reproducibility analysis (Supplementary Figure 15): the published record as served when the study ran, a full from-scratch re-run with the same prompts, and a fixed-evidence replay. Every response carries `reproducibility_replicate: true`; the published record stays at `/v1/genes/{SYMBOL}`.
+
+- [Replicate studies](https://api.deliverome.org/surfaceome/v1/replicates): every study with its replicate kinds and genes.
+- [A gene's replicates](https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates): the replicates held for one gene, with a link to each (404 if the gene was not sampled).
+- [One replicate](https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates/deep_dive_concordance_v1/full_rerun): one replicate record in full under `.record`; kind is `published_snapshot`, `full_rerun` or `fixed_evidence_replay`.
+
 ## Reference
 
 - [SurfaceomeRecord schema](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/src/accessible_surfaceome/tools/_shared/models.py): the Pydantic source of truth every per-gene record validates against.
