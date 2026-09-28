@@ -3,7 +3,11 @@
 Six-bar comparison:
   * Sonnet (+ NCBI)        — the LLM, canonical NCBI-resolver variant
   * UniProt (TM+signal)    — best single DB under its optimized cutoff
-  * ≥2 / ≥3 / ≥4 / ≥5 DB   — ensemble: "yes" iff at least k of the 5
+  * ≥1 … ≥5 DB            — ensemble: "yes" iff at least k of the 5
+                              surface DBs vote yes. k=1 is the union
+                              (any DB), the most permissive setting; it
+                              matches the agent's sensitivity and loses
+                              nearly all specificity.
                               surface DBs (each under its optimized
                               cutoff) vote yes
 
@@ -21,6 +25,7 @@ Run:
 """
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -44,6 +49,7 @@ CLAUDE_ORANGE = "#d87851"
 # Sequential teal ramp for the ≥k ensembles, light → dark = permissive → strict.
 # Pulled from BRAND_SEQUENTIAL teal so the ensemble bars cluster visually.
 ENSEMBLE_PALETTE = {
+    1: "#A9C7BF",  # teal-lightest — the union (any DB)
     2: "#7AAB9F",  # teal-light
     3: "#4D8A80",
     4: "#3D6B60",
@@ -78,17 +84,26 @@ def main() -> None:
         out["SURFY"]   = row["surfy_surface_flag"] == 1
         return out
 
-    sonnet_ncbi = (
-        data[(data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")]
-        .groupby("gene_symbol", sort=False)["predicted_verdict"].first().to_dict()
-    )
+    # Majority across replicates, not the first one. `.first()` silently
+    # reported replicate 1 as if it were the run's verdict, which flipped
+    # two genes (ABCB9, C3) and understated the agent by 1.4 pp. Same bug
+    # class as the reason-collapse fix in curator_vs_agent_reason.py.
+    _sonnet_rows = data[
+        (data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")
+    ]
+    sonnet_ncbi = {
+        gene: Counter(verdicts).most_common(1)[0][0]
+        for gene, verdicts in _sonnet_rows.groupby("gene_symbol", sort=False)[
+            "predicted_verdict"
+        ]
+    }
 
     callers: list[tuple[str, callable, str]] = [
         ("Sonnet (+ NCBI)",      lambda g: sonnet_ncbi.get(g) or "no",                              CLAUDE_ORANGE),
         ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(g).get("UniProt") else "no",
                                                                                                     CATEGORICAL_PALETTE[0]),
     ]
-    for k in (2, 3, 4, 5):
+    for k in (1, 2, 3, 4, 5):
         callers.append((
             f"≥{k} DB",
             (lambda g, k=k: "yes" if sum(db_votes_for(g).values()) >= k else "no"),

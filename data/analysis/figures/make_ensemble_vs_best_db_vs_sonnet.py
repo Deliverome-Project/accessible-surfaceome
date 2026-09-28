@@ -31,6 +31,7 @@ Standalone — ``uv run make_ensemble_vs_best_db_vs_sonnet.py``.
 """
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
 import matplotlib.font_manager as fm
@@ -143,6 +144,7 @@ DB_LABELS = ["UniProt", "GO CC", "HPA", "SURFY", "CSPA"]
 
 # Sequential teal ramp for the ≥k ensembles: light → dark = permissive → strict.
 ENSEMBLE_PALETTE = {
+    1: "#A9C7BF",  # teal-lightest — the union (any DB)
     2: "#7AAB9F",  # teal-light
     3: "#4D8A80",
     4: "#3D6B60",
@@ -207,10 +209,19 @@ def main() -> None:
                 return out
         return out
 
-    sonnet_ncbi = (
-        data[(data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")]
-        .groupby("gene_symbol", sort=False)["predicted_verdict"].first().to_dict()
-    )
+    # Majority across replicates, not the first one. `.first()` silently
+    # reported replicate 1 as if it were the run's verdict, which flipped
+    # two genes (ABCB9, C3) and understated the agent by 1.4 pp. Same bug
+    # class as the reason-collapse fix in curator_vs_agent_reason.py.
+    _sonnet_rows = data[
+        (data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")
+    ]
+    sonnet_ncbi = {
+        gene: Counter(verdicts).most_common(1)[0][0]
+        for gene, verdicts in _sonnet_rows.groupby("gene_symbol", sort=False)[
+            "predicted_verdict"
+        ]
+    }
 
     callers: list[tuple[str, callable, str]] = [
         ("Sonnet (+ IDs)",      lambda g: sonnet_ncbi.get(g) or "no",                              BRAND_CLAUDE_ORANGE),
@@ -219,7 +230,7 @@ def main() -> None:
     ]
     # "k+ DB" rather than "≥k DB" — static Manrope OTFs lack the ≥ glyph
     # and matplotlib silently drops it; ASCII "+" stays robust.
-    for k in (2, 3, 4, 5):
+    for k in (1, 2, 3, 4, 5):
         callers.append((
             f"{k}+ DB",
             (lambda g, k=k: "yes" if sum(db_votes_for(acc_by_gene.get(g, "")).values()) >= k else "no"),
