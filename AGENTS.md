@@ -174,7 +174,14 @@ as content drift on every sweep. Numbered releases
 `pyproject.toml`); it drafts, never publishes, the Zenodo data-record
 version. History endpoints are path-based only (the zone cache rule
 ignores query strings): `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`,
-`/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]`.
+`/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]`. Cohort-scale I/O (the
+seed, the sweep) is kept off the shared Cloudflare account API budget
+(1,200 requests / 5 min across every `api.cloudflare.com` call, R2 REST
+ops and D1 queries alike): R2 writes go through the S3-compatible API
+([`cloud/r2_s3.py`](src/accessible_surfaceome/cloud/r2_s3.py)) using
+credentials derived from `CLOUDFLARE_API_TOKEN`, and D1 calls made
+through `CloudRevisionStore` are throttled via `RECORD_HISTORY_D1_QPS`
+(default 2.5 qps, `0` disables).
 
 `scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
 rewrites whole tables that back cohort endpoints — and it purges those
