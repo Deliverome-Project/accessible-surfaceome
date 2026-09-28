@@ -102,7 +102,15 @@ STAGE2_RUN_IDS = (
     "genome_1db_trim_pubmed_ncbi_v1",
     "genome_optcut_zerodb_pubmed_ncbi_v1",
 )
-STAGE2_REEXAMINED = 2_626 + 10_287 + 1_417 + 74
+# Split by database support, because the two halves are re-read for
+# different reasons. The zero-DB genes have nothing to fall back on if
+# triage says no; the 1-DB genes are the ones the universe gate's trim
+# would drop (single DB vote + high-confidence non-surface). Together they
+# are exactly the set the gate is capable of dropping — that, not a
+# DB-count description, is the actual selection rule.
+STAGE2_ZERO_DB = 2_626 + 10_287 + 74   # ambiguous tail + intracellular + optcut
+STAGE2_ONE_DB = 1_417                  # the 1-of-5-DB trim set
+STAGE2_REEXAMINED = STAGE2_ZERO_DB + STAGE2_ONE_DB
 
 # Figure 4's palette, so the two schematics read as a pair.
 INK = "#1F1718"
@@ -354,18 +362,19 @@ def build(counts: Counts):
         ha="left", va="center", fontsize=11, fontweight="bold",
         color=TEAL, zorder=5,
     )
-    # NOT all zero-database, despite how this used to read. The 14,404 is
-    # four lanes: the zero-DB ambiguous tail (2,626), the zero-DB
-    # confidently-intracellular complement (10,287) and the 74 the
-    # optimized cutoffs moved from 1-DB to 0-DB — but also the 1-of-5-DB
-    # trim set (1,417), which by definition carries a database flag. That
-    # lane exists precisely to re-read the genes the trim would otherwise
-    # drop, so calling the whole set "zero-database" mislabels it and
-    # understates what the second pass covers.
+    # Broken out by database support. "Zero-database" alone was wrong — the
+    # 1,417 in the trim lane carry a flag by definition — but the bare total
+    # hid that the second pass covers two different populations. Showing
+    # both makes the selection rule legible: every call the universe gate
+    # could drop, whether for having no DB support at all or for having
+    # exactly one alongside a high-confidence non-surface verdict.
+    # "against the literature" is dropped; the STAGE 2 header above already
+    # says "literature pass", and the line is needed for the split.
     for i, line in enumerate(
         (
             f"{counts.stage2_reexamined:,} non-surface calls re-read",
-            "against the literature",
+            f"{STAGE2_ZERO_DB:,} with no database flag \u00b7 "
+            f"{STAGE2_ONE_DB:,} with one",
             f"\u2192 {counts.stage2_rescued:,} reclassified as surface",
         )
     ):
