@@ -978,3 +978,17 @@ CREATE TABLE IF NOT EXISTS data_release_member (
     revision    INTEGER NOT NULL,
     PRIMARY KEY (version, gene_symbol)
 );
+
+-- ---------------------------------------------------------------------------
+-- Query-cost indexes (2026-09-28). Applied live to public D1 the same day.
+-- * surface_annotation lookups use `gene_symbol = ? COLLATE NOCASE` (the
+--   mixed-case Cxorf class), which the BINARY PK cannot serve: every record
+--   and evidence fetch scanned all rows (~5.3k, ~1 GB of JSON). Rows read per
+--   lookup: 5,332 → 3.
+-- * The Worker's topology release lookups filter topology_public by cohort
+--   first; the existing (topology_version, cohort, …) index cannot serve that.
+-- ---------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_symbol_nocase
+    ON surface_annotation (gene_symbol COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS idx_topology_public_cohort_version
+    ON topology_public (cohort, topology_version);
