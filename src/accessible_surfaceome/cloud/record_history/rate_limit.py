@@ -11,10 +11,14 @@ ceiling so roughly half the budget stays free for everything else.
 
 from __future__ import annotations
 
+import logging
+import math
 import os
 import threading
 import time
 from collections.abc import Callable
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_D1_QPS = 2.5
 QPS_ENV_VAR = "RECORD_HISTORY_D1_QPS"
@@ -63,13 +67,32 @@ class RateLimiter:
 
 
 def d1_qps_from_env() -> float:
+    """``RECORD_HISTORY_D1_QPS``, defaulting to :data:`DEFAULT_D1_QPS`.
+
+    Only a literal ``0`` disables the limiter (see :class:`RateLimiter`).
+    Anything unparseable, negative, or non-finite (``inf``/``nan`` — ``float()``
+    happily accepts those spellings) logs a warning and falls back to the
+    default rather than silently disabling throttling or pacing at some
+    nonsensical rate.
+    """
     raw = os.environ.get(QPS_ENV_VAR, "").strip()
     if not raw:
         return DEFAULT_D1_QPS
     try:
-        return float(raw)
+        value = float(raw)
     except ValueError:
+        logger.warning(
+            "%s=%r is not a number; using the default %s qps",
+            QPS_ENV_VAR, raw, DEFAULT_D1_QPS,
+        )
         return DEFAULT_D1_QPS
+    if not math.isfinite(value) or value < 0:
+        logger.warning(
+            "%s=%r must be a finite number >= 0; using the default %s qps",
+            QPS_ENV_VAR, raw, DEFAULT_D1_QPS,
+        )
+        return DEFAULT_D1_QPS
+    return value
 
 
 __all__ = ["DEFAULT_D1_QPS", "QPS_ENV_VAR", "RateLimiter", "d1_qps_from_env"]

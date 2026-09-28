@@ -97,6 +97,50 @@ def test_qps_from_env_garbage_falls_back_to_default(monkeypatch: pytest.MonkeyPa
     assert d1_qps_from_env() == DEFAULT_D1_QPS
 
 
+def test_qps_from_env_garbage_logs_a_warning(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    import logging
+
+    monkeypatch.setenv(QPS_ENV_VAR, "banana")
+    with caplog.at_level(logging.WARNING):
+        d1_qps_from_env()
+    assert any(QPS_ENV_VAR in r.message for r in caplog.records)
+
+
+def test_qps_from_env_negative_falls_back_to_default_with_warning(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Only a literal 0 disables — a negative value is not a valid 'off'
+    spelling and must not silently become one."""
+    import logging
+
+    monkeypatch.setenv(QPS_ENV_VAR, "-1")
+    with caplog.at_level(logging.WARNING):
+        value = d1_qps_from_env()
+    assert value == DEFAULT_D1_QPS
+    assert any(QPS_ENV_VAR in r.message for r in caplog.records)
+
+
+@pytest.mark.parametrize("raw", ["inf", "-inf", "nan"])
+def test_qps_from_env_non_finite_falls_back_to_default(
+    monkeypatch: pytest.MonkeyPatch, raw: str
+) -> None:
+    """`float()` happily parses "inf"/"nan" spellings; neither is a sane
+    rate, so both must fall back rather than silently produce a
+    zero-interval (unlimited) or crashing limiter."""
+    monkeypatch.setenv(QPS_ENV_VAR, raw)
+    assert d1_qps_from_env() == DEFAULT_D1_QPS
+
+
+def test_qps_from_env_zero_is_the_only_disabling_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(QPS_ENV_VAR, "0")
+    assert d1_qps_from_env() == 0.0
+    assert RateLimiter(d1_qps_from_env()).enabled is False
+
+
 def test_concurrent_acquires_are_serialized_and_all_paced() -> None:
     """Thread-safety smoke test: N threads racing `acquire()` must each get
     a distinct, monotonically increasing slot — never two threads computing

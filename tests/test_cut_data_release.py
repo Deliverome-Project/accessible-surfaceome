@@ -305,3 +305,144 @@ def test_nondefault_zenodo_api_without_resume_is_refused(
 
     with pytest.raises(SystemExit, match="requires --resume"):
         _mod.main()
+
+
+# ---------------------------------------------------------------------------
+# _retryable_r2_error / _get_object_with_retry — the S3 read path's retry
+# classification.
+# ---------------------------------------------------------------------------
+
+
+def _client_error(status: int, code: str = "500") -> Exception:
+    from botocore.exceptions import ClientError
+
+    return ClientError(
+        {
+            "Error": {"Code": code, "Message": "boom"},
+            "ResponseMetadata": {"HTTPStatusCode": status},
+        },
+        "GetObject",
+    )
+
+
+def test_retryable_r2_error_classifications() -> None:
+    from botocore.exceptions import (
+        EndpointConnectionError,
+        ReadTimeoutError,
+        ResponseStreamingError,
+    )
+
+    assert _mod._retryable_r2_error(httpx.TransportError("boom")) is True
+    request = httpx.Request("GET", "https://x")
+    assert (
+        _mod._retryable_r2_error(
+            httpx.HTTPStatusError(
+                "x", request=request, response=httpx.Response(503, request=request)
+            )
+        )
+        is True
+    )
+    assert (
+        _mod._retryable_r2_error(
+            httpx.HTTPStatusError(
+                "x", request=request, response=httpx.Response(404, request=request)
+            )
+        )
+        is False
+    )
+    assert (
+        _mod._retryable_r2_error(EndpointConnectionError(endpoint_url="https://x"))
+        is True
+    )
+    assert (
+        _mod._retryable_r2_error(ReadTimeoutError(endpoint_url="https://x")) is True
+    )
+    assert (
+        _mod._retryable_r2_error(ResponseStreamingError(error=OSError("broken pipe")))
+        is True
+    )
+    assert _mod._retryable_r2_error(_client_error(500)) is True
+    assert _mod._retryable_r2_error(_client_error(403, code="AccessDenied")) is False
+    assert _mod._retryable_r2_error(ValueError("unrelated")) is False
+
+
+class _FlakyBody:
+    """``StreamingBody``-like object whose ``.read()`` fails N times."""
+
+    def __init__(self, *, fail_times: int, error: Exception, payload: bytes) -> None:
+        self._remaining_failures = fail_times
+        self._error = error
+        self._payload = payload
+
+    def read(self) -> bytes:
+        if self._remaining_failures > 0:
+            self._remaining_failures -= 1
+            raise self._error
+        return self._payload
+
+
+class _FlakyS3Client:
+    def __init__(self, *, fail_times: int, error: Exception, payload: bytes) -> None:
+        self._body = _FlakyBody(fail_times=fail_times, error=error, payload=payload)
+        self.get_object_calls = 0
+
+    def get_object(self, *, Bucket: str, Key: str) -> dict:  # noqa: N803
+        self.get_object_calls += 1
+        return {"Body": self._body}
+
+
+def test_get_object_with_retry_retries_on_read_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from botocore.exceptions import ReadTimeoutError
+
+    client = _FlakyS3Client(
+        fail_times=1,
+        error=ReadTimeoutError(endpoint_url="https://x"),
+        payload=b"the bytes",
+    )
+    monkeypatch.setattr(_mod, "r2_s3_client", lambda: client)
+
+    result = _mod._get_object_with_retry("records/sha256/aa.json")
+
+    assert result == b"the bytes"
+    # .read() was called twice (fail once, succeed once); get_object doesn't
+    # need to be re-issued since the retry decorator wraps the whole
+    # function, not just the Body.read() call — confirms the function-level
+    # retry, not just a body-level one.
+    assert client.get_object_calls == 2
+
+
+def test_get_object_with_retry_retries_on_response_streaming_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from botocore.exceptions import ResponseStreamingError
+
+    client = _FlakyS3Client(
+        fail_times=1,
+        error=ResponseStreamingError(error=OSError("incomplete read")),
+        payload=b"more bytes",
+    )
+    monkeypatch.setattr(_mod, "r2_s3_client", lambda: client)
+
+    result = _mod._get_object_with_retry("records/sha256/bb.json")
+
+    assert result == b"more bytes"
+
+
+def test_get_object_with_retry_missing_object_returns_none_no_retry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _MissingClient:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def get_object(self, *, Bucket: str, Key: str) -> dict:  # noqa: N803
+            self.calls += 1
+            raise _client_error(404, code="NoSuchKey")
+
+    client = _MissingClient()
+    monkeypatch.setattr(_mod, "r2_s3_client", lambda: client)
+
+    assert _mod._get_object_with_retry("records/sha256/missing.json") is None
+    assert client.calls == 1  # a real miss is never retried

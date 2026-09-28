@@ -84,9 +84,21 @@ def _retryable_r2_error(exc: BaseException) -> bool:
         return True
     if isinstance(exc, httpx.HTTPStatusError):
         return exc.response.status_code >= 500
-    from botocore.exceptions import ClientError, EndpointConnectionError
+    from botocore.exceptions import (
+        ClientError,
+        EndpointConnectionError,
+        ReadTimeoutError,
+        ResponseStreamingError,
+    )
 
-    if isinstance(exc, EndpointConnectionError):
+    if isinstance(exc, (EndpointConnectionError, ReadTimeoutError)):
+        return True
+    if isinstance(exc, ResponseStreamingError):
+        # Raised by botocore's StreamingBody.read() when the underlying
+        # urllib3 connection breaks mid-body — wraps things like
+        # IncompleteRead. A body that started streaming and then broke is
+        # exactly the "safe to just retry the whole get_object" transient
+        # case, same as a timeout before any bytes arrived.
         return True
     if isinstance(exc, ClientError):
         status = (exc.response.get("ResponseMetadata") or {}).get("HTTPStatusCode")
