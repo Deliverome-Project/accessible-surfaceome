@@ -11,6 +11,7 @@
   "deep_dive_final_categories": "swh:1:rev:ff04a114198b84ec49b71d7390b8b5ead044c5e4",
   "deep_dive_flow": "swh:1:rev:ddcf5b4d22ab557226725385e122b0cd7f48c3a9",
   "deep_dive_record_richness": "swh:1:rev:b35cb0fa19833193350c41c69107409c9ef453a1",
+  "deep_dive_replicate_kappa": "swh:1:rev:290520dfcf8ddafe0de099b49d2f7c7ce69444b4",
   "deep_dive_vs_sonnet_benchmark": "swh:1:rev:29136bc5b9b27c942998d816cc4e3e4d93955bd6",
   "ensemble_vs_best_db_vs_sonnet": "swh:1:rev:b12e68885f5aac8a717c2e26b1872d7986450fa4",
   "evidence_corpus_vs_selected": "swh:1:rev:f019aa24e274dddb613b9913c89613fae27e6760",

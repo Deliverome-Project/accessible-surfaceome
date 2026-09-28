@@ -122,6 +122,12 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "deep_dive_record_richness": [
         "data/processed/figures/deep_dive_record_richness.tsv",
     ],
+    "deep_dive_replicate_kappa": [
+        # Supp Fig S15 — published vs full re-run and published vs
+        # fixed-evidence replay, one row per gene per comparison. Built by
+        # scripts/build/build_deep_dive_concordance_tsvs.py.
+        "data/processed/figures/deep_dive_replicate_kappa.tsv",
+    ],
     "deep_dive_vs_sonnet_benchmark": [
         # Supp Fig S12 — one row per deep-dived SurfaceBench gene with
         # both predictors' soft-credit correctness + the deep-dive tier +
