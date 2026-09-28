@@ -14,14 +14,18 @@ import httpx
 import pytest
 
 from accessible_surfaceome.cloud import r2_s3
-from accessible_surfaceome.cloud.r2_s3 import R2S3CredentialError, r2_s3_client
+from accessible_surfaceome.cloud.r2_s3 import (
+    R2S3CredentialError,
+    r2_s3_client,
+    reset_r2_s3_client_cache,
+)
 
 
 @pytest.fixture(autouse=True)
 def _clear_client_cache() -> Iterator[None]:
-    r2_s3_client.cache_clear()
+    reset_r2_s3_client_cache()
     yield
-    r2_s3_client.cache_clear()
+    reset_r2_s3_client_cache()
 
 
 def _patch_verify(monkeypatch: pytest.MonkeyPatch, handler) -> list[httpx.Request]:
@@ -158,3 +162,64 @@ def test_r2_s3_client_uses_account_endpoint(monkeypatch: pytest.MonkeyPatch) -> 
 
     assert client.meta.endpoint_url == "https://acct123.r2.cloudflarestorage.com"
     assert client.meta.region_name == "auto"
+
+
+def test_r2_s3_client_config_disables_flexible_checksums(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """botocore >=1.36's flexible-checksum defaults add aws-chunked trailer
+    framing R2 doesn't speak — a known R2/botocore-1.42 incompatibility.
+    Both knobs must be pinned to "when_required" so this client never
+    sends/expects that framing."""
+    monkeypatch.setenv("R2_ACCESS_KEY_ID", "k")
+    monkeypatch.setenv("R2_SECRET_ACCESS_KEY", "s")
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct123")
+
+    client = r2_s3_client()
+
+    assert client.meta.config.request_checksum_calculation == "when_required"
+    assert client.meta.config.response_checksum_validation == "when_required"
+
+
+def test_r2_s3_client_cold_cache_under_threads_builds_exactly_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A thread pool racing the very first (cold-cache) call must build
+    exactly one client and make exactly one token-verify HTTP call —
+    proving the lock is held across the whole build, not just the cache
+    lookup (which is all `functools.lru_cache` would have guaranteed)."""
+    import threading
+
+    token = "cfut_race-me"
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", token)
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct123")
+    monkeypatch.delenv("R2_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("R2_SECRET_ACCESS_KEY", raising=False)
+
+    verify_calls = 0
+    calls_lock = threading.Lock()
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        nonlocal verify_calls
+        with calls_lock:
+            verify_calls += 1
+        return httpx.Response(200, json={"success": True, "result": {"id": "tok-id"}})
+
+    _patch_verify(monkeypatch, handler)
+
+    results: list[object] = []
+    results_lock = threading.Lock()
+
+    def worker() -> None:
+        client = r2_s3_client()
+        with results_lock:
+            results.append(client)
+
+    threads = [threading.Thread(target=worker) for _ in range(16)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert verify_calls == 1
+    assert len({id(c) for c in results}) == 1

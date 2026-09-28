@@ -35,7 +35,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
-from functools import lru_cache
+import threading
 from typing import Any
 
 import httpx
@@ -51,6 +51,12 @@ _VERIFY_TIMEOUT_S = 15.0
 # (the seed's R2 uploads run 16-wide).
 _MAX_ATTEMPTS = 8
 _MAX_POOL_CONNECTIONS = 32
+# botocore >=1.36's flexible-checksums default ("when_supported") adds
+# aws-chunked trailer framing to requests/responses that R2 doesn't speak —
+# a known R2/botocore-1.42 incompatibility. "when_required" keeps checksums
+# off unless an operation truly requires one (R2 doesn't require any SigV4
+# extras this client uses), matching the wire format R2 actually expects.
+_CHECKSUM_MODE = "when_required"
 
 
 class R2S3CredentialError(RuntimeError):
@@ -103,18 +109,7 @@ def _derive_credentials() -> tuple[str, str]:
     return access_key_id, secret_access_key
 
 
-@lru_cache(maxsize=1)
-def r2_s3_client() -> Any:
-    """A cached boto3 S3 client targeting the R2 S3-compatible endpoint.
-
-    Raises :class:`R2S3CredentialError` (missing ``CLOUDFLARE_ACCOUNT_ID``,
-    or credential derivation failure) — callers that want a soft-fail
-    REST fallback should catch that (and only that; a genuine boto3/network
-    problem inside client construction is unexpected and should surface).
-
-    Cached with ``lru_cache`` — call ``r2_s3_client.cache_clear()`` (tests
-    do this) to force a fresh client after changing env vars or mocks.
-    """
+def _build_client() -> Any:
     import boto3
     from botocore.config import Config
 
@@ -131,8 +126,51 @@ def r2_s3_client() -> Any:
         config=Config(
             retries={"max_attempts": _MAX_ATTEMPTS, "mode": "adaptive"},
             max_pool_connections=_MAX_POOL_CONNECTIONS,
+            request_checksum_calculation=_CHECKSUM_MODE,
+            response_checksum_validation=_CHECKSUM_MODE,
         ),
     )
 
 
-__all__ = ["R2S3CredentialError", "r2_s3_client"]
+# Deliberately NOT `functools.lru_cache`: lru_cache's internal lock is held
+# only during cache lookup/update, not during the wrapped call itself, so
+# two threads racing a cold cache would both build a client — and, worse,
+# both hit the token-verify endpoint. This lock is held across the whole
+# build, so a cold cache under a thread pool (the seed/sweep's startup
+# check, item 2 below) does exactly one build and one verify call.
+_client_lock = threading.Lock()
+_cached_client: Any | None = None
+
+
+def r2_s3_client() -> Any:
+    """A cached boto3 S3 client targeting the R2 S3-compatible endpoint.
+
+    Raises :class:`R2S3CredentialError` (missing ``CLOUDFLARE_ACCOUNT_ID``,
+    or credential derivation failure) — callers that want a soft-fail
+    REST fallback should catch that (and only that; a genuine boto3/network
+    problem inside client construction is unexpected and should surface).
+
+    Cached — call :func:`reset_r2_s3_client_cache` (tests do this) to force
+    a fresh client after changing env vars or mocks. Thread-safe: concurrent
+    callers on a cold cache serialize on a lock held for the whole build
+    (see the comment above), so only one client gets built and only one
+    credential-derivation HTTP call is made even when many threads race the
+    very first call.
+    """
+    global _cached_client
+    if _cached_client is not None:
+        return _cached_client
+    with _client_lock:
+        if _cached_client is None:
+            _cached_client = _build_client()
+        return _cached_client
+
+
+def reset_r2_s3_client_cache() -> None:
+    """Test-only: drop the cached client so the next call builds a fresh one."""
+    global _cached_client
+    with _client_lock:
+        _cached_client = None
+
+
+__all__ = ["R2S3CredentialError", "r2_s3_client", "reset_r2_s3_client_cache"]
