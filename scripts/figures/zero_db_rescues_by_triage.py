@@ -54,11 +54,15 @@ YES_REASONS = [
     "stable_complex_partner",
     "other",
 ]
+# Descending by count, like every other bar list here. cell_state_induced
+# (190) and stable_surface_attachment (161) were transposed — close enough
+# that an earlier cohort may have had them the other way round, but the
+# rescue lanes have since moved them apart.
 CONTEXTUAL_REASONS = [
     "dual_localization",
     "tissue_restricted_surface",
-    "stable_surface_attachment",
     "cell_state_induced",
+    "stable_surface_attachment",
     "lysosomal_exocytosis",
     "other",
 ]
@@ -88,8 +92,8 @@ YES_PALETTE = {
 CONTEXTUAL_PALETTE = {
     "dual_localization":            "#8C4210",
     "tissue_restricted_surface":    "#C07830",
-    "stable_surface_attachment":    "#F4AA28",
-    "cell_state_induced":           "#F4C070",
+    "cell_state_induced":           "#F4AA28",
+    "stable_surface_attachment":    "#F4C070",
     "lysosomal_exocytosis":         "#FAECD4",
     "other":                        "#6F5D5A",
 }
@@ -98,9 +102,10 @@ YES_HEADER_COLOR = "#2E7A55"
 CONTEXTUAL_HEADER_COLOR = "#8C4210"
 
 # Callouts: db=0 rescues, one exemplar per reason — plus a SECOND for the
-# two clinically-rich contextual reasons (stable-attachment: MMP9 + LRG1;
-# cell-state: GSDME + HSPA1A), each a clinical/clinical-stage target. The
-# triage agent reports its own confidence per call (low/medium/high); the
+# two clinically-rich contextual reasons (cell-state: GSDME + HSPA1A +
+# NPM1; stable-attachment: MMP9 + LRG1), each a clinical/clinical-stage
+# target. The triage agent reports its own confidence per call
+# (low/medium/high); the
 # named picks below have direct surface flow-cytometry / biotinylation
 # evidence in the published literature regardless of the agent's rating.
 # Each `reason` is verified at runtime against `triage.reason` in the
@@ -120,11 +125,11 @@ YES_CALLOUTS = [
 CONTEXTUAL_CALLOUTS = [
     ("IL15",    "Secreted + surface trans-presentation via IL-15Rα", "dual_localization"),
     ("KLK2",    "hK2; prostate-restricted kallikrein", "tissue_restricted_surface"),
-    ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
-    ("LRG1",    "Leucine-rich α2-glycoprotein; cell-surface/ECM-tethered", "stable_surface_attachment"),
     ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
     ("NPM1",    "csNPM1 — surface nucleophosmin on AML blasts", "cell_state_induced"),
+    ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
+    ("LRG1",    "Leucine-rich α2-glycoprotein; cell-surface/ECM-tethered", "stable_surface_attachment"),
     ("HPSE",    "Heparanase; surface on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
