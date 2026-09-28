@@ -41,24 +41,39 @@ import modal
 # image
 # --------------------------------------------------------------------------- #
 
+# The distribution is named ``deeptmhmm2_predictor``; ``dtm2`` is only the console
+# script it installs. A PEP 508 direct reference has to carry the distribution name or
+# the install fails on a metadata name mismatch.
+DTM2_COMMIT = "b05e27adf50738405e1de0b4a6b7072bb145fd3a"  # upstream main, 2026-08-28
+DTM2_SPEC = f"deeptmhmm2_predictor @ git+https://github.com/fteufel/DeepTMHMM2.git@{DTM2_COMMIT}"
+
+# Weights live where deeptmhmm2_predictor.weights.get_cache_dir() looks: $XDG_CACHE_HOME
+# (or ~/.cache) / deeptmhmm2. Pinning XDG_CACHE_HOME keeps that path stable no matter
+# what HOME a container gets.
+WEIGHTS_DIR = "/opt/cache/deeptmhmm2"
+
 # Model weights are baked into the image rather than downloaded at runtime: the
 # ensemble is 5 topology heads + 5 membrane-type heads on ESM2-650M, and fetching
 # that per container would dominate the run and hammer the upstream hosts.
+#
+# Baking also pins them. Upstream's weights.py sets ``_WEIGHTS_REF = "main"`` with the
+# author's own "ideally pin to a tag/SHA" note still attached, so the checkpoints behind
+# a given package version can change under us. The image freezes whatever ``main`` served
+# at build time, and ``weights_fingerprint`` digests it so the published rows record
+# which checkpoints actually produced them.
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("git", "ca-certificates")
     .pip_install("uv>=0.5")
-    .run_commands(
-        "uv pip install --system --no-cache "
-        "'dtm2 @ git+https://github.com/fteufel/DeepTMHMM2.git'"
-    )
+    .env({"XDG_CACHE_HOME": "/opt/cache"})
+    .run_commands(f"uv pip install --system --no-cache '{DTM2_SPEC}'")
     # Warm the caches so every container starts with weights on disk.
     .run_commands(
         'python -c "import pathlib; '
         "pathlib.Path('/tmp/warm.fasta').write_text('>warm\\nMKTIIALSYIFCLVFADYKDDDDK\\n')\" "
         "&& dtm2 /tmp/warm.fasta /tmp/warm_out --device cpu --batch-size 1"
     )
-    .env({"HF_HOME": "/root/.cache/huggingface", "TORCH_HOME": "/root/.cache/torch"})
+    .env({"HF_HOME": "/opt/cache/huggingface", "TORCH_HOME": "/opt/cache/torch"})
 )
 
 app = modal.App("surfaceome-deeptmhmm2")
@@ -216,6 +231,31 @@ def predict_shard(payload: dict) -> dict:
 def predict_long(payload: dict) -> dict:
     """The two long bands: 2.5-6 kaa in shards of 20, and the >6 kaa outliers alone."""
     return _predict(payload["records"], payload["run_id"], payload["shard_id"])
+
+
+@app.function(image=image, timeout=300)
+def weights_fingerprint() -> str:
+    """``deeptmhmm2_predictor-<version>+ckpt.<12 hex>`` — the value published as
+    ``tool_version``.
+
+    The checkpoint digest is not decoration. Upstream resolves weights from a moving
+    branch, so the package version alone does not identify what ran; two sweeps tagged
+    ``deeptmhmm2_predictor-0.1.0`` could disagree. The digest covers all ten checkpoints
+    in build order, so a weights change is visible as a different ``tool_version``.
+    """
+    import hashlib
+    from importlib.metadata import version
+
+    digest = hashlib.sha256()
+    for ckpt in sorted(Path(WEIGHTS_DIR).glob("*.ckpt")):
+        digest.update(ckpt.name.encode())
+        with ckpt.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1 << 20), b""):
+                digest.update(chunk)
+    n = len(list(Path(WEIGHTS_DIR).glob("*.ckpt")))
+    if n != 10:
+        raise RuntimeError(f"expected 10 checkpoints in {WEIGHTS_DIR}, found {n}")
+    return f"deeptmhmm2_predictor-{version('deeptmhmm2_predictor')}+ckpt.{digest.hexdigest()[:12]}"
 
 
 # --------------------------------------------------------------------------- #
