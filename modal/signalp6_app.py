@@ -39,7 +39,10 @@ import modal
 
 PKG_DIR = Path(__file__).parent / ".signalp6-pkg"
 
-if not PKG_DIR.is_dir():
+# Only meaningful on the laptop. This module is re-imported inside every container, where
+# the package is already installed from /opt/signalp6-package and PKG_DIR is a local path
+# that was never shipped -- so an unguarded check fails every worker.
+if modal.is_local() and not PKG_DIR.is_dir():
     # Checked here rather than left to add_local_dir, which only raises after Modal has
     # already built the torch image -- a slow way to be told to run one script.
     raise SystemExit(
@@ -59,9 +62,15 @@ image = (
         extra_index_url="https://download.pytorch.org/whl/cu117",
     )
     .pip_install("matplotlib>3.3.2", "numpy>1.19.2,<2", "tqdm>4.46.1")
-    .add_local_dir(PKG_DIR, "/opt/signalp6-package", copy=True)
-    .run_commands("pip install --no-deps /opt/signalp6-package")
 )
+
+# Adding the local package is a build-time step, so it only applies where the build runs.
+# Inside a container the image is already built and hydrated by id; re-declaring the layer
+# there would stat a path that does not exist.
+if modal.is_local():
+    image = image.add_local_dir(
+        PKG_DIR, "/opt/signalp6-package", copy=True
+    ).run_commands("pip install --no-deps /opt/signalp6-package")
 
 app = modal.App("surfaceome-signalp6")
 models = modal.Volume.from_name("signalp6-models", create_if_missing=True)
