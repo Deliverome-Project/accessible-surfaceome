@@ -20,10 +20,10 @@ revision other than 1, a symbol this tarball doesn't carry, or a
 ``json_hash`` that doesn't match what this tarball's record hashes to
 (a stale or swapped-out tarball). Everything that passes that check is
 "already done"; only the remaining genes get written. R2 puts are
-separately idempotent (content-addressed, ``put_blob(..., skip_head=True)``
-— see below). If ``data_release`` already has 1.0.0 with every tarball
-gene accounted for, the script prints "already seeded" and exits 0 having
-written nothing.
+separately idempotent (content-addressed, probed with ``head_object``
+before every write — see below). If ``data_release`` already has 1.0.0
+with every tarball gene accounted for, the script prints "already seeded"
+and exits 0 having written nothing.
 
 Ordering matters for the rest of the record-history rollout: this seed
 must run BEFORE anything ever archives a *served* record for these
@@ -49,12 +49,16 @@ requests / 5 min, covering every ``api.cloudflare.com`` call including
 R2 REST ops and D1 queries):
 
 * **R2** — each record is uploaded through the S3-compatible API
-  (``CloudRevisionStore.put_blob(..., skip_head=True)``; see
-  ``cloud/r2_s3.py``), a separate API surface from ``api.cloudflare.com``
-  that doesn't touch the shared budget at all. ``skip_head=True`` skips
-  the existence probe: the seed runs against keys that are overwhelmingly
-  new, and a content-addressed write is idempotent even on the rare
-  collision, so there's nothing to check for. Runs from a
+  (``CloudRevisionStore.put_blob``; see ``cloud/r2_s3.py``), a separate
+  API surface from ``api.cloudflare.com`` that doesn't touch the shared
+  budget at all — so the existence probe (``head_object``) stays on for
+  every key, keeping the bucket strictly write-once, at no cost against
+  that budget. ``r2_s3_client()`` is built ONCE up front, before the pool
+  starts (``main`` exits non-zero with a clear message if that fails) —
+  the store is also constructed with ``require_s3=True``, so a later
+  failure to reach the S3 client raises loudly instead of silently
+  falling back to the REST ``r2_client`` path (which WOULD compete for
+  the shared budget, defeating the point). Runs from a
   ``POOL_WORKERS``-wide thread pool.
 * **D1** — revision-1 rows are written with multi-row
   ``INSERT ... VALUES (...),(...) ON CONFLICT(gene_symbol, revision) DO
@@ -76,6 +80,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
+from accessible_surfaceome.cloud.r2_s3 import R2S3CredentialError, r2_s3_client
 from accessible_surfaceome.cloud.record_history.hashing import content_hash_record
 from accessible_surfaceome.cloud.record_history.releases import create_release
 from accessible_surfaceome.cloud.record_history.store import (
@@ -276,7 +281,24 @@ def main() -> None:
     tarball_symbols = set(expected_hash)
 
     load_env()
-    with CloudRevisionStore.from_env() as store:
+    # Build (and cache) the S3 client ONCE, here in the main thread, before
+    # the R2 upload pool starts below — so every pooled worker finds it
+    # already built (one client, one credential-derivation call) instead of
+    # racing a cold cache, and so a broken/missing CLOUDFLARE_API_TOKEN
+    # fails loudly right now instead of thousands of workers each hitting
+    # the (require_s3=True) ArchiveError individually.
+    try:
+        r2_s3_client()
+    except R2S3CredentialError as exc:
+        raise SystemExit(
+            f"R2 S3 client unavailable ({exc}) — the seed refuses to fall "
+            "back to the REST r2_client path at cohort scale (it would "
+            "compete for the shared Cloudflare account API budget). Set "
+            "CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN (or "
+            "R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) and retry."
+        ) from exc
+
+    with CloudRevisionStore.from_env(require_s3=True) as store:
         existing_rows = store.d1.query(
             "SELECT gene_symbol, revision, json_hash, source FROM record_revision", []
         )
@@ -308,10 +330,7 @@ def main() -> None:
         def put(item: tuple[str, bytes, dict]) -> None:
             _, raw, rec = item
             store.put_blob(
-                blob_key(content_hash_record(rec), "json"),
-                raw,
-                "application/json",
-                skip_head=True,
+                blob_key(content_hash_record(rec), "json"), raw, "application/json"
             )
 
         with ThreadPoolExecutor(POOL_WORKERS) as pool:

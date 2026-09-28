@@ -101,7 +101,7 @@ def _existing_row(d1: SqliteD1, sym: str, json_hash: str, *, source: str = "seed
 class FakeStore:
     def __init__(self, d1: SqliteD1 | None = None) -> None:
         self.d1 = d1 or SqliteD1()
-        self.put_blob_calls: list[tuple[str, bool]] = []
+        self.put_blob_calls: list[str] = []
 
     def __enter__(self) -> "FakeStore":
         return self
@@ -109,17 +109,17 @@ class FakeStore:
     def __exit__(self, *_exc: object) -> None:
         return None
 
-    def put_blob(
-        self, key: str, body: bytes, content_type: str, *, skip_head: bool = False
-    ) -> None:
-        self.put_blob_calls.append((key, skip_head))
+    def put_blob(self, key: str, body: bytes, content_type: str) -> None:
+        self.put_blob_calls.append(key)
 
 
 class _FakeCloudRevisionStore:
     store: FakeStore | None = None
+    require_s3_seen: list[bool] = []
 
     @classmethod
-    def from_env(cls) -> FakeStore:
+    def from_env(cls, *, require_s3: bool = False) -> FakeStore:
+        cls.require_s3_seen.append(require_s3)
         assert cls.store is not None
         return cls.store
 
@@ -129,12 +129,24 @@ def _run_execute(
     monkeypatch: pytest.MonkeyPatch,
     tarball_records: list[dict[str, Any]],
     store_obj: FakeStore,
+    *,
+    r2_s3_client_fails: bool = False,
 ) -> None:
     tarball = _make_tarball(tmp_path, "seed.tar.gz", tarball_records)
     _FakeCloudRevisionStore.store = store_obj
+    _FakeCloudRevisionStore.require_s3_seen = []
     monkeypatch.setattr(_mod, "CloudRevisionStore", _FakeCloudRevisionStore)
     monkeypatch.setattr(_mod, "load_env", lambda: None)
     monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
+
+    if r2_s3_client_fails:
+        def _fail_r2_s3_client() -> None:
+            raise _mod.R2S3CredentialError("no token")
+
+        monkeypatch.setattr(_mod, "r2_s3_client", _fail_r2_s3_client)
+    else:
+        monkeypatch.setattr(_mod, "r2_s3_client", lambda: object())
+
     monkeypatch.setattr(
         sys, "argv", ["seed_record_history.py", "--tarball", str(tarball), "--execute"]
     )
@@ -184,6 +196,30 @@ def test_dry_run_refuses_duplicate_symbols_before_any_write(
         _mod.main()
 
 
+def test_r2_s3_client_failure_exits_before_any_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The eager, main-thread-only build check: a broken/missing S3 client
+    must exit loudly before the store is even constructed, let alone before
+    any R2/D1 write — never a silent per-worker REST fallback."""
+    tarball_records = [_record("EGFR", "HGNC:3236")]
+    store_obj = FakeStore()
+
+    def _boom_from_env(*_a: object, **_kw: object) -> None:
+        raise AssertionError("CloudRevisionStore.from_env must not be reached")
+
+    monkeypatch.setattr(
+        _FakeCloudRevisionStore, "from_env", classmethod(_boom_from_env)
+    )
+
+    with pytest.raises(SystemExit, match="R2 S3 client unavailable"):
+        _run_execute(
+            tmp_path, monkeypatch, tarball_records, store_obj, r2_s3_client_fails=True
+        )
+
+    assert store_obj.put_blob_calls == []
+
+
 def test_happy_execute_path_writes_revision_1_and_creates_release_1_0_0(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -198,10 +234,10 @@ def test_happy_execute_path_writes_revision_1_and_creates_release_1_0_0(
 
     _run_execute(tmp_path, monkeypatch, tarball_records, store_obj)
 
-    # Both records went through R2 with skip_head=True (content-addressed,
-    # the bucket is assumed empty for these fresh keys).
     assert len(store_obj.put_blob_calls) == 2
-    assert all(skip_head is True for _key, skip_head in store_obj.put_blob_calls)
+    # The seed constructs its store with require_s3=True — no silent REST
+    # fallback at cohort scale.
+    assert _FakeCloudRevisionStore.require_s3_seen == [True]
 
     rows = store_obj.d1.query(
         "SELECT gene_symbol, revision, source, json_hash FROM record_revision "
@@ -234,7 +270,7 @@ def test_resume_only_writes_the_remaining_genes(
 
     # Only CD63 (not already at revision 1) gets a fresh R2 write.
     assert store_obj.put_blob_calls == [
-        (_mod.blob_key(_mod.content_hash_record(tarball_records[1]), "json"), True)
+        _mod.blob_key(_mod.content_hash_record(tarball_records[1]), "json")
     ]
     rows = store_obj.d1.query("SELECT gene_symbol FROM record_revision ORDER BY gene_symbol")
     assert [r["gene_symbol"] for r in rows] == ["CD63", "EGFR"]

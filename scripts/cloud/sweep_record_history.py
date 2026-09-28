@@ -45,10 +45,18 @@ this sweep's D1 call volume. Every D1 call made through the store (including
 that prefetch) is paced via ``RECORD_HISTORY_D1_QPS`` (default 2.5 qps, ``0``
 disables) so a sweep doesn't compete with concurrent sessions for the shared
 Cloudflare account API budget (1,200 requests / 5 min across every
-``api.cloudflare.com`` call — R2 REST ops and D1 queries both count). R2
-writes (via ``archive_gene`` → ``put_blob``) go through the S3-compatible API
-(``cloud/r2_s3.py``) first, a separate API surface that doesn't touch that
-budget at all.
+``api.cloudflare.com`` call — R2 REST ops and D1 queries both count).
+
+Before that, ``--execute`` also builds (and caches) the R2 S3 client ONCE
+in the main thread, ahead of the archiving pool, and exits non-zero with a
+clear message if that fails — so a cold cache under the pool can't race
+multiple workers into building their own clients (each with its own
+credential-derivation call), and a missing/broken ``CLOUDFLARE_API_TOKEN``
+fails loudly right away instead of ~5,130 individual failures. The store
+is also constructed with ``require_s3=True``: if the S3 client somehow
+becomes unavailable later, ``put_blob`` raises instead of silently
+falling back to the REST ``r2_client`` path, which WOULD compete for the
+shared budget this whole rewrite exists to protect.
 """
 
 from __future__ import annotations
@@ -63,6 +71,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import httpx
 
+from accessible_surfaceome.cloud.r2_s3 import R2S3CredentialError, r2_s3_client
 from accessible_surfaceome.cloud.record_history.archive import (
     BYPASS_HEADER,
     PUBLIC_API_BASE,
@@ -186,9 +195,27 @@ def sweep(genes: list[str] | None, *, execute: bool, workers: int) -> Counter[st
         if not execute:
             print(f"[dry-run] would archive {len(todo)} genes; pass --execute.")
             return counts
+        # Build (and cache) the S3 client ONCE, here in the main thread,
+        # before the archiving pool starts below — so pooled workers find
+        # it already built (one client, one credential-derivation call)
+        # instead of racing a cold cache, and a broken/missing
+        # CLOUDFLARE_API_TOKEN fails loudly right now instead of ~5,130
+        # individual (require_s3=True) ArchiveError failures.
+        try:
+            r2_s3_client()
+        except R2S3CredentialError as exc:
+            print(
+                f"R2 S3 client unavailable ({exc}) — the sweep refuses to fall "
+                "back to the REST r2_client path at cohort scale (it would "
+                "compete for the shared Cloudflare account API budget). Set "
+                "CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN (or "
+                "R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) and retry.",
+                file=sys.stderr,
+            )
+            raise SystemExit(1) from exc
         guard = _ConsecutiveFailureGuard(ABORT_AFTER_N_CONSECUTIVE_FAILURES)
         with (
-            CloudRevisionStore.from_env() as store,
+            CloudRevisionStore.from_env(require_s3=True) as store,
             ThreadPoolExecutor(workers) as pool,
         ):
             # One query for every gene's latest revision instead of one
