@@ -98,6 +98,10 @@ export function InfoTip({
       </button>
       <span
         role="tooltip"
+        // Read by InfoTipAutoPlace when it lifts a popover to
+        // `position: fixed` (inside a scroll container) and has to
+        // re-derive the anchoring the CSS class would have given it.
+        data-align={align}
         className={`${styles.popover} ${wide ? styles.popoverWide : ""} ${alignClass}`
           .replace(/\s+/g, " ")
           .trim()}
