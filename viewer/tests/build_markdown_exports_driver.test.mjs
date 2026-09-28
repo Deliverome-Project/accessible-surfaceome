@@ -56,17 +56,40 @@ function fakeResponse({ status = 200, headers = {}, jsonBody } = {}) {
 
 // Routing table the stub `fetch` consults, keyed by exact URL. Tests
 // mutate this before each call; `fetchCounts` tracks calls per URL so
-// tests can assert retry counts.
+// tests can assert retry counts. `defaultRoute(url)`, when set, handles
+// any URL with no exact entry — used by tests that pad the gene list with
+// many uniformly-healthy "filler" genes (so a single real failure stays
+// under the early-abort threshold — see the I1 note below) without
+// needing one Map entry per filler gene.
 let routes = new Map();
+let defaultRoute = null;
 let fetchCounts = new Map();
 globalThis.fetch = async (url) => {
   fetchCounts.set(url, (fetchCounts.get(url) ?? 0) + 1);
-  const handler = routes.get(url);
+  const handler = routes.get(url) ?? (defaultRoute ? () => defaultRoute(url) : null);
   if (!handler) throw new Error(`no stub route for ${url}`);
   return handler(fetchCounts.get(url));
 };
 
 const NO_WAIT = { sleep: async () => {} };
+
+// Generic healthy responses for "filler" genes that pad a test's /v1/genes
+// list. With I1's early-abort circuit breaker, `floor(MD_MAX_FAIL_FRAC ×
+// total)` needs to be >= the number of INTENTIONAL failures a test wants
+// to exercise, or loadRecordsFromApi aborts before finishing — at the
+// default 1% threshold that means total >= 100 to tolerate even a single
+// failure. Padding with filler genes (routed through `defaultRoute`
+// rather than one Map entry each) keeps these tests realistic without
+// bloating the fixture by hand.
+function fillerGeneEntries(n) {
+  return Array.from({ length: n }, (_, i) => ({ gene_symbol: `FILLER${i}` }));
+}
+function fillerDefaultRoute(url) {
+  const m = url.match(/\/v1\/genes\/(FILLER\d+)(\/evidence)?$/);
+  if (!m) return fakeResponse({ status: 404 });
+  if (m[2]) return fakeResponse({ status: 200, jsonBody: { evidence: [] } });
+  return fakeResponse({ status: 200, jsonBody: { gene: { hgnc_symbol: m[1] } } });
+}
 
 const {
   fetchEvidenceLedger,
@@ -74,6 +97,7 @@ const {
   uploadMarkdownToR2,
   computeFailFraction,
   reportSummaryAndMaybeFail,
+  shouldSkipBuildCache,
 } = await import("../scripts/build-markdown-exports.mjs");
 
 const BASE = "https://example.test/surfaceome";
@@ -132,6 +156,70 @@ test("fetchEvidenceLedger: malformed payload (not an array) is a failure", async
 // ----------------------------------------------------------------
 
 test("loadRecordsFromApi: 404 record tolerated, healthy gene included, degraded-evidence gene skipped", async () => {
+  const FILLER_COUNT = 150; // see fillerGeneEntries doc — keeps CCC's 1 failure under the default early-abort threshold
+  routes = new Map([
+    [
+      `${BASE}/v1/genes`,
+      () =>
+        fakeResponse({
+          status: 200,
+          jsonBody: {
+            genes: [
+              { gene_symbol: "AAA" },
+              { gene_symbol: "BBB" },
+              { gene_symbol: "CCC" },
+              ...fillerGeneEntries(FILLER_COUNT),
+            ],
+          },
+        }),
+    ],
+    [`${BASE}/v1/genes/AAA`, () => fakeResponse({ status: 200, jsonBody: { gene: { hgnc_symbol: "AAA" } } })],
+    [`${BASE}/v1/genes/AAA/evidence`, () => fakeResponse({ status: 200, jsonBody: { evidence: [] } })],
+    [`${BASE}/v1/genes/BBB`, () => fakeResponse({ status: 404 })],
+    [`${BASE}/v1/genes/CCC`, () => fakeResponse({ status: 200, jsonBody: { gene: { hgnc_symbol: "CCC" } } })],
+    [`${BASE}/v1/genes/CCC/evidence`, () => fakeResponse({ status: 200, headers: { [DEGRADED_HEADER]: "x" } })],
+  ]);
+  defaultRoute = fillerDefaultRoute;
+  fetchCounts = new Map();
+
+  const result = await loadRecordsFromApi({ retryOpts: NO_WAIT });
+  defaultRoute = null;
+
+  assert.equal(result.totalAttempted, 3 + FILLER_COUNT);
+  assert.equal(result.records.length, 1 + FILLER_COUNT, "AAA + every filler gene should make it through");
+  assert.ok(result.records.some((r) => r.rec.gene.hgnc_symbol === "AAA"));
+  assert.deepEqual(result.skippedRecord, [], "a plain 404 is tolerated, not counted as a skip");
+  assert.deepEqual(result.skippedEvidence, ["CCC"], "CCC's persistently-degraded evidence must skip the gene");
+});
+
+test("loadRecordsFromApi: a persistently-failing record fetch is counted in skippedRecord, without tripping the early-abort at a tolerable rate", async () => {
+  const FILLER_COUNT = 150; // ZZZ's 1 failure among 151 genes is well under the default 1% early-abort threshold
+  routes = new Map([
+    [
+      `${BASE}/v1/genes`,
+      () =>
+        fakeResponse({
+          status: 200,
+          jsonBody: { genes: [{ gene_symbol: "ZZZ" }, ...fillerGeneEntries(FILLER_COUNT)] },
+        }),
+    ],
+    [`${BASE}/v1/genes/ZZZ`, () => fakeResponse({ status: 500 })],
+  ]);
+  defaultRoute = fillerDefaultRoute;
+  const result = await loadRecordsFromApi({ retryOpts: NO_WAIT });
+  defaultRoute = null;
+  assert.equal(result.records.length, FILLER_COUNT, "every filler gene should still make it through despite ZZZ's failure");
+  assert.deepEqual(result.skippedRecord, ["ZZZ"]);
+  assert.deepEqual(result.skippedEvidence, []);
+});
+
+// ----------------------------------------------------------------
+// loadRecordsFromApi — I1 early-abort circuit breaker
+// ----------------------------------------------------------------
+
+test("loadRecordsFromApi: aborts early (throws) once failures exceed floor(MAX_FAIL_FRAC × total), BEFORE returning any records", async () => {
+  // total=3, default threshold 1% → floor(0.01*3)=0 — the very FIRST
+  // failure (CCC's persistently-degraded evidence) must trip the breaker.
   routes = new Map([
     [
       `${BASE}/v1/genes`,
@@ -143,33 +231,26 @@ test("loadRecordsFromApi: 404 record tolerated, healthy gene included, degraded-
     ],
     [`${BASE}/v1/genes/AAA`, () => fakeResponse({ status: 200, jsonBody: { gene: { hgnc_symbol: "AAA" } } })],
     [`${BASE}/v1/genes/AAA/evidence`, () => fakeResponse({ status: 200, jsonBody: { evidence: [] } })],
-    [`${BASE}/v1/genes/BBB`, () => fakeResponse({ status: 404 })],
+    [`${BASE}/v1/genes/BBB`, () => fakeResponse({ status: 200, jsonBody: { gene: { hgnc_symbol: "BBB" } } })],
+    [`${BASE}/v1/genes/BBB/evidence`, () => fakeResponse({ status: 200, jsonBody: { evidence: [] } })],
     [`${BASE}/v1/genes/CCC`, () => fakeResponse({ status: 200, jsonBody: { gene: { hgnc_symbol: "CCC" } } })],
     [`${BASE}/v1/genes/CCC/evidence`, () => fakeResponse({ status: 200, headers: { [DEGRADED_HEADER]: "x" } })],
   ]);
-  fetchCounts = new Map();
-
-  const result = await loadRecordsFromApi({ retryOpts: NO_WAIT });
-
-  assert.equal(result.totalAttempted, 3);
-  assert.equal(result.records.length, 1, "only AAA should make it through both fetches");
-  assert.equal(result.records[0].rec.gene.hgnc_symbol, "AAA");
-  assert.deepEqual(result.skippedRecord, [], "a plain 404 is tolerated, not counted as a skip");
-  assert.deepEqual(result.skippedEvidence, ["CCC"], "CCC's persistently-degraded evidence must skip the gene");
+  await assert.rejects(
+    () => loadRecordsFromApi({ retryOpts: NO_WAIT }),
+    /OUTAGE DETECTED/,
+    "expected loadRecordsFromApi to throw once the failure threshold is crossed",
+  );
 });
 
-test("loadRecordsFromApi: a persistently-failing record fetch is counted in skippedRecord", async () => {
+test("loadRecordsFromApi: /v1/genes returning 0 genes is fatal, like the snapshot script (M2)", async () => {
   routes = new Map([
-    [
-      `${BASE}/v1/genes`,
-      () => fakeResponse({ status: 200, jsonBody: { genes: [{ gene_symbol: "ZZZ" }] } }),
-    ],
-    [`${BASE}/v1/genes/ZZZ`, () => fakeResponse({ status: 500 })],
+    [`${BASE}/v1/genes`, () => fakeResponse({ status: 200, jsonBody: { genes: [] } })],
   ]);
-  const result = await loadRecordsFromApi({ retryOpts: NO_WAIT });
-  assert.equal(result.records.length, 0);
-  assert.deepEqual(result.skippedRecord, ["ZZZ"]);
-  assert.deepEqual(result.skippedEvidence, []);
+  await assert.rejects(
+    () => loadRecordsFromApi({ retryOpts: NO_WAIT }),
+    /0 genes/,
+  );
 });
 
 // ----------------------------------------------------------------
@@ -307,4 +388,23 @@ test("reportSummaryAndMaybeFail: over the cap sets exitCode=1", () => {
   });
   assert.equal(process.exitCode, 1);
   process.exitCode = undefined;
+});
+
+// ----------------------------------------------------------------
+// shouldSkipBuildCache (C1) — never read viewer/build-cache/records when
+// this is an ops job re-publishing to a live surface, since that cache
+// can be a stale local artifact from before this incident's pacing fix.
+// ----------------------------------------------------------------
+
+test("shouldSkipBuildCache: MD_TARGET=r2 always skips the build-cache", () => {
+  assert.equal(shouldSkipBuildCache("r2", null), true);
+  assert.equal(shouldSkipBuildCache("r2", new Set(["EGFR"])), true);
+});
+
+test("shouldSkipBuildCache: SURFACEOME_MD_GENES set always skips the build-cache, regardless of MD_TARGET", () => {
+  assert.equal(shouldSkipBuildCache("public", new Set(["EGFR"])), true);
+});
+
+test("shouldSkipBuildCache: neither r2 nor a gene filter — the build-cache is used normally", () => {
+  assert.equal(shouldSkipBuildCache("public", null), false);
 });

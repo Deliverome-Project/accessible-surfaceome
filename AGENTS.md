@@ -31,7 +31,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run tests: `uv run pytest -q`
 - Run hooks: `uv run pre-commit run --all-files --config .pre-commit-config.yaml`
 - Run viewer dev server: `cd viewer && npm install && npm run dev` (http://localhost:3000)
-- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export). The build's bulk per-gene Worker fetches (record pre-fetch, and the separate `build-markdown-exports.mjs` per-gene Markdown export) are paced (concurrency + rate capped, `viewer/scripts/lib/build-fetch.mjs`) and never publish a degraded record (a 200 carrying `X-Surfaceome-Degraded` is retried, then skipped if it never clears) — see `viewer/README.md`'s "Build gotcha" section.
+- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export). Its per-gene record pre-fetch, AND the standalone `build:exports` ops job (`build-markdown-exports.mjs`, NOT part of `npm run build` — run separately after a deep-dive sweep), are both paced (concurrency + rate capped, `viewer/scripts/lib/build-fetch.mjs`) and never publish a degraded record (a 200 carrying `X-Surfaceome-Degraded` is retried, then skipped if it never clears) — see `viewer/README.md`'s "Build gotcha" section.
 - Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
 
 ## Deep-dive agents run in-process with local prompts (no managed-agent sync)

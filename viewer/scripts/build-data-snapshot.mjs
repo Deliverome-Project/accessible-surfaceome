@@ -57,12 +57,12 @@
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
 import {
   createLimiter,
   fetchWithRetry,
   resolveBuildFetchTuning,
   resolveMaxFailFrac,
+  shouldAbortEarly,
 } from "./lib/build-fetch.mjs";
 
 const API_BASE = process.env.SURFACEOME_API_BASE
@@ -118,25 +118,39 @@ function fmtMB(bytes) {
  * things for the build guard:
  *
  *   { body }         — success (healthy, non-degraded); write it.
- *   { notFound }     — deterministic 404 / hard 4xx. The gene is in
- *                      /v1/genes but the record endpoint can't serve it
- *                      (a Worker list/record inconsistency, e.g. the
- *                      renamed-Cxorf genes). Tolerated — the gene page
- *                      would `notFound()` regardless, correctly. Does
- *                      NOT count against the fail-rate guard.
- *   { failed, degraded } — retries exhausted on a transient error OR a
- *                      persistently-degraded response. THIS is the
- *                      rate-limit/blocking/D1-outage signal the guard
- *                      exists to catch; a high rate of these fails the
- *                      build. `degraded` is set when the LAST attempt was
- *                      a degraded 200 rather than an error, for logging.
+ *   { notFound }     — deterministic 4xx on a NON-2xx status (typically
+ *                      404). The gene is in /v1/genes but the record
+ *                      endpoint can't serve it (a Worker list/record
+ *                      inconsistency, e.g. the renamed-Cxorf genes).
+ *                      Tolerated — the gene page would `notFound()`
+ *                      regardless, correctly. Does NOT count against the
+ *                      fail-rate guard.
+ *   { failed, degraded } — retries exhausted on a transient error, a
+ *                      persistently-degraded response, OR a `hardFailure`
+ *                      on a 2xx status (malformed body on an otherwise-
+ *                      healthy response — a REAL failure, never a
+ *                      tolerable "not found"). THIS is the
+ *                      rate-limit/blocking/D1-outage/corrupt-response
+ *                      signal the guard exists to catch; a high rate of
+ *                      these fails the build. `degraded` is set when the
+ *                      LAST attempt was a degraded 200 rather than an
+ *                      error, for logging.
  */
 async function fetchRecordBody(url, limiter, { retryOpts } = {}) {
   const r = await limiter(() =>
     fetchWithRetry(url, { maxAttempts: RECORD_ATTEMPTS, ...retryOpts }),
   );
   if (r.ok) return { body: r.body };
-  if (r.hardFailure) return { notFound: true };
+  if (r.hardFailure) {
+    // A hard failure paired with a 2xx status (malformed body on an
+    // otherwise-healthy response) is NOT a tolerable "gene not found" —
+    // only a genuine non-2xx hard failure (404, or another hard 4xx) is
+    // safe to tolerate as notFound (PR #275 review, I5).
+    if (r.status != null && r.status >= 200 && r.status < 300) {
+      return { failed: true, degraded: null };
+    }
+    return { notFound: true };
+  }
   return { failed: true, degraded: r.degraded };
 }
 
@@ -145,18 +159,20 @@ async function snapshotEndpoints() {
     const url = `${API_BASE}${endpoint}`;
     const t0 = performance.now();
     console.log(`[snapshot] fetching ${url}`);
-    let res;
-    try {
-      res = await fetch(url);
-    } catch (e) {
-      console.error(`[snapshot] ${endpoint} → fetch failed: ${e.message}`);
+    // Retries 429/5xx/network/degraded with backoff (M8) — these two
+    // fetches used to be a bare `fetch()` with no retry at all, so a
+    // single transient blip failed the whole build even though the much
+    // larger per-gene pre-fetch below tolerates exactly this class of
+    // error.
+    const r = await fetchWithRetry(url, { maxAttempts: 5 });
+    if (!r.ok) {
+      console.error(
+        `[snapshot] ${endpoint} → failed after retries ` +
+          `(status=${r.status ?? "network"}${r.degraded ? `, degraded=${r.degraded}` : ""})`,
+      );
       process.exit(1);
     }
-    if (!res.ok) {
-      console.error(`[snapshot] ${endpoint} → HTTP ${res.status}`);
-      process.exit(1);
-    }
-    const body = await res.text();
+    const body = r.body;
     const out = path.join(CACHE_DIR, file);
     await writeFile(out, body);
     const dt = Math.round(performance.now() - t0);
@@ -205,13 +221,20 @@ async function snapshotRecords() {
   const notFound = []; // deterministic 404 — Worker can't serve; tolerated
   let written = 0;
   let done = 0;
+  // Early-abort circuit breaker (PR #275 review, I1): once `failed` exceeds
+  // floor(RECORD_MAX_FAIL_FRAC × symbols.length), stop pulling NEW work —
+  // an outage doesn't need every one of ~5.3k genes to individually time
+  // out through 5 retries before the build gives up; it needs to notice
+  // fast and stop hammering an already-struggling Worker/D1.
+  let aborted = false;
+  const abortSample = [];
   // Every fetch is scheduled through the shared limiter, which caps BOTH
   // concurrency and request rate — the burst that caused the incident was
   // concurrency-bounded but rate-UNbounded (12 in flight, no pacing).
   const limiter = createLimiter({ concurrency: RECORD_CONCURRENCY, rps: RECORD_RPS });
   let cursor = 0;
   async function worker() {
-    while (cursor < symbols.length) {
+    while (cursor < symbols.length && !aborted) {
       const sym = symbols[cursor++];
       const r = await fetchRecordBody(`${API_BASE}/v1/genes/${sym}`, limiter);
       if (r.body) {
@@ -222,6 +245,12 @@ async function snapshotRecords() {
       } else {
         failed.push(sym);
         if (r.degraded) degradedFailed.push(sym);
+        if (abortSample.length < 10) {
+          abortSample.push(`${sym}: ${r.degraded ? `degraded (${r.degraded})` : "transient failure"}`);
+        }
+        if (!aborted && shouldAbortEarly(failed.length, symbols.length, RECORD_MAX_FAIL_FRAC)) {
+          aborted = true;
+        }
       }
       done += 1;
       if (done % 250 === 0) console.log(`  … ${done}/${symbols.length}`);
@@ -232,6 +261,16 @@ async function snapshotRecords() {
   );
   const dt = Math.round(performance.now() - t0);
   const failFrac = failed.length / symbols.length;
+  if (aborted) {
+    console.error(
+      `[snapshot] OUTAGE DETECTED — aborted early after ${done}/${symbols.length} genes ` +
+        `attempted (${failed.length} transient-failed [${degradedFailed.length} degraded], ` +
+        `${(failFrac * 100).toFixed(1)}% > ${(RECORD_MAX_FAIL_FRAC * 100).toFixed(0)}% cap). ` +
+        `The Worker/D1 is rate-limiting/blocking/unhealthy; refusing to keep hammering it or ` +
+        `ship a site full of not-found or degraded gene pages. Sample: ${abortSample.join("; ")}`,
+    );
+    process.exit(1);
+  }
   console.log(
     `  wrote ${written}/${symbols.length} records to ${RECORDS_DIR} ` +
       `(${dt} ms; ${failed.length} transient-failed [${degradedFailed.length} degraded], ${notFound.length} 404)`,
@@ -243,7 +282,11 @@ async function snapshotRecords() {
   // degraded record, for those genes. Genuine 404s (gene in /v1/genes but
   // no serveable record — a separate Worker inconsistency) are NOT
   // counted here: those pages would `notFound()` regardless, so
-  // tolerating them is correct.
+  // tolerating them is correct. (Backstop only now — the early-abort
+  // above already catches this same threshold mid-run; this still covers
+  // any failure pattern that somehow completes the whole loop without
+  // ever crossing the early-abort check, e.g. a threshold changed
+  // mid-flight in a future refactor.)
   if (failFrac > RECORD_MAX_FAIL_FRAC) {
     console.error(
       `[snapshot] ${failed.length}/${symbols.length} record fetches hit ` +
@@ -364,9 +407,9 @@ async function snapshot() {
 export { fetchRecordBody, snapshot, snapshotRecords };
 
 // Only auto-run when executed directly (`node build-data-snapshot.mjs`),
-// not when imported by a test.
-const isMain =
-  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
-if (isMain) {
+// not when imported by a test. `import.meta.main` (Node 24, M4) replaces
+// the previous manual `import.meta.url === pathToFileURL(argv[1]).href`
+// comparison.
+if (import.meta.main) {
   await snapshot();
 }

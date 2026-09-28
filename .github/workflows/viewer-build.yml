@@ -54,6 +54,22 @@ jobs:
         # sortable-column regression (a7c2163e7) merge silently. Now gated.
         run: bash tests/run_render_tests.sh
 
+      - name: build-fetch pacing/retry tests
+        # scripts/lib/build-fetch.mjs (the shared limiter + retry/degraded/
+        # backoff machinery every bulk per-gene build fetcher routes
+        # through) plus the two build-*.mjs scripts' own translation logic
+        # — see PR #275 (the 2026-09-28 incident fix). Includes one real
+        # ~15-20s integration test of the I1 early-abort circuit breaker
+        # against a local mock HTTP server (never the production API).
+        run: bash tests/run_build_fetch_tests.sh
+
+      - name: SSG degraded-record fallback tests
+        # viewer/lib/surfaceome.ts's live-fetch fallback (_fetchRecordFromWorker,
+        # used by `next dev` and any build that skipped the record snapshot)
+        # gets the same degraded/retry/Retry-After hardening as the build
+        # scripts above — pinned here since it's a separate code path.
+        run: bash tests/run_surfaceome_record_degraded_tests.sh
+
       - name: build (offline stub mode)
         # GitHub-Actions IPs get a Cloudflare WAF 403 against
         # `api.deliverome.org/surfaceome/v1/catalog`, so CI runs the

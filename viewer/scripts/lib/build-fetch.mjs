@@ -32,7 +32,13 @@
 
 export const DEGRADED_HEADER = "X-Surfaceome-Degraded";
 
-export const DEFAULT_CONCURRENCY = 4;
+// Concurrency default raised 4 → 8 (PR #275 review): the request-RATE cap
+// (DEFAULT_RPS, still 8/s) is what actually protects D1 from a cache-miss
+// burst, not the in-flight count — a higher concurrency just lets more
+// requests overlap in flight while the rate limiter still paces how often
+// a NEW one starts, so this halves wall-clock time on latency-bound runs
+// without raising the request rate against the Worker/D1.
+export const DEFAULT_CONCURRENCY = 8;
 export const DEFAULT_RPS = 8;
 export const DEFAULT_MAX_ATTEMPTS = 5;
 // 1s, 2s, 4s, 8s between the 5 attempts; capped at 30s (also the cap
@@ -40,6 +46,11 @@ export const DEFAULT_MAX_ATTEMPTS = 5;
 export const DEFAULT_BACKOFF_MS = [1000, 2000, 4000, 8000];
 export const DEFAULT_MAX_DELAY_MS = 30_000;
 export const DEFAULT_MAX_FAIL_FRAC = 0.01;
+// Per-request timeout (M5) — an individual fetch that hangs (rather than
+// erroring or timing out at the transport level) must not stall a whole
+// worker slot indefinitely; a timeout is folded into the same retryable
+// "network error" path as a connection failure.
+export const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
 
 export const defaultSleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -77,6 +88,22 @@ export function resolveMaxFailFrac(fallback = DEFAULT_MAX_FAIL_FRAC) {
   if (raw == null || raw.trim() === "") return fallback;
   const n = Number(raw);
   return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+/**
+ * Early-abort circuit breaker (PR #275 review, I1): true once
+ * `failedCount` exceeds `floor(maxFailFrac × total)`. Both bulk fetchers
+ * check this INSIDE their worker loop, after every completed gene, so a
+ * real outage is caught mid-fetch — aborting the remaining planned
+ * requests — instead of only being detected after every one of ~5.3k
+ * genes has been attempted (which, for the MD job, also means the abort
+ * happens before the fetch phase ever hands anything to the R2 upload
+ * phase). This is the SAME threshold shape the end-of-run
+ * failure-fraction gate uses, just evaluated continuously rather than
+ * once at the end.
+ */
+export function shouldAbortEarly(failedCount, total, maxFailFrac) {
+  return failedCount > Math.floor(maxFailFrac * total);
 }
 
 /**
@@ -121,13 +148,28 @@ export function createLimiter({
   let active = 0;
   let nextSlotAt = 0;
   const queue = [];
+  // At most ONE pacing timer pending at a time (I4). `schedule()` calls
+  // `pump()` synchronously on every enqueue, and `pump()` is also called
+  // whenever a task finishes — without this guard, every one of those
+  // calls that lands while rate-limited would independently schedule its
+  // OWN `sleep(wait).then(pump)`, so queuing N tasks up front (the common
+  // `Promise.all(tasks.map(...))` shape) created O(n) redundant pending
+  // timers all waking at ~the same instant instead of one wakeup per
+  // actual pacing interval.
+  let waitingForSlot = false;
 
   function pump() {
     while (queue.length > 0 && active < concurrency) {
       const t = now();
       if (t < nextSlotAt) {
-        const wait = nextSlotAt - t;
-        sleep(wait).then(pump);
+        if (!waitingForSlot) {
+          waitingForSlot = true;
+          const wait = nextSlotAt - t;
+          sleep(wait).then(() => {
+            waitingForSlot = false;
+            pump();
+          });
+        }
         return;
       }
       const job = queue.shift();
@@ -158,14 +200,27 @@ export function createLimiter({
   };
 }
 
-/** Honour `Retry-After` (seconds, or an HTTP-date) when present. */
+/**
+ * Honour `Retry-After` (seconds, or an HTTP-date) when present. Returns
+ * `null` when absent OR when an HTTP-date form is already in the past
+ * (M7) — a past/now date would otherwise floor to a 0ms wait via the old
+ * `Math.max(0, …)` clamp, turning a single slow response into an
+ * immediate-retry storm against an already-struggling Worker. `null`
+ * lets the caller fall back to the normal computed backoff instead. The
+ * numeric-seconds form is NOT floored this way: `Retry-After: 0` is a
+ * legitimate "retry immediately" signal from the server, not a stale
+ * clock artifact.
+ */
 export function parseRetryAfterMs(res) {
   const raw = res?.headers?.get?.("Retry-After") ?? res?.headers?.get?.("retry-after");
   if (raw == null) return null;
   const seconds = Number(raw);
   if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
   const dateMs = Date.parse(raw);
-  if (!Number.isNaN(dateMs)) return Math.max(0, dateMs - Date.now());
+  if (!Number.isNaN(dateMs)) {
+    const delta = dateMs - Date.now();
+    return delta > 0 ? delta : null;
+  }
   return null;
 }
 
@@ -175,25 +230,39 @@ export function computeBackoffMs(attempt, { baseDelaysMs = DEFAULT_BACKOFF_MS, m
 }
 
 /**
- * Fetch `url`, retrying on 429 / 5xx / network error / a 200 response
- * carrying `X-Surfaceome-Degraded` (serve-time enrichment failed on the
- * Worker) — up to `maxAttempts` times with exponential backoff, honouring
- * `Retry-After` when the Worker sends one. A deterministic 4xx (404, or
- * any non-429 4xx) returns immediately without retrying.
+ * Fetch `url`, retrying on 429 / 5xx / network error / request timeout /
+ * a 200 response carrying `X-Surfaceome-Degraded` (serve-time enrichment
+ * failed on the Worker) — up to `maxAttempts` times with exponential
+ * backoff, honouring `Retry-After` when the Worker sends one. A
+ * deterministic 4xx (404, or any non-429 4xx) returns immediately without
+ * retrying.
  *
  * Resolves to a discriminated result — never throws on a fetch/HTTP
- * failure (network errors ARE caught and folded into the result):
+ * failure (network errors, including a timeout, ARE caught and folded
+ * into the result):
  *   { ok: true, body, status }                          — success.
- *   { ok: false, hardFailure: true, status }             — deterministic
- *     4xx (or a malformed body on an otherwise-2xx response); don't retry.
+ *   { ok: false, hardFailure: true, status }             — deterministic:
+ *     a 4xx status, OR malformed JSON (a `SyntaxError` from `readBody`) on
+ *     an otherwise-healthy response — don't retry either.
  *   { ok: false, hardFailure: false, status, degraded, error } — retries
- *     exhausted on a transient (429/5xx/network) or persistently-degraded
- *     response. THIS is the signal the incident is about: an availability
- *     problem, not a per-gene data problem.
+ *     exhausted on a transient (429/5xx/network/timeout/a non-SyntaxError
+ *     body-read failure such as a connection reset mid-stream) or
+ *     persistently-degraded response. THIS is the signal the incident is
+ *     about: an availability problem, not a per-gene data problem.
  *
  * `readBody(res)` decides how to consume the body of a healthy (ok,
  * non-degraded) response — defaults to `res.text()`; pass
  * `res => res.json()` (or use `fetchJsonWithRetry`) for JSON endpoints.
+ * Only a `SyntaxError` out of `readBody` (bad JSON — the bytes themselves
+ * are wrong, retrying won't fix them) is treated as a hard failure; any
+ * OTHER error reading the body (the connection dropping mid-read, an
+ * aborted stream, etc.) is exactly as retryable as a network error at the
+ * `fetchImpl` layer, since it means the bytes never fully arrived.
+ *
+ * `requestTimeoutMs` (default 30s) bounds a single attempt via
+ * `AbortSignal.timeout` — a hang is folded into the same retryable
+ * network-error path as a connection failure, not left to stall a worker
+ * slot forever.
  */
 export async function fetchWithRetry(
   url,
@@ -206,6 +275,7 @@ export async function fetchWithRetry(
     sleep = defaultSleep,
     onRetry,
     readBody = (res) => res.text(),
+    requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
   } = {},
 ) {
   let lastStatus = null;
@@ -213,9 +283,14 @@ export async function fetchWithRetry(
   let lastError = null;
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     let res = null;
+    let bodyOutcome = null; // set only when a body-read was attempted on a healthy response
     try {
-      res = await fetchImpl(url, headers ? { headers } : undefined);
+      const init = {};
+      if (headers) init.headers = headers;
+      if (requestTimeoutMs != null) init.signal = AbortSignal.timeout(requestTimeoutMs);
+      res = await fetchImpl(url, Object.keys(init).length ? init : undefined);
     } catch (err) {
+      // Network error OR AbortSignal.timeout firing — both transient.
       lastError = err;
       res = null;
     }
@@ -227,18 +302,28 @@ export async function fetchWithRetry(
           const body = await readBody(res);
           return { ok: true, body, status: res.status };
         } catch (err) {
-          // Malformed body on an otherwise-healthy response — a
-          // deterministic parse problem, not an availability/pacing
-          // issue, so don't burn retries on it.
-          return { ok: false, hardFailure: true, status: res.status, error: err };
+          if (err instanceof SyntaxError) {
+            // Malformed JSON on an otherwise-healthy response — the bytes
+            // themselves are wrong, a deterministic parse problem, not an
+            // availability/pacing issue, so don't burn retries on it.
+            return { ok: false, hardFailure: true, status: res.status, error: err };
+          }
+          // Any OTHER body-read error (connection reset mid-stream, an
+          // aborted read, "terminated", …) is a network/transient problem
+          // masquerading as a successful response header — retry it like
+          // a network error rather than giving up immediately.
+          bodyOutcome = err;
         }
       }
-      if (res.ok && degradedHeader) {
+      if (bodyOutcome) {
+        lastError = bodyOutcome;
+        // fall through to the retry/backoff logic below
+      } else if (res.ok && degradedHeader) {
         lastDegraded = degradedHeader;
         // Drain the body so the connection can be reused/closed cleanly;
         // we never use degraded bytes.
         await Promise.resolve(res.text?.()).catch(() => {});
-      } else if (res.status === 404 || (res.status !== 429 && res.status < 500)) {
+      } else if (!res.ok && (res.status === 404 || (res.status !== 429 && res.status < 500))) {
         return { ok: false, hardFailure: true, status: res.status };
       }
       // else: 429 or 5xx — fall through to retry.

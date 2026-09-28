@@ -714,8 +714,17 @@ schema in `src/accessible_surfaceome/tools/_shared/models.py`. See
 ### Per-gene markdown exports — D1-sourced at build time
 
 The downloadable `{SYMBOL}.md` briefs are rendered by
-`viewer/scripts/build-markdown-exports.mjs` (wired into `npm run build` via
-`build:exports`). It has two record sources, selected by `SURFACEOME_MD_SOURCE`:
+`viewer/scripts/build-markdown-exports.mjs`, run via the `build:exports`
+npm script. **`build:exports` is a standalone ops job, not part of
+`npm run build`** — `viewer/package.json`'s `build` script is
+`build:snapshot && next build --webpack && node scripts/prune-export.mjs`,
+which never invokes `build:exports`. Run it manually (or from a separate
+scheduled job) after a deep-dive sweep changes the published set:
+`SURFACEOME_MD_SOURCE=api node scripts/build-markdown-exports.mjs` for
+the default `public` target (writes `{SYMBOL}.json` + `.md` under
+`viewer/public/data/surfaceome/`), or with `MD_TARGET=r2` for the R2
+`.md`-only populate job (see below). It has two record sources, selected
+by `SURFACEOME_MD_SOURCE`:
 
 - **`snapshots`** (default) — renders `.md` next to each committed
   `viewer/public/data/surfaceome/*.json`. Offline-safe; used by CI, local
@@ -727,11 +736,16 @@ The downloadable `{SYMBOL}.md` briefs are rendered by
   caps the count (testing / incremental builds); `SURFACEOME_API_BASE`
   overrides the Worker base.
 
-**Set `SURFACEOME_MD_SOURCE=api` on the Cloudflare Pages `build:exports`
-step** so a large deep-dive sweep that publishes only to D1 still ships a
-`.md` (+ a materialized fs fallback) for every gene, without committing
-thousands of snapshots. Commit only a small curated snapshot set as the
-Worker-down offline fallback.
+**Run `build:exports` with `SURFACEOME_MD_SOURCE=api`** (the default) so a
+large deep-dive sweep that publishes only to D1 still ships a `.md` (+ a
+materialized fs fallback) for every gene, without committing thousands of
+snapshots. Commit only a small curated snapshot set as the Worker-down
+offline fallback. Because this ops job is NOT part of the Pages build, a
+newly-published gene's `.md` download only exists after someone runs this
+job — that's expected, not a bug to fix by wiring it into `npm run build`
+(the whole point of pulling it out was to keep the Pages 20k-file cap and
+build time under control; see the script's own header comment for the
+history).
 
 Consequently the old "every D1-published gene needs a committed in-tree
 snapshot" rule is **retired** — a published gene with no committed snapshot
@@ -743,12 +757,24 @@ per-gene snapshot.
 Both this exporter's record + evidence-ledger fetches and
 `build-data-snapshot.mjs`'s per-gene record pre-fetch are paced through a
 shared concurrency/rate limiter (`viewer/scripts/lib/build-fetch.mjs`,
-default 4 concurrent / 8 req/s, `SURFACEOME_BUILD_FETCH_CONCURRENCY` /
-`_RPS`) and never publish a record still carrying `X-Surfaceome-Degraded`
-after retries — a persistently degraded/failing gene is skipped (existing
+default 8 concurrent / 8 req/s, `SURFACEOME_BUILD_FETCH_CONCURRENCY` /
+`_RPS` — the rate cap is the binding constraint, not concurrency) and
+never publish a record still carrying `X-Surfaceome-Degraded` after
+retries — a persistently degraded/failing gene is skipped (existing
 R2/`.md` artifact left untouched) and logged rather than baked into the
-build, and the run exits non-zero only if more than
-`SURFACEOME_BUILD_MAX_FAILED_FRAC` (default 1%) of genes failed.
+build. Both scripts also abort the whole run early (before any R2 upload
+for this exporter), mid-fetch, once the running failure count exceeds
+`floor(SURFACEOME_BUILD_MAX_FAILED_FRAC × total genes)` — an outage is
+caught within a handful of genes, not only after every one of ~5,300 has
+individually exhausted retries — and separately exits non-zero if more
+than
+`SURFACEOME_BUILD_MAX_FAILED_FRAC` (default 1%) of genes failed. When run
+with `MD_TARGET=r2` or `SURFACEOME_MD_GENES` set (a targeted re-export of
+specific genes, comma-separated), this exporter always fetches live from
+the Worker and never reads the local `viewer/build-cache/records` snapshot
+— that cache can be stale (e.g. left over in another worktree from before
+this pacing fix), and both of those modes are ops jobs republishing to a
+live surface, so they must never risk shipping stale bytes.
 
 ## Cloudflare D1 + R2 backups for agent runs
 

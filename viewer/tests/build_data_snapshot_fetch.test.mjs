@@ -102,3 +102,25 @@ test("fetchRecordBody: persistent 5xx is failed, not degraded", async () => {
   assert.equal(r.failed, true);
   assert.equal(r.degraded, null);
 });
+
+test("fetchRecordBody: a hardFailure on a 2xx status (malformed body) maps to failed, never notFound (I5)", async () => {
+  // build-data-snapshot.mjs's default readBody is res.text(), which never
+  // throws SyntaxError in practice — this test overrides readBody (via
+  // retryOpts, which fetchRecordBody spreads straight into
+  // fetchWithRetry's options) to exercise the mapping logic directly:
+  // a hardFailure alongside a HEALTHY 2xx status is a real failure, never
+  // a tolerable "not found" — only a genuine non-2xx hard failure is.
+  scenario = "healthy"; // 200, non-degraded
+  calls = 0;
+  const r = await fetchRecordBody("https://example.test/v1/genes/EGFR", fastLimiter(), {
+    retryOpts: {
+      sleep: async () => {},
+      readBody: () => {
+        throw new SyntaxError("bad json");
+      },
+    },
+  });
+  assert.equal(r.notFound, undefined, "a 2xx hardFailure must NOT be tolerated as notFound");
+  assert.equal(r.failed, true);
+  assert.equal(r.degraded, null);
+});

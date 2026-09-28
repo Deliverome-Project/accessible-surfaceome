@@ -22,7 +22,7 @@
 
 import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import {
   createLimiter,
   defaultSleep,
@@ -30,6 +30,7 @@ import {
   parseGeneListEnv,
   resolveBuildFetchTuning,
   resolveMaxFailFrac,
+  shouldAbortEarly,
 } from "./lib/build-fetch.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1436,6 +1437,16 @@ function loadRecordsFromSnapshots() {
 // back to `loadRecordsFromApi`.
 const BUILD_CACHE_RECORDS_DIR = path.join(VIEWER_ROOT, "build-cache", "records");
 
+// NOTE (PR #275 review, C1): `main()` now SKIPS this function entirely
+// whenever `MD_GENES_FILTER` is set (or `MD_TARGET === "r2"`) — see the
+// `skipBuildCache` branch in `main()` — so the `MD_GENES_FILTER` filtering
+// below is dead in practice for those runs. It stays here as a defensive
+// no-op (and so a directly-called/tested invocation of this function
+// still behaves correctly) rather than because main() relies on it: a
+// PARTIAL local cache filtered down to a subset would otherwise silently
+// under-deliver a targeted `SURFACEOME_MD_GENES` re-export instead of
+// fetching the missing genes live, which is exactly the bug C1 closes by
+// bypassing this path altogether for that case.
 function loadRecordsFromBuildCache() {
   if (!existsSync(BUILD_CACHE_RECORDS_DIR)) return [];
   const jsonFiles = readdirSync(BUILD_CACHE_RECORDS_DIR).filter((n) =>
@@ -1524,10 +1535,40 @@ async function fetchEvidenceLedger(sym, { retryOpts } = {}) {
 async function loadRecordsFromApi({ retryOpts } = {}) {
   const listUrl = `${API_BASE}/v1/genes`;
   const list = await fetchJson(listUrl);
-  let genes = list?.genes ?? [];
-  let symbols = genes.map((g) => g.gene_symbol).filter(Boolean);
+  const genes = list?.genes ?? [];
+  const allSymbols = genes.map((g) => g.gene_symbol).filter(Boolean);
+  // M2: an empty published-gene list is fatal, exactly like
+  // build-data-snapshot.mjs's snapshotRecords() guard — never silently
+  // export nothing.
+  if (allSymbols.length === 0) {
+    throw new Error(
+      `[md-exports] ${listUrl} returned 0 genes — refusing to run with an empty gene list`,
+    );
+  }
+  let symbols = allSymbols;
   if (MD_GENES_FILTER) {
-    symbols = symbols.filter((s) => MD_GENES_FILTER.has(s));
+    // M1: a requested symbol that isn't in the published set is very
+    // likely a typo or a case mismatch — warn AND fail loud (rather than
+    // silently exporting fewer genes than asked for), suggesting the
+    // case-insensitive match if one exists. The filter itself stays
+    // exact-case (gene symbols are case-sensitive HGNC identifiers); only
+    // the SUGGESTION is case-insensitive.
+    const allSymbolSet = new Set(allSymbols);
+    const lowerToActual = new Map(allSymbols.map((s) => [s.toLowerCase(), s]));
+    const missing = [...MD_GENES_FILTER].filter((s) => !allSymbolSet.has(s));
+    if (missing.length > 0) {
+      const detail = missing
+        .map((m) => {
+          const suggestion = lowerToActual.get(m.toLowerCase());
+          return suggestion && suggestion !== m ? `${m} (did you mean ${suggestion}?)` : m;
+        })
+        .join(", ");
+      console.error(
+        `[md-exports] SURFACEOME_MD_GENES contains symbol(s) not in ${listUrl}: ${detail}`,
+      );
+      throw new Error(`SURFACEOME_MD_GENES: symbol(s) not found — ${detail}`);
+    }
+    symbols = allSymbols.filter((s) => MD_GENES_FILTER.has(s));
   }
   const limit = parseInt(process.env.SURFACEOME_MD_LIMIT || "0", 10);
   if (limit > 0) symbols = symbols.slice(0, limit);
@@ -1542,8 +1583,22 @@ async function loadRecordsFromApi({ retryOpts } = {}) {
   const skippedEvidence = [];
   let cursor = 0;
   let done = 0;
+  // Early-abort circuit breaker (PR #275 review, I1): once
+  // skippedRecord+skippedEvidence exceeds floor(MD_MAX_FAIL_FRAC ×
+  // symbols.length), stop pulling new work and THROW — the caller
+  // (main()) awaits this function BEFORE it ever enters the per-gene
+  // write/upload loop, so an outage is caught, and the run aborted,
+  // strictly before any R2 PUT happens.
+  let aborted = false;
+  const abortSample = [];
+  function noteFailure(sym, reason) {
+    if (abortSample.length < 10) abortSample.push(`${sym}: ${reason}`);
+    if (!aborted && shouldAbortEarly(skippedRecord.length + skippedEvidence.length, symbols.length, MD_MAX_FAIL_FRAC)) {
+      aborted = true;
+    }
+  }
   async function worker() {
-    while (cursor < symbols.length) {
+    while (cursor < symbols.length && !aborted) {
       const sym = symbols[cursor++];
       const recUrl = `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`;
       const r = await mdFetchLimiter(() =>
@@ -1555,16 +1610,14 @@ async function loadRecordsFromApi({ retryOpts } = {}) {
         // 4xx, or retries exhausted on a transient/degraded response — is
         // logged and counted against the failure-fraction gate.
         if (r.status !== 404) {
+          const reason = r.hardFailure
+            ? `HTTP ${r.status}`
+            : r.degraded
+              ? `degraded (${r.degraded}) after retries`
+              : `HTTP ${r.status ?? "?"} after retries`;
           skippedRecord.push(sym);
-          console.warn(
-            `  ! ${sym}: record fetch failed — ${
-              r.hardFailure
-                ? `HTTP ${r.status}`
-                : r.degraded
-                  ? `degraded (${r.degraded}) after retries`
-                  : `HTTP ${r.status ?? "?"} after retries`
-            }`,
-          );
+          console.warn(`  ! ${sym}: record fetch failed — ${reason}`);
+          noteFailure(sym, reason);
         }
       } else {
         const rec = r.body;
@@ -1572,6 +1625,7 @@ async function loadRecordsFromApi({ retryOpts } = {}) {
         if (!evResult.ok) {
           skippedEvidence.push(sym);
           console.warn(`  ! ${sym}: evidence fetch failed — ${evResult.reason} (skipping gene)`);
+          noteFailure(sym, `evidence: ${evResult.reason}`);
         } else {
           rec.evidence = evResult.evidence;
           out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
@@ -1587,7 +1641,43 @@ async function loadRecordsFromApi({ retryOpts } = {}) {
       worker,
     ),
   );
+  if (aborted) {
+    const msg =
+      `[md-exports] OUTAGE DETECTED — aborted early after ${done}/${symbols.length} genes ` +
+      `attempted (${skippedRecord.length} record failure(s), ${skippedEvidence.length} evidence ` +
+      `failure(s)). The Worker/D1 is rate-limiting/blocking/unhealthy; refusing to keep hammering ` +
+      `it or proceed to any upload. Sample: ${abortSample.join("; ")}`;
+    console.error(msg);
+    throw new Error(msg);
+  }
   return { records: out, totalAttempted: symbols.length, skippedRecord, skippedEvidence };
+}
+
+/**
+ * Pure decision function (PR #275 review, C1): true whenever `main()`
+ * must bypass `viewer/build-cache/records` entirely and always fetch
+ * live from the Worker. `MD_TARGET === "r2"` and/or `SURFACEOME_MD_GENES`
+ * both mean this run is an ops job re-publishing to a LIVE surface
+ * (public R2, or a targeted subset) — it must never read the build-cache,
+ * which can be a STALE local cache from before this incident's fix
+ * (concurrent worktrees on this repo can each have their own build-cache
+ * from an earlier, unpaced snapshot run). Pulled out as a pure function
+ * (no filesystem/network) so the decision itself is directly unit-tested
+ * without needing to fabricate a build-cache directory or a full
+ * `main()` run.
+ */
+function shouldSkipBuildCache(mdTarget, mdGenesFilter) {
+  return mdTarget === "r2" || mdGenesFilter != null;
+}
+
+/** Human-readable reason string for `shouldSkipBuildCache`'s decision — used in the source-selection log line. */
+function skipBuildCacheReason(mdTarget, mdGenesFilter) {
+  return [
+    mdTarget === "r2" ? "MD_TARGET=r2" : null,
+    mdGenesFilter ? "SURFACEOME_MD_GENES set" : null,
+  ]
+    .filter(Boolean)
+    .join(" + ");
 }
 
 /**
@@ -1685,26 +1775,36 @@ async function main() {
     written: 0,
   };
   if (MD_SOURCE === "api") {
-    records = loadRecordsFromBuildCache();
-    if (records.length > 0) {
-      console.log(
-        `  build-cache: ${records.length} records from ${BUILD_CACHE_RECORDS_DIR}` +
-          (MD_GENES_FILTER ? " (filtered by SURFACEOME_MD_GENES)" : ""),
-      );
-      stats.totalAttempted = records.length;
-    } else {
-      console.log(
-        `  build-cache empty at ${BUILD_CACHE_RECORDS_DIR} — falling back to Worker fetch`,
-      );
+    if (shouldSkipBuildCache(MD_TARGET, MD_GENES_FILTER)) {
+      console.log(`  source: api (live Worker fetch — build-cache bypassed: ${skipBuildCacheReason(MD_TARGET, MD_GENES_FILTER)})`);
       const apiResult = await loadRecordsFromApi();
       records = apiResult.records;
       stats.totalAttempted = apiResult.totalAttempted;
       stats.skippedRecord.push(...apiResult.skippedRecord);
       stats.skippedEvidence.push(...apiResult.skippedEvidence);
+    } else {
+      records = loadRecordsFromBuildCache();
+      if (records.length > 0) {
+        console.log(
+          `  source: build-cache (${records.length} records from ${BUILD_CACHE_RECORDS_DIR})`,
+        );
+        stats.totalAttempted = records.length;
+      } else {
+        console.log(
+          `  build-cache empty at ${BUILD_CACHE_RECORDS_DIR} — falling back to Worker fetch`,
+        );
+        const apiResult = await loadRecordsFromApi();
+        records = apiResult.records;
+        stats.totalAttempted = apiResult.totalAttempted;
+        stats.skippedRecord.push(...apiResult.skippedRecord);
+        stats.skippedEvidence.push(...apiResult.skippedEvidence);
+        console.log(`  source: api (live Worker fetch — build-cache was empty)`);
+      }
     }
   } else {
     records = loadRecordsFromSnapshots();
     stats.totalAttempted = records.length;
+    console.log(`  source: snapshots (${records.length} committed JSON records)`);
   }
   if (records.length === 0) {
     console.warn(`No records to export (source=${MD_SOURCE}).`);
@@ -1882,14 +1982,15 @@ export {
   uploadMarkdownToR2,
   computeFailFraction,
   reportSummaryAndMaybeFail,
+  shouldSkipBuildCache,
   main,
 };
 
 // Only auto-run when executed directly (`node build-markdown-exports.mjs`),
-// not when imported by a test.
-const isMain =
-  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
-if (isMain) {
+// not when imported by a test. `import.meta.main` (Node 24, M4) replaces
+// the previous manual `import.meta.url === pathToFileURL(argv[1]).href`
+// comparison.
+if (import.meta.main) {
   main().catch((err) => {
     console.error(err);
     process.exit(1);

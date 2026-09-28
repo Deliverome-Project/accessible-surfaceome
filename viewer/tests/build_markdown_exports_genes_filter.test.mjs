@@ -75,3 +75,35 @@ test("SURFACEOME_MD_GENES restricts loadRecordsFromApi to exactly the listed sym
     "BBB must never be fetched — the whole point of the filter is to avoid touching genes outside it",
   );
 });
+
+test("SURFACEOME_MD_GENES: a symbol not in /v1/genes throws with a case-insensitive suggestion (M1)", async () => {
+  // The filter asks for exact "AAA" and "CCC", but the published list only
+  // has "aaa" (wrong case) and "CCC" — "CCC" resolves fine, "AAA" doesn't
+  // match anything exactly, and the lowercase near-match should be
+  // surfaced as a suggestion without being silently accepted (the filter
+  // itself stays exact-case).
+  routes = new Map([
+    [
+      `${BASE}/v1/genes`,
+      () =>
+        fakeResponse({
+          status: 200,
+          jsonBody: { genes: [{ gene_symbol: "aaa" }, { gene_symbol: "CCC" }] },
+        }),
+    ],
+  ]);
+  requestedUrls = [];
+
+  await assert.rejects(
+    () => loadRecordsFromApi({ retryOpts: { sleep: async () => {} } }),
+    (err) => {
+      assert.match(err.message, /AAA/);
+      assert.match(err.message, /did you mean aaa/i);
+      return true;
+    },
+  );
+  assert.ok(
+    !requestedUrls.some((u) => u.includes("/v1/genes/CCC") || u.includes("/v1/genes/aaa")),
+    "must fail BEFORE fetching any per-gene record, exact-case filter unchanged by the suggestion",
+  );
+});

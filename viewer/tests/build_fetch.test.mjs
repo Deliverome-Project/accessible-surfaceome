@@ -24,6 +24,7 @@ import {
   parseGeneListEnv,
   resolveBuildFetchTuning,
   resolveMaxFailFrac,
+  shouldAbortEarly,
 } from "../scripts/lib/build-fetch.mjs";
 
 // ----------------------------------------------------------------
@@ -162,6 +163,46 @@ test("createLimiter: a rejected task doesn't stall the queue", async () => {
   });
   await drain(Promise.all([p1, p2]), clock);
   assert.deepEqual(results.sort(), ["err:boom", "ok2"]);
+});
+
+test("createLimiter: enqueuing N tasks up front schedules O(n) pacing wakeups, not O(n^2) (I4)", async () => {
+  // Regression test: before the `waitingForSlot` guard, every schedule()
+  // call that landed while rate-limited independently created its OWN
+  // `sleep(wait).then(pump)` chain. Queuing N tasks in a tight synchronous
+  // loop (the common `Promise.all(tasks.map(fn => limiter(fn)))` shape)
+  // then created up to N REDUNDANT pending timers all waking near the
+  // same instant, instead of one wakeup per actual pacing interval.
+  const clock = makeFakeClock();
+  let sleepCalls = 0;
+  const countingSleep = (ms) => {
+    sleepCalls += 1;
+    return clock.sleep(ms);
+  };
+  const limiter = createLimiter({
+    concurrency: 1000, // not the bottleneck — rate pacing is what's under test
+    rps: 10, // 100ms between starts
+    now: clock.now,
+    sleep: countingSleep,
+  });
+
+  const N = 30;
+  // Enqueue all N tasks in a tight synchronous loop — exactly the shape
+  // that exposed the O(n) redundant-timer bug (schedule() calls pump()
+  // synchronously on every push, before any of the earlier calls' timers
+  // have fired).
+  const tasks = Array.from({ length: N }, () => limiter(async () => "ok"));
+
+  await drain(Promise.all(tasks), clock);
+
+  // One wakeup roughly per task once pacing is the bottleneck (N-1 waits
+  // for N tasks paced apart, since the very first task starts immediately
+  // with no wait) — bounded well under the O(n) trigger's actual behavior
+  // (which would produce many MORE than N sleep() calls, one per
+  // redundant pump() invocation rather than one per pacing interval).
+  assert.ok(
+    sleepCalls <= 3 * N,
+    `expected O(n) pacing wakeups (<= ${3 * N}), got ${sleepCalls} sleep() calls for ${N} tasks`,
+  );
 });
 
 // ----------------------------------------------------------------
@@ -344,6 +385,74 @@ test("fetchJsonWithRetry: malformed JSON on an otherwise-healthy response is a h
   assert.equal(calls, 1, "a parse error is deterministic — must not retry");
 });
 
+test("fetchWithRetry: a non-SyntaxError body-read failure (connection reset mid-read) is RETRIED, not a hard failure (I5)", async () => {
+  let calls = 0;
+  const readBody = async () => {
+    calls += 1;
+    if (calls === 1) {
+      // Mirrors undici's "terminated" TypeError on a dropped connection —
+      // the response headers arrived (2xx, ok) but the body stream never
+      // finished. This is NOT the same as bad JSON content and must be
+      // retried like any other transient/network failure.
+      throw new TypeError("terminated");
+    }
+    return "recovered body";
+  };
+  const fetchImpl = async () => fakeResponse({ status: 200 });
+  const r = await fetchWithRetry("https://example.test/x", { fetchImpl, readBody, sleep: noopSleep });
+  assert.equal(r.ok, true);
+  assert.equal(r.body, "recovered body");
+  assert.equal(calls, 2, "must retry past the non-SyntaxError body-read failure");
+});
+
+test("fetchWithRetry: a SyntaxError body-read failure IS a hard failure, still not retried", async () => {
+  let calls = 0;
+  const readBody = async () => {
+    calls += 1;
+    throw new SyntaxError("Unexpected token");
+  };
+  const fetchImpl = async () => fakeResponse({ status: 200 });
+  const r = await fetchWithRetry("https://example.test/x", { fetchImpl, readBody, sleep: noopSleep });
+  assert.equal(r.ok, false);
+  assert.equal(r.hardFailure, true);
+  assert.equal(calls, 1);
+});
+
+test("fetchWithRetry: passes a per-attempt AbortSignal (M5)", async () => {
+  const seenSignals = [];
+  const fetchImpl = async (url, init) => {
+    seenSignals.push(init?.signal ?? null);
+    return fakeResponse({ status: 200, textBody: "ok" });
+  };
+  await fetchWithRetry("https://example.test/x", { fetchImpl, sleep: noopSleep });
+  assert.equal(seenSignals.length, 1);
+  assert.ok(seenSignals[0] instanceof AbortSignal, "expected an AbortSignal to be passed");
+});
+
+test("fetchWithRetry: a request that errors (simulating an aborted/timed-out attempt) is retried like any network error", async () => {
+  // AbortSignal.timeout() firing surfaces to fetchImpl as a rejected
+  // fetch() call (an AbortError) — exercised here via a fetchImpl stub
+  // that rejects on its first call, standing in for that timeout path.
+  // (The full 30s default timeout itself is not awaited in a unit test.)
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls += 1;
+    if (calls === 1) {
+      const err = new Error("The operation was aborted");
+      err.name = "TimeoutError";
+      throw err;
+    }
+    return fakeResponse({ status: 200, textBody: "ok" });
+  };
+  const r = await fetchWithRetry("https://example.test/x", {
+    fetchImpl,
+    sleep: noopSleep,
+    requestTimeoutMs: 5, // small, just to confirm the option is threaded through without error
+  });
+  assert.equal(r.ok, true);
+  assert.equal(calls, 2);
+});
+
 // ----------------------------------------------------------------
 // parseRetryAfterMs / env-var resolvers
 // ----------------------------------------------------------------
@@ -358,13 +467,65 @@ test("parseRetryAfterMs: absent header returns null", () => {
   assert.equal(parseRetryAfterMs(res), null);
 });
 
+test("parseRetryAfterMs: a future HTTP-date returns the delta in ms (M7)", () => {
+  const future = new Date(Date.now() + 10_000).toUTCString();
+  const res = fakeResponse({ headers: { "Retry-After": future } });
+  const ms = parseRetryAfterMs(res);
+  assert.ok(ms != null && ms > 8000 && ms <= 10_000, `expected ~10000ms, got ${ms}`);
+});
+
+test("parseRetryAfterMs: a PAST HTTP-date returns null, not a negative/zero wait (M7)", () => {
+  const past = new Date(Date.now() - 60_000).toUTCString();
+  const res = fakeResponse({ headers: { "Retry-After": past } });
+  assert.equal(
+    parseRetryAfterMs(res),
+    null,
+    "a stale Retry-After date must fall back to the computed backoff, not drive an immediate-retry storm",
+  );
+});
+
+test("fetchWithRetry: a past-date Retry-After falls back to the computed backoff, not 0ms (M7)", async () => {
+  let calls = 0;
+  const delays = [];
+  const past = new Date(Date.now() - 60_000).toUTCString();
+  const fetchImpl = async () => {
+    calls += 1;
+    if (calls === 1) return fakeResponse({ status: 429, headers: { "Retry-After": past } });
+    return fakeResponse({ status: 200, textBody: "ok" });
+  };
+  await fetchWithRetry("https://example.test/x", {
+    fetchImpl,
+    sleep: noopSleep,
+    onRetry: (info) => delays.push(info.delay),
+  });
+  assert.deepEqual(delays, [1000], "expected the default first-attempt backoff (1000ms), not 0");
+});
+
+// ----------------------------------------------------------------
+// shouldAbortEarly (I1)
+// ----------------------------------------------------------------
+
+test("shouldAbortEarly: false while at or under the floor(frac × total) threshold", () => {
+  // floor(0.01 * 1000) = 10 — 10 failures is still AT the threshold.
+  assert.equal(shouldAbortEarly(10, 1000, 0.01), false);
+});
+
+test("shouldAbortEarly: true as soon as failures exceed the floor(frac × total) threshold", () => {
+  assert.equal(shouldAbortEarly(11, 1000, 0.01), true);
+});
+
+test("shouldAbortEarly: a tiny total (floor == 0) trips on the very first failure", () => {
+  assert.equal(shouldAbortEarly(0, 50, 0.01), false);
+  assert.equal(shouldAbortEarly(1, 50, 0.01), true);
+});
+
 test("resolveBuildFetchTuning: defaults and env overrides", () => {
   const prevC = process.env.SURFACEOME_BUILD_FETCH_CONCURRENCY;
   const prevR = process.env.SURFACEOME_BUILD_FETCH_RPS;
   try {
     delete process.env.SURFACEOME_BUILD_FETCH_CONCURRENCY;
     delete process.env.SURFACEOME_BUILD_FETCH_RPS;
-    assert.deepEqual(resolveBuildFetchTuning(), { concurrency: 4, rps: 8 });
+    assert.deepEqual(resolveBuildFetchTuning(), { concurrency: 8, rps: 8 });
 
     process.env.SURFACEOME_BUILD_FETCH_CONCURRENCY = "10";
     process.env.SURFACEOME_BUILD_FETCH_RPS = "20";
@@ -373,7 +534,7 @@ test("resolveBuildFetchTuning: defaults and env overrides", () => {
     // Invalid values fall back to the default rather than throwing/NaN.
     process.env.SURFACEOME_BUILD_FETCH_CONCURRENCY = "not-a-number";
     process.env.SURFACEOME_BUILD_FETCH_RPS = "-5";
-    assert.deepEqual(resolveBuildFetchTuning(), { concurrency: 4, rps: 8 });
+    assert.deepEqual(resolveBuildFetchTuning(), { concurrency: 8, rps: 8 });
   } finally {
     if (prevC === undefined) delete process.env.SURFACEOME_BUILD_FETCH_CONCURRENCY;
     else process.env.SURFACEOME_BUILD_FETCH_CONCURRENCY = prevC;

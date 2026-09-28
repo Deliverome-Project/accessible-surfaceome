@@ -9,7 +9,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-scenarios=(degraded-then-healthy persistent-degraded retry-after)
+scenarios=(degraded-then-healthy persistent-degraded retry-after retry-after-cap no-store-after-degraded)
 fails=0
 for s in "${scenarios[@]}"; do
   if ! npx --yes tsx tests/surfaceome_record_degraded.test.ts "$s"; then

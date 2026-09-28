@@ -1014,14 +1014,33 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
 // the build's bulk fetchers (viewer/scripts/lib/build-fetch.mjs).
 const DEGRADED_HEADER = "X-Surfaceome-Degraded";
 
-/** Honour `Retry-After` (seconds, or an HTTP-date) when the Worker sends one. */
+// Upper bound on an honoured `Retry-After` wait here (PR #275 review, I2).
+// The Worker's 429 response sends `Retry-After: 60`, but this fetch sits
+// inside a single Next.js `generateStaticParams`/page-render call during
+// `next build`, and `staticPageGenerationTimeout` defaults to 60s for the
+// WHOLE page — a single 60s wait (let alone across up to 3 attempts) would
+// by itself blow that budget and time out the page. 5s keeps the retry
+// responsive to a real rate-limit signal without risking the page timeout;
+// the shared build-fetch.mjs limiter (used by the bulk pre-fetch this is
+// only a fallback for) has no such per-page deadline and doesn't cap it.
+const RETRY_AFTER_CAP_MS = 5_000;
+
+/**
+ * Honour `Retry-After` (seconds, or an HTTP-date) when the Worker sends
+ * one, capped at `RETRY_AFTER_CAP_MS`. A past/now HTTP-date returns
+ * `null` (falls back to the computed backoff) rather than a 0ms wait —
+ * mirrors `parseRetryAfterMs` in `scripts/lib/build-fetch.mjs`.
+ */
 function _parseRetryAfterMs(res: Response | null): number | null {
   const raw = res?.headers?.get?.("Retry-After");
   if (raw == null) return null;
   const seconds = Number(raw);
-  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  if (Number.isFinite(seconds)) return Math.min(Math.max(0, seconds * 1000), RETRY_AFTER_CAP_MS);
   const dateMs = Date.parse(raw);
-  if (!Number.isNaN(dateMs)) return Math.max(0, dateMs - Date.now());
+  if (!Number.isNaN(dateMs)) {
+    const delta = dateMs - Date.now();
+    return delta > 0 ? Math.min(delta, RETRY_AFTER_CAP_MS) : null;
+  }
   return null;
 }
 
@@ -1055,13 +1074,20 @@ async function _fetchRecordFromWorker(
 ): Promise<SurfaceomeRecord | null> {
   const attempts = 3;
   const backoffMs = [750, 2000];
+  // Once ANY attempt saw a degraded response, every subsequent attempt
+  // uses `no-store` regardless of `RECORD_FETCH_CACHE` (PR #275 review,
+  // M6) — `force-cache` in production opts this fetch into Next's Data
+  // Cache, and a retry's whole point is to reach the Worker again, not
+  // risk a cache layer handing back the very degraded response being
+  // retried away from.
+  let sawDegraded = false;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     let res: Response | null = null;
     try {
       res = await fetch(`${base}/v1/genes/${symbol}`, {
-        cache: RECORD_FETCH_CACHE,
+        cache: sawDegraded ? "no-store" : RECORD_FETCH_CACHE,
         signal: controller.signal,
       });
     } catch {
@@ -1081,6 +1107,7 @@ async function _fetchRecordFromWorker(
       }
       if (res.ok && degradedHeader) {
         degraded = true;
+        sawDegraded = true;
         await res.text().catch(() => undefined); // drain; never use degraded bytes
       } else {
         if (res.status === 404) return null; // unpublished — deterministic
