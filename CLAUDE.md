@@ -740,6 +740,16 @@ the exporter's api-source *wiring* (static
 `test_markdown_exporter_supports_d1_source`) instead of requiring a
 per-gene snapshot.
 
+Both this exporter's record + evidence-ledger fetches and
+`build-data-snapshot.mjs`'s per-gene record pre-fetch are paced through a
+shared concurrency/rate limiter (`viewer/scripts/lib/build-fetch.mjs`,
+default 4 concurrent / 8 req/s, `SURFACEOME_BUILD_FETCH_CONCURRENCY` /
+`_RPS`) and never publish a record still carrying `X-Surfaceome-Degraded`
+after retries — a persistently degraded/failing gene is skipped (existing
+R2/`.md` artifact left untouched) and logged rather than baked into the
+build, and the run exits non-zero only if more than
+`SURFACEOME_BUILD_MAX_FAILED_FRAC` (default 1%) of genes failed.
+
 ## Cloudflare D1 + R2 backups for agent runs
 
 The `surfaceome_agents` D1 database stores every `surface_triage`

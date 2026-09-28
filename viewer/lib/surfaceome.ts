@@ -1008,28 +1008,54 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
     }));
 }
 
+// Header the Worker sets on a 200 whose serve-time enrichment failed
+// (also carries `Cache-Control: no-store`). Never bake those bytes into a
+// static page — treat exactly like a transient failure and retry, same as
+// the build's bulk fetchers (viewer/scripts/lib/build-fetch.mjs).
+const DEGRADED_HEADER = "X-Surfaceome-Degraded";
+
+/** Honour `Retry-After` (seconds, or an HTTP-date) when the Worker sends one. */
+function _parseRetryAfterMs(res: Response | null): number | null {
+  const raw = res?.headers?.get?.("Retry-After");
+  if (raw == null) return null;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  const dateMs = Date.parse(raw);
+  if (!Number.isNaN(dateMs)) return Math.max(0, dateMs - Date.now());
+  return null;
+}
+
 /**
  * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on a
- * genuine 404 (unpublished gene) or a persistent error; retries transient
- * failures (429 rate-limit, 5xx cold-D1, network) with backoff, mirroring
- * `loadCatalog`.
+ * genuine 404 (unpublished gene) or a persistent error/degraded response;
+ * retries transient failures (429 rate-limit, 5xx cold-D1, network) AND a
+ * 200 response carrying `X-Surfaceome-Degraded` (serve-time enrichment
+ * failed) with backoff, honouring `Retry-After` when present — mirroring
+ * `loadCatalog` and the build's bulk fetchers. On a persistently-degraded
+ * response this still falls back to `null` exactly as a persistent error
+ * does — same behavior the caller (and the page's `notFound()`) already
+ * handles today; a degraded record is simply never returned.
  *
  * This is the LIVE-fetch fallback for `next dev` and any build that
- * skipped the record snapshot. Production SSG never reaches here:
- * `loadSurfaceomeRecord` reads the per-gene record from `build-cache/
- * records/{SYMBOL}.json` (written by `build-data-snapshot.mjs`) first.
- * The retry matters because a naive `next build` fires ~1.2k concurrent
- * per-gene fetches; before the snapshot + retry existed, the resulting
- * 429s were swallowed as `null` → `notFound()` baked a not-found page for
- * every rate-limited gene while the build still succeeded (every gene
- * page 404'd in production). Cache mode is `RECORD_FETCH_CACHE`
+ * skipped the record snapshot (or whose snapshot skipped this specific
+ * gene because it was persistently degraded there — see
+ * `build-data-snapshot.mjs`). Production SSG never reaches here for a
+ * healthy gene: `loadSurfaceomeRecord` reads the per-gene record from
+ * `build-cache/records/{SYMBOL}.json` (written by `build-data-snapshot.mjs`)
+ * first. The retry matters because a naive `next build` fires ~1.2k
+ * concurrent per-gene fetches; before the snapshot + retry existed, the
+ * resulting 429s were swallowed as `null` → `notFound()` baked a not-found
+ * page for every rate-limited gene while the build still succeeded (every
+ * gene page 404'd in production). Cache mode is `RECORD_FETCH_CACHE`
  * (force-cache in prod for SSG, no-store in dev for always-fresh).
  */
 async function _fetchRecordFromWorker(
   symbol: string,
   base: string,
 ): Promise<SurfaceomeRecord | null> {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  const attempts = 3;
+  const backoffMs = [750, 2000];
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     let res: Response | null = null;
@@ -1043,20 +1069,29 @@ async function _fetchRecordFromWorker(
     } finally {
       clearTimeout(timer);
     }
+    let degraded = false;
     if (res) {
-      if (res.ok) {
+      const degradedHeader = res.headers.get(DEGRADED_HEADER);
+      if (res.ok && !degradedHeader) {
         try {
           return (await res.json()) as SurfaceomeRecord;
         } catch {
           return null; // malformed JSON — deterministic, don't retry
         }
       }
-      if (res.status === 404) return null; // unpublished — deterministic
-      if (res.status !== 429 && res.status < 500) return null; // hard 4xx
+      if (res.ok && degradedHeader) {
+        degraded = true;
+        await res.text().catch(() => undefined); // drain; never use degraded bytes
+      } else {
+        if (res.status === 404) return null; // unpublished — deterministic
+        if (res.status !== 429 && res.status < 500) return null; // hard 4xx
+      }
     }
-    // transient (network error, 429, or 5xx) — back off and retry
-    if (attempt < 2) {
-      await new Promise((r) => setTimeout(r, [750, 2000][attempt] ?? 2000));
+    // transient (network error, 429, 5xx, or degraded 200) — back off and retry
+    if (attempt < attempts - 1) {
+      const retryAfterMs = degraded ? null : _parseRetryAfterMs(res);
+      const delay = retryAfterMs ?? backoffMs[attempt] ?? 2000;
+      await new Promise((r) => setTimeout(r, delay));
     }
   }
   return null;
