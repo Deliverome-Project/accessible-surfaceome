@@ -63,7 +63,8 @@ DDL: list[str] = [
     github_tag         TEXT,
     zenodo_version_doi TEXT,
     n_genes            INTEGER NOT NULL,
-    notes              TEXT
+    notes              TEXT,
+    archive_scope      TEXT
 )""",
     """CREATE TABLE IF NOT EXISTS data_release_member (
     version     TEXT NOT NULL,
@@ -72,6 +73,16 @@ DDL: list[str] = [
     PRIMARY KEY (version, gene_symbol)
 )""",
 ]
+
+# A `data_release` table created before `archive_scope` existed needs this
+# applied once, idempotently, before the column can be set (`CREATE TABLE IF
+# NOT EXISTS` above is a no-op against an already-existing table — it never
+# retrofits a column). SQLite/D1 has no `ADD COLUMN IF NOT EXISTS`, so the
+# caller runs this and treats a "duplicate column name" error as success —
+# see `scripts/cloud/drop_seed_revisions.py::ensure_archive_scope_column`.
+ALTER_DATA_RELEASE_ADD_ARCHIVE_SCOPE_SQL = (
+    "ALTER TABLE data_release ADD COLUMN archive_scope TEXT"
+)
 
 # ?1 gene_symbol, ?2 hgnc_id, ?3 json_hash, ?4 evidence_hash, ?5 md_hash,
 # ?6 published_at, ?7 source, ?8 schema_version, ?9 prompt_corpus_version.

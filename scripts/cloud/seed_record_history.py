@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
-"""One-off: seed record history from the 2026-08-15 Zenodo deposit.
+"""RETIRED — do not run. Kept only as importable history/reference.
+
+This script originally seeded record history from the 2026-08-15 Zenodo
+deposit (deep_dives_all.tar.gz, record 20805384) as each gene's revision 1
+(source seed:zenodo-1.0.0), then created data release 1.0.0 over them. That
+design was reverted: API record history is now scoped to states the API
+actually SERVED — a deposit snapshot that was never itself served through
+the Worker doesn't belong in `record_revision`. Release 1.0.0 stays as a
+Zenodo-only `data_release` row (no `data_release_member` rows; see
+`archive_scope='zenodo_only'` in `record_history/store.py`).
+
+Any `seed:zenodo-1.0.0` rows this script wrote in an earlier run are
+removed, and the genes' subsequent revisions renumbered down by one, by
+`scripts/cloud/drop_seed_revisions.py` (dry-run by default, `--execute`).
+`main()` below refuses immediately so this script can never be re-run by
+habit; the rest of the module (tarball parsing, hashing helpers) is left
+importable for anyone tracing the history of how 1.0.0 was seeded.
+
+Original docstring, for archaeology — do not follow this procedure:
 
 Writes each record in deep_dives_all.tar.gz (Zenodo record 20805384) as
 revision 1 (source seed:zenodo-1.0.0, evidence inline, no .md), then
@@ -76,29 +94,19 @@ from __future__ import annotations
 import argparse
 import json
 import tarfile
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
-from accessible_surfaceome.cloud.r2_s3 import R2S3CredentialError, r2_s3_client
-from accessible_surfaceome.cloud.record_history.hashing import content_hash_record
-from accessible_surfaceome.cloud.record_history.releases import create_release
-from accessible_surfaceome.cloud.record_history.store import (
-    CloudRevisionStore,
-    blob_key,
-)
-from accessible_surfaceome.cloud.surface_annotation import purge_paths
-from accessible_surfaceome.env import load_env
+# `content_hash_record`, `create_release`, `CloudRevisionStore`, `blob_key`,
+# `purge_paths`, `load_env`, `r2_s3_client`/`R2S3CredentialError` are no
+# longer imported here — the write path that used them (building the S3
+# client, hashing + bulk-inserting revision-1 rows, cutting release 1.0.0)
+# was removed along with `main()`'s body; see the module docstring. Import
+# them directly from their real modules if you need them for archaeology.
 
 SEED_SOURCE = "seed:zenodo-1.0.0"
 SEED_AT = "2026-08-15T00:00:00Z"
 SEED_DOI = "10.5281/zenodo.20805384"
-
-# Number of R2 upload round trips to run concurrently. R2 uploads now go
-# through the S3-compatible API (a separate API surface from
-# api.cloudflare.com, with its own — much higher — limits), so this can run
-# wider than the old REST-API pool did.
-POOL_WORKERS = 16
 
 # record_revision has 10 columns; D1 caps a statement at 100 bound
 # parameters, so this is the widest multi-row INSERT that stays legal.
@@ -265,101 +273,15 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tarball", type=Path, required=True)
     ap.add_argument("--execute", action="store_true")
-    args = ap.parse_args()
-
-    records = read_records(args.tarball)
-    print(f"{len(records)} records in {args.tarball.name}")
-    check_unique_case_insensitive(records)
-    if not args.execute:
-        print("[dry-run] pass --execute to write revision 1 + release 1.0.0")
-        return
-
-    expected_hash = {
-        sym.casefold(): content_hash_record(rec) for sym, _raw, rec in records
-    }
-    display_symbol = {sym.casefold(): sym for sym, _raw, _rec in records}
-    tarball_symbols = set(expected_hash)
-
-    load_env()
-    # Build (and cache) the S3 client ONCE, here in the main thread, before
-    # the R2 upload pool starts below — so every pooled worker finds it
-    # already built (one client, one credential-derivation call) instead of
-    # racing a cold cache, and so a broken/missing CLOUDFLARE_API_TOKEN
-    # fails loudly right now instead of thousands of workers each hitting
-    # the (require_s3=True) ArchiveError individually.
-    try:
-        r2_s3_client()
-    except R2S3CredentialError as exc:
-        raise SystemExit(
-            f"R2 S3 client unavailable ({exc}) — the seed refuses to fall "
-            "back to the REST r2_client path at cohort scale (it would "
-            "compete for the shared Cloudflare account API budget). Set "
-            "CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN (or "
-            "R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY) and retry."
-        ) from exc
-
-    with CloudRevisionStore.from_env(require_s3=True) as store:
-        existing_rows = store.d1.query(
-            "SELECT gene_symbol, revision, json_hash, source FROM record_revision", []
-        )
-        refuse_on_stale_existing_rows(
-            existing_rows, expected_hash=expected_hash, tarball_symbols=tarball_symbols
-        )
-
-        releases = store.d1.query("SELECT version, n_genes FROM data_release", [])
-        other_versions = sorted(
-            {r["version"] for r in releases if r["version"] != "1.0.0"}
-        )
-        if other_versions:
-            raise SystemExit(
-                "data_release already has version(s) other than 1.0.0: "
-                f"{', '.join(other_versions)} — refusing to seed underneath a later release"
-            )
-        release_100 = next((r for r in releases if r["version"] == "1.0.0"), None)
-        if release_100 is not None and int(release_100["n_genes"]) == len(records):
-            print("already seeded")
-            return
-
-        existing_symbols = {row["gene_symbol"].casefold() for row in existing_rows}
-        todo = [item for item in records if item[0].casefold() not in existing_symbols]
-        if existing_symbols:
-            print(f"resuming: {len(todo)} of {len(records)} genes still need writing")
-        else:
-            print(f"{len(todo)} genes to write")
-
-        def put(item: tuple[str, bytes, dict]) -> None:
-            _, raw, rec = item
-            store.put_blob(
-                blob_key(content_hash_record(rec), "json"), raw, "application/json"
-            )
-
-        with ThreadPoolExecutor(POOL_WORKERS) as pool:
-            list(pool.map(put, todo))
-        print("R2 blobs written" if todo else "R2: nothing left to write")
-
-        bulk_insert_seed_rows(store.d1, todo, expected_hash=expected_hash)
-        verify_seeded_rows(
-            store.d1, expected_hash=expected_hash, display_symbol=display_symbol
-        )
-
-        members: list[tuple[str, int]] = [(sym, 1) for sym, _, _ in records]
-        create_release(
-            store.d1,
-            version="1.0.0",
-            cut_at=SEED_AT,
-            github_tag=None,
-            zenodo_version_doi=SEED_DOI,
-            notes=(
-                "Initial data deposit (Zenodo record 20805384); records as "
-                "deposited, evidence inline, no Markdown."
-            ),
-            members=members,
-        )
-        purge_paths(["/v1/releases", "/v1/releases/1.0.0"])
-    print(
-        f"seeded {len(members)} genes; release 1.0.0 created/confirmed. "
-        "Now set ARCHIVE_BYPASS_TOKEN locally and run "
-        "sweep_record_history.py --execute"
+    ap.parse_args()  # still validated, so --help keeps working
+    raise SystemExit(
+        "seed_record_history.py is retired: record history now holds only "
+        "states the API actually served, not the Zenodo deposit snapshot. "
+        "Release 1.0.0 is a Zenodo-only data_release row with no member "
+        "revisions. If seed:zenodo-1.0.0 rows already landed in D1 from an "
+        "earlier run, remove them with "
+        "'uv run python scripts/cloud/drop_seed_revisions.py --execute'. "
+        "Refusing to run."
     )
 
 

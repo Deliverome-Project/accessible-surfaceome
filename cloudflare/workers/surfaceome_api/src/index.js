@@ -320,6 +320,33 @@ async function handleRevisionList(env, symbol) {
   if (!results.length) return notFound("gene_not_annotated");
   const g = results[0];
   const base = `${HISTORY_BASE}/genes/${g.gene_symbol}/revisions`;
+  // `results` is ordered newest-first (revision DESC); `changed` is computed
+  // by walking oldest-first and diffing each row against the previous
+  // (numerically lower) revision of the SAME gene — no extra query, since
+  // every row for this gene is already in hand. Revision 1 (a gene's first
+  // served version — history no longer contains a seeded/deposited
+  // revision 0) is always `["first_served"]`, since there is no prior
+  // revision to diff against and a part-by-part comparison against nothing
+  // would be meaningless. Every later revision lists whichever of
+  // record/evidence/markdown differ from the previous revision — a
+  // NULL-to-value or value-to-NULL transition counts as a change via plain
+  // `!==` (NULL !== "somehash").
+  const ascending = [...results].sort((a, b) => a.revision - b.revision);
+  const changedByRevision = new Map();
+  let prev = null;
+  for (const r of ascending) {
+    let changed;
+    if (prev === null) {
+      changed = ["first_served"];
+    } else {
+      changed = [];
+      if (r.json_hash !== prev.json_hash) changed.push("record");
+      if (r.evidence_hash !== prev.evidence_hash) changed.push("evidence");
+      if (r.md_hash !== prev.md_hash) changed.push("markdown");
+    }
+    changedByRevision.set(r.revision, changed);
+    prev = r;
+  }
   return json({
     gene_symbol: g.gene_symbol,
     hgnc_id: g.hgnc_id,
@@ -333,6 +360,7 @@ async function handleRevisionList(env, symbol) {
       md_hash: r.md_hash,
       schema_version: r.schema_version,
       prompt_corpus_version: r.prompt_corpus_version,
+      changed: changedByRevision.get(r.revision),
       releases: r.releases ? JSON.parse(r.releases) : [],
       url: `${base}/${r.revision}`,
       evidence_url: r.evidence_hash ? `${base}/${r.revision}/evidence` : null,
@@ -353,33 +381,76 @@ async function handleRevisionBody(env, symbol, n, part) {
   return archivedPart(env, row, part);
 }
 
+// A release whose `archive_scope` is 'zenodo_only' predates this system
+// (only release 1.0.0, the 2026-08-15 Zenodo deposit, today) — its records
+// were never individually archived into `record_revision`/R2, only bundled
+// into the Zenodo deposit tarball. NULL/'api' (every release cut under this
+// system) has real `data_release_member` rows behind it. See
+// docs/superpowers/specs/2026-09-27-record-history-design.md.
+function isZenodoOnly(rel) {
+  return rel.archive_scope === "zenodo_only";
+}
+
 async function handleReleaseList(env) {
   const { results } = await env.DB.prepare(
-    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes
+    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes, archive_scope
        FROM data_release ORDER BY cut_at DESC`
   ).all();
-  return json({ releases: results });
+  return json({
+    releases: results.map((r) => ({
+      version: r.version,
+      cut_at: r.cut_at,
+      github_tag: r.github_tag,
+      zenodo_version_doi: r.zenodo_version_doi,
+      n_genes: r.n_genes,
+      notes: r.notes,
+      api_members: !isZenodoOnly(r),
+    })),
+  });
 }
 
 async function handleRelease(env, ver) {
   const v = normalizeVersion(ver);
   if (!v) return badRequest("invalid_version");
   const rel = await env.DB.prepare(
-    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes
+    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes, archive_scope
        FROM data_release WHERE version = ?`
   ).bind(v).first();
   if (!rel) return notFound("release_not_found");
+  // Immutable once its Zenodo version is published; until then a short TTL
+  // so --set-doi shows up promptly.
+  const hasDoi = Boolean(rel.zenodo_version_doi);
+  const ttl = hasDoi ? CACHE_TTL_IMMUTABLE : CACHE_TTL_SHORT;
+  const base = {
+    version: rel.version,
+    cut_at: rel.cut_at,
+    github_tag: rel.github_tag,
+    zenodo_version_doi: rel.zenodo_version_doi,
+    n_genes: rel.n_genes,
+    notes: rel.notes,
+  };
+  if (isZenodoOnly(rel)) {
+    return json(
+      {
+        ...base,
+        api_members: false,
+        members: [],
+        note:
+          `Release ${rel.version} predates the API's per-gene record history ` +
+          "and is archived only in its Zenodo deposit" +
+          (rel.zenodo_version_doi ? ` (${rel.zenodo_version_doi})` : "") +
+          "; its records are not individually served through these history routes.",
+      },
+      { ttl, immutable: hasDoi },
+    );
+  }
   const { results } = await env.DB.prepare(
     `SELECT r.gene_symbol, r.hgnc_id, m.revision, r.json_hash, r.evidence_hash, r.md_hash
        FROM data_release_member m
        JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
       WHERE m.version = ? ORDER BY r.gene_symbol`
   ).bind(v).all();
-  // Immutable once its Zenodo version is published; until then a short TTL
-  // so --set-doi shows up promptly.
-  const hasDoi = Boolean(rel.zenodo_version_doi);
-  const ttl = hasDoi ? CACHE_TTL_IMMUTABLE : CACHE_TTL_SHORT;
-  return json({ ...rel, members: results }, { ttl, immutable: hasDoi });
+  return json({ ...base, api_members: true, members: results }, { ttl, immutable: hasDoi });
 }
 
 async function handleReleaseGene(env, ver, symbol, part) {
@@ -387,8 +458,16 @@ async function handleReleaseGene(env, ver, symbol, part) {
   if (!v) return badRequest("invalid_version");
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
-  const rel = await env.DB.prepare(`SELECT version FROM data_release WHERE version = ?`).bind(v).first();
+  const rel = await env.DB.prepare(
+    `SELECT version, zenodo_version_doi, archive_scope FROM data_release WHERE version = ?`
+  ).bind(v).first();
   if (!rel) return notFound("release_not_found");
+  if (isZenodoOnly(rel)) {
+    return json(
+      { error: "release_not_in_api_history", zenodo_version_doi: rel.zenodo_version_doi },
+      { status: 404, ttl: 60 },
+    );
+  }
   const row = await env.DB.prepare(
     `SELECT r.revision, r.json_hash, r.evidence_hash, r.md_hash
        FROM data_release_member m

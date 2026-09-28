@@ -62,15 +62,17 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 
 ### Record history & data releases
 
-Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change. Numbered data releases pin a fixed revision per gene. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI.
+Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change — numbering starts at **1** for a gene's first served version; there's no revision 0. Numbered data releases pin a fixed revision per gene. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI.
 
 | Method | Path | Returns | TTL |
 |---|---|---|---|
-| `GET` | `/v1/genes/{SYMBOL}/revisions` | Every archived revision of this gene's served record (newest first), with the releases each belongs to | 60s |
+| `GET` | `/v1/genes/{SYMBOL}/revisions` | Every archived revision of this gene's served record (newest first), each with a `changed` label (`["first_served"]`, or whichever of `record`/`evidence`/`markdown` differ from the previous revision) and the releases it belongs to | 60s |
 | `GET` | `/v1/genes/{SYMBOL}/revisions/{n}` | Revision n of the record, byte-for-byte as served; also `/evidence` and `.md` | immutable |
-| `GET` | `/v1/releases` | Numbered data releases with their GitHub tag and Zenodo version DOI | 60s |
+| `GET` | `/v1/releases` | Numbered data releases with their GitHub tag, Zenodo version DOI, and `api_members` | 60s |
 | `GET` | `/v1/releases/{version}` | One release: metadata + the revision of every gene in it | 60s until published, then immutable |
 | `GET` | `/v1/releases/{version}/genes/{SYMBOL}` | A gene as it was in that release; also `/evidence` and `.md` | immutable |
+
+Release **1.0.0** (the 2026-08-15 Zenodo deposit, DOI `10.5281/zenodo.20805384`) predates per-gene record history and is **Zenodo-only**: `api_members` is `false`, `/v1/releases/1.0.0` returns `members: []` plus a `note` pointing at the DOI, and `/v1/releases/1.0.0/genes/{SYMBOL}` 404s `release_not_in_api_history` (DOI in the body) for every gene — those records live only in the Zenodo deposit, never in these history routes.
 
 Gene symbols are case-insensitive on the wire (the Worker uppercases them) but the canonical HGNC form is upper-case.
 
