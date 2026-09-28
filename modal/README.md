@@ -247,6 +247,12 @@ scripts/cloud/stage_signalp6.sh /path/to/signalp-6.0i.slow_sequential.tar.gz
 uv run modal run modal/signalp6_app.py::convert_models
 ```
 
+The upload is 9.2 GB and takes roughly 20 minutes. It is safe to interrupt:
+`modal volume put` commits atomically, so a killed upload leaves nothing partial
+on the Volume, and the extraction is cached under `~/.cache/signalp6-stage` so a
+re-run resumes from there rather than unpacking the tarball again. `--clean`
+forces a fresh extraction.
+
 The staging script splits the tarball in two, because the halves have opposite
 needs: the Python package (~100 KB) is baked into the image so a rebuild is
 cheap, while the six 1.63 GB checkpoints go to the `signalp6-models` Volume so a

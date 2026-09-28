@@ -3,53 +3,73 @@
 #
 # Splits the DTU tarball into the two things Modal needs separately:
 #
-#   modal/.signalp6-pkg/   the Python package, code only (~100 KB) -> baked into the image
-#   Modal Volume           the six 1.63 GB checkpoints (9.8 GB)    -> mounted at runtime
+#   modal/.signalp6-pkg/   the Python package, code only (~108 KB) -> baked into the image
+#   Modal Volume           the six 1.63 GB checkpoints (9.2 GB)    -> mounted at runtime
 #
-# They are split because rebuilding the image must not mean re-uploading 9.8 GB, and
+# They are split because rebuilding the image must not mean re-uploading 9.2 GB, and
 # because the GPU conversion rewrites the checkpoints in place -- that has to happen
 # somewhere durable and writable, which is the Volume, not an image layer.
+#
+# RESUMABLE. Extraction goes to a persistent cache, not a temp dir, so an interrupted
+# upload can be retried without unpacking 9.2 GB again. `modal volume put` commits
+# atomically, so a killed upload leaves nothing partial on the Volume -- just re-run.
+# Pass --clean to force a fresh extraction.
 #
 # LICENCE: SignalP 6.0 is DTU academic-licensed. This uploads it to YOUR OWN private
 # Modal workspace for your own use. Do not make that Volume public, do not share the
 # workspace, and do not commit any part of the tarball to git.
 #
 # Usage:
-#   scripts/cloud/stage_signalp6.sh /path/to/signalp-6.0i.slow_sequential.tar.gz
+#   scripts/cloud/stage_signalp6.sh /path/to/signalp-6.0i.slow_sequential.tar.gz [--clean]
 
 set -euo pipefail
 
-TARBALL="${1:?usage: $0 /path/to/signalp-6.0i.slow_sequential.tar.gz}"
+TARBALL="${1:?usage: $0 /path/to/signalp-6.0i.slow_sequential.tar.gz [--clean]}"
+CLEAN="${2:-}"
 VOLUME="signalp6-models"
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 PKG_DST="${REPO_ROOT}/modal/.signalp6-pkg"
-WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/signalp6-stage"
+CKPT_DIR="${CACHE}/sequential_models_signalp6"
+EXPECTED_CKPT=7
 
 [ -f "$TARBALL" ] || { echo "error: no such file: $TARBALL" >&2; exit 1; }
+[ "$CLEAN" = "--clean" ] && rm -rf "$CACHE" "$PKG_DST"
 
-echo "==> extracting (9.8 GB; this takes a few minutes)"
-tar xzf "$TARBALL" -C "$WORK"
-SRC="$(find "$WORK" -type d -name 'signalp-6-package' -maxdepth 3 | head -1)"
-[ -n "$SRC" ] || { echo "error: signalp-6-package not found in the tarball" >&2; exit 1; }
+have_ckpt() {
+    [ -d "$CKPT_DIR" ] && [ "$(find "$CKPT_DIR" -name '*.pt' | wc -l | tr -d ' ')" -eq "$EXPECTED_CKPT" ]
+}
 
-echo "==> separating code from checkpoints"
-rm -rf "$PKG_DST"
-mkdir -p "$PKG_DST"
-# Everything except the checkpoints. The package still declares them as package_data,
-# but --model_dir overrides that at run time.
-(cd "$SRC" && tar cf - --exclude='models/sequential_models_signalp6' .) | tar xf - -C "$PKG_DST"
-mkdir -p "$PKG_DST/models/sequential_models_signalp6"
+if have_ckpt && [ -f "$PKG_DST/setup.py" ]; then
+    echo "==> already extracted at $CACHE ($(du -sh "$CKPT_DIR" | cut -f1)); skipping unpack"
+    echo "    (pass --clean to force a fresh extraction)"
+else
+    WORK="$(mktemp -d)"
+    trap 'rm -rf "$WORK"' EXIT
+    echo "==> extracting (9.2 GB; this takes a few minutes)"
+    tar xzf "$TARBALL" -C "$WORK"
+    SRC="$(find "$WORK" -maxdepth 3 -type d -name 'signalp-6-package' | head -1)"
+    [ -n "$SRC" ] || { echo "error: signalp-6-package not found in the tarball" >&2; exit 1; }
 
-CKPT_SRC="$SRC/models/sequential_models_signalp6"
-n_ckpt="$(find "$CKPT_SRC" -name '*.pt' | wc -l | tr -d ' ')"
-echo "    package -> $PKG_DST ($(du -sh "$PKG_DST" | cut -f1))"
-echo "    checkpoints: $n_ckpt files, $(du -sh "$CKPT_SRC" | cut -f1)"
-[ "$n_ckpt" -eq 7 ] || echo "    WARNING: expected 7 (.pt) files, found $n_ckpt"
+    echo "==> separating code from checkpoints"
+    rm -rf "$PKG_DST"; mkdir -p "$PKG_DST"
+    # Everything except the checkpoints. The package still declares them as package_data,
+    # but --model_dir overrides that at run time.
+    (cd "$SRC" && tar cf - --exclude='models/sequential_models_signalp6' .) | tar xf - -C "$PKG_DST"
+    mkdir -p "$PKG_DST/models/sequential_models_signalp6"
 
-echo "==> uploading checkpoints to Modal volume '$VOLUME' (slow: 9.8 GB)"
+    rm -rf "$CACHE"; mkdir -p "$CACHE"
+    mv "$SRC/models/sequential_models_signalp6" "$CKPT_DIR"
+    echo "    package     -> $PKG_DST ($(du -sh "$PKG_DST" | cut -f1))"
+    echo "    checkpoints -> $CKPT_DIR ($(du -sh "$CKPT_DIR" | cut -f1))"
+    have_ckpt || echo "    WARNING: expected $EXPECTED_CKPT .pt files, found $(find "$CKPT_DIR" -name '*.pt' | wc -l | tr -d ' ')"
+fi
+
+echo "==> uploading checkpoints to Modal volume '$VOLUME' (9.2 GB, ~20 min)"
+echo "    safe to interrupt: the put commits atomically, so re-running resumes from"
+echo "    the cached extraction rather than the tarball."
 uv run modal volume create "$VOLUME" 2>/dev/null || true
-uv run modal volume put "$VOLUME" "$CKPT_SRC" /cpu/sequential_models_signalp6
+uv run modal volume put --force "$VOLUME" "$CKPT_DIR" /cpu/sequential_models_signalp6
 
 echo
 echo "staged. next, convert the checkpoints for GPU (one-time, on Modal):"
@@ -57,3 +77,5 @@ echo "    uv run modal run modal/signalp6_app.py::convert_models"
 echo
 echo "then measure cost before any sweep:"
 echo "    uv run modal run modal/signalp6_app.py::canary --n 200"
+echo
+echo "the $(du -sh "$CACHE" | cut -f1) extraction cache at $CACHE can be deleted once converted."
