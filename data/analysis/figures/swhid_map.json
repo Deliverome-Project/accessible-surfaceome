@@ -21,5 +21,5 @@
   "topology_coverage_by_source": "swh:1:rev:242fc106dd71c12eaa4b4d4dc66ab5610449cfc5",
   "triage_vs_deep_dive_reason": "swh:1:rev:90566f6a04a1e9a72488343d3fc938786bddf514",
   "web_preview": "swh:1:rev:3b0062e20f36c6dce22177c89d32803b2d553b81",
-  "zero_db_rescues_by_triage": "swh:1:rev:1cfc0b71ac2459361319d908f17f8c412829050c"
+  "zero_db_rescues_by_triage": "swh:1:rev:a54aafed57791ba98f4a8cd5943e130f078a4ef7"
 }
