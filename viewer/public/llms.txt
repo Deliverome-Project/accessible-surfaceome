@@ -28,6 +28,16 @@ genes (the COX1 / WAS class).
 - [Genome-wide triage export, with reasoning (TSV)](https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1): the full ~19k-gene Sonnet/NCBI sweep with the agent's reasoning appended. Drop `with_reasoning=1` for the prose-free figure-input export.
 - [SurfaceBench matrix](https://api.deliverome.org/surfaceome/v1/benchmark/matrix): the 147-gene eval — ground truth + 5 per-DB flags + per-(model × variant) LLM verdicts with reasoning. Models: Opus, Sonnet, Haiku.
 
+## Record history & releases
+
+Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI.
+
+- [Gene revisions](https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions): every archived revision of this gene's served record (newest first), with the releases each belongs to.
+- [One revision](https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions/1): revision n of the record, byte-for-byte as served; also `/evidence` and `.md`.
+- [Data releases](https://api.deliverome.org/surfaceome/v1/releases): numbered data releases with their GitHub tag and Zenodo version DOI.
+- [One release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0): one release's metadata + the revision of every gene in it.
+- [A gene in a release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/ERBB2): a gene as it was in that release; also `/evidence` and `.md`.
+
 ## Reference
 
 - [SurfaceomeRecord schema](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/src/accessible_surfaceome/tools/_shared/models.py): the Pydantic source of truth every per-gene record validates against.

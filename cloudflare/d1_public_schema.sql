@@ -937,3 +937,44 @@ CREATE TABLE IF NOT EXISTS db_optimized_cutoff_public (
   uniprot_optimized  INTEGER NOT NULL DEFAULT 0,
   cspa_optimized     INTEGER NOT NULL DEFAULT 0
 );
+
+-- ---------------------------------------------------------------------------
+-- Record history (2026-09-27; spec docs/superpowers/specs/2026-09-27-record-history-design.md)
+-- One row per ACTUAL change to what the API served for a gene: record,
+-- evidence ledger, Markdown export. Bytes live write-once in R2 bucket
+-- surfaceome-record-history at records/sha256/{hash}.{json|md}. Written
+-- only by accessible_surfaceome.cloud.record_history; the Worker reads.
+-- DDL of record: record_history/store.py::DDL (applied by
+-- scripts/cloud/apply_record_history_ddl.py). Keep the two identical.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS record_revision (
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,  -- two casings of one gene share a sequence
+    hgnc_id               TEXT,
+    revision              INTEGER NOT NULL,   -- 1, 2, 3 … per gene
+    json_hash             TEXT NOT NULL,      -- sha256 of the served record
+    evidence_hash         TEXT,               -- NULL: evidence inline (seed) or absent
+    md_hash                TEXT,               -- NULL: no .md existed
+    published_at          TEXT NOT NULL,      -- ISO-8601 UTC, when archived
+    source                TEXT NOT NULL,      -- seed:zenodo-1.0.0 | publish | sweep
+    schema_version        TEXT,
+    prompt_corpus_version TEXT,
+    PRIMARY KEY (gene_symbol, revision)
+);
+CREATE INDEX IF NOT EXISTS idx_record_revision_hgnc ON record_revision (hgnc_id);
+
+-- A numbered data release: a fixed pointer per gene to one revision.
+CREATE TABLE IF NOT EXISTS data_release (
+    version            TEXT PRIMARY KEY,   -- '1.3.0'
+    cut_at             TEXT NOT NULL,
+    github_tag         TEXT,               -- 'v1.3.0'; NULL for 1.0.0
+    zenodo_version_doi TEXT,               -- set once the Zenodo version is published
+    n_genes            INTEGER NOT NULL,
+    notes              TEXT
+);
+
+CREATE TABLE IF NOT EXISTS data_release_member (
+    version     TEXT NOT NULL,
+    gene_symbol TEXT NOT NULL COLLATE NOCASE,
+    revision    INTEGER NOT NULL,
+    PRIMARY KEY (version, gene_symbol)
+);

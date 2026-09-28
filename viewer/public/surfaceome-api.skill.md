@@ -60,6 +60,18 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 
 `/v1/orthologs/{SYMBOL}` is the **broad** ortholog view — latest Ensembl Compara for any of ~5k genes with a mouse/cyno ortholog (~90% of the surfaceome), carrying full-length % identity + orthology type + high-confidence flag. The deep-dive record's `deterministic_features.orthologs` is the **deep** view — mouse/cyno canonical only, ECD % identity + projected topology + sequence, but only for genes that have been deep-dived. Use the endpoint for breadth, the record for depth.
 
+### Record history & data releases
+
+Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change. Numbered data releases pin a fixed revision per gene. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI.
+
+| Method | Path | Returns | TTL |
+|---|---|---|---|
+| `GET` | `/v1/genes/{SYMBOL}/revisions` | Every archived revision of this gene's served record (newest first), with the releases each belongs to | 60s |
+| `GET` | `/v1/genes/{SYMBOL}/revisions/{n}` | Revision n of the record, byte-for-byte as served; also `/evidence` and `.md` | immutable |
+| `GET` | `/v1/releases` | Numbered data releases with their GitHub tag and Zenodo version DOI | 60s |
+| `GET` | `/v1/releases/{version}` | One release: metadata + the revision of every gene in it | 60s until published, then immutable |
+| `GET` | `/v1/releases/{version}/genes/{SYMBOL}` | A gene as it was in that release; also `/evidence` and `.md` | immutable |
+
 Gene symbols are case-insensitive on the wire (the Worker uppercases them) but the canonical HGNC form is upper-case.
 
 ## SurfaceomeRecord shape (per-gene deep-dive)

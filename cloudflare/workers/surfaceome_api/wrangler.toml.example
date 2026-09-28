@@ -110,6 +110,18 @@ simple = { limit = 60, period = 60 }    # 60 req / 60s / IP on catalog + *.tsv
 binding = "GENE_MD"
 bucket_name = "surfaceome-gene-md"
 
+# --- Record history (write-once, content-addressed) ---
+#
+# Archived bodies live in this R2 bucket, written by
+# accessible_surfaceome.cloud.record_history; the Worker only reads from it
+# (via the RECORD_HISTORY binding below). Create the bucket once with:
+#   npx --yes wrangler r2 bucket create surfaceome-record-history
+# The archiver's cache/rate-limit bypass secret is set separately:
+#   npx --yes wrangler secret put ARCHIVE_BYPASS_TOKEN
+[[r2_buckets]]
+binding = "RECORD_HISTORY"
+bucket_name = "surfaceome-record-history"
+
 # --- Read-through record cache (KV) ---
 #
 # Shared-GLOBAL mirror behind `caches.default` for cacheable GETs
