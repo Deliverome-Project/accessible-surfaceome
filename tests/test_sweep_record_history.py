@@ -41,10 +41,16 @@ class _FakeStore:
     def __exit__(self, *_exc: object) -> None:
         return None
 
+    def prefetch_latest(self) -> None:
+        return None
+
 
 class _FakeCloudRevisionStore:
+    require_s3_seen: list[bool] = []
+
     @classmethod
-    def from_env(cls) -> _FakeStore:
+    def from_env(cls, *, require_s3: bool = False) -> _FakeStore:
+        cls.require_s3_seen.append(require_s3)
         return _FakeStore()
 
 
@@ -106,6 +112,48 @@ def test_execute_without_token_exits_nonzero(monkeypatch: pytest.MonkeyPatch) ->
     assert exc_info.value.code != 0
 
 
+def test_r2_s3_client_failure_exits_before_any_archiving(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The eager, main-thread-only build check: a broken/missing S3 client
+    must exit loudly before the pool (and CloudRevisionStore) is even
+    constructed, let alone before any gene is archived — never a silent
+    per-worker REST fallback."""
+    monkeypatch.setenv("ARCHIVE_BYPASS_TOKEN", "tok")
+    monkeypatch.setattr(_mod, "load_env", lambda: None)
+    monkeypatch.setattr(
+        _mod, "annotated_genes", lambda http, token, base=None: ["EGFR"]
+    )
+
+    def _fail_r2_s3_client() -> None:
+        raise _mod.R2S3CredentialError("no token")
+
+    monkeypatch.setattr(_mod, "r2_s3_client", _fail_r2_s3_client)
+    monkeypatch.setattr(
+        _mod,
+        "CloudRevisionStore",
+        type(
+            "Boom",
+            (),
+            {
+                "from_env": classmethod(
+                    lambda cls, **kw: (_ for _ in ()).throw(
+                        AssertionError("CloudRevisionStore.from_env must not be reached")
+                    )
+                )
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        _mod, "archive_gene", lambda *a, **kw: (_ for _ in ()).throw(AssertionError())
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        _mod.sweep(None, execute=True, workers=1)
+
+    assert exc_info.value.code == 1
+
+
 @pytest.mark.parametrize(
     "make_error",
     [
@@ -139,6 +187,8 @@ def test_aborts_after_n_consecutive_failures_of_any_kind(
         _mod, "annotated_genes", lambda http, token, base=None: list(genes)
     )
     monkeypatch.setattr(_mod, "archive_gene", _fake_archive_gene)
+    monkeypatch.setattr(_mod, "r2_s3_client", lambda: object())
+    _FakeCloudRevisionStore.require_s3_seen = []
     monkeypatch.setattr(_mod, "CloudRevisionStore", _FakeCloudRevisionStore)
     monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
 
@@ -156,6 +206,9 @@ def test_aborts_after_n_consecutive_failures_of_any_kind(
     assert counts["failed"] == len(genes)
     assert counts["skipped_after_abort"] == len(genes) - n
     assert "ABORTING" in capsys.readouterr().out
+    # The sweep constructs its store with require_s3=True — no silent REST
+    # fallback at cohort scale.
+    assert _FakeCloudRevisionStore.require_s3_seen == [True]
 
 
 def _served(symbol: str, value: int) -> Served:
