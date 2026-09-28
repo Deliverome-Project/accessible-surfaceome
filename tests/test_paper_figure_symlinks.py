@@ -56,8 +56,17 @@ def _prefix(label: str) -> str:
 
 
 def _exts(slug: str) -> list[str]:
-    """SVG mockups ship a single ``.svg``; every other figure ships ``.pdf`` + ``.png``."""
-    return ["svg"] if (FIGURES / f"{slug}.svg").is_file() else ["pdf", "png"]
+    """A figure ships ``.pdf`` + ``.png``; an SVG-only mockup ships one ``.svg``.
+
+    Keyed on what the figure actually renders, NOT on "does an .svg exist" —
+    that earlier test silently mis-classified Figure 4. Its composer takes a
+    panel-b schematic as an *input*, and that input used to sit under the
+    figure's own slug, so the presence of ``deep_dive_flow.svg`` made Figure 4
+    look like a mockup and the folder never got a pasteable ``.png``.
+    """
+    if (FIGURES / f"{slug}.pdf").is_file() and (FIGURES / f"{slug}.png").is_file():
+        return ["pdf", "png"]
+    return ["svg"]
 
 
 def _expected_names() -> set[str]:
