@@ -1,4 +1,10 @@
-# Modal deep-dive sweep
+# Modal apps
+
+Two apps live here: the deep-dive sweep (below) and the DeepTMHMM2
+topology sweep ([jump](#deeptmhmm2-topology-sweep)). They share the one-time
+setup but nothing else — separate Modal apps, volumes and cost profiles.
+
+## Deep-dive sweep
 
 This directory hosts the Modal app that fans the surfaceome_v2 deep-dive
 annotator out across the candidate universe (v3 cohort: 5,105 genes,
@@ -153,3 +159,66 @@ uv run python scripts/build/deep_dive_sweep.py \
     --run-id smoke_test_2026_05 \
     --canary 3 --concurrency 1 --no-d1
 ```
+
+
+# DeepTMHMM2 topology sweep
+
+`deeptmhmm2_app.py` runs [DeepTMHMM2](https://github.com/fteufel/DeepTMHMM2)
+(`dtm2`) over every human proteoform already in the public `topology_public`
+table — 20,224 forms, 12.5M residues. DeepTMHMM v1 populated that table;
+v2 adds beta barrels, reentrant loops, interfacial helices and a membrane-type
+call, so this is a second annotation of the same inputs rather than a
+replacement of the first.
+
+## Why it reads its input from D1
+
+`topology_public` stores each proteoform's input sequence. Reusing those exact
+sequences — rather than re-fetching FASTAs — is what makes v1 and v2
+comparable row-for-row. The query groups on `uniprot_acc_full`, the stable ID;
+`gene_symbol` is denormalized in that table and is not a join key.
+
+## v1 rows are not at risk
+
+The primary key is `(topology_version, cohort, uniprot_acc_full)` and the
+uploader uses `INSERT OR IGNORE`, so a new `topology_version` is a disjoint
+namespace. Nothing in this app writes to D1 at all: both entrypoints stream to
+the `surfaceome-topology2` Volume, and publishing is a separate reviewed step
+that asserts the v1 row count is unchanged either side of it.
+
+## GPU bands
+
+ESM2 attention is quadratic in length, so one 14,507-aa proteoform can OOM a
+GPU that handles the p99 comfortably. Three bands, sized from the measured
+length distribution (p50 456 aa, p90 1,187, p99 3,038):
+
+| Band | Forms | Residues | GPU | Shard |
+|---|---:|---:|---|---:|
+| ≤ 2,500 aa | 19,882 | 11.2M | T4 | 200 |
+| 2,500–6,000 aa | 329 | 1.2M | A10G | 20 |
+| > 6,000 aa | 13 | 110k | A10G | 1 |
+
+The middle band is the point: routing all 342 over-2,500 forms to their own
+container would burn 342 A10G starts for sequences a shared container handles
+fine. The canary reports measured throughput per band, so the thresholds can be
+retuned from evidence rather than from this guess.
+
+## Workflow
+
+```bash
+# Canary: 50 proteoforms sampled across the length distribution.
+# Prints GPU-seconds, a per-1k-residue rate and a projected full-sweep cost.
+uv run modal run modal/deeptmhmm2_app.py::canary --n 50
+
+# Full sweep, only after reviewing that projection.
+uv run modal run modal/deeptmhmm2_app.py::full_sweep --run-id dtm2_2026_09_28
+
+# Pull the raw dtm2 output back for review.
+uv run modal volume get surfaceome-topology2 dtm2_2026_09_28
+```
+
+The canary samples with a stride rather than taking the first `n`: the query is
+ordered by length, so the head would project the whole sweep from the shortest
+proteoforms and undercount by a wide margin.
+
+The workers are given their sequences in the payload and hold no credentials —
+only the local entrypoint reads D1.
