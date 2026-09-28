@@ -48,4 +48,4 @@ Every distinct state the API served for a gene (record, evidence ledger, Markdow
 
 - Verdict values are lowercase strings: `yes`, `contextual`, `no`. String-compare exactly.
 - Absent fields are omitted on the wire (older records lack newer fields) — read with optional-chaining / `?? null`.
-- Caching: list endpoints `max-age=60`; per-gene records, benchmark, and ortholog endpoints `max-age=86400`. Build-time consumers should use `cache: "force-cache"`.
+- Caching: list endpoints `max-age=60`; per-gene records, benchmark, and ortholog endpoints `max-age=86400`. Build-time consumers should use `cache: "force-cache"`. A degraded enrichment lookup ships 200 with `X-Surfaceome-Degraded` (comma-separated field list) + `Cache-Control: no-store` — retry instead of caching it.

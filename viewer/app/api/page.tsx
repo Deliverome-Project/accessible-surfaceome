@@ -538,7 +538,13 @@ export default async function ApiPage() {
             <code className={styles.code}>max-age=86400</code> (one day).
             Build-time consumers should use{" "}
             <code className={styles.code}>cache: &quot;force-cache&quot;</code>{" "}
-            so the response is baked into the static artifact.
+            so the response is baked into the static artifact. If a
+            server-side lookup used to enrich the record hiccups, the
+            response still ships 200 but carries{" "}
+            <code className={styles.code}>X-Surfaceome-Degraded</code> (a
+            comma-separated list of the fields that may be stale/null) and{" "}
+            <code className={styles.code}>Cache-Control: no-store</code> —
+            retry rather than caching it yourself.
           </p>
           <p>
             <span className="label-mono">Schema ·</span> Per-gene records
