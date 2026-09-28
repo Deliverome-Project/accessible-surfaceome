@@ -206,14 +206,13 @@ def main() -> None:
     ypos, headers, y = [], [], 0.0
     for title, rows in _SECTIONS:
         headers.append((y, title))
-        y += 0.9
+        y += 0.75
         for _ in rows:
             ypos.append(y)
             y += 1.25
-        y += 0.3
     df["y"] = df["row"].map(dict(enumerate(ypos)))
 
-    fig, ax = plt.subplots(figsize=(15, 20))
+    fig, ax = plt.subplots(figsize=(15, 17.5))
     sns.despine(ax=ax, top=True, right=True)
     # McHugh (2012) bands, drawn contiguous so no gap shows between them.
     ax.axvspan(0.60, 0.80, color=_BAND_MODERATE, zorder=0)
@@ -253,14 +252,14 @@ def main() -> None:
         ax.text(-0.02, yy + 0.3, f"{opts}  [{kind}]", transform=trans, ha="right",
                 va="center", fontsize=13, color=COLORS["neutral"])
     for yy, title in headers:
-        ax.text(-0.02, yy + 0.25, title.upper(), transform=trans, ha="right",
+        ax.text(-0.02, yy + 0.02, title.upper(), transform=trans, ha="right",
                 va="center", fontsize=13, fontweight=800, color=COLORS["primary"])
         if yy > 0:
-            ax.axhline(yy - 0.15, color=COLORS["neutral"], linewidth=0.8, alpha=0.5,
+            ax.axhline(yy - 0.32, color=COLORS["neutral"], linewidth=0.8, alpha=0.5,
                        zorder=1)
 
     ax.set_yticks([])
-    ax.set_ylim(y - 0.2, -0.7)
+    ax.set_ylim(y - 0.2, -0.55)
     ax.set_xlim(0, 1.005)
     ax.set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     ax.set_xlabel("Cohen's κ vs\npublished record")
@@ -272,12 +271,12 @@ def main() -> None:
         mlines.Line2D([], [], color=_REPLAY_COLOR, marker="o", markersize=8, linewidth=2,
                       markerfacecolor="white", markeredgewidth=1.8, linestyle=":",
                       label="Fixed-evidence replay"),
-        mpatches.Patch(color="none", label=""),  # spacer: bands fill column two
         mpatches.Patch(color=_BAND_MODERATE, label="Moderate (0.60–0.79)"),
         mpatches.Patch(color=_BAND_STRONG, label="Strong (0.80–0.90)"),
         mpatches.Patch(color=_BAND_ALMOST_PERFECT, label="Almost perfect (>0.90)"),
-    ], loc="upper center", bbox_to_anchor=(0.45, -0.075), ncol=2, frameon=False,
-        columnspacing=1.5, handlelength=2.2)
+    ], loc="upper left", bbox_to_anchor=(0.01, 1.0), ncol=1, frameon=True,
+        facecolor="white", edgecolor="none", framealpha=1.0, handlelength=2.2,
+        labelspacing=0.3, borderpad=0.3)
     fig.tight_layout()
     save_figure(fig, SLUG, OUT_DIR, gist_url=GIST_URL)
 
