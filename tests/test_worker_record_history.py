@@ -86,7 +86,7 @@ def test_extract_ddl_does_not_conflate_data_release_and_member() -> None:
     assert "unrelated" not in ddl
 
 
-def test_record_history_routes(tmp_path: Path) -> None:
+def _require_node() -> str:
     node = shutil.which("node")
     if node is None:
         if os.environ.get("REQUIRE_WORKER_NODE") == "1":
@@ -94,6 +94,14 @@ def test_record_history_routes(tmp_path: Path) -> None:
                 "Shared API compatibility checks require Node; refusing to skip"
             )
         pytest.skip("Node is required for Worker tests")
+    return node
+
+
+def _write_worker_mjs(tmp_path: Path) -> Path:
+    """Writes the real Worker source (with its one non-relative-URL import
+    stubbed) to ``tmp_path/worker.mjs``, alongside the sibling module it
+    imports relatively. Shared by every test in this file that runs the
+    real router offline."""
     root = Path(__file__).resolve().parents[1]
     source = (root / "cloudflare/workers/surfaceome_api/src/index.js").read_text()
     source = source.replace(
@@ -105,6 +113,12 @@ def test_record_history_routes(tmp_path: Path) -> None:
         tmp_path / "contact-sites.js",
     )
     (tmp_path / "worker.mjs").write_text(source)
+    return root
+
+
+def test_record_history_routes(tmp_path: Path) -> None:
+    node = _require_node()
+    root = _write_worker_mjs(tmp_path)
 
     schema_sql = (root / "cloudflare/d1_public_schema.sql").read_text()
     ddl = _extract_ddl(schema_sql, DDL_TABLES)
@@ -281,10 +295,10 @@ assert.match(list.revisions[0].url, /\/v1\/genes\/EGFR\/revisions\/2$/);
 // A revision that belongs to no release at all gets releases: [], not null
 // or a malformed parse of an empty json_group_array.
 assert.deepEqual(list.revisions[0].releases, []);
-// `changed`: revision 1 (nothing to diff against) is always first_served;
+// `changed`: revision 1 (nothing to diff against) is always first_archived;
 // revision 2 differs from revision 1 in all three parts (record/evidence/md
 // each went from a value or NULL to a different value).
-assert.deepEqual(list.revisions[1].changed, ["first_served"]);
+assert.deepEqual(list.revisions[1].changed, ["first_archived"]);
 assert.deepEqual(list.revisions[0].changed, ["record", "evidence", "markdown"]);
 
 // mixed-case gene symbol lookup — real COLLATE NOCASE, not a JS mock.
@@ -292,8 +306,8 @@ const mixedCase = await (await call("/v1/genes/c11ORF24/revisions")).json();
 assert.equal(mixedCase.gene_symbol, "C11orf24");
 assert.equal(mixedCase.current_revision, 1);
 // A gene with only ever one revision (no prior revision 0 to inherit from
-// either) is also first_served.
-assert.deepEqual(mixedCase.revisions[0].changed, ["first_served"]);
+// either) is also first_archived.
+assert.deepEqual(mixedCase.revisions[0].changed, ["first_archived"]);
 
 // revision bodies
 let r = await call("/v1/genes/EGFR/revisions/2");
@@ -355,8 +369,8 @@ const one = await oneResp.json();
 assert.equal(one.version, "1.0.0");
 assert.equal(one.api_members, false);
 assert.deepEqual(one.members, []);
-assert.match(one.note, /Zenodo/);
-assert.match(one.note, /10\.5281\/zenodo\.20805384/);
+assert.match(one.api_note, /Zenodo/);
+assert.match(one.api_note, /10\.5281\/zenodo\.20805384/);
 
 // a release cut under this system: real members, canonical gene_symbol
 // casing from record_revision (not the "egfr" data_release_member stored).
@@ -427,6 +441,132 @@ const paths = idx.endpoints.map(e => e.path);
 for (const p of ["/v1/genes/{symbol}/revisions", "/v1/genes/{symbol}/revisions/{n}",
                  "/v1/releases", "/v1/releases/{version}", "/v1/releases/{version}/genes/{symbol}"])
   assert(paths.includes(p), p);
+console.log("ok");
+""")
+    out = subprocess.run(
+        [node, str(tmp_path / "test.mjs")], capture_output=True, text=True, cwd=tmp_path
+    )
+    assert out.returncode == 0, out.stderr + out.stdout
+    assert out.stdout.strip().endswith("ok")
+
+
+def test_release_routes_tolerate_missing_archive_scope_column(tmp_path: Path) -> None:
+    """`data_release.archive_scope` is added by `drop_seed_revisions.py`'s
+    idempotent ALTER (or a fresh `apply_record_history_ddl.py` apply) — a
+    Worker deploy that SELECTs it can land in production BEFORE that
+    migration has run. This fixture's `data_release` table has NO such
+    column at all (public D1's shape before either script has ever
+    touched it), so every /v1/releases* route must degrade to treating
+    every release as non-zenodo-only rather than 500ing on "no such
+    column: archive_scope"."""
+    node = _require_node()
+    _write_worker_mjs(tmp_path)
+
+    root = Path(__file__).resolve().parents[1]
+    schema_sql = (root / "cloudflare/d1_public_schema.sql").read_text()
+    ddl = _extract_ddl(schema_sql, DDL_TABLES)
+    ddl = re.sub(r",\n(?:\s*--[^\n]*\n)*\s*archive_scope\s+TEXT\n", "\n", ddl)
+    assert "archive_scope" not in ddl
+    (tmp_path / "ddl.sql").write_text(ddl)
+
+    (tmp_path / "test.mjs").write_text(r"""
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
+import worker from "./worker.mjs";
+
+const ddl = readFileSync(new URL("./ddl.sql", import.meta.url), "utf8");
+const sqliteDb = new DatabaseSync(":memory:");
+sqliteDb.exec(ddl);
+
+function insert(table, columns, rows) {
+  const sql = `INSERT INTO ${table} (${columns.join(", ")}) VALUES (${columns.map(() => "?").join(", ")})`;
+  const stmt = sqliteDb.prepare(sql);
+  for (const row of rows) {
+    stmt.run(...columns.map((c) => (row[c] === undefined ? null : row[c])));
+  }
+}
+
+insert(
+  "record_revision",
+  ["gene_symbol", "hgnc_id", "revision", "json_hash", "evidence_hash", "md_hash",
+   "published_at", "source", "schema_version", "prompt_corpus_version"],
+  [
+    { gene_symbol: "EGFR", hgnc_id: "HGNC:3236", revision: 1, json_hash: "j1",
+      published_at: "2026-08-20T00:00:00Z", source: "sweep",
+      schema_version: "2.14.2", prompt_corpus_version: "2.50.2" },
+  ],
+);
+
+// No `archive_scope` column at all — note the column is simply absent
+// from both the column list and the values here.
+insert(
+  "data_release",
+  ["version", "cut_at", "github_tag", "zenodo_version_doi", "n_genes", "notes"],
+  [
+    { version: "1.0.0", cut_at: "2026-08-15T00:00:00Z",
+      zenodo_version_doi: "10.5281/zenodo.20805384", n_genes: 5130,
+      notes: "Initial data deposit (Zenodo record 20805384)." },
+  ],
+);
+
+insert(
+  "data_release_member",
+  ["version", "gene_symbol", "revision"],
+  [{ version: "1.0.0", gene_symbol: "EGFR", revision: 1 }],
+);
+
+function makeDB(db) {
+  return {
+    prepare(sql) {
+      let boundArgs = [];
+      return {
+        bind(...args) { boundArgs = args; return this; },
+        async first() {
+          const row = db.prepare(sql).get(...boundArgs);
+          return row === undefined ? null : row;
+        },
+        async all() {
+          const rows = db.prepare(sql).all(...boundArgs);
+          return { results: rows };
+        },
+      };
+    },
+  };
+}
+
+globalThis.caches = { default: { match: async () => undefined, put: async () => {} } };
+const blobs = { "records/sha256/j1.json": '{"v":1}' };
+const env = {
+  DB: makeDB(sqliteDb),
+  RECORD_HISTORY: { async get(key) { return key in blobs ? { body: blobs[key] } : null; } },
+};
+async function call(path) {
+  const pending = [];
+  const r = await worker.fetch(new Request("https://api.deliverome.org/surfaceome" + path),
+    env, { waitUntil(p) { pending.push(p); } });
+  await Promise.all(pending);
+  return r;
+}
+
+// None of these 500 — the missing column degrades to "not zenodo-only",
+// same as a fresh install that has never run drop_seed_revisions.py.
+const list = await call("/v1/releases");
+assert.equal(list.status, 200);
+const listBody = await list.json();
+assert.deepEqual(listBody.releases.map(r => r.api_members), [true]);
+
+const one = await call("/v1/releases/1.0.0");
+assert.equal(one.status, 200);
+const oneBody = await one.json();
+assert.equal(oneBody.api_members, true);
+assert.equal(oneBody.members[0].gene_symbol, "EGFR");
+assert.equal(oneBody.api_note, undefined);
+
+const gene = await call("/v1/releases/1.0.0/genes/EGFR");
+assert.equal(gene.status, 200);
+assert.equal(await gene.text(), '{"v":1}');
+
 console.log("ok");
 """)
     out = subprocess.run(

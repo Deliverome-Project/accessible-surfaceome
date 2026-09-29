@@ -1,5 +1,7 @@
 """``scripts/cloud/drop_seed_revisions.py`` against in-memory SQLite built
-from ``record_history.store.DDL`` — same house pattern as
+from a column-less copy of ``record_history.store.DDL`` — matching public
+D1's live schema before this script's ``ensure_archive_scope_column`` has
+ever run (see ``_legacy_ddl``). Same house pattern as
 ``tests/test_seed_record_history.py``.
 
 Loaded via ``importlib.util.spec_from_file_location`` so the standalone
@@ -11,8 +13,11 @@ real package.
 from __future__ import annotations
 
 import importlib.util
+import json
+import re
 import sqlite3
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -29,13 +34,33 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
 
-class SqliteD1:
-    """D1Client stand-in backed by in-memory SQLite (same SQL dialect)."""
+def _legacy_ddl() -> list[str]:
+    """``store.DDL`` with `archive_scope` stripped back out of
+    ``data_release`` — derived from the real DDL (not hand-duplicated) so
+    it can't drift from the current schema except in the one column this
+    migration exists to add. This is what public D1's live table looks
+    like before ``ensure_archive_scope_column`` has ever run against it.
+    """
+    out = []
+    for stmt in store.DDL:
+        if "CREATE TABLE IF NOT EXISTS data_release " in stmt:
+            stmt = re.sub(r",\s*archive_scope\s+TEXT", "", stmt)
+            assert "archive_scope" not in stmt
+        out.append(stmt)
+    return out
 
-    def __init__(self) -> None:
+
+class SqliteD1:
+    """D1Client stand-in backed by in-memory SQLite (same SQL dialect).
+
+    Defaults to the column-less legacy DDL (see module docstring); pass
+    ``ddl=store.DDL`` for a fixture that already has `archive_scope`.
+    """
+
+    def __init__(self, ddl: list[str] | None = None) -> None:
         self.con = sqlite3.connect(":memory:")
         self.con.row_factory = sqlite3.Row
-        for s in store.DDL:
+        for s in ddl if ddl is not None else _legacy_ddl():
             self.con.execute(s)
         self.queries: list[tuple[str, list[Any]]] = []
 
@@ -63,6 +88,29 @@ class _FailOnceOnSql:
             self._fired = True
             raise RuntimeError("simulated transient D1 failure")
         return self._inner.query(sql, params)
+
+
+class _InjectOnceAfterSql:
+    """Wraps a ``SqliteD1``; the FIRST time a query whose SQL contains
+    ``trigger`` runs, immediately afterward (against the SAME connection)
+    also runs ``inject_sql`` once — simulates a concurrent write (e.g. a
+    publish landing a new revision) racing this migration mid-loop."""
+
+    def __init__(
+        self, inner: SqliteD1, trigger: str, inject_sql: str, inject_params: list[Any]
+    ) -> None:
+        self._inner = inner
+        self._trigger = trigger
+        self._inject_sql = inject_sql
+        self._inject_params = inject_params
+        self._fired = False
+
+    def query(self, sql: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
+        result = self._inner.query(sql, params)
+        if not self._fired and self._trigger in sql:
+            self._fired = True
+            self._inner.query(self._inject_sql, self._inject_params)
+        return result
 
 
 class FakeStore:
@@ -132,6 +180,12 @@ def _seed_fixture(d1: SqliteD1) -> None:
     _insert_revision(d1, "CD63", 1, source="seed:zenodo-1.0.0")
     _insert_revision(d1, "CD63", 2, source="sweep")
 
+    # BRI3BP: ONLY ever had the seed row (never re-served) -> after
+    # migration it has ZERO record_revision rows; the Worker's
+    # /v1/genes/BRI3BP/revisions then 404s gene_not_annotated (not
+    # exercised here — this test only covers the D1-side state).
+    _insert_revision(d1, "BRI3BP", 1, source="seed:zenodo-1.0.0")
+
     # EGFR: never seeded (annotated after 2026-08-15) -> untouched.
     _insert_revision(d1, "EGFR", 1, source="sweep")
     _insert_revision(d1, "EGFR", 2, source="sweep")
@@ -144,14 +198,14 @@ def _seed_fixture(d1: SqliteD1) -> None:
             "1.0.0",
             "2026-08-15T00:00:00Z",
             "10.5281/zenodo.20805384",
-            2,
+            3,
             "Initial data deposit (Zenodo record 20805384); records as "
             "deposited, evidence inline, no Markdown.",
         ],
     )
     d1.query(
         "INSERT INTO data_release_member (version, gene_symbol, revision) "
-        "VALUES ('1.0.0', 'S100A7A', 1), ('1.0.0', 'CD63', 1)"
+        "VALUES ('1.0.0', 'S100A7A', 1), ('1.0.0', 'CD63', 1), ('1.0.0', 'BRI3BP', 1)"
     )
 
 
@@ -180,6 +234,12 @@ def _assert_fully_migrated(d1: SqliteD1) -> None:
     )
     assert [(r["revision"], r["source"]) for r in cd63] == [(1, "sweep")]
 
+    # BRI3BP: nothing left — its only revision was the seed.
+    bri3bp = d1.query(
+        "SELECT COUNT(*) AS n FROM record_revision WHERE gene_symbol = 'BRI3BP'"
+    )
+    assert bri3bp[0]["n"] == 0
+
     # EGFR (never seeded): untouched.
     egfr = d1.query(
         "SELECT revision, source FROM record_revision WHERE gene_symbol = 'EGFR' "
@@ -199,7 +259,7 @@ def _assert_fully_migrated(d1: SqliteD1) -> None:
         "FROM data_release WHERE version = '1.0.0'"
     )[0]
     assert rel["zenodo_version_doi"] == "10.5281/zenodo.20805384"
-    assert rel["n_genes"] == 2
+    assert rel["n_genes"] == 3
     assert rel["archive_scope"] == "zenodo_only"
     assert "Zenodo deposit" in rel["notes"]
 
@@ -209,17 +269,27 @@ def _assert_fully_migrated(d1: SqliteD1) -> None:
 
 
 def _run_main(
-    monkeypatch: pytest.MonkeyPatch, d1: Any, *, execute: bool
-) -> None:
+    monkeypatch: pytest.MonkeyPatch,
+    d1: Any,
+    *,
+    execute: bool,
+    backup: Path | None = None,
+) -> Path | None:
     _FakeCloudRevisionStore.store = FakeStore(d1)
     monkeypatch.setattr(_mod, "CloudRevisionStore", _FakeCloudRevisionStore)
     monkeypatch.setattr(_mod, "load_env", lambda: None)
     monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
     argv = ["drop_seed_revisions.py"]
     if execute:
-        argv.append("--execute")
+        if backup is None:
+            backup = Path(tempfile.mkdtemp()) / "backup.jsonl"
+        argv += ["--backup", str(backup), "--execute"]
     monkeypatch.setattr(sys, "argv", argv)
     _mod.main()
+    return backup
+
+
+# --- basic dry-run / execute / idempotency -----------------------------
 
 
 def test_dry_run_writes_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -228,19 +298,47 @@ def test_dry_run_writes_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
 
     _run_main(monkeypatch, d1, execute=False)
 
-    # Untouched: the seed row is still there.
+    # Untouched: the seed rows are still there, and the column was never
+    # added (dry-run must not ALTER either).
     rows = d1.query(
         "SELECT COUNT(*) AS n FROM record_revision WHERE source = 'seed:zenodo-1.0.0'"
     )
-    assert rows[0]["n"] == 2
+    assert rows[0]["n"] == 3
     members = d1.query(
         "SELECT COUNT(*) AS n FROM data_release_member WHERE version = '1.0.0'"
     )
-    assert members[0]["n"] == 2
+    assert members[0]["n"] == 3
+    assert not _mod.has_archive_scope_column(d1)
 
 
-def test_execute_migrates_fully(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_dry_run_reports_missing_column_without_crashing(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d1 = SqliteD1()  # legacy (column-less) by construction
+    _seed_fixture(d1)
+
+    _run_main(monkeypatch, d1, execute=False)
+
+    assert "archive_scope column missing" in capsys.readouterr().out
+
+
+def test_execute_migrates_fully_from_column_less_schema(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     d1 = SqliteD1()
+    _seed_fixture(d1)
+    assert not _mod.has_archive_scope_column(d1)
+
+    _run_main(monkeypatch, d1, execute=True)
+
+    assert _mod.has_archive_scope_column(d1)
+    _assert_fully_migrated(d1)
+
+
+def test_execute_migrates_fully_when_column_already_present(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    d1 = SqliteD1(ddl=store.DDL)  # current schema: archive_scope already there
     _seed_fixture(d1)
 
     _run_main(monkeypatch, d1, execute=True)
@@ -287,11 +385,12 @@ def test_refuses_when_a_later_release_exists(monkeypatch: pytest.MonkeyPatch) ->
     with pytest.raises(SystemExit, match="1.3.0"):
         _run_main(monkeypatch, d1, execute=True)
 
-    # Refused before any write.
+    # Refused before any write (not even the ALTER or the backup).
     rows = d1.query(
         "SELECT COUNT(*) AS n FROM record_revision WHERE source = 'seed:zenodo-1.0.0'"
     )
-    assert rows[0]["n"] == 2
+    assert rows[0]["n"] == 3
+    assert not _mod.has_archive_scope_column(d1)
 
 
 def test_refuses_with_a_later_release_even_in_dry_run(
@@ -307,23 +406,175 @@ def test_refuses_with_a_later_release_even_in_dry_run(
         _run_main(monkeypatch, d1, execute=False)
 
 
+# --- --backup ------------------------------------------------------------
+
+
+def test_backup_required_with_execute(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "argv", ["drop_seed_revisions.py", "--execute"])
+
+    with pytest.raises(SystemExit, match="--backup"):
+        _mod.main()
+
+
+def test_backup_captures_pre_migration_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    d1 = SqliteD1()
+    _seed_fixture(d1)
+    backup_path = tmp_path / "backup.jsonl"
+
+    _run_main(monkeypatch, d1, execute=True, backup=backup_path)
+
+    entries = [json.loads(line) for line in backup_path.read_text().splitlines()]
+    record_rows = [e["row"] for e in entries if e["table"] == "record_revision"]
+    # Old (pre-migration) numbering: S100A7A's seed row is still at
+    # revision 1 in the backup even though the live table shifted it away.
+    s100 = [r for r in record_rows if r["gene_symbol"] == "S100A7A"]
+    assert len(s100) == 4  # seed + 3 served, all backed up
+    seed_row = next(r for r in s100 if r["source"] == "seed:zenodo-1.0.0")
+    assert seed_row["revision"] == 1
+    bri3bp = [r for r in record_rows if r["gene_symbol"] == "BRI3BP"]
+    assert len(bri3bp) == 1  # its only (now-deleted) row, captured before the DELETE
+
+    member_rows = [e["row"] for e in entries if e["table"] == "data_release_member"]
+    assert {r["gene_symbol"] for r in member_rows} == {"S100A7A", "CD63", "BRI3BP"}
+
+    release_rows = [e["row"] for e in entries if e["table"] == "data_release"]
+    assert len(release_rows) == 1
+    assert release_rows[0]["version"] == "1.0.0"
+
+    # Never-seeded EGFR isn't in the backup at all.
+    assert not [r for r in record_rows if r["gene_symbol"] == "EGFR"]
+
+
+def test_backup_write_failure_refuses_before_any_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    d1 = SqliteD1()
+    _seed_fixture(d1)
+    blocker = tmp_path / "not_a_directory"
+    blocker.write_text("x")
+    backup_path = blocker / "backup.jsonl"  # parent is a FILE -> mkdir fails
+
+    with pytest.raises(SystemExit, match="backup write"):
+        _run_main(monkeypatch, d1, execute=True, backup=backup_path)
+
+    rows = d1.query(
+        "SELECT COUNT(*) AS n FROM record_revision WHERE source = 'seed:zenodo-1.0.0'"
+    )
+    assert rows[0]["n"] == 3
+
+
+# --- resumability / concurrency (C1) --------------------------------------
+
+
+def test_shift_revisions_down_replay_after_success_is_a_noop() -> None:
+    """Direct unit test of the exact bug this fix addresses: replaying the
+    shift after a gene has already fully migrated must not try to move its
+    (now legitimate) row at revision 2 on top of its own revision 1 —
+    which, unguarded, raised a UNIQUE constraint violation."""
+    d1 = SqliteD1()
+    _insert_revision(d1, "S100A7A", 2, source="sweep")
+    _insert_revision(d1, "S100A7A", 3, source="sweep")
+    _insert_revision(d1, "S100A7A", 4, source="publish")
+
+    _mod.shift_revisions_down(d1)
+    first = [
+        r["revision"]
+        for r in d1.query(
+            "SELECT revision FROM record_revision WHERE gene_symbol = 'S100A7A' "
+            "ORDER BY revision"
+        )
+    ]
+    assert first == [1, 2, 3]
+
+    _mod.shift_revisions_down(d1)  # replay directly — must not raise
+    second = [
+        r["revision"]
+        for r in d1.query(
+            "SELECT revision FROM record_revision WHERE gene_symbol = 'S100A7A' "
+            "ORDER BY revision"
+        )
+    ]
+    assert second == [1, 2, 3]
+
+
+def test_resume_after_crash_between_k3_and_k4(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Manually reach "crashed after k=3, before k=4" (S100A7A ends at
+    1,2,4 — a gap at 3) by applying the guarded shifts by hand, then let a
+    fresh --execute resume and finish it."""
+    d1 = SqliteD1()
+    _seed_fixture(d1)
+
+    d1.query("DELETE FROM data_release_member WHERE version = '1.0.0'")
+    d1.query("DELETE FROM record_revision WHERE source = 'seed:zenodo-1.0.0'")
+    # k=2: 2->1 for every affected gene.
+    d1.query(
+        "UPDATE record_revision SET revision = 1 WHERE revision = 2 "
+        "AND gene_symbol IN ('S100A7A', 'CD63')"
+    )
+    # k=3: 3->2, only S100A7A has a row there.
+    d1.query(
+        "UPDATE record_revision SET revision = 2 WHERE revision = 3 "
+        "AND gene_symbol = 'S100A7A'"
+    )
+    s100 = d1.query(
+        "SELECT revision FROM record_revision WHERE gene_symbol = 'S100A7A' "
+        "ORDER BY revision"
+    )
+    assert [r["revision"] for r in s100] == [1, 2, 4]
+
+    _run_main(monkeypatch, d1, execute=True)
+
+    _assert_fully_migrated(d1)
+
+
+def test_concurrent_insert_mid_loop_converges_to_contiguous(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A publish landing S100A7A's revision 5 WHILE the first shift pass is
+    running (injected right after the first UPDATE commits) leaves a gap
+    a single fixed-`max` pass can't reach (1,2,3,5) — the bounded outer
+    loop's next pass must still converge it to 1,2,3,4."""
+    d1 = SqliteD1()
+    _seed_fixture(d1)
+    injecting = _InjectOnceAfterSql(
+        d1,
+        "UPDATE record_revision SET revision = ?",
+        "INSERT INTO record_revision "
+        "(gene_symbol, hgnc_id, revision, json_hash, evidence_hash, md_hash, "
+        " published_at, source, schema_version, prompt_corpus_version) "
+        "VALUES ('S100A7A', 'HGNC:0000', 5, 's100-5', NULL, NULL, "
+        " '2026-09-28T12:00:00Z', 'publish', '2.14.4', 'v9')",
+        [],
+    )
+
+    _run_main(monkeypatch, injecting, execute=True)
+
+    s100 = d1.query(
+        "SELECT revision, source FROM record_revision WHERE gene_symbol = 'S100A7A' "
+        "ORDER BY revision"
+    )
+    assert [(r["revision"], r["source"]) for r in s100] == [
+        (1, "sweep"),
+        (2, "sweep"),
+        (3, "publish"),
+        (4, "publish"),
+    ]
+    assert _mod.genes_needing_shift(d1) == {}
+
+
 def test_resume_after_interruption_before_shifting(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Crash right after both DELETEs (a)/(b) commit, before any shift
-    UPDATE runs."""
+    """Crash right after both DELETEs land, before any shift UPDATE runs."""
     d1 = SqliteD1()
     _seed_fixture(d1)
 
     failing = _FailOnceOnSql(d1, "UPDATE record_revision SET revision =")
-    _FakeCloudRevisionStore.store = FakeStore(failing)  # ty: ignore[invalid-argument-type]
-    monkeypatch.setattr(_mod, "CloudRevisionStore", _FakeCloudRevisionStore)
-    monkeypatch.setattr(_mod, "load_env", lambda: None)
-    monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
-    monkeypatch.setattr(sys, "argv", ["drop_seed_revisions.py", "--execute"])
 
     with pytest.raises(RuntimeError, match="simulated transient D1 failure"):
-        _mod.main()
+        _run_main(monkeypatch, failing, execute=True)
 
     # Confirm we really did interrupt mid-migration: both DELETEs landed
     # (seed rows gone, no 1.0.0 members) but genes still have a numbering
@@ -344,51 +595,18 @@ def test_resume_after_interruption_before_shifting(
     _assert_fully_migrated(d1)
 
 
-def test_resume_after_interruption_mid_shift(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Manually apply only k=2 of the shift loop, then resume via main()."""
-    d1 = SqliteD1()
-    _seed_fixture(d1)
-
-    d1.query("DELETE FROM data_release_member WHERE version = '1.0.0'")
-    d1.query("DELETE FROM record_revision WHERE source = 'seed:zenodo-1.0.0'")
-    # Apply only the k=2 step by hand (S100A7A: 2->1, CD63: 2->1).
-    d1.query(
-        "UPDATE record_revision SET revision = 1 "
-        "WHERE revision = 2 AND gene_symbol IN ('S100A7A', 'CD63')"
-    )
-    # S100A7A is now 1,3,4 (a gap at 2); CD63 is fully done at just 1.
-    gapped = _mod.genes_needing_shift(d1)
-    assert set(gapped) == {"S100A7A"}
-
-    _run_main(monkeypatch, d1, execute=True)
-
-    _assert_fully_migrated(d1)
+# --- schema helpers --------------------------------------------------------
 
 
 def test_ensure_archive_scope_column_is_idempotent() -> None:
-    con = sqlite3.connect(":memory:")
-    con.row_factory = sqlite3.Row
-    # A `data_release` table shaped like public D1's BEFORE this column
-    # existed — CREATE TABLE IF NOT EXISTS from the current DDL would be a
-    # no-op against a table like this, which is exactly why the ALTER path
-    # is needed.
-    con.execute(
-        "CREATE TABLE data_release (version TEXT PRIMARY KEY, cut_at TEXT NOT NULL, "
-        "github_tag TEXT, zenodo_version_doi TEXT, n_genes INTEGER NOT NULL, notes TEXT)"
-    )
+    d1 = SqliteD1()  # legacy, no archive_scope yet
+    assert not _mod.has_archive_scope_column(d1)
 
-    class _Con:
-        def query(self, sql: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
-            cur = con.execute(sql, params or [])
-            con.commit()
-            return [dict(r) for r in cur.fetchall()]
+    _mod.ensure_archive_scope_column(d1)
+    assert _mod.has_archive_scope_column(d1)
 
-    d1 = _Con()
-    _mod.ensure_archive_scope_column(d1)  # adds the column
     _mod.ensure_archive_scope_column(d1)  # already applied -> no-op, not an error
-
-    cols = {r[1] for r in con.execute("PRAGMA table_info(data_release)").fetchall()}
-    assert "archive_scope" in cols
+    assert _mod.has_archive_scope_column(d1)
 
 
 def test_genes_needing_shift_ignores_ordinary_genes() -> None:

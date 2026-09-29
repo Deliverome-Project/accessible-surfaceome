@@ -78,11 +78,43 @@ DDL: list[str] = [
 # applied once, idempotently, before the column can be set (`CREATE TABLE IF
 # NOT EXISTS` above is a no-op against an already-existing table — it never
 # retrofits a column). SQLite/D1 has no `ADD COLUMN IF NOT EXISTS`, so the
-# caller runs this and treats a "duplicate column name" error as success —
-# see `scripts/cloud/drop_seed_revisions.py::ensure_archive_scope_column`.
+# helpers below run the ALTER and treat a "duplicate column name" failure as
+# success.
 ALTER_DATA_RELEASE_ADD_ARCHIVE_SCOPE_SQL = (
     "ALTER TABLE data_release ADD COLUMN archive_scope TEXT"
 )
+
+
+def has_archive_scope_column(d1: Any) -> bool:
+    """Read-only: does public D1's live ``data_release`` table already have
+    ``archive_scope``? Safe to call before the column exists (unlike
+    ``SELECT ... archive_scope ...``, which would raise) — used by a
+    dry-run to report "column missing" instead of crashing, and by
+    ``ensure_archive_scope_column`` to skip a redundant ALTER attempt.
+    """
+    rows = d1.query("PRAGMA table_info(data_release)", [])
+    return any(r["name"] == "archive_scope" for r in rows)
+
+
+def ensure_archive_scope_column(d1: Any) -> None:
+    """Idempotent ``ALTER TABLE data_release ADD COLUMN archive_scope``.
+
+    A fresh install gets the column from ``DDL`` above; public D1's
+    pre-existing `data_release` table predates it, so this ALTER is the
+    retrofit path. Call it before any query that SELECTs `archive_scope`
+    (``genes_needing_shift`` style callers aside — that query is on
+    `record_revision`, not `data_release`) — see
+    ``scripts/cloud/drop_seed_revisions.py`` (runs this first, under
+    ``--execute``, before any other state read) and
+    ``scripts/cloud/apply_record_history_ddl.py``.
+    """
+    if has_archive_scope_column(d1):
+        return
+    try:
+        d1.query(ALTER_DATA_RELEASE_ADD_ARCHIVE_SCOPE_SQL, [])
+    except Exception as exc:  # noqa: BLE001 - only "already applied" is swallowed
+        if "duplicate column" not in str(exc).lower():
+            raise
 
 # ?1 gene_symbol, ?2 hgnc_id, ?3 json_hash, ?4 evidence_hash, ?5 md_hash,
 # ?6 published_at, ?7 source, ?8 schema_version, ?9 prompt_corpus_version.

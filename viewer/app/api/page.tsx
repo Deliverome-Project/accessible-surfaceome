@@ -263,14 +263,14 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "History",
     blurb:
-      "Record history + numbered data releases. Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change — numbering starts at 1 for a gene's first served version; there's no revision 0. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI. Release 1.0.0, the 2026-08-15 Zenodo deposit, predates this system and is Zenodo-only: it has no per-gene member records here (see the DOI in its /v1/releases/1.0.0 response instead).",
+      "Record history + numbered data releases. Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change — numbering starts at 1 for a gene's first archived version; there's no revision 0. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI. Release 1.0.0, the 2026-08-15 Zenodo deposit, predates this system and is Zenodo-only: it has no per-gene member records here (see the DOI in its /v1/releases/1.0.0 response instead).",
     endpoints: [
       {
         method: "GET",
         path: "/v1/genes/{SYMBOL}/revisions",
         anchor: "history",
         summary:
-          "Every archived revision of this gene's served record (newest first), each with a `changed` label (\"first_served\", or the parts — record/evidence/markdown — that differ from the previous revision) and the releases it belongs to.",
+          "Every archived revision of this gene's served record (newest first), each with a `changed` label (\"first_archived\", or the parts — record/evidence/markdown — that differ from the previous revision) and the releases it belongs to.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions | jq '.current_revision, .revisions[0].changed, .revisions[0]'",
       },
@@ -293,9 +293,9 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/releases/{version}",
         summary:
-          "One release: metadata + the revision of every gene in it. Release 1.0.0 returns members: [] and a note pointing at its Zenodo DOI instead — its records were never served through the API.",
+          "One release: metadata + the revision of every gene in it. Release 1.0.0 returns members: [] and an `api_note` pointing at its Zenodo DOI instead — its records were never served through the API.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/releases/1.0.0 | jq '.n_genes, .zenodo_version_doi, .api_members, .note'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/releases/1.0.0 | jq '.n_genes, .zenodo_version_doi, .api_members, .api_note'",
       },
       {
         method: "GET",

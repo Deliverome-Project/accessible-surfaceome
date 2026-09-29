@@ -18,7 +18,7 @@ const payload = {
       releases: [{ version: "1.3.0", zenodo_version_doi: "10.5281/zenodo.999" }],
       url: "https://api.deliverome.org/surfaceome/v1/genes/EGFR/revisions/2" },
     { revision: 1, published_at: "2026-08-15T00:00:00Z", source: "sweep",
-      changed: ["first_served"],
+      changed: ["first_archived"],
       releases: [], url: "https://api.deliverome.org/surfaceome/v1/genes/EGFR/revisions/1" },
   ],
 };
@@ -49,11 +49,11 @@ test("strip omits the release when the revision is in none", () => {
   assert.doesNotMatch(html, /doi\.org/);
 });
 
-test("strip labels a first-served revision distinctly", () => {
+test("strip labels a first-archived revision distinctly", () => {
   const p = { ...payload, current_revision: 1, revisions: [payload.revisions[1]] };
   const html = renderToStaticMarkup(React.createElement(RevisionStrip, { revisions: parseRevisions(p)! }));
   assert.match(html, /Revision 1/);
-  assert.match(html, /first served version/);
+  assert.match(html, /first archived version/);
 });
 
 test("strip combines multiple changed parts with ' + '", () => {
@@ -82,5 +82,5 @@ test("strip renders no changed segment when `changed` is absent", () => {
   };
   const html = renderToStaticMarkup(React.createElement(RevisionStrip, { revisions: parseRevisions(p)! }));
   assert.match(html, /Revision 2/);
-  assert.doesNotMatch(html, /record updated|evidence updated|Markdown refreshed|first served version/);
+  assert.doesNotMatch(html, /record updated|evidence updated|Markdown refreshed|first archived version/);
 });

@@ -324,20 +324,25 @@ async function handleRevisionList(env, symbol) {
   // by walking oldest-first and diffing each row against the previous
   // (numerically lower) revision of the SAME gene — no extra query, since
   // every row for this gene is already in hand. Revision 1 (a gene's first
-  // served version — history no longer contains a seeded/deposited
-  // revision 0) is always `["first_served"]`, since there is no prior
+  // ARCHIVED version — history no longer contains a seeded/deposited
+  // revision 0) is always `["first_archived"]`, since there is no prior
   // revision to diff against and a part-by-part comparison against nothing
-  // would be meaningless. Every later revision lists whichever of
-  // record/evidence/markdown differ from the previous revision — a
-  // NULL-to-value or value-to-NULL transition counts as a change via plain
-  // `!==` (NULL !== "somehash").
+  // would be meaningless. It's "first_archived" and not "first_served"
+  // deliberately: for a gene that was seeded and then had that seed row
+  // renumbered away (drop_seed_revisions.py), its new revision 1 is
+  // whatever was first captured into record_revision AFTER that migration
+  // — the API had already been serving that gene's record for a while
+  // before history (or this migration) existed. Every later revision
+  // lists whichever of record/evidence/markdown differ from the previous
+  // revision — a NULL-to-value or value-to-NULL transition counts as a
+  // change via plain `!==` (NULL !== "somehash").
   const ascending = [...results].sort((a, b) => a.revision - b.revision);
   const changedByRevision = new Map();
   let prev = null;
   for (const r of ascending) {
     let changed;
     if (prev === null) {
-      changed = ["first_served"];
+      changed = ["first_archived"];
     } else {
       changed = [];
       if (r.json_hash !== prev.json_hash) changed.push("record");
@@ -391,11 +396,42 @@ function isZenodoOnly(rel) {
   return rel.archive_scope === "zenodo_only";
 }
 
+const DATA_RELEASE_COLS =
+  "version, cut_at, github_tag, zenodo_version_doi, n_genes, notes";
+
+// `data_release.archive_scope` is added by `drop_seed_revisions.py`'s
+// idempotent `ALTER TABLE` (or a fresh `apply_record_history_ddl.py`
+// apply) — a Worker deploy that reads it can land BEFORE that migration
+// has run against public D1, in which case the column doesn't exist yet
+// and every `SELECT ... archive_scope ...` below would otherwise 500 on
+// every /v1/releases* route. `isMissingTable` already recognizes "no such
+// column" as the persistent, deploy-order-dependent case (not a flaky
+// one), so on that specific failure this re-queries WITHOUT the column
+// and reports every release as `archive_scope: null` (never zenodo-only)
+// until the column exists — the same "degrade to absent" posture used
+// everywhere else in this file for a not-yet-provisioned table/column.
+async function dataReleaseRows(env, whereSql, params) {
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT ${DATA_RELEASE_COLS}, archive_scope FROM data_release ${whereSql}`
+    ).bind(...params).all();
+    return results;
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+    const { results } = await env.DB.prepare(
+      `SELECT ${DATA_RELEASE_COLS} FROM data_release ${whereSql}`
+    ).bind(...params).all();
+    return results.map((r) => ({ ...r, archive_scope: null }));
+  }
+}
+
+async function dataReleaseRow(env, whereSql, params) {
+  const rows = await dataReleaseRows(env, whereSql, params);
+  return rows[0] ?? null;
+}
+
 async function handleReleaseList(env) {
-  const { results } = await env.DB.prepare(
-    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes, archive_scope
-       FROM data_release ORDER BY cut_at DESC`
-  ).all();
+  const results = await dataReleaseRows(env, "ORDER BY cut_at DESC", []);
   return json({
     releases: results.map((r) => ({
       version: r.version,
@@ -412,10 +448,7 @@ async function handleReleaseList(env) {
 async function handleRelease(env, ver) {
   const v = normalizeVersion(ver);
   if (!v) return badRequest("invalid_version");
-  const rel = await env.DB.prepare(
-    `SELECT version, cut_at, github_tag, zenodo_version_doi, n_genes, notes, archive_scope
-       FROM data_release WHERE version = ?`
-  ).bind(v).first();
+  const rel = await dataReleaseRow(env, "WHERE version = ?", [v]);
   if (!rel) return notFound("release_not_found");
   // Immutable once its Zenodo version is published; until then a short TTL
   // so --set-doi shows up promptly.
@@ -435,7 +468,7 @@ async function handleRelease(env, ver) {
         ...base,
         api_members: false,
         members: [],
-        note:
+        api_note:
           `Release ${rel.version} predates the API's per-gene record history ` +
           "and is archived only in its Zenodo deposit" +
           (rel.zenodo_version_doi ? ` (${rel.zenodo_version_doi})` : "") +
@@ -458,9 +491,7 @@ async function handleReleaseGene(env, ver, symbol, part) {
   if (!v) return badRequest("invalid_version");
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
-  const rel = await env.DB.prepare(
-    `SELECT version, zenodo_version_doi, archive_scope FROM data_release WHERE version = ?`
-  ).bind(v).first();
+  const rel = await dataReleaseRow(env, "WHERE version = ?", [v]);
   if (!rel) return notFound("release_not_found");
   if (isZenodoOnly(rel)) {
     return json(

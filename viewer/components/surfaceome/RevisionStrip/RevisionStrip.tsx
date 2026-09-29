@@ -3,9 +3,9 @@ import styles from "./RevisionStrip.module.css";
 
 /** Plain-language label per `changed` entry, combined with " + " when a
  *  revision touched more than one part (e.g. "record updated + Markdown
- *  refreshed"). `"first_served"` always stands alone — a gene's first
+ *  refreshed"). `"first_archived"` always stands alone — a gene's first
  *  revision has nothing to diff against. */
-const CHANGED_LABELS: Record<Exclude<RevisionChange, "first_served">, string> = {
+const CHANGED_LABELS: Record<Exclude<RevisionChange, "first_archived">, string> = {
   record: "record updated",
   evidence: "evidence updated",
   markdown: "Markdown refreshed",
@@ -13,8 +13,8 @@ const CHANGED_LABELS: Record<Exclude<RevisionChange, "first_served">, string> = 
 
 function changedLabel(changed: RevisionChange[] | undefined): string | null {
   if (!changed || !changed.length) return null;
-  if (changed.includes("first_served")) return "first served version";
-  return changed.map((c) => CHANGED_LABELS[c as Exclude<RevisionChange, "first_served">] ?? c).join(" + ");
+  if (changed.includes("first_archived")) return "first archived version";
+  return changed.map((c) => CHANGED_LABELS[c as Exclude<RevisionChange, "first_archived">] ?? c).join(" + ");
 }
 
 /** One-line "cite this version" strip for the gene page (record history).

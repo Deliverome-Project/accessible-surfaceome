@@ -155,15 +155,15 @@ write-once to R2 bucket `surfaceome-record-history`
 actual change in public D1
 ([`cloud/record_history/`](src/accessible_surfaceome/cloud/record_history/)).
 **History holds only states the API actually served** — numbering starts
-at **1** (a gene's first served version); there is no revision 0.
+at **1** (a gene's first archived version); there is no revision 0.
 `GET /v1/genes/{sym}/revisions` labels each entry's `changed`:
-`["first_served"]` for a gene's first revision, otherwise whichever of
+`["first_archived"]` for a gene's first revision, otherwise whichever of
 `record`/`evidence`/`markdown` differ from the previous revision. Release
 **1.0.0** (the 2026-08-15 Zenodo deposit) predates per-gene record history
 and stays **Zenodo-only** — its `data_release` row has
 `archive_scope = 'zenodo_only'` and no `data_release_member` rows,
 `GET /v1/releases` reports it with `api_members: false`,
-`GET /v1/releases/1.0.0` returns `members: []` + a `note` naming the
+`GET /v1/releases/1.0.0` returns `members: []` + an `api_note` naming the
 Zenodo DOI, and `GET /v1/releases/1.0.0/genes/{sym}` 404s
 `release_not_in_api_history` (DOI in the body) instead of falling back to
 a live lookup. `scripts/cloud/seed_record_history.py` (which originally

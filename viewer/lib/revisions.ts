@@ -5,12 +5,12 @@ export interface RevisionRelease {
 }
 
 /** What changed vs. the previous (numerically lower) revision of this
- *  gene. `"first_served"` on a gene's first revision — there is no prior
+ *  gene. `"first_archived"` on a gene's first revision — there is no prior
  *  revision to diff against, and a part-by-part comparison against
  *  nothing would be meaningless. Otherwise any of `"record"` /
  *  `"evidence"` / `"markdown"` whose hash differs from the previous
  *  revision (a part appearing or disappearing counts as changed too). */
-export type RevisionChange = "first_served" | "record" | "evidence" | "markdown";
+export type RevisionChange = "first_archived" | "record" | "evidence" | "markdown";
 
 export interface RevisionEntry {
   revision: number;
