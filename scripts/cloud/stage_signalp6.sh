@@ -65,14 +65,42 @@ else
     have_ckpt || echo "    WARNING: expected $EXPECTED_CKPT .pt files, found $(find "$CKPT_DIR" -name '*.pt' | wc -l | tr -d ' ')"
 fi
 
+echo "==> fingerprinting"
+# Nothing else identifies these weights. The package version ("signalp-6.0+h") names the
+# code, not the checkpoints, so a re-stage from a fresh DTU download could differ silently
+# and no published row would show it. DeepTMHMM2 avoids this by digesting its checkpoints
+# into tool_version; this does the same, and writes the result next to the weights so the
+# volume is self-describing.
+ARCHIVE_SHA="$(shasum -a 256 "$TARBALL" | cut -d' ' -f1)"
+CKPT_SHA="$(cd "$CKPT_DIR" && find . -name '*.pt' -type f | sort | xargs shasum -a 256 | shasum -a 256 | cut -d' ' -f1)"
+SHORT="${CKPT_SHA:0:12}"
+cat > "${CACHE}/PROVENANCE.json" <<JSON
+{
+  "tool": "signalp-6.0+h",
+  "mode": "slow-sequential",
+  "tool_version": "signalp-6.0+h+ckpt.${SHORT}",
+  "archive_filename": "$(basename "$TARBALL")",
+  "archive_sha256": "${ARCHIVE_SHA}",
+  "checkpoints_sha256": "${CKPT_SHA}",
+  "n_checkpoints": ${n_ckpt:-7},
+  "staged_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+JSON
+echo "    archive     sha256 ${ARCHIVE_SHA:0:16}..."
+echo "    checkpoints sha256 ${CKPT_SHA:0:16}..."
+echo "    tool_version -> signalp-6.0+h+ckpt.${SHORT}"
+
 echo "==> uploading checkpoints to Modal volume '$VOLUME' (9.2 GB, ~20 min)"
 echo "    safe to interrupt: the put commits atomically, so re-running resumes from"
 echo "    the cached extraction rather than the tarball."
 uv run modal volume create "$VOLUME" 2>/dev/null || true
 uv run modal volume put --force "$VOLUME" "$CKPT_DIR" /cpu/sequential_models_signalp6
+uv run modal volume put --force "$VOLUME" "${CACHE}/PROVENANCE.json" /PROVENANCE.json
 
 echo
-echo "staged. next, convert the checkpoints for GPU (one-time, on Modal):"
+echo "staged. publish with --tool-version signalp-6.0+h+ckpt.${SHORT}"
+echo
+echo "next, convert the checkpoints for GPU (one-time, on Modal):"
 echo "    uv run modal run modal/signalp6_app.py::convert_models"
 echo
 echo "then measure cost before any sweep:"

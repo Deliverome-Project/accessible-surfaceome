@@ -54,11 +54,34 @@ else
     echo "    checkpoint -> $CKPT ($(du -h "$CKPT" | cut -f1))"
 fi
 
+echo "==> fingerprinting"
+# Same reason as SignalP: the DTU zip is the only source of these weights and nothing else
+# would reveal a different build after a re-stage.
+ARCHIVE_SHA="$(shasum -a 256 "$ZIP" | cut -d' ' -f1)"
+CKPT_SHA="$(shasum -a 256 "$CKPT" | cut -d' ' -f1)"
+SHORT="${CKPT_SHA:0:12}"
+cat > "${CACHE}/PROVENANCE.json" <<JSON
+{
+  "tool": "netsurfp-3.0-standalone",
+  "tool_version": "netsurfp-3.0+ckpt.${SHORT}",
+  "archive_filename": "$(basename "$ZIP")",
+  "archive_sha256": "${ARCHIVE_SHA}",
+  "checkpoint_sha256": "${CKPT_SHA}",
+  "staged_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+JSON
+echo "    archive    sha256 ${ARCHIVE_SHA:0:16}..."
+echo "    checkpoint sha256 ${CKPT_SHA:0:16}..."
+echo "    tool_version -> netsurfp-3.0+ckpt.${SHORT}"
+
 echo "==> uploading the checkpoint to Modal volume '$VOLUME' (3.34 GB)"
 echo "    safe to interrupt: the put commits atomically and the extraction is cached."
 uv run modal volume create "$VOLUME" 2>/dev/null || true
 uv run modal volume put --force "$VOLUME" "$CKPT" /nsp3.pth
+uv run modal volume put --force "$VOLUME" "${CACHE}/PROVENANCE.json" /PROVENANCE.json
 
 echo
-echo "staged. measure cost before any sweep:"
+echo "staged. publish with --tool-version netsurfp-3.0+ckpt.${SHORT}"
+echo
+echo "measure cost before any sweep:"
 echo "    uv run modal run modal/disorder_app.py::netsurfp_canary --n 40"

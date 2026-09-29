@@ -1,9 +1,12 @@
 # Modal apps
 
-Three apps live here: the deep-dive sweep (below), the DeepTMHMM2 topology
-sweep ([jump](#deeptmhmm2-topology-sweep)) and the SignalP 6 signal-peptide
-sweep ([jump](#signalp-6-sweep)). They share the one-time Modal setup but
-nothing else — separate apps, volumes, images and cost profiles.
+Four apps live here: the deep-dive sweep (below), the DeepTMHMM2 topology
+sweep ([jump](#deeptmhmm2-topology-sweep)), the SignalP 6 signal-peptide sweep
+([jump](#signalp-6-sweep)) and the disorder benchmark
+([jump](#disorder-benchmark)). They share the one-time Modal setup but nothing
+else — separate apps, volumes, images and cost profiles.
+
+**What persists and what does not** — see [durability](#what-persists).
 
 ## Deep-dive sweep
 
@@ -310,3 +313,91 @@ As with DeepTMHMM2, nothing here writes to D1. Output streams to the
 SignalP 6 pins `torch>1.7.0,<2`; DeepTMHMM2 pins `torch==2.10.0`. The two cannot
 share an image, and the range is not worth fighting — the SignalP checkpoints are
 TorchScript traces made under torch 1.x.
+
+
+# Disorder benchmark
+
+`disorder_app.py` answers the boundary SignalP does not: **where does ordered
+structure begin after the cleavage site?** That is the downstream edge an
+N-terminal tag has to sit inside. Tedman used NetSurfP-2.0 for it; this runs
+three predictors so the choice can be measured rather than assumed.
+
+| predictor | what it gives | scope |
+|---|---|---|
+| metapredict v3 | per-residue disorder, disorder domains | whole sequence, all proteoforms |
+| NetSurfP-3.0 | RSA, ASA, Q3/Q8, phi/psi, disorder | **N-terminal window only** |
+| AlphaFold-disorder | windowed RSA (25 aa) and 1−pLDDT | proteoforms with an AFDB model |
+
+`flDPnn3` is absent: it tops CAID3 but ships as a web server, and the two GitHub
+hits are third-party forks rather than the authors' release.
+
+## Three constraints that shape the run
+
+**NetSurfP sees only the first 400 residues.** ESM-1b caps at 1024 tokens and
+`nsp3.py` neither chunks nor truncates, so a whole-protein run is unavailable at
+any price. Since the question is about the N-terminus this costs nothing — but
+`window_residues` records it per row, and comparisons must respect it.
+
+**Non-standard residues are substituted, not skipped.** All three predictors
+reject unknown letters outright. A first sweep silently lost 27 proteoforms —
+the human selenoproteome, including the signal-peptide-positive GPX3 and GPX6.
+`sources/residues.py` holds the rule (U→C, O→K, B/Z/J, X→A) and every affected
+row is flagged.
+
+**AlphaFoldDB does carry isoform models** — 99% of this set's 8,835 isoforms.
+Assuming otherwise discarded 8,679 predictions. The isoform accession is
+requested as-is and never falls back to the canonical model, which would return
+a different sequence under the isoform's name. AFDB is on **v6**; `model_v4`
+URLs 404.
+
+## Staging NetSurfP-3.0
+
+The public GitHub repo cannot run — its Dockerfile loads a `model_best.pth`
+that is not in the tree. Only the DTU standalone zip carries the trained head.
+
+```bash
+scripts/cloud/stage_netsurfp3.sh /path/to/netsurfp-3.0.Linux.zip
+```
+
+It needs torch 1.8.0 / fair-esm 0.3.1 on Python 3.8, which Modal's image builder
+no longer supports (3.10 floor) and torch has no wheels above 3.9. The function
+therefore runs on 3.11 and shells out to a private 3.8 venv; the build asserts
+its own result, because a silently-empty venv otherwise surfaces only as
+`No module named 'torch'` inside a GPU worker.
+
+## Workflow
+
+```bash
+uv run modal run modal/disorder_app.py::canary --n 40
+uv run modal run modal/disorder_app.py::full_sweep --run-id dis_2026_09_28
+uv run modal run modal/disorder_app.py::netsurfp_sweep --run-id nsp3_2026_09_28
+uv run modal run modal/disorder_app.py::metapredict_sweep --run-id meta_2026_09_28
+```
+
+All take `--cohorts` (default `human_canonical,human_isoforms`); pass
+`mouse_ortholog,cyno_ortholog` for the ortholog set.
+
+# What persists
+
+**Durable:**
+
+- **The Volumes.** `surfaceome-topology2`, `signalp6-runs`, `disorder-runs` hold
+  the raw sweep output; `signalp6-models` and `netsurfp3-model` hold the
+  licensed weights. These are named and survive independently of any run.
+- **The images**, because they are defined in committed code with every version
+  pinned, including a commit SHA for DeepTMHMM2's source.
+- **The published D1 rows**, which carry `tool_version` (a checkpoint digest for
+  DeepTMHMM2, whose upstream weights track a moving branch).
+
+**Not durable:**
+
+- **The apps.** `modal run` creates an *ephemeral* app that stops when the
+  entrypoint returns. `modal app list` shows nothing afterwards and
+  `modal app history` is empty, so a recorded `modal_app_id` is a breadcrumb for
+  looking a run up while logs are retained — not a redeployable artifact. The
+  reproducible part is the code plus the pinned versions, not the app.
+- **The local logs.** Sweep output goes to the terminal; nothing writes it to the
+  repo. Cost and timing figures quoted in PRs come from those logs.
+
+So: to re-create a run, check out the commit in `git_sha` and re-run the
+entrypoint. Do not expect to re-attach to the original app.

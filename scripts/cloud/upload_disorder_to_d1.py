@@ -43,6 +43,11 @@ def main() -> None:
     ap.add_argument("--predictor", required=True, choices=sorted(PARSERS))
     ap.add_argument("--disorder-version", required=True)
     ap.add_argument("--cohorts", default=DEFAULT_COHORTS)
+    ap.add_argument(
+        "--resume",
+        action="store_true",
+        help="finish an interrupted publish instead of refusing",
+    )
     ap.add_argument("--modal-app-id", default=None, help="bare id, e.g. ap-XXXX")
     ap.add_argument("--tool-version", default=None)
     g = ap.add_mutually_exclusive_group(required=True)
@@ -79,10 +84,11 @@ def main() -> None:
             "SELECT COUNT(*) n FROM disorder_public WHERE disorder_version=? AND predictor=?",
             [args.disorder_version, args.predictor],
         )[0]["n"]
-        if clash:
+        if clash and not args.resume:
             sys.exit(
                 f"refusing: {clash:,} rows already under "
-                f"({args.disorder_version}, {args.predictor})"
+                f"({args.disorder_version}, {args.predictor}). "
+                "Pass --resume to finish an interrupted publish"
             )
         before = d1.query("SELECT COUNT(*) n FROM disorder_public")[0]["n"]
 

@@ -35,6 +35,11 @@ def main() -> None:
     ap.add_argument("--tool-version", default="signalp-6.0+h")
     ap.add_argument("--mode", default="slow-sequential")
     ap.add_argument("--organism", default="eukarya")
+    ap.add_argument(
+        "--resume",
+        action="store_true",
+        help="finish an interrupted publish instead of refusing",
+    )
     ap.add_argument("--cohorts", default=DEFAULT_COHORTS)
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--dry-run", action="store_true")
@@ -65,8 +70,11 @@ def main() -> None:
             f"\nsignalp_public holds {before:,} rows; {clash:,} under "
             f"{args.signalp_version!r}"
         )
-        if clash:
-            sys.exit("refusing: that signalp_version already has rows")
+        if clash and not args.resume:
+            sys.exit(
+                f"refusing: {clash:,} rows already under that signalp_version. "
+                "Pass --resume to finish an interrupted publish."
+            )
 
         ph = ", ".join(["?"] * len(cohorts))
         ident = {

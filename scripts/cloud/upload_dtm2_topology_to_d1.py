@@ -92,6 +92,11 @@ def main() -> None:
     ap.add_argument(
         "--tool-version", required=True, help="from `modal run ...::fingerprint`"
     )
+    ap.add_argument(
+        "--resume",
+        action="store_true",
+        help="finish an interrupted publish instead of refusing",
+    )
     ap.add_argument("--cohorts", default=DEFAULT_COHORTS)
     group = ap.add_mutually_exclusive_group(required=True)
     group.add_argument("--dry-run", action="store_true")
@@ -112,8 +117,12 @@ def main() -> None:
             f"\ntable holds {before:,} rows; {clash:,} already under "
             f"{args.topology_version!r}"
         )
-        if clash:
-            sys.exit("refusing: that topology_version already has rows")
+        if clash and not args.resume:
+            sys.exit(
+                f"refusing: {clash:,} rows already under that topology_version. "
+                "Pass --resume to finish an interrupted publish (rows already written "
+                "are skipped; INSERT OR IGNORE makes each row idempotent)."
+            )
         targets = target_rows(d1, cohorts)
 
         missing = [r for r in targets if r["uniprot_acc_full"] not in preds]
