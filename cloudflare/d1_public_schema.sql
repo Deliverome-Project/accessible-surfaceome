@@ -969,7 +969,17 @@ CREATE TABLE IF NOT EXISTS data_release (
     github_tag         TEXT,               -- 'v1.3.0'; NULL for 1.0.0
     zenodo_version_doi TEXT,               -- set once the Zenodo version is published
     n_genes            INTEGER NOT NULL,
-    notes              TEXT
+    notes              TEXT,
+    -- 'zenodo_only' for release 1.0.0 (the 2026-08-15 Zenodo deposit): it
+    -- predates per-gene record history, so it has NO data_release_member
+    -- rows — its records live only in the Zenodo deposit tarball, not in
+    -- record_revision/R2. NULL (read as 'api' by convention) for every
+    -- release cut under this system, which does have member rows. A
+    -- pre-existing `data_release` table (created before this column
+    -- existed) needs `ALTER TABLE data_release ADD COLUMN archive_scope
+    -- TEXT` applied once — see scripts/cloud/drop_seed_revisions.py, which
+    -- does this idempotently before setting 1.0.0's value.
+    archive_scope      TEXT
 );
 
 CREATE TABLE IF NOT EXISTS data_release_member (

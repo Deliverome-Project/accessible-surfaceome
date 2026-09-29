@@ -30,13 +30,13 @@ genes (the COX1 / WAS class).
 
 ## Record history & releases
 
-Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI.
+Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change — numbering starts at 1 for a gene's first archived version, no revision 0. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI. Release 1.0.0 (the 2026-08-15 Zenodo deposit) predates this system and is Zenodo-only — see below.
 
-- [Gene revisions](https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions): every archived revision of this gene's served record (newest first), with the releases each belongs to.
+- [Gene revisions](https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions): every archived revision of this gene's served record (newest first), each with a `changed` label ("first_archived", or the parts that differ from the previous revision) and the releases it belongs to.
 - [One revision](https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions/1): revision n of the record, byte-for-byte as served; also `/evidence` and `.md`.
-- [Data releases](https://api.deliverome.org/surfaceome/v1/releases): numbered data releases with their GitHub tag and Zenodo version DOI.
-- [One release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0): one release's metadata + the revision of every gene in it.
-- [A gene in a release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/ERBB2): a gene as it was in that release; also `/evidence` and `.md`.
+- [Data releases](https://api.deliverome.org/surfaceome/v1/releases): numbered data releases with their GitHub tag, Zenodo version DOI, and `api_members` (false only for 1.0.0).
+- [One release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0): one release's metadata + the revision of every gene in it. 1.0.0 returns `members: []` and an `api_note` pointing at its Zenodo DOI — its records were never served through the API, only deposited.
+- [A gene in a release](https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/ERBB2): a gene as it was in that release; also `/evidence` and `.md`. For 1.0.0 this 404s `release_not_in_api_history` (with the Zenodo DOI) — fetch the gene from the Zenodo deposit instead.
 
 ## Reference
 
