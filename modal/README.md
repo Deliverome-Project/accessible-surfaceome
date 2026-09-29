@@ -1,4 +1,11 @@
-# Modal deep-dive sweep
+# Modal apps
+
+Three apps live here: the deep-dive sweep (below), the DeepTMHMM2 topology
+sweep ([jump](#deeptmhmm2-topology-sweep)) and the SignalP 6 signal-peptide
+sweep ([jump](#signalp-6-sweep)). They share the one-time Modal setup but
+nothing else — separate apps, volumes, images and cost profiles.
+
+## Deep-dive sweep
 
 This directory hosts the Modal app that fans the surfaceome_v2 deep-dive
 annotator out across the candidate universe (v3 cohort: 5,105 genes,
@@ -153,3 +160,153 @@ uv run python scripts/build/deep_dive_sweep.py \
     --run-id smoke_test_2026_05 \
     --canary 3 --concurrency 1 --no-d1
 ```
+
+
+# DeepTMHMM2 topology sweep
+
+`deeptmhmm2_app.py` runs [DeepTMHMM2](https://github.com/fteufel/DeepTMHMM2)
+(`dtm2`) over every human proteoform already in the public `topology_public`
+table — 20,224 forms, 12.5M residues. DeepTMHMM v1 populated that table;
+v2 adds beta barrels, reentrant loops, interfacial helices and a membrane-type
+call, so this is a second annotation of the same inputs rather than a
+replacement of the first.
+
+## Why it reads its input from D1
+
+`topology_public` stores each proteoform's input sequence. Reusing those exact
+sequences — rather than re-fetching FASTAs — is what makes v1 and v2
+comparable row-for-row. The query groups on `uniprot_acc_full`, the stable ID;
+`gene_symbol` is denormalized in that table and is not a join key.
+
+## v1 rows are not at risk
+
+The primary key is `(topology_version, cohort, uniprot_acc_full)` and the
+uploader uses `INSERT OR IGNORE`, so a new `topology_version` is a disjoint
+namespace. Nothing in this app writes to D1 at all: both entrypoints stream to
+the `surfaceome-topology2` Volume, and publishing is a separate reviewed step
+that asserts the v1 row count is unchanged either side of it.
+
+## GPU bands
+
+ESM2 attention is quadratic in length, so one 14,507-aa proteoform can OOM a
+GPU that handles the p99 comfortably. Three bands, sized from the measured
+length distribution (p50 456 aa, p90 1,187, p99 3,038):
+
+| Band | Forms | Residues | GPU | Shard |
+|---|---:|---:|---|---:|
+| ≤ 2,500 aa | 19,882 | 11.2M | T4 | 200 |
+| 2,500–6,000 aa | 329 | 1.2M | A10G | 20 |
+| > 6,000 aa | 13 | 110k | A10G | 1 |
+
+The middle band is the point: routing all 342 over-2,500 forms to their own
+container would burn 342 A10G starts for sequences a shared container handles
+fine. The canary reports measured throughput per band, so the thresholds can be
+retuned from evidence rather than from this guess.
+
+## Workflow
+
+```bash
+# Canary: 50 proteoforms sampled across the length distribution.
+# Prints GPU-seconds, a per-1k-residue rate and a projected full-sweep cost.
+uv run modal run modal/deeptmhmm2_app.py::canary --n 50
+
+# Full sweep, only after reviewing that projection.
+uv run modal run modal/deeptmhmm2_app.py::full_sweep --run-id dtm2_2026_09_28
+
+# Pull the raw dtm2 output back for review.
+uv run modal volume get surfaceome-topology2 dtm2_2026_09_28
+```
+
+The canary samples with a stride rather than taking the first `n`: the query is
+ordered by length, so the head would project the whole sweep from the shortest
+proteoforms and undercount by a wide margin.
+
+The workers are given their sequences in the payload and hold no credentials —
+only the local entrypoint reads D1.
+
+
+# SignalP 6 sweep
+
+`signalp6_app.py` runs [SignalP 6.0](https://doi.org/10.1038/s41587-021-01156-3)
+in `slow-sequential` mode — the full six-model ensemble, evaluated one model at
+a time — over human proteoforms in `topology_public`.
+
+DeepTMHMM says *there is a signal peptide and it ends here*. SignalP adds the
+secretion pathway (Sec/SPI, Sec/SPII, Tat/SPI, …) and per-position confidence.
+The two are complementary, which is why this is a separate annotation rather
+than a replacement.
+
+## Staging is a prerequisite and is not automatic
+
+The DTU tarball is 9.1 GB compressed, 9.8 GB of checkpoints, and is academic-
+licensed — **it must never be committed**. `modal/.signalp6-pkg/` is gitignored
+and the app refuses to start without it.
+
+```bash
+scripts/cloud/stage_signalp6.sh /path/to/signalp-6.0i.slow_sequential.tar.gz
+uv run modal run modal/signalp6_app.py::convert_models
+```
+
+The upload is 9.2 GB and takes roughly 20 minutes. It is safe to interrupt:
+`modal volume put` commits atomically, so a killed upload leaves nothing partial
+on the Volume, and the extraction is cached under `~/.cache/signalp6-stage` so a
+re-run resumes from there rather than unpacking the tarball again. `--clean`
+forces a fresh extraction.
+
+The staging script splits the tarball in two, because the halves have opposite
+needs: the Python package (~100 KB) is baked into the image so a rebuild is
+cheap, while the six 1.63 GB checkpoints go to the `signalp6-models` Volume so a
+rebuild does not mean re-uploading 9.8 GB.
+
+`convert_models` then prepares them for GPU. SignalP's converter rewrites
+checkpoints **in place** and GPU-converted weights cannot run on CPU, so it
+works on a copy under `/models/gpu` and never touches the `/models/cpu`
+originals. That is what makes a failed conversion recoverable without a second
+upload; `--force` re-copies.
+
+## Cost does not scale with protein length
+
+`signalp/utils.py` truncates every input to its first 70 residues and pads to a
+fixed 73 tokens, because the traced model was built at that fixed length. A
+14,507-aa titin isoform costs exactly what a 100-aa peptide costs.
+
+So there is no length banding here, unlike `deeptmhmm2_app.py` — one uniform
+band with large batches is correct, and the only thing that drives cost is how
+many sequences are submitted:
+
+| Gate | Sequences | Residues actually seen |
+|---|---:|---:|
+| `deeptmhmm_sp` (SP or SP+TM by v1) | 5,728 | 400,283 |
+| `all` | 20,224 | 1,413,838 |
+
+**The gate is a scientific choice, not a cost one.** Restricting to sequences
+DeepTMHMM already called SP-positive inherits v1's false negatives: SignalP
+never sees a protein v1 called GLOB or TM, so it can never overturn one. Given
+the fixed per-sequence cost, `all` is 3.5× a very small number. Prefer `all`
+unless there is a reason beyond cost.
+
+## Workflow
+
+```bash
+# Measure first. Projects both gates from one sample; writes no D1.
+uv run modal run modal/signalp6_app.py::canary --n 200
+
+# Then, after reviewing the projection:
+uv run modal run modal/signalp6_app.py::full_sweep --run-id sp6_2026_09_28 --gate all
+
+uv run modal volume get signalp6-runs sp6_2026_09_28
+```
+
+`--organism eukarya` post-processes to Sec/SPI only, which is correct for human
+and suppresses bacterial SP types the model can otherwise emit. `--format none`
+writes only the summary tables; per-sequence `.gff` or plots would be one file
+per protein on a network volume and would dominate the run.
+
+As with DeepTMHMM2, nothing here writes to D1. Output streams to the
+`signalp6-runs` Volume and publishing is a separate reviewed step.
+
+## Why a separate image
+
+SignalP 6 pins `torch>1.7.0,<2`; DeepTMHMM2 pins `torch==2.10.0`. The two cannot
+share an image, and the range is not worth fighting — the SignalP checkpoints are
+TorchScript traces made under torch 1.x.
