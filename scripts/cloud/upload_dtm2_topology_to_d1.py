@@ -35,7 +35,8 @@ from accessible_surfaceome.cloud.d1_client import D1Client
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.sources import deeptmhmm2 as d2
 
-COHORTS = ("human_canonical", "human_isoforms")
+# Default is the human set; pass --cohorts for the mouse / cyno ortholog runs.
+DEFAULT_COHORTS = "human_canonical,human_isoforms"
 CARRIED = (
     "cohort",
     "hgnc_id",
@@ -68,19 +69,19 @@ def load_predictions(run_dir: Path) -> dict[str, d2.Prediction]:
     return preds
 
 
-def target_rows(d1: D1Client) -> list[dict]:
+def target_rows(d1: D1Client, cohorts: tuple[str, ...]) -> list[dict]:
     """One v1 row per (cohort, uniprot_acc_full) to hang a v2 row on.
 
     A proteoform present in both cohorts gets a row in each: the prediction depends only
     on the sequence, but ``cohort`` is part of the key and consumers filter on it.
     """
-    ph = ", ".join(["?"] * len(COHORTS))
+    ph = ", ".join(["?"] * len(cohorts))
     rows = d1.query(
         f"SELECT {', '.join(CARRIED)} FROM topology_public "
         f"WHERE cohort IN ({ph}) GROUP BY cohort, uniprot_acc_full",
-        list(COHORTS),
+        list(cohorts),
     )
-    print(f"{len(rows):,} (cohort, accession) targets across {COHORTS}")
+    print(f"{len(rows):,} (cohort, accession) targets across {cohorts}")
     return rows
 
 
@@ -91,12 +92,14 @@ def main() -> None:
     ap.add_argument(
         "--tool-version", required=True, help="from `modal run ...::fingerprint`"
     )
+    ap.add_argument("--cohorts", default=DEFAULT_COHORTS)
     group = ap.add_mutually_exclusive_group(required=True)
     group.add_argument("--dry-run", action="store_true")
     group.add_argument("--execute", action="store_true")
     args = ap.parse_args()
 
     load_env()
+    cohorts = tuple(c.strip() for c in args.cohorts.split(","))
     preds = load_predictions(args.run_dir)
 
     with D1Client.public() as d1:
@@ -111,7 +114,7 @@ def main() -> None:
         )
         if clash:
             sys.exit("refusing: that topology_version already has rows")
-        targets = target_rows(d1)
+        targets = target_rows(d1, cohorts)
 
         missing = [r for r in targets if r["uniprot_acc_full"] not in preds]
         if missing:

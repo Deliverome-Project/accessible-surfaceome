@@ -195,3 +195,4 @@ data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
 .zed/
 .pages-rebuild-marker
 modal/.signalp6-pkg/
+modal/.netsurfp3-pkg/

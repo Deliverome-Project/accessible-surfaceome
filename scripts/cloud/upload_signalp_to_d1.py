@@ -23,7 +23,8 @@ from accessible_surfaceome.cloud.d1_client import D1Client
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.sources.signalp6 import parse_run
 
-COHORTS = ("human_canonical", "human_isoforms")
+# Default is the human set; pass --cohorts for the mouse / cyno ortholog runs.
+DEFAULT_COHORTS = "human_canonical,human_isoforms"
 BATCH = 60
 
 
@@ -34,12 +35,14 @@ def main() -> None:
     ap.add_argument("--tool-version", default="signalp-6.0+h")
     ap.add_argument("--mode", default="slow-sequential")
     ap.add_argument("--organism", default="eukarya")
+    ap.add_argument("--cohorts", default=DEFAULT_COHORTS)
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--dry-run", action="store_true")
     g.add_argument("--execute", action="store_true")
     args = ap.parse_args()
 
     load_env()
+    cohorts = tuple(c.strip() for c in args.cohorts.split(","))
     calls = parse_run(args.run_dir)
     print(f"{len(calls):,} SignalP calls parsed")
     print("  ", dict(Counter(c.prediction for c in calls.values())))
@@ -65,14 +68,14 @@ def main() -> None:
         if clash:
             sys.exit("refusing: that signalp_version already has rows")
 
-        ph = ", ".join(["?"] * len(COHORTS))
+        ph = ", ".join(["?"] * len(cohorts))
         ident = {
             r["uniprot_acc_full"]: r
             for r in d1.query(
                 "SELECT uniprot_acc_full, uniprot_acc, hgnc_id, gene_symbol, is_canonical, "
                 f"protein_length FROM topology_public WHERE cohort IN ({ph}) "
                 "GROUP BY uniprot_acc_full",
-                list(COHORTS),
+                list(cohorts),
             )
         }
         print(f"{len(ident):,} identity rows from topology_public")
