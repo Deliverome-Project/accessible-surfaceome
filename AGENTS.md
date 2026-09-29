@@ -154,7 +154,24 @@ write-once to R2 bucket `surfaceome-record-history`
 (`records/sha256/{hash}.{json|md}`), with one `record_revision` row per
 actual change in public D1
 ([`cloud/record_history/`](src/accessible_surfaceome/cloud/record_history/)).
-`publish_record` archives after every publish (needs
+**History holds only states the API actually served** — numbering starts
+at **1** (a gene's first archived version); there is no revision 0.
+`GET /v1/genes/{sym}/revisions` labels each entry's `changed`:
+`["first_archived"]` for a gene's first revision, otherwise whichever of
+`record`/`evidence`/`markdown` differ from the previous revision. Release
+**1.0.0** (the 2026-08-15 Zenodo deposit) predates per-gene record history
+and stays **Zenodo-only** — its `data_release` row has
+`archive_scope = 'zenodo_only'` and no `data_release_member` rows,
+`GET /v1/releases` reports it with `api_members: false`,
+`GET /v1/releases/1.0.0` returns `members: []` + an `api_note` naming the
+Zenodo DOI, and `GET /v1/releases/1.0.0/genes/{sym}` 404s
+`release_not_in_api_history` (DOI in the body) instead of falling back to
+a live lookup. `scripts/cloud/seed_record_history.py` (which originally
+wrote that deposit into `record_revision` as revision 1) is retired and
+refuses to run; [`scripts/cloud/drop_seed_revisions.py`](scripts/cloud/drop_seed_revisions.py)
+(dry-run by default, `--execute`) removes any `seed:zenodo-1.0.0` rows an
+earlier run left and renumbers the affected genes' later revisions down
+by one. `publish_record` archives after every publish (needs
 `ARCHIVE_BYPASS_TOKEN`; a miss warns, never fails the publish). Anything
 that writes `surface_annotation` directly, or bulk-updates a deterministic
 table the Worker joins at serve time, must be followed by
