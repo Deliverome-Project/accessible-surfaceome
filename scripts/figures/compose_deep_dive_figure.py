@@ -1,6 +1,6 @@
 """Stack the cohort funnel over the deep-dive pipeline as one two-panel figure.
 
-Main-paper Figure 4 becomes (a) how the 5,130-gene cohort is nominated
+Main-paper Figure 4 becomes (a) how the 5,332-gene cohort is nominated
 and trimmed, then (b) what the pipeline does to each of those genes.
 Panel a is generated (``scripts/figures/pipeline_funnel.py``); panel b is
 the author-drawn Illustrator export, used unmodified.

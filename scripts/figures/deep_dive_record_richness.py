@@ -30,7 +30,7 @@ e. **Deterministic features (derived, 0–7)** — how many of the seven derived
    deterministic structural/topology features are present. Tiers: canonical,
    likely, low.
 
-The ``uncertain`` tier (n=9) is dropped everywhere as too small to show a
+The ``uncertain`` tier (n=55) is dropped everywhere as too small to show a
 distribution.
 
 Why per-panel violins?
@@ -46,7 +46,7 @@ Reads the bundled per-figure TSV at
 ``data/processed/figures/deep_dive_record_richness.tsv`` (one row per deep-dived
 gene: the five real per-gene axes + the deep-dive ``tier``).
 
-Computed over the completed deep-dive sweep (5,130 genes).
+Computed over the completed deep-dive sweep (5,332 genes).
 
 Run::
 
@@ -80,7 +80,7 @@ DATA_TSV = ROOT / "data/processed/figures/deep_dive_record_richness.tsv"
 GIST_URL = "https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01"
 
 # Tier colors — MUST match Fig 5. canonical=green, likely=teal, low=amber,
-# no=muted warm-grey. `uncertain` is dropped everywhere (n=9, too small).
+# no=muted warm-grey. `uncertain` is dropped everywhere (n=55, too small).
 TIER_COLORS = {
     "canonical": "#2E7A55",
     "likely":    "#3D6B60",

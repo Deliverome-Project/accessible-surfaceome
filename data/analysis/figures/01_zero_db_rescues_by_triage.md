@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 3.** The triage agent rescues 960 surface candidates not identified by any of the five source databases. The two-stage Sonnet 4.6 triage agent calls 81 proteins definitively surface ("yes", panel a) and 879 proteins conditionally surface ("contextual": state- or lineage-dependent, panel b) that were not identified by any of the five source databases. Bars group each verdict by the agent's rationale, with representative examples labeled.
+> **Figure 3.** The triage agent rescues 1,108 surface candidates not identified by any of the five source databases. The two-stage Sonnet 4.6 triage agent calls 87 proteins definitively surface ("yes", panel a) and 1,021 proteins conditionally surface ("contextual": state- or lineage-dependent, panel b) that were not identified by any of the five source databases. Bars group each verdict by the agent's rationale, with representative examples labeled.
 <!-- END manuscript-legend -->
 
 Whole-genome view of the genes the **Sonnet (+ NCBI) triage agent**
