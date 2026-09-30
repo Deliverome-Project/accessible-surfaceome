@@ -69,6 +69,7 @@ FIGURE_ORDER: list[tuple[str, str]] = [
     ("Supp S12",  "evidence_corpus_vs_selected"),
     ("Supp S13",  "triage_vs_deep_dive_reason"),
     ("Supp S14",  "surfaceome_deterministic_features"),
+    ("Supp S15",  "deep_dive_replicate_kappa"),
 ]
 
 

@@ -1002,3 +1002,42 @@ CREATE INDEX IF NOT EXISTS idx_surface_annotation_symbol_nocase
     ON surface_annotation (gene_symbol COLLATE NOCASE);
 CREATE INDEX IF NOT EXISTS idx_topology_public_cohort_version
     ON topology_public (cohort, topology_version);
+
+-- ---------------------------------------------------------------------------
+-- deep_dive_replicate — reproducibility replicates (public D1 only).
+-- Re-annotations of a random sample of deep-dive genes, kept for the
+-- run-to-run reproducibility analysis (Supplementary Figure 15). These are
+-- NOT the published records: surface_annotation stays the only source of
+-- /v1/genes/{SYMBOL}, and nothing in the catalog or viewer reads this table.
+-- The Worker serves it API-only under /v1/replicates and
+-- /v1/genes/{SYMBOL}/replicates, every response labelled as a replicate.
+--
+-- One row per (study, kind, gene). replicate_kind:
+--   'published_snapshot'     — the published record exactly as served when the
+--                              study ran (the comparator; the live record may
+--                              since have been republished)
+--   'full_rerun'             — the whole pipeline re-run from scratch
+--   'fixed_evidence_replay'  — builders + synthesizer re-run on the published
+--                              record's own evidence ledger
+-- Loaded from the frozen bundle data/processed/deep_dive_concordance_v1/ by
+-- scripts/cloud/upload_deep_dive_replicates_to_d1.py (also deposited on Zenodo).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS deep_dive_replicate (
+    study_id              TEXT NOT NULL,   -- 'deep_dive_concordance_v1'
+    replicate_kind        TEXT NOT NULL,   -- see above
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,
+    hgnc_id               TEXT,
+    uniprot_acc           TEXT,
+    sample_batch          INTEGER,         -- 1 or 2 (two disjoint random batches of 25)
+    run_id                TEXT NOT NULL,   -- run that produced this record
+    compared_against_run_id TEXT NOT NULL, -- the published run it is compared with
+    schema_version        TEXT,
+    prompt_corpus_version TEXT,
+    record_generated_at   TEXT,
+    annotation_json       TEXT NOT NULL,   -- full SurfaceomeRecord, evidence included
+    loaded_at             TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (study_id, replicate_kind, gene_symbol)
+);
+
+CREATE INDEX IF NOT EXISTS idx_deep_dive_replicate_symbol
+    ON deep_dive_replicate (gene_symbol COLLATE NOCASE);

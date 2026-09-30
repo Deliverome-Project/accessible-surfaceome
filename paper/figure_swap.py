@@ -38,6 +38,18 @@ rendition without mutating the library.
 Strict mode (``--strict``) escalates warnings to errors. Default mode
 keeps the build moving and prints a list of issues so the author can
 choose to re-render or accept.
+
+Change alert: before swapping, each figure the .docx embedded is compared
+with the render that replaces it (``compare_figures``). A replacement that
+visibly differs is a FRESH figure the author has not reviewed in the
+manuscript, so the build lists every such figure — with a side-by-side
+old | new | difference image under ``compare_dir`` — and repeats the list
+at the end of the build (``format_change_alert``). The comparison ignores
+what the .docx round-trip does to a pasted image (downscaling, JPEG
+re-compression, a flattened transparent background): both images are
+flattened on white, resampled to a common width and lightly blurred before
+differencing, which leaves an unchanged figure at 0 differing pixels while
+a single edited number still shows hundreds.
 """
 from __future__ import annotations
 
@@ -78,13 +90,36 @@ class FigureSpec:
 
 
 @dataclass
+class FigureChange:
+    """How the render swapped in compares with the figure the .docx embedded.
+
+    ``status`` is ``"changed"``, ``"unchanged"`` or ``"not_compared"`` (no
+    raster to compare against, or an unreadable image — ``detail`` says why).
+    """
+
+    span_id: str
+    slug: str
+    status: str
+    detail: str = ""
+    changed_pixels: int = 0
+    aspect_delta: float = 0.0
+    comparison_image: Path | None = None
+
+
+@dataclass
 class SwapReport:
     """Outcome of a figure-swap pass. ``issues`` are human-readable
-    strings; ``swapped`` and ``skipped`` are img→canonical maps."""
+    strings; ``swapped`` and ``skipped`` are img→canonical maps;
+    ``changes`` compares each swapped-in render with the .docx figure."""
 
     swapped: dict[str, Path] = field(default_factory=dict)
     skipped: list[str] = field(default_factory=list)
     issues: list[str] = field(default_factory=list)
+    changes: list[FigureChange] = field(default_factory=list)
+
+    @property
+    def changed(self) -> list[FigureChange]:
+        return [c for c in self.changes if c.status == "changed"]
 
     @property
     def has_issues(self) -> bool:
@@ -283,10 +318,110 @@ def _validate_pdf(path: Path, _spec: FigureSpec) -> list[str]:
 # ── HTML rewrite ──────────────────────────────────────────────────────
 
 
+# ── Change detection: .docx figure vs the render swapped in ───────────
+
+# Common width both images are resampled to before differencing. 1200 px
+# keeps a single edited axis number visible (~250 differing pixels) while
+# the resample + blur absorbs JPEG / downscale noise (0 pixels).
+_COMPARE_WIDTH = 1200
+_PIXEL_THRESHOLD = 48       # 0–255 grey-level difference that counts as changed
+_MIN_CHANGED_PIXELS = 25    # above this many changed pixels → figure changed
+_MAX_ASPECT_DELTA = 0.01    # >1% aspect-ratio change → figure changed
+
+
+def comparison_raster(spec: FigureSpec, figures_dirs: Path | Sequence[Path]) -> Path | None:
+    """A raster of the render being swapped in, to compare against the .docx.
+
+    PNG entries compare their own asset; vector entries (SVG) compare the
+    sibling ``<slug>.png`` every published figure also ships, which is the
+    same render.
+    """
+    if spec.format == "png":
+        return resolve_asset(spec, figures_dirs)
+    return resolve_asset(FigureSpec(slug=spec.slug, format="png"), figures_dirs)
+
+
+def _flatten_grey(path: Path):  # -> PIL.Image.Image
+    from PIL import Image
+
+    Image.MAX_IMAGE_PIXELS = None  # 600-DPI figure renders exceed Pillow's bomb guard
+    with Image.open(path) as im:
+        im.load()
+        if im.mode in ("RGBA", "LA", "P", "PA"):
+            rgba = im.convert("RGBA")
+            bg = Image.new("RGBA", rgba.size, "white")
+            bg.alpha_composite(rgba)
+            return bg.convert("L")
+        return im.convert("L")
+
+
+def compare_figures(
+    docx_image: Path, new_image: Path, *, out_path: Path | None = None
+) -> tuple[bool, int, float]:
+    """Compare the .docx figure with the new render.
+
+    Returns ``(changed, changed_pixels, aspect_delta)``. When ``out_path`` is
+    given and the figure changed, writes a side-by-side image there: the
+    .docx figure, the new render, and the new render with differing pixels
+    marked in red.
+    """
+    from PIL import Image, ImageChops, ImageFilter
+
+    old, new = _flatten_grey(docx_image), _flatten_grey(new_image)
+    ar_old, ar_new = old.height / old.width, new.height / new.width
+    aspect_delta = abs(ar_old - ar_new) / ar_new
+    size = (_COMPARE_WIDTH, round(_COMPARE_WIDTH * ar_new))
+    a = old.resize(size, Image.Resampling.LANCZOS).filter(ImageFilter.GaussianBlur(1))
+    b = new.resize(size, Image.Resampling.LANCZOS).filter(ImageFilter.GaussianBlur(1))
+    mask = ImageChops.difference(a, b).point(lambda v: 255 if v >= _PIXEL_THRESHOLD else 0)
+    changed_pixels = sum(mask.histogram()[255:])
+    changed = changed_pixels > _MIN_CHANGED_PIXELS or aspect_delta > _MAX_ASPECT_DELTA
+
+    if changed and out_path is not None:
+        old_panel = old.resize(size, Image.Resampling.LANCZOS).convert("RGB")
+        new_panel = new.resize(size, Image.Resampling.LANCZOS).convert("RGB")
+        marked = new_panel.copy()
+        marked.paste((220, 30, 30), mask=mask.filter(ImageFilter.MaxFilter(5)))
+        gap = 24
+        sheet = Image.new("RGB", (size[0] * 3 + gap * 2, size[1]), "white")
+        for i, panel in enumerate((old_panel, new_panel, marked)):
+            sheet.paste(panel, (i * (size[0] + gap), 0))
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        sheet.save(out_path)
+    return changed, changed_pixels, aspect_delta
+
+
+def _check_change(
+    span_id: str, spec: FigureSpec, docx_src: str | None, html_dir: Path,
+    figures_dirs: Path | Sequence[Path], compare_dir: Path | None,
+) -> FigureChange:
+    if not docx_src or docx_src.startswith(("http://", "https://", "data:")):
+        return FigureChange(span_id, spec.slug, "not_compared", "no embedded .docx image")
+    docx_path = Path(docx_src)
+    if not docx_path.is_absolute():
+        docx_path = (html_dir / docx_path).resolve()
+    new_raster = comparison_raster(spec, figures_dirs)
+    if not docx_path.is_file():
+        return FigureChange(span_id, spec.slug, "not_compared", f"embedded image missing: {docx_src}")
+    if new_raster is None:
+        return FigureChange(span_id, spec.slug, "not_compared", f"no {spec.slug}.png to compare against")
+    out = compare_dir / f"{span_id.split('.')[0][:40]}__{spec.slug}.png" if compare_dir else None
+    try:
+        changed, n_px, aspect = compare_figures(docx_path, new_raster, out_path=out)
+    except Exception as exc:  # noqa: BLE001 — an unreadable image must not stop the build
+        return FigureChange(span_id, spec.slug, "not_compared", f"could not compare: {exc}")
+    return FigureChange(
+        span_id, spec.slug, "changed" if changed else "unchanged",
+        changed_pixels=n_px, aspect_delta=aspect,
+        comparison_image=out if changed else None,
+    )
+
+
 def swap_figures(
     html_path: Path,
     manifest: dict[str, FigureSpec],
     figures_dirs: Path | Sequence[Path],
+    compare_dir: Path | None = None,
 ) -> SwapReport:
     """Walk the pandoc-emitted HTML, find each anchored figure paragraph
     (``<p><span id="figure-N"></span><img></p>``), look up the matching
@@ -296,6 +431,10 @@ def swap_figures(
 
     ``figures_dirs`` is an ordered search path (first match wins); a
     bare ``Path`` is accepted for single-directory callers.
+
+    Each swapped figure is also compared with the image the .docx embedded
+    (``report.changes``); a changed one gets an old | new | difference image
+    in ``compare_dir`` when that is given.
     """
     report = SwapReport()
     if not manifest:
@@ -346,6 +485,9 @@ def swap_figures(
             )
             continue
         canonical_path = resolved.resolve()
+        report.changes.append(_check_change(
+            span_id, spec, imgs[0].get("src"), html_path.parent, figures_dirs, compare_dir,
+        ))
         for img in imgs:
             img.set("src", str(canonical_path))
             # Drop any in-docx sizing hints so the print CSS controls
@@ -412,7 +554,39 @@ def format_report(report: SwapReport) -> str:
         lines.append(f"  ⚠ {len(report.issues)} resolution / format issue(s):")
         for i in report.issues:
             lines.append(f"    {i}")
+    if report.changes:
+        n_same = sum(c.status == "unchanged" for c in report.changes)
+        lines.append(
+            f"  compared with the .docx: {len(report.changed)} changed, {n_same} unchanged, "
+            f"{len(report.changes) - len(report.changed) - n_same} not compared"
+        )
+        for c in report.changes:
+            if c.status == "not_compared":
+                lines.append(f"    ? {c.span_id}: not compared — {c.detail}")
+    alert = format_change_alert(report)
+    if alert:
+        lines.append(alert)
     return "\n".join(lines) if lines else "  (manifest empty or no figures matched)"
+
+
+def format_change_alert(report: SwapReport) -> str:
+    """The figures whose swapped-in render differs from the .docx — fresh
+    figures the author has not reviewed in the manuscript. Empty if none."""
+    if not report.changed:
+        return ""
+    lines = [
+        "",
+        f"  ⚠⚠ {len(report.changed)} FIGURE(S) DIFFER FROM THE VERSION IN THE .DOCX —",
+        "     the build is shipping fresh renders; review each before publishing:",
+    ]
+    for c in report.changed:
+        why = f"{c.changed_pixels} differing px"
+        if c.aspect_delta > _MAX_ASPECT_DELTA:
+            why += f", aspect ratio changed {c.aspect_delta:.0%}"
+        lines.append(f"     • {c.span_id}  ({c.slug}.png; {why})")
+        if c.comparison_image:
+            lines.append(f"       old | new | difference: {c.comparison_image}")
+    return "\n".join(lines)
 
 
 # ── CLI entry — useful for ad-hoc validation without a full build ─────

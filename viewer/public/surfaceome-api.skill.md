@@ -74,6 +74,16 @@ Every distinct state the API served for a gene (record, evidence ledger, Markdow
 
 Release **1.0.0** (the 2026-08-15 Zenodo deposit, DOI `10.5281/zenodo.20805384`) predates per-gene record history and is **Zenodo-only**: `api_members` is `false`, `/v1/releases/1.0.0` returns `members: []` plus an `api_note` pointing at the DOI, and `/v1/releases/1.0.0/genes/{SYMBOL}` 404s `release_not_in_api_history` (DOI in the body) for every gene — those records live only in the Zenodo deposit, never in these history routes.
 
+### Reproducibility replicates
+
+**Not published records** — never use these in place of `/v1/genes/{SYMBOL}`. For the run-to-run reproducibility analysis (Supplementary Figure 15), 50 deep-dive genes drawn at random were re-analysed, and each is held three ways: `published_snapshot` (the published record as served when the study ran), `full_rerun` (the whole pipeline from scratch, same prompts) and `fixed_evidence_replay` (section builders + synthesizer re-run on the published evidence). Every response carries `reproducibility_replicate: true`.
+
+| Method | Path | Returns | TTL |
+|---|---|---|---|
+| `GET` | `/v1/replicates` | Every replicate study with its kinds and genes (metadata only) | 60s |
+| `GET` | `/v1/genes/{SYMBOL}/replicates` | The replicates held for one gene, with a link to each; 404 `no_replicates` if not sampled | 1 day |
+| `GET` | `/v1/genes/{SYMBOL}/replicates/{study}/{kind}` | One replicate record in full (evidence included) under `.record`, plus study / kind / run ids and the shared `deep_dive_tier` | 1 day |
+
 Gene symbols are case-insensitive on the wire (the Worker uppercases them) but the canonical HGNC form is upper-case.
 
 ## SurfaceomeRecord shape (per-gene deep-dive)

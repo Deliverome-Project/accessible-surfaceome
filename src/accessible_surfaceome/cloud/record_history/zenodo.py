@@ -21,6 +21,10 @@ version, once published, can never be un-published.
 
 from __future__ import annotations
 
+import gzip
+import io
+import tarfile
+from collections.abc import Sequence
 from datetime import date
 from pathlib import Path
 
@@ -28,6 +32,34 @@ import httpx
 
 ZENODO_API = "https://zenodo.org/api"
 DATA_CONCEPT_RECID = "20805383"  # concept DOI 10.5281/zenodo.20805383
+# Reproducibility replicates (Supplementary Figure 15). Not published records —
+# a frozen study bundle, deposited alongside every release from the one it
+# first ships in (a new version inherits the file; re-uploading an unchanged
+# bundle is byte-identical because the tarball is built deterministically).
+REPLICATES_TARBALL_NAME = "deep-dive-reproducibility-replicates-v1.tar.gz"
+
+
+def build_replicates_tarball(bundle: Path, out_dir: Path) -> Path:
+    """Tar ``bundle`` (the frozen replicate study) deterministically: sorted
+    members, zeroed mtime / owner, gzip mtime 0 — same bytes on every run."""
+    files = sorted(p for p in bundle.iterdir() if p.is_file())
+    for p in files:
+        if p.read_bytes()[:40].startswith(b"version https://git-lfs"):
+            raise RuntimeError(f"{p.name} is an LFS pointer — run `git lfs pull` first")
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w", format=tarfile.PAX_FORMAT) as tar:
+        for p in files:
+            data = p.read_bytes()
+            info = tarfile.TarInfo(f"{REPLICATES_TARBALL_NAME.removesuffix('.tar.gz')}/{p.name}")
+            info.size, info.mtime, info.mode = len(data), 0, 0o644
+            info.uid = info.gid = 0
+            info.uname = info.gname = ""
+            tar.addfile(info, io.BytesIO(data))
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = out_dir / REPLICATES_TARBALL_NAME
+    with out.open("wb") as fh, gzip.GzipFile(fileobj=fh, mode="wb", mtime=0) as gz:
+        gz.write(buf.getvalue())
+    return out
 
 
 class ZenodoDraftError(RuntimeError):
@@ -42,8 +74,13 @@ def create_draft_version(
     http: httpx.Client,
     api: str = ZENODO_API,
     concept_recid: str = DATA_CONCEPT_RECID,
+    extra_files: Sequence[Path] = (),
 ) -> str:
     """Create the draft; return its web URL for review.
+
+    ``extra_files`` are uploaded alongside the tarball, each replacing an
+    inherited file of the same name (e.g. the reproducibility-replicate
+    bundle); every other inherited file is kept.
 
     ``concept_recid`` defaults to the real data record's concept id; pass
     a sandbox concept record id together with ``api="https://sandbox.
@@ -90,16 +127,18 @@ def create_draft_version(
     # The new version inherits the previous version's files; replace only
     # the deep-dive tarball. Triage TSVs + README carry over (refresh them
     # by hand in the draft if they changed).
+    extra_names = {p.name for p in extra_files}
     for f in d.get("files", []):
-        if f["filename"].startswith("deep_dives"):
+        if f["filename"].startswith("deep_dives") or f["filename"] in extra_names:
             http.delete(f["links"]["self"], headers=auth_header).raise_for_status()
-    with tarball.open("rb") as fh:
-        http.put(
-            f"{d['links']['bucket']}/{tarball.name}",
-            headers=auth_header,
-            content=fh.read(),
-            timeout=900,  # the deep-dive tarball is a large upload
-        ).raise_for_status()
+    for path in (tarball, *extra_files):
+        with path.open("rb") as fh:
+            http.put(
+                f"{d['links']['bucket']}/{path.name}",
+                headers=auth_header,
+                content=fh.read(),
+                timeout=900,  # the deep-dive tarball is a large upload
+            ).raise_for_status()
 
     meta = dict(d["metadata"])
     # These are server-assigned per-version identifiers on the PREVIOUS

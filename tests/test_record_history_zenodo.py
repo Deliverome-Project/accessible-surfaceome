@@ -152,3 +152,49 @@ def test_draft_version_missing_latest_draft_link_raises_clear_error(
         create_draft_version(
             token="t", tarball=tarball, version="1.3.0", http=http, api=API
         )
+
+
+def test_draft_version_uploads_extra_files_replacing_same_name(tmp_path: Path) -> None:
+    tarball = tmp_path / "deep_dives_1.3.0.tar.gz"
+    tarball.write_bytes(b"tgz")
+    extra = tmp_path / "README.md"
+    extra.write_bytes(b"new readme")
+    rec = _Recorder()
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        rec.record(req)
+        p = req.url.path
+        if p == "/api/records/20805383/versions/latest":
+            return httpx.Response(200, json={"id": 20805384})
+        if p == "/api/deposit/depositions/20805384/actions/newversion":
+            return httpx.Response(
+                201, json={"links": {"latest_draft": f"{API}/deposit/depositions/999"}}
+            )
+        if p == "/api/deposit/depositions/999" and req.method == "GET":
+            return httpx.Response(200, json=_draft_json())
+        return httpx.Response(200, json={})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    create_draft_version(
+        token="t", tarball=tarball, version="1.3.0", http=http, api=API, extra_files=[extra]
+    )
+    calls = rec.calls()
+    assert ("DELETE", "/api/files/readme") in calls  # inherited same-name file replaced
+    assert ("PUT", "/api/files/bucket/README.md") in calls
+    assert ("PUT", "/api/files/bucket/deep_dives_1.3.0.tar.gz") in calls
+    assert not any("publish" in path for _, path in calls)
+
+
+def test_replicates_tarball_is_deterministic(tmp_path: Path) -> None:
+    from accessible_surfaceome.cloud.record_history.zenodo import build_replicates_tarball
+
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    (bundle / "b.tsv").write_text("x\n")
+    (bundle / "a.md").write_text("y\n")
+    one = build_replicates_tarball(bundle, tmp_path / "o1").read_bytes()
+    two = build_replicates_tarball(bundle, tmp_path / "o2").read_bytes()
+    assert one == two
+    (bundle / "c.jsonl.gz").write_bytes(b"version https://git-lfs.github.com/spec/v1\n")
+    with pytest.raises(RuntimeError, match="LFS pointer"):
+        build_replicates_tarball(bundle, tmp_path / "o3")

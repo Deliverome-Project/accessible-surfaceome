@@ -49,6 +49,7 @@ READS_BUNDLED_TSV = [
     "surface_evidence_assay_types",
     "deep_dive_final_categories",
     "deep_dive_record_richness",
+    "deep_dive_replicate_kappa",
     "deep_dive_vs_sonnet_benchmark",
     "evidence_corpus_vs_selected",
     "triage_vs_deep_dive_reason",
