@@ -34,14 +34,26 @@ GENE = "SRC"
 
 # Panel a is captured wider than panel b so the catalog table's right-hand
 # columns get as much room as the table's own max-width allows.
-A_WIDTH, B_WIDTH = 1400, 1374
+# Panel a is wider so the widened .page-width container fits all columns.
+A_WIDTH, B_WIDTH = 1520, 1490
 DPR = 2
 
-# Kill scrollbars so neither panel carries a grey gutter down its right edge.
-HIDE_SCROLLBARS = (
-    "::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}"
-    "html{scrollbar-width:none!important}"
-)
+# Capture-only CSS. Three problems, all of them artifacts of screenshotting a
+# live app rather than anything a reader should see in a figure:
+#   1. scrollbars draw a grey gutter down the right edge of both panels;
+#   2. the closed rationale drawer parks just off-screen and its box-shadow
+#      bleeds back across the right edge, and hidden InfoTip popovers do the
+#      same — that is the shading, not a crop artifact;
+#   3. the catalog table is 1,317 px of columns inside a 1,280 px container,
+#      so `STATE DEP.` is always clipped and the container paints a
+#      horizontal-scroll shadow. Widening `.page-width` is the same view a
+#      reader gets on a wider monitor; nothing is restyled or hidden.
+CAPTURE_CSS = """
+::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
+html{scrollbar-width:none!important}
+[class*="Drawer_drawer"],[class*="InfoTip_popover"]{display:none!important;box-shadow:none!important}
+.page-width,[class*="page_page"]{width:1400px!important;max-width:none!important}
+"""
 
 # Layout constants, carried over from the hand-made SVG so the refreshed
 # figure keeps its proportions: left inset, top margin, inter-panel gap,
@@ -49,8 +61,12 @@ HIDE_SCROLLBARS = (
 VIEWBOX_W = 529.71
 A_LEFT, B_LEFT = 24.63, 24.53
 A_TOP, GAP, BOTTOM_PAD = 3.0, 27.4, 21.5
+# Both panels are scaled to a FIXED rendered width, not a fixed scale
+# factor. A fixed scale silently overflows the viewBox the moment a capture
+# width changes — which is exactly what happened when panel a was widened to
+# fit the catalog's last column.
 A_RENDERED_W = 502.74
-B_SCALE = 0.18
+B_RENDERED_W = 494.64
 LABEL_DY = 12.04
 
 
@@ -66,7 +82,7 @@ async def _capture() -> tuple[bytes, bytes]:
         )
         page = await ctx.new_page()
         await page.goto(f"{SITE}/", wait_until="networkidle", timeout=90_000)
-        await page.add_style_tag(content=HIDE_SCROLLBARS)
+        await page.add_style_tag(content=CAPTURE_CSS)
         await page.wait_for_timeout(6_000)
         # rows[0] is the header, rows[1] the first gene — crop just below it.
         rows = page.locator("[role=row]")
@@ -83,13 +99,16 @@ async def _capture() -> tuple[bytes, bytes]:
         )
         page = await ctx.new_page()
         await page.goto(f"{SITE}/{GENE}/", wait_until="networkidle", timeout=90_000)
-        await page.add_style_tag(content=HIDE_SCROLLBARS)
+        await page.add_style_tag(content=CAPTURE_CSS)
         # The AlphaFold canvas renders late; give it time or the panel is blank.
         await page.wait_for_timeout(8_000)
         jump = await page.locator("input[placeholder*='Jump to gene']").first.bounding_box()
         glob = await page.locator("text=Globular").first.bounding_box()
         b_top = round(jump["y"] - 14)
-        b_height = round(glob["y"] + glob["height"] + 34 - b_top)
+        # +26 rather than a rounder number: it clears the "Globular" legend row
+        # but stops short of the structure card's bottom border, which
+        # otherwise lands on the panel's last pixel row and reads as shading.
+        b_height = round(glob["y"] + glob["height"] + 12 - b_top)
         panel_b = await page.screenshot(
             clip={"x": 0, "y": b_top, "width": B_WIDTH, "height": b_height}
         )
@@ -112,8 +131,9 @@ def build_svg(panel_a: bytes, panel_b: bytes) -> str:
     aw, ah = _png_size(panel_a)
     bw, bh = _png_size(panel_b)
     a_scale = A_RENDERED_W / aw
+    b_scale = B_RENDERED_W / bw
     b_top = A_TOP + ah * a_scale + GAP
-    viewbox_h = b_top + bh * B_SCALE + BOTTOM_PAD
+    viewbox_h = b_top + bh * b_scale + BOTTOM_PAD
     a64 = base64.b64encode(panel_a).decode()
     b64 = base64.b64encode(panel_b).decode()
     return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -129,7 +149,7 @@ def build_svg(panel_a: bytes, panel_b: bytes) -> str:
       }}
     </style>
   </defs>
-  <image width="{bw}" height="{bh}" transform="translate({B_LEFT} {b_top:.2f}) scale({B_SCALE})" xlink:href="data:image/png;base64,{b64}"/>
+  <image width="{bw}" height="{bh}" transform="translate({B_LEFT} {b_top:.2f}) scale({b_scale:.6f})" xlink:href="data:image/png;base64,{b64}"/>
   <g id="NACWnK.tif">
     <image id="Layer_0" data-name="Layer 0" width="{aw}" height="{ah}" transform="translate({A_LEFT} {A_TOP}) scale({a_scale:.6f})" xlink:href="data:image/png;base64,{a64}"/>
   </g>
