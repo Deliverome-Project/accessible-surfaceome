@@ -15,7 +15,7 @@ BOTH metrics that the earlier coverage-bar grid could only show one of:
 The two metrics differ only by denominator, so putting them in the same cell
 lets a reader cross-reference them directly. The headline it renders: **CSPA ×
 glycosylation is a large, pale dot** — intrinsically glyco-dominated (~75% of
-its own calls) yet only a small slice of the universe (~11%), reflecting its
+its own calls) yet only a small slice of the universe (~14%), reflecting its
 N-glycocapture chemistry; SURFY and UniProt show the same glyco enrichment at
 larger scale (dark, high-coverage); the zero-DB Sonnet rescues are glyco- and
 transmembrane-DEPLETED (near-empty row), consistent with contextual-surface

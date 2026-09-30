@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 8.** SurfaceBench over-samples the membrane topologies where databases disagree, so its measured accuracy is a conservative floor on full-catalog performance. The per-class composition of the hand-curated benchmark is compared against the full shipped accessible set across nine membrane-topology classes, with each class tested by an exact two-tailed binomial test of the benchmark count against the population proportion, Bonferroni-corrected across the nine classes. The benchmark is significantly enriched for glycosylation-site-bearing and GPI-anchored proteins and depleted for multi-pass transmembrane proteins. Because it is deliberately weighted toward ambiguous, disagreement-prone topologies and away from the easy multi-pass case, accuracy measured on it is a lower bound on full-catalog accuracy.
+> **Supplementary Figure 8.** SurfaceBench over-samples the membrane topologies where databases disagree, so its measured accuracy is a conservative floor on full-catalog performance. The per-class composition of the hand-curated benchmark is compared against the full shipped accessible set across nine membrane-topology classes, with each class tested by an exact two-tailed binomial test of the benchmark count against the population proportion, Bonferroni-corrected across the nine classes. The benchmark is significantly enriched for glycosylation-site-bearing and GPI-anchored proteins and depleted for multi-pass transmembrane proteins. Because it is deliberately weighted toward ambiguous, disagreement-prone topologies and away from the easy multi-pass case, accuracy measured on it is a lower bound on full-catalog accuracy. [Figure data and script. ](https://gist.github.com/beccajcarlson/f724dd328f48566a354f0294109a7337) \[image\]
 <!-- END manuscript-legend -->
 
 **99-of-147 SurfaceBench genes that join the per-protein features
@@ -31,16 +31,18 @@ points and Bonferroni-corrected exact 2-tailed binomial significance
 stars (`*` p<0.05, `**` p<0.01, `***` p<0.001 after 9-test
 correction).
 
-**Headline**: **3 of 9 topology classes reach significance** after
+**Headline**: **4 of 9 topology classes reach significance** after
 Bonferroni correction.
 
-- **Glyc. site** +20.1 pp `***` — the bench is enriched for
+- **Glyc. site** +18.9 pp `***` — the bench is enriched for
   N/O-glycosylated proteins (a strong surface signal that biases
   toward "easy" cases).
-- **GPI-anchored** +14.5 pp `***` — the bench oversamples GPI
+- **GPI-anchored** +14.2 pp `***` — the bench oversamples GPI
   anchors precisely because the DBs disagree on them most.
-- **Multi-pass TM** −11.0 pp `*` — the bench *under*-samples
+- **Multi-pass TM** −13.9 pp `**` — the bench *under*-samples
   multi-pass TM, the class the DBs agree easily on.
+- **TM w/o SP** −17.6 pp `**` — the bench under-samples
+  transmembrane proteins that carry no signal peptide.
 
 This is the **bench enrichment bias** the methods section flags:
 SurfaceBench is deliberately enriched for DB-disagreement cases, so
@@ -56,7 +58,7 @@ uv run make_bench_topology_vs_universe.py
 The script reads only the bundled `bench_topology_vs_universe.tsv`
 next to it — no network fetch, no external joins. The TSV is one
 row per gene in the Sonnet 2-tier yes/contextual universe with
-`is_bench` (true for 97 bench-member genes) and 9 topology boolean
+`is_bench` (true for 99 bench-member genes) and 9 topology boolean
 flag columns denormalized in. Wilson 95% binomial CIs and
 Bonferroni-corrected exact 2-tailed binomial p-values are computed
 inline (no scipy dep — manual PMF loop reliable at small n).
@@ -86,9 +88,9 @@ and renders the same chart.
 
 ## Paste-able figure caption
 
-> **Figure caption.** Topology composition of SurfaceBench (n = 97
+> **Figure caption.** Topology composition of SurfaceBench (n = 99
 > of 147 that join into the per-protein features TSV) compared
-> against the Sonnet 2-tier yes/contextual universe (n = 4,426),
+> against the Sonnet 2-tier yes/contextual universe (n = 4,628),
 > the genes the production pipeline ships as accessible after the
 > NCBI sweep + PubMed rescue lane. Bars show the % of each subset
 > that carries the topological feature; error bars on SurfaceBench
@@ -97,10 +99,10 @@ and renders the same chart.
 > computed by an exact 2-tailed binomial test of the bench count
 > against the universe proportion under H₀, Bonferroni-corrected
 > across the 9 topology classes (\* p < 0.05, \*\* p < 0.01,
-> \*\*\* p < 0.001); 3 of 9 classes reach significance. The bench
-> is enriched for Glyc. site (+20.1 pp\*), GPI-anchored (+14.5
+> \*\*\* p < 0.001); 4 of 9 classes reach significance. The bench
+> is enriched for Glyc. site (+18.9 pp\*\*\*), GPI-anchored (+14.2
 > pp\*), Single-pass TM (+11.6 pp) and depleted for Inner-leaflet
 > lipidated (−0.3 pp), No TM / no signal (−0.6 pp), Multi-pass TM
-> (−11.0 pp\*); this reflects its deliberate selection for
+> (−13.9 pp\*\*); this reflects its deliberate selection for
 > DB-disagreement cases, so bench-derived accuracy estimates are a
 > lower bound on expected full-universe accuracy.

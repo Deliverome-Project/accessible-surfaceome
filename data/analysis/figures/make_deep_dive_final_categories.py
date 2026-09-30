@@ -24,7 +24,7 @@ rather than the evidence-gated facet keeps weak-evidence surface calls that
 land in the ``low`` tier. The facets cut across confidence rather than
 gating it.
 
-Full deep-dive cohort (5,130 genes); ``canonical`` / ``likely`` are the
+Full deep-dive cohort (5,332 genes); ``canonical`` / ``likely`` are the
 frontend catalog-preset predicates, giving 1,782 canonical / 1,243 likely /
 973 low / 1,078 no / 54 uncertain.
 

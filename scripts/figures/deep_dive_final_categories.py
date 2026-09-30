@@ -20,7 +20,7 @@ via ``scripts/build_figure_tsvs.py`` (``_dd_passes_*``); canonical/likely == the
 catalog presets, and the low/uncertain/no split of the negatives is a
 figure-only refinement (the presets don't cover the negatives).
 
-Full deep-dive cohort (5,130 genes); canonical uses the PR #130 gate.
+Full deep-dive cohort (5,332 genes); canonical uses the PR #130 gate.
 
 # Reproduction:
 #   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
