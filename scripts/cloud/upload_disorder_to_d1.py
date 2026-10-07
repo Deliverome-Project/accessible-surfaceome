@@ -82,6 +82,16 @@ def main() -> None:
     )
     ap.add_argument("--modal-app-id", default=None, help="bare id, e.g. ap-XXXX")
     ap.add_argument("--tool-version", default=None)
+    ap.add_argument(
+        "--drop-length-mismatch",
+        action="store_true",
+        help=(
+            "exclude predictions scored over more residues than the stored protein, "
+            "instead of refusing the whole publish. Every dropped accession is named. "
+            "Use only when the mismatch is understood: it means the predictor saw a "
+            "different sequence, so position i no longer maps to residue i+1."
+        ),
+    )
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--dry-run", action="store_true")
     g.add_argument("--execute", action="store_true")
@@ -149,14 +159,30 @@ def main() -> None:
             )
 
         now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        # Collect every mismatch before deciding, so the scale is visible. Dying on the
+        # first one tells you nothing about whether it is a stray or a systematic fault.
+        mismatched = {
+            acc: (row.window_residues, ident[acc]["protein_length"])
+            for acc, row in rows.items()
+            if row.window_residues > ident[acc]["protein_length"]
+        }
+        if mismatched:
+            print(f"\n{len(mismatched):,} prediction(s) scored more residues than the stored protein:")
+            for acc, (w, length) in sorted(mismatched.items(), key=lambda kv: kv[1][1] - kv[1][0]):
+                print(f"   {acc:<16} scored {w:>5}  stored {length:>5}  (+{w - length})")
+            if not args.drop_length_mismatch:
+                sys.exit(
+                    "refusing: the predictor saw a different sequence for these, so the "
+                    "per-residue offsets do not line up with the stored protein. Pass "
+                    "--drop-length-mismatch to publish the rest without them."
+                )
+            print(f"   dropping all {len(mismatched):,}; the rest publish unchanged\n")
+
         payload = []
         for acc, row in rows.items():
+            if acc in mismatched:
+                continue
             i = ident[acc]
-            if row.window_residues > i["protein_length"]:
-                sys.exit(
-                    f"refusing: {acc} scored {row.window_residues} residues but the "
-                    f"protein is {i['protein_length']} long"
-                )
             payload.append(
                 {
                     "disorder_version": args.disorder_version,
