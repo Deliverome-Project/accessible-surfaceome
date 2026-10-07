@@ -56,6 +56,10 @@ build-backend = "hatchling.build"
 packages = ["src/accessible_surfaceome"]
 
 [tool.uv]
+# Supply-chain quarantine at the resolver: uv never picks a release under 7 days old,
+# direct or transitive, whoever runs `uv lock` (people, Dependabot, CI). Same policy as
+# the other Deliverome repos; Dependabot cooldown alone misses re-resolved transitive deps.
+exclude-newer = "7 days"
 # Supply-chain cooldown pin (see CLAUDE.md "min-release-age" rationale for the
 # viewer; this is the Python-side equivalent applied surgically). pdfplumber
 # pulls pypdfium2 transitively with only a `>=4.18.0` floor, so a fresh resolve
