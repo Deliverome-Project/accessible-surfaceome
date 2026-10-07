@@ -194,3 +194,5 @@ data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
 # Editor / build cruft
 .zed/
 .pages-rebuild-marker
+# per-residue tag-site signals: ~90 KB/gene, durable home is S3/R2, not git
+data/processed/tag_site_signals/
