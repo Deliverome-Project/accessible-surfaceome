@@ -13,6 +13,7 @@ slug and this database is served publicly.
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import subprocess
 import sys
@@ -22,7 +23,7 @@ from pathlib import Path
 
 from accessible_surfaceome.cloud.d1_client import D1Client
 from accessible_surfaceome.env import load_env
-from accessible_surfaceome.sources.disorder import PARSERS
+from accessible_surfaceome.sources.disorder import PARSERS, Row
 
 DEFAULT_COHORTS = "human_canonical,human_isoforms"
 BATCH = 200  # raised from 50; one writer, larger batches
@@ -37,9 +38,40 @@ def _git(*args: str) -> str:
     return subprocess.run(["git", *args], capture_output=True, text=True).stdout.strip()
 
 
+def _load_rows_json(path: Path, predictor: str) -> dict[str, Row]:
+    """Rebuild Row objects parsed on Modal, refusing a file for another predictor.
+
+    Reconstructed through Row rather than used as plain dicts so the rows published this
+    way are the same objects the local path would have produced, and so a field added to
+    Row without being added here fails loudly instead of being silently dropped.
+    """
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt") as fh:
+        payload = json.load(fh)
+    rows: dict[str, Row] = {}
+    for acc, fields in payload.items():
+        row = Row(**fields)
+        if row.predictor != predictor:
+            sys.exit(
+                f"{path} holds {row.predictor!r} rows but --predictor is {predictor!r}"
+            )
+        rows[acc] = row
+    return rows
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--run-dir", required=True, type=Path)
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--run-dir", type=Path, help="a sweep directory to parse locally")
+    src.add_argument(
+        "--rows-json",
+        type=Path,
+        help=(
+            "rows already parsed by modal/disorder_parse_app.py (.json or .json.gz). "
+            "The sweeps are far larger than the rows they yield, so parsing on Modal "
+            "and fetching only this file avoids a multi-GB download."
+        ),
+    )
     ap.add_argument("--predictor", required=True, choices=sorted(PARSERS))
     ap.add_argument("--disorder-version", required=True)
     ap.add_argument("--cohorts", default=DEFAULT_COHORTS)
@@ -57,8 +89,13 @@ def main() -> None:
 
     load_env()
     cohorts = tuple(c.strip() for c in args.cohorts.split(","))
-    rows = PARSERS[args.predictor](args.run_dir)
-    print(f"{len(rows):,} {args.predictor} rows parsed from {args.run_dir}")
+    if args.run_dir:
+        rows = PARSERS[args.predictor](args.run_dir)
+        source = args.run_dir
+    else:
+        rows = _load_rows_json(args.rows_json, args.predictor)
+        source = args.rows_json
+    print(f"{len(rows):,} {args.predictor} rows parsed from {source}")
 
     sha, dirty = _git("rev-parse", "HEAD"), bool(_git("status", "--porcelain"))
     print(
