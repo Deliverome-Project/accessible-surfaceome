@@ -11,6 +11,9 @@ HOOK = (
     Path(__file__).resolve().parents[1] / "scripts/precommit/forbid_workspace_urls.py"
 )
 spec = importlib.util.spec_from_file_location("_hook", HOOK)
+# spec and spec.loader are Optional; narrow them so the type checker can see that a
+# missing hook fails here with a clear message rather than an AttributeError later.
+assert spec is not None and spec.loader is not None, f"cannot load {HOOK}"
 hook = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(hook)
 
