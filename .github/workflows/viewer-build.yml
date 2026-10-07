@@ -58,12 +58,8 @@ jobs:
         run: npm ci
 
       - name: audit
-        # Fails on high or critical advisories. The `next` dep is pinned to
-        # `16.3.0-canary.11` because every stable 16.x release through 16.2.6
-        # is in the vulnerable range for ~13 GHSA advisories — the fix landed
-        # in 16.3.0-canary.6+. Bump `next` back to a `^16.3.x` stable range
-        # in `viewer/package.json` once Next 16.3.0 ships, then this step
-        # picks it up automatically.
+        # Fails on high or critical advisories. `next` is on the stable 16.3.x line
+        # (16.3.0 shipped the fixes the old 16.3.0-canary pin was waiting for).
         run: npm audit --audit-level=high
 
       - name: typecheck
