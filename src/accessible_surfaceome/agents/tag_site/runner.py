@@ -222,6 +222,36 @@ def upgrade_quotes(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSit
     return result
 
 
+def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteResult:
+    """Downgrade ``position_evidence`` to ``inferred`` on any site whose quote
+    does not NAME its position.
+
+    The schema already separates "a tag was published AT this residue" from "the
+    loop has precedent and I chose this residue", but nothing enforced it, and
+    every site produced on the held-out control genes claimed ``validated`` from
+    a quote that named no position at all -- one cited an internalization-rate
+    experiment, another a plasmid-localization sentence. Those positions were
+    derived from topology (they are the canonical cleavage sites) and may well
+    be right; what they are not is validated by the citation attached to them.
+
+    The site is kept either way. A correct site with a weak citation is still
+    worth reporting -- it just must not claim more than its evidence does.
+
+    Both ``n`` and its neighbours count, because a paper may name the residue
+    before or after the junction, and the quote is read with the sequence so a
+    cell line or a stray integer cannot launder a position claim."""
+    if not sequence:
+        return result
+    for s in result.sites:
+        if s.position_evidence != "validated":
+            continue
+        named = residue_mentions(s.supporting_quote, sequence=sequence)
+        n = s.insert_after_residue
+        if not named & {n - 1, n, n + 1}:
+            s.position_evidence = "inferred"
+    return result
+
+
 def verify_entailment(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSiteResult:
     """Entailment backstop: set ``entailment_verified`` on each site True iff its
     supporting_quote is found in the span-verified evidence ledger. The ledger is
@@ -384,6 +414,9 @@ def run_tag_site_agent(
     verify_entailment(result, evidence=evidence)
     result.sites = [s for s in result.sites if s.entailment_verified]
     upgrade_quotes(result, evidence=evidence)
+    #   b2) a site may claim a VALIDATED position only if its quote names it;
+    #       otherwise the position came from topology, not from the citation.
+    enforce_position_claims(result, sequence=sequence)
     if sequence and topology:
         kept, rejected = apply_geometry_pass(
             result.sites,
