@@ -23,7 +23,10 @@ co-tested control (union 11/11 vs web 10/11 vs lit 9/11).
 """
 from __future__ import annotations
 
+import json
+import logging
 import re
+from pathlib import Path
 
 
 from accessible_surfaceome.tools._shared.europepmc import (
@@ -57,6 +60,8 @@ _TAG_METHODS = (
 )
 _MAX_PER_SOURCE = 30
 
+logger = logging.getLogger(__name__)
+
 
 def _alias_or(aliases: list[str]) -> str:
     """OR-join aliases, PHRASE-quoting multi-word ones. Unquoted, ``transferrin
@@ -67,8 +72,60 @@ def _alias_or(aliases: list[str]) -> str:
 
 
 def build_tag_site_query(aliases: list[str]) -> str:
-    """EuropePMC boolean: (gene aliases) AND (tagging-methods vocabulary)."""
+    """EuropePMC boolean: (gene aliases) AND (tagging-methods vocabulary).
+
+    The single broad query. Kept for callers that want one request; prefer
+    :func:`build_tag_site_queries`, which splits the same vocabulary by facet."""
     return f"({_alias_or(aliases)}) AND ({_TAG_METHODS})"
+
+
+# The same vocabulary as ``_TAG_METHODS``, split by MODALITY. One monolithic
+# OR-clause gets a single relevance ranking and a single top-N cut, so a paper
+# matching one narrow facet competes against every other facet's matches. Issued
+# separately, each facet gets its own top-N and the union covers more ground --
+# which matters because tagging papers are found by the modality they used, not
+# by the word "tag".
+_TAG_METHOD_FACETS = {
+    "epitope": (
+        '"epitope tag" OR "HA tag" OR "FLAG tag" OR "Myc tag" OR "V5 tag" OR '
+        'ALFA OR "epitope-tagged" OR "extracellular epitope"'
+    ),
+    "fluorescent": (
+        'pHluorin OR "fluorescent protein" OR GFP OR "GFP fusion" OR mCherry OR '
+        'HaloTag OR "SNAP-tag" OR HiBiT'
+    ),
+    "knock_in": (
+        '"knock-in" OR "knockin" OR "endogenously tagged" OR "endogenous tagging" OR '
+        'CRISPR OR "gene editing"'
+    ),
+    "surface_display": (
+        '"cell surface expression" OR "surface labeling" OR "surface labelling" OR '
+        '"non-permeabilized" OR "ecto-tagged" OR "surface display"'
+    ),
+    "insertion": (
+        '"extracellular loop" OR "domain insertion" OR "insertion screen" OR '
+        'transposon OR bungarotoxin OR SpyTag OR DogTag'
+    ),
+}
+
+
+def build_tag_site_queries(aliases: list[str]) -> list[str]:
+    """One EuropePMC boolean per tagging MODALITY, all scoped to the same gene
+    aliases. Union the results rather than relying on a single ranked cut."""
+    alias_clause = _alias_or(aliases)
+    return [f"({alias_clause}) AND ({facet})" for facet in _TAG_METHOD_FACETS.values()]
+
+
+def merge_discovery_cache(*, cached: dict, fresh: dict) -> dict:
+    """Union of a gene's previously-discovered papers and this run's, keyed by
+    ``paper_source_id``; the fresh record wins on collision.
+
+    Discovery is non-deterministic where it counts -- a preprint whose abstract
+    names none of the genes it tags is reachable only through web search, and so
+    appears on one run and not the next. Accumulating the union means a paper
+    found once is never lost, without biasing the search toward any particular
+    paper: whatever discovery surfaces is simply kept."""
+    return {**cached, **fresh}
 
 
 def discover_tag_site_papers(
@@ -77,6 +134,7 @@ def discover_tag_site_papers(
     gene_symbol: str,
     aliases: list[str],
     retraction_index: RetractionIndex | None = None,
+    cached: dict[str, Paper] | None = None,
 ) -> dict[str, Paper]:
     """Return ``{paper_source_id: Paper}`` for tagging-methods papers on this gene,
     via the repo lit-search: EuropePMC (alias + methods vocabulary) UNION PubTator
@@ -89,14 +147,29 @@ def discover_tag_site_papers(
     should include the protein name(s) — methods papers rarely use the symbol."""
     ri = retraction_index or _empty_retraction_index()
     discovered: dict[str, Paper] = {}
-    query = build_tag_site_query([gene_symbol, *aliases])
+    all_aliases = [gene_symbol, *aliases]
 
-    # Two EuropePMC passes over the same alias+methods query: the default
-    # (relevance/recency) sort PLUS a CITATION-sorted pass that surfaces the
-    # classic, heavily-cited methods papers the default sort buries. Preprints are
-    # kept (DOI-anchored) and retracted papers dropped.
-    for sort in (None, "CITED desc"):
-        payload = europepmc_search(http=http, query=query, page_size=_MAX_PER_SOURCE, sort=sort)
+    # EuropePMC passes, widest first:
+    #   * the broad alias+methods query under the default (relevance/recency)
+    #     sort AND a CITATION-sorted pass, which surfaces the classic
+    #     heavily-cited methods papers the default sort buries;
+    #   * one pass per tagging MODALITY, so a paper matching a single narrow
+    #     facet gets its own top-N instead of competing with every other facet
+    #     inside one ranked cut.
+    # Preprints are kept (DOI-anchored) and retracted papers dropped.
+    passes: list[tuple[str, str | None]] = [
+        (build_tag_site_query(all_aliases), None),
+        (build_tag_site_query(all_aliases), "CITED desc"),
+    ]
+    passes += [(q, None) for q in build_tag_site_queries(all_aliases)]
+
+    for query, sort in passes:
+        try:
+            payload = europepmc_search(
+                http=http, query=query, page_size=_MAX_PER_SOURCE, sort=sort
+            )
+        except Exception:  # noqa: BLE001 - one facet failing must not lose the rest
+            continue
         records = payload.get("resultList", {}).get("result", [])
         for paper in papers_from_europepmc_records(
             records,
@@ -118,7 +191,11 @@ def discover_tag_site_papers(
         if not paper.is_retracted:
             discovered.setdefault(paper_source_id(paper), paper)
 
-    return discovered
+    # Union with anything previous runs found for this gene. Discovery is
+    # non-deterministic where it counts, so a paper reachable only through web
+    # search can vanish between runs; keeping the accumulated set costs one
+    # triage pass and removes that failure mode without steering the search.
+    return merge_discovery_cache(cached=cached or {}, fresh=discovered)
 
 
 # Source-tier vocabulary for a site's cited evidence (the model sets ``source_tier``
@@ -337,3 +414,40 @@ def boost_residue_clips(pool, *, sequence: str, topology: str) -> int:
     for key in hits:
         pool[key].score = (getattr(pool[key], "score", 0.0) or 0.0) + ceiling + 1.0
     return len(hits)
+
+
+# Accumulated per-gene discovery. Derived data, regenerable, and it grows with
+# every run — gitignored alongside the other local caches.
+DISCOVERY_CACHE_DIR = Path(__file__).resolve().parents[3].parent / "data/external/tag_site_discovery"
+
+
+def load_discovery_cache(gene_symbol: str, *, cache_dir: Path | None = None) -> dict[str, Paper]:
+    """Papers previous runs discovered for this gene. Missing or unreadable cache
+    is an empty dict — a stale local file must never take down a run."""
+    path = Path(cache_dir or DISCOVERY_CACHE_DIR) / f"{gene_symbol}.json"
+    try:
+        raw = json.loads(path.read_text())
+    except Exception:  # noqa: BLE001 - absent, corrupt, or unreadable
+        return {}
+    out: dict[str, Paper] = {}
+    for sid, payload in (raw or {}).items():
+        try:
+            out[sid] = Paper.model_validate(payload)
+        except Exception:  # noqa: BLE001 - drop rows an older schema wrote
+            continue
+    return out
+
+
+def save_discovery_cache(
+    gene_symbol: str, papers: dict[str, Paper], *, cache_dir: Path | None = None
+) -> None:
+    """Persist this gene's accumulated discovery. Best-effort: a cache write
+    failing is not a reason to lose a completed run."""
+    path = Path(cache_dir or DISCOVERY_CACHE_DIR) / f"{gene_symbol}.json"
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({sid: p.model_dump(mode="json") for sid, p in papers.items()}, indent=1)
+        )
+    except Exception:  # noqa: BLE001
+        logger.warning("could not write discovery cache for %s", gene_symbol)

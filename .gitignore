@@ -190,3 +190,6 @@ data/analysis/deep_dive_binding_sites/therapeutic_aacdb_evidence.tsv
 
 # Curated binder denominator source caches
 /data/external/binder_denominators/
+
+# Accumulated per-gene tag-site discovery (regenerable; grows every run).
+data/external/tag_site_discovery/

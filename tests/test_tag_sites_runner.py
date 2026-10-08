@@ -381,3 +381,34 @@ def test_run_boosts_residue_bearing_clips_before_selection(monkeypatch):
                         lambda c, **k: seen.setdefault("pool", dict(k["pool"])) and None)
     _run()
     assert seen["pool"]["lo"].score > seen["pool"]["hi"].score
+
+
+def test_run_accumulates_discovery_across_runs(tmp_path, monkeypatch):
+    """A paper an earlier run found must still be in the pool when this run's
+    search misses it — the EndoNB failure mode."""
+    from accessible_surfaceome.agents.tag_site import literature_discovery as LD
+    from accessible_surfaceome.tools._shared.models import Paper
+
+    remembered = Paper(pmid=None, doi="10.1101/2025.06.08.658482", pmc_id=None,
+                       title="EndoNB", abstract="", year=2025, is_preprint=True)
+    LD.save_discovery_cache("X", {"DOI:10.1101/2025.06.08.658482": remembered},
+                            cache_dir=tmp_path)
+    monkeypatch.setattr(R, "DISCOVERY_CACHE_DIR", tmp_path)
+
+    seen = {}
+    # This run's own search finds nothing.
+    monkeypatch.setattr(R, "discover_tag_site_papers",
+                        lambda **k: dict(k.get("cached") or {}))
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts",
+                        lambda c, *, papers, gene: seen.setdefault("papers", papers) and [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [])
+    _run()
+
+    assert any(getattr(p, "doi", None) == "10.1101/2025.06.08.658482"
+               for p in seen.get("papers", []))
+    # and the merged set is written back for the next run
+    assert "DOI:10.1101/2025.06.08.658482" in LD.load_discovery_cache("X", cache_dir=tmp_path)

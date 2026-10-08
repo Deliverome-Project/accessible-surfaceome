@@ -52,12 +52,15 @@ from accessible_surfaceome.tools._shared.retraction_watch import from_http as _r
 
 from .geometry import apply_geometry_pass
 from .literature_discovery import (
+    DISCOVERY_CACHE_DIR,
     SOURCE_TIERS,
     best_supporting_quote,
     boost_residue_clips,
     discover_tag_site_papers,
+    load_discovery_cache,
     quote_is_probative,
     quote_supported,
+    save_discovery_cache,
 )
 from .normalize import signal_peptide_end
 from .prompt import SYSTEM_PROMPT, build_user_prompt, keep_validated_sites
@@ -222,8 +225,14 @@ def run_tag_site_agent(
 
     # 1. Discovery: repo lit-search + shared web_search complement, hydrated to real
     # Papers keyed by paper_source_id (deterministic pool wins on collision).
+    # Seed with everything previous runs found for this gene, so a paper that is
+    # only reachable through web search cannot vanish between runs.
     papers = discover_tag_site_papers(
-        http=http, gene_symbol=gene_symbol, aliases=aliases, retraction_index=ri
+        http=http,
+        gene_symbol=gene_symbol,
+        aliases=aliases,
+        retraction_index=ri,
+        cached=load_discovery_cache(gene_symbol, cache_dir=DISCOVERY_CACHE_DIR),
     )
     for wp in web_discover_papers(
         client,
@@ -235,6 +244,7 @@ def run_tag_site_agent(
     ):
         papers.setdefault(paper_source_id(wp), wp)
     papers_by_id: dict[str, Paper] = {paper_source_id(p): p for p in papers.values()}
+    save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
     if not papers_by_id:
         return _empty()
 
