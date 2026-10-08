@@ -419,6 +419,13 @@ def boost_residue_clips(pool, *, sequence: str, topology: str) -> dict[str, set[
     whether that one clip was the relevant one, and the pool is not persisted, so
     the question could not be answered afterwards.
 
+    A clip qualifies only when it BOTH names an extracellular residue AND reads as
+    describing an insertion; see the comment in the loop for why the residue alone
+    lets another protein's phosphosite through. The cost is that a pure
+    primer-table row, which carries a label but no prose, is no longer lifted --
+    acceptable, because such a row is a wall of nucleotides that the model cannot
+    quote a site out of, and it still reaches the pool through draft ranking.
+
     Only extracellular positions count -- a residue in the cytoplasmic tail or a
     TM helix is not a surface tag site. Both ``n`` and ``n - 1`` are tested
     against the topology because papers differ on whether a label names the
@@ -439,6 +446,16 @@ def boost_residue_clips(pool, *, sequence: str, topology: str) -> dict[str, set[
         text = " ".join(
             filter(None, (getattr(clip, "quote", None), getattr(clip, "context_excerpt", None)))
         )
+        # A residue alone is not enough. Sequence confirmation rules out tokens the
+        # protein does not have, but not text that names a residue it DOES have
+        # while talking about something else entirely -- another protein's
+        # phosphosite ("FAK Y397", and "phosphorylation of FAK at tyrosine 397"),
+        # a spectrophotometry reading ("A260/A280 ratio"), a variant in a different
+        # gene. All of those were boosted on one ITGB1 run, where residue 397 is
+        # indeed Y and 280 is indeed A. Requiring the clip to describe an insertion
+        # as well separated them cleanly: 3 of 3 real clips kept, 0 of 6 noise.
+        if not quote_is_probative(text):
+            continue
         named = {n for n in residue_mentions(text, sequence=sequence) if _extracellular(n)}
         if named:
             hits[key] = named
