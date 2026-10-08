@@ -41,14 +41,14 @@ way this schema wants it:
     clip because it looks like raw DNA.
 Treat all of these as statements of position.
 
-BEFORE OR AFTER — resolve it, never assume. Papers differ on whether the residue they name
-sits BEFORE the junction or AFTER it, and a single paper can do both for different genes.
-Use the computed sequence to settle it: if the named letter matches the sequence at position
-n, the paper means residue n; then decide from the surrounding text whether the tag goes
-after n (so insert_after_residue = n) or before it (insert_after_residue = n - 1). When the
-flanking residues are identical both readings match the sequence and it CANNOT be settled
-that way — say so in the rationale and set position_evidence accordingly rather than picking
-silently.
+BEFORE OR AFTER — resolve it and COMMIT. Papers differ on whether the residue they name sits
+BEFORE the junction or AFTER it, and a single paper can do both for different genes. Use the
+computed sequence: if the named letter matches the sequence at position n, the paper means
+residue n; then read the surrounding text for whether the tag goes after n
+(insert_after_residue = n) or before it (insert_after_residue = n - 1). If the flanking
+residues are identical, both readings fit the sequence — pick the one that places the tag in
+the EXTRACELLULAR span, note the one-residue ambiguity in the rationale, and report the site.
+A one-residue uncertainty is NOT a reason to withhold a site; report it and say so.
 
 EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when the LITERATURE shows a
 PUBLISHED example of a tag or other insertion actually TOLERATED there: an epitope-tag
