@@ -48,7 +48,9 @@ repos:
         name: "Block console URLs that embed a workspace / account id (public repo)"
         entry: scripts/precommit/forbid_workspace_urls.py
         language: python
-        exclude: '^(data/|.*/node_modules/|.*\\.(lock|tsbuildinfo|fasta|fa)$)'
+        # tests/test_forbid_workspace_urls.py is the hook's own fixture file: it has
+        # to contain the strings the hook blocks, so scanning it fails every run.
+        exclude: '^(data/|.*/node_modules/|tests/test_forbid_workspace_urls\.py$|.*\.(lock|tsbuildinfo|fasta|fa)$)'
       - id: check-viewer-types-sync
         name: "Enforce TS↔Pydantic schema sync for the viewer"
         # The script walks SurfaceomeRecord's Pydantic tree and verifies
