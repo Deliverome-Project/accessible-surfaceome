@@ -37,20 +37,191 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGDR-terminal-n",
+      "gene_symbol": "PTGDR",
+      "uniprot_acc": "Q13258",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": null,
+      "residue_after": "M",
+      "residue_label": null,
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular N-terminus (topology 'O' at residue 1) \u2014 direct N-terminal tag",
+      "sources": [],
+      "plddt": 45.4,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [
     {
-      "site_id": "PTGDR-nterm-tedman::iso::Q13258-2",
+      "site_id": "PTGDR-disorder-191::iso::Q13258-2",
       "isoform_id": "Q13258-2",
-      "classification": "control",
-      "det_path": null,
-      "site_kind": "terminal_n",
-      "tag_type": "HA",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 191,
+      "canonical_residue": 191,
+      "left_pct": 64.52702702702703
+    },
+    {
+      "site_id": "PTGDR-disorder-1::iso::Q13258-2",
+      "isoform_id": "Q13258-2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
       "isoform_residue": 1,
-      "canonical_residue": null,
-      "left_pct": 0.33783783783783783,
-      "note": "Isoform surface expr 127 (-98% vs canonical)"
+      "canonical_residue": 1,
+      "left_pct": 0.33783783783783783
+    },
+    {
+      "site_id": "PTGDR-disorder-288::iso::Q13258-2",
+      "isoform_id": "Q13258-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 288,
+      "canonical_residue": 315,
+      "left_pct": 97.2972972972973
+    },
+    {
+      "site_id": "PTGDR-disorder-296::iso::Q13258-2",
+      "isoform_id": "Q13258-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 296,
+      "canonical_residue": 359,
+      "left_pct": 100.0
+    },
+    {
+      "site_id": "PTGDR-surface_loop-193::iso::Q13258-2",
+      "isoform_id": "Q13258-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 193,
+      "canonical_residue": 193,
+      "left_pct": 65.2027027027027
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "PTGDR-disorder-192::iso::G7PA94",
+      "isoform_id": "G7PA94",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 192,
+      "canonical_residue": 192,
+      "left_pct": 53.48189415041783
+    },
+    {
+      "site_id": "PTGDR-disorder-1::iso::G7PA94",
+      "isoform_id": "G7PA94",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": 1,
+      "left_pct": 0.2785515320334262
+    },
+    {
+      "site_id": "PTGDR-disorder-291::iso::P70263",
+      "isoform_id": "P70263",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 291,
+      "canonical_residue": 295,
+      "left_pct": 81.5126050420168
+    },
+    {
+      "site_id": "PTGDR-disorder-294::iso::G7PA94",
+      "isoform_id": "G7PA94",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 294,
+      "canonical_residue": 294,
+      "left_pct": 81.89415041782729
+    },
+    {
+      "site_id": "PTGDR-surface_loop-172::iso::P70263",
+      "isoform_id": "P70263",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 172,
+      "canonical_residue": 173,
+      "left_pct": 48.17927170868347
+    },
+    {
+      "site_id": "PTGDR-surface_loop-192::iso::P70263",
+      "isoform_id": "P70263",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 192,
+      "canonical_residue": 193,
+      "left_pct": 53.78151260504202
+    },
+    {
+      "site_id": "PTGDR-surface_loop-193::iso::G7PA94",
+      "isoform_id": "G7PA94",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 193,
+      "canonical_residue": 193,
+      "left_pct": 53.760445682451255
+    },
+    {
+      "site_id": "PTGDR-surface_loop-290::iso::P70263",
+      "isoform_id": "P70263",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 290,
+      "canonical_residue": 294,
+      "left_pct": 81.23249299719888
+    },
+    {
+      "site_id": "PTGDR-surface_loop-6::iso::P70263",
+      "isoform_id": "P70263",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 6,
+      "canonical_residue": 7,
+      "left_pct": 1.680672268907563
     }
   ]
 }
