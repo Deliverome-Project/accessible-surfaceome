@@ -359,3 +359,25 @@ def test_a_probative_citation_outranks_a_bare_one_at_equal_validation():
     b.quote_probative = True
     out = R.rank_sites(_result([a, b]))
     assert [s.insert_after_residue for s in out.sites] == [20, 10]
+
+
+def test_run_boosts_residue_bearing_clips_before_selection(monkeypatch):
+    """A clip naming an extracellular residue must outrank a higher-scoring one
+    BEFORE select_clips truncates the menu, or it is never shown to the model."""
+    import types
+    lo = types.SimpleNamespace(quote="tag inserted at residue 101",
+                               context_excerpt=None, score=0.1)
+    hi = types.SimpleNamespace(quote="general background on the receptor",
+                               context_excerpt=None, score=9.9)
+    pool = {"lo": lo, "hi": hi}
+
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "ALFA inserted after K101."
+    _wire(monkeypatch, _result([s]))
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: (pool, []))
+    seen = {}
+    monkeypatch.setattr(R, "select_clips",
+                        lambda c, **k: seen.setdefault("pool", dict(k["pool"])) and None)
+    _run()
+    assert seen["pool"]["lo"].score > seen["pool"]["hi"].score

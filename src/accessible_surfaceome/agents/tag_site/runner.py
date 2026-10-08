@@ -54,6 +54,7 @@ from .geometry import apply_geometry_pass
 from .literature_discovery import (
     SOURCE_TIERS,
     best_supporting_quote,
+    boost_residue_clips,
     discover_tag_site_papers,
     quote_is_probative,
     quote_supported,
@@ -250,6 +251,16 @@ def run_tag_site_agent(
 
     # 4. Clip select (tag-site prompt) -> 5. span-verified promotion. Keep only
     # clips whose quote has a real char offset into the fetched body.
+    #
+    # First lift clips that NAME an extracellular residue. The selector keeps only
+    # the top clips by score, which on a well-studied gene drops most of the pool
+    # (TFRC: 746 -> 100), so a clip pinning a real insertion can be cut before the
+    # model ever sees it.
+    if sequence and topology:
+        n_boosted = boost_residue_clips(pool, sequence=sequence, topology=topology)
+        if n_boosted:
+            log.info("  %s: boosted %d/%d clips naming an extracellular residue",
+                     gene_symbol, n_boosted, len(pool))
     selection = select_clips(
         client,
         pool=pool,

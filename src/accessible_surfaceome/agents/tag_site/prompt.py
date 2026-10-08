@@ -31,6 +31,25 @@ between residue N and N+1; report residue_before (= residue N) and residue_after
 When a computed sequence is provided, COPY residue_before/after from it exactly — a mismatch
 invalidates the site.
 
+HOW PAPERS SPELL A POSITION (read all of these). A tagging paper rarely writes the site the
+way this schema wants it:
+  - spelled out in prose — "the tag follows the signal peptide (Alanine 34)", "at the codon
+    for glycine 101";
+  - three-letter or spaced forms — "Thr436", "Ala 102";
+  - a bare code inside a PRIMER / HDR-TEMPLATE table, surrounded by nucleotide sequence. The
+    table is often the AUTHORITATIVE label even when the prose is vaguer, so do not dismiss a
+    clip because it looks like raw DNA.
+Treat all of these as statements of position.
+
+BEFORE OR AFTER — resolve it, never assume. Papers differ on whether the residue they name
+sits BEFORE the junction or AFTER it, and a single paper can do both for different genes.
+Use the computed sequence to settle it: if the named letter matches the sequence at position
+n, the paper means residue n; then decide from the surrounding text whether the tag goes
+after n (so insert_after_residue = n) or before it (insert_after_residue = n - 1). When the
+flanking residues are identical both readings match the sequence and it CANNOT be settled
+that way — say so in the rationale and set position_evidence accordingly rather than picking
+silently.
+
 EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when the LITERATURE shows a
 PUBLISHED example of a tag or other insertion actually TOLERATED there: an epitope-tag
 knock-in, a fluorescent-protein fusion, a transposon/domain insertion screen, or an

@@ -72,3 +72,13 @@ def test_landmarks_clip_a_predicted_sp_run_to_the_authoritative_end():
     out = format_topology_landmarks("S" * 24 + "O" * 16, sp_end=21)
     assert "SIGNAL PEPTIDE: 1-21" in out
     assert "EXTRACELLULAR: 22-40" in out
+
+
+def test_prompt_explains_how_papers_spell_residue_positions():
+    """A paper may write the position as a word, a three-letter code, or a bare
+    code buried in a primer table — and may name the residue before OR after the
+    junction, inconsistently within one paper. The model has to be told."""
+    from accessible_surfaceome.agents.tag_site.prompt import SYSTEM_PROMPT
+    low = SYSTEM_PROMPT.lower()
+    for cue in ("spelled", "three-letter", "primer", "before or after"):
+        assert cue in low, cue
