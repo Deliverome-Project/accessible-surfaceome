@@ -63,15 +63,15 @@ def _proposal(**kw) -> TagSiteProposal:
     ).model_copy(update=kw)
 
 
-def test_repair_snaps_a_terminal_n_to_the_signal_peptide_cleavage_site():
-    """The real TMEM123 Q18 defect: the model miscounted the signal-peptide run,
-    so its 'mature N-terminus' landed inside the peptide that gets cleaved."""
+def test_a_terminal_n_inside_the_signal_peptide_is_NOT_relocated():
+    """Snapping a terminal_n to the cleavage site manufactures a position with no
+    publication behind it. The real TMEM123 site (A33, EndoNB) is seven residues
+    PAST cleavage, and 'TMEM123 after residue 26' — exactly what a snap produces —
+    was removed from the controls twice as topology-derived. Reject, don't move."""
     s = _proposal(site_type="terminal_n", insert_after_residue=8,
                   residue_before="L", residue_after="L")
-    assert repair_proposal(s, sequence=SEQ, sp_end=11) == "snap_signal_peptide"
-    assert s.insert_after_residue == 11
-    assert s.residue_before == "A" and s.residue_after == "H"
-    assert s.residue_label == "A11"
+    assert repair_proposal(s, sequence=SEQ, sp_end=11) is None
+    assert s.insert_after_residue == 8  # untouched
 
 
 def test_repair_repins_a_mismatched_site_from_its_prose_window():
@@ -133,12 +133,11 @@ def test_geometry_pass_rejects_a_site_the_topology_gate_fails():
     assert "intracellular" in rejected[0][1]
 
 
-def test_geometry_pass_repairs_then_regates():
-    """A repair must not smuggle a site past the topology gate: snap the
-    terminal_n to the cleavage site, THEN check the mature terminus."""
-    cyto_nterm = "I" * 11 + TOPO[11:]
+def test_geometry_pass_rejects_a_terminal_n_inside_the_signal_peptide():
+    """Residues are correct, but the tag would be cleaved off with the peptide."""
     kept, rejected = apply_geometry_pass(
         [_proposal(site_type="terminal_n", insert_after_residue=8,
                    residue_before="L", residue_after="L")],
-        sequence=SEQ, topology=cyto_nterm, sp_end=0)
+        sequence=SEQ, topology=TOPO, sp_end=11)
     assert not kept and len(rejected) == 1
+    assert "signal peptide" in rejected[0][1]

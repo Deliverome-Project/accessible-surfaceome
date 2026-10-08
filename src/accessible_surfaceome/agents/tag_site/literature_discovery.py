@@ -252,28 +252,40 @@ _RE_POSITIONAL = re.compile(r"\b(?:residue|position|codon)\s+(?:no\.?\s*)?(\d{1,
 _RE_DNA_RUN = re.compile(r"[ACGT]{12,}")
 
 
-def residue_mentions(text: str | None) -> set[int]:
+def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[int]:
     """Every residue POSITION ``text`` names, in any spelling a paper might use:
     ``A33``, ``Ala33``, ``Thr 436``, ``alanine 34``, ``residue 64``.
 
-    Stretches of raw DNA are skipped — the only literal ``A33`` in the EndoNB
-    preprint is inside a primer block, and reading it as a residue would pin the
-    site on sequence formatting."""
+    ``sequence`` unlocks the HDR / primer tables. A code sitting in a block of
+    raw nucleotides is normally sequence formatting rather than a residue label,
+    so it is ignored — but those tables are also where a tagging paper records
+    its authoritative insertion labels, and dropping them loses real sites. When
+    the canonical sequence is supplied, a DNA-adjacent code is trusted exactly
+    when it MATCHES the sequence at that position, which formatting will not.
+
+    Positions are returned as the text names them. Papers differ on whether the
+    label is the residue before or after the junction — EndoNB names the one
+    before for four of its genes and the one after for TFRC — so a caller
+    converting to a junction must consider both ``n`` and ``n - 1``."""
     if not text:
         return set()
     runs = _RE_DNA_RUN.findall(text)
     clean = _RE_DNA_RUN.sub(" ", text)
-    # A snippet that is mostly nucleotide runs is a primer / HDR table. Short
-    # tokens there ("A33") are sequence formatting, so the CODE form is dropped —
-    # but a spelled-out residue never occurs in such a table, so those still count.
     dna_heavy = sum(len(r) for r in runs) > 0.3 * len(text)
-    patterns = (_RE_FULL, _RE_THREE, _RE_POSITIONAL)
-    if not dna_heavy:
-        patterns = (*patterns, _RE_CODE)
+
     out: set[int] = set()
-    for rx in patterns:
+    for rx in (_RE_FULL, _RE_THREE, _RE_POSITIONAL):
         for m in rx.finditer(clean):
             n = int(m.groups()[-1])
             if 0 < n <= _MAX_RESIDUE:
                 out.add(n)
+
+    for m in _RE_CODE.finditer(clean):
+        letter, n = m.group(1).upper(), int(m.group(2))
+        if not 0 < n <= _MAX_RESIDUE:
+            continue
+        if not dna_heavy:
+            out.add(n)
+        elif sequence and n <= len(sequence) and sequence[n - 1].upper() == letter:
+            out.add(n)  # a table label the sequence confirms
     return out

@@ -71,28 +71,26 @@ def _set_junction(site, residue: int, sequence: str) -> None:
     site.residue_after = sequence[residue] if residue < len(sequence) else ""
 
 
-def repair_proposal(site, *, sequence: str, sp_end: int) -> str | None:
+def repair_proposal(site, *, sequence: str, sp_end: int = 0) -> str | None:  # noqa: ARG001
     """Repair ``site``'s junction in place; return the repair kind, or None when
     nothing was changed (either it already verifies, or it is unrecoverable).
 
-    Two repairs, both deterministic:
+    One repair, deterministic:
 
-    * ``snap_signal_peptide`` — a ``terminal_n`` on a signal-peptide-bearing
-      protein belongs at the cleavage site by definition, whatever integer the
-      model derived. This is the TMEM123 Q18 class.
     * ``prose_window`` — the model spelled the right sequence window into its
       rationale but wrote the wrong integer; the window re-pins it uniquely.
       This is the TMEM123 K155 class.
 
     A mismatched site with no recoverable window is left ALONE for the caller to
-    reject — relocating it by guesswork would launder a fabricated position."""
-    if not sequence:
-        return None
+    reject — relocating it by guesswork would launder a fabricated position.
 
-    if site.site_type == "terminal_n" and sp_end > 0:
-        if site.insert_after_residue != sp_end:
-            _set_junction(site, sp_end, sequence)
-            return "snap_signal_peptide"
+    There is deliberately NO signal-peptide snap. Moving a ``terminal_n`` to the
+    cleavage site looks principled but invents a position: for TMEM123 it yields
+    A26, which the curated controls removed twice as topology-derived with no
+    publication behind it, while the real validated site is A33 (EndoNB) — seven
+    residues further in, in the unstructured region. A tag inside the peptide is
+    rejected by the topology gate instead, which is the honest outcome."""
+    if not sequence:
         return None
 
     if check_residues(

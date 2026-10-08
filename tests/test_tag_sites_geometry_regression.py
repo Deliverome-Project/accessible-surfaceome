@@ -50,15 +50,16 @@ def test_fixture_matches_the_published_record():
     assert SEQ[154:166] == "HSEAKKGSKFDT"
 
 
-def test_q18_is_repaired_to_the_real_cleavage_site():
-    """Published as Q18 — eight residues inside the signal peptide."""
+def test_q18_is_rejected_not_moved_to_the_cleavage_site():
+    """Published as Q18, eight residues inside the signal peptide. Snapping it to
+    A26 would invent a site the curators deleted twice as topology-derived — and
+    the real validated site is A33 (EndoNB), seven residues past cleavage."""
     s = _shipped(site_type="terminal_n", insert_after_residue=18,
                  residue_before="Q", residue_after="V")
     kept, rejected = _pass([s])
-    assert not rejected
-    assert kept[0].insert_after_residue == 26
-    assert kept[0].residue_label == "A26"     # matches the deterministic path
-    assert kept[0].position_repaired is True
+    assert not kept
+    assert "signal peptide" in rejected[0][1]
+    assert s.insert_after_residue == 18  # not relocated
 
 
 def test_k155_is_repaired_to_the_junction_its_own_prose_pins():
