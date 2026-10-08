@@ -135,6 +135,7 @@ def discover_tag_site_papers(
     aliases: list[str],
     retraction_index: RetractionIndex | None = None,
     cached: dict[str, Paper] | None = None,
+    faceted: bool = False,
 ) -> dict[str, Paper]:
     """Return ``{paper_source_id: Paper}`` for tagging-methods papers on this gene,
     via the repo lit-search: EuropePMC (alias + methods vocabulary) UNION PubTator
@@ -153,15 +154,25 @@ def discover_tag_site_papers(
     #   * the broad alias+methods query under the default (relevance/recency)
     #     sort AND a CITATION-sorted pass, which surfaces the classic
     #     heavily-cited methods papers the default sort buries;
-    #   * one pass per tagging MODALITY, so a paper matching a single narrow
-    #     facet gets its own top-N instead of competing with every other facet
-    #     inside one ranked cut.
+    #   * with ``faceted``, one pass per tagging MODALITY, so a paper matching a
+    #     single narrow facet gets its own top-N instead of competing with every
+    #     other facet inside one ranked cut.
+    #
+    # Faceting is OFF by default. Measured on the six control genes: 1 site with
+    # it on against 4 with it off. It triples the clip pool (one gene 441 ->
+    # 1193) against a selector that still keeps only the top 100, so the extra
+    # recall arrives as a smaller SHARE of evidence reaching the model. And it
+    # cannot help the case it was built for: the preprint that motivated it has
+    # no EuropePMC full text and names none of its genes in the abstract, so
+    # only the web-search leg reaches it and more EuropePMC passes do nothing.
+    # Revisit together with the menu cap, not before.
     # Preprints are kept (DOI-anchored) and retracted papers dropped.
     passes: list[tuple[str, str | None]] = [
         (build_tag_site_query(all_aliases), None),
         (build_tag_site_query(all_aliases), "CITED desc"),
     ]
-    passes += [(q, None) for q in build_tag_site_queries(all_aliases)]
+    if faceted:
+        passes += [(q, None) for q in build_tag_site_queries(all_aliases)]
 
     for query, sort in passes:
         try:

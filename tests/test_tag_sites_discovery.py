@@ -63,7 +63,32 @@ def test_merging_an_empty_cache_is_just_the_fresh_set():
 
 # --- wiring: several queries per gene, and the cache is unioned ---------------
 
-def test_discovery_issues_one_query_per_facet_plus_the_broad_pass(monkeypatch):
+def test_discovery_is_broad_only_by_default(monkeypatch):
+    """Faceting is OFF by default. Measured: with it on, the six control genes
+    returned 1 site against 4 with it off, while tripling the clip pool against
+    a fixed 100-clip selector cap. It also cannot help the case it was built for
+    -- the paper that motivated it is reachable only through web search, which
+    faceting does not touch."""
+    from accessible_surfaceome.agents.tag_site import literature_discovery as LD
+    seen = []
+
+    def fake_search(*, http, query, page_size, sort=None):
+        seen.append((query, sort))
+        return {"resultList": {"result": []}}
+
+    monkeypatch.setattr(LD, "europepmc_search", fake_search)
+    monkeypatch.setattr(LD, "papers_from_europepmc_records", lambda *a, **k: [])
+    monkeypatch.setattr(LD, "pubtator_search", lambda **k: type("R", (), {"hits": []})())
+    monkeypatch.setattr(LD, "europepmc_bulk_by_pmid", lambda **k: [])
+
+    LD.discover_tag_site_papers(http=cast(CachedHTTP, object()),
+                                gene_symbol="TFRC", aliases=["TfR1"])
+    assert len(seen) == 2, seen                       # broad query, two sorts
+    assert len({q for q, _ in seen}) == 1
+    assert any(s == "CITED desc" for _, s in seen)
+
+
+def test_discovery_issues_one_query_per_facet_when_asked(monkeypatch):
     from accessible_surfaceome.agents.tag_site import literature_discovery as LD
     seen = []
 
@@ -78,7 +103,7 @@ def test_discovery_issues_one_query_per_facet_plus_the_broad_pass(monkeypatch):
     monkeypatch.setattr(LD, "europepmc_bulk_by_pmid", lambda **k: [])
 
     LD.discover_tag_site_papers(http=cast(CachedHTTP, object()),
-                                gene_symbol="TFRC", aliases=["TfR1"])
+                                gene_symbol="TFRC", aliases=["TfR1"], faceted=True)
 
     assert len(seen) >= 6, seen                       # broad x2 sorts + per-facet
     assert any(s == "CITED desc" for _, s in seen)    # the citation pass survives
