@@ -94,3 +94,52 @@ def test_without_a_sequence_the_conservative_behaviour_is_kept():
 def test_a_sequence_does_not_resurrect_junk_out_of_range():
     assert residue_mentions("GGGACCTACTCTGGCTCCAGG A9999 CTGGCCACGGCTGCTCCAGGCAGC",
                             sequence=TMEM123_SEQ) == set()
+
+
+# --- a residue code must match the sequence, in prose as well as in tables -----
+#
+# Verbatim from an ERBB2 run: every clip the boost lifted was a false positive.
+# "A549" is a cell line, "H3K79" is a histone mark, and a reagent table's
+# catalogue number read as a residue too. Code forms were verified only inside
+# nucleotide blocks; in prose they were taken on faith, even though the sequence
+# was right there. Checking them against it rejects five of those six.
+
+ERBB2_FALSE_POSITIVES = (
+    "Using HUVEC, A549, MCF-7, and SK-BR-3 cell lines to model HER2 heterogeneity",
+    "DOT1L, a histone H3 lysine 79 (H3K79) methyltransferase, is a therapeutic target",
+    "Reagents and tools table Reagent/resource Reference or source Identifier A418",
+)
+
+
+def _erbb2_seq():
+    # G549, E79, S418 — none match the letters those tokens claim.
+    seq = ["A"] * 1255
+    seq[548], seq[78], seq[417] = "G", "E", "S"
+    return "".join(seq)
+
+
+def test_a_cell_line_name_is_not_read_as_a_residue():
+    assert 549 not in residue_mentions(ERBB2_FALSE_POSITIVES[0], sequence=_erbb2_seq())
+
+
+def test_a_histone_mark_is_not_read_as_a_residue():
+    assert 79 not in residue_mentions(ERBB2_FALSE_POSITIVES[1], sequence=_erbb2_seq())
+
+
+def test_a_catalogue_number_is_not_read_as_a_residue():
+    assert 418 not in residue_mentions(ERBB2_FALSE_POSITIVES[2], sequence=_erbb2_seq())
+
+
+def test_a_real_prose_code_that_matches_the_sequence_still_reads():
+    seq = "M" + "A" * 288 + "I" + "V" + "A" * 100   # I290
+    assert 290 in residue_mentions("an ALFA tag was inserted after I290", sequence=seq)
+
+
+def test_a_spelled_out_form_still_reads_when_the_sequence_agrees():
+    assert 34 in residue_mentions("the tag follows the signal peptide (Alanine 34)",
+                                  sequence=_erbb2_seq())  # residue 34 is A
+
+
+def test_a_bare_positional_phrase_needs_no_confirmation():
+    """There is no letter to check against."""
+    assert 64 in residue_mentions("placed at residue 64", sequence=_erbb2_seq())

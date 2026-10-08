@@ -344,12 +344,26 @@ def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[in
     """Every residue POSITION ``text`` names, in any spelling a paper might use:
     ``A33``, ``Ala33``, ``Thr 436``, ``alanine 34``, ``residue 64``.
 
-    ``sequence`` unlocks the HDR / primer tables. A code sitting in a block of
-    raw nucleotides is normally sequence formatting rather than a residue label,
-    so it is ignored — but those tables are also where a tagging paper records
-    its authoritative insertion labels, and dropping them loses real sites. When
-    the canonical sequence is supplied, a DNA-adjacent code is trusted exactly
-    when it MATCHES the sequence at that position, which formatting will not.
+    ``sequence`` is what makes the CODE form (``A33``) safe to read at all. A bare
+    letter-number token is extremely common noise: in one run every clip promoted
+    on a code match was a false positive -- ``A549`` is a cell line, ``H3K79`` a
+    histone mark, and a reagent table's catalogue number read as a residue too.
+    When a sequence is supplied, a code is kept only when its letter MATCHES the
+    sequence at that position, which rejected five of those six. This applies in
+    prose and inside nucleotide blocks alike; the blocks additionally matter
+    because a tagging paper's HDR/primer table is often where its authoritative
+    insertion label lives, and dropping them loses real sites.
+
+    The same check applies to spelled-out names, which are not immune: "histone
+    H3 lysine 79" is not a residue of the protein under study. Any form carrying
+    a LETTER is confirmed against the sequence; only bare positional phrases
+    ("residue 64") have nothing to confirm and are taken as-is.
+
+    A paper numbering in a different frame (mature protein, another isoform) will
+    therefore not match and is dropped here. That is the right trade for this
+    function's job -- feeding a position to the topology check -- because an
+    unverifiable position cannot be placed on the extracellular face anyway;
+    recovering such a frame is the synthesis stage's work, with the REPL.
 
     Positions are returned as the text names them. Papers differ on whether the
     label is the residue before or after the junction — EndoNB names the one
@@ -362,20 +376,31 @@ def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[in
     dna_heavy = sum(len(r) for r in runs) > 0.3 * len(text)
 
     out: set[int] = set()
-    for rx in (_RE_FULL, _RE_THREE, _RE_POSITIONAL):
+
+    def _confirmed(letter: str, n: int) -> bool:
+        if not sequence:
+            return True
+        return n <= len(sequence) and sequence[n - 1].upper() == letter.upper()
+
+    for rx, table in ((_RE_FULL, _AA_FULL), (_RE_THREE, _AA_THREE)):
         for m in rx.finditer(clean):
-            n = int(m.groups()[-1])
-            if 0 < n <= _MAX_RESIDUE:
+            n = int(m.group(2))
+            if 0 < n <= _MAX_RESIDUE and _confirmed(table[m.group(1).lower()], n):
                 out.add(n)
+    for m in _RE_POSITIONAL.finditer(clean):  # no letter to confirm
+        n = int(m.group(1))
+        if 0 < n <= _MAX_RESIDUE:
+            out.add(n)
 
     for m in _RE_CODE.finditer(clean):
         letter, n = m.group(1).upper(), int(m.group(2))
         if not 0 < n <= _MAX_RESIDUE:
             continue
-        if not dna_heavy:
-            out.add(n)
-        elif sequence and n <= len(sequence) and sequence[n - 1].upper() == letter:
-            out.add(n)  # a table label the sequence confirms
+        if sequence:
+            if n <= len(sequence) and sequence[n - 1].upper() == letter:
+                out.add(n)  # the sequence confirms this is a residue, not noise
+        elif not dna_heavy:
+            out.add(n)  # nothing to verify against; trust prose, distrust DNA blocks
     return out
 
 
