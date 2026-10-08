@@ -1,10 +1,16 @@
 exclude: ^(data/)
 
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.0
+  # Run the project's own ruff (pinned in uv.lock) so pre-commit and CI can never
+  # disagree. The astral-sh/ruff-pre-commit hook pinned a second, older ruff (v0.13.0)
+  # that nothing kept up to date.
+  - repo: local
     hooks:
       - id: ruff-check
+        name: ruff check (uv)
+        entry: uv run --frozen ruff check --force-exclude
+        language: system
+        types_or: [python, pyi]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
