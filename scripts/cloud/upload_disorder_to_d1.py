@@ -25,7 +25,7 @@ from accessible_surfaceome.env import load_env
 from accessible_surfaceome.sources.disorder import PARSERS
 
 DEFAULT_COHORTS = "human_canonical,human_isoforms"
-BATCH = 50
+BATCH = 200  # raised from 50; one writer, larger batches
 TOOL_VERSIONS = {
     "metapredict": "metapredict-3.0.2",
     "netsurfp-3.0": "netsurfp-3.0-standalone",
@@ -177,7 +177,10 @@ def main() -> None:
             [args.disorder_version, args.predictor],
         )[0]["n"]
         print(f"\nrows before {before:,}  after {after:,}  (+{after - before:,})")
-        if after - before != new or new != len(payload):
+        # Under --resume, `before` already holds rows from the interrupted run, so
+        # growth is less than the version total. What holds either way is that the
+        # version ends up with exactly the rows prepared.
+        if new != len(payload) or (not args.resume and after - before != new):
             sys.exit("ALARM: row accounting does not balance")
         print("done")
 

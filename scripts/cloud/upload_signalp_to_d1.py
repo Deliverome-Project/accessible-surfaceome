@@ -25,7 +25,7 @@ from accessible_surfaceome.sources.signalp6 import parse_run
 
 # Default is the human set; pass --cohorts for the mouse / cyno ortholog runs.
 DEFAULT_COHORTS = "human_canonical,human_isoforms"
-BATCH = 60
+BATCH = 250  # raised from 60; one writer, larger batches
 
 
 def main() -> None:
@@ -155,7 +155,10 @@ def main() -> None:
         )[0]["n"]
         print(f"\nrows before {before:,}  after {after:,}  (+{after - before:,})")
         print(f"rows under {args.signalp_version}: {new:,}")
-        if after - before != new or new != len(payload):
+        # Under --resume, `before` already holds rows from the interrupted run, so
+        # growth is less than the version total. What holds either way is that the
+        # version ends up with exactly the rows prepared.
+        if new != len(payload) or (not args.resume and after - before != new):
             sys.exit("ALARM: row accounting does not balance")
         print("done")
 

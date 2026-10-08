@@ -49,7 +49,7 @@ CARRIED = (
     "sequence",
     "protein_length",
 )
-BATCH = 40
+BATCH = 150  # raised from 40; one writer, larger batches
 
 
 def load_predictions(run_dir: Path) -> dict[str, d2.Prediction]:
@@ -190,7 +190,13 @@ def main() -> None:
         )[0]["n"]
         print(f"\nrows before {before:,}  after {after:,}  (+{after - before:,})")
         print(f"rows under {args.topology_version}: {new:,}")
-        if after - before != new:
+        # Under --resume, `before` already contains rows from the interrupted run, so
+        # growth is less than the version's total. The invariant that holds either way is
+        # that the version ends up with exactly the rows we prepared.
+        if new != len(payload):
+            sys.exit(f"ALARM: {new:,} rows under {args.topology_version} but "
+                     f"{len(payload):,} were prepared")
+        if not args.resume and after - before != new:
             sys.exit("ALARM: total growth does not equal the new version's row count")
         surviving = after - new
         if surviving != before:

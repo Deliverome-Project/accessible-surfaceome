@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import importlib.util
 import json
 import re
@@ -59,6 +60,8 @@ def _upstream_constants():
     for entry in paths:
         if entry.name == "constants.py" and entry.parent.name == "deeptmhmm2_predictor":
             spec = importlib.util.spec_from_file_location("_dtm2_up", entry.locate())
+            if spec is None or spec.loader is None:
+                pytest.skip(f"constants.py found at {entry} but is not importable")
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             return module
@@ -179,7 +182,7 @@ def test_side_characters_from_two_membranes_are_refused():
 
 def test_unknown_character_is_refused_not_guessed():
     pred = d2.parse_record(_record("eeeMMMEEE", "Alpha TM", [PM], {PM: 0.9}))
-    bad = d2.Prediction(**{**pred.__dict__, "topology_string": "eeeMMM???"})
+    bad = dataclasses.replace(pred, topology_string="eeeMMM???")
     with pytest.raises(d2.Deeptmhmm2Error, match="neither a state nor a side"):
         _ = bad.sides
 
