@@ -276,6 +276,14 @@ def main() -> None:
     ap.add_argument("--gene", nargs=2, metavar=("SYMBOL", "ACC"), action="append",
                     help="one gene (repeatable)")
     ap.add_argument("--manifest", help="TSV of symbol<TAB>acc")
+    ap.add_argument(
+        "--extra-3line", action="append", default=[],
+        help="additional predicted_topologies.3line to merge into the canonical set. "
+             "591 s1e3 library members are absent from human_canonical_non_hla (5 are HLA, "
+             "which that export excludes by construction); their same-version v1 rows are "
+             "re-exported from D1 into library_members_from_d1. Later files do not override "
+             "an accession already present.",
+    )
     ap.add_argument("--out-dir", default=str(OUT_DIR))
     ap.add_argument("--limit", type=int, default=0, help="cap number of genes (0 = all)")
     ap.add_argument("--dry-run", action="store_true")
@@ -287,6 +295,9 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     canon = parse_3line(CANON_3LINE)
+    for extra in args.extra_3line:
+        for acc, rec in parse_3line(Path(extra)).items():
+            canon.setdefault(acc, rec)   # first file wins; supplements never override
     iso_map = parse_3line(ISO_3LINE)
     genes = _gene_list(args)
     if args.limit:
