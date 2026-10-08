@@ -1,0 +1,36 @@
+{
+  "has_data": true,
+  "gene_symbol": "SLC47A2",
+  "uniprot_acc": "Q86VL8",
+  "sites": [
+    {
+      "site_id": "SLC47A2-terminal-c",
+      "gene_symbol": "SLC47A2",
+      "uniprot_acc": "Q86VL8",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 602,
+      "residue_before": "H",
+      "residue_after": null,
+      "residue_label": "H602",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular C-terminus (topology 'O' at residue L) \u2014 direct C-terminal tag",
+      "sources": [],
+      "plddt": 51.0,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": []
+}

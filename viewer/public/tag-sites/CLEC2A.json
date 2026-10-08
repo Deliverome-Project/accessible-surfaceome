@@ -1,0 +1,36 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC2A",
+  "uniprot_acc": "Q6UVW9",
+  "sites": [
+    {
+      "site_id": "CLEC2A-terminal-c",
+      "gene_symbol": "CLEC2A",
+      "uniprot_acc": "Q6UVW9",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 174,
+      "residue_before": "L",
+      "residue_after": null,
+      "residue_label": "L174",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular C-terminus (topology 'O' at residue L) \u2014 direct C-terminal tag",
+      "sources": [],
+      "plddt": 51.5,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": []
+}
