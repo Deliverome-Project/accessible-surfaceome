@@ -355,9 +355,30 @@ CREATE TABLE IF NOT EXISTS topology_public (
     per_residue_topology       TEXT NOT NULL,        -- O/M/I/S/B chars; len == protein_length
     predicted_surface_membrane INTEGER NOT NULL,     -- 1 iff label in {TM, SP+TM}
     predicted_secreted         INTEGER NOT NULL,     -- 1 iff label == SP
-    tool_version               TEXT NOT NULL,        -- e.g. 'deeptmhmm-1.0.24'
+    tool_version               TEXT NOT NULL,        -- e.g. 'deeptmhmm-1.0.24', or 'deeptmhmm2_predictor-0.1.0+ckpt.<12 hex>'
     retrieved_at               TEXT NOT NULL,        -- ISO 8601 timestamp
     synced_at                  TEXT NOT NULL DEFAULT (datetime('now')),
+
+    -- DeepTMHMM2 (v2) columns. NULL for every v1 row and populated only under a
+    -- v2 topology_version. Rationale, the v1-alphabet projection rule, and why
+    -- there is no type-code column live in
+    -- cloudflare/migrations/topology_public_dtm2.sql — read that before using
+    -- any of these. Decode dtm2_topology_string through
+    -- accessible_surfaceome.sources.deeptmhmm2, never by hand: its side
+    -- characters mean different things per membrane type.
+    dtm2_structural_type        TEXT,     -- Globular | Globular + SP | Alpha TM | Alpha TM + SP | Beta Barrel | Alpha TM + TP | Globular + TP
+    dtm2_topology_string        TEXT,     -- full v2 alphabet; sides are membrane-specific
+    dtm2_v1_alphabet_lossy      INTEGER,  -- 1 iff the per_residue_topology projection dropped R/F/>
+    dtm2_main_membrane_type     TEXT,     -- highest-probability predicted compartment; NULL for non-TM
+    dtm2_main_membrane_type_idx INTEGER,  -- model index; the key that decodes dtm2_topology_string
+    dtm2_membrane_types         TEXT,     -- JSON array, multi-label, highest probability first
+    dtm2_membrane_type_probs    TEXT,     -- JSON object {type_name: probability} over all 17 supported types
+    dtm2_plasma_membrane        INTEGER,  -- 1 iff 'Eukaryotic plasma membrane' is over threshold
+    dtm2_plasma_membrane_prob   REAL,     -- kept even when the call is 0, so a re-threshold needs no rerun
+    dtm2_reentrant_count        INTEGER,  -- segment counts; the only record of these features
+    dtm2_interfacial_count      INTEGER,
+    dtm2_transit_peptide_length INTEGER,  -- '>' residues; deliberately NOT folded into signal_peptide_length
+
     PRIMARY KEY (topology_version, cohort, uniprot_acc_full)
 );
 
