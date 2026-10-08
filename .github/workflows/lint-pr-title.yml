@@ -36,7 +36,7 @@ jobs:
             docs
             ci
             deps
-            deps-dev   # Dependabot's scope for development dependencies
+            deps-dev
             viewer
             paper
           requireScope: false
