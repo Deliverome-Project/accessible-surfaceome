@@ -1,0 +1,40 @@
+{
+  "has_data": true,
+  "gene_symbol": "ITGB1",
+  "uniprot_acc": "P05556",
+  "sites": [
+    {
+      "site_id": "ITGB1-internal-101-lit",
+      "gene_symbol": "ITGB1",
+      "uniprot_acc": "P05556",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 101,
+      "residue_before": "G",
+      "residue_after": "T",
+      "residue_label": "G101",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "other",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "yes",
+      "confidence": "high",
+      "rationale": "Multiple independent publications (PMC5603536, PMC9999384) validate insertion of large and small tags at exactly this junction in full-length membrane-anchored ITGB1. Surface display was confirmed by live-cell fluorescence imaging and non-permeabilised staining. Trafficking function was assessed via pHluorin pH-sensitivity assays. The hybrid domain loop between G101 and T102 is extracellular, 627 aa from the TM helix, and structurally tolerant of insertions up to full GFP size, making it an ideal site for a short ALFA-tag with flanking GS linkers. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "citation": "preprint",
+          "claim": "Each ecto-tag (GFP, pHluorin, Halo, and SNAP, in blue , N- and C-terminal sequences specified) was inserted into the hybrid domain of human \u03b21 integrin between residues Gly101 and Tyr102 (in green )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": []
+}

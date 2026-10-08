@@ -1,0 +1,40 @@
+{
+  "has_data": true,
+  "gene_symbol": "SELE",
+  "uniprot_acc": "P16581",
+  "sites": [
+    {
+      "site_id": "SELE-terminal_n-21-lit",
+      "gene_symbol": "SELE",
+      "uniprot_acc": "P16581",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "A",
+      "residue_after": "W",
+      "residue_label": "A21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "yes \u2014 ligand-induced surface expression preserved in response to TNF\u03b1 (EC50 = 0.057 \u00b1 0.011 nM), IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine; surface display confirmed by membrane-impermeable LgBiT complementation",
+      "confidence": "high",
+      "rationale": "CRISPR-Cas9 genome editing introduced an 11-aa HiBiT tag plus a GSSG linker into the endogenous SELE locus in HUVECs and TERT2-HUVECs, placing the tag immediately after signal-peptide cleavage (after A21, before W22). Surface display was confirmed with membrane-impermeable exogenous LgBiT (NanoBiT complementation), proving the tag is extracellular. Ligand-induced expression in response to TNF\u03b1 (EC50 = 0.057 \u00b1 0.011 nM), IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine was fully preserved, confirming normal trafficking and inducible expression. No disulfide cysteines, N-glycosylation sequons, or known functional residues are disrupted at this junction. The GSSG linker provides conformational flexibility away from the lectin-domain ligand-binding surface. [validation: surface_and_function; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "citation": "preprint",
+          "claim": "(B) General genome-editing strategy showing the PAM sequence adjacent to the signal sequence of E-selectin and the insertion of HiBiT and a GSSG linker immediately following the signal sequence in the HiBiT-tagged E-selectin sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": []
+}
