@@ -368,17 +368,22 @@ def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[in
     return out
 
 
-def boost_residue_clips(pool, *, sequence: str, topology: str) -> int:
+def boost_residue_clips(pool, *, sequence: str, topology: str) -> dict[str, set[int]]:
     """Raise the score of every clip that names an EXTRACELLULAR residue, so it
-    survives the selector's menu cap. Mutates ``pool`` in place; returns the
-    number boosted.
+    survives the selector's menu cap. Mutates ``pool`` in place and returns
+    ``{clip_key: positions named}`` for the clips it lifted.
 
     ``select_clips`` keeps only the top clips by score, which on a well-studied
-    gene throws away most of the evidence (TFRC: 746 clips -> 100). A clip that
-    pins a real insertion is then never shown to the selector, so reading
+    gene throws away most of the evidence (one run: 1193 clips -> 100). A clip
+    that pins a real insertion is then never shown to the selector, so reading
     residues at all is pointless unless the clip carrying one survives the cut.
 
-    Only extracellular positions count — a residue in the cytoplasmic tail or a
+    The return value is the diagnostic half. A run that logged only "boosted
+    1/123" for a gene whose decisive paper HAD been retrieved left no way to tell
+    whether that one clip was the relevant one, and the pool is not persisted, so
+    the question could not be answered afterwards.
+
+    Only extracellular positions count -- a residue in the cytoplasmic tail or a
     TM helix is not a surface tag site. Both ``n`` and ``n - 1`` are tested
     against the topology because papers differ on whether a label names the
     residue before or after the junction.
@@ -386,34 +391,29 @@ def boost_residue_clips(pool, *, sequence: str, topology: str) -> int:
     This is a tag-site-only pre-pass: the shared selector is untouched, so the
     internalization track keeps its own ranking."""
     if not pool or not sequence or not topology:
-        return 0
+        return {}
 
     def _extracellular(n: int) -> bool:
-        for pos in (n, n - 1):
-            if 1 <= pos <= len(topology) and topology[pos - 1] == "O":
-                return True
-        return False
-
-    hits = [
-        key
-        for key, clip in pool.items()
-        if any(
-            _extracellular(n)
-            for n in residue_mentions(
-                " ".join(filter(None, (getattr(clip, "quote", None),
-                                       getattr(clip, "context_excerpt", None)))),
-                sequence=sequence,
-            )
+        return any(
+            1 <= pos <= len(topology) and topology[pos - 1] == "O" for pos in (n, n - 1)
         )
-    ]
+
+    hits: dict[str, set[int]] = {}
+    for key, clip in pool.items():
+        text = " ".join(
+            filter(None, (getattr(clip, "quote", None), getattr(clip, "context_excerpt", None)))
+        )
+        named = {n for n in residue_mentions(text, sequence=sequence) if _extracellular(n)}
+        if named:
+            hits[key] = named
     if not hits:
-        return 0
+        return {}
     # Lift boosted clips above every unboosted one while keeping their order
     # among themselves, so this re-ranks without discarding the pool's own signal.
     ceiling = max((getattr(c, "score", 0.0) or 0.0) for c in pool.values())
     for key in hits:
         pool[key].score = (getattr(pool[key], "score", 0.0) or 0.0) + ceiling + 1.0
-    return len(hits)
+    return hits
 
 
 # Accumulated per-gene discovery. Derived data, regenerable, and it grows with

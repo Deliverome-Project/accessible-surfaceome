@@ -267,10 +267,17 @@ def run_tag_site_agent(
     # (TFRC: 746 -> 100), so a clip pinning a real insertion can be cut before the
     # model ever sees it.
     if sequence and topology:
-        n_boosted = boost_residue_clips(pool, sequence=sequence, topology=topology)
-        if n_boosted:
+        boosted = boost_residue_clips(pool, sequence=sequence, topology=topology)
+        if boosted:
             log.info("  %s: boosted %d/%d clips naming an extracellular residue",
-                     gene_symbol, n_boosted, len(pool))
+                     gene_symbol, len(boosted), len(pool))
+            # Name them. A bare count cannot answer "was the right clip lifted?"
+            # once the run is over, because the pool is not persisted.
+            for key, positions in list(boosted.items())[:12]:
+                clip = pool[key]
+                log.info("      %s @%s: %s",
+                         getattr(clip, "source_id", key), sorted(positions),
+                         (getattr(clip, "quote", "") or "")[:110])
     selection = select_clips(
         client,
         pool=pool,

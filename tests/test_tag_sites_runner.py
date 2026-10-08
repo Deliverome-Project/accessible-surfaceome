@@ -1,10 +1,22 @@
-from accessible_surfaceome.agents.tag_site import runner as R
 import types
-
-from accessible_surfaceome.agents.tag_site.schema import TagSiteProposal, TagSiteResult
 from typing import cast
+
+import pytest
 from anthropic import Anthropic
+
+from accessible_surfaceome.agents.tag_site import runner as R
+from accessible_surfaceome.agents.tag_site.schema import TagSiteProposal, TagSiteResult
 from accessible_surfaceome.tools._shared.http import CachedHTTP
+
+
+@pytest.fixture(autouse=True)
+def _isolate_discovery_cache(tmp_path, monkeypatch):
+    """Keep every run in this module off the repo's real cache directory.
+
+    ``run_tag_site_agent`` loads and SAVES a per-gene discovery cache, so tests
+    driving it with a stub gene wrote ``data/external/tag_site_discovery/X.json``
+    into the working tree."""
+    monkeypatch.setattr(R, "DISCOVERY_CACHE_DIR", tmp_path / "discovery")
 
 
 def _paper(*, pmid=None, doi=None, pmc_id=None, title="", abstract="", year=None, is_preprint=False):
@@ -451,3 +463,12 @@ def test_distinct_junctions_are_not_merged():
     b = _site(2, res=99)
     b.site_type, b.residue_before = "internal", "A"
     assert len(R.to_viewer_sites(_result([a, b]), uniprot_acc="Q0")) == 2
+
+
+def test_a_run_never_writes_its_discovery_cache_into_the_repo():
+    """Unit tests writing to data/ is how `data/external/tag_site_discovery/X.json`
+    turned up in a working tree. The autouse fixture redirects the cache; this
+    pins that it stays redirected for every test in this module."""
+    from accessible_surfaceome.agents.tag_site import literature_discovery as LD
+    assert R.DISCOVERY_CACHE_DIR != LD.DISCOVERY_CACHE_DIR, (
+        f"runner would write to the repo cache: {R.DISCOVERY_CACHE_DIR}")
