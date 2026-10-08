@@ -4,6 +4,33 @@
   "uniprot_acc": "Q8NH81",
   "sites": [
     {
+      "site_id": "OR10G6-disorder-286",
+      "gene_symbol": "OR10G6",
+      "uniprot_acc": "Q8NH81",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 286,
+      "residue_before": "Q",
+      "residue_after": "E",
+      "residue_label": "Q286",
+      "residue_range": "P283-L289",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 62.1,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    },
+    {
       "site_id": "OR10G6-nterm-tedman",
       "gene_symbol": "OR10G6",
       "uniprot_acc": "Q8NH81",
@@ -37,7 +64,69 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR10G6-terminal-n",
+      "gene_symbol": "OR10G6",
+      "uniprot_acc": "Q8NH81",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "S",
+      "residue_after": "K",
+      "residue_label": "S19",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-19, 'O' at residue 20) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 45.3,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "OR10G6-disorder-265::iso::Q8VEU2",
+      "isoform_id": "Q8VEU2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 265,
+      "canonical_residue": 286,
+      "left_pct": 85.48387096774194
+    },
+    {
+      "site_id": "OR10G6-disorder-2::iso::Q8VEU2",
+      "isoform_id": "Q8VEU2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 2,
+      "canonical_residue": 23,
+      "left_pct": 0.6451612903225806
+    },
+    {
+      "site_id": "OR10G6-surface_loop-8::iso::Q8VEU2",
+      "isoform_id": "Q8VEU2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 8,
+      "canonical_residue": 29,
+      "left_pct": 2.5806451612903225
+    }
+  ]
 }

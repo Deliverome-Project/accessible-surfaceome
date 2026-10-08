@@ -1,0 +1,36 @@
+{
+  "has_data": true,
+  "gene_symbol": "CATSPERH",
+  "uniprot_acc": "E9PQX1",
+  "sites": [
+    {
+      "site_id": "CATSPERH-terminal-n",
+      "gene_symbol": "CATSPERH",
+      "uniprot_acc": "E9PQX1",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A22",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-22, 'O' at residue 23) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 93.8,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": []
+}

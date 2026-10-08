@@ -1,0 +1,48 @@
+{
+  "has_data": true,
+  "gene_symbol": "SHISA4",
+  "uniprot_acc": "Q96DD7",
+  "sites": [
+    {
+      "site_id": "SHISA4-terminal-n",
+      "gene_symbol": "SHISA4",
+      "uniprot_acc": "Q96DD7",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A27",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-27, 'O' at residue 28) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 53.3,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "SHISA4-surface_loop-29::iso::A0A7N9D1D7",
+      "isoform_id": "A0A7N9D1D7",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 29,
+      "canonical_residue": 29,
+      "left_pct": 14.720812182741117
+    }
+  ]
+}

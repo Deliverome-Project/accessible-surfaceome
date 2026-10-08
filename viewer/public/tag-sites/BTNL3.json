@@ -1,0 +1,92 @@
+{
+  "has_data": true,
+  "gene_symbol": "BTNL3",
+  "uniprot_acc": "Q6UXE8",
+  "sites": [
+    {
+      "site_id": "BTNL3-terminal-n",
+      "gene_symbol": "BTNL3",
+      "uniprot_acc": "Q6UXE8",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 16,
+      "residue_before": "S",
+      "residue_after": "G",
+      "residue_label": "S16",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-16, 'O' at residue 17) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 68.4,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "BTNL3-disorder-137::iso::Q6UXE8-2",
+      "isoform_id": "Q6UXE8-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 137,
+      "canonical_residue": 137,
+      "left_pct": 31.712962962962965
+    },
+    {
+      "site_id": "BTNL3-disorder-154::iso::Q6UXE8-2",
+      "isoform_id": "Q6UXE8-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 154,
+      "canonical_residue": 154,
+      "left_pct": 35.648148148148145
+    },
+    {
+      "site_id": "BTNL3-disorder-162::iso::Q6UXE8-2",
+      "isoform_id": "Q6UXE8-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 162,
+      "canonical_residue": 232,
+      "left_pct": 37.5
+    },
+    {
+      "site_id": "BTNL3-surface_loop-50::iso::Q6UXE8-2",
+      "isoform_id": "Q6UXE8-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 50,
+      "canonical_residue": 50,
+      "left_pct": 11.574074074074074
+    },
+    {
+      "site_id": "BTNL3-surface_loop-83::iso::Q6UXE8-2",
+      "isoform_id": "Q6UXE8-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 83,
+      "canonical_residue": 83,
+      "left_pct": 19.212962962962962
+    }
+  ],
+  "ortholog_pins": []
+}

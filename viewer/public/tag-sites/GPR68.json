@@ -37,7 +37,168 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR68-terminal-n",
+      "gene_symbol": "GPR68",
+      "uniprot_acc": "Q15743",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": null,
+      "residue_after": "M",
+      "residue_label": null,
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular N-terminus (topology 'O' at residue 1) \u2014 direct N-terminal tag",
+      "sources": [],
+      "plddt": 43.5,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "GPR68-disorder-10::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 10,
+      "canonical_residue": null,
+      "left_pct": 2.857142857142857
+    },
+    {
+      "site_id": "GPR68-disorder-11::iso::Q8BFQ3",
+      "isoform_id": "Q8BFQ3",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 11,
+      "canonical_residue": 11,
+      "left_pct": 3.0136986301369864
+    },
+    {
+      "site_id": "GPR68-disorder-176::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 176,
+      "canonical_residue": 166,
+      "left_pct": 50.28571428571429
+    },
+    {
+      "site_id": "GPR68-disorder-187::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 187,
+      "canonical_residue": 177,
+      "left_pct": 53.42857142857142
+    },
+    {
+      "site_id": "GPR68-disorder-1::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": null,
+      "left_pct": 0.2857142857142857
+    },
+    {
+      "site_id": "GPR68-disorder-1::iso::Q8BFQ3",
+      "isoform_id": "Q8BFQ3",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": 1,
+      "left_pct": 0.273972602739726
+    },
+    {
+      "site_id": "GPR68-disorder-21::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 21,
+      "canonical_residue": 11,
+      "left_pct": 6.0
+    },
+    {
+      "site_id": "GPR68-disorder-29::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 29,
+      "canonical_residue": 19,
+      "left_pct": 8.285714285714285
+    },
+    {
+      "site_id": "GPR68-surface_loop-14::iso::Q8BFQ3",
+      "isoform_id": "Q8BFQ3",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 14,
+      "canonical_residue": 14,
+      "left_pct": 3.8356164383561646
+    },
+    {
+      "site_id": "GPR68-surface_loop-189::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 189,
+      "canonical_residue": 179,
+      "left_pct": 54.0
+    },
+    {
+      "site_id": "GPR68-surface_loop-84::iso::Q8BFQ3",
+      "isoform_id": "Q8BFQ3",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 84,
+      "canonical_residue": 84,
+      "left_pct": 23.013698630136986
+    },
+    {
+      "site_id": "GPR68-surface_loop-94::iso::G7PBB1",
+      "isoform_id": "G7PBB1",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 94,
+      "canonical_residue": 84,
+      "left_pct": 26.857142857142858
+    }
+  ]
 }

@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .disorder import disorder_candidates
+from .disorder_tracks import consensus as disorder_consensus
 from .emit import emit_tag_sites_json
 from .isoform import classify_isoform_sites
 from .features import ca_coords, feature_distances
@@ -33,11 +34,21 @@ def compute_signals(
     sequence: str,
     ortholog_seqs: list[str],
     hazard_res: set[int],
+    disorder_tracks: dict[str, list[float]] | None = None,
 ) -> dict[str, Any]:
     """Build the full per-residue signal dict the gates consume, all from
     source: structural signals off the AF model, ortholog-MSA conservation, and
-    the UniProt-feature 3D-distance veto."""
+    the UniProt-feature 3D-distance veto.
+
+    ``disorder_tracks`` maps predictor name to a per-residue 0-1 disorder score, from
+    ``disorder_public``. Supplying it replaces the disorder lane's pLDDT proxy with the
+    published predictors, which is worth doing: scored against Tedman's 112 validated
+    junctions the predictors land a median 3 aa away and the pLDDT proxy 40 aa."""
+    extra: dict[str, Any] = {}
+    if disorder_tracks:
+        extra["disorder"] = disorder_consensus(disorder_tracks, len(sequence))
     return merge_signals(
+        extra,
         {
             "plddt": per_residue_plddt(pdb_path),
             "rsa": per_residue_rsa(pdb_path),
@@ -125,9 +136,13 @@ def derive_deterministic_sites(
     surf = surface_loop_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     diso = disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     by_res: dict[int, dict[str, Any]] = {}
-    for s in surf:  # surface_loop first → preferred on collision
-        by_res.setdefault(s["insert_after_residue"], s)
+    # Disorder first, so it wins a residue both lanes name. The ordered-loop lane requires
+    # pLDDT >= 70 for trustworthy RSA/DSSP geometry, but 108 of Tedman's 112 validated
+    # junctions sit below that -- low pLDDT IS the flexibility signal there, not a quality
+    # problem -- so preferring the ordered nomination inverts what the evidence supports.
     for s in diso:
+        by_res.setdefault(s["insert_after_residue"], s)
+    for s in surf:
         by_res.setdefault(s["insert_after_residue"], s)
     internal = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
     return _with_terminals(internal, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
@@ -165,7 +180,7 @@ def select_deterministic_representatives(
         disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     )
     by_res: dict[int, dict[str, Any]] = {}
-    for s in surf + diso:  # surface_loop first -> preferred on residue collision
+    for s in diso + surf:  # disorder first -> preferred on residue collision (see merge note)
         by_res.setdefault(s["insert_after_residue"], s)
     return sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
 
@@ -207,7 +222,7 @@ def run_gene(
         disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     )
     by_res: dict[int, dict[str, Any]] = {}
-    for s in surf + diso:  # surface_loop first → preferred on residue collision
+    for s in diso + surf:  # disorder first -> preferred on residue collision (see merge note)
         by_res.setdefault(s["insert_after_residue"], s)
     internal = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
     sites = _with_terminals(internal, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
