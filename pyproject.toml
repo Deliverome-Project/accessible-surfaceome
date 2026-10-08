@@ -55,6 +55,21 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/accessible_surfaceome"]
 
+[tool.ruff]
+extend-exclude = ["data"]
+
+[tool.ruff.lint]
+# The rule set is explicit on purpose. Without it ruff uses its built-in default, and
+# that default changes between releases: 0.16 grew it from 59 rules to 413, which
+# turned a routine ruff bump into 584 findings. These four families are exactly the
+# 0.15 default, so this changes nothing today; adopt more rules deliberately, in their
+# own PR.
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.format]
+# ruff >=0.16.9 also formats Python code blocks inside Markdown; leave prose as written.
+exclude = ["*.md"]
+
 [tool.uv]
 # Supply-chain quarantine at the resolver: uv never picks a release under 7 days old,
 # direct or transitive, whoever runs `uv lock` (people, Dependabot, CI). Same policy as
@@ -76,7 +91,7 @@ dev = [
     "playwright>=1.60.0",
     "pre-commit>=4.3.0",
     "pytest>=8.4.0",
-    "ruff>=0.13.0",
+    "ruff>=0.16",
     "ty>=0.0.34",
 ]
 
