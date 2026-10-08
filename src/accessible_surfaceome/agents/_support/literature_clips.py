@@ -12,6 +12,8 @@ actual fetched full text (or the abstract when no body was fetched) so
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import hashlib
 import json
 import logging
@@ -67,9 +69,15 @@ def build_pool(
     *,
     http: CachedHTTP,
     retraction_index: Any,
+    relevance: Callable[[str], float] | None = None,
 ) -> tuple[dict[str, EvidenceClaimDraft], list[TriageAction]]:
     """Run body fetch for ``worth_fetching`` outcomes and build the clip pool.
-    Returns ``(pool, actions)``."""
+    Returns ``(pool, actions)``.
+
+    ``relevance`` is forwarded to draft extraction, where it ranks sentences
+    ahead of the per-section cap. Without it the cap keeps each section's
+    opening sentences and discards its findings. Default ``None`` leaves every
+    existing caller unchanged."""
     pool: dict[str, EvidenceClaimDraft] = {}
     by_source: dict[str, list[EvidenceClaimDraft]] = defaultdict(list)
     actions = apply_triage_outcomes(
@@ -80,6 +88,7 @@ def build_pool(
         http=http,
         retraction_index=retraction_index,
         add_to_pool_fn=_add_to_pool,
+        relevance=relevance,
     )
     return pool, actions
 

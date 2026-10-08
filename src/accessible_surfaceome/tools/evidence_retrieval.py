@@ -51,6 +51,7 @@ import logging
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
+from collections.abc import Callable
 from typing import get_args
 
 from ._shared.europepmc import (
@@ -1272,6 +1273,7 @@ def extract_paper_drafts(
     abstract: str | None,
     sections: list[PaperSection],
     max_drafts: int = _MAX_DRAFTS_PER_PAPER,
+    relevance: Callable[[str], float] | None = None,
 ) -> list[EvidenceClaimDraft]:
     """Pre-extract verbatim-anchored EvidenceClaimDraft skeletons from a
     Europe-PMC-style paper's abstract + (optionally) full-text sections.
@@ -1292,6 +1294,20 @@ def extract_paper_drafts(
     ``sections`` is the same ``list[PaperSection]`` carried on ``Paper``;
     we map each section's ``name`` to the ``PaperSection_`` enum used by
     EvidenceClaim via ``_SECTION_TO_CLAIM`` (unknown names → "other").
+
+    ``relevance`` adds a per-sentence term to the score before the per-section
+    cap is applied. Without it the cap keeps the first ``_MAX_DRAFTS_PER_SECTION``
+    sentences in document order — which for a paper of any length hands the agent
+    the section PREAMBLE and discards its findings. Measured on a methods
+    preprint: 30 drafts from 38k chars, every one a section opening, and the
+    sentence stating the tag position absent; the agent then cited the one
+    on-topic line it did receive (a general-method sentence) and invented a
+    residue 64 positions away.
+
+    The default is ``None``, which is byte-identical to the previous behaviour:
+    ``position_score`` decreases strictly with position, so ranking by it and
+    taking the top N selects exactly the same first-N sentences, in the same
+    order. Only a caller that supplies a relevance term sees a different pool.
     """
 
     drafts: list[EvidenceClaimDraft] = []
@@ -1307,16 +1323,16 @@ def extract_paper_drafts(
     for section_enum, text in body_iter:
         if not text or not text.strip():
             continue
-        per_section = 0
         # Score by position: earlier sentences score higher. Uniform
         # base so the agent's tier-ranking logic stays compatible with
         # evidence_retrieval-emitted drafts (which use weight + match
         # count); paper-level drafts sit below the methodology snippets
-        # by design.
-        n_sentences = max(1, len(_split_sentences(text)))
-        for pos, sentence in enumerate(_split_sentences(text)):
-            if len(drafts) >= max_drafts or per_section >= _MAX_DRAFTS_PER_SECTION:
-                break
+        # by design. ``relevance`` adds to that score BEFORE the cap, so an
+        # informative sentence can outrank the section preamble.
+        sentences = _split_sentences(text)
+        n_sentences = max(1, len(sentences))
+        scored: list[tuple[float, int, str]] = []
+        for pos, sentence in enumerate(sentences):
             quote = sentence.strip()
             if len(quote) > _QUOTE_MAX_CHARS:
                 # Sentence is over the cap — center the trim on the
@@ -1328,9 +1344,18 @@ def extract_paper_drafts(
                 quote = _trim_to_quote_cap(quote, m)
             if not quote or quote not in text:
                 continue
-            position_score = 1.0 + (n_sentences - pos) / n_sentences  # 1..2
+            score = 1.0 + (n_sentences - pos) / n_sentences  # 1..2
+            if relevance is not None:
+                score += relevance(quote)
+            scored.append((score, pos, quote))
+
+        # Highest score first, document order breaking ties. With no relevance
+        # term the score decreases strictly with position, so this selects the
+        # same first-N sentences the previous early-break did.
+        scored.sort(key=lambda t: (-t[0], t[1]))
+        room = max(0, max_drafts - len(drafts))
+        for position_score, _pos, quote in scored[: min(_MAX_DRAFTS_PER_SECTION, room)]:
             seq += 1
-            per_section += 1
             drafts.append(
                 EvidenceClaimDraft(
                     suggested_evidence_id=f"draft_{bare}_{section_enum}_{seq:02d}",

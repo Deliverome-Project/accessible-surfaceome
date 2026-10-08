@@ -30,6 +30,7 @@ usage sink the other agents use.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +61,7 @@ from .literature_discovery import (
     load_discovery_cache,
     quote_is_probative,
     quote_supported,
+    residue_mentions,
     save_discovery_cache,
 )
 from .normalize import signal_peptide_end
@@ -106,6 +108,38 @@ CODE_EXECUTION_TOOL: list[dict[str, Any]] = [
 ]
 
 log = logging.getLogger(__name__)
+
+
+def tag_site_relevance(sequence: str) -> Callable[[str], float]:
+    """A per-sentence relevance term for draft extraction, scoring what a
+    tag-site clip has to contain to be worth anything.
+
+    Draft extraction otherwise ranks sentences by POSITION and keeps the first
+    few per section, so for a paper of any length the agent receives the section
+    preamble and none of its findings. On the preprint behind five of the curated
+    controls that cost the one sentence naming the insertion residue; the agent
+    cited the general-method line it did receive and invented a position 64
+    residues away.
+
+    Two signals, deliberately additive rather than either/or:
+
+    * the sentence describes an insertion at all (:func:`quote_is_probative`);
+    * it names a residue the canonical sequence CONFIRMS
+      (:func:`residue_mentions`), which is what separates a real label from a
+      cell line or a histone mark.
+
+    A sentence with both outranks one with either, and both outrank the 1..2
+    band positional scoring occupies — so a finding can displace preamble, which
+    is the whole point."""
+    def score(text: str) -> float:
+        value = 0.0
+        if quote_is_probative(text):
+            value += 3.0
+        if residue_mentions(text, sequence=sequence):
+            value += 3.0
+        return value
+
+    return score
 
 
 def load_tag_select_prompt() -> str:
@@ -267,7 +301,10 @@ def run_tag_site_agent(
 
     # 2. Abstract triage -> 3. body pool + real source store (shared).
     outcomes = triage_abstracts(client, papers=list(papers_by_id.values()), gene=gene_symbol)
-    pool, actions = build_pool(outcomes, papers_by_id, http=http, retraction_index=ri)
+    pool, actions = build_pool(
+        outcomes, papers_by_id, http=http, retraction_index=ri,
+        relevance=tag_site_relevance(sequence) if sequence else None,
+    )
     fetched_by_id = {a.paper_id: bool(getattr(a, "fetched_body", False)) for a in actions}
     papers_by_source_id = {
         pid: (paper, fetched_by_id.get(pid, False)) for pid, paper in papers_by_id.items()
