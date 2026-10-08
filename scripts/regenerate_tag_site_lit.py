@@ -214,6 +214,35 @@ def _print_lit_sites(symbol: str, sites: list[dict[str, Any]]) -> None:
         print(f"        quote: {qshow}")
 
 
+def merge_lit_sites(
+    file_data: dict[str, Any] | None,
+    lit_sites: list[dict[str, Any]],
+    *,
+    symbol: str,
+    uniprot_acc: str,
+) -> dict[str, Any]:
+    """Return the tag-site record with its ``literature_retrieved`` sites replaced
+    by ``lit_sites``, preserving deterministic/screen sites and the isoform /
+    ortholog pins.
+
+    ``file_data=None`` builds a fresh record instead of failing: most of the
+    library has no committed tag-sites JSON, so refusing to create one would
+    confine the literature agent to genes it has already run on."""
+    rec = file_data if file_data is not None else {
+        "has_data": False,
+        "gene_symbol": symbol,
+        "uniprot_acc": uniprot_acc,
+        "sites": [],
+        "isoform_pins": [],
+        "ortholog_pins": [],
+    }
+    kept = [s for s in rec.get("sites", []) if s.get("provenance") != "literature_retrieved"]
+    merged = sorted(kept + lit_sites, key=lambda s: s["site_id"])
+    rec["sites"] = merged
+    rec["has_data"] = len(merged) > 0
+    return rec
+
+
 def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
     """Run the lit agent for one control; merge into (or, dry-run, just report)
     the viewer JSON. Returns a summary dict for the batch report."""
@@ -276,22 +305,18 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
 
     # 4. Merge: keep non-lit (deterministic) sites + pins + gene fields; swap lit.
     if not dry_run:
-        if file_data is None:
-            summary["error"] = "viewer JSON not found; cannot merge"
-            log.error("  %s: %s", symbol, summary["error"])
-            return summary
-        kept = [
-            s for s in file_data.get("sites", [])
-            if s.get("provenance") != "literature_retrieved"
-        ]
-        merged = sorted(kept + lit_sites, key=lambda s: s["site_id"])
-        file_data["sites"] = merged
-        file_data["has_data"] = len(merged) > 0
-        out_path.write_text(json.dumps(file_data, indent=2) + "\n")
+        is_new = file_data is None
+        rec = merge_lit_sites(file_data, lit_sites, symbol=symbol,
+                              uniprot_acc=(file_acc or acc))
+        kept = [s for s in rec["sites"] if s.get("provenance") != "literature_retrieved"]
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(rec, indent=2) + "\n")
         summary["kept_deterministic"] = len(kept)
-        summary["total_sites"] = len(merged)
-        log.info("  %s: wrote %s (det kept=%d, lit=%d, total=%d)",
-                 symbol, out_path.relative_to(ROOT), len(kept), len(lit_sites), len(merged))
+        summary["total_sites"] = len(rec["sites"])
+        summary["created"] = is_new
+        log.info("  %s: %s %s (det kept=%d, lit=%d, total=%d)",
+                 symbol, "created" if is_new else "wrote",
+                 out_path.relative_to(ROOT), len(kept), len(lit_sites), len(rec["sites"]))
 
     summary["ok"] = True
     return summary

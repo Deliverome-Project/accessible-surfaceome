@@ -36,3 +36,52 @@ def test_returns_zero_when_the_entry_annotates_no_signal_peptide():
 def test_returns_zero_on_a_malformed_or_empty_entry():
     assert regen.signal_peptide_end_from_entry({}) == 0
     assert regen.signal_peptide_end_from_entry({"features": [{"type": "Signal"}]}) == 0
+
+
+# --- merging literature sites into a tag-site record ---------------------------
+#
+# 1,805 of the 2,344 FG-library genes have no committed tag-sites JSON, so a
+# driver that can only UPDATE existing files cannot reach most of the library.
+
+def _lit(site_id, res):
+    return {"site_id": site_id, "provenance": "literature_retrieved",
+            "insert_after_residue": res, "gene_symbol": "X"}
+
+
+def _det(site_id):
+    return {"site_id": site_id, "provenance": "deterministic_computed",
+            "gene_symbol": "X"}
+
+
+def test_merge_swaps_literature_sites_and_keeps_everything_else():
+    existing = {
+        "has_data": True, "gene_symbol": "X", "uniprot_acc": "Q0",
+        "sites": [_det("X-det-1"), _lit("X-old-lit", 10)],
+        "isoform_pins": [{"site_id": "p1"}], "ortholog_pins": [{"site_id": "p2"}],
+    }
+    out = regen.merge_lit_sites(existing, [_lit("X-new-lit", 20)],
+                                symbol="X", uniprot_acc="Q0")
+    provs = sorted(s["provenance"] for s in out["sites"])
+    assert provs == ["deterministic_computed", "literature_retrieved"]
+    assert [s["site_id"] for s in out["sites"]] == ["X-det-1", "X-new-lit"]  # sorted
+    assert out["isoform_pins"] == [{"site_id": "p1"}]   # pins untouched
+    assert out["ortholog_pins"] == [{"site_id": "p2"}]
+    assert out["has_data"] is True
+
+
+def test_merge_creates_a_record_for_a_gene_with_no_existing_file():
+    out = regen.merge_lit_sites(None, [_lit("X-lit-1", 20)],
+                                symbol="X", uniprot_acc="Q0")
+    assert out["gene_symbol"] == "X"
+    assert out["uniprot_acc"] == "Q0"
+    assert out["has_data"] is True
+    assert [s["site_id"] for s in out["sites"]] == ["X-lit-1"]
+    assert out["isoform_pins"] == [] and out["ortholog_pins"] == []
+
+
+def test_merge_marks_has_data_false_when_a_new_gene_yields_no_sites():
+    """A gene with no qualifying published insertion is a real, expected answer —
+    it must still produce a valid record, not an error."""
+    out = regen.merge_lit_sites(None, [], symbol="X", uniprot_acc="Q0")
+    assert out["has_data"] is False
+    assert out["sites"] == []

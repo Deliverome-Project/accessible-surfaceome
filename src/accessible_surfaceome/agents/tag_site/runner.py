@@ -51,7 +51,13 @@ from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty
 from accessible_surfaceome.tools._shared.retraction_watch import from_http as _retraction_from_http
 
 from .geometry import apply_geometry_pass
-from .literature_discovery import SOURCE_TIERS, discover_tag_site_papers, quote_supported
+from .literature_discovery import (
+    SOURCE_TIERS,
+    best_supporting_quote,
+    discover_tag_site_papers,
+    quote_is_probative,
+    quote_supported,
+)
 from .normalize import signal_peptide_end
 from .prompt import SYSTEM_PROMPT, build_user_prompt, keep_validated_sites
 from .schema import VALIDATION_LEVELS, VALIDATION_RANK, TagSiteProposal, TagSiteResult
@@ -119,14 +125,16 @@ def format_evidence_ledger(evidence: list[Evidence]) -> str:
     return "\n".join(lines)
 
 
-def _sort_key(s: TagSiteProposal) -> tuple[int, int, int, int]:
+def _sort_key(s: TagSiteProposal) -> tuple[int, int, int, int, int]:
     """Validation strength first (surface+function best), then source tier
     (paper > patent > vendor), then source-verified citations ahead of unverified,
-    then the model's own rank."""
+    then citations that actually describe an insertion ahead of bare ones, then
+    the model's own rank."""
     return (
         VALIDATION_RANK.get(s.validation_level, len(VALIDATION_LEVELS)),
         SOURCE_TIERS.index(s.source_tier) if s.source_tier in SOURCE_TIERS else len(SOURCE_TIERS),
         0 if s.entailment_verified else 1,
+        0 if s.quote_probative else 1,
         s.rank,
     )
 
@@ -137,6 +145,25 @@ def rank_sites(result: TagSiteResult) -> TagSiteResult:
     result.sites.sort(key=_sort_key)
     for i, s in enumerate(result.sites, start=1):
         s.rank = i
+    return result
+
+
+def upgrade_quotes(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSiteResult:
+    """Set ``quote_probative`` on every site, swapping in a better LEDGER quote
+    when the model cited a sentence that describes no insertion.
+
+    The site is never dropped for a weak quote: the observed failure had the
+    right residue and the right paper and only quoted the abstract's opening
+    line. Any replacement comes from the same span-verified ledger, so it is
+    entailed by construction."""
+    for s in result.sites:
+        if quote_is_probative(s.supporting_quote):
+            s.quote_probative = True
+            continue
+        better = best_supporting_quote(residue=s.insert_after_residue, evidence=evidence)
+        if better:
+            s.supporting_quote = better
+            s.quote_probative = True
     return result
 
 
@@ -273,6 +300,7 @@ def run_tag_site_agent(
     #   c) validation + ranking, as before.
     verify_entailment(result, evidence=evidence)
     result.sites = [s for s in result.sites if s.entailment_verified]
+    upgrade_quotes(result, evidence=evidence)
     if sequence and topology:
         kept, rejected = apply_geometry_pass(
             result.sites,
@@ -335,6 +363,7 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
                     # Only stated when true, so an untouched record reads exactly
                     # as it did before this gate existed.
                     + ("; position_repaired: true" if s.position_repaired else "")
+                    + ("" if s.quote_probative else "; quote_describes_no_insertion: true")
                     + "]"
                 ),
                 "sources": sources,

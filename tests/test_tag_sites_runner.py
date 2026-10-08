@@ -313,3 +313,49 @@ def test_viewer_rationale_records_that_a_position_was_repaired():
     s.position_repaired = True
     out = R.to_viewer_sites(_result([s]), uniprot_acc="Q0")[0]
     assert "position_repaired: true" in out["rationale"]
+
+
+# --- citation quality --------------------------------------------------------
+
+def test_run_upgrades_a_non_probative_quote_from_the_ledger(monkeypatch):
+    """The GLUT4 class: right site, right paper, quote that mentions no tag.
+    Swap in a ledger quote that actually describes the insertion."""
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "Glucose transport is the main physiological effect of insulin."
+    _wire(monkeypatch, _result([s]),
+          quote="Glucose transport is the main physiological effect of insulin.")
+    # Ledger carries both the weak sentence and a probative one naming the residue.
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [
+        _evi("Glucose transport is the main physiological effect of insulin.",
+             source_id="PMID:1"),
+        _evi("An HA epitope was inserted after K101 of the transporter.",
+             source_id="PMID:1"),
+    ])
+    out = _run()
+    assert len(out.sites) == 1
+    assert out.sites[0].supporting_quote == (
+        "An HA epitope was inserted after K101 of the transporter.")
+    assert out.sites[0].quote_probative is True
+
+
+def test_run_keeps_a_site_whose_ledger_has_no_probative_quote(monkeypatch):
+    """Do NOT drop it — GLUT4 showed the site itself can be correct. Flag it."""
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    weak = "Glucose transport is the main physiological effect of insulin."
+    s.supporting_quote = weak
+    _wire(monkeypatch, _result([s]), quote=weak)
+    out = _run()
+    assert len(out.sites) == 1
+    assert out.sites[0].supporting_quote == weak
+    assert out.sites[0].quote_probative is False
+
+
+def test_a_probative_citation_outranks_a_bare_one_at_equal_validation():
+    a = _site(1, val="surface_only", res=10)
+    a.quote_probative = False
+    b = _site(2, val="surface_only", res=20)
+    b.quote_probative = True
+    out = R.rank_sites(_result([a, b]))
+    assert [s.insert_after_residue for s in out.sites] == [20, 10]

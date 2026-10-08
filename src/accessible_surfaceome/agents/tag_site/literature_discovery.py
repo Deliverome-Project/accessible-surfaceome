@@ -23,6 +23,8 @@ co-tested control (union 11/11 vs web 10/11 vs lit 9/11).
 """
 from __future__ import annotations
 
+import re
+
 
 from accessible_surfaceome.tools._shared.europepmc import (
     europepmc_bulk_by_pmid,
@@ -172,3 +174,106 @@ def quote_supported(quote: str | None, source_text: str) -> bool:
     if len(nq) < 12:
         return False
     return find_quote_in_normalized(nq, normalize_for_quote_matching(source_text)) is not None
+
+
+# Vocabulary that marks a sentence as actually describing an insertion, rather
+# than being background biology. Deliberately broad across modality, because the
+# tagging literature names the construct a dozen ways and rarely says "tag" —
+# the same reason ``_TAG_METHODS`` above is broad for discovery.
+_PROBATIVE_TERMS = (
+    "tag", "tagged", "epitope", "insert", "inserted", "insertion", "fusion",
+    "fused", "knock-in", "knockin", "knocked in", "appended", "engineered",
+    "ha ", "flag", "myc", "alfa", "v5", "gfp", "yfp", "cfp", "mcherry",
+    "phluorin", "hibit", "halotag", "snap-tag", "clip-tag", "spytag", "dogtag",
+    "bungarotoxin", "avitag", "biotin-acceptor", "tetracysteine", "flash",
+    "transposon", "chimera", "chimeric", "reporter",
+)
+
+
+def quote_is_probative(quote: str | None) -> bool:
+    """True when ``quote`` actually describes an insertion/tag, not background
+    biology.
+
+    ``entailment_verified`` proves a quote came from the cited source; this asks
+    the separate question of whether it SUPPORTS the site. A site can be right
+    and its quote useless — a reader who clicks through to check then sees
+    nothing about a tag."""
+    if not quote:
+        return False
+    q = f" {quote.lower()} "
+    return any(t in q for t in _PROBATIVE_TERMS)
+
+
+def best_supporting_quote(*, residue: int | None, evidence) -> str | None:
+    """The strongest ledger quote for a site at ``residue``: one that is probative
+    AND names the residue number, else any probative one. None when the ledger
+    has nothing better to offer.
+
+    Used to UPGRADE a non-probative citation rather than drop the site — the
+    GLUT4 case proved dropping is wrong, since the site and paper were both
+    correct and only the quoted sentence was weak."""
+    quotes = [sp.quote for e in evidence for sp in (e.spans or []) if sp.quote]
+    probative = [q for q in quotes if quote_is_probative(q)]
+    if not probative:
+        return None
+    if residue is not None:
+        marker = str(residue)
+        for q in probative:
+            if marker in q:
+                return q
+    return probative[0]
+
+
+# Residue spellings a tagging paper actually uses. The code form alone is not
+# enough: EndoNB writes "(Alanine 34)" and "at the codon for glycine 101", and
+# its only machine-readable copies sit inside primer tables full of raw DNA.
+_AA_FULL = {
+    "alanine": "A", "arginine": "R", "asparagine": "N", "aspartate": "D",
+    "aspartic acid": "D", "cysteine": "C", "glutamate": "E", "glutamic acid": "E",
+    "glutamine": "Q", "glycine": "G", "histidine": "H", "isoleucine": "I",
+    "leucine": "L", "lysine": "K", "methionine": "M", "phenylalanine": "F",
+    "proline": "P", "serine": "S", "threonine": "T", "tryptophan": "W",
+    "tyrosine": "Y", "valine": "V",
+}
+_AA_THREE = {
+    "ala": "A", "arg": "R", "asn": "N", "asp": "D", "cys": "C", "glu": "E",
+    "gln": "Q", "gly": "G", "his": "H", "ile": "I", "leu": "L", "lys": "K",
+    "met": "M", "phe": "F", "pro": "P", "ser": "S", "thr": "T", "trp": "W",
+    "tyr": "Y", "val": "V",
+}
+_MAX_RESIDUE = 40_000  # longest human protein (titin) ~34k
+
+_RE_FULL = re.compile(rf"\b({'|'.join(_AA_FULL)})\s*-?\s*(\d{{1,5}})\b", re.I)
+_RE_THREE = re.compile(rf"\b({'|'.join(_AA_THREE)})\s*-?\s*(\d{{1,5}})\b", re.I)
+_RE_CODE = re.compile(r"(?<![A-Za-z0-9])([ACDEFGHIKLMNPQRSTVWY])(\d{1,5})(?![A-Za-z0-9])")
+_RE_POSITIONAL = re.compile(r"\b(?:residue|position|codon)\s+(?:no\.?\s*)?(\d{1,5})\b", re.I)
+# A long uppercase nucleotide run means we are inside a primer / HDR table, where
+# a token like "A33" is sequence formatting rather than a residue label.
+_RE_DNA_RUN = re.compile(r"[ACGT]{12,}")
+
+
+def residue_mentions(text: str | None) -> set[int]:
+    """Every residue POSITION ``text`` names, in any spelling a paper might use:
+    ``A33``, ``Ala33``, ``Thr 436``, ``alanine 34``, ``residue 64``.
+
+    Stretches of raw DNA are skipped — the only literal ``A33`` in the EndoNB
+    preprint is inside a primer block, and reading it as a residue would pin the
+    site on sequence formatting."""
+    if not text:
+        return set()
+    runs = _RE_DNA_RUN.findall(text)
+    clean = _RE_DNA_RUN.sub(" ", text)
+    # A snippet that is mostly nucleotide runs is a primer / HDR table. Short
+    # tokens there ("A33") are sequence formatting, so the CODE form is dropped —
+    # but a spelled-out residue never occurs in such a table, so those still count.
+    dna_heavy = sum(len(r) for r in runs) > 0.3 * len(text)
+    patterns = (_RE_FULL, _RE_THREE, _RE_POSITIONAL)
+    if not dna_heavy:
+        patterns = (*patterns, _RE_CODE)
+    out: set[int] = set()
+    for rx in patterns:
+        for m in rx.finditer(clean):
+            n = int(m.groups()[-1])
+            if 0 < n <= _MAX_RESIDUE:
+                out.add(n)
+    return out

@@ -97,6 +97,15 @@ class TagSiteProposal(BaseModel):
         default=False,
         description="Set by the pipeline (not the model): True iff supporting_quote is found in the cited source text.",
     )
+    quote_probative: bool = Field(
+        default=False,
+        description=(
+            "Set by the pipeline (not the model): True iff supporting_quote actually DESCRIBES "
+            "an insertion/tag rather than background biology. Distinct from entailment_verified, "
+            "which only proves the quote came from the cited source — a site can be correct and "
+            "its quote still say nothing about a tag."
+        ),
+    )
     position_repaired: bool = Field(
         default=False,
         description=(
