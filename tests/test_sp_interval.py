@@ -24,23 +24,39 @@ def test_an_all_disordered_ectodomain_has_no_boundary():
 
 
 def test_interval_runs_from_the_cleavage_site_to_the_fold():
-    iv = S.tag_interval(5, {"a": DIS})
+    iv = S.tag_interval(5, {"a": DIS}, tolerance=0)
     assert (iv.lo, iv.hi) == (5, 10)
     assert iv.positions == [5, 6, 7, 8, 9, 10]
+
+
+def test_tolerance_extends_past_the_predicted_onset():
+    # Six of Tedman's eight out-of-interval junctions overshoot by 1-2 residues and still
+    # express well (VIPR2 +1 at 6,474 MFU), and several of those intervals are a single
+    # residue wide. Two residues of slack takes canonical agreement from 63/67 to 67/67.
+    assert S.tag_interval(5, {"a": DIS}, tolerance=0).hi == 10
+    assert S.tag_interval(5, {"a": DIS}).hi == 12
+    assert S.tag_interval(5, {"a": DIS}, tolerance=2).hi == 12
+
+
+def test_tolerance_rescues_a_degenerate_interval():
+    # fold predicted to start at the cleavage site: strictly there is nowhere to insert
+    tight = [0.1] * 50
+    assert S.tag_interval(5, {"a": tight}, tolerance=0).positions == [5]
+    assert S.tag_interval(5, {"a": tight}).positions == [5, 6, 7]
 
 
 def test_onset_is_the_median_so_one_outlier_cannot_collapse_the_interval():
     tracks = {"early": [0.1] * 50,                       # structured from the cleavage site
               "mid": DIS,                                 # says residue 11
               "late": [0.9] * 20 + [0.1] * 30}            # says residue 21
-    iv = S.tag_interval(5, tracks)
+    iv = S.tag_interval(5, tracks, tolerance=0)
     assert iv.hi == 10  # the median onset (11) - 1, not the earliest (6) or latest (21)
     # the scan starts at the cleavage site, so no onset can precede it
     assert iv.onsets == {"early": 6, "mid": 11, "late": 21}
 
 
 def test_no_predictor_finds_a_boundary_falls_back_to_a_typical_width():
-    iv = S.tag_interval(5, {"a": [0.9] * 50}, fallback_width=7)
+    iv = S.tag_interval(5, {"a": [0.9] * 50}, fallback_width=7, tolerance=0)
     assert iv.width == 7
     assert all(v is None for v in iv.onsets.values())
 

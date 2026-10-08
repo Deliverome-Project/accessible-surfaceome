@@ -21,7 +21,11 @@ import pandas as pd
 
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.paths import REPO_ROOT
-from accessible_surfaceome.tag_sites.tedman import map_junction_to_canonical, parse_ha_position
+from accessible_surfaceome.tag_sites.tedman import (
+    map_junction_to_canonical,
+    parse_ha_position,
+    project_junction,
+)
 from accessible_surfaceome.tools._shared.http import open_default_client
 from accessible_surfaceome.tools.gene_lookup import _uniprot_entry, resolve_by_hgnc_id
 
@@ -32,6 +36,7 @@ COHORT = REPO_ROOT / "data" / "external" / "ncbi_gene_info" / "Homo_sapiens.prot
 COLS = [
     "gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene_id", "ensembl_transcript_id",
     "is_canonical", "gpcr_class", "site_kind", "junction_after_residue", "expected_residue",
+    "construct_junction", "frame_offset", "frame_identity",
     "tag", "tag_length", "surface_expression_pme", "surface_expression_sd",
     "verified", "source_key",
 ]
@@ -63,6 +68,27 @@ def _resolve(symbol: str, ensg: str, http) -> tuple[str, str, str]:
     entry = _uniprot_entry(bundle.uniprot_acc, http=http)
     seq = (entry.get("sequence") or {}).get("value") or ""
     return hgnc_id, bundle.uniprot_acc, seq
+
+
+def _transcript_protein(enst: str, http) -> str:
+    """The protein the construct's own transcript encodes, for frame resolution.
+
+    This is the sequence Tedman actually built from, so it is the authority on what his
+    junction numbers mean. Best-effort: a transcript Ensembl will not serve yields an
+    empty string and the row records no junction rather than one in an unknown frame.
+    """
+    if not enst:
+        return ""
+    try:
+        r = http.get(
+            f"https://rest.ensembl.org/sequence/id/{enst}",
+            params={"type": "protein"},
+            headers={"Accept": "application/json"},
+        )
+        return str(r.json().get("seq", "")).rstrip("*")
+    except Exception as e:  # noqa: BLE001
+        log.warning("transcript protein fetch failed %s: %s", enst, e)
+        return ""
 
 
 def _index_rows(path: Path) -> list[dict]:
@@ -134,7 +160,22 @@ def main() -> int:
                     log.warning("resolve failed %s: %s", sym, e)
                     seq_cache[sym] = ("", "", "")
             hgnc_id, acc, seq = seq_cache[sym]
-            jm = map_junction_to_canonical(parse_ha_position(row["ha"]), seq)
+            construct_j = parse_ha_position(row["ha"])
+            # Project from the CONSTRUCT's own numbering into canonical UniProt numbering
+            # by aligning the transcript's protein, not by assuming they share a frame.
+            # ENST00000579344 encodes CCR7 without its first six residues, so its junction
+            # 23 is canonical residue 29; comparing the raw integers made that look like a
+            # signal-peptide disagreement, which is the failure that silently puts a tag
+            # inside the signal peptide. Transcripts whose protein cannot be fetched, or
+            # whose junction lands where the two sequences differ, keep no junction rather
+            # than a number in the wrong frame.
+            src = _transcript_protein(row["enst"], http)
+            proj = project_junction(src, seq, construct_j) if (src and seq and construct_j > 0) else None
+            if proj is not None and proj.junction is not None:
+                jm = map_junction_to_canonical(proj.junction, seq)
+            else:
+                jm = map_junction_to_canonical(construct_j, seq) if not src else \
+                     map_junction_to_canonical(0, seq)
             pme, sd = stain.get(f"{sym}_{row['enst']}", (None, None))
             w.writerow({
                 "gene_symbol": sym, "hgnc_id": hgnc_id, "uniprot_acc": acc,
@@ -143,6 +184,9 @@ def main() -> int:
                 "gpcr_class": row["gpcr_class"], "site_kind": "terminal_n",
                 "junction_after_residue": "" if jm.insert_after_residue is None else jm.insert_after_residue,
                 "expected_residue": jm.residue_before or (jm.residue_after or ""),
+                "construct_junction": construct_j or "",
+                "frame_offset": "" if proj is None or proj.offset is None else proj.offset,
+                "frame_identity": "" if proj is None else round(proj.identity, 4),
                 "tag": "HA", "tag_length": 9,
                 "surface_expression_pme": "" if pme is None else round(float(pme), 1),
                 "surface_expression_sd": "" if sd is None else round(float(sd), 1),

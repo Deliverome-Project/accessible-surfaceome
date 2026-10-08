@@ -93,3 +93,86 @@ def build_control_sites_for_gene(rows: list[dict], *, sources: list[dict]) -> li
             sources=sources,
         ))
     return out
+
+
+@dataclass(frozen=True)
+class ProjectedJunction:
+    """A junction carried from the construct's own numbering into ours.
+
+    A junction is meaningless without the frame it was measured in. Tedman's positions are
+    in the numbering of the specific transcript each plasmid was built from, and those are
+    not always our proteoform: ENST00000579344 encodes CCR7 minus its first six residues,
+    so his junction 23 is canonical residue 29. Comparing the raw integers made that look
+    like a signal-peptide disagreement, which is the failure mode that silently puts a tag
+    inside the signal peptide -- so the frame is resolved by sequence, not by trusting an
+    isoform identifier to be right.
+    """
+
+    junction: int | None
+    offset: int | None
+    identity: float
+    exact: bool
+    note: str
+
+
+MIN_ANCHOR_BLOCK = 15
+"""Residues of identical sequence a matching block must have to carry a coordinate.
+
+difflib will happily return a two-residue coincidental match, and taking the first block
+containing the junction then produces a confident wrong answer. GABBR1 is the case that
+caught it: its construct transcript is isoform Q9UBS5-2, whose N-terminus differs from the
+canonical, and a short spurious block mapped junction 34 onto canonical residue 156 -- 137
+residues past the canonical cleavage site, inside the folded ectodomain. The junction
+residue itself matched by chance (H to H) while the surrounding sequence did not
+(SHSPHLPRPHS vs TPKPHCQVNRT). A real correspondence is a long run, so require one.
+"""
+
+FLANK_CHECK = 5
+"""Residues either side of the junction that must also be identical.
+
+Block length alone is not enough: the junction can sit at the very edge of a long block,
+where the context on one side belongs to a different region. Checking the immediate flanks
+is what makes "the same position" mean the same local sequence.
+"""
+
+
+def project_junction(
+    source_seq: str, target_seq: str, junction: int
+) -> ProjectedJunction:
+    """Map ``junction`` from ``source_seq``'s numbering into ``target_seq``'s.
+
+    Uses the longest identical blocks between the two sequences rather than an alignment
+    score: isoform and truncation differences are insertions and deletions of otherwise
+    identical runs, so block matching maps a coordinate exactly where the two agree and
+    reports honestly where they do not. A junction inside a block carries across with that
+    block's offset; one landing in a gap has no counterpart and returns ``None`` rather
+    than the nearest guess.
+    """
+    import difflib
+
+    if not source_seq or not target_seq:
+        return ProjectedJunction(None, None, 0.0, False, "missing sequence")
+    sm = difflib.SequenceMatcher(None, source_seq, target_seq, autojunk=False)
+    identity = sm.ratio()
+    for block in sm.get_matching_blocks():
+        if not (block.size and block.a < junction <= block.a + block.size):
+            continue
+        if block.size < MIN_ANCHOR_BLOCK:
+            continue
+        offset = block.b - block.a
+        lo = max(0, junction - FLANK_CHECK)
+        hi = min(len(source_seq), junction + FLANK_CHECK)
+        if source_seq[lo:hi] != target_seq[lo + offset : hi + offset]:
+            continue
+        return ProjectedJunction(
+            junction=junction + offset,
+            offset=offset,
+            identity=identity,
+            exact=offset == 0,
+            note=("same frame" if offset == 0
+                  else f"construct numbering is offset {offset:+d} from ours"),
+        )
+    return ProjectedJunction(
+        None, None, identity, False,
+        "junction falls in a region the two sequences do not share",
+    )

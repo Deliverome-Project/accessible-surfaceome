@@ -34,6 +34,17 @@ boundary. Five is short enough to catch a compact domain and long enough to igno
 confident residue.
 """
 
+ONSET_TOLERANCE = 2
+"""Residues past the predicted onset that remain admissible.
+
+Not taste: of Tedman's eight junctions falling outside the strict interval, six overshoot
+by 1-2 residues, and they express well -- VIPR2 at +1 reads 6,474 MFU and GCGR at +2 reads
+1,467, both far above the 100 MFU bar. Several of those intervals are a single residue
+wide (20..20, 25..25), i.e. the fold is predicted to start at the cleavage site and there
+is nowhere strictly legal to insert. A two-residue tolerance captures 67/67 canonical
+constructs against 63/67 strict, so the boundary is slightly sharper than the biology.
+"""
+
 
 class TagInterval(NamedTuple):
     """Admissible insertion positions, in the "after N" convention.
@@ -93,6 +104,7 @@ def tag_interval(
     threshold: float = STRUCTURE_THRESHOLD,
     run: int = STRUCTURE_RUN,
     fallback_width: int = 7,
+    tolerance: int = ONSET_TOLERANCE,
 ) -> TagInterval:
     """The admissible span between the cleavage site and the start of the fold.
 
@@ -113,7 +125,7 @@ def tag_interval(
         onset = found[len(found) // 2]
     else:
         onset = cleavage_site + fallback_width + 1
-    return TagInterval(lo=cleavage_site, hi=max(cleavage_site, onset - 1),
+    return TagInterval(lo=cleavage_site, hi=max(cleavage_site, onset - 1 + tolerance),
                        onsets=onsets, cleavage_site=cleavage_site)
 
 
