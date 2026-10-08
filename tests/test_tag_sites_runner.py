@@ -412,3 +412,42 @@ def test_run_accumulates_discovery_across_runs(tmp_path, monkeypatch):
                for p in seen.get("papers", []))
     # and the merged set is written back for the next run
     assert "DOI:10.1101/2025.06.08.658482" in LD.load_discovery_cache("X", cache_dir=tmp_path)
+
+
+# --- one site per junction, however many papers support it --------------------
+
+def test_two_proposals_at_one_junction_become_one_site_with_both_sources():
+    """EGFR emitted 'EGFR-terminal_n-24-lit' twice — two papers independently
+    putting a tag at the N-terminus. That is ONE site with two citations, not
+    two sites with a colliding id."""
+    a = _site(1, res=24, val="surface_and_function")
+    a.site_type, a.residue_before = "terminal_n", "A"
+    a.supporting_pmid, a.supporting_quote = 111, "we fused a Flag tag on the N terminus"
+    b = _site(2, res=24, val="surface_only")
+    b.site_type, b.residue_before = "terminal_n", "A"
+    b.supporting_pmid, b.supporting_quote = 222, "FAP was inserted at the amino-terminus"
+
+    out = R.to_viewer_sites(_result([a, b]), uniprot_acc="Q0")
+    assert len(out) == 1, [s["site_id"] for s in out]
+    assert len({s["site_id"] for s in out}) == 1
+    pmids = sorted(src["pmid"] for src in out[0]["sources"])
+    assert pmids == [111, 222]
+
+
+def test_the_better_validated_proposal_supplies_the_merged_fields():
+    """Rank is already sorted best-first, so the first one wins the body."""
+    a = _site(1, res=24, val="surface_and_function")
+    a.site_type, a.residue_before, a.supporting_pmid = "terminal_n", "A", 111
+    b = _site(2, res=24, val="not_measured")
+    b.site_type, b.residue_before, b.supporting_pmid = "terminal_n", "A", 222
+    out = R.to_viewer_sites(R.rank_sites(_result([a, b])), uniprot_acc="Q0")
+    assert len(out) == 1
+    assert "validation: surface_and_function" in out[0]["rationale"]
+
+
+def test_distinct_junctions_are_not_merged():
+    a = _site(1, res=24)
+    a.site_type, a.residue_before = "terminal_n", "A"
+    b = _site(2, res=99)
+    b.site_type, b.residue_before = "internal", "A"
+    assert len(R.to_viewer_sites(_result([a, b]), uniprot_acc="Q0")) == 2

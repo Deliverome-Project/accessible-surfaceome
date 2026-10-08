@@ -339,8 +339,15 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
     """Convert to the viewer's ``literature_retrieved`` TaggedSite shape
     (viewer/lib/tag-sites-types.ts). Agent-only fields (validation_level,
     position_evidence, source_tier, entailment) fold into ``rationale``/``sources``
-    so the viewer contract is unchanged."""
+    so the viewer contract is unchanged.
+
+    Proposals sharing a junction are MERGED into one site carrying every
+    citation. Two papers independently placing a tag at the same residue is
+    corroboration, not two sites — emitting both produced records with a
+    duplicated ``site_id``. ``result.sites`` arrives best-first, so the
+    better-validated proposal supplies the body and the rest contribute sources."""
     out: list[dict[str, Any]] = []
+    by_id: dict[str, dict[str, Any]] = {}
     for s in result.sites:
         sources: list[dict[str, Any]] = []
         if s.supporting_pmid:
@@ -356,41 +363,51 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
         elif s.supporting_quote:
             # Preprint / DOI-only citation with a quote but no PMID.
             sources.append({"citation": "preprint", "claim": s.supporting_quote})
-        out.append(
-            {
-                "site_id": f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit",
-                "gene_symbol": result.gene_symbol,
-                "uniprot_acc": uniprot_acc,
-                "provenance": "literature_retrieved",
-                "det_path": None,
-                "site_kind": s.site_type,
-                "insert_after_residue": s.insert_after_residue,
-                "residue_before": s.residue_before,
-                "residue_after": s.residue_after,
-                "residue_label": s.residue_label,
-                "topology_state": _TOPO_CHAR.get(s.topology_state, "O"),
-                "extracellular": s.topology_state == "extracellular",
-                "compartment": s.topology_state,
-                "tag_type": s.tag_type,
-                "tag_length_aa": None,
-                "linker": None,
-                "evidence_type": s.evidence_type,
-                "functional_impact_measured": s.functional_or_expression_impact_measured,
-                "confidence": s.confidence,
-                "rationale": (
-                    f"{s.rationale} [validation: {s.validation_level}; "
-                    f"position: {s.position_evidence}; source: {s.source_tier}; "
-                    f"entailment_verified: {s.entailment_verified}"
-                    # Only stated when true, so an untouched record reads exactly
-                    # as it did before this gate existed.
-                    + ("; position_repaired: true" if s.position_repaired else "")
-                    + ("" if s.quote_probative else "; quote_describes_no_insertion: true")
-                    + "]"
-                ),
-                "sources": sources,
-                "plddt": None,
-                "conservation_rank": None,
-                "median_conservation": None,
-            }
-        )
+
+        site_id = f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit"
+        if site_id in by_id:
+            kept = by_id[site_id]["sources"]
+            seen = {(src.get("pmid"), src.get("claim")) for src in kept}
+            kept.extend(
+                src for src in sources if (src.get("pmid"), src.get("claim")) not in seen
+            )
+            continue
+
+        record: dict[str, Any] = {
+            "site_id": site_id,
+            "gene_symbol": result.gene_symbol,
+            "uniprot_acc": uniprot_acc,
+            "provenance": "literature_retrieved",
+            "det_path": None,
+            "site_kind": s.site_type,
+            "insert_after_residue": s.insert_after_residue,
+            "residue_before": s.residue_before,
+            "residue_after": s.residue_after,
+            "residue_label": s.residue_label,
+            "topology_state": _TOPO_CHAR.get(s.topology_state, "O"),
+            "extracellular": s.topology_state == "extracellular",
+            "compartment": s.topology_state,
+            "tag_type": s.tag_type,
+            "tag_length_aa": None,
+            "linker": None,
+            "evidence_type": s.evidence_type,
+            "functional_impact_measured": s.functional_or_expression_impact_measured,
+            "confidence": s.confidence,
+            "rationale": (
+                f"{s.rationale} [validation: {s.validation_level}; "
+                f"position: {s.position_evidence}; source: {s.source_tier}; "
+                f"entailment_verified: {s.entailment_verified}"
+                # Only stated when true, so an untouched record reads exactly
+                # as it did before this gate existed.
+                + ("; position_repaired: true" if s.position_repaired else "")
+                + ("" if s.quote_probative else "; quote_describes_no_insertion: true")
+                + "]"
+            ),
+            "sources": sources,
+            "plddt": None,
+            "conservation_rank": None,
+            "median_conservation": None,
+        }
+        by_id[site_id] = record
+        out.append(record)
     return out

@@ -9,6 +9,7 @@ is the instrument.
 from pathlib import Path
 
 from accessible_surfaceome.agents.tag_site.benchmark import (
+    dirty_record_paths,
     load_controls,
     score_predictions,
 )
@@ -60,3 +61,38 @@ def test_recall_counts_each_control_once_even_when_a_gene_repeats():
     assert len(cs) >= 4
     rep = score_predictions({"ITGB1": [101]}, cs, tolerance=0)
     assert rep.n_exact == len(cs)
+
+
+# --- the scorer must not be read off a dirty tree ------------------------------
+#
+# I reported a baseline of "1 exact / 31" that was actually measured while an
+# agent run's output was still uncommitted, then built on that number. The true
+# committed baseline was 2. A benchmark you can read off modified records is not
+# a benchmark.
+
+
+
+def test_a_clean_tree_reports_nothing_dirty():
+    assert dirty_record_paths("") == []
+
+
+def test_modified_records_are_reported():
+    porcelain = (
+        " M viewer/public/tag-sites/TFRC.json\n"
+        " M viewer/public/tag-sites/EGFR.json\n"
+    )
+    assert dirty_record_paths(porcelain) == [
+        "viewer/public/tag-sites/TFRC.json",
+        "viewer/public/tag-sites/EGFR.json",
+    ]
+
+
+def test_untracked_and_staged_records_count_too():
+    porcelain = ("?? viewer/public/tag-sites/NEW.json\n"
+                 "A  viewer/public/tag-sites/STAGED.json\n")
+    assert len(dirty_record_paths(porcelain)) == 2
+
+
+def test_a_renamed_path_is_read_from_its_destination():
+    porcelain = "R  viewer/public/tag-sites/A.json -> viewer/public/tag-sites/B.json\n"
+    assert dirty_record_paths(porcelain) == ["viewer/public/tag-sites/B.json"]

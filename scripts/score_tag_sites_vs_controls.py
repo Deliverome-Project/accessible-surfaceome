@@ -10,9 +10,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
+import sys
 from pathlib import Path
 
-from accessible_surfaceome.agents.tag_site.benchmark import load_controls, score_predictions
+from accessible_surfaceome.agents.tag_site.benchmark import (
+    dirty_record_paths,
+    load_controls,
+    score_predictions,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 TAG_SITES = ROOT / "viewer/public/tag-sites"
@@ -41,7 +47,29 @@ def main() -> None:
                     help="'literature_retrieved' (default), 'deterministic_computed', or 'any'")
     ap.add_argument("--tolerance", type=int, default=3,
                     help="residues within which a prediction counts as 'near' (default 3)")
+    ap.add_argument("--allow-dirty", action="store_true",
+                    help="score anyway when tag-site records have uncommitted changes")
     args = ap.parse_args()
+
+    # Refuse to score modified records: the number would describe whatever the
+    # last run left on disk rather than the committed state.
+    try:
+        porcelain = subprocess.run(
+            ["git", "status", "--porcelain", "--", str(TAG_SITES)],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        ).stdout
+    except Exception:  # noqa: BLE001 - not a git checkout; nothing to guard
+        porcelain = ""
+    dirty = dirty_record_paths(porcelain)
+    if dirty and not args.allow_dirty:
+        print(f"REFUSING: {len(dirty)} tag-site record(s) have uncommitted changes, so a "
+              f"score would not describe the committed state. Commit, revert, or pass "
+              f"--allow-dirty.\n")
+        for d in dirty[:10]:
+            print(f"    {d}")
+        sys.exit(2)
+    if dirty:
+        print(f"WARNING: scoring {len(dirty)} uncommitted record(s) (--allow-dirty)\n")
 
     controls = load_controls(CONTROLS)
     preds = predictions(args.provenance)

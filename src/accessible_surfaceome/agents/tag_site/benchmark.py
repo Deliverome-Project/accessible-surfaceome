@@ -94,3 +94,22 @@ def score_predictions(
         else:
             rep.outcomes[c.id] = "miss"
     return rep
+
+
+def dirty_record_paths(git_porcelain: str) -> list[str]:
+    """Record paths with uncommitted changes, parsed from ``git status
+    --porcelain``.
+
+    A score read off modified records measures whatever the last run happened to
+    leave on disk, not the committed state. That mistake has already been made
+    here: a reported baseline of 1 exact was taken mid-run and the committed
+    value was 2. The scorer refuses rather than letting it recur."""
+    out: list[str] = []
+    for line in (git_porcelain or "").splitlines():
+        path = line[3:].strip() if len(line) > 3 else ""
+        if not path:
+            continue
+        if " -> " in path:  # rename: the destination is what is on disk now
+            path = path.split(" -> ", 1)[1].strip()
+        out.append(path.strip('"'))
+    return out
