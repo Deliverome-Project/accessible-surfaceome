@@ -161,6 +161,7 @@ def _existing_non_deterministic(path: Path) -> list[dict]:
 def regenerate_gene(
     symbol: str, acc: str, *, canon: dict[str, tuple[str, str]],
     iso_map: dict[str, tuple[str, str]], out_dir: Path, dry_run: bool,
+    signals_dir: str | None = None,
 ) -> dict[str, int] | None:
     if acc not in canon:
         log.warning("skip %s (%s): not in canonical 3line topology", symbol, acc)
@@ -174,12 +175,24 @@ def regenerate_gene(
         return None
     hazard = _hazard(acc)
 
+    # Orthologs are fetched BEFORE the canonical gate run, not after: the surface_loop
+    # ranking is (-own RSA, conservation, -gap_freq), and with no ortholog sequences both
+    # conservation and gap_freq are 0.0 at every residue, which silently reduces the rank
+    # to RSA alone. The same sequences are reused for the ortholog pins below.
+    orths = orthologs_for(symbol)
+    if not orths:
+        # Not fatal — conservation is defined as neutral (0.0) with no orthologs — but it
+        # silently drops two of the three surface_loop ranking keys, so say so per gene
+        # rather than letting the run look identical to one that had them.
+        log.warning("  %s: no orthologs available — surface_loop ranks on RSA alone", symbol)
+
     # Canonical deterministic sites (incl. terminals) via run_gene into a temp dir
     # (temp starts empty, so its payload holds ONLY the fresh deterministic set).
     with tempfile.TemporaryDirectory() as tmp:
         payload = run_gene(
-            symbol, acc, sequence=seq, topology=topo, ortholog_seqs=[],
-            pdb_path=pdb, hazard_res=hazard, out_dir=tmp,
+            symbol, acc, sequence=seq, topology=topo,
+            ortholog_seqs=[o_seq for _o_acc, o_seq, _o_topo in orths],
+            pdb_path=pdb, hazard_res=hazard, out_dir=tmp, signals_dir=signals_dir,
         )
     det_sites = payload["sites"]
 
@@ -193,7 +206,6 @@ def regenerate_gene(
     # Per-ortholog pins (gates on each ortholog's OWN AFDB model, classified vs
     # human canonical). Keyed by ortholog acc; rendered on the ortholog's own
     # structure at its own residue axis. Best-effort (orthologs sourced from the API).
-    orths = orthologs_for(symbol)
     opins = run_ortholog_pins(
         symbol, acc, canonical_sequence=seq, canonical_sites=det_sites,
         orthologs=orths, fetch_pdb=af_pdb, hazard_for=None,
@@ -224,7 +236,13 @@ def regenerate_gene(
     else:
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(result, indent=2, default=_json_default) + "\n")
-        log.info("wrote %s -> %s", out_path.relative_to(ROOT), summary)
+        # relative_to() raises for an --out-dir outside the repo, which is a legitimate
+        # place to stage a run; fall back to the absolute path rather than crashing.
+        try:
+            shown = out_path.relative_to(ROOT)
+        except ValueError:
+            shown = out_path
+        log.info("wrote %s -> %s", shown, summary)
     return summary
 
 
@@ -261,6 +279,10 @@ def main() -> None:
     ap.add_argument("--out-dir", default=str(OUT_DIR))
     ap.add_argument("--limit", type=int, default=0, help="cap number of genes (0 = all)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--signals-dir", default=None,
+                    help="also write the per-residue signals the gates consumed, one "
+                         "gzipped record per gene, so cutoffs can be re-applied later "
+                         "without refetching AlphaFold or rerunning DSSP")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -276,7 +298,8 @@ def main() -> None:
     totals = {"genes": 0, "det": 0, "term": 0, "pins": 0, "unique": 0, "opins": 0, "ounique": 0}
     for symbol, acc in genes:
         s = regenerate_gene(symbol, acc, canon=canon, iso_map=iso_map,
-                            out_dir=out_dir, dry_run=args.dry_run)
+                            out_dir=out_dir, dry_run=args.dry_run,
+                            signals_dir=args.signals_dir)
         if s:
             totals["genes"] += 1
             totals["det"] += s["deterministic"]
