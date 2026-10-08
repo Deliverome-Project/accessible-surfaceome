@@ -50,6 +50,20 @@ residues are identical, both readings fit the sequence — pick the one that pla
 the EXTRACELLULAR span, note the one-residue ambiguity in the rationale, and report the site.
 A one-residue uncertainty is NOT a reason to withhold a site; report it and say so.
 
+YOU CAN RUN PYTHON. A code-execution tool is available; use it rather than reasoning over
+the sequence in your head, which is unreliable for anything positional. Paste the sequence in
+as a string literal and compute. Worth using whenever:
+  - a paper's NUMBERING FRAME may differ from the canonical isoform — mature-protein numbering
+    (canonical position = stated position + signal-peptide length), a different isoform, or an
+    ortholog. Search the sequence for the residue or peptide the paper names and recover the
+    offset, instead of assuming the number transfers;
+  - you want to confirm which residue a label means — check whether the named letter matches
+    the sequence at n or at n-1 before deciding the junction;
+  - you want to locate a peptide or window a paper quotes, or count the distance from a site
+    to a TM boundary.
+Report what you computed in the rationale. If the computed answer contradicts the number as
+printed in the paper, say so and give the computed one.
+
 EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when the LITERATURE shows a
 PUBLISHED example of a tag or other insertion actually TOLERATED there: an epitope-tag
 knock-in, a fluorescent-protein fusion, a transposon/domain insertion screen, or an

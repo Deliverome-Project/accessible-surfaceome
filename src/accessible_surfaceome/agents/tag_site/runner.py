@@ -88,6 +88,23 @@ _TAG_SELECT_MENU_INSTRUCTION = (
 )
 _TAG_EVIDENCE_ID_PREFIX = "tag_evi_"
 
+# Server-side Python REPL for the synthesis stage. Declared in ``tools`` and
+# resolved inside the same ``create`` call -- no client-side tool loop -- which is
+# the shape ``call_builder`` already supports for ``web_search``.
+#
+# The model is given the canonical sequence but cannot compute over it reliably:
+# from a bare topology string it read a 26-residue signal-peptide run as 18 and
+# shifted every boundary it derived. Deterministic code now covers the checks we
+# knew to write; the REPL is for the one we cannot pre-write -- a paper stating a
+# position in a DIFFERENT numbering frame (mature protein, an isoform, an
+# ortholog), where recovering the offset is a search over the sequence.
+#
+# ``call_builder`` degrades to a plain call if code execution is not enabled on
+# the account, the same way it does for web_search.
+CODE_EXECUTION_TOOL: list[dict[str, Any]] = [
+    {"type": "code_execution_20260120", "name": "code_execution"}
+]
+
 log = logging.getLogger(__name__)
 
 
@@ -314,6 +331,7 @@ def run_tag_site_agent(
         usage_sink=usage_sink,
         label=f"tag_site:{gene_symbol}",
         max_tokens=32_000,  # 16k default truncated multi-site outputs (e.g. SLC6A4)
+        tools=CODE_EXECUTION_TOOL,
     )
     if result is None:
         return _empty()
