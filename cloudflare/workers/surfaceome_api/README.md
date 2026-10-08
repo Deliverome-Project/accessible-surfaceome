@@ -20,14 +20,20 @@ Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → 
 | Method | Path | Returns |
 |---|---|---|
 | `GET` | `/v1/catalog` | Genome-wide table — candidate-universe rows × DB flags × latest triage × deep-dive flag (drives the viewer's index) |
+| `GET` | `/v1/catalog/:symbol` | One catalog row |
+| `GET` | `/v1/genes/:symbol.md` | The record as Markdown, served from R2 |
+| `GET` | `/v1/meta/sizes` | Payload sizes per endpoint |
 | `GET` | `/v1/triage/:symbol` | Triage agent verdicts across (model × variant × replicate) — no costs |
-| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, 21 cols including DB votes + `uniprot_acc` joined server-side. Default `run_id=mainbench_canonical_v1`; pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene sweep. |
+| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, 21 cols including DB votes + `uniprot_acc` joined server-side. Default `run_id=mainbench_canonical_v2`; pass `run_id=genome_full_sonnet_ncbi_v2` for the full ~19k-gene sweep. |
 
 ### Deep dive (per-gene)
 
 | Method | Path | Returns |
 |---|---|---|
-| `GET` | `/v1/genes/:symbol` | Full `SurfaceomeRecord` JSON (latest schema_version) |
+| `GET` | `/v1/internalization/:symbol` | Saved sequence-prior and literature internalization tracks; `null` when no analysis exists. Catalog rows carry `intern`, `intern_lit`, and `intern_lit_grade`. |
+| `GET` | `/v1/tag-sites/:symbol` | Engineered tag insertion sites from `tag_site_public`. |
+| `GET` | `/v1/genes/:symbol` | `SurfaceomeRecord` JSON (latest schema_version): executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks. The citation ledger is **no longer inlined** here (moved to `/evidence`; record ~45% smaller). |
+| `GET` | `/v1/genes/:symbol/evidence` | The citation ledger for one gene — verbatim quotes + provenance as `{ gene, evidence[], papers{} }`, split out of the core record and served via KV read-through. `papers` is NCBI citation metadata (title, byline, journal, year) joined in from `paper_metadata` and keyed by the same `source_id` the spans carry; the stored records hold only an accession, so this is where a readable reference line comes from. Empty `{}` when the join finds nothing — consumers must treat every field as optional. |
 | `GET` | `/v1/orthologs/:symbol` | Mouse + cyno orthologs for any gene from latest Compara release (broad genome-wide raw Compara — full-length identity; distinct from the deep ECD/topology orthologs inside the per-gene record) |
 | `GET` | `/v1/genes` | List of annotated genes (summary fields) |
 | `GET` | `/v1/health` | `{ ok, n_annotations }` — confirms DB binding |
@@ -44,7 +50,7 @@ Four layers:
 1. **Aggressive edge caching** carries the load (the TTLs above). Don't
    shorten them to chase freshness — see purge below.
 2. **Cache rule** (apply once / after a TTL change with
-   [`scripts/apply_cf_edge_rules.py`](../../../scripts/apply_cf_edge_rules.py)
+   [`scripts/cloud/apply_cf_edge_rules.py`](../../../scripts/cloud/apply_cf_edge_rules.py)
    — dry-run by default, `--execute` to apply) that makes the cache key
    **ignore the query string**, so `?_=<random>` can't bust the cache and
    amplify D1 load. Cache Rules are available on every plan.
@@ -106,12 +112,12 @@ npx wrangler dev
 # → http://localhost:8787/v1/health
 ```
 
-## Sync from the private DB
+## How records reach this Worker
 
-This Worker reads what the **sync script** writes. The Worker doesn't pull from private D1 directly — it only reads `surfaceome_public`. To refresh data:
+This Worker reads what the **sync script** writes. It only ever reads `surfaceome_public`. To refresh data:
 
 ```bash
-uv run python scripts/sync_public_d1.py
+uv run python scripts/cloud/sync_public_d1.py
 ```
 
 That script reads `surfaceome_agents` (private, contains costs/tokens/prompt text) and writes the column-whitelisted subset to `surfaceome_public`.
@@ -174,7 +180,7 @@ Response shape: `{ "gene": "SYMBOL", "notes": [{ id, submitter_name, comment, ap
 
 Required bindings (`wrangler.toml`):
 - `DB` — public D1 (`surfaceome_public`) — already present.
-- `FEEDBACK_DB` — private D1 (`surfaceome_agents`) for submissions + audit.
+- `FEEDBACK_DB` — `surfaceome_agents` for submissions + audit.
 - `FEEDBACK_RATELIMIT` — KV namespace for per-IP rate-limit counters.
 
 Required secrets (`wrangler secret put`):

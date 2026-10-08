@@ -144,8 +144,8 @@ BUCKET.update({r: "contextual" for r in REASONS_ORDERED[5:10]})
 BUCKET.update({r: "no" for r in REASONS_ORDERED[10:]})
 
 LABEL_SHORT = {
-    "classical_surface_receptor":   "classical\nsurf rcptr",
-    "multipass_with_exposed_loops": "multipass\nexp loops",
+    "classical_surface_receptor":   "single-pass",
+    "multipass_with_exposed_loops": "multi-pass",
     "gpi_anchored":                 "GPI\nanchored",
     "extracellular_face_protein":   "ECF\nprotein",
     "stable_complex_partner":       "stable cplx\npartner",

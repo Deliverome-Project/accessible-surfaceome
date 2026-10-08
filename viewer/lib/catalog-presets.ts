@@ -168,9 +168,12 @@ export const LOW_LIT_PAPERS_MAX = 100;
  * (a well-studied gene simply won't carry it). This orthogonality is why it
  * lives outside PRESETS.
  *
- * `dbSurfacePositive` is wired to **UniProt** (`catalogRow.db.uniprot`) —
- * UniProt outperformed the other surface databases on our gold-standard
- * positive controls. Passed as an argument because the DB call is a
+ * `dbSurfacePositive` is wired to UniProt under the **SurfaceBench-optimized
+ * cutoff** (TM>0 OR signal peptide OR strict subcellular term) — the rule
+ * under which UniProt outperformed the other surface databases on our
+ * gold-standard positive controls, and the rule the figures and the paper
+ * score membership on. It previously read the NATIVE flag, which made the
+ * live badge disagree with the published numbers. Passed as an argument because the DB call is a
  * candidate-universe flag in the 5-DB strip, NOT part of the deep-dive
  * `filters`. Missing `n_papers_found` → not flagged. Mirror of
  * catalog_presets.is_low_literature_surface.

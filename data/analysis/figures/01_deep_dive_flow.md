@@ -10,7 +10,7 @@ This figure is an author-drawn SVG mockup — there is no reproduction
 script or data TSV. The gist bundles the SVG alone for direct
 embedding into the manuscript / blog. The pipeline architecture it
 describes lives in the project repo at
-[`scripts/surfaceome_v2_annotate.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/surfaceome_v2_annotate.py)
+[`scripts/annotate_gene.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/annotate_gene.py)
 →
 [`src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py),
 with the architectural narrative in the `## v2 publishes records by

@@ -64,6 +64,8 @@ export function TriageRow({ rec, triageHeadline }: Props) {
       </span>
       {verdict === "conflict" ? (
         <span className={styles.triageConflict}>conflicts with deep dive</span>
+      ) : verdict === "narrowed" ? (
+        <span className={styles.triageNarrowed}>narrowed by deep dive</span>
       ) : verdict === "agree" ? (
         <span className={styles.triageAgree}>agrees with deep dive</span>
       ) : null}

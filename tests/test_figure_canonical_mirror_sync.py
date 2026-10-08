@@ -1,9 +1,9 @@
-"""Drift guard: canonical figure generator (``scripts/<slug>.py``) vs
+"""Drift guard: canonical figure generator (``scripts/figures/<slug>.py``) vs
 gist mirror (``data/analysis/figures/make_<slug>.py``).
 
 Every published figure has two source files by convention:
 
-  • ``scripts/<slug>.py`` — canonical generator, uses the project's
+  • ``scripts/figures/<slug>.py`` — canonical generator, uses the project's
     ``_plotting_config`` import (centralized styling), reads from
     in-repo TSVs / D1.
   • ``data/analysis/figures/make_<slug>.py`` — standalone gist mirror,
@@ -43,13 +43,13 @@ import pytest
 
 from accessible_surfaceome.paths import REPO_ROOT
 
-SCRIPTS_DIR = REPO_ROOT / "scripts"
+SCRIPTS_DIR = REPO_ROOT / "scripts" / "figures"
 MIRROR_DIR = REPO_ROOT / "data/analysis/figures"
 
 # Slug → both files. A "pair" is a slug that has BOTH
-# ``scripts/<slug>.py`` AND ``data/analysis/figures/make_<slug>.py``.
+# ``scripts/figures/<slug>.py`` AND ``data/analysis/figures/make_<slug>.py``.
 # Mirror-only figures (where the canonical generator lives inside a
-# multi-figure script in scripts/, e.g. ``triage_bench_db_barplot.py``)
+# multi-figure script in scripts/figures/, e.g. ``triage_bench_db_barplot.py``)
 # are out of scope for the per-file drift guard — they need a different
 # treatment.
 
@@ -131,7 +131,7 @@ def test_figure_canonical_mirror_layout_in_sync(slug: str) -> None:
     mirror" for the rule. Per-slug intentional divergences are
     allowlisted above."""
     if slug == "<no-pairs>":
-        pytest.skip("no scripts/<slug>.py ↔ data/analysis/figures/make_<slug>.py "
+        pytest.skip("no scripts/figures/<slug>.py ↔ data/analysis/figures/make_<slug>.py "
                     "pairs found (partial checkout?)")
     canonical = SCRIPTS_DIR / f"{slug}.py"
     mirror = MIRROR_DIR / f"make_{slug}.py"
@@ -152,11 +152,11 @@ def test_figure_canonical_mirror_layout_in_sync(slug: str) -> None:
 
     assert not diffs, (
         f"Figure layout drift between canonical generator and gist mirror "
-        f"for slug={slug!r}:\n  scripts/{slug}.py  ↔  "
+        f"for slug={slug!r}:\n  scripts/figures/{slug}.py  ↔  "
         f"data/analysis/figures/make_{slug}.py\n" + "\n".join(diffs)
         + "\n\nFix: per CLAUDE.md \"Canonical generator vs gist mirror\", "
         "edit both files in the same commit, then regenerate the figure "
-        "with `uv run python scripts/" + slug + ".py`. If the divergence "
+        "with `uv run python scripts/figures/" + slug + ".py`. If the divergence "
         "is intentional (e.g., mirror is a single-panel slice of a "
         "multi-panel canonical), add the knob name to "
         "_INTENTIONAL_DIVERGENCE in this test file."
@@ -198,7 +198,7 @@ def test_figure_canonical_mirror_models_in_sync(slug: str) -> None:
     only_mirror = (mm - cm) - allowed
     assert not only_canonical and not only_mirror, (
         f"Model-list drift between canonical and mirror for slug={slug!r}:\n"
-        f"  only in scripts/{slug}.py:  {sorted(only_canonical)}\n"
+        f"  only in scripts/figures/{slug}.py:  {sorted(only_canonical)}\n"
         f"  only in make_{slug}.py:     {sorted(only_mirror)}\n"
         f"This is the drift class that shipped a figure missing its Sonnet 5 "
         f"bar. Sync the MODEL_ORDER / model dicts in BOTH files, then "

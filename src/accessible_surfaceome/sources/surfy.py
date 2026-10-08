@@ -2,7 +2,8 @@
 
 Input: ``data/raw/table_S3_surfaceome.xlsx`` — the SurfaceomeMasterTable sheet
 (20,193 human proteins × 44 columns) as published at
-``http://wlab.ethz.ch/surfaceome/``. Row 1 of the spreadsheet is a title;
+``https://wollscheidlab.org/SURFY/`` (formerly ``wlab.ethz.ch/surfaceome``,
+which now redirects there). Row 1 of the spreadsheet is a title;
 row 2 holds column headers.
 
 Output: ``data/processed/surfy/surfy_human_snapshot.tsv`` — one row per
@@ -52,7 +53,10 @@ DEFAULT_OUTPUT_DIR = ROOT / "data" / "processed" / "surfy"
 OUTPUT_TSV_NAME = "surfy_human_snapshot.tsv"
 OUTPUT_SUMMARY_NAME = "surfy_human_snapshot_summary.json"
 OUTPUT_MANIFEST_NAME = "surfy_build_traceability.json"
-SURFY_SOURCE_URL = "http://wlab.ethz.ch/surfaceome/table_S3_surfaceome.xlsx"
+# The Wollscheid lab moved domains; the old wlab.ethz.ch path 301s to the new
+# landing page rather than the file. Verified 2026-09-08: the file below is
+# byte-identical to our committed snapshot (sha256 2f1b8262...b055a, 6,864,772 B).
+SURFY_SOURCE_URL = "https://wollscheidlab.org/SURFY/table_S3_surfaceome.xlsx"
 SHEET_NAME = "SurfaceomeMasterTable"
 
 COLUMN_MAP: list[tuple[str, str]] = [

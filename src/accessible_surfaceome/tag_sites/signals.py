@@ -16,6 +16,9 @@ unit-tested core so the conservation signal can be tested without a network.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from typing import Any
 
 from accessible_surfaceome.merge._sequence_identity import _aligner, _sanitize
@@ -138,3 +141,64 @@ def per_residue_ss(pdb_path: str) -> dict[int, str]:
     arr = np.array(coords, dtype=float)  # [L, 4, 3]
     ss = pydssp.assign(arr, out_type="c3")  # array of '-'/'H'/'E'
     return {rn: ("C" if s in ("-", "L", "C") else str(s)) for rn, s in zip(resnums, ss)}
+
+
+# --- Persisting the signals the gates consumed --------------------------------- #
+# Every gate threshold in this package (pLDDT >= 70, RSA, conservation, gap_freq,
+# feature distance) is a cutoff applied to these arrays. Recomputing them means
+# refetching an AlphaFold model and rerunning DSSP per gene, which is the expensive
+# part of the pipeline; the gates themselves are microseconds. Writing the arrays
+# out once makes re-thresholding a local operation on a file instead of a rerun.
+
+SIGNAL_SCHEMA = 1
+
+
+def signals_record(
+    signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str
+) -> dict[str, Any]:
+    """The per-residue signals as 1..L arrays, with ``None`` where a signal is absent.
+
+    Stored positionally rather than as residue-keyed maps: a residue-keyed JSON object
+    costs more than the numbers it holds, and the arrays are dense for every signal that
+    comes off the model. Index ``i`` is residue ``i+1``.
+    """
+    seq: str = signals.get("sequence") or ""
+    length = len(seq)
+    rng = range(1, length + 1)
+    topo: dict[int, str] = signals.get("topology") or {}
+    ca: dict[int, tuple[float, float, float]] = signals.get("ca") or {}
+
+    def col(key: str) -> list[Any]:
+        d = signals.get(key) or {}
+        return [d.get(r) for r in rng]
+
+    return {
+        "schema": SIGNAL_SCHEMA,
+        "gene_symbol": gene_symbol,
+        "uniprot_acc": uniprot_acc,
+        "length": length,
+        "sequence": seq,
+        "topology": "".join(topo.get(r, "?") for r in rng),
+        "plddt": col("plddt"),
+        "rsa": col("rsa"),
+        "ss": [(signals.get("ss") or {}).get(r, "") for r in rng],
+        "conservation": col("conservation"),
+        "gap_freq": col("gap_freq"),
+        "feature_dist": col("feature_dist"),
+        "ca": [list(ca[r]) if r in ca else None for r in rng],
+    }
+
+
+def write_signals(
+    signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str, out_dir: str | Path
+) -> Path:
+    """Write one gzipped per-residue signal record per gene, named by symbol."""
+    import gzip
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / f"{gene_symbol}.json.gz"
+    rec = signals_record(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
+    with gzip.open(path, "wt", encoding="utf-8") as fh:
+        json.dump(rec, fh, separators=(",", ":"), default=lambda o: o.item())
+    return path

@@ -97,7 +97,7 @@ quarantine):
 
 ```bash
 uv run modal volume get surfaceome-annotations / data/annotations/
-uv run python scripts/deep_dive_census.py \
+uv run python scripts/audit/deep_dive_census.py \
     --run-id cu_v3_sonnet_2026_06 \
     --gene-list data/processed/candidate_universe/candidate_universe_v3.tsv \
     --annotations-dir data/annotations
@@ -162,16 +162,16 @@ re-spend. Backfill the parent from JSON:
 
 ```bash
 uv run modal volume get surfaceome-annotations / data/annotations/
-uv run python scripts/backfill_deep_dive_from_json.py --run-id cu_v3_sonnet_2026_06          # dry-run
-uv run python scripts/backfill_deep_dive_from_json.py --run-id cu_v3_sonnet_2026_06 --execute
-uv run python scripts/audit_deep_dive_orphans.py     --run-id cu_v3_sonnet_2026_06 --execute  # repair child rows
+uv run python scripts/cloud/backfill_deep_dive_from_json.py --run-id cu_v3_sonnet_2026_06          # dry-run
+uv run python scripts/cloud/backfill_deep_dive_from_json.py --run-id cu_v3_sonnet_2026_06 --execute
+uv run python scripts/audit/audit_deep_dive_orphans.py     --run-id cu_v3_sonnet_2026_06 --execute  # repair child rows
 ```
 
 **Public D1 / viewer drift:** if the census reports `public_missing` /
 `public_stale`, re-publish from the pulled snapshots:
 
 ```bash
-uv run python scripts/upload_viewer_snapshots_to_d1.py --execute   # pushes + purges edge cache
+uv run python scripts/cloud/upload_viewer_snapshots_to_d1.py --execute   # pushes + purges edge cache
 ```
 
 ---
@@ -183,8 +183,8 @@ uv run python scripts/upload_viewer_snapshots_to_d1.py --execute   # pushes + pu
 # 2. Content drift check against the curated validation genes (needs .env):
 uv run pytest -q tests/test_pipeline_validation_genes.py
 # 3. Backfill the n_papers_found discovery signal on committed snapshots (no LLM):
-uv run python scripts/backfill_n_papers_found.py --execute
-uv run python scripts/upload_viewer_snapshots_to_d1.py --execute
+uv run python scripts/build/backfill_n_papers_found.py --execute
+uv run python scripts/cloud/upload_viewer_snapshots_to_d1.py --execute
 ```
 
 ---
@@ -225,5 +225,5 @@ it with `rate_limit_smoke` after any Modal-plumbing change.
 | `full_sweep` | Incremental / full campaign | `--limit`, `--max-cost-per-gene-usd`, `--max-total-cost-usd`, `--chunk-size`, `--include-quarantined`, `--force` |
 
 Local in-process equivalent (no Modal account, for smoke tests):
-`scripts/deep_dive_sweep.py --gene-list … --run-id … --canary 3 --no-d1`
+`scripts/build/deep_dive_sweep.py --gene-list … --run-id … --canary 3 --no-d1`
 (supports the same `--limit` / `--force` / `--include-quarantined`).

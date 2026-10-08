@@ -48,10 +48,15 @@ import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import styles from "./GeneDetail.module.css";
 
 interface GeneDetailProps {
-  papers?: PaperMetadataMap;
   /** The full SurfaceomeRecord — the only hard requirement, fetched by the
    *  client shell from the Worker before this renders. */
   rec: SurfaceomeRecord;
+  /** `source_id` → NCBI citation metadata for the papers the evidence
+   *  ledger cites, from `GET /v1/genes/{sym}/evidence`. Arrives with the
+   *  lazy ledger fetch, so it's undefined on first paint and absent
+   *  entirely on the offline-snapshot path — the EvidenceDrawer falls back
+   *  to the bare accession in both cases. */
+  papers?: PaperMetadataMap;
   /** Descriptive protein name + synonyms. On the client shell this comes
    *  from the record's `deterministic_features.surface_bind.protein_name`
    *  (the build-time NCBI/HGNC gene-name TSV is not client-safe), so

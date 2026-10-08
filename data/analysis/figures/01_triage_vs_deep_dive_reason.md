@@ -1,8 +1,4 @@
-# Supplementary Figure 12 — `triage_vs_deep_dive_reason`
-
-**MOCK figure** — placeholder counts pending the v2 deep-dive sweep
-joining onto the triage_run table; only ~20 deep-dive records exist
-as of this draft.
+# Supplementary Figure 13 — `triage_vs_deep_dive_reason`
 
 19×19 confusion matrix between the triage agent's first-pass
 `surface_call_reason` (rows) and the deep-dive synthesizer's
@@ -43,6 +39,6 @@ published deep-dive records (Worker `/v1/genes/{SYMBOL}` index).
 The in-repo canonical figure at
 [`data/analysis/figures/triage_vs_deep_dive_reason.pdf`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/figures/triage_vs_deep_dive_reason.pdf)
 is rendered by
-[`scripts/triage_vs_deep_dive_reason.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_vs_deep_dive_reason.py)
+[`scripts/figures/triage_vs_deep_dive_reason.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_vs_deep_dive_reason.py)
 in the project repo. This gist mirror ships an equivalent
 single-panel render from the same bundled TSV.

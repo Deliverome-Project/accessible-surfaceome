@@ -37,7 +37,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Literal, Any
 
 from accessible_surfaceome.tools._shared.models import (
     SurfaceBindFeatures,
@@ -120,6 +120,38 @@ def _decode_pdbs(raw: Any) -> list[str]:
     return []
 
 
+# DeepTMHMM per-residue topology alphabet (see the ``per_residue_topology``
+# column comment in cloudflare/d1_public_schema.sql: "O/M/I/S/B chars").
+AnchorTopology = Literal[
+    "extracellular", "intracellular", "membrane", "signal_peptide"
+]
+
+_TOPOLOGY_CHARS: dict[str, AnchorTopology] = {
+    "O": "extracellular",
+    "I": "intracellular",
+    "M": "membrane",
+    "B": "membrane",       # beta-barrel strand — still in the bilayer
+    "S": "signal_peptide",
+}
+
+
+def anchor_topology(
+    per_residue_topology: str | None, anchor_residue: int
+) -> AnchorTopology | None:
+    """Which side of the membrane a SURFACE-Bind anchor residue sits on.
+
+    SURFACE-Bind scores the whole solved structure, so a scored patch is
+    not necessarily reachable from outside the cell. Returns ``None``
+    when the topology string is missing or the anchor falls outside it
+    (isoform-length mismatch) — "unknown", never a guessed answer.
+    """
+    if not per_residue_topology:
+        return None
+    if not 1 <= anchor_residue <= len(per_residue_topology):
+        return None
+    return _TOPOLOGY_CHARS.get(per_residue_topology[anchor_residue - 1])
+
+
 def _lookup_d1(uniprot_acc: str) -> SurfaceBindFeatures | None:
     """Try the public-D1 ``surface_bind_protein`` + ``surface_bind_site`` tables.
 
@@ -162,6 +194,26 @@ def _lookup_d1(uniprot_acc: str) -> SurfaceBindFeatures | None:
                 "ORDER BY site_id;",
                 [uniprot_acc],
             )
+            # One extra scalar pull so each site can say which side of the
+            # membrane its anchor is on. Left-join semantics by hand: a
+            # protein with no topology row yields anchor_topology=None on
+            # every site rather than failing the whole lookup.
+            # Guarded separately from the two SURFACE-Bind queries above:
+            # topology is an ENRICHMENT, so a missing row or a failing query
+            # must degrade to anchor_topology=None, never cost the caller the
+            # whole surface_bind block (which the outer handler would do by
+            # returning None and handing the JSON fallback the answer).
+            try:
+                topo_rows = d1.query(
+                    "SELECT per_residue_topology FROM topology_public "
+                    "WHERE uniprot_acc = ? AND species = 'human' "
+                    "AND is_canonical IN ('1', 1) AND cohort = 'human_canonical' "
+                    "LIMIT 1;",
+                    [uniprot_acc],
+                )
+                prt = topo_rows[0].get("per_residue_topology") if topo_rows else None
+            except Exception:  # noqa: BLE001 — enrichment only; never fatal
+                prt = None
     except Exception:  # noqa: BLE001 — env / table / network errors fall through
         return None
 
@@ -173,6 +225,7 @@ def _lookup_d1(uniprot_acc: str) -> SurfaceBindFeatures | None:
             n_seeds_alpha=int(s["n_seeds_alpha"]),
             n_seeds_beta=int(s["n_seeds_beta"]),
             hydrophobicity=float(s["hydrophobicity"]),
+            anchor_topology=anchor_topology(prt, int(s["anchor_residue"])),
         )
         for s in site_rows
     ]

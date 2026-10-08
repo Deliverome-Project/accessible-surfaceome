@@ -68,7 +68,17 @@ case "$mode" in
     ;;
   all)
     git lfs pull
-    git lfs fsck
+    # --objects only. The default also runs --pointers, which asks "is every
+    # file that LFS knows about stored as a pointer?" — and now answers no for
+    # the 18 per-figure TSVs under data/processed/figures, which are
+    # deliberately LFS-EXEMPT (raw.githubusercontent.com has to serve them as
+    # text or pd.read_csv(<raw url>) gets a pointer stub). They carry LFS
+    # history from before the exemption, so --pointers flags them forever;
+    # the exemption is correct and the flag is the false positive. Under
+    # `set -e` that exit 1 would abort every `bootstrap-worktree.sh all`.
+    # --objects still does the check worth having: are the LFS blobs present
+    # and uncorrupted after the pull.
+    git lfs fsck --objects
     ;;
   *)
     hydrate_lfs "$mode"

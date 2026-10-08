@@ -1,5 +1,11 @@
 # Custom tools for the surface-proteome Managed Agent
 
+> **Historical design note.** This describes an earlier package layout —
+> `agents/surface_annotator/`, `installs/`, `data/corpus/`, `data/audit/` —
+> none of which exist today. Production is `agents/surfaceome_v2/` with
+> retrieval in `agents/plan_trim_select/`. Kept for the design rationale,
+> not as a map of the current tree.
+
 ## Why this document exists
 
 The agent needs to answer "is this protein on the cell surface, and how is it attached?" for each gene in our candidate universe. While investigating KAAG1 by hand, we burned ~1,200 lines of raw API output through the main context to surface ~250 lines of load-bearing fact — roughly a 5× token tax. Across 9,000 genes that tax is unaffordable, and a smaller (Haiku/Sonnet) model can't navigate it without choking.

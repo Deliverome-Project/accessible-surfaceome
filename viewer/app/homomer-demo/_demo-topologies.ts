@@ -19,7 +19,9 @@
  * otherwise from the convention "TM proteins have a cytoplasmic
  * N-term" (true for BSCL2 / GJA1 / AQP1).
  *
- * Generated 2026-06-06 by ``scripts/synthesize_demo_topology.py``
+ * Generated 2026-06-06 by ``scripts/synthesize_demo_topology.py`` (that
+ * generator is no longer in the repo; recover it from git history to
+ * regenerate this fixture)
  * against UniProt release 2026_02. Re-run when bumping UniProt or
  * when adding a new demo gene.
  */

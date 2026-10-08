@@ -767,7 +767,7 @@ function BenchRowView({
                 }`}
                 title={
                   cell.reason
-                    ? `${m.long} · NCBI → ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for full reasoning`
+                    ? `${m.long} · NCBI → ${cell.verdict} (${prettyEnum(cell.reason)}) — click for full reasoning`
                     : `${m.long} · NCBI → ${cell.verdict} — click for full reasoning`
                 }
               >
@@ -885,7 +885,7 @@ function ModelVariantRow({
                 onClick={() => onSelectCell(row.gene_symbol, model.id, v.id)}
                 aria-pressed={isSelected}
                 title={`${model.long} · ${v.long} → ${cell.verdict}${
-                  cell.reason ? ` (${cell.reason.replace(/_/g, " ")})` : ""
+                  cell.reason ? ` (${prettyEnum(cell.reason)})` : ""
                 } — click for full reasoning`}
               >
                 <span className={`${styles.verdictLabel} ${verdictTone(cell.verdict)}`}>

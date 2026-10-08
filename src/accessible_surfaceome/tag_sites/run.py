@@ -16,6 +16,7 @@ from .isoform import classify_isoform_sites
 from .features import ca_coords, feature_distances
 from .signals import (
     merge_signals,
+    write_signals,
     ortholog_conservation,
     per_residue_plddt,
     per_residue_rsa,
@@ -179,10 +180,16 @@ def run_gene(
     pdb_path: str,
     hazard_res: set[int],
     out_dir: str | Path,
+    signals_dir: str | Path | None = None,
 ) -> dict[str, Any]:
     """End-to-end for one gene: compute signals → both gates → representative
     selection (so a dense ectodomain doesn't emit hundreds of adjacent sites) →
-    emit merged JSON."""
+    emit merged JSON.
+
+    ``signals_dir`` additionally writes the per-residue arrays the gates consumed.
+    Every gate here is a cutoff on those arrays, and recomputing them means refetching
+    an AlphaFold model and rerunning DSSP, so persisting them is what makes a later
+    re-threshold a local operation rather than a rerun of the expensive half."""
     signals = compute_signals(
         pdb_path,
         topology=topology,
@@ -190,6 +197,9 @@ def run_gene(
         ortholog_seqs=ortholog_seqs,
         hazard_res=hazard_res,
     )
+    if signals_dir is not None:
+        write_signals(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc,
+                      out_dir=signals_dir)
     surf = select_representatives(
         surface_loop_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     )

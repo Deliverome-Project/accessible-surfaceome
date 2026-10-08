@@ -24,7 +24,7 @@ def _minimal_fields() -> dict[str, Any]:
         "gist_url": "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",
         "swhid": "swh:1:snp:0000000000000000000000000000000000000000",
         "repo": "Deliverome-Project/accessible-surfaceome",
-        "repo_path": "scripts/triage_bench_db_venn.py",
+        "repo_path": "scripts/figures/triage_bench_db_venn.py",
         "repo_ref": "898c743d9df4ec7497e7424b80d3408e5ad07c41",
         "data": [
             {

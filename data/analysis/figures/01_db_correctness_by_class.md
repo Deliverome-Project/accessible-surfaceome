@@ -34,7 +34,7 @@ Sources (fetched live from the public API):
   `uniprot_optimized` + `cspa_optimized` mark which).
 
 Canonical in-repo generator:
-[`scripts/triage_bench_db_barplot.py::make_by_class_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_bench_db_barplot.py)
+[`scripts/figures/triage_bench_db_barplot.py::make_by_class_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_bench_db_barplot.py)
 with `_USE_OPTIMIZED_CUTOFFS = True`. The optimized accession TSV
 above is dumped as a side effect of the same function via
 `_dump_db_optimized_cutoffs`.

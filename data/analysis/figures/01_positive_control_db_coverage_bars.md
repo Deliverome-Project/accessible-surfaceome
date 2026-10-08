@@ -55,7 +55,7 @@ Sources:
 - Permanent data archive (Zenodo): [10.5281/zenodo.20805384](https://doi.org/10.5281/zenodo.20805384)
 
 Canonical in-repo generator:
-[`scripts/positive_control_db_coverage_bars.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/positive_control_db_coverage_bars.py)
+[`scripts/figures/positive_control_db_coverage_bars.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/positive_control_db_coverage_bars.py)
 
 Upstream list builder (refreshes the input TSVs from TheraSAbDab + Open
 Targets + ViralZone):

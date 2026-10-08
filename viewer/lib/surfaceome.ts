@@ -373,6 +373,14 @@ export interface CatalogRow {
    *  literature), overlaid at build time from public/data/tag-site-counts.json
    *  (enrichRowsWithTagSiteCounts). Null when the gene has no tag sites. */
   tag_site_counts: TagSiteCounts | null;
+  /** Worker-computed low-literature badge. Authoritative: the Worker
+   *  evaluates it against the SurfaceBench-OPTIMIZED UniProt cutoff,
+   *  which `db.uniprot` (the native 5-DB strip flag) cannot express.
+   *  Recomputing it client-side from `db.uniprot` is what made the
+   *  gene page disagree with the catalog — prefer this field and fall
+   *  back to the local predicate only when the Worker hasn't shipped
+   *  it (pre-deploy interim / fs snapshot). */
+  low_lit_uniprot?: boolean;
 }
 
 export interface Catalog {
@@ -700,6 +708,8 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     in_fg_library: Boolean(r.in_fg_library),
     // Default null — the build-time enrichRowsWithTagSiteCounts overlay fills it.
     tag_site_counts: null,
+    low_lit_uniprot:
+      typeof r.low_lit_uniprot === "boolean" ? r.low_lit_uniprot : undefined,
   };
 }
 

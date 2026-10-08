@@ -250,7 +250,7 @@ def recover_one(
     and replays the builders + synthesizer. When ``publish`` is True the
     corrected record is pushed to **public D1** via
     :func:`cloud.surface_annotation.publish_record` (the same path
-    ``surfaceome_v2_annotate.py --publish`` uses — D1 write + edge-cache purge),
+    ``annotate_gene.py --publish`` uses — D1 write + edge-cache purge),
     NOT ``annotate``'s ``persist`` (which only writes an ephemeral local disk
     artifact). Otherwise the record is computed and discarded (the return value
     carries the before/after grade for review).

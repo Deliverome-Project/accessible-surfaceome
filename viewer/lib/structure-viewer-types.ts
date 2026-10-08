@@ -1,7 +1,7 @@
 /*
  * Structure-viewer data shape.
  * ------------------------------------------------------------
- * Mirrors the JSON emitted by ``scripts/build_structure_viewer_data.py``.
+ * Mirrors the JSON emitted by ``scripts/build/build_structure_viewer_data.py``.
  * One file per UniProt accession under
  * ``viewer/public/structure-viewer/{UNIPROT}.json`` — loaded at SSG
  * time on the per-gene page and passed as props to
@@ -78,7 +78,7 @@ export const MEMBRANE_COLOR = "#A0A4AB";
  * When you bump this past `vN`: also bump the v4 fallbacks in
  * `src/accessible_surfaceome/agents/surfaceome_v1/_stub_structure`
  * + `orchestrator.py` (they're cosmetic placeholders but should
- * track) and re-run `scripts/build_structure_viewer_data.py` to
+ * track) and re-run `scripts/build/build_structure_viewer_data.py` to
  * refresh any baked URLs in `viewer/public/structure-viewer/*.json`.
  */
 export const LATEST_KNOWN_AFDB_VERSION = "v6";

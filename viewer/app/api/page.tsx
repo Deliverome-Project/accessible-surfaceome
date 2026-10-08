@@ -191,20 +191,20 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/triage/export.tsv",
         sizeKey: "/v1/triage/export.tsv",
         summary:
-          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet sweep. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
+          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v2 for the full ~19k-gene Sonnet sweep. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
         curl:
-          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1' | head -3",
+          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1' | head -3",
       },
       {
         method: "GET",
-        path: "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1",
+        path: "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&with_reasoning=1",
         anchor: "triage-full-export",
         sizeKey:
-          "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1",
+          "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&with_reasoning=1",
         summary:
           "Full genome-wide triage export WITH agent reasoning: the ~19k-gene Sonnet/NCBI sweep with predicted_key_uncertainty and the agent's free-text verdict_reasoning paragraph appended as the trailing columns. with_reasoning=1 works on any run_id; this is the bulk counterpart to the per-gene /v1/triage/{SYMBOL} reasoning.",
         curl:
-          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1&with_reasoning=1' | head -3",
+          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1' | head -3",
       },
     ],
   },

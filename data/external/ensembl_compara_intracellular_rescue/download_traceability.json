@@ -1,0 +1,80 @@
+{
+  "dataset": "Ensembl_Compara_surfaceome_mouse_cyno",
+  "extras": {
+    "biomart_chunk_count": 6,
+    "biomart_chunk_size": 25,
+    "biomart_rows_returned": 159,
+    "cyno_taxon_id": 9544,
+    "genes_with_both_species_pass": 109,
+    "genes_with_cyno_one2one_high_confidence": 113,
+    "genes_with_mouse_one2one_high_confidence": 126,
+    "genes_with_no_query_ensembl_ids": 0,
+    "genes_with_one_or_both_species_pass": 130,
+    "hgnc_tsv": "data/raw/hgnc_complete_set.tsv",
+    "input_csv": "data/processed/topology_run_topo_2026_09_rescue/candidate_accessions.tsv",
+    "input_rows": 148,
+    "mouse_taxon_id": 10090,
+    "proportion_both": 0.736486,
+    "proportion_cyno": 0.763514,
+    "proportion_mouse": 0.851351,
+    "proportion_one_or_both": 0.878378,
+    "resolver_mapping_status_counts": {
+      "exact": 6,
+      "unresolved": 142
+    },
+    "total_input_rows": 148,
+    "total_unique_genes": 148,
+    "total_unique_query_ensembl_gene_ids": 148,
+    "unique_input_genes": 148,
+    "unique_query_ensembl_gene_ids": 148
+  },
+  "generated_at_utc": "2026-09-20T23:08:57.125893+00:00",
+  "n_files": 4,
+  "records": [
+    {
+      "captured_at_utc": "2026-09-20T23:08:57.124935+00:00",
+      "dataset": "Ensembl_Compara_surfaceome_mouse_cyno",
+      "file_name": "compara_mouse_cyno_one2one_highconf_by_gene.csv",
+      "local_path": "data/external/ensembl_compara_intracellular_rescue/compara_mouse_cyno_one2one_highconf_by_gene.csv",
+      "note": "Gene-level mouse/cyno ortholog pass flags (ortholog_one2one + confidence=1).",
+      "sha256": "6b8cea68fd2d67f3539097bb5b93d65b00f4a307b373606865058b3e2acbc755",
+      "size_bytes": 13904,
+      "source_url": "https://www.ensembl.org/biomart/martservice",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-09-20T23:08:57.125339+00:00",
+      "dataset": "Ensembl_Compara_surfaceome_mouse_cyno",
+      "file_name": "compara_mouse_cyno_one2one_highconf_by_ensembl_query.csv",
+      "local_path": "data/external/ensembl_compara_intracellular_rescue/compara_mouse_cyno_one2one_highconf_by_ensembl_query.csv",
+      "note": "Per-Ensembl-query-ID ortholog pass flags for mouse/cyno.",
+      "sha256": "d95373215498f9ea2bddc427d0dc21a6b9449a3d66b2d62915d320e6e2adeea1",
+      "size_bytes": 18321,
+      "source_url": "https://www.ensembl.org/biomart/martservice",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-09-20T23:08:57.125463+00:00",
+      "dataset": "Ensembl_Compara_surfaceome_mouse_cyno",
+      "file_name": "compara_mouse_cyno_biomart_raw_rows.csv",
+      "local_path": "data/external/ensembl_compara_intracellular_rescue/compara_mouse_cyno_biomart_raw_rows.csv",
+      "note": "Raw BioMart homology rows for queried human Ensembl IDs.",
+      "sha256": "69bc1d46e8058a867ba11e267a2519cb600730f5a21111a18a4325b9c7a15839",
+      "size_bytes": 19361,
+      "source_url": "https://www.ensembl.org/biomart/martservice",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-09-20T23:08:57.125564+00:00",
+      "dataset": "Ensembl_Compara_surfaceome_mouse_cyno",
+      "file_name": "compara_mouse_cyno_one2one_highconf_summary.csv",
+      "local_path": "data/external/ensembl_compara_intracellular_rescue/compara_mouse_cyno_one2one_highconf_summary.csv",
+      "note": "Summary proportions for mouse/cyno ortholog pass criteria.",
+      "sha256": "7b6f13acb773d9d7a2b18a59d2c8cc478e6382b8f363158a5e86007a0286af79",
+      "size_bytes": 390,
+      "source_url": "https://www.ensembl.org/biomart/martservice",
+      "status": "downloaded"
+    }
+  ],
+  "script": "/Users/rebeccacarlson/Git/accessible-surfaceome/.claude/worktrees/npm1-deep-dive-d397b9/src/accessible_surfaceome/sources/ensembl_compara.py"
+}

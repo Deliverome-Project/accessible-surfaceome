@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 # search path — the live Modal workers get it via cwd. Load it
 # dynamically so the test runs without putting all 49 scripts under
 # the type-checker's umbrella.
-_SWEEP_PATH = Path(__file__).resolve().parent.parent / "scripts" / "deep_dive_sweep.py"
+_SWEEP_PATH = Path(__file__).resolve().parent.parent / "scripts" / "build" / "deep_dive_sweep.py"
 _spec = importlib.util.spec_from_file_location("deep_dive_sweep", _SWEEP_PATH)
 assert _spec is not None and _spec.loader is not None
 _sweep = importlib.util.module_from_spec(_spec)

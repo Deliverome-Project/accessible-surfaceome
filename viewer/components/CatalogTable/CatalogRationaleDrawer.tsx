@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { prettyEnum } from "../../lib/enums";
 import styles from "./CatalogRationaleDrawer.module.css";
 
 /** Shape of a single triage run as returned by the public Worker's
@@ -149,7 +150,7 @@ export function CatalogRationaleDrawer({
           {reason ? (
             <p className={styles.drawerReason}>
               <span className="label-mono">Reason code · </span>
-              {reason.replace(/_/g, " ")}
+              {prettyEnum(reason)}
             </p>
           ) : null}
           {detail?.status === "loading" ? (
@@ -198,7 +199,7 @@ export function CatalogRationaleDrawer({
                     </span>
                     {r.predicted_reason ? (
                       <span className={styles.drawerSecondaryReason}>
-                        · {r.predicted_reason.replace(/_/g, " ")}
+                        · {prettyEnum(r.predicted_reason)}
                       </span>
                     ) : null}
                   </li>

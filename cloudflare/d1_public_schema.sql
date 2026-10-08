@@ -5,7 +5,7 @@
 -- Worker at e.g. `api.deliverome.org/surfaceome/...` with no auth.
 --
 -- Sync direction: ALWAYS private → public. The sync script
--- (scripts/sync_public_d1.py) is one-way and append-only — historical
+-- (scripts/cloud/sync_public_d1.py) is one-way and append-only — historical
 -- snapshots stay queryable, the public DB is never read by the agent
 -- pipeline.
 --
@@ -22,7 +22,7 @@
 --   wrangler d1 execute surfaceome_public --remote \\
 --     --file=cloudflare/d1_public_schema.sql
 --
--- Or via D1 HTTP API (no wrangler needed) — see scripts/apply_d1_schema.py.
+-- Or via the D1 HTTP API (no wrangler needed) — see scripts/cloud/sync_d1_schema.py.
 
 -- ---------------------------------------------------------------------------
 -- compara_release / compara_ortholog
@@ -230,7 +230,7 @@ CREATE INDEX IF NOT EXISTS idx_surface_annotation_cohort
 --
 -- Loaded from `data/processed/candidate_universe/candidate_universe.tsv`
 -- (a build artifact, NOT in the private agents DB) by
--- scripts/upload_candidate_universe_to_d1.py. Each merge run bumps
+-- scripts/cloud/upload_candidate_universe_to_d1.py. Each merge run bumps
 -- universe_version so historical universes stay queryable; the Worker
 -- always serves the latest.
 -- ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ CREATE TABLE IF NOT EXISTS candidate_universe_release (
 -- gene_identifier table. Lets the public Worker (and the viewer) look up
 -- canonical stable IDs for any gene without re-resolving from symbol —
 -- which historically was where the resolver bugs entered the pipeline
--- (see scripts/audit_resolver_hgnc_id_v3.py for the failure modes).
+-- (see scripts/audit/audit_resolver_hgnc_id_v3.py for the failure modes).
 --
 -- Synced from `surfaceome_agents.gene_identifier` by the same one-way
 -- script that mirrors candidate_universe + triage_run. Resolver-version
@@ -355,9 +355,30 @@ CREATE TABLE IF NOT EXISTS topology_public (
     per_residue_topology       TEXT NOT NULL,        -- O/M/I/S/B chars; len == protein_length
     predicted_surface_membrane INTEGER NOT NULL,     -- 1 iff label in {TM, SP+TM}
     predicted_secreted         INTEGER NOT NULL,     -- 1 iff label == SP
-    tool_version               TEXT NOT NULL,        -- e.g. 'deeptmhmm-1.0.24'
+    tool_version               TEXT NOT NULL,        -- e.g. 'deeptmhmm-1.0.24', or 'deeptmhmm2_predictor-0.1.0+ckpt.<12 hex>'
     retrieved_at               TEXT NOT NULL,        -- ISO 8601 timestamp
     synced_at                  TEXT NOT NULL DEFAULT (datetime('now')),
+
+    -- DeepTMHMM2 (v2) columns. NULL for every v1 row and populated only under a
+    -- v2 topology_version. Rationale, the v1-alphabet projection rule, and why
+    -- there is no type-code column live in
+    -- cloudflare/migrations/topology_public_dtm2.sql — read that before using
+    -- any of these. Decode dtm2_topology_string through
+    -- accessible_surfaceome.sources.deeptmhmm2, never by hand: its side
+    -- characters mean different things per membrane type.
+    dtm2_structural_type        TEXT,     -- Globular | Globular + SP | Alpha TM | Alpha TM + SP | Beta Barrel | Alpha TM + TP | Globular + TP
+    dtm2_topology_string        TEXT,     -- full v2 alphabet; sides are membrane-specific
+    dtm2_v1_alphabet_lossy      INTEGER,  -- 1 iff the per_residue_topology projection dropped R/F/>
+    dtm2_main_membrane_type     TEXT,     -- highest-probability predicted compartment; NULL for non-TM
+    dtm2_main_membrane_type_idx INTEGER,  -- model index; the key that decodes dtm2_topology_string
+    dtm2_membrane_types         TEXT,     -- JSON array, multi-label, highest probability first
+    dtm2_membrane_type_probs    TEXT,     -- JSON object {type_name: probability} over all 17 supported types
+    dtm2_plasma_membrane        INTEGER,  -- 1 iff 'Eukaryotic plasma membrane' is over threshold
+    dtm2_plasma_membrane_prob   REAL,     -- kept even when the call is 0, so a re-threshold needs no rerun
+    dtm2_reentrant_count        INTEGER,  -- segment counts; the only record of these features
+    dtm2_interfacial_count      INTEGER,
+    dtm2_transit_peptide_length INTEGER,  -- '>' residues; deliberately NOT folded into signal_peptide_length
+
     PRIMARY KEY (topology_version, cohort, uniprot_acc_full)
 );
 
@@ -519,7 +540,7 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
 --
 -- Two tables: protein-level aggregate (one row per UniProt acc) +
 -- site-level detail (one row per (acc, site_id)). Sync script:
--- scripts/sync_surface_bind_to_d1.py reads from
+-- scripts/cloud/sync_surface_bind_to_d1.py reads from
 -- data/external/surface_bind/surface_bind_summary.json and UPSERTs.
 -- ---------------------------------------------------------------------------
 
@@ -584,7 +605,7 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
 -- despite being known dimers). Consumers default ``is_homo_oligomer
 -- =False`` for any uniprot_acc with no row.
 --
--- Sync script: ``scripts/build_schweke_d1_table.py`` reads the figshare
+-- Sync script: ``scripts/cloud/build_schweke_d1_table.py`` reads the figshare
 -- deposit (see ``data/external/schweke_homomer_atlas/PROVENANCE.md``)
 -- and UPSERTs per ``(universe_version, uniprot_acc)``. Released here as
 -- a public mirror — CC-BY 4.0 per Schweke's deposit, attribution
@@ -695,7 +716,7 @@ CREATE INDEX IF NOT EXISTS idx_feedback_public_gene
 -- ``Transmembrane`` features + comparing against the PDB's residue
 -- coverage.
 --
--- Build script: scripts/build_schweke_d1_table.py
+-- Build script: scripts/cloud/build_schweke_d1_table.py
 -- Sources: data/external/schweke_homomer_atlas/list_models_refset.csv
 --          + data/external/schweke_homomer_atlas/full_complex_index.tsv
 --          + data/processed/candidate_universe/candidate_universe_v2.tsv
@@ -950,3 +971,27 @@ CREATE TABLE IF NOT EXISTS paper_metadata (
 
 CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmid ON paper_metadata (pmid);
 CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmc ON paper_metadata (pmc_id);
+
+-- Optimized (SurfaceBench-recalibrated) DB cutoffs, per UniProt accession.
+--
+-- The paper scores DB membership on recalibrated rules everywhere — UniProt
+-- expanded to TM>0 OR signal-peptide>0 OR a strict subcellular term, CSPA
+-- tightened to high-confidence only — but those rules were only ever computed
+-- repo-side from the raw UniProt and CSPA dumps
+-- (scripts/figures/triage_bench_db_barplot.py::_optimized_uniprot_accs /
+-- _optimized_cspa_accs). D1 carried each source's NATIVE flag and nothing
+-- else, so the Worker could not reproduce a single optimized call and the
+-- viewer's low-literature badge silently gated on the un-recalibrated flag
+-- while the figures beside it used the recalibrated one.
+--
+-- POSITIVE LIST: an accession absent from this table is (0, 0) — NOT
+-- "fall back to the native flag". Falling back resurrects exactly the
+-- low-confidence CSPA-only proteins the tightening exists to drop. Loaded by
+-- scripts/cloud/load_db_optimized_cutoffs_to_d1.py; because absence means
+-- zero, the table must be populated BEFORE a Worker that reads it is
+-- deployed, or every gene reads 0 and the badge disappears site-wide.
+CREATE TABLE IF NOT EXISTS db_optimized_cutoff_public (
+  accession          TEXT PRIMARY KEY,
+  uniprot_optimized  INTEGER NOT NULL DEFAULT 0,
+  cspa_optimized     INTEGER NOT NULL DEFAULT 0
+);

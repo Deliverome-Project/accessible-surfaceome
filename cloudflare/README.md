@@ -48,7 +48,9 @@ npx --yes wrangler d1 execute surfaceome_agents \
 # 4. Sanity-check that the tables exist.
 npx --yes wrangler d1 execute surfaceome_agents --remote --command \
     "SELECT name FROM sqlite_master WHERE type='table';"
-#   Expected: prompt_version, benchmark_version, triage_run, sqlite_sequence
+#   Expected: 18 tables + 3 views (prompt_version, benchmark_version,
+#   triage_run, gene_identifier, topology_public, feedback, … — see
+#   d1_schema.sql for the full list), plus sqlite_sequence
 ```
 
 ### Bind the new D1 to the Deliverome Pages project
@@ -75,7 +77,7 @@ env.SURFACEOME_AGENTS.prepare("SELECT * FROM triage_run WHERE ...").all();
 
 **This repo's Python tooling does NOT need the Pages binding** — the
 `triage_runner.py --d1` streaming sink and the
-`scripts/d1_export_to_r2.sh` backup script both call D1's HTTP API
+`scripts/cloud/d1_export_to_r2.sh` backup script both call D1's HTTP API
 directly, authenticated by `CLOUDFLARE_API_TOKEN` and addressed by
 `CLOUDFLARE_D1_SURFACEOME_AGENTS_ID`. They work independently of any
 wrangler.toml binding.
@@ -125,7 +127,7 @@ covers every modern code path.)
 
 ### Schema overview
 
-Six tables and three views (see `d1_schema.sql` for the canonical
+Eighteen tables and three views (see `d1_schema.sql` for the canonical
 definition):
 
 | table | rows | purpose |
@@ -210,7 +212,7 @@ everything after is lost. For most accidents this is what you want.
 Snapshot the database to a portable SQL file:
 
 ```sh
-bash scripts/d1_triage_backup.sh
+bash scripts/cloud/d1_triage_backup.sh
 ```
 
 This runs `npx --yes wrangler d1 export` and writes
@@ -228,20 +230,25 @@ offline-grep-able trail beyond the Time Travel window.
 ### Layer 2.5 — Automated SQL exports → R2 bucket (CI-driven)
 
 The GitHub workflow `.github/workflows/d1-backup.yml` triggers
-`scripts/d1_export_to_r2.sh` on every push to `main` that touches:
+`scripts/cloud/d1_export_to_r2.sh` on every push to `main` that touches:
 
 - `cloudflare/d1_schema.sql` (schema changes)
 - `data/annotations/**` (new deep-dive records)
 - `data/triage/**` (production triage outputs)
 - `src/accessible_surfaceome/cloud/**` (uploader code)
-- `scripts/d1_export_to_r2.sh`
+- `scripts/cloud/d1_export_to_r2.sh`
 
-Each run produces an offsite SQL dump in the R2 bucket
-`deliverome-d1-backups` under the dated key
-`d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql`
-and updates the stable pointer `d1-backups/surfaceome_agents/latest.sql`.
-A small JSON manifest (sha256 + byte count) lands next to each dump for
-integrity checks.
+Each run exports the DB, gzips the dump, splits it into fixed-size parts
+(250 MiB — `wrangler r2 object put` refuses files over 300 MiB, and the
+`surfaceome_agents` dump passed 2 GiB in mid-2026), verifies that the
+parts reassemble to the raw dump's sha256, and only then uploads to
+`deliverome-d1-backups` under the dated prefix
+`d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql.gz.part-aa, -ab, …`
+plus a manifest (`…_<UTC>.manifest.json`: part keys, sizes, sha256s, and
+the exact restore commands). The stable pointer is
+`d1-backups/surfaceome_agents/latest.manifest.json`. Restore = fetch the
+parts listed in the manifest, `cat parts | gunzip`, check the sha256, then
+`wrangler d1 execute --file`.
 
 **One-time R2 setup** (run locally with `wrangler`):
 
@@ -257,8 +264,8 @@ npx --yes wrangler r2 bucket create deliverome-d1-backups
 Manual trigger from your local machine:
 
 ```sh
-bash scripts/d1_export_to_r2.sh            # CI mode: dump → R2, no local copy
-bash scripts/d1_export_to_r2.sh --keep-local  # also keep a local file
+bash scripts/cloud/d1_export_to_r2.sh            # CI mode: dump → R2, no local copy
+bash scripts/cloud/d1_export_to_r2.sh --keep-local  # also keep a local file
 ```
 
 Inspect / restore from R2:
@@ -267,13 +274,22 @@ Inspect / restore from R2:
 # List recent dumps.
 npx --yes wrangler r2 object list deliverome-d1-backups --prefix d1-backups/surfaceome_agents/
 
-# Pull the latest pointer locally.
-npx --yes wrangler r2 object get deliverome-d1-backups \
-    d1-backups/surfaceome_agents/latest.sql \
-    --output ./latest.sql
+# Pull the latest manifest — it lists the gzip parts and their sha256s.
+npx --yes wrangler r2 object get deliverome-d1-backups/d1-backups/surfaceome_agents/latest.manifest.json \
+    --file ./latest.manifest.json --remote
+
+# Fetch every part listed under "parts" (keys look like
+# d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql.gz.part-aa, -ab, …).
+for key in $(python3 -c 'import json; print(" ".join(p["key"] for p in json.load(open("latest.manifest.json"))["parts"]))'); do
+    npx --yes wrangler r2 object get "deliverome-d1-backups/$key" --file "./$(basename "$key")" --remote
+done
+
+# Reassemble in order, decompress, and check against the manifest's sql_sha256.
+cat ./surfaceome_agents_*.sql.gz.part-* | gunzip > ./restore.sql
+shasum -a 256 ./restore.sql
 
 # Re-import into D1 (DESTRUCTIVE — wipes current tables before applying).
-npx --yes wrangler d1 execute surfaceome_agents --remote --file=./latest.sql
+npx --yes wrangler d1 execute surfaceome_agents --remote --file=./restore.sql
 ```
 
 R2 is durable, cross-region, and outside the Time Travel window — this
@@ -294,6 +310,6 @@ audit trail — if D1 is wiped, re-running the sweep with the same
 | event | action |
 |---|---|
 | After every triage sweep | nothing — `--d1` streams as you go |
-| Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh dump lands in R2 with a dated key + `latest.sql` pointer |
+| Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh gzipped + split dump lands in R2 under a dated prefix + `latest.manifest.json` pointer |
 | Before schema migration | run `d1_triage_backup.sh`, migrate, smoke-test |
-| Catastrophic D1 loss | restore from `r2://deliverome-d1-backups/d1-backups/.../latest.sql`, then re-run the triage runner with the same `--run-id` to refill any post-backup rows from the on-disk JSON tree |
+| Catastrophic D1 loss | restore from the parts listed in `r2://deliverome-d1-backups/d1-backups/<db>/latest.manifest.json` (snippet above), then re-run the triage runner with the same `--run-id` to refill any post-backup rows from the on-disk JSON tree |

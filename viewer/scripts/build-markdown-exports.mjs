@@ -395,11 +395,24 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push(`| UniProt | [${g.uniprot_acc}](https://www.uniprot.org/uniprotkb/${g.uniprot_acc}) |`);
   lines.push(`| NCBI Gene | [${g.ncbi_gene_id}](https://www.ncbi.nlm.nih.gov/gene/${g.ncbi_gene_id}) |`);
   lines.push(`| Ensembl | [${g.ensembl_gene}](https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${g.ensembl_gene}) |`);
+  if (g.ensembl_canonical_protein) {
+    lines.push(`| Ensembl canonical protein | [${g.ensembl_canonical_protein}](https://www.ensembl.org/Homo_sapiens/Transcript/ProteinSummary?p=${g.ensembl_canonical_protein}) |`);
+  }
   lines.push(`| Subcategory | ${prettyEnum(e.subcategory)} |`);
   lines.push(`| Surface accessibility | ${prettyEnum(e.surface_accessibility)} |`);
   lines.push(`| Confidence | ${prettyEnum(e.confidence)} |`);
   lines.push(`| Evidence grade | ${prettyEnum(e.evidence_grade_summary)} |`);
-  lines.push(`| Triage signal | ${prettyEnum(rec.triage_signal)} |`);
+  // Triage verdict AND its own reason code, on one row. Keeping the two
+  // together matters: the deep-dive `surface_call_reason` further down is
+  // a DIFFERENT agent's call and disagrees with triage for roughly a third
+  // of deep-dived genes. Showing a bare "Triage signal: Yes" here and an
+  // unlabelled "reason=..." below reads as a self-contradiction (reported
+  // on OR11H6: triage yes + deep-dive tissue_restricted_surface).
+  lines.push(
+    `| Triage signal | ${prettyEnum(rec.triage_signal)}${
+      rec.triage_reason ? ` · reason=${prettyEnum(rec.triage_reason)}` : ""
+    } |`,
+  );
   if (e.headline_risks.length > 0) {
     lines.push(
       `| Headline risks | ${e.headline_risks.map(prettyEnum).join(", ")} |`,
@@ -443,7 +456,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     `| Accessibility | overall=${prettyEnum(f.surface_accessibility)} · conf=${prettyEnum(f.confidence)} · subcategory=${prettyEnum(f.subcategory)} · ecd=${prettyEnum(f.ecd_accessibility_class)} |`,
   );
   lines.push(
-    `| Classification | reason=${prettyEnum(f.surface_call_reason)} · family=${prettyEnum(f.llm_family)} · state-dependence=${prettyEnum(f.state_dependence)} · induction-trigger=${prettyEnum(f.induction_trigger)} |`,
+    `| Classification | deep-dive reason=${prettyEnum(f.surface_call_reason)} · family=${prettyEnum(f.llm_family)} · state-dependence=${prettyEnum(f.state_dependence)} · induction-trigger=${prettyEnum(f.induction_trigger)} |`,
   );
   lines.push(
     `| Expression | level=${prettyEnum(f.expression_level)} · breadth=${prettyEnum(f.expression_breadth)} · specificity=${prettyEnum(f.surface_specificity)} · low-endogenous=${f.low_endogenous_expression} · tumor-associated=${f.tumor_associated ?? "—"} · orphan-receptor=${f.has_known_ligand === false} · OE-precedent=${f.overexpression_surface_localization_observed} |`,
@@ -778,6 +791,22 @@ function md(rec, structureData, sequences, afdbEntry) {
     );
   }
   lines.push("");
+  if (ct && ct.predicted_surface_membrane != null) {
+    const call = ct.predicted_surface_membrane
+      ? "membrane / surface"
+      : ct.predicted_secreted
+        ? "secreted — signal peptide, no TM helix"
+        : "neither a TM helix nor a signal peptide";
+    const extras = [];
+    if (ct.protein_length != null) extras.push(`${ct.protein_length} aa`);
+    if (ct.beta_strand_count) {
+      extras.push(`${ct.beta_strand_count} β-strand${ct.beta_strand_count === 1 ? "" : "s"}`);
+    }
+    lines.push(
+      `**DeepTMHMM call** — ${call}${extras.length ? ` (${extras.join(" · ")})` : ""}. The tool's own classification, not an inference from the ECD/ICD lengths above.`,
+    );
+  }
+  lines.push("");
   lines.push(
     "**Tier cutoffs.** *Ortholog conservation* (higher = better — cross-species evidence can stand in for human): ≥85% high · 60–85% moderate · <60% low. *Paralog cross-reactivity* (higher = worse — a binder may also engage the paralog): >80% high-risk · 60–80% caution · <60% low-risk ([PMID 30297845](https://pubmed.ncbi.nlm.nih.gov/30297845/)).",
   );
@@ -910,16 +939,16 @@ function md(rec, structureData, sequences, afdbEntry) {
     );
     lines.push("");
     lines.push(
-      "**Reading the scores.** BSA vs the average antibody–antigen interface ≈ 1103 ± 244 Å² ([PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)): ≥1500 Å² comfortable · 850–1500 workable · <850 thin. Seed pool: ≥1000 comfortable design margin · ≥100 workable · <100 thin/specialized. SURFACE-Bind excludes transmembrane regions but not necessarily intracellular domains — cross-check the anchor residue against the topology string in §5/appendix (`O` = extracellular/antibody-accessible, `I` = intracellular).",
+      "**Reading the scores.** BSA vs the average antibody–antigen interface ≈ 1103 ± 244 Å² ([PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)): ≥1500 Å² comfortable · 850–1500 workable · <850 thin. Seed pool: ≥1000 comfortable design margin · ≥100 workable · <100 thin/specialized. SURFACE-Bind excludes transmembrane regions but not necessarily intracellular domains, so the **Anchor side** column reports which face each patch sits on (from the DeepTMHMM topology string in §5/appendix). Only `extracellular` patches are antibody-accessible; `signal peptide` is ambiguous because the peptide is cleaved, and a blank means the topology prediction was unavailable.",
     );
     lines.push("");
     lines.push(
-      "| Site | Anchor residue | BSA (Å²) | α-helix seeds | β-strand seeds | Hydrophobicity |",
+      "| Site | Anchor residue | Anchor side | BSA (Å²) | α-helix seeds | β-strand seeds | Hydrophobicity |",
     );
-    lines.push("|---|---|---|---|---|---|");
+    lines.push("|---|---|---|---|---|---|---|");
     for (const site of sb.sites) {
       lines.push(
-        `| ${site.site_id} | ${site.anchor_residue} | ${fmtNum(site.area_a2)} | ${fmtInt(site.n_seeds_alpha)} | ${fmtInt(site.n_seeds_beta)} | ${fmtNum(site.hydrophobicity)} |`,
+        `| ${site.site_id} | ${site.anchor_residue} | ${site.anchor_topology ? site.anchor_topology.replace("_", " ") : "—"} | ${fmtNum(site.area_a2)} | ${fmtInt(site.n_seeds_alpha)} | ${fmtInt(site.n_seeds_beta)} | ${fmtNum(site.hydrophobicity)} |`,
       );
     }
     lines.push("");
@@ -1422,6 +1451,28 @@ async function fetchRecordWithRetry(url) {
 // the pre-fetched records from disk without hitting the Worker. This
 // path fires when the build-cache is missing / empty (e.g. dev running
 // `build:exports` in isolation) or when we need a live re-fetch.
+/** Fetch one gene's evidence ledger from `/v1/genes/{sym}/evidence`.
+ *
+ *  Returns `[]` (never throws) when the endpoint is unreachable or the
+ *  payload is malformed: a missing ledger should cost that gene its
+ *  Evidence section, not its entire Markdown export. */
+async function fetchEvidenceLedger(sym) {
+  try {
+    const payload = await fetchRecordWithRetry(
+      `${API_BASE}/v1/genes/${encodeURIComponent(sym)}/evidence`,
+    );
+    const ev = payload?.evidence;
+    if (!Array.isArray(ev)) {
+      console.warn(`  ! ${sym}: evidence payload not an array — using []`);
+      return [];
+    }
+    return ev;
+  } catch (err) {
+    console.warn(`  ! ${sym}: evidence fetch failed (${err.message}) — using []`);
+    return [];
+  }
+}
+
 async function loadRecordsFromApi() {
   const listUrl = `${API_BASE}/v1/genes`;
   const list = await fetchJson(listUrl);
@@ -1444,7 +1495,18 @@ async function loadRecordsFromApi() {
         const rec = await fetchRecordWithRetry(
           `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`,
         );
-        if (rec) out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+        if (rec) {
+          // `/v1/genes/{sym}` does NOT carry the evidence ledger — it is
+          // served separately by `/v1/genes/{sym}/evidence` (which also
+          // joins in `paper_metadata`). Without this the renderer throws
+          // `rec.evidence is not iterable` on the FIRST gene, so api mode
+          // was dead on arrival for every gene, not just new ones. Attach
+          // it here so the api and snapshots sources hand `md()` the same
+          // shape. A failed evidence fetch degrades to an empty ledger
+          // rather than dropping the gene's whole export.
+          rec.evidence = await fetchEvidenceLedger(sym);
+          out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+        }
       } catch (err) {
         console.warn(`  ! ${sym}: record fetch failed — ${err.message}`);
       }
@@ -1510,6 +1572,31 @@ async function main() {
   if (records.length === 0) {
     console.warn(`No records to export (source=${MD_SOURCE}).`);
     return;
+  }
+  // Evidence backfill. `/v1/genes/{sym}` never returns the ledger (it is
+  // served by `/v1/genes/{sym}/evidence`), so records reaching here from
+  // EITHER api path — a live fetch or the build-cache that `build:snapshot`
+  // wrote from the same endpoint — can arrive without `evidence` and blow up
+  // `md()` with "rec.evidence is not iterable". `loadRecordsFromApi` already
+  // attaches it; this catches the build-cache path and any future source.
+  const needEvidence = records.filter((r) => !Array.isArray(r.rec?.evidence));
+  if (needEvidence.length > 0) {
+    console.log(
+      `  backfilling evidence ledgers for ${needEvidence.length} record(s)`,
+    );
+    let i = 0;
+    await Promise.all(
+      Array.from(
+        { length: Math.min(RECORD_FETCH_CONCURRENCY, needEvidence.length) },
+        async () => {
+          while (i < needEvidence.length) {
+            const entry = needEvidence[i++];
+            const sym = entry.rec?.gene?.hgnc_symbol ?? entry.name.replace(/\.json$/, "");
+            entry.rec.evidence = await fetchEvidenceLedger(sym);
+          }
+        },
+      ),
+    );
   }
   console.log(`Exporting ${records.length} records (source=${MD_SOURCE}).`);
   for (const { name, rec } of records) {

@@ -43,6 +43,7 @@ The visual reference points the CSS mirrors from the Pioneer paper:
 | Subsection headings | Playfair Display 13pt, `var(--maroon-dark)` |
 | Body | Manrope 9.5pt, two-column, justified, hyphenated |
 | Figures | Cream card with 4px maroon left bar, full column-span |
+| Figure-caption lead ("Figure N. Title.") | Manrope 700, `var(--maroon-dark)` — extent set by `figures.lua`, not by line breaks |
 | Tables | Maroon-blush header row, dark border under header |
 | Block quotes | Maroon-blush background with maroon side rule |
 | Footer | "Deliverome" left, page number right, both maroon |
@@ -69,9 +70,14 @@ print layout:
 - **Use Word heading styles**, not bold body text. Pandoc maps
   Word's H1 / H2 / H3 to `<h1>` / `<h2>` / `<h3>`, and the CSS
   hangs the section-heading treatment off those.
-- **Figure captions** in Word: write them as standalone paragraphs
-  starting `Figure 1. <caption>`. Pandoc spots that pattern and
-  emits `<figure><figcaption>` correctly.
+- **Figure captions** in Word: style them as Heading 5, starting
+  `Figure 1. <caption>`. Bold the lead clause — the figure label plus
+  the title sentence, exactly as
+  `data/analysis/figures/<slug>.caption.md` writes it — and both
+  editions print that clause in brand maroon. `figures.lua` falls back
+  to finding the clause itself (label + first sentence) when the bold
+  is missing, and reports at build time any caption where even that
+  failed.
 - **Tables**: native Word tables work; pandoc emits real `<table>`
   markup. Don't paste tables in as images.
 - **Italics** (gene names): survive intact through to JATS.

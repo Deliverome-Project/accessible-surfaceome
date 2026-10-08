@@ -53,7 +53,7 @@ header, installs matplotlib / seaborn / pandas in a one-shot env, and emits
   `induction_trigger`, and `facet`. Pre-joined by
   [`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py).
 - **Canonical generator** (uses the in-repo `_plotting_config`):
-  [`scripts/deep_dive_final_categories.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/deep_dive_final_categories.py).
+  [`scripts/figures/deep_dive_final_categories.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/deep_dive_final_categories.py).
   The standalone script in this gist reads the bundled TSV and renders without
   depending on the project's plotting module.
 - Bucket boundaries are pinned by the closed enums in

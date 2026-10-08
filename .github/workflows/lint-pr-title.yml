@@ -37,6 +37,7 @@ jobs:
             ci
             deps
             viewer
+            paper
           requireScope: false
           subjectPattern: ^.+$
           subjectPatternError: subject must not be empty

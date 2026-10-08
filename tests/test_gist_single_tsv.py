@@ -40,7 +40,7 @@ FIGURES_DIR = REPO_ROOT / "data" / "analysis" / "figures"
 def _tsv_bundle() -> dict[str, list[str]]:
     """Parse ``TSV_BUNDLE`` out of sync_figure_gists_bundle_data.py without
     importing the module (avoids dragging in its `gh` runtime deps)."""
-    src = (REPO_ROOT / "scripts" / "sync_figure_gists_bundle_data.py").read_text()
+    src = (REPO_ROOT / "scripts" / "figures" / "sync_figure_gists_bundle_data.py").read_text()
     tree = ast.parse(src)
     for node in tree.body:
         if isinstance(node, ast.AnnAssign):

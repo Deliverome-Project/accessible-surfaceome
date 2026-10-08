@@ -54,7 +54,7 @@ gene with its `tier` plus the five real per-gene richness axes.
 The in-repo figure at
 [`data/analysis/figures/deep_dive_record_richness.pdf`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/analysis/figures/deep_dive_record_richness.pdf)
 is produced by
-[`scripts/deep_dive_record_richness.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/deep_dive_record_richness.py)
+[`scripts/figures/deep_dive_record_richness.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/deep_dive_record_richness.py)
 in the project repo. This gist mirror reads the pre-aggregated per-figure TSV
 instead so it stays self-contained.
 
@@ -62,7 +62,7 @@ instead so it stays self-contained.
 
 - Public D1 `surface_annotation.annotation_json` — one row per published
   deep-dive record.
-- Facet export: [`scripts/export_deep_dive_figure_source.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_deep_dive_figure_source.py)
+- Facet export: [`scripts/figures/export_deep_dive_figure_source.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/export_deep_dive_figure_source.py)
   — server-side `json_extract` pulls the per-gene axes (including the
   positive-finding `n_llm_evidence` count over the 24 filter facets and the
   `n_det_features` count over the 7 deterministic-feature blocks) into

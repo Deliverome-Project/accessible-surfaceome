@@ -52,9 +52,9 @@ const ENUM_MAP: Record<string, string> = {
   // CONTEXTUAL values + secreted_only already appear elsewhere in
   // this map (Modulation / Contradiction-types blocks below) so we
   // don't re-declare them here — TS rejects duplicate keys.
-  classical_surface_receptor: "Classical surface receptor",
+  classical_surface_receptor: "Single-pass",
   gpi_anchored: "GPI-anchored",
-  multipass_with_exposed_loops: "Multipass, exposed loops",
+  multipass_with_exposed_loops: "Multi-pass",
   extracellular_face_protein: "Extracellular-face protein",
   stable_complex_partner: "Stable complex partner",
   mitochondrial_internal: "Mitochondrial (internal)",

@@ -52,7 +52,7 @@ directory.
 - **Magnitude behind the boolean flags** (for reader analysis; not plotted).
   The boolean feature columns say *whether* a gene has a feature; six extra
   columns — joined from
-  [`scripts/export_det_feature_detail.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_det_feature_detail.py)
+  [`scripts/tsv-export/export_det_feature_detail.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/tsv-export/export_det_feature_detail.py)
   (the same genome-wide D1 tables, uniform across both facets) — give the
   magnitude, so you can filter/sort on it rather than just the yes/no:
 
@@ -65,12 +65,12 @@ directory.
 
   Empty where the feature is absent (no paralog, not a homomer, …).
 - **Canonical generator** (uses the in-repo `_plotting_config`):
-  [`scripts/surfaceome_deterministic_features.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/surfaceome_deterministic_features.py).
+  [`scripts/figures/surfaceome_deterministic_features.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/surfaceome_deterministic_features.py).
   The standalone script in this gist reads the bundled TSV and renders without
   depending on the project's plotting module.
 - **Sonnet det-feature export** (genome-wide D1 tables →
   `sonnet_universe_det_features.tsv`):
-  [`scripts/export_sonnet_universe_det_features.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_sonnet_universe_det_features.py).
+  [`scripts/tsv-export/export_sonnet_universe_det_features.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/tsv-export/export_sonnet_universe_det_features.py).
 
 The mirror's `_fetch_tsv` is sibling-first: it reads the bundled TSV next to the
 script (the gist case), falling back to the in-repo path otherwise.

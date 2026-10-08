@@ -31,8 +31,8 @@ uv run make_db_vs_sonnet_whole_proteome.py
 
 Sources (fetched live from the public repo, no API calls):
 
-- Whole-proteome catalog (DB flags + Sonnet verdicts): [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv) — 19,324 protein-coding genes; sourced from D1 by [`scripts/export_whole_proteome_catalog_to_tsv.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_whole_proteome_catalog_to_tsv.py)
+- Whole-proteome catalog (DB flags + Sonnet verdicts): [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv) — 19,324 protein-coding genes; sourced from D1 by [`scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py)
 - UniProt + CSPA optimized-cutoff accession sets: [`data/processed/triage_bench/db_optimized_cutoffs.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/triage_bench/db_optimized_cutoffs.tsv)
 
 Canonical in-repo generator:
-[`scripts/db_vs_sonnet_whole_proteome.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/db_vs_sonnet_whole_proteome.py).
+[`scripts/figures/db_vs_sonnet_whole_proteome.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/db_vs_sonnet_whole_proteome.py).

@@ -6,6 +6,7 @@ import type {
   BenchmarkMatrix,
   BenchmarkVariantResult,
 } from "../../lib/surfaceome-types";
+import { prettyEnum } from "../../lib/enums";
 import styles from "./BenchmarkTable.module.css";
 
 // Public Worker base (client-side fetch — same origin the SSG loader uses
@@ -192,7 +193,7 @@ export function RationaleDrawer({
               {data.truth_reason ? (
                 <p className={styles.drawerTruthLine}>
                   <span className="label-mono">Reason · </span>
-                  {data.truth_reason.replace(/_/g, " ")}
+                  {prettyEnum(data.truth_reason)}
                 </p>
               ) : null}
               {data.rationale ? (
@@ -249,7 +250,7 @@ export function RationaleDrawer({
                 {reason ? (
                   <p className={styles.drawerReason}>
                     <span className="label-mono">Model reason code · </span>
-                    {reason.replace(/_/g, " ")}
+                    {prettyEnum(reason)}
                   </p>
                 ) : null}
                 {reasoning ? (
@@ -284,7 +285,7 @@ export function RationaleDrawer({
                               ? "errored (no valid verdict)"
                               : rep.predicted_verdict!.replace(/_/g, " ")}
                             {!errored && rep.predicted_reason
-                              ? ` · ${rep.predicted_reason.replace(/_/g, " ")}`
+                              ? ` · ${prettyEnum(rep.predicted_reason)}`
                               : ""}
                           </p>
                           {errored ? (

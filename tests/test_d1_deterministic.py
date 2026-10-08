@@ -258,3 +258,75 @@ def test_fetch_orthologs_topology_none_when_join_misses(
     # miss falls into the `int(... or 0)` branch).
     assert o.tm_helix_count == 0
     assert o.ecd_length_residues == 0
+
+
+# ---------------------------------------------------------------------------
+# _latest_paralog_version — a cohort backfill must not shadow the global release
+# ---------------------------------------------------------------------------
+
+
+def test_paralog_version_prefers_coverage_over_recency(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The exact production regression, pinned.
+
+    ``paralog_2026_09_20_rescue`` (123 genes) landed after
+    ``paralog_topo_2026_05_16`` (5,790 genes). Selecting on ``fetched_at DESC``
+    picked the 123-gene release, so every deep dive saw paralogs for 2% of the
+    cohort — and an empty paralog list renders as "this protein has no
+    paralogs", a fabricated negative rather than a missing lookup.
+    """
+
+    def fake_query(sql: str, params: list) -> list[dict]:
+        if "FROM compara_paralog GROUP BY" in sql:
+            return [
+                {"v": "paralog_2026_09_20_rescue", "n": 123},
+                {"v": "paralog_topo_2026_05_16", "n": 5790},
+                {"v": "paralog_topo_test_optA_full", "n": 3},
+            ]
+        if "compara_paralog_release" in sql:
+            return [  # newest first — the trap the old picker fell into
+                {
+                    "paralog_version": "paralog_2026_09_20_rescue",
+                    "fetched_at": "2026-09-21 01:38:24",
+                },
+                {
+                    "paralog_version": "paralog_topo_2026_05_16",
+                    "fetched_at": "2026-05-17 05:58:34",
+                },
+                {
+                    "paralog_version": "paralog_topo_test_optA_full",
+                    "fetched_at": "2026-05-16 17:46:42",
+                },
+            ]
+        return []
+
+    monkeypatch.setattr(d1_deterministic, "_query_public", fake_query)
+    assert d1_deterministic._latest_paralog_version() == "paralog_topo_2026_05_16"
+
+
+def test_paralog_version_breaks_ties_on_recency(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Equal coverage → the newer release wins, so a re-materialization of the
+    same gene set still supersedes the copy it replaces."""
+
+    def fake_query(sql: str, params: list) -> list[dict]:
+        if "FROM compara_paralog GROUP BY" in sql:
+            return [{"v": "paralog_old", "n": 500}, {"v": "paralog_new", "n": 500}]
+        if "compara_paralog_release" in sql:
+            return [
+                {"paralog_version": "paralog_old", "fetched_at": "2026-01-01 00:00:00"},
+                {"paralog_version": "paralog_new", "fetched_at": "2026-09-01 00:00:00"},
+            ]
+        return []
+
+    monkeypatch.setattr(d1_deterministic, "_query_public", fake_query)
+    assert d1_deterministic._latest_paralog_version() == "paralog_new"
+
+
+def test_paralog_version_empty_when_table_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(d1_deterministic, "_query_public", lambda sql, params: [])
+    assert d1_deterministic._latest_paralog_version() == ""

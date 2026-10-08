@@ -33,7 +33,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPTS = REPO_ROOT / "scripts"
+SCRIPTS = REPO_ROOT / "scripts" / "figures"
 
 # Figures whose canonical generator reads its dedicated per-figure TSV
 # (``data/processed/figures/<slug>.tsv``) as the single source of truth,
@@ -71,6 +71,8 @@ READS_BUNDLED_TSV = [
     # opus-4-8). db_cutoff_tradeoff was also extracted but reads a
     # data/processed/triage_bench/ TSV (not a figures/ one), so it's guarded by
     # mirror-sync only and intentionally absent from this list.
+    "db_overlap_upset",
+    "blog_db_overlap_venn",
     "db_overlap_venn",
     "db_correctness_by_class",
     "benchmark_cost_vs_accuracy",

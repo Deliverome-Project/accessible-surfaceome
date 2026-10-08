@@ -65,10 +65,10 @@ DRIFT_STATUSES = frozenset(
 )
 
 REPAIR_HINT: dict[str, str] = {
-    STATUS_ORPHAN_CHILDREN: "scripts/audit_deep_dive_orphans.py --execute",
-    STATUS_PRIVATE_MISSING: "scripts/backfill_deep_dive_from_json.py --execute",
-    STATUS_PUBLIC_MISSING: "scripts/upload_viewer_snapshots_to_d1.py --execute",
-    STATUS_PUBLIC_STALE: "scripts/upload_viewer_snapshots_to_d1.py --execute",
+    STATUS_ORPHAN_CHILDREN: "scripts/audit/audit_deep_dive_orphans.py --execute",
+    STATUS_PRIVATE_MISSING: "scripts/cloud/backfill_deep_dive_from_json.py --execute",
+    STATUS_PUBLIC_MISSING: "scripts/cloud/upload_viewer_snapshots_to_d1.py --execute",
+    STATUS_PUBLIC_STALE: "scripts/cloud/upload_viewer_snapshots_to_d1.py --execute",
     STATUS_JSON_MISSING: "re-pull the Volume (modal volume get) — canonical JSON absent",
     STATUS_MISSING: "resume the sweep (full_sweep) — gene never completed",
     STATUS_QUARANTINED: (
