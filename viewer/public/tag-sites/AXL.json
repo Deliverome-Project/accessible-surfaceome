@@ -1077,5 +1077,27 @@
       "canonical_residue": 450,
       "left_pct": 50.0
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:22:23.664989+00:00",
+  "literature_notes": "Both ledger entries were examined and neither qualifies for an extracellular-face tag site. (1) PMC13240818 (pLVX-AXL-HA): the HA tag is cloned 'downstream of the wild-type AXL coding sequence', placing it at the intracellular C-terminus (residue 894 lies in the intracellular domain 473\u2013894). No snorkel evidence is cited, so this is an intracellular tag and is excluded. (2) PMC7791157 (pCMV-MYC-AXL): the ledger quote names the plasmid but does not state the insertion position of the Myc tag; per the rules a plasmid whose tag position is unstated cannot be used to pin insert_after_residue. Zero sites qualify.",
+  "literature_rejected": [
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "intracellular_terminus",
+      "reason": "C-terminal HA tag placed after residue 894, which is intracellular (domain 473-894). Not on the extracellular face. No snorkel evidence cited.",
+      "supporting_quote": "A HA-tag or an IRES-EGFP sequence was cloned in the downstream of the wild-type AXL coding sequence to generate pLVX-AXL-HA and pLVX-TetOne-hAXL-IRES-EGFP constructs."
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "position_unstated",
+      "reason": "Tag position is unstated in the ledger quote. The plasmid name 'pCMV-MYC-AXL' implies N-terminal Myc but the quote does not specify the insertion junction; insert_after_residue cannot be pinned.",
+      "supporting_quote": "The pDEST-SFB-SARS-CoV-2-S and pCMV-MYC-ACE2, pCMV-MYC-AXL, pCMV-MYC-EGFR and pCMV-MYC-LDLR plasmids were synthesized directly."
+    }
   ]
 }

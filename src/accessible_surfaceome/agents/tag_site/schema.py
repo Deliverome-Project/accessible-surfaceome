@@ -179,6 +179,10 @@ class RejectedSite(BaseModel):
     insert_after_residue: int | None = None
     gate: str = Field(description='Which gate removed it: "entailment" | "validation" | "geometry"')
     reason: str = ""
+    #: The quote that failed. For an entailment drop this IS the diagnostic —
+    #: without it the record says a site was removed but not what it cited, and
+    #: the truncated log line is not enough to reconstruct the mismatch.
+    supporting_quote: str | None = None
 
 
 class TagSiteResult(BaseModel):

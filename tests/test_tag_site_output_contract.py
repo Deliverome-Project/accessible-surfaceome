@@ -362,3 +362,57 @@ def test_an_invented_quote_is_still_dropped() -> None:
     recover_overcomplete_quotes(result, evidence=evidence)
     verify_entailment(result, evidence=evidence)
     assert not result.sites[0].entailment_verified
+
+
+# ---------------------------------------------------------------------------
+# Typographic punctuation must not break entailment.
+# ---------------------------------------------------------------------------
+
+
+def test_a_curly_apostrophe_does_not_break_entailment() -> None:
+    """The real KCNH2 T436 failure, with the real strings.
+
+    The agent proposed the site and ranked it FIRST. Its 448-character quote
+    differed from the ledger clip in ONE character: the publisher writes
+    "manufacturer’s" with U+2019 and the model transcribed U+0027. NFKC does not
+    fold those together, so the most faithful possible citation failed the
+    entailment gate and the site was deleted silently.
+
+    This normalizer is shared by every pipeline that span-verifies a quote, so
+    the same drop was available to the deep dive and internalization too."""
+    from accessible_surfaceome.agents.tag_site.literature_discovery import quote_supported
+
+    ledger = (
+        "A 13-residue bungarotoxin-binding site (BBS; "
+        "TGGCGGTACTACGAGAGCAGCCTGGAGCCCTACCCCGAC) was then introduced between "
+        "residues T436/E437 in the extracellular S1–S2 loop of hERG using the "
+        "Quik-Change Lightning Site-Directed Mutagenesis Kit (Stratagene) "
+        "according to the manufacturer’s instructions."
+    )
+    model_transcription = ledger.replace("’", "'").replace("–", "-")
+    assert model_transcription != ledger
+    assert quote_supported(model_transcription, ledger)
+
+
+def test_typographic_folding_is_idempotent() -> None:
+    """`normalize_for_quote_matching` documents f(f(x)) == f(x); every folded
+    target is ASCII and maps to itself, but assert it rather than assume it."""
+    from accessible_surfaceome.tools._shared.normalize import normalize_for_quote_matching
+
+    for raw in (
+        "the manufacturer’s “protocol” — see Fig. 1…",
+        "residues T436–E437",
+        "plain ascii text with 'quotes' and - dashes",
+    ):
+        once = normalize_for_quote_matching(raw)
+        assert normalize_for_quote_matching(once) == once
+
+
+def test_folding_does_not_collapse_genuinely_different_quotes() -> None:
+    """Folding is strictly more permissive, so the risk it carries is a FALSE
+    match. Two sentences that differ in words must still not entail."""
+    from accessible_surfaceome.agents.tag_site.literature_discovery import quote_supported
+
+    a = "A FLAG tag was inserted between Gln43 and Thr44 of the extracellular loop."
+    b = "A FLAG tag was inserted between Gln97 and Thr98 of the extracellular loop."
+    assert not quote_supported(a, b)

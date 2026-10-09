@@ -534,6 +534,7 @@ def run_tag_site_agent(
                 insert_after_residue=_s.insert_after_residue,
                 gate="entailment",
                 reason="supporting_quote is not in the span-verified ledger",
+                supporting_quote=_s.supporting_quote,
             ))
     result.sites = [s for s in result.sites if s.entailment_verified]
     attach_source_pmids(result, evidence=evidence, papers_by_id=papers_by_id)

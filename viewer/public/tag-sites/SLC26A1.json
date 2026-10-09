@@ -58,6 +58,38 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "SLC26A1-internal-155-lit",
+      "gene_symbol": "SLC26A1",
+      "uniprot_acc": "Q9H2B4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 155,
+      "residue_before": "P",
+      "residue_after": "G",
+      "residue_label": "P155",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface immunostaining of non-permeabilized oocytes confirmed cell-surface display of HA-tagged SLC26A1 (WT and Leu275Pro mutant); transport activity of the tagged construct was NOT MEASURED in the ledger clips.",
+      "confidence": "high",
+      "rationale": "Python computation confirms res(155)=P and res(156)=G. Position 155 falls within the second extracellular loop (topology landmarks: 138\u2013179), 18 aa from the proximal TM boundary (137) and 25 aa from the distal TM boundary (180), well exceeding the \u22653 aa minimum on both sides. The ledger explicitly names Pro155 as the insertion point in full-length, membrane-anchored SLC26A1 expressed in oocytes, and surface immunostaining of non-permeabilized cells confirmed extracellular display. HA epitope tag inserted by PCR mutagenesis after Pro155 in the second extracellular loop of full-length, membrane-anchored SLC26A1 (wild-type and Leu275Pro mutant). Expressed in Xenopus oocytes. Non-permeabilized oocytes were fixed with 1% PFA and immunostained, confirming cell-surface display of the HA-tagged construct. Surface expression was quantified for both WT and mutant. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 36719378,
+          "citation": "PMID 36719378",
+          "claim": "An HA epitope was inserted by PCR mutagenesis into the second extracellular loop, after Pro 155 of WT SLC26A1 and the Leu275Pro mutant."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "SLC26A1-snorkel-c",
       "gene_symbol": "SLC26A1",
       "uniprot_acc": "Q9H2B4",
@@ -300,6 +332,21 @@
       "isoform_residue": 337,
       "canonical_residue": 332,
       "left_pct": 47.86931818181818
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:22:21.575170+00:00",
+  "literature_notes": "The N-terminal FLAG tag reported in PMID 24647542 was explicitly shown by the same paper to be intracellular (no immunostaining of intact non-permeabilized cells for any SLC26 member including SLC26A1), consistent with the topology landmark placing residues 1\u201372 in the intracellular compartment. This site was therefore rejected.",
+  "literature_rejected": [
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "Intracellular. Topology landmarks place residues 1\u201372 in the intracellular compartment. The ledger itself confirms: 'No immunostaining of intact cells was observed for any SLC26 members, demonstrating that the NH2-terminal FLAG tag was located in the cytosol.' Does not meet the extracellular requirement.",
+      "supporting_quote": null
     }
   ]
 }
