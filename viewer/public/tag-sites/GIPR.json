@@ -52,5 +52,48 @@
       "left_pct": 6.682577565632458,
       "note": "Isoform surface expr 134 (-98% vs canonical)"
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:24:42.534890+00:00",
+  "literature_notes": "All C-terminal tags (V5 in PMC3296735; YFP/eYFP/SYFP2 in PMC4156404/PMC7438548; Flag in PMC10842860) are intracellular (IC4: 396\u2013466) and are excluded as extracellular sites. PMC10576055 (Flag + HA by site-directed mutagenesis) does not state the insertion position and cannot be pinned to a residue. PMC12771327 (HiBiT extracellular detection) does not state the tag position explicitly. No ledger evidence supports any internal extracellular loop (ECL1 192\u2013218, ECL2 281\u2013293, ECL3 362\u2013368) insertion for GIPR.",
+  "literature_rejected": [
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "C-terminus is intracellular (IC4: 396\u2013466); not an extracellular site",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "position_pinnable",
+      "reason": "Quote does not state the insertion position; insert_after_residue cannot be pinned",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "position_pinnable",
+      "reason": "Quote does not state the tag position explicitly; insert_after_residue cannot be pinned",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "insertion_tolerated",
+      "reason": "Reports glycosylation site mutagenesis, not a tag insertion site",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "Q21",
+      "insert_after_residue": 21,
+      "gate": "entailment",
+      "reason": "supporting_quote is not in the span-verified ledger",
+      "supporting_quote": "A myc-tag (EQKLISEEDL) was introduced immediately downstream of the predicted signal peptide of GLP-1R and GIPR by sequential overlapping PCR using primers, which also added a NotI and XbaI site to the products' termini."
+    }
   ]
 }

@@ -4,6 +4,70 @@
   "uniprot_acc": "P41440",
   "sites": [
     {
+      "site_id": "SLC19A1-internal-297-lit",
+      "gene_symbol": "SLC19A1",
+      "uniprot_acc": "P41440",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 297,
+      "residue_before": "P",
+      "residue_after": "T",
+      "residue_label": "P297",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Methotrexate binding and uptake assays in full-length, membrane-anchored construct: minor effects on both binding and uptake (surface_and_function preserved).",
+      "confidence": "high",
+      "rationale": "The ledger (PMID 10347183) explicitly names Pro-297 as the insertion site in the external loop between TM7 and TM8. Python lookup confirms residue 297 = P (Pro) and residue 298 = T in the canonical sequence. The topology landmarks place EXTRACELLULAR_4 at 289\u2013307; Pro-297 is 9 residues from the TM7 boundary (288) and 11 residues from TM8 (308), both well above the \u22653-residue minimum. The paper used a full-length, membrane-anchored construct (not a secreted ectodomain), and the HA insertion was functionally validated with only minor effects on methotrexate binding and uptake. insert_after_residue=297 places the tag between P(297) and T(298), mid-loop on the extracellular face. HA epitope tag inserted at Pro-297 in the extracellular loop between TM7 and TM8 (EXTRACELLULAR_4, residues 289\u2013307) of full-length human SLC19A1 fused to C-terminal eGFP; expressed in mammalian cells and tested for [3H]-methotrexate binding and uptake. Minor effects on both binding and uptake were reported. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 10347183,
+          "citation": "PMID 10347183",
+          "claim": "The hemagglutinin epitope insertion mutants were also tested for their effects on the function of the reduced folate carrier. For these studies, each of the constructs had a carboxyl-terminal fusion of the enhanced green fluorescent protein to monitor and quantitate expression. Insertions into the external loop between transmembrane regions 7 and 8 (Pro-297), the cytoplasmic loop between transmembrane regions 6 and 7 (Ser-225), and near the cytoplasmic amino and carboxyl termini (Pro-20 and Gly-492, respectively) had minor effects on methotrexate binding and uptake."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC19A1-internal-427-lit",
+      "gene_symbol": "SLC19A1",
+      "uniprot_acc": "P41440",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 427,
+      "residue_before": "P",
+      "residue_after": "V",
+      "residue_label": "P427",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Methotrexate binding and uptake assays in full-length, membrane-anchored construct: binding preserved but uptake selectively reduced (function_perturbed).",
+      "confidence": "medium",
+      "rationale": "The ledger (PMID 10347183) explicitly names Pro-427 as the insertion site in the external loop between TM11 and TM12. Python lookup confirms residue 427 = P (Pro) and residue 428 = V in the canonical sequence. The topology landmarks place EXTRACELLULAR_6 at 419\u2013431; Pro-427 is 9 residues from the TM11 boundary (418) and 5 residues from TM12 (432), both above the \u22653-residue minimum. The paper used a full-length, membrane-anchored construct. However, the insertion selectively interfered with uptake (though not binding), so validation_level is function_perturbed. This site is ranked lower than Pro-297 due to the functional perturbation. insert_after_residue=427 places the tag between P(427) and V(428) on the extracellular face. HA epitope tag inserted at Pro-427 in the extracellular loop between TM11 and TM12 (EXTRACELLULAR_6, residues 419\u2013431) of full-length human SLC19A1 fused to C-terminal eGFP; expressed in mammalian cells and tested for [3H]-methotrexate binding and uptake. The insertion selectively interfered with uptake but not binding, indicating partial functional perturbation. [validation: function_perturbed; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 10347183,
+          "citation": "PMID 10347183",
+          "claim": "The insertion into the cytoplasmic loop between transmembrane regions 10 and 11 (Gln-385) greatly reduced both binding and uptake of methotrexate, whereas the insertion into the external loop between transmembrane regions 11 and 12 (Pro-427) selectively interfered with uptake but not binding."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "SLC19A1-snorkel-c",
       "gene_symbol": "SLC19A1",
       "uniprot_acc": "P41440",
@@ -247,6 +311,63 @@
       "isoform_residue": 416,
       "canonical_residue": 422,
       "left_pct": 71.47766323024055
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:23:40.198862+00:00",
+  "literature_notes": "Six ledger-supported insertion sites were evaluated. Only two (Pro-297 and Pro-427) are in extracellular loops and qualify. The remaining four \u2014 Ser-225 (INTRACELLULAR_4, 204\u2013268), Pro-20 (INTRACELLULAR_1, 1\u201327), Gly-492 (INTRACELLULAR_7, 453\u2013591), and Gln-385 (INTRACELLULAR_6, 386\u2013397) \u2014 are all cytoplasmic and are excluded. The BRIL N-terminal fusion (PMC11965291) is fused to the intracellular N-terminus and the anti-Fab C-terminal fusion is intracellular; both excluded. The C-terminal HA tags from PMC13331525 and PMID 9767079 are also intracellular.",
+  "literature_rejected": [
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "Cytoplasmic loop between TM6 and TM7 (INTRACELLULAR_4: 204\u2013268); not extracellular.",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "Cytoplasmic N-terminus (INTRACELLULAR_1: 1\u201327); not extracellular.",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "Cytoplasmic C-terminus (INTRACELLULAR_7: 453\u2013591); not extracellular.",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "Cytoplasmic loop between TM10 and TM11 (INTRACELLULAR_6: 386\u2013397); not extracellular.",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "Fused to N-terminus of TM1; the N-terminus of SLC19A1 is intracellular (INTRACELLULAR_1: 1\u201327). Not extracellular.",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "Fused after TM12 into the intracellular C-terminus (INTRACELLULAR_7: 453\u2013591). Not extracellular.",
+      "supporting_quote": null
+    },
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "extracellular",
+      "reason": "C-terminal tag is intracellular (INTRACELLULAR_7: 453\u2013591). Not extracellular.",
+      "supporting_quote": null
     }
   ]
 }

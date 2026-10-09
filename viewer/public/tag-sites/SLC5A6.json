@@ -1,0 +1,56 @@
+{
+  "has_data": true,
+  "gene_symbol": "SLC5A6",
+  "uniprot_acc": "Q9Y289",
+  "sites": [
+    {
+      "site_id": "SLC5A6-internal-483-lit",
+      "gene_symbol": "SLC5A6",
+      "uniprot_acc": "Q9Y289",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 483,
+      "residue_before": "M",
+      "residue_after": "P",
+      "residue_label": "M483",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa (PSRLEEELRRRLTEP), GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Normal expression confirmed (construct selected based on normal expression); NbALFA nanobody binding confirmed on extracellular surface; cryo-EM structure resolved. Transport function was not explicitly re-assayed in the tagged construct, but expression and correct folding/trafficking were verified.",
+      "confidence": "high",
+      "rationale": "The ledger (PMC13454448) explicitly states that EL3 residues 484\u2013516 of full-length, membrane-anchored SMVT were replaced by the ALFA tag. Python computation confirms: seq[482]='M' (position 483) and seq[483]='P' (position 484), placing insert_after_residue=483. The topology landmarks place the entire EL3 in the EXTRACELLULAR span 477\u2013527, with TM10 ending at 476 (7 residues from the junction) and TM11 starting at 528 (45 residues from the junction) \u2014 both well beyond the \u22653-residue minimum. The replacement of a 33-residue loop with a 15-residue ALFA helix is sterically plausible and precedented by the published structure. Full-length human SMVT (SLC5A6) was engineered by replacing extracellular loop EL3 residues 484\u2013516 with the ALFA tag (PSRLEEELRRRLTEP). The resulting construct SMVT_EM showed normal expression and was bound by the NbALFA nanobody on the extracellular surface, serving as a fiducial marker for cryo-EM structural determination. The tag is accessible on the extracellular face of the membrane-anchored, full-length transporter. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 483; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 42364996,
+          "citation": "PMID 42364996",
+          "claim": "Specifically, we replaced the extracellular loop EL3 (residues 484-516) between TM11 and TM12 with a stable, short \u03b1-helix known as the ALFA tag (Fig. 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:23:42.158669+00:00",
+  "literature_notes": "The GFP-tagged hSMVT ledger entry (PMC3230660) confirms cell-surface display of a GFP-fused full-length construct but does not state where the GFP is inserted. Per the rules, this entry cannot ground a site and was rejected. It corroborates that full-length SLC5A6 tolerates large fusion tags and traffics to the plasma membrane.",
+  "literature_rejected": [
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "position_unstated",
+      "reason": "GFP tag position not stated \u2014 cannot determine insert_after_residue. Qualifies as corroborating evidence for surface trafficking but not as a pinned site.",
+      "supporting_quote": null
+    }
+  ]
+}

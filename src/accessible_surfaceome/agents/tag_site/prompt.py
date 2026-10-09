@@ -160,14 +160,29 @@ VALIDATED_EVIDENCE_TYPES = frozenset(
 #: Fields the PIPELINE sets after the model replies. Asking the model for these
 #: invites it to assert its own quote was verified, which is the one thing the
 #: entailment gate exists to decide.
-_PIPELINE_SET = ("entailment_verified", "quote_probative", "position_repaired", "rank")
+_PIPELINE_SET = (
+    "entailment_verified", "quote_probative", "position_repaired", "rank",
+    # The gates' own record of what they removed. Asking the model for it got
+    # exactly what you would expect: it invented a gate name ("no_ledger_support")
+    # and filled the field with editorial notes about loops it chose not to
+    # propose, which is what `notes` is for. A gate record the model can write is
+    # not a record of the gates.
+    "rejected",
+)
 
 #: Top-level identity the RUNNER stamps from its own arguments. Asking the model
 #: to echo these back cost a repair round on every run and bought nothing.
 _CODE_SET = (
     "gene_symbol", "uniprot_accession", "sequence_length", "topology_state",
     "supporting_pmid",
+    # Prompt provenance, stamped by the runner on the way out. The model cannot
+    # know the sha of the prompt it is reading, and asking produced six entries
+    # in the contract that all carried the same copy-pasted hint.
+    "schema_version", "prompt_sha", "prompt_version", "model", "generated_at",
 )
+
+#: Per-field hints for the top-level keys the model does supply.
+_TOP_HINTS = {"notes": "what you considered and did not propose, and why"}
 
 #: Short type tokens; the long semantics stay in the prose above rather than
 #: being duplicated here.
@@ -219,10 +234,11 @@ def format_output_contract() -> str:
     lines = ["OUTPUT — ONE JSON object with exactly these keys:", ""]
     lines.append(f"  {'sites':<10} {'list':<6} required — [] when nothing qualifies, which is a valid answer")
     for name, f in top.items():
-        if name == "sites" or name in _CODE_SET:
+        if name == "sites" or name in _CODE_SET or name in _PIPELINE_SET:
             continue
         req = "required" if f.is_required() else f"optional, default {f.default!r}"
-        lines.append(f"  {name:<10} {_type_token(f.annotation):<6} {req} — anything that did not fit a site")
+        hint = _TOP_HINTS.get(name, "")
+        lines.append(f"  {name:<10} {_type_token(f.annotation):<6} {req}{' — ' + hint if hint else ''}")
     lines += ["", "Each entry of `sites`:", ""]
     for name, f in TagSiteProposal.model_fields.items():
         if name in _PIPELINE_SET or name in _CODE_SET:

@@ -493,6 +493,9 @@ def run_tag_site_agent(
     if result is None:
         return _empty()
     assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
+    # Anything the model put here is its own editorial judgement, not a gate
+    # record; `notes` is where that belongs.
+    result.rejected = []
 
     # Identity is ours, not the model's: we passed the symbol and accession in and
     # computed the sequence. Stamping them here keeps the record's provenance
