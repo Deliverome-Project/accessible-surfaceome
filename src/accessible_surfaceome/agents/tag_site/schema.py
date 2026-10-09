@@ -1,6 +1,8 @@
 """Structured output schema for the literature tag-site agent."""
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field, computed_field
 
 # Evidence-strength ladder (verbatim from the agentic tag-site benchmark prompt).
@@ -8,9 +10,25 @@ EVIDENCE_TYPES = (
     "published tag insertion at this exact site",
     "published tag insertion in the same loop or domain",
     "published tolerance of a different insertion (transposon, FP fusion)",
-    "structural inference",
-    "topology inference only",
 )
+# "structural inference" and "topology inference only" were valid values here
+# while the prompt forbade justifying any site by structural inference — the
+# schema offered exactly what the prose banned. Deciding a site on topology is
+# the deterministic pipeline's job, which does it with computed RSA/DSSP, so a
+# literature site has no honest use for either value.
+
+EvidenceType = Literal[
+    "published tag insertion at this exact site",
+    "published tag insertion in the same loop or domain",
+    "published tolerance of a different insertion (transposon, FP fusion)",
+]
+SiteType = Literal["terminal_n", "terminal_c", "internal"]
+#: "unknown" is deliberate and load-bearing: a compartment that could not be
+#: derived must never read as extracellular. Mirrors `compartmentAt` in
+#: viewer/lib/surface-bind.ts, which carries the same rule.
+TopologyState = Literal["extracellular", "intracellular", "membrane", "signal", "unknown"]
+PositionEvidence = Literal["validated", "inferred"]
+Confidence = Literal["high", "medium", "low"]
 
 # Validation strength of the cited tagging construct, best -> worst. The headline
 # ranking signal: prioritize sites where the tag was shown to DISPLAY on the surface
@@ -26,25 +44,37 @@ VALIDATION_LEVELS = (
     "not_measured",          # tag reported without validation
 )
 VALIDATION_RANK = {v: i for i, v in enumerate(VALIDATION_LEVELS)}
+ValidationLevel = Literal[
+    "surface_and_function", "surface_only", "function_only",
+    "detected_only", "function_perturbed", "not_measured",
+]
 
 # Source tier of the supporting reference, best -> worst (see literature_discovery).
 SOURCE_TIERS = ("paper", "patent", "other", "vendor")
+SourceTier = Literal["paper", "patent", "other", "vendor"]
 
 
 class TagSiteProposal(BaseModel):
     #: Overwritten unconditionally by `rank_sites` after the gates run, so the
     #: model's ordering is discarded — do not ask for it.
     rank: int = 0
-    site_type: str = Field(description='"terminal_n" | "terminal_c" | "internal"')
+    site_type: SiteType = Field(description='"terminal_n" | "terminal_c" | "internal"')
     insert_after_residue: int = Field(
         description="Junction: tag sits between this residue and +1 (UniProt canonical numbering)."
     )
     residue_before: str = Field(description="1-letter residue AT insert_after_residue.")
     residue_after: str = Field(description="1-letter residue AT insert_after_residue+1.")
-    topology_state: str = Field(description='"extracellular" | "intracellular" | "membrane" | "signal"')
+    topology_state: TopologyState = Field(
+        default="unknown",
+        description=(
+            "Derived in code from the computed topology by `compartment_for_site` "
+            "after the geometry pass — the model is not asked for it. Per-kind, so "
+            "a terminal_n reads the MATURE N-terminus rather than the junction."
+        ),
+    )
     tag_type: str = Field(description="e.g. 'short epitope, ALFA 15 aa, GS linkers'")
-    evidence_type: str = Field(description="One of the EVIDENCE_TYPES ladder values.")
-    position_evidence: str = Field(
+    evidence_type: EvidenceType = Field(description="One of the EVIDENCE_TYPES ladder values.")
+    position_evidence: PositionEvidence = Field(
         description=(
             '"validated" — a tag was published AT this exact residue/junction (or immediately '
             'adjacent, +/-1). "inferred" — the loop/domain has tagging precedent ELSEWHERE, but '
@@ -64,7 +94,7 @@ class TagSiteProposal(BaseModel):
     functional_or_expression_impact_measured: str = Field(
         description="What was MEASURED (assay + result), or 'NOT MEASURED'. Never inferred."
     )
-    validation_level: str = Field(
+    validation_level: ValidationLevel = Field(
         default="not_measured",
         description=(
             "One of VALIDATION_LEVELS. The priority ranking signal: was the tag shown to "
@@ -77,7 +107,7 @@ class TagSiteProposal(BaseModel):
             "reported. Derive it from what was actually measured — never infer beyond the evidence."
         ),
     )
-    source_tier: str = Field(
+    source_tier: SourceTier = Field(
         default="paper",
         description=(
             "Reference tier: 'paper' (peer-reviewed/preprint) > 'patent' > 'other' > 'vendor' "
@@ -118,7 +148,7 @@ class TagSiteProposal(BaseModel):
         ),
     )
     rationale: str
-    confidence: str = Field(description='"high" | "medium" | "low"')
+    confidence: Confidence = Field(description='"high" | "medium" | "low"')
 
     @computed_field  # type: ignore[prop-decorator]
     @property

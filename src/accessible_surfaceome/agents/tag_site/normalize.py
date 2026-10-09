@@ -62,6 +62,28 @@ def first_mature_residue(topology: str, sp_end: int) -> int:
     return i + 1
 
 
+def compartment_for_site(
+    kind: str | None, res: int | None, topology: str, *, sp_end: int
+) -> str:
+    """The compartment a site is DISPLAYED in — the single derivation the gate
+    judges on and the record records.
+
+    It is per-kind, not simply ``compartment_at(res)``: a terminal_c is judged at
+    the C-terminus and a terminal_n at the MATURE N-terminus (past any residual
+    signal peptide), not at whatever residue the junction names. Returns
+    "unknown" rather than guessing, so a caller can never read absence as
+    extracellular."""
+    if kind == "internal":
+        return compartment_at(topology, res)
+    if kind == "terminal_c":
+        return compartment_at(topology, len(topology) if topology else None)
+    if kind == "terminal_n":
+        if sp_end > 0:
+            return compartment_at(topology, first_mature_residue(topology, sp_end))
+        return compartment_at(topology, 1)
+    return "unknown"
+
+
 def topology_gate(
     site: dict[str, Any], topology: str, *, sp_end: int | None = None
 ) -> tuple[bool, str]:
@@ -78,29 +100,27 @@ def topology_gate(
     res = site.get("insert_after_residue")
     sp_end = signal_peptide_end(topology) if sp_end is None else sp_end
 
-    if kind == "internal":
-        c = compartment_at(topology, res)
-        return (c == "extracellular", "" if c == "extracellular"
-                else f"internal residue {res} is {c}, not extracellular")
+    # The signal-peptide check is not a compartment question: the residue may sit
+    # in an 'S' run that is cleaved away, so it is judged before the compartment.
+    if kind == "terminal_n" and sp_end > 0 and res is not None and res < sp_end:
+        return False, (f"terminal_n at residue {res} is within the signal peptide "
+                       f"(1-{sp_end}) — the tag is cleaved off with the SP (silent failure)")
 
-    if kind == "terminal_c":
-        c = compartment_at(topology, len(topology) if topology else None)
-        return (c == "extracellular", "" if c == "extracellular"
-                else f"C-terminus is {c}, not extracellular")
+    if kind not in {"internal", "terminal_c", "terminal_n"}:
+        return True, ""  # unknown kind → pass
 
-    if kind == "terminal_n":
-        if sp_end > 0:
-            if res is not None and res < sp_end:
-                return False, (f"terminal_n at residue {res} is within the signal peptide "
-                               f"(1-{sp_end}) — the tag is cleaved off with the SP (silent failure)")
-            mature = compartment_at(topology, first_mature_residue(topology, sp_end))
-            return (mature == "extracellular", "" if mature == "extracellular"
-                    else f"mature N-terminus (residue {sp_end + 1}) is {mature}, not extracellular")
-        c = compartment_at(topology, 1)
-        return (c == "extracellular", "" if c == "extracellular"
-                else f"N-terminus (residue 1) is {c} — no extracellular N-terminus to tag (type II)")
-
-    return True, ""  # unknown kind → pass
+    c = compartment_for_site(kind, res, topology, sp_end=sp_end)
+    if c == "extracellular":
+        return True, ""
+    where = {
+        "internal": f"internal residue {res}",
+        "terminal_c": "C-terminus",
+        "terminal_n": (f"mature N-terminus (residue {sp_end + 1})" if sp_end > 0
+                       else "N-terminus (residue 1)"),
+    }[kind]
+    tail = " — no extracellular N-terminus to tag (type II)" if (
+        kind == "terminal_n" and sp_end == 0) else ", not extracellular"
+    return False, f"{where} is {c}{tail}"
 
 
 def apply_topology_gate(

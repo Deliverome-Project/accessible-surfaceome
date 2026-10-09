@@ -156,7 +156,7 @@ _PIPELINE_SET = ("entailment_verified", "quote_probative", "position_repaired", 
 
 #: Top-level identity the RUNNER stamps from its own arguments. Asking the model
 #: to echo these back cost a repair round on every run and bought nothing.
-_CODE_SET = ("gene_symbol", "uniprot_accession", "sequence_length")
+_CODE_SET = ("gene_symbol", "uniprot_accession", "sequence_length", "topology_state")
 
 #: Short type tokens; the long semantics stay in the prose above rather than
 #: being duplicated here.
@@ -214,7 +214,7 @@ def format_output_contract() -> str:
         lines.append(f"  {name:<10} {_type_token(f.annotation):<6} {req} — anything that did not fit a site")
     lines += ["", "Each entry of `sites`:", ""]
     for name, f in TagSiteProposal.model_fields.items():
-        if name in _PIPELINE_SET:
+        if name in _PIPELINE_SET or name in _CODE_SET:
             continue
         req = "required" if f.is_required() else f"default {f.default!r}"
         # Fall back to the schema's own description when it already enumerates the

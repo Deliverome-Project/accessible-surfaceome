@@ -77,7 +77,13 @@ _TAG_SITE_INTENT = (
     "bungarotoxin-binding site, snorkel) in an extracellular loop or terminus, "
     "and their surface-display / functional validation"
 )
-_TOPO_CHAR = {"extracellular": "O", "intracellular": "I", "membrane": "M", "signal": "S"}
+#: Compartment -> DeepTMHMM char for the viewer shape. "unknown" maps to None,
+#: never to "O": an underived compartment that renders as extracellular is the
+#: failure this table used to have via a `.get(..., "O")` default.
+_TOPO_CHAR: dict[str, str | None] = {
+    "extracellular": "O", "intracellular": "I",
+    "membrane": "M", "signal": "S", "unknown": None,
+}
 
 # Tag-site clip-select stage: the shared selector is fed this prompt + menu
 # instruction, and its picks are promoted under the ``tag_evi_`` evidence-id
@@ -487,7 +493,7 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
             "residue_before": s.residue_before,
             "residue_after": s.residue_after,
             "residue_label": s.residue_label,
-            "topology_state": _TOPO_CHAR.get(s.topology_state, "O"),
+            "topology_state": _TOPO_CHAR[s.topology_state],
             "extracellular": s.topology_state == "extracellular",
             "compartment": s.topology_state,
             "tag_type": s.tag_type,

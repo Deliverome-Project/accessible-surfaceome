@@ -17,6 +17,9 @@ are not asked of the model at all.
 """
 from __future__ import annotations
 
+import typing
+from pathlib import Path
+
 from accessible_surfaceome.agents.tag_site.prompt import (
     _CODE_SET,
     _PIPELINE_SET,
@@ -24,6 +27,9 @@ from accessible_surfaceome.agents.tag_site.prompt import (
     format_output_contract,
 )
 from pydantic import BaseModel
+
+from accessible_surfaceome.agents.internalization import models as internalization_models
+from accessible_surfaceome.agents.internalization.literature_grade import LiteratureLLMOut
 
 from accessible_surfaceome.agents.tag_site.schema import TagSiteProposal, TagSiteResult
 
@@ -70,7 +76,7 @@ def test_code_supplied_fields_have_defaults_so_an_omission_still_validates() -> 
     """The runner stamps these after parsing; the model omitting them must not
     fail validation, which is what made them cost a repair round."""
     for name in _CODE_SET:
-        field = TagSiteResult.model_fields[name]
+        field = TagSiteResult.model_fields.get(name) or TagSiteProposal.model_fields[name]
         assert not field.is_required(), f"{name!r} is still required of the model"
     assert not TagSiteProposal.model_fields["rank"].is_required()
 
@@ -108,3 +114,62 @@ def test_the_impact_field_is_a_string_not_a_bool() -> None:
         "functional_or_expression_impact_measured"
     ].annotation is str
     assert "never true/false" in format_output_contract()
+
+
+# ---------------------------------------------------------------------------
+# The same two invariants, applied to the internalization literature search.
+#
+# It already satisfies both — 16 Literal types, and every required field named
+# in its prompts. These tests exist so it stays that way: the tag-site agent
+# also started out fine and drifted, and nothing was watching.
+# ---------------------------------------------------------------------------
+
+_INTERNALIZATION_PROMPTS = (
+    Path(internalization_models.__file__).parent / "prompts"
+)
+
+
+def _reachable(
+    model: type[BaseModel], seen: set[type[BaseModel]] | None = None
+) -> set[type[BaseModel]]:
+    """Every BaseModel reachable from `model`, including through list/optional."""
+    seen = seen if seen is not None else set()
+    if model in seen:
+        return seen
+    seen.add(model)
+    for field in model.model_fields.values():
+        for candidate in (field.annotation, *typing.get_args(field.annotation)):
+            for inner in (candidate, *typing.get_args(candidate)):
+                if isinstance(inner, type) and issubclass(inner, BaseModel):
+                    _reachable(inner, seen)
+    return seen
+
+
+def test_internalization_closed_vocabularies_are_literals() -> None:
+    """A closed vocabulary typed as bare `str` accepts anything — which is how a
+    tag-site record shipped `topology_state='O'` and read as not-extracellular."""
+    unconstrained: list[str] = []
+    for model in _reachable(LiteratureLLMOut):
+        for name, field in model.model_fields.items():
+            if typing.get_origin(field.annotation) is typing.Literal:
+                continue
+            description = field.description or ""
+            if "|" in description or description.count("'") >= 4:
+                unconstrained.append(f"{model.__name__}.{name}")
+    assert not unconstrained, (
+        f"{unconstrained} enumerate their allowed values in the description but "
+        f"are not Literal, so any string validates"
+    )
+
+
+def test_internalization_required_fields_are_named_in_its_prompts() -> None:
+    """The schema is not sent to the API here either, so a required field the
+    prompts never name is one the model can only guess at."""
+    blob = "\n".join(p.read_text() for p in _INTERNALIZATION_PROMPTS.glob("*.md"))
+    missing = [
+        f"{model.__name__}.{name}"
+        for model in _reachable(LiteratureLLMOut)
+        for name, field in model.model_fields.items()
+        if field.is_required() and name not in blob
+    ]
+    assert not missing, f"required but named in no internalization prompt: {missing}"

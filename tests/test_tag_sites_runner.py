@@ -1,4 +1,6 @@
 import types
+
+from pydantic import ValidationError
 from typing import cast
 
 import pytest
@@ -64,16 +66,26 @@ def test_function_perturbed_ranks_below_surface_only():
     assert [s.insert_after_residue for s in out.sites] == [20, 10]  # surface_only first
 
 
-def test_rank_sites_drops_unvalidated_and_orders_by_validation_then_tier():
+def test_rank_sites_orders_by_validation_then_tier():
     a = _site(1, val="not_measured", tier="paper", res=10)
     b = _site(2, val="surface_and_function", tier="vendor", res=20)
-    c = _site(3, ev="structural inference", res=30)          # dropped (not validated)
     d = _site(4, val="surface_and_function", tier="paper", res=40)
-    out = R.rank_sites(_result([a, b, c, d]))
+    out = R.rank_sites(_result([a, b, d]))
     residues = [s.insert_after_residue for s in out.sites]
     assert residues == [40, 20, 10]          # D (val+paper), B (val+vendor), A (not_measured)
     assert [s.rank for s in out.sites] == [1, 2, 3]   # renumbered
-    assert 30 not in residues                # the structural-inference site is gone
+
+
+def test_a_structural_inference_site_cannot_be_constructed_at_all():
+    """This used to be filtered out by `keep_validated_sites` AFTER parsing, which
+    meant the prompt banned the value while the schema accepted it. The Literal
+    moves the rejection to parse time, where the repair loop reports it back to
+    the model instead of the site being silently dropped."""
+    import pytest
+    with pytest.raises(ValidationError):
+        _site(3, ev="structural inference", res=30)
+    with pytest.raises(ValidationError):
+        _site(3, ev="topology inference only", res=30)
 
 
 def test_format_evidence_ledger():

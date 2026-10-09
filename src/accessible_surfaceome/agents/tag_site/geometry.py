@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import re
 
-from .normalize import topology_gate
+from .normalize import compartment_for_site, topology_gate
 
 
 def check_residues(
@@ -141,5 +141,14 @@ def apply_geometry_pass(
         if not ok:
             rejected.append((site, f"topology: {reason}"))
             continue
+
+        # Record the compartment the gate just judged, rather than whatever the
+        # model called it. The two used to disagree: the gate derived the real
+        # compartment and kept the site, then the record stored the model's
+        # string, which shipped sites reading `extracellular: false` on sites
+        # that had passed the extracellular gate.
+        site.topology_state = compartment_for_site(
+            site.site_type, site.insert_after_residue, topology, sp_end=sp_end
+        )
         kept.append(site)
     return kept, rejected
