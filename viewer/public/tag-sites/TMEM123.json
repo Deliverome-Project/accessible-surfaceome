@@ -28,7 +28,7 @@
       "sources": [],
       "plddt": 51.0,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TMEM123-disorder-113",
@@ -55,7 +55,7 @@
       "sources": [],
       "plddt": 51.9,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TMEM123-disorder-128",
@@ -82,7 +82,7 @@
       "sources": [],
       "plddt": 49.8,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 0.5
     },
     {
       "site_id": "TMEM123-disorder-145",
@@ -109,7 +109,7 @@
       "sources": [],
       "plddt": 44.2,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 0.5
     },
     {
       "site_id": "TMEM123-disorder-159",
@@ -136,7 +136,7 @@
       "sources": [],
       "plddt": 66.8,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 0.5
     },
     {
       "site_id": "TMEM123-disorder-39",
@@ -163,7 +163,7 @@
       "sources": [],
       "plddt": 44.2,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 0.5
     },
     {
       "site_id": "TMEM123-disorder-55",
@@ -217,7 +217,7 @@
       "sources": [],
       "plddt": 50.6,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TMEM123-disorder-91",
@@ -244,7 +244,7 @@
       "sources": [],
       "plddt": 46.4,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TMEM123-surface_loop-160",
@@ -271,7 +271,7 @@
       "sources": [],
       "plddt": 71.6,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TMEM123-terminal-n",

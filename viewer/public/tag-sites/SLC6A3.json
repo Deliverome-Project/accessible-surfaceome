@@ -394,31 +394,5 @@
       "canonical_residue": 187,
       "left_pct": 30.161290322580648
     }
-  ],
-  "schema_version": "1.0.0",
-  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
-  "prompt_version": "1.0.0",
-  "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T02:15:43.974205+00:00",
-  "literature_notes": "C-terminal Twin-Strep-HA and FLAG tags (PMC7809260) are on the intracellular C-terminus (topology span 579-620, intracellular) and do not qualify as extracellular tags. YFP-HA-DAT (PMC8010718, PMC9124866) places YFP at the N-terminus (intracellular, residues 1-68) and HA in EL2 at P194/G195 (already captured as site 1). EL3 CCPGCC (PMC2817725): the intrinsic Pro-Gly in EL3 is at P288-G289 (computed from sequence: residue 288=P, 289=G, EL3 span 286-309); the CCPGCC motif starts at residue 286, only 1 residue from the TM5/EL3 boundary (TM5 ends at 285), failing the >=3 residue constraint. DAT-pHluorin in live neurons (PMC11490699) confirms in vivo utility of the P194/G195 construct but adds no new insertion sites.",
-  "literature_rejected": [
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "too_close_to_tm",
-      "reason": "CCPGCC motif starts at residue 286, only 1 residue from TM5/EL3 boundary (TM5 ends at 285). Fails >=3 residue from TM boundary constraint for epitope tag insertion. Evidence is also for a substitution-based tag, not an insertion."
-    },
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "not_extracellular",
-      "reason": "The C-terminus of DAT (residues 579-620) is intracellular per topology landmarks. Tags at this position are not extracellular and do not qualify."
-    },
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "not_extracellular",
-      "reason": "YFP is fused to the N-terminus of DAT (residues 1-68, intracellular). This is an intracellular terminus tag, not extracellular."
-    }
   ]
 }

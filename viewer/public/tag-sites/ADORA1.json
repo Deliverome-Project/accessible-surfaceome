@@ -37,35 +37,58 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADORA1-terminal-n",
+      "gene_symbol": "ADORA1",
+      "uniprot_acc": "P30542",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": null,
+      "residue_after": "M",
+      "residue_label": null,
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular N-terminus (topology 'O' at residue 1) \u2014 direct N-terminal tag",
+      "sources": [],
+      "plddt": 38.3,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [
     {
-      "site_id": "ADORA1-nterm-tedman::iso::P30542-2",
+      "site_id": "ADORA1-disorder-1::iso::P30542-2",
       "isoform_id": "P30542-2",
-      "classification": "control",
-      "det_path": null,
-      "site_kind": "terminal_n",
-      "tag_type": "HA",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
       "isoform_residue": 1,
-      "canonical_residue": null,
-      "left_pct": 0.8,
-      "note": "Isoform surface expr 107 (-98% vs canonical)"
+      "canonical_residue": 1,
+      "left_pct": 0.8
+    },
+    {
+      "site_id": "ADORA1-disorder-73::iso::P30542-2",
+      "isoform_id": "P30542-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 73,
+      "canonical_residue": 73,
+      "left_pct": 58.4
     }
   ],
-  "schema_version": "1.0.0",
-  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
-  "prompt_version": "1.0.0",
-  "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T02:23:00.063423+00:00",
-  "literature_notes": "Both ledger lines originate from the same paper (PMC12229354) and describe the same Myc-tagged ADORA1 construct. Neither quote specifies the insertion residue or junction; the supplementary table referenced in the paper is not reproduced in the ledger. The position (insert_after_residue = 0, N-terminal prepend) is the only extracellular terminal position available for a GPCR lacking a signal peptide and is therefore inferred rather than validated. ECL1 (69\u201381), ECL2 (147\u2013179), and ECL3 (257\u2013267) are also extracellular but the ledger provides no positional evidence for any of them; no sites in those loops are reported. If the supplementary table were available and named a specific residue, position_evidence could be upgraded to 'validated'.",
-  "literature_rejected": [
-    {
-      "residue_label": "-0",
-      "insert_after_residue": 0,
-      "gate": "geometry",
-      "reason": "residue mismatch: residue 0 is outside the sequence (1-326)",
-      "supporting_quote": null
-    }
-  ]
+  "ortholog_pins": []
 }

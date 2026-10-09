@@ -64,6 +64,9 @@ def main() -> int:
         "--version", default="dev",
         help="tag_sites_version stamp for these rows (e.g. a date).",
     )
+    ap.add_argument("--allow-deletes", action="store_true",
+                    help="proceed even when a gene's local JSON has FEWER sites than "
+                         "D1 holds (replace-all would delete the difference).")
     ap.add_argument("--gene", help="sync only this SYMBOL (default: all committed JSON).")
     ap.add_argument("--manifest", help="TSV whose first column is a gene SYMBOL; sync "
                                        "only those genes, leaving the rest of the store "
@@ -88,6 +91,38 @@ def main() -> int:
 
     load_env()
     client = D1Client.public()
+
+    # Pre-flight: publish_tag_sites is REPLACE-ALL per gene, so syncing a stale
+    # snapshot DELETES rows D1 holds and the file does not. The dry-run counts
+    # what would be written and says nothing about what would be destroyed —
+    # which is how a sync from snapshots that had already drifted removed 40
+    # live rows, including every deterministic site for a gene the in-tree JSON
+    # had lost at an earlier commit.
+    shrinking: list[tuple[str, int, int]] = []
+    for path in files:
+        data = json.loads(path.read_text())
+        symbol = data.get("gene_symbol") or path.stem
+        local_n = len(data.get("sites") or [])
+        rows = client.query(
+            "SELECT COUNT(*) n FROM tag_site_public WHERE gene_symbol = ?;", [symbol]
+        )
+        remote_n = (rows[0]["n"] if rows else 0) or 0
+        if remote_n > local_n:
+            shrinking.append((symbol, remote_n, local_n))
+    if shrinking and not args.allow_deletes:
+        log.error(
+            "REFUSING: %d gene(s) would LOSE rows — D1 holds more sites than the "
+            "local JSON. Re-derive the missing sites (scripts/regenerate_tag_sites.py) "
+            "or pass --allow-deletes if the removal is intended.",
+            len(shrinking),
+        )
+        for symbol, remote_n, local_n in shrinking[:20]:
+            log.error("    %-10s D1=%d local=%d  (-%d)", symbol, remote_n, local_n,
+                      remote_n - local_n)
+        return 2
+    if shrinking:
+        log.warning("--allow-deletes: %d gene(s) will lose rows", len(shrinking))
+
     try:
         tag_sites_d1.ensure_table(client)
         grand = 0

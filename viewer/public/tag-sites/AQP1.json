@@ -427,12 +427,5 @@
       "canonical_residue": 46,
       "left_pct": 17.100371747211895
     }
-  ],
-  "schema_version": "1.0.0",
-  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
-  "prompt_version": "1.0.0",
-  "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T02:07:58.790401+00:00",
-  "literature_notes": "All three ledger lines converge on the identical Q43/T44 junction in extracellular loop 1 (topology span 34\u201349). This is reported as a single site (rank 1) because all three citations pin the same residue pair. No other extracellular loops (loop 2: 116\u2013135; loop 3: 187\u2013210) are supported by any ledger line, so no additional sites are proposed. Validation level is surface_only because the ledger quotes describe surface-expression assays (non-permeabilized anti-FLAG staining) but do not report water-transport functional assays for the tagged constructs.",
-  "literature_rejected": []
+  ]
 }

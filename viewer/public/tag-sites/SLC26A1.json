@@ -333,20 +333,5 @@
       "canonical_residue": 332,
       "left_pct": 47.86931818181818
     }
-  ],
-  "schema_version": "1.0.0",
-  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
-  "prompt_version": "1.0.0",
-  "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T02:22:21.575170+00:00",
-  "literature_notes": "The N-terminal FLAG tag reported in PMID 24647542 was explicitly shown by the same paper to be intracellular (no immunostaining of intact non-permeabilized cells for any SLC26 member including SLC26A1), consistent with the topology landmark placing residues 1\u201372 in the intracellular compartment. This site was therefore rejected.",
-  "literature_rejected": [
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "extracellular",
-      "reason": "Intracellular. Topology landmarks place residues 1\u201372 in the intracellular compartment. The ledger itself confirms: 'No immunostaining of intact cells was observed for any SLC26 members, demonstrating that the NH2-terminal FLAG tag was located in the cytosol.' Does not meet the extracellular requirement.",
-      "supporting_quote": null
-    }
   ]
 }

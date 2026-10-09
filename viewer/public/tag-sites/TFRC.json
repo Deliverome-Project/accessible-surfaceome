@@ -58,7 +58,7 @@
       "sources": [],
       "plddt": 35.9,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 0.5
     },
     {
       "site_id": "TFRC-disorder-120",
@@ -112,7 +112,7 @@
       "sources": [],
       "plddt": 58.0,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TFRC-disorder-94",
@@ -139,7 +139,7 @@
       "sources": [],
       "plddt": 40.8,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 0.5
     },
     {
       "site_id": "TFRC-internal-290-lit",
@@ -198,7 +198,7 @@
       "sources": [],
       "plddt": 79.0,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TFRC-surface_loop-150",
@@ -225,7 +225,7 @@
       "sources": [],
       "plddt": 94.8,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TFRC-surface_loop-247",
@@ -279,7 +279,7 @@
       "sources": [],
       "plddt": 95.9,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TFRC-surface_loop-327",
@@ -306,7 +306,7 @@
       "sources": [],
       "plddt": 80.8,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TFRC-surface_loop-569",
@@ -333,7 +333,7 @@
       "sources": [],
       "plddt": 97.2,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 0.5
     },
     {
       "site_id": "TFRC-surface_loop-688",
@@ -360,7 +360,7 @@
       "sources": [],
       "plddt": 95.4,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TFRC-surface_loop-704",
@@ -387,7 +387,7 @@
       "sources": [],
       "plddt": 92.8,
       "conservation_rank": null,
-      "median_conservation": 0.0
+      "median_conservation": 1.0
     },
     {
       "site_id": "TFRC-terminal-c",
