@@ -72,7 +72,13 @@ class TagSiteProposal(BaseModel):
             "a terminal_n reads the MATURE N-terminus rather than the junction."
         ),
     )
-    tag_type: str = Field(description="e.g. 'short epitope, ALFA 15 aa, GS linkers'")
+    tag_type: str = Field(
+        description=(
+            "The tag the CITED study inserted, as a short LABEL: 'ALFA', '3xFLAG', "
+            "'BBS 13 aa', 'GFP'. Not the tag being proposed, which is always a "
+            "~15-23 aa short epitope, and not a justification."
+        )
+    )
     evidence_type: EvidenceType = Field(description="One of the EVIDENCE_TYPES ladder values.")
     position_evidence: PositionEvidence = Field(
         description=(

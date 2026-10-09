@@ -10,6 +10,7 @@ never leaves a stale row). The Worker serves these at ``/v1/tag-sites/:symbol``.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from datetime import UTC, datetime
 from typing import Any
 
@@ -119,25 +120,122 @@ def rows_for_file(data: dict[str, Any], *, version: str, synced_at: str) -> list
     ]
 
 
+
+def enrich_sources_with_paper_metadata(
+    rows: list[dict[str, Any]], *, client: D1Client
+) -> int:
+    """Join ``paper_metadata`` into each row's ``sources_json`` and return the
+    number of sources enriched.
+
+    A tag-site citation carried only a PMID, so the viewer could render "PMID
+    29725305" and nothing a reader recognises. The deep dive solved this
+    already: the same table, keyed the same way, is joined into
+    ``/v1/genes/{sym}/evidence`` at serve time. The tag-sites route is deployed
+    from a Worker whose source is not in this repo, so the join happens here
+    instead — which also enriches every row already published rather than only
+    what a future run produces.
+
+    Missing metadata is left alone: a preprint with no PMID has no row to join,
+    and a citation without a title is still a citation."""
+    import json as _json
+
+    pmids: set[str] = set()
+    parsed: list[tuple[dict[str, Any], list[dict[str, Any]]]] = []
+    for row in rows:
+        try:
+            srcs = _json.loads(row.get("sources_json") or "[]")
+        except Exception:  # noqa: BLE001 - a malformed blob must not fail the sync
+            continue
+        if not isinstance(srcs, list):
+            continue
+        parsed.append((row, srcs))
+        pmids.update(str(s["pmid"]) for s in srcs if isinstance(s, dict) and s.get("pmid"))
+    if not pmids:
+        return 0
+
+    meta: dict[str, dict[str, Any]] = {}
+    ordered = sorted(pmids)
+    for i in range(0, len(ordered), 50):  # D1 caps bound parameters per query
+        chunk = ordered[i : i + 50]
+        marks = ", ".join(["?"] * len(chunk))
+        for m in client.query(
+            f"SELECT pmid, title, authors_short, journal, year FROM paper_metadata "
+            f"WHERE pmid IN ({marks});",
+            chunk,
+        ):
+            if m.get("pmid"):
+                meta[str(m["pmid"])] = m
+
+    n = 0
+    for row, srcs in parsed:
+        changed = False
+        for src in srcs:
+            if not isinstance(src, dict):
+                continue
+            m = meta.get(str(src.get("pmid") or ""))
+            if not m:
+                continue
+            src["title"] = m.get("title")
+            src["authors"] = m.get("authors_short")
+            src["journal"] = m.get("journal")
+            src["year"] = m.get("year")
+            changed, n = True, n + 1
+        if changed:
+            row["sources_json"] = _json.dumps(srcs)
+    return n
+
+
 def publish_tag_sites(
-    data: dict[str, Any], *, tag_sites_version: str, client: D1Client | None = None
+    data: dict[str, Any],
+    *,
+    tag_sites_version: str,
+    client: D1Client | None = None,
+    provenances: Iterable[str] | None = None,
 ) -> int:
     """UPSERT one gene's tag-sites into public D1 and return the row count written.
 
-    Replace-all per gene: every existing row for ``gene_symbol`` is deleted first,
-    so a re-derivation that drops a site leaves no stale row. Idempotent — re-runs
-    converge on the same rows. Caller owns ``client`` when passed; otherwise a
-    public client is opened + closed."""
+    UPSERT by ``site_id``, with stale-row cleanup scoped to the PROVENANCES this
+    file speaks for — not replace-all.
+
+    It used to delete every row for the gene first. One file is written by two
+    independent pipelines (deterministic and literature), so a file carrying only
+    literature sites would delete the gene's deterministic rows: a sync from
+    snapshots that had drifted below D1 removed 40 live rows that way, including
+    every deterministic site for a gene whose in-tree JSON had lost them at an
+    earlier commit while D1 kept serving them.
+
+    Scoping the delete keeps what it was for — a re-derivation that DROPS a site
+    must not leave a stale row behind — without letting one pipeline's output
+    silently erase another's. Pass ``provenances`` explicitly when a run must be
+    authoritative for a provenance its output no longer contains (a literature
+    re-run that legitimately found nothing still has to clear the old literature
+    rows); the default infers it from the file, which cannot express that.
+
+    Idempotent — re-runs converge on the same rows. Caller owns ``client`` when
+    passed; otherwise a public client is opened + closed."""
     synced_at = datetime.now(UTC).isoformat()
     rows = rows_for_file(data, version=tag_sites_version, synced_at=synced_at)
+    scope = sorted(set(provenances)) if provenances is not None else sorted(
+        {r["provenance"] for r in rows if r.get("provenance")}
+    )
 
     owns = client is None
     client = client or D1Client.public()
     try:
         ensure_table(client)
-        client.query(
-            "DELETE FROM tag_site_public WHERE gene_symbol = ?;", [data["gene_symbol"]]
-        )
+        enrich_sources_with_paper_metadata(rows, client=client)
+        if scope:
+            keep = [r["site_id"] for r in rows]
+            marks = ", ".join(["?"] * len(scope))
+            sql = (
+                f"DELETE FROM tag_site_public WHERE gene_symbol = ? "
+                f"AND provenance IN ({marks})"
+            )
+            params: list[Any] = [data["gene_symbol"], *scope]
+            if keep:
+                sql += f" AND site_id NOT IN ({', '.join(['?'] * len(keep))})"
+                params += keep
+            client.query(sql + ";", params)
         cols = ", ".join(_COLS)
         placeholders = ", ".join(["?"] * len(_COLS))
         for row in rows:

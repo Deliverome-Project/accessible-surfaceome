@@ -191,7 +191,11 @@ _HINTS = {
     "insert_after_residue": "the junction",
     "residue_before": "1-letter, AT insert_after_residue",
     "residue_after": "1-letter, AT insert_after_residue+1",
-    "tag_type": 'e.g. "short epitope, ALFA 15 aa, GS linkers"',
+    # An "e.g." and nothing else got values ranging from "ALFA" to 112 characters
+    # of argument, and two different meanings: the tag the paper used, and the tag
+    # we propose. The viewer renders this as a chip.
+    "tag_type": 'the CITED study\'s tag, as a short label ("ALFA", "3xFLAG", "BBS 13 aa") '
+                "— not a justification",
     "evidence_type": "one of the three in 4",
     "position_evidence": '"validated" | "inferred"',
     "cited_tag_residue": "null unless the cited tag is a point tag",
