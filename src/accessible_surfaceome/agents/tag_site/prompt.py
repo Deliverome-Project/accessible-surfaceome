@@ -41,10 +41,15 @@ structural inference — that is the deterministic pipeline's job, done with com
 Doubt the evidence -> drop the site. No qualifying insertion -> ZERO sites, which is the right
 answer, not a failure. (Doubt about a single RESIDUE is a different thing — see 2.)
 
-Read every ledger line before concluding there is no internal site: the modalities it spans
-rarely say "tag" in the abstract — FLAG / HA / Myc / ALFA / V5, fluorescent-protein fusion,
-HaloTag / SNAP-tag / CLIP-tag, bungarotoxin-binding site, AviTag, tetracysteine, transposon and
-domain-insertion screens. A terminal site is no reason to stop looking for an internal one.
+REPORT EVERY SITE THE LEDGER SUPPORTS, not only the best-evidenced one. Two papers pinning two
+different junctions in the same loop are TWO sites, and the weaker-validated one is still a site
+— rank it lower, do not drop it. A well-evidenced site is no reason to stop reading, and neither
+is a terminal one when the ledger also grounds an internal.
+
+Read every ledger line before you conclude a site is not there: the modalities it spans rarely
+say "tag" in the abstract — FLAG / HA / Myc / ALFA / V5, fluorescent-protein fusion, HaloTag /
+SNAP-tag / CLIP-tag, bungarotoxin-binding site, AviTag, tetracysteine, transposon and
+domain-insertion screens.
 
 Per site:
 - `supporting_quote` — the VERBATIM ledger line, copied, never paraphrased. It is re-checked
@@ -345,6 +350,8 @@ def build_user_prompt(
         ]
     else:
         lines += ["", "(benchmark mode: resolve the accession, sequence, and topology yourself.)"]
-    lines += ["", "Report every site the ledger supports, terminal and internal where the "
-              "topology allows. There is no target number, and zero is a valid answer."]
+    lines += ["", "There is no target number: zero is a valid answer, and so is five. Report "
+              "every site the ledger supports — terminal and internal where the topology "
+              "allows, and several in the same loop when separate papers pin separate "
+              "junctions."]
     return "\n".join(lines)
