@@ -74,6 +74,18 @@ from .prompt import (
     keep_validated_sites,
     prompt_sha,
 )
+from .triage_cache import (
+    load as load_triage_cache,
+)
+from .triage_cache import (
+    save as save_triage_cache,
+)
+from .triage_cache import (
+    split as split_triage,
+)
+from .triage_cache import (
+    triage_prompt_sha,
+)
 from .schema import (
     VALIDATION_LEVELS,
     VALIDATION_RANK,
@@ -414,7 +426,21 @@ def run_tag_site_agent(
         return _empty()
 
     # 2. Abstract triage -> 3. body pool + real source store (shared).
-    outcomes = triage_abstracts(client, papers=list(papers_by_id.values()), gene=gene_symbol)
+    # Resume: reuse verdicts this gene already has under the SAME triage prompt.
+    # Triage is ~90% of a run's model calls (one per discovered paper), and it
+    # was recomputed from scratch every time — so re-running a gene after a
+    # SYNTHESIS prompt edit paid the whole triage bill again for identical
+    # verdicts. A changed triage prompt_sha invalidates the lot automatically.
+    _tsha = triage_prompt_sha()
+    _cached = load_triage_cache(gene_symbol)
+    _todo, _reused = split_triage(papers_by_id, _cached, prompt_sha=_tsha)
+    if _reused:
+        log.info("  %s: reusing %d cached triage verdict(s); %d to run",
+                 gene_symbol, len(_reused), len(_todo))
+    outcomes = _reused + (
+        triage_abstracts(client, papers=_todo, gene=gene_symbol) if _todo else []
+    )
+    save_triage_cache(gene_symbol, outcomes, prompt_sha=_tsha)
     if usage_sink is not None:
         # `TriageOutcome.usage` is a populated UsageRecord (Haiku-priced) that
         # nothing collected, so abstract triage — the biggest fan-out, one call
