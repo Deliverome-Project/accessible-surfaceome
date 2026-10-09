@@ -17,13 +17,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "FLAG",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface expression confirmed by non-permeabilized anti-FLAG staining in three independent studies (PMC12802846, PMC11253201, PMC10274688). Water-channel function (osmotic water permeability) not reported in the ledger quotes \u2014 NOT MEASURED for function.",
+      "functional_impact_measured": "Surface detection by anti-FLAG antibody staining without permeabilization confirmed plasma-membrane trafficking in all three studies. Water-channel function was not explicitly re-assayed in the FLAG-tagged constructs in the cited lines, but surface delivery was intact.",
       "confidence": "high",
-      "rationale": "Python computation confirms: seq[42]='Q' (position 43) and seq[43]='T' (position 44), matching all three ledger citations exactly. The junction falls within the authoritative extracellular span 34\u201349 (loop 1, between TM1 and TM2). Distance from TM1 C-terminus (residue 33) = 10 residues; distance from TM2 N-terminus (residue 50) = 7 residues \u2014 both well above the \u22653-residue minimum. Three papers independently validated FLAG insertion at this exact Q43/T44 junction in full-length, membrane-anchored AQP1 constructs, all confirming extracellular surface accessibility. An ALFA tag (~15 aa) with flanking GS linkers is comparable in size to a FLAG tag and is expected to be tolerated at this well-validated site. Three independent studies inserted a FLAG epitope tag immediately after Q43 (between Gln43 and Thr44) in the first extracellular loop of full-length, membrane-anchored AQP1 (human hAQP1, LSAqp1, and Aqp1-FKBP12-DD fusion). In all three cases, surface expression was confirmed by anti-FLAG antibody staining without cell permeabilization, demonstrating that the tagged protein traffics to the plasma membrane with the tag accessible on the extracellular face. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Python computation confirms Q at position 43 and T at position 44 in the canonical 269-aa AQP1 sequence. ECL1 spans residues 34\u201349 (between TM1 end at 33 and TM2 start at 50). Q43 is 10 residues from the TM1 boundary and T44 is 6 residues from the TM2 boundary, both well above the \u22653-residue minimum. All three ledger lines explicitly name the Q43\u2013T44 junction in full-length, membrane-anchored constructs and demonstrate extracellular tag exposure by non-permeabilized antibody staining. The junction is validated at single-residue resolution by multiple independent papers. No ambiguity in numbering frame: the canonical isoform has no signal peptide, so UniProt positions map directly. Three independent publications (PMC12802846, PMC11253201, PMC10274688) all report insertion of a FLAG epitope tag into the first extracellular loop (ECL1) of full-length, membrane-anchored human or Leishmania-species AQP1 immediately after Q43 (between Q43 and T44). In each case, the tagged protein was detected at the cell surface using anti-FLAG antibodies without cell permeabilization, confirming plasma-membrane trafficking and extracellular exposure of the tag. PMC11253201 used an AQP1-FKBP12-DD fusion; PMC10274688 used LSAqp1 (a close ortholog). All constructs are full-length and membrane-anchored. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 39027298,
@@ -427,5 +427,12 @@
       "canonical_residue": 46,
       "left_pct": 17.100371747211895
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:41:00.706342+00:00",
+  "literature_notes": "All three ledger lines converge on the identical junction (insert_after_residue=43, between Q43 and T44 in ECL1). Because the junction is the same in all three, this is reported as one site (not three), with the most explicit quote selected and all three PMCs noted in evidence_detail. No other extracellular loops (ECL2: 116\u2013135; ECL3: 187\u2013210) are supported by any ledger line. Both termini of AQP1 are intracellular (N-terminus residues 1\u201312; C-terminus residues 232\u2013269) and are therefore not candidates for extracellular tagging. No ledger evidence supports any other site.",
+  "literature_rejected": []
 }

@@ -82,5 +82,12 @@
       "canonical_residue": 210,
       "left_pct": 40.3041825095057
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:58:47.908826+00:00",
+  "literature_notes": "Three ledger lines were examined for VANGL1 (524 aa, 4-TM topology). VANGL1 has no signal peptide; its N-terminus (residue 1, M) is intracellular (topology I, residues 1\u2013112), and its C-terminus (residue 524, V) is also intracellular (topology I, residues 242\u2013524). The two extracellular loops are ECL1 (residues 134\u2013151) and ECL2 (residues 207\u2013218).\n\nLedger line 1 (PMC11698883): C-terminal eGFP + strep tag fused to full-length human VANGL1 via a 3C site. The C-terminus is intracellular \u2014 this is an intracellular terminus tag, not an extracellular one. Does NOT qualify.\n\nLedger line 2 (PMC11698883): GFP-tagged full-length VANGL1 evaluated by FSEC. This is the same C-terminal construct as line 1, confirming expression and homogeneity. Does NOT qualify for the same reason.\n\nLedger line 3 (PMC11698917): N-terminal GFP tag on full-length human VANGL1 cloned into pEG BacMan. The N-terminus (residue 1) is intracellular per the authoritative topology landmarks. This is an intracellular terminus tag. Does NOT qualify.\n\nNo ledger line reports a tag insertion on an extracellular face of VANGL1 \u2014 neither in ECL1 (134\u2013151), ECL2 (207\u2013218), nor any extracellular terminus. Zero sites qualify.",
+  "literature_rejected": []
 }

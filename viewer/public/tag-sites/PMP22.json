@@ -71,18 +71,18 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "myc (EQKLISEEDL)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Folding and trafficking explicitly stated non-perturbative (PMC13382790); surface display confirmed by anti-myc flow cytometry on non-permeabilized cells and by immunofluorescence (PMC9860121, PMC13382790); stable expression in RSCs with dose-dependent plasma-membrane trafficking quantified (PMC13382790); HA-tagged mouse PMP22 in ECL2 confirmed unaffected processing and trafficking (PMC3563111); myc-tagged human PMP22 in ECL2 confirmed no interference with cellular transport or function (PMC9860121).",
+      "functional_impact_measured": "Folding and trafficking: NOT PERTURBED \u2014 multiple studies explicitly state the tag 'neither affects the processing nor the trafficking of the protein' (PMC3563111) and 'has no effect on PMP22 trafficking or function' (PMC7322011). Surface display confirmed by non-permeabilized immunofluorescence and flow cytometry with anti-myc antibody (PMC9860121). Complex glycosylation (Endo H resistance) confirmed for the tagged construct (PMC13382790 context). Function: NOT PERTURBED per PMC7322011 and PMC9860121.",
       "confidence": "high",
-      "rationale": "The ledger entry from PMC13382790 explicitly names residues 125 and 126 as the junction for a 10-residue myc epitope tag in ECL2 of human PMP22. Python computation confirms: residue 125 = H, residue 126 = L, both within ECL2 (topology landmarks 117\u2013133). Distance from TM3 C-boundary (residue 116) to the insert = 9 residues; distance from insert to TM4 N-boundary (residue 134) = 8 residues; both well above the \u22653 residue minimum. The insert sits centrally in a 17-residue extracellular loop, sterically plausible for a 15\u201323 aa ALFA tag with GS linkers. Multiple independent publications using HA (mouse, PMC3563111) and myc (human, PMC8191293, PMC9860121, PMC3110552, PMC13293285, PMC12881431) tags in the same ECL2 all confirm non-perturbative behaviour, providing strong convergent support. The C-terminal ALFA (DOI:10.1101/2025.09.03.673966) and C-terminal GFP (PMC11700639) tags are on the intracellular face (topology: residues 157\u2013160 = INTRACELLULAR) and are excluded. No ledger entry pins any insertion in ECL1 (26\u201366) to a specific residue. [validation: surface_and_function; position: inferred; source: paper; entailment_verified: True]",
+      "rationale": "PMC13382790 explicitly names the junction as between residues 125 and 126 in ECL2. Python verification confirms: seq[124]='H' (His125) and seq[125]='L' (Leu126), matching the canonical sequence exactly. ECL2 spans residues 117\u2013133 (authoritative topology); the insertion site is 9 residues from TM3 (ends at 116) and 9 residues from TM4 (starts at 134), both well above the >=3 residue minimum. The myc tag (10 aa) was tolerated; an ALFA tag with GS linkers (~15\u201323 aa) is of comparable or slightly larger size and is plausible given the demonstrated loop flexibility. The HA-tag ledger lines from PMC3563111 name only the loop (ECL2) without pinning a residue; they corroborate the loop's tolerance but do not constitute a separate junction. The C-terminal GFP (PMC11700639) and C-terminal ALFA (DOI:10.1101/2025.09.03.673966) tags were disqualified because the C-terminus (residues 157\u2013160) is intracellular per the authoritative topology landmarks. PMC13382790 reports a 10-residue myc tag (EQKLISEEDL) inserted between residues 125 and 126 in the second extracellular loop (ECL2) of human PMP22, synthesized as an intron-less ORF and subcloned into pCW57.1 for stable lentiviral expression. The same paper states this insertion was 'previously demonstrated to be non-perturbative of PMP22 folding and trafficking'. Multiple independent studies (PMC3563111, PMC7322011, PMC8191293, PMC3110552, PMC9860121, PMC13293285, PMC12881431) confirm that a myc or HA tag in ECL2 does not affect PMP22 processing, trafficking, or function, and that the tag is accessible to antibody labeling at the cell surface in non-permeabilized conditions (flow cytometry and immunofluorescence). The junction is 9 residues from TM3 end (residue 116) and 9 residues from TM4 start (residue 134), well within ECL2 (117\u2013133). [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 125; entailment_verified: True]",
       "sources": [
         {
           "pmid": 42320627,
           "citation": "PMID 42320627",
-          "claim": "The 10-residue myc tag was inserted between residues 125 and 126 in the second extracellular loop of PMP22, as this internal tag was previously demonstrated to be non-perturbative of PMP22 folding and trafficking ( Fig. 1 A ) ( 36 , 37 )."
+          "claim": "A DNA fragment encoding an intron-less human PMP22 ORF ( NM_153321 ) with an internal myc epitope tag (EQKLISEEDL) inserted between residues 125 and 126 was synthesized and subcloned into the pCW57.1 vector (Addgene, 41393) between NheI and AgeI restriction sites (Integrated DNA Technologies (IDT))."
         }
       ],
       "plddt": null,
@@ -174,5 +174,12 @@
       "canonical_residue": 58,
       "left_pct": 36.25
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:52:43.430668+00:00",
+  "literature_notes": "Ledger lines considered and not proposed as separate sites: (1) PMC3563111 HA tag in ECL2 \u2014 names only the loop, not a residue; supports the same ECL2 region as the validated site but does not constitute a second pinned junction. (2) PMC7322011, PMC8191293, PMC3110552, PMC9860121, PMC13293285, PMC12881431 \u2014 all report myc tags in ECL2 without pinning a residue; they corroborate the validated site. (3) PMC11700639 C-terminal GFP \u2014 disqualified: the C-terminus (residues 157\u2013160) is intracellular per authoritative topology; a tag there is not on the extracellular face. (4) DOI:10.1101/2025.09.03.673966 C-terminal ALFA tag \u2014 disqualified for the same reason; despite the non-permeabilized immunofluorescence showing PM localization of the protein, the ALFA tag itself is on the intracellular C-terminus and would not be accessible from the extracellular face. (5) PMC13293285 N41Q-myc and PMC12881431 N41Q-myc \u2014 the myc tag position is not stated in these quotes; N41Q refers to a glycosylation-deficient mutation in ECL1, not the tag location. No ECL1 insertion site can be pinned from these lines.",
+  "literature_rejected": []
 }

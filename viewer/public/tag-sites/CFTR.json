@@ -102,9 +102,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "NOT MEASURED explicitly in the ledger clip; the construct was generated for structural/trafficking studies of TMD2 but no channel-function assay result is quoted in the ledger line.",
+      "functional_impact_measured": "NOT MEASURED (no surface or functional assay result reported in the cited ledger line for this construct).",
       "confidence": "medium",
-      "rationale": "The ledger names S898 as the insertion position in ECL4 of full-length CFTR. Python verification: residue 898 = S, residue 899 = R, both within ECL4 (880\u2013917), 19 aa from TM8 end (879) and 20 aa from TM9 start (918). The phrase 'at position S898' is slightly ambiguous (before or after S898); the most natural reading in a Gibson-assembly context is that the tag is inserted after S898, giving insert_after_residue = 898, residue_before = S, residue_after = R. This is a distinct junction from the FLAG site at N901/S902 (3 residues apart), reported by a different paper, so it is reported as a separate site. Ranked below the FLAG site because only one paper grounds it and no functional assay result is quoted. Triple HA tag (3xHA) inserted at position S898 in ECL4 of full-length CFTR by Gibson assembly to generate the TMD2-3HA construct (PMC9825563). The paper names S898 as the insertion position within ECL4. [validation: detected_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger (PMC9825563) names S898 as the reference residue. Python verification confirms sequence[898]='S'. The phrase 'positioned at position S898' is slightly ambiguous (before or after S898); I interpret it as insert_after_residue=898 (tag inserted after S898), giving residue_before='S' and residue_after='R' (sequence[899]='R'). The alternative reading (insert_after_residue=897, before S898) is also in ECL4 and satisfies all constraints; the \u00b11 uncertainty does not affect qualification. Both 897 and 898 are within ECL4 (880\u2013917, extracellular). Distance from TM7 end (879): 19 aa; distance from TM8 start (918): 20 aa \u2014 well above the \u22653 aa minimum. This is a distinct junction from the FLAG site at 901, reported by a different paper, and is therefore a separate site. Ranked below the FLAG site because no surface or functional validation is reported in the ledger. Triple HA tag (3xHA) inserted at position S898 in ECL4 of full-length CFTR by Gibson assembly to generate the TMD2-3HA construct (PMC9825563). The construct was expressed from pBI-CMV2-CFTR backbone. No surface or functional assay result is described in the ledger quote for this specific construct. [validation: not_measured; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 36609925,
@@ -134,9 +134,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface immunofluorescence (non-permeabilized cells): FLAG detected on plasma membrane of wt-CFTR cells, absent in F508del cells \u2014 consistent with correct trafficking. PMC4405497 states 'cell surface localization of CFTR without altering its expression'. Function as a traffic reporter confirmed; channel function not explicitly re-measured in the tagged construct.",
+      "functional_impact_measured": "Surface immunofluorescence (non-permeabilized cells): wt-CFTR-FLAG reaches the plasma membrane; F508del-CFTR-FLAG does not \u2014 consistent with known trafficking defect, not a tag-induced artefact. Ion-channel function NOT MEASURED in these studies.",
       "confidence": "high",
-      "rationale": "The ledger explicitly names the junction as between Asn901 and Ser902 in ECL4 of full-length, membrane-anchored CFTR. Python verification confirms: residue 901 = N, residue 902 = S, both within the ECL4 span (880\u2013917), 22 aa from the TM8 C-boundary (879) and 17 aa from the TM9 N-boundary (918), well clear of the \u22653 aa TM-proximity constraint. Two independent papers (PMC4356983 and PMC4405497) ground this exact junction. Surface display confirmed by non-permeabilized immunofluorescence. insert_after_residue = 901. FLAG octapeptide (DYKDDDDK) inserted between N901 and S902 in the fourth extracellular loop (ECL4) of full-length CFTR. Immunofluorescence without cell permeabilization confirmed surface display of the FLAG tag in wt-CFTR-expressing cells but not F508del-CFTR cells, validating the construct as a plasma-membrane traffic reporter. Confirmed in a second independent study (PMC4405497) using a lentiviral stable-expression system, which reports cell surface localization without altered expression. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger (PMC4356983) names the junction explicitly: between Asn901 and Ser902. Python verification confirms sequence[901]='N' and sequence[902]='S', matching the paper's Asn901/Ser902. Both residues fall within ECL4 (topology landmark 880\u2013917, extracellular). Distance from TM7 C-terminus (residue 879): 22 aa; distance from TM8 N-terminus (residue 918): 17 aa \u2014 well beyond the \u22653 aa minimum. PMC4405497 independently confirms 'FLAG octapeptide (DYKDDDDK) after residue N901' in a lentiviral vector, providing a second paper grounding the same junction. insert_after_residue=901 is unambiguous. FLAG octapeptide (DYKDDDDK) inserted between Asn901 and Ser902 in the fourth extracellular loop (ECL4) of full-length CFTR. Surface display confirmed by immunofluorescence without cell permeabilization: wt-CFTR-FLAG is detectable at the plasma membrane; F508del-CFTR-FLAG is not, validating the construct as a trafficking reporter. Independently reproduced in a lentiviral stable-expression system (PMC4405497). [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 25762484,
@@ -162,13 +162,13 @@
       "topology_state": null,
       "extracellular": false,
       "compartment": "unknown",
-      "tag_type": "HiBiT (11 aa)",
+      "tag_type": "HiBiT",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "PMC10622324: extracellular (non-lytic) bioluminescence assay detects only surface HiBiT-CFTR; total and PM pools quantified. PMC12932761: luminescence signal comparable to parental cells under vehicle (negligible PM expression of G542X), validating surface-detection sensitivity. Channel function not re-measured in the tagged constructs per the ledger clips.",
+      "functional_impact_measured": "PM bioluminescence (extracellular HiBiT assay, non-lytic): WT-CFTR-HiBiT detected at plasma membrane. G542X-CFTR-HiBiT PM expression quantified and modulated by TRIDs and CFTR modulators. Ion-channel function NOT MEASURED in these studies.",
       "confidence": "medium",
-      "rationale": "Two independent papers confirm HiBiT insertion in ECL4 of full-length, membrane-anchored CFTR with surface detection validated by non-lytic bioluminescence. Neither paper names the specific junction residue in the ledger clips, so this is reported as a region-level site (ECL4, residues 880\u2013917). The exact junction cannot be pinned without inventing a position. Ranked below the residue-level sites. insert_after_residue = null; region = ECL4. HiBiT tag knocked into ECL4 of endogenous WT-CFTR at two candidate positions via CRISPR/Cas9 (PMC10622324); bioluminescence-based quantification of total and plasma-membrane CFTR confirmed. A second study (PMC12932761) used HiBiT in the extracellular domain of full-length G542X-CFTR in stable BEAS-2B cells, referencing the same ECL4 approach. Neither ledger line names the specific junction residue(s). [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "rationale": "PMC10622324 reports HiBiT knock-in into ECL4 at two positions but does not name the residue numbers in the ledger quote. PMC12932761 corroborates HiBiT in the extracellular domain of CFTR with PM detection. Because no junction residue is named, insert_after_residue is left null and region is set to 'ECL4' (topology landmark 880\u2013917). The two already-validated junctions in ECL4 (898 and 901) are the most likely candidates, but this ledger entry cannot be collapsed into either without inventing a junction. Ranked below the residue-pinned sites. cited_tag_residue is null because no residue is named in the supporting quote. HiBiT tag knocked into ECL4 of endogenous WT-CFTR at two candidate positions via CRISPR/Cas9 (PMC10622324). Bioluminescence-based quantification used for both total (lytic) and plasma-membrane-localized (extracellular, non-permeabilized) CFTR. Additionally, HiBiT fused to the extracellular domain of full-length G542X-CFTR in stable BEAS-2B cells enabled PM expression quantification (PMC12932761). The ledger quotes do not name specific residue numbers for the HiBiT junctions. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 37918963,
@@ -281,5 +281,12 @@
       "canonical_residue": 909,
       "left_pct": 61.24661246612466
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:46:53.907745+00:00",
+  "literature_notes": "Disqualified ledger entries: (1) mCherry fused to the N-terminus of CFTR (PMC4356983, PMC8976878) \u2014 CFTR has no signal peptide; the N-terminus (residues 1\u201377) is intracellular per the topology landmarks, so this is not an extracellular tag. (2) SpyTags at both N- and C-termini of full-length CFTR (PMC13056111) \u2014 the N-terminus (1\u201377) and C-terminus (1148\u20131480) are both intracellular; electrophysiological function was confirmed but neither terminus is extracellular, so these do not qualify as extracellular tag sites. No other extracellular loops of CFTR (ECL1: 94\u2013124; ECL2: 219\u2013222; ECL3: 325\u2013347; ECL5: 1012; ECL6: 1122\u20131126) are supported by any ledger entry.",
+  "literature_rejected": []
 }

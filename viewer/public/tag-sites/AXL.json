@@ -434,6 +434,43 @@
       "plddt": 56.6,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "AXL-terminal_n-None-lit",
+      "gene_symbol": "AXL",
+      "uniprot_acc": "P30530",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular domain (N-terminal, position not pinned)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell surface labeling confirmed extracellular display of the HA tag on full-length Axl in TAM TKO MEFs; no functional assay of Axl signaling reported in this quote.",
+      "confidence": "medium",
+      "rationale": "The ledger line from PMC4206827 reports a full-length, membrane-anchored HA-tagged mouse Axl construct that is confirmed on the cell surface by live-cell labeling \u2014 satisfying the requirement for a tolerated extracellular tag insertion. The quote does not name a residue, loop, or junction, so insert_after_residue cannot be pinned and is left null. The region is the extracellular domain. The most common placement for an epitope tag on a receptor tyrosine kinase with a signal peptide is immediately after the signal peptide cleavage site (after residue 25, before residue 26 = mature Ala), but this inference is not supported by the quote text and cannot be stated as validated. Reported as region-level, inferred position. Full-length HA-tagged recombinant mouse Axl expressed in TAM triple-knockout MEF cell lines; live-cell surface labeling confirmed the HA tag is displayed on the extracellular face. The paper does not state the junction residue at which the HA tag was inserted. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 25265470,
+          "citation": "PMID 25265470",
+          "claim": "( B ) Live cell labeling of Tyro3 (top panels) and Axl (bottom panels) on the surface of clonal populations of TAM TKO MEF lines expressing HA-tagged recombinant mouse Tyro3 (left), recombinant mouse Axl (middle), or recombinant mouse Mer (right)."
+        },
+        {
+          "pmid": 33420426,
+          "citation": "PMID 33420426",
+          "claim": "The pDEST-SFB-SARS-CoV-2-S and pCMV-MYC-ACE2, pCMV-MYC-AXL, pCMV-MYC-EGFR and pCMV-MYC-LDLR plasmids were synthesized directly."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [
@@ -1077,5 +1114,12 @@
       "canonical_residue": 450,
       "left_pct": 50.0
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:43:18.858262+00:00",
+  "literature_notes": "Neither ledger line pins a specific residue or loop for the tag insertion in AXL. PMC4206827 confirms extracellular surface display of HA-tagged full-length mouse Axl by live-cell labeling, qualifying as a region-level site with surface_only validation. PMC7791157 names a pCMV-MYC-AXL construct but provides no expression, surface, or functional data in the cited line, yielding a not_measured region-level site. Both sites are reported as inferred (no residue named) with insert_after_residue = null. The most parsimonious placement for either tag on a type-I RTK with a 25-residue signal peptide would be after residue 25 (before mature Ala-26), but this is a structural inference not grounded in either ledger line and therefore not used to set insert_after_residue. No ledger line names a loop, domain boundary, or junction residue, so no validated or residue-pinned site can be reported.",
+  "literature_rejected": []
 }

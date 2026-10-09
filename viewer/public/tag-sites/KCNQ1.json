@@ -17,17 +17,50 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "c-myc (EQKLISEEDL)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface expression quantified by flow cytometry / FACS anti-myc immunostaining in non-permeabilized HEK293 cells; channel folding, trafficking, and function explicitly reported as unaffected (PMC7988323, DOI:10.1101/2020.07.29.227231). GOF variants carrying this tag were used in functional studies without caveat.",
+      "functional_impact_measured": "Flow cytometry / FACS anti-myc immunostaining of non-permeabilized HEK293 cells confirmed robust plasma-membrane surface expression; electrophysiology confirmed no impact on channel folding, trafficking, or function (explicitly stated in PMC7988323 and DOI:10.1101/2020.07.29.227231).",
       "confidence": "high",
-      "rationale": "All ledger lines converge on a single junction: insert_after_residue=146 (E) / residue_after=147 (Q). Computed from the canonical sequence: seq[145]='E', seq[146]='Q', confirming the paper's Glu146/Gln147 naming exactly matches the canonical isoform without any offset correction. Topology landmarks place position 146 inside the EXTRACELLULAR span 144\u2013154 (S1\u2013S2 loop), 3 aa from the S1 TM end (143) and 9 aa from the S2 TM start (155); both distances satisfy the \u22653 aa rule. The loop is 11 residues long; the published myc tag (10 aa) was tolerated, making a 15\u201323 aa ALFA+GS insert sterically plausible by the same precedent. The BBS-tagged construct in PMC12218124 was not assigned to a specific residue in the ledger and therefore cannot be reported as a separate site. Primary supporting source is PMC7988323 (and its preprint DOI:10.1101/2020.07.29.227231); corroborated by PMC5842040, PMC13041670, PMC12724399, DOI:10.64898/2025.12.15.25341924, and DOI:10.1101/2025.10.13.682066. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Six independent ledger lines from at least four distinct publications all pin the same junction: c-myc inserted after E146 (between Glu146 and Gln147) in the extracellular S1\u2013S2 linker of full-length, membrane-anchored KCNQ1. Python confirms seq[146]='E' and seq[147]='Q', matching the paper's residue identities. The insertion site lies within the extracellular span 144\u2013154, is 3 aa from TM1 (143) and 8 aa from TM2 (155), and multiple papers explicitly state no impact on folding, trafficking, or function. This is the highest-confidence site in the ledger. Multiple independent studies (PMC7988323, DOI:10.1101/2020.07.29.227231, PMC5842040, PMC13041670, PMC12724399, DOI:10.64898/2025.12.15.25341924) all insert a c-myc epitope (EQKLISEEDL) into full-length, membrane-anchored KCNQ1 between Glu146 and Gln147 in the extracellular S1\u2013S2 linker. Surface expression was quantified by anti-myc immunostaining of non-permeabilized HEK293 cells (flow cytometry / FACS). Multiple papers explicitly state the modification has no impact on channel folding, trafficking, or function. Python verification: seq[146]='E' (Glu) and seq[147]='Q' (Gln) match the paper's stated residues exactly. The S1\u2013S2 extracellular span is residues 144\u2013154 (topology landmarks); residue 146 is 3 aa from the TM1 C-terminus (143) and 8 aa from the TM2 N-terminus (155), satisfying the \u22653-residue TM-boundary constraint. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "citation": "preprint",
+          "pmid": 33600800,
+          "citation": "PMID 33600800",
           "claim": "The c-myc tag (EQKLISEEDL) was inserted into the extracellular S1\u2013S2 linker between residues Glu146 and Gln147."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "KCNQ1-internal-None-lit",
+      "gene_symbol": "KCNQ1",
+      "uniprot_acc": "P51787",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular loop (unspecified)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "BBS 13 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface labeling with Alexa Fluor-647-conjugated \u03b1-bungarotoxin in non-permeabilized transfected cells confirmed plasma-membrane localization of BBS-KCNQ1-YFP; functional impact of BBS insertion NOT MEASURED in the cited ledger line.",
+      "confidence": "medium",
+      "rationale": "PMC12218124 demonstrates that a 13-residue BBS was tolerated in an extracellular loop of full-length membrane-anchored KCNQ1, with confirmed surface labeling. However, the paper names neither the specific loop nor the junction residue, so insert_after_residue is left null and the region is reported as 'extracellular loop (unspecified)'. No junction can be inferred from this ledger line without fabricating a position. Ranked below Site 1 because the position is unresolved and function was not measured. PMC12218124 reports engineering a 13-residue high-affinity bungarotoxin binding site (BBS) into 'an extracellular loop' of full-length, YFP-tagged KCNQ1 (BBS-KCNQ1-YFP). Non-permeabilized cells were labeled with Alexa Fluor-647-conjugated \u03b1-bungarotoxin to selectively visualize and quantify plasma-membrane channels. The paper does not name which extracellular loop or which residue junction was used. KCNQ1 has three extracellular loops per the topology landmarks: S1\u2013S2 (144\u2013154), S3\u2013S4 (216\u2013220), and S5\u2013pore\u2013S6 (283\u2013327). No junction can be pinned from this ledger line alone. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 40593673,
+          "citation": "PMID 40593673",
+          "claim": "To selectively visualize and quantify plasma membrane channels, we engineered a 13-residue high-affinity bungarotoxin binding site (BBS) into an extracellular loop of YFP-tagged KCNQ1 (BBS-KCNQ1-YFP) and incubated non-permeabilized transfected cells with Alexafluor-647-conjugated \u03b1-bungarotoxin (BTX-647) (Fig. 1C ) 24 , 25 ."
         }
       ],
       "plddt": null,
@@ -157,5 +190,12 @@
       "canonical_residue": 322,
       "left_pct": 48.05389221556886
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:52:31.599007+00:00",
+  "literature_notes": "All ledger lines converge on a single well-validated junction: c-myc after E146 in the S1\u2013S2 extracellular linker (residues 144\u2013154). Six ledger lines from at least four independent publications confirm this exact position with explicit statements of no impact on folding, trafficking, or function. The BBS entry (PMC12218124) is a genuine second published insertion in full-length KCNQ1 but cannot be pinned to a residue or even a named loop from the ledger text alone, so it is reported as a region-level site. The S3\u2013S4 linker (216\u2013220, only 5 residues) and S5\u2013pore\u2013S6 region (283\u2013327) are not grounded by any ledger line with a named residue or loop, so no additional sites are proposed for them. Ledger lines from PMC12724399 and DOI:10.64898/2025.12.15.25341924 describe 'the first extracellular loop' without naming a residue; these corroborate Site 1 (S1\u2013S2 = first extracellular loop) but do not add a new site. The intracellular N-terminus (1\u2013122) and C-terminus (344\u2013676) are not extracellular and were not considered.",
+  "literature_rejected": []
 }

@@ -476,3 +476,23 @@ def test_a_region_level_site_is_not_re_judged_against_a_residue() -> None:
     result = TagSiteResult(sites=[site])
     enforce_position_claims(result, sequence="MPPSISAFQAAYIGIEVLIALV")
     assert result.sites[0].position_evidence == "inferred"
+
+
+def test_an_empty_result_still_carries_its_provenance() -> None:
+    """Three early returns bypassed the stamping at the end of the runner, so a
+    gene that ran and legitimately found nothing came out indistinguishable
+    from one that never ran. ITGB5 did exactly that in a 24-gene sweep: no
+    prompt_sha, while VANGL1 — also zero sites — carried one because it reached
+    the normal path. A zero that cannot be dated has to be re-run to be
+    trusted, which defeats the point of recording it."""
+    import inspect
+
+    from accessible_surfaceome.agents.tag_site import runner
+
+    src = inspect.getsource(runner.run_tag_site_agent)
+    empty = src[src.index("def _empty()") : src.index("# 1. Discovery")]
+    for field in ("prompt_sha", "prompt_version", "model", "generated_at"):
+        assert field in empty, (
+            f"_empty() does not stamp {field!r} — an empty result would be "
+            f"indistinguishable from a gene that never ran"
+        )

@@ -125,16 +125,17 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "other",
+      "tag_type": "GFP / pHluorin / HaloTag / SNAP",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "yes",
+      "functional_impact_measured": "Surface expression confirmed by immunofluorescence and flow cytometry; integrin trafficking (endocytosis, recycling) and adhesion/spreading function assessed and found preserved in multiple mammalian cell lines.",
       "confidence": "high",
-      "rationale": "Multiple independent publications (PMC5603536, PMC9999384) validate insertion of large and small tags at exactly this junction in full-length membrane-anchored ITGB1. Surface display was confirmed by live-cell fluorescence imaging and non-permeabilised staining. Trafficking function was assessed via pHluorin pH-sensitivity assays. The hybrid domain loop between G101 and T102 is extracellular, 627 aa from the TM helix, and structurally tolerant of insertions up to full GFP size, making it an ideal site for a short ALFA-tag with flanking GS linkers. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Five independent ledger lines from two papers (PMC5603536 and PMC9999384) all explicitly pin the junction to between Gly101 and Tyr102 in the hybrid domain of full-length, membrane-anchored human \u03b21 integrin. Canonical position 101 = G (Gly), confirming the paper's 'Gly101' label. The paper names the following residue 'Tyr102', but the canonical sequence (UniProt P05556, 798 aa) has T (Thr) at position 102; no G-Y pair exists anywhere in the extracellular domain. The discrepancy at position 102 most likely reflects a minor difference in the reference sequence used by the authors (e.g., a different cDNA clone or isoform variant), but the junction is unambiguously pinned at 101/102 by the explicit codon-level mutagenesis description. residue_before is copied from the canonical sequence as G (position 101); residue_after is copied as T (position 102) per instructions. The site is deep in the extracellular domain (canonical 101, 81 residues from the signal-peptide cleavage site at 20, and 628 residues from the TM boundary at 729), fully satisfying the \u22653-residue TM-distance constraint. The hybrid domain is a well-characterised \u03b2-sandwich fold; insertion at this loop junction has been validated with four different tag types across multiple cell lines. GFP, pHluorin, HaloTag, and SNAP tags were each inserted between Gly101 and Tyr102 in the hybrid domain of full-length, membrane-anchored human \u03b21 integrin expressed in mammalian cells. Ecto-tagged constructs were generated using QuikChange mutagenesis to introduce EcoRI/XhoI sites between codons 101 and 102, followed by insertion of PCR-amplified tag sequences with 4- or 9-aa flexible linkers on both sides. Surface expression, trafficking, and integrin function were assessed. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "citation": "preprint",
+          "pmid": 28924207,
+          "citation": "PMID 28924207",
           "claim": "Each ecto-tag (GFP, pHluorin, Halo, and SNAP, in blue , N- and C-terminal sequences specified) was inserted into the hybrid domain of human \u03b21 integrin between residues Gly101 and Tyr102 (in green )."
         }
       ],
@@ -1320,5 +1321,12 @@
       "canonical_residue": 94,
       "left_pct": 11.779448621553884
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:54:48.033424+00:00",
+  "literature_notes": "PMC2359743 (three quotes) describes a '\u03b21Int-HaloTag fusion protein' that is accessible on non-permeabilized cells, proving the HaloTag is extracellular. However, none of the three ledger quotes from that paper name a residue, loop, or domain where the tag is inserted; the construct name alone does not pin the junction. No region-level site can be reported because not even a named loop is given. This evidence was therefore not used to create a separate site entry, though it is consistent with the Gly101/Tyr102 site established by PMC5603536 and PMC9999384. PMC12173946 describes 'mRuby2-tagged ITGB1' in the context of studying cytoplasmic NPxY phosphorylation (Y783F/Y795F mutations, both intracellular); the ledger quote does not state where the mRuby2 tag is inserted, and given the intracellular focus of the study the tag is most likely an N-terminal prepend (which would be cleaved with the signal peptide) or a C-terminal intracellular fusion. No extracellular position can be inferred, so no site was proposed from this evidence.",
+  "literature_rejected": []
 }

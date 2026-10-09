@@ -318,9 +318,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "NOT_MEASURED",
+      "functional_impact_measured": "Surface display confirmed (tag is extracellularly accessible); the paper reports the construct was engineered and used for surface labelling, but detailed functional assays (e.g. scramblase activity) are not described in the ledger clip.",
       "confidence": "high",
-      "rationale": "The ledger entry (DOI:10.1101/2025.06.08.658482) explicitly reports insertion of an ALFA tag into full-length TMEM123 after Ala34, placing it in the extracellular unstructured ectodomain 8 residues past the signal peptide cleavage site (Ala26). The tag was used in a surface internalization assay (EndoNB), confirming extracellular display. Ala34 is confirmed in the canonical sequence; residue_after is Ser35. The site is 135 aa from the TM helix (169\u2013190), well beyond the \u22653-residue minimum. No disulfide cysteines in the ectodomain; nearest NxS/T motifs (Asn46, Asn50) are >9 residues away. The ectodomain is predicted unstructured, providing steric room for a ~15 aa ALFA tag. This is the only ledger-supported site for TMEM123; no internal or C-terminal sites are grounded in the ledger. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger line from DOI:10.1101/2025.06.08.658482 explicitly names Alanine 34 as the junction residue in a full-length, membrane-anchored TMEM123 construct. Python verification confirms: seq[33] = 'A' (Alanine, 1-indexed position 34), which is extracellular (EC span 27\u2013168), 135 residues from the TM boundary (169), and 8 residues after the mature N-terminus (27). residue_before = A (pos 34), residue_after = S (pos 35), both read directly from the numbered sequence. The signal peptide ends at residue 26 (authoritative landmark), so the tag at position 34 is correctly placed after SP cleavage and will not be removed co-translationally. site_type is terminal_n because the paper explicitly frames this as the N-terminal extracellular region immediately following the signal peptide \u2014 the canonical position for an N-terminal extracellular tag on a type-I single-pass membrane protein with a long unstructured ectodomain. Full-length TMEM123 construct with ALFA tag inserted after Alanine 34 (8 residues into the mature ectodomain, immediately following the signal peptide cleavage site at residue 26). The construct was expressed and the tag was surface-displayed, confirming extracellular accessibility. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "citation": "preprint",
@@ -753,5 +753,12 @@
       "canonical_residue": 162,
       "left_pct": 80.5
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:58:54.267427+00:00",
+  "literature_notes": "Only one ledger line was provided, grounding a single site at Alanine 34. No other insertions in TMEM123 (or close orthologs) appear in the ledger. The ectodomain (residues 27\u2013168) is described as predicted to be unstructured, making it broadly permissive in principle, but no other specific junctions are supported by published evidence in the ledger. The intracellular C-terminus (191\u2013208) and TM domain (169\u2013190) were not considered as they are not extracellular. No internal loop insertions are supported by the ledger.",
+  "literature_rejected": []
 }

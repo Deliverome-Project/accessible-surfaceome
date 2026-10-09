@@ -4,36 +4,6 @@
   "uniprot_acc": "P02786",
   "sites": [
     {
-      "site_id": "TFRC-cterm-760-lit",
-      "gene_symbol": "TFRC",
-      "uniprot_acc": "P02786",
-      "provenance": "literature_retrieved",
-      "det_path": null,
-      "site_kind": "terminal_c",
-      "insert_after_residue": 760,
-      "residue_before": "F",
-      "residue_after": null,
-      "topology_state": "O",
-      "extracellular": true,
-      "compartment": "extracellular",
-      "tag_type": "short epitope",
-      "tag_length_aa": null,
-      "linker": null,
-      "evidence_type": "asserted experimentally supported; citation pending",
-      "functional_impact_measured": "NOT MEASURED vs untagged (control A24)",
-      "confidence": "low",
-      "rationale": "TFRC is a type-II protein; the C-terminus (F760) is the ectodomain end and extracellular. Control A24 \u2014 asserted, citation not yet in hand.",
-      "sources": [
-        {
-          "citation": "TFRC C-terminal tag (control A24) \u2014 citation pending"
-        }
-      ],
-      "plddt": null,
-      "conservation_rank": null,
-      "median_conservation": null,
-      "residue_label": "F760"
-    },
-    {
       "site_id": "TFRC-disorder-107",
       "gene_symbol": "TFRC",
       "uniprot_acc": "P02786",
@@ -140,38 +110,6 @@
       "plddt": 40.8,
       "conservation_rank": null,
       "median_conservation": 0.5
-    },
-    {
-      "site_id": "TFRC-internal-290-lit",
-      "gene_symbol": "TFRC",
-      "uniprot_acc": "P02786",
-      "provenance": "literature_retrieved",
-      "det_path": null,
-      "site_kind": "internal",
-      "insert_after_residue": 290,
-      "residue_before": "I",
-      "residue_after": "V",
-      "topology_state": "O",
-      "extracellular": true,
-      "compartment": "extracellular",
-      "tag_type": "ALFA",
-      "tag_length_aa": 15,
-      "linker": "GS both sides",
-      "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Transferrin uptake retained, ligand-independent, n=4 (EndoNB)",
-      "confidence": "high",
-      "rationale": "Surface loop in the apical domain, ~35-45 A from the Tf/HFE interface.",
-      "sources": [
-        {
-          "citation": "Lenaerts et al., EndoNB, bioRxiv 2025",
-          "doi": "10.1101/2025.06.08.658482",
-          "url": "https://doi.org/10.1101/2025.06.08.658482"
-        }
-      ],
-      "plddt": null,
-      "conservation_rank": null,
-      "median_conservation": null,
-      "residue_label": "I290"
     },
     {
       "site_id": "TFRC-surface_loop-121",
@@ -413,6 +351,38 @@
       "rationale": "extracellular C-terminus (topology 'O' at residue L) \u2014 direct C-terminal tag",
       "sources": [],
       "plddt": 55.1,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "TFRC-terminal_c-760-lit",
+      "gene_symbol": "TFRC",
+      "uniprot_acc": "P02786",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 760,
+      "residue_before": "F",
+      "residue_after": "",
+      "residue_label": "F760",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Used as a surface co-expression partner in HEK293T and Expi293 cells; surface presence is implied by the experimental context (surface co-expression studies), but transferrin-binding or endocytosis function of TfR1-v5 itself was NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "TfR1 (TFRC) is a Type II single-pass transmembrane protein: N-terminus intracellular (residues 1\u201365), TM 66\u201386, C-terminus extracellular (87\u2013760). The construct name 'TfR1-v5' uses the suffix convention for C-terminal tags, confirmed by the same sentence's use of 'N-terminal FLAG tag' (prefix) and 'C-terminal GFP fusion' (suffix) for other constructs. Python lookup: full_seq[760]='F', full_seq[759]='E'; the C-terminus is 674 residues from the TM boundary, well beyond the >=3-residue minimum. insert_after_residue=760 places the ALFA/V5-class tag after the final residue F on the extracellular face. TfR1-v5 construct stably expressed in HEK293T and Expi293 cells for surface co-expression studies alongside FLAG/HA/GFP-tagged partner receptors; the '-v5' suffix follows the same prefix/suffix naming convention used in the same sentence for N-terminal FLAG and C-terminal GFP fusions, unambiguously placing the V5 tag at the C-terminus (residue 760, extracellular). [validation: surface_only; position: inferred; source: paper; cited_tag_residue: 760; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 42816619,
+          "citation": "PMID 42816619",
+          "claim": "All receptors contain an N-terminal FLAG tag, with an additional N-terminal HA tag or C-terminal GFP fusion in some cases, and were co-expressed with TfR1-v5 in HEK293T or Expi293 cells."
+        }
+      ],
+      "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
     }
@@ -793,5 +763,12 @@
       "canonical_residue": 708,
       "left_pct": 93.18479685452162
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T20:01:01.159288+00:00",
+  "literature_notes": "Ledger 1 (PMC4372551): EGFP fused to the 'amino terminus' of full-length TfR1. TfR1 is Type II \u2014 its N-terminus (residues 1\u201365) is intracellular. The tag is on the intracellular face and does not qualify as an extracellular insertion site. Ledger 2 (PMC9576747): 'HA-TfR1' construct. The prefix naming convention implies N-terminal HA, which is intracellular for a Type II protein. Additionally, the quote does not explicitly state the insertion position. Disqualified on both grounds (intracellular face; position unstated). Only Ledger 3 (PMC13632652) supports an extracellular tag site: the C-terminal V5 on the large extracellular ectodomain (residues 87\u2013760).",
+  "literature_rejected": []
 }

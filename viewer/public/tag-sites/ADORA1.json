@@ -4,6 +4,38 @@
   "uniprot_acc": "P30542",
   "sites": [
     {
+      "site_id": "ADORA1-internal-None-lit",
+      "gene_symbol": "ADORA1",
+      "uniprot_acc": "P30542",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular region (unspecified)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry (anti-Myc): cell surface expression of Myc-tagged A1R confirmed on anti-Lewis Y CAR T cells; no functional assay of A1R signaling reported for the tagged construct",
+      "confidence": "medium",
+      "rationale": "PMC12229354 reports a Myc-tag inserted into the 'extracellular region' of wild-type human A1R, confirmed at the cell surface by flow cytometry. The paper does not name which extracellular loop or residue carries the tag; no junction residue can be read from the ledger. Reported as a region-level site (insert_after_residue=null). The experiment uses Flag-tagged CAR simultaneously, suggesting the Myc-tag is not at the N-terminus (which would conflict with a Flag-tag in the same assay), but this is inference and not used to pin a residue. Ranked below the N-terminal FLAG site because the position is unresolved and no functional assay of A1R signaling was reported. Short Myc-tag engineered onto the 'extracellular region' of wild-type human A1 receptor expressed on CAR T cells; surface expression confirmed by flow cytometry detecting co-expressed Flag-CAR and Myc-A1R simultaneously. The paper does not name a specific loop or residue junction. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 40610421,
+          "citation": "PMID 40610421",
+          "claim": "Due to the lack of reliable flow cytometry antibodies for the hA 1 R, a short Myc-tag sequence was engineered onto the extracellular region of the wild-type hA 1 R to confirm protein expression on the cell surface (Supplementary Fig. 2 C, and Supplementary Table 1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "ADORA1-nterm-tedman",
       "gene_symbol": "ADORA1",
       "uniprot_acc": "P30542",
@@ -83,46 +115,14 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Flow cytometry on intact cells (PMC7116137): N-terminal FLAG tag confirmed equivalent plasma membrane surface delivery of wild-type and G279S mutant receptors; no impairment of trafficking reported. PMC4513639: construct used for surface expression studies without reported trafficking defect.",
+      "functional_impact_measured": "Flow cytometry (anti-FLAG): surface expression confirmed equivalent to untagged controls; receptor used in BRET-based functional assays measuring G-protein coupling \u2014 function preserved",
       "confidence": "high",
-      "rationale": "ADORA1 is a GPCR with no signal peptide; residues 1\u20139 are extracellular and TM1 begins at residue 10. An N-terminal tag therefore prepends before residue 1 (insert_after_residue=0), placing it on the extracellular face. PMC4513639 explicitly states the FLAG epitope was added 'at the N terminus' of the full-length receptor \u2014 this is a paper-level citation that names the position. PMC7116137 corroborates with flow cytometry surface detection via the N-terminal FLAG tag on intact cells, confirming extracellular accessibility. The commercial-plasmid disqualification rule does not apply here because PMC4513639 is a primary research paper that independently generated and explicitly positioned the tag. Residue 1 is M (verified from numbered sequence); residue_before is empty (prepend). The tag sits \u22651 residue from TM1 (which starts at residue 10), satisfying the \u22653-residue-from-TM-boundary constraint relative to the tag's C-terminal anchor. PMC4513639 generated N-terminally FLAG-tagged full-length human A1 receptor constructs for surface expression studies in HEK293 cells. PMC7116137 independently used an N-terminal FLAG-tagged full-length A1R (from Sinobiological) and confirmed plasma membrane surface delivery by flow cytometry, detecting the tag on intact cells. [validation: surface_only; position: inferred; source: paper; cited_tag_residue: 0; entailment_verified: True]",
+      "rationale": "ADORA1 has no signal peptide: the topology assigns residues 1\u20139 as extracellular (O), not signal (S). An N-terminal tag therefore prepends before residue 1 (insert_after_residue=0), placing it entirely in the extracellular space with 9 residues of buffer before TM1 begins at residue 10. PMC7116137 explicitly names an 'N-terminal FLAG epitope' on the human A1 receptor and confirms surface delivery by flow cytometry; the same FLAG-tagged construct is used as the wild-type functional control in BRET assays measuring G-protein coupling, establishing both surface expression and functional integrity. PMC4513639 independently reports N-terminal FLAG and SF-TAP tag addition to the same receptor. Python confirms: residue_after = seq[0] = 'M'; residue_before = '' (prepend). No signal peptide cleavage risk. Distance from tag insertion point to TM1 boundary: 9 residues of extracellular sequence. Human A1 receptor with N-terminal FLAG epitope expressed in HEK293 cells; surface delivery confirmed by flow cytometry; FLAG-tagged receptor used as functional control in paired BRET experiments comparing WT vs G279S mutant G-protein coupling. A second paper (PMC4513639) independently confirms N-terminal FLAG and SF-TAP tag addition at the N-terminus of the same receptor. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 0; entailment_verified: True]",
       "sources": [
         {
-          "pmid": 25354767,
-          "citation": "PMID 25354767",
-          "claim": "In addition, we generated N-terminally modified versions by addition of either a FLAG epitope or a Strep-Tactin II-FLAG tandem affinity purification tag (SF-TAP) at the N terminus ( Gloeckner et al., 2007 )."
-        }
-      ],
-      "plddt": null,
-      "conservation_rank": null,
-      "median_conservation": null
-    },
-    {
-      "site_id": "ADORA1-terminal_n-None-lit",
-      "gene_symbol": "ADORA1",
-      "uniprot_acc": "P30542",
-      "provenance": "literature_retrieved",
-      "det_path": null,
-      "site_kind": "terminal_n",
-      "insert_after_residue": null,
-      "residue_before": "",
-      "residue_after": "",
-      "residue_label": "extracellular region",
-      "topology_state": null,
-      "extracellular": false,
-      "compartment": "unknown",
-      "tag_type": "Myc",
-      "tag_length_aa": null,
-      "linker": null,
-      "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Flow cytometry on intact CAR T cells (PMC12229354): Myc-tagged hA1R confirmed on cell surface by anti-Myc staining; co-expression with Flag-tagged CAR also confirmed. No functional assay of A1R signalling reported for the Myc-tagged construct.",
-      "confidence": "medium",
-      "rationale": "PMC12229354 reports a Myc tag inserted into the extracellular region of full-length hA1R, validated by surface flow cytometry. The paper uses the phrase 'extracellular region' without naming a specific loop (ECL1, ECL2, ECL3) or residue number. ADORA1 has four extracellular spans: N-terminus (1\u20139), ECL1 (69\u201381), ECL2 (147\u2013179), ECL3 (257\u2013267). Because no junction is named, insert_after_residue is left null and region is set to 'extracellular region'. This is a genuine published insertion on the extracellular face of the full-length membrane-anchored receptor and is reported as a region-level site. No residue is invented. Position_evidence is 'inferred' because the junction cannot be pinned from the ledger text. PMC12229354 engineered a short Myc-tag sequence onto the extracellular region of wild-type full-length hA1R expressed in CAR T cells, confirmed by flow cytometry to be on the cell surface. The paper does not specify which extracellular loop or residue carries the tag. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
-      "sources": [
-        {
-          "pmid": 40610421,
-          "citation": "PMID 40610421",
-          "claim": "Due to the lack of reliable flow cytometry antibodies for the hA 1 R, a short Myc-tag sequence was engineered onto the extracellular region of the wild-type hA 1 R to confirm protein expression on the cell surface (Supplementary Fig. 2 C, and Supplementary Table 1 )."
+          "pmid": 32817461,
+          "citation": "PMID 32817461",
+          "claim": "The plasmids encoding the human adenosine A 1 -receptor harboring an N-terminal FLAG epitope, the human dopamine D 1 -receptor harboring an N-terminal HA-epitope, and NanoLuc luciferase (PNL1.1) were obtained from Sinobiological (Beijing, China), from the cDNA resource center (Bloomsburg University), and from Promega (Fitchburg, WI), respectively."
         }
       ],
       "plddt": null,
@@ -154,5 +154,12 @@
       "left_pct": 58.4
     }
   ],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:43:36.306973+00:00",
+  "literature_notes": "C-terminal eYFP fusion (PMC7116137, PMC4513639): the C-terminus of ADORA1 is intracellular (residues 291\u2013326, topology INTRACELLULAR); this tag does not qualify as an extracellular site and was excluded. YFP-tagged A1R in PMC4513639 (Y288A mutant studies): the YFP position is not stated in the ledger clips and is almost certainly C-terminal (intracellular) given the experimental context (glycosylation/membrane studies); excluded. G279S mutagenesis (PMC7116137): this is a TM7 residue (position 279 falls within TM7, residues 268\u2013290); it is a point mutation study, not a tag insertion, and does not qualify. ECL3 (residues 257\u2013267) contains two cysteines (C260, C263) that likely form a disulfide; no ledger line supports a tag insertion there. ECL1 (69\u201381) and ECL2 (147\u2013179) have no ledger support for tag insertions in ADORA1 specifically. The SF-TAP tag (PMC4513639) is also N-terminal and corroborates the same site as the FLAG tag; it is not reported as a separate site because it maps to the same junction (insert_after_residue=0).",
+  "literature_rejected": []
 }

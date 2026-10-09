@@ -397,10 +397,26 @@ def run_tag_site_agent(
         ri = _empty_retraction()
 
     def _empty() -> TagSiteResult:
+        """An empty result is still a result, and carries its provenance.
+
+        There are three early returns through here — no papers, no evidence, a
+        synthesis that came back None — and each bypassed the stamping at the
+        end of the function. A gene that ran and legitimately found nothing was
+        therefore indistinguishable from one that never ran: ITGB5 came out of a
+        24-gene sweep with no prompt_sha while every other gene carried one,
+        including VANGL1, which also found nothing but reached the normal path.
+
+        "Ran under prompt X and found nothing" is exactly the fact the
+        provenance rule exists to preserve — a zero that cannot be dated has to
+        be re-run to be trusted."""
         return TagSiteResult(
             gene_symbol=gene_symbol,
             uniprot_accession=uniprot_accession,
             sequence_length=len(sequence or ""),
+            prompt_sha=prompt_sha(),
+            prompt_version=TAG_SITE_PROMPT_VERSION,
+            model=SONNET_MODEL,
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
     # 1. Discovery: repo lit-search + shared web_search complement, hydrated to real
