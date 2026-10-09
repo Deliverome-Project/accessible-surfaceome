@@ -404,6 +404,14 @@ def run_tag_site_agent(
         return _empty()
     assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
 
+    # Identity is ours, not the model's: we passed the symbol and accession in and
+    # computed the sequence. Stamping them here keeps the record's provenance
+    # honest and lets the prompt stop asking for three fields it cannot know
+    # better than we do.
+    result.gene_symbol = gene_symbol
+    result.uniprot_accession = uniprot_accession
+    result.sequence_length = len(sequence or "")
+
     # 7. Post-process. Three gates, each removing a class of site that was
     # previously shipped unchecked:
     #   a) entailment — a quote that is not in the ledger is not evidence, so the

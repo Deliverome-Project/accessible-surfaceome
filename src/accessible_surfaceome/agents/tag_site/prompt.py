@@ -8,6 +8,7 @@ name exact residue junctions and have them verified against the real sequence
 from __future__ import annotations
 
 from .normalize import topology_runs
+from .schema import SOURCE_TIERS, TagSiteProposal, TagSiteResult
 
 SYSTEM_PROMPT = """You are a protein-engineering research agent. For ONE human cell-surface protein, find sites
 that can carry a SHORT epitope tag (~13-23 aa, e.g. ALFA `PSRLEEELRRRLTEP` + GS linkers) on the
@@ -121,7 +122,7 @@ result, or 'NOT MEASURED' — never infer an impact. 'surface_and_function' mean
 PRESERVED, not merely measured — REDUCED function, or function CONFOUNDED by the untagged protein
 being present, is 'function_perturbed', with the reduction or confound in evidence_detail.
 
-Return JSON only, matching the provided schema."""
+Return JSON only, in exactly the shape below."""
 
 # evidence_type values that represent an actual validated tagging example (not inference).
 VALIDATED_EVIDENCE_TYPES = frozenset(
@@ -133,6 +134,102 @@ VALIDATED_EVIDENCE_TYPES = frozenset(
     }
 )
 
+
+
+# ---------------------------------------------------------------------------
+# Output contract — GENERATED from the Pydantic models, never hand-maintained.
+#
+# `call_builder` validates the reply against `TagSiteResult` but never sends the
+# schema to the API: the `messages.create` call passes system/messages/tools and
+# nothing else. So every field the model must emit has to be stated in the
+# prompt itself. Hand-listing them is what failed before — `uniprot_accession`
+# and `sequence_length` were required and named nowhere, so EVERY run burned its
+# repair budget rediscovering them, and `functional_or_expression_impact_measured`
+# came back as a bool because the name reads boolean. Deriving the list from the
+# model means adding a field updates the prompt in the same commit, by construction.
+# ---------------------------------------------------------------------------
+
+#: Fields the PIPELINE sets after the model replies. Asking the model for these
+#: invites it to assert its own quote was verified, which is the one thing the
+#: entailment gate exists to decide.
+_PIPELINE_SET = ("entailment_verified", "quote_probative", "position_repaired", "rank")
+
+#: Top-level identity the RUNNER stamps from its own arguments. Asking the model
+#: to echo these back cost a repair round on every run and bought nothing.
+_CODE_SET = ("gene_symbol", "uniprot_accession", "sequence_length")
+
+#: Short type tokens; the long semantics stay in the prose above rather than
+#: being duplicated here.
+_HINTS = {
+    "rank": "1 = best",
+    "insert_after_residue": "the junction",
+    "residue_before": "1-letter, AT insert_after_residue",
+    "residue_after": "1-letter, AT insert_after_residue+1",
+    "tag_type": 'e.g. "short epitope, ALFA 15 aa, GS linkers"',
+    "evidence_type": "one of the three in 4",
+    "position_evidence": '"validated" | "inferred"',
+    "cited_tag_residue": "null unless the cited tag is a point tag",
+    "evidence_detail": "what was measured/observed, in what system",
+    "functional_or_expression_impact_measured": (
+        'assay + result, or "NOT MEASURED" -- a STRING, never true/false'
+    ),
+    "validation_level": "one of the six in 4",
+    "source_tier": " | ".join(f'"{t}"' for t in SOURCE_TIERS),
+    "supporting_pmid": "null for a preprint",
+    "supporting_quote": "the VERBATIM ledger line",
+    "rationale": "why this site, and what you computed",
+}
+
+
+
+def _enumerated(description: str | None) -> str:
+    """The description itself when it is a short list of allowed values, else ""."""
+    if not description:
+        return ""
+    text = description.strip()
+    return text if "|" in text and len(text) <= 80 else ""
+
+
+def _type_token(annotation: object) -> str:
+    """`int | None` -> "int|null"; `str` -> "str"; `list[...]` -> "list"."""
+    name = getattr(annotation, "__name__", None)
+    if name in {"int", "str", "bool", "float"}:
+        return name
+    text = str(annotation)
+    if "None" in text:
+        inner = next((t for t in ("int", "str", "bool", "float") if t in text), "str")
+        return f"{inner}|null"
+    return "list" if text.startswith("list") else "str"
+
+
+def format_output_contract() -> str:
+    """The exact JSON shape, rendered from `TagSiteResult` + `TagSiteProposal`."""
+    top = TagSiteResult.model_fields
+    lines = ["OUTPUT — ONE JSON object with exactly these keys:", ""]
+    lines.append(f"  {'sites':<10} {'list':<6} required — [] when nothing qualifies, which is a valid answer")
+    for name, f in top.items():
+        if name == "sites" or name in _CODE_SET:
+            continue
+        req = "required" if f.is_required() else f"optional, default {f.default!r}"
+        lines.append(f"  {name:<10} {_type_token(f.annotation):<6} {req} — anything that did not fit a site")
+    lines += ["", "Each entry of `sites`:", ""]
+    for name, f in TagSiteProposal.model_fields.items():
+        if name in _PIPELINE_SET:
+            continue
+        req = "required" if f.is_required() else f"default {f.default!r}"
+        # Fall back to the schema's own description when it already enumerates the
+        # allowed values ('"a" | "b"'), so a new closed-value field documents itself.
+        hint = _HINTS.get(name) or _enumerated(f.description)
+        lines.append(f"  {name:<42} {_type_token(f.annotation):<9} {req}{' — ' + hint if hint else ''}")
+    lines += [
+        "",
+        f"Emit nothing else. {', '.join(_CODE_SET)} and "
+        f"{', '.join(_PIPELINE_SET)} are set by the pipeline from what it already knows.",
+    ]
+    return "\n".join(lines)
+
+
+SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 
 def keep_validated_sites(result):
     """Drop any proposed site whose evidence is structural/topology inference rather

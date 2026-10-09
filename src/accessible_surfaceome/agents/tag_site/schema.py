@@ -32,7 +32,9 @@ SOURCE_TIERS = ("paper", "patent", "other", "vendor")
 
 
 class TagSiteProposal(BaseModel):
-    rank: int
+    #: Overwritten unconditionally by `rank_sites` after the gates run, so the
+    #: model's ordering is discarded — do not ask for it.
+    rank: int = 0
     site_type: str = Field(description='"terminal_n" | "terminal_c" | "internal"')
     insert_after_residue: int = Field(
         description="Junction: tag sits between this residue and +1 (UniProt canonical numbering)."
@@ -132,8 +134,13 @@ class TagSiteProposal(BaseModel):
 
 
 class TagSiteResult(BaseModel):
-    gene_symbol: str
-    uniprot_accession: str
-    sequence_length: int
+    # Stamped by the runner from what the caller already holds — never asked of
+    # the model, which would only be echoing back its own input and failing
+    # validation when it forgot. `sequence_length` is provenance: it records
+    # which sequence the junctions were pinned against, so it has to come from
+    # the real sequence rather than a guess.
+    gene_symbol: str = ""
+    uniprot_accession: str = ""
+    sequence_length: int = 0
     sites: list[TagSiteProposal] = Field(default_factory=list)
     notes: str = ""
