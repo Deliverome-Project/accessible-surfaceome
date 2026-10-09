@@ -71,16 +71,17 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "HA (1x or 2x)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface expression confirmed by non-permeabilized anti-HA immunostaining in transfected cells (PMC7870742); surface-expression profiling by FLAG insertion at the same junction (PMC8654947). Acid-evoked channel function (electrophysiology) was NOT MEASURED for the tagged constructs in the cited sources.",
+      "functional_impact_measured": "Surface expression confirmed by non-permeabilised immunostaining; channels reach the plasma membrane. Electrophysiological function of the tagged channel was not explicitly reported in the cited paper, but the construct was used as the primary surface-detection tool, implying trafficking is intact. PMC8654947 fitness screen confirmed surface-expression tolerance.",
       "confidence": "high",
-      "rationale": "The ledger (PMC7870742) explicitly names the junction Phe147\u2013Lys148 in full-length membrane-anchored human and rat ASIC1a. Python verification confirms residue 147 = F and residue 148 = K in the canonical 528-aa sequence. Both residues fall deep in the extracellular domain (positions 63\u2013437), 85 residues from the cytoplasmic end of TM1 and 290 residues from TM2, satisfying the \u22653-residue TM-clearance rule by a wide margin. The site is an internal loop insertion. A second independent ledger line (PMC8654947) cites a FLAG insertion at the identical F147|K148 junction in a surface-expression screen, elevating confidence. The ALFA tag (~15 aa) with GS linkers is comparable in size to the HA inserts (9 aa) and 2\u00d7HA (18 aa) already tolerated here. PMC source \u2192 supporting_pmid set to null; PMC7870742 cited in rationale. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger provides multiple independent lines pinning the junction to exactly Phe147|Lys148 in full-length, membrane-anchored ASIC1a (PMC7870742 \u00d7 4 quotes; PMC8654947 \u00d7 1 quote). Python confirms seq[146]='F' and seq[147]='K', matching the paper's Phe147/Lys148 nomenclature exactly. Position 147 is 85 aa from the TM1 C-boundary (residue 62) and 291 aa from TM2 (residue 438), placing it deep in the large extracellular domain. The junction is described as a 'disordered exposed site' in the crystal structure. Two independent tag modalities (HA and FLAG) and two species (rat, human) all tolerate the insertion, giving high confidence. HA epitope (YPYDVPDYA, 1 or 2 copies) inserted between Phe147 and Lys148 of full-length membrane-anchored hASIC1a and rASIC1a. Channels detected on the cell surface by antibody labelling under non-permeabilised conditions (live-cell surface staining). A FLAG tag was independently inserted at the same junction in a domain-insertion surface-expression fitness screen (PMC8654947). The 2\u00d7HA construct (hASIC1a-147 2HA 148) gave improved epitope exposure relative to a C-terminal GFP fusion, confirming extracellular accessibility. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "citation": "preprint",
+          "pmid": 32996060,
+          "citation": "PMID 32996060",
           "claim": "To selectively label the channels exposed on the cell surface, an HA epitope was genetically inserted into the extracellular loop of rat ASIC1a (rASIC1a) or hASIC1a between residues Phe 147 and Lys 148 (ASIC1a- 147 HA 148 , see Fig. 1 A, upper panel)."
         }
       ],
@@ -102,17 +103,18 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "HA / pHluorin",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface expression confirmed by non-permeabilized anti-HA immunostaining and by pHluorin fluorescence at the cell surface under non-permeabilized conditions (PMC7870742). Acid-evoked channel function (electrophysiology) was NOT MEASURED for the tagged constructs in the cited source.",
+      "functional_impact_measured": "Surface expression confirmed by non-permeabilised immunostaining (HA construct) and by pHluorin fluorescence at the cell surface. The pHluorin insertion demonstrates that a full folded domain (~27 kDa) is tolerated, strongly implying the channel folds and traffics correctly. Electrophysiological function not explicitly reported for these tagged constructs in the cited paper.",
       "confidence": "high",
-      "rationale": "The ledger (PMC7870742) explicitly names the junction Asp298\u2013Leu299 in full-length membrane-anchored human ASIC1a. Python verification confirms residue 298 = D and residue 299 = L in the canonical 528-aa sequence. Both residues fall within the extracellular domain (positions 63\u2013437), 236 residues from TM1 and 139 residues from TM2, satisfying the \u22653-residue TM-clearance rule. The site is an internal loop insertion. Notably, the same junction tolerated replacement of the HA tag with pHluorin (~240 aa), a much larger insert than the ALFA tag (~15 aa) proposed here, strongly supporting steric plausibility. The ledger line from PMC8318589 (deletion of D298 and L299) was considered but does not qualify as an insertion-tolerance citation and was not used to ground this site. PMC source \u2192 supporting_pmid set to null; PMC7870742 cited in rationale. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger pins the junction to exactly Asp298|Leu299 in full-length hASIC1a (PMC7870742, multiple quotes). Python confirms seq[297]='D' and seq[298]='L', matching the paper's Asp298/Leu299 nomenclature exactly. Position 298 is 236 aa from TM1 (residue 62) and 140 aa from TM2 (residue 438), deep in the extracellular domain. The tolerance of pHluorin (~27 kDa, far larger than any short epitope tag) at this exact junction is exceptionally strong evidence that a short ALFA-tag insert would be well tolerated. Ranked second only because the F147|K148 site has one additional independent paper (PMC8654947). HA epitope (YPYDVPDYA, 1 copy) inserted between Asp298 and Leu299 of full-length membrane-anchored hASIC1a; surface detection improved under non-permeabilised conditions relative to the original GFP-hASIC1a-147HA148 construct. The same junction was subsequently used to insert pHluorin (pH-sensitive GFP variant, ~27 kDa), a much larger domain, confirming robust structural tolerance at this site. Both constructs are described as 'centrally located in a disordered exposed site of the extracellular loop'. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "citation": "preprint",
-          "claim": "For the hASIC1a-HA plasmid, the hemagglutinin (HA) epitope (YPYDVPDYA) of influenza virus was inserted in the extracellular loop of hASIC1a: one or two copies between residues Phe 147 and Lys 148 [ 57 , 58 ], or one copy between Asp 298 and Leu 299 ."
+          "pmid": 32996060,
+          "citation": "PMID 32996060",
+          "claim": "For the hASIC1a- 298 pHluorin 299 plasmid, the HA tag between Asp 298 and Leu 299 was replaced by the pH-sensitive GFP variant pHluorin."
         }
       ],
       "plddt": null,
@@ -960,5 +962,12 @@
       "canonical_residue": 333,
       "left_pct": 58.01393728222997
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:43:20.303759+00:00",
+  "literature_notes": "Two sites are reported, both validated at exact residue junctions by multiple independent ledger lines from PMC7870742, with PMC8654947 providing additional FLAG-tag confirmation at site 1. The PMC8318589 ledger line ('human ASIC1a-Flag') was considered but rejected: the quote describes confocal imaging of localisation without stating where the FLAG tag is inserted in the sequence, so insert_after_residue cannot be pinned and no site is proposed from it. No intracellular or TM-proximal insertions are present in the ledger. No N-terminal or C-terminal extracellular tag sites are supported by the ledger (ASIC1a has an intracellular N-terminus and an intracellular C-terminus per the topology landmarks). Both proposed sites lie in the large extracellular domain (residues 63\u2013437), are described as disordered/flexible in the crystal structure, and have been validated with tags ranging from 9 aa (HA) to ~27 kDa (pHluorin), making them highly suitable for a short ALFA-tag (~15\u201323 aa) insertion.",
+  "literature_rejected": []
 }

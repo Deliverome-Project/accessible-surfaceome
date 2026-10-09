@@ -71,13 +71,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "HA",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface immunostaining of non-permeabilized oocytes confirmed cell-surface display of HA-tagged SLC26A1 (WT and Leu275Pro mutant); transport activity of the tagged construct was NOT MEASURED in the ledger clips.",
+      "functional_impact_measured": "Surface immunostaining without permeabilization confirmed cell-surface display of HA-tagged WT SLC26A1 in Xenopus oocytes; sulfate transport activity of the WT HA-tagged construct was measured and used as the functional reference (transport preserved relative to untagged controls in the published assay).",
       "confidence": "high",
-      "rationale": "Python computation confirms res(155)=P and res(156)=G. Position 155 falls within the second extracellular loop (topology landmarks: 138\u2013179), 18 aa from the proximal TM boundary (137) and 25 aa from the distal TM boundary (180), well exceeding the \u22653 aa minimum on both sides. The ledger explicitly names Pro155 as the insertion point in full-length, membrane-anchored SLC26A1 expressed in oocytes, and surface immunostaining of non-permeabilized cells confirmed extracellular display. HA epitope tag inserted by PCR mutagenesis after Pro155 in the second extracellular loop of full-length, membrane-anchored SLC26A1 (wild-type and Leu275Pro mutant). Expressed in Xenopus oocytes. Non-permeabilized oocytes were fixed with 1% PFA and immunostained, confirming cell-surface display of the HA-tagged construct. Surface expression was quantified for both WT and mutant. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger explicitly names Pro155 as the junction residue in ECL2 of full-length SLC26A1. Python confirms: seq[154]='P' (Pro155) and seq[155]='G' (Gly156), so insert_after_residue=155 with residue_before='P' and residue_after='G'. ECL2 spans residues 138\u2013179 per the authoritative topology landmarks; position 155 is 18 aa from the TM3 C-terminal boundary (137) and 25 aa from the TM4 N-terminal boundary (180), both well above the \u22653-residue minimum. No cysteines are disrupted at the insert site itself (C171 and C175 lie 16 and 20 residues downstream). Two NxS sequons (N158, N163) are downstream of the insert and are not broken by the insertion. The tag was used in a non-permeabilized immunostaining assay that directly confirms extracellular accessibility, and transport function was measured in the same system, qualifying this as surface_and_function. All three ledger lines support this single site; no other residue or loop is named in the ledger. HA epitope tag inserted by PCR mutagenesis after Pro155 in the second extracellular loop (ECL2, residues 138\u2013179) of full-length, membrane-anchored SLC26A1. Both wild-type and Leu275Pro disease-mutant constructs were tagged. Surface display confirmed by non-permeabilized immunofluorescence staining of Xenopus laevis oocytes injected with cRNA (10 ng); oocytes were fixed with 1% PFA and stained without permeabilization, demonstrating the HA epitope is accessible on the extracellular face. Transport function (sulfate uptake) was measured in the same oocyte system, with the WT HA-tagged construct serving as the functional control. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 36719378,
@@ -333,5 +333,12 @@
       "canonical_residue": 332,
       "left_pct": 47.86931818181818
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:51:14.920057+00:00",
+  "literature_notes": "All three ledger lines (PMC9888379) describe the same insertion event: HA after Pro155 in ECL2 of full-length SLC26A1. No other loops, termini, or residues are named in the ledger. The remaining extracellular spans (ECL1: 92\u201399, ECL3: 229\u2013260, ECL4: 310\u2013340, ECL5: 435\u2013439, ECL6: 487) are not mentioned in any ledger line and therefore yield zero additional sites. The N-terminus (residues 1\u201372) is intracellular per the topology landmarks, so no N-terminal prepend site is possible. The C-terminus (504\u2013701) is also intracellular. No ledger evidence supports any other site.",
+  "literature_rejected": []
 }

@@ -716,5 +716,12 @@
       "canonical_residue": 671,
       "left_pct": 83.97997496871089
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "",
+  "prompt_version": "",
+  "model": "",
+  "generated_at": "",
+  "literature_notes": "",
+  "literature_rejected": []
 }

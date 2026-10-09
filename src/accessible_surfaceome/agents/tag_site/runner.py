@@ -74,6 +74,21 @@ from .prompt import (
     keep_validated_sites,
     prompt_sha,
 )
+from .triage_cache import (
+    load as load_triage_cache,
+)
+from .triage_cache import (
+    save as save_triage_cache,
+)
+from .triage_cache import (
+    split as split_triage,
+)
+from .triage_cache import (
+    input_sha as triage_input_sha,
+)
+from .triage_cache import (
+    triage_prompt_sha,
+)
 from .schema import (
     VALIDATION_LEVELS,
     VALIDATION_RANK,
@@ -264,8 +279,13 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
     for s in result.sites:
         if s.position_evidence != "validated":
             continue
-        named = residue_mentions(s.supporting_quote, sequence=sequence)
         n = s.insert_after_residue
+        if n is None:
+            # A region-level site claims no junction, so there is no position
+            # for a quote to name; it is already labelled 'inferred' by the
+            # prompt and must not be re-judged against a residue it never gave.
+            continue
+        named = residue_mentions(s.supporting_quote, sequence=sequence)
         if not named & {n - 1, n, n + 1}:
             s.position_evidence = "inferred"
     return result
@@ -377,10 +397,26 @@ def run_tag_site_agent(
         ri = _empty_retraction()
 
     def _empty() -> TagSiteResult:
+        """An empty result is still a result, and carries its provenance.
+
+        There are three early returns through here — no papers, no evidence, a
+        synthesis that came back None — and each bypassed the stamping at the
+        end of the function. A gene that ran and legitimately found nothing was
+        therefore indistinguishable from one that never ran: ITGB5 came out of a
+        24-gene sweep with no prompt_sha while every other gene carried one,
+        including VANGL1, which also found nothing but reached the normal path.
+
+        "Ran under prompt X and found nothing" is exactly the fact the
+        provenance rule exists to preserve — a zero that cannot be dated has to
+        be re-run to be trusted."""
         return TagSiteResult(
             gene_symbol=gene_symbol,
             uniprot_accession=uniprot_accession,
             sequence_length=len(sequence or ""),
+            prompt_sha=prompt_sha(),
+            prompt_version=TAG_SITE_PROMPT_VERSION,
+            model=SONNET_MODEL,
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
     # 1. Discovery: repo lit-search + shared web_search complement, hydrated to real
@@ -409,7 +445,24 @@ def run_tag_site_agent(
         return _empty()
 
     # 2. Abstract triage -> 3. body pool + real source store (shared).
-    outcomes = triage_abstracts(client, papers=list(papers_by_id.values()), gene=gene_symbol)
+    # Resume: reuse verdicts this gene already has under the SAME triage prompt.
+    # Triage is ~90% of a run's model calls (one per discovered paper), and it
+    # was recomputed from scratch every time — so re-running a gene after a
+    # SYNTHESIS prompt edit paid the whole triage bill again for identical
+    # verdicts. A changed triage prompt_sha invalidates the lot automatically.
+    _tsha = triage_prompt_sha()
+    _cached = load_triage_cache(gene_symbol)
+    _todo, _reused = split_triage(papers_by_id, _cached, prompt_sha=_tsha)
+    if _reused:
+        log.info("  %s: reusing %d cached triage verdict(s); %d to run",
+                 gene_symbol, len(_reused), len(_todo))
+    outcomes = _reused + (
+        triage_abstracts(client, papers=_todo, gene=gene_symbol) if _todo else []
+    )
+    save_triage_cache(
+        gene_symbol, outcomes, prompt_sha=_tsha,
+        inputs={sid: triage_input_sha(p) for sid, p in papers_by_id.items()},
+    )
     if usage_sink is not None:
         # `TriageOutcome.usage` is a populated UsageRecord (Haiku-priced) that
         # nothing collected, so abstract triage — the biggest fan-out, one call

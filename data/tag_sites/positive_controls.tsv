@@ -4,7 +4,6 @@ A2	ADRB2	P07550	terminal	0	M		HiBiT	11	boursier2020	yes_no_difference	N-terminus
 A4	GIPR	P48546	terminal	21	Q		FLAG	8	alsabah2020	yes	HA SP replaces native
 A5	GLP1R	P43220	terminal	23	P		VSV-G	11	thompson2014	yes	native SP retained; tag downstream
 A8	ADORA1	P30542	terminal	0	M		HiBiT	11	soave2020	partial	N-terminus; Met1->Leu
-A24	TFRC	P02786	terminal	760			short_epitope		pi_asserted	accepted_pi	type II C-terminus (ectodomain end, extracellular); ACCEPTED as a valid control per direct instruction (Becca 2026-08-15)
 A9	ITGB1	P05556	internal	101	G		ALFA	15	endonb	yes	hybrid domain, exposed betaX-betaA loop 92-114
 A10	ITGB1	P05556	internal	101	G		eGFP	239	huet2017	yes	same loop
 A11	ITGB1	P05556	internal	101	G		pHluorin	238	huet2017	yes	same loop

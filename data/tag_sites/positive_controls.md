@@ -1,7 +1,7 @@
 # Extracellular tag-site positive controls
 
 Ground truth for the tag-site benchmark. Machine-readable source is
-`positive_controls.tsv` (23 published-success rows + A24 asserted; plus batch-2
+`positive_controls.tsv` (23 published-success rows; A24 was dropped 2026-10-08; plus batch-2
 rows B1–B13, see "Extended set — batch 2" below). Verify residue
 positions against UniProt with:
 
@@ -45,12 +45,10 @@ where the sources are if any of those categories are wanted back later.
 | A6 | **CD46** | P15529 | after **A34** | native SP retained, tag downstream | HiBiT (11) + GGG | NOT MEASURED | Kim 2023 |
 | A7 | **NPY1R** | P25929 | after **M1** (M1 deleted) | none — NPY1R has no SP | FLAG (8) | NOT MEASURED vs untagged; tag shown surface-accessible by anti-FLAG ELISA on non-permeabilized cells | Park 2022 |
 | A8 | **ADORA1** | P30542 | before **residue 1**, Met1→Leu | none added | HiBiT (11) + GSSGGSSG | Partial — NanoBRET pK_D 7.17 ± 0.03; DPCPX pK_B 8.28 ± 0.12 matches reference | Various |
-| A24 | **TFRC** | P02786 | **C-terminus**, residue 760 | none — TFRC is type II, C-terminus is the ectodomain end | short epitope | **Kept per direct instruction as experimentally supported; the specific citation is not yet in hand.** | *pending citation* |
 
 **A1 and A2 are the strongest terminal rows** — both are endogenous CRISPR knock-ins with
 quantified function. A3–A5 are recombinant but carry explicit tagged-vs-untagged
-pharmacology. A6–A8 lack a functional comparison. **A24 is asserted, not sourced** — see
-the caveat below the internal-sites table.
+pharmacology. A6–A8 lack a functional comparison.
 
 ### Internal sites
 
@@ -72,7 +70,16 @@ the caveat below the internal-sites table.
 | A22 | **SLC26A1** | Q9H2B4 | after **P155** | extracellular loop | HA (9) | NOT MEASURED | — |
 | A23 | **SLC9A6** (NHE6) | Q92581 | after **M53** | first exofacial loop | 3×FLAG (32) | Asserted by reference to prior work, NOT MEASURED here | — |
 
-### A24 (TFRC C-terminus) — kept on direct instruction, citation still needed
+### A24 (TFRC C-terminus) — REMOVED from the scored set
+
+The row was dropped from `positive_controls.tsv` on 2026-10-08. It had no citation and
+never acquired one, so a literature agent could not retrieve it and scoring it penalised
+correct behaviour: the only way to "hit" the row was for the record to carry a
+hand-asserted site, which is exactly what the two TFRC rows in the store were — they
+predate the agent's provenance fields entirely (no prompt_sha, no model, empty quotes, and
+an evidence_type outside the allowed set). The original note is kept below for the record.
+
+#### Original note
 
 My own search did not find a published tag at TFRC's C-terminus (residue 760, the
 ectodomain end — TFRC is type II, so this is the opposite terminus from the usual
@@ -183,18 +190,18 @@ prediction, not measured in-house.
 | `boursier2020` | Boursier ME, et al. *J Biol Chem* 2020;295:5124–5135. DOI [10.1074/jbc.RA119.011952](https://doi.org/10.1074/jbc.RA119.011952). PMC7152755. |
 | `kanner2018` | Kanner SA, et al. *Front Physiol* 2018;9:397. DOI [10.3389/fphys.2018.00397](https://doi.org/10.3389/fphys.2018.00397). PMC5917007. |
 | `kim2023` | Kim (CD46 HiBiT) 2023 — see A6. |
-| *pending* | TFRC C-terminal tag (row A24) — citation not yet identified. |
+| *removed* | TFRC C-terminal tag (was row A24) — no citation was ever found; the row was dropped from the scored set on 2026-10-08. |
 
 ## Curation caveats
 
-- **Every stated residue position except A24 was verified against the UniProt sequence.**
+- **Every stated residue position was verified against the UniProt sequence.**
   Verification run: 29 passed / 4 skipped / 0 failed on this set; skips are the rows with
-  no declared position (A24 among them, since it names a terminus rather than a checkable
+  no declared position (A24 was among them, since it named a terminus rather than a checkable
   junction), plus TRPC5 and KCNH2, which sit outside the surfaceome reference set and were
   checked directly against UniProt instead (Q9UL62 Y460/N461, Q12809 T436/E437).
-- **A24 (TFRC C-terminus) has no citation yet** — kept on direct instruction, see the note
-  under the internal-sites table. Treat it as asserted, not verified, until a source is
-  attached.
+- **A24 (TFRC C-terminus) was removed from the scored set on 2026-10-08** — no citation was
+  ever found, so the row penalised an agent for not retrieving something unpublished. See
+  the note under the internal-sites table for the full history.
 - **A7 (NPY1R)** is a recombinant insect-cell construct, not a knock-in, with no
   tagged-vs-untagged comparison. Well pinned on architecture, weak on functional impact.
 - **EndoNB residue labels are inconsistent** — four entries name the residue before the

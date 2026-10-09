@@ -120,26 +120,26 @@
       "median_conservation": null
     },
     {
-      "site_id": "ADRB2-terminal_n-1-lit",
+      "site_id": "ADRB2-terminal_n-0-lit",
       "gene_symbol": "ADRB2",
       "uniprot_acc": "P07550",
       "provenance": "literature_retrieved",
       "det_path": null,
       "site_kind": "terminal_n",
-      "insert_after_residue": 1,
-      "residue_before": "M",
-      "residue_after": "G",
-      "residue_label": "M1",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "FLAG",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface display confirmed by live-cell TIRF microscopy and non-permeabilized M1 anti-FLAG antibody labeling; agonist-induced internalization (10 \u00b5M isoproterenol, 5 and 30 min time points) quantified in \u03b2arr1/2 DKO HEK293 cells \u2014 receptor traffics and responds to agonist normally (PMC9681205). Surface expression also confirmed by FACS with anti-HA antibody (PMC12214593).",
+      "functional_impact_measured": "Internalization assay: FLAG-\u03b22AR co-expressed with \u03b2arr2-EGFP variants showed regulated endocytosis at 5 and 30 min post 10 \u00b5M isoproterenol stimulation, indistinguishable from expected \u03b22AR behaviour; surface display confirmed by non-permeabilized live-cell TIRF imaging.",
       "confidence": "high",
-      "rationale": "All five ledger lines converge on the same N-terminal extracellular position. ADRB2 has no signal peptide (UniProt P07550); the canonical sequence begins with M1 which is extracellular (topology landmark: EXTRACELLULAR 1\u201333). 'N-terminally FLAG/HA/SNAP tagged' for a signal-peptide-free GPCR means the tag is inserted after the initiator Met (insert_after_residue = 1), placing it between M1 and G2. Python computation confirms: residue 1 = M, residue 2 = G, TM1 starts at residue 34 (V), giving 33 residues of clearance from the TM boundary. No cysteines in the 1\u201333 span; glycosylation sequons at N6 and N15 are downstream and unperturbed. The strongest ledger line (PMC9681205) demonstrates both surface display and functional agonist-induced internalization, qualifying this as surface_and_function. The site is validated (not inferred) because the published tag is at this exact N-terminal junction. Multiple independent studies report N-terminally FLAG-tagged, HA-tagged, and SNAP-tagged full-length \u03b22AR expressed in HEK293 cells. PMC9681205 is the most rigorous: FLAG-tagged \u03b22AR was confirmed on the cell surface by live-cell TIRF microscopy and by M1 anti-FLAG antibody labeling (both 37 \u00b0C live and 4 \u00b0C non-permeabilized conditions), and agonist-induced (10 \u00b5M isoproterenol) internalization was quantified in \u03b2arr1/2 double-knockout HEK293 cells \u2014 demonstrating both surface display and preserved receptor function. PMC12214593 confirmed surface expression of HA-tagged \u03b22AR by FACS with AF647-coupled anti-HA antibody. PMC9246501 and PMC10853676 report SNAP-tag fused to the N-terminal domain of \u03b22AR with functional expression in HEK293 cells. PMC12962099 reports HA-B2AR-Rluc8 with surface detection by anti-HA antibody. ADRB2 (UniProt P07550) has no signal peptide; M1 is the first extracellular residue (topology: EXTRACELLULAR 1\u201333), so a tag inserted after M1 (between M1 and G2) is not cleaved. Computed: TM1 begins at position 34 (V34), placing the junction 33 residues from the TM boundary (well above the \u22653 minimum). No cysteines in the N-terminal region (1\u201333). N-glycosylation sequons at N6 (NGS) and N15 (NGS) are downstream of the tag junction and unaffected. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 1; entailment_verified: True]",
+      "rationale": "ADRB2 has no signal peptide (UniProt P07550); the N-terminus (residues 1\u201333) is directly extracellular per the authoritative topology landmarks. insert_after_residue=0 places the tag before M1, which is the standard N-terminal prepend for a signal-peptide-free GPCR. Computed: residue_after = seq[0] = 'M'. The extracellular span is 33 residues long, placing the junction 33 residues from TM1 (34\u201358), well beyond the \u22653-residue minimum. PMC9681205 explicitly states 'N-terminally FLAG tagged' for the full-length, membrane-anchored receptor and validates surface display by non-permeabilized live-cell labeling and functional endocytosis. The same N-terminal position is independently corroborated by four additional ledger entries: HA tag (PMC12214593, surface FACS), SNAP-tag fused to 'N-terminal domain' (PMC9246501, surface labeling + CHX-chase), SNAP-tagged \u03b22AR (PMC10853676, expression), and HA-B2AR-Rluc8 (PMC12962099, cAMP assay listed). All five papers describe the identical junction; PMC9681205 provides the strongest functional validation and is used as the primary supporting quote. N-terminally FLAG-tagged full-length \u03b22AR expressed in \u03b2arr1/2 double-knockout HEK293 cells; surface display confirmed by live-cell, non-permeabilized M1 anti-FLAG labeling (Alexa Fluor 647); receptor undergoes isoproterenol-stimulated endocytosis, demonstrating preserved agonist-driven trafficking function. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 0; entailment_verified: True]",
       "sources": [
         {
           "pmid": 36250629,
@@ -286,5 +286,12 @@
       "canonical_residue": 187,
       "left_pct": 45.83333333333333
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T19:43:01.862477+00:00",
+  "literature_notes": "All nine ledger lines describe N-terminal tags (FLAG, HA, or SNAP) on full-length membrane-anchored ADRB2; they all support the same insert_after_residue=0 site. No ledger line reports a tag inserted in any extracellular loop (ECL1 96\u2013107, ECL2 172\u2013197, ECL3 296\u2013306) or at the C-terminus. The point mutations S41A, V34A, and F49A in PMC12962099 are TM1 residues used to probe palmitoylation/lipid interactions, not tag-insertion sites. No internal extracellular loop site is proposed because the ledger provides no qualifying insertion there.",
+  "literature_rejected": []
 }

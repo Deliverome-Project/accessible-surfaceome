@@ -179,18 +179,49 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa or 3xFLAG equivalent, GS linkers",
+      "tag_type": "3xFLAG",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Non-permeabilized antibody labeling confirmed extracellular surface display of the FLAG tag; the 3F-NHE6-HA construct was used as a functional tool to study endosomal pH regulation and NHE6 trafficking \u2014 function preserved.",
+      "functional_impact_measured": "Surface display confirmed by antibody labeling of full-length membrane-anchored NHE6; construct used in trafficking studies. Functional preservation of NHE6 transport activity not explicitly stated in the ledger lines.",
       "confidence": "high",
-      "rationale": "Residue 53 = M, residue 54 = D, matching the paper's explicit statement 'after residue Met 53'. Position 53 falls within the first extracellular span (EC1 = 43\u201370), 11 residues from the signal-peptide cleavage site (SP ends at 42) and 18 residues from the TM1 boundary (TM1 starts at 71), both well above the \u22653-residue minimum. The tag is inserted into the mature extracellular protein, not within the cleaved signal peptide. A triple FLAG epitope (AAA-DYKDDDDK-G-DYKDDDDK-G-DYKDDDDK-AAA) was inserted into full-length, membrane-anchored NHE6 immediately after Met53 in the first extracellular loop, generating the 3F-NHE6-HA construct. The construct was expressed in mammalian cells, the FLAG tag was accessible to antibody without permeabilization (confirming extracellular surface display), and the tagged protein was used as a functional tool to study endosomal pH regulation and trafficking. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Python confirmed seq[52]='M' and seq[53]='D', matching residue_before=M and residue_after=D. Position 53 falls within the computed extracellular span 43\u201370 (first extracellular loop, after signal-peptide cleavage at residue 42). Distance from SP cleavage: 11 aa; distance from TM1 start (71): 18 aa \u2014 well above the \u22653 aa minimum. No cysteines or N-glycosylation sequons (NxS/T) are present in the 43\u201370 span. The ledger names the residue explicitly ('immediately after residue Met 53'), making this a validated, pinned position. Two separate ledger lines from the same paper independently confirm the junction. Two independent ledger lines from PMC5010692 report that a triple FLAG epitope (AAA DYKDDDDK G DYKDDDDK G DYKDDDDK AAA) was inserted into the first extracellular loop of full-length NHE6 immediately after residue Met53, generating the 3F-NHE6-HA construct. PCR was used to engineer an in-frame NotI site after M53 followed by insertion of annealed primers representing the 3xFLAG epitope. The construct was used in trafficking and surface-labeling experiments on the full-length membrane-anchored protein. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 27590723,
           "citation": "PMID 27590723",
           "claim": "The same template (NHE6 HA ) was also used to introduce a triple Flag epitope (AAA DYKDDDDK G DYKDDDDK G DYKDDDDK AAA) in the first extracellular loop immediately after residue Met 53 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC9A6-internal-None-lit",
+      "gene_symbol": "SLC9A6",
+      "uniprot_acc": "Q92581",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular (loop unspecified)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by antibody labeling without permeabilization in 3T3-L1 adipocytes stably expressing the tagged full-length NHE6. No transport-function assay result reported in the ledger line.",
+      "confidence": "low",
+      "rationale": "The ledger confirms a triple-HA tag on the extracellular face of full-length, membrane-anchored NHE6 (antibody accessible without permeabilization). However, neither a residue number nor a named loop is given in the ledger line, so no junction can be pinned. This is reported as a region-level site. The position is inferred to be in one of the extracellular loops (43\u201370, 123\u2013175, 234\u2013251, 304\u2013319, 377\u2013382, 437\u2013443, 500\u2013508) but cannot be assigned further without additional ledger evidence. Ranked below Site 1 because the junction is unpinnable. DOI:10.1101/2023.07.30.551163 reports 3T3-L1 cells stably expressing full-length NHE6 with an 'external triple-HA tag' confirmed by antibody labeling without permeabilization, demonstrating surface display on the membrane-anchored protein. The ledger line does not name a residue or a specific extracellular loop for the HA tag insertion. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "citation": "preprint",
+          "claim": "To discern the functional significance of NHE6 upregulation in adipocytes, we compared the cellular localization of NHE6 under basal conditions and following insulin treatment. 3T3-L1 cells with stable expression of NHE6 containing an external triple-HA tag and cytoplasmic Cterminal GFP marker ( Fig. 2A ) were antibody labeled without permeabilization."
         }
       ],
       "plddt": null,
@@ -759,5 +790,12 @@
       "canonical_residue": 316,
       "left_pct": 45.15669515669516
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T20:03:09.215749+00:00",
+  "literature_notes": "Two ledger lines (PMC5010692) independently pin the 3xFLAG insertion to Met53 in the first extracellular loop (residues 43\u201370), making Site 1 a high-confidence validated site. The third ledger line (DOI:10.1101/2023.07.30.551163) confirms a separate external triple-HA tag on full-length NHE6 but names neither a residue nor a loop; it is reported as a region-level site (Site 2) with low confidence. No other ledger lines support additional sites. The intracellular C-terminal GFP mentioned in the preprint is on the cytoplasmic face and does not qualify as an extracellular tag site. No ledger evidence supports any of the other extracellular loops (ECL2 123\u2013175, ECL3 234\u2013251, ECL4 304\u2013319, ECL5 377\u2013382, ECL6 437\u2013443, ECL7 500\u2013508).",
+  "literature_rejected": []
 }

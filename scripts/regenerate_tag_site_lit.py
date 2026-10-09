@@ -49,6 +49,9 @@ from accessible_surfaceome.env import load_env
 
 load_env()
 
+from accessible_surfaceome.agents.tag_site.record import (  # noqa: E402
+    merge as merge_record,
+)
 from accessible_surfaceome.agents.tag_site.runner import (  # noqa: E402
     run_tag_site_agent,
     to_viewer_sites,
@@ -242,8 +245,8 @@ def merge_lit_sites(
     }
     kept = [s for s in rec.get("sites", []) if s.get("provenance") != "literature_retrieved"]
     merged = sorted(kept + lit_sites, key=lambda s: s["site_id"])
-    rec["sites"] = merged
-    rec["has_data"] = len(merged) > 0
+    rec = merge_record(file_data, {**rec, "sites": merged, "has_data": len(merged) > 0},
+                       owner="literature")
     if result is not None:
         # Prompt provenance (CLAUDE.md: mandatory for any persisted LLM output)
         # plus what the gates removed. Without the first, records written either
