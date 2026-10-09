@@ -1,0 +1,55 @@
+{
+  "has_data": true,
+  "gene_symbol": "SLC9A6",
+  "uniprot_acc": "Q92581",
+  "sites": [
+    {
+      "site_id": "SLC9A6-internal-53-lit",
+      "gene_symbol": "SLC9A6",
+      "uniprot_acc": "Q92581",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 53,
+      "residue_before": "M",
+      "residue_after": "D",
+      "residue_label": "M53",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa or 3xFLAG equivalent, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Non-permeabilized antibody labeling confirmed extracellular surface display of the FLAG tag; the 3F-NHE6-HA construct was used as a functional tool to study endosomal pH regulation and NHE6 trafficking \u2014 function preserved.",
+      "confidence": "high",
+      "rationale": "Residue 53 = M, residue 54 = D, matching the paper's explicit statement 'after residue Met 53'. Position 53 falls within the first extracellular span (EC1 = 43\u201370), 11 residues from the signal-peptide cleavage site (SP ends at 42) and 18 residues from the TM1 boundary (TM1 starts at 71), both well above the \u22653-residue minimum. The tag is inserted into the mature extracellular protein, not within the cleaved signal peptide. A triple FLAG epitope (AAA-DYKDDDDK-G-DYKDDDDK-G-DYKDDDDK-AAA) was inserted into full-length, membrane-anchored NHE6 immediately after Met53 in the first extracellular loop, generating the 3F-NHE6-HA construct. The construct was expressed in mammalian cells, the FLAG tag was accessible to antibody without permeabilization (confirming extracellular surface display), and the tagged protein was used as a functional tool to study endosomal pH regulation and trafficking. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 27590723,
+          "citation": "PMID 27590723",
+          "claim": "The same template (NHE6 HA ) was also used to introduce a triple Flag epitope (AAA DYKDDDDK G DYKDDDDK G DYKDDDDK AAA) in the first extracellular loop immediately after residue Met 53 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:11:12.907355+00:00",
+  "literature_notes": "The DOI:10.1101/2023.07.30.551163 ledger clips describe a full-length NHE6 construct with an 'external triple-HA tag' confirmed by non-permeabilized antibody labeling, but neither clip states the insertion residue. Because the ledger rules require a pinnable position, these clips cannot define an independent site; they are cited as corroborating evidence for the first extracellular loop (EC1, residues 43\u201370) already validated at Met53.",
+  "literature_rejected": [
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "position",
+      "reason": "Ledger clips confirm extracellular surface display of the HA tag on full-length NHE6 but do not state the insertion residue. Cannot pin insert_after_residue; site cannot be independently reported per ledger rules."
+    }
+  ]
+}

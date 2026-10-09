@@ -4,6 +4,38 @@
   "uniprot_acc": "P29972",
   "sites": [
     {
+      "site_id": "AQP1-internal-43-lit",
+      "gene_symbol": "AQP1",
+      "uniprot_acc": "P29972",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 43,
+      "residue_before": "Q",
+      "residue_after": "T",
+      "residue_label": "Q43",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by non-permeabilized anti-FLAG staining in three independent studies (PMC12802846, PMC11253201, PMC10274688). Water-channel function (osmotic water permeability) not reported in the ledger quotes \u2014 NOT MEASURED for function.",
+      "confidence": "high",
+      "rationale": "Python computation confirms: seq[42]='Q' (position 43) and seq[43]='T' (position 44), matching all three ledger citations exactly. The junction falls within the authoritative extracellular span 34\u201349 (loop 1, between TM1 and TM2). Distance from TM1 C-terminus (residue 33) = 10 residues; distance from TM2 N-terminus (residue 50) = 7 residues \u2014 both well above the \u22653-residue minimum. Three papers independently validated FLAG insertion at this exact Q43/T44 junction in full-length, membrane-anchored AQP1 constructs, all confirming extracellular surface accessibility. An ALFA tag (~15 aa) with flanking GS linkers is comparable in size to a FLAG tag and is expected to be tolerated at this well-validated site. Three independent studies inserted a FLAG epitope tag immediately after Q43 (between Gln43 and Thr44) in the first extracellular loop of full-length, membrane-anchored AQP1 (human hAQP1, LSAqp1, and Aqp1-FKBP12-DD fusion). In all three cases, surface expression was confirmed by anti-FLAG antibody staining without cell permeabilization, demonstrating that the tagged protein traffics to the plasma membrane with the tag accessible on the extracellular face. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 39027298,
+          "citation": "PMID 39027298",
+          "claim": "Given that both termini of Aqp1 are cytoplasmic, we inserted a FLAG epitope in an extracellular loop between Gln43 and Thr44, which enabled us to probe Aqp1-FKBP12-DD without having to permeabilize the cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "AQP1-snorkel-c",
       "gene_symbol": "AQP1",
       "uniprot_acc": "P29972",
@@ -395,5 +427,12 @@
       "canonical_residue": 46,
       "left_pct": 17.100371747211895
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:07:58.790401+00:00",
+  "literature_notes": "All three ledger lines converge on the identical Q43/T44 junction in extracellular loop 1 (topology span 34\u201349). This is reported as a single site (rank 1) because all three citations pin the same residue pair. No other extracellular loops (loop 2: 116\u2013135; loop 3: 187\u2013210) are supported by any ledger line, so no additional sites are proposed. Validation level is surface_only because the ledger quotes describe surface-expression assays (non-permeabilized anti-FLAG staining) but do not report water-transport functional assays for the tagged constructs.",
+  "literature_rejected": []
 }

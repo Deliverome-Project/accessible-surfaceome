@@ -55,6 +55,9 @@ from accessible_surfaceome.agents.tag_site.runner import (  # noqa: E402
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+#: Per-run intermediates (clip pool, ledger, boosted clips, usage). Derived and
+#: regenerable, so it lives beside the other local caches rather than in git.
+RUNS_DIR = ROOT / "data/external/tag_site_runs"
 OUT_DIR = ROOT / "viewer/public/tag-sites"
 API_BASE = "https://api.deliverome.org/surfaceome"
 UNIPROT_BASE = "https://rest.uniprot.org/uniprotkb"
@@ -299,7 +302,14 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
                     symbol, sp_end, predicted)
 
     # 3. Run the multi-stage literature agent, convert to viewer shape.
+    # Per-gene cost. The agent has always accepted a usage_sink and the pricing
+    # table has always been there; nothing passed one, so every tag-site run was
+    # unpriced and "what does a gene cost" had no answer on disk.
+    usage: list[Any] = []
+    inter: dict[str, Any] = {}
     result = run_tag_site_agent(
+        usage_sink=usage,
+        intermediates=inter,
         gene_symbol=symbol,
         protein_name=protein_name,
         uniprot_accession=acc,
@@ -325,6 +335,28 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
     summary["new_lit"] = len(lit_sites)
     summary["lit_sites"] = lit_sites
     log.info("  %s: agent returned %d literature site(s)", symbol, len(lit_sites))
+
+    cost = sum(getattr(u, "cost_usd", 0.0) or 0.0 for u in usage)
+    tok_in = sum(getattr(u, "input_tokens", 0) or 0 for u in usage)
+    tok_out = sum(getattr(u, "output_tokens", 0) or 0 for u in usage)
+    cache_rd = sum(getattr(u, "cache_read_input_tokens", 0) or 0 for u in usage)
+    summary["cost_usd"] = round(cost, 4)
+    summary["n_model_calls"] = len(usage)
+    log.info("  %s COST: $%.4f over %d model calls (in=%d out=%d cache_read=%d)",
+             symbol, cost, len(usage), tok_in, tok_out, cache_rd)
+
+    # Persist the run's intermediates. The clip pool and the evidence ledger
+    # lived only in memory, so every question about why a site was or was not
+    # proposed cost a fresh run to answer.
+    inter["cost_usd"] = round(cost, 4)
+    inter["n_model_calls"] = len(usage)
+    inter["prompt_sha"] = result.prompt_sha
+    inter["prompt_version"] = result.prompt_version
+    inter["model"] = result.model
+    inter["generated_at"] = result.generated_at
+    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    (RUNS_DIR / f"{symbol}.json").write_text(json.dumps(inter, indent=2, default=str))
+    log.info("  %s: wrote intermediates to %s", symbol, RUNS_DIR / f"{symbol}.json")
 
     # 4. Merge: keep non-lit (deterministic) sites + pins + gene fields; swap lit.
     if not dry_run:

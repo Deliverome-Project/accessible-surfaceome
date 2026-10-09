@@ -356,6 +356,7 @@ def run_tag_site_agent(
     mode: str = "production",
     sp_end: int | None = None,
     usage_sink: list[Any] | None = None,
+    intermediates: dict[str, Any] | None = None,
 ) -> TagSiteResult:
     """Discover papers (+ preprints, retraction-filtered), triage, pool + span-verify
     tag-insertion clips (shared clip pipeline), then synthesize a validated, ranked
@@ -409,6 +410,11 @@ def run_tag_site_agent(
 
     # 2. Abstract triage -> 3. body pool + real source store (shared).
     outcomes = triage_abstracts(client, papers=list(papers_by_id.values()), gene=gene_symbol)
+    if usage_sink is not None:
+        # `TriageOutcome.usage` is a populated UsageRecord (Haiku-priced) that
+        # nothing collected, so abstract triage — the biggest fan-out, one call
+        # per paper — contributed nothing to any cost total.
+        usage_sink.extend(o.usage for o in outcomes if getattr(o, "usage", None))
     pool, actions = build_pool(
         outcomes, papers_by_id, http=http, retraction_index=ri,
         relevance=tag_site_relevance(sequence) if sequence else None,
@@ -428,6 +434,7 @@ def run_tag_site_agent(
     # the top clips by score, which on a well-studied gene drops most of the pool
     # (TFRC: 746 -> 100), so a clip pinning a real insertion can be cut before the
     # model ever sees it.
+    boosted: dict[str, set[int]] = {}
     if sequence and topology:
         boosted = boost_residue_clips(pool, sequence=sequence, topology=topology)
         if boosted:
@@ -468,6 +475,10 @@ def run_tag_site_agent(
     )
     user_prompt = f"{user_prompt}\n\n{format_evidence_ledger(evidence)}"
 
+    # n_repair_attempts + validation_error, as every v2 builder records. Without
+    # it a repair cascade is only visible by reading raw logs, which is how the
+    # KCNH2 13-error cascade went unnoticed.
+    synth_meta: dict[str, Any] = {}
     result = call_builder(
         client,
         system_prompt=SYSTEM_PROMPT,
@@ -477,6 +488,7 @@ def run_tag_site_agent(
         label=f"tag_site:{gene_symbol}",
         max_tokens=32_000,  # 16k default truncated multi-site outputs (e.g. SLC6A4)
         tools=CODE_EXECUTION_TOOL,
+        meta_sink=synth_meta,
     )
     if result is None:
         return _empty()
@@ -544,6 +556,31 @@ def run_tag_site_agent(
                 gate="geometry", reason=reason,
             ))
         result.sites = kept
+    if intermediates is not None:
+        # The clip pool and the ledger were never persisted — the code says so
+        # twice — so after a run finished there was no way to ask which clips
+        # were available, what the model was shown, or why a site was not
+        # proposed. Every such question today cost a fresh run to answer.
+        intermediates.update({
+            "gene_symbol": gene_symbol,
+            "n_papers": len(papers_by_id),
+            "n_clips": len(pool),
+            "n_boosted": len(boosted),
+            "boosted": {k: sorted(v) for k, v in boosted.items()},
+            "ledger": [
+                {
+                    "source_id": (sp.source.source_id if sp.source else None),
+                    "claim": e.claim,
+                    "quote": sp.quote,
+                }
+                for e in evidence
+                for sp in (e.spans or [])
+            ],
+            "synthesis_meta": synth_meta,
+            "notes": result.notes,
+            "rejected": [x.model_dump() for x in result.rejected],
+        })
+
     result.prompt_sha = prompt_sha()
     result.prompt_version = TAG_SITE_PROMPT_VERSION
     result.model = SONNET_MODEL

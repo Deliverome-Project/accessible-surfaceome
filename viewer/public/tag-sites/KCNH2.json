@@ -17,13 +17,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers (~23 aa total)",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers (~17-23 aa total insert)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Electrophysiology: tag demonstrated not to affect electrophysiological properties (DOI:10.1101/2020.02.17.952606; Akhavan et al. 2003 cited therein). Surface trafficking: confirmed by flow cytometry and confocal microscopy in HEK293T cells (PMC7704534). Processing and function: 'does not interfere with processing and function' (PMC3861077, citing Akhavan et al. 2003). On-Cell/In-Cell surface quantification confirmed (PMC13182972).",
+      "functional_impact_measured": "Electrophysiology: tag demonstrated not to affect electrophysiological properties of the channel (DOI:10.1101/2020.02.17.952606). Surface expression: confirmed by flow cytometry and confocal microscopy in HEK293T cells (PMC7704534). Processing and function: HA tag in S1\u2013S2 loop does not interfere with processing and function (PMC3861077, citing Akhavan et al. 2003).",
       "confidence": "high",
-      "rationale": "The ledger provides an exact-residue citation: HA tag inserted between T443 and E444 in the extracellular S1\u2013S2 loop of full-length KCNH2. Python verification confirms seq_dict[443]='T' and seq_dict[444]='E', matching the paper's stated residues exactly. The junction sits within the extracellular span 430\u2013453 (authoritative topology). Distance from TM1 end (residue 429): 14 aa; distance from TM2 start (residue 454): 10 aa \u2014 both well above the \u22653 aa minimum. C445 is 2 positions C-terminal to the junction and C449 is 6 positions away; these cysteines are known to form a disulfide in the turret, but the published HA tag at this exact junction was tolerated without disrupting electrophysiology, demonstrating the insert does not perturb the disulfide. Multiple independent papers confirm surface display and functional integrity. Ranked first because electrophysiology was explicitly measured and found unaffected. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger line from DOI:10.1101/2020.02.17.952606 explicitly names T443 and E444 as the junction. Python lookup confirms seq[443]='T' and seq[444]='E', matching the paper exactly. The junction lies within the extracellular S1\u2013S2 loop (topology: 430\u2013453), 14 residues from TM1 end (429) and 10 residues from TM2 start (454), both well above the >=3 aa minimum. The same paper confirms electrophysiological function is preserved; multiple independent groups (PMC3861077, PMC3877390, PMC7704534, PMC13182972) have used HA-tagged hERG in this same loop with confirmed surface expression and unperturbed function. Ranked first due to highest validation level (surface_and_function) and explicit residue-level citation. A 9 aa HA tag with flanking 4 aa linkers (NSEHYPYDVPDYAVTFE, 17 aa total) was inserted between T443 and E444 in the extracellular S1\u2013S2 loop of full-length KCNH2 (hERG1a) by inverse PCR in a stable HEK293 cell line. The tag was demonstrated not to affect electrophysiological properties of the channel. Surface expression confirmed by flow cytometry and confocal microscopy across multiple independent studies using HA-tagged hERG constructs in the same S1\u2013S2 loop. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "citation": "preprint",
@@ -36,5 +36,25 @@
     }
   ],
   "isoform_pins": [],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_version": "1.0.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-09T02:12:02.541107+00:00",
+  "literature_notes": "Both validated sites lie in the same extracellular S1\u2013S2 loop (topology 430\u2013453) of KCNH2. All other ledger lines (PMC3861077, PMC3877390, PMC7704534, PMC13182972) describe HA-tagged hERG in the S1\u2013S2 loop without specifying the exact residue junction; they corroborate the general loop tolerance but do not independently pin a third residue-level site and so are cited as supporting evidence for site 1 rather than as separate sites. No ledger evidence supports any other extracellular loop (S3\u2013S4 loop: 501; turret/S5\u2013S6 loop: 571\u2013638) with a tag insertion in full-length membrane-anchored KCNH2.",
+  "literature_rejected": [
+    {
+      "residue_label": "",
+      "insert_after_residue": null,
+      "gate": "position",
+      "reason": "These ledger lines confirm the S1\u2013S2 loop is tolerant of HA tags and confirm surface expression and/or function, but do not state the exact residue junction. They are used as corroborating evidence for the T443/E444 site (which is explicitly pinned by DOI:10.1101/2020.02.17.952606) rather than as independent sites, because no distinct residue number can be extracted to define a separate insert_after_residue."
+    },
+    {
+      "residue_label": "T436",
+      "insert_after_residue": 436,
+      "gate": "entailment",
+      "reason": "supporting_quote is not in the span-verified ledger"
+    }
+  ]
 }

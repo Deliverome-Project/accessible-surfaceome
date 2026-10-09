@@ -86,13 +86,13 @@ def _wire(monkeypatch, *, discovered, llm, evidence=None):
         lambda pool, *, papers_by_source_id, http, retraction_index: object(),
     )
     monkeypatch.setattr(
-        mod, "select_clips", lambda c, *, pool, gene, synonyms: SimpleNamespace()
+        mod, "select_clips", lambda c, *, pool, gene, synonyms, **_: SimpleNamespace()
     )
     monkeypatch.setattr(
         mod, "promote", lambda sel, *, pool, store: list(evidence or [])
     )
     monkeypatch.setattr(
-        mod, "grade_from_evidence", lambda c, *, gene, evidence, synonyms: llm
+        mod, "grade_from_evidence", lambda c, *, gene, evidence, synonyms, **_: llm
     )
 
 
@@ -156,11 +156,11 @@ def test_annotate_literature_keeps_seq_prior_out_of_lit_stages(tmp_path, monkeyp
         seen.append(repr((papers, gene, synonyms)))
         return []
 
-    def cap_select(c, *, pool, gene, synonyms):
+    def cap_select(c, *, pool, gene, synonyms, **_):
         seen.append(repr((pool, gene, synonyms)))
         return SimpleNamespace()
 
-    def cap_grade(c, *, gene, evidence, synonyms):
+    def cap_grade(c, *, gene, evidence, synonyms, **_):
         seen.append(repr((gene, evidence, synonyms)))
         return llm
 

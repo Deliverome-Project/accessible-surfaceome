@@ -8,7 +8,7 @@ import hashlib
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 from anthropic import Anthropic
 
@@ -94,6 +94,9 @@ def annotate_literature(
     client = client or get_client()
     http = http or open_default_client()
     retraction = empty_retraction()
+    # Per-gene cost. The lit search had no usage tracking at all, so a sweep's
+    # spend was unknowable even though every call site already accepted a sink.
+    usage: list[Any] = []
 
     bundle = resolve_by_hgnc_id(resolve_hgnc_id(gene), http=http)
     # Alternate names so the LLM stages recognize the protein under aliases /
@@ -154,7 +157,8 @@ def annotate_literature(
     )
 
     selection = select_clips(
-        client, pool=pool, gene=bundle.hgnc_symbol, synonyms=synonyms
+        client, pool=pool, gene=bundle.hgnc_symbol, synonyms=synonyms,
+        usage_sink=usage,
     )
     # Only span-verified claims (real char offset into the fetched body) inform
     # the grade and ship as cited sources — drop store/substring misses.
@@ -237,6 +241,8 @@ def annotate_literature(
         prompt_sha=lit_prompt_sha(),
         prompt_version=LIT_PROMPT_VERSION,
         model=SONNET_MODEL,
+        cost_usd=round(sum(getattr(u, "cost_usd", 0.0) or 0.0 for u in usage), 4),
+        n_model_calls=len(usage),
     )
 
     record = InternalizationRecord(
