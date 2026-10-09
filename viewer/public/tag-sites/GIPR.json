@@ -37,6 +37,38 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GIPR-terminal_n-21-lit",
+      "gene_symbol": "GIPR",
+      "uniprot_acc": "P48546",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "Q",
+      "residue_after": "R",
+      "residue_label": "Q21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface biotinylation confirmed plasma-membrane display of HA-GIPR (PMC3296735); N-terminal SNAP-GIPR showed GIP(1-42)-stimulated receptor trafficking (internalization assay) in INS-1 832/3 cells with endogenous GIPR deleted, demonstrating preserved agonist-driven function (PMC10016038); cell-impermeant SNAP probe specifically labeled SNAPf-GIPR at the plasma membrane of HEK293 cells (PMC13544220)",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201321 (cleavage after Q21); the mature extracellular N-terminal domain begins at R22 and extends to R136, well clear of TM1 (137\u2013158). Inserting a short tag after residue 21 places it at the very start of the extracellular face, \u2265115 residues from the nearest TM boundary. Python verification confirms residue 21 = Q and residue 22 = R in the canonical sequence. Three independent papers pin tags to this exact junction using the phrase 'directly/immediately downstream of the signal peptide' (PMC3296735: HA; PMC4156404: myc; PMC13544220: SNAPf). A fourth paper (PMC10016038) demonstrates that an N-terminal SNAP-tagged GIPR retains GIP-stimulated trafficking, providing functional validation at this topological position. All C-terminal tags in the ledger (V5, eYFP, SYFP2, YFP, Flag, EGFP, SmBiT) land in the intracellular C-tail (residues 396\u2013466) and are excluded. Ledger lines with unstated tag positions (PMC10576055, PMC12771327, PMC7526454 3X-HA, PMC13485621 FLAG+mNG) cannot pin insert_after_residue and were not used as primary evidence. HA epitope (YPYDVPDYA) inserted by overlapping PCR mutagenesis directly downstream of the GIPR signal peptide cleavage site (after residue 21, Q; before residue 22, R) in full-length membrane-anchored human GIPR; surface expression confirmed by surface biotinylation (PMC3296735). A myc-tag was independently introduced at the identical junction ('immediately downstream of the predicted signal peptide') in full-length GIPR for extracellular surface labeling in HEK-293 cells (PMC4156404). N-terminal SNAP-tagged full-length human GIPR (N-terminal tag, same topological position) was expressed in INS-1 832/3 beta cells with endogenous receptor deleted and showed GIP(1-42)-stimulated receptor trafficking, confirming functional surface display (PMC10016038). SNAPf-tagged GIPR (endogenous SP replaced by SNAPf + upstream SP, placing SNAPf at the extracellular N-terminus) was surface-labeled with a cell-impermeant SNAP probe in HEK293 cells (PMC13544220). Additional N-terminal tags (3X-HA, FLAG+mNeonGreen, N-terminal SNAP from Cisbio) reported in PMC7526454 and PMC13485621 are consistent with this position but do not state the exact residue. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 21; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 22412906,
+          "citation": "PMID 22412906",
+          "claim": "overlapping PCR mutagenesis was used to insert the HA epitope (YPYDVPDYA) directly downstream of the GIPR and GLP1R putative signal peptide sequences on their N-termini"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [
@@ -54,46 +86,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_sha": "59b1951da26f06fc3cc11af7b8a18f650f39c9d43a09667add3ed570c0d99392",
   "prompt_version": "1.0.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T02:24:42.534890+00:00",
-  "literature_notes": "All C-terminal tags (V5 in PMC3296735; YFP/eYFP/SYFP2 in PMC4156404/PMC7438548; Flag in PMC10842860) are intracellular (IC4: 396\u2013466) and are excluded as extracellular sites. PMC10576055 (Flag + HA by site-directed mutagenesis) does not state the insertion position and cannot be pinned to a residue. PMC12771327 (HiBiT extracellular detection) does not state the tag position explicitly. No ledger evidence supports any internal extracellular loop (ECL1 192\u2013218, ECL2 281\u2013293, ECL3 362\u2013368) insertion for GIPR.",
-  "literature_rejected": [
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "extracellular",
-      "reason": "C-terminus is intracellular (IC4: 396\u2013466); not an extracellular site",
-      "supporting_quote": null
-    },
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "position_pinnable",
-      "reason": "Quote does not state the insertion position; insert_after_residue cannot be pinned",
-      "supporting_quote": null
-    },
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "position_pinnable",
-      "reason": "Quote does not state the tag position explicitly; insert_after_residue cannot be pinned",
-      "supporting_quote": null
-    },
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "insertion_tolerated",
-      "reason": "Reports glycosylation site mutagenesis, not a tag insertion site",
-      "supporting_quote": null
-    },
-    {
-      "residue_label": "Q21",
-      "insert_after_residue": 21,
-      "gate": "entailment",
-      "reason": "supporting_quote is not in the span-verified ledger",
-      "supporting_quote": "A myc-tag (EQKLISEEDL) was introduced immediately downstream of the predicted signal peptide of GLP-1R and GIPR by sequential overlapping PCR using primers, which also added a NotI and XbaI site to the products' termini."
-    }
-  ]
+  "generated_at": "2026-10-09T02:36:13.476509+00:00",
+  "literature_notes": "Only one extracellular site is supported by the ledger. Every ledger line was evaluated: (1) C-terminal tags (V5 PMC3296735, eYFP/SYFP2 PMC7438548, YFP PMC4156404, Flag PMC10842860, EGFP PMC7526454, SmBiT PMC13544220) all land in the intracellular C-tail (topology 396\u2013466) and are disqualified for extracellular tagging. (2) PMC10576055 (Flag/HA by site-directed mutagenesis) and PMC12771327 (HiBiT extracellular detection) do not state the insertion residue and cannot pin insert_after_residue. (3) PMC7526454 (3X-HA N-terminal) and PMC13485621 (FLAG+mNeonGreen N-terminal) state 'N-terminal' without specifying the exact residue; they are consistent with site 1 but were not used as primary evidence. The single qualifying site\u2014after residue 21, the signal-peptide cleavage point\u2014is supported by three papers with explicit positional language and a fourth with functional confirmation.",
+  "literature_rejected": []
 }

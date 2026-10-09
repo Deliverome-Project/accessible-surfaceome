@@ -4,6 +4,38 @@
   "uniprot_acc": "Q12809",
   "sites": [
     {
+      "site_id": "KCNH2-internal-436-lit",
+      "gene_symbol": "KCNH2",
+      "uniprot_acc": "Q12809",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 436,
+      "residue_before": "T",
+      "residue_after": "E",
+      "residue_label": "T436",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers (~19-21 aa total); analogous to BBS 13 aa insert validated here",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by confocal microscopy and flow cytometry in HEK293 cells. Electrophysiological function not explicitly reported for the BBS-tagged construct in the cited papers, but robust surface trafficking was demonstrated. Multiple independent studies using HA tags in the same S1\u2013S2 loop (same protein, same loop) report no interference with processing or function (Akhavan et al. 2003, cited in PMC3861077).",
+      "confidence": "high",
+      "rationale": "The ledger explicitly names T436/E437 as the insertion junction in the extracellular S1\u2013S2 loop (topology landmarks: EC 430\u2013453, flanked by TM S1 409\u2013429 and TM S2 454\u2013471). Python verification confirms full_seq[436]='T' and full_seq[437]='E', matching the paper exactly. Distance from S1 TM end (429): 7 residues; distance from S2 TM start (454): 18 residues \u2014 both well above the \u22653 residue minimum. The nearest disulfide-forming cysteines (C445, C449) are 9 and 13 residues downstream, respectively, leaving adequate spacing. The BBS tag (13 aa) is within the 13\u201323 aa target range; an ALFA tag with GS linkers (~19\u201321 aa) is similarly sized. Multiple independent papers confirm this loop tolerates epitope insertions without disrupting trafficking. A 13-residue bungarotoxin-binding site (BBS) was inserted between T436 and E437 in the extracellular S1\u2013S2 loop of full-length hERG1a (also bearing a C-terminal YFP) in HEK293 cells. Surface expression of the intact membrane-anchored channel was confirmed by confocal microscopy (YFP total pool; BTX-Alexa647 surface pool) and flow cytometry (surface signals up to 100-fold above threshold). The construct is full-length and membrane-anchored; not a secreted ectodomain. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 29725305,
+          "citation": "PMID 29725305",
+          "claim": "A 13-residue bungarotoxin-binding site (BBS; TGGCGGTACTACGAGAGCAGCCTGGAGCCCTACCCCGAC) ( Sekine-Aizawa and Huganir, 2004 ; Yang et al., 2010 ) was then introduced between residues T436/E437 in the extracellular S1\u2013S2 loop of hERG using the Quik-Change Lightning Site-Directed Mutagenesis Kit (Stratagene) according to the manufacturer's instructions. 16 LQT2 mutations were introduced in the PAS domain of BBS-hERG-YFP via site-directed mutagenesis."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "KCNH2-internal-443-lit",
       "gene_symbol": "KCNH2",
       "uniprot_acc": "Q12809",
@@ -17,13 +49,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers (~17-23 aa total insert)",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers (~19-21 aa total); analogous to HA tag with linkers (17 aa) validated here",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Electrophysiology: tag demonstrated not to affect electrophysiological properties of the channel (DOI:10.1101/2020.02.17.952606). Surface expression: confirmed by flow cytometry and confocal microscopy in HEK293T cells (PMC7704534). Processing and function: HA tag in S1\u2013S2 loop does not interfere with processing and function (PMC3861077, citing Akhavan et al. 2003).",
+      "functional_impact_measured": "Electrophysiological properties confirmed unaffected: 'This tag has been demonstrated previously not to affect the electrophysiological properties of the channel.' Stable expression construct validated for surface labeling. Function preserved.",
       "confidence": "high",
-      "rationale": "The ledger line from DOI:10.1101/2020.02.17.952606 explicitly names T443 and E444 as the junction. Python lookup confirms seq[443]='T' and seq[444]='E', matching the paper exactly. The junction lies within the extracellular S1\u2013S2 loop (topology: 430\u2013453), 14 residues from TM1 end (429) and 10 residues from TM2 start (454), both well above the >=3 aa minimum. The same paper confirms electrophysiological function is preserved; multiple independent groups (PMC3861077, PMC3877390, PMC7704534, PMC13182972) have used HA-tagged hERG in this same loop with confirmed surface expression and unperturbed function. Ranked first due to highest validation level (surface_and_function) and explicit residue-level citation. A 9 aa HA tag with flanking 4 aa linkers (NSEHYPYDVPDYAVTFE, 17 aa total) was inserted between T443 and E444 in the extracellular S1\u2013S2 loop of full-length KCNH2 (hERG1a) by inverse PCR in a stable HEK293 cell line. The tag was demonstrated not to affect electrophysiological properties of the channel. Surface expression confirmed by flow cytometry and confocal microscopy across multiple independent studies using HA-tagged hERG constructs in the same S1\u2013S2 loop. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger explicitly names T443/E444 as the insertion junction in the extracellular S1\u2013S2 loop. Python verification confirms full_seq[443]='T' and full_seq[444]='E', matching the paper exactly. Distance from S1 TM end (429): 14 residues; distance from S2 TM start (454): 11 residues \u2014 both well above the \u22653 residue minimum. C445 is 2 residues downstream of the junction; however, the paper explicitly demonstrates electrophysiological function is preserved, indicating the insert does not disrupt the C445\u2013C449 disulfide. The HA-with-linkers insert (17 aa) is within the 13\u201323 aa target range; an ALFA tag with GS linkers is similarly sized. A second ledger line (PMC7704534) independently confirms HA tagging in the first extracellular loop of KV11.1/KCNH2 with surface expression validated by flow cytometry and confocal microscopy. A 9-amino acid HA tag with flanking 4-aa linkers (NSEHYPYDVPDYAVTFE, 17 aa total) was inserted between T443 and E444 in the extracellular S1\u2013S2 loop of full-length KCNH2 (hERG1a) by inverse PCR. The construct was incorporated into a stable expression system (AttB-KCNH2-HA:IRES:mCherry). The paper explicitly states the tag does not affect electrophysiological properties of the channel. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "citation": "preprint",
@@ -38,23 +70,10 @@
   "isoform_pins": [],
   "ortholog_pins": [],
   "schema_version": "1.0.0",
-  "prompt_sha": "3dea6221b7e71f699e9164818ea1297d76febea1f3a73136b2a638ebd2ee3f9a",
+  "prompt_sha": "59b1951da26f06fc3cc11af7b8a18f650f39c9d43a09667add3ed570c0d99392",
   "prompt_version": "1.0.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T02:12:02.541107+00:00",
-  "literature_notes": "Both validated sites lie in the same extracellular S1\u2013S2 loop (topology 430\u2013453) of KCNH2. All other ledger lines (PMC3861077, PMC3877390, PMC7704534, PMC13182972) describe HA-tagged hERG in the S1\u2013S2 loop without specifying the exact residue junction; they corroborate the general loop tolerance but do not independently pin a third residue-level site and so are cited as supporting evidence for site 1 rather than as separate sites. No ledger evidence supports any other extracellular loop (S3\u2013S4 loop: 501; turret/S5\u2013S6 loop: 571\u2013638) with a tag insertion in full-length membrane-anchored KCNH2.",
-  "literature_rejected": [
-    {
-      "residue_label": "",
-      "insert_after_residue": null,
-      "gate": "position",
-      "reason": "These ledger lines confirm the S1\u2013S2 loop is tolerant of HA tags and confirm surface expression and/or function, but do not state the exact residue junction. They are used as corroborating evidence for the T443/E444 site (which is explicitly pinned by DOI:10.1101/2020.02.17.952606) rather than as independent sites, because no distinct residue number can be extracted to define a separate insert_after_residue."
-    },
-    {
-      "residue_label": "T436",
-      "insert_after_residue": 436,
-      "gate": "entailment",
-      "reason": "supporting_quote is not in the span-verified ledger"
-    }
-  ]
+  "generated_at": "2026-10-09T02:31:01.296225+00:00",
+  "literature_notes": "Two validated sites were identified, both in the extracellular S1\u2013S2 loop (topology 430\u2013453) of KCNH2. All other ledger entries were considered: (1) Multiple corroborating HA-in-S1S2-loop entries (PMC3861077, PMC3877390, PMC7704534, PMC13182972, PMC5917007) do not add new residue-level positions beyond 436 and 443 \u2014 they confirm the loop tolerates insertions and support both sites as additional corroboration. (2) The N-terminal myc tag and C-terminal myc tag (PMC5671924) are both intracellular (N-terminus 1\u2013408 is intracellular; C-terminus 657\u20131159 is intracellular per topology landmarks) and do not qualify as extracellular sites. (3) The BBS surface-labeling confocal and flow cytometry entries (PMC5917007, three additional quotes) are corroborating evidence for site 1 at 436, not independent new sites. (4) The large extracellular S5\u2013S6 loop (571\u2013638) contains no ledger-grounded insertion at a specific residue and was therefore not proposed. Site 1 (436) is ranked higher because the BBS tag size (13 aa) is the closest match to the ALFA tag target range and the site is farther from the C445\u2013C449 disulfide pair; Site 2 (443) is ranked second because function was explicitly confirmed by electrophysiology, giving it 'surface_and_function' validation, but proximity to C445 (2 residues) is a structural note.",
+  "literature_rejected": []
 }
