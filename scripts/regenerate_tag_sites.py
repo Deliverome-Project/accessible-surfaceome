@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import sys
 import os
 import tempfile
 import urllib.request
@@ -47,6 +48,8 @@ PDB_CACHE = ROOT / "data/cache/afdb_pdb"
 # Public API record is the source of ortholog seq/topology/acc — the same data the
 # viewer's ortholog tiles read (deterministic_features.orthologs).
 API_BASE = os.environ.get("SURFACEOME_API_BASE", "https://api.deliverome.org/surfaceome").rstrip("/")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 log = logging.getLogger("regenerate_tag_sites")
 
@@ -158,14 +161,39 @@ def _existing_non_deterministic(path: Path) -> list[dict]:
     ]
 
 
+
+def _canon_from_api(acc: str, symbol: str) -> tuple[str, str] | None:
+    """(sequence, topology) from the public API when the accession is absent
+    from the committed 3line predictions.
+
+    The 3line files cover the SURFACEOME COHORT. Six benchmark controls sit
+    outside it — CFTR, KCNH2, KCNQ1, PMP22, TRPC5, VANGL1 — so the deterministic
+    lanes skipped them entirely while the literature agent handled them fine,
+    because it reads the same topology off the API record. This closes that gap
+    rather than leaving a gene with literature sites and no deterministic ones."""
+    try:
+        import regenerate_tag_site_lit as lit  # same scripts/ dir
+
+        _acc, seq, topo = lit.extract_from_record(lit.fetch_record(symbol))
+        if seq and topo and len(seq) == len(topo):
+            return seq, topo
+    except Exception as exc:  # noqa: BLE001 - absent topology must not kill the batch
+        log.warning("  %s (%s): API topology fallback failed: %s", symbol, acc, exc)
+    return None
+
+
 def regenerate_gene(
     symbol: str, acc: str, *, canon: dict[str, tuple[str, str]],
     iso_map: dict[str, tuple[str, str]], out_dir: Path, dry_run: bool,
     signals_dir: str | None = None,
 ) -> dict[str, int] | None:
     if acc not in canon:
-        log.warning("skip %s (%s): not in canonical 3line topology", symbol, acc)
-        return None
+        fallback = _canon_from_api(acc, symbol)
+        if fallback is None:
+            log.warning("skip %s (%s): not in canonical 3line topology", symbol, acc)
+            return None
+        log.info("  %s (%s): not in 3line; using the API record's topology", symbol, acc)
+        canon = {**canon, acc: fallback}
     seq, topo_s = canon[acc]
     topo = {i + 1: c for i, c in enumerate(topo_s)}
     try:

@@ -154,12 +154,5 @@
       "left_pct": 58.4
     }
   ],
-  "ortholog_pins": [],
-  "schema_version": "1.0.0",
-  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
-  "prompt_version": "1.0.0",
-  "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T03:30:08.903730+00:00",
-  "literature_notes": "Ledger lines considered and not proposed as sites: (1) PMC7116137 line 1 \u2014 commercial plasmid from Sinobiological with N-terminal FLAG; disqualified on its own as a commercial plasmid with unstated position, but the N-terminal FLAG site is independently grounded by PMC4513639 (a primary paper). (2) PMC7116137 line 3 \u2014 eYFP fused to the C-terminus of A1R; the C-terminus (residues 291\u2013326) is intracellular per the topology landmarks, so this does not qualify as an extracellular tag site. (3) PMC4513639 line 6 \u2014 YFP-tagged A1R-Y288A; tag position not stated in the ledger clip and Y288 is in TM7 (268\u2013290); likely a C-terminal YFP (intracellular), disqualified. (4) PMC7116137 line 2 \u2014 G279S mutagenesis in FLAG/eYFP constructs; G279 is in TM7, this line provides no new tag-position information. The SF-TAP tag mentioned in PMC4513639 is also an N-terminal addition ('at the N terminus') and would map to the same insert_after_residue=0 site as the FLAG tag; it is not listed as a separate site because it is the same junction. No ledger line supports an insertion in ECL1, ECL2, or ECL3 at a named residue.",
-  "literature_rejected": []
+  "ortholog_pins": []
 }

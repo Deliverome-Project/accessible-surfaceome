@@ -286,12 +286,5 @@
       "canonical_residue": 187,
       "left_pct": 45.83333333333333
     }
-  ],
-  "schema_version": "1.0.0",
-  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
-  "prompt_version": "1.0.0",
-  "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T03:33:28.043466+00:00",
-  "literature_notes": "All five qualifying ledger entries converge on the extracellular N-terminus (insert_after_residue=0). The C-terminal Venus/Rluc8 fusions in PMC12962099 are intracellular (topology: INTRACELLULAR 328\u2013413) and do not qualify as extracellular tag sites. No ledger entry reports any insertion in ECL1 (96\u2013107), ECL2 (172\u2013197), or ECL3 (296\u2013306), so no internal extracellular loop sites are proposed. The HA and SNAP entries (PMC12214593, PMC9246501, PMC10853676, PMC12962099) all corroborate the same N-terminal position and are noted in evidence_detail but the FLAG entry from PMC9681205 is used as the primary supporting_quote because it provides the most complete surface-and-function validation dataset.",
-  "literature_rejected": []
+  ]
 }
