@@ -252,3 +252,113 @@ def test_a_doi_only_preprint_keeps_a_null_pmid() -> None:
     result = TagSiteResult(sites=[site])
     attach_source_pmids(result, evidence=evidence, papers_by_id=papers)
     assert result.sites[0].supporting_pmid is None
+
+
+# ---------------------------------------------------------------------------
+# Prompt provenance + recorded rejections.
+# ---------------------------------------------------------------------------
+
+
+def test_every_llm_record_carries_the_three_mandatory_provenance_fields() -> None:
+    """CLAUDE.md: a pipeline whose LLM output is persisted must stamp the model
+    id, the prompt_sha and the prompt_version. Tag-site records carried none;
+    internalization's literature track carried two of three. Four prompt edits
+    in one day produced records that could not be told apart afterwards."""
+    from accessible_surfaceome.agents.internalization.models import (
+        LiteratureTrack,
+        ModelPriorTrack,
+    )
+    from accessible_surfaceome.agents.tag_site.schema import TagSiteResult as TSR
+
+    required = ("prompt_sha", "prompt_version", "model")
+    for model in (TSR, LiteratureTrack, ModelPriorTrack):
+        missing = [f for f in required if f not in model.model_fields]
+        assert not missing, f"{model.__name__} is missing provenance fields: {missing}"
+    assert "schema_version" in TSR.model_fields
+
+
+def test_the_prompt_sha_tracks_the_prompt_text() -> None:
+    """The fingerprint has to change when the prompt does, or a stale record
+    reads as current — the whole point of the version guard."""
+    from accessible_surfaceome.agents.tag_site import prompt as tag_prompt
+
+    before = tag_prompt.prompt_sha()
+    original = tag_prompt.SYSTEM_PROMPT
+    try:
+        tag_prompt.SYSTEM_PROMPT = original + "\n(an edit)"
+        assert tag_prompt.prompt_sha() != before
+    finally:
+        tag_prompt.SYSTEM_PROMPT = original
+    assert tag_prompt.prompt_sha() == before
+
+
+def test_an_overcomplete_quote_is_recovered_rather_than_dropped() -> None:
+    """The KCNH2 T436 case: clips are truncated at extraction, so a model that
+    reproduces the whole sentence yields a string no clip contains. That is a
+    MORE faithful citation and the gate was deleting it."""
+    import types
+
+    from accessible_surfaceome.agents.tag_site.runner import (
+        recover_overcomplete_quotes,
+        verify_entailment,
+    )
+
+    clip = (
+        "A 13-residue bungarotoxin-binding site (BBS; "
+        "TGGCGGTACTACGAGAGCAGCCTGGAGCCCTACCCCGAC) ( Sekine-Aizawa and Huga"
+    )
+    evidence = [types.SimpleNamespace(spans=[types.SimpleNamespace(quote=clip)])]
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=436,
+        residue_before="T", residue_after="E", tag_type="BBS",
+        evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        supporting_quote=clip + "nir, 2004) was placed between Thr436 and Glu437.",
+        rationale="r", confidence="high",
+    )
+    result = TagSiteResult(sites=[site])
+
+    verify_entailment(result, evidence=evidence)
+    assert not result.sites[0].entailment_verified  # the old behaviour: dropped
+
+    recover_overcomplete_quotes(result, evidence=evidence)
+    verify_entailment(result, evidence=evidence)
+    assert result.sites[0].entailment_verified
+    assert result.sites[0].supporting_quote == clip  # stores what it verified
+
+
+def test_an_invented_quote_is_still_dropped() -> None:
+    """The recovery must not become a way for fabricated text to pass. Moving
+    `upgrade_quotes` ahead of the gate would have done exactly that — it falls
+    back to ANY probative ledger quote, so an invented citation would have
+    survived wearing a real but unrelated one."""
+    import types
+
+    from accessible_surfaceome.agents.tag_site.runner import (
+        recover_overcomplete_quotes,
+        verify_entailment,
+    )
+
+    evidence = [
+        types.SimpleNamespace(
+            spans=[
+                types.SimpleNamespace(
+                    quote="An ALFA tag was inserted after G101 of the ectodomain loop."
+                )
+            ]
+        )
+    ]
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=777,
+        residue_before="A", residue_after="A", tag_type="ALFA",
+        evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        supporting_quote="A sentence that appears in no clip whatsoever.",
+        rationale="r", confidence="high",
+    )
+    result = TagSiteResult(sites=[site])
+    recover_overcomplete_quotes(result, evidence=evidence)
+    verify_entailment(result, evidence=evidence)
+    assert not result.sites[0].entailment_verified

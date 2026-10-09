@@ -37,6 +37,38 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GLP1R-terminal_n-23-lit",
+      "gene_symbol": "GLP1R",
+      "uniprot_acc": "P43220",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "P",
+      "residue_after": "R",
+      "residue_label": "P23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "cAMP-responsive luciferase assay (PMC6155907): pEC50 8.8 \u00b1 0.1 (myc-tagged) vs 8.3 \u00b1 0.1 (WT), not significantly different. SNAP-tagged constructs (PMC5913239, PMC12808597): appropriate cAMP responses to agonist stimulation confirmed. Surface expression confirmed by FACS (LUXendin) and ELISA (PMC11610247).",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201323 (topology landmarks, authoritative). The mature N-terminus begins at residue 24 (R). Inserting a tag after residue 23 places it between P (pos 23, last residue of the cleaved signal peptide) and R (pos 24, first residue of the mature extracellular domain). Python confirmed: seq[22]='P', seq[23]='R'. The junction is 120 residues from TM1 (144\u2013168), providing ample extracellular space. The myc-tag paper (PMC6155907) explicitly states 'immediately downstream of the putative signal peptide' for a full-length membrane-anchored construct, and the functional assay shows preserved potency. Four additional independent papers (PMC5913239, PMC12808597, PMC11610247, PMC13267291) all place SNAP-tags or SNAP/FLAG combinations at the same N-terminal position of full-length GLP-1R with confirmed surface expression and cAMP function. All C-terminal tag entries in the ledger (YFP, FLAG, Strep-tag II, nanoluciferase) map to the intracellular C-terminus (residues 406\u2013463, topology INTRACELLULAR) and are disqualified. The L260 amber-stop construct (PMC9917595) targets an intracellular loop (topology 250\u2013267, INTRACELLULAR) and is disqualified. [validation: surface_and_function; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 28035964,
+          "citation": "PMID 28035964",
+          "claim": "Introduction of a myc-tag to the N-terminus of GLP-1R immediately downstream of the putative signal peptide did not significantly affect the potency of GLP-1 at this receptor when assessed using a cAMP-responsive luciferase assay ( Figure 1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": []

@@ -30,6 +30,7 @@ usage sink the other agents use.
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import Any
@@ -45,7 +46,7 @@ from accessible_surfaceome.agents._support.literature_clips import (
 )
 from accessible_surfaceome.agents._support.web_literature import web_discover_papers
 from accessible_surfaceome.agents.plan_trim_select.abstract_triage import triage_abstracts
-from accessible_surfaceome.agents.surfaceome_v2.builders._common import call_builder
+from accessible_surfaceome.agents.surfaceome_v2.builders._common import SONNET_MODEL, call_builder
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import Evidence, Paper, paper_source_id
 from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty_retraction
@@ -60,13 +61,26 @@ from .literature_discovery import (
     discover_tag_site_papers,
     load_discovery_cache,
     quote_is_probative,
+    ledger_clip_within,
     quote_supported,
     residue_mentions,
     save_discovery_cache,
 )
 from .normalize import signal_peptide_end
-from .prompt import SYSTEM_PROMPT, build_user_prompt, keep_validated_sites
-from .schema import VALIDATION_LEVELS, VALIDATION_RANK, TagSiteProposal, TagSiteResult
+from .prompt import (
+    SYSTEM_PROMPT,
+    TAG_SITE_PROMPT_VERSION,
+    build_user_prompt,
+    keep_validated_sites,
+    prompt_sha,
+)
+from .schema import (
+    VALIDATION_LEVELS,
+    VALIDATION_RANK,
+    RejectedSite,
+    TagSiteProposal,
+    TagSiteResult,
+)
 
 # web_search discovery is delegated to the shared ``web_literature`` module
 # (agents/_support), so the tag-site and internalization tracks share ONE
@@ -257,7 +271,7 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
     return result
 
 
-def verify_entailment(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSiteResult:
+def verify_entailment(result: TagSiteResult, *, evidence: Iterable[Any]) -> TagSiteResult:
     """Entailment backstop: set ``entailment_verified`` on each site True iff its
     supporting_quote is found in the span-verified evidence ledger. The ledger is
     the ONLY citation source the synthesis stage saw and every clip in it is
@@ -267,6 +281,22 @@ def verify_entailment(result: TagSiteResult, *, evidence: list[Evidence]) -> Tag
     ledger = "\n".join(sp.quote for e in evidence for sp in (e.spans or []) if sp.quote)
     for s in result.sites:
         s.entailment_verified = quote_supported(s.supporting_quote, ledger)
+    return result
+
+
+def recover_overcomplete_quotes(result: TagSiteResult, *, evidence: Iterable[Any]) -> TagSiteResult:
+    """Rescue a site whose quote CONTAINS a ledger clip instead of being inside one.
+
+    Clips are truncated at extraction, so a model that reads the source and
+    reproduces the whole sentence yields a string no clip contains. That is a
+    more faithful citation, and the entailment check was deleting it. The site
+    keeps the ledger's own text, never the longer string we did not verify."""
+    for site in result.sites:
+        if site.entailment_verified:
+            continue
+        clip = ledger_clip_within(site.supporting_quote, evidence)
+        if clip:
+            site.supporting_quote = clip
     return result
 
 
@@ -467,7 +497,32 @@ def run_tag_site_agent(
     #   b) geometry — the junction is re-derived from the computed sequence and
     #      topology, repaired where that is deterministic, rejected otherwise.
     #   c) validation + ranking, as before.
+    # Repair before the gate — but ONLY a repair that proves the citation, which
+    # is the narrow case `apply_geometry_pass`'s "repair FIRST, then gate" rule
+    # actually licenses. `recover_overcomplete_quotes` fires only when the
+    # model's text CONTAINS a real ledger clip, and stores that clip, so it
+    # cannot invent support; this is what rescues KCNH2 T436, deleted for
+    # quoting its source more completely than the clip stored.
+    #
+    # `upgrade_quotes` stays AFTER the drop. It rescues a weak quote by swapping
+    # in another ledger line, and falls back to any probative quote when none
+    # names the residue — ahead of the gate that would let a wholly invented
+    # quote survive wearing a real but unrelated citation, which is worse than
+    # dropping the site.
     verify_entailment(result, evidence=evidence)
+    recover_overcomplete_quotes(result, evidence=evidence)
+    verify_entailment(result, evidence=evidence)
+
+    for _s in result.sites:
+        if not _s.entailment_verified:
+            log.info("  %s: dropped %s — quote not found in the ledger: %.120r",
+                     gene_symbol, _s.residue_label, _s.supporting_quote or "")
+            result.rejected.append(RejectedSite(
+                residue_label=_s.residue_label,
+                insert_after_residue=_s.insert_after_residue,
+                gate="entailment",
+                reason="supporting_quote is not in the span-verified ledger",
+            ))
     result.sites = [s for s in result.sites if s.entailment_verified]
     attach_source_pmids(result, evidence=evidence, papers_by_id=papers_by_id)
     upgrade_quotes(result, evidence=evidence)
@@ -483,7 +538,16 @@ def run_tag_site_agent(
         )
         for site, reason in rejected:
             log.info("  %s: dropped %s — %s", gene_symbol, site.residue_label, reason)
+            result.rejected.append(RejectedSite(
+                residue_label=site.residue_label,
+                insert_after_residue=site.insert_after_residue,
+                gate="geometry", reason=reason,
+            ))
         result.sites = kept
+    result.prompt_sha = prompt_sha()
+    result.prompt_version = TAG_SITE_PROMPT_VERSION
+    result.model = SONNET_MODEL
+    result.generated_at = datetime.now(UTC).isoformat()
     return rank_sites(result)
 
 
@@ -546,9 +610,18 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
             "functional_impact_measured": s.functional_or_expression_impact_measured,
             "confidence": s.confidence,
             "rationale": (
-                f"{s.rationale} [validation: {s.validation_level}; "
+                f"{s.rationale} "
+                # evidence_detail is where the prompt sends the assay, the result
+                # and any confound, and cited_tag_residue is what makes an
+                # "inferred" position honest by naming where the real tag sits.
+                # Both were collected every run and read by nothing.
+                + (f"{s.evidence_detail} " if s.evidence_detail else "")
+                + f"[validation: {s.validation_level}; "
                 f"position: {s.position_evidence}; source: {s.source_tier}; "
-                f"entailment_verified: {s.entailment_verified}"
+                + (f"cited_tag_residue: {s.cited_tag_residue}; "
+                   if s.position_evidence == "inferred" and s.cited_tag_residue is not None
+                   else "")
+                + f"entailment_verified: {s.entailment_verified}"
                 # Only stated when true, so an untouched record reads exactly
                 # as it did before this gate existed.
                 + ("; position_repaired: true" if s.position_repaired else "")

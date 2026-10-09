@@ -13,6 +13,7 @@ from typing import cast
 from anthropic import Anthropic
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents.surfaceome_v2.builders._common import SONNET_MODEL
 from accessible_surfaceome.agents._support.web_literature import web_discover_papers
 from accessible_surfaceome.agents.internalization.ids import resolve_hgnc_id
 from accessible_surfaceome.agents.internalization.literature_discovery import (
@@ -235,6 +236,7 @@ def annotate_literature(
         n_papers_fetched=sum(1 for v in fetched_by_id.values() if v),
         prompt_sha=lit_prompt_sha(),
         prompt_version=LIT_PROMPT_VERSION,
+        model=SONNET_MODEL,
     )
 
     record = InternalizationRecord(

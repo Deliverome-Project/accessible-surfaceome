@@ -220,6 +220,7 @@ def merge_lit_sites(
     *,
     symbol: str,
     uniprot_acc: str,
+    result: Any = None,
 ) -> dict[str, Any]:
     """Return the tag-site record with its ``literature_retrieved`` sites replaced
     by ``lit_sites``, preserving deterministic/screen sites and the isoform /
@@ -240,6 +241,18 @@ def merge_lit_sites(
     merged = sorted(kept + lit_sites, key=lambda s: s["site_id"])
     rec["sites"] = merged
     rec["has_data"] = len(merged) > 0
+    if result is not None:
+        # Prompt provenance (CLAUDE.md: mandatory for any persisted LLM output)
+        # plus what the gates removed. Without the first, records written either
+        # side of a prompt edit are indistinguishable; without the second, a
+        # dropped site is invisible to anyone reading the record afterwards.
+        rec["schema_version"] = result.schema_version
+        rec["prompt_sha"] = result.prompt_sha
+        rec["prompt_version"] = result.prompt_version
+        rec["model"] = result.model
+        rec["generated_at"] = result.generated_at
+        rec["literature_notes"] = result.notes
+        rec["literature_rejected"] = [x.model_dump() for x in result.rejected]
     return rec
 
 
@@ -298,6 +311,16 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
     )
     # Use the viewer file's own acc for the site records when present, so the new
     # lit sites match the file (they are expected to be identical anyway).
+    # The agent's own account of what it did NOT propose. `notes` and
+    # `evidence_detail` are asked for by the prompt and read by nothing, so a
+    # run that declines a site the ledger carried left no trace of why — which
+    # is exactly the question KCNH2 T436 raised and nothing on disk could answer.
+    if getattr(result, "notes", ""):
+        log.info("  %s NOTES: %s", symbol, result.notes)
+    for _s in result.sites:
+        log.info("  %s detail %s: cited_tag_residue=%s evidence_detail=%s",
+                 symbol, _s.residue_label, _s.cited_tag_residue, _s.evidence_detail)
+
     lit_sites = to_viewer_sites(result, uniprot_acc=(file_acc or acc))
     summary["new_lit"] = len(lit_sites)
     summary["lit_sites"] = lit_sites
@@ -307,7 +330,7 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
     if not dry_run:
         is_new = file_data is None
         rec = merge_lit_sites(file_data, lit_sites, symbol=symbol,
-                              uniprot_acc=(file_acc or acc))
+                              uniprot_acc=(file_acc or acc), result=result)
         kept = [s for s in rec["sites"] if s.get("provenance") != "literature_retrieved"]
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(rec, indent=2) + "\n")

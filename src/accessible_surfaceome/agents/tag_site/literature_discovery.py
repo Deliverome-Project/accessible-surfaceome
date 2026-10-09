@@ -264,6 +264,40 @@ def quote_supported(quote: str | None, source_text: str) -> bool:
     return find_quote_in_normalized(nq, normalize_for_quote_matching(source_text)) is not None
 
 
+def ledger_clip_within(quote: str | None, evidence) -> str | None:
+    """The ledger clip that ``quote`` CONTAINS, when the model quoted a superset
+    of what the clip stored. None when no clip is contained.
+
+    ``quote_supported`` asks the other direction — is the quote inside the
+    ledger — which drops a site for quoting too FAITHFULLY. Clips are truncated
+    at extraction, so a model that reads the source and reproduces the whole
+    sentence produces a string no clip contains: KCNH2 T436 was deleted for
+    continuing "( Sekine-Aizawa and Huga" to "( Sekine-Aizawa and Huganir, 2004".
+
+    The clip is returned rather than a bool so the caller can store the text it
+    actually verified, never the longer string it merely believes.
+
+    A contained clip must be substantial (>=40 normalized chars): a short
+    fragment would match inside almost any sentence and would let padded or
+    invented text ride in on a few shared words."""
+    if not quote:
+        return None
+    nq = normalize_for_quote_matching(quote)
+    if len(nq) < 12:
+        return None
+    best: str | None = None
+    best_len = 0
+    for e in evidence:
+        for span in getattr(e, "spans", None) or []:
+            clip = getattr(span, "quote", None)
+            if not clip:
+                continue
+            nc = normalize_for_quote_matching(clip)
+            if len(nc) >= 40 and find_quote_in_normalized(nc, nq) is not None and len(nc) > best_len:
+                best, best_len = clip, len(nc)
+    return best
+
+
 # Vocabulary that marks a sentence as actually describing an insertion, rather
 # than being background biology. Deliberately broad across modality, because the
 # tagging literature names the construct a dozen ways and rarely says "tag" —

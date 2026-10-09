@@ -163,6 +163,24 @@ class TagSiteProposal(BaseModel):
         return f"{self.residue_before}{self.insert_after_residue}"
 
 
+#: Bump with any change to the shape of a persisted tag-site record.
+TAG_SITE_SCHEMA_VERSION = "1.0.0"
+
+
+class RejectedSite(BaseModel):
+    """A site the model proposed and the pipeline removed.
+
+    Recorded, not merely logged. A log line helps whoever watches a run; it does
+    nothing for a reviewer opening the record six months later, who otherwise
+    cannot tell a site was never found from one that was found and deleted. The
+    agent ranked KCNH2 T436 FIRST and the record shipped without a trace of it."""
+
+    residue_label: str = ""
+    insert_after_residue: int | None = None
+    gate: str = Field(description='Which gate removed it: "entailment" | "validation" | "geometry"')
+    reason: str = ""
+
+
 class TagSiteResult(BaseModel):
     # Stamped by the runner from what the caller already holds — never asked of
     # the model, which would only be echoing back its own input and failing
@@ -174,3 +192,15 @@ class TagSiteResult(BaseModel):
     sequence_length: int = 0
     sites: list[TagSiteProposal] = Field(default_factory=list)
     notes: str = ""
+    rejected: list[RejectedSite] = Field(default_factory=list)
+
+    # Prompt provenance. Mandatory for any pipeline whose LLM output is
+    # persisted (CLAUDE.md), and absent here until now: four prompt edits in one
+    # day produced records that were indistinguishable afterwards, so a rerun
+    # could not be told from a stale row and an A/B had to recover the old
+    # prompt from git rather than read it off the record.
+    schema_version: str = TAG_SITE_SCHEMA_VERSION
+    prompt_sha: str = ""
+    prompt_version: str = ""
+    model: str = ""
+    generated_at: str = ""

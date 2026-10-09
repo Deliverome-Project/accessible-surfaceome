@@ -1,0 +1,41 @@
+{
+  "has_data": true,
+  "gene_symbol": "PMP22",
+  "uniprot_acc": "Q01453",
+  "sites": [
+    {
+      "site_id": "PMP22-internal-125-lit",
+      "gene_symbol": "PMP22",
+      "uniprot_acc": "Q01453",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 125,
+      "residue_before": "H",
+      "residue_after": "L",
+      "residue_label": "H125",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Folding and trafficking explicitly stated non-perturbative (PMC13382790); surface display confirmed by anti-myc flow cytometry on non-permeabilized cells and by immunofluorescence (PMC9860121, PMC13382790); stable expression in RSCs with dose-dependent plasma-membrane trafficking quantified (PMC13382790); HA-tagged mouse PMP22 in ECL2 confirmed unaffected processing and trafficking (PMC3563111); myc-tagged human PMP22 in ECL2 confirmed no interference with cellular transport or function (PMC9860121).",
+      "confidence": "high",
+      "rationale": "The ledger entry from PMC13382790 explicitly names residues 125 and 126 as the junction for a 10-residue myc epitope tag in ECL2 of human PMP22. Python computation confirms: residue 125 = H, residue 126 = L, both within ECL2 (topology landmarks 117\u2013133). Distance from TM3 C-boundary (residue 116) to the insert = 9 residues; distance from insert to TM4 N-boundary (residue 134) = 8 residues; both well above the \u22653 residue minimum. The insert sits centrally in a 17-residue extracellular loop, sterically plausible for a 15\u201323 aa ALFA tag with GS linkers. Multiple independent publications using HA (mouse, PMC3563111) and myc (human, PMC8191293, PMC9860121, PMC3110552, PMC13293285, PMC12881431) tags in the same ECL2 all confirm non-perturbative behaviour, providing strong convergent support. The C-terminal ALFA (DOI:10.1101/2025.09.03.673966) and C-terminal GFP (PMC11700639) tags are on the intracellular face (topology: residues 157\u2013160 = INTRACELLULAR) and are excluded. No ledger entry pins any insertion in ECL1 (26\u201366) to a specific residue. [validation: surface_and_function; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 42320627,
+          "citation": "PMID 42320627",
+          "claim": "The 10-residue myc tag was inserted between residues 125 and 126 in the second extracellular loop of PMP22, as this internal tag was previously demonstrated to be non-perturbative of PMP22 folding and trafficking ( Fig. 1 A ) ( 36 , 37 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": []
+}

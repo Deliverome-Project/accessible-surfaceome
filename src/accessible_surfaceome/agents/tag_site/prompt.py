@@ -7,8 +7,13 @@ name exact residue junctions and have them verified against the real sequence
 """
 from __future__ import annotations
 
+import hashlib
+import logging
+
 from .normalize import topology_runs
 from .schema import SOURCE_TIERS, TagSiteProposal, TagSiteResult
+
+_log = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a protein-engineering research agent. For ONE human cell-surface protein, find sites
 that can carry a SHORT epitope tag (~13-23 aa, e.g. ALFA `PSRLEEELRRRLTEP` + GS linkers) on the
@@ -237,6 +242,16 @@ def format_output_contract() -> str:
 
 SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 
+#: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
+#: `prompt_sha` fingerprints the text automatically; this is the human-readable
+#: half, so a reviewer can tell a deliberate revision from an incidental one.
+TAG_SITE_PROMPT_VERSION = "1.0.0"
+
+
+def prompt_sha() -> str:
+    """sha256 of the exact system prompt that produced a record."""
+    return hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest()
+
 def keep_validated_sites(result):
     """Drop any proposed site whose evidence is structural/topology inference rather
     than a validated tagging example (defence-in-depth behind the prompt constraint).
@@ -248,6 +263,10 @@ def keep_validated_sites(result):
         # tolerant match: an actual insertion is described, not mere inference
         return "insertion" in e and "inference" not in e and "topology" not in e
 
+    dropped = [s for s in result.sites if not _is_validated(s.evidence_type)]
+    for s in dropped:
+        _log.info("  dropped %s — evidence_type %r is not a validated tagging example",
+                  getattr(s, "residue_label", "?"), s.evidence_type)
     result.sites = [s for s in result.sites if _is_validated(s.evidence_type)]
     return result
 
