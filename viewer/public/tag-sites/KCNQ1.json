@@ -1,0 +1,40 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNQ1",
+  "uniprot_acc": "P51787",
+  "sites": [
+    {
+      "site_id": "KCNQ1-internal-146-lit",
+      "gene_symbol": "KCNQ1",
+      "uniprot_acc": "P51787",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 146,
+      "residue_before": "E",
+      "residue_after": "Q",
+      "residue_label": "E146",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression quantified by flow cytometry / FACS anti-myc immunostaining in non-permeabilized HEK293 cells; channel folding, trafficking, and function explicitly reported as unaffected (PMC7988323, DOI:10.1101/2020.07.29.227231). GOF variants carrying this tag were used in functional studies without caveat.",
+      "confidence": "high",
+      "rationale": "All ledger lines converge on a single junction: insert_after_residue=146 (E) / residue_after=147 (Q). Computed from the canonical sequence: seq[145]='E', seq[146]='Q', confirming the paper's Glu146/Gln147 naming exactly matches the canonical isoform without any offset correction. Topology landmarks place position 146 inside the EXTRACELLULAR span 144\u2013154 (S1\u2013S2 loop), 3 aa from the S1 TM end (143) and 9 aa from the S2 TM start (155); both distances satisfy the \u22653 aa rule. The loop is 11 residues long; the published myc tag (10 aa) was tolerated, making a 15\u201323 aa ALFA+GS insert sterically plausible by the same precedent. The BBS-tagged construct in PMC12218124 was not assigned to a specific residue in the ledger and therefore cannot be reported as a separate site. Primary supporting source is PMC7988323 (and its preprint DOI:10.1101/2020.07.29.227231); corroborated by PMC5842040, PMC13041670, PMC12724399, DOI:10.64898/2025.12.15.25341924, and DOI:10.1101/2025.10.13.682066. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "citation": "preprint",
+          "claim": "The c-myc tag (EQKLISEEDL) was inserted into the extracellular S1\u2013S2 linker between residues Glu146 and Gln147."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": []
+}

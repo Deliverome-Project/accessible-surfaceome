@@ -173,3 +173,82 @@ def test_internalization_required_fields_are_named_in_its_prompts() -> None:
         if field.is_required() and name not in blob
     ]
     assert not missing, f"required but named in no internalization prompt: {missing}"
+
+
+# ---------------------------------------------------------------------------
+# supporting_pmid is derived, not transcribed.
+# ---------------------------------------------------------------------------
+
+
+def test_supporting_pmid_is_filled_from_the_cited_ledger_line() -> None:
+    """The real failure: `paper_source_id` keys a paper "PMC:<id>" ahead of
+    "PMID:<id>", the ledger inherited that label and told the model to null the
+    pmid, and every PMC-sourced citation lost it — 99 of 125 papers in one KCNH2
+    pool. The viewer then stamped `citation: "preprint"` on peer-reviewed work.
+
+    Uses the actual pair that broke: PMC5917007 / PMID 29725305, the Kanner 2018
+    paper the benchmark cites for KCNH2 T436."""
+    import types
+
+    from accessible_surfaceome.agents.tag_site.runner import attach_source_pmids
+
+    quote = "a BBS (13 amino acid residues) was placed between residues Thr436 and Glu437"
+    evidence = [
+        types.SimpleNamespace(
+            spans=[
+                types.SimpleNamespace(
+                    quote=quote,
+                    source=types.SimpleNamespace(source_id="PMC:PMC5917007"),
+                )
+            ]
+        )
+    ]
+    papers = {"PMC:PMC5917007": types.SimpleNamespace(pmid="29725305", is_preprint=False)}
+
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=436,
+        residue_before="T", residue_after="E", tag_type="BBS",
+        evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        supporting_quote=quote, rationale="r", confidence="high",
+    )
+    assert site.supporting_pmid is None  # the model never supplies it
+
+    result = TagSiteResult(sites=[site])
+    attach_source_pmids(result, evidence=evidence, papers_by_id=papers)
+    assert result.sites[0].supporting_pmid == 29725305
+
+
+def test_a_doi_only_preprint_keeps_a_null_pmid() -> None:
+    """The one case "preprint" was ever meant for: no PMID exists, so null is
+    correct rather than a lost identifier."""
+    import types
+
+    from accessible_surfaceome.agents.tag_site.runner import attach_source_pmids
+
+    quote = "an HA tag was inserted between amino acids T443 and E444"
+    evidence = [
+        types.SimpleNamespace(
+            spans=[
+                types.SimpleNamespace(
+                    quote=quote,
+                    source=types.SimpleNamespace(source_id="DOI:10.1101/2020.02.17.952606"),
+                )
+            ]
+        )
+    ]
+    papers = {
+        "DOI:10.1101/2020.02.17.952606": types.SimpleNamespace(pmid=None, is_preprint=True)
+    }
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=443,
+        residue_before="T", residue_after="E", tag_type="HA",
+        evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        supporting_quote=quote, rationale="r", confidence="high",
+    )
+    result = TagSiteResult(sites=[site])
+    attach_source_pmids(result, evidence=evidence, papers_by_id=papers)
+    assert result.sites[0].supporting_pmid is None

@@ -30,7 +30,7 @@ usage sink the other agents use.
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
@@ -171,10 +171,9 @@ def format_evidence_ledger(evidence: list[Evidence]) -> str:
     lines = [
         "EVIDENCE LEDGER (span-verified clips — each QUOTE is VERBATIM and already "
         "located in the cited source. Ground EVERY site in ONE ledger line: copy "
-        "its QUOTE into supporting_quote exactly. For a [PMID n] line set "
-        "supporting_pmid=n; for a [PMC ...]/[DOI ...] line set supporting_pmid=null "
-        "and cite it in the rationale. Do NOT invent sites or quotes beyond this "
-        "ledger):"
+        "its QUOTE into supporting_quote exactly — that is what identifies the "
+        "source, so the citation is filled in for you. Do NOT invent sites or "
+        "quotes beyond this ledger):"
     ]
     for e in evidence:
         span = e.spans[0] if e.spans else None
@@ -268,6 +267,49 @@ def verify_entailment(result: TagSiteResult, *, evidence: list[Evidence]) -> Tag
     ledger = "\n".join(sp.quote for e in evidence for sp in (e.spans or []) if sp.quote)
     for s in result.sites:
         s.entailment_verified = quote_supported(s.supporting_quote, ledger)
+    return result
+
+
+def attach_source_pmids(
+    result: TagSiteResult,
+    *,
+    evidence: Iterable[Any],
+    papers_by_id: Mapping[str, Any],
+) -> TagSiteResult:
+    """Fill ``supporting_pmid`` from the ledger line the site actually cited.
+
+    The model was being asked to transcribe an identifier the pipeline already
+    holds, and it could not: ``paper_source_id`` keys a paper ``PMC:<id>`` in
+    preference to ``PMID:<id>`` (right for a pool key — PMC is the full-text
+    key), and the ledger inherited that label and instructed null. So every
+    PMC-sourced citation lost its PMID — 99 of 125 papers in one pool — and
+    ``to_viewer_sites`` then stamped the record ``citation: "preprint"`` on
+    peer-reviewed papers, which also left the records with no PMID for the
+    viewer's citation rule to link.
+
+    The quote identifies the ledger line, the line identifies the source, and
+    the source carries the PMID. A genuine DOI-only preprint has no pmid and
+    stays null, which is the only case that label was ever meant for."""
+    spans = [
+        (sp.quote, sp.source.source_id)
+        for e in evidence
+        for sp in (e.spans or [])
+        if sp.quote and sp.source
+    ]
+    for site in result.sites:
+        if not site.supporting_quote:
+            continue
+        source_id = next(
+            (sid for quote, sid in spans if quote_supported(site.supporting_quote, quote)),
+            None,
+        )
+        paper = papers_by_id.get(source_id) if source_id else None
+        pmid = getattr(paper, "pmid", None)
+        if pmid:
+            try:
+                site.supporting_pmid = int(str(pmid).strip())
+            except ValueError:  # a non-numeric id is not a PMID; leave it null
+                pass
     return result
 
 
@@ -427,6 +469,7 @@ def run_tag_site_agent(
     #   c) validation + ranking, as before.
     verify_entailment(result, evidence=evidence)
     result.sites = [s for s in result.sites if s.entailment_verified]
+    attach_source_pmids(result, evidence=evidence, papers_by_id=papers_by_id)
     upgrade_quotes(result, evidence=evidence)
     #   b2) a site may claim a VALIDATED position only if its quote names it;
     #       otherwise the position came from topology, not from the citation.

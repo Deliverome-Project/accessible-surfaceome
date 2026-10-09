@@ -55,8 +55,6 @@ Per site:
 - `supporting_quote` — the VERBATIM ledger line, copied, never paraphrased. It is re-checked
   against the ledger; not found -> `entailment_verified=false` and down-ranked. A fabricated
   quote is worse than none.
-- `supporting_pmid` — n for a [PMID n] line; null for a [PMC ...] / [DOI ...] preprint, whose id
-  goes in the rationale instead.
 - `source_tier` — 'paper' > 'patent' > 'vendor'. A vendor page never outranks a paper.
 
 2. POSITION
@@ -161,7 +159,10 @@ _PIPELINE_SET = ("entailment_verified", "quote_probative", "position_repaired", 
 
 #: Top-level identity the RUNNER stamps from its own arguments. Asking the model
 #: to echo these back cost a repair round on every run and bought nothing.
-_CODE_SET = ("gene_symbol", "uniprot_accession", "sequence_length", "topology_state")
+_CODE_SET = (
+    "gene_symbol", "uniprot_accession", "sequence_length", "topology_state",
+    "supporting_pmid",
+)
 
 #: Short type tokens; the long semantics stay in the prose above rather than
 #: being duplicated here.
