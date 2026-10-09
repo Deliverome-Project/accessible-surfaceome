@@ -20,9 +20,23 @@ def check_residues(
     """None when ``before``/``after`` match ``sequence`` at the junction
     ``residue``|``residue+1``; else a human-readable mismatch reason.
 
-    ``after`` is not checked at the C-terminus (there is no residue+1 there)."""
+    ``after`` is not checked at the C-terminus (there is no residue+1 there).
+
+    ``residue == 0`` is the N-TERMINAL PREPEND: the tag goes before residue 1,
+    so there is no before-residue to read. It is a real and common junction —
+    two control rows use it, and it is the only position available on a protein
+    whose N-terminus is extracellular and which has no signal peptide, such as a
+    GPCR. Rejecting it as "outside the sequence" dropped a site the model had
+    proposed at exactly the position the benchmark expected."""
     if not sequence or residue is None:
         return "no sequence or residue to check"
+    if residue == 0:
+        real_after = sequence[0]
+        if after and after != real_after:
+            return f"claims {after} at 1 but sequence has {real_after}1"
+        if before:
+            return "an N-terminal prepend (residue 0) has no before-residue"
+        return None
     if residue < 1 or residue > len(sequence):
         return f"residue {residue} is outside the sequence (1-{len(sequence)})"
     real_before = sequence[residue - 1]
@@ -120,6 +134,12 @@ def apply_geometry_pass(
     the repair would have saved."""
     kept, rejected = [], []
     for site in sites:
+        if site.insert_after_residue is None:
+            # A region-level site names a loop, not a junction. There is nothing
+            # to verify against the sequence and nothing to repair; dropping it
+            # for that would discard the published insertion it records.
+            kept.append(site)
+            continue
         if repair_proposal(site, sequence=sequence, sp_end=sp_end):
             site.position_repaired = True
 

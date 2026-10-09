@@ -416,3 +416,63 @@ def test_folding_does_not_collapse_genuinely_different_quotes() -> None:
     a = "A FLAG tag was inserted between Gln43 and Thr44 of the extracellular loop."
     b = "A FLAG tag was inserted between Gln97 and Thr98 of the extracellular loop."
     assert not quote_supported(a, b)
+
+
+# ---------------------------------------------------------------------------
+# Evidence that cannot be pinned to a junction must still be kept.
+# ---------------------------------------------------------------------------
+
+
+def test_an_n_terminal_prepend_is_a_valid_junction() -> None:
+    """insert_after_residue=0 puts the tag BEFORE residue 1. It is the only
+    extracellular terminus a GPCR without a signal peptide has, and two control
+    rows use it — but check_residues called it "outside the sequence", so the
+    geometry gate deleted a site the model had proposed at exactly the position
+    the benchmark expected (ADORA1)."""
+    from accessible_surfaceome.agents.tag_site.geometry import check_residues
+
+    seq = "MPPSISAFQAAYIGIEVLIALV"
+    assert check_residues(sequence=seq, residue=0, before="", after="M") is None
+    assert check_residues(sequence=seq, residue=0, before="", after="K")  # wrong after
+    assert check_residues(sequence=seq, residue=0, before="A", after="M")  # has no before
+    assert check_residues(sequence=seq, residue=-1, before="", after="M")  # still invalid
+
+
+def test_a_region_level_site_survives_the_geometry_pass() -> None:
+    """A paper that reports a tag in a named loop without giving the junction is
+    real evidence. It used to be discarded whole; now it is kept with `region`
+    set and no junction claimed, rather than a junction being invented."""
+    from accessible_surfaceome.agents.tag_site.geometry import apply_geometry_pass
+
+    site = TagSiteProposal(
+        site_type="internal", region="ECL4", tag_type="HiBiT",
+        evidence_type="published tag insertion in the same loop or domain",
+        position_evidence="inferred",
+        evidence_detail="HiBiT knock-in into ECL4, surface display confirmed",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        rationale="the paper names ECL4 but no junction", confidence="medium",
+    )
+    kept, rejected = apply_geometry_pass(
+        [site], sequence="MPPSISAFQAAYIGIEVLIALV", topology="O" * 22, sp_end=0
+    )
+    assert len(kept) == 1 and not rejected
+    assert kept[0].residue_label == "ECL4"
+    assert kept[0].insert_after_residue is None
+
+
+def test_a_region_level_site_is_not_re_judged_against_a_residue() -> None:
+    """enforce_position_claims compares the quote against n-1/n/n+1. A region
+    site has no n, and arithmetic on None is how that surfaced."""
+    from accessible_surfaceome.agents.tag_site.runner import enforce_position_claims
+
+    site = TagSiteProposal(
+        site_type="internal", region="ECL4", tag_type="HiBiT",
+        evidence_type="published tag insertion in the same loop or domain",
+        position_evidence="inferred", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        supporting_quote="HiBiT was knocked into the ECL4 of WT-CFTR",
+        rationale="r", confidence="medium",
+    )
+    result = TagSiteResult(sites=[site])
+    enforce_position_claims(result, sequence="MPPSISAFQAAYIGIEVLIALV")
+    assert result.sites[0].position_evidence == "inferred"

@@ -68,6 +68,20 @@ UniProt canonical numbering. `insert_after_residue = N` puts the tag between N a
 residue_before (= N) and residue_after (= N+1) COPIED from the sequence given. A mismatch
 invalidates the site.
 
+A clip that NAMES a residue outranks one that names only a loop. If any ledger line pins a
+junction, use it — do not conclude the loop is unpinnable because a DIFFERENT line about the
+same loop is vague.
+
+When NO line names a residue but one reports a tag inserted in a named loop, report a
+REGION-LEVEL site: set `region` to the loop ("ECL4"), leave insert_after_residue null, and say
+in the rationale that the paper does not give the junction. That is a real published insertion
+and worth reporting; inventing a junction for it is not.
+
+`insert_after_residue = 0` is the N-TERMINAL PREPEND: the tag goes before residue 1, so
+residue_before is "" and residue_after is residue 1. Use it for a tag on an extracellular
+N-terminus with no signal peptide — on a GPCR it is often the only extracellular terminus
+there is.
+
 Papers state a position three ways, all valid:
 - spelled out in prose — "the tag follows the signal peptide (Alanine 34)", "at the codon for
   glycine 101";
@@ -188,8 +202,8 @@ _TOP_HINTS = {"notes": "what you considered and did not propose, and why"}
 #: being duplicated here.
 _HINTS = {
     "rank": "1 = best",
-    "insert_after_residue": "the junction",
-    "residue_before": "1-letter, AT insert_after_residue",
+    "insert_after_residue": "the junction; 0 prepends; null for a region-level site",
+    "residue_before": '1-letter, AT insert_after_residue; "" for a prepend (0)',
     "residue_after": "1-letter, AT insert_after_residue+1",
     # An "e.g." and nothing else got values ranging from "ALFA" to 112 characters
     # of argument, and two different meanings: the tag the paper used, and the tag
@@ -207,6 +221,7 @@ _HINTS = {
     "source_tier": " | ".join(f'"{t}"' for t in SOURCE_TIERS),
     "supporting_pmid": "null for a preprint",
     "supporting_quote": "the VERBATIM ledger line",
+    "region": 'the loop, when no residue is named (e.g. "ECL4"); else ""',
     "rationale": "why this site, and what you computed",
 }
 

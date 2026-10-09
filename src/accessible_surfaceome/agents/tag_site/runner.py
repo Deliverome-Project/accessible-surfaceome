@@ -264,8 +264,13 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
     for s in result.sites:
         if s.position_evidence != "validated":
             continue
-        named = residue_mentions(s.supporting_quote, sequence=sequence)
         n = s.insert_after_residue
+        if n is None:
+            # A region-level site claims no junction, so there is no position
+            # for a quote to name; it is already labelled 'inferred' by the
+            # prompt and must not be re-judged against a residue it never gave.
+            continue
+        named = residue_mentions(s.supporting_quote, sequence=sequence)
         if not named & {n - 1, n, n + 1}:
             s.position_evidence = "inferred"
     return result

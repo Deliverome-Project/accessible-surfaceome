@@ -59,11 +59,37 @@ class TagSiteProposal(BaseModel):
     #: model's ordering is discarded — do not ask for it.
     rank: int = 0
     site_type: SiteType = Field(description='"terminal_n" | "terminal_c" | "internal"')
-    insert_after_residue: int = Field(
-        description="Junction: tag sits between this residue and +1 (UniProt canonical numbering)."
+    insert_after_residue: int | None = Field(
+        default=None,
+        description=(
+            "Junction: tag sits between this residue and +1 (UniProt canonical "
+            "numbering); 0 prepends before residue 1. Null ONLY for a "
+            "region-level site, where `region` names the loop instead."
+        ),
     )
-    residue_before: str = Field(description="1-letter residue AT insert_after_residue.")
-    residue_after: str = Field(description="1-letter residue AT insert_after_residue+1.")
+    region: str = Field(
+        default="",
+        description=(
+            "The loop or domain the paper names when it reports an insertion "
+            "WITHOUT a residue number, e.g. 'ECL4'. Set this and leave "
+            "insert_after_residue null rather than guessing a junction — the "
+            "evidence is real and was being thrown away whole."
+        ),
+    )
+    residue_before: str = Field(
+        default="",
+        description=(
+            "1-letter residue AT insert_after_residue. Empty for an N-terminal "
+            "prepend (insert_after_residue = 0), which has no before-residue."
+        ),
+    )
+    residue_after: str = Field(
+        default="",
+        description=(
+            "1-letter residue AT insert_after_residue+1. Empty for a "
+            "region-level site, which names no junction."
+        ),
+    )
     topology_state: TopologyState = Field(
         default="unknown",
         description=(
@@ -166,6 +192,12 @@ class TagSiteProposal(BaseModel):
         the tag is inserted AFTER this residue, between it and residue+1. Derived
         from ``residue_before`` + ``insert_after_residue`` so it is always
         consistent regardless of how the model phrased the site."""
+        if self.insert_after_residue is None:
+            return self.region or "region"
+        if self.insert_after_residue == 0:
+            # An N-terminal prepend has no before-residue, so the usual
+            # letter+number form produced labels like "-0".
+            return "Nterm"
         return f"{self.residue_before}{self.insert_after_residue}"
 
 
