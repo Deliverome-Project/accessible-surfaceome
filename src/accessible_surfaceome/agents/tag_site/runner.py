@@ -84,6 +84,9 @@ from .triage_cache import (
     split as split_triage,
 )
 from .triage_cache import (
+    input_sha as triage_input_sha,
+)
+from .triage_cache import (
     triage_prompt_sha,
 )
 from .schema import (
@@ -440,7 +443,10 @@ def run_tag_site_agent(
     outcomes = _reused + (
         triage_abstracts(client, papers=_todo, gene=gene_symbol) if _todo else []
     )
-    save_triage_cache(gene_symbol, outcomes, prompt_sha=_tsha)
+    save_triage_cache(
+        gene_symbol, outcomes, prompt_sha=_tsha,
+        inputs={sid: triage_input_sha(p) for sid, p in papers_by_id.items()},
+    )
     if usage_sink is not None:
         # `TriageOutcome.usage` is a populated UsageRecord (Haiku-priced) that
         # nothing collected, so abstract triage — the biggest fan-out, one call

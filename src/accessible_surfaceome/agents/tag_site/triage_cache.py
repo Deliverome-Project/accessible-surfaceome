@@ -16,7 +16,13 @@ The key is ``(gene_symbol, paper_source_id, triage prompt_sha)``:
   stale, and the repo's provenance rule is explicit that a changed prompt_sha
   must re-run rather than be silently reused. Editing the triage prompt
   therefore invalidates every cached verdict automatically, with no flag to
-  remember and nothing to purge.
+  remember and nothing to purge;
+* **input_sha** — a hash of the title and abstract the call actually saw —
+  because the prompt is only half of what produced the verdict. A paper whose
+  abstract is corrected, de-truncated on a later fetch, or replaced when a
+  preprint is published is a DIFFERENT input, and a verdict formed on the old
+  text is as stale as one formed under the old prompt. It also makes a
+  source_id collision harmless rather than silent.
 
 Only a SUCCESSFUL verdict is cached. An error outcome is a transient failure —
 a timeout, a rate limit — and caching it would make one bad minute permanent.
@@ -45,6 +51,16 @@ def triage_prompt_sha() -> str:
     return hashlib.sha256(_SYSTEM_PROMPT_CACHED.encode("utf-8")).hexdigest()
 
 
+def input_sha(paper: Any) -> str:
+    """Hash of the text triage is shown for a paper: its title and abstract.
+
+    Normalized only by stripping, so a whitespace-identical refetch does not
+    churn the cache while any real change to the wording does."""
+    title = (getattr(paper, "title", "") or "").strip()
+    abstract = (getattr(paper, "abstract", "") or "").strip()
+    return hashlib.sha256(f"{title}\n{abstract}".encode()).hexdigest()
+
+
 def _path(gene_symbol: str, *, cache_dir: Path | None = None) -> Path:
     return Path(cache_dir or TRIAGE_CACHE_DIR) / f"{gene_symbol}.json"
 
@@ -66,6 +82,7 @@ def save(
     outcomes: list[Any],
     *,
     prompt_sha: str,
+    inputs: dict[str, str] | None = None,
     cache_dir: Path | None = None,
 ) -> int:
     """Merge this run's successful verdicts into the gene's cache.
@@ -82,6 +99,7 @@ def save(
             "decision": getattr(resp, "decision", None),
             "reason": getattr(resp, "reason", None),
             "prompt_sha": prompt_sha,
+            "input_sha": (inputs or {}).get(o.paper_id),
         }
         n += 1
     path = _path(gene_symbol, cache_dir=cache_dir)
@@ -102,9 +120,13 @@ def split(
 ) -> tuple[list[Any], list[Any]]:
     """``(to_triage, reusable_outcomes)``.
 
-    A cached entry is reusable only when its ``prompt_sha`` matches the prompt
-    in force; anything else re-runs, which is the sha-aware skip the provenance
-    rule requires."""
+    A cached entry is reusable only when BOTH its ``prompt_sha`` matches the
+    prompt in force AND its ``input_sha`` matches the paper's current title and
+    abstract. Anything else re-runs, which is the sha-aware skip the provenance
+    rule requires, extended to the input the prompt was applied to.
+
+    An entry written before ``input_sha`` existed carries None and is re-run:
+    the cheap, correct reading of "we cannot tell what this verdict saw"."""
     from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
         AbstractTriageResponse,
         TriageOutcome,
@@ -114,7 +136,11 @@ def split(
     reusable: list[Any] = []
     for source_id, paper in papers.items():
         hit = cached.get(source_id)
-        if not hit or hit.get("prompt_sha") != prompt_sha:
+        if (
+            not hit
+            or hit.get("prompt_sha") != prompt_sha
+            or hit.get("input_sha") != input_sha(paper)
+        ):
             to_triage.append(paper)
             continue
         try:
