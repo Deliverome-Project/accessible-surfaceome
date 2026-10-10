@@ -17,6 +17,11 @@ databases list the protein, running from all five on the left to a single
 database on the right. The left panel gives each database's total size
 against the five-database average.
 
+Not every combination is drawn. The figure shows the 10 largest
+combinations plus each database on its own (11 of the 31 non-empty
+combinations, 4,533 of the 5,546 proteins); the other 20 combinations
+(1,013 proteins) are left out.
+
 This figure replaces a 5-way Venn. The Venn is not area-proportional and
 cannot be made so: all 31 regions are non-empty and span 3–1,063 proteins,
 and a least-squares fit of five ellipses to those areas draws the
@@ -30,13 +35,15 @@ uv run make_db_overlap_upset.py
 ```
 
 The script declares its own dependencies via PyPA inline script metadata,
-so `uv` resolves them; no `pip install` step. It reads the bundled
-`db_overlap_venn.tsv` (same five flags, one row per accession) if present
-next to it, and otherwise falls back to the copy in the repository.
+so `uv` resolves them; no `pip install` step. It reads
+`db_overlap_upset.tsv` (the five database flags, one row per accession)
+from the same folder if present, and otherwise from the in-repo copy at
+`data/processed/figures/db_overlap_upset.tsv`. It does not download
+anything.
 
 ## Canonical sources
 
 - Figure generator:
   [`scripts/figures/db_overlap_upset.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/db_overlap_upset.py)
 - Data:
-  [`data/processed/figures/db_overlap_venn.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/figures/db_overlap_venn.tsv)
+  [`data/processed/figures/db_overlap_upset.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/figures/db_overlap_upset.tsv)

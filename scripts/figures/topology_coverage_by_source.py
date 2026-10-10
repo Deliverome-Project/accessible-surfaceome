@@ -14,12 +14,14 @@ BOTH metrics that the earlier coverage-bar grid could only show one of:
 
 The two metrics differ only by denominator, so putting them in the same cell
 lets a reader cross-reference them directly. The headline it renders: **CSPA ×
-glycosylation is a large, pale dot** — intrinsically glyco-dominated (~75% of
-its own calls) yet only a small slice of the universe (~11%), reflecting its
+glycosylation is a large, pale dot** — intrinsically glyco-dominated (~96% of
+its own calls) yet only a small slice of the universe (~14%), reflecting its
 N-glycocapture chemistry; SURFY and UniProt show the same glyco enrichment at
-larger scale (dark, high-coverage); the zero-DB Sonnet rescues are glyco- and
-transmembrane-DEPLETED (near-empty row), consistent with contextual-surface
-rather than classically-structured membrane proteins.
+larger scale (dark, high-coverage). The 1,108 zero-DB Sonnet rescues split by
+how triage called them: the 794 called from the gene summary alone (no
+literature) are mostly likely-secreted (55%) and glycosylated (41%); the 314
+rescued only once PubMed literature was added most often have no TM and no
+signal peptide (49%). Neither row has GPCR or GPI proteins.
 
 Reads the dedicated per-figure TSV
 ``data/processed/figures/topology_coverage_by_source.tsv``. That TSV carries the

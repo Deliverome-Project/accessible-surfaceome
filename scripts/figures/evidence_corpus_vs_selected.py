@@ -1,29 +1,32 @@
 """Papers found vs papers selected as evidence per gene, colored by the
-agent's ``evidence_grade`` verdict (Supplementary S11).
+agent's ``evidence_grade`` verdict (Supplementary Figure 12a), plus the
+deep-dive surface tier composition by papers-found bin (panel b).
 
 For each gene in the deep-dive cohort, the literature pipeline records two
 corpus sizes:
 
   * **Papers found** — the size of the per-gene candidate corpus from
     discovery (EuropePMC + PubTator NER + gene2pubmed union), i.e.
-    ``n_papers_found`` (methods-section median 234.5, range ~50–400).
+    ``n_papers_found`` (median 219, range 1–395 across the 5,313 plotted
+    genes). Panel a's log axis starts at 25, so the 120 genes with fewer
+    than 25 papers found are not drawn.
   * **Papers selected as evidence** — the subset the deep-dive's
     ``plan_trim_select`` step ranks high enough to read full-text and feed
-    into the block builders (``n_papers_selected``). The selection count
-    grows sub-linearly with corpus size — more candidate papers means more
-    noise, not proportionally more relevant evidence.
+    into the block builders (``n_papers_selected``, median 10). The median
+    selection rate rises from ~2% of the corpus for small corpora to ~8% at
+    200–300 papers found, then falls again for larger corpora.
 
 Each gene's evidence base is graded ``evidence_grade`` from the closed enum:
 
   * ``direct_multi_method``     — multiple independent assay types
   * ``direct_single_method``    — direct surface evidence from one assay
   * ``supportive_but_indirect`` — circumstantial / topology-based
-  * ``weak``                    — sparse or low-quality evidence
   * ``conflicting``             — evidence points both ways
+  * ``weak``                    — sparse or low-quality evidence
 
 The verdict tracks the two corpus axes — well-evidenced surface targets pile
 up toward the upper-right (rich corpus + rich selection → multi-method
-verdict), while weak / conflicting calls cluster low.
+verdict), while weak calls cluster low.
 
 **Real data.** Every point is a published deep-dive record with real gene
 symbols and real counts, read from the bundled per-figure TSV at
@@ -34,10 +37,11 @@ tier``). The single source of that TSV is ``scripts/build_figure_tsvs.py``
 this canonical generator reads the TSV so it renders the **same** dataset as
 the gist mirror (``data/analysis/figures/make_evidence_corpus_vs_selected.py``).
 
-Computed over the completed deep-dive sweep; ``papers_found`` is null on
-a handful of legacy records so those genes are absent (both axes must be
-present to plot). The ``weak`` pile is partly the pretrim-cap recall bug
-deleting foundational literature; re-render after the full sweep + QA fixes.
+Computed over the completed deep-dive sweep: 5,313 of the 5,332 deep-dive
+records carry both counts; the other 19 have a null ``n_papers_found`` and
+are absent (both axes must be present to plot).
+
+# Reproduction: https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549
 
 Run:
     uv run python scripts/figures/evidence_corpus_vs_selected.py
@@ -61,6 +65,10 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "evidence_corpus_vs_selected"
+# Published reproduction gist; embedded in the PNG Source / PDF Subject
+# metadata by save_figure. Must match GIST_URL in the gist mirror and
+# data/analysis/figures/gist_map.json.
+GIST_URL = "https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549"
 
 # Bundled per-figure TSV — one row per published deep-dive record, produced by
 # ``scripts/build_figure_tsvs.py`` (``build_evidence_corpus_vs_selected``).
@@ -221,12 +229,13 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
         frameon=False, fontsize=13, title_fontsize=14,
     )
 
+    # Footer sits under panel a, which it describes.
     fig.text(
-        0.5, -0.04,
-        f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
-        f"median {int(np.median(selected))} selected); n={len(found)} genes "
-        f"(full deep-dive cohort).",
-        ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
+        0.27, -0.04,
+        f"Real deep-dive records with a papers-found count: n={len(found):,} genes\n"
+        f"(median {int(np.median(found))} papers found, {int(np.median(selected))} selected; "
+        f"x-axis starts at 25).",
+        ha="center", va="top", fontsize=13, style="italic", color=COLORS["neutral"],
     )
 
     _draw_tier_composition(ax_b, data)
@@ -240,7 +249,8 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
 
 def main() -> None:
     fig, _ = make_plot()
-    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"),
+                gist_url=GIST_URL)
 
 
 if __name__ == "__main__":

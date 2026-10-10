@@ -6,19 +6,27 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``ensemble_vs_best_db_vs_sonnet.{pdf,png}`` from the public repo.
+"""Reproduce ``ensemble_vs_best_db_vs_sonnet.{pdf,png}`` from the bundled TSV.
 
-Six-bar comparison on the 147-gene bench:
+Seven-bar comparison on the 147-gene bench:
 
-* Sonnet (+ IDs)        — the Claude triage agent on its canonical
-                           NCBI-resolver prompt variant
-* UniProt (TM+signal)    — best single classical DB, under its
-                           bench-optimized cutoff (TM OR signal-peptide
-                           positive)
-* ≥2 / ≥3 / ≥4 / ≥5 DB   — ensemble callers: "yes" iff at least k of
-                           the 5 surface DBs (UniProt, GO CC, HPA,
-                           SURFY, CSPA, each under its own optimized
-                           cutoff) vote yes
+* Sonnet (+ IDs)          — the Claude Sonnet 4.6 triage agent on its
+                            canonical NCBI-resolver ("gene identifiers")
+                            prompt variant. Bar = MEAN of the three
+                            per-replicate accuracies, with SEM error bar
+                            and the individual replicates as dots
+* UniProt (TM+signal)     — best single classical DB, under its
+                            bench-optimized cutoff (TM OR signal-peptide
+                            positive)
+* 1+ / 2+ / 3+ / 4+ / 5+ DB — ensemble callers: "yes" iff at least k of
+                            the 5 surface DBs (UniProt, GO CC, HPA,
+                            SURFY, CSPA, each under its own optimized
+                            cutoff) vote yes. k=1 is the union (any DB);
+                            k=5 is the strict intersection of all 5
+
+Reads only the bundled ``ensemble_vs_best_db_vs_sonnet.tsv`` sibling
+(in-repo: ``data/processed/figures/``; built by
+``scripts/build_figure_tsvs.py``).
 
 Accuracy uses the project's soft-credit rule: yes ≡ contextual on
 the positive side; ``no`` matches ``no`` only.
@@ -271,15 +279,22 @@ def main() -> None:
         print(f"  {row['caller'].replace(chr(10), ' '):20s}  "
               f"{row['accuracy']*100:5.1f}%  ({row['n_correct']}/{row['n_total']})")
 
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=(13, 6))
     bars = ax.bar(
         df["caller"], df["accuracy"] * 100,
         color=df["color"], edgecolor="none", width=0.6,
     )
-    for bar, row in zip(bars, df.to_dict("records"), strict=True):
+    # Lift the Sonnet % label clear of its replicate dots + SEM cap.
+    _reps = [v * 100 for v in sonnet_rep_accs]
+    sonnet_top = 0.0
+    if len(_reps) >= 2:
+        _m = sum(_reps) / len(_reps)
+        _sem = ((sum((v - _m) ** 2 for v in _reps) / (len(_reps) - 1)) ** 0.5) / len(_reps) ** 0.5
+        sonnet_top = max(max(_reps), _m + _sem)
+    for i, (bar, row) in enumerate(zip(bars, df.to_dict("records"), strict=True)):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 1.2,
+            max(bar.get_height(), sonnet_top if i == 0 else 0.0) + 1.2,
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
             fontsize=20, fontweight="bold", color=BRAND_INK,

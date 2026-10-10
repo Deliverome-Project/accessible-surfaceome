@@ -7,21 +7,28 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 7.** A fully open-source surfaceome viewer. a) The viewer homepage, showing a table of all proteins with reference database membership, triage LLM calls, and deep-dive LLM calls. b) For proteins with a deep-dive record, a detailed page is available including both LLM information and deterministic results. Opening a protein’s deep-dive record reveals the complete structured analysis, including the surface-localization verdict and confidence, each graded attribute, supporting verbatim literature excerpts, and deterministic features. Together, these elements allow readers to trace every conclusion to its source. The Compare view lets a user upload their own protein set and see it scored against the atlas — surface calls, tiers, and evidence for each member — for rapid triage of a candidate list, in the spirit of enrichment tools like Enrichr [(Chen et al., 2013; Xie et al., 2021)](https://www.zotero.org/google-docs/?J1RBaR). The exact agent prompts, a browsable table of the SurfaceBench benchmark with per-model calls, and the full reproducibility materials are also available as dedicated views.
+> **Figure 7.** A fully open-source surfaceome viewer. a) The viewer homepage, showing a table of all proteins with reference database membership, triage LLM calls, and deep-dive LLM calls. b) For proteins with a deep-dive record, a detailed page is available including both LLM information and deterministic results.
 <!-- END manuscript-legend -->
 
 Two screenshots of the live surfaceome viewer at
-[surfaceome.deliverome.org](https://surfaceome.deliverome.org) —
-(a) the catalog homepage with the 24 deep-dive filter facets on the
-left rail; (b) the per-gene detail page exposing the full validated
-`SurfaceomeRecord` (executive summary, nine LLM-graded sections,
-deterministic-features card with canonical DeepTMHMM topology,
-AlphaFold pLDDT + structure links, orthologs, paralogs ≥ 80 % ECD
-identity, SURFACE-Bind MaSIF patches, Schweke 2024 homo-oligomer
-state).
+[surfaceome.deliverome.org](https://surfaceome.deliverome.org).
+(a) The catalog homepage: the curated-list presets (Canonical 1,783,
+Likely 1,252, Cell-state induced 454, Cell-type restricted 852,
+Low-lit + UniProt 538), the search box with the All / Deep dive /
+More filters / TSV bar, and the header plus first row of the sortable
+catalog table. That row shows each source database's call (UniProt,
+GO, SURFY, CSPA, HPA) and the DB vote count alongside the triage
+verdict and reason and the deep-dive reason and calls.
+(b) The top of the per-gene page for SRC: its identifiers, tier and
+source calls, the executive summary, the headline experimental surface
+evidence / confidence / state-dependence calls, and the AlphaFold
+structure panel with pLDDT and isoform / ortholog tabs. The rest of
+the validated `SurfaceomeRecord` sits further down the same page and
+is not shown in the figure.
 
 Reproduce it with `uv run --with playwright make_web_preview.py`, which
-screenshots the live site and rebuilds the SVG. There is no data TSV —
+screenshots the live site, rebuilds the SVG, and renders it to the
+PNG and PDF. There is no data TSV —
 the inputs are the two pages themselves, so a re-run reproduces the
 figure as the viewer looks *today* rather than byte-for-byte as
 published. That is deliberate: it is how the panels get caught going

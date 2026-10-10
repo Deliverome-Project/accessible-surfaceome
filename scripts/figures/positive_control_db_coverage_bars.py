@@ -4,10 +4,17 @@ Three-panel bar chart: per-database coverage of the three positive-control
 target lists (ADC / TCE / ViralZone). One bar per source (Sonnet + 5 DBs),
 canonical performance-ranked axis order and project palette.
 
-The per-DB flags are read directly from ``candidate_universe_v3``, whose
-``*_flag`` columns already carry the SurfaceBench-optimized cutoffs (the
-optimization is applied upstream in the v3 build). They are baked into the
-bundled TSV by ``scripts/build_positive_control_lists.py``.
+The per-DB flags come from ``candidate_universe_v3``, whose ``*_flag``
+columns already carry the catalog-vote cutoffs (SurfaceBench-optimized for
+UniProt and CSPA, native for GO CC, SURFY and HPA). The Sonnet flag is
+positive (verdict yes or contextual) in any of the NCBI v1, NCBI v2 or
+PubMed-rescue (``genome_full_sonnet_pubmed_ncbi_v1``) triage passes.
+``scripts/build_positive_control_lists.py`` writes both into
+``positive_control_long.tsv``; ``scripts/build_figure_tsvs.py`` copies that
+file to the bundled ``data/processed/figures/positive_control_db_coverage_bars.tsv``.
+
+In panel a each bar is split by ADC source (TheraSAbDab > Open Targets >
+ADCdb); the gene(s) Sonnet misses are written inside its bar.
 
 # Reproduction: https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c
 

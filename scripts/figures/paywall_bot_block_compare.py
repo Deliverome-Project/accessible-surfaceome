@@ -1,27 +1,29 @@
 """Render the production-vs-OpenAlex paywall+bot-block comparison.
 
-**Data sources** (asymmetric — OpenAlex's daily free API budget was
-exhausted before we could finish a 21-axis rerun, so it stays at the
-10-axis sample from the earlier run):
+**Data sources** (both under ``data/analysis/paywall_bot_block/``; same
+100 genes × 10 papers, both 21 axes/gene):
 
-* **production** — live JSONL from
-  ``probe_results/cohort100x10_production.jsonl`` (~21-axis, mirrors
-  ``build_a1_kickoff()``). Re-render at any time to pick up additional
-  genes as the probe progresses.
-* **openalex** — TSV snapshot at
-  ``probe_results/cohort100x10_openalex_10axis.tsv`` (10-axis run from
-  pre-rate-limit). Frozen at 86 genes / 849 papers.
+* **production** — ``probe_results/cohort100x10_production.jsonl``
+  (mirrors ``build_a1_kickoff()``; 100 genes / 1,000 papers).
+* **openalex** — ``probe_results/cohort100x10_openalex.jsonl`` (one
+  OpenAlex query per production axis; 100 genes / 989 papers). If that
+  JSONL is missing, the script falls back to the older 10-axis TSV
+  snapshot ``probe_results/cohort100x10_openalex_10axis.tsv`` (86 genes
+  / 849 papers), which is not what the published figure shows.
 
-Emits a side-by-side stacked-bar PDF/PNG showing the 4-bucket
-distribution under each retrieval strategy, plus a refreshed
-``paywall_bot_block_compare.tsv`` (union of the live production rows
-and the salvaged openalex snapshot).
+Both are produced by ``scripts/probes/probe_oa_buckets.py``.
+
+Emits a horizontal stacked-bar PDF/PNG (one bar per strategy) showing
+the 6-bucket distribution (PMC / Unpaywall / DataCite full body,
+bot-blocked, OA repo still missed, no OA), plus a refreshed
+``data/processed/paywall_bot_block/paywall_bot_block_compare.tsv``
+(one row per source × gene × paper).
 
 # Reproduction:
 #   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
 #   https://gist.github.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d
 #   Reader-side mirror script:
-#   data/analysis/paywall_bot_block/make_paywall_bot_block_compare.py.
+#   data/analysis/figures/make_paywall_bot_block_compare.py.
 
 Run:
     uv run python scripts/figures/paywall_bot_block_compare.py
@@ -99,8 +101,8 @@ BUCKET_COLOR = {
 }
 
 # Production = 21 axes (mirrors build_a1_kickoff exactly). OpenAlex =
-# 10 axes (was the original sample before the rate limit blocked a
-# 21-axis rerun). Labels reflect what the data actually is.
+# 21 axes, one OpenAlex query per production axis (live JSONL). If the
+# 10-axis TSV fallback is used instead, this label is wrong.
 SOURCE_LABEL = {
     "production": "Production strategy\n(EuropePMC + PubTator\n+ gene2pubmed,\n21 axes/gene)",
     "openalex":   "OpenAlex strategy\n(broad gene + method-\nkeyword search,\n21 axes/gene)",

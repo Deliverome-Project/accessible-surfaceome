@@ -12,8 +12,13 @@ Three-panel bar chart: per-database coverage of the three positive-control
 target lists (ADC / TCE / ViralZone). One bar per source (Sonnet + 5 DBs),
 canonical performance-ranked axis order and project palette.
 
-Sonnet column = positive in the dual NCBI triage (v1 ∪ v2, verdict yes OR
-contextual). PubMed-augmented variant is NOT part of the combined axis.
+Sonnet column = positive (verdict yes or contextual) in any of the NCBI v1,
+NCBI v2 or PubMed-rescue (``genome_full_sonnet_pubmed_ncbi_v1``) triage
+passes. In panel a each bar is split by ADC source (TheraSAbDab > Open
+Targets > ADCdb); the gene(s) Sonnet misses are written inside its bar.
+
+Reads one bundled TSV, ``positive_control_db_coverage_bars.tsv`` (a copy of
+``data/processed/positive_controls/positive_control_long.tsv``).
 
 Standalone — ``uv run make_positive_control_db_coverage_bars.py``.
 """

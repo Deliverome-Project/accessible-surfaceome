@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 14.** The precomputed deterministic features distribute as expected for candidate surface proteins across both the deep-dive confidence tiers and the full two-stage Sonnet triage set. Twelve topology and structural features — TM-helix count, proteins and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular surface-bind site — compared across the canonical, likely, low, and uncertain/non-surface tiers and the genome-wide Sonnet-positive pool. [Figure data and script.](https://gist.github.com/beccajcarlson/57cf3cc3db903ab39bc0ba315ce5e4d5) ## Supplementary Note 1. Limitations of full-text retrieval by agents. A major limitation of this work is that much of the relevant scientific literature is not freely accessible to either researchers or automated agents. Full-text access, not just abstracts, matters for a pipeline like this, as others have previously shown for protein subcellular associations and other features [(Westergaard et al., 2018)](https://www.zotero.org/google-docs/?Bc8pm8). On a random sample of the discovery corpus (100 proteins, 10 papers each), 89% of candidate papers were recoverable as
+> **Supplementary Figure 14.** The precomputed deterministic features distribute as expected for candidate surface proteins across both the deep-dive confidence tiers and the full two-stage Sonnet triage set. Twelve topology and structural features — TM-helix count, proteins and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular surface-bind site — compared across the canonical, likely, low, and uncertain/non-surface tiers and the genome-wide Sonnet-positive pool.
 <!-- END manuscript-legend -->
 
 Distribution of **twelve deterministic per-gene features** across the
@@ -25,7 +25,7 @@ fraction bars.
 | Facet | Definition | Feature source |
 |---|---|---|
 | `canonical` / `likely` / `low` / `uncertain·no` | Deep-dive tier (`_dd_assign_bucket`), pooling the two weakest tiers | Deep-dive **records** (full coverage per deep-dived gene) |
-| `Sonnet dual triage` | Every gene the genome-wide Sonnet triage (`genome_full_sonnet_ncbi_v2`) called `yes`/`contextual` (4,612 with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
+| `Sonnet dual triage` | Every gene the two-stage Sonnet triage called `yes`/`contextual` — `genome_full_sonnet_ncbi_v2` plus the four PubMed rescue lanes (4,612 with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
 
 The Sonnet facet is a broader, *different* category from the tiers — its det
 features come from the genome-wide tables (the same DeepTMHMM / Compara /

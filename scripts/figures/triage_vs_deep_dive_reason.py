@@ -15,9 +15,9 @@ surface (tier ``canonical`` / ``likely`` / ``low``), the fraction ALSO flagged
 surface by each source: the 5 catalog databases (UniProt, GO, SURFY, CSPA, HPA)
 plus Sonnet triage (verdict ``yes`` / ``contextual``), broken down by
 deep-dive tier. Every source flags a larger share of canonical genes than
-likely, and more likely than low — Sonnet triage stays the most concordant
-partner throughout, i.e. the evidence-anchored deep dive concords far more with
-the upstream Sonnet call than with any single database.
+likely, and more likely than low. Sonnet triage is the most concordant source
+at every tier (99 / 95 / 91%), and its lead over the best database (UniProt,
+94 / 79 / 54%) widens as the deep dive's confidence drops.
 
 **Panel b — verdict flow.** Slim 100%-stacked horizontal bars, one per triage
 verdict (``yes`` / ``contextual`` / ``no``), each split by the deep-dive's
@@ -38,13 +38,15 @@ colored by bucket so a cross-bucket flip is visible at a glance.
 
 **Real data.** Built from the per-figure TSV
 ``data/processed/figures/triage_vs_deep_dive_reason.tsv`` — one row per gene
-with both a triage and a deep-dive record (n=5,130), carrying the triage
+with both a triage and a deep-dive record (n=5,332), carrying the triage
 verdict/reason, the deep-dive reason/tier, and the 5 per-DB surface flags. The
 same TSV backs the gist mirror
 (``data/analysis/figures/make_triage_vs_deep_dive_reason.py``).
 
-Full deep-dive cohort (5,130 genes); about 53% of genes land on the reason
-diagonal, the rest split into same-bucket relabels and cross-bucket flips.
+5,332 genes with both calls; 50% land on the reason diagonal. Of the rest,
+about 29% are same-bucket relabels and about 71% are cross-bucket flips; the
+largest flip block is yes-bucket triage reasons relabeled as contextual by the
+deep dive.
 
 Run:
     uv run python scripts/figures/triage_vs_deep_dive_reason.py
@@ -75,7 +77,7 @@ OUT_DIR = ROOT / "data/analysis/figures"
 DATA_TSV = ROOT / "data/processed/figures/triage_vs_deep_dive_reason.tsv"
 SLUG = "triage_vs_deep_dive_reason"
 
-# ── Panel a: triage verdicts (rows/bars) × deep-dive tiers (stack segments) ──
+# ── Panel b: triage verdicts (rows/bars) × deep-dive tiers (stack segments) ──
 TRIAGE_VERDICT_ORDER = ["yes", "contextual", "no"]
 TRIAGE_VERDICT_LABEL = {
     "yes":        "triage: yes",
@@ -99,14 +101,14 @@ DD_TIER_LABEL = {
     "uncertain": "uncertain",
     "no":        "no",
 }
-# Deep-dive tiers that count as a positive "surface call" for panel c.
+# Deep-dive tiers that count as a positive "surface call" for panel a.
 DD_SURFACE_TIERS = ["canonical", "likely", "low"]
-# Panel c groups concordance by these three deep-dive tiers; distinct
+# Panel a groups concordance by these three deep-dive tiers; distinct
 # colors so the reader can see whether DB agreement climbs with the
 # deep dive's own confidence (canonical > likely > low).
 TIER_C_COLOR = {"canonical": "#2E7A55", "likely": "#3D6B60", "low": "#C99A5B"}
 
-# ── Panel c: DB concordance sources ──
+# ── Panel a: DB concordance sources ──
 # The 5 catalog databases (canonical palette by identity — see the
 # canonical-db-palette memory) + Sonnet triage as a peer source, given a
 # visually distinct Claude-orange so it doesn't read as a 6th database.
@@ -124,7 +126,7 @@ DB_SOURCES = [
 SONNET_LABEL = "Sonnet triage"
 SONNET_COLOR = "#d87851"  # Claude-orange — distinct from the 5 DB bars
 
-# ── Panel b: the shared 19-value TriageReason vocabulary ──
+# ── Panel c: the shared 19-value TriageReason vocabulary ──
 REASONS_ORDERED = [
     # YES bucket
     "classical_surface_receptor",
@@ -205,11 +207,12 @@ def _build_matrix(df: pd.DataFrame) -> np.ndarray:
 
 
 def _concordance_by_tier(df: pd.DataFrame) -> list[tuple[str, dict[str, float]]]:
-    """Panel c — per source, the % of EACH deep-dive tier's genes the
+    """Panel a — per source, the % of EACH deep-dive tier's genes the
     source also flags surface. Breaking concordance down by tier shows
     whether DB agreement is higher on the deep dive's higher-confidence
     tiers (canonical) than its weakest (low). Returns
-    ``(label, {tier: pct})`` sorted descending by the canonical-tier pct."""
+    ``(label, {tier: pct})`` with Sonnet triage first, then the databases
+    sorted descending by the canonical-tier pct."""
     out: list[tuple[str, dict[str, float]]] = []
     for label, col, _color in DB_SOURCES:
         by_tier = {}
@@ -243,7 +246,7 @@ def _bucket_boundaries() -> list[int]:
 
 
 def _draw_verdict_flow(ax: plt.Axes, df: pd.DataFrame) -> None:
-    """Panel a — slim 100%-stacked horizontal bars: one bar per triage
+    """Panel b — slim 100%-stacked horizontal bars: one bar per triage
     verdict, each split by the deep-dive tier composition (fraction), with
     the raw count annotated inside each meaningful segment. Bars are thin
     with whitespace between so the panel reads as an elegant flow strip."""
@@ -292,7 +295,7 @@ def _draw_verdict_flow(ax: plt.Axes, df: pd.DataFrame) -> None:
 def _draw_concordance_by_tier(
     ax: plt.Axes, rows: list[tuple[str, dict[str, float]]]
 ) -> None:
-    """Panel c — DB concordance broken down by deep-dive tier: one group
+    """Panel a — DB concordance broken down by deep-dive tier: one group
     per source, 3 tier-colored bars (canonical / likely / low), showing
     the % of each tier's genes that source also flags. If DB agreement
     tracks the deep dive's confidence, the canonical bar sits above low
@@ -327,7 +330,7 @@ def _draw_concordance_by_tier(
 
 
 def _draw_reason_matrix(ax: plt.Axes, m: np.ndarray) -> None:
-    """Panel b — the 19×19 triage × deep-dive reason confusion matrix."""
+    """Panel c — the 19×19 triage × deep-dive reason confusion matrix."""
     n = m.shape[0]
     cmap = sns.light_palette("#3D6B60", as_cmap=True)
     sns.heatmap(

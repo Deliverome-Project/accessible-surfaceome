@@ -9,7 +9,7 @@
 # ///
 """Reproduce ``surfaceome_deterministic_features.{pdf,png}``.
 
-**Supplementary Fig 13.** Distribution of twelve deterministic per-gene
+**Supplementary Fig 14.** Distribution of twelve deterministic per-gene
 features across the surfaceome, faceted by the REAL deep-dive
 surface-accessibility tier collapsed into four comparison groups, plus a fifth
 facet — the full Sonnet dual-triage surface pool:
@@ -18,8 +18,9 @@ facet — the full Sonnet dual-triage surface pool:
   * likely         — group == 'likely';
   * low            — group == 'low' (low/moderate accessibility, weak evidence);
   * uncertain / no — group ∈ {uncertain, no} (ambiguous-to-negative);
-  * Sonnet dual triage — every gene the genome-wide Sonnet triage called
-    yes/contextual (~4,236 with topology). A DIFFERENT category: broader, and
+  * Sonnet dual triage — every gene the two-stage Sonnet triage
+    (genome_full_sonnet_ncbi_v2 plus the four PubMed rescue lanes) called
+    yes/contextual (4,612 with topology). A DIFFERENT category: broader, and
     its det features come from the genome-wide D1 tables (topology_public,
     compara_*, schweke_homomer_public, surface_bind_*) rather than the
     deep-dive records, since most of these genes are not deep-dived. Same
@@ -42,7 +43,7 @@ The deep-dive-tier features are sourced from the deep-dive RECORDS (full
 coverage per deep-dived gene, fixing the prior DeepTMHMM-M1-only coverage bias);
 the Sonnet pool's features come from the genome-wide D1 tables (topology 100%).
 
-Full deep-dive cohort (5,130 genes); the `canonical` tier uses the PR #130 gate.
+Full deep-dive cohort (5,332 genes); the `canonical` tier uses the PR #130 gate.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs
@@ -193,8 +194,9 @@ def assign_facet(group: str) -> str | None:
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    """Sibling-only: bundled TSV must sit next to this script. No
-    network fetch — the gist is the single citable reproduction unit."""
+    """Sibling-first: read the bundled TSV next to this script (the gist
+    case), else the in-repo path. No network fetch — the gist is the single
+    citable reproduction unit."""
     sibling = Path(__file__).parent / Path(url).name
     if sibling.is_file():
         return pd.read_csv(sibling, sep="\t")
@@ -315,7 +317,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
         sns.despine(ax=ax, top=True, right=True)
         _panel_label(ax, letter)
 
-    # Hide the unused grid cell (11 panels in a 4×3 / 12-slot grid).
+    # 12 panels fill the 4×3 grid; hide any spare cell if a panel is dropped.
     for extra in axes[len(panels):]:
         extra.set_visible(False)
 
@@ -345,7 +347,7 @@ def main() -> None:
     feats = _fetch_tsv(DATA_TSV)
     print(f"Deep-dive tier universe (all groups): {len(feats)}")
     print(feats["group"].value_counts().to_string())
-    # Collapse the raw per-gene tier to the 4-facet comparison; `pending`
+    # Collapse the raw per-gene tier to the 5-facet comparison; `pending`
     # (not yet deep-dived) maps to NaN and is dropped.
     feats["facet"] = feats["group"].map(assign_facet)
     feats = feats[feats["facet"].notna()].copy()

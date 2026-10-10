@@ -11,16 +11,16 @@ cell-state induced (split oncogenic vs. other) — counted by surface-call
 REASON and broken out across the three populated tiers (canonical / likely /
 low). Counting by reason rather than the evidence-gated facet keeps
 weak-evidence genes that still carry a surface call: the ``low`` tier
-contributes 463 cell-type-restricted and 156 induced genes that the gated
-facet drops. Totals across the three tiers: cell-type restricted 1,314;
-induced 600 (416 oncogenic, 184 other).
+contributes 471 cell-type-restricted and 178 induced genes that the gated
+facet drops. Totals across the three tiers: cell-type restricted 1,323;
+induced 632 (434 oncogenic, 198 other).
 
 Bucket predicates delegate to ``accessible_surfaceome.release.catalog_presets``
 via ``scripts/build_figure_tsvs.py`` (``_dd_passes_*``); canonical/likely == the
 catalog presets, and the low/uncertain/no split of the negatives is a
 figure-only refinement (the presets don't cover the negatives).
 
-Full deep-dive cohort (5,130 genes); canonical uses the PR #130 gate.
+Full deep-dive cohort (5,332 genes); canonical uses the PR #130 gate.
 
 # Reproduction:
 #   Public gist (reader-side standalone, PyPA inline-script-metadata deps):

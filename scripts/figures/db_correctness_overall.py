@@ -1,17 +1,20 @@
 """Supp Fig 1 — LLM-only overall accuracy on the 147-gene benchmark.
 
-Grouped bars by model (Haiku 4.5 / Sonnet 4.6 / Opus 4.8) with hatched bars
-for the within-model prompt variants (naive / + IDs / + IDs + web /
-+ IDs + PubMed); bar height = mean of per-replicate accuracies, with each
-replicate's accuracy overlaid as a point and a run-to-run SEM error bar.
+Grouped bars by model (Haiku 4.5 / Sonnet 4.6 / Sonnet 5 / Opus 4.8) with
+hatched bars for the within-model prompt variants (naive / + IDs / + IDs + web /
++ IDs + PubMed). Haiku 4.5 and Sonnet 4.6 have all four variants, Opus 4.8
+naive and + IDs, Sonnet 5 + IDs only. Bar height = mean of the three
+per-replicate accuracies, with each replicate's accuracy overlaid as a point
+and a run-to-run SEM error bar.
 
 DATA SOURCE — reads ``data/processed/figures/db_correctness_overall.tsv``
 (built by ``scripts/build_figure_tsvs.py``), the SAME single source of truth the
-gist mirror ``data/analysis/figures/make_db_correctness_overall.py`` reads. The
-model list comes from the data, never a hardcode — this is the canonical
-generator that replaced the ``triage_bench_db_barplot.py`` ``make_overall_plot``
-path, whose hardcoded ``opus-4-7`` model list shipped empty bars when the data
-moved to Opus 4.8.
+gist mirror ``data/analysis/figures/make_db_correctness_overall.py`` reads. This
+is the canonical generator that replaced the ``triage_bench_db_barplot.py``
+``make_overall_plot`` path, whose hardcoded ``opus-4-7`` model ID shipped empty
+bars when the data moved to Opus 4.8. ``MODEL_ORDER`` below is still a fixed
+list (it sets display order, labels and colors), so a new model ID in the TSV
+must be added there or it is silently skipped.
 
 Run: ``uv run python scripts/figures/db_correctness_overall.py``
 # Reproduction: https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d
@@ -84,7 +87,7 @@ def main() -> None:
         for vi, (variant, _, hatch) in enumerate(VARIANT_ORDER):
             reps = rep_acc.get((model, variant), [])
             if not reps:
-                continue  # e.g. opus-4-8 was only run on naive + ncbi
+                continue  # e.g. opus-4-8 was only run on naive + ncbi; sonnet-5 on ncbi only
             mean_rep = sum(reps) / len(reps)
             x = mi + (vi - (n_variants - 1) / 2) * bar_w
             ax.bar(x, mean_rep, width=bar_w, color=color, hatch=hatch,

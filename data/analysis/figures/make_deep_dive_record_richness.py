@@ -34,7 +34,7 @@ non-surface proteins carry little extracellular evidence by definition; the
 ``uncertain`` tier (n=55) is dropped everywhere as too small relative to
 the other tiers to plot a stable distribution.
 
-Full deep-dive cohort (5,130 genes); the `canonical` tier uses the PR #130 gate.
+Full deep-dive cohort (5,332 genes); the `canonical` tier uses the PR #130 gate.
 
 Standalone — ``uv run make_deep_dive_record_richness.py``.
 """
@@ -77,7 +77,7 @@ BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 
 # Tier colors — MUST match Fig 5. canonical=green, likely=teal, low=amber,
-# no=muted warm-grey. `uncertain` is dropped everywhere (n=9, too small).
+# no=muted warm-grey. `uncertain` is dropped everywhere (n=55, too small).
 TIER_COLORS = {
     "canonical": "#2E7A55",
     "likely":    "#3D6B60",

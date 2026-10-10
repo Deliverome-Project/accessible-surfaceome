@@ -1,4 +1,4 @@
-"""Cohort funnel — how 19,324 protein-coding genes become a 5,130-gene deep dive.
+"""Cohort funnel — how 19,324 protein-coding genes become a 5,332-gene deep dive.
 
 A schematic in the visual language of Figure 4 (the deep-dive stage
 diagram): rounded maroon-outlined stage cards, pale-teal inner panels,
@@ -35,12 +35,11 @@ Left to right:
   because it removes rather than produces.
 * **Deep dive** — the cohort that went on to a per-gene record.
 
-**Why the arithmetic is not shown on the canvas.** Union (6,586) minus
-the trim (1,457) minus one withdrawn-HGNC row is 5,128, the v3 candidate
-universe; the completed sweep is 5,130. The two-gene gap is cohort
-vintage, not a counting error — the sweep ran against a marginally
-earlier universe. Printing 6,586 and 5,130 side by side would look like
-an off-by-two, so the union total stays in the caption.
+**Why the arithmetic is not shown on the canvas.** The union (5,626
+database-flagged plus 1,108 agent-only rescues = 6,734) minus the trim
+(1,401) is 5,333; the deep-dive cohort is 5,332 because one row is a
+withdrawn HGNC entry with no record. Printing 6,734 − 1,401 next to 5,332
+would read as an off-by-one, so the union total stays in the caption.
 
 Data sources:
   data/processed/figures/zero_db_rescues_by_triage.tsv        whole proteome
@@ -74,7 +73,7 @@ OUT_DIR = REPO_ROOT / "data/analysis/figures"
 # two thirds of the canvas comes from here.
 PROTEOME_TSV = REPO_ROOT / "data/processed/figures/zero_db_rescues_by_triage.tsv"
 # The deep-dive roster. One row per gene that completed the sweep; only
-# its length is needed, but reading the file beats hardcoding 5,130.
+# its length is needed, but reading the file beats hardcoding 5,332.
 DEEP_DIVE_TSV = REPO_ROOT / "data/processed/figures/deep_dive_final_categories.tsv"
 # The 1-of-5 trim: one row per gene dropped from the union because the
 # agent called it "no" at high confidence and exactly one database

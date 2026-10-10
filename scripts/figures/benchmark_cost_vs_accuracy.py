@@ -9,11 +9,22 @@ the cells visually without a legend.
 DATA SOURCE — reads ``data/processed/figures/benchmark_cost_vs_accuracy.tsv``
 (built by ``scripts/build_figure_tsvs.py``), the SAME single source of truth
 the gist mirror ``data/analysis/figures/make_benchmark_cost_vs_accuracy.py``
-reads from ``raw.githubusercontent.com``.  The model list comes from the data,
-never a hardcode — this is the canonical generator for the cost/accuracy
-frontier figure, replacing the ``triage_bench_db_barplot.py``
-``make_cost_vs_accuracy_plot`` path whose hardcoded model list caused empty
-cells when the data moved to Opus 4.8.
+reads as its bundled sibling file.  That TSV is built from
+``data/processed/triage_bench/mainbench_replicates_v2.tsv``.  Cells are the
+(model, prompt_variant) pairs present in the data that also have an entry in
+``CELL_LABEL`` — 11 today: Haiku 4.5 and Sonnet 4.6 each × {naive, + IDs,
++ IDs + PubMed, + IDs + web}, Sonnet 5 × {+ IDs}, Opus 4.8 × {naive, + IDs}.
+This is the canonical generator for the cost/accuracy frontier figure; it
+replaced the ``triage_bench_db_barplot.py`` ``make_cost_vs_accuracy_plot``
+path, whose hardcoded model list left cells empty when the data moved to
+Opus 4.8.
+
+Cost (``_whole_genome_cost``): mean tokens per call; the shared system
+prompt is charged once at the cache-write rate and reused at the cache-read
+rate (cells with no recorded cache tokens assume a 2,000-token system
+prompt); remaining prompt tokens at the input rate, the reply at the output
+rate; each web search $0.01; times 19,324 genes.  The y-axis floor is
+max(78, lowest cell accuracy − 2).
 
 Run: ``uv run python scripts/figures/benchmark_cost_vs_accuracy.py``
 # Reproduction: https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41
@@ -38,7 +49,10 @@ BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 BRAND_CLAUDE_ORANGE = "#d87851"
 
-# Anthropic published prices ($/M tokens, 2026-05).
+# Per-million-token prices used for the figure: in = input, out = output,
+# cr = cache read, cw = cache write. Entered 2026-05; the manuscript legend
+# calls them July 2026 list prices. Sonnet 5 is priced the same as
+# Sonnet 4.6 (its post-introductory rate, per the legend).
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
@@ -110,7 +124,11 @@ def _whole_genome_cost(group: pd.DataFrame) -> float:
     so token columns already carry per-replicate counts.  Cost is per single
     triage pass — average the per-rep counts across the cell's
     (gene, replicate) rows.  ``n`` here is gene-count (rows ÷ reps per gene
-    ≈ unique genes), used only in the system-prompt amortisation.
+    ≈ unique genes), used only in the system-prompt amortisation: the
+    shared system prompt is charged once at the cache-write rate and
+    reused ``n - 1`` times at the cache-read rate.  Cells with no recorded
+    cache tokens treat the first 2,000 prompt tokens as that system
+    prompt.  Each web search adds WEB_SEARCH_USD_PER_QUERY.
     """
     model = group["model"].iloc[0]
     pricing = _PRICE[model]

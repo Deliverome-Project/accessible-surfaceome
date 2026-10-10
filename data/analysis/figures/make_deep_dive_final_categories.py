@@ -24,9 +24,9 @@ rather than the evidence-gated facet keeps weak-evidence surface calls that
 land in the ``low`` tier. The facets cut across confidence rather than
 gating it.
 
-Full deep-dive cohort (5,130 genes); ``canonical`` / ``likely`` are the
-frontend catalog-preset predicates, giving 1,782 canonical / 1,243 likely /
-973 low / 1,078 no / 54 uncertain.
+Full deep-dive cohort (5,332 genes); ``canonical`` / ``likely`` are the
+frontend catalog-preset predicates, giving 1,783 canonical / 1,252 likely /
+1,014 low / 1,228 no / 55 uncertain.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs
@@ -46,9 +46,10 @@ import seaborn as sns
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-# Single per-figure TSV: (category, subcategory, n_genes) — the
-# distribution that drives Panel-a tier heights + the Panel-b `likely`
-# composition. Produced by ``scripts/build_figure_tsvs.py``. Gist bundles
+# Single per-figure TSV, one row per deep-dived gene: Panel a counts genes
+# per tier (`category`); Panel b counts genes by `surface_call_reason` /
+# `induction_trigger` across canonical, likely and low. Produced by
+# ``scripts/build_figure_tsvs.py``. Gist bundles
 # this TSV next to the script; the figure reads ONLY from the sibling —
 # no other URLs.
 DATA_TSV = f"{BASE}/data/processed/figures/deep_dive_final_categories.tsv"
@@ -250,9 +251,9 @@ def _tier_group_brackets(ax) -> None:
 def main() -> None:
     _apply_brand_style()
 
-    # Single bundled TSV with (category, subcategory, n_genes) rows.
-    # Panel a reads the per-tier totals; Panel b reads the `likely`
-    # sub-buckets (one row per cell-type / cell-state reason).
+    # Single bundled TSV, one row per deep-dived gene. Panel a counts genes
+    # per tier; Panel b (below) counts genes by surface-call reason /
+    # induction trigger across the canonical, likely and low tiers.
     _df = _fetch_tsv(DATA_TSV)
     data = _read(_df)
     canon = sum(data.get("canonical", {}).values())

@@ -10,8 +10,9 @@
 
 Supp Fig 9 — a single **bubble matrix** of surface inclusion sources (rows) ×
 topology features (columns). For every gene in the FULL any-yes-vote universe
-(Sonnet yes/contextual incl. the PubMed rescue OR any optimized-DB vote; 960
-zero-DB Sonnet rescues), 9 binary topology features are scored per source. Each
+(Sonnet yes/contextual incl. the PubMed rescue OR any optimized-DB vote; 1,108
+zero-DB Sonnet rescues = 794 no-literature + 314 PubMed rescue), 9 binary
+topology features are scored per source. Each
 cell's dot encodes BOTH metrics at once:
 
   • dot AREA  ∝ within-source enrichment — % of that source's OWN calls carrying
@@ -19,14 +20,16 @@ cell's dot encodes BOTH metrics at once:
   • dot COLOR = coverage — % of the whole surface universe those represent
     (``|source ∩ feature| / |universe|``)
 
-CSPA × glycosylation is a large, pale dot (~75% of its own calls, but a small
-slice of the universe — its N-glycocapture chemistry); SURFY/UniProt show the
-same glyco enrichment at larger scale (dark); the zero-DB Sonnet rescues are
-dominated by likely-secreted + glycosylated contextual-surface proteins the
-classical-topology DBs miss (and carry no GPCR / GPI).
+CSPA × glycosylation is a large, pale dot (~96% of its own calls, but a small
+slice of the universe, ~14% — its N-glycocapture chemistry); SURFY/UniProt show
+the same glyco enrichment at larger scale (dark). The zero-DB Sonnet rescues
+split by how triage called them: the no-literature row (794) is mostly
+likely-secreted (55%) and glycosylated (41%); the PubMed-rescue row (314) most
+often has no TM and no signal peptide (49%). Neither row has GPCR or GPI
+proteins.
 
 Reads the dedicated per-figure TSV (built by scripts/build_figure_tsvs.py from
-scripts/export_s9_full_universe_features.py): src_* source flags, optimized
+scripts/tsv-export/export_s9_full_universe_features.py): src_* source flags, optimized
 cutoffs, n_sources_optimized, the 9 topology features on full coverage, and
 verdict_source, which splits the zero-DB Sonnet rescues into the first-pass
 (no literature) and PubMed-rescue rows, as in Figure 3.

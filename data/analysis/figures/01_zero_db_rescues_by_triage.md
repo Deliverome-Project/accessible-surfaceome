@@ -7,23 +7,26 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 3.** The triage agent rescues 960 surface candidates not identified by any of the five source databases. The two-stage Sonnet 4.6 triage agent calls 81 proteins definitively surface ("yes", panel a) and 879 proteins conditionally surface ("contextual": state- or lineage-dependent, panel b) that were not identified by any of the five source databases. Bars group each verdict by the agent's rationale, with representative examples labeled.
+> **Figure 3.** The triage agent rescues 1,108 surface candidates not identified by any of the five source databases. The two-stage Sonnet 4.6 triage agent calls 87 proteins definitively surface ("yes", panel a) and 1,021 proteins conditionally surface ("contextual": state- or lineage-dependent, panel b) that were not identified by any of the five source databases. Bars group each verdict by the agent's rationale, with representative examples labeled.
 <!-- END manuscript-legend -->
 
-Whole-genome view of the genes the **Sonnet (+ NCBI) triage agent**
-flags as surface-accessible despite **none** of the five classical
-surface DBs (UniProt / GO CC / HPA / SURFY / CSPA) voting "yes." Two
-grouped bar panels on a shared y-axis show per-reason counts within
-each verdict bucket:
+Whole-genome view of the genes the **Sonnet triage agent** calls
+surface-accessible (`yes` or `contextual`) although **none** of the
+five classical surface DBs (UniProt / GO CC / HPA / SURFY / CSPA) flags
+them, with UniProt and CSPA scored at their bench-optimized cutoffs.
+That is 1,108 genes: 794 called by the first pass on the NCBI gene
+summary, and 314 that pass called `no` and a PubMed rescue lane then
+called `yes` or `contextual`. Two bar panels, drawn on the same y-axis
+scale, show per-reason counts within each verdict bucket:
 
-* **yes** — definite surface, by triage agent's `verdict=yes`
-* **contextual** — state / lineage / partner-dependent surface
-  display, by triage agent's `verdict=contextual`
+* **a, yes** (87 genes) — definite surface, triage `verdict=yes`
+* **b, contextual** (1,021 genes) — state / lineage / partner-dependent
+  surface display, triage `verdict=contextual`
 
 Beneath each panel, select gene callouts illustrate the kind of
 biology the triage agent surfaces in each verdict bucket. Each
-callout's reason is verified at runtime against the catalog's
-`triage.reason` — mismatches raise an error.
+callout's reason is verified at runtime against the TSV's
+`sonnet_reason` column — mismatches raise an error.
 
 Run:
 
@@ -31,7 +34,18 @@ Run:
 uv run make_zero_db_rescues_by_triage.py
 ```
 
-Source: the whole-proteome catalog TSV — [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv). 19,324 protein-coding human genes; each row carries the five `*_surface_flag` fields + `n_sources_surface` + the canonical Sonnet `sonnet_verdict` and `sonnet_reason`. The rescue slice = `n_sources_surface == 0 AND sonnet_verdict ∈ {yes, contextual}`. Sourced from D1 by [`scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py).
+Source: the figure TSV bundled in this gist —
+[`data/processed/figures/zero_db_rescues_by_triage.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/figures/zero_db_rescues_by_triage.tsv).
+19,324 protein-coding human genes. Each row carries stable IDs, the five
+initial `*_surface_flag` fields + `n_sources_surface`, the bench-optimized
+`uniprot_optimized` / `cspa_optimized` + `n_sources_optimized`, and the
+Sonnet `sonnet_verdict` / `sonnet_reason` with `verdict_source` (`ncbi` =
+first pass on the NCBI gene summary; `pubmed_rescue` = flipped by a PubMed
+rescue lane) and `rescue_run` (which lane). The rescue slice =
+`n_sources_optimized == 0 AND sonnet_verdict ∈ {yes, contextual}`. Built by
+[`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py)
+(`build_zero_db_rescues`) from the whole-proteome catalog TSV and the
+optimized-cutoff table (`data/processed/triage_bench/db_optimized_cutoffs.tsv`).
 
 Canonical in-repo generator:
 [`scripts/figures/zero_db_rescues_by_triage.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/zero_db_rescues_by_triage.py).

@@ -6,23 +6,25 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``db_correctness_by_class.{pdf,png}`` from the public repo.
+"""Reproduce ``db_correctness_by_class.{pdf,png}`` from the TSV bundled with this gist.
 
-For 6 callers (5 DBs + Sonnet+NCBI), grouped bars showing
-overall accuracy + per-verdict-bucket accuracy (yes / contextual /
-no) on the 147-gene bench.
+For 6 callers (5 DBs + Sonnet 4.6 with identifiers and no tools),
+grouped bars showing overall accuracy + per-verdict-bucket accuracy
+(yes / contextual / no) on the 147-protein bench. The Sonnet bar is
+the mean over its 3 replicates, with per-replicate dots and an SEM
+error bar.
 
 DB cutoffs are the **trade-off-audit optimized** versions (see
-``scripts/triage_bench_db_barplot.py::_optimized_uniprot_accs`` /
+``scripts/figures/triage_bench_db_barplot.py::_optimized_uniprot_accs`` /
 ``_optimized_cspa_accs`` and the ``db_cutoff_tradeoff`` figure):
 
   * **UniProt — TM+signal**: admit any accession with a transmembrane
     domain, a signal peptide, OR a strict surface subcellular term
-    (looser than canonical; rescues more bench positives without
-    hurting the no-class).
+    (looser than canonical; rescues more bench positives, at the cost
+    of one extra no-class false positive).
   * **CSPA — HC-only**: admit only the high-confidence flag (drops
     ``putative`` + ``unspecific`` rows; stricter than canonical, lifts
-    precision against the no-class).
+    accuracy on the no-class).
   * **GO CC / HPA / SURFY**: canonical baselines (audit didn't surface
     a better cutoff).
 
@@ -257,9 +259,9 @@ def main() -> None:
     callers_in_plot = [sonnet_label, *db_labels_sorted]
 
     # Sonnet per-bucket MEAN-of-replicate fraction — the Sonnet bar height in
-    # each bucket is the mean across the 3 replicates (not the majority-vote
+    # each bucket is the mean across the 3 replicates (not the first-row
     # fraction), so the bar lines up with the overlaid points + SEM. DB callers
-    # are deterministic and keep their exact majority fraction.
+    # are deterministic and keep their exact fraction.
     sonnet_rep_frac: dict[str, float] = {}
     try:
         _s = data[(data["model"] == "claude-sonnet-4-6")
@@ -328,7 +330,7 @@ def main() -> None:
 
     # Insert a small visible gap between the single LLM bar and the
     # 5-DB cluster within each column group. Mirrors the canonical
-    # generator's layout (scripts/triage_bench_db_barplot.py).
+    # generator's layout (scripts/figures/db_correctness_by_class.py).
     n_col = len(COLUMNS)
     n_callers = len(callers_in_plot)
     bar_width = ax.patches[0].get_width()
@@ -353,7 +355,7 @@ def main() -> None:
 
     # Overlay individual-replicate accuracy + SEM on the Sonnet bars (caller
     # index 0, one patch per bucket). DB callers are deterministic — no
-    # overlay. Per-bucket per-rep accuracy from the replicates TSV.
+    # overlay. Per-bucket per-rep accuracy from the bundled TSV.
     try:
         srep = data[(data["model"] == "claude-sonnet-4-6")
                     & (data["prompt_variant"] == "ncbi")].copy()

@@ -56,9 +56,15 @@ def _clean(text: str) -> str:
     The label is re-added by the block template so every README renders it
     the same way regardless of how the doc happened to punctuate it.
     """
+    # Docs exports wrap a caption in heading marks ("##### **Figure 1. …") and
+    # sometimes leave a trailing "#####"; neither belongs in the legend text.
+    text = re.sub(r"^\s*#{1,6}\s*", "", text)
+    text = re.sub(r"\s*#{1,6}\s*$", "", text)
     text = re.sub(r"^\*\*", "", text)
     text = re.sub(r"^(Supplementary\s+)?Figure\s+S?\d+\.\s*", "", text)
     text = text.replace("**", "")
+    # Markdown escapes the export adds before punctuation (\~, \>, \*, …).
+    text = re.sub(r"\\([~>*_\[\]()#+.!-])", r"\1", text)
     # The gist links to its own data; the manuscript's trailing link is noise here.
     text = re.sub(r"\s*\[Figure data and script\.?\s*\]\([^)]*\)\s*$", "", text)
     return re.sub(r"\s+", " ", text).strip()
