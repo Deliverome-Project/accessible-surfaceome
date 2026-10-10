@@ -67,6 +67,7 @@ from .literature_discovery import (
     save_discovery_cache,
 )
 from .normalize import signal_peptide_end
+from .position_verify import verify_position_blind
 from .prompt import (
     SYSTEM_PROMPT,
     TAG_SITE_PROMPT_VERSION,
@@ -256,7 +257,9 @@ def upgrade_quotes(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSit
     return result
 
 
-def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteResult:
+def enforce_position_claims(
+    result: TagSiteResult, *, sequence: str, client: Any | None = None
+) -> TagSiteResult:
     """Downgrade ``position_evidence`` to ``inferred`` on any site whose quote
     does not NAME its position.
 
@@ -273,7 +276,13 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
 
     Both ``n`` and its neighbours count, because a paper may name the residue
     before or after the junction, and the quote is read with the sequence so a
-    cell line or a stray integer cannot launder a position claim."""
+    cell line or a stray integer cannot launder a position claim.
+
+    ``client`` enables a BLIND second opinion for the long tail the literal
+    matcher misses. It is consulted only when the matcher found nothing, it is
+    shown the sentence and nothing else, and it can only UPGRADE — a verifier
+    that could also downgrade would be a second way to lose a correct site, and
+    the deterministic path already decides that."""
     if not sequence:
         return result
     for s in result.sites:
@@ -286,8 +295,17 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
             # prompt and must not be re-judged against a residue it never gave.
             continue
         named = residue_mentions(s.supporting_quote, sequence=sequence)
-        if not named & {n - 1, n, n + 1}:
-            s.position_evidence = "inferred"
+        if named & {n - 1, n, n + 1}:
+            continue
+        # The matcher found nothing. Before downgrading, ask the blind verifier
+        # — it handles the spellings no pattern list covers, and returns NONE
+        # for the numbers that are durations, figures and catalogue ids.
+        stated = verify_position_blind(
+            s.supporting_quote, client=client, max_residue=len(sequence)
+        )
+        if stated is not None and stated in {n - 1, n, n + 1}:
+            continue  # rescued: the sentence does state this position
+        s.position_evidence = "inferred"
     return result
 
 
@@ -619,7 +637,7 @@ def run_tag_site_agent(
     upgrade_quotes(result, evidence=evidence)
     #   b2) a site may claim a VALIDATED position only if its quote names it;
     #       otherwise the position came from topology, not from the citation.
-    enforce_position_claims(result, sequence=sequence)
+    enforce_position_claims(result, sequence=sequence, client=client)
     enforce_evidence_type_coupling(result)
     if sequence and topology:
         kept, rejected = apply_geometry_pass(

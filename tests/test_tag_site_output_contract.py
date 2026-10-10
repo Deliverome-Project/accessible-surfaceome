@@ -17,6 +17,8 @@ are not asked of the model at all.
 """
 from __future__ import annotations
 
+import json
+import types
 import typing
 from pathlib import Path
 
@@ -188,8 +190,6 @@ def test_supporting_pmid_is_filled_from_the_cited_ledger_line() -> None:
 
     Uses the actual pair that broke: PMC5917007 / PMID 29725305, the Kanner 2018
     paper the benchmark cites for KCNH2 T436."""
-    import types
-
     from accessible_surfaceome.agents.tag_site.runner import attach_source_pmids
 
     quote = "a BBS (13 amino acid residues) was placed between residues Thr436 and Glu437"
@@ -223,8 +223,6 @@ def test_supporting_pmid_is_filled_from_the_cited_ledger_line() -> None:
 def test_a_doi_only_preprint_keeps_a_null_pmid() -> None:
     """The one case "preprint" was ever meant for: no PMID exists, so null is
     correct rather than a lost identifier."""
-    import types
-
     from accessible_surfaceome.agents.tag_site.runner import attach_source_pmids
 
     quote = "an HA tag was inserted between amino acids T443 and E444"
@@ -296,8 +294,6 @@ def test_an_overcomplete_quote_is_recovered_rather_than_dropped() -> None:
     """The KCNH2 T436 case: clips are truncated at extraction, so a model that
     reproduces the whole sentence yields a string no clip contains. That is a
     MORE faithful citation and the gate was deleting it."""
-    import types
-
     from accessible_surfaceome.agents.tag_site.runner import (
         recover_overcomplete_quotes,
         verify_entailment,
@@ -333,8 +329,6 @@ def test_an_invented_quote_is_still_dropped() -> None:
     `upgrade_quotes` ahead of the gate would have done exactly that — it falls
     back to ANY probative ledger quote, so an invented citation would have
     survived wearing a real but unrelated one."""
-    import types
-
     from accessible_surfaceome.agents.tag_site.runner import (
         recover_overcomplete_quotes,
         verify_entailment,
@@ -588,3 +582,75 @@ def test_the_repair_refuses_when_the_claimed_pair_exists_elsewhere() -> None:
         functional_or_expression_impact_measured="NOT MEASURED", rationale="r", confidence="high",
     )
     assert repair_proposal(site, sequence=seq, sp_end=0) is None
+
+
+# ---------------------------------------------------------------------------
+# The blind position verifier.
+# ---------------------------------------------------------------------------
+
+
+def test_the_verifier_is_blind_to_what_it_is_verifying() -> None:
+    """The guard exists because the model overclaims, so asking the model "did
+    your quote support your claim?" would be worthless. The verifier is shown
+    the sentence and nothing else — no gene, no claimed residue, no hint that a
+    claim is under review — so it cannot rubber-stamp a position it does not
+    know is wanted."""
+    from accessible_surfaceome.agents.tag_site import position_verify as pv
+
+    system = pv._SYSTEM.lower()
+    for leak in ("claim", "validate", "verify", "review", "correct", "expected"):
+        assert leak not in system, f"the verifier's prompt mentions {leak!r}"
+
+    captured = {}
+
+    class _Client:
+        class messages:  # noqa: N801
+            @staticmethod
+            def create(**kw):
+                captured.update(kw)
+                return types.SimpleNamespace(content=[types.SimpleNamespace(text="484")])
+
+    pv.verify_position_blind("residues 484-516 were replaced", client=_Client, max_residue=700)
+    sent = json.dumps(captured, default=str)
+    assert "483" not in sent and "gene" not in sent.lower()
+
+
+def test_the_verifier_can_only_upgrade() -> None:
+    """A verifier that could also downgrade would be a second way to lose a
+    correct site. The deterministic path already decides that."""
+    import inspect
+
+    from accessible_surfaceome.agents.tag_site import runner
+
+    src = inspect.getsource(runner.enforce_position_claims)
+    after = src[src.index("verify_position_blind") :]
+    assert 'continue' in after, "a successful verification must keep the claim"
+    assert 'position_evidence = "validated"' not in after, "it must not promote"
+
+
+def test_a_failed_verifier_leaves_the_deterministic_verdict_alone() -> None:
+    """No client, an API error or an unparseable reply must all be inert."""
+    from accessible_surfaceome.agents.tag_site.position_verify import verify_position_blind
+
+    class _Boom:
+        class messages:  # noqa: N801
+            @staticmethod
+            def create(**_):
+                raise RuntimeError("api down")
+
+    assert verify_position_blind("residues 484-516 replaced", client=None) is None
+    assert verify_position_blind("residues 484-516 replaced", client=_Boom) is None
+    assert verify_position_blind("", client=_Boom) is None
+
+
+def test_a_position_outside_the_protein_is_rejected() -> None:
+    """A reply of 9999 for a 700-residue protein is not a position."""
+    from accessible_surfaceome.agents.tag_site.position_verify import verify_position_blind
+
+    class _Client:
+        class messages:  # noqa: N801
+            @staticmethod
+            def create(**_):
+                return types.SimpleNamespace(content=[types.SimpleNamespace(text="9999")])
+
+    assert verify_position_blind("x" * 40, client=_Client, max_residue=700) is None
