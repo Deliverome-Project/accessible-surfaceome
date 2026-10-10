@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 14.** The precomputed deterministic features distribute as expected for candidate surface proteins across both the deep-dive confidence tiers and the full two-stage Sonnet triage set. Twelve topology and structural features — TM-helix count, proteins and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular surface-bind site — compared across the canonical, likely, low, and uncertain/non-surface tiers and the genome-wide Sonnet-positive pool.
+> **Supplementary Figure 14.** The precomputed deterministic features distribute as expected for candidate surface proteins across both the deep-dive confidence tiers and the full two-stage Sonnet triage set. Twelve topology and structural features — TM-helix count, protein length and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular surface-bind site — compared across the canonical, likely, low, and uncertain/non-surface tiers and the genome-wide Sonnet-positive pool.
 <!-- END manuscript-legend -->
 
 Distribution of **twelve deterministic per-gene features** across the
