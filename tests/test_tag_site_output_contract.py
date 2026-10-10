@@ -654,3 +654,84 @@ def test_a_position_outside_the_protein_is_rejected() -> None:
                 return types.SimpleNamespace(content=[types.SimpleNamespace(text="9999")])
 
     assert verify_position_blind("x" * 40, client=_Client, max_residue=700) is None
+
+
+# ---------------------------------------------------------------------------
+# Citing a ledger line by id instead of retyping its quote.
+# ---------------------------------------------------------------------------
+
+
+def test_the_quote_is_resolved_from_the_cited_id_not_retyped() -> None:
+    """Every quote failure today was a transcription artifact — a curly
+    apostrophe against a straight one, a sentence reproduced more completely
+    than the clip stored. None can occur when the text is never retyped: it
+    comes back out of the same ledger it went in as.
+
+    This is the pattern the clip-SELECT stage has always used ("you only pick
+    and classify by clip_id, you never retype the quote")."""
+    from accessible_surfaceome.agents.tag_site.runner import fill_quotes_from_ledger
+
+    ledger = [
+        types.SimpleNamespace(spans=[types.SimpleNamespace(quote="FIRST clip text, verbatim.")]),
+        types.SimpleNamespace(spans=[types.SimpleNamespace(quote="SECOND clip text, verbatim.")]),
+    ]
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=101, residue_before="G", residue_after="S",
+        tag_type="ALFA", evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        supporting_clip_id="L2", rationale="r", confidence="high",
+    )
+    result = TagSiteResult(sites=[site])
+    fill_quotes_from_ledger(result, evidence=ledger)
+    assert result.sites[0].supporting_quote == "SECOND clip text, verbatim."
+
+
+def test_a_site_citing_no_id_keeps_its_own_quote() -> None:
+    """Backward compatible: the entailment gate still has something to judge."""
+    from accessible_surfaceome.agents.tag_site.runner import fill_quotes_from_ledger
+
+    ledger = [types.SimpleNamespace(spans=[types.SimpleNamespace(quote="ledger text")])]
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=101, residue_before="G", residue_after="S",
+        tag_type="ALFA", evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED",
+        supporting_quote="the model wrote this one", rationale="r", confidence="high",
+    )
+    result = TagSiteResult(sites=[site])
+    fill_quotes_from_ledger(result, evidence=ledger)
+    assert result.sites[0].supporting_quote == "the model wrote this one"
+
+
+def test_an_out_of_range_or_malformed_id_is_ignored() -> None:
+    from accessible_surfaceome.agents.tag_site.runner import fill_quotes_from_ledger
+
+    ledger = [types.SimpleNamespace(spans=[types.SimpleNamespace(quote="only line")])]
+    for cid in ("L9", "Lx", "3", ""):
+        site = TagSiteProposal(
+            site_type="internal", insert_after_residue=101, residue_before="G",
+            residue_after="S", tag_type="ALFA",
+            evidence_type="published tag insertion at this exact site",
+            position_evidence="validated", evidence_detail="d",
+            functional_or_expression_impact_measured="NOT MEASURED",
+            supporting_clip_id=cid, supporting_quote="kept", rationale="r", confidence="high",
+        )
+        result = TagSiteResult(sites=[site])
+        fill_quotes_from_ledger(result, evidence=ledger)
+        assert result.sites[0].supporting_quote == "kept", f"id {cid!r} should be ignored"
+
+
+def test_the_ledger_renders_citable_ids() -> None:
+    from accessible_surfaceome.agents.tag_site.runner import format_evidence_ledger
+
+    ev = [
+        types.SimpleNamespace(
+            claim="a claim",
+            spans=[types.SimpleNamespace(
+                quote="q", source=types.SimpleNamespace(source_id="PMID:123"))],
+        )
+    ] * 2
+    text = format_evidence_ledger(ev)
+    assert "[L1]" in text and "[L2]" in text
+    assert "supporting_clip_id" in text

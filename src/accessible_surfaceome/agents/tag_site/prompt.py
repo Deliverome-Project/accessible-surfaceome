@@ -56,11 +56,8 @@ say "tag" in the abstract — FLAG / HA / Myc / ALFA / V5, fluorescent-protein f
 SNAP-tag / CLIP-tag, bungarotoxin-binding site, AviTag, tetracysteine, transposon and
 domain-insertion screens.
 
-Per site:
-- `supporting_quote` — the VERBATIM ledger line, copied, never paraphrased. It is re-checked
-  against the ledger; not found -> `entailment_verified=false` and down-ranked. A fabricated
-  quote is worse than none.
-- `source_tier` — 'paper' > 'patent' > 'vendor'. A vendor page never outranks a paper.
+Per site: `supporting_clip_id` is the [Ln] id of the ONE ledger line it rests on. The quote and
+the citation are filled in from that id. `source_tier` — 'paper' > 'patent' > 'vendor'.
 
 2. POSITION
 
@@ -68,28 +65,17 @@ UniProt canonical numbering. `insert_after_residue = N` puts the tag between N a
 residue_before (= N) and residue_after (= N+1) COPIED from the sequence given. A mismatch
 invalidates the site.
 
-A TAGGED CONSTRUCT WITH NO RESIDUE IS STILL A SITE WHEN THE TOPOLOGY LEAVES ONE TERMINUS.
-When a paper reports a tagged construct of THIS protein — "TfR1-v5", "Myc-tagged hA1R",
-"N-terminally FLAG tagged" — and names no residue, read the LANDMARKS. If exactly ONE terminus
-is extracellular, that is where the tag is: there is nowhere else it could be and still be on
-the surface. Report it, with `position_evidence` = "topology_derived" and the junction taken
-from the landmarks (prepend = 0, or the mature N-terminus after a signal peptide; a C-terminal
-tag goes after the LAST residue). Say in the rationale that the paper gives no residue and the
-position follows from the topology.
+A TAGGED CONSTRUCT WITH NO RESIDUE IS STILL A SITE. Two cases, both real findings:
+- the landmarks leave exactly ONE extracellular terminus ("TfR1-v5", "Myc-tagged hA1R") — the
+  tag is there, because nowhere else is on the surface. `position_evidence`="topology_derived",
+  junction from the landmarks (prepend = 0, the mature N-terminus after a signal peptide, or
+  after the LAST residue for a C-terminal tag). The position is computed, not chosen.
+- a tag in a NAMED LOOP with no residue — set `region` ("ECL4") and leave insert_after_residue
+  null. Inventing a junction for it is not reporting it.
+Choosing a position INSIDE a loop remains forbidden: a loop offers many, a sole terminus one.
 
-That is a real finding, not a guess: the position is computed, not chosen. It is NOT the same
-as picking a spot inside a loop, which remains forbidden — a loop offers many positions and the
-topology cannot single one out, whereas a sole extracellular terminus is the only candidate
-there is.
-
-A clip that NAMES a residue outranks one that names only a loop. If any ledger line pins a
-junction, use it — do not conclude the loop is unpinnable because a DIFFERENT line about the
-same loop is vague.
-
-When NO line names a residue but one reports a tag inserted in a named loop, report a
-REGION-LEVEL site: set `region` to the loop ("ECL4"), leave insert_after_residue null, and say
-in the rationale that the paper does not give the junction. That is a real published insertion
-and worth reporting; inventing a junction for it is not.
+A clip that NAMES a residue outranks one that names only a loop — do not call a loop unpinnable
+because a different line about it is vague.
 
 `insert_after_residue = 0` is the N-TERMINAL PREPEND: the tag goes before residue 1, so
 residue_before is "" and residue_after is residue 1. Use it for a tag on an extracellular
@@ -211,6 +197,10 @@ _CODE_SET = (
     # know the sha of the prompt it is reading, and asking produced six entries
     # in the contract that all carried the same copy-pasted hint.
     "schema_version", "prompt_sha", "prompt_version", "model", "generated_at",
+    # Resolved from supporting_clip_id. Asking for the text was paying output
+    # rates to echo our own input, and every quote failure today was a
+    # transcription artifact that cannot occur when nothing is retyped.
+    "supporting_quote",
 )
 
 #: Per-field hints for the top-level keys the model does supply.

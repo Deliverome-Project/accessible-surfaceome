@@ -158,12 +158,16 @@ class TagSiteProposal(BaseModel):
     supporting_pmid: int | None = Field(
         default=None, description="PMID of the supporting paper when one exists (grounds the citation)."
     )
+    supporting_clip_id: str = Field(
+        default="",
+        description='The [Ln] id of the ONE ledger line this site is grounded in, e.g. "L3".',
+    )
     supporting_quote: str | None = Field(
         default=None,
         description=(
-            "A VERBATIM sentence copied from the cited paper (abstract/methods/results, provided "
-            "to you above) that states the tag was inserted at this site and/or its validation. "
-            "This exact string is checked against the source text — do NOT paraphrase or invent it."
+            "Filled in by the pipeline from supporting_clip_id — not asked of you. "
+            "The text comes back out of the ledger it went in as, so it cannot be "
+            "mistyped or embellished."
         ),
     )
     entailment_verified: bool = Field(

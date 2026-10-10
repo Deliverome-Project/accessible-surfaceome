@@ -31,26 +31,26 @@
       "median_conservation": 1.0
     },
     {
-      "site_id": "SLC4A1-internal-557-lit",
+      "site_id": "SLC4A1-internal-556-lit",
       "gene_symbol": "SLC4A1",
       "uniprot_acc": "P02730",
       "provenance": "literature_retrieved",
       "det_path": null,
       "site_kind": "internal",
-      "insert_after_residue": 557,
-      "residue_before": "V",
-      "residue_after": "L",
-      "residue_label": "V557",
+      "insert_after_residue": 556,
+      "residue_before": "N",
+      "residue_after": "V",
+      "residue_label": "N556",
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HA",
+      "tag_type": "HA / Myc",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface expression confirmed by immunodetection of HA-tagged kAE1 at the plasma membrane (pLVX-TRE3G lentiviral system, HEK293 or equivalent cells). Anion transport function NOT MEASURED in the cited quotes.",
+      "functional_impact_measured": "Cell-based assays performed (trafficking and functional studies of kAE1 WT and T444N mutant); surface expression of tagged constructs was used as the experimental readout, implying tolerated surface display. Quantitative functional transport assay result not explicitly reported for the tagged construct alone in the ledger excerpts.",
       "confidence": "high",
-      "rationale": "The ledger line from PMC12959882 explicitly states 'HA epitope in position 557 (on eAE1)' in a full-length, membrane-anchored kAE1 construct. Position 557 falls within EL3 (topology: 542-569), 16 residues from the TM7 C-terminus (541) and 13 residues from the TM8 N-terminus (570), well clear of both TM boundaries (>=3 required). Python confirms seq[556]='V' and seq[557]='L', so insert_after_residue=557 places the tag between Val557 and Leu558. No Cys residues and no NxS/T glycosylation sequons are present in EL3. The tag is described as 'external', confirming extracellular orientation. PMC9623938 independently describes a Myc tag at position 557 in the third extracellular loop of kAE1 (same eAE1 numbering), corroborating this junction. Full-length kAE1 construct (membrane-anchored, expressed in lentiviral system pLVX-TRE3G) carries an HA epitope tag explicitly stated to be at eAE1 position 557, within extracellular loop 3 (EL3). The tag is described as 'external' (extracellular-facing). Surface detection of the tagged transporter was performed. The same junction (position 557, EL3) is independently supported by PMC9623938, which describes a Myc tag at position 557 in the third extracellular loop of kAE1 (using eAE1 numbering, as confirmed by PMC12959882). [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Ledger line 1 (PMC12959882) explicitly states 'position 557 (on eAE1)', anchoring this to eAE1 canonical numbering. Ledger line 2 (PMC9623938) independently places a Myc tag at the same position in the third extracellular loop of kAE1, corroborating the site. Python computation confirms residue 557 = V within extracellular loop 542\u2013569; 'at position 557' is interpreted as insert_after_residue = 556 (tag placed before V557), giving residue_before = N (556) and residue_after = V (557). Both flanking positions are well within the extracellular loop, \u226513 aa from either TM boundary, with no cysteines or glycosylation sequons in the loop. Two independent papers report epitope-tag insertions at eAE1 position 557 in full-length, membrane-anchored kAE1/eAE1 constructs expressed in mammalian cells. PMC12959882 uses an HA tag in a lentiviral kAE1 construct for cell-based studies; PMC9623938 uses a Myc tag at the same position in pcDNA3.1-kAE1 constructs to study wild-type and T444N mutant trafficking. Both papers explicitly state 'position 557 (on eAE1)' or 'position 557 in the third extracellular loop of kAE1', confirming eAE1 canonical numbering. Python confirms residue 557 = V (Val) within extracellular loop 542\u2013569, 15 aa from the upstream TM boundary (541) and 13 aa from the downstream TM boundary (570). No cysteines or NxS/T glycosylation motifs are present in loop 542\u2013569. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 41778592,
@@ -80,9 +80,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Surface biotinylation and immunoblot confirmed V5-tagged eAE1 at the plasma membrane (HEK293 cells). Anion transport function NOT MEASURED in the cited quotes.",
+      "functional_impact_measured": "Surface biotinylation followed by immunoblot confirmed V5-tagged eAE1 is present at the cell surface (Figure 2 of PMC11769940). Quantitative anion transport function was NOT MEASURED for the tagged construct in the cited ledger excerpts.",
       "confidence": "medium",
-      "rationale": "PMC11769940 reports V5 tag insertion into EL3 of full-length eAE1 (membrane-anchored, HEK293 expression), with surface biotinylation confirming plasma membrane display. The paper states EL3 as residues 555-576 for eAE1; the authoritative topology landmarks give EL3 as 542-569. No specific junction residue is named for eAE1 (the sequence shown, YNVLGKPIPNPLLGLDSTMVPK, matches kAE1 EL3 490-511 but is not found in the eAE1 canonical sequence at 555-576, suggesting the paper displays the kAE1 sequence for both isoforms). Because no junction is pinned for eAE1, this is reported as a region-level site with insert_after_residue=null. The site is distinct from Site 1 (HA at 557) because it is a different paper, different tag, and the junction is unspecified. cited_tag_residue is null because no residue is named. Full-length human eAE1 construct with a V5 tag inserted into extracellular loop 3 (EL3; stated as residues 555-576 for eAE1 in the paper, topology landmarks give EL3 as 542-569) was expressed in HEK293 cells. Surface biotinylation and immunoblot confirmed the V5-tagged eAE1 at the plasma membrane. No specific junction residue is named for the eAE1 construct; the paper provides only the loop boundaries. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "rationale": "PMC11769940 reports V5 inserted into EL3 of full-length eAE1 (residues 555\u2013576 per the paper), confirmed at the cell surface by biotinylation. No junction residue is named, so this is a region-level site within EL3. The computed extracellular loop 542\u2013569 encompasses the paper's EL3 start (555); the paper's upper boundary (576) extends into the TM per authoritative topology, but the insertion is within the extracellular portion. This site is in the same loop as Site 1 but grounded in a separate ledger line with independent surface-expression validation, so it is reported separately per instructions. PMC11769940 reports V5 inserted into extracellular loop 3 (EL3; residues 555\u2013576 in eAE1 numbering) of full-length human eAE1 expressed in mammalian cells. The paper does not name a specific junction residue. Surface expression of the V5-tagged eAE1 was confirmed by surface biotinylation and immunoblot. The paper's EL3 boundaries (555\u2013576) overlap with the computed extracellular loop 542\u2013569; residues 570\u2013576 fall in the TM per the authoritative topology, so the tag insertion is within the extracellular portion of EL3 (542\u2013569). No specific junction residue is given, making this a region-level site. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 39872416,
@@ -427,10 +427,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
-  "prompt_version": "1.0.0",
+  "prompt_sha": "757585378f2f37052460c0ed56357bfc716522f983c67a646b230c0c0d6046f6",
+  "prompt_version": "1.2.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T20:05:56.844082+00:00",
-  "literature_notes": "Four ledger lines were examined. Lines 1 (PMC12959882) and 2 (PMC9623938) both support an HA/Myc tag at eAE1 position 557 in EL3 (topology 542-569); Line 1 is the primary citation because its verbatim quote explicitly names 'position 557 (on eAE1)'. Line 2's quote names only the construct labels without stating the position, so it is used as corroboration. Lines 3 and 4 (both PMC11769940) support a V5 tag in eAE1 EL3 with surface biotinylation confirmation, but no specific junction is given for eAE1; this is reported as a region-level site. No ledger evidence supports tags in EL1 (426-439), EL2 (472-486), EL4 (625-660), EL5 (713), EL6 (782), or EL7 (851-857); those loops are not proposed. The large N-terminal cytoplasmic domain (1-404) and C-terminal intracellular tail (870-911) are intracellular and excluded. The Myc paper (PMC9623938) also mentions a C-terminal HA tag (kAE1-HA), but the C-terminus of eAE1 (residues 870-911) is intracellular per topology, so that tag is not extracellular and is excluded. Position 557 has no Cys residues and no NxS/T glycosylation sequons in EL3, and is 16 residues from TM7 and 13 residues from TM8, satisfying all geometric constraints.",
+  "generated_at": "2026-10-10T20:36:19.281866+00:00",
+  "literature_notes": "Four ledger lines were evaluated. Lines 1 (PMC12959882) and 2 (PMC9623938) both pin an epitope tag to eAE1 position 557 in EL3 and are consolidated as Site 1 (the stronger, residue-resolved site). Lines 3 and 4 (PMC11769940) report a V5 tag inserted into EL3 of eAE1 without naming a junction residue, yielding Site 2 (region-level). The C-terminal HA tag on kAE1 reported in PMC9623938 was disqualified because the C-terminus of eAE1/kAE1 is intracellular (topology 870\u2013911). No ledger line supports any other extracellular loop or terminus of SLC4A1. The N-terminus (residues 1\u2013404) is entirely intracellular and carries no qualifying insertion. The kAE1 isoform offset of 65 residues was verified computationally: kAE1 EL3 (490\u2013511) maps to eAE1 EL3 (555\u2013576), consistent with both papers.",
   "literature_rejected": []
 }

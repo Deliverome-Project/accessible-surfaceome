@@ -185,8 +185,15 @@ def load_tag_select_prompt() -> str:
     return _TAG_SELECT_PROMPT_PATH.read_text()
 
 
-def format_evidence_ledger(evidence: list[Evidence]) -> str:
+def format_evidence_ledger(evidence: Iterable[Any]) -> str:
     """Render span-verified ``Evidence`` as the synthesis prompt's ledger block.
+
+    Each line carries an ``[Ln]`` id. The model cites that id and never retypes
+    the quote, which is how the clip-SELECT stage has always worked ("you only
+    pick and classify by clip_id, you never retype the quote") and makes a
+    fabricated quote structurally impossible rather than something the
+    entailment gate has to catch afterwards. It also stops paying output rates
+    to echo our own input: the quotes ran ~240 characters each.
 
     Each line is ``[<label>] <claim>`` + a verbatim ``QUOTE`` already located in
     the cited source upstream, so the synthesis stage can only ground a site in a
@@ -199,19 +206,18 @@ def format_evidence_ledger(evidence: list[Evidence]) -> str:
             "found for this protein. Return an EMPTY sites list with a rationale."
         )
     lines = [
-        "EVIDENCE LEDGER (span-verified clips — each QUOTE is VERBATIM and already "
-        "located in the cited source. Ground EVERY site in ONE ledger line: copy "
-        "its QUOTE into supporting_quote exactly — that is what identifies the "
-        "source, so the citation is filled in for you. Do NOT invent sites or "
-        "quotes beyond this ledger):"
+        "EVIDENCE LEDGER (span-verified clips, each already located VERBATIM in "
+        "its source). Ground EVERY site in ONE line and name it by its [Ln] id "
+        "in supporting_clip_id. The quote and the citation are filled in from "
+        "that id — you never retype them. Do NOT invent sites beyond this ledger):"
     ]
-    for e in evidence:
+    for i, e in enumerate(evidence, start=1):
         span = e.spans[0] if e.spans else None
         source_id = span.source.source_id if span and span.source else "?"
         pmid = source_id.split("PMID:", 1)[1] if source_id.startswith("PMID:") else None
         label = f"PMID {pmid}" if pmid else source_id
         quote = span.quote if span else ""
-        lines.append(f"- [{label}] {e.claim}\n  QUOTE: {quote}")
+        lines.append(f"- [L{i}] [{label}] {e.claim}\n  QUOTE: {quote}")
     return "\n".join(lines)
 
 
@@ -365,6 +371,36 @@ def recover_overcomplete_quotes(result: TagSiteResult, *, evidence: Iterable[Any
         clip = ledger_clip_within(site.supporting_quote, evidence)
         if clip:
             site.supporting_quote = clip
+    return result
+
+
+def fill_quotes_from_ledger(
+    result: TagSiteResult, *, evidence: Iterable[Any]
+) -> TagSiteResult:
+    """Fill ``supporting_quote`` from the ``[Ln]`` id the site cited.
+
+    The quote is OURS, not the model's: it comes back out of the same ledger it
+    went in as, so it cannot be mistyped, truncated or embellished. Every quote
+    failure today was a transcription artifact — a curly apostrophe against a
+    straight one, a sentence reproduced more completely than the clip stored —
+    and none of them can occur when the text is never retyped.
+
+    A site that cites no id keeps whatever quote it wrote, so the entailment
+    gate still has something to judge; that is the backward-compatible path."""
+    lines = list(evidence)
+    for site in result.sites:
+        cid = (getattr(site, "supporting_clip_id", "") or "").strip().upper()
+        if not cid.startswith("L"):
+            continue
+        try:
+            idx = int(cid[1:]) - 1
+        except ValueError:
+            continue
+        if not 0 <= idx < len(lines):
+            continue
+        span = next(iter(getattr(lines[idx], "spans", None) or []), None)
+        if span is not None and getattr(span, "quote", None):
+            site.supporting_quote = span.quote
     return result
 
 
@@ -625,6 +661,8 @@ def run_tag_site_agent(
     # names the residue — ahead of the gate that would let a wholly invented
     # quote survive wearing a real but unrelated citation, which is worse than
     # dropping the site.
+    # Resolve cited ids to their quotes BEFORE any check reads a quote.
+    fill_quotes_from_ledger(result, evidence=evidence)
     verify_entailment(result, evidence=evidence)
     recover_overcomplete_quotes(result, evidence=evidence)
     verify_entailment(result, evidence=evidence)
