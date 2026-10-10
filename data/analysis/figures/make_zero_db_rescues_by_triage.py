@@ -291,20 +291,15 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
             fontsize=20, fontweight="bold", color=header_color,
         )
 
-    ax.set_title(
-        header_label,
-        fontsize=20, color=header_color, fontweight="bold",
-        loc="left", pad=16,
-    )
+    # No panel header: the canonical generator's house style turns
+    # ``set_title`` into a no-op (figures are captioned, not titled), so the
+    # published figure has none. ``header_label`` is kept for call parity.
     ax.set_xticks(x_positions)
-    # Flatten the pre-wrapped REASON_LABEL strings (\n → space) so the
-    # rotated labels read on one line; multi-line + rotation looks broken.
     ax.set_xticklabels(
-        [REASON_LABEL[r].replace("\n", " ") for r in visible],
-        fontsize=18, color=BRAND_INK,
-        rotation=30, ha="right", rotation_mode="anchor",
+        [REASON_LABEL[r] for r in visible],
+        fontsize=15, color=BRAND_INK,
     )
-    ax.tick_params(axis="y", labelsize=20)
+    ax.tick_params(axis="y", labelsize=16)
     ax.set_xlim(-0.9, x_positions[-1] + 0.9)
     sns.despine(ax=ax, top=True, right=True)
 
@@ -314,7 +309,7 @@ def _draw_callouts(ax, callouts, palette, title):
     ax.text(
         0.0, 1.0, title,
         transform=ax.transAxes, ha="left", va="top",
-        fontsize=20, color=BRAND_NEUTRAL, fontweight="bold",
+        fontsize=19, color=BRAND_NEUTRAL, fontweight="bold",
     )
     y0 = 0.82
     n = len(callouts)
@@ -331,12 +326,12 @@ def _draw_callouts(ax, callouts, palette, title):
         ax.text(
             0.07, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=20, fontweight="bold", color=BRAND_INK,
+            fontsize=19, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
-            0.26, y, f"— {desc}",
+            0.28, y, f"— {desc}",
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=15, color=BRAND_NEUTRAL,
+            fontsize=16, color=BRAND_NEUTRAL,
         )
 
 
@@ -434,7 +429,7 @@ def main() -> None:
 
     for ax in (ax_yes, ax_ctx):
         ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
-        ax.tick_params(axis="y", labelsize=20)
+        ax.tick_params(axis="y", labelsize=16)
 
     _draw_callouts(ax_callouts_yes, YES_CALLOUTS, YES_PALETTE, title="Select yes rescues")
     _draw_callouts(ax_callouts_ctx, CONTEXTUAL_CALLOUTS, CONTEXTUAL_PALETTE, title="Select contextual rescues")
