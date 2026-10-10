@@ -249,9 +249,9 @@ h5 {
   /* Rail only — the filled caption card belongs to the print edition,
    * where it separates figures from two-column body text. On a white
    * single-column page it just adds noise. */
-  border-left: 3px solid var(--maroon-mid);
+  border-left: 1.5px solid rgba(146, 32, 56, 0.45);
   margin-block: 0.7rem 0;
-  padding: 0.85rem 1.1rem;
+  padding: 0.3rem 0 0.3rem 1rem;
   font-family: var(--font-sans, "Manrope"), sans-serif;
   font-weight: 400;
   font-size: 0.88rem;
@@ -266,7 +266,7 @@ h5 {
  * the .docx's own bolding of the same words, kept so a caption the
  * filter could not resolve still reads right here. */
 h5 .caption-lead,
-h5 strong { color: var(--maroon-dark); font-weight: 700; }
+h5 strong { color: var(--maroon-dark); font-weight: 600; }
 
 /* Landing highlight: clicking a cross-reference should make it
  * obvious WHICH block you just jumped to. */
