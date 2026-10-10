@@ -304,7 +304,15 @@ def enforce_position_claims(
             s.supporting_quote, client=client, max_residue=len(sequence)
         )
         if stated is not None and stated in {n - 1, n, n + 1}:
-            continue  # rescued: the sentence does state this position
+            # Say so. Without this the verifier is invisible: two sites were
+            # upgraded in one run and both turned out to be the deterministic
+            # span/list patterns, which is only knowable by re-deriving the
+            # match by hand. A fallback nobody can see firing cannot be
+            # evaluated, and will get credited for work it did not do.
+            log.info("  %s: %s position upheld by blind verify (quote states %d)",
+                     result.gene_symbol or "?", s.residue_label, stated)
+            s.position_repaired = True
+            continue
         s.position_evidence = "inferred"
     return result
 
