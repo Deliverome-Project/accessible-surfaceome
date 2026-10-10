@@ -334,9 +334,9 @@ def make_figure(prod_genes, prod_papers, oax_genes, oax_papers, out_dir: Path) -
     # with data/analysis/figures/make_paywall_bot_block_compare.py;
     # see CLAUDE.md "Canonical generator vs gist mirror".
     plt.rcParams.update({
-        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
-        "xtick.labelsize": 15, "ytick.labelsize": 14,
-        "legend.fontsize": 13,
+        "font.size": 11, "axes.labelsize": 12.5, "axes.titlesize": 0,
+        "xtick.labelsize": 11, "ytick.labelsize": 11,
+        "legend.fontsize": 11,
     })
 
     sources = [
@@ -369,7 +369,7 @@ def make_figure(prod_genes, prod_papers, oax_genes, oax_papers, out_dir: Path) -
                     cum + pct / 2, ypos,
                     f"{pct:.0f}%",
                     ha="center", va="center",
-                    color="white", fontweight="bold", fontsize=16,
+                    color="white", fontsize=10.5,
                 )
             cum += pct
 
@@ -380,14 +380,14 @@ def make_figure(prod_genes, prod_papers, oax_genes, oax_papers, out_dir: Path) -
         ax.text(
             104, ypos,
             f"{total} papers /\n{len(genes)} genes\navg {avg_avail:.0f} papers/\ngene pre-sample",
-            ha="left", va="center", fontsize=11, fontweight="medium",
+            ha="left", va="center", fontsize=10,
             color="#1F1718",
         )
 
     ax.set_xlim(0, 100)
     ax.set_ylim(-0.7, len(sources) - 0.3)
     ax.set_yticks(y_positions)
-    ax.set_yticklabels([SOURCE_LABEL[s[0]] for s in sources], fontweight="medium")
+    ax.set_yticklabels([SOURCE_LABEL[s[0]] for s in sources])
     ax.set_xlabel("% of sampled papers")
     # No baked-in title — figure gets captioned in the gist README + paper
     # (per _plotting_config convention: axes.titlesize=0 suppresses anyway).

@@ -346,8 +346,8 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 20, "axes.labelsize": 19, "axes.titlesize": 0,
-        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
+        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
+        "xtick.labelsize": 18, "ytick.labelsize": 18, "legend.fontsize": 18,
     })
     data = _load_data()
     m, n_joined, n_match, cell_genes = _build_matrix(data)
@@ -365,7 +365,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # is kept tight so panel c sits close under panel b rather than
     # floating with a wide band of whitespace above it.
     outer = fig.add_gridspec(
-        nrows=2, ncols=1, height_ratios=[1.7, 2.1], hspace=0.30,
+        nrows=2, ncols=1, height_ratios=[1.7, 2.1], hspace=0.42,
     )
     top = outer[0].subgridspec(
         nrows=2, ncols=1, height_ratios=[0.7, 1.0], hspace=0.55,
@@ -380,7 +380,8 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
 
     def _draw_grouped(ax, configs, x_groups, group_acc, *, bar_w=None,
                        overall_idx=0, label="(%)", show_legend=True,
-                       rep_acc=None):
+                       rep_acc=None, legend_ncols=None,
+                       legend_order=None):
         """Render one config-grouped bar chart.
 
         ``configs``: list of (model, variant, label) tuples — one bar
@@ -447,7 +448,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                             alpha=0.9,
                         )
         ax.set_xticks(x)
-        ax.set_xticklabels(x_groups, fontsize=14)
+        ax.set_xticklabels(x_groups, fontsize=18)
         ax.set_ylim(0, 109)
         ax.set_ylabel(label)
         # Dotted separator between the Overall group and the per-
@@ -459,8 +460,13 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                        alpha=0.8, zorder=0)
         sns.despine(ax=ax, top=True, right=True)
         if show_legend:
-            ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.35),
-                      ncols=min(5, n_cfg), frameon=False, fontsize=13)
+            # Above the axes: below, it collides with the tick labels.
+            handles, labels = ax.get_legend_handles_labels()
+            order = legend_order or range(len(handles))
+            ax.legend([handles[k] for k in order], [labels[k] for k in order],
+                      loc="lower center", bbox_to_anchor=(0.5, 1.02),
+                      ncols=legend_ncols or n_cfg, frameon=False, fontsize=18,
+                      handlelength=1.2, columnspacing=1.5)
 
     # ─────── (a) per-bucket strict accuracy ───────
     BUCKETS_PA = ["yes", "ctx", "no"]
@@ -513,11 +519,12 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     groups_a = ["Overall", "Yes", "Contextual", "No"]
     _draw_grouped(ax_bucket, CONFIGS_A, groups_a, bucket_acc,
                    bar_w=0.08, overall_idx=0,
-                   label="Bucket-strict accuracy (%)",
-                   show_legend=True,
+                   label="Bucket-strict\naccuracy (%)",
+                   show_legend=True, legend_ncols=4,
+                   legend_order=[0, 4, 8, 1, 5, 9, 2, 6, 3, 7],
                    rep_acc=rep_bucket_acc)
-    ax_bucket.text(0.0, 1.05, "a", transform=ax_bucket.transAxes,
-                   fontsize=26, fontweight="bold", va="bottom")
+    ax_bucket.text(-0.08, 1.05, "a", transform=ax_bucket.transAxes,
+                   fontsize=27, fontweight=800, va="bottom")
 
     # ─────── (b) per-reason exact-match accuracy ───────
     # Compute reason frequencies + per-config per-reason accuracy
@@ -555,19 +562,19 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # Build group_acc for the renderer — "Overall" first, then one
     # entry per reason (label = short name + n).
     short = {r: LABEL_SHORT.get(r, r).replace("\n", " ") for r in reasons}
-    reason_labels = [f"{short[r]}\n(n={reason_n[r]})" for r in reasons]
-    groups_b = ["Overall\n(n=147)"] + reason_labels
+    reason_labels = [f"{short[r]} (n={reason_n[r]})" for r in reasons]
+    groups_b = ["Overall (n=147)"] + reason_labels
     group_acc_b: dict[tuple[str, str], dict[str, tuple[int, int]]] = {}
     for (mod, var, _label) in CONFIGS_B:
         m_, t_ = overall_b[(mod, var)]
-        gb: dict[str, tuple[int, int]] = {"Overall\n(n=147)": (m_, t_)}
+        gb: dict[str, tuple[int, int]] = {"Overall (n=147)": (m_, t_)}
         for r, label in zip(reasons, reason_labels, strict=True):
             row = reason_acc[(mod, var)].get(r, [0, 0])
             gb[label] = tuple(row)
         group_acc_b[(mod, var)] = gb
     _draw_grouped(ax_perreason, CONFIGS_B, groups_b, group_acc_b,
                    bar_w=0.16, overall_idx=0,
-                   label="Exact-reason accuracy (%)",
+                   label="Exact-reason\naccuracy (%)",
                    show_legend=True)
     # (On-bar exact-reason % labels for the Overall group were removed:
     # the four config bars sit too close and their labels overlapped.
@@ -584,7 +591,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         tick.set_rotation(35)
         tick.set_ha("right")
         tick.set_rotation_mode("anchor")
-        tick.set_fontsize(9)
+        tick.set_fontsize(18)
         if b in bucket_to_color:
             tick.set_color(bucket_to_color[b])
             tick.set_fontweight("semibold")
@@ -595,22 +602,26 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     n_present = len(reasons)
     n_enum = len(enum_reasons)
     absent_str = ", ".join(absent_from_bench) if absent_from_bench else "none"
+    # Sit the footnote just under the rotated tick labels.
+    fig.canvas.draw()
+    tick_y0 = ax_perreason.get_tightbbox(fig.canvas.get_renderer()).y0
+    foot_y = ax_perreason.transAxes.inverted().transform((0, tick_y0))[1] - 0.03
     ax_perreason.text(
-        0.5, -0.42,
+        0.5, foot_y,
         f"Showing {n_present} of {n_enum} TriageReason enum values "
-        f"(present on bench, n ≥ 1). Absent from bench: {absent_str}.",
+        f"(present on bench, n ≥ 1).\nAbsent from bench: {absent_str}.",
         transform=ax_perreason.transAxes, ha="center", va="top",
-        fontsize=13, style="italic", color=COLORS["neutral"],
+        fontsize=16, style="italic", color=COLORS["neutral"],
     )
-    ax_perreason.text(0.0, 1.05, "b", transform=ax_perreason.transAxes,
-                      fontsize=26, fontweight="bold", va="bottom")
+    ax_perreason.text(-0.08, 1.05, "b", transform=ax_perreason.transAxes,
+                      fontsize=27, fontweight=800, va="bottom")
 
     # ─────── (c) confusion matrix (Sonnet/ncbi) ───────
     ax = ax_matrix
     cmap = sns.light_palette("#3D6B60", as_cmap=True)
     sns.heatmap(
-        m, ax=ax, cmap=cmap, square=True, linewidths=0.5, linecolor="#FFFFFF",
-        annot=True, fmt="d", annot_kws={"fontsize": 11, "color": "#1F1718"},
+        m, ax=ax, cmap=cmap, square=False, linewidths=0.5, linecolor="#FFFFFF",
+        annot=True, fmt="d", annot_kws={"fontsize": 17, "color": "#1F1718"},
         cbar_kws={"label": "genes", "shrink": 0.55, "pad": 0.02, "aspect": 25},
         # X-tick labels go to single-line (no internal "\n") since
         # we're rotating them to 40° below — wrapped + rotated reads
@@ -629,6 +640,8 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     for tick, reason in zip(ax.get_yticklabels(), REASONS_ORDERED, strict=True):
         tick.set_color(BUCKET_COLOR[BUCKET[reason]])
         tick.set_fontweight("semibold")
+        tick.set_fontsize(17)  # two-line labels must fit one row
+        tick.set_linespacing(1.0)
     # X labels at 40° (slanted) so the wider single-line strings
     # don't collide with each other at column boundaries. Align
     # right-anchored so the rotation pivots on the tick line.
@@ -655,26 +668,30 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # genes (cytoplasmic n=11, classical_surface_receptor n=27) — too
     # many to label legibly, so they stay count-only. The off-diagonal
     # cells are the disagreements worth surfacing by name.
-    for (i, j), genes in cell_genes.items():
+    count_txt = {(round(t_.get_position()[1] - 0.5), round(t_.get_position()[0] - 0.5)): t_
+                 for t_ in ax.texts if t_.get_text()}
+    swapped: set[tuple[int, int]] = set()
+    for (i, j), genes in sorted(cell_genes.items()):
         if i == j or not genes:
             continue
-        # Gene-name strip below the count (offset y slightly downward
-        # from the cell centre). seaborn's count text sits at the
-        # cell's centre; we add a smaller second text right below.
         name_str = ", ".join(genes)
         if len(name_str) > 22:
-            # 22 chars fits 2-3 typical gene symbols at this fontsize;
-            # for longer lists, two-line wrap stays readable.
             name_str = name_str.replace(", ", ",\n", 1) if len(genes) >= 2 else name_str
-        ax.text(j + 0.5, i + 0.78, name_str,
-                ha="center", va="top",
-                fontsize=9, color="#3a2122",
+        left = (i, j - 1)
+        swap = left in cell_genes and left[0] != left[1] and left not in swapped
+        if swap:
+            swapped.add((i, j))
+        if (i, j) in count_txt:
+            count_txt[(i, j)].set_y(i + (0.72 if swap else 0.30))
+        ax.text(j + 0.5, i + (0.30 if swap else 0.72), name_str,
+                ha="center", va="center",
+                fontsize=16, color="#3a2122",
                 fontstyle="italic", zorder=11)
 
     ax.set_xlabel("Agent predicted_reason  (Sonnet 4.6 + NCBI)", labelpad=12)
     ax.set_ylabel("Curator\nground_truth_reason", labelpad=12)
     ax.text(-0.04, 1.02, "c", transform=ax.transAxes,
-            fontsize=26, fontweight="bold", va="bottom")
+            fontsize=27, fontweight=800, va="bottom")
 
     handles = [
         mpatches.Patch(facecolor=BUCKET_COLOR[b], edgecolor="none",
@@ -690,9 +707,13 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # then -0.18 (overlapped the x-axis label itself); now -0.26 so
     # the legend has its own row underneath the entire x-axis stack:
     # tick labels → axis label → legend, top-to-bottom.
+    # Under the x-axis label, measured after layout.
+    fig.canvas.draw()
+    xlab_y0 = ax.get_tightbbox(fig.canvas.get_renderer()).y0
+    leg_y = ax.transAxes.inverted().transform((0, xlab_y0))[1] - 0.01
     ax.legend(
         handles=handles,
-        loc="upper center", bbox_to_anchor=(0.5, -0.26),
+        loc="upper center", bbox_to_anchor=(0.5, leg_y),
         ncols=4, frameon=False, fontsize=18,
     )
 

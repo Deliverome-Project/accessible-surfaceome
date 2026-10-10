@@ -55,15 +55,24 @@ OUT_DIR = ROOT / "data/analysis/figures"  # promoted to canonical figures dir
 DB_LABELS = ["UniProt", "GO CC", "HPA", "SURFY", "CSPA"]
 CLAUDE_ORANGE = "#d87851"
 
-# Sequential teal ramp for the ≥k ensembles, light → dark = permissive → strict.
-# Pulled from BRAND_SEQUENTIAL teal so the ensemble bars cluster visually.
+# Grey ramp for the k+ ensembles, light → dark as more databases must agree
+# (permissive union → strict intersection). Neutral so the ensembles can't be
+# mistaken for any single database's brand colour; shared by S5 and S6.
 ENSEMBLE_PALETTE = {
-    1: "#A9C7BF",  # teal-lightest — the union (any DB)
-    2: "#7AAB9F",  # teal-light
-    3: "#4D8A80",
-    4: "#3D6B60",
-    5: "#244840",  # teal-deep
+    1: "#CFCFCF",  # 1+ DB: the union
+    2: "#A7A7A7",
+    3: "#7E7E7E",
+    4: "#565656",
+    5: "#2E2E2E",  # 5+ DB: the strict intersection
 }
+
+def _count_text_color(hex_color: str, dark: str) -> str:
+    """Dark text on light bars, white on dark ones (WCAG relative luminance)."""
+    def _lin(c: float) -> float:
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (int(hex_color.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    lum = 0.2126 * _lin(r) + 0.7152 * _lin(g) + 0.0722 * _lin(b)
+    return dark if lum > 0.18 else "white"
 
 
 def _vote_correct(vote: str, truth: str) -> bool:
@@ -108,8 +117,7 @@ def main() -> None:
         ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(g).get("UniProt") else "no",
                                                                                                     CATEGORICAL_PALETTE[0]),
     ]
-    # "k+ DB" rather than "≥k DB" — static Manrope OTFs lack the ≥ glyph
-    # and matplotlib silently drops it; ASCII "+" stays robust.
+    # "k+ DB" = at least k of the 5 DBs vote yes.
     for k in (1, 2, 3, 4, 5):
         callers.append((
             f"{k}+ DB",
@@ -141,8 +149,8 @@ def main() -> None:
     # Brand-style-v3 font sizes — matches the gist mirror.
     # See CLAUDE.md "Canonical generator vs gist mirror".
     plt.rcParams.update({
-        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
-        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+        "font.size": 15, "axes.labelsize": 17, "axes.titlesize": 0,
+        "xtick.labelsize": 15, "ytick.labelsize": 15, "legend.fontsize": 15,
     })
     fig, ax = plt.subplots(figsize=(13, 6))
     bars = ax.bar(
@@ -159,17 +167,18 @@ def main() -> None:
     for i, (bar, row) in enumerate(zip(bars, df.to_dict("records"), strict=True)):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            max(bar.get_height(), sonnet_top if i == 0 else 0.0) + 1.2,
+            # Extra lift on Sonnet: clear the dot edge, not just its center.
+            max(bar.get_height(), sonnet_top if i == 0 else 0.0) + (2.2 if i == 0 else 1.2),
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
-            fontsize=20, fontweight="bold", color=COLORS["dark"],
+            fontsize=13.5, color=COLORS["dark"],
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() / 2,
             f"{row['n_correct']}/{row['n_total']}",
             ha="center", va="center",
-            fontsize=15, color="white", fontweight="bold",
+            fontsize=13, color=_count_text_color(row["color"], COLORS["dark"]),
         )
 
     # Individual-replicate accuracies + SEM on the Sonnet bar only (bar
@@ -188,11 +197,8 @@ def main() -> None:
             ax.scatter(xc + jitter, rv, s=24, color=COLORS["dark"],
                        edgecolor="white", linewidth=0.5, zorder=5, alpha=0.9)
 
-    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=19)
+    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)")
     ax.set_ylim(0, 105)
-    ax.tick_params(axis="x", labelsize=17)
-    ax.tick_params(axis="y", labelsize=14)
-
     sns.despine(ax=ax, top=True, right=True)
     fig.tight_layout()
     save_figure(

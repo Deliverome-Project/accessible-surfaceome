@@ -105,7 +105,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -114,12 +114,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 20,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 16,
+        "axes.labelsize": 18,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -134,12 +134,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 20,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -288,23 +288,22 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
             x, h + y_max * 0.015,
             f"{h}",
             ha="center", va="bottom",
-            fontsize=20, fontweight="bold", color=header_color,
+            fontsize=15, color=header_color,
         )
 
     ax.set_title(
         header_label,
-        fontsize=20, color=header_color, fontweight="bold",
+        fontsize=18, color=header_color, fontweight="semibold",
         loc="left", pad=16,
     )
     ax.set_xticks(x_positions)
-    # Flatten the pre-wrapped REASON_LABEL strings (\n → space) so the
-    # rotated labels read on one line; multi-line + rotation looks broken.
+    # One line, rotated: eleven categories at print size do not fit flat.
     ax.set_xticklabels(
-        [REASON_LABEL[r].replace("\n", " ") for r in visible],
-        fontsize=18, color=BRAND_INK,
+        [REASON_LABEL[r].replace("-\n", "-").replace("\n", " ") for r in visible],
+        fontsize=16, color=BRAND_INK,
         rotation=30, ha="right", rotation_mode="anchor",
     )
-    ax.tick_params(axis="y", labelsize=20)
+    ax.tick_params(axis="y", labelsize=16)
     ax.set_xlim(-0.9, x_positions[-1] + 0.9)
     sns.despine(ax=ax, top=True, right=True)
 
@@ -314,29 +313,32 @@ def _draw_callouts(ax, callouts, palette, title):
     ax.text(
         0.0, 1.0, title,
         transform=ax.transAxes, ha="left", va="top",
-        fontsize=20, color=BRAND_NEUTRAL, fontweight="bold",
+        fontsize=18, color=BRAND_NEUTRAL,
     )
     y0 = 0.82
     n = len(callouts)
     row_h = (y0 - 0.05) / max(n - 1, 1) if n > 1 else 0.0
-    row_h = min(row_h, 0.155)
+    row_h = min(row_h, 0.155)  # cap at row spacing for small n
+    # Column offsets in inches, so both callout columns align identically.
+    ax_w = ax.get_position().width * ax.figure.get_figwidth()
+    x_marker, x_sym, x_desc = 0.12 / ax_w, 0.32 / ax_w, 1.25 / ax_w
     for i, (symbol, desc, reason) in enumerate(callouts):
         y = y0 - i * row_h
         ax.scatter(
-            [0.025], [y],
-            marker="s", s=260,
+            [x_marker], [y],
+            marker="s", s=170,
             color=palette.get(reason, BRAND_NEUTRAL),
             edgecolor="none", transform=ax.transAxes, zorder=10,
         )
         ax.text(
-            0.07, y, symbol,
+            x_sym, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=20, fontweight="bold", color=BRAND_INK,
+            fontsize=15, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
-            0.26, y, f"— {desc}",
+            x_desc, y, f"— {desc}",
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=15, color=BRAND_NEUTRAL,
+            fontsize=14, color=BRAND_NEUTRAL,
         )
 
 
@@ -386,21 +388,23 @@ def main() -> None:
     if bad:
         raise RuntimeError(f"Callouts not found in rescue slice: {bad}")
 
-    fig = plt.figure(figsize=(19, 13))
+    fig = plt.figure(figsize=(14, 11.5))
+    # Bar panels and callout columns sit on separate grids: the callout
+    # text needs nearly the full width, more than the bar columns give it.
     gs = gridspec.GridSpec(
-        2, 2, figure=fig,
-        # v2: bumped callout-row weight (1.05 → 1.55) + figure height
-        # (11 → 13) so the per-row callout text (larger under brand-style-v3)
-        # has room to breathe instead of crashing into the bar panels.
-        height_ratios=[2.2, 1.55],
-        width_ratios=[1.0, 1.5],
-        hspace=0.30, wspace=0.28,
-        top=0.93, bottom=0.04, left=0.06, right=0.97,
+        1, 2, figure=fig,
+        width_ratios=[1.0, 1.5], wspace=0.28,
+        top=0.94, bottom=0.53, left=0.08, right=0.99,
+    )
+    gs_callouts = gridspec.GridSpec(
+        1, 2, figure=fig,
+        width_ratios=[6.2, 7.3], wspace=0.04,
+        top=0.33, bottom=0.0, left=0.0, right=0.99,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
     ax_ctx = fig.add_subplot(gs[0, 1])
-    ax_callouts_yes = fig.add_subplot(gs[1, 0])
-    ax_callouts_ctx = fig.add_subplot(gs[1, 1])
+    ax_callouts_yes = fig.add_subplot(gs_callouts[0, 0])
+    ax_callouts_ctx = fig.add_subplot(gs_callouts[0, 1])
 
     # Subpanel labels — Manrope ExtraBold (weight 800), upper-left of each
     # bar panel. Convention: lowercase letters, axis coordinates so they
@@ -409,7 +413,7 @@ def main() -> None:
         ax.text(
             -0.06, 1.08, letter,
             transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=32, fontweight=800, color=BRAND_INK,
+            fontsize=24, fontweight=800, color=BRAND_INK,
         )
 
     # One limit across both panels so bar heights compare directly; only
@@ -433,8 +437,8 @@ def main() -> None:
     )
 
     for ax in (ax_yes, ax_ctx):
-        ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
-        ax.tick_params(axis="y", labelsize=20)
+        ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=18)
+        ax.tick_params(axis="y", labelsize=16)
 
     _draw_callouts(ax_callouts_yes, YES_CALLOUTS, YES_PALETTE, title="Select yes rescues")
     _draw_callouts(ax_callouts_ctx, CONTEXTUAL_CALLOUTS, CONTEXTUAL_PALETTE, title="Select contextual rescues")

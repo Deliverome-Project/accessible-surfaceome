@@ -117,7 +117,7 @@ SOURCE_COL = {
 # Enrichment (%) → scatter marker area (points²). Area-linear in the value so
 # perception tracks magnitude: an 80% dot fills its cell without overrunning it
 # and a small-but-nonzero dot stays visible via ``_S_FLOOR``.
-_S_SCALE = 26.0
+_S_SCALE = 19.0
 _S_FLOOR = 18.0
 # Reference enrichments for the size legend.
 _SIZE_LEGEND = [10, 40, 80]
@@ -126,12 +126,12 @@ _SIZE_LEGEND = [10, 40, 80]
 def main() -> None:
     setup_plotting_style(font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 18,
+        "font.size": 16,
         "axes.labelsize": 18,
         "axes.titlesize": 0,
         "xtick.labelsize": 16,
-        "ytick.labelsize": 17,
-        "legend.fontsize": 14,
+        "ytick.labelsize": 16,
+        "legend.fontsize": 16,
     })
 
     df = pd.read_csv(FEATURES_TSV, sep="\t")
@@ -163,7 +163,7 @@ def main() -> None:
             sizes.append(max(enrichment * _S_SCALE, _S_FLOOR))
             covs.append(100.0 * n / universe)
 
-    fig, ax = plt.subplots(figsize=(17, 9.6))
+    fig, ax = plt.subplots(figsize=(14.5, 8.2))
     cmap = LinearSegmentedColormap.from_list("coverage", SEQUENTIAL_PALETTES["teal"][::-1])
     norm = Normalize(vmin=0.0, vmax=max(covs))
     sc = ax.scatter(xs, ys, s=sizes, c=covs, cmap=cmap, norm=norm,
@@ -186,8 +186,8 @@ def main() -> None:
     # the right margin BELOW it without collision.
     cbar = fig.colorbar(sc, ax=ax, shrink=0.5, pad=0.015,
                         anchor=(0.0, 1.0), panchor=(0.0, 1.0))
-    cbar.set_label("Coverage\n(% of surface universe)", fontsize=14)
-    cbar.ax.tick_params(labelsize=12)
+    cbar.set_label("Coverage\n(% of surface universe)", fontsize=18)
+    cbar.ax.tick_params(labelsize=16)
     cbar.outline.set_visible(False)  # ty: ignore  # Colorbar.outline is a Spine
 
     # Size legend — dot AREA ∝ within-source enrichment. Line2D ``markersize``
@@ -202,8 +202,8 @@ def main() -> None:
     ]
     leg = ax.legend(handles=handles, title="Enrichment\n(% of source's own calls)",
                     loc="upper left", bbox_to_anchor=(1.015, 0.44),
-                    labelspacing=3.4, borderpad=1.0, handletextpad=1.8,
-                    frameon=False, fontsize=13, title_fontsize=13)
+                    labelspacing=2.4, borderpad=1.0, handletextpad=1.4,
+                    frameon=False, fontsize=16, title_fontsize=18)
     leg._legend_box.align = "left"  # ty: ignore[unresolved-attribute]
 
     fig.tight_layout()

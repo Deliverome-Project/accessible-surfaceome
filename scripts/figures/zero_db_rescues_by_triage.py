@@ -211,18 +211,20 @@ def _draw_reason_bars(
             x, h + y_max * 0.015,
             f"{h}",
             ha="center", va="bottom",
-            fontsize=20, fontweight="bold", color=header_color,
+            fontsize=15, color=header_color,
         )
 
     ax.set_title(
         header_label,
-        fontsize=20, color=header_color, fontweight="bold",
+        fontsize=18, color=header_color, fontweight="semibold",
         loc="left", pad=16,
     )
     ax.set_xticks(x_positions)
+    # One line, rotated: eleven categories at print size do not fit flat.
     ax.set_xticklabels(
-        [REASON_LABEL[r] for r in visible],
-        fontsize=15, color=COLORS["dark"],
+        [REASON_LABEL[r].replace("-\n", "-").replace("\n", " ") for r in visible],
+        fontsize=16, color=COLORS["dark"],
+        rotation=30, ha="right", rotation_mode="anchor",
     )
     ax.tick_params(axis="y", labelsize=16)
     ax.set_xlim(-0.9, x_positions[-1] + 0.9)
@@ -236,29 +238,32 @@ def _draw_callouts(ax, callouts: list[tuple[str, str, str]], palette: dict, titl
     ax.text(
         0.0, 1.0, title,
         transform=ax.transAxes, ha="left", va="top",
-        fontsize=19, color=COLORS["neutral"], fontweight="bold",
+        fontsize=18, color=COLORS["neutral"],
     )
     y0 = 0.82
     n = len(callouts)
     row_h = (y0 - 0.05) / max(n - 1, 1) if n > 1 else 0.0
     row_h = min(row_h, 0.155)  # cap at row spacing for small n
+    # Column offsets in inches, so both callout columns align identically.
+    ax_w = ax.get_position().width * ax.figure.get_figwidth()
+    x_marker, x_sym, x_desc = 0.12 / ax_w, 0.32 / ax_w, 1.25 / ax_w
     for i, (symbol, desc, reason) in enumerate(callouts):
         y = y0 - i * row_h
         ax.scatter(
-            [0.025], [y],
-            marker="s", s=260,
+            [x_marker], [y],
+            marker="s", s=170,
             color=palette.get(reason, COLORS["neutral"]),
             edgecolor="none", transform=ax.transAxes, zorder=10,
         )
         ax.text(
-            0.07, y, symbol,
+            x_sym, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=19, fontweight="bold", color=COLORS["dark"],
+            fontsize=15, fontweight="bold", color=COLORS["dark"],
         )
         ax.text(
-            0.28, y, f"— {desc}",
+            x_desc, y, f"— {desc}",
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=16, color=COLORS["neutral"],
+            fontsize=14, color=COLORS["neutral"],
         )
 
 
@@ -322,8 +327,8 @@ def main() -> None:
     # per-element sizes and the mirror's rotated x-tick labels still
     # differ. See CLAUDE.md "Canonical generator vs gist mirror".
     plt.rcParams.update({
-        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
-        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     # Layout numbers match the gist-mirror at
     # data/analysis/figures/make_zero_db_rescues_by_triage.py (single
@@ -334,18 +339,23 @@ def main() -> None:
     #   - hspace 0.20 → 0.30, wspace 0.10 → 0.28 (clear x-labels +
     #                                              callout headers)
     #   - top 0.92 → 0.93 (headroom for subpanel labels)
-    fig = plt.figure(figsize=(19, 13))
+    fig = plt.figure(figsize=(14, 11.5))
+    # Bar panels and callout columns sit on separate grids: the callout
+    # text needs nearly the full width, more than the bar columns give it.
     gs = gridspec.GridSpec(
-        2, 2, figure=fig,
-        height_ratios=[2.2, 1.55],
-        width_ratios=[1.0, 1.5],
-        hspace=0.30, wspace=0.28,
-        top=0.93, bottom=0.04, left=0.06, right=0.97,
+        1, 2, figure=fig,
+        width_ratios=[1.0, 1.5], wspace=0.28,
+        top=0.94, bottom=0.53, left=0.08, right=0.99,
+    )
+    gs_callouts = gridspec.GridSpec(
+        1, 2, figure=fig,
+        width_ratios=[6.2, 7.3], wspace=0.04,
+        top=0.33, bottom=0.0, left=0.0, right=0.99,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
     ax_ctx = fig.add_subplot(gs[0, 1])
-    ax_callouts_yes = fig.add_subplot(gs[1, 0])
-    ax_callouts_ctx = fig.add_subplot(gs[1, 1])
+    ax_callouts_yes = fig.add_subplot(gs_callouts[0, 0])
+    ax_callouts_ctx = fig.add_subplot(gs_callouts[0, 1])
 
     # Subpanel labels — Manrope ExtraBold (weight 800), upper-left of
     # each bar panel. Project-wide convention from
@@ -355,7 +365,7 @@ def main() -> None:
         ax.text(
             -0.06, 1.08, letter,
             transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=32, fontweight=800, color=COLORS["dark"],
+            fontsize=24, fontweight=800, color=COLORS["dark"],
         )
 
     # One limit across both panels so a bar in a is directly comparable to
@@ -386,7 +396,7 @@ def main() -> None:
     )
 
     for ax in (ax_yes, ax_ctx):
-        ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
+        ax.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=18)
         ax.tick_params(axis="y", labelsize=16)
 
     _draw_callouts(

@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 4.** Re-deriving each source database's surface-inclusion rule against SurfaceBench changes which proteins two of the five sources admit, while three are already well-calibrated. Each panel shows one source database; points are alternative inclusion rules of increasing permissiveness, plotted by the number of proteins each would admit (horizontal axis, log scale; further left is stricter) against classification accuracy on SurfaceBench, the 147-protein benchmark of manually labeled surface, contextually surface, and non-surface proteins (vertical axis). Each point is annotated with the fraction of true surface proteins recovered and the fraction of non-surface proteins correctly excluded. The current rule and the rule recommended after the benchmark audit are marked. UniProt was loosened by additionally accepting transmembrane- and signal-peptide-annotated entries, recovering GPI-anchored and single-pass receptors it had been missing with little loss of specificity. CSPA was tightened by restricting it to high-confidence detections only, improving specificity at comparable recall. Human Protein Atlas, and SURFY rules were already at their accuracy optimum and were left unchanged, while GO’s gain in accuracy wasn’t justified based on the number of additional proteins added.
+> **Supplementary Figure 4.** Re-deriving each source database's surface-inclusion rule against SurfaceBench changes which proteins two of the five sources admit, while three are already well-calibrated. Each panel shows one source database; points are alternative inclusion rules of increasing permissiveness, plotted by the number of proteins each would admit (horizontal axis, log scale; further left is stricter) against classification accuracy on SurfaceBench, the 147-protein benchmark of manually labeled surface, contextually surface, and non-surface proteins (vertical axis). Each point is annotated with the fraction of true surface proteins recovered and the fraction of non-surface proteins correctly excluded. The original rule and the rule adopted after the benchmark audit are marked. UniProt was loosened by additionally accepting transmembrane- and signal-peptide-annotated entries, recovering GPI-anchored and single-pass receptors it had been missing with little loss of specificity. CSPA was tightened by restricting it to high-confidence detections only, improving specificity at comparable recall. Human Protein Atlas, and SURFY rules were already at their accuracy optimum and were left unchanged, while GO’s gain in accuracy wasn’t justified based on the number of additional proteins added.
 <!-- END manuscript-legend -->
 
 For each of the five source databases in the candidate-universe vote
@@ -19,8 +19,8 @@ proteins it has no data for, so its panel is scored on the 98
 benchmark proteins HPA covers; the other four panels use all 147.
 
 Markers:
-* Diamond — the database's original (pre-audit) inclusion rule.
-* Star — the rule recommended after the audit, shown only where it
+* Diamond ("Original rule") — the database's pre-audit inclusion rule.
+* Star ("Adopted after benchmark audit") — the rule adopted after the audit, shown only where it
   differs from the original (UniProt "TM+signal" and CSPA "HC-only").
   The candidate-universe vote now uses these two rules.
 * Circle — other cutoffs that were evaluated and not adopted.

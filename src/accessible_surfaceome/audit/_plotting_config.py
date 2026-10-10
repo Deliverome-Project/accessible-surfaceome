@@ -20,7 +20,13 @@ _fonts_registered = False
 
 
 def register_bundled_fonts() -> None:
-    """Add ``./assets/fonts/*.ttf`` to matplotlib's font manager (idempotent)."""
+    """Add ``./assets/fonts/*.{ttf,otf}`` to matplotlib's font manager (idempotent).
+
+    matplotlib can't pick a weight inside the variable font, so each weight
+    needs its own static file (``Manrope-{Regular,Medium,SemiBold,Bold,ExtraBold}.ttf``,
+    cut by ``scripts/build/instance_manrope_static.py``). Without them every
+    medium/semibold/bold request snapped to whichever static face was nearest.
+    """
 
     global _fonts_registered
     if _fonts_registered:
@@ -28,7 +34,8 @@ def register_bundled_fonts() -> None:
     if not _BUNDLED_FONTS_DIR.is_dir():
         _fonts_registered = True
         return
-    for ttf in sorted(_BUNDLED_FONTS_DIR.glob("*.ttf")):
+    fonts = sorted([*_BUNDLED_FONTS_DIR.glob("*.ttf"), *_BUNDLED_FONTS_DIR.glob("*.otf")])
+    for ttf in fonts:
         try:
             fm.fontManager.addfont(str(ttf))
         except Exception:  # noqa: BLE001 — best-effort; fall back if a font can't load
@@ -127,15 +134,18 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
 
         # Font (project convention is +30% from matplotlib defaults so
         # exported figures stay readable when embedded in slides / PDFs)
-        'font.family': 'sans-serif',
+        # An explicit family list (not the 'sans-serif' alias) turns on
+        # matplotlib's per-glyph fallback, so a character Manrope lacks comes
+        # from DejaVu Sans instead of rendering as an empty box.
+        'font.family': ['Manrope', 'DejaVu Sans'],
         'font.sans-serif': ['Manrope', 'Outfit', 'DejaVu Sans', 'Liberation Sans', 'Arial'],
         'font.serif': ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
         'font.size': 14,
         # Manrope at weight 400 reads as light against Manrope's variable
-        # range (300-800). Default to 500 (medium) so figures don't ever
+        # range (300-800). Default to 600 (semibold) so figures don't ever
         # render with the thin defaults — explicit ``fontweight='light'``
         # is still respected on a per-text basis if a figure wants it.
-        'font.weight': 'medium',
+        'font.weight': 'semibold',
 
         # Axes
         'axes.labelsize': 16,
@@ -149,7 +159,7 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'axes.titlesize': 0,
         'axes.titlepad': 0,
         'axes.titleweight': 'semibold',
-        'axes.labelweight': 'medium',
+        'axes.labelweight': 'semibold',
         'axes.spines.top': False,
         'axes.spines.right': False,
         'axes.grid': True,

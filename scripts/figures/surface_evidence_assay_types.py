@@ -101,35 +101,35 @@ def load() -> pd.DataFrame:
 
 
 def _panel_label(ax, letter: str) -> None:
-    ax.text(-0.02, 1.04, letter, transform=ax.transAxes, fontsize=26,
+    ax.text(-0.02, 1.04, letter, transform=ax.transAxes, fontsize=24,
             fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
 def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
-        "xtick.labelsize": 15, "ytick.labelsize": 15, "legend.fontsize": 15,
+        "font.size": 15, "axes.labelsize": 17.5, "axes.titlesize": 0,
+        "xtick.labelsize": 15.5, "ytick.labelsize": 15.5, "legend.fontsize": 15.5,
     })
     df = load()
     colors = [COLOR_DIRECT if d else COLOR_INDIRECT for d in df["is_direct"]]
 
     fig, (ax_a, ax_b) = plt.subplots(
-        1, 2, figsize=(17, 8), sharey=True,
+        1, 2, figsize=(14, 6.8), sharey=True,
         gridspec_kw={"width_ratios": [1.35, 1.0], "wspace": 0.08},
     )
 
     ax_a.barh(df["label"], df["genes_used"], color=colors, edgecolor="none")
     for y, (n, rows) in enumerate(zip(df["genes_used"], df["n_rows"], strict=True)):
         ax_a.text(n + 40, y, f"{n:,}", va="center", ha="left",
-                  fontsize=13, color=COLORS["neutral"])
+                  fontsize=14, color=COLORS["neutral"])
     ax_a.set_xlabel("Genes with supporting\nsurface evidence")
     ax_a.set_xlim(0, df["genes_used"].max() * 1.16)
 
     ax_b.barh(df["label"], df["pct_sole_primary"], color=colors, edgecolor="none")
     for y, p in enumerate(df["pct_sole_primary"]):
         ax_b.text(p + 0.12, y, f"{p:.1f}%", va="center", ha="left",
-                  fontsize=13, color=COLORS["neutral"])
+                  fontsize=14, color=COLORS["neutral"])
     ax_b.set_xlabel("Share of those genes where it was\nthe only assay supporting the call")
     ax_b.set_xlim(0, max(df["pct_sole_primary"].max() * 1.22, 1))
 
@@ -142,19 +142,22 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
         plt.Rectangle((0, 0), 1, 1, color=COLOR_INDIRECT),
     ]
     ax_a.legend(handles, ["Probes an intact cell", "Indirect / not cell-surface specific"],
-                loc="lower right", frameon=False, fontsize=14,
+                loc="lower right", frameon=False, fontsize=15.5,
                 bbox_to_anchor=(1.0, 0.02))
 
     _panel_label(ax_a, "a")
     _panel_label(ax_b, "b")
 
-    fig.text(
-        0.5, -0.02,
-        f"Supporting surface-expression claims only, over genes in a surface-positive tier; "
-        f"assays under {MIN_GENES} genes omitted. \"Only assay\" counts primary-tier support.",
-        ha="center", va="top", fontsize=13, style="italic", color=COLORS["neutral"],
-    )
     fig.tight_layout()
+    # Footnote sits just below the lower of the two x-axis labels.
+    renderer = fig.canvas.get_renderer()
+    label_y0 = min(ax.xaxis.label.get_window_extent(renderer).y0 for ax in (ax_a, ax_b))
+    fig.text(
+        0.5, label_y0 / fig.bbox.height - 0.008,
+        f"Supporting surface-expression claims only, over genes in a surface-positive tier;\n"
+        f"assays under {MIN_GENES} genes omitted. \"Only assay\" counts primary-tier support.",
+        ha="center", va="top", fontsize=13.5, style="italic", color=COLORS["neutral"],
+    )
     return fig, (ax_a, ax_b)
 
 
