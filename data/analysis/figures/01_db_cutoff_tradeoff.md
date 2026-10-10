@@ -43,9 +43,9 @@ Data (bundled in this gist):
   The script reads the copy that sits next to it in the gist and
   falls back to the in-repo copy only when that bundled file is
   missing. The TSV is a committed artifact: the figure scripts only
-  read it. It is regenerated deliberately with
-  `_dump_db_cutoff_tradeoff_points` in
-  [`scripts/figures/triage_bench_db_barplot.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_bench_db_barplot.py).
+  read it. It is regenerated deliberately by running
+  `DUMP_CUTOFF_POINTS=1 uv run python scripts/figures/triage_bench_db_barplot.py`
+  ([`scripts/figures/triage_bench_db_barplot.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_bench_db_barplot.py)).
 
 Canonical in-repo generator:
 [`scripts/figures/db_cutoff_tradeoff.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/db_cutoff_tradeoff.py).
