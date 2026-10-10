@@ -14,30 +14,37 @@ strategies applied to the same 100 random genes × 10 random papers each:
   (EuropePMC search + PubTator NER + NCBI gene2pubmed + topic_search +
   6 standing axes — byte-identical to ``build_a1_kickoff()`` in
   ``src/accessible_surfaceome/agents/plan_trim_select/kickoff_templates.py``).
-* **OpenAlex**: a broader retrieval surface — 10 axes via OpenAlex's
-  REST API (one broad gene-name search + 9 method-keyword
-  conjunctions). Catches preprints (bioRxiv/medRxiv) + non-PubMed
-  journals + grey literature that EuropePMC doesn't index.
+* **OpenAlex**: a broader retrieval surface — 21 axes via OpenAlex's
+  REST API, one per production axis (2 broad gene-name queries, one of
+  them date-sorted; 10 method-keyword, 3 topic-keyword and 6
+  standing-axis keyword conjunctions). Catches preprints
+  (bioRxiv/medRxiv) + non-PubMed journals + grey literature that
+  EuropePMC doesn't index.
 
-Each paper is classified into one of four reachability buckets by
-running the **production fetch chain** (``_fetch_body_drafts`` →
-PMC JATS → Unpaywall PDF → fallback abstract). When the prod fetch
-fails, the secondary Unpaywall lookup distinguishes bot-blocked
-(only OA path is a 403'ing host like Wiley/bioRxiv/Elsevier/MDPI/
-ASH/OUP/Cell) from no-OA (Unpaywall says is_oa=false or no record).
+Each paper is classified into one of six buckets by running the
+**production fetch chain** (``_fetch_body_drafts`` → PMC JATS →
+Unpaywall PDF → DataCite landing PDF → fallback abstract): three
+reachable (full body via PMC, Unpaywall or DataCite) and three not
+(bot-blocked publisher, OA repository with a DataCite DOI the fetch
+still misses, no open access). When the prod fetch fails, the
+secondary Unpaywall lookup distinguishes bot-blocked (only OA path is
+a 403'ing host like Wiley/bioRxiv/Elsevier/MDPI/ASH/OUP/Cell) from
+no-OA (Unpaywall says is_oa=false or no record).
 
 Headline result: production's 21-axis search has high precision
-(~88% reachable) on a tighter corpus; OpenAlex finds 2.4× more papers
-per gene but only 43% are reachable — the additional pool is mostly
-paywalled non-PMC literature and bot-blocked preprint servers.
+(~89% reachable) on a tighter corpus; OpenAlex finds 3.6× more papers
+per gene before sampling (829 vs 228) but only 49% are reachable — the
+additional pool is mostly paywalled non-PMC literature and bot-blocked
+preprint servers.
 
-Standalone — ``uv run make_paywall_bot_block_compare.py``.
+Standalone — run ``uv run make_paywall_bot_block_compare.py`` in a
+clone of the gist, with the bundled ``paywall_bot_block_compare.tsv``
+next to this script.
 """
 from __future__ import annotations
 
 import csv
 import io
-import json
 from collections import Counter
 from pathlib import Path
 
@@ -143,10 +150,10 @@ SOURCE_LABEL = {
 
 
 def fetch_tsv() -> list[dict]:
-    """Sibling-first → repo dev-mode → URL fetch. Sibling case wins
-    when this script runs from a published gist with the TSV bundled
-    next to it (SWHID-of-the-gist then captures data + script
-    atomically)."""
+    """Sibling-first → repo dev-mode; no network fetch. Sibling case
+    wins when this script runs from a published gist with the TSV
+    bundled next to it (SWHID-of-the-gist then captures data + script
+    atomically). ``TSV_URL`` only supplies the file name."""
     sibling = Path(__file__).parent / Path(TSV_URL).name
     if sibling.is_file():
         text = sibling.read_text()

@@ -35,8 +35,10 @@ BRANCH = "main"
 # Dedicated per-figure TSV: the five databases' INITIAL (pre-recalibration)
 # surface flags, union members only, with stable IDs — NOT the
 # whole-proteome catalog. Figure 1 is a databases-overlap figure, so it
-# ships its own minimal input (built by scripts/build_figure_tsvs.py),
-# free of the catalog's triage/optimized/universe_version columns.
+# ships its own minimal input, free of the catalog's
+# triage/optimized/universe_version columns. Its content matches
+# db_overlap_venn.tsv, which scripts/build_figure_tsvs.py writes.
+# Read from the sibling file or the in-repo copy only; never downloaded.
 CAND_URL = (
     f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
     f"/data/processed/figures/db_overlap_upset.tsv"
@@ -212,8 +214,6 @@ def main() -> None:
         "legend.fontsize": 11,
     })
     flags = load_flags(_fetch_csv_text(CAND_URL))
-    sel, sizes = build_columns(flags)
-
     sel, sizes = build_columns(flags)
 
     # Declared as a dict literal, and LAST, so the canonical<->mirror

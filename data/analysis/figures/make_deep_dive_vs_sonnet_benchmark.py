@@ -8,7 +8,7 @@
 # ///
 """Reproduce ``deep_dive_vs_sonnet_benchmark.{pdf,png}``.
 
-**Supplementary Fig 12.** Deep-dive vs Sonnet+NCBI accuracy on all 113
+**Supplementary Fig 11.** Deep-dive vs Sonnet+NCBI accuracy on all 113
 SurfaceBench genes deep-dived so far (the intersection with the 147-gene
 benchmark; no records excluded — the one holistic-`conflicting` gene,
 RPN1, is scored too, so both predictors see the full common set).
@@ -21,13 +21,13 @@ counts correct when called surface.
   * **b.** Accuracy split by ground-truth bucket (yes / contextual / no).
 
 The deep-dive bar is STACKED by the tier it assigned to the
-correctly-classified genes — canonical / likely / low (green shades)
-and uncertain / no (grey), the same five-tier palette as Figure 5a — so
-its confidence composition is visible. Sonnet+NCBI accuracy is the mean
+correctly-classified genes — canonical / likely (green and teal) and low
+(amber), with uncertain / no (grey), the same five-tier palette as Figure
+5a — so its confidence composition is visible. Sonnet+NCBI accuracy is the mean
 of three mainbench replicates (one dot per replicate; the error bar is
 the SEM across replicates); the deep dive runs once per gene, so its bar
 carries no replicate spread. Deep dive and Sonnet are near-identical
-overall (97% vs 97%, Sonnet as the replicate mean); the deep dive is
+overall (97.3% vs 96.8%, Sonnet as the replicate mean); the deep dive is
 perfect on the 68 ground-truth-yes genes and makes three errors — one FN
 in the contextual bucket (PMEL) and two FPs in the 'no' bucket (ATG9A,
 RPN1). The deep-dive verdict counts as surface

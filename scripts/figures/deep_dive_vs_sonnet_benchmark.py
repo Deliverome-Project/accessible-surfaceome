@@ -1,6 +1,6 @@
 """Deep-dive vs Sonnet+NCBI accuracy on SurfaceBench (deep-dived genes).
 
-New Supp figure: for all SurfaceBench genes deep-dived so far (the intersection,
+Supplementary Figure 11: for all SurfaceBench genes deep-dived so far (the intersection,
 n=113 of 147), how the evidence-anchored deep dive scores against the curated
 ground truth, next to the Sonnet+NCBI triage on the SAME genes. Soft-credit
 accuracy — a contextually-surface protein counts correct when called surface.
@@ -10,8 +10,9 @@ No records are excluded (holistic-`conflicting` genes are scored too).
 **b.** Accuracy per ground-truth bucket (yes / contextual / no).
 
 Reads the bundled per-figure TSV (one row per deep-dived bench gene with both
-predictors' soft-credit correctness); the figure aggregates. Deep dive 97% vs
-Sonnet 97% (near-identical; single collapsed-verdict basis: 97.3% vs 95.6%).
+predictors' soft-credit correctness); the figure aggregates. Deep dive 97.3% vs
+Sonnet 96.8% (three-replicate mean; near-identical; single collapsed-verdict
+basis: 97.3% vs 95.6%).
 
 Run::
 
@@ -125,7 +126,7 @@ def _draw_sonnet(ax, rows: list[dict], x: float, width: float) -> None:
 
 def _draw_deep_dive(ax, rows: list[dict], x: float, width: float) -> None:
     """Deep-dive accuracy bar, STACKED by the tier of the correctly-classified
-    genes (canonical/likely/low green shades + grey for uncertain/no), so the
+    genes (canonical green / likely teal / low amber + grey for uncertain/no), so the
     confidence breakdown of the calls is visible. Stack height == accuracy."""
     from collections import Counter
     n = len(rows)

@@ -10,19 +10,22 @@ re-run; do not hand-edit inside these markers.*
 > **Supplementary Figure 8.** SurfaceBench over-samples the membrane topologies where databases disagree, so its measured accuracy is a conservative floor on full-catalog performance. The per-class composition of the hand-curated benchmark is compared against the full shipped accessible set across nine membrane-topology classes, with each class tested by an exact two-tailed binomial test of the benchmark count against the population proportion, Bonferroni-corrected across the nine classes. The benchmark is significantly enriched for glycosylation-site-bearing and GPI-anchored proteins and depleted for multi-pass transmembrane proteins. Because it is deliberately weighted toward ambiguous, disagreement-prone topologies and away from the easy multi-pass case, accuracy measured on it is a lower bound on full-catalog accuracy.
 <!-- END manuscript-legend -->
 
-**99-of-147 SurfaceBench genes that join the per-protein features
-TSV, plotted against the 4,628-gene Sonnet 2-tier yes/contextual
-universe.** Grouped bars over the same 9 topology categories the
-`topology_coverage_by_source` 3x3 figure breaks out, with two hues:
+**The 99 SurfaceBench genes whose curated ground-truth verdict is yes
+or contextual, plotted against the 4,628-gene Sonnet 2-tier
+yes/contextual universe.** Grouped bars over the same 9 topology
+categories the `topology_coverage_by_source` figure breaks out, with
+two hues:
 
 - **Sonnet 2-tier yes/contextual universe** (light warm-grey, `#C7BDB6`) — the genes the
   production pipeline calls accessible after the Sonnet+NCBI sweep
-  plus the Sonnet+PubMed rescue lane (NCBI=no → PubMed=yes/contextual
+  plus all of the Sonnet+PubMed rescue lanes (NCBI=no → PubMed=yes/contextual
   flips). This is what the catalog *actually ships*, NOT the broader
   "any-DB-voted-yes" union.
-- **SurfaceBench** (teal, `#3D6B60`) — the 99 bench-member genes that survive
-  the join into the per-protein features TSV (out of the 147 curated
-  bench rows).
+- **SurfaceBench** (teal, `#3D6B60`) — the 99 of the 147 curated
+  bench genes whose ground-truth verdict is yes or contextual. The
+  bench is defined by the curated truth, not by Sonnet's call: 96 of
+  the 99 sit inside the universe, and the other 3 (C3, SRC, TGOLN2)
+  are genes Sonnet missed, kept in the bench anyway.
 
 Bench bars carry Wilson 95% binomial confidence intervals; the
 universe is a population, not a sample, so no CI on the grey bars.
@@ -35,14 +38,18 @@ correction).
 Bonferroni correction.
 
 - **Glyc. site** +18.9 pp `***` — the bench is enriched for
-  N/O-glycosylated proteins (a strong surface signal that biases
-  toward "easy" cases).
+  N/O-glycosylated proteins.
 - **GPI-anchored** +14.2 pp `***` — the bench oversamples GPI
   anchors precisely because the DBs disagree on them most.
 - **Multi-pass TM** −13.9 pp `**` — the bench *under*-samples
   multi-pass TM, the class the DBs agree easily on.
-- **TM w/o SP** −17.6 pp `**` — the bench under-samples
-  transmembrane proteins that carry no signal peptide.
+- **TM w/o SP** −17.6 pp `**` — the bench also under-samples
+  proteins with a predicted transmembrane segment and no signal
+  peptide (DeepTMHMM).
+
+The other 5 classes (7TM GPCR, Single-pass TM, Likely secreted,
+Inner-leaflet lipidated, No TM / no signal) do not reach
+significance.
 
 This is the **bench enrichment bias** the methods section flags:
 SurfaceBench is deliberately enriched for DB-disagreement cases, so
@@ -56,53 +63,59 @@ uv run make_bench_topology_vs_universe.py
 ```
 
 The script reads only the bundled `bench_topology_vs_universe.tsv`
-next to it — no network fetch, no external joins. The TSV is one
-row per gene in the Sonnet 2-tier yes/contextual universe with
-`is_bench` (true for 99 bench-member genes) and 9 topology boolean
-flag columns denormalized in. Wilson 95% binomial CIs and
-Bonferroni-corrected exact 2-tailed binomial p-values are computed
-inline (no scipy dep — manual PMF loop reliable at small n).
+next to it — no network fetch, no external joins. The TSV is the
+union of the two cohorts: 4,631 rows, one per gene that is in the
+universe (`in_universe`, 4,628 genes) or in the bench (`is_bench`,
+99 genes), with 9 topology flag columns (1/0) denormalized in.
+Wilson 95% binomial CIs and Bonferroni-corrected exact 2-tailed
+binomial p-values are computed inline (no scipy dep — manual PMF
+loop reliable at small n).
 
 ## Canonical generator
 
-The canonical generator that produces both this gist mirror's
-inputs and the in-repo
+The canonical generator that produces the in-repo
 [`data/analysis/figures/bench_topology_vs_universe.pdf`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/analysis/figures/bench_topology_vs_universe.pdf)
 lives at
 [`scripts/figures/bench_topology_vs_universe.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/bench_topology_vs_universe.py)
-in the project repo. It pulls
-[`data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv)
-from raw.githubusercontent.com, filters to Sonnet 2-tier
-yes/contextual via the `_is_sonnet_2tier_yc` rule (NCBI sweep
-verdict ∈ {yes, contextual} OR (NCBI=no AND PubMed-rescue verdict
-∈ {yes, contextual})), restricts to bench-member rows via
-`uniprot_acc` join against
-[`data/eval/triage_benchmark_v1.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/eval/triage_benchmark_v1.tsv),
-and renders the same chart.
+in the project repo. Like this mirror, it reads only the committed
+[`data/processed/figures/bench_topology_vs_universe.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/figures/bench_topology_vs_universe.tsv)
+and renders the same chart. That TSV is built by
+[`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py)
+(`build_bench_topology_vs_universe`): the universe is every gene
+with `src_sonnet = 1` in
+[`data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv)
+(Sonnet 2-tier yes/contextual across the NCBI sweep and all PubMed
+rescue lanes), and the bench is every gene whose
+`ground_truth_verdict` in
+[`data/eval/triage_benchmark_v1.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/eval/triage_benchmark_v1.tsv)
+is yes or contextual, matched on UniProt accession.
 
 ## Data lineage
 
-- Per-protein topology features: [`data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv)
-- Bench truth (uniprot_acc list): [`data/eval/triage_benchmark_v1.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/eval/triage_benchmark_v1.tsv)
+- Per-protein topology features + universe flag: [`data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv)
+- Bench truth (ground-truth verdict + uniprot_acc): [`data/eval/triage_benchmark_v1.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/eval/triage_benchmark_v1.tsv)
 - Pre-joined per-figure TSV (bundled here): [`data/processed/figures/bench_topology_vs_universe.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/figures/bench_topology_vs_universe.tsv)
 
 ## Paste-able figure caption
 
 > **Figure caption.** Topology composition of SurfaceBench (n = 99
-> of 147 that join into the per-protein features TSV) compared
-> against the Sonnet 2-tier yes/contextual universe (n = 4,628),
-> the genes the production pipeline ships as accessible after the
-> NCBI sweep + PubMed rescue lane. Bars show the % of each subset
-> that carries the topological feature; error bars on SurfaceBench
-> are Wilson 95% binomial confidence intervals (the universe is a
-> population, not a sample, so no CI). Per-class p-values are
-> computed by an exact 2-tailed binomial test of the bench count
-> against the universe proportion under H₀, Bonferroni-corrected
-> across the 9 topology classes (\* p < 0.05, \*\* p < 0.01,
-> \*\*\* p < 0.001); 4 of 9 classes reach significance. The bench
-> is enriched for Glyc. site (+18.9 pp\*\*\*), GPI-anchored (+14.2
-> pp\*), Single-pass TM (+11.6 pp) and depleted for Inner-leaflet
-> lipidated (−0.3 pp), No TM / no signal (−0.6 pp), Multi-pass TM
-> (−13.9 pp\*\*); this reflects its deliberate selection for
-> DB-disagreement cases, so bench-derived accuracy estimates are a
-> lower bound on expected full-universe accuracy.
+> benchmark genes with a ground-truth verdict of yes or contextual)
+> compared against the Sonnet 2-tier yes/contextual universe
+> (n = 4,628), the genes the production pipeline ships as accessible
+> after the NCBI sweep + PubMed rescue lanes. Bars show the % of each
+> subset that carries the topological feature; error bars on
+> SurfaceBench are Wilson 95% binomial confidence intervals (the
+> universe is a population, not a sample, so no CI). Per-class
+> p-values are computed by an exact 2-tailed binomial test of the
+> bench count against the universe proportion under H₀,
+> Bonferroni-corrected across the 9 topology classes (\* p < 0.05,
+> \*\* p < 0.01, \*\*\* p < 0.001); 4 of 9 classes reach
+> significance. The bench is enriched for Glyc. site (+18.9 pp\*\*\*)
+> and GPI-anchored (+14.2 pp\*\*\*) and depleted for Multi-pass TM
+> (−13.9 pp\*\*) and TM without signal peptide (−17.6 pp\*\*). The
+> other classes are not significant: 7TM GPCR +0.7 pp, Single-pass TM
+> +10.5 pp, Likely secreted −6.3 pp, Inner-leaflet lipidated
+> +0.3 pp, No TM / no signal −5.6 pp. This reflects the bench's
+> deliberate selection for DB-disagreement cases, so bench-derived
+> accuracy estimates are a lower bound on expected full-universe
+> accuracy.

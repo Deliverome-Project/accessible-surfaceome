@@ -1,14 +1,19 @@
-"""Supp Fig 3 — DB cutoff recalibration tradeoff.
+"""Supplementary Figure 4 — DB cutoff recalibration tradeoff.
 
 Five per-source subplots showing the universe-size / accuracy trade-off
 across cutoff variants for each surface DB. The figure legitimately plots
-BOTH initial (canonical ◆) and optimized (recommended ★) cutoff points —
-this IS the recalibration tradeoff visualization.
+BOTH the original pre-audit rule (◆) and the rule recommended after the
+audit (★, UniProt and CSPA only; the candidate-universe vote now uses
+these) — this IS the recalibration tradeoff visualization. Circles are
+other cutoffs evaluated and not adopted.
 
 DATA SOURCE — reads ``data/processed/triage_bench/db_cutoff_tradeoff_points.tsv``
 (precomputed points; do NOT recompute here — the TSV is the single source of
 truth shared with the gist mirror
-``data/analysis/figures/make_db_cutoff_tradeoff.py``).
+``data/analysis/figures/make_db_cutoff_tradeoff.py``). The TSV is a committed
+artifact; regenerate it deliberately with ``_dump_db_cutoff_tradeoff_points``
+in ``scripts/figures/triage_bench_db_barplot.py``. HPA abstains on benchmark
+proteins it has no data for, so its panel is scored on the 98 it covers.
 
 Run: ``uv run python scripts/figures/db_cutoff_tradeoff.py``
 # Reproduction: https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed
@@ -41,7 +46,7 @@ BRAND_SEQUENTIAL = {
 }
 
 GROUP_ORDER = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
-# Per-DB sequential ramps, light → dark = strict → permissive.
+# Per-DB sequential ramps, dark → light = strict → permissive.
 GROUP_RAMP = {
     "UniProt": [BRAND_SEQUENTIAL["maroon"][i]   for i in (1, 2, 3, 4)],
     "GO":      [BRAND_SEQUENTIAL["teal"][i]     for i in (1, 2, 4)],
@@ -208,8 +213,9 @@ def main() -> None:
 
         # Per-panel caption block — one line per cutoff variant, marker
         # char doubles as the visual key for matching to on-plot points.
-        # Monospace so columns align; tiny enough that even DejaVu Sans
-        # Mono fallback reads cleanly on systems without a brand mono.
+        # Columns: short label, universe size, +% surface proteins
+        # recovered / -% non-surface proteins correctly excluded.
+        # Monospace so columns align.
         ax.text(
             0.0,
             -0.30,
@@ -222,7 +228,7 @@ def main() -> None:
             family="monospace",
         )
 
-    # 6th cell: marker-shape key + missing-rule footnote.
+    # 6th cell: marker-shape key.
     legend_ax = axes_flat[5]
     legend_ax.axis("off")
     handles = [
@@ -294,8 +300,8 @@ def main() -> None:
     # × ~22pt line height) and row-2 panels. Without this, row-1 captions
     # crash into row-2 axes / row-2 captions extend into the supxlabel.
     # Bumped 0.95 → 1.40 to give room for the now-larger (19, 13) figure +
-    # the recommended-cutoff line (★) below the canonical line (◆) in
-    # each panel.
+    # the extra recommended-cutoff line (★) in the UniProt and CSPA
+    # caption tables.
     plt.subplots_adjust(hspace=1.40)
 
     save_figure(fig, "db_cutoff_tradeoff", OUT_DIR, gist_url=GIST_URL)

@@ -6,11 +6,13 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``db_cutoff_tradeoff.{pdf,png}`` from the public repo.
+"""Reproduce ``db_cutoff_tradeoff.{pdf,png}`` (Supplementary Figure 4).
 
 Five per-source subplots showing the universe-size / accuracy
 trade-off across cutoff variants for each surface DB. Reads a tiny
-precomputed-points TSV (raw-fetched), so the gist stays small.
+precomputed-points TSV: the copy bundled next to this script in the
+gist first, falling back to the in-repo copy only when that is missing
+(no network fetch), so the gist stays small and self-contained.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available, per-DB sequential ramps
@@ -170,7 +172,7 @@ def _apply_brand_style() -> None:
 
 
 GROUP_ORDER = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
-# Per-DB sequential ramps, light → dark = strict → permissive. Pulled
+# Per-DB sequential ramps, dark → light = strict → permissive. Pulled
 # from BRAND_SEQUENTIAL so the visual identity matches the rest of the
 # figure set.
 GROUP_RAMP = {
@@ -283,8 +285,9 @@ def main() -> None:
 
         # Per-panel caption block — one line per cutoff variant, marker
         # char doubles as the visual key for matching to on-plot points.
-        # Monospace so columns align; tiny enough that even DejaVu Sans
-        # Mono fallback reads cleanly on systems without a brand mono.
+        # Columns: short label, universe size, +% surface proteins
+        # recovered / -% non-surface proteins correctly excluded.
+        # Monospace so columns align.
         ax.text(
             0.0, -0.30, "\n".join(caption_lines),
             transform=ax.transAxes,
@@ -293,7 +296,7 @@ def main() -> None:
             family="monospace",
         )
 
-    # 6th cell: marker-shape key + missing-rule footnote.
+    # 6th cell: marker-shape key.
     legend_ax = axes_flat[5]
     legend_ax.axis("off")
     handles = [
@@ -328,8 +331,8 @@ def main() -> None:
     # × ~22pt line height) and row-2 panels. Without this, row-1 captions
     # crash into row-2 axes / row-2 captions extend into the supxlabel.
     # Bumped 0.95 → 1.40 to give room for the now-larger (19, 13) figure +
-    # the recommended-cutoff line (★) below the canonical line (◆) in
-    # each panel.
+    # the extra recommended-cutoff line (★) in the UniProt and CSPA
+    # caption tables.
     plt.subplots_adjust(hspace=1.40)
 
     out_pdf = Path("db_cutoff_tradeoff.pdf")

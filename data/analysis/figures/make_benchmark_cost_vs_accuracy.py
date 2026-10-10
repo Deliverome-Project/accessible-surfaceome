@@ -8,9 +8,12 @@
 # ///
 """Reproduce ``benchmark_cost_vs_accuracy.{pdf,png}`` from the public repo.
 
-Fetches the canonical main-bench export (D1 → flat TSV) +
-benchmark-truth TSV via ``raw.githubusercontent.com``, then renders the
-8-cell cost/accuracy frontier in the Claude-orange palette.
+Reads the bundled ``benchmark_cost_vs_accuracy.tsv`` (the sibling file in
+the gist; falls back to the in-repo copy under ``data/processed/figures/``),
+then renders the 11-cell cost/accuracy frontier in the Claude-orange
+palette: Haiku 4.5 and Sonnet 4.6 each × {naive, + IDs, + IDs + PubMed,
++ IDs + web}, Sonnet 5 × {+ IDs}, Opus 4.8 × {naive, + IDs}. Accuracy is
+the mean over 3 replicates on the 147-gene bench.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
@@ -28,12 +31,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-# Final-figure data sources — pinned to the public repo at raw.githubusercontent.com
-# for citation stability. The predictions TSV is refreshed from public D1
-# by `scripts/export_mainbench_to_tsv.py`; truth labels come from the
-# curated benchmark TSV in `data/eval/`. (Live consumers wanting the same
-# shape can hit `api.deliverome.org/surfaceome/v1/{triage,benchmark}/
-# export.tsv` instead — see the API page on the viewer.)
+# Data source. BASE is used only to name the TSV and to map it to its
+# in-repo path; the script never downloads it (see _fetch_tsv). Upstream,
+# per-replicate predictions are exported from public D1 by
+# `scripts/tsv-export/export_mainbench_to_tsv.py` into
+# `data/processed/triage_bench/mainbench_replicates_v2.tsv`, which
+# `scripts/build_figure_tsvs.py` turns into the per-figure TSV below.
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
@@ -130,7 +133,10 @@ def _apply_brand_style() -> None:
     })
 
 
-# Anthropic published prices ($/M tokens, 2026-05).
+# Per-million-token prices used for the figure: in = input, out = output,
+# cr = cache read, cw = cache write. Entered 2026-05; the manuscript legend
+# calls them July 2026 list prices. Sonnet 5 is priced the same as
+# Sonnet 4.6 (its post-introductory rate, per the legend).
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
@@ -169,10 +175,9 @@ CELL_COLOR = {
 }
 
 # Per-cell label offsets (pixels) to deconflict dense clusters — mirrors
-# scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot. Without
-# these, Opus(naive) and Sonnet(+NCBI+web) land at similar (cost, acc.) and
-# their labels stack. When abs(dy) >= 16 a short leader line is drawn so
-# the label → point mapping stays unambiguous. Re-tune if cells move.
+# scripts/figures/benchmark_cost_vs_accuracy.py. When abs(dy) >= 16 a short
+# leader line is drawn so the label → point mapping stays unambiguous.
+# Re-tune if cells move.
 CELL_LABEL_OFFSET = {
     ("claude-haiku-4-5",  "naive"):       (7,   6),
     ("claude-haiku-4-5",  "ncbi"):        (7,  10),
@@ -222,7 +227,11 @@ def _whole_genome_cost(group: pd.DataFrame) -> float:
     so token columns already carry per-replicate counts. Cost is per single
     triage pass — average the per-rep counts across the cell's
     (gene, replicate) rows. ``n`` here is gene-count (rows ÷ reps per gene
-    ≈ unique genes), used only in the system-prompt amortization."""
+    ≈ unique genes), used only in the system-prompt amortization: the
+    shared system prompt is charged once at the cache-write rate and
+    reused ``n - 1`` times at the cache-read rate. Cells with no recorded
+    cache tokens treat the first 2,000 prompt tokens as that system
+    prompt. Each web search adds WEB_SEARCH_USD_PER_QUERY."""
     model = group["model"].iloc[0]
     pricing = _PRICE[model]
     n = group["gene_symbol"].nunique()

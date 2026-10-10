@@ -10,9 +10,12 @@
 
 Whole-genome DB ↔ Sonnet agreement plot. The 147-gene bench has hand-
 curated ground truth; on the whole proteome it doesn't exist, so we use
-the Sonnet (+ NCBI) triage verdict as the **reference** and ask how
-often each surface DB (under its bench-optimized cutoff) and each
-≥k-DB ensemble agrees with Sonnet, split by Sonnet's verdict bucket.
+the production two-tier Sonnet triage verdict as the **reference**: an
+NCBI first pass, with 379 genes upgraded from "no" to "yes"/"contextual"
+by the PubMed second-pass rescue (``verdict_source == "pubmed_rescue"``
+in the TSV). We ask how often each surface DB (under its bench-optimized
+cutoff) and each k+-DB ensemble agrees with Sonnet, split by Sonnet's
+verdict bucket.
 
 Soft-credit rule (same as the bench plot): DB "yes" matches Sonnet
 "yes" or "contextual"; DB "no" matches Sonnet "no" only.
@@ -32,10 +35,14 @@ Visual styling matches the in-repo ``_plotting_config`` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
 runs standalone.
 
-Data: catalog + per-DB votes from bundled TSVs (gist case) or the
-in-repo data/processed/catalog/ + data/processed/triage_bench/
-paths (dev case). The gist's HEAD commit SHA is the SWHID for the
-whole reproduction unit (script + data + README).
+Data: a single TSV, db_vs_sonnet_whole_proteome.tsv (19,324
+protein-coding genes, one row each: five per-DB surface flags, the
+optimized UniProt/CSPA flags, and the Sonnet verdict), read from next
+to this script (gist case) or from the in-repo
+data/processed/figures/db_vs_sonnet_whole_proteome.tsv (dev case). It
+is built by scripts/build_figure_tsvs.py from whole_proteome_catalog.tsv
+and db_optimized_cutoffs.tsv. The gist's HEAD commit SHA is the SWHID
+for the whole reproduction unit (script + data + README).
 
 Standalone — ``uv run make_db_vs_sonnet_whole_proteome.py``.
 """
@@ -194,17 +201,11 @@ def _vote_match(db_vote: str, sonnet: str) -> bool:
 def main() -> None:
     _apply_brand_style()
 
-    # Catalog now comes from a static TSV (sourced from D1 by
-    # scripts/export_whole_proteome_catalog_to_tsv.py) instead of the
-    # live Worker — keeps the gist self-contained and snapshot-pinned
-    # to whatever branch/SHA this script is fetched from. Each row
-    # carries the v1-style ``*_surface_flag`` columns AND the
-    # canonical Sonnet+NCBI verdict, so this single TSV replaces the
-    # CATALOG_URL + CAND_TSV pair the figure used previously.
-    # Single bundled TSV: catalog rows with uniprot_optimized +
-    # cspa_optimized denormalized in. Both flag sets reduce to row-level
-    # boolean columns, so the set-construction below derives the same
-    # uniprot_opt / cspa_opt accession sets from the bundled rows.
+    # Single bundled TSV: one row per protein-coding gene with the
+    # ``*_surface_flag`` columns, the production Sonnet verdict, and
+    # uniprot_optimized + cspa_optimized denormalized in. The
+    # set-construction below derives the uniprot_opt / cspa_opt accession
+    # sets from those row-level flags.
     catalog = _fetch_tsv(DATA_TSV)
     print(f"  loaded {len(catalog):,} catalog rows; sonnet = claude-sonnet-4-6")
 
@@ -331,13 +332,14 @@ def main() -> None:
                 patch.get_x() + patch.get_width() / 2,
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
-                ha="center", va="bottom",
-                fontsize=11, color=BRAND_INK,
+                ha="center", va="bottom", rotation=90,
+                fontsize=13, color=BRAND_INK,
             )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction agreeing with\nSonnet (+ NCBI) verdict")
-    ax.set_ylim(0, 1.14)
+    ax.set_ylabel("Fraction agreeing with\nSonnet triage verdict")
+    ax.set_ylim(0, 1.22)  # headroom for the vertical bar-top % labels
+    ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     handles, _ = ax.get_legend_handles_labels()
     legend_labels = [f"{lbl}  ({overall_acc[lbl]:.0%})" for lbl in caller_order]

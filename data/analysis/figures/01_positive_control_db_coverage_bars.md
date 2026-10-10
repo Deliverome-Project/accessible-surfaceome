@@ -12,8 +12,14 @@ re-run; do not hand-edit inside these markers.*
 
 Three-panel bar chart showing how the five gating surface databases and the
 Sonnet triage agent cover three orthogonal positive-control target lists.
-Each panel is one target list; each bar is one source. Y-axis ceiling is the
-panel's own n_total.
+Each panel is one target list; each bar is one source. The top y-axis tick is
+the panel's own n_total; the axis runs a little higher (1.18 × n_total) to fit
+the label above each bar (source name, count, percentage).
+
+In panel a each bar is split by the source that contributed the ADC target
+(TheraSAbDab, then Open Targets, then ADCdb, shaded dark to light teal; see
+the "ADC source" legend). The gene(s) Sonnet misses are written inside the
+Sonnet bar: CT83 in panel a and NPC1 in panel c. Sonnet misses no TCE target.
 
 * **Panel a — ADC targets** (n = 234). Union of TheraSAbDab antibody-drug
   conjugates ([opig.stats.ox.ac.uk/webapps/sabdab-sabpred/therasabdab](https://opig.stats.ox.ac.uk/webapps/sabdab-sabpred/therasabdab/)),
@@ -29,8 +35,11 @@ panel's own n_total.
 
 Sonnet bar = positive in the combined Sonnet triage (runs
 `genome_full_sonnet_ncbi_v1` ∪ `_v2` ∪ `genome_full_sonnet_pubmed_ncbi_v1`,
-verdict `yes` OR `contextual`) — the same inclusion rule the candidate
-universe uses.
+verdict `yes` OR `contextual`). The candidate universe also admits genes from
+three later PubMed rescue lanes (`genome_intracellular_pubmed_ncbi_v1`,
+`genome_1db_trim_pubmed_ncbi_v1`, `genome_optcut_zerodb_pubmed_ncbi_v1`);
+none of them changes any count in this figure; CT83 and NPC1 are not rescued
+by any lane.
 
 **Per-target detail (for reader analysis).** Beyond the yes/no DB + Sonnet
 flags, each row in the bundled TSV carries the context needed to evaluate
@@ -56,17 +65,19 @@ uv run make_positive_control_db_coverage_bars.py
 
 Sources:
 
-- Input TSVs (augmented with HGNC IDs + 5-DB flags + Sonnet flag, fetched
-  from raw GitHub when the gist runs standalone, sibling-files when bundled
-  in the gist):
-  - [data/processed/positive_controls/positive_control_ADC.tsv](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/positive_controls/positive_control_ADC.tsv)
-  - [data/processed/positive_controls/positive_control_TCE.tsv](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/positive_controls/positive_control_TCE.tsv)
-  - [data/processed/positive_controls/positive_control_VZ.tsv](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/positive_controls/positive_control_VZ.tsv)
+- Input TSV (bundled in this gist; the script reads it from the same folder):
+  [data/processed/figures/positive_control_db_coverage_bars.tsv](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/figures/positive_control_db_coverage_bars.tsv).
+  It is a copy of `data/processed/positive_controls/positive_control_long.tsv`
+  made by `scripts/build_figure_tsvs.py`: one row per category × gene, with
+  stable IDs (HGNC ID, UniProt, Ensembl, NCBI Gene), the five DB flags,
+  `n_db_votes`, the Sonnet flag (`sonnet_full_flag`), `adc_source`, and the
+  detail columns above.
 - Permanent data archive (Zenodo): [10.5281/zenodo.20805384](https://doi.org/10.5281/zenodo.20805384)
 
 Canonical in-repo generator:
 [`scripts/figures/positive_control_db_coverage_bars.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/positive_control_db_coverage_bars.py)
 
-Upstream list builder (refreshes the input TSVs from TheraSAbDab + Open
-Targets + ViralZone):
+Upstream list builder (rebuilds `positive_control_long.tsv` from TheraSAbDab,
+Open Targets, ADCdb and ViralZone; ADCdb is the source for 172 of the 234 ADC
+targets):
 [`scripts/build_positive_control_lists.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_positive_control_lists.py)

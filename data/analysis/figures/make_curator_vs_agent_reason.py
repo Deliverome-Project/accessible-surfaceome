@@ -19,7 +19,7 @@ reassignments (same Yes/Contextual/No bucket, different reason) and
 cross-bucket flips (the cells that matter most for verdict accuracy).
 
 The composite has three panels, matching the canonical generator
-``scripts/curator_vs_agent_reason.py`` in the project repo:
+``scripts/figures/curator_vs_agent_reason.py`` in the project repo:
 
   (a) bucket-strict accuracy across the 10 available model×variant
       configs (Haiku×4 + Sonnet×4 + Opus×2), with per-replicate dots
@@ -118,7 +118,7 @@ def _apply_brand_style() -> None:
         "font.weight": "medium",
         # Match the canonical generator's rcParams so the layout
         # fingerprint (font.size / axes.labelsize / tick sizes / legend)
-        # stays in sync with scripts/curator_vs_agent_reason.py.
+        # stays in sync with scripts/figures/curator_vs_agent_reason.py.
         "font.size": 20, "axes.labelsize": 19, "axes.titlesize": 0,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
@@ -449,7 +449,7 @@ def _draw_grouped(ax, configs, x_groups, group_acc, *, bar_w=None,
 
 
 def make_plot(data: pd.DataFrame) -> plt.Figure:
-    """3-panel composite matching scripts/curator_vs_agent_reason.py:
+    """3-panel composite matching scripts/figures/curator_vs_agent_reason.py:
       (a) per-bucket strict accuracy across 10 configs
       (b) per-reason exact-match accuracy across 4 frontier configs
       (c) the Sonnet/NCBI curator×agent confusion matrix.

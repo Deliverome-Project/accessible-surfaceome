@@ -6,13 +6,16 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``db_correctness_overall.{pdf,png}`` from the public repo.
+"""Reproduce ``db_correctness_overall.{pdf,png}`` from the bundled TSV.
 
 LLM-only overall accuracy on the 147-gene bench, grouped by model
-(Haiku 4.5 / Sonnet 4.6 / Opus 4.8) with hatched bars for the
-within-model prompt variants (naive / + IDs / + IDs + web /
-+ IDs + PubMed). Color encodes the model (Claude-orange walk);
-hatch encodes the prompt variant.
+(Haiku 4.5 / Sonnet 4.6 / Sonnet 5 / Opus 4.8) with hatched bars for
+the within-model prompt variants (naive / + IDs / + IDs + web /
++ IDs + PubMed). Haiku 4.5 and Sonnet 4.6 have all four variants,
+Opus 4.8 naive and + IDs, Sonnet 5 + IDs only. Color encodes the model
+(Claude-orange walk); hatch encodes the prompt variant. Bar height is
+the mean of the three per-replicate accuracies; points are the
+replicates and error bars are the SEM across replicates.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
@@ -126,7 +129,7 @@ def _apply_brand_style() -> None:
 
 
 # Model display order + Claude-orange palette (light → dark = larger model).
-# Sonnet 5 added 2026-06-30 — only ncbi variant sampled.
+# Sonnet 5 added 2026-06-30 — only the ncbi (+ IDs) variant sampled.
 MODEL_ORDER = [
     ("claude-haiku-4-5",  "Haiku 4.5",  "#f1c4ab"),
     ("claude-sonnet-4-6", "Sonnet 4.6", BRAND_CLAUDE_ORANGE),
@@ -189,9 +192,9 @@ def main() -> None:
     # everything the script needs.
     rep_acc = _per_rep_accuracy(_fetch_tsv(DATA_TSV))
 
-    # Wider figure (was 12) so the 4-bar Haiku / Sonnet / Opus clusters'
-    # bar-top "9X.X%" labels (one per prompt variant) sit with breathing
-    # room instead of touching neighbours.
+    # Wider figure (was 12) so the up-to-4-bar model clusters' bar-top
+    # "9X.X%" labels (one per prompt variant) sit with breathing room
+    # instead of touching neighbours.
     fig, ax = plt.subplots(figsize=(16, 5.5))
     n_models = len(MODEL_ORDER)
     n_variants = len(VARIANT_ORDER)
@@ -201,7 +204,7 @@ def main() -> None:
         for vi, (variant, _, hatch) in enumerate(VARIANT_ORDER):
             reps = rep_acc.get((model, variant), [])
             if not reps:
-                continue  # e.g. opus-4-8 was only run on naive + ncbi
+                continue  # e.g. opus-4-8 was only run on naive + ncbi; sonnet-5 on ncbi only
             # Bar height = MEAN of per-replicate accuracies (not the majority-
             # vote accuracy) so the bar, the overlaid points, and the SEM error
             # bar all share one center. This is the average single-run accuracy

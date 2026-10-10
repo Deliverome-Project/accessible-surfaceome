@@ -34,7 +34,7 @@ non-surface proteins carry little extracellular evidence by definition; the
 ``uncertain`` tier (n=55) is dropped everywhere as too small relative to
 the other tiers to plot a stable distribution.
 
-Full deep-dive cohort (5,130 genes); the `canonical` tier uses the PR #130 gate.
+Full deep-dive cohort (5,332 genes); the `canonical` tier uses the PR #130 gate.
 
 Standalone — ``uv run make_deep_dive_record_richness.py``.
 """

@@ -1,7 +1,9 @@
-"""Figure 2 — per-class DB-vs-LLM accuracy on the 147-gene benchmark.
+"""Figure 2 — per-class DB-vs-LLM accuracy on the 147-protein benchmark.
 
-For 6 callers (5 DBs + Sonnet+NCBI), grouped bars showing overall
-accuracy + per-verdict-bucket accuracy (yes / contextual / no).
+For 6 callers (5 DBs + Sonnet 4.6 with identifiers and no tools),
+grouped bars showing overall accuracy + per-verdict-bucket accuracy
+(yes / contextual / no). The Sonnet bar is the mean over its 3
+replicates, with per-replicate dots and an SEM error bar.
 
 DB cutoffs are the **trade-off-audit optimized** versions:
 
@@ -11,10 +13,12 @@ DB cutoffs are the **trade-off-audit optimized** versions:
   * **GO CC / HPA / SURFY**: canonical baselines.
 
 DATA SOURCE — reads ``data/processed/figures/db_correctness_by_class.tsv``
-(built by ``scripts/build_figure_tsvs.py``). The model list comes from the
-data, never a hardcode — this replaces the
-``triage_bench_db_barplot.py::make_class_plot`` path that hardcoded
-``opus-4-7`` and shipped empty bars when the data moved to Opus 4.8.
+(built by ``scripts/build_figure_tsvs.py``), the same TSV the gist
+bundles. The Sonnet caller is pinned to ``claude-sonnet-4-6`` /
+``prompt_variant=ncbi``, matching the gist mirror; the TSV also holds
+other models (including Sonnet 5) that this figure does not
+plot. This replaces the ``triage_bench_db_barplot.py::make_by_class_plot``
+path.
 
 Run: ``uv run python scripts/figures/db_correctness_by_class.py``
 # Reproduction: https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d
@@ -33,6 +37,7 @@ REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/figures/db_correctness_by_class.tsv"
 OUT_DIR = REPO / "data/analysis/figures"
 GIST_URL = "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"
+SONNET_MODEL = "claude-sonnet-4-6"
 
 INK = "#1F1718"
 NEUTRAL = "#6F5D5A"
@@ -108,13 +113,13 @@ def main() -> None:
         return "yes" if row[flag_col] == 1 else "no"
 
     # Sonnet/ncbi per-cell predicted_verdict: first row per gene in that cell.
-    # Model + variant come from the data — no hardcoded model name.
+    # Pinned to claude-sonnet-4-6 (as the gist mirror is): the TSV also has
+    # Sonnet 5 ncbi rows, so a "first model containing 'sonnet'"
+    # pick would depend on row order.
     sonnet_rows = data[data["prompt_variant"] == "ncbi"].copy()
-    # Pick the model that appears in the data for the ncbi variant.
-    # Prefer claude-sonnet-4-6 if present; otherwise take whatever is there.
-    ncbi_models = sonnet_rows["model"].unique().tolist()
-    preferred = [m for m in ncbi_models if "sonnet" in m]
-    ncbi_model = preferred[0] if preferred else (ncbi_models[0] if ncbi_models else None)
+    ncbi_model: str | None = SONNET_MODEL
+    if ncbi_model not in set(sonnet_rows["model"]):
+        raise ValueError(f"{SONNET_MODEL} / ncbi rows missing from {DATA_TSV}")
     sonnet_label = "Sonnet (+ IDs)"
     if ncbi_model is not None:
         sonnet_ncbi = (

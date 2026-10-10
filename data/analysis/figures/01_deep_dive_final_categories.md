@@ -21,11 +21,11 @@ Each deep-dived gene is placed on a confidence spectrum:
 - **canonical** (1,783) — the strict gold-standard surface tier
 - **likely** (1,252) — the broader passes-likely surface set
 - **low** (1,014) — low/moderate accessibility but weak evidence (maybe surface)
-- **no** (1,228) — leaned not-surface
 - **uncertain** (55) — ambiguous
+- **no** (1,228) — leaned not-surface
 
 `canonical` and `likely` are exactly the frontend catalog-preset predicates
-(`passesCanonical` / `passesLikely`); the low/no/uncertain split of the
+(`passesCanonical` / `passesLikely`); the low/uncertain/no split of the
 negatives is a figure-only refinement (the presets don't cover the negatives).
 
 ## Panel b — cross-cutting surface facets, by reason

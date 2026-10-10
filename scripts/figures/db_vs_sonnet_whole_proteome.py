@@ -2,10 +2,17 @@
 
 Whole-genome analog of the 147-gene-bench `db_correctness_by_class`
 figure. The bench has hand-curated ground truth; on the whole proteome
-it doesn't exist, so we use **Sonnet (+ NCBI)'s triage verdict as the
-reference** and ask: for each surface DB (under its bench-optimized
-cutoff) and each ≥k-DB ensemble, what fraction of genes does it agree
-with Sonnet on, split by Sonnet's verdict bucket.
+it doesn't exist, so we use the **production two-tier Sonnet triage
+verdict as the reference**: an NCBI first pass, with 379 genes upgraded
+from "no" to "yes"/"contextual" by the PubMed second-pass rescue
+(``verdict_source == "pubmed_rescue"`` in the TSV). For each surface DB
+(under its bench-optimized cutoff) and each ≥k-DB ensemble, we ask what
+fraction of genes agrees with Sonnet, split by Sonnet's verdict bucket.
+
+Data: the single TSV data/processed/figures/db_vs_sonnet_whole_proteome.tsv
+(19,324 protein-coding genes, one row each), built by
+scripts/build_figure_tsvs.py from whole_proteome_catalog.tsv and
+db_optimized_cutoffs.tsv.
 
 Soft-credit rule (same as the bench plot): a DB "yes" matches Sonnet
 "yes" *or* Sonnet "contextual"; a DB "no" matches Sonnet "no" only.
@@ -52,7 +59,7 @@ ENSEMBLE_KS = [1, 2, 3, 4, 5]
 
 DB_PALETTE = {label: CATEGORICAL_PALETTE[i] for i, label in enumerate(DB_LABELS)}
 
-# Sequential teal ramp for the ≥k ensembles (light → dark = strict → permissive).
+# Sequential teal ramp for the ≥k ensembles (light → dark = permissive → strict).
 ENSEMBLE_PALETTE = {
     1: "#7AAB9F",  # teal-light  (≥1 = permissive union)
     2: "#4D8A80",
@@ -79,7 +86,7 @@ def _vote_match(db_vote: str, sonnet: str) -> bool:
 
 def main() -> None:
     # Single committed TSV (built by scripts/build_figure_tsvs.py) is the
-    # source of truth — the same file the gist mirror reads via raw GitHub.
+    # source of truth — the same file the gist bundles next to its mirror.
     # It carries the per-DB flag columns AND the bench-optimized
     # uniprot_optimized / cspa_optimized flags denormalized per row, so no
     # separate db_optimized_cutoffs.tsv or whole_proteome_catalog.tsv read
@@ -131,7 +138,9 @@ def main() -> None:
     # Build caller list: ensembles first (color by k), then individual DBs sorted desc.
     callers: list[tuple[str, str]] = []
     for k in ENSEMBLE_KS:
-        callers.append((f"≥{k} DB", "ensemble"))
+        # "k+ DB", not "≥k DB": the gist mirror's bundled static Manrope lacks ≥,
+        # and both renders must read the same.
+        callers.append((f"{k}+ DB", "ensemble"))
     for label in db_sorted:
         callers.append((label, "single"))
 
@@ -139,7 +148,7 @@ def main() -> None:
         if kind == "single":
             return "yes" if row[caller] else "no"
         # ensemble: ≥k DBs vote yes
-        k = int(caller.lstrip("≥").rstrip(" DB"))
+        k = int(caller.rstrip(" DB").rstrip("+"))
         return "yes" if sum(bool(row[d]) for d in DB_LABELS) >= k else "no"
 
     # Compute agreement rates per (caller, bucket).
@@ -182,7 +191,7 @@ def main() -> None:
 
     caller_order = [c[0] for c in callers]
     palette = [
-        (ENSEMBLE_PALETTE[int(c[0].lstrip("≥").rstrip(" DB"))] if c[1] == "ensemble"
+        (ENSEMBLE_PALETTE[int(c[0].rstrip(" DB").rstrip("+"))] if c[1] == "ensemble"
          else DB_PALETTE[c[0]])
         for c in callers
     ]
@@ -224,13 +233,14 @@ def main() -> None:
                 patch.get_x() + patch.get_width() / 2,
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
-                ha="center", va="bottom",
-                fontsize=8, color=COLORS["dark"],
+                ha="center", va="bottom", rotation=90,
+                fontsize=13, color=COLORS["dark"],
             )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction agreeing with\nSonnet (+ NCBI) verdict")
-    ax.set_ylim(0, 1.14)
+    ax.set_ylabel("Fraction agreeing with\nSonnet triage verdict")
+    ax.set_ylim(0, 1.22)  # headroom for the vertical bar-top % labels
+    ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     handles, _ = ax.get_legend_handles_labels()
     legend_labels = [f"{lbl}  ({overall_acc[lbl]:.0%})" for lbl in caller_order]
@@ -238,7 +248,7 @@ def main() -> None:
         handles, legend_labels,
         title="Caller (overall agreement)",
         loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=10,
+        frameon=False, fontsize=14,
     )
 
     # Subtitle with per-bucket sample sizes.
@@ -250,13 +260,14 @@ def main() -> None:
     subtitle = (
         f"n(overall) = {totals.get('overall', 0):,}  ·  "
         f"n(yes) = {totals.get('yes', 0):,}  ·  "
-        f"n(contextual) = {totals.get('contextual', 0):,}  "
+        f"n(contextual) = {totals.get('contextual', 0):,}  ·  "
+        f"n(no) = {totals.get('no', 0):,}  "
         f"(whole protein-coding proteome with a rated Sonnet verdict)"
     )
     ax.text(
         0.5, -0.18, subtitle,
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=11, color=COLORS["neutral"],
+        fontsize=14, color=COLORS["neutral"],
     )
 
     sns.despine(ax=ax, top=True, right=True)

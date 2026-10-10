@@ -12,9 +12,9 @@ dual-triage surface pool — giving FIVE comparison facets:
   - ``likely``         — group == 'likely'
   - ``low``            — group == 'low' (low/moderate accessibility, weak evidence)
   - ``uncertain / no`` — group ∈ {uncertain, no} (ambiguous-to-negative)
-  - ``Sonnet dual triage`` — every gene the genome-wide Sonnet triage
-    (``genome_full_sonnet_ncbi_v2``) called yes/contextual (~4,236 with
-    topology). A DIFFERENT category from the tiers: broader, and its det
+  - ``Sonnet dual triage`` — every gene the two-stage Sonnet triage
+    (``genome_full_sonnet_ncbi_v2`` plus the four PubMed rescue lanes) called
+    yes/contextual (4,612 with topology). A DIFFERENT category from the tiers: broader, and its det
     features come from the genome-wide D1 tables (``topology_public``,
     ``compara_*``, ``schweke_homomer_public``, ``surface_bind_*``) rather than
     the deep-dive records, since most of these genes are not deep-dived. Same
@@ -34,17 +34,20 @@ as per-facet fraction bars (% of genes carrying the feature) — a violin of a
 Features:
 
   - Topology (from the deep-dive record): TM-helix count, protein length,
-    signal peptide, N/C-term extracellular, alt-isoform topology change
+    ECD length, signal peptide, N/C-term extracellular, alt-isoform
+    topology change
   - Schweke 2024           : homo-oligomer state
-  - Ensembl Compara        : mouse + cyno 1:1 ortholog presence
+  - Ensembl Compara        : mouse + cyno 1:1 ortholog presence, concerning
+    paralog (ECD 40%+ identity)
+  - Surface-bind sites     : 1+ extracellular surface-bind site
 
 Topology + every deterministic feature here is sourced from the deep-dive
 RECORDS (full coverage per deep-dived gene), which fixes the prior
 DeepTMHMM-M1-only coverage bias where the low / uncertain / no tiers were
 70-94% missing.
 
-Computed over the completed deep-dive sweep of 5,332 candidate genes; treat the
-per-tier rates as provisional until the sweep completes.
+Computed over the completed deep-dive sweep of 5,332 genes (pending
+excluded).
 """
 from __future__ import annotations
 
@@ -125,9 +128,11 @@ DATA_TSV = REPO_ROOT / "data/processed/figures/surfaceome_deterministic_features
 def load_data() -> pd.DataFrame:
     """Load the pre-joined single TSV the figure renders from.
 
-    The join (deep-dive tier × record-sourced topology [TM count, length,
-    signal peptide, N/C-term extracellular, alt-isoform topology] × Schweke
-    homo-oligomer × Ensembl-Compara mouse/cyno 1:1 ortholog flags) is
+    The join (deep-dive tier × record-sourced topology [TM count, protein
+    length, ECD length, signal peptide, N/C-term extracellular, alt-isoform
+    topology] × Schweke homo-oligomer × Ensembl-Compara mouse/cyno 1:1
+    ortholog + concerning-paralog flags × extracellular surface-bind site,
+    unioned with the Sonnet-pool rows) is
     materialised once by
     ``scripts/build_figure_tsvs.py::build_surfaceome_deterministic_features``
     into ``data/processed/figures/surfaceome_deterministic_features.tsv``.
@@ -249,11 +254,11 @@ def render(feats: pd.DataFrame) -> Path:
         sns.despine(ax=ax, top=True, right=True)
         _panel_label(ax, letter)
 
-    # Hide the unused grid cell (11 panels in a 4×3 / 12-slot grid).
+    # 12 panels fill the 4×3 grid; hide any spare cell if a panel is dropped.
     for extra in axes[len(panels):]:
         extra.set_visible(False)
 
-    # Single legend at top — the five deep-dive tiers + the Sonnet dual-triage pool.
+    # Single legend at top — the four deep-dive tier facets + the Sonnet dual-triage pool.
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, color=GROUP_COLOR[g],
                       label=GROUP_LABEL[g].replace("\n", " "))

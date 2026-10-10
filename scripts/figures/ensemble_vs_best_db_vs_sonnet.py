@@ -1,18 +1,28 @@
-"""Sonnet vs best single DB vs ≥k DB ensembles — overall accuracy on the 147-gene bench.
+"""Sonnet vs best single DB vs k+ DB ensembles — overall accuracy on the 147-gene bench.
 
-Six-bar comparison:
-  * Sonnet (+ NCBI)        — the LLM, canonical NCBI-resolver variant
+Seven-bar comparison:
+  * Sonnet (+ IDs)         — the Claude Sonnet 4.6 triage agent on its
+                             canonical NCBI-resolver ("gene identifiers")
+                             prompt variant. Bar = MEAN of the three
+                             per-replicate accuracies, with SEM error bar
+                             and the individual replicates as dots.
   * UniProt (TM+signal)    — best single DB under its optimized cutoff
-  * ≥1 … ≥5 DB            — ensemble: "yes" iff at least k of the 5
-                              surface DBs vote yes. k=1 is the union
-                              (any DB), the most permissive setting; it
-                              matches the agent's sensitivity and loses
-                              nearly all specificity.
-                              surface DBs (each under its optimized
-                              cutoff) vote yes
+  * 1+ / 2+ / 3+ / 4+ / 5+ DB — ensemble: "yes" iff at least k of the 5
+                             surface DBs (UniProt, GO CC, HPA, SURFY, CSPA,
+                             each under its optimized cutoff) vote yes.
+                             k=1 is the union (any DB), the most permissive
+                             setting; k=5 is the strict intersection.
+
+Accuracy uses the project's soft-credit rule: yes ≡ contextual on the
+positive side; ``no`` matches ``no`` only. DB / ensemble bars are
+deterministic (one value each, no replicates).
 
 Overall correctness only — per-bucket breakdown lives in the sibling
 `db_correctness_by_class` canonical figure.
+
+Reads only the per-figure TSV
+``data/processed/figures/ensemble_vs_best_db_vs_sonnet.tsv`` (built by
+``scripts/build_figure_tsvs.py``).
 
 # Reproduction:
 #   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
@@ -25,7 +35,6 @@ Run:
 """
 from __future__ import annotations
 
-from collections import Counter
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -84,34 +93,38 @@ def main() -> None:
         out["SURFY"]   = row["surfy_surface_flag"] == 1
         return out
 
-    # Majority across replicates, not the first one. `.first()` silently
-    # reported replicate 1 as if it were the run's verdict, which flipped
-    # two genes (ABCB9, C3) and understated the agent by 1.4 pp. Same bug
-    # class as the reason-collapse fix in curator_vs_agent_reason.py.
+    # Sonnet bar = MEAN of the per-replicate accuracies (``is_match`` is the
+    # soft-credit match per row), so bar, replicate dots and SEM share one
+    # center. Matches the manuscript legend ("mean of three replicates").
     _sonnet_rows = data[
         (data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")
     ]
-    sonnet_ncbi = {
-        gene: Counter(verdicts).most_common(1)[0][0]
-        for gene, verdicts in _sonnet_rows.groupby("gene_symbol", sort=False)[
-            "predicted_verdict"
-        ]
-    }
+    sonnet_rep_accs = (
+        _sonnet_rows.assign(is_match=_sonnet_rows["is_match"].astype(int))
+        .groupby("replicate")["is_match"].mean().tolist()
+    )
 
     callers: list[tuple[str, callable, str]] = [
-        ("Sonnet (+ NCBI)",      lambda g: sonnet_ncbi.get(g) or "no",                              CLAUDE_ORANGE),
         ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(g).get("UniProt") else "no",
                                                                                                     CATEGORICAL_PALETTE[0]),
     ]
+    # "k+ DB" rather than "≥k DB" — static Manrope OTFs lack the ≥ glyph
+    # and matplotlib silently drops it; ASCII "+" stays robust.
     for k in (1, 2, 3, 4, 5):
         callers.append((
-            f"≥{k} DB",
+            f"{k}+ DB",
             (lambda g, k=k: "yes" if sum(db_votes_for(g).values()) >= k else "no"),
             ENSEMBLE_PALETTE[k],
         ))
 
     genes = list(truth_by_gene)
-    rows = []
+    sonnet_acc = sum(sonnet_rep_accs) / len(sonnet_rep_accs)
+    rows = [{
+        # Inner count label = rounded mean correct per single run.
+        "caller": "Sonnet (+ IDs)", "accuracy": sonnet_acc,
+        "n_correct": round(sonnet_acc * len(genes)), "n_total": len(genes),
+        "color": CLAUDE_ORANGE,
+    }]
     for label, vote_fn, color in callers:
         n_correct = sum(_vote_correct(vote_fn(g), truth_by_gene[g]) for g in genes)
         rows.append({
@@ -131,31 +144,54 @@ def main() -> None:
         "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
         "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
     })
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=(13, 6))
     bars = ax.bar(
         df["caller"], df["accuracy"] * 100,
         color=df["color"], edgecolor="none", width=0.6,
     )
-    for bar, row in zip(bars, df.to_dict("records"), strict=True):
+    # Lift the Sonnet % label clear of its replicate dots + SEM cap.
+    _reps = [v * 100 for v in sonnet_rep_accs]
+    sonnet_top = 0.0
+    if len(_reps) >= 2:
+        _m = sum(_reps) / len(_reps)
+        _sem = ((sum((v - _m) ** 2 for v in _reps) / (len(_reps) - 1)) ** 0.5) / len(_reps) ** 0.5
+        sonnet_top = max(max(_reps), _m + _sem)
+    for i, (bar, row) in enumerate(zip(bars, df.to_dict("records"), strict=True)):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 1.2,
+            max(bar.get_height(), sonnet_top if i == 0 else 0.0) + 1.2,
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
-            fontsize=17, fontweight="bold", color=COLORS["dark"],
+            fontsize=20, fontweight="bold", color=COLORS["dark"],
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() / 2,
             f"{row['n_correct']}/{row['n_total']}",
             ha="center", va="center",
-            fontsize=12, color="white", fontweight="bold",
+            fontsize=15, color="white", fontweight="bold",
         )
+
+    # Individual-replicate accuracies + SEM on the Sonnet bar only (bar
+    # height is their mean, so all three share one center).
+    rep_accs = [v * 100 for v in sonnet_rep_accs]
+    if len(rep_accs) >= 2:
+        sonnet_bar = bars[0]
+        xc = sonnet_bar.get_x() + sonnet_bar.get_width() / 2
+        m = sum(rep_accs) / len(rep_accs)
+        sd = (sum((v - m) ** 2 for v in rep_accs) / (len(rep_accs) - 1)) ** 0.5
+        sem = sd / (len(rep_accs) ** 0.5)
+        ax.errorbar(xc, m, yerr=sem, fmt="none", ecolor=COLORS["dark"],
+                    elinewidth=1.2, capsize=4, capthick=1.2, zorder=4)
+        for j, rv in enumerate(rep_accs):
+            jitter = (j - (len(rep_accs) - 1) / 2) * (sonnet_bar.get_width() * 0.16)
+            ax.scatter(xc + jitter, rv, s=24, color=COLORS["dark"],
+                       edgecolor="white", linewidth=0.5, zorder=5, alpha=0.9)
 
     ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=19)
     ax.set_ylim(0, 105)
-    ax.tick_params(axis="x", labelsize=13)
-    ax.tick_params(axis="y", labelsize=13)
+    ax.tick_params(axis="x", labelsize=17)
+    ax.tick_params(axis="y", labelsize=14)
 
     sns.despine(ax=ax, top=True, right=True)
     fig.tight_layout()

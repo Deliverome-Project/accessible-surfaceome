@@ -25,7 +25,7 @@ fraction bars.
 | Facet | Definition | Feature source |
 |---|---|---|
 | `canonical` / `likely` / `low` / `uncertain·no` | Deep-dive tier (`_dd_assign_bucket`), pooling the two weakest tiers | Deep-dive **records** (full coverage per deep-dived gene) |
-| `Sonnet dual triage` | Every gene the genome-wide Sonnet triage (`genome_full_sonnet_ncbi_v2`) called `yes`/`contextual` (4,612 with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
+| `Sonnet dual triage` | Every gene the two-stage Sonnet triage called `yes`/`contextual` — `genome_full_sonnet_ncbi_v2` plus the four PubMed rescue lanes (4,612 with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
 
 The Sonnet facet is a broader, *different* category from the tiers — its det
 features come from the genome-wide tables (the same DeepTMHMM / Compara /

@@ -36,7 +36,7 @@ distribution.
 Why per-panel violins?
 ----------------------
 Each axis has a very different scale (papers in the hundreds vs feature counts
-0–6) so a shared Y axis would compress the small axes into the baseline. Five
+0–7) so a shared Y axis would compress the small axes into the baseline. Five
 small per-panel violins (one Y axis each) let each real distribution speak for
 itself.
 

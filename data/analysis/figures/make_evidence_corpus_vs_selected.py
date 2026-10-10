@@ -9,15 +9,20 @@
 # ///
 """Reproduce ``evidence_corpus_vs_selected.{pdf,png}`` — per-gene papers
 found (discovery corpus) vs papers selected as evidence, colored by the
-agent's ``evidence_grade`` verdict.
+agent's ``evidence_grade`` verdict (panel a), plus deep-dive surface tier
+composition by papers-found bin (panel b).
 
 **Real data.** Every point is a published deep-dive record with a real gene
 symbol and real counts:
 
   * ``papers_found``     — discovery-corpus size (EuropePMC + PubTator +
-    gene2pubmed union; ``n_papers_found``, median ~240).
+    gene2pubmed union; ``n_papers_found``, median 219, range 1–395). Panel
+    a's log axis starts at 25, so the 120 genes with fewer than 25 papers
+    found are not drawn.
   * ``papers_selected``  — papers the agent read full-text and kept as
-    evidence (``n_papers_selected``); grows sub-linearly with corpus size.
+    evidence (``n_papers_selected``, median 10). The median selection rate
+    rises from ~2% of the corpus for small corpora to ~8% at 200–300 papers
+    found, then falls again for larger corpora.
   * ``evidence_grade``   ∈ {direct_multi_method, direct_single_method,
     supportive_but_indirect, conflicting, weak} — the agent's grade of the
     retained evidence base; tracks selection depth.
@@ -26,8 +31,9 @@ The bundled sibling TSV is produced by ``scripts/build_figure_tsvs.py``
 (``build_evidence_corpus_vs_selected``) from the deep-dive export, so this
 mirror renders the same dataset as the in-repo canonical.
 
-Full deep-dive cohort (5,130 genes, all carrying both a discovery-corpus
-size and a selected count).
+Deep-dive records with a discovery-corpus size (5,313 genes; median 219
+found, 10 selected). The deep-dive cohort is 5,332; the other 19 records
+have a null ``n_papers_found`` and are left out of the TSV.
 
 Standalone — ``uv run make_evidence_corpus_vs_selected.py``.
 """
@@ -54,7 +60,6 @@ DATA_TSV = f"{BASE}/data/processed/figures/evidence_corpus_vs_selected.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
-# Filled at gist-creation time; the placeholder stays harmless until then.
 GIST_URL = "https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
@@ -285,12 +290,13 @@ def main() -> None:
         frameon=False, fontsize=13, title_fontsize=14,
     )
 
+    # Footer sits under panel a, which it describes.
     fig.text(
-        0.5, -0.04,
-        f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
-        f"median {int(np.median(selected))} selected); n={len(data)} genes "
-        f"(full deep-dive cohort).",
-        ha="center", va="top", fontsize=12, style="italic", color=BRAND_NEUTRAL,
+        0.27, -0.04,
+        f"Real deep-dive records with a papers-found count: n={len(data):,} genes\n"
+        f"(median {int(np.median(found))} papers found, {int(np.median(selected))} selected; "
+        f"x-axis starts at 25).",
+        ha="center", va="top", fontsize=13, style="italic", color=BRAND_NEUTRAL,
     )
 
     _draw_tier_composition(ax_b, data)

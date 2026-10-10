@@ -48,7 +48,8 @@ parity, OpenAlex surfaces ~3.6× more papers per gene than production
 ## Methodology — same classifier for both
 
 Every paper is run through the **production fetch chain**
-(`_fetch_body_drafts` → PMC JATS → Unpaywall PDF → fallback abstract).
+(`_fetch_body_drafts` → PMC JATS → Unpaywall PDF → DataCite landing
+PDF → fallback abstract).
 When the prod fetch fails, the secondary Unpaywall lookup distinguishes:
 
 | Bucket | Meaning |
@@ -64,8 +65,8 @@ When the prod fetch fails, the secondary Unpaywall lookup distinguishes:
 
 | Strategy | Sample size | Avg pre-sample papers/gene | PMC | Unpaywall | DataCite | Bot-blocked | OA repo missed | No OA | Reachable |
 |---|---|---|---|---|---|---|---|---|---|
-| **Production** (21 axes) | 1,000 papers / 100 genes | 228 | 88% | 0.5% | 0% | 0.6% | 0.1% | 10% | **88.9%** |
-| **OpenAlex** (21 axes) | 989 papers / 100 genes | 829 | 44% | 4% | 0.5% | 11% | 2.2% | 38% | **48.4%** |
+| **Production** (21 axes) | 1,000 papers / 100 genes | 228 | 88.4% | 0.5% | 0% | 0.6% | 0.1% | 10.4% | **88.9%** |
+| **OpenAlex** (21 axes) | 989 papers / 100 genes | 829 | 44.1% | 3.8% | 0.7% | 11.1% | 2.0% | 38.2% | **48.6%** |
 
 *Reachable* = PMC + Unpaywall + DataCite (everything the production fetch
 chain actually retrieves). The DataCite tier is new in PR #81 — it
@@ -78,9 +79,9 @@ PubMed/EuropePMC-keyed discovery rarely surfaces non-Crossref DOIs in
 the first place.
 
 **The story.** With matched 21-axis search complexity, production
-surfaces a smaller pool per gene (~228 papers) but **88% are
+surfaces a smaller pool per gene (~228 papers) but **89% are
 reachable**. OpenAlex's broader recall surface returns **3.6× more
-papers per gene** (~829) but only **48% are reachable** — the
+papers per gene** (~829) but only **49% are reachable** — the
 additional pool is dominated by:
 - Preprints whose only OA path bot-blocks (bioRxiv/medRxiv/Research Square)
 - Paywalled non-PMC-archived journal articles (Cell/Nature non-OA, Wiley journals)
@@ -91,8 +92,8 @@ additional pool is dominated by:
   carves them out by registration agency; the DataCite landing →
   `citation_pdf_url` resolver fetches the arXiv + Zenodo subset.
 
-**Net reachable papers per gene**: production ~200 (228 × 88%),
-OpenAlex ~398 (829 × 48%). OpenAlex genuinely surfaces about 2× the
+**Net reachable papers per gene**: production ~203 (228 × 88.9%),
+OpenAlex ~403 (829 × 48.6%). OpenAlex genuinely surfaces about 2× the
 reachable corpus when measured this way — but with much higher noise
 (see next section: most of those additional papers are off-topic).
 
@@ -112,24 +113,34 @@ adding OpenAlex would dilute precision more than it adds signal.
 ## Run
 
 ```bash
-uv run https://gist.githubusercontent.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d/raw/make_paywall_bot_block_compare.py
+git clone https://gist.github.com/cbc950dad1c3a6595fd5018cdb6b030d.git
+cd cbc950dad1c3a6595fd5018cdb6b030d
+uv run make_paywall_bot_block_compare.py
 ```
 
-PyPA inline-script-metadata script reads the per-paper TSV from
-`raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/paywall_bot_block/paywall_bot_block_compare.tsv`
-(one row per source × gene × paper).
+The script declares its dependencies with PyPA inline script metadata,
+so `uv run` installs them. It reads the per-paper TSV
+`paywall_bot_block_compare.tsv` (one row per source × gene × paper) from
+the same folder; inside the repo it falls back to
+`data/processed/paywall_bot_block/paywall_bot_block_compare.tsv`. It
+writes `paywall_bot_block_compare.{pdf,png}` to the current directory.
 
 ## Data sources
 
 | File | Contents |
 |---|---|
 | `data/processed/paywall_bot_block/paywall_bot_block_compare.tsv` | Tidy long-form figure input: source × gene × paper × bucket. 1,989 rows. LFS-exempted so raw.githubusercontent.com serves it as text. |
-| `probe_results/cohort100x10_production.jsonl` | Per-gene production-strategy probe results (live JSONL, 100/100 genes done) |
-| `probe_results/cohort100x10_openalex.jsonl` | Per-gene OpenAlex-strategy probe results, 21-axis run with API key (100/100 genes done) |
+| `data/analysis/paywall_bot_block/probe_results/cohort100x10_production.jsonl` | Per-gene production-strategy probe results (100/100 genes) |
+| `data/analysis/paywall_bot_block/probe_results/cohort100x10_openalex.jsonl` | Per-gene OpenAlex-strategy probe results, 21-axis run with API key (100/100 genes) |
 | Probe script | `scripts/probes/probe_oa_buckets.py --source {production,openalex} --n-genes 100 --papers-per-gene 10 --workers 8` — resume-capable, JSONL-per-gene incremental writer, 8-wide parallelism |
 | Figure script | `scripts/figures/paywall_bot_block_compare.py` — canonical generator |
 
 ## Cohort definition
 
-`candidate_universe_v2.tsv` (6,521 genes; Sonnet yes/contextual ∪
-≥1 DB-vote). 100 random genes sampled with seed=2024.
+100 random genes sampled with seed=2024 (`--seed` default in the
+probe script) from the genes with a UniProt accession in
+`data/processed/candidate_universe/candidate_universe_v2.tsv` (Sonnet
+yes/contextual ∪ ≥1 DB vote) as it stood on 2026-06-07, when it held
+6,521 genes. The file has since grown to 6,711 genes (PubMed rescues
+added 2026-06-22), so re-running the probe today draws a different
+sample.

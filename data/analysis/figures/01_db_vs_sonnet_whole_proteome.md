@@ -12,11 +12,13 @@ re-run; do not hand-edit inside these markers.*
 
 Whole-genome analog of the 147-gene bench plot
 `db_correctness_by_class`. On the bench, ground truth is hand-curated;
-on the whole proteome (~19,324 protein-coding genes) it doesn't exist,
-so we use the **Sonnet (+ NCBI) triage verdict as the reference** and
-ask: for each surface DB (under its bench-optimized cutoff) and each
-≥k-DB ensemble (k = 1..5), what fraction of genes does it agree with
-Sonnet on, split by Sonnet's verdict bucket.
+on the whole proteome (19,324 protein-coding genes) it doesn't exist,
+so we use the **production two-tier Sonnet triage verdict as the
+reference**: an NCBI first pass, with 379 genes upgraded from "no" to
+"yes" or "contextual" by the PubMed second-pass rescue (`verdict_source`
+= `pubmed_rescue` in the TSV). For each surface DB (under its
+bench-optimized cutoff) and each ≥k-DB ensemble (k = 1..5), we ask what
+fraction of genes agrees with Sonnet, split by Sonnet's verdict bucket.
 
 Soft-credit rule: DB "yes" matches Sonnet "yes" *or* "contextual";
 DB "no" matches Sonnet "no" only.
@@ -39,10 +41,10 @@ Run:
 uv run make_db_vs_sonnet_whole_proteome.py
 ```
 
-Sources (fetched live from the public repo, no API calls):
+Data (bundled in this gist; the script reads only this file, with no
+network or API calls):
 
-- Whole-proteome catalog (DB flags + Sonnet verdicts): [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv) — 19,324 protein-coding genes; sourced from D1 by [`scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py)
-- UniProt + CSPA optimized-cutoff accession sets: [`data/processed/triage_bench/db_optimized_cutoffs.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/triage_bench/db_optimized_cutoffs.tsv)
+- [`db_vs_sonnet_whole_proteome.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/figures/db_vs_sonnet_whole_proteome.tsv) — 19,324 protein-coding genes, one row each: the five per-DB surface flags, the optimized UniProt and CSPA flags, and the Sonnet verdict (with `verdict_source`). Built by [`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py) from [`whole_proteome_catalog.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/catalog/whole_proteome_catalog.tsv) and [`db_optimized_cutoffs.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/processed/triage_bench/db_optimized_cutoffs.tsv).
 
 Canonical in-repo generator:
 [`scripts/figures/db_vs_sonnet_whole_proteome.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/db_vs_sonnet_whole_proteome.py).

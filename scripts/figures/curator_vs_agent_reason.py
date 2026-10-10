@@ -1,10 +1,13 @@
 """Curator vs agent ``TriageReason`` agreement on SurfaceBench.
 
 Per-gene comparison of the manual curator's ground-truth ``reason``
-(from ``data/eval/triage_benchmark_v1.tsv``) against the production
-triage agent's ``predicted_reason`` (from
-``data/processed/triage_bench/mainbench_canonical_v2.tsv``, filtered
-to ``model=claude-sonnet-4-6`` ``prompt_variant=ncbi``, n=147 genes).
+against the production triage agent's ``predicted_reason`` (model
+``claude-sonnet-4-6``, ``prompt_variant=ncbi``, n=147 genes). Both come
+from the per-replicate figure TSV
+``data/processed/figures/curator_vs_agent_reason.tsv`` (built by
+``scripts/build_figure_tsvs.py`` from ``data/eval/triage_benchmark_v1.tsv``
+and ``mainbench_replicates_v2.tsv``); the 3 replicates per gene are
+collapsed to one reason here by ``_representative_reason``.
 Both reasons are drawn from the same closed 19-value ``TriageReason``
 enum — so the diagonal of the matrix is exact-reason agreement, and
 the within-bucket / cross-bucket off-diagonals tell different stories:
@@ -16,8 +19,10 @@ the within-bucket / cross-bucket off-diagonals tell different stories:
     (contextual), agent says ``cytoplasmic`` (no)) — verdict-level
     disagreement, the cells that matter most
 
-Headline: ~84% exact reason agreement; the matrix shows which reason
-classes carry the residual disagreement.
+Headline: 129/147 (87.8%) exact reason agreement for Sonnet 4.6 + NCBI
+(panel c); the matrix shows which reason classes carry the 18
+disagreements. Panels a and b compare the other model × variant
+configs.
 
 Run:
     uv run python scripts/figures/curator_vs_agent_reason.py
@@ -115,7 +120,7 @@ def _load_data() -> pd.DataFrame:
 
 def _surface_vote(verdict: str) -> bool | None:
     """Map a verdict string to a surface-positive boolean, or None if invalid.
-    Mirrors the same function in scripts/export_mainbench_to_tsv.py — yes and
+    Mirrors the same function in scripts/tsv-export/export_mainbench_to_tsv.py — yes and
     contextual both count as surface-positive for majority voting, no is
     surface-negative."""
     if verdict in ("yes", "contextual"):
@@ -238,7 +243,7 @@ CONFIGS_A = [
     ("claude-opus-4-8",   "ncbi",         "Opus 4.8 (NCBI)"),
 ]
 # Panel-b configs — 2 Sonnet variants + best Haiku + best Opus.
-# Best Haiku = web_ncbi (73.5% reason; verified by inspecting all 4
+# Best Haiku = web_ncbi (76.2% exact reason; verified by inspecting all 4
 # Haiku variants). Best Opus = ncbi (only naive + ncbi available for
 # Opus).
 CONFIGS_B = [
