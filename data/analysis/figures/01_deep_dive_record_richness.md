@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 6.** Each deep-dive record is information-dense, and its richness scales with the confidence of the surface call. Five axes of content: a) papers found in discovery, b) papers selected for full-text reading, c) selected papers carrying extracellular evidence, d) structured catalog filters holding a positive, non-default finding (of 24), and e) precomputed deterministic features populated (of 7). For example, some proteins had no available SURFACE-Bind predictions or known orthologs. Every panel is faceted by the deep-dive confidence tier — canonical, likely, low, and non-surface ("no"); see Methods. Panels a and b span all four tiers; panels c–e show the three surface-positive tiers only (canonical, likely, low), since non-surface proteins carry little extracellular evidence by definition. Each violin is the per-protein distribution for that tier (inner lines: median and 25th/75th percentiles; dark dots are individual proteins) across the full deep-dived cohort (n = 5,130).
+> **Figure 6.** Each deep-dive record is information-dense, and its richness scales with the confidence of the surface call. Five axes of content: a) papers found in discovery, b) papers selected for full-text reading, c) selected papers carrying extracellular evidence, d) structured catalog filters holding a positive, non-default finding (of 24), and e) precomputed deterministic features populated (of 7). For example, some proteins had no available SURFACE-Bind predictions or known orthologs. Every panel is faceted by the deep-dive confidence tier — canonical, likely, low, and non-surface ("no"); see Methods. Panels a and b span all four tiers; panels c–e show the three surface-positive tiers only (canonical, likely, low), since non-surface proteins carry little extracellular evidence by definition. Each violin is the per-protein distribution for that tier (inner lines: median and 25th/75th percentiles; dark dots are individual proteins) across the full deep-dived cohort (n = 5,332).
 <!-- END manuscript-legend -->
 
 A 5-panel violin showing the **real** per-gene distribution along five axes
@@ -25,7 +25,7 @@ feature counts 0–24 to papers in the hundreds — a shared Y would compress th
 small axes into the baseline). A faint point strip overlays the real per-gene
 values so the actual per-tier `n` is visible. Panels a/b keep the `no` tier;
 panels c–e drop it (non-surface proteins carry little extracellular evidence by
-definition). The `uncertain` tier (n=9) is dropped everywhere as too small to
+definition). The `uncertain` tier (n=55) is dropped everywhere as too small to
 plot.
 
 - **a. Papers found** — discovery-corpus size (EuropePMC + PubTator NER +

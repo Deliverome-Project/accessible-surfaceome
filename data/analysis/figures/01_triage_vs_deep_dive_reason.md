@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 13.** Triage and database calls agree with full-text deep-dive curation most strongly for high-confidence surface protein-coding genes (n = 5,130). a) Fraction of deep-dive canonical, likely, and low-confidence genes also flagged as surface by each database and the triage agents. b) Resolution of each triage verdict across the five deep-dive tiers. Triage-yes is 65% canonical and 28% likely; triage-contextual spreads across likely, low, and no; triage-no remains 74% no, with 24% upgraded to likely or low by the deep-dive pipeline. c) Triage reason (rows) versus deep-dive structured reason (columns); exact agreement is 53%.
+> **Supplementary Figure 13.** Triage and database calls agree with full-text deep-dive curation most strongly for high-confidence surface protein-coding genes (n = 5,332). a) Fraction of deep-dive canonical, likely, and low-confidence genes also flagged as surface by each database and the triage agents. b) Resolution of each triage verdict across the five deep-dive tiers. Triage-yes is 64% canonical and 28% likely; triage-contextual spreads across likely, low, and no; triage-no remains 76% no, with 22% upgraded to likely or low by the deep-dive pipeline. c) Triage reason (rows) versus deep-dive structured reason (columns); exact agreement is 50%.
 <!-- END manuscript-legend -->
 
 19×19 confusion matrix between the triage agent's first-pass

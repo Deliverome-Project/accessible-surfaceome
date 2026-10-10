@@ -38,12 +38,12 @@ colored by bucket so a cross-bucket flip is visible at a glance.
 
 **Real data.** Built from the per-figure TSV
 ``data/processed/figures/triage_vs_deep_dive_reason.tsv`` — one row per gene
-with both a triage and a deep-dive record (n=5,130), carrying the triage
+with both a triage and a deep-dive record (n=5,332), carrying the triage
 verdict/reason, the deep-dive reason/tier, and the 5 per-DB surface flags. The
 same TSV backs the gist mirror
 (``data/analysis/figures/make_triage_vs_deep_dive_reason.py``).
 
-Full deep-dive cohort (5,130 genes); about 53% of genes land on the reason
+Full deep-dive cohort (5,332 genes); about 50% of genes land on the reason
 diagonal, the rest split into same-bucket relabels and cross-bucket flips.
 
 Run:

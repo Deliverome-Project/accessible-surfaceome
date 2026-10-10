@@ -3,7 +3,7 @@
 Side-by-side grouped barplot over the same 9 topology categories the
 ``topology_coverage_by_source`` 3×3 figure breaks out, with two hues:
 
-  • **Sonnet 2-tier yes/contextual universe** (n=4,426) — the genes
+  • **Sonnet 2-tier yes/contextual universe** (n=4,628) — the genes
     the production pipeline calls accessible after the
     Sonnet+NCBI sweep plus the Sonnet+PubMed rescue lane
     (NCBI=no → PubMed=yes/contextual flips, ~177 genes recovered).
@@ -143,7 +143,7 @@ def _compute_distribution() -> tuple[
     # Two cohorts share one union TSV via in_universe + is_bench flags. Bench is
     # the benchmark's GROUND-TRUTH yes/contextual genes (99, incl. 3 Sonnet
     # miscalled that sit outside the universe); universe is the sonnet-2-tier
-    # set (4,426). The union carries the 3 bench-only genes' topology.
+    # set (4,628). The union carries the 3 bench-only genes' topology.
     universe_data = data[data["in_universe"].astype(bool)]
     bench_data = data[data["is_bench"].astype(bool)]
     n_universe = len(universe_data)

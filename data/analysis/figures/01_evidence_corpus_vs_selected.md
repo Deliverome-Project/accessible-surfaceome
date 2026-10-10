@@ -7,15 +7,12 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 12.** The number of papers retained as evidence per protein grows sub-linearly with the size of the discovery corpus, and the agent's evidence-quality grade tracks the depth of the retained set. The horizontal axis (log scale) is the number of papers found during literature discovery; the vertical axis (linear scale) is how many were kept as evidence after selection. Points are colored by the agent's evidence-quality grade — direct evidence from multiple independent assays, direct evidence from a single assay, supportive but indirect evidence, or weak or sparse evidence. Proteins with fewer than 100 papers found that were called surface by UniProt were flagged on the viewer since they may be surface proteins but likely have insufficient evidence to classify them as such. [Figure data and script.](https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549) #####
+> **Supplementary Figure 12.** The number of papers retained as evidence per protein grows sub-linearly with the size of the discovery corpus, and the agent's evidence-quality grade tracks the depth of the retained set. The horizontal axis (log scale) is the number of papers found during literature discovery; the vertical axis (linear scale) is how many were kept as evidence after selection. Points are colored by the agent's evidence-quality grade — direct evidence from multiple independent assays, direct evidence from a single assay, supportive but indirect evidence, or weak or sparse evidence. Proteins with fewer than 100 papers found that were called surface by UniProt were flagged on the viewer since they may be surface proteins but likely have insufficient evidence to classify them as such.
 <!-- END manuscript-legend -->
 
 Per-gene scatter of two corpus axes the deep-dive literature pipeline
-returns, colored by the agent's `evidence_grade` verdict. Every point is
-a real published deep-dive record: **n = 5,313 genes**, the deep-dive
-cohort (5,332) minus 19 legacy records written before schema 2.14.0 that
-carry a null `n_papers_found` — both axes must be present to plot a
-point. Median 219 papers found/gene, median 10 selected.
+returns, colored by the agent's `evidence_grade` verdict. **n = 5,313 genes**;
+median 219 papers found/gene, median 10 selected.
 
 
 ## How selection actually scales
@@ -44,7 +41,7 @@ rises across the first half of the range.
 ## Panel b — tier composition by literature size
 
 Stacked share of each discovery-corpus stratum by deep-dive surface tier.
-Panel a shows that selection scales sub-linearly with corpus size; panel b
+Panel a shows how much of each corpus is retained; panel b
 shows what the pipeline *concluded* at each corpus size, which is the part
 that separates "well studied" from "strong evidence".
 

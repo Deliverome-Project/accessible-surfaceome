@@ -77,7 +77,7 @@ BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 
 # Tier colors — MUST match Fig 5. canonical=green, likely=teal, low=amber,
-# no=muted warm-grey. `uncertain` is dropped everywhere (n=9, too small).
+# no=muted warm-grey. `uncertain` is dropped everywhere (n=55, too small).
 TIER_COLORS = {
     "canonical": "#2E7A55",
     "likely":    "#3D6B60",
