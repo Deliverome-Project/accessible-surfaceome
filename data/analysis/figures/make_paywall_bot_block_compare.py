@@ -93,26 +93,26 @@ def _apply_brand_style() -> None:
     plt.rcParams.update({
         "savefig.dpi": 600, "savefig.bbox": "tight",
         "figure.facecolor": "none", "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         # Match _plotting_config: no light defaults. Manrope at weight 400
         # reads as light against the variable range (300-800); default to
         # 500 so figures don't render with thin defaults.
-        "font.weight": "medium",
+        "font.weight": "semibold",
         # Sized to be visually consistent with the v3-baseline cohort
         # figures (font.size=21) while accounting for this script's
         # smaller (10, 6) figsize — picked to ride slightly below them
         # so the figure doesn't read as oversized at its native scale.
-        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0, "axes.titlepad": 0,
-        "axes.labelweight": "medium", "axes.titleweight": "semibold",
+        "font.size": 11, "axes.labelsize": 12.5, "axes.titlesize": 0, "axes.titlepad": 0,
+        "axes.labelweight": "semibold", "axes.titleweight": "semibold",
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.grid": True, "axes.axisbelow": True,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none", "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7, "grid.color": BRAND_GRID,
-        "xtick.labelsize": 15, "ytick.labelsize": 14,
+        "xtick.labelsize": 11, "ytick.labelsize": 11,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 13,
+        "legend.frameon": False, "legend.fontsize": 11,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
@@ -206,19 +206,19 @@ def main() -> None:
             if pct >= 6:
                 ax.text(cum + pct / 2, ypos, f"{pct:.0f}%",
                         ha="center", va="center",
-                        color="white", fontweight="bold", fontsize=14)
+                        color="white", fontsize=10.5)
             cum += pct
         ax.text(
             104, ypos,
             f"{total} papers /\n{len(genes)} genes",
-            ha="left", va="center", fontsize=12, fontweight="medium",
+            ha="left", va="center", fontsize=10,
             color=BRAND_INK,
         )
 
     ax.set_xlim(0, 100)
     ax.set_ylim(-0.7, len(sources) - 0.3)
     ax.set_yticks(y_positions)
-    ax.set_yticklabels([SOURCE_LABEL[s] for s in sources], fontweight="medium")
+    ax.set_yticklabels([SOURCE_LABEL[s] for s in sources])
     ax.set_xlabel("% of sampled papers")
     # No baked-in title — figure gets captioned in the gist README.
     handles = [

@@ -93,7 +93,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -102,12 +102,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 14,
-        "axes.labelsize": 14,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 10.5,
+        "axes.labelsize": 12,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -122,12 +122,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 13,
-        "ytick.labelsize": 13,
+        "xtick.labelsize": 10.5,
+        "ytick.labelsize": 10.5,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 13,
+        "legend.fontsize": 10.5,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -174,31 +174,30 @@ CELL_COLOR = {
     ("claude-opus-4-8",   "ncbi"):        "#a85b3f",
 }
 
-# Per-cell label offsets (pixels) to deconflict dense clusters — mirrors
-# scripts/figures/benchmark_cost_vs_accuracy.py. When abs(dy) >= 16 a short
-# leader line is drawn so the label → point mapping stays unambiguous.
-# Re-tune if cells move.
+# Per-cell label offsets (points) — mirrors
+# scripts/figures/benchmark_cost_vs_accuracy.py. Labels are vertically
+# centred on the anchor; dx < 0 right-aligns them to the left of the point.
+# Offsets >= 18 pt get a leader line. Checked so no label touches a dot,
+# another label or a leader line — re-tune if cells move.
 CELL_LABEL_OFFSET = {
-    ("claude-haiku-4-5",  "naive"):       (7,   6),
-    ("claude-haiku-4-5",  "ncbi"):        (7,  10),
-    ("claude-haiku-4-5",  "pubmed_ncbi"): (7, -18),
-    ("claude-haiku-4-5",  "web_ncbi"):    (7,   6),
-    # Sonnet 4.6 (naive) sits just above Sonnet 5 (+ IDs) at a near-identical
-    # cost — send its label LEFT (into the empty gap toward Haiku) so it
-    # doesn't collide with the Sonnet 5 point/label below it.
-    ("claude-sonnet-4-6", "naive"):       (-128,  2),
-    ("claude-sonnet-4-6", "ncbi"):        (7,   12),
-    # + IDs + web and + IDs + PubMed nearly overlap (same cost, 0.5pp apart):
-    # push PubMed's label HIGH (clear above the +IDs row) with a leader, and
-    # keep web's label just up-right on its point — so neither lands on the
-    # other's point or on Opus (naive) to their right.
-    ("claude-sonnet-4-6", "pubmed_ncbi"): (7,  34),
-    ("claude-sonnet-4-6", "web_ncbi"):    (7,   6),
-    # Sonnet 5 (+ IDs) sits ~1pp below Sonnet 4.6 (naive) at a very similar
-    # cost; push its label well down with a leader line.
-    ("claude-sonnet-5",   "ncbi"):        (16, -44),
-    ("claude-opus-4-8",   "naive"):       (7, -18),
-    ("claude-opus-4-8",   "ncbi"):        (7,  10),
+    ("claude-haiku-4-5",  "naive"):       (10,   0),
+    # Below-right: the + IDs + PubMed point sits level with it to the right.
+    ("claude-haiku-4-5",  "ncbi"):        (10, -13),
+    ("claude-haiku-4-5",  "pubmed_ncbi"): (10,   0),
+    ("claude-haiku-4-5",  "web_ncbi"):    (-10,  0),
+    # Sonnet 4.6 naive / + IDs sit close together: both labels go LEFT into
+    # the empty gap toward Haiku.
+    ("claude-sonnet-4-6", "naive"):       (-10,  0),
+    ("claude-sonnet-4-6", "ncbi"):        (-10,  3),
+    # + IDs + PubMed is boxed in by + IDs, Sonnet 5 and + IDs + web: lift its
+    # label up-right on a leader, clear of every neighbour.
+    ("claude-sonnet-4-6", "pubmed_ncbi"): (14,  18),
+    ("claude-sonnet-4-6", "web_ncbi"):    (10,   9),
+    # Sonnet 5 (+ IDs) sits just below Sonnet 4.6 + IDs + PubMed: label
+    # down-right on a leader.
+    ("claude-sonnet-5",   "ncbi"):        (14, -18),
+    ("claude-opus-4-8",   "naive"):       (10,   0),
+    ("claude-opus-4-8",   "ncbi"):        (10,   0),
 }
 
 
@@ -292,16 +291,20 @@ def main() -> None:
             x, y,
             s=180, c=row["color"], edgecolor=BRAND_INK, linewidth=0.8, zorder=3,
         )
-        dx, dy = CELL_LABEL_OFFSET.get((row["model"], row["variant"]), (8, -3))
+        dx, dy = CELL_LABEL_OFFSET.get((row["model"], row["variant"]), (9, 0))
+        # Labels are vertically centred on their anchor and grow away from
+        # the point (left-anchored when dx > 0); the leader starts at the
+        # dot's rim so it never crosses the marker.
         arrowprops = (
             dict(arrowstyle="-", color=BRAND_NEUTRAL,
-                 linewidth=0.6, alpha=0.7, shrinkA=0, shrinkB=4)
-            if abs(dy) >= 16 else None
+                 linewidth=0.6, alpha=0.8, shrinkA=2, shrinkB=7.5)
+            if (dx * dx + dy * dy) ** 0.5 >= 18 else None
         )
         ax.annotate(
             row["label"], (x, y),
             xytext=(dx, dy), textcoords="offset points",
-            fontsize=14, color=BRAND_INK,
+            ha="left" if dx >= 0 else "right", va="center",
+            fontsize=9.75, color=BRAND_INK,
             arrowprops=arrowprops,
         )
     ax.set_xscale("log")

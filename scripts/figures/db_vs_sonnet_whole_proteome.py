@@ -59,13 +59,15 @@ ENSEMBLE_KS = [1, 2, 3, 4, 5]
 
 DB_PALETTE = {label: CATEGORICAL_PALETTE[i] for i, label in enumerate(DB_LABELS)}
 
-# Sequential teal ramp for the ≥k ensembles (light → dark = permissive → strict).
+# Grey ramp for the k+ ensembles, light → dark as more databases must agree
+# (permissive union → strict intersection). Neutral so the ensembles can't be
+# mistaken for any single database's brand colour; shared by S5 and S6.
 ENSEMBLE_PALETTE = {
-    1: "#7AAB9F",  # teal-light  (≥1 = permissive union)
-    2: "#4D8A80",
-    3: "#3D6B60",
-    4: "#244840",
-    5: "#152E28",  # teal-deep   (≥5 = strict intersection)
+    1: "#CFCFCF",  # 1+ DB: the union
+    2: "#A7A7A7",
+    3: "#7E7E7E",
+    4: "#565656",
+    5: "#2E2E2E",  # 5+ DB: the strict intersection
 }
 
 BUCKETS = ["overall", "yes", "contextual", "no"]
@@ -138,8 +140,7 @@ def main() -> None:
     # Build caller list: ensembles first (color by k), then individual DBs sorted desc.
     callers: list[tuple[str, str]] = []
     for k in ENSEMBLE_KS:
-        # "k+ DB", not "≥k DB": the gist mirror's bundled static Manrope lacks ≥,
-        # and both renders must read the same.
+        # "k+ DB" = k or more DBs vote yes (same label as the gist mirror).
         callers.append((f"{k}+ DB", "ensemble"))
     for label in db_sorted:
         callers.append((label, "single"))
@@ -185,8 +186,8 @@ def main() -> None:
     # Brand-style-v3 font sizes — matches the gist mirror.
     # See CLAUDE.md "Canonical generator vs gist mirror".
     plt.rcParams.update({
-        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
-        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
 
     caller_order = [c[0] for c in callers]
@@ -196,7 +197,7 @@ def main() -> None:
         for c in callers
     ]
 
-    fig, ax = plt.subplots(figsize=(22, 6.5))
+    fig, ax = plt.subplots(figsize=(14, 7))
     sns.barplot(
         data=plot_df,
         x="bucket_label", y="fraction",
@@ -234,7 +235,7 @@ def main() -> None:
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
                 ha="center", va="bottom", rotation=90,
-                fontsize=13, color=COLORS["dark"],
+                fontsize=14, color=COLORS["dark"],
             )
 
     ax.set_xlabel("")
@@ -243,12 +244,15 @@ def main() -> None:
     ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     handles, _ = ax.get_legend_handles_labels()
-    legend_labels = [f"{lbl}  ({overall_acc[lbl]:.0%})" for lbl in caller_order]
+    legend_labels = [f"{lbl} ({overall_acc[lbl]:.0%})" for lbl in caller_order]
+    # Column-major fill: ensembles on the first row, single DBs on the second.
+    order = [0, 5, 1, 6, 2, 7, 3, 8, 4, 9]
+    handles, legend_labels = [handles[k] for k in order], [legend_labels[k] for k in order]
     ax.legend(
         handles, legend_labels,
-        title="Caller (overall agreement)",
-        loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=14,
+        title="Caller (overall agreement)", title_fontsize=18,
+        loc="lower center", bbox_to_anchor=(0.5, 1.0), ncols=5,
+        frameon=False, fontsize=16, columnspacing=1.6,
     )
 
     # Subtitle with per-bucket sample sizes.

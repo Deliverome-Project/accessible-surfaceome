@@ -59,6 +59,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.transforms import offset_copy
 import pandas as pd
 import seaborn as sns
 
@@ -101,7 +102,9 @@ PANELS = [
     ("n_det_features",     "Deterministic features (derived, 0-7)", _THREE, "Features per protein"),
 ]
 
-FIGSIZE = (25, 6.5)
+# Two rows (the 4-tier panels a/b on top, the 3-tier panels c-e below) so the
+# figure prints at a legible scale; a single 5-wide row needed a ~25 in canvas.
+FIGSIZE = (16, 10)
 
 
 def _load_real_values() -> pd.DataFrame:
@@ -153,12 +156,16 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         # occupy the x-tick labels.
         "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 16,
         "axes.titleweight": "semibold", "axes.titlepad": 12,
-        "xtick.labelsize": 14, "ytick.labelsize": 18, "legend.fontsize": 14,
+        "xtick.labelsize": 18, "ytick.labelsize": 18, "legend.fontsize": 18,
     })
 
     data = _load_real_values()
 
-    fig, axes = plt.subplots(1, 5, figsize=FIGSIZE)
+    fig = plt.figure(figsize=FIGSIZE)
+    gs = fig.add_gridspec(2, 6)
+    axes = [fig.add_subplot(gs[0, 0:3]), fig.add_subplot(gs[0, 3:6]),
+            fig.add_subplot(gs[1, 0:2]), fig.add_subplot(gs[1, 2:4]),
+            fig.add_subplot(gs[1, 4:6])]
     panel_letters = ["a", "b", "c", "d", "e"]
 
     for idx, (ax, (key, subtitle, tiers, ylabel)) in enumerate(
@@ -173,16 +180,19 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         # each panel instead so the reader can see what each panel shows.
         ax.text(
             0.5, 1.03, subtitle, transform=ax.transAxes,
-            ha="center", va="bottom", fontsize=15, fontweight="semibold",
+            ha="center", va="bottom", fontsize=17.5, fontweight="semibold",
             color=COLORS["dark"],
         )
 
         # Subpanel letter (lowercase, ExtraBold) at the panel's upper-left,
         # baseline-aligned with the subtitle — figure_subpanel_labels memory.
         ax.text(
-            -0.14, 1.03, panel_letters[idx],
-            transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=22, fontweight=800, color=COLORS["dark"],
+            0.0, 1.03, panel_letters[idx],
+            # Fixed inch offset so the letter sits the same distance left of
+            # every panel regardless of its width.
+            transform=offset_copy(ax.transAxes, fig=fig, x=-0.95, units="inches"),
+            ha="left", va="bottom",
+            fontsize=27, fontweight=800, color=COLORS["dark"],
         )
 
         sns.despine(ax=ax, top=True, right=True)

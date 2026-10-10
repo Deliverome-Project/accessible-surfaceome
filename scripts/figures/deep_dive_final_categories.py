@@ -120,7 +120,7 @@ def _read_tier_categories() -> dict[str, dict[str, int]]:
 
 
 def _panel_label(ax, letter: str) -> None:
-    ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=26,
+    ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=27,
             fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
@@ -134,7 +134,7 @@ def _panel_label(ax, letter: str) -> None:
 _TIER_GROUPS = [
     ((0, 2), "surface"),
     ((3, 3), "undetermined"),
-    ((4, 4), "not surface"),
+    ((4, 4), "not\nsurface"),  # wrapped: one line collides with "undetermined"
 ]
 
 
@@ -156,14 +156,14 @@ def _tier_group_brackets(ax) -> None:
             ax.plot([x, x], [y_bar, y_bar + 0.022], transform=trans,
                     color=COLORS["neutral"], lw=1.4, clip_on=False)
         ax.text((x0 + x1) / 2, y_txt, label, transform=trans, ha="center",
-                va="top", fontsize=13, color=COLORS["neutral"])
+                va="top", fontsize=16, color=COLORS["neutral"])
 
 
 def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
         "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
-        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+        "xtick.labelsize": 18, "ytick.labelsize": 18, "legend.fontsize": 18,
     })
     data = _read()
     canon = sum(data.get("canonical", {}).values())
@@ -175,7 +175,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
 
     fig, (axA, axB) = plt.subplots(
         1, 2, figsize=(18, 7),
-        gridspec_kw={"width_ratios": [1.5, 1.3], "wspace": 0.18},
+        gridspec_kw={"width_ratios": [1.45, 1.35], "wspace": 0.18},
     )
 
     # ── Panel a: the five-tier confidence spectrum ──────────────────────────
@@ -196,9 +196,9 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     for i, (label, n, color) in enumerate(tiers):
         axA.bar(i, n, width=0.74, color=color, edgecolor="none")
         axA.text(i, n + tier_max * 0.02, f"{n:,}", ha="center", va="bottom",
-                 fontsize=17, fontweight="bold", color=COLORS["dark"])
+                 fontsize=16.5, color=COLORS["dark"])
     axA.set_xticks(range(len(tiers)))
-    axA.set_xticklabels([t[0] for t in tiers], fontsize=15)
+    axA.set_xticklabels([t[0] for t in tiers])
     axA.set_ylabel("Proteins in\ndeep-dive cohort")
     # Panel b labels its axis and panel a did not, which reads as an
     # oversight when the two sit side by side (reviewer note). "Surface
@@ -206,7 +206,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     # confidence in a surface call, but `no` and `uncertain` are the
     # absence of one, so calling the whole axis a confidence scale would
     # mislabel two of its five categories.
-    axA.set_xlabel("Deep-dive surface tier", labelpad=82)
+    axA.set_xlabel("Deep-dive surface tier", labelpad=100)
     _tier_group_brackets(axA)
     axA.set_ylim(0, tier_max * 1.16)
     axA.set_xlim(-0.6, len(tiers) - 0.4)
@@ -232,13 +232,13 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
                      edgecolor="white", linewidth=1.0)
             if n >= bar_max * 0.06:
                 axB.text(left + n / 2, y, f"{n:,}", va="center", ha="center",
-                         fontsize=13, fontweight="bold", color="white")
+                         fontsize=15.5, color="white")
             left += n
-        axB.text(left + bar_max * 0.012, y, f"{left:,.0f}", va="center",
-                 ha="left", fontsize=15, fontweight="bold", color=COLORS["dark"])
+        axB.text(left + bar_max * 0.02, y, f"{left:,.0f}", va="center",
+                 ha="left", fontsize=16.5, color=COLORS["dark"])
 
     axB.set_yticks(y_pos)
-    axB.set_yticklabels(_PANELB_TIERS, fontsize=16)
+    axB.set_yticklabels(_PANELB_TIERS)
     axB.set_xlabel("Proteins (by surface-call reason)")
     axB.set_xlim(0, bar_max * 1.15)
     axB.set_ylim(-0.7, len(_PANELB_TIERS) - 0.3)
@@ -248,7 +248,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
                for label, color in _PANELB_CATS]
     axB.legend(handles=handles, title="Surface facet (by reason)",
                loc="upper right", bbox_to_anchor=(1.0, 1.0), frameon=False,
-               fontsize=12, title_fontsize=13, handlelength=1.1,
+               title_fontsize=20, handlelength=1.1,
                handletextpad=0.5, labelspacing=0.35)
     _panel_label(axB, "b")
 

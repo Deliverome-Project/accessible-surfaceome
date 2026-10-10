@@ -112,7 +112,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -121,12 +121,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 20,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 16,
+        "axes.labelsize": 18,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -141,12 +141,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 20,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -155,13 +155,15 @@ def _apply_brand_style() -> None:
 DB_LABELS = ["UniProt", "GO CC", "HPA", "SURFY", "CSPA"]
 ENSEMBLE_KS = [1, 2, 3, 4, 5]
 DB_PALETTE = {label: BRAND_PALETTE[i] for i, label in enumerate(DB_LABELS)}
-# Sequential teal ramp for the ≥k ensembles (light → dark = permissive → strict).
+# Grey ramp for the k+ ensembles, light → dark as more databases must agree
+# (permissive union → strict intersection). Neutral so the ensembles can't be
+# mistaken for any single database's brand colour; shared by S5 and S6.
 ENSEMBLE_PALETTE = {
-    1: "#7AAB9F",  # teal-light  (≥1 = permissive union)
-    2: "#4D8A80",
-    3: "#3D6B60",
-    4: "#244840",
-    5: "#152E28",  # teal-deep   (≥5 = strict intersection)
+    1: "#CFCFCF",  # 1+ DB: the union
+    2: "#A7A7A7",
+    3: "#7E7E7E",
+    4: "#565656",
+    5: "#2E2E2E",  # 5+ DB: the strict intersection
 }
 
 BUCKETS = ["overall", "yes", "contextual", "no"]
@@ -243,11 +245,8 @@ def main() -> None:
     db_overall_acc = {label: _db_overall(label) for label in DB_LABELS}
     db_sorted = sorted(DB_LABELS, key=lambda d: -db_overall_acc[d])
 
-    # Label uses "k+ DB" rather than "≥k DB" because the static Manrope OTFs
-    # bundled in assets/fonts/ (medium-weight subset, 414 glyphs) lack the
-    # ≥ glyph and matplotlib's per-glyph fallback silently drops it. "+"
-    # reads identically in scientific contexts and stays ASCII so font swaps
-    # can't regress it.
+    # Ensembles are labelled "k+ DB" (k or more DBs vote yes), matching the
+    # canonical generator.
     callers: list[tuple[str, str]] = []
     for k in ENSEMBLE_KS:
         callers.append((f"{k}+ DB", "ensemble"))
@@ -298,7 +297,7 @@ def main() -> None:
     # Wider figure (was 17) so the 10-bar clusters in the dense
     # "Sonnet = no" bucket — where 4 ensemble bars all sit at ~100% —
     # spread out enough for their bar-top % labels to read distinctly.
-    fig, ax = plt.subplots(figsize=(22, 6.5))
+    fig, ax = plt.subplots(figsize=(14, 7))
     sns.barplot(
         data=plot_df,
         x="bucket_label", y="fraction",
@@ -333,7 +332,7 @@ def main() -> None:
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
                 ha="center", va="bottom", rotation=90,
-                fontsize=13, color=BRAND_INK,
+                fontsize=14, color=BRAND_INK,
             )
 
     ax.set_xlabel("")
@@ -342,12 +341,15 @@ def main() -> None:
     ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     handles, _ = ax.get_legend_handles_labels()
-    legend_labels = [f"{lbl}  ({overall_acc[lbl]:.0%})" for lbl in caller_order]
+    legend_labels = [f"{lbl} ({overall_acc[lbl]:.0%})" for lbl in caller_order]
+    # Column-major fill: ensembles on the first row, single DBs on the second.
+    order = [0, 5, 1, 6, 2, 7, 3, 8, 4, 9]
+    handles, legend_labels = [handles[k] for k in order], [legend_labels[k] for k in order]
     ax.legend(
         handles, legend_labels,
-        title="Caller (overall agreement)",
-        loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=14,
+        title="Caller (overall agreement)", title_fontsize=18,
+        loc="lower center", bbox_to_anchor=(0.5, 1.0), ncols=5,
+        frameon=False, fontsize=16, columnspacing=1.6,
     )
 
     totals = {

@@ -102,19 +102,19 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
+        "font.weight": "semibold", "axes.labelweight": "semibold",
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none",
         "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 14, "ytick.labelsize": 16,
+        "xtick.labelsize": 16, "ytick.labelsize": 16,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 14,
+        "legend.frameon": False, "legend.fontsize": 16,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
@@ -252,7 +252,7 @@ def main() -> None:
     univ, bench, ci, pvals, n_u, n_b = _compute_distribution(data)
     n = len(FEATURES)
 
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=(14, 7.5))
     width = 0.40
     x = np.arange(n)
 
@@ -282,20 +282,20 @@ def main() -> None:
         star = _star(p)
         # Color/weight encode SIGNIFICANCE, not magnitude: a class that
         # clears the Bonferroni gate (star != "ns") is dark ink + bold;
-        # a non-significant class is neutral gray + normal weight, so a
+        # a non-significant class is neutral gray + the default weight, so a
         # large-but-ns delta (e.g. Single-pass TM, +10.5 pp at p=0.28) doesn't
         # read as "significant" the way a bold label would. Dark neutral
         # (not the bench color) so the annotations carry no red/highlight.
         significant = star != "ns"
         color = BRAND_INK if significant else BRAND_NEUTRAL
-        weight = "bold" if significant else "normal"
+        weight = "bold" if significant else "semibold"
         label = f"{sign}{abs(delta):.1f} pp"
         if star != "ns":
             label += f"  {star}"
         ax.text(
             i, y_text, label,
             ha="center", va="bottom",
-            fontsize=12, color=color, fontweight=weight,
+            fontsize=15, color=color, fontweight=weight,
         )
 
     ax.set_xticks(x)
@@ -309,7 +309,7 @@ def main() -> None:
     # label collides with an upper-right legend.
     ax.legend(
         loc="upper left", bbox_to_anchor=(0.01, 0.99),
-        frameon=False, fontsize=14,
+        frameon=False, fontsize=16,
     )
 
     sns.despine(ax=ax, top=True, right=True)
