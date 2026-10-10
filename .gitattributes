@@ -171,6 +171,11 @@ data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
 # Sizes are comfortable — 17 files, 11.3 MB total, largest 1.76 MB, against
 # GitHub's 100 MB non-LFS cap and the ~5 MB practical cap in CLAUDE.md.
 data/processed/figures/*.tsv  -filter -diff -merge text
+# Supp Fig 15 concordance bundle: the small TSV + README stay plain text so
+# GitHub renders them; the three .jsonl.gz record sets stay in LFS.
+data/processed/deep_dive_concordance_v1/*.tsv -filter -diff -merge text
+data/processed/deep_dive_concordance_v1/*.md -filter -diff -merge text
+
 
 # Intracellular-bucket rescue sweep (10,287-row gene list, ~372 KB; 148-row
 # rescue table). Same rationale as the reconfirm gene list — plaintext inputs

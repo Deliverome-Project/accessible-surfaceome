@@ -54,6 +54,10 @@ NEW_FILES = [
     TMP_DIR / "triage-benchmark-with-reasoning.tsv",
 ]
 README_PATH = TMP_DIR / "README.md"
+# Reproducibility replicates (Supplementary Figure 15): the frozen bundle, tarred
+# deterministically so an unchanged bundle re-syncs as "unchanged".
+REPLICATES_BUNDLE = Path(__file__).resolve().parents[2] / "data/processed/deep_dive_concordance_v1"
+REPLICATES_TARBALL = TMP_DIR / "deep-dive-reproducibility-replicates-v1.tar.gz"  # built by _build_replicates_tarball
 
 # Filenames THIS script used to ship but no longer does. They are deleted
 # from the deposit only if present — surgical and name-scoped. This is the
@@ -110,7 +114,7 @@ candidates. This deposit holds the data those three stages produced.
 **Reserved DOI:** `10.5281/zenodo.20805384` — stable across draft updates,
 activates on publish.
 
-Three data files + this README. Each is a flat TSV or a gzipped folder of
+Four data files + this README. Each is a flat TSV or a gzipped folder of
 per-gene JSON, readable with any TSV reader (pandas, R) or `tar xzf` — no
 project code needed. Each is also reproducible from the project's public
 read-only API (recipes at the end).
@@ -205,6 +209,26 @@ to each record as served, so the classification here matches that catalog.
 
 ---
 
+## 4. `deep-dive-reproducibility-replicates-v1.tar.gz` — run-to-run reproducibility
+
+**Not published records.** 50 deep-dive genes drawn at random (two disjoint
+batches of 25) and re-analysed to measure reproducibility (Supplementary
+Figure 15 of the manuscript). Three record sets, one line per gene in each
+(`{"hgnc_symbol", "sample_batch", "record"}`, `record` a full SurfaceomeRecord
+with its evidence ledger):
+
+- **`published.jsonl.gz`** — the published record exactly as served when the
+  study ran (2026-09-27; run `cu_v3_sonnet_2026_06`), the comparator
+- **`full_rerun.jsonl.gz`** — the whole pipeline re-run from scratch with the
+  same prompts (run `deep_dive_concordance_v1`)
+- **`fixed_evidence_replay.jsonl.gz`** — section builders + synthesizer re-run
+  on each published record's own evidence (discovery and selection held fixed)
+
+plus `sample_genes.tsv` (the 50 genes and their batch) and a README. The same
+records are queryable from the API, labelled `reproducibility_replicate: true`.
+
+---
+
 ## Reproducing from the public API
 
 Every file is rebuildable from the read-only API at
@@ -222,6 +246,11 @@ curl 'https://api.deliverome.org/surfaceome/v1/benchmark'
 # File 3 — the deep-dive records
 curl 'https://api.deliverome.org/surfaceome/v1/genes'          # gene index
 curl 'https://api.deliverome.org/surfaceome/v1/genes/EGFR'     # one record
+
+# File 4 — the reproducibility replicates (NOT published records)
+curl 'https://api.deliverome.org/surfaceome/v1/replicates'                 # study + gene index
+curl 'https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates'      # one gene's replicates
+curl 'https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates/deep_dive_concordance_v1/full_rerun'
 ```
 
 ## License
@@ -240,7 +269,7 @@ update.
 
 _DESCRIPTION_HTML = (
     "Benchmark, triage, and deep-dive data outputs for the "
-    "accessible-surfaceome project. This draft ships three data files "
+    "accessible-surfaceome project. This draft ships four data files "
     "plus an in-deposit README documenting every column and the "
     "source-join recipe.<br><br>"
     "<b>triage-runs-genome-with-reasoning.tsv</b> — 21,950-row "
@@ -265,6 +294,12 @@ _DESCRIPTION_HTML = (
     "(`deep_dive_tier` + `deep_dive_facet`) computed by the same "
     "predicate the viewer ships and attached server-side on "
     "/v1/genes/{symbol}.<br><br>"
+    "<b>deep-dive-reproducibility-replicates-v1.tar.gz</b> — run-to-run "
+    "reproducibility replicates, NOT published records: for 50 randomly "
+    "sampled deep-dive genes, the published record as served when the "
+    "study ran, a full from-scratch re-run with the same prompts, and a "
+    "fixed-evidence replay (builders + synthesizer only). Source data for "
+    "Supplementary Figure 15; also queryable at /v1/replicates.<br><br>"
     "The manuscript will be added to this record in a later draft update "
     "against the same reserved DOI (10.5281/zenodo.20805384). All data "
     "files are reproducible from the public read-only API at "
@@ -282,6 +317,13 @@ _DEEP_DIVES_ENTRY = {
     "index_url": "https://api.deliverome.org/surfaceome/v1/genes",
     "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
 }
+
+
+def _build_replicates_tarball() -> Path:
+    """Shared deterministic builder (record_history.zenodo) — one implementation."""
+    from accessible_surfaceome.cloud.record_history.zenodo import build_replicates_tarball
+
+    return build_replicates_tarball(REPLICATES_BUNDLE, TMP_DIR)
 
 
 def _build_deep_dive_tarball() -> Path:
@@ -319,6 +361,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--deep-dives-only", action="store_true",
                     help="sync ONLY the deep-dive tarball; leave TSVs / README / "
                          "metadata untouched")
+    ap.add_argument("--replicates-only", action="store_true",
+                    help="sync ONLY the reproducibility-replicate tarball + the "
+                         "README / description that document it; leave the TSVs "
+                         "and the deep-dive tarball untouched")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the sync plan; issue no PUT / DELETE / metadata "
                          "write (skips the ~110 MB tarball build)")
@@ -330,10 +376,23 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     auth = {"Authorization": f"Bearer {token}"}
 
-    include_tsvs = not args.deep_dives_only
+    include_tsvs = not (args.deep_dives_only or args.replicates_only)
     include_deep_dives = args.with_deep_dives or args.deep_dives_only
+    include_replicates = not args.deep_dives_only
+    # The README + description document every file, so they travel with either
+    # the TSV sync or the replicate sync.
+    include_docs = include_tsvs or include_replicates
 
     managed: list[Path] = []
+    if include_replicates:
+        managed.append(_build_replicates_tarball())
+        print(f"→ built {REPLICATES_TARBALL} "
+              f"({REPLICATES_TARBALL.stat().st_size / 1024**2:.1f} MB)")
+    if args.replicates_only:
+        TMP_DIR.mkdir(parents=True, exist_ok=True)
+        README_PATH.write_text(_build_readme())
+        print(f"→ wrote {README_PATH}")
+        managed.append(README_PATH)
     if include_tsvs:
         # Verify both new TSVs exist + materialize the README.
         for p in NEW_FILES:
@@ -433,7 +492,7 @@ def main(argv: list[str] | None = None) -> int:
 
         # 3. Update description + title — only when syncing the TSVs (the
         # description documents them) and only if they actually differ.
-        if include_tsvs and not args.dry_run:
+        if include_docs and not args.dry_run:
             metadata = dep["metadata"]
             if (metadata.get("title") == "The accessible human surfaceome"
                     and metadata.get("description") == _DESCRIPTION_HTML):

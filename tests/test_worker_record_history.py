@@ -86,7 +86,7 @@ def test_extract_ddl_does_not_conflate_data_release_and_member() -> None:
     assert "unrelated" not in ddl
 
 
-def test_record_history_routes(tmp_path: Path) -> None:
+def _require_node() -> str:
     node = shutil.which("node")
     if node is None:
         if os.environ.get("REQUIRE_WORKER_NODE") == "1":
@@ -94,6 +94,14 @@ def test_record_history_routes(tmp_path: Path) -> None:
                 "Shared API compatibility checks require Node; refusing to skip"
             )
         pytest.skip("Node is required for Worker tests")
+    return node
+
+
+def _write_worker_mjs(tmp_path: Path) -> Path:
+    """Writes the real Worker source (with its one non-relative-URL import
+    stubbed) to ``tmp_path/worker.mjs``, alongside the sibling module it
+    imports relatively. Shared by every test in this file that runs the
+    real router offline."""
     root = Path(__file__).resolve().parents[1]
     source = (root / "cloudflare/workers/surfaceome_api/src/index.js").read_text()
     source = source.replace(
@@ -105,6 +113,12 @@ def test_record_history_routes(tmp_path: Path) -> None:
         tmp_path / "contact-sites.js",
     )
     (tmp_path / "worker.mjs").write_text(source)
+    return root
+
+
+def test_record_history_routes(tmp_path: Path) -> None:
+    node = _require_node()
+    root = _write_worker_mjs(tmp_path)
 
     schema_sql = (root / "cloudflare/d1_public_schema.sql").read_text()
     ddl = _extract_ddl(schema_sql, DDL_TABLES)
@@ -138,8 +152,11 @@ insert(
   ["gene_symbol", "hgnc_id", "revision", "json_hash", "evidence_hash", "md_hash",
    "published_at", "source", "schema_version", "prompt_corpus_version"],
   [
+    // Revision 1 is a gene's first SERVED version — record history no
+    // longer holds a seeded/deposited revision 0 or 1 (see
+    // scripts/cloud/drop_seed_revisions.py); every gene starts here.
     { gene_symbol: "EGFR", hgnc_id: "HGNC:3236", revision: 1, json_hash: "j1",
-      published_at: "2026-08-15T00:00:00Z", source: "seed:zenodo-1.0.0",
+      published_at: "2026-08-20T00:00:00Z", source: "sweep",
       schema_version: "2.14.2", prompt_corpus_version: "2.50.2" },
     { gene_symbol: "EGFR", hgnc_id: "HGNC:3236", revision: 2, json_hash: "j2",
       evidence_hash: "e2", md_hash: "m2", published_at: "2026-09-27T00:00:00Z",
@@ -155,10 +172,16 @@ insert(
 
 insert(
   "data_release",
-  ["version", "cut_at", "github_tag", "zenodo_version_doi", "n_genes", "notes"],
+  ["version", "cut_at", "github_tag", "zenodo_version_doi", "n_genes", "notes", "archive_scope"],
   [
+    // 1.0.0 predates per-gene record history — archived only in its
+    // Zenodo deposit, no data_release_member rows (see
+    // scripts/cloud/drop_seed_revisions.py). Exercises the
+    // archive_scope='zenodo_only' branch of every release handler.
     { version: "1.0.0", cut_at: "2026-08-15T00:00:00Z",
-      zenodo_version_doi: "10.5281/zenodo.20805384", n_genes: 1 },
+      zenodo_version_doi: "10.5281/zenodo.20805384", n_genes: 5130,
+      notes: "Initial data deposit (Zenodo record 20805384).",
+      archive_scope: "zenodo_only" },
     // No DOI yet — exercises the pre-DOI short-TTL / non-immutable branch.
     { version: "2.0.0", cut_at: "2026-09-20T00:00:00Z", n_genes: 1 },
     // 1.9.0 / 1.10.0: a STRING sort of the version column orders these
@@ -181,9 +204,9 @@ insert(
     // handleRevisionList's correlated releases[] subquery must ORDER BY
     // cut_at regardless of insertion order, and handleRelease must report
     // the CANONICAL record_revision.gene_symbol in `members`, not whatever
-    // casing data_release_member happens to store.
+    // casing data_release_member happens to store. 1.0.0 deliberately has
+    // NO member rows (zenodo-only).
     { version: "2.0.0", gene_symbol: "EGFR", revision: 1 },
-    { version: "1.0.0", gene_symbol: "egfr", revision: 1 },
     { version: "1.10.0", gene_symbol: "EGFR", revision: 1 },
     { version: "1.9.0", gene_symbol: "egfr", revision: 1 },
   ],
@@ -260,22 +283,31 @@ async function call(path, headers = {}) {
 const list = await (await call("/v1/genes/egfr/revisions")).json();
 assert.equal(list.current_revision, 2);
 assert.deepEqual(list.revisions.map(r => r.revision), [2, 1]);
-assert.equal(list.revisions[1].releases[0].version, "1.0.0");
-// ORDER BY cut_at inside the correlated subquery: rev 1 belongs to all four
+// EGFR's rev 1 is NOT a member of 1.0.0 (zenodo-only, no member rows) — it
+// only belongs to the three releases cut under this system.
+// ORDER BY cut_at inside the correlated subquery: rev 1 belongs to all three
 // releases (inserted out of both version and chronological order above), so
 // a working ORDER BY must come back sorted by cut_at ascending — NOT by the
 // version string, which would put "1.10.0" before "1.9.0".
-assert.deepEqual(list.revisions[1].releases.map(r => r.version), ["1.0.0", "1.9.0", "2.0.0", "1.10.0"]);
+assert.deepEqual(list.revisions[1].releases.map(r => r.version), ["1.9.0", "2.0.0", "1.10.0"]);
 assert.equal(list.revisions[1].evidence_url, null);
 assert.match(list.revisions[0].url, /\/v1\/genes\/EGFR\/revisions\/2$/);
 // A revision that belongs to no release at all gets releases: [], not null
 // or a malformed parse of an empty json_group_array.
 assert.deepEqual(list.revisions[0].releases, []);
+// `changed`: revision 1 (nothing to diff against) is always first_archived;
+// revision 2 differs from revision 1 in all three parts (record/evidence/md
+// each went from a value or NULL to a different value).
+assert.deepEqual(list.revisions[1].changed, ["first_archived"]);
+assert.deepEqual(list.revisions[0].changed, ["record", "evidence", "markdown"]);
 
 // mixed-case gene symbol lookup — real COLLATE NOCASE, not a JS mock.
 const mixedCase = await (await call("/v1/genes/c11ORF24/revisions")).json();
 assert.equal(mixedCase.gene_symbol, "C11orf24");
 assert.equal(mixedCase.current_revision, 1);
+// A gene with only ever one revision (no prior revision 0 to inherit from
+// either) is also first_archived.
+assert.deepEqual(mixedCase.revisions[0].changed, ["first_archived"]);
 
 // revision bodies
 let r = await call("/v1/genes/EGFR/revisions/2");
@@ -307,6 +339,11 @@ const rl = await (await call("/v1/releases")).json();
 // (Sep 20), then 1.9.0 (Sep 10), then 1.0.0 (Aug 15). A string sort on
 // version would instead put "2.0.0" first and "1.10.0" before "1.9.0".
 assert.deepEqual(rl.releases.map(r => r.version), ["1.10.0", "2.0.0", "1.9.0", "1.0.0"]);
+// api_members: false only for the zenodo-only 1.0.0 release.
+assert.deepEqual(
+  Object.fromEntries(rl.releases.map(r => [r.version, r.api_members])),
+  { "1.10.0": true, "2.0.0": true, "1.9.0": true, "1.0.0": false },
+);
 
 // v-prefix redirects (301, no-store) to the bare canonical path — one cache
 // key per release so cut_data_release's (bare-only) purge always hits.
@@ -321,14 +358,26 @@ const vRedirectGeneMd = await call("/v1/releases/V1.0.0/genes/EGFR.md");
 assert.equal(vRedirectGeneMd.status, 301);
 assert.equal(vRedirectGeneMd.headers.get("Location"), "https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/EGFR.md");
 
-// bare-path release with a DOI: immutable, 1-year TTL, canonical gene_symbol
-// casing from record_revision (not the "egfr" data_release_member stored).
+// bare-path release with a DOI: immutable, 1-year TTL. 1.0.0 is
+// zenodo-only — members: [], api_members: false, a human-readable note
+// naming the Zenodo DOI, and NO data_release JOIN attempted (it has no
+// member rows to join against).
 let oneResp = await call("/v1/releases/1.0.0");
 assert.match(oneResp.headers.get("Cache-Control"), /immutable/);
 assert.match(oneResp.headers.get("Cache-Control"), /max-age=31536000/);
 const one = await oneResp.json();
 assert.equal(one.version, "1.0.0");
-assert.equal(one.members[0].gene_symbol, "EGFR");
+assert.equal(one.api_members, false);
+assert.deepEqual(one.members, []);
+assert.match(one.api_note, /Zenodo/);
+assert.match(one.api_note, /10\.5281\/zenodo\.20805384/);
+
+// a release cut under this system: real members, canonical gene_symbol
+// casing from record_revision (not the "egfr" data_release_member stored).
+let realResp = await call("/v1/releases/1.9.0");
+const real = await realResp.json();
+assert.equal(real.api_members, true);
+assert.equal(real.members[0].gene_symbol, "EGFR");
 
 // release without a DOI yet: short TTL, NOT immutable.
 let noDoiResp = await call("/v1/releases/2.0.0");
@@ -337,8 +386,18 @@ assert.match(noDoiResp.headers.get("Cache-Control"), /max-age=60\b/);
 
 assert.equal((await call("/v1/releases/one")).status, 400);
 assert.equal((await (await call("/v1/releases/9.9.9")).json()).error, "release_not_found");
-assert.equal(await (await call("/v1/releases/1.0.0/genes/egfr")).text(), '{"v":1}');
-assert.equal((await (await call("/v1/releases/1.0.0/genes/CD63")).json()).error, "gene_not_in_release");
+// A gene under the zenodo-only release 404s distinctly — never falls back
+// to a live gene lookup, and the DOI is in the body so a caller can find
+// the actual records.
+const notInApiHistory = await call("/v1/releases/1.0.0/genes/egfr");
+assert.equal(notInApiHistory.status, 404);
+const notInApiHistoryBody = await notInApiHistory.json();
+assert.equal(notInApiHistoryBody.error, "release_not_in_api_history");
+assert.equal(notInApiHistoryBody.zenodo_version_doi, "10.5281/zenodo.20805384");
+// A release cut under this system still 404s gene_not_in_release for a
+// gene that really isn't a member.
+assert.equal(await (await call("/v1/releases/1.9.0/genes/egfr")).text(), '{"v":1}');
+assert.equal((await (await call("/v1/releases/1.9.0/genes/CD63")).json()).error, "gene_not_in_release");
 
 // archive bypass skips the caches only with the right secret
 cacheReads = 0;
@@ -382,6 +441,132 @@ const paths = idx.endpoints.map(e => e.path);
 for (const p of ["/v1/genes/{symbol}/revisions", "/v1/genes/{symbol}/revisions/{n}",
                  "/v1/releases", "/v1/releases/{version}", "/v1/releases/{version}/genes/{symbol}"])
   assert(paths.includes(p), p);
+console.log("ok");
+""")
+    out = subprocess.run(
+        [node, str(tmp_path / "test.mjs")], capture_output=True, text=True, cwd=tmp_path
+    )
+    assert out.returncode == 0, out.stderr + out.stdout
+    assert out.stdout.strip().endswith("ok")
+
+
+def test_release_routes_tolerate_missing_archive_scope_column(tmp_path: Path) -> None:
+    """`data_release.archive_scope` is added by `drop_seed_revisions.py`'s
+    idempotent ALTER (or a fresh `apply_record_history_ddl.py` apply) — a
+    Worker deploy that SELECTs it can land in production BEFORE that
+    migration has run. This fixture's `data_release` table has NO such
+    column at all (public D1's shape before either script has ever
+    touched it), so every /v1/releases* route must degrade to treating
+    every release as non-zenodo-only rather than 500ing on "no such
+    column: archive_scope"."""
+    node = _require_node()
+    _write_worker_mjs(tmp_path)
+
+    root = Path(__file__).resolve().parents[1]
+    schema_sql = (root / "cloudflare/d1_public_schema.sql").read_text()
+    ddl = _extract_ddl(schema_sql, DDL_TABLES)
+    ddl = re.sub(r",\n(?:\s*--[^\n]*\n)*\s*archive_scope\s+TEXT\n", "\n", ddl)
+    assert "archive_scope" not in ddl
+    (tmp_path / "ddl.sql").write_text(ddl)
+
+    (tmp_path / "test.mjs").write_text(r"""
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
+import worker from "./worker.mjs";
+
+const ddl = readFileSync(new URL("./ddl.sql", import.meta.url), "utf8");
+const sqliteDb = new DatabaseSync(":memory:");
+sqliteDb.exec(ddl);
+
+function insert(table, columns, rows) {
+  const sql = `INSERT INTO ${table} (${columns.join(", ")}) VALUES (${columns.map(() => "?").join(", ")})`;
+  const stmt = sqliteDb.prepare(sql);
+  for (const row of rows) {
+    stmt.run(...columns.map((c) => (row[c] === undefined ? null : row[c])));
+  }
+}
+
+insert(
+  "record_revision",
+  ["gene_symbol", "hgnc_id", "revision", "json_hash", "evidence_hash", "md_hash",
+   "published_at", "source", "schema_version", "prompt_corpus_version"],
+  [
+    { gene_symbol: "EGFR", hgnc_id: "HGNC:3236", revision: 1, json_hash: "j1",
+      published_at: "2026-08-20T00:00:00Z", source: "sweep",
+      schema_version: "2.14.2", prompt_corpus_version: "2.50.2" },
+  ],
+);
+
+// No `archive_scope` column at all — note the column is simply absent
+// from both the column list and the values here.
+insert(
+  "data_release",
+  ["version", "cut_at", "github_tag", "zenodo_version_doi", "n_genes", "notes"],
+  [
+    { version: "1.0.0", cut_at: "2026-08-15T00:00:00Z",
+      zenodo_version_doi: "10.5281/zenodo.20805384", n_genes: 5130,
+      notes: "Initial data deposit (Zenodo record 20805384)." },
+  ],
+);
+
+insert(
+  "data_release_member",
+  ["version", "gene_symbol", "revision"],
+  [{ version: "1.0.0", gene_symbol: "EGFR", revision: 1 }],
+);
+
+function makeDB(db) {
+  return {
+    prepare(sql) {
+      let boundArgs = [];
+      return {
+        bind(...args) { boundArgs = args; return this; },
+        async first() {
+          const row = db.prepare(sql).get(...boundArgs);
+          return row === undefined ? null : row;
+        },
+        async all() {
+          const rows = db.prepare(sql).all(...boundArgs);
+          return { results: rows };
+        },
+      };
+    },
+  };
+}
+
+globalThis.caches = { default: { match: async () => undefined, put: async () => {} } };
+const blobs = { "records/sha256/j1.json": '{"v":1}' };
+const env = {
+  DB: makeDB(sqliteDb),
+  RECORD_HISTORY: { async get(key) { return key in blobs ? { body: blobs[key] } : null; } },
+};
+async function call(path) {
+  const pending = [];
+  const r = await worker.fetch(new Request("https://api.deliverome.org/surfaceome" + path),
+    env, { waitUntil(p) { pending.push(p); } });
+  await Promise.all(pending);
+  return r;
+}
+
+// None of these 500 — the missing column degrades to "not zenodo-only",
+// same as a fresh install that has never run drop_seed_revisions.py.
+const list = await call("/v1/releases");
+assert.equal(list.status, 200);
+const listBody = await list.json();
+assert.deepEqual(listBody.releases.map(r => r.api_members), [true]);
+
+const one = await call("/v1/releases/1.0.0");
+assert.equal(one.status, 200);
+const oneBody = await one.json();
+assert.equal(oneBody.api_members, true);
+assert.equal(oneBody.members[0].gene_symbol, "EGFR");
+assert.equal(oneBody.api_note, undefined);
+
+const gene = await call("/v1/releases/1.0.0/genes/EGFR");
+assert.equal(gene.status, 200);
+assert.equal(await gene.text(), '{"v":1}');
+
 console.log("ok");
 """)
     out = subprocess.run(
