@@ -17,13 +17,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "c-myc (EQKLISEEDL)",
+      "tag_type": "c-Myc (EQKLISEEDL)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Flow cytometry / FACS anti-myc immunostaining of non-permeabilized HEK293 cells confirmed robust plasma-membrane surface expression; electrophysiology confirmed no impact on channel folding, trafficking, or function (explicitly stated in PMC7988323 and DOI:10.1101/2020.07.29.227231).",
+      "functional_impact_measured": "Surface ELISA, flow cytometry, and electrophysiology confirmed normal surface trafficking and channel function; L12 states explicitly 'no impact on channel folding, trafficking, or function'.",
       "confidence": "high",
-      "rationale": "Six independent ledger lines from at least four distinct publications all pin the same junction: c-myc inserted after E146 (between Glu146 and Gln147) in the extracellular S1\u2013S2 linker of full-length, membrane-anchored KCNQ1. Python confirms seq[146]='E' and seq[147]='Q', matching the paper's residue identities. The insertion site lies within the extracellular span 144\u2013154, is 3 aa from TM1 (143) and 8 aa from TM2 (155), and multiple papers explicitly state no impact on folding, trafficking, or function. This is the highest-confidence site in the ledger. Multiple independent studies (PMC7988323, DOI:10.1101/2020.07.29.227231, PMC5842040, PMC13041670, PMC12724399, DOI:10.64898/2025.12.15.25341924) all insert a c-myc epitope (EQKLISEEDL) into full-length, membrane-anchored KCNQ1 between Glu146 and Gln147 in the extracellular S1\u2013S2 linker. Surface expression was quantified by anti-myc immunostaining of non-permeabilized HEK293 cells (flow cytometry / FACS). Multiple papers explicitly state the modification has no impact on channel folding, trafficking, or function. Python verification: seq[146]='E' (Glu) and seq[147]='Q' (Gln) match the paper's stated residues exactly. The S1\u2013S2 extracellular span is residues 144\u2013154 (topology landmarks); residue 146 is 3 aa from the TM1 C-terminus (143) and 8 aa from the TM2 N-terminus (155), satisfying the \u22653-residue TM-boundary constraint. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Six independent ledger lines (L1\u2013L7, L12\u2013L13) all pin the identical junction: after E146 (Glu146), before Q147 (Gln147), in the 11-residue S1\u2013S2 extracellular loop (topology span 144\u2013154). Python confirms residue 146 = E and residue 147 = Q, matching the papers exactly. The junction is 3 residues from the TM1 C-terminus (143) and 9 residues from the TM2 N-terminus (155), satisfying the \u22653-residue TM-clearance rule. No cysteines or N-glycosylation sequons are present in the loop. L12 provides the strongest validation: folding, trafficking, and function all confirmed preserved. Full-length human KCNQ1 (membrane-anchored, not a secreted ectodomain) was engineered with a c-Myc epitope (EQKLISEEDL) inserted after residue E146 in the S1\u2013S2 extracellular loop. Multiple independent groups (PMC7988323, DOI:10.1101/2020.07.29.227231, PMC5842040, PMC12632771, PMC13041670, PMC12724399) report the identical junction. L12 (PMC7988323) explicitly states the modification has no impact on channel folding, trafficking, or function. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 33600800,
@@ -36,31 +36,31 @@
       "median_conservation": null
     },
     {
-      "site_id": "KCNQ1-internal-None-lit",
+      "site_id": "KCNQ1-internal-148-lit",
       "gene_symbol": "KCNQ1",
       "uniprot_acc": "P51787",
       "provenance": "literature_retrieved",
       "det_path": null,
       "site_kind": "internal",
-      "insert_after_residue": null,
-      "residue_before": "",
-      "residue_after": "",
-      "residue_label": "extracellular loop (unspecified)",
-      "topology_state": null,
-      "extracellular": false,
-      "compartment": "unknown",
+      "insert_after_residue": 148,
+      "residue_before": "Y",
+      "residue_after": "A",
+      "residue_label": "Y148",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
       "tag_type": "BBS 13 aa",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Surface labeling with Alexa Fluor-647-conjugated \u03b1-bungarotoxin in non-permeabilized transfected cells confirmed plasma-membrane localization of BBS-KCNQ1-YFP; functional impact of BBS insertion NOT MEASURED in the cited ledger line.",
-      "confidence": "medium",
-      "rationale": "PMC12218124 demonstrates that a 13-residue BBS was tolerated in an extracellular loop of full-length membrane-anchored KCNQ1, with confirmed surface labeling. However, the paper names neither the specific loop nor the junction residue, so insert_after_residue is left null and the region is reported as 'extracellular loop (unspecified)'. No junction can be inferred from this ledger line without fabricating a position. Ranked below Site 1 because the position is unresolved and function was not measured. PMC12218124 reports engineering a 13-residue high-affinity bungarotoxin binding site (BBS) into 'an extracellular loop' of full-length, YFP-tagged KCNQ1 (BBS-KCNQ1-YFP). Non-permeabilized cells were labeled with Alexa Fluor-647-conjugated \u03b1-bungarotoxin to selectively visualize and quantify plasma-membrane channels. The paper does not name which extracellular loop or which residue junction was used. KCNQ1 has three extracellular loops per the topology landmarks: S1\u2013S2 (144\u2013154), S3\u2013S4 (216\u2013220), and S5\u2013pore\u2013S6 (283\u2013327). No junction can be pinned from this ledger line alone. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Flow cytometry with Alexa 647-bungarotoxin confirmed cell-surface display of BBS-KCNQ1-YFP (L11). Electrophysiological function of the BBS-tagged construct is NOT MEASURED in the cited ledger lines.",
+      "confidence": "high",
+      "rationale": "Three ledger lines (L8, L9, L10) independently report the BBS insertion between residues 148 and 149 of the S1\u2013S2 extracellular loop. Python confirms residue 148 = Y (Tyr) and residue 149 = A (Ala), both within the extracellular span 144\u2013154. The junction is 5 residues from TM1 (143) and 7 residues from TM2 (155), satisfying \u22653-residue clearance. No cysteines or N-glycosylation sequons are present. This is a distinct, independently validated junction 2 residues C-terminal to the myc site, demonstrating the loop tolerates insertions at multiple positions. Full-length KCNQ1 (membrane-anchored) was engineered with a 13-residue bungarotoxin-binding site (BBS) peptide inserted between residues 148 and 149 in the extracellular S1\u2013S2 loop (PMC11429900, PMC12218124, PMC5764571). L11 confirms surface labeling of the BBS-Q1-YFP construct by Alexa 647-conjugated fluorescent bungarotoxin measured by flow cytometry. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "pmid": 40593673,
-          "citation": "PMID 40593673",
-          "claim": "To selectively visualize and quantify plasma membrane channels, we engineered a 13-residue high-affinity bungarotoxin binding site (BBS) into an extracellular loop of YFP-tagged KCNQ1 (BBS-KCNQ1-YFP) and incubated non-permeabilized transfected cells with Alexafluor-647-conjugated \u03b1-bungarotoxin (BTX-647) (Fig. 1C ) 24 , 25 ."
+          "pmid": 39345403,
+          "citation": "PMID 39345403",
+          "claim": "A 13-residue bungarotoxin binding site peptide (BBS) sequence was introduced between sequences for residues 148 and 149 in KCNQ1 extracellular S1\u2013S2 loop using QuikChange Lightning Site-Directed Mutagenesis kit (Stratagene) according to the manufacturer\u2019s instructions."
         }
       ],
       "plddt": null,
@@ -192,10 +192,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
-  "prompt_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T19:52:31.599007+00:00",
-  "literature_notes": "All ledger lines converge on a single well-validated junction: c-myc after E146 in the S1\u2013S2 extracellular linker (residues 144\u2013154). Six ledger lines from at least four independent publications confirm this exact position with explicit statements of no impact on folding, trafficking, or function. The BBS entry (PMC12218124) is a genuine second published insertion in full-length KCNQ1 but cannot be pinned to a residue or even a named loop from the ledger text alone, so it is reported as a region-level site. The S3\u2013S4 linker (216\u2013220, only 5 residues) and S5\u2013pore\u2013S6 region (283\u2013327) are not grounded by any ledger line with a named residue or loop, so no additional sites are proposed for them. Ledger lines from PMC12724399 and DOI:10.64898/2025.12.15.25341924 describe 'the first extracellular loop' without naming a residue; these corroborate Site 1 (S1\u2013S2 = first extracellular loop) but do not add a new site. The intracellular N-terminus (1\u2013122) and C-terminus (344\u2013676) are not extracellular and were not considered.",
+  "generated_at": "2026-10-10T21:22:32.104073+00:00",
+  "literature_notes": "All ledger lines converge on the single extracellular loop of KCNQ1 (S1\u2013S2 linker, topology span 144\u2013154). Two distinct junctions are supported: after E146 (myc tag, six papers, function confirmed) and after Y148 (BBS 13-aa tag, three papers, surface confirmed). No other extracellular spans exist in KCNQ1 that carry ledger-supported insertions: the S2\u2013S3 linker (216\u2013220, 5 residues) and the S3\u2013S4 linker (283\u2013327) have no qualifying ledger lines. The intracellular C-terminus (344\u2013676) and N-terminus (1\u2013122) are not extracellular and were not considered. L4/L5 also mention mEGFP fused to the C-terminus of mycKCNQ1, but the C-terminus is intracellular (residue 676, topology I), so that fusion is not an extracellular site and is excluded. L13 is a general statement subsumed by L1\u2013L7 and adds no new junction.",
   "literature_rejected": []
 }

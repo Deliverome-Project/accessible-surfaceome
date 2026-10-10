@@ -17,13 +17,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HA",
+      "tag_type": "HA (hemagglutinin epitope)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Methotrexate binding and uptake assays in transfected cells; 'minor effects on methotrexate binding and uptake' \u2014 function largely preserved.",
+      "functional_impact_measured": "Methotrexate binding and uptake assayed; insertion had minor effects on both \u2014 classified as functionally tolerated.",
       "confidence": "high",
-      "rationale": "The ledger (PMID 10347183) explicitly names Pro-297 as the insertion site in the external loop between TM7 and TM8. Python confirms seq[296]='P' (position 297) and that position 297 falls within the computed extracellular span 289-307. residue_before=P (pos 297), residue_after=T (pos 298). Distance from TM7 end (288): 9 residues; distance from TM8 start (308): 11 residues \u2014 well clear of both TM boundaries. The 19-aa loop (289-307) is long enough to accommodate a ~15-23 aa tag. Function was measured and found largely preserved (minor effects only), making this the highest-confidence extracellular site. HA epitope tag inserted at Pro-297 in the extracellular loop between TM7 and TM8 (ECL 289-307) of full-length human SLC19A1 fused to C-terminal eGFP; expressed in mammalian cells and tested for methotrexate binding and uptake. The insertion had only minor effects on both methotrexate binding and uptake. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The paper explicitly names Pro-297 as the insertion site in the external loop between TM7 and TM8. Python confirms residue 297 = P (match) and residue 298 = T. The site sits 9 aa from the TM7 C-boundary (288) and 11 aa from the TM8 N-boundary (308), well clear of both TM helices. The construct is full-length and membrane-anchored (EGFP-fused), and methotrexate binding and uptake were both measured and found only minimally affected. Full-length hRFC fused to EGFP at the C-terminus, with HA epitope inserted at Pro-297 in the extracellular loop between TM7 and TM8 (EC loop 289-307), expressed in mammalian cells and assayed for methotrexate binding and uptake. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 10347183,
@@ -49,13 +49,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HA",
+      "tag_type": "HA (hemagglutinin epitope)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Methotrexate binding and uptake assays in transfected cells; 'selectively interfered with uptake but not binding' \u2014 binding preserved but transport activity reduced.",
-      "confidence": "medium",
-      "rationale": "The ledger (PMID 10347183) explicitly names Pro-427 as the insertion site in the external loop between TM11 and TM12 (paper's TM numbering). Python confirms seq[426]='P' (position 427) and that position 427 falls within the computed extracellular span 419-431. residue_before=P (pos 427), residue_after=V (pos 428). Distance from TM10 end (418): 9 residues; distance from TM11 start (432): 5 residues \u2014 both \u22653 residues from TM boundaries. The 13-aa loop (419-431) is at the lower end of comfortable for a ~15-23 aa tag but the paper demonstrates physical tolerance of the HA insertion. However, uptake was selectively impaired (binding preserved), so this site is ranked lower as function_perturbed. The paper's TM11/12 nomenclature maps to our computed TM10/11 (398-418 / 432-452); position 427 is unambiguously extracellular in both numbering schemes. HA epitope tag inserted at Pro-427 in the extracellular loop between TM11 and TM12 (paper's numbering; ECL 419-431 in computed topology) of full-length human SLC19A1 fused to C-terminal eGFP; expressed in mammalian cells and tested for methotrexate binding and uptake. The insertion selectively interfered with uptake but not binding, indicating partial functional disruption. [validation: function_perturbed; position: validated; source: paper; entailment_verified: True]",
+      "functional_impact_measured": "Methotrexate binding was preserved but uptake was selectively interfered with \u2014 function_perturbed; the tag reaches the cell surface but disrupts transport activity.",
+      "confidence": "high",
+      "rationale": "The paper explicitly names Pro-427 as the insertion site in the external loop between TM11 and TM12. Python confirms residue 427 = P (match) and residue 428 = V. The site sits 9 aa from the TM11 C-boundary (418) and 5 aa from the TM12 N-boundary (432), satisfying the \u22653 aa TM-distance constraint. However, the paper reports that this insertion selectively interfered with methotrexate uptake (while binding was preserved), indicating the tag perturbs transport function at this position; ranked lower than site 1. Full-length hRFC with HA epitope inserted at Pro-427 in the extracellular loop between TM11 and TM12 (EC loop 419-431), expressed in mammalian cells and assayed for methotrexate binding and uptake. [validation: function_perturbed; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 10347183,
@@ -314,10 +314,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
-  "prompt_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T19:51:22.915758+00:00",
-  "literature_notes": "Six ledger-supported insertion sites were evaluated. Only two are on the extracellular face: Pro-297 (ECL 289-307, TM7-8 loop) and Pro-427 (ECL 419-431, TM10-11 loop). The remaining four \u2014 Pro-20 (intracellular N-terminus, residues 1-27), Ser-225 (intracellular loop 6-7, residues 204-268), Gly-492 (intracellular C-terminus, residues 453-591), and Gln-385 (computed as TM residue 363-385, and paper reports 'greatly reduced binding and uptake') \u2014 are all intracellular or transmembrane and were excluded. The C-terminal HA tags from PMID 9767079 and PMC13331525 are on the intracellular C-terminus (residues 453-591) and were excluded. The BRIL N-terminal fusion and anti-Fab C-terminal fusion from PMC11965291 are both on the intracellular face (N-terminus of TM1 = cytoplasmic entry; C-terminus of TM12 = cytoplasmic exit) and were excluded. Asn-58 in ECL 49-67 is a known N-glycosylation site (PMID 9767079 mutated it to Gln to study deglycosylation); no insertion was reported there, so no site is proposed. The ECL 114-120 (7 aa), ECL 178-184 (7 aa), and ECL 357-362 (6 aa) loops have no ledger-supported insertions and are not proposed.",
+  "generated_at": "2026-10-10T21:22:43.510371+00:00",
+  "literature_notes": "Six other ledger sites were evaluated and excluded because they are intracellular: L1 Ser-225 (IC loop TM6-7, 204-268), L1 Pro-20 (IC N-terminus, 1-27), L1 Gly-492 (IC C-terminus, 453-591), L2 Gln-385 (paper numbering off-by-one; Q is at 386 in the IC loop 386-397, not extracellular), L3 C-terminal HA (IC C-terminus 453-591), L4/L5 HA after Glu226 (IC loop 204-268), L4/L6 Myc-His10 after Leu537 (IC C-terminus 453-591). L7 (SLC19A-HA) names no insertion position and cannot be pinned. L8 (BRIL at N-terminus of TM1, nanobody at C-terminus of TM12) places both fusions on the intracellular face per the authoritative topology landmarks (N-terminus 1-27 is IC; C-terminus of TM12 leads into IC region 453-591). No extracellular N-terminal terminus exists for SLC19A1 (residues 1-27 are intracellular). The two sites reported are the only ledger-grounded extracellular insertion sites.",
   "literature_rejected": []
 }

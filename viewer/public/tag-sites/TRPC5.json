@@ -44,13 +44,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "DogTag (25 aa with GS linkers)",
+      "tag_type": "DogTag (GS-flanked, 13 aa core)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface labeling confirmed (construct used for surface labeling studies); full functional characterisation not explicitly reported in the ledger line, but surface accessibility of the DogTag was the experimental readout.",
+      "functional_impact_measured": "Surface display of the tagged construct was confirmed (construct described as 'surface-displayed tagged TRPC5'); no channel-function assay (e.g. Ca2+ flux or patch-clamp) is reported for this specific DogTag construct in the cited clip.",
       "confidence": "high",
-      "rationale": "The ledger line from PMC8878318 explicitly names the junction as between Y460 and N461 of full-length human TRPC5. Python verification confirms: seq[459]='Y' and seq[460]='N', exactly matching the paper. Both residues fall within the computed extracellular span 455\u2013476 (ECL2, between TM4 ending at 454 and TM5 starting at 477). Distance from TM4 C-terminus: 460\u2212454=6 aa; distance from TM5 N-terminus: 477\u2212460=17 aa \u2014 both well above the \u22653 aa minimum. The insert (GGGGS-DogTag-GGGGS, ~33 aa total) was tolerated in a membrane-anchored, full-length construct used for extracellular surface labeling, satisfying all constraints. The ALFA tag (~15\u201323 aa with GS linkers) is comparable in size to the DogTag insert used here and would be accommodated at the same junction. Full-length human TRPC5 (pcDNA4-TRPC5-DogTag-SYFP2) was expressed in mammalian cells with a DogTag peptide (DIPATYEFTDGKHYITNEPIPPK, ~23 aa) flanked by GGGGS linkers inserted between Y460 and N461 in ECL2 (extracellular loop between TM4 and TM5, topology span 455\u2013476). The construct was used for site-specific surface labeling studies, demonstrating the tag is accessible on the extracellular face. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The ledger clip (L1) explicitly names the junction as between Y460 and N461 of full-length human TRPC5; Python confirms seq[459]='Y' and seq[460]='N', matching the paper exactly. Position 460 falls within the extracellular loop ECL3 (landmarks 455\u2013476), 6 residues from the TM4 C-boundary (454) and 16 residues from the TM5 N-boundary (477), satisfying the \u22653-residue clearance on both sides. No cysteine is present in ECL3; the N461-G-S sequon is disrupted by the insert but the paper explicitly validated this construct for surface display. Full-length human TRPC5 with DogTag (DIPATYEFTDGKHYITNEPIPPK) flanked by GGGGS linkers inserted between Y460 and N461 by site-directed mutagenesis; construct co-expressed with SYFP2 in HEK cells and used to characterise surface-displayed TRPC5. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 34324879,
@@ -154,10 +154,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
-  "prompt_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T19:59:41.190537+00:00",
-  "literature_notes": "Only one ledger line was provided, grounding a single site at Y460/N461 in ECL2 of TRPC5. No other extracellular insertions (N-terminal, other loops, or other ECL junctions) are supported by the ledger. The construct also carries a C-terminal SYFP2 fusion, but that is intracellular (C-terminus is in the intracellular span 625\u2013973) and therefore not proposed as an extracellular tag site. No other ledger lines name additional junctions in ECL1 (385\u2013404), ECL3 (536\u2013603), or the short ECL between TM1\u2013TM2 (338), so no additional sites are reported.",
+  "generated_at": "2026-10-10T21:27:25.602841+00:00",
+  "literature_notes": "L2 and L3 both describe a C-terminal SYFP2 fusion of full-length human TRPC5. The topology landmarks place the C-terminus (residue 973) firmly in the intracellular region (625\u2013973); this tag is therefore on the cytoplasmic face and does not qualify as an extracellular surface tag. L2's functional data (EC50 ~15 nM, comparable to untagged TRPC5) pertains to this intracellular-tagged construct and cannot be used to propose or validate an extracellular site. Only L1 grounds an extracellular insertion, yielding one site.",
   "literature_rejected": []
 }
