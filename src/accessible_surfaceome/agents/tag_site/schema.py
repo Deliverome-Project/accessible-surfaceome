@@ -125,7 +125,13 @@ class TagSiteProposal(BaseModel):
             "(e.g. 89) when you inferred a different site (e.g. 120). Null if not a point tag."
         ),
     )
-    evidence_detail: str = Field(description="What was measured/observed, in what system.")
+    evidence_detail: str = Field(
+        description=(
+            "The CONSTRUCT and the system, in one clause: what was built, in what "
+            "cells. The RESULT goes in functional_or_expression_impact_measured — "
+            "do not write the measurement twice."
+        )
+    )
     functional_or_expression_impact_measured: str = Field(
         description="What was MEASURED (assay + result), or 'NOT MEASURED'. Never inferred."
     )
@@ -182,7 +188,17 @@ class TagSiteProposal(BaseModel):
             "instead of silent."
         ),
     )
-    rationale: str
+    rationale: str = Field(
+        description=(
+            "Why THIS position, and what you COMPUTED to pin it — the sequence "
+            "check, any numbering-frame recovery, the distance to a TM boundary. "
+            "2-4 sentences.\n"
+            "Do NOT restate supporting_quote: it ships beside this and a reader "
+            "sees both. Do not repeat evidence_detail or the measurement. Do not "
+            "narrate the topology spans you were given; they are already on the "
+            "record. What belongs here is the reasoning nothing else carries."
+        )
+    )
     confidence: Confidence = Field(description='"high" | "medium" | "low"')
 
     @computed_field  # type: ignore[prop-decorator]

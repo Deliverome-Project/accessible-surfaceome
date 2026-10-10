@@ -231,7 +231,7 @@ _HINTS = {
     "evidence_type": "one of the three in 4",
     "position_evidence": '"validated" | "topology_derived" | "inferred"',
     "cited_tag_residue": "null unless the cited tag is a point tag",
-    "evidence_detail": "what was measured/observed, in what system",
+    "evidence_detail": "the construct and the system; the RESULT goes in the next field",
     "functional_or_expression_impact_measured": (
         'assay + result, or "NOT MEASURED" -- a STRING, never true/false'
     ),
@@ -240,7 +240,7 @@ _HINTS = {
     "supporting_pmid": "null for a preprint",
     "supporting_quote": "the VERBATIM ledger line",
     "region": 'the loop, when no residue is named (e.g. "ECL4"); else ""',
-    "rationale": "why this site, and what you computed",
+    "rationale": "why THIS position + what you computed; 2-4 sentences, no quote restated",
 }
 
 
@@ -298,7 +298,7 @@ SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 #: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
 #: `prompt_sha` fingerprints the text automatically; this is the human-readable
 #: half, so a reviewer can tell a deliberate revision from an incidental one.
-TAG_SITE_PROMPT_VERSION = "1.1.0"
+TAG_SITE_PROMPT_VERSION = "1.2.0"
 
 
 def prompt_sha() -> str:

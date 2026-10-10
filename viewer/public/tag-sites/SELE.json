@@ -233,18 +233,18 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HiBiT 11 aa",
+      "tag_type": "HiBiT (11 aa)",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "TNF\u03b1-stimulated surface expression measured by NanoBiT complementation; EC50 = 0.057 \u00b1 0.011 nM (n=5); ligand-induced surface expression confirmed for TNF\u03b1, IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine \u2014 function PRESERVED",
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression assay (LgBiT complementation): HiBiT-E-selectin showed robust ligand-induced surface upregulation in response to six stimuli, confirming functional trafficking and surface display; no loss of inducibility reported.",
       "confidence": "high",
-      "rationale": "E-selectin is a type I transmembrane protein (signal peptide residues 1\u201321, extracellular domain residues 22\u2013556, TM 557\u2013577, intracellular 578\u2013610). The mature N-terminus (residue 22, W) is extracellular and 535 residues from the TM boundary. The ledger paper (PMC10366498) explicitly states the HiBiT tag was inserted at the N-terminus of E-selectin using a PAM site immediately following the signal sequence. Python analysis confirms: signal peptide ends at A21, mature protein begins at W22; insert_after_residue=21 places the tag between A21 and W22, i.e., at the start of the extracellular domain. residue_before=A (position 21, last residue of signal peptide), residue_after=W (position 22, first residue of mature extracellular domain). The tag is on the extracellular face. Surface display was confirmed with membrane-impermeable LgBiT, and robust ligand-induced functional expression was demonstrated across six stimuli. This is the highest validation level (surface_and_function). All seven ledger lines support this single site; no other insertion sites are described in the ledger. CRISPR-Cas9 genome editing introduced an 11 aa HiBiT tag at the N-terminus of endogenous E-selectin in primary HUVECs and immortalized TERT2-HUVECs. The PAM site used for editing was immediately downstream of the signal sequence, placing the tag at the start of the mature extracellular domain (after residue 21). Surface display was confirmed by NanoBiT complementation with membrane-impermeable exogenous LgBiT. Functional surface expression was measured in response to TNF\u03b1 (EC50 = 0.057 \u00b1 0.011 nM, n=5), IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 21; entailment_verified: True]",
+      "rationale": "All three ledger lines describe the same published insertion: an 11 aa HiBiT tag placed at the N-terminus of endogenous E-selectin via CRISPR-Cas9 in HUVECs. The paper states 'N terminus' but gives no residue number, so the position is topology-derived. E-selectin (UniProt P16581) is a type I single-pass transmembrane protein: the signal peptide spans residues 1\u201321 (authoritative landmark), the ectodomain spans 22\u2013556, the TM spans 557\u2013577, and the cytoplasmic tail spans 578\u2013610. The C-terminus is therefore intracellular. The mature N-terminus (residue 22, W) is the sole extracellular terminus, making it the only possible location for an extracellular N-terminal tag. Python-verified: residue 21 = A (last of signal peptide), residue 22 = W (first of mature ectodomain); insert_after_residue = 21 places the tag between the cleaved signal peptide and the mature protein, consistent with standard signal-peptide-followed-by-tag architecture. Distance to TM boundary: 535 residues \u2014 no steric concern. The tag was expressed from the endogenous locus and showed normal ligand-induced surface trafficking, confirming functional tolerance. CRISPR-Cas9 knock-in of an 11 aa HiBiT tag at the N-terminus of endogenous E-selectin in primary HUVECs and immortalized TERT2-HUVECs. Cell-surface expression of the tagged protein was measured by membrane-impermeable LgBiT complementation (nanoluciferase). Ligand-induced surface expression was confirmed in response to TNF\u03b1, IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine. [validation: surface_and_function; position: topology_derived; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 37496673,
           "citation": "PMID 37496673",
-          "claim": "A PAM site immediately following the signal sequence of E-selectin was then identified and used for CRISPR-Cas9 genome editing to introduce a HiBiT tag at the start of the coding sequence for E-selectin ( Figure 2 )."
+          "claim": "To ensure that ligand-induced changes were monitored in physiologically relevant cells under the control of their native promoters, we used CRISPR-Cas9 genome editing to attach the 11 amino acid HiBiT tag 18 , 19 to the N terminus of endogenous E-selectin expressed in both HUVECs and immortalized TERT2-HUVECs. 20 Measurement of cell surface expression of HiBiT-tagged E-selectin was then made following addition of exogenous membrane-impermeable LgBiT to achieve self-complementation of the full-length nanoluciferase enzyme."
         }
       ],
       "plddt": null,
@@ -553,10 +553,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "b269b1315804389054e0234ead3498c827da6cc69f025ae9a6bbdefe695b2e14",
-  "prompt_version": "1.0.0",
+  "prompt_sha": "46850afc97d3214e1af181c678067d4bdcb7fdbc27c7e5422b99ff79446d0385",
+  "prompt_version": "1.1.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-09T19:50:12.602479+00:00",
-  "literature_notes": "All seven ledger lines (PMC10366498) describe the same experiment and the same site: HiBiT at the N-terminus of mature E-selectin, immediately after signal peptide cleavage. No internal loop insertions, C-terminal tags, or other sites are reported in the ledger. The ledger contains no evidence for any insertion in the extracellular loops, the lectin domain, EGF domain, or complement-regulatory repeats of E-selectin. The intracellular C-terminus (residues 578\u2013610) is not supported by any ledger line. Therefore only one site is reported.",
+  "generated_at": "2026-10-10T20:23:33.598185+00:00",
+  "literature_notes": "All three ledger lines (PMC10366498) describe a single insertion event \u2014 HiBiT at the N-terminus of E-selectin \u2014 and are consolidated into one site. No ledger line supports any internal loop insertion or C-terminal tag for this protein. The C-terminus (residues 578\u2013610) is intracellular and therefore excluded. No other sites are proposed because no other ledger evidence exists.",
   "literature_rejected": []
 }
