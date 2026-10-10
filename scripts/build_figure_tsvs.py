@@ -552,9 +552,9 @@ def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFr
 
     One row per published deep-dive record with real gene symbols and real
     counts (was a MOCK lognormal draw before the sweep produced records).
-    ``n_papers_found`` landed in schema 2.14.0 so a handful of legacy records
-    carry a null there — those rows are dropped from the funnel (both axes must
-    be present to plot a point). Columns:
+    Any record with a null ``n_papers_found`` (unknown discovery corpus) is
+    dropped from the funnel, since both axes must be present to plot a point;
+    none do today. Columns:
     ``gene_symbol, uniprot_acc, papers_found, papers_selected, evidence_grade,
     tier``.
 
@@ -573,8 +573,7 @@ def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFr
         "evidence_grade": dd["evidence_grade"].astype(str),
         "tier": [_dd_tier(r) for _, r in dd.iterrows()],
     })
-    # A point needs both axes; drop records missing either count (19 records
-    # carry a null n_papers_found).
+    # A point needs both axes; drop any record missing either count.
     out = out.dropna(subset=["papers_found", "papers_selected"])
     out["papers_found"] = out["papers_found"].astype(int)
     out["papers_selected"] = out["papers_selected"].astype(int)

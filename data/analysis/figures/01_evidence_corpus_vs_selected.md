@@ -7,17 +7,16 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 12.** The depth of the literature behind each protein tracks both the agent's evidence grade and its surface call. a) For each deep-dived protein with a papers-found count (n = 5,313), the number of papers found during literature discovery (horizontal axis, log scale; the 120 proteins with fewer than 25 papers lie off-axis) against the number kept as evidence after selection (vertical axis, linear scale); median 219 found and 10 kept. Points are colored by the agent's evidence-quality grade: direct evidence from multiple independent assays, direct evidence from a single assay, supportive but indirect evidence, conflicting evidence, or weak or sparse evidence. b) Deep-dive surface tier of proteins grouped by the number of papers found. The share called canonical rises from 1% of proteins with fewer than 75 papers to 46% of those with 200 or more, while the share called low falls from 60% to 11%. Proteins with fewer than 100 papers found that were called surface by UniProt are flagged on the viewer, since they may be surface proteins with too little literature to classify them as such.
+> **Supplementary Figure 12.** The number of papers retained as evidence per protein grows sub-linearly with the size of the discovery corpus, and the agent's evidence-quality grade tracks the depth of the retained set. a) For each deep-dived protein (n = 5,313), the number of papers found during literature discovery (horizontal axis, log scale) against the number kept as evidence after selection (vertical axis, linear scale); median 219 found and 10 kept. Points are colored by the agent’s evidence-quality grade: direct evidence from multiple independent assays, direct evidence from a single assay, supportive but indirect evidence, or weak or sparse evidence. b) Deep-dive surface tier of proteins grouped by the number of papers found. The share called canonical rises from 1% of proteins with fewer than 75 papers to 46% of those with more than 200, while the share called low falls from 60% to 11%. Proteins with fewer than 100 papers found that were called surface by UniProt are flagged on the viewer, since they may be surface proteins with too little literature to classify them as such.
 <!-- END manuscript-legend -->
 
 Per-gene scatter of two corpus axes the deep-dive literature pipeline
 returns, colored by the agent's `evidence_grade` verdict. The TSV has
-one row per published deep-dive record with both counts: **n = 5,313
-genes**. That is the deep-dive cohort (5,332) minus 19 records whose
-`n_papers_found` is null in the deep-dive export; both axes must be
-present to plot a point. Median 219 papers found/gene (range 1–395),
-median 10 selected. Panel a's log axis starts at 25, so the 120 genes
-with fewer than 25 papers found are in the TSV but not drawn.
+one row per published deep-dive record: **n = 5,332 genes**, the full
+deep-dive cohort (every record carries both counts). Median 220 papers
+found/gene (range 1–395), median 10 selected. Panel a's log axis starts
+at 25, so the 120 genes with fewer than 25 papers found are in the TSV
+but not drawn.
 
 
 ## How selection actually scales
@@ -75,9 +74,8 @@ so the three share one map.
   and plumbed onto `Filters.n_papers_found` per the CLAUDE.md schema
   2.14.1+ contract. It **cannot be recomputed from a finished record** —
   the discovery count was never persisted before 2.14.0, only the
-  post-trim selection. The 19 records with a null value are the rows
-  dropped above. (An earlier 100-gene methods audit put the median at
-  234.5; across the 5,313 plotted genes it is 219.)
+  post-trim selection. (An earlier 100-gene methods audit put the median
+  at 234.5; across the 5,332 plotted genes it is 220.)
 - **y-axis — Papers selected as evidence.** The subset the deep-dive's
   `plan_trim_select` step ranks high-enough to feed into the block
   builders for full-text claim extraction. **Already computable from

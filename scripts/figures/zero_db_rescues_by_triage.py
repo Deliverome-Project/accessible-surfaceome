@@ -323,9 +323,9 @@ def main() -> None:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     # Brand-style-v3 font sizes (mirror parity). The gist mirror at
     # data/analysis/figures/make_zero_db_rescues_by_triage.py sets these
-    # inline; this canonical script applies the same rcParams. Some
-    # per-element sizes and the mirror's rotated x-tick labels still
-    # differ. See CLAUDE.md "Canonical generator vs gist mirror".
+    # inline; this canonical script applies the same rcParams, and the
+    # per-element sizes and x-tick labels match too. See CLAUDE.md
+    # "Canonical generator vs gist mirror".
     plt.rcParams.update({
         "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
         "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,

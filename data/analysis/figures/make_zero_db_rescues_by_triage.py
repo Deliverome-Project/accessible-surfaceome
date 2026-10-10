@@ -291,11 +291,9 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
             fontsize=15, color=header_color,
         )
 
-    ax.set_title(
-        header_label,
-        fontsize=18, color=header_color, fontweight="semibold",
-        loc="left", pad=16,
-    )
+    # No panel header: the canonical generator's house style turns
+    # ``set_title`` into a no-op (figures are captioned, not titled), so the
+    # published figure has none. ``header_label`` is kept for call parity.
     ax.set_xticks(x_positions)
     # One line, rotated: eleven categories at print size do not fit flat.
     ax.set_xticklabels(

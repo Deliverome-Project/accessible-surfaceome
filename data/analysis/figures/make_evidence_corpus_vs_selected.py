@@ -16,7 +16,7 @@ composition by papers-found bin (panel b).
 symbol and real counts:
 
   * ``papers_found``     — discovery-corpus size (EuropePMC + PubTator +
-    gene2pubmed union; ``n_papers_found``, median 219, range 1–395). Panel
+    gene2pubmed union; ``n_papers_found``, median 220, range 1–395). Panel
     a's log axis starts at 25, so the 120 genes with fewer than 25 papers
     found are not drawn.
   * ``papers_selected``  — papers the agent read full-text and kept as
@@ -31,9 +31,8 @@ The bundled sibling TSV is produced by ``scripts/build_figure_tsvs.py``
 (``build_evidence_corpus_vs_selected``) from the deep-dive export, so this
 mirror renders the same dataset as the in-repo canonical.
 
-Deep-dive records with a discovery-corpus size (5,313 genes; median 219
-found, 10 selected). The deep-dive cohort is 5,332; the other 19 records
-have a null ``n_papers_found`` and are left out of the TSV.
+One row per deep-dive record (5,332 genes; median 220 found, 10
+selected); every record carries both counts.
 
 Standalone — ``uv run make_evidence_corpus_vs_selected.py``.
 """
@@ -297,7 +296,7 @@ def main() -> None:
     ax.text(
         0.5, -0.155,
         f"Real deep-dive records with a papers-found count: n={len(data):,} genes "
-        f"(median {int(np.median(found))} papers found, {int(np.median(selected))} selected; "
+        f"(median {np.median(found):.0f} papers found, {np.median(selected):.0f} selected; "
         f"x-axis starts at 25).",
         ha="center", va="top", transform=ax.transAxes, fontsize=13, style="italic", color=BRAND_NEUTRAL,
     )
