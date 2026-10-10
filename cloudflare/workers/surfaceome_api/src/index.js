@@ -430,6 +430,167 @@ async function dataReleaseRow(env, whereSql, params) {
   return rows[0] ?? null;
 }
 
+// --- Reproducibility replicates (API-only) ---
+// Genes re-annotated for the run-to-run reproducibility analysis
+// (Supplementary Figure 15), served from public D1 `deep_dive_replicate`.
+// These are NOT the published records: surface_annotation stays the only
+// source of /v1/genes/{SYMBOL}, nothing in the catalog or viewer reads this
+// table, and every response is labelled `reproducibility_replicate: true`
+// with a pointer back to the published record. Rows are loaded once from a
+// frozen bundle and never rewritten, so the per-gene routes' 1-day TTL needs
+// no purge path; the cohort-level index stays on the 1-minute TTL (tiny
+// metadata query) so it never needs a purge-map entry.
+const REPLICATE_KINDS = ["published_snapshot", "full_rerun", "fixed_evidence_replay"];
+const REPLICATE_STUDY_OK = /^[a-z0-9_]{1,64}$/;
+const REPLICATE_NOTICE =
+  "Reproducibility replicate, not the published record. Kept for the run-to-run " +
+  "reproducibility analysis (Supplementary Figure 15); the published record is " +
+  "/v1/genes/{symbol}.";
+const REPLICATE_KIND_NOTES = {
+  published_snapshot: "The published record exactly as served when the study ran (the comparator); the live record may since have been republished.",
+  full_rerun: "The whole pipeline re-run from scratch with the same prompts: literature discovery, abstract triage, paper selection, section builders and synthesizer.",
+  fixed_evidence_replay: "Section builders and synthesizer re-run on the published record's own evidence ledger; discovery and selection held fixed.",
+};
+
+function replicateUrl(sym, study, kind) {
+  return `${HISTORY_BASE}/genes/${sym}/replicates/${study}/${kind}`;
+}
+
+// GET /v1/replicates — every study, its kinds and genes (metadata only; never
+// reads annotation_json).
+async function handleReplicateIndex(env) {
+  let results;
+  try {
+    ({ results } = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, sample_batch,
+              run_id, compared_against_run_id
+         FROM deep_dive_replicate
+        ORDER BY study_id, gene_symbol, replicate_kind`
+    ).all());
+  } catch (e) {
+    if (isMissingTable(e)) return json({ notice: REPLICATE_NOTICE, studies: [] });
+    throw e;
+  }
+  const studies = new Map();
+  for (const r of results) {
+    let st = studies.get(r.study_id);
+    if (!st) {
+      st = { study_id: r.study_id, compared_against_run_id: r.compared_against_run_id,
+             kinds: {}, genes: new Map() };
+      studies.set(r.study_id, st);
+    }
+    st.kinds[r.replicate_kind] ??= { n: 0, run_id: r.run_id, description: REPLICATE_KIND_NOTES[r.replicate_kind] ?? null };
+    st.kinds[r.replicate_kind].n++;
+    if (!st.genes.has(r.gene_symbol)) {
+      st.genes.set(r.gene_symbol, { gene_symbol: r.gene_symbol, hgnc_id: r.hgnc_id,
+        sample_batch: r.sample_batch, url: `${HISTORY_BASE}/genes/${r.gene_symbol}/replicates` });
+    }
+  }
+  return json({
+    notice: REPLICATE_NOTICE,
+    studies: [...studies.values()].map((st) => ({
+      study_id: st.study_id,
+      compared_against_run_id: st.compared_against_run_id,
+      n_genes: st.genes.size,
+      kinds: st.kinds,
+      genes: [...st.genes.values()],
+    })),
+  }, { ttl: CACHE_TTL_SHORT });
+}
+
+// GET /v1/genes/{SYMBOL}/replicates — the replicates held for one gene.
+async function handleGeneReplicates(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  let results = [];
+  try {
+    ({ results } = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, uniprot_acc, sample_batch,
+              run_id, compared_against_run_id, schema_version, prompt_corpus_version,
+              record_generated_at
+         FROM deep_dive_replicate
+        WHERE gene_symbol = ? COLLATE NOCASE
+        ORDER BY study_id, replicate_kind`
+    ).bind(sym).all());
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+  }
+  if (!results.length) return notFound("no_replicates");
+  const g = results[0];
+  return json({
+    reproducibility_replicate: true,
+    notice: REPLICATE_NOTICE,
+    gene_symbol: g.gene_symbol,
+    hgnc_id: g.hgnc_id,
+    uniprot_acc: g.uniprot_acc,
+    published_record_url: `${HISTORY_BASE}/genes/${g.gene_symbol}`,
+    replicates: results.map((r) => ({
+      study_id: r.study_id,
+      replicate_kind: r.replicate_kind,
+      description: REPLICATE_KIND_NOTES[r.replicate_kind] ?? null,
+      sample_batch: r.sample_batch,
+      run_id: r.run_id,
+      compared_against_run_id: r.compared_against_run_id,
+      schema_version: r.schema_version,
+      prompt_corpus_version: r.prompt_corpus_version,
+      record_generated_at: r.record_generated_at,
+      url: replicateUrl(r.gene_symbol, r.study_id, r.replicate_kind),
+    })),
+  }, { ttl: CACHE_TTL_LONG });
+}
+
+// GET /v1/genes/{SYMBOL}/replicates/{study}/{kind} — one replicate record, in
+// full (evidence included), wrapped so it cannot be mistaken for the published
+// record. The deep-dive tier is attached with the same shared predicate
+// handleGene uses, so a replicate's tier is directly comparable.
+async function handleGeneReplicate(env, symbol, study, kind) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  if (!REPLICATE_STUDY_OK.test(study)) return badRequest("invalid_study");
+  if (!REPLICATE_KINDS.includes(kind)) return badRequest("invalid_replicate_kind");
+  let row = null;
+  try {
+    row = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, uniprot_acc, sample_batch,
+              run_id, compared_against_run_id, schema_version, prompt_corpus_version,
+              record_generated_at, annotation_json
+         FROM deep_dive_replicate
+        WHERE gene_symbol = ? COLLATE NOCASE AND study_id = ? AND replicate_kind = ?`
+    ).bind(sym, study, kind).first();
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+  }
+  if (!row) return notFound("replicate_not_found");
+  let record;
+  try {
+    record = JSON.parse(row.annotation_json);
+  } catch (e) {
+    return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
+  }
+  const out = {
+    reproducibility_replicate: true,
+    notice: REPLICATE_NOTICE,
+    study_id: row.study_id,
+    replicate_kind: row.replicate_kind,
+    description: REPLICATE_KIND_NOTES[row.replicate_kind] ?? null,
+    gene_symbol: row.gene_symbol,
+    hgnc_id: row.hgnc_id,
+    uniprot_acc: row.uniprot_acc,
+    sample_batch: row.sample_batch,
+    run_id: row.run_id,
+    compared_against_run_id: row.compared_against_run_id,
+    published_record_url: `${HISTORY_BASE}/genes/${row.gene_symbol}`,
+  };
+  if (record?.filters) {
+    attachDeepDiveClassification(out, {
+      ...record.filters,
+      evidence_grade_summary: record?.executive_summary?.evidence_grade_summary ?? null,
+    });
+  }
+  out.record = record;
+  return json(out, { ttl: CACHE_TTL_LONG });
+}
+
 async function handleReleaseList(env) {
   const results = await dataReleaseRows(env, "ORDER BY cut_at DESC", []);
   return json({
@@ -2868,6 +3029,9 @@ const V1_ENDPOINTS = [
   { group: "History", method: "GET", path: "/v1/releases", summary: "Numbered data releases with their GitHub tag and Zenodo version DOI" },
   { group: "History", method: "GET", path: "/v1/releases/{version}", summary: "One release: metadata + the revision of every gene in it" },
   { group: "History", method: "GET", path: "/v1/releases/{version}/genes/{symbol}", summary: "A gene as it was in that release; also /evidence and .md" },
+  { group: "Reproducibility", method: "GET", path: "/v1/replicates", summary: "Reproducibility replicates (NOT published records): each study with its replicate kinds and genes — e.g. deep_dive_concordance_v1, the 50-gene run-to-run study behind Supplementary Figure 15" },
+  { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates", summary: "The reproducibility replicates held for one gene (404 if none), with links to each" },
+  { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates/{study}/{kind}", summary: "One replicate SurfaceomeRecord in full (evidence included), wrapped with reproducibility_replicate: true; kind ∈ published_snapshot · full_rerun · fixed_evidence_replay" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
@@ -4007,11 +4171,15 @@ export default {
     if (path === "/v1/triage/export.tsv") return withEdgeCache(request, env, ctx, () => handleTriageExport(env, url), { includeQuery: true });
     if (path === "/v1/meta/sizes") return withEdgeCache(request, env, ctx, () => handleMetaSizes(env));
     if (path === "/v1/releases") return withEdgeCache(request, env, ctx, () => handleReleaseList(env));
+    if (path === "/v1/replicates") return withEdgeCache(request, env, ctx, () => handleReplicateIndex(env));
     // Feedback endpoints are user-specific / write-adjacent — never cache.
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
+    // Reproducibility replicates (API-only) — more specific than /v1/genes/{sym}.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/replicates$/))) return withEdgeCache(request, env, ctx, () => handleGeneReplicates(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/replicates\/([^/]+)\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleGeneReplicate(env, m[1], m[2], m[3]));
     // Record history — more specific than every /v1/genes/{sym}… route below.
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions$/))) return withEdgeCache(request, env, ctx, () => handleRevisionList(env, m[1]));
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\.md$/))) return handleRevisionBody(env, m[1], m[2], "md");

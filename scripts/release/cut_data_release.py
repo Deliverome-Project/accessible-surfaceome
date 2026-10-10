@@ -56,6 +56,7 @@ from accessible_surfaceome.cloud.record_history import releases as rel
 from accessible_surfaceome.cloud.record_history.store import BUCKET, is_missing_s3_object
 from accessible_surfaceome.cloud.record_history.zenodo import (
     DATA_CONCEPT_RECID,
+    build_replicates_tarball,
     ZENODO_API,
     ZenodoDraftError,
     create_draft_version,
@@ -269,6 +270,9 @@ def main() -> None:
     if not token:
         print("ZENODO_TOKEN unset — upload the tarball as a new version by hand.")
         return
+    # The Supp Fig 15 reproducibility replicates ship with every release (the
+    # frozen study bundle; not published records).
+    replicates = build_replicates_tarball(ROOT / "data/processed/deep_dive_concordance_v1", args.out_dir)
     with httpx.Client(timeout=900) as http:
         try:
             url = create_draft_version(
@@ -278,6 +282,7 @@ def main() -> None:
                 http=http,
                 api=args.zenodo_api,
                 concept_recid=args.zenodo_concept_recid,
+                extra_files=[replicates],
             )
         except ZenodoDraftError as exc:
             # The release rows + export above are already committed and are

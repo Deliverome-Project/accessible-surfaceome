@@ -169,7 +169,8 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     if the manifest entry was missing).
 
     Returns the three output paths so callers can wire them straight
-    into a publish/upload step.
+    into a publish/upload step, plus ``figure_alert``: the list of figures
+    whose swapped-in render differs from the .docx (empty if none).
     """
     if not src.is_file():
         raise FileNotFoundError(f"source manuscript not found: {src}")
@@ -246,14 +247,21 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     #    Static checkers (ty) walk from the repo root and can't see
     #    the sibling — silence the unresolved-import diagnostic.
     from figure_swap import (  # ty: ignore[unresolved-import]
+        format_change_alert,
         format_report,
         load_manifest,
         swap_figures,
     )
     manifest = load_manifest(FIGURE_MANIFEST)
+    figure_alert = ""
     if manifest:
         print(f"→ figure-swap   ({len(manifest)} manifest entries)")
-        report = swap_figures(html_path, manifest, FIGURE_SEARCH_PATH)
+        # Each figure the .docx embedded is compared with the render that
+        # replaces it; a changed one gets old | new | difference images here.
+        report = swap_figures(
+            html_path, manifest, FIGURE_SEARCH_PATH, compare_dir=out_dir / "figure-changes"
+        )
+        figure_alert = format_change_alert(report)
         formatted = format_report(report)
         if formatted:
             print(formatted)
@@ -285,7 +293,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         extra_args=["--standalone"],
     )
 
-    return {"html": html_path, "pdf": pdf_path, "xml": xml_path}
+    return {"html": html_path, "pdf": pdf_path, "xml": xml_path, "figure_alert": figure_alert}
 
 
 def _downsample_raster(src: Path, dest: Path, max_width: int) -> Path | None:
@@ -380,7 +388,7 @@ def build_web(
     asset_prefix: str = "assets",
     max_raster_width: int = 2400,
     biorxiv_url: str | None = None,
-) -> Path:
+) -> tuple[Path, str]:
     """Render the manuscript as a self-contained web page.
 
     Same pandoc pass and same filters as the PDF build — so the
@@ -399,9 +407,11 @@ def build_web(
         absolute local paths that mean nothing on a web server.
       * deliverome-web.css replaces the print sheet.
 
-    Returns the written index.html.
+    Returns the written index.html and the figure-change alert (the
+    figures whose swapped-in render differs from the .docx; empty if none).
     """
     from figure_swap import (  # ty: ignore[unresolved-import]
+        format_change_alert,
         format_report,
         load_manifest,
         swap_figures,
@@ -445,9 +455,16 @@ def build_web(
     )
 
     manifest = load_manifest(FIGURE_MANIFEST)
+    figure_alert = ""
     if manifest:
         print(f"→ figure-swap   ({len(manifest)} manifest entries)")
-        report = swap_figures(work, manifest, FIGURE_SEARCH_PATH)
+        # Comparison images go next to the source, never into out_dir,
+        # which is shipped as-is to the static site.
+        report = swap_figures(
+            work, manifest, FIGURE_SEARCH_PATH,
+            compare_dir=src.parent / "build" / "figure-changes",
+        )
+        figure_alert = format_change_alert(report)
         formatted = format_report(report)
         if formatted:
             print(formatted)
@@ -609,7 +626,7 @@ def build_web(
     work.unlink(missing_ok=True)
     shutil.rmtree(media_dir, ignore_errors=True)
     print(f"  copied {len(copied)} image(s) → {assets_dir}")
-    return index
+    return index, figure_alert
 
 
 def main() -> int:
@@ -679,7 +696,7 @@ def main() -> int:
 
     if args.web is not None:
         try:
-            index = build_web(
+            index, figure_alert = build_web(
                 args.source.resolve(),
                 args.web.resolve(),
                 args.asset_prefix,
@@ -695,6 +712,9 @@ def main() -> int:
         print()
         print(f"✓ Wrote {index}")
         print(f"  open {index} in a browser to check it.")
+        # Last, so the list of fresh figures can't scroll past unseen.
+        if figure_alert:
+            print(figure_alert)
         return 0
 
     try:
@@ -716,6 +736,9 @@ def main() -> int:
     print("  Rendering → 'Emulate CSS media type: print' shows exactly")
     print("  what WeasyPrint sees. Tweak paper/deliverome-print.css and")
     print("  re-run.")
+    # Last, so the list of fresh figures can't scroll past unseen.
+    if outputs.get("figure_alert"):
+        print(outputs["figure_alert"])
     return 0
 
 

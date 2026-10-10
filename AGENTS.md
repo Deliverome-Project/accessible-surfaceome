@@ -208,6 +208,18 @@ through `CloudRevisionStore` are throttled via `RECORD_HISTORY_D1_QPS`
 costs ~17 queries on the shared public D1; never raise it during business
 hours.
 
+**Reproducibility replicates are not published records.** Public D1
+`deep_dive_replicate` holds the Supplementary Figure 15 study
+(`deep_dive_concordance_v1`: 50 random deep-dive genes × `published_snapshot`
+/ `full_rerun` / `fixed_evidence_replay`), loaded once from the frozen bundle
+`data/processed/deep_dive_concordance_v1/` by
+`scripts/cloud/upload_deep_dive_replicates_to_d1.py`. The Worker serves it
+API-only (`/v1/replicates`, `/v1/genes/{sym}/replicates[/{study}/{kind}]`,
+every response labelled `reproducibility_replicate: true`); nothing in the
+catalog, viewer, record history or `surface_annotation` reads it. Never
+publish a replicate through `publish_record`. `cut_data_release.py` attaches
+the same bundle to each Zenodo release draft.
+
 `scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
 rewrites whole tables that back cohort endpoints — and it purges those
 after a successful sync via `purge_cohort_surfaces` (`--no-purge` to skip).
