@@ -5,7 +5,7 @@
   "curator_vs_agent_reason": "swh:1:rev:592a1fc5bcd217d29a1650b021849b4725f00fcb",
   "db_correctness_by_class": "swh:1:rev:e6991d1ea09a9db6cdd66fe97d2e30f71dbaf7e8",
   "db_correctness_overall": "swh:1:rev:951e5b8fb41d77a8c22ac1f206bf79b4c034d590",
-  "db_cutoff_tradeoff": "swh:1:rev:5377b9e3e50dd444b28e157280256b07a5fc53e4",
+  "db_cutoff_tradeoff": "swh:1:rev:15a7dcc84f1b8e16b121f839e477e090b91db1db",
   "db_overlap_upset": "swh:1:rev:787f5d492d929bf3fdb0436a2fc7a2ff271111a0",
   "db_vs_sonnet_whole_proteome": "swh:1:rev:22d3b329b146b876cb6bef625e4957dd0fc30916",
   "deep_dive_final_categories": "swh:1:rev:cf327377dbc566d0edaa198a5179ea3866b4d844",
