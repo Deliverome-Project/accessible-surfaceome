@@ -1901,7 +1901,15 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
     # in-render recompute can differ from the committed points and would silently
     # overwrite them (same trap class as db_optimized_cutoffs.tsv). The plot below
     # renders from points_by_group in memory; regenerate the committed TSV
-    # deliberately via _dump_db_cutoff_tradeoff_points, never as a render side effect.
+    # deliberately by setting DUMP_CUTOFF_POINTS=1, never as a render side effect.
+    #
+    # Freezing it was the right call, but with no mechanism to thaw it the file
+    # silently outlived its truth: it still encodes the pre-2026-06-07 benchmark
+    # (98 surface / 49 non-surface) from before HMGB1 was corrected to
+    # `contextual`, so every recall in Supp S4 was divided by 98 against a
+    # curated 99. The opt-in below is that mechanism.
+    if os.environ.get("DUMP_CUTOFF_POINTS") == "1":
+        _dump_db_cutoff_tradeoff_points(points_by_group)
 
     group_order = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
     fig, axes = plt.subplots(2, 3, figsize=(14, 8.5), sharey=True)
