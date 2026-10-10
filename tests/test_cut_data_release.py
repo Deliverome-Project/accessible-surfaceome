@@ -68,6 +68,12 @@ def _patch_common(
     monkeypatch.setattr(_mod, "load_env", lambda: None)
     monkeypatch.setattr(_mod.D1Client, "public", classmethod(lambda cls: d1))
     monkeypatch.setattr(_mod, "purge_paths", lambda *a, **kw: None)
+    # The replicate bundle is LFS-tracked, so CI checks out pointers; the
+    # tarball builder has its own tests (test_record_history_zenodo.py).
+    monkeypatch.setattr(
+        _mod, "build_replicates_tarball",
+        lambda _bundle, out_dir: Path(out_dir) / "replicates.tar.gz",
+    )
     # R2Config.from_env() is built unconditionally before get_blob/export in
     # both the fresh and --resume paths, even though these tests fake out
     # the actual R2 calls (export_release / get_blob) — it just needs any

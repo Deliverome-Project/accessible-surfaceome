@@ -169,6 +169,27 @@ uv run python paper/figure_swap.py            # report issues
 uv run python paper/figure_swap.py --strict   # exit 1 on any issue
 ```
 
+### Alert: figures that changed since the .docx
+
+Swapping in the canonical render means the PDF can carry a figure the
+manuscript never showed you. So before each swap the build compares the
+figure the .docx embedded with the render replacing it, and flags any that
+visibly differ:
+
+- the swap log prints `compared with the .docx: N changed, M unchanged, K not
+  compared`, and the build **ends** with a `⚠⚠ N FIGURE(S) DIFFER FROM THE
+  VERSION IN THE .DOCX` block listing each one, so it can't scroll past;
+- each changed figure gets an old | new | difference image (differing pixels
+  marked red) in `<docx-dir>/build/figure-changes/`.
+
+The comparison is built to ignore what the .docx round-trip does to a pasted
+image (downscaling, JPEG re-compression, a flattened transparent background):
+an unchanged figure scores 0 differing pixels, while a single edited number
+still scores hundreds. Vector (SVG) entries are compared through the sibling
+`<slug>.png` every published figure ships; a figure with no PNG is reported
+as "not compared" rather than silently passed. The alert never fails the
+build; review the listed figures before publishing.
+
 ## Cross-reference links
 
 The build synthesises clickable in-PDF cross-references from the prose,

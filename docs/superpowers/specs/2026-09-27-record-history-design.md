@@ -3,6 +3,27 @@
 **Date:** 2026-09-27
 **Status:** approved; implemented on `claude/record-history-api`
 
+> **2026-09-28 amendment.** Record history briefly seeded revision 1 of
+> every gene from the 2026-08-15 Zenodo deposit (decision 4 below,
+> `source='seed:zenodo-1.0.0'`), landing release 1.0.0 as that snapshot.
+> That was reverted hours after going live: nothing had cited a revision
+> number yet, and history is supposed to hold only states the API
+> **served** — the deposit was never itself served through the Worker.
+> The corrected design: **numbering starts at 1** (a gene's first archived
+> version, no revision 0), release **1.0.0 stays Zenodo-only** (a
+> `data_release` row with `archive_scope='zenodo_only'` and no
+> `data_release_member` rows), and every `/v1/genes/{sym}/revisions` entry
+> carries a `changed` label. `scripts/cloud/seed_record_history.py` is
+> retired; `scripts/cloud/drop_seed_revisions.py` undoes what it wrote.
+> **This renumbers what a `/v1/genes/{sym}/revisions/{n}` URL points at**
+> for every previously-seeded gene, even though that route is served
+> `immutable` — a URL fetched in the hours between the original seed and
+> this fix now resolves to a DIFFERENT body (what used to be one revision
+> higher). Accepted deliberately: record history was live only a few
+> hours before this correction, and nothing had cited a revision number
+> yet. The rest of this document describes the ORIGINAL design; §§1, 3
+> and 5 below are annotated with what changed.
+
 ## Problem
 
 The public API serves only the latest deep-dive record per gene.
@@ -53,10 +74,15 @@ and the records it contains.
    republish; archiving the served response captures them.
 3. **Content-addressed storage.** Bytes are written only when content
    changes; a release is a list of pointers.
-4. **Seed:** revision 1 = the 2026-08-15 Zenodo deposit
-   (`deep_dives_all.tar.gz`, record 20805384), tagged as data release
-   **1.0.0**. The first release cut under this system is **1.3.0**. No data
-   tags for 1.1.0 / 1.2.0 (no data snapshot of them exists).
+4. **Seed (REVERTED — see the 2026-09-28 amendment above):** revision 1 =
+   the 2026-08-15 Zenodo deposit (`deep_dives_all.tar.gz`, record
+   20805384), tagged as data release **1.0.0**. This was undone hours
+   after going live: history holds only states the API actually served,
+   and the deposit was never served. Release **1.0.0 stays as a
+   Zenodo-only `data_release` row** (no member revisions); numbering
+   starts at 1 for a gene's first archived version. The first release cut
+   under this system is still **1.3.0**. No data tags for 1.1.0 / 1.2.0
+   (no data snapshot of them exists).
 5. **Path-based URLs only.** The zone cache rule ignores query strings,
    so `?revision=` would be answered with the cached live record.
 
@@ -100,7 +126,9 @@ CREATE TABLE IF NOT EXISTS data_release (
     github_tag          TEXT,               -- 'v1.3.0'; NULL for 1.0.0
     zenodo_version_doi  TEXT,               -- filled after deposit
     n_genes             INTEGER NOT NULL,
-    notes               TEXT
+    notes               TEXT,
+    archive_scope       TEXT                -- 'zenodo_only' for 1.0.0; NULL
+                                             -- ('api' by convention) otherwise
 );
 
 CREATE TABLE IF NOT EXISTS data_release_member (
@@ -138,15 +166,33 @@ keep serving the latest record with today's enrichment.
 
 | Endpoint | Returns | Cache |
 |---|---|---|
-| `GET /v1/genes/{sym}/revisions` | `{gene_symbol, hgnc_id, current_revision, revisions:[{revision, published_at, source, json_hash, evidence_hash, md_hash, schema_version, prompt_corpus_version, releases:[{version, zenodo_version_doi}], url, evidence_url, md_url}]}`, newest first | 60 s, purged on write |
+| `GET /v1/genes/{sym}/revisions` | `{gene_symbol, hgnc_id, current_revision, revisions:[{revision, published_at, source, json_hash, evidence_hash, md_hash, schema_version, prompt_corpus_version, changed, releases:[{version, zenodo_version_doi}], url, evidence_url, md_url}]}`, newest first | 60 s, purged on write |
 | `GET /v1/genes/{sym}/revisions/{n}` | archived JSON bytes | 1 y, `immutable` |
 | `GET /v1/genes/{sym}/revisions/{n}/evidence` | archived evidence-ledger bytes | 1 y, `immutable` |
 | `GET /v1/genes/{sym}/revisions/{n}.md` | archived Markdown bytes | 1 y, `immutable` |
-| `GET /v1/releases` | `[{version, cut_at, github_tag, zenodo_version_doi, n_genes}]` | 60 s, purged on write |
-| `GET /v1/releases/{ver}` | release metadata + `members:[{gene_symbol, hgnc_id, revision, json_hash, md_hash}]` | 1 y, `immutable` once `zenodo_version_doi` is set; 60 s before |
+| `GET /v1/releases` | `[{version, cut_at, github_tag, zenodo_version_doi, n_genes, api_members}]` | 60 s, purged on write |
+| `GET /v1/releases/{ver}` | release metadata + `api_members` + `members:[{gene_symbol, hgnc_id, revision, json_hash, md_hash}]` (`[]` + an `api_note` for a Zenodo-only release) | 1 y, `immutable` once `zenodo_version_doi` is set; 60 s before |
 | `GET /v1/releases/{ver}/genes/{sym}` | same bytes as the matching revision | 1 y, `immutable` |
 | `GET /v1/releases/{ver}/genes/{sym}/evidence` | same bytes as the matching revision's evidence ledger | 1 y, `immutable` |
 | `GET /v1/releases/{ver}/genes/{sym}.md` | same bytes as the matching revision's `.md` | 1 y, `immutable` |
+
+**`changed`** (added 2026-09-28, computed in the Worker from the
+already-fetched `revisions` rows — no extra query): `["first_archived"]` for
+a gene's first revision (nothing to diff against, so a part-by-part
+comparison would be meaningless); otherwise whichever of `"record"` /
+`"evidence"` / `"markdown"` differ in hash from the previous (numerically
+lower) revision of the same gene — a part appearing or disappearing (NULL
+↔ a hash) counts as changed too.
+
+**Zenodo-only releases** (release 1.0.0 only, today): a `data_release` row
+with `archive_scope = 'zenodo_only'` has no `data_release_member` rows.
+`GET /v1/releases` marks it `api_members: false`; `GET /v1/releases/{ver}`
+returns `members: []` plus an `api_note` pointing at its Zenodo DOI instead of
+attempting the member JOIN; `GET /v1/releases/{ver}/genes/{sym}` 404s
+`release_not_in_api_history` (with `zenodo_version_doi` in the body) for
+every symbol rather than ever reaching `gene_not_in_release`. No revision
+ever lists a Zenodo-only release under its `releases` array, since that
+comes from the same (empty) `data_release_member` join.
 
 - Archived bodies are read straight from R2 (not wrapped in the edge/KV
   cache wrapper, which would drop their headers) and carry `ETag: "{hash}"`, `X-Surfaceome-Revision`,
@@ -154,10 +200,11 @@ keep serving the latest record with today's enrichment.
 - `{ver}` accepts `1.3.0` or `v1.3.0`, normalized, validated against
   `^\d+\.\d+\.\d+$`.
 - Errors: `invalid_symbol`, `gene_not_annotated`, `revision_not_found`,
-  `release_not_found`, `gene_not_in_release`, `markdown_not_archived` /
-  `evidence_not_archived` (404 for a revision with a NULL hash; the seed
-  revision's evidence is inline in its record). A D1 row whose R2 object is
-  missing returns `500 archive_body_missing` — never a live-record fallback.
+  `release_not_found`, `gene_not_in_release`, `release_not_in_api_history`
+  (a Zenodo-only release; `zenodo_version_doi` is in the body),
+  `markdown_not_archived` / `evidence_not_archived` (404 for a revision
+  with a NULL hash). A D1 row whose R2 object is missing returns
+  `500 archive_body_missing` — never a live-record fallback.
 - `/v1/releases/{ver}` uses `RATE_LIMITER_HEAVY`.
 - All endpoints are listed in the `/v1` index and API docs.
 
@@ -206,29 +253,51 @@ token → normal cached path (no error, no signal).
 - `scripts/cloud/sweep_record_history.py` — `archive_gene(source="sweep")`
   over every symbol from `/v1/genes`; thread pool; dry-run default,
   `--execute`, `--genes A,B`. Run after any bulk deterministic-table sync.
-- `scripts/cloud/seed_record_history.py` (one-off, **resumable, not
-  refuse-on-nonempty**) — download `deep_dives_all.tar.gz` from Zenodo
-  record 20805384; write each record as revision 1
+- `scripts/cloud/seed_record_history.py` — **RETIRED (2026-09-28
+  amendment).** Originally a one-off that wrote the 2026-08-15 Zenodo
+  deposit into `record_revision` as revision 1 and tagged it release
+  1.0.0 (the section below, kept for archaeology, describes what it did).
+  Reverted the same day, before anything had cited a revision number:
+  history holds only states the API actually served, and the deposit was
+  never served. `main()` now refuses immediately with a pointer to
+  `drop_seed_revisions.py`; the module's pure helpers stay importable.
+  `scripts/cloud/drop_seed_revisions.py` (one-off, dry-run by default,
+  `--execute`) undoes it: deletes every
+  `seed:zenodo-1.0.0` row and 1.0.0's `data_release_member` rows, shifts
+  each affected gene's later revisions down by one so they're contiguous
+  from 1, and sets 1.0.0's `archive_scope = 'zenodo_only'` (idempotently
+  `ALTER TABLE`-ing that column onto public D1's pre-existing
+  `data_release` table first). Resumable with **no persisted external
+  state** — the genes still needing a shift are re-derived on every run
+  from a single invariant: `INSERT_REVISION_SQL` always keeps an ordinary
+  gene's revisions contiguous from 1, so ANY gene whose current rows
+  aren't contiguous from 1 is, by construction, one this migration hasn't
+  finished with yet. Refuses if `data_release` has any version other than
+  1.0.0 (a later release would have pinned member revision numbers
+  against the pre-migration numbering). Purges `/v1/releases`,
+  `/v1/releases/1.0.0`, and every affected gene's
+  `/v1/genes/{sym}/revisions` list afterward.
+
+  <details><summary>Original seed behavior (retired; kept for history)</summary>
+
+  Resumable, not refuse-on-nonempty: download `deep_dives_all.tar.gz` from
+  Zenodo record 20805384; write each record as revision 1
   (`source='seed:zenodo-1.0.0'`, `md_hash` NULL, `published_at` =
   2026-08-15); create release `1.0.0` (`cut_at` 2026-08-15,
   `zenodo_version_doi` `10.5281/zenodo.20805384`, `github_tag` NULL,
-  members = all seeded genes). Then run the sweep: changed genes get
-  revision 2; genes annotated after 2026-08-15 start at revision 1.
+  members = all seeded genes). A re-run first read every existing
+  `record_revision` row (read-only) and refused — naming the offending
+  genes — if any row wasn't exactly what this seed itself would have
+  written: a `source` other than `seed:zenodo-1.0.0`, a `revision` other
+  than 1, a symbol the tarball didn't carry, or a `json_hash` that didn't
+  match what this tarball's record hashes to (a stale or swapped-out
+  tarball). Rows that passed were "already done"; only the remaining
+  genes got written. R2 puts were separately idempotent
+  (content-addressed, `head_object`-gated). If `data_release` 1.0.0
+  already existed with every tarball gene accounted for, the script
+  printed "already seeded" and exited 0 having written nothing.
 
-  A re-run first reads every existing `record_revision` row (read-only) and
-  refuses — naming the offending genes — if any row isn't exactly what this
-  seed itself would have written: a `source` other than
-  `seed:zenodo-1.0.0`, a `revision` other than 1, a symbol the tarball
-  doesn't carry, or a `json_hash` that doesn't match what this tarball's
-  record hashes to (a stale or swapped-out tarball). Rows that pass are
-  "already done"; only the remaining genes get written. R2 puts are
-  separately idempotent (content-addressed, `head_object`-gated). If
-  `data_release` 1.0.0 already exists with every tarball gene accounted
-  for, the script prints "already seeded" and exits 0 having written
-  nothing.
-
-Revision 1 from the seed is the stored record as deposited (never
-enriched, evidence inline); its `source` says so.
+  </details>
 
 The `.md` export is regenerated by the viewer build, not by a publish, so
 a publish archives the new record next to the previous `.md`; the next
@@ -268,10 +337,17 @@ revisions remain.
   browser; it fetches `/v1/genes/{sym}/revisions` alongside its other
   secondary enrichments after first paint. On failure the strip is
   omitted. The strip, near the record header:
-  *Revision N · published YYYY-MM-DD · in release vX.Y.Z · Cite this
-  version · All revisions*. "Cite this version" → the immutable revision
-  URL, plus the release's Zenodo version DOI when the revision is in a
-  release.
+  *Revision N · \<changed label\> · published YYYY-MM-DD · in release
+  vX.Y.Z · Cite this version · All revisions*. The changed label
+  (`viewer/lib/revisions.ts` + `RevisionStrip.tsx`, 2026-09-28) reads the
+  entry's `changed` array — "first archived version" for a gene's first
+  revision, otherwise the matching parts joined with " + " ("record
+  updated", "evidence updated", "Markdown refreshed"). "Cite this
+  version" → the immutable revision URL, plus the release's Zenodo
+  version DOI when the revision is in a release (never for a Zenodo-only
+  release — no revision is ever a member of one, so the strip simply
+  omits the release segment for those, same as any other revision in no
+  release).
 
 ## 6. Testing
 
