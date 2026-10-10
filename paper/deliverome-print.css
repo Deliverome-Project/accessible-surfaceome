@@ -537,6 +537,38 @@ thead th {
   border-bottom: 2px solid var(--maroon-mid, #922038);
 }
 
+/* Body rows: build.py demotes every <thead> row after the first into
+ * <tbody>, so only the real header row gets the uppercase band. Cell
+ * paragraphs would otherwise inherit the body's justified text, which
+ * opens wide gaps in a narrow cell. */
+th p, td p {
+  margin: 0 0 0.25em;
+  text-align: left;
+  hyphens: manual;
+}
+
+td p:first-child strong {
+  color: var(--maroon-dark, #6e1428);
+}
+
+/* A heading build.py pulled into a table-block (the "Supplementary
+ * information" title) — it is already inside a spanning block. */
+.table-block > .table-block-heading {
+  column-span: none;
+  margin-top: 0;
+}
+
+/* A table caption sits ABOVE its table (build.py moves it there), so it
+ * keeps with what follows rather than what precedes it — the reverse of
+ * a figure caption. */
+h5.table-caption {
+  break-before: auto;
+  page-break-before: auto;
+  break-after: avoid;
+  page-break-after: avoid;
+  margin: 0.6em 0 0.4em 0;
+}
+
 /* ============================================================
  * Block quotes — abstract-style pull quote
  * ============================================================ */
