@@ -119,6 +119,28 @@ def repair_proposal(site, *, sequence: str, sp_end: int = 0) -> str | None:  # n
     if pinned is not None:
         _set_junction(site, pinned, sequence)
         return "prose_window"
+
+    # * ``letter_only`` — the junction NUMBER is corroborated (residue_before
+    #   matches the sequence there) and only the descriptive residue_after
+    #   letter is wrong. Nothing moves: the site stays at the number it named,
+    #   and the letter is read off the authoritative sequence.
+    #
+    #   This is deliberately not the guesswork the docstring warns about. The
+    #   site is not relocated, so no position is laundered. SLC5A6 lost a real
+    #   site this way — a published EL3 ALFA tag with two corroborating ledger
+    #   lines — because the model wrote T at 484 where the sequence has P, while
+    #   naming 483 and its M correctly.
+    #
+    #   The guard is uniqueness: if the PAIR the model described occurs anywhere
+    #   in the sequence, it may have meant that other junction, and choosing
+    #   between them would be exactly the guesswork we refuse. Reject instead.
+    n = site.insert_after_residue
+    if n is not None and 1 <= n <= len(sequence) and site.residue_before:
+        if site.residue_before == sequence[n - 1]:
+            claimed_pair = f"{site.residue_before}{site.residue_after or ''}"
+            if site.residue_after and sequence.count(claimed_pair) == 0:
+                site.residue_after = sequence[n] if n < len(sequence) else ""
+                return "letter_only"
     return None
 
 

@@ -27,7 +27,7 @@ SiteType = Literal["terminal_n", "terminal_c", "internal"]
 #: derived must never read as extracellular. Mirrors `compartmentAt` in
 #: viewer/lib/surface-bind.ts, which carries the same rule.
 TopologyState = Literal["extracellular", "intracellular", "membrane", "signal", "unknown"]
-PositionEvidence = Literal["validated", "inferred"]
+PositionEvidence = Literal["validated", "inferred", "topology_derived"]
 Confidence = Literal["high", "medium", "low"]
 
 # Validation strength of the cited tagging construct, best -> worst. The headline
@@ -109,9 +109,12 @@ class TagSiteProposal(BaseModel):
     position_evidence: PositionEvidence = Field(
         description=(
             '"validated" — a tag was published AT this exact residue/junction (or immediately '
-            'adjacent, +/-1). "inferred" — the loop/domain has tagging precedent ELSEWHERE, but '
-            "THIS specific position is your own structural choice. If the cited tag is not at "
-            "insert_after_residue, this MUST be 'inferred'."
+            'adjacent, +/-1). "topology_derived" — the paper reports a tagged construct of THIS '
+            "protein without naming a residue, and the computed topology admits exactly ONE "
+            "extracellular terminus, so the position follows from the topology rather than from "
+            'a choice. "inferred" — the loop/domain has tagging precedent ELSEWHERE and THIS '
+            "position is your own structural choice. If the cited tag is not at "
+            "insert_after_residue, this MUST NOT be 'validated'."
         )
     )
     cited_tag_residue: int | None = Field(

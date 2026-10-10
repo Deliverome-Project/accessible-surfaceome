@@ -278,7 +278,7 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
         return result
     for s in result.sites:
         if s.position_evidence != "validated":
-            continue
+            continue  # 'inferred' and 'topology_derived' already claim no exact citation
         n = s.insert_after_residue
         if n is None:
             # A region-level site claims no junction, so there is no position
@@ -288,6 +288,28 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
         named = residue_mentions(s.supporting_quote, sequence=sequence)
         if not named & {n - 1, n, n + 1}:
             s.position_evidence = "inferred"
+    return result
+
+
+def enforce_evidence_type_coupling(result: TagSiteResult) -> TagSiteResult:
+    """An unvalidated position may not carry an exact-site ``evidence_type``.
+
+    The prompt couples them — `evidence_type` may be "published tag insertion at
+    this exact site" ONLY when the position is validated — but nothing enforced
+    it. `enforce_position_claims` downgrades `position_evidence` when the quote
+    does not name the residue and leaves `evidence_type` untouched, so a record
+    could say "I inferred this position" and "a tag was published at this exact
+    site" in the same breath. TFRC's C-terminal site shipped exactly that pair,
+    which made it read stronger than the sentence behind it.
+
+    The site is KEPT. Only the claim is corrected — a terminal position derived
+    from topology is a real finding, it just is not an exact-site citation."""
+    for site in result.sites:
+        if (
+            site.position_evidence != "validated"
+            and site.evidence_type == "published tag insertion at this exact site"
+        ):
+            site.evidence_type = "published tag insertion in the same loop or domain"
     return result
 
 
@@ -598,6 +620,7 @@ def run_tag_site_agent(
     #   b2) a site may claim a VALIDATED position only if its quote names it;
     #       otherwise the position came from topology, not from the citation.
     enforce_position_claims(result, sequence=sequence)
+    enforce_evidence_type_coupling(result)
     if sequence and topology:
         kept, rejected = apply_geometry_pass(
             result.sites,

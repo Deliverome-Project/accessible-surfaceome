@@ -496,3 +496,95 @@ def test_an_empty_result_still_carries_its_provenance() -> None:
             f"_empty() does not stamp {field!r} — an empty result would be "
             f"indistinguishable from a gene that never ran"
         )
+
+
+# ---------------------------------------------------------------------------
+# A terminal site the topology pins, and the claim it is allowed to make.
+# ---------------------------------------------------------------------------
+
+
+def test_an_unvalidated_position_cannot_claim_an_exact_site_citation() -> None:
+    """The prompt couples these — exact-site evidence_type requires a validated
+    position — but nothing enforced it. enforce_position_claims downgrades
+    position_evidence and left evidence_type alone, so TFRC's C-terminal site
+    shipped saying "I inferred this position" and "a tag was published at this
+    exact site" at once. The site is kept; only the claim is corrected."""
+    from accessible_surfaceome.agents.tag_site.runner import enforce_evidence_type_coupling
+
+    def site(pos_ev):
+        return TagSiteProposal(
+            site_type="terminal_c", insert_after_residue=760, residue_before="F",
+            residue_after="", tag_type="V5",
+            evidence_type="published tag insertion at this exact site",
+            position_evidence=pos_ev, evidence_detail="d",
+            functional_or_expression_impact_measured="NOT MEASURED",
+            rationale="r", confidence="medium",
+        )
+
+    result = TagSiteResult(sites=[site("inferred"), site("topology_derived"), site("validated")])
+    enforce_evidence_type_coupling(result)
+    inferred, derived, validated = result.sites
+    assert inferred.evidence_type == "published tag insertion in the same loop or domain"
+    assert derived.evidence_type == "published tag insertion in the same loop or domain"
+    assert validated.evidence_type == "published tag insertion at this exact site"
+    # all three SURVIVE — this corrects a label, it does not drop a site
+    assert len(result.sites) == 3
+
+
+def test_topology_derived_is_its_own_standing() -> None:
+    """A position computed from a sole extracellular terminus is stronger than
+    'I picked a spot in a loop'. Collapsing both into 'inferred' loses that."""
+    import typing
+
+    vals = typing.get_args(TagSiteProposal.model_fields["position_evidence"].annotation)
+    assert set(vals) == {"validated", "inferred", "topology_derived"}
+
+
+def test_a_wrong_letter_is_repaired_without_moving_the_junction() -> None:
+    """SLC5A6 lost a real published site — an EL3 ALFA tag with two corroborating
+    ledger lines — because the model wrote T at 484 where the sequence has P,
+    while naming 483 and its M correctly. The NUMBER was corroborated; only a
+    descriptive letter was wrong."""
+    from accessible_surfaceome.agents.tag_site.geometry import check_residues, repair_proposal
+
+    seq = "AAAAAMPPSPSNGS"          # M at 6, P at 7; "MT" occurs nowhere
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=6, residue_before="M", residue_after="T",
+        tag_type="ALFA", evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED", rationale="r", confidence="high",
+    )
+    assert check_residues(sequence=seq, residue=6, before="M", after="T")      # fails first
+    assert repair_proposal(site, sequence=seq, sp_end=0) == "letter_only"
+    assert site.insert_after_residue == 6, "the junction must not move"
+    assert site.residue_after == "P"
+    assert check_residues(sequence=seq, residue=6, before="M", after="P") is None
+
+
+def test_the_repair_refuses_when_the_number_is_not_corroborated() -> None:
+    """If residue_before does not match either, nothing corroborates the number
+    and correcting the other letter would launder a fabricated position."""
+    from accessible_surfaceome.agents.tag_site.geometry import repair_proposal
+
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=6, residue_before="Q", residue_after="Q",
+        tag_type="ALFA", evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED", rationale="r", confidence="high",
+    )
+    assert repair_proposal(site, sequence="AAAAAMPPSPSNGS", sp_end=0) is None
+
+
+def test_the_repair_refuses_when_the_claimed_pair_exists_elsewhere() -> None:
+    """Then the model may have meant that other junction, and choosing between
+    them is exactly the guesswork repair_proposal refuses to do."""
+    from accessible_surfaceome.agents.tag_site.geometry import repair_proposal
+
+    seq = "AAAAAMPPSMTNGS"          # M|P at 6, but "MT" also occurs at 10
+    site = TagSiteProposal(
+        site_type="internal", insert_after_residue=6, residue_before="M", residue_after="T",
+        tag_type="ALFA", evidence_type="published tag insertion at this exact site",
+        position_evidence="validated", evidence_detail="d",
+        functional_or_expression_impact_measured="NOT MEASURED", rationale="r", confidence="high",
+    )
+    assert repair_proposal(site, sequence=seq, sp_end=0) is None

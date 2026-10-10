@@ -68,6 +68,20 @@ UniProt canonical numbering. `insert_after_residue = N` puts the tag between N a
 residue_before (= N) and residue_after (= N+1) COPIED from the sequence given. A mismatch
 invalidates the site.
 
+A TAGGED CONSTRUCT WITH NO RESIDUE IS STILL A SITE WHEN THE TOPOLOGY LEAVES ONE TERMINUS.
+When a paper reports a tagged construct of THIS protein — "TfR1-v5", "Myc-tagged hA1R",
+"N-terminally FLAG tagged" — and names no residue, read the LANDMARKS. If exactly ONE terminus
+is extracellular, that is where the tag is: there is nowhere else it could be and still be on
+the surface. Report it, with `position_evidence` = "topology_derived" and the junction taken
+from the landmarks (prepend = 0, or the mature N-terminus after a signal peptide; a C-terminal
+tag goes after the LAST residue). Say in the rationale that the paper gives no residue and the
+position follows from the topology.
+
+That is a real finding, not a guess: the position is computed, not chosen. It is NOT the same
+as picking a spot inside a loop, which remains forbidden — a loop offers many positions and the
+topology cannot single one out, whereas a sole extracellular terminus is the only candidate
+there is.
+
 A clip that NAMES a residue outranks one that names only a loop. If any ledger line pins a
 junction, use it — do not conclude the loop is unpinnable because a DIFFERENT line about the
 same loop is vague.
@@ -127,6 +141,10 @@ Every site must be:
 - "validated" — a tag was published AT this residue/junction (+/-1) AND your quote names that
   position. Only then may `evidence_type` be "published tag insertion at this exact site"; set
   `cited_tag_residue` = insert_after_residue.
+- "topology_derived" — the paper reports a tagged construct of this protein but names no
+  residue, and exactly ONE terminus is extracellular, so the position comes from the landmarks.
+  Use the terminal junction; `evidence_type` is "published tag insertion in the same loop or
+  domain", never the exact-site value.
 - "inferred" — precedent is ELSEWHERE in the loop/domain and you picked this position yourself;
   `cited_tag_residue` = the residue that actually carries the published tag (tag cited at 89,
   site proposed at 120 -> cited_tag_residue=89). Never dress an inferred position as an
@@ -211,7 +229,7 @@ _HINTS = {
     "tag_type": 'the CITED study\'s tag, as a short label ("ALFA", "3xFLAG", "BBS 13 aa") '
                 "— not a justification",
     "evidence_type": "one of the three in 4",
-    "position_evidence": '"validated" | "inferred"',
+    "position_evidence": '"validated" | "topology_derived" | "inferred"',
     "cited_tag_residue": "null unless the cited tag is a point tag",
     "evidence_detail": "what was measured/observed, in what system",
     "functional_or_expression_impact_measured": (
@@ -280,7 +298,7 @@ SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 #: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
 #: `prompt_sha` fingerprints the text automatically; this is the human-readable
 #: half, so a reviewer can tell a deliberate revision from an incidental one.
-TAG_SITE_PROMPT_VERSION = "1.0.0"
+TAG_SITE_PROMPT_VERSION = "1.1.0"
 
 
 def prompt_sha() -> str:
