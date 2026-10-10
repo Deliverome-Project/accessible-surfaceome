@@ -113,7 +113,7 @@ def _apply_brand_style() -> None:
     brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -122,12 +122,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 20,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 15,
+        "axes.labelsize": 17,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -142,12 +142,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
+        "xtick.labelsize": 15,
+        "ytick.labelsize": 15,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 20,
+        "legend.fontsize": 15,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -340,22 +340,10 @@ def main() -> None:
             patch = ax.patches[caller_idx * n_col + j]
             patch.set_x(patch.get_x() + gap)
 
-    # Per-bar percentage annotations.
-    for i, caller in enumerate(callers_in_plot):
-        for j, bucket in enumerate(COLUMNS):
-            patch = ax.patches[i * n_col + j]
-            frac = df[(df["caller"] == caller) & (df["bucket"] == bucket)].iloc[0]["fraction"]
-            ax.text(
-                patch.get_x() + patch.get_width() / 2,
-                patch.get_height() + 0.01,
-                f"{frac:.0%}",
-                ha="center", va="bottom",
-                fontsize=11, color=BRAND_INK,
-            )
-
     # Overlay individual-replicate accuracy + SEM on the Sonnet bars (caller
     # index 0, one patch per bucket). DB callers are deterministic — no
     # overlay. Per-bucket per-rep accuracy from the bundled TSV.
+    label_floor: dict[int, float] = {}
     try:
         srep = data[(data["model"] == "claude-sonnet-4-6")
                     & (data["prompt_variant"] == "ncbi")].copy()
@@ -375,6 +363,7 @@ def main() -> None:
                 m = sum(accs) / len(accs)
                 sd = (sum((v - m) ** 2 for v in accs) / (len(accs) - 1)) ** 0.5
                 sem = sd / (len(accs) ** 0.5)
+                label_floor[j] = max(max(accs), m + sem)
                 ax.errorbar(xc, m, yerr=sem, fmt="none", ecolor=BRAND_INK,
                             elinewidth=1.0, capsize=2.5, capthick=1.0, zorder=5)
                 for k, av in enumerate(accs):
@@ -384,18 +373,34 @@ def main() -> None:
     except Exception:  # noqa: BLE001
         pass  # best-effort overlay
 
+    # Per-bar percentage labels, rotated so each stays inside its own bar's
+    # width; Sonnet's sit above its replicate dots + SEM cap.
+    for i, caller in enumerate(callers_in_plot):
+        for j, bucket in enumerate(COLUMNS):
+            patch = ax.patches[i * n_col + j]
+            frac = df[(df["caller"] == caller) & (df["bucket"] == bucket)].iloc[0]["fraction"]
+            floor = label_floor.get(j) if i == 0 else None
+            top = max(patch.get_height(), floor or 0.0)
+            ax.annotate(
+                f"{frac:.0%}",
+                xy=(patch.get_x() + patch.get_width() / 2, top),
+                xytext=(0, 9 if floor else 4), textcoords="offset points",
+                ha="center", va="bottom", rotation=90,
+                fontsize=13.5, color=BRAND_INK,
+            )
+
     ax.set_xlabel("")
     ax.set_ylabel("Fraction correctly\nclassified")
-    ax.set_ylim(0, 1.14)
-    ax.yaxis.set_major_locator(plt.MaxNLocator(6))
+    ax.set_ylim(0, 1.2)
+    ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     handles, _ = ax.get_legend_handles_labels()
-    legend_labels = [f"{lbl}  ({overall[lbl]:.0%})" for lbl in callers_in_plot]
+    legend_labels = [f"{lbl} ({overall[lbl]:.0%})" for lbl in callers_in_plot]
     ax.legend(
         handles, legend_labels,
         title="Caller (overall acc.)",
         loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, borderaxespad=0.0,
+        frameon=False, borderaxespad=0.0, title_fontsize=17,
     )
 
     # n-per-class subtitle. Pushed below the x-tick labels (which are
@@ -405,9 +410,9 @@ def main() -> None:
     subtitle_parts = [f"n(overall) = {sum(totals.values())}"]
     subtitle_parts += [f"n({v}) = {totals[v]}" for v in ["yes", "contextual", "no"]]
     ax.text(
-        0.5, -0.34, "  ·  ".join(subtitle_parts),
+        0.5, -0.21, "  ·  ".join(subtitle_parts),
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=13, color=BRAND_NEUTRAL,
+        fontsize=12.5, color=BRAND_NEUTRAL,
     )
     sns.despine(ax=ax, top=True, right=True)
 

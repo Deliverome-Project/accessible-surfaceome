@@ -185,13 +185,13 @@ def _compute_distribution() -> tuple[
 def make_plot() -> tuple[plt.Figure, plt.Axes]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
-        "xtick.labelsize": 14, "ytick.labelsize": 16, "legend.fontsize": 14,
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     feats, univ, bench, ci, pvals, n_u, n_b = _compute_distribution()
     n = len(feats)
 
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=(14, 7.5))
     width = 0.40
     x = np.arange(n)
 
@@ -221,20 +221,20 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         star = _star(p)
         # Color/weight encode SIGNIFICANCE, not magnitude: a class that
         # clears the Bonferroni gate (star != "ns") is dark ink + bold;
-        # a non-significant class is neutral gray + normal weight, so a
+        # a non-significant class is neutral gray + the default weight, so a
         # large-but-ns delta (e.g. Single-pass TM, +10.5 pp at p=0.28) doesn't
         # read as "significant" the way a bold label would. Dark neutral
         # (not the bench color) so the annotations carry no red/highlight.
         significant = star != "ns"
         color = "#1F1718" if significant else "#6F5D5A"
-        weight = "bold" if significant else "normal"
+        weight = "bold" if significant else "semibold"
         label = f"{sign}{abs(delta):.1f} pp"
         if star != "ns":
             label += f"  {star}"
         ax.text(
             i, y_text, label,
             ha="center", va="bottom",
-            fontsize=12, color=color, fontweight=weight,
+            fontsize=15, color=color, fontweight=weight,
         )
 
     ax.set_xticks(x)
@@ -248,7 +248,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     # label collides with an upper-right legend.
     ax.legend(
         loc="upper left", bbox_to_anchor=(0.01, 0.99),
-        frameon=False, fontsize=14,
+        frameon=False, fontsize=16,
     )
 
     sns.despine(ax=ax, top=True, right=True)

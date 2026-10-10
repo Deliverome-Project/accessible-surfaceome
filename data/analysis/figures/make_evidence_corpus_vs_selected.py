@@ -127,12 +127,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
+        "font.weight": "semibold",
         "font.size": 18,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "axes.labelsize": 16,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -147,12 +147,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 14.5,
+        "ytick.labelsize": 14.5,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 14,
+        "legend.fontsize": 14.5,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -219,23 +219,22 @@ def _draw_tier_composition(ax, data) -> None:
         for xi, (v, b) in enumerate(zip(vals, bottom, strict=True)):
             if v >= 6:  # only label a segment tall enough to hold the text
                 ax.text(xi, b + v / 2, f"{v:.0f}%", ha="center", va="center",
-                        fontsize=12, color="white", fontweight="semibold")
+                        fontsize=13, color="white")
         bottom = [b + v for b, v in zip(bottom, vals, strict=True)]
 
     ax.set_xticks(list(x))
-    ax.set_xticklabels([f"{lab}\n(n={int(n_per[lab]):,})" for lab in _STRATA_LABELS],
-                       fontsize=14)
+    ax.set_xticklabels([f"{lab}\n(n={int(n_per[lab]):,})" for lab in _STRATA_LABELS])
     ax.set_xlabel("Papers found per gene  (discovery corpus)")
     ax.set_ylabel("Share of genes\nin stratum (%)")
     ax.set_ylim(0, 100)
     ax.grid(axis="x", visible=False)
     ax.legend(title="deep-dive surface tier", loc="upper center",
-              bbox_to_anchor=(0.5, -0.20), ncol=5, frameon=False,
-              fontsize=13, title_fontsize=14)
+              bbox_to_anchor=(0.5, -0.23), ncol=5, frameon=False,
+              title_fontsize=16)
 
 
 def _panel_letter(ax, letter: str) -> None:
-    ax.text(-0.02, 1.04, letter, transform=ax.transAxes, fontsize=24,
+    ax.text(-0.02, 1.04, letter, transform=ax.transAxes, fontsize=21.5,
             fontweight=800, va="bottom", ha="right", color=BRAND_INK)
 
 
@@ -247,9 +246,11 @@ def main() -> None:
     selected = data["papers_selected"].to_numpy()
     verdicts = data["evidence_grade"].to_numpy()
 
+    # Stacked (a over b): side by side, panel a's legend could not fit the
+    # empty low-literature corner without covering points at print size.
     fig, (ax, ax_b) = plt.subplots(
-        1, 2, figsize=(22, 8),
-        gridspec_kw={"width_ratios": [1.15, 1.0], "wspace": 0.22},
+        2, 1, figsize=(15, 13.5),
+        gridspec_kw={"height_ratios": [1.15, 1.0], "hspace": 0.4},
     )
 
     # Plot in worst → best verdict order so the strong verdicts land on
@@ -259,7 +260,7 @@ def main() -> None:
         mask = verdicts == verdict
         ax.scatter(
             found[mask], selected[mask],
-            s=70, alpha=0.32, edgecolor="white", linewidth=0.6,
+            s=55, alpha=0.32, edgecolor="white", linewidth=0.6,
             color=VERDICT_COLOR[verdict],
             label=f"{VERDICT_LABEL[verdict]}  (n={counts.get(verdict, 0)})",
             zorder=3 + VERDICT_ORDER.index(verdict),
@@ -281,21 +282,23 @@ def main() -> None:
     ordered_labels = [
         f"{VERDICT_LABEL[v]}  (n={counts.get(v, 0)})" for v in VERDICT_ORDER
     ]
-    ax.legend(
+    leg_a = ax.legend(
         [handle_by_label[lbl] for lbl in ordered_labels if lbl in handle_by_label],
         [lbl for lbl in ordered_labels if lbl in handle_by_label],
         title="agent evidence_grade verdict",
         loc="upper left", bbox_to_anchor=(0.01, 0.99),
-        frameon=False, fontsize=13, title_fontsize=14,
+        frameon=False, title_fontsize=16,
     )
+    for _h in leg_a.legend_handles:  # solid swatches despite translucent points
+        _h.set_alpha(1.0)
 
-    # Footer sits under panel a, which it describes.
-    fig.text(
-        0.27, -0.04,
-        f"Real deep-dive records with a papers-found count: n={len(data):,} genes\n"
+    # Footer sits under panel a (which it describes), below its x-axis label.
+    ax.text(
+        0.5, -0.155,
+        f"Real deep-dive records with a papers-found count: n={len(data):,} genes "
         f"(median {np.median(found):.0f} papers found, {np.median(selected):.0f} selected; "
         f"x-axis starts at 25).",
-        ha="center", va="top", fontsize=13, style="italic", color=BRAND_NEUTRAL,
+        ha="center", va="top", transform=ax.transAxes, fontsize=13, style="italic", color=BRAND_NEUTRAL,
     )
 
     _draw_tier_composition(ax_b, data)

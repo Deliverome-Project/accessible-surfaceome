@@ -19,8 +19,8 @@ proteins it has no data for, so its panel is scored on the 98
 benchmark proteins HPA covers; the other four panels use all 147.
 
 Markers:
-* Diamond — the database's original (pre-audit) inclusion rule.
-* Star — the rule recommended after the audit, shown only where it
+* Diamond ("Original rule") — the database's pre-audit inclusion rule.
+* Star ("Adopted after benchmark audit") — the rule adopted after the audit, shown only where it
   differs from the original (UniProt "TM+signal" and CSPA "HC-only").
   The candidate-universe vote now uses these two rules.
 * Circle — other cutoffs that were evaluated and not adopted.
