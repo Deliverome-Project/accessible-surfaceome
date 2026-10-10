@@ -32,9 +32,12 @@ Cutoff convention (unchanged from the bar version):
     / ``cspa_optimized``), consistent with the accuracy figures — NOT the
     initial ``src_uniprot`` / ``src_cspa`` flags.
   • GO CC, HPA, SURFY, and Sonnet use their ``src_*`` flags unchanged.
-  • ``sonnet_only`` (zero-DB rescue) = Sonnet-positive proteins that NO database
-    flags under the optimized cutoffs (``src_sonnet == 1`` AND
-    ``n_sources_optimized == 0``).
+  • The zero-DB rescues = Sonnet-positive proteins that NO database flags under
+    the optimized cutoffs (``src_sonnet == 1`` AND ``n_sources_optimized == 0``),
+    drawn as two rows split on ``verdict_source`` as in Figure 3:
+    ``sonnet_only_ncbi`` (called by the first-pass triage on the NCBI gene
+    summary, no literature) and ``sonnet_only_pubmed`` (called only by a PubMed
+    rescue lane).
 
 This is the **canonical generator** (centralized ``_plotting_config`` styling,
 in-repo TSV path). The standalone reader-side mirror is
@@ -81,10 +84,17 @@ FEATURES: list[tuple[str, str]] = [
 
 # Rows (sources), top-to-bottom. Sonnet first (reference), then the zero-DB
 # rescue subset, then the five DBs.
-SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
+SOURCE_ORDER = [
+    "sonnet", "sonnet_only_ncbi", "sonnet_only_pubmed",
+    "uniprot", "surfy", "cspa", "go", "hpa",
+]
 SOURCE_LABEL = {
     "sonnet":      "Sonnet",
-    "sonnet_only": "Sonnet-only\n(zero-DB)",
+    # The zero-DB Sonnet rescues, split by how the triage called them (as in
+    # Figure 3): the first pass on the NCBI gene summary alone, or only once a
+    # PubMed rescue lane added literature (``verdict_source``).
+    "sonnet_only_ncbi":   "Sonnet-only, zero-DB\n(no literature)",
+    "sonnet_only_pubmed": "Sonnet-only, zero-DB\n(PubMed rescue)",
     "uniprot":     "UniProt",
     "surfy":       "SURFY",
     "cspa":        "CSPA",
@@ -124,10 +134,16 @@ def main() -> None:
 
     df = pd.read_csv(FEATURES_TSV, sep="\t")
     universe = int(len(df))
-    sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
+    sonnet_only = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
+    zero_db_masks = {
+        "sonnet_only_ncbi":   sonnet_only & (df["verdict_source"] == "ncbi"),
+        "sonnet_only_pubmed": sonnet_only & (df["verdict_source"] == "pubmed_rescue"),
+    }
+    # Every zero-DB rescue lands in exactly one of the two rows.
+    assert int(sum(m.sum() for m in zero_db_masks.values())) == int(sonnet_only.sum())
 
     def _mask(src: str) -> pd.Series:
-        return sonnet_only_mask if src == "sonnet_only" else (df[SOURCE_COL[src]] == 1)
+        return zero_db_masks[src] if src in zero_db_masks else (df[SOURCE_COL[src]] == 1)
 
     nrows, ncols = len(SOURCE_ORDER), len(FEATURES)
     xs, ys, sizes, covs = [], [], [], []
@@ -145,7 +161,7 @@ def main() -> None:
             sizes.append(max(enrichment * _S_SCALE, _S_FLOOR))
             covs.append(100.0 * n / universe)
 
-    fig, ax = plt.subplots(figsize=(17, 8.5))
+    fig, ax = plt.subplots(figsize=(17, 9.6))
     cmap = LinearSegmentedColormap.from_list("coverage", SEQUENTIAL_PALETTES["teal"][::-1])
     norm = Normalize(vmin=0.0, vmax=max(covs))
     sc = ax.scatter(xs, ys, s=sizes, c=covs, cmap=cmap, norm=norm,

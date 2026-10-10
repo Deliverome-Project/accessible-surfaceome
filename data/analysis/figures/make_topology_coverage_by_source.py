@@ -27,7 +27,9 @@ classical-topology DBs miss (and carry no GPCR / GPI).
 
 Reads the dedicated per-figure TSV (built by scripts/build_figure_tsvs.py from
 scripts/export_s9_full_universe_features.py): src_* source flags, optimized
-cutoffs, n_sources_optimized, and the 9 topology features on full coverage.
+cutoffs, n_sources_optimized, the 9 topology features on full coverage, and
+verdict_source, which splits the zero-DB Sonnet rescues into the first-pass
+(no literature) and PubMed-rescue rows, as in Figure 3.
 
 Visual styling matches the in-repo `_plotting_config`, inlined so the gist runs
 standalone — ``uv run make_topology_coverage_by_source.py``.
@@ -134,10 +136,17 @@ FEATURES: list[tuple[str, str]] = [
 ]
 
 # Rows (sources), top-to-bottom.
-SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
+SOURCE_ORDER = [
+    "sonnet", "sonnet_only_ncbi", "sonnet_only_pubmed",
+    "uniprot", "surfy", "cspa", "go", "hpa",
+]
 SOURCE_LABEL = {
     "sonnet":      "Sonnet",
-    "sonnet_only": "Sonnet-only\n(zero-DB)",
+    # The zero-DB Sonnet rescues, split by how the triage called them (as in
+    # Figure 3): the first pass on the NCBI gene summary alone, or only once a
+    # PubMed rescue lane added literature (``verdict_source``).
+    "sonnet_only_ncbi":   "Sonnet-only, zero-DB\n(no literature)",
+    "sonnet_only_pubmed": "Sonnet-only, zero-DB\n(PubMed rescue)",
     "uniprot":     "UniProt",
     "surfy":       "SURFY",
     "cspa":        "CSPA",
@@ -178,10 +187,16 @@ def main() -> None:
     _apply_brand_style()
     df = _fetch_tsv(FEATURES_TSV)
     universe = int(len(df))
-    sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
+    sonnet_only = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
+    zero_db_masks = {
+        "sonnet_only_ncbi":   sonnet_only & (df["verdict_source"] == "ncbi"),
+        "sonnet_only_pubmed": sonnet_only & (df["verdict_source"] == "pubmed_rescue"),
+    }
+    # Every zero-DB rescue lands in exactly one of the two rows.
+    assert int(sum(m.sum() for m in zero_db_masks.values())) == int(sonnet_only.sum())
 
     def _mask(src: str) -> pd.Series:
-        return sonnet_only_mask if src == "sonnet_only" else (df[SOURCE_COL[src]] == 1)
+        return zero_db_masks[src] if src in zero_db_masks else (df[SOURCE_COL[src]] == 1)
 
     nrows, ncols = len(SOURCE_ORDER), len(FEATURES)
     xs, ys, sizes, covs = [], [], [], []
@@ -199,7 +214,7 @@ def main() -> None:
             sizes.append(max(enrichment * _S_SCALE, _S_FLOOR))
             covs.append(100.0 * n / universe)
 
-    fig, ax = plt.subplots(figsize=(17, 8.5))
+    fig, ax = plt.subplots(figsize=(17, 9.6))
     cmap = LinearSegmentedColormap.from_list("coverage", BRAND_SEQUENTIAL["teal"][::-1])
     norm = Normalize(vmin=0.0, vmax=max(covs))
     sc = ax.scatter(xs, ys, s=sizes, c=covs, cmap=cmap, norm=norm,

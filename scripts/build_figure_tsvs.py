@@ -250,7 +250,13 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
     membership so the figure renders UniProt and CSPA at their
     recalibrated cutoffs (GO/HPA/SURFY/Sonnet unchanged). Also carries
     ``n_sources_optimized`` so the Sonnet-only (zero-DB) subset is
-    defined against the optimized DB vote, matching Figure 3."""
+    defined against the optimized DB vote, matching Figure 3.
+
+    Also carries ``verdict_source`` (``ncbi`` = the first-pass triage on the
+    NCBI gene summary, no literature; ``pubmed_rescue`` = called yes /
+    contextual only by a PubMed rescue lane) and ``rescue_run`` (which lane),
+    joined from the catalog on ``hgnc_id``, so S9 can split the Sonnet-only
+    row into its no-literature and PubMed-rescue halves the way Figure 3 does."""
     # Prefer the FULL any-yes-vote universe (960 sonnet_only, genome-wide
     # topology) from scripts/export_s9_full_universe_features.py — it already
     # carries the src_* flags, optimized cutoffs, n_sources_optimized, and the
@@ -259,7 +265,7 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
     # legacy per_protein_features path only if the full export isn't present.
     full = src.get("features_full")
     if full is not None and not full.empty:
-        return full
+        return _with_verdict_source(full, src["catalog"])
     feat = _optimized_membership(src["features"], src["opt"], "uniprot_accession")
     # GO/HPA/SURFY keep their initial src flags (not recalibrated).
     feat["n_sources_optimized"] = (
@@ -269,7 +275,19 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
         + feat["src_hpa"].fillna(0).astype(int)
         + feat["src_surfy"].fillna(0).astype(int)
     )
-    return feat
+    return _with_verdict_source(feat, src["catalog"])
+
+
+def _with_verdict_source(df: pd.DataFrame, catalog: pd.DataFrame) -> pd.DataFrame:
+    """Join the catalog's ``verdict_source`` / ``rescue_run`` onto ``df`` by
+    ``hgnc_id``. The catalog's only repeated keys are the blank-HGNC
+    mitochondrial genes, dropped here so a NaN key can never match."""
+    tag = (catalog[["hgnc_id", "verdict_source", "rescue_run"]]
+           .dropna(subset=["hgnc_id"]).drop_duplicates("hgnc_id"))
+    out = df.drop(columns=["verdict_source", "rescue_run"], errors="ignore").merge(
+        tag, on="hgnc_id", how="left", validate="many_to_one")
+    assert len(out) == len(df), "verdict_source join changed the row count"
+    return out
 
 
 def build_bench_topology_vs_universe(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
