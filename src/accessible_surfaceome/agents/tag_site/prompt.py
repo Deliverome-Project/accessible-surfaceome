@@ -288,7 +288,7 @@ SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 #: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
 #: `prompt_sha` fingerprints the text automatically; this is the human-readable
 #: half, so a reviewer can tell a deliberate revision from an incidental one.
-TAG_SITE_PROMPT_VERSION = "1.2.0"
+TAG_SITE_PROMPT_VERSION = "1.3.0"
 
 
 def prompt_sha() -> str:
