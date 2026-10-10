@@ -12,12 +12,11 @@ re-run; do not hand-edit inside these markers.*
 
 Per-gene scatter of two corpus axes the deep-dive literature pipeline
 returns, colored by the agent's `evidence_grade` verdict. The TSV has
-one row per published deep-dive record with both counts: **n = 5,313
-genes**. That is the deep-dive cohort (5,332) minus 19 records whose
-`n_papers_found` is null in the deep-dive export; both axes must be
-present to plot a point. Median 219 papers found/gene (range 1–395),
-median 10 selected. Panel a's log axis starts at 25, so the 120 genes
-with fewer than 25 papers found are in the TSV but not drawn.
+one row per published deep-dive record: **n = 5,332 genes**, the full
+deep-dive cohort (every record carries both counts). Median 220 papers
+found/gene (range 1–395), median 10 selected. Panel a's log axis starts
+at 25, so the 120 genes with fewer than 25 papers found are in the TSV
+but not drawn.
 
 
 ## How selection actually scales
@@ -75,9 +74,8 @@ so the three share one map.
   and plumbed onto `Filters.n_papers_found` per the CLAUDE.md schema
   2.14.1+ contract. It **cannot be recomputed from a finished record** —
   the discovery count was never persisted before 2.14.0, only the
-  post-trim selection. The 19 records with a null value are the rows
-  dropped above. (An earlier 100-gene methods audit put the median at
-  234.5; across the 5,313 plotted genes it is 219.)
+  post-trim selection. (An earlier 100-gene methods audit put the median
+  at 234.5; across the 5,332 plotted genes it is 220.)
 - **y-axis — Papers selected as evidence.** The subset the deep-dive's
   `plan_trim_select` step ranks high-enough to feed into the block
   builders for full-text claim extraction. **Already computable from

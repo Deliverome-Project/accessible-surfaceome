@@ -7,7 +7,7 @@ corpus sizes:
 
   * **Papers found** — the size of the per-gene candidate corpus from
     discovery (EuropePMC + PubTator NER + gene2pubmed union), i.e.
-    ``n_papers_found`` (median 219, range 1–395 across the 5,313 plotted
+    ``n_papers_found`` (median 220, range 1–395 across the 5,332 plotted
     genes). Panel a's log axis starts at 25, so the 120 genes with fewer
     than 25 papers found are not drawn.
   * **Papers selected as evidence** — the subset the deep-dive's
@@ -37,9 +37,10 @@ tier``). The single source of that TSV is ``scripts/build_figure_tsvs.py``
 this canonical generator reads the TSV so it renders the **same** dataset as
 the gist mirror (``data/analysis/figures/make_evidence_corpus_vs_selected.py``).
 
-Computed over the completed deep-dive sweep: 5,313 of the 5,332 deep-dive
-records carry both counts; the other 19 have a null ``n_papers_found`` and
-are absent (both axes must be present to plot).
+Computed over the completed deep-dive sweep: all 5,332 deep-dive records
+carry both counts. (19 replayed records published a null ``n_papers_found``
+until it was restored from their run intermediates on 2026-10-10 — see
+``scripts/build/restore_n_papers_found_from_intermediates.py``.)
 
 # Reproduction: https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549
 
@@ -233,7 +234,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     fig.text(
         0.27, -0.04,
         f"Real deep-dive records with a papers-found count: n={len(found):,} genes\n"
-        f"(median {int(np.median(found))} papers found, {int(np.median(selected))} selected; "
+        f"(median {np.median(found):.0f} papers found, {np.median(selected):.0f} selected; "
         f"x-axis starts at 25).",
         ha="center", va="top", fontsize=13, style="italic", color=COLORS["neutral"],
     )
