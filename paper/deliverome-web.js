@@ -161,13 +161,199 @@
     '<button class="figure-lightbox__nav figure-lightbox__prev" type="button" aria-label="Previous figure">&#8249;</button>' +
     '<button class="figure-lightbox__nav figure-lightbox__next" type="button" aria-label="Next figure">&#8250;</button>' +
     '<figure class="figure-lightbox__inner">' +
-    '<img alt="" />' +
+    '<div class="figure-lightbox__viewport">' +
+    '<img alt="" draggable="false" />' +
+    '<p class="figure-lightbox__hint">Pinch to zoom · drag to pan</p>' +
+    '<button class="figure-lightbox__reset" type="button">Reset zoom</button>' +
+    "</div>" +
     '<figcaption></figcaption>' +
     '<p class="figure-lightbox__counter"></p>' +
     "</figure>";
   document.body.appendChild(overlay);
 
   var imgEl = overlay.querySelector("img");
+  var viewport = overlay.querySelector(".figure-lightbox__viewport");
+
+  /* ── Pan and zoom, inside the figure's window ────────────────────
+   *
+   * The panel never changes shape; the image is scaled and translated
+   * within the fixed window above, so the legend stays where it is and
+   * stays readable. `transform-origin: 0 0` plus an image whose layout
+   * box fills the window means every number below is in one coordinate
+   * space: window pixels from its top-left corner.
+   */
+  var MIN_SCALE = 1;
+  var MAX_SCALE = 8;
+  var scale = 1;
+  var tx = 0;
+  var ty = 0;
+
+  function setViewportRatio(w, h) {
+    w = parseFloat(w);
+    h = parseFloat(h);
+    viewport.style.aspectRatio = w > 0 && h > 0 ? w + " / " + h : "";
+  }
+
+  function clampPan() {
+    /* Keep the scaled image covering the box it occupies unzoomed, so
+     * panning can never strand the reader on empty background. At scale
+     * 1 this pins it to 0,0 — which is also how a zoom-out recentres
+     * itself. Measured on the IMAGE, not the window: the image is
+     * centred inside the window and letterboxed by object-fit, so the
+     * two boxes are not the same rectangle. */
+    var w = imgEl.offsetWidth;
+    var h = imgEl.offsetHeight;
+    tx = Math.min(0, Math.max(w * (1 - scale), tx));
+    ty = Math.min(0, Math.max(h * (1 - scale), ty));
+  }
+
+  function applyTransform() {
+    clampPan();
+    imgEl.style.transform =
+      "translate(" + tx + "px, " + ty + "px) scale(" + scale + ")";
+    viewport.classList.toggle("is-zoomed", scale > MIN_SCALE + 0.001);
+  }
+
+  function resetZoom() {
+    scale = 1;
+    tx = 0;
+    ty = 0;
+    imgEl.style.transform = "";
+    viewport.classList.remove("is-zoomed", "is-panning");
+  }
+
+  /* Zoom about a point, so the pixel under the cursor stays under it —
+   * zooming about the centre instead makes the thing you were looking
+   * at drift off-screen, which is what makes a zoom feel broken. */
+  function zoomAt(px, py, factor) {
+    var next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
+    if (next === scale) return;
+    tx = px - ((px - tx) * next) / scale;
+    ty = py - ((py - ty) * next) / scale;
+    scale = next;
+    applyTransform();
+  }
+
+  /* A pointer position in the image's own coordinate space. The window
+   * carries no transform, so its rect is stable to measure against;
+   * offsetLeft/Top then step in to the image's untransformed corner. */
+  function pointIn(e) {
+    var r = viewport.getBoundingClientRect();
+    return [
+      e.clientX - r.left - imgEl.offsetLeft,
+      e.clientY - r.top - imgEl.offsetTop,
+    ];
+  }
+
+  /* A trackpad pinch arrives as a wheel event with ctrlKey set — that
+   * is the only signal browsers give for it.
+   *
+   * A PLAIN wheel means different things depending on what the reader
+   * is looking at. Zoomed in, a two-finger scroll is how anyone expects
+   * to move around a magnified image, so it pans; mapping it to zoom
+   * instead leaves the reader magnified with no way to reach the rest
+   * of the figure. At rest there is nothing to pan, and a reader who
+   * scrolls over a figure means to look closer, so it zooms. */
+  viewport.addEventListener(
+    "wheel",
+    function (e) {
+      e.preventDefault();
+      var p = pointIn(e);
+      if (e.ctrlKey) {
+        zoomAt(p[0], p[1], Math.exp(-e.deltaY * 0.01));
+      } else if (scale > MIN_SCALE) {
+        tx -= e.deltaX;
+        ty -= e.deltaY;
+        applyTransform();
+      } else {
+        zoomAt(p[0], p[1], Math.exp(-e.deltaY * 0.0015));
+      }
+    },
+    { passive: false }
+  );
+
+  /* Pointer events rather than mouse+touch: one code path covers the
+   * trackpad drag, the mouse drag and the two-finger touch pinch. */
+  var points = {};
+  var pinchStart = null;
+  var panned = false;
+
+  /* An explicit way out, because the other two are both invisible:
+   * double-click is a guess, and Escape is a keyboard reader's reflex
+   * that nobody on a trackpad thinks to try. Shown only while zoomed. */
+  var resetBtn = overlay.querySelector(".figure-lightbox__reset");
+  resetBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    resetZoom();
+  });
+
+  viewport.addEventListener("pointerdown", function (e) {
+    /* The reset button lives inside the window, so it would otherwise
+     * be swallowed by the pan gesture below. */
+    if (e.target.closest(".figure-lightbox__reset")) return;
+    /* Without this a drag on an <img> becomes the browser's native
+     * image drag: the pointer stream stops, a ghost thumbnail follows
+     * the cursor, and the pan never happens. `draggable="false"` on the
+     * image covers the same ground; both are cheap and the failure is
+     * silent, so keep them. */
+    e.preventDefault();
+    points[e.pointerId] = { x: e.clientX, y: e.clientY };
+    panned = false;
+    if (Object.keys(points).length === 1 && scale > MIN_SCALE) {
+      viewport.setPointerCapture(e.pointerId);
+      viewport.classList.add("is-panning");
+    }
+  });
+
+  viewport.addEventListener("pointermove", function (e) {
+    var prev = points[e.pointerId];
+    if (!prev) return;
+    var ids = Object.keys(points);
+
+    if (ids.length >= 2) {
+      /* Two fingers: pinch about their midpoint. */
+      points[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var a = points[ids[0]];
+      var b = points[ids[1]];
+      var dist = Math.hypot(a.x - b.x, a.y - b.y);
+      var r = viewport.getBoundingClientRect();
+      var mid = [
+        (a.x + b.x) / 2 - r.left - imgEl.offsetLeft,
+        (a.y + b.y) / 2 - r.top - imgEl.offsetTop,
+      ];
+      if (pinchStart) zoomAt(mid[0], mid[1], dist / pinchStart);
+      pinchStart = dist;
+      panned = true;
+      return;
+    }
+
+    if (scale <= MIN_SCALE) return;
+    tx += e.clientX - prev.x;
+    ty += e.clientY - prev.y;
+    points[e.pointerId] = { x: e.clientX, y: e.clientY };
+    panned = true;
+    applyTransform();
+  });
+
+  function endPointer(e) {
+    delete points[e.pointerId];
+    if (Object.keys(points).length < 2) pinchStart = null;
+    if (!Object.keys(points).length) viewport.classList.remove("is-panning");
+  }
+  viewport.addEventListener("pointerup", endPointer);
+  viewport.addEventListener("pointercancel", endPointer);
+
+  /* Double-click is the keyboard-free way in and out. */
+  viewport.addEventListener("dblclick", function (e) {
+    e.preventDefault();
+    if (scale > MIN_SCALE) {
+      resetZoom();
+    } else {
+      var p = pointIn(e);
+      zoomAt(p[0], p[1], 2.5);
+    }
+  });
+
   var capEl = overlay.querySelector("figcaption");
   var closeBtn = overlay.querySelector(".figure-lightbox__close");
   var prevBtn = overlay.querySelector(".figure-lightbox__prev");
@@ -193,6 +379,15 @@
     if (lastFocused === null) lastFocused = document.activeElement;
     imgEl.setAttribute("src", source.getAttribute("src"));
     imgEl.setAttribute("alt", source.getAttribute("alt") || "");
+    /* Give the figure's window the shape of the figure, so it can be
+     * shrunk to fit beside the legend without clipping the image — see
+     * the .figure-lightbox__viewport comment in the stylesheet. The
+     * in-flow <img> already carries width/height attributes, so the
+     * ratio is known before this copy has decoded a single byte. */
+    setViewportRatio(
+      source.getAttribute("width") || source.naturalWidth,
+      source.getAttribute("height") || source.naturalHeight
+    );
     /* Carry the caption's rich markup, not just its text: the run-in
      * "Figure N. Title." is a <strong> and the caption ends with a
      * "Figure data and script." link to the figure's gist. Flattening
@@ -211,12 +406,16 @@
      * layer swallowing every click. */
     void overlay.offsetWidth;
     overlay.classList.add("is-open");
+    /* A new figure always starts fitted, never inheriting the previous
+     * one's zoom — stepping through figures should be comparable. */
+    resetZoom();
     document.body.style.overflow = "hidden";
     closeBtn.focus();
   }
 
   function close() {
     overlay.classList.remove("is-open");
+    resetZoom();
     overlay.hidden = true;
     document.body.style.overflow = "";
     imgEl.removeAttribute("src");
@@ -304,6 +503,14 @@
    * caption is excluded so its text stays selectable. */
   overlay.addEventListener("click", function (e) {
     if (e.target.closest(".figure-lightbox__nav")) return;
+    /* Clicking the figure still dismisses — but not when the reader is
+     * working inside it. A drag that ends on the image fires a click
+     * too, so a pan would otherwise close the lightbox the moment you
+     * let go; and once zoomed in, a stray click shouldn't throw away
+     * the view you just framed. */
+    if (e.target === imgEl || e.target.closest(".figure-lightbox__viewport")) {
+      if (panned || scale > MIN_SCALE) return;
+    }
     /* An in-page caption link (e.g. "Methods", href="#…") has to take the
      * reader to that section — but the overlay is a fixed layer sitting on
      * top, so the jump is invisible while it's open. Close first, then let
@@ -319,7 +526,15 @@
 
   document.addEventListener("keydown", function (e) {
     if (overlay.hidden) return;
-    if (e.key === "Escape") close();
+    if (e.key === "Escape") {
+      /* Step back out of zoom first: Escape should undo the last thing
+       * the reader did, not two things at once. */
+      if (scale > MIN_SCALE) {
+        resetZoom();
+      } else {
+        close();
+      }
+    }
     else if (e.key === "ArrowRight") step(1);
     else if (e.key === "ArrowLeft") step(-1);
   });
@@ -621,4 +836,201 @@
     if (document.visibilityState === "visible") loadNotes(0);
   });
   loadTurnstile();
+})();
+
+/*
+ * Scroll reveal.
+ *
+ * The `reveal` classes are stamped into the markup by paper/web_assets.py
+ * and the `js-reveal` gate is set by an inline <head> script, both before
+ * this file runs — see REVEAL_BOOTSTRAP_SCRIPT for why that ordering is
+ * load-bearing. What is left for here is the part that needs a viewport:
+ * deciding what is already on screen, arming the transition afterwards so
+ * the opening screen doesn't animate, and un-hiding the rest on approach.
+ *
+ * If this file never loads, the gate is still set but nothing ever adds
+ * `is-visible` — which is why the gate is conditional on
+ * IntersectionObserver, the same capability this observer needs. A
+ * browser without it never hides anything in the first place.
+ */
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  if (!root.classList.contains("js-reveal")) return;
+
+  var targets = document.querySelectorAll(".paper-root .reveal");
+
+  function show(el) {
+    el.classList.add("is-visible");
+  }
+
+  /* Anything already on screen is shown BEFORE arming, so it transitions
+   * from nothing and simply exists at first paint. Everything after this
+   * point animates. */
+  var i;
+  for (i = 0; i < targets.length; i++) {
+    var box = targets[i].getBoundingClientRect();
+    if (box.top < window.innerHeight && box.bottom > 0) show(targets[i]);
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    /* Can't happen while the gate checks the same thing, but if the gate
+     * ever moves, fail to the readable state rather than a blank page. */
+    for (i = 0; i < targets.length; i++) show(targets[i]);
+    return;
+  }
+
+  /* Commit the values above BEFORE arming, by forcing a style flush.
+   * Reading offsetWidth makes the browser resolve layout now, so the
+   * elements just marked visible settle at opacity 1 with no transition
+   * attached and simply exist at first paint.
+   *
+   * A requestAnimationFrame here is wrong twice over — the same trap the
+   * lightbox hits above. It is paused in a background tab, so a paper
+   * cmd-clicked into one would never arm; and it races the observer
+   * below, which can deliver its first batch before the frame callback
+   * runs, leaving the first block under the fold to snap in unarmed. A
+   * synchronous flush has neither problem. */
+  void document.body.offsetWidth;
+  root.classList.add("reveal-armed");
+
+  /* Find-in-page sees text that is still at opacity 0, so a reader
+   * searching the paper could be scrolled to what looks like a blank
+   * stretch. Rather than keeping prose out of the reveal — which is
+   * what makes the whole effect visible — drop the reveal entirely the
+   * moment anyone starts searching. Best-effort: the browser may claim
+   * the shortcut first in some configurations, and nothing breaks if
+   * it does; this only ever makes MORE text visible. */
+  function revealEverything() {
+    for (var k = 0; k < targets.length; k++) show(targets[k]);
+  }
+  document.addEventListener("keydown", function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === "f" || e.key === "F")) {
+      revealEverything();
+    }
+  });
+  /* Chrome fires this on a hidden element it is about to scroll a
+   * find-in-page match to. Where supported it is exact, and it also
+   * covers "scroll to text fragment" links. */
+  document.addEventListener("beforematch", revealEverything, true);
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      for (var j = 0; j < entries.length; j++) {
+        if (!entries[j].isIntersecting) continue;
+        show(entries[j].target);
+        /* Once revealed, stay revealed: re-animating on the way back up
+         * turns a page you are scanning into a flickering one. */
+        observer.unobserve(entries[j].target);
+      }
+    },
+    /* Hold the reveal until the block is ~18% of the viewport up from
+     * the bottom edge, rather than firing as it clips the edge.
+     *
+     * This is the difference between motion you see and motion you
+     * only infer. Triggered at the edge, a block has finished arriving
+     * while it is still in the last few percent of the screen — below
+     * where anyone is looking — so the page just seems to have been
+     * that way already. Held slightly, the same animation plays where
+     * the eye actually is. */
+    { rootMargin: "0px 0px -18% 0px", threshold: 0 }
+  );
+
+  for (i = 0; i < targets.length; i++) {
+    if (!targets[i].classList.contains("is-visible")) observer.observe(targets[i]);
+  }
+})();
+
+/*
+ * Contents rail — dock on scroll.
+ *
+ * The rail is fixed-position, so without this it sits beside the title
+ * band offering navigation for a paper the reader hasn't begun. Fade it
+ * in once they're past the header. Purely cosmetic: with this script
+ * absent the stylesheet leaves the rail permanently visible, which is
+ * where it was before.
+ */
+(function () {
+  "use strict";
+
+  var toc = document.getElementById("TOC");
+  var header = document.querySelector(".paper-header");
+  if (!toc || !header || !("IntersectionObserver" in window)) return;
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      /* Docked once the title band has left the viewport entirely. */
+      toc.classList.toggle("is-docked", !entries[0].isIntersecting);
+    },
+    /* No rootMargin, deliberately. A negative TOP inset shrinks the
+     * observer root down past the header, so at the top of the page —
+     * the one position where the rail must be hidden — the header reads
+     * as "not intersecting" and the rail docks immediately, inverting
+     * the whole behaviour. Plain viewport intersection is both simpler
+     * and correct: visible while any of the title band is on screen. */
+    { threshold: 0 }
+  );
+  observer.observe(header);
+})();
+
+/*
+ * Post-jump highlight.
+ *
+ * After a smooth scroll the page settles a beat before the eye catches
+ * up, and in a wall of near-identical reference lines "which one did I
+ * just land on?" is a real question. Flash the destination.
+ *
+ * Deliberately NOT wired to body-text figure cross-references: those
+ * open the figure in place rather than scrolling (see the lightbox
+ * section above), so there is no destination to point at.
+ */
+(function () {
+  "use strict";
+
+  var FLASH = "is-jump-flash";
+  var DURATION = 1200;
+  var timer = null;
+  var current = null;
+
+  function flash(id) {
+    var target;
+    try {
+      target = document.getElementById(decodeURIComponent(id));
+    } catch (e) {
+      target = document.getElementById(id);
+    }
+    if (!target) return;
+    /* citations.lua anchors a reference with an EMPTY span at its start,
+     * which has no box to highlight — paint the enclosing block. */
+    var box = target.closest("li, p, div, h2, h3, h4, section") || target;
+
+    if (current) current.classList.remove(FLASH);
+    if (timer) window.clearTimeout(timer);
+
+    /* Force a reflow between removal and re-add, or re-clicking the same
+     * link is a no-op: the class never left the computed style, so the
+     * animation is never restarted. */
+    void box.offsetWidth;
+
+    box.classList.add(FLASH);
+    current = box;
+    timer = window.setTimeout(function () {
+      box.classList.remove(FLASH);
+      if (current === box) current = null;
+    }, DURATION);
+  }
+
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if (!a) return;
+    var href = a.getAttribute("href");
+    if (!href || href === "#") return;
+    /* Let the browser do the scrolling; just mark where it lands. */
+    flash(href.slice(1));
+  });
+
+  window.addEventListener("hashchange", function () {
+    if (location.hash.length > 1) flash(location.hash.slice(1));
+  });
 })();

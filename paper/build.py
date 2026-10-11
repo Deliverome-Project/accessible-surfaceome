@@ -33,6 +33,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from typing import Any
 
 
 def _patch_cffi_for_macos_brew() -> None:
@@ -394,6 +395,23 @@ def _comments_section(api_base: str, gene: str, turnstile_key: str) -> str:
     )
 
 
+def _append_fragment(parent: Any, fragment: str) -> None:
+    """Append an HTML fragment to `parent` without a stray document wrapper.
+
+    ``lxml.html.fromstring()`` on a head-only element — ``<link>``,
+    ``<meta>``, ``<script>`` — returns a whole
+    ``<html><head>…</head></html>`` document rather than the element, so
+    appending its result nests a second document inside the page.
+    Browsers untangle that and the paper shipped that way for a while,
+    but it is invalid, and the reveal bootstrap now depends on running
+    before first paint — not a thing to leave resting on parser error
+    recovery.
+    """
+    from lxml import html as lxml_html  # ty: ignore[unresolved-import]
+
+    parent.append(lxml_html.fragment_fromstring(fragment, create_parent=False))
+
+
 def build_web(
     src: Path,
     out_dir: Path,
@@ -429,6 +447,14 @@ def build_web(
         swap_figures,
     )
     from lxml import html as lxml_html
+    from web_assets import (  # ty: ignore[unresolved-import]
+        FONT_HEAD_LINKS,
+        REVEAL_BOOTSTRAP_SCRIPT,
+        apply_image_hints,
+        apply_reveal_markup,
+    )
+
+    append_fragment = _append_fragment
 
     out_dir.mkdir(parents=True, exist_ok=True)
     assets_dir = out_dir / "assets"
@@ -488,6 +514,8 @@ def build_web(
     # sources with the same basename can't collide.
     doc = lxml_html.parse(str(work)).getroot()
     copied: dict[str, str] = {}
+    copied_files: dict[str, Path] = {}
+    hint_targets: list[tuple[Any, Path]] = []
     for i, img in enumerate(doc.xpath("//img")):
         raw = img.get("src") or ""
         if raw.startswith(("http://", "https://", "data:")) or raw.startswith(asset_prefix + "/"):
@@ -508,7 +536,12 @@ def build_web(
             else:
                 name = written.name
             copied[key] = f"{asset_prefix}/{name}"
+            copied_files[key] = assets_dir / name
         img.set("src", copied[key])
+        # Hints are applied further down rather than here: they depend on
+        # knowing whether an image sits in the title band, and the
+        # <header> that marks it hasn't been built yet at this point.
+        hint_targets.append((img, copied_files[key]))
 
     # Open every off-site link (gist, DOI, bioRxiv, GitHub, Zenodo …) in
     # a new tab so following a citation or reproduction link never navigates
@@ -609,12 +642,24 @@ def build_web(
         style.getparent().remove(style)
     head = doc.find("head")
     if head is not None:
-        head.append(lxml_html.fromstring(
-            f'<link rel="stylesheet" href="{asset_prefix}/paper.css"/>'
-        ))
-        head.append(lxml_html.fromstring(
-            '<meta name="viewport" content="width=device-width, initial-scale=1"/>'
-        ))
+        # Fonts first, and before our own stylesheet: the preload scanner
+        # finds them while the HTML is still parsing, and the two
+        # preconnects open both TLS connections in parallel with it.
+        # These used to be an @import inside paper.css, which cost three
+        # serial round trips and reflowed the page on every cold load.
+        for fragment in FONT_HEAD_LINKS:
+            append_fragment(head, fragment)
+        append_fragment(
+            head, f'<link rel="stylesheet" href="{asset_prefix}/paper.css"/>'
+        )
+        append_fragment(
+            head,
+            '<meta name="viewport" content="width=device-width, initial-scale=1"/>',
+        )
+        # Inline, and in <head>, so the reveal gate is set before first
+        # paint. paper.js is deferred; a gate set there would let the
+        # page paint visible and then blank out.
+        append_fragment(head, REVEAL_BOOTSTRAP_SCRIPT)
     if body is not None:
         # Reader comment form at the very bottom of the paper.
         body.append(lxml_html.fromstring(
@@ -624,15 +669,31 @@ def build_web(
         ))
         # `defer` so the parser is never blocked; the script only
         # enhances links that already work without it.
-        body.append(lxml_html.fromstring(
-            f'<script src="{asset_prefix}/paper.js" defer></script>'
-        ))
+        append_fragment(
+            body, f'<script src="{asset_prefix}/paper.js" defer></script>'
+        )
 
     # Standalone pages need the scope class the stylesheet keys off;
     # embedded pages get it from the wrapper div instead.
     if body is not None:
         existing = body.get("class", "")
         body.set("class", (existing + " paper-root").strip())
+
+    # Intrinsic size + decode hints, so a figure reserves its box before
+    # the bytes land instead of shoving the prose below it down the page.
+    # Here rather than in the loop above for two orderings: after
+    # swap_figures, which strips width/height off every <img> it
+    # rewrites, and after the title band has been grouped into <header>,
+    # which is how an above-the-fold image is recognised.
+    for img, img_path in hint_targets:
+        apply_image_hints(img, img_path)
+
+    # Scroll-reveal markers. Last, so the title band has already been
+    # grouped into <header> (and is therefore skipped) and the TOC has
+    # already been pruned. Inert without the <head> gate above.
+    revealed = apply_reveal_markup(doc)
+    if revealed:
+        print(f"  marked {revealed} block(s) for scroll reveal")
 
     index = out_dir / "index.html"
     # Trailing newline: lxml's tostring doesn't emit one, and when this
