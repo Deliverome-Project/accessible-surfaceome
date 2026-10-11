@@ -288,9 +288,21 @@ strong { font-weight: 600; }
 }
 
 .paper-root > .figure-block {
-  /* Figures earn more width than the prose measure: a five-panel
-   * violin at 44rem is unreadable. */
-  max-width: min(66rem, 100%);
+  /* Figures sit in the same column as the prose.
+   *
+   * They used to be allowed 66rem against a 44rem measure, because a
+   * five-panel violin at 44rem is unreadable. The measure has since
+   * widened to 58rem, which leaves the figure column no longer short of
+   * room and the extra width only breaking the page's left and right
+   * edges — a figure that starts before the text it belongs to reads as
+   * a layout fault rather than emphasis.
+   *
+   * Clamped to the same box as a paragraph — `--measure`, not the text
+   * column inside it. The block also inherits the body's 1.5rem
+   * `padding-inline`, so its CONTENTS land on the text column and a
+   * figure begins and ends exactly where the prose does. Subtracting
+   * the gutters here as well would inset the figure by them twice. */
+  max-width: min(var(--measure), 100%);
   margin: 2.4rem auto;
   scroll-margin-top: 7rem;
 }
@@ -306,7 +318,9 @@ strong { font-weight: 600; }
  * `100% - 3rem` arm keeps the same gutter once the viewport is narrower
  * than the measure. */
 .paper-root > .figure-block h5 {
-  width: min(calc(var(--measure) - 3rem), calc(100% - 3rem));
+  /* The block's content box IS the text column (see above), so the
+   * legend simply fills it. */
+  width: 100%;
   margin-inline: auto;
 }
 

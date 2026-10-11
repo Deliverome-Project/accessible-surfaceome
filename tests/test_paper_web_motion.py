@@ -694,8 +694,16 @@ def test_figure_legend_shares_the_body_text_column() -> None:
     its own width it inherits that and every caption hangs a couple of
     dozen pixels outside the text column, which reads as a mistake."""
     css = _strip_comments(WEB_CSS.read_text())
+    block = re.search(r"\.paper-root > \.figure-block\s*\{([^}]*)\}", css)
+    assert block, "no figure-block rule"
+    assert "var(--measure)" in block.group(1), (
+        "figures are not clamped to the prose measure, so both the figure "
+        "and its legend hang outside the text column"
+    )
+    assert "- 3rem" not in block.group(1), (
+        "the block also inherits the body's padding-inline, so subtracting "
+        "the gutters here insets the figure by them twice"
+    )
     rule = re.search(r"\.paper-root > \.figure-block h5\s*\{([^}]*)\}", css)
     assert rule, "the figure legend has no width of its own"
-    body = rule.group(1)
-    assert "var(--measure)" in body, "legend width is not tied to the text column"
-    assert "margin-inline: auto" in body, "legend is not centred on the column"
+    assert "width: 100%" in rule.group(1), "legend does not fill the figure column"
