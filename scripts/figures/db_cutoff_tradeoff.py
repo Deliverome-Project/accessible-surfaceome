@@ -149,7 +149,10 @@ def main() -> None:
     # fixed columns so the numbers align.
     key_fs = 14
     key_line_pt = key_fs * 1.5
-    key_top_pt = -48  # clears the x tick labels
+    # Clears the x tick labels AND the per-panel x axis title beneath
+    # them; the title was added when the figure-level supxlabel was
+    # dropped, and at -48 the key's first row landed on top of it.
+    key_top_pt = -80
     key_x_pt = {"marker": 6, "label": 18, "n": 192, "acc": 202}
 
     for gi, group in enumerate(GROUP_ORDER):
@@ -281,21 +284,18 @@ def main() -> None:
         labelspacing=0.9,
     )
 
-    fig.supxlabel(
-        "Universe size — proteins this filter would admit "
-        "(log scale; lower = stricter)",
-        fontsize=18,
-        fontweight="semibold",
-        y=0.01,
-        color=BRAND_INK,
-    )
-    fig.supylabel(
-        "Accuracy on\n147-gene benchmark (%)",
-        fontsize=18,
-        fontweight="semibold",
-        x=0.01,
-        color=BRAND_INK,
-    )
+    # Per-panel axis titles rather than fig.supxlabel/supylabel. Each
+    # subplot carries its own key block underneath, so the panels are not a
+    # contiguous grid: supylabel centres on the FIGURE, which put the y title
+    # in the gap between the two rows instead of beside the axes, and
+    # supxlabel sat below the second row's key — nowhere near the top row's
+    # x axis, leaving those three panels effectively untitled. Short titles
+    # keep the repetition quiet; the caption carries the full definition.
+    for ax in axes_flat[:len(GROUP_ORDER)]:
+        ax.set_xlabel("Universe size (proteins)", fontsize=16,
+                      fontweight="semibold", color=BRAND_INK, labelpad=6)
+        ax.set_ylabel("Accuracy (%)", fontsize=16,
+                      fontweight="semibold", color=BRAND_INK, labelpad=6)
     # tight_layout counts the per-panel key text, so the row gap and
     # bottom margin make room for it.
     plt.tight_layout(rect=[0.03, 0.025, 1, 1], h_pad=1.5)
