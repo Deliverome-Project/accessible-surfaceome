@@ -1,6 +1,6 @@
 {
   "bench_topology_vs_universe": "swh:1:rev:ef8c80eff1d9c7840eedcf0b115eaae29195ffeb",
-  "benchmark_cost_vs_accuracy": "swh:1:rev:df5614411161efc07e1fa49e22b5793d53f0dccb",
+  "benchmark_cost_vs_accuracy": "swh:1:rev:fb62c4c6bda3e4922c27a6e2f4ee59115fe213ef",
   "blog_db_overlap_venn": "swh:1:rev:ea49e413f3219e293dcd5cb4142f0da2cd91f050",
   "curator_vs_agent_reason": "swh:1:rev:e1096155e4241613c2b0c69afe7e7f9efe8d6e5a",
   "db_correctness_by_class": "swh:1:rev:cc8f6e3ddd19ebbf1ce859e92d602673861781c1",
