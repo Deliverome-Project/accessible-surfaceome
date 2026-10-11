@@ -333,6 +333,7 @@ local function linkify_figure_refs(inlines)
         -- Slash-joined pairs ("S13/S14") arrive as a single token and
         -- are handled by the same collector.
         local nums, seps, consumed, tail_suffix = {}, {}, 0, ""
+        local tail_glued = nil
         local j = i + 2
         while j <= #inlines and inlines[j].t == "Str" do
           -- Trailing punctuation may itself contain "," or ";" —
@@ -343,6 +344,21 @@ local function linkify_figure_refs(inlines)
           -- Lua's greedy body capture still claims a separator comma
           -- when one is genuinely mid-run ("S1, S2").
           local body, suf = inlines[j].text:match("^([Ss]%d+[/&,;]?[Ss]?[%d/&,;Ss]*)([^%a%d]*)$")
+          local glued
+          if not body then
+            -- "(Figure S4)Two of five changed" — a missing space after
+            -- the closing bracket glues the next sentence onto the
+            -- reference token, and the anchored pattern above rejects
+            -- the whole thing, silently dropping the link. The draft
+            -- does this once and would do it again.
+            --
+            -- Real punctuation is REQUIRED between the number and the
+            -- glued word, so "S4)Two" is a reference with a typo while
+            -- "S4Two" stays untouched — the latter is far more likely
+            -- to be an identifier than a cross-reference.
+            local b, s2, rest = inlines[j].text:match("^([Ss]%d+)([^%a%d]+)(%a.*)$")
+            if b then body, suf, glued = b, s2, rest end
+          end
           if not body then break end
           for n in body:gmatch("[Ss](%d+)") do
             if #nums > 0 then
@@ -352,6 +368,11 @@ local function linkify_figure_refs(inlines)
           end
           consumed = j - i + 1
           tail_suffix = suf or ""
+          if glued then
+            -- Nothing can follow a glued word, so the run ends here.
+            tail_glued = glued
+            break
+          end
           -- Continue only when this token ended with a separator and
           -- the next inline is " S<n>" — otherwise the run is done.
           local trailing = body:sub(-1)
@@ -381,6 +402,8 @@ local function linkify_figure_refs(inlines)
                 "#" .. figure_ids["figure s" .. n]))
             end
             if tail_suffix ~= "" then result:insert(pandoc.Str(tail_suffix)) end
+            -- The glued-on word goes back as plain text, outside the link.
+            if tail_glued then result:insert(pandoc.Str(tail_glued)) end
             i = i + consumed
             matched = true
           end

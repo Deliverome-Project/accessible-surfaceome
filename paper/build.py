@@ -284,6 +284,19 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
 
     polish_print_html(html_path)
 
+    # Panel markers, applied to the rendered HTML so the PDF and the web
+    # edition get the identical treatment from one implementation.
+    from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]
+    from lxml import html as _lx  # ty: ignore[unresolved-import]
+
+    _tree = _lx.parse(str(html_path))
+    _n = bold_panel_labels(_tree.getroot())
+    if _n:
+        _tree.write(str(html_path), method="html", encoding="utf-8")
+        print(f"  emboldened {_n} panel marker(s) in figure legends")
+
+    _check_figure_links(str(html_path), "PDF build")
+
     # 3. WeasyPrint → PDF. The `base_url` anchors relative paths (the
     #    CSS @import of `../viewer/app/design-tokens.css` and the
     #    extracted-media images) to the HTML file's directory.
@@ -412,6 +425,36 @@ def _append_fragment(parent: Any, fragment: str) -> None:
     parent.append(lxml_html.fragment_fromstring(fragment, create_parent=False))
 
 
+def _check_figure_links(doc_or_path: Any, label: str) -> None:
+    """Stop the build on a figure cross-reference that never linked.
+
+    The Lua filter already warns, but pandoc warnings scroll past in a
+    long build and the exit status stays 0 — which is how
+    "(Figure S4)Two of five changed" shipped as plain text in both the
+    PDF and the web edition for several builds. Checking the rendered
+    HTML covers both outputs and does not depend on reading stderr.
+    """
+    from figure_links import find_unlinked_figure_refs  # ty: ignore[unresolved-import]
+
+    broken, panels = find_unlinked_figure_refs(doc_or_path)
+    if panels:
+        print(
+            f"  note: {len(panels)} panel-suffixed reference(s) are not links "
+            f"({label}). figures.lua declines these by design:"
+        )
+        for entry in panels:
+            print(f"    {entry}")
+    if broken:
+        detail = "\n".join(f"    {entry}" for entry in broken)
+        raise RuntimeError(
+            f"{len(broken)} figure reference(s) did not become links "
+            f"({label}):\n{detail}\n"
+            "  Either the reference is malformed in the .docx (a missing "
+            "space after a bracket will do it) or figures.lua needs to "
+            "learn the shape."
+        )
+
+
 def build_web(
     src: Path,
     out_dir: Path,
@@ -447,6 +490,7 @@ def build_web(
         swap_figures,
     )
     from lxml import html as lxml_html
+    from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]
     from web_assets import (  # ty: ignore[unresolved-import]
         FONT_HEAD_LINKS,
         REVEAL_BOOTSTRAP_SCRIPT,
@@ -687,6 +731,12 @@ def build_web(
     # which is how an above-the-fold image is recognised.
     for img, img_path in hint_targets:
         apply_image_hints(img, img_path)
+
+    panels = bold_panel_labels(doc)
+    if panels:
+        print(f"  emboldened {panels} panel marker(s) in figure legends")
+
+    _check_figure_links(doc, "web build")
 
     # Scroll-reveal markers. Last, so the title band has already been
     # grouped into <header> (and is therefore skipped) and the TOC has

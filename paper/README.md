@@ -179,6 +179,45 @@ window.
 Note that the overlay's dismiss-on-click would otherwise swallow the
 zoom gesture — the image click is intercepted before that fallthrough.
 
+### Dead cross-references fail the build
+
+`filters/figures.lua` turns "Figure 3" / "Figure S4" in the prose into
+links, and warns about references it could not match — but pandoc
+warnings scroll past in a long build and the exit status stays 0, so a
+dead cross-reference ships silently. One did: the draft reads
+`(Figure S4)Two of five changed` with no space after the bracket, the
+tokeniser saw `S4)Two`, and that reference was plain text in both the
+PDF and the web edition for several builds.
+
+`paper/figure_links.py` now checks the rendered HTML — covering both
+outputs, and needing nothing but lxml, so it is tested in CI where the
+`paper` extra is not installed. A reference the filter should have
+linked and did not **fails the build**. Panel-suffixed references
+("Figure 4a") are listed as a note instead: `tail_match` takes a bare
+integer and declines them by design, and a deliberate choice should not
+read as a regression.
+
+When it fires, the reference is usually malformed in the `.docx` — a
+missing space after a bracket will do it — rather than a gap in the
+filter.
+
+### Panel markers in legends are bold
+
+`paper/caption_panels.py` emboldens the "a)", "b)", "c)" that introduce
+each panel's sentence. Without it a multi-panel legend reads as one
+undifferentiated paragraph and finding the sentence for panel b means
+reading the whole caption.
+
+Applied to the rendered HTML, so the PDF and the web edition get the
+identical treatment from one implementation. What counts as a marker is
+deliberately narrow — it must open a clause — because this manuscript's
+captions contain `("yes", panel a)`, which a looser rule would bold
+mid-sentence. The start-of-run case is the subtle one: the first
+panel's marker sits at the start of the caption-lead span's *tail*,
+where the full stop that ends the clause is inside the span and
+invisible to the matcher, so it was the one marker per legend that got
+missed.
+
 ### Figures reserve their box before they load
 
 `apply_image_hints` stamps intrinsic `width`/`height` on every `<img>`,

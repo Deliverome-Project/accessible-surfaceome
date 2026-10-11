@@ -357,6 +357,16 @@ h5 {
 h5 .caption-lead,
 h5 strong { color: var(--maroon-dark); font-weight: 600; }
 
+/* Panel markers inside a legend. A multi-panel legend otherwise reads
+ * as one undifferentiated paragraph, so finding the sentence that
+ * explains panel b means reading the whole thing. Same maroon as the
+ * caption's run-in, a step heavier than the prose around it. */
+h5 .panel-label,
+.figure-lightbox__inner figcaption .panel-label {
+  font-weight: 700;
+  color: var(--maroon-dark);
+}
+
 /* Landing highlight: clicking a cross-reference should make it
  * obvious WHICH block you just jumped to. */
 .figure-block:target h5,

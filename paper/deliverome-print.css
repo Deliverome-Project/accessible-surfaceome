@@ -725,3 +725,12 @@ img.resource-icon {
   width: auto;
   max-width: 100%;
 }
+
+/* Panel markers inside a figure legend (paper/caption_panels.py). The
+ * print edition sets captions tighter than the web one, so the marker
+ * does the work of a paragraph break that two-column copy has no room
+ * for. */
+h5 .panel-label {
+  font-weight: 700;
+  color: var(--maroon-dark);
+}
