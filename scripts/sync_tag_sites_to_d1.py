@@ -2,13 +2,24 @@
 
 Reads every ``viewer/public/tag-sites/{SYMBOL}.json`` (the deterministic +
 literature pipelines' committed output) and UPSERTs one row per site via
-:func:`accessible_surfaceome.cloud.tag_sites.publish_tag_sites` (idempotent;
-replace-all per gene). Env comes from ``.env`` via ``load_env``
+:func:`accessible_surfaceome.cloud.tag_sites.publish_tag_sites` — idempotent,
+with stale-row cleanup scoped to the provenances being published, NOT
+replace-all. Env comes from ``.env`` via ``load_env``
 (``CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID`` etc.).
+
+``--provenance`` is what makes a one-pipeline sync safe AND complete. One
+``{SYMBOL}.json`` is written by two independent pipelines, and after a
+literature sweep the local file for a gene whose deterministic sites live only
+in D1 carries literature sites alone. Naming the provenance does two things the
+default cannot: it stops the publish from being authoritative for a pipeline
+whose output is not in the file, and it lets a gene that legitimately found
+NOTHING still clear its old rows — with no provenance the scope is inferred
+from the file, and an empty file infers an empty scope, so stale rows survive.
 
     uv run python scripts/sync_tag_sites_to_d1.py --dry-run
     uv run python scripts/sync_tag_sites_to_d1.py --version 2026-08-15
     uv run python scripts/sync_tag_sites_to_d1.py --gene TFRC --version 2026-08-15
+    uv run python scripts/sync_tag_sites_to_d1.py --provenance literature_retrieved
 """
 
 from __future__ import annotations
@@ -71,6 +82,12 @@ def main() -> int:
     ap.add_argument("--manifest", help="TSV whose first column is a gene SYMBOL; sync "
                                        "only those genes, leaving the rest of the store "
                                        "unpublished and unstamped.")
+    ap.add_argument("--provenance", action="append", metavar="P",
+                    help="publish ONLY this provenance and be authoritative for it "
+                         "(repeatable). Rows of other provenances are never touched, "
+                         "and the pre-flight compares counts within P rather than "
+                         "totals. Use for a one-pipeline sync, e.g. "
+                         "--provenance literature_retrieved.")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -79,11 +96,17 @@ def main() -> int:
         log.warning("no tag-sites JSON found in %s", TAG_SITES_DIR)
         return 1
 
+    scope = sorted(set(args.provenance)) if args.provenance else None
+    if scope:
+        log.info("scoped to provenance: %s", ", ".join(scope))
+
     if args.dry_run:
         total = 0
         for f in files:
             data = json.loads(f.read_text())
             rows = tag_sites_d1.rows_for_file(data, version=args.version, synced_at="(dry-run)")
+            if scope:
+                rows = [r for r in rows if r.get("provenance") in scope]
             total += len(rows)
             log.info("%-12s %3d sites", data["gene_symbol"], len(rows))
         log.info("dry-run: %d gene(s), %d site row(s) — nothing written", len(files), total)
@@ -92,20 +115,35 @@ def main() -> int:
     load_env()
     client = D1Client.public()
 
-    # Pre-flight: publish_tag_sites is REPLACE-ALL per gene, so syncing a stale
-    # snapshot DELETES rows D1 holds and the file does not. The dry-run counts
-    # what would be written and says nothing about what would be destroyed —
-    # which is how a sync from snapshots that had already drifted removed 40
-    # live rows, including every deterministic site for a gene the in-tree JSON
-    # had lost at an earlier commit.
+    # Pre-flight: the publish DELETES rows D1 holds that the file does not, within
+    # the provenances it speaks for. The dry-run counts what would be written and
+    # says nothing about what would be destroyed — which is how a sync from
+    # snapshots that had already drifted removed 40 live rows, including every
+    # deterministic site for a gene whose in-tree JSON had lost them earlier.
+    #
+    # The comparison must use the SAME scope as the publish. Comparing totals
+    # while the publish is provenance-scoped is not conservative, it is simply
+    # wrong in both directions: it reports 22,000 deterministic rows as at risk
+    # during a literature-only sync that cannot touch them, and the noise is
+    # what makes someone reach for --allow-deletes.
     shrinking: list[tuple[str, int, int]] = []
     for path in files:
         data = json.loads(path.read_text())
         symbol = data.get("gene_symbol") or path.stem
-        local_n = len(data.get("sites") or [])
-        rows = client.query(
-            "SELECT COUNT(*) n FROM tag_site_public WHERE gene_symbol = ?;", [symbol]
-        )
+        sites = data.get("sites") or []
+        if scope:
+            local_n = sum(1 for s in sites if s.get("provenance") in scope)
+            marks = ", ".join(["?"] * len(scope))
+            rows = client.query(
+                f"SELECT COUNT(*) n FROM tag_site_public WHERE gene_symbol = ? "
+                f"AND provenance IN ({marks});",
+                [symbol, *scope],
+            )
+        else:
+            local_n = len(sites)
+            rows = client.query(
+                "SELECT COUNT(*) n FROM tag_site_public WHERE gene_symbol = ?;", [symbol]
+            )
         remote_n = (rows[0]["n"] if rows else 0) or 0
         if remote_n > local_n:
             shrinking.append((symbol, remote_n, local_n))
@@ -129,7 +167,7 @@ def main() -> int:
         for f in files:
             data = json.loads(f.read_text())
             n = tag_sites_d1.publish_tag_sites(
-                data, tag_sites_version=args.version, client=client
+                data, tag_sites_version=args.version, client=client, provenances=scope
             )
             grand += n
             log.info("synced %-12s %3d sites", data["gene_symbol"], n)

@@ -484,3 +484,96 @@ def test_a_run_never_writes_its_discovery_cache_into_the_repo():
     from accessible_surfaceome.agents.tag_site import literature_discovery as LD
     assert R.DISCOVERY_CACHE_DIR != LD.DISCOVERY_CACHE_DIR, (
         f"runner would write to the repo cache: {R.DISCOVERY_CACHE_DIR}")
+
+
+# --- every return path records what the run did -----------------------------
+#
+# The stamping used to live only at the END of run_tag_site_agent, so all three
+# early returns skipped it. A gene that legitimately found nothing wrote an
+# intermediates dict holding nothing — not even its own symbol. The first
+# library sweep produced 759 such rows out of 1,825, $344 of spend that could
+# not be attributed to a gene, and the sha-aware resume keys on gene_symbol, so
+# every one of them would have been paid for twice.
+#
+# These assert the ARCHIVE for each early return, which the three tests above
+# leave untested because they only look at the returned result.
+
+def _stub_no_papers(monkeypatch):
+    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+
+
+def _stub_no_evidence(monkeypatch):
+    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {"PMID:1": _paper(pmid=1)})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts", lambda *a, **k: [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [])
+
+
+def _stub_builder_failed(monkeypatch):
+    _stub_no_evidence(monkeypatch)
+    monkeypatch.setattr(
+        R, "promote", lambda *a, **k: [_evi("ALFA after G101.", source_id="PMID:1")]
+    )
+    monkeypatch.setattr(R, "call_builder", lambda client, **k: None)
+
+
+@pytest.mark.parametrize(
+    "stub", [_stub_no_papers, _stub_no_evidence, _stub_builder_failed],
+    ids=["no_papers", "no_evidence", "builder_failed"],
+)
+def test_every_early_return_still_records_the_run(monkeypatch, stub):
+    stub(monkeypatch)
+    inter: dict = {}
+    out = R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
+        sequence="AAA", topology="OOO", client=cast(Anthropic, object()),
+        http=cast(CachedHTTP, object()), intermediates=inter,
+    )
+    assert out.sites == []
+    # The one that makes the row attributable at all.
+    assert inter.get("gene_symbol") == "X"
+    # The archive's schema, so a zero-site row is a real measurement rather
+    # than a hole: every count present and an int, because 0 is a different
+    # claim from absent. n_papers is NOT asserted to be 0 — two of these three
+    # paths do discover papers, and that is exactly the distinction the archive
+    # has to keep.
+    for key in ("n_papers", "n_clips", "n_boosted", "n_sites"):
+        assert isinstance(inter.get(key), int), key
+    assert inter["n_sites"] == 0
+    for key in ("ledger", "rejected", "other_positions"):
+        assert inter.get(key) == [], key
+
+
+def test_early_return_records_the_papers_it_did_discover(monkeypatch):
+    """A gene with papers but no usable evidence is not the same as a gene with
+    no papers, and the archive has to be able to tell them apart."""
+    _stub_no_evidence(monkeypatch)
+    inter: dict = {}
+    R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
+        sequence="AAA", topology="OOO", client=cast(Anthropic, object()),
+        http=cast(CachedHTTP, object()), intermediates=inter,
+    )
+    assert inter["n_papers"] == 1
+    assert inter["n_clips"] == 0
+
+
+def test_no_return_path_skips_the_stamp():
+    """A new early return must not reopen the hole.
+
+    Structural, because the cost of finding this the other way was a 1,825-gene
+    sweep: every `return` in the body either goes through `_empty()` (which
+    stamps) or is the final one (which stamps)."""
+    import inspect
+    import re
+
+    src = inspect.getsource(R.run_tag_site_agent)
+    returns = re.findall(r"^    return (.+)$", src, flags=re.M)
+    assert returns, "expected to find top-level returns"
+    assert all(
+        r.startswith("_empty()") or r.startswith("rank_sites(") for r in returns
+    ), returns

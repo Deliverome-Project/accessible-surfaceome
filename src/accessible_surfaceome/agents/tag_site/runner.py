@@ -480,6 +480,35 @@ def run_tag_site_agent(
     except Exception:  # noqa: BLE001 - never block on the retraction fetch
         ri = _empty_retraction()
 
+    # What the run knows SO FAR. The three _empty() paths below returned before
+    # the stamping at the end of this function, so a gene that legitimately found
+    # nothing wrote an intermediates dict holding nothing — not even its own
+    # symbol. The first library sweep produced 759 such rows out of 1,825: $344
+    # of spend that could not be attributed to a gene, and a resume that would
+    # have paid for every one of them twice, because the skip set keys on
+    # gene_symbol. _empty() exists because the RESULT had this identical hole;
+    # this closes it for the archive, and the defaults below are the correct
+    # answers for a run that stopped early rather than placeholders.
+    _progress: dict[str, Any] = {
+        "gene_symbol": gene_symbol,
+        "n_papers": 0,
+        "n_clips": 0,
+        "n_boosted": 0,
+        "boosted": {},
+        "ledger": [],
+        "synthesis_meta": {},
+        "notes": "",
+        "n_sites": 0,
+        "rejected": [],
+        "other_positions": [],
+    }
+
+    def _stamp(**final: Any) -> None:
+        """Write the run's account into the caller's dict. Every return goes
+        through here, so a new early return cannot silently skip it."""
+        if intermediates is not None:
+            intermediates.update({**_progress, **final})
+
     def _empty() -> TagSiteResult:
         """An empty result is still a result, and carries its provenance.
 
@@ -493,6 +522,7 @@ def run_tag_site_agent(
         "Ran under prompt X and found nothing" is exactly the fact the
         provenance rule exists to preserve — a zero that cannot be dated has to
         be re-run to be trusted."""
+        _stamp()
         return TagSiteResult(
             gene_symbol=gene_symbol,
             uniprot_accession=uniprot_accession,
@@ -525,6 +555,7 @@ def run_tag_site_agent(
         papers.setdefault(paper_source_id(wp), wp)
     papers_by_id: dict[str, Paper] = {paper_source_id(p): p for p in papers.values()}
     save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
+    _progress["n_papers"] = len(papers_by_id)
     if not papers_by_id:
         return _empty()
 
@@ -584,6 +615,11 @@ def run_tag_site_agent(
                 log.info("      %s @%s: %s",
                          getattr(clip, "source_id", key), sorted(positions),
                          (getattr(clip, "quote", "") or "")[:110])
+    _progress.update({
+        "n_clips": len(pool),
+        "n_boosted": len(boosted),
+        "boosted": {k: sorted(v) for k, v in boosted.items()},
+    })
     selection = select_clips(
         client,
         pool=pool,
@@ -700,36 +736,30 @@ def run_tag_site_agent(
                 gate="geometry", reason=reason,
             ))
         result.sites = kept
-    if intermediates is not None:
-        # The clip pool and the ledger were never persisted — the code says so
-        # twice — so after a run finished there was no way to ask which clips
-        # were available, what the model was shown, or why a site was not
-        # proposed. Every such question today cost a fresh run to answer.
-        intermediates.update({
-            "gene_symbol": gene_symbol,
-            "n_papers": len(papers_by_id),
-            "n_clips": len(pool),
-            "n_boosted": len(boosted),
-            "boosted": {k: sorted(v) for k, v in boosted.items()},
-            "ledger": [
-                {
-                    "source_id": (sp.source.source_id if sp.source else None),
-                    "claim": e.claim,
-                    "quote": sp.quote,
-                }
-                for e in evidence
-                for sp in (e.spans or [])
-            ],
-            "synthesis_meta": synth_meta,
-            "notes": result.notes,
-            "n_sites": len(result.sites),
-            "rejected": [x.model_dump() for x in result.rejected],
-            # Published positions that are NOT surface sites: tolerated
-            # intracellular insertions, and positions a paper reports as
-            # function-abrogating. Both were visible only as numbers inside a
-            # ledger sentence before this.
-            "other_positions": [x.model_dump() for x in result.other_positions],
-        })
+    # The clip pool and the ledger were never persisted — the code says so twice
+    # — so after a run finished there was no way to ask which clips were
+    # available, what the model was shown, or why a site was not proposed. Every
+    # such question cost a fresh run to answer.
+    _stamp(
+        ledger=[
+            {
+                "source_id": (sp.source.source_id if sp.source else None),
+                "claim": e.claim,
+                "quote": sp.quote,
+            }
+            for e in evidence
+            for sp in (e.spans or [])
+        ],
+        synthesis_meta=synth_meta,
+        notes=result.notes,
+        n_sites=len(result.sites),
+        rejected=[x.model_dump() for x in result.rejected],
+        # Published positions that are NOT surface sites: tolerated
+        # intracellular insertions, and positions a paper reports as
+        # function-abrogating. Both were visible only as numbers inside a ledger
+        # sentence before this.
+        other_positions=[x.model_dump() for x in result.other_positions],
+    )
 
     result.prompt_sha = prompt_sha()
     result.prompt_version = TAG_SITE_PROMPT_VERSION
