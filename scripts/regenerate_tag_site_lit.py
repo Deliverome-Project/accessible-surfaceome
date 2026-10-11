@@ -265,6 +265,14 @@ def merge_lit_sites(
         rec["generated_at"] = result.generated_at
         rec["literature_notes"] = result.notes
         rec["literature_rejected"] = [x.model_dump() for x in result.rejected]
+        # Intracellular / function-abrogating positions. They were reaching the
+        # run archive and stopping there, so the one surface a reader actually
+        # opens could not show them — a tolerated cytoplasmic insertion is the
+        # right answer for a snorkel or an intracellular label, and a known-bad
+        # position is evidence, but only if it is somewhere findable.
+        rec["literature_other_positions"] = [
+            x.model_dump() for x in result.other_positions
+        ]
     return rec
 
 

@@ -32,6 +32,7 @@ FULL = {
     "schema_version": "1.0.0", "prompt_sha": "deadbeef", "prompt_version": "1.0.0",
     "model": "claude-sonnet-4-6", "generated_at": "2026-10-09T00:00:00Z",
     "literature_notes": "what it did not propose", "literature_rejected": [{"gate": "entailment"}],
+    "literature_other_positions": [{"residue": 271, "kind": "intracellular"}],
 }
 
 
