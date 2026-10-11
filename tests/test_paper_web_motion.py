@@ -104,6 +104,14 @@ def test_image_hints_do_not_override_an_authored_size(tmp_path: Path) -> None:
 
 # ── 2. Reveal is gated so a no-JS reader sees everything ────────────
 
+def _first_group(pattern: str, text: str, what: str) -> str:
+    """The first capture of `pattern`, or a failure that names what was
+    being looked for. Also narrows the Optional for the type checker."""
+    m = re.search(pattern, text)
+    assert m, f"not found: {what}"
+    return m.group(1)
+
+
 def _strip_comments(css: str) -> str:
     """Drop /* … */ so prose explaining a selector can't be mistaken for
     one. These rules are heavily commented on purpose, and the comments
@@ -478,10 +486,12 @@ def test_large_blocks_get_their_own_slower_motion() -> None:
         css,
     )
     assert block, "figures and tables share the default reveal distance"
-    base_d = int(re.search(r"--reveal-distance:\s*(\d+)px", css).group(1))
-    base_t = int(re.search(r"--reveal-duration:\s*(\d+)ms", css).group(1))
-    fig_d = int(re.search(r"--reveal-distance:\s*(\d+)px", block.group(1)).group(1))
-    fig_t = int(re.search(r"--reveal-duration:\s*(\d+)ms", block.group(1)).group(1))
+    dist = r"--reveal-distance:\s*(\d+)px"
+    dur = r"--reveal-duration:\s*(\d+)ms"
+    base_d = int(_first_group(dist, css, "base reveal distance"))
+    base_t = int(_first_group(dur, css, "base reveal duration"))
+    fig_d = int(_first_group(dist, block.group(1), "figure reveal distance"))
+    fig_t = int(_first_group(dur, block.group(1), "figure reveal duration"))
     assert fig_d > base_d and fig_t > base_t
 
 
@@ -651,8 +661,10 @@ def test_there_is_a_visible_way_to_reset_the_zoom() -> None:
     )
     assert shown, "the reset control is never shown"
     assert "pointer-events: auto" in shown.group(1), "shown but not clickable"
-    hidden = re.search(r"\.figure-lightbox__reset\s*\{([^}]*)\}", css)
-    assert "pointer-events: none" in hidden.group(1), (
+    hidden = _first_group(
+        r"\.figure-lightbox__reset\s*\{([^}]*)\}", css, "the reset control"
+    )
+    assert "pointer-events: none" in hidden, (
         "the control is clickable while invisible"
     )
 
