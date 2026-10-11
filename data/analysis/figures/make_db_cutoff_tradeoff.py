@@ -383,11 +383,13 @@ def main() -> None:
     # supxlabel sat below the second row's key — nowhere near the top row's
     # x axis, leaving those three panels effectively untitled. Short titles
     # keep the repetition quiet; the caption carries the full definition.
+    # No fontsize/fontweight/color here on purpose: axes.labelsize (18),
+    # axes.labelweight (semibold) and axes.labelcolor (#1F1718, identical to
+    # BRAND_INK) all come from the shared type scale, so these titles track it
+    # if it moves again. Hardcoding 16 here would quietly undercut the scale.
     for ax in axes_flat[:len(GROUP_ORDER)]:
-        ax.set_xlabel("Universe size (proteins)", fontsize=16,
-                      fontweight="semibold", color=BRAND_INK, labelpad=6)
-        ax.set_ylabel("Accuracy (%)", fontsize=16,
-                      fontweight="semibold", color=BRAND_INK, labelpad=6)
+        ax.set_xlabel("Universe size (proteins)", labelpad=6)
+        ax.set_ylabel("Accuracy (%)", labelpad=6)
     # tight_layout counts the per-panel key text, so the row gap and
     # bottom margin make room for it.
     plt.tight_layout(rect=[0.03, 0.025, 1, 1], h_pad=1.5)
