@@ -173,6 +173,7 @@
 
   var imgEl = overlay.querySelector("img");
   var viewport = overlay.querySelector(".figure-lightbox__viewport");
+  var innerEl = overlay.querySelector(".figure-lightbox__inner");
 
   /* ── Pan and zoom, inside the figure's window ────────────────────
    *
@@ -188,10 +189,51 @@
   var tx = 0;
   var ty = 0;
 
+  /* Stacked or side-by-side? Measured, not guessed.
+   *
+   * Which layout shows the figure larger depends on the figure's shape
+   * AND on how much height its legend eats AND on the window — and the
+   * three do not line up. Sorting by aspect ratio alone mis-sorts real
+   * figures in this manuscript in both directions: one near-square
+   * figure with a long legend is 71% larger beside, while a slightly
+   * flatter one with a short legend is 6% SMALLER. So lay the figure
+   * out both ways while the overlay is still invisible, keep whichever
+   * renders bigger, and let the threshold take care of itself.
+   *
+   * Below the stylesheet's 48rem breakpoint the side-by-side rules do
+   * not apply at all, so both measurements come back equal and stacked
+   * wins by default — the narrow-screen case needs no special casing. */
+  var naturalRatio = 0;
+
+  /* Give the figure's window the shape of the figure, so it can be
+   * shrunk to fit beside the legend without clipping the image — see
+   * the .figure-lightbox__viewport comment in the stylesheet. */
   function setViewportRatio(w, h) {
     w = parseFloat(w);
     h = parseFloat(h);
-    viewport.style.aspectRatio = w > 0 && h > 0 ? w + " / " + h : "";
+    var known = w > 0 && h > 0;
+    naturalRatio = known ? h / w : 0;
+    viewport.style.aspectRatio = known ? w + " / " + h : "";
+  }
+
+  function visiblePictureArea() {
+    /* The <img> box is the window; `object-fit: contain` letterboxes
+     * the picture inside it, so the box is NOT what the reader sees.
+     * Measuring the box instead of the picture is what made an earlier
+     * pass of this comparison come out backwards. */
+    var b = imgEl.getBoundingClientRect();
+    if (!naturalRatio || !b.width || !b.height) return 0;
+    var h = b.width * naturalRatio;
+    return h <= b.height ? b.width * h : (b.height / naturalRatio) * b.height;
+  }
+
+  function chooseLayout() {
+    innerEl.classList.remove("is-portrait");
+    var stacked = visiblePictureArea();
+    innerEl.classList.add("is-portrait");
+    if (visiblePictureArea() <= stacked) {
+      innerEl.classList.remove("is-portrait");
+    }
   }
 
   function clampPan() {
@@ -405,6 +447,9 @@
      * opacity 0 and never become visible — an invisible full-screen
      * layer swallowing every click. */
     void overlay.offsetWidth;
+    /* After un-hiding (so there is a layout to measure) and before
+     * `is-open` (so the reader never sees the trial layouts). */
+    chooseLayout();
     overlay.classList.add("is-open");
     /* A new figure always starts fitted, never inheriting the previous
      * one's zoom — stepping through figures should be comparable. */
