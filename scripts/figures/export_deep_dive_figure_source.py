@@ -61,11 +61,14 @@ _TRIAGE_RESCUE_RUN_IDS = (
 # bar shows one dot per replicate + SEM across them, matching the other accuracy
 # figures. One row per (bench gene x replicate).
 BENCH_SONNET_OUT = ROOT / "data/processed/deep_dive/benchmark_sonnet_replicates.tsv"
-# Per-(gene x evidence_type x tier x direction) counts over the SURFACE-
-# EXPRESSION claims only. One row per combination, so the downstream figure
-# can ask both "how many genes used this assay" and "for how many was it the
-# only assay" without pulling 120 KB annotation blobs per gene.
-EVIDENCE_TYPES_OUT = ROOT / "data/processed/deep_dive/surface_evidence_types.tsv"
+# Per-(gene x method family x subclass x accessibility relevance x
+# permeabilization x expression system) counts over the record's
+# ``surface_evidence.methods`` block — one row per experiment the methods
+# builder extracted, with its direct-vs-supporting judgment. Grouped so the
+# figure can ask "how many genes have direct evidence from this method" and
+# "for how many was it the only direct method" without pulling 120 KB
+# annotation blobs per gene.
+SURFACE_METHODS_OUT = ROOT / "data/processed/deep_dive/surface_evidence_methods.tsv"
 _MAINBENCH_RUN = "mainbench_canonical_v2"
 _MAINBENCH_MODEL = "claude-sonnet-4-6"
 _MAINBENCH_VARIANT = "ncbi"
@@ -321,28 +324,29 @@ def _bench_sonnet_sql() -> str:
     )
 
 
-def _evidence_types_sql() -> str:
-    """Per-gene assay-type tally over surface-expression claims.
+def _surface_methods_sql() -> str:
+    """Per-gene tally of the ``surface_evidence.methods`` rows.
 
-    Restricted to ``claim_type='surface_expression'`` because that is the
-    claim that establishes surface accessibility — tissue-expression and
-    topology rows use the same ``evidence_type`` vocabulary but say nothing
-    about whether the protein is on the surface, so counting them would
-    inflate every assay uniformly and wash out the contrast.
-
-    Grouped rather than one-row-per-evidence so the export stays small
-    (~27k rows instead of ~58k) while still supporting the per-gene set
-    operations the figure needs.
+    The methods block, not the evidence ledger, is the source because it is
+    where each experiment gets a judgment of whether it shows the protein is
+    reachable from outside an intact cell (``accessibility_relevance``) and
+    how it was done (live vs permeabilized, endogenous vs overexpressed).
+    The ledger's ``evidence_type`` only names the technique in a quote, so it
+    counts permeabilized IF and whole-cell proteomics as surface assays. The
+    evidence-grade builder grades from this same block, so the figure and the
+    catalog's evidence grade read one source.
     """
     return (
         "SELECT sa.gene_symbol AS gene_symbol, "
-        "       json_extract(j.value,'$.evidence_type')  AS evidence_type, "
-        "       json_extract(j.value,'$.evidence_tier')  AS evidence_tier, "
-        "       json_extract(j.value,'$.direction')      AS direction, "
+        "       json_extract(m.value,'$.method_family')           AS method_family, "
+        "       json_extract(m.value,'$.method_subclass')         AS method_subclass, "
+        "       json_extract(m.value,'$.accessibility_relevance') AS accessibility_relevance, "
+        "       json_extract(m.value,'$.permeabilization')        AS permeabilization, "
+        "       json_extract(m.value,'$.expression_system')       AS expression_system, "
         "       COUNT(*) AS n_rows "
-        "FROM surface_annotation sa, json_each(sa.annotation_json,'$.evidence') j "
-        "WHERE json_extract(j.value,'$.claim_type') = 'surface_expression' "
-        "GROUP BY gene_symbol, evidence_type, evidence_tier, direction;"
+        "FROM surface_annotation sa, json_each(sa.annotation_json,'$.surface_evidence.methods') m "
+        "GROUP BY gene_symbol, method_family, method_subclass, accessibility_relevance, "
+        "         permeabilization, expression_system;"
     )
 
 
@@ -356,7 +360,7 @@ def main() -> int:
             _bench_sonnet_sql(),
             [_MAINBENCH_RUN, _MAINBENCH_MODEL, _MAINBENCH_VARIANT],
         )
-        evidence_type_rows = d1.query(_evidence_types_sql(), [])
+        surface_method_rows = d1.query(_surface_methods_sql(), [])
     df = pd.DataFrame(rows)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT, sep="\t", index=False)
@@ -373,11 +377,11 @@ def main() -> int:
     print(f"wrote {BENCH_SONNET_OUT.relative_to(ROOT)}: {len(bench_sonnet)} bench "
           f"Sonnet replicate cells ({_MAINBENCH_RUN}/{_MAINBENCH_MODEL}/{_MAINBENCH_VARIANT})")
 
-    ev_types = pd.DataFrame(evidence_type_rows)
-    ev_types.to_csv(EVIDENCE_TYPES_OUT, sep="\t", index=False)
-    n_genes = ev_types["gene_symbol"].nunique() if not ev_types.empty else 0
-    print(f"wrote {EVIDENCE_TYPES_OUT.relative_to(ROOT)}: {len(ev_types)} "
-          f"(gene x assay x tier x direction) rows over {n_genes} genes")
+    methods = pd.DataFrame(surface_method_rows)
+    methods.to_csv(SURFACE_METHODS_OUT, sep="\t", index=False)
+    n_genes = methods["gene_symbol"].nunique() if not methods.empty else 0
+    print(f"wrote {SURFACE_METHODS_OUT.relative_to(ROOT)}: {len(methods)} "
+          f"(gene x method x relevance) rows over {n_genes} genes")
     return 0
 
 

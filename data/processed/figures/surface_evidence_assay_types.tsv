@@ -1,22 +1,9 @@
-evidence_type	genes_used	genes_sole	genes_sole_primary	pct_sole	pct_sole_primary	n_rows
-functional_assay	2796	144	180	5.15	6.44	11657
-immunofluorescence	2272	68	125	2.99	5.5	9339
-review_assertion	2033	106	7	5.21	0.34	4474
-flow_cytometry	1478	24	54	1.62	3.65	6723
-immunohistochemistry	1080	12	24	1.11	2.22	2519
-western_blot	946	12	25	1.27	2.64	1719
-mass_spec_surfaceome	866	33	61	3.81	7.04	1434
-loss_of_function_phenotype	514	9	6	1.75	1.17	688
-surface_biotinylation	495	2	4	0.4	0.81	1043
-cryo_em	232	2	4	0.86	1.72	346
-computational_prediction	120	6	1	5.0	0.83	145
-crystal_structure	97	0	1	0.0	1.03	110
-orthology	70	5	0	7.14	0.0	93
-db_annotation	67	2	1	2.99	1.49	78
-single_cell_rna_seq	48	0	0	0.0	0.0	51
-genetic_association	35	0	0	0.0	0.0	41
-rt_qpcr	26	2	3	7.69	11.54	26
-rna_seq	19	0	1	0.0	5.26	20
-in_situ_hybridization	13	0	1	0.0	7.69	13
-microarray	6	0	0	0.0	0.0	6
-northern_blot	3	0	0	0.0	0.0	3
+method	family	genes_direct	genes_supporting_only	genes_sole_direct	pct_sole_direct	n_surface_genes	n_genes_any_direct
+functional_surface_assay	functional	1450	537	453	31.24	4049	2266
+flow_cytometry	imaging_cytometry	1202	53	292	24.29	4049	2266
+surface_biotin_pulldown	labeling_capture	613	16	112	18.27	4049	2266
+immunofluorescence	imaging_cytometry	337	1311	64	18.99	4049	2266
+cell_surface_capture_ms	labeling_capture	321	25	47	14.64	4049	2266
+proximity_labeling	labeling_capture	74	65	12	16.22	4049	2266
+other	other	69	262	5	7.25	4049	2266
+immunohistochemistry	imaging_cytometry	2	570	2	100.0	4049	2266
