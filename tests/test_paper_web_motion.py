@@ -612,3 +612,46 @@ def test_panning_cannot_strand_the_reader_off_the_figure() -> None:
     js = WEB_JS.read_text()
     assert "function clampPan()" in js
     assert "Math.min(0, Math.max(w * (1 - scale), tx))" in js
+
+
+def test_scrolling_pans_once_zoomed_in() -> None:
+    """Zoomed in, a two-finger scroll is how anyone expects to move
+    around a magnified image. Mapping it to zoom instead leaves the
+    reader magnified with no way to reach the rest of the figure."""
+    js = WEB_JS.read_text()
+    wheel = js[js.index('"wheel"'):][:900]
+    assert "else if (scale > MIN_SCALE)" in wheel
+    assert "tx -= e.deltaX" in wheel and "ty -= e.deltaY" in wheel
+
+
+def test_dragging_the_image_is_not_a_native_image_drag() -> None:
+    """Otherwise the pointer stream stops, a ghost thumbnail follows the
+    cursor, and the pan silently never happens."""
+    js = WEB_JS.read_text()
+    assert 'draggable="false"' in js
+    down = js[js.index('addEventListener("pointerdown"'):]
+    down = down[: down.index("});")]
+    assert "e.preventDefault();" in down, (
+        "pointerdown does not suppress the native image drag"
+    )
+    css = _strip_comments(WEB_CSS.read_text())
+    img = re.search(r"\.figure-lightbox__viewport img\s*\{([^}]*)\}", css)
+    assert img and "user-drag: none" in img.group(1)
+
+
+def test_there_is_a_visible_way_to_reset_the_zoom() -> None:
+    """Double-click and Escape both reset, but neither is visible, so
+    neither is a way out for a reader who doesn't already know."""
+    js = WEB_JS.read_text()
+    assert "figure-lightbox__reset" in js
+    css = _strip_comments(WEB_CSS.read_text())
+    shown = re.search(
+        r"\.figure-lightbox__viewport\.is-zoomed \.figure-lightbox__reset\s*\{([^}]*)\}",
+        css,
+    )
+    assert shown, "the reset control is never shown"
+    assert "pointer-events: auto" in shown.group(1), "shown but not clickable"
+    hidden = re.search(r"\.figure-lightbox__reset\s*\{([^}]*)\}", css)
+    assert "pointer-events: none" in hidden.group(1), (
+        "the control is clickable while invisible"
+    )

@@ -561,6 +561,10 @@ td p:first-child strong { color: var(--maroon-dark); }
   /* Pan/zoom maths is in the image's own box, measured from its
    * top-left — see the controller in deliverome-web.js. */
   transform-origin: 0 0;
+  /* A drag on an image is a native image-drag unless both of these say
+   * otherwise, and the pan silently never starts. */
+  -webkit-user-drag: none;
+  user-select: none;
   cursor: zoom-in;
 }
 
@@ -590,6 +594,42 @@ td p:first-child strong { color: var(--maroon-dark); }
 
 .figure-lightbox__viewport.is-zoomed .figure-lightbox__hint {
   opacity: 0;
+}
+
+/* Swaps in where the hint was, once the hint's advice has been taken.
+ * Double-click and Escape do the same thing, but neither is visible,
+ * so neither is a way out for a reader who doesn't already know. */
+.figure-lightbox__reset {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.25rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(31, 23, 24, 0.72);
+  color: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, background-color 150ms ease;
+}
+
+.figure-lightbox__viewport.is-zoomed .figure-lightbox__reset {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.figure-lightbox__reset:hover {
+  background: rgba(31, 23, 24, 0.9);
+}
+
+.figure-lightbox__reset:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .figure-lightbox__inner figcaption {

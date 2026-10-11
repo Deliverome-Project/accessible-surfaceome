@@ -127,9 +127,22 @@ legend, so nothing in the lightbox scrolls. The overlay is
 **The figure zooms inside its own window.** Pinch (or scroll) over the
 figure to magnify it up to 8x within the frame it already occupies —
 the panel keeps its shape and the legend stays exactly where it is.
-Drag to pan, double-click to go in or back out, Escape steps out of
-zoom before it closes the lightbox, and opening another figure always
-starts fitted.
+Once zoomed, drag or two-finger scroll to pan. A **Reset zoom** button
+appears in the window while zoomed; double-click and Escape do the same
+thing but neither is visible, so neither is a way out for a reader who
+doesn't already know. Opening another figure always starts fitted.
+
+Two things about panning are easy to get wrong and fail silently:
+
+* A plain wheel has to **pan** once zoomed in, not zoom. Mapping it to
+  zoom leaves the reader magnified with no way to reach the rest of the
+  figure — a two-finger scroll is how anyone expects to move around a
+  magnified image.
+* A drag on an `<img>` is the browser's **native image drag** unless
+  both `draggable="false"` and `preventDefault()` on `pointerdown` say
+  otherwise. The pointer stream stops, a ghost thumbnail follows the
+  cursor, and the pan never starts. Synthetic PointerEvents in a test
+  do not reproduce this — it only shows up under a real drag.
 
 The window takes its `aspect-ratio` from the image's own dimensions,
 set by `paper.js` when the figure opens. That indirection is load

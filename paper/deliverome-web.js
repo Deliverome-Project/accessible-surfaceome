@@ -162,8 +162,9 @@
     '<button class="figure-lightbox__nav figure-lightbox__next" type="button" aria-label="Next figure">&#8250;</button>' +
     '<figure class="figure-lightbox__inner">' +
     '<div class="figure-lightbox__viewport">' +
-    '<img alt="" />' +
-    '<p class="figure-lightbox__hint">Pinch or scroll to zoom</p>' +
+    '<img alt="" draggable="false" />' +
+    '<p class="figure-lightbox__hint">Pinch to zoom · drag to pan</p>' +
+    '<button class="figure-lightbox__reset" type="button">Reset zoom</button>' +
     "</div>" +
     '<figcaption></figcaption>' +
     '<p class="figure-lightbox__counter"></p>' +
@@ -245,15 +246,28 @@
   }
 
   /* A trackpad pinch arrives as a wheel event with ctrlKey set — that
-   * is the only signal browsers give for it. A plain wheel zooms too:
-   * there is nothing to scroll inside the window, and a reader who
-   * scrolls over a figure means to look closer. */
+   * is the only signal browsers give for it.
+   *
+   * A PLAIN wheel means different things depending on what the reader
+   * is looking at. Zoomed in, a two-finger scroll is how anyone expects
+   * to move around a magnified image, so it pans; mapping it to zoom
+   * instead leaves the reader magnified with no way to reach the rest
+   * of the figure. At rest there is nothing to pan, and a reader who
+   * scrolls over a figure means to look closer, so it zooms. */
   viewport.addEventListener(
     "wheel",
     function (e) {
       e.preventDefault();
       var p = pointIn(e);
-      zoomAt(p[0], p[1], Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)));
+      if (e.ctrlKey) {
+        zoomAt(p[0], p[1], Math.exp(-e.deltaY * 0.01));
+      } else if (scale > MIN_SCALE) {
+        tx -= e.deltaX;
+        ty -= e.deltaY;
+        applyTransform();
+      } else {
+        zoomAt(p[0], p[1], Math.exp(-e.deltaY * 0.0015));
+      }
     },
     { passive: false }
   );
@@ -264,7 +278,25 @@
   var pinchStart = null;
   var panned = false;
 
+  /* An explicit way out, because the other two are both invisible:
+   * double-click is a guess, and Escape is a keyboard reader's reflex
+   * that nobody on a trackpad thinks to try. Shown only while zoomed. */
+  var resetBtn = overlay.querySelector(".figure-lightbox__reset");
+  resetBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    resetZoom();
+  });
+
   viewport.addEventListener("pointerdown", function (e) {
+    /* The reset button lives inside the window, so it would otherwise
+     * be swallowed by the pan gesture below. */
+    if (e.target.closest(".figure-lightbox__reset")) return;
+    /* Without this a drag on an <img> becomes the browser's native
+     * image drag: the pointer stream stops, a ghost thumbnail follows
+     * the cursor, and the pan never happens. `draggable="false"` on the
+     * image covers the same ground; both are cheap and the failure is
+     * silent, so keep them. */
+    e.preventDefault();
     points[e.pointerId] = { x: e.clientX, y: e.clientY };
     panned = false;
     if (Object.keys(points).length === 1 && scale > MIN_SCALE) {
