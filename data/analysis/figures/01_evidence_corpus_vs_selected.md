@@ -61,7 +61,7 @@ The clearest signal is `low` collapsing from 60% to 11%: sparse literature
 produces *weak* calls, not negative ones — the `no` share is roughly flat
 across strata (17–34%). Canonical rises 1% → 46% over the same range.
 
-Tier colours match Figure 5a and Supp S13. A tier name carrying a different
+Tier colours match Figure 5a and Supp S14. A tier name carrying a different
 colour across figures is exactly the inconsistency a reviewer caught on S11,
 so the three share one map.
 
