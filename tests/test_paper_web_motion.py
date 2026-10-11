@@ -508,16 +508,18 @@ def test_lightbox_never_scrolls() -> None:
     )
 
 
-def test_lightbox_image_can_actually_shrink() -> None:
+def test_lightbox_figure_area_can_actually_shrink() -> None:
     """A flex item defaults to `min-height: auto`, which refuses to go
     below its intrinsic size — the usual reason a max-height on a
-    flexbox image appears to do nothing at all."""
+    flexbox image appears to do nothing at all. The figure's window is
+    what shrinks now; the image fills it and is transformed inside."""
     css = _strip_comments(WEB_CSS.read_text())
-    img = re.search(r"\.figure-lightbox__inner img\s*\{([^}]*)\}", css)
+    vp = re.search(r"\.figure-lightbox__viewport\s*\{([^}]*)\}", css)
+    assert vp, "no figure viewport rule"
+    assert re.search(r"min-height:\s*0", vp.group(1)), "figure area cannot shrink"
+    img = re.search(r"\.figure-lightbox__viewport img\s*\{([^}]*)\}", css)
     assert img, "no lightbox image rule"
-    body = img.group(1)
-    assert re.search(r"min-height:\s*0", body), "image cannot shrink to fit"
-    assert "object-fit: contain" in body, "image would distort when shrunk"
+    assert "object-fit: contain" in img.group(1), "image would distort"
 
 
 def test_lightbox_shows_the_whole_legend() -> None:
@@ -538,17 +540,45 @@ def test_lightbox_shows_the_whole_legend() -> None:
     )
 
 
-def test_clicking_the_figure_zooms_rather_than_dismissing() -> None:
-    """The figure shares the screen with its legend, so it needs a way to
-    reclaim the whole screen — and the overlay's dismiss-on-click would
-    otherwise swallow that gesture."""
-    js = WEB_JS.read_text()
-    assert "is-zoomed" in js
-    assert "e.target === imgEl" in js, "the image click is not intercepted"
+def test_figure_zooms_inside_its_own_frame() -> None:
+    """Zooming happens within the figure's window, so the panel keeps its
+    shape and the legend stays put and readable — rather than the figure
+    popping out to fill the viewport, which is a different gesture."""
     css = _strip_comments(WEB_CSS.read_text())
-    assert ".figure-lightbox.is-zoomed figcaption" in css, (
-        "zooming does not hide the legend, so it reclaims no space"
+    vp = re.search(r"\.figure-lightbox__viewport\s*\{([^}]*)\}", css)
+    assert vp, "no figure viewport"
+    assert "overflow: hidden" in vp.group(1), (
+        "the viewport is not a window, so a scaled image would escape it"
     )
+    assert "touch-action: none" in vp.group(1), (
+        "the browser will claim pinch for page zoom before the handler sees it"
+    )
+    assert ".figure-lightbox.is-zoomed figcaption" not in css, (
+        "the old pop-out zoom (which hid the legend) is still present"
+    )
+
+
+def test_pinch_and_wheel_both_zoom() -> None:
+    """A trackpad pinch reaches the page only as a ctrl+wheel event."""
+    js = WEB_JS.read_text()
+    assert 'addEventListener(\n    "wheel"' in js or '"wheel"' in js
+    assert "passive: false" in js, "a passive wheel listener cannot preventDefault"
+    assert "pointerdown" in js and "Math.hypot" in js, "no two-finger pinch"
+
+
+def test_zoom_keeps_the_point_under_the_cursor() -> None:
+    """Zooming about the centre drifts whatever you were looking at off
+    screen, which is what makes a zoom feel broken."""
+    js = WEB_JS.read_text()
+    assert "function zoomAt(" in js
+    assert "px - ((px - tx) * next) / scale" in js
+
+
+def test_panning_does_not_dismiss_the_lightbox() -> None:
+    """A drag that ends on the image fires a click too, and the overlay
+    dismisses on click."""
+    js = WEB_JS.read_text()
+    assert "if (panned || scale > MIN_SCALE) return;" in js
 
 
 def test_zoom_resets_between_figures() -> None:
@@ -556,4 +586,29 @@ def test_zoom_resets_between_figures() -> None:
     the previous one's zoom."""
     js = WEB_JS.read_text()
     opened = js[js.index('overlay.classList.add("is-open")'):][:400]
-    assert 'remove("is-zoomed")' in opened
+    assert "resetZoom();" in opened
+
+
+def test_figure_window_gets_its_shape_from_the_image() -> None:
+    """Without a shape of its own the window is sized BY the image, then
+    shrinks to make room for the legend — and the image, whose
+    `max-height: 100%` resolves against a height derived from itself,
+    keeps its original size and is clipped top and bottom."""
+    js = WEB_JS.read_text()
+    assert "setViewportRatio(" in js
+    assert "aspectRatio" in js
+    css = _strip_comments(WEB_CSS.read_text())
+    vp = re.search(r"\.figure-lightbox__viewport\s*\{([^}]*)\}", css)
+    assert vp and "min-height: 0" in vp.group(1)
+    img = re.search(r"\.figure-lightbox__viewport img\s*\{([^}]*)\}", css)
+    assert img, "no lightbox image rule"
+    # Absolutely filling a window that has its own shape is what removes
+    # the circular dependency.
+    assert "position: absolute" in img.group(1)
+    assert "object-fit: contain" in img.group(1)
+
+
+def test_panning_cannot_strand_the_reader_off_the_figure() -> None:
+    js = WEB_JS.read_text()
+    assert "function clampPan()" in js
+    assert "Math.min(0, Math.max(w * (1 - scale), tx))" in js

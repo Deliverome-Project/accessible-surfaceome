@@ -524,25 +524,72 @@ td p:first-child strong { color: var(--maroon-dark); }
   padding: clamp(0.9rem, 2vw, 1.4rem);
 }
 
-.figure-lightbox__inner img {
-  display: block;
-  /* `min-height: 0` is the load-bearing line. A flex item's default
-   * `min-height: auto` refuses to shrink below its intrinsic content
-   * size, so without it a tall figure simply overflows the box it was
-   * just told to fit inside — the usual reason a flexbox "max-height"
-   * appears to do nothing. */
-  flex: 1 1 auto;
+/* The figure's area in the panel. Fixed by the flex layout — the panel
+ * never changes shape — and the image is scaled and panned INSIDE it.
+ * `overflow: hidden` is what makes it a window rather than a picture.
+ *
+ * `touch-action: none` stops the browser claiming pinch and drag for
+ * page zoom and scrolling before the handlers see them. */
+.figure-lightbox__viewport {
+  /* The window the figure is scaled and panned inside. Its SHAPE comes
+   * from an `aspect-ratio` that paper.js sets from the image's natural
+   * dimensions when the figure opens.
+   *
+   * That indirection is doing real work. The image cannot size this box
+   * itself: left in flow it gives the box its own height, the box then
+   * shrinks to make room for the legend, and the image — whose
+   * `max-height: 100%` resolves against a height that was derived from
+   * it — keeps its original size and overflows, so the figure is
+   * clipped top and bottom. Giving the box a definite shape of its own
+   * breaks that circularity: the box shrinks, and the absolutely
+   * positioned image inside simply fills whatever is left. */
+  flex: 0 1 auto;
   min-height: 0;
-  max-height: 100%;
-  max-width: 100%;
-  width: auto;
-  /* Shrinking is done by the layout, so the image must letterbox
-   * inside whatever box it ends up with rather than distort. */
-  object-fit: contain;
-  object-position: center top;
-  margin-inline: auto;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
   border-radius: 8px;
+  touch-action: none;
+}
+
+.figure-lightbox__viewport img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Pan/zoom maths is in the image's own box, measured from its
+   * top-left — see the controller in deliverome-web.js. */
+  transform-origin: 0 0;
   cursor: zoom-in;
+}
+
+.figure-lightbox__viewport.is-zoomed img {
+  cursor: grab;
+}
+
+.figure-lightbox__viewport.is-panning img {
+  cursor: grabbing;
+}
+
+/* A hint, shown until the reader zooms for the first time. */
+.figure-lightbox__hint {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  margin: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(31, 23, 24, 0.55);
+  color: #fff;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.figure-lightbox__viewport.is-zoomed .figure-lightbox__hint {
+  opacity: 0;
 }
 
 .figure-lightbox__inner figcaption {
@@ -958,41 +1005,11 @@ html {
   transform: none;
 }
 
-/* ── Zoomed: the figure alone, on the whole screen ──────────────
- *
- * Fitting a figure ABOVE its legend necessarily costs the figure half
- * the screen. Clicking the figure trades the legend away and gives the
- * space back. Sized to the viewport rather than to the image's natural
- * pixels on purpose: most figures here are SVG, whose intrinsic size is
- * a viewBox a few hundred units wide, so "natural size" would zoom most
- * of them OUT. */
-.figure-lightbox.is-zoomed {
-  padding: 0.5rem;
-}
-
-.figure-lightbox.is-zoomed .figure-lightbox__inner {
-  max-width: none;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  background: transparent;
-  border-radius: 0;
-}
-
-.figure-lightbox.is-zoomed .figure-lightbox__inner img {
-  width: 100%;
-  height: 100%;
-  max-height: none;
-  object-position: center;
-  border-radius: 0;
-  cursor: zoom-out;
-}
-
-.figure-lightbox.is-zoomed figcaption,
-.figure-lightbox.is-zoomed .figure-lightbox__counter {
-  display: none;
-}
-
+/* Zooming happens INSIDE the figure's window (see
+ * .figure-lightbox__viewport above), so the panel itself never changes
+ * shape and the legend stays put and readable. An earlier version
+ * popped the figure out to fill the whole viewport and hid the legend,
+ * which is a different gesture than zooming into the figure. */
 /* ── Contents rail ────────────────────────────────────────────── */
 
 /* The rail is fixed-position, so on load it sits beside the title band

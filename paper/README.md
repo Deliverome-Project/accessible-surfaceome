@@ -124,16 +124,25 @@ legend, so nothing in the lightbox scrolls. The overlay is
   a `max-height` on a flexbox image appears to do nothing.
   `object-fit: contain` keeps it from distorting as it shrinks.
 
-Fitting a figure above a long legend necessarily costs the figure half
-the screen, so **clicking the figure zooms it**: the legend is hidden
-and the image takes the whole viewport (~3.4x the area on the
-longest-legend figure in this manuscript). Clicking again returns;
-Escape steps out of zoom before it closes the lightbox; opening another
-figure always starts fitted.
+**The figure zooms inside its own window.** Pinch (or scroll) over the
+figure to magnify it up to 8x within the frame it already occupies —
+the panel keeps its shape and the legend stays exactly where it is.
+Drag to pan, double-click to go in or back out, Escape steps out of
+zoom before it closes the lightbox, and opening another figure always
+starts fitted.
 
-The zoom is sized to the **viewport**, not to the image's natural
-pixels. Most figures here are SVG whose intrinsic size is a viewBox a
-few hundred units wide, so "natural size" would zoom most of them *out*.
+The window takes its `aspect-ratio` from the image's own dimensions,
+set by `paper.js` when the figure opens. That indirection is load
+bearing: left to size the window itself, the image gives the window its
+height, the window then shrinks to make room for the legend, and the
+image — whose `max-height: 100%` resolves against a height derived from
+it — keeps its original size and is clipped top and bottom. A window
+with a shape of its own breaks the circularity.
+
+Zoom is about the pointer, not the centre: zooming about the centre
+drifts whatever you were looking at off screen, which is what makes a
+zoom feel broken. Panning is clamped so the image always covers the
+window.
 
 Note that the overlay's dismiss-on-click would otherwise swallow the
 zoom gesture — the image click is intercepted before that fallthrough.

@@ -161,22 +161,167 @@
     '<button class="figure-lightbox__nav figure-lightbox__prev" type="button" aria-label="Previous figure">&#8249;</button>' +
     '<button class="figure-lightbox__nav figure-lightbox__next" type="button" aria-label="Next figure">&#8250;</button>' +
     '<figure class="figure-lightbox__inner">' +
+    '<div class="figure-lightbox__viewport">' +
     '<img alt="" />' +
+    '<p class="figure-lightbox__hint">Pinch or scroll to zoom</p>' +
+    "</div>" +
     '<figcaption></figcaption>' +
     '<p class="figure-lightbox__counter"></p>' +
     "</figure>";
   document.body.appendChild(overlay);
 
   var imgEl = overlay.querySelector("img");
-  imgEl.setAttribute("tabindex", "0");
-  imgEl.setAttribute("role", "button");
-  imgEl.setAttribute("aria-label", "Zoom figure");
-  imgEl.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" || e.key === " ") {
+  var viewport = overlay.querySelector(".figure-lightbox__viewport");
+
+  /* ── Pan and zoom, inside the figure's window ────────────────────
+   *
+   * The panel never changes shape; the image is scaled and translated
+   * within the fixed window above, so the legend stays where it is and
+   * stays readable. `transform-origin: 0 0` plus an image whose layout
+   * box fills the window means every number below is in one coordinate
+   * space: window pixels from its top-left corner.
+   */
+  var MIN_SCALE = 1;
+  var MAX_SCALE = 8;
+  var scale = 1;
+  var tx = 0;
+  var ty = 0;
+
+  function setViewportRatio(w, h) {
+    w = parseFloat(w);
+    h = parseFloat(h);
+    viewport.style.aspectRatio = w > 0 && h > 0 ? w + " / " + h : "";
+  }
+
+  function clampPan() {
+    /* Keep the scaled image covering the box it occupies unzoomed, so
+     * panning can never strand the reader on empty background. At scale
+     * 1 this pins it to 0,0 — which is also how a zoom-out recentres
+     * itself. Measured on the IMAGE, not the window: the image is
+     * centred inside the window and letterboxed by object-fit, so the
+     * two boxes are not the same rectangle. */
+    var w = imgEl.offsetWidth;
+    var h = imgEl.offsetHeight;
+    tx = Math.min(0, Math.max(w * (1 - scale), tx));
+    ty = Math.min(0, Math.max(h * (1 - scale), ty));
+  }
+
+  function applyTransform() {
+    clampPan();
+    imgEl.style.transform =
+      "translate(" + tx + "px, " + ty + "px) scale(" + scale + ")";
+    viewport.classList.toggle("is-zoomed", scale > MIN_SCALE + 0.001);
+  }
+
+  function resetZoom() {
+    scale = 1;
+    tx = 0;
+    ty = 0;
+    imgEl.style.transform = "";
+    viewport.classList.remove("is-zoomed", "is-panning");
+  }
+
+  /* Zoom about a point, so the pixel under the cursor stays under it —
+   * zooming about the centre instead makes the thing you were looking
+   * at drift off-screen, which is what makes a zoom feel broken. */
+  function zoomAt(px, py, factor) {
+    var next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
+    if (next === scale) return;
+    tx = px - ((px - tx) * next) / scale;
+    ty = py - ((py - ty) * next) / scale;
+    scale = next;
+    applyTransform();
+  }
+
+  /* A pointer position in the image's own coordinate space. The window
+   * carries no transform, so its rect is stable to measure against;
+   * offsetLeft/Top then step in to the image's untransformed corner. */
+  function pointIn(e) {
+    var r = viewport.getBoundingClientRect();
+    return [
+      e.clientX - r.left - imgEl.offsetLeft,
+      e.clientY - r.top - imgEl.offsetTop,
+    ];
+  }
+
+  /* A trackpad pinch arrives as a wheel event with ctrlKey set — that
+   * is the only signal browsers give for it. A plain wheel zooms too:
+   * there is nothing to scroll inside the window, and a reader who
+   * scrolls over a figure means to look closer. */
+  viewport.addEventListener(
+    "wheel",
+    function (e) {
       e.preventDefault();
-      overlay.classList.toggle("is-zoomed");
+      var p = pointIn(e);
+      zoomAt(p[0], p[1], Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)));
+    },
+    { passive: false }
+  );
+
+  /* Pointer events rather than mouse+touch: one code path covers the
+   * trackpad drag, the mouse drag and the two-finger touch pinch. */
+  var points = {};
+  var pinchStart = null;
+  var panned = false;
+
+  viewport.addEventListener("pointerdown", function (e) {
+    points[e.pointerId] = { x: e.clientX, y: e.clientY };
+    panned = false;
+    if (Object.keys(points).length === 1 && scale > MIN_SCALE) {
+      viewport.setPointerCapture(e.pointerId);
+      viewport.classList.add("is-panning");
     }
   });
+
+  viewport.addEventListener("pointermove", function (e) {
+    var prev = points[e.pointerId];
+    if (!prev) return;
+    var ids = Object.keys(points);
+
+    if (ids.length >= 2) {
+      /* Two fingers: pinch about their midpoint. */
+      points[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var a = points[ids[0]];
+      var b = points[ids[1]];
+      var dist = Math.hypot(a.x - b.x, a.y - b.y);
+      var r = viewport.getBoundingClientRect();
+      var mid = [
+        (a.x + b.x) / 2 - r.left - imgEl.offsetLeft,
+        (a.y + b.y) / 2 - r.top - imgEl.offsetTop,
+      ];
+      if (pinchStart) zoomAt(mid[0], mid[1], dist / pinchStart);
+      pinchStart = dist;
+      panned = true;
+      return;
+    }
+
+    if (scale <= MIN_SCALE) return;
+    tx += e.clientX - prev.x;
+    ty += e.clientY - prev.y;
+    points[e.pointerId] = { x: e.clientX, y: e.clientY };
+    panned = true;
+    applyTransform();
+  });
+
+  function endPointer(e) {
+    delete points[e.pointerId];
+    if (Object.keys(points).length < 2) pinchStart = null;
+    if (!Object.keys(points).length) viewport.classList.remove("is-panning");
+  }
+  viewport.addEventListener("pointerup", endPointer);
+  viewport.addEventListener("pointercancel", endPointer);
+
+  /* Double-click is the keyboard-free way in and out. */
+  viewport.addEventListener("dblclick", function (e) {
+    e.preventDefault();
+    if (scale > MIN_SCALE) {
+      resetZoom();
+    } else {
+      var p = pointIn(e);
+      zoomAt(p[0], p[1], 2.5);
+    }
+  });
+
   var capEl = overlay.querySelector("figcaption");
   var closeBtn = overlay.querySelector(".figure-lightbox__close");
   var prevBtn = overlay.querySelector(".figure-lightbox__prev");
@@ -202,6 +347,15 @@
     if (lastFocused === null) lastFocused = document.activeElement;
     imgEl.setAttribute("src", source.getAttribute("src"));
     imgEl.setAttribute("alt", source.getAttribute("alt") || "");
+    /* Give the figure's window the shape of the figure, so it can be
+     * shrunk to fit beside the legend without clipping the image — see
+     * the .figure-lightbox__viewport comment in the stylesheet. The
+     * in-flow <img> already carries width/height attributes, so the
+     * ratio is known before this copy has decoded a single byte. */
+    setViewportRatio(
+      source.getAttribute("width") || source.naturalWidth,
+      source.getAttribute("height") || source.naturalHeight
+    );
     /* Carry the caption's rich markup, not just its text: the run-in
      * "Figure N. Title." is a <strong> and the caption ends with a
      * "Figure data and script." link to the figure's gist. Flattening
@@ -222,14 +376,14 @@
     overlay.classList.add("is-open");
     /* A new figure always starts fitted, never inheriting the previous
      * one's zoom — stepping through figures should be comparable. */
-    overlay.classList.remove("is-zoomed");
+    resetZoom();
     document.body.style.overflow = "hidden";
     closeBtn.focus();
   }
 
   function close() {
     overlay.classList.remove("is-open");
-    overlay.classList.remove("is-zoomed");
+    resetZoom();
     overlay.hidden = true;
     document.body.style.overflow = "";
     imgEl.removeAttribute("src");
@@ -317,13 +471,13 @@
    * caption is excluded so its text stays selectable. */
   overlay.addEventListener("click", function (e) {
     if (e.target.closest(".figure-lightbox__nav")) return;
-    /* The figure itself toggles zoom rather than dismissing. Fitting a
-     * figure above its legend costs it half the screen; this gives that
-     * space back for a look at the detail, then returns. Everything
-     * else in the overlay keeps dismissing as before. */
-    if (e.target === imgEl) {
-      overlay.classList.toggle("is-zoomed");
-      return;
+    /* Clicking the figure still dismisses — but not when the reader is
+     * working inside it. A drag that ends on the image fires a click
+     * too, so a pan would otherwise close the lightbox the moment you
+     * let go; and once zoomed in, a stray click shouldn't throw away
+     * the view you just framed. */
+    if (e.target === imgEl || e.target.closest(".figure-lightbox__viewport")) {
+      if (panned || scale > MIN_SCALE) return;
     }
     /* An in-page caption link (e.g. "Methods", href="#…") has to take the
      * reader to that section — but the overlay is a fixed layer sitting on
@@ -343,8 +497,8 @@
     if (e.key === "Escape") {
       /* Step back out of zoom first: Escape should undo the last thing
        * the reader did, not two things at once. */
-      if (overlay.classList.contains("is-zoomed")) {
-        overlay.classList.remove("is-zoomed");
+      if (scale > MIN_SCALE) {
+        resetZoom();
       } else {
         close();
       }
