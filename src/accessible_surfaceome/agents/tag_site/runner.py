@@ -437,6 +437,12 @@ def attach_source_pmids(
             (sid for quote, sid in spans if quote_supported(site.supporting_quote, quote)),
             None,
         )
+        if source_id:
+            # Keep the accession even when there is no PMID. Without it a
+            # DOI-only preprint published as the bare word "preprint", naming
+            # nothing a reader could look up — and the repo's citation rule is
+            # that a cited paper must be one click from its source.
+            site.supporting_source_id = source_id
         paper = papers_by_id.get(source_id) if source_id else None
         pmid = getattr(paper, "pmid", None)
         if pmid:
@@ -768,6 +774,17 @@ def run_tag_site_agent(
     return rank_sites(result)
 
 
+def _citation_label(source_id: str) -> str:
+    """A human citation from an accession: "DOI 10.1101/x", "PMC PMC123".
+
+    Falls back to "preprint" only when there is genuinely no identifier, which
+    is the one case that word was ever meant for."""
+    if not source_id:
+        return "preprint"
+    prefix, _, rest = source_id.partition(":")
+    return f"{prefix} {rest}" if rest else source_id
+
+
 def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str, Any]]:
     """Convert to the viewer's ``literature_retrieved`` TaggedSite shape
     (viewer/lib/tag-sites-types.ts). Agent-only fields (validation_level,
@@ -794,8 +811,15 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
                 }
             )
         elif s.supporting_quote:
-            # Preprint / DOI-only citation with a quote but no PMID.
-            sources.append({"citation": "preprint", "claim": s.supporting_quote})
+            # No PMID — a preprint, or a record NCBI does not index. Cite the
+            # accession the pipeline resolved; "preprint" on its own identifies
+            # nothing, and 25 published refs across 24 genes said exactly that.
+            acc = s.supporting_source_id or ""
+            sources.append({
+                "source_id": acc or None,
+                "citation": _citation_label(acc),
+                "claim": s.supporting_quote,
+            })
 
         site_id = f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit"
         if site_id in by_id:

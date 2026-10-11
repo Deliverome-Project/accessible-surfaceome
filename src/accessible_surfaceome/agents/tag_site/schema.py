@@ -158,6 +158,15 @@ class TagSiteProposal(BaseModel):
     supporting_pmid: int | None = Field(
         default=None, description="PMID of the supporting paper when one exists (grounds the citation)."
     )
+    supporting_source_id: str = Field(
+        default="",
+        description=(
+            "Filled in by the pipeline: the cited source's accession "
+            '("PMID:9334225", "PMC:PMC6199259", "DOI:10.1101/..."). It is what '
+            "identifies a source that has no PMID — a preprint used to publish "
+            "as the bare word \"preprint\", which names nothing a reader can look up."
+        ),
+    )
     supporting_clip_id: str = Field(
         default="",
         description='The [Ln] id of the ONE ledger line this site is grounded in, e.g. "L3".',

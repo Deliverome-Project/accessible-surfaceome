@@ -23,9 +23,10 @@ import typing
 from pathlib import Path
 
 from accessible_surfaceome.agents.tag_site.prompt import (
-    _CODE_SET,
-    _PIPELINE_SET,
     SYSTEM_PROMPT,
+    _CODE_SET,
+    _PIPELINE_INTERNAL,
+    _PIPELINE_SET,
     format_output_contract,
 )
 from pydantic import BaseModel
@@ -41,7 +42,9 @@ def _model_supplied(model: type[BaseModel]) -> list[str]:
     return [
         name
         for name in model.model_fields
-        if name not in _PIPELINE_SET and name not in _CODE_SET
+        if name not in _PIPELINE_SET
+        and name not in _CODE_SET
+        and name not in _PIPELINE_INTERNAL
     ]
 
 
@@ -735,3 +738,26 @@ def test_the_ledger_renders_citable_ids() -> None:
     text = format_evidence_ledger(ev)
     assert "[L1]" in text and "[L2]" in text
     assert "supporting_clip_id" in text
+
+
+def test_pipeline_internal_fields_never_reach_the_prompt() -> None:
+    """A field the model is never shown must not appear in the prompt TEXT.
+
+    The closing "set by the pipeline" sentence is prompt text, so naming a field
+    there changes prompt_sha — and a changed sha makes every record written
+    under the old one stale by the repo's own resume rule. Adding
+    `supporting_source_id` to that list once invalidated 1,835 already-run genes
+    (~$1,000 of re-runs) purely to tell the model about a field it cannot emit.
+
+    `_PIPELINE_INTERNAL` is the category that keeps the two concerns apart:
+    skipped from the contract like `_CODE_SET`, absent from its prose."""
+    from accessible_surfaceome.agents.tag_site.prompt import (
+        _PIPELINE_INTERNAL,
+        SYSTEM_PROMPT,
+    )
+
+    for name in _PIPELINE_INTERNAL:
+        assert name not in SYSTEM_PROMPT, (
+            f"{name!r} reached the prompt text; that changes prompt_sha and "
+            f"marks every already-run gene stale"
+        )
