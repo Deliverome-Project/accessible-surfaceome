@@ -133,3 +133,36 @@ test("literature sits above screen-validated", () => {
   assert.ok(lit >= 0 && screen >= 0, "both sections should render");
   assert.ok(lit < screen, "Literature-validated must come before Screen-validated");
 });
+
+test("published non-surface positions are shown, not dropped", () => {
+  const html = render({
+    has_data: true,
+    gene_symbol: "ABCC1",
+    uniprot_acc: "P33527",
+    prompt_sha: "abc",
+    sites: [litSite],
+    literature_other_positions: [
+      { residue: 271, kind: "intracellular", note: "HA at 271 is intracellular by IF; protein functional" },
+      { residue: 127, kind: "abrogates_function", note: "insertion abrogated etoposide resistance" },
+    ],
+  });
+  assert.ok(html.includes("Published, not surface sites (2)"), "section missing");
+  assert.ok(html.includes("271") && html.includes("127"), "residues not listed");
+  assert.ok(html.includes("Intracellular"), "intracellular badge missing");
+  assert.ok(html.includes("Abrogates function"), "abrogating badge missing");
+});
+
+test("a gene with ONLY non-surface positions still renders the card", () => {
+  const html = render({
+    has_data: false,
+    gene_symbol: "X",
+    uniprot_acc: "Q0",
+    sites: [],
+    literature_other_positions: [{ residue: 99, kind: "intracellular", note: "" }],
+  });
+  assert.ok(
+    !html.includes("No tag-site suggestions"),
+    "a gene with published non-surface positions is not an empty gene",
+  );
+  assert.ok(html.includes("Published, not surface sites (1)"));
+});

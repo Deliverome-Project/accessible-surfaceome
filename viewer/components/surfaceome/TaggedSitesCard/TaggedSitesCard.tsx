@@ -6,6 +6,7 @@ import { SectionCard } from "../SectionCard/SectionCard";
 import type {
   EvidenceSource,
   IsoformTagPin,
+  OtherPosition,
   TaggedSite,
   TaggedSitesFile,
 } from "../../../lib/tag-sites-types";
@@ -468,6 +469,70 @@ const DET_COLUMNS: Column[] = [
   { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
 ];
 
+const OTHER_KIND: Record<string, { text: string; cls: string; title: string }> = {
+  intracellular: {
+    text: "Intracellular",
+    cls: "badgeSurface",
+    title: "A published insertion the protein tolerates, but facing the cytoplasm — usable for an intracellular label or a snorkel, not for surface display.",
+  },
+  abrogates_function: {
+    text: "Abrogates function",
+    cls: "badgeWeak",
+    title: "The paper reports that inserting a tag here destroyed the protein's function. A known-bad position.",
+  },
+  other: {
+    text: "Other",
+    cls: "badgeNone",
+    title: "Published, but neither tolerated-intracellular nor function-abrogating.",
+  },
+};
+
+/** Published insertion points that are NOT surface tag sites.
+ *
+ *  A scanning paper names positions the agent must not propose as surface
+ *  sites, and they used to be dropped on the floor: a tolerated insertion
+ *  facing the cytoplasm is the right answer for a snorkel or an intracellular
+ *  label, and a position a paper reports as abrogating function is evidence
+ *  about a site NOT to use. Both are worth more per character than most of
+ *  what a candidate table carries. */
+function OtherPositionsTable({ positions }: { positions: OtherPosition[] }) {
+  const sorted = [...positions].sort((a, b) => a.residue - b.residue);
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th scope="col">Residue</th>
+            <th scope="col">Finding</th>
+            <th scope="col">What the paper reports</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((o, i) => {
+            const spec = OTHER_KIND[o.kind] ?? OTHER_KIND.other;
+            return (
+              <tr key={`${o.residue}-${o.kind}-${i}`}>
+                <td className={styles.residue}>{o.residue}</td>
+                <td>
+                  <span
+                    className={`${styles.badge} ${styles[spec.cls]}`}
+                    title={spec.title}
+                  >
+                    {spec.text}
+                  </span>
+                </td>
+                <td className={styles.evidence}>
+                  {o.note || <span className={styles.muted}>—</span>}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /** Compact table for per-isoform CONTROL pins (e.g. Tedman screen): each row is
  *  one alternative isoform that carries the same N-terminal control tag, with its
  *  own measured surface expression. These also render on the Isoforms tab's
@@ -552,6 +617,10 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   const isoformCtrl = (taggedSites?.isoform_pins ?? []).filter(
     (p) => p.classification === "control",
   );
+  // Published positions that are not surface sites. Per-gene, not per-site —
+  // they are reasons NOT to tag somewhere, so they have no site row.
+  const otherPositions = taggedSites?.literature_other_positions ?? [];
+
   // The agent stamps prompt_sha on every result INCLUDING an empty one, so its
   // presence is the claim "this gene was searched" — which is what makes a zero
   // reportable instead of invisible.
@@ -572,6 +641,7 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   // threw away the one thing that gene has to say.
   if (
     lit.length + det.length + screenSites.length + isoformCtrl.length === 0 &&
+    otherPositions.length === 0 &&
     !searched
   ) {
     return (
@@ -644,6 +714,21 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
         <>
           <h3 className={styles.subhead}>Computed candidates ({det.length})</h3>
           <SortableTable sites={det} columns={DET_COLUMNS} />
+        </>
+      ) : null}
+
+      {otherPositions.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>
+            Published, not surface sites ({otherPositions.length})
+          </h3>
+          <p className={styles.lede}>
+            Insertion points named in the literature that are not surface tag
+            sites — tolerated but facing the cytoplasm (use these for an
+            intracellular label or a snorkel), or reported to abrogate function
+            (positions to avoid).
+          </p>
+          <OtherPositionsTable positions={otherPositions} />
         </>
       ) : null}
     </SectionCard>
