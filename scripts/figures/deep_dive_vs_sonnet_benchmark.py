@@ -54,7 +54,7 @@ _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
 _TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
     # MUST match deep_dive_final_categories (Fig 5a) and
-    # triage_vs_deep_dive_reason (Supp S13), which both use
+    # triage_vs_deep_dive_reason (Supp S14), which both use
     # canonical=green / likely=teal. This figure had them swapped
     # "for contrast" — a local call that made the same tier name carry
     # different colours across three figures in one paper, which a

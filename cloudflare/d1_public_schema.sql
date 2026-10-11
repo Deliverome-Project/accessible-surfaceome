@@ -1006,7 +1006,7 @@ CREATE INDEX IF NOT EXISTS idx_topology_public_cohort_version
 -- ---------------------------------------------------------------------------
 -- deep_dive_replicate — reproducibility replicates (public D1 only).
 -- Re-annotations of a random sample of deep-dive genes, kept for the
--- run-to-run reproducibility analysis (Supplementary Figure 15). These are
+-- run-to-run reproducibility analysis (Supplementary Figure 16). These are
 -- NOT the published records: surface_annotation stays the only source of
 -- /v1/genes/{SYMBOL}, and nothing in the catalog or viewer reads this table.
 -- The Worker serves it API-only under /v1/replicates and

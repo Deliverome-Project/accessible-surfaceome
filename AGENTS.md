@@ -209,7 +209,7 @@ costs ~17 queries on the shared public D1; never raise it during business
 hours.
 
 **Reproducibility replicates are not published records.** Public D1
-`deep_dive_replicate` holds the Supplementary Figure 15 study
+`deep_dive_replicate` holds the Supplementary Figure 16 study
 (`deep_dive_concordance_v1`: 50 random deep-dive genes × `published_snapshot`
 / `full_rerun` / `fixed_evidence_replay`), loaded once from the frozen bundle
 `data/processed/deep_dive_concordance_v1/` by

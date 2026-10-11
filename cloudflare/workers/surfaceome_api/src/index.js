@@ -432,7 +432,7 @@ async function dataReleaseRow(env, whereSql, params) {
 
 // --- Reproducibility replicates (API-only) ---
 // Genes re-annotated for the run-to-run reproducibility analysis
-// (Supplementary Figure 15), served from public D1 `deep_dive_replicate`.
+// (Supplementary Figure 16), served from public D1 `deep_dive_replicate`.
 // These are NOT the published records: surface_annotation stays the only
 // source of /v1/genes/{SYMBOL}, nothing in the catalog or viewer reads this
 // table, and every response is labelled `reproducibility_replicate: true`
@@ -444,7 +444,7 @@ const REPLICATE_KINDS = ["published_snapshot", "full_rerun", "fixed_evidence_rep
 const REPLICATE_STUDY_OK = /^[a-z0-9_]{1,64}$/;
 const REPLICATE_NOTICE =
   "Reproducibility replicate, not the published record. Kept for the run-to-run " +
-  "reproducibility analysis (Supplementary Figure 15); the published record is " +
+  "reproducibility analysis (Supplementary Figure 16); the published record is " +
   "/v1/genes/{symbol}.";
 const REPLICATE_KIND_NOTES = {
   published_snapshot: "The published record exactly as served when the study ran (the comparator); the live record may since have been republished.",
@@ -3029,7 +3029,7 @@ const V1_ENDPOINTS = [
   { group: "History", method: "GET", path: "/v1/releases", summary: "Numbered data releases with their GitHub tag and Zenodo version DOI" },
   { group: "History", method: "GET", path: "/v1/releases/{version}", summary: "One release: metadata + the revision of every gene in it" },
   { group: "History", method: "GET", path: "/v1/releases/{version}/genes/{symbol}", summary: "A gene as it was in that release; also /evidence and .md" },
-  { group: "Reproducibility", method: "GET", path: "/v1/replicates", summary: "Reproducibility replicates (NOT published records): each study with its replicate kinds and genes — e.g. deep_dive_concordance_v1, the 50-gene run-to-run study behind Supplementary Figure 15" },
+  { group: "Reproducibility", method: "GET", path: "/v1/replicates", summary: "Reproducibility replicates (NOT published records): each study with its replicate kinds and genes — e.g. deep_dive_concordance_v1, the 50-gene run-to-run study behind Supplementary Figure 16" },
   { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates", summary: "The reproducibility replicates held for one gene (404 if none), with links to each" },
   { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates/{study}/{kind}", summary: "One replicate SurfaceomeRecord in full (evidence included), wrapped with reproducibility_replicate: true; kind ∈ published_snapshot · full_rerun · fixed_evidence_replay" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },

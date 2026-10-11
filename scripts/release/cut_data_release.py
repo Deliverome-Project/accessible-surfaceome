@@ -270,7 +270,7 @@ def main() -> None:
     if not token:
         print("ZENODO_TOKEN unset — upload the tarball as a new version by hand.")
         return
-    # The Supp Fig 15 reproducibility replicates ship with every release (the
+    # The Supp Fig 16 reproducibility replicates ship with every release (the
     # frozen study bundle; not published records).
     replicates = build_replicates_tarball(ROOT / "data/processed/deep_dive_concordance_v1", args.out_dir)
     with httpx.Client(timeout=900) as http:

@@ -310,7 +310,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "Reproducibility",
     blurb:
-      "Reproducibility replicates — NOT published records. For the run-to-run reproducibility analysis (Supplementary Figure 15), 50 deep-dive genes drawn at random were re-analysed; each is held three ways: the published record as served when the study ran (published_snapshot), a full from-scratch re-run with the same prompts (full_rerun), and a fixed-evidence replay that re-ran only the section builders and synthesizer on the published evidence (fixed_evidence_replay). Every response carries reproducibility_replicate: true and a link back to the published record, which stays at /v1/genes/{SYMBOL}. The same records are deposited on Zenodo.",
+      "Reproducibility replicates — NOT published records. For the run-to-run reproducibility analysis (Supplementary Figure 16), 50 deep-dive genes drawn at random were re-analysed; each is held three ways: the published record as served when the study ran (published_snapshot), a full from-scratch re-run with the same prompts (full_rerun), and a fixed-evidence replay that re-ran only the section builders and synthesizer on the published evidence (fixed_evidence_replay). Every response carries reproducibility_replicate: true and a link back to the published record, which stays at /v1/genes/{SYMBOL}. The same records are deposited on Zenodo.",
     endpoints: [
       {
         method: "GET",

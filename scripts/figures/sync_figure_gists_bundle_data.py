@@ -122,7 +122,7 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/figures/deep_dive_record_richness.tsv",
     ],
     "deep_dive_replicate_kappa": [
-        # Supp Fig S15 — published vs full re-run and published vs
+        # Supp Fig S16 — published vs full re-run and published vs
         # fixed-evidence replay, one row per gene per comparison. Built by
         # scripts/build/build_deep_dive_concordance_tsvs.py.
         "data/processed/figures/deep_dive_replicate_kappa.tsv",
@@ -152,7 +152,7 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/figures/surface_evidence_assay_types.tsv",
     ],
     "surfaceome_deterministic_features": [
-        # Per-gene deterministic features (Supp Fig 14).
+        # Per-gene deterministic features (Supp Fig 15).
         # Single pre-joined TSV built by build_figure_tsvs.py.
         "data/processed/figures/surfaceome_deterministic_features.tsv",
     ],

@@ -32,7 +32,7 @@ import httpx
 
 ZENODO_API = "https://zenodo.org/api"
 DATA_CONCEPT_RECID = "20805383"  # concept DOI 10.5281/zenodo.20805383
-# Reproducibility replicates (Supplementary Figure 15). Not published records —
+# Reproducibility replicates (Supplementary Figure 16). Not published records —
 # a frozen study bundle, deposited alongside every release from the one it
 # first ships in (a new version inherits the file; re-uploading an unchanged
 # bundle is byte-identical because the tarball is built deterministically).
