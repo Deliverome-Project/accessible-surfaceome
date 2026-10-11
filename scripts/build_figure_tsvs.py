@@ -1044,9 +1044,13 @@ def build_surface_evidence_assay_types(src: dict[str, pd.DataFrame]) -> pd.DataF
 
 
 BUILDERS: dict[str, callable] = {
-    "db_overlap_venn":               build_db_overlap_venn,
-    # Figure 1 is now an UpSet plot over the same five flags; same table.
+    # One builder, two live consumers: Figure 1 is an UpSet over the five
+    # native flags, and the Venn of the same five was demoted to a blog
+    # figure. The standalone ``db_overlap_venn`` slug was retired along with
+    # its generator — it emitted a third byte-identical copy of this table
+    # that nothing read.
     "db_overlap_upset":              build_db_overlap_venn,
+    "blog_db_overlap_venn":          build_db_overlap_venn,
     "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
     "db_correctness_by_class":       build_db_correctness_by_class,
     "db_correctness_overall":        build_db_correctness_overall,

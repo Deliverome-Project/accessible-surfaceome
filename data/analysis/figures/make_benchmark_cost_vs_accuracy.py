@@ -134,31 +134,39 @@ def _apply_brand_style() -> None:
 
 
 # Per-million-token prices used for the figure: in = input, out = output,
-# cr = cache read, cw = cache write. Entered 2026-05; the manuscript legend
-# calls them July 2026 list prices. Sonnet 5 is priced the same as
-# Sonnet 4.6 (its post-introductory rate, per the legend).
+# cr = cache read, cw = cache write. Verified 2026-10-11 against
+# https://platform.claude.com/docs/en/about-claude/pricing.
+#
+# Two corrections landed here together, for different reasons:
+#  * Opus 4.8 was carrying 15/75/1.50/18.75 — an exact four-way match for the
+#    retired Opus 4.1 row. It was copied forward from a claude-opus-4-7 entry
+#    that had the same problem. No Opus since 4.5 has been priced above 5/25.
+#  * Sonnet 5 was deliberately entered at Sonnet 4.6's rate, because that was
+#    the increase Anthropic had scheduled for 2026-09-01. The increase was
+#    cancelled and the 2/10 launch price became the standard price, so the
+#    legend sentence that explained the choice is gone too.
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-sonnet-5":   {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-opus-4-8":   {"in": 15.0, "out": 75.0,  "cr": 1.50, "cw": 18.75},
+    "claude-sonnet-5":   {"in": 2.00, "out": 10.00, "cr": 0.20, "cw": 2.50},
+    "claude-opus-4-8":   {"in": 5.00, "out": 25.00, "cr": 0.50, "cw": 6.25},
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01
 WHOLE_GENOME_N = 19_324  # protein-coding human genes with a valid HGNC + UniProt mapping
 
 # Per-cell label + Claude-orange sequential walk (light → dark = more-context cells).
 CELL_LABEL = {
-    ("claude-haiku-4-5",  "naive"):       "Haiku (naive)",
-    ("claude-haiku-4-5",  "ncbi"):        "Haiku (+ IDs)",
-    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku (+ IDs + PubMed)",
-    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku (+ IDs + web)",
+    ("claude-haiku-4-5",  "naive"):       "Haiku 4.5 (naive)",
+    ("claude-haiku-4-5",  "ncbi"):        "Haiku 4.5 (+ IDs)",
+    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku 4.5 (+ IDs + PubMed)",
+    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku 4.5 (+ IDs + web)",
     ("claude-sonnet-4-6", "naive"):       "Sonnet 4.6 (naive)",
     ("claude-sonnet-4-6", "ncbi"):        "Sonnet 4.6 (+ IDs)",
     ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet 4.6 (+ IDs + PubMed)",
     ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet 4.6 (+ IDs + web)",
     ("claude-sonnet-5",   "ncbi"):        "Sonnet 5 (+ IDs)",
-    ("claude-opus-4-8",   "naive"):       "Opus (naive)",
-    ("claude-opus-4-8",   "ncbi"):        "Opus (+ IDs)",
+    ("claude-opus-4-8",   "naive"):       "Opus 4.8 (naive)",
+    ("claude-opus-4-8",   "ncbi"):        "Opus 4.8 (+ IDs)",
 }
 CELL_COLOR = {
     ("claude-haiku-4-5",  "naive"):       "#f7d8c4",
@@ -190,8 +198,10 @@ CELL_LABEL_OFFSET = {
     ("claude-sonnet-4-6", "naive"):       (-10,  0),
     ("claude-sonnet-4-6", "ncbi"):        (-10,  3),
     # + IDs + PubMed is boxed in by + IDs, Sonnet 5 and + IDs + web: lift its
-    # label up-right on a leader, clear of every neighbour.
-    ("claude-sonnet-4-6", "pubmed_ncbi"): (14,  18),
+    # label up on a leader. It goes up-LEFT, not up-right: correcting the Opus
+    # price pulled Opus 4.8 (+ IDs) in from the right edge to ~$195, straight
+    # into the gap this label used to occupy.
+    ("claude-sonnet-4-6", "pubmed_ncbi"): (-14, 18),
     ("claude-sonnet-4-6", "web_ncbi"):    (10,   9),
     # Sonnet 5 (+ IDs) sits just below Sonnet 4.6 + IDs + PubMed: label
     # down-right on a leader.

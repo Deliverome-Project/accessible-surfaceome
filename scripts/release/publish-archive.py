@@ -98,7 +98,7 @@ REPO_ORIGIN = "https://github.com/Deliverome-Project/accessible-surfaceome"
 # FIGURE_PROVENANCE in scripts/embed_figure_gist_metadata.py — keep in
 # sync as new figure gists are minted.
 GIST_ORIGINS = [
-    "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",  # db_overlap_venn
+    "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",  # db_overlap_upset (Figure 1)
     # add more figure gists here as they're built and gain a slot in
     # FIGURE_PROVENANCE
 ]

@@ -75,7 +75,6 @@ READS_BUNDLED_TSV = [
     # mirror-sync only and intentionally absent from this list.
     "db_overlap_upset",
     "blog_db_overlap_venn",
-    "db_overlap_venn",
     "db_correctness_by_class",
     "benchmark_cost_vs_accuracy",
     # Supp S13 — deterministic-features 3×3 (MOCK: buckets are Sonnet verdicts
