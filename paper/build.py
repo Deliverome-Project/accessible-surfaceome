@@ -287,13 +287,18 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     # Panel markers, applied to the rendered HTML so the PDF and the web
     # edition get the identical treatment from one implementation.
     from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]
+    from figure_alt import add_figure_alt_text  # ty: ignore[unresolved-import]
     from lxml import html as _lx  # ty: ignore[unresolved-import]
 
     _tree = _lx.parse(str(html_path))
     _n = bold_panel_labels(_tree.getroot())
-    if _n:
+    _alt = add_figure_alt_text(_tree.getroot())
+    if _n or _alt:
         _tree.write(str(html_path), method="html", encoding="utf-8")
+    if _n:
         print(f"  emboldened {_n} panel marker(s) in figure legends")
+    if _alt:
+        print(f"  set alt text on {_alt} figure image(s)")
 
     _check_figure_links(str(html_path), "PDF build")
 
@@ -489,6 +494,7 @@ def build_web(
     )
     from lxml import html as lxml_html
     from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]
+    from figure_alt import add_figure_alt_text  # ty: ignore[unresolved-import]
     from web_assets import (  # ty: ignore[unresolved-import]
         FONT_HEAD_LINKS,
         REVEAL_BOOTSTRAP_SCRIPT,
@@ -733,6 +739,9 @@ def build_web(
     panels = bold_panel_labels(doc)
     if panels:
         print(f"  emboldened {panels} panel marker(s) in figure legends")
+    alts = add_figure_alt_text(doc)
+    if alts:
+        print(f"  set alt text on {alts} figure image(s)")
 
     _check_figure_links(doc, "web build")
 

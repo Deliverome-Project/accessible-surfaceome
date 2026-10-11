@@ -1,4 +1,4 @@
-"""Catch figure cross-references that never became links.
+"""Catch figure and table cross-references that never became links.
 
 ``filters/figures.lua`` turns "Figure 3" / "Figure S4" in the prose into
 links to the figure. When a reference does not match its patterns the
@@ -22,7 +22,8 @@ from typing import Any
 # anchored at a word boundary on the right: a reference glued to the
 # next word is exactly the failure this exists to catch.
 REFERENCE = re.compile(
-    r"\b((?:Supplementary |Appendix )?Figures?)\s+(S?\d+)([a-z](?:[^\w\s][a-z])?)?",
+    r"\b((?:Supplementary |Appendix )?(?:Figures?|Tables?))"
+    r"\s+(S?\d+)([a-z](?:[^\w\s][a-z])?)?",
     re.I,
 )
 

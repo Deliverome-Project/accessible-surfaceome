@@ -110,6 +110,23 @@ local function collect_figure_ids(elem)
     figure_ids["supplementary figure " .. supp] = elem.identifier
     return
   end
+  -- Tables share this index and this machinery. They are captioned the
+  -- same way, cited the same way, and were the last reference shape in
+  -- the paper still rendering as plain text while every figure around
+  -- them linked.
+  local supp_table = text:match("^supplementary table (%d+)")
+  if supp_table and elem.identifier ~= "" then
+    -- Same split as the figures: captions read "Supplementary Table 1"
+    -- and the prose says "Table S1".
+    figure_ids["table s" .. supp_table] = elem.identifier
+    figure_ids["supplementary table " .. supp_table] = elem.identifier
+    return
+  end
+  local plain_table = text:match("^(table %d+)")
+  if plain_table and elem.identifier ~= "" then
+    figure_ids[plain_table] = elem.identifier
+    return
+  end
   local key = text:match("^(appendix figure %d+)")
     or text:match("^(figure %d+)")
   if key and elem.identifier ~= "" then
@@ -226,6 +243,13 @@ local function head_match(s)
   return nil
 end
 
+-- Same shape for the table label. Kept separate from head_match
+-- rather than folded into LABEL_WORDS: that list feeds the figure
+-- lookup keys, and a table must never resolve against a figure anchor.
+local function table_head_match(s)
+  return s:match("^([%(%[]?)([Tt]ables?)$")
+end
+
 -- Same shape but for "Appendix" prefix word.
 local function appendix_head_match(s)
   return s:match("^([%(%[]?)([Aa]ppendix)$")
@@ -338,6 +362,40 @@ local function linkify_figure_refs(inlines)
             i = i + 5
             matched = true
           end
+        end
+      end
+    end
+
+    -- "Table N" / "Table SN" (3 inlines). Deliberately simpler than the
+    -- figure branch above: the draft cites tables one at a time, so
+    -- there is no run-collector here. If a "Tables S1, S2" ever appears
+    -- the build guard will say so rather than it slipping through.
+    if not matched
+        and i + 2 <= #inlines
+        and inlines[i].t == "Str"
+        and inlines[i + 1].t == "Space"
+        and inlines[i + 2].t == "Str" then
+      local prefix, tbl_word = table_head_match(inlines[i].text)
+      if tbl_word then
+        local key, label, suffix
+        local snum, ssuf = supp_tail_match(inlines[i + 2].text)
+        if snum then
+          key = "table s" .. snum
+          label = tbl_word .. " S" .. snum
+          suffix = ssuf
+        else
+          local num, suf, panel = tail_match(inlines[i + 2].text)
+          if num then
+            key = "table " .. num
+            label = tbl_word .. " " .. num .. (panel or "")
+            suffix = suf
+          end
+        end
+        local id = key and figure_ids[key]
+        if id then
+          emit_link_with_brackets(result, prefix, label, suffix, id)
+          i = i + 3
+          matched = true
         end
       end
     end

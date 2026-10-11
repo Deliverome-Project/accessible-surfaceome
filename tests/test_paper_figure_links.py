@@ -90,3 +90,19 @@ def test_supplementary_and_appendix_prefixes_are_recognised() -> None:
         "<p>see Supplementary Figure 12 and Appendix Figure 2 for detail</p>"
     )
     assert len(broken) == 2
+
+
+def test_table_references_are_checked_too() -> None:
+    """Tables are captioned and cited exactly like figures, and were the
+    last reference shape in the paper still rendering as plain text
+    while every figure around them linked."""
+    broken, _ = _check("<p>the taxonomy is given in Table S1 for reference</p>")
+    assert len(broken) == 1
+    assert "Table S1" in broken[0]
+
+
+def test_a_linked_table_reference_is_not_reported() -> None:
+    broken, panels = _check(
+        '<p>see <a href="#supplementary-table-1">Table S1</a> for the taxonomy</p>'
+    )
+    assert broken == [] and panels == []

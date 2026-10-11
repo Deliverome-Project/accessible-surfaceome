@@ -189,17 +189,31 @@ dead cross-reference ships silently. One did: the draft reads
 tokeniser saw `S4)Two`, and that reference was plain text in both the
 PDF and the web edition for several builds.
 
+Tables go through the same index and the same machinery — they are
+captioned the same way and cited the same way, and "Table S1" was the
+last reference shape in the paper still rendering as plain text while
+every figure around it linked. Panel-suffixed references ("Figure 4a")
+link to their figure, which is the only sensible target since there is
+no per-panel anchor.
+
 `paper/figure_links.py` now checks the rendered HTML — covering both
 outputs, and needing nothing but lxml, so it is tested in CI where the
 `paper` extra is not installed. A reference the filter should have
-linked and did not **fails the build**. Panel-suffixed references
-("Figure 4a") are listed as a note instead: `tail_match` takes a bare
-integer and declines them by design, and a deliberate choice should not
-read as a regression.
+linked and did not **fails the build**.
 
 When it fires, the reference is usually malformed in the `.docx` — a
 missing space after a bracket will do it — rather than a gap in the
 filter.
+
+### Figures carry alt text from their own legend
+
+Pandoc carries no alt text out of the `.docx`, so 22 of 27 images had
+no `alt` attribute at all — not empty, absent — and a screen reader
+announced nothing for almost every figure in either edition.
+`paper/figure_alt.py` sets it from the legend's lead sentence: already
+written, already copy-edited, and it cannot drift from the caption. An
+image that already has alt text keeps it, which is what leaves the
+title band's brand marks alone.
 
 ### Panel markers in legends are bold
 
