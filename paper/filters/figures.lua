@@ -231,9 +231,33 @@ local function appendix_head_match(s)
   return s:match("^([%(%[]?)([Aa]ppendix)$")
 end
 
--- Tail like "2", "2)", "2.", "2;". Returns (num, suffix) or nil.
+-- Tail like "2", "2)", "2.", "2;", and panel-suffixed forms "4a",
+-- "5b)", "6a-c". Returns (num, suffix, panel) or nil.
+--
+-- The panel letters ride along in the link TEXT while the link still
+-- points at the figure, which is the only sensible target: there is no
+-- per-panel anchor to aim at. Before this, a bare %d+ tail was the only
+-- shape that matched, so "Figure 4" was a link and "Figure 4a" two
+-- words later was not — an inconsistency readers notice.
+--
+-- Letters are limited to a-h: panels run out long before that, and a
+-- tighter class keeps an identifier like "4S" from being read as a
+-- panel reference.
 local function tail_match(s)
-  return s:match("^(%d+)([^%a%d]*)$")
+  local num, suffix = s:match("^(%d+)([^%a%d]*)$")
+  if num then return num, suffix, "" end
+  -- A range: "6a-c", "6a\u{2013}c)". The separator is any run of
+  -- non-ASCII-alphanumerics, spelled out as [^a-zA-Z0-9] rather than
+  -- [^%a%d]: %a follows the C locale, which can classify the bytes of
+  -- a multi-byte en dash as letters, and then the class matches
+  -- nothing and the whole reference falls through unlinked. That is
+  -- exactly what "Figure 6a\u{2013}c" did.
+  local n, p1, mid, p2, suf =
+    s:match("^(%d+)([a-h])([^a-zA-Z0-9]+)([a-h])([^a-zA-Z0-9]*)$")
+  if n then return n, suf, p1 .. mid .. p2 end
+  local n2, p, suf2 = s:match("^(%d+)([a-h])([^a-zA-Z0-9]*)$")
+  if n2 then return n2, suf2, p end
+  return nil
 end
 
 -- Supplementary tail: "S3", "S10)", "S4,". Returns (label, suffix) or
@@ -304,12 +328,13 @@ local function linkify_figure_refs(inlines)
       local prefix, app_word = appendix_head_match(inlines[i].text)
       local _, fig_word = head_match(inlines[i + 2].text)
       if app_word and fig_word and inlines[i + 2].text:sub(1, 1) ~= "(" then
-        local num, suffix = tail_match(inlines[i + 4].text)
+        local num, suffix, panel = tail_match(inlines[i + 4].text)
         if num then
           local key = "appendix figure " .. num
           local id = figure_ids[key]
           if id then
-            emit_link_with_brackets(result, prefix, app_word .. " " .. fig_word .. " " .. num, suffix, id)
+            emit_link_with_brackets(result, prefix,
+              app_word .. " " .. fig_word .. " " .. num .. (panel or ""), suffix, id)
             i = i + 5
             matched = true
           end
@@ -410,12 +435,13 @@ local function linkify_figure_refs(inlines)
         end
 
         if not matched then
-          local num, suffix = tail_match(inlines[i + 2].text)
+          local num, suffix, panel = tail_match(inlines[i + 2].text)
           if num then
             local key = "figure " .. num
             local id = figure_ids[key]
             if id then
-              emit_link_with_brackets(result, prefix, fig_word .. " " .. num, suffix, id)
+              emit_link_with_brackets(result, prefix,
+                fig_word .. " " .. num .. (panel or ""), suffix, id)
               i = i + 3
               matched = true
             end

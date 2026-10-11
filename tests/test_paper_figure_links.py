@@ -69,12 +69,20 @@ def test_the_contents_rail_is_not_checked() -> None:
 
 
 def test_panel_suffixed_references_are_reported_separately() -> None:
-    """figures.lua declines these by design (`tail_match` takes a bare
-    integer), so they must not fail the build — a deliberate choice
-    should not read as a regression."""
+    """These link to their figure now, so an unlinked one is a defect —
+    but it is kept in its own bucket because the cause differs from a
+    malformed reference and the build message should say which."""
     broken, panels = _check("<p>the split is clear (Figure 4a) and (Figure 6a-c)</p>")
     assert broken == []
     assert len(panels) == 2
+
+
+def test_a_linked_panel_reference_is_not_reported() -> None:
+    broken, panels = _check(
+        '<p>see <a href="#figure-4">Figure 4a</a> and'
+        ' <a href="#figure-6">Figure 6a-c</a></p>'
+    )
+    assert broken == [] and panels == []
 
 
 def test_supplementary_and_appendix_prefixes_are_recognised() -> None:

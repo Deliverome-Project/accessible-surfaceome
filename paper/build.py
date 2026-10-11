@@ -437,17 +437,15 @@ def _check_figure_links(doc_or_path: Any, label: str) -> None:
     from figure_links import find_unlinked_figure_refs  # ty: ignore[unresolved-import]
 
     broken, panels = find_unlinked_figure_refs(doc_or_path)
-    if panels:
-        print(
-            f"  note: {len(panels)} panel-suffixed reference(s) are not links "
-            f"({label}). figures.lua declines these by design:"
-        )
-        for entry in panels:
-            print(f"    {entry}")
-    if broken:
-        detail = "\n".join(f"    {entry}" for entry in broken)
+    # Panel-suffixed references ("Figure 4a") link to their figure too,
+    # so an unlinked one is now a defect rather than a design choice.
+    # They stay a separate bucket because the cause differs and the
+    # message should say which.
+    dead = broken + panels
+    if dead:
+        detail = "\n".join(f"    {entry}" for entry in dead)
         raise RuntimeError(
-            f"{len(broken)} figure reference(s) did not become links "
+            f"{len(dead)} figure reference(s) did not become links "
             f"({label}):\n{detail}\n"
             "  Either the reference is malformed in the .docx (a missing "
             "space after a bracket will do it) or figures.lua needs to "
