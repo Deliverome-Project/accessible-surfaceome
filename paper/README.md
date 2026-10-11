@@ -144,6 +144,16 @@ Two things about panning are easy to get wrong and fail silently:
   cursor, and the pan never starts. Synthetic PointerEvents in a test
   do not reproduce this — it only shows up under a real drag.
 
+**A tall figure puts its legend beside it.** The panel is wider than it
+is tall, so a portrait figure sharing that height with a legend beneath
+it ends up a sliver — the shape that most needs the room gets the
+least. When the figure is at least as tall as it is wide, `paper.js`
+adds `is-portrait` and the panel turns on its side: legend in a column
+on the left, figure taking the full panel height on the right. On the
+tallest figure in this manuscript that is 645px of figure instead of
+306px. Off below 48rem, where a side-by-side split leaves neither side
+enough width to read.
+
 The window takes its `aspect-ratio` from the image's own dimensions,
 set by `paper.js` when the figure opens. That indirection is load
 bearing: left to size the window itself, the image gives the window its

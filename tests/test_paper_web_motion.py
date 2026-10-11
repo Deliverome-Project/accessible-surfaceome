@@ -719,3 +719,47 @@ def test_figure_legend_shares_the_body_text_column() -> None:
     rule = re.search(r"\.paper-root > \.figure-block h5\s*\{([^}]*)\}", css)
     assert rule, "the figure legend has no width of its own"
     assert "width: 100%" in rule.group(1), "legend does not fill the figure column"
+
+
+# ── 7. Tall figures put the legend beside, not beneath ──────────────
+
+def test_tall_figures_move_the_legend_beside_the_figure() -> None:
+    """The panel is wider than it is tall, so a portrait figure sharing
+    that height with its legend ends up a sliver — the shape that most
+    needs the room gets the least."""
+    js = WEB_JS.read_text()
+    assert "PORTRAIT_RATIO" in js
+    assert 'classList.toggle("is-portrait"' in js, "the layout never switches"
+
+    css = _strip_comments(WEB_CSS.read_text())
+    rule = re.search(
+        r"\.figure-lightbox__inner\.is-portrait\s*\{([^}]*)\}", css
+    )
+    assert rule, "no portrait layout"
+    assert "flex-direction: row" in rule.group(1)
+    assert "height: 100%" in rule.group(1), (
+        "the panel does not fill the overlay, so the height the switch "
+        "exists to give the figure is not there to take"
+    )
+
+
+def test_portrait_legend_is_ordered_before_the_figure() -> None:
+    """`order`, not `row-reverse`: reversing would also throw the figure
+    counter to the far left, away from the figure it counts."""
+    css = _strip_comments(WEB_CSS.read_text())
+    cap = re.search(
+        r"\.figure-lightbox__inner\.is-portrait figcaption\s*\{([^}]*)\}", css
+    )
+    assert cap, "no portrait legend rule"
+    assert "order: -1" in cap.group(1)
+    assert "row-reverse" not in css
+
+
+def test_portrait_layout_is_off_on_narrow_screens() -> None:
+    """A side-by-side split in a phone-width panel leaves neither the
+    figure nor the legend enough width to be worth reading."""
+    css = _strip_comments(WEB_CSS.read_text())
+    guarded = [
+        b for b in _media_blocks(css, "min-width") if "is-portrait" in b
+    ]
+    assert guarded, "the portrait layout is not behind a width query"

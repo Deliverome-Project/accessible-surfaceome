@@ -173,6 +173,7 @@
 
   var imgEl = overlay.querySelector("img");
   var viewport = overlay.querySelector(".figure-lightbox__viewport");
+  var innerEl = overlay.querySelector(".figure-lightbox__inner");
 
   /* ── Pan and zoom, inside the figure's window ────────────────────
    *
@@ -188,10 +189,20 @@
   var tx = 0;
   var ty = 0;
 
+  /* Above this, stacking the legend UNDER the figure costs the figure
+   * most of its height: the panel is wider than it is tall, so a
+   * portrait figure sharing that height vertically ends up a sliver.
+   * Side by side, it gets the full height instead. Square figures are
+   * left stacked — they lose little, and the stacked layout keeps the
+   * legend on the reading line directly below the figure. */
+  var PORTRAIT_RATIO = 1;
+
   function setViewportRatio(w, h) {
     w = parseFloat(w);
     h = parseFloat(h);
-    viewport.style.aspectRatio = w > 0 && h > 0 ? w + " / " + h : "";
+    var known = w > 0 && h > 0;
+    viewport.style.aspectRatio = known ? w + " / " + h : "";
+    innerEl.classList.toggle("is-portrait", known && h / w >= PORTRAIT_RATIO);
   }
 
   function clampPan() {

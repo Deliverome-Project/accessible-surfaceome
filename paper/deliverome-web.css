@@ -623,6 +623,56 @@ td p:first-child strong { color: var(--maroon-dark); }
 }
 
 /* A hint, shown until the reader zooms for the first time. */
+/* ── Tall figures: legend beside, not beneath ────────────────────
+ *
+ * The panel is wider than it is tall, so a portrait figure that shares
+ * that height with its legend ends up a sliver — the one shape that
+ * most needs the room gets the least. Turned on its side, the figure
+ * takes the full panel height and the legend sits in a column beside
+ * it. paper.js adds `is-portrait` when the figure is at least as tall
+ * as it is wide.
+ *
+ * Only above 48rem: in a phone-width panel a side-by-side split leaves
+ * neither the figure nor the legend enough width to be worth reading. */
+@media (min-width: 48rem) {
+  .figure-lightbox__inner.is-portrait {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1.2rem;
+    /* Fill the overlay, so the point of the exercise — height for the
+     * figure — is actually there to take. */
+    height: 100%;
+  }
+
+  /* `order`, not `row-reverse`: reversing would also throw the figure
+   * counter to the far left, away from the figure it counts. */
+  .figure-lightbox__inner.is-portrait figcaption {
+    order: -1;
+    flex: 0 0 auto;
+    width: clamp(15rem, 30%, 24rem);
+    align-self: center;
+    margin-top: 0;
+    /* A legend long enough to outrun the full panel height in a column
+     * this narrow is rare, and scrolling it beats clipping it. It does
+     * not engage at the lengths this manuscript actually uses. */
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .figure-lightbox__inner.is-portrait .figure-lightbox__viewport {
+    /* Height leads and the aspect-ratio derives the width — the
+     * reverse of the stacked layout. */
+    flex: 1 1 auto;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+  }
+
+  .figure-lightbox__inner.is-portrait .figure-lightbox__counter {
+    align-self: flex-end;
+  }
+}
+
 .figure-lightbox__hint {
   position: absolute;
   right: 0.5rem;
