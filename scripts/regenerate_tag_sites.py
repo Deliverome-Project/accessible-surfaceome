@@ -29,11 +29,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import sys
 import os
 import tempfile
 import urllib.request
 from pathlib import Path
 
+from accessible_surfaceome.agents.tag_site.record import merge as merge_record
 from accessible_surfaceome.tag_sites import features as F
 from accessible_surfaceome.tag_sites.run import run_gene, run_isoform_pins, run_ortholog_pins
 from accessible_surfaceome.tools.afdb_plddt import read_afdb_model_links
@@ -47,6 +49,9 @@ PDB_CACHE = ROOT / "data/cache/afdb_pdb"
 # Public API record is the source of ortholog seq/topology/acc — the same data the
 # viewer's ortholog tiles read (deterministic_features.orthologs).
 API_BASE = os.environ.get("SURFACEOME_API_BASE", "https://api.deliverome.org/surfaceome").rstrip("/")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 
 log = logging.getLogger("regenerate_tag_sites")
 
@@ -158,14 +163,48 @@ def _existing_non_deterministic(path: Path) -> list[dict]:
     ]
 
 
+
+def _canon_from_api(acc: str, symbol: str) -> tuple[str, str] | None:
+    """(sequence, topology) from the public API when the accession is absent
+    from the committed 3line predictions.
+
+    The 3line files cover the SURFACEOME COHORT. Six benchmark controls sit
+    outside it — CFTR, KCNH2, KCNQ1, PMP22, TRPC5, VANGL1 — so the deterministic
+    lanes skipped them entirely while the literature agent handled them fine,
+    because it reads the same topology off the API record. This closes that gap
+    rather than leaving a gene with literature sites and no deterministic ones."""
+    try:
+        import regenerate_tag_site_lit as lit  # same scripts/ dir
+
+        _acc, seq, topo = lit.extract_from_record(lit.fetch_record(symbol))
+        if seq and topo and len(seq) == len(topo):
+            return seq, topo
+    except Exception as exc:  # noqa: BLE001 - absent topology must not kill the batch
+        log.warning("  %s (%s): API topology fallback failed: %s", symbol, acc, exc)
+    return None
+
+
+
+def _read_record(path: Path) -> dict[str, object]:
+    """The record already on disk, or {} when there is none."""
+    try:
+        return json.loads(path.read_text())
+    except Exception:  # noqa: BLE001 - no prior record, or unreadable
+        return {}
+
+
 def regenerate_gene(
     symbol: str, acc: str, *, canon: dict[str, tuple[str, str]],
     iso_map: dict[str, tuple[str, str]], out_dir: Path, dry_run: bool,
     signals_dir: str | None = None,
 ) -> dict[str, int] | None:
     if acc not in canon:
-        log.warning("skip %s (%s): not in canonical 3line topology", symbol, acc)
-        return None
+        fallback = _canon_from_api(acc, symbol)
+        if fallback is None:
+            log.warning("skip %s (%s): not in canonical 3line topology", symbol, acc)
+            return None
+        log.info("  %s (%s): not in 3line; using the API record's topology", symbol, acc)
+        canon = {**canon, acc: fallback}
     seq, topo_s = canon[acc]
     topo = {i + 1: c for i, c in enumerate(topo_s)}
     try:
@@ -222,6 +261,10 @@ def regenerate_gene(
         "isoform_pins": sorted(pins, key=lambda p: p["site_id"]),
         "ortholog_pins": sorted(opins, key=lambda p: p["site_id"]),
     }
+    # One record, two writers. `merge` keeps every field owned by the LITERATURE
+    # pipeline — its prompt provenance above all — which rebuilding this dict
+    # from scratch used to erase.
+    result = merge_record(_read_record(out_path), result, owner="deterministic")
     n_term = sum(1 for s in det_sites if s.get("det_path") in ("terminal", "snorkel"))
     summary = {
         "deterministic": len(det_sites), "terminal_or_snorkel": n_term,

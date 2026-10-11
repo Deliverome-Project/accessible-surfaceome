@@ -233,17 +233,18 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HiBiT",
+      "tag_type": "HiBiT 11 aa",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "yes \u2014 ligand-induced surface expression preserved in response to TNF\u03b1 (EC50 = 0.057 \u00b1 0.011 nM), IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine; surface display confirmed by membrane-impermeable LgBiT complementation",
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface HiBiT signal detected by membrane-impermeable LgBiT nanoluciferase complementation; ligand-induced surface expression preserved in response to TNF\u03b1, IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine \u2014 full inducible trafficking function confirmed.",
       "confidence": "high",
-      "rationale": "CRISPR-Cas9 genome editing introduced an 11-aa HiBiT tag plus a GSSG linker into the endogenous SELE locus in HUVECs and TERT2-HUVECs, placing the tag immediately after signal-peptide cleavage (after A21, before W22). Surface display was confirmed with membrane-impermeable exogenous LgBiT (NanoBiT complementation), proving the tag is extracellular. Ligand-induced expression in response to TNF\u03b1 (EC50 = 0.057 \u00b1 0.011 nM), IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine was fully preserved, confirming normal trafficking and inducible expression. No disulfide cysteines, N-glycosylation sequons, or known functional residues are disrupted at this junction. The GSSG linker provides conformational flexibility away from the lectin-domain ligand-binding surface. [validation: surface_and_function; position: inferred; source: paper; entailment_verified: True]",
+      "rationale": "The signal peptide spans residues 1\u201321 (landmark-authoritative); the mature extracellular domain begins at residue 22 (W). A tag placed 'on the N terminus' of the full-length membrane-anchored protein must sit after the signal-peptide cleavage site, i.e., insert_after_residue = 21, giving residue_before = A (pos 21) and residue_after = W (pos 22), both read directly from the numbered sequence. This is the only extracellular terminus; the C-terminus is intracellular (residues 578\u2013610). The tag position is 535 residues from the TM boundary, satisfying the \u22653-residue constraint. L3 confirms that the tagged protein retains its defining inducible-trafficking function across six stimuli, supporting surface_and_function validation. CRISPR-Cas9 knock-in of an 11 aa HiBiT tag onto the N-terminus of endogenous SELE in primary HUVECs and immortalized TERT2-HUVECs; the tagged allele is expressed from the native promoter. The paper states 'N terminus' but names no specific residue; E-selectin has exactly one extracellular terminus (the mature N-terminus after signal-peptide cleavage at residue 21), so the junction is unambiguous. [validation: surface_and_function; position: topology_derived; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "citation": "preprint",
-          "claim": "(B) General genome-editing strategy showing the PAM sequence adjacent to the signal sequence of E-selectin and the insertion of HiBiT and a GSSG linker immediately following the signal sequence in the HiBiT-tagged E-selectin sequence."
+          "pmid": 37496673,
+          "citation": "PMID 37496673",
+          "claim": "To ensure that ligand-induced changes were monitored in physiologically relevant cells under the control of their native promoters, we used CRISPR-Cas9 genome editing to attach the 11 amino acid HiBiT tag 18 , 19 to the N terminus of endogenous E-selectin expressed in both HUVECs and immortalized TERT2-HUVECs. 20 Measurement of cell surface expression of HiBiT-tagged E-selectin was then made following addition of exogenous membrane-impermeable LgBiT to achieve self-complementation of the full-length nanoluciferase enzyme."
         }
       ],
       "plddt": null,
@@ -550,5 +551,12 @@
       "canonical_residue": 549,
       "left_pct": 89.86928104575163
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:21:26.152201+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same single construct from PMC10366498: an 11 aa HiBiT tag at the N-terminus of endogenous SELE. No residue number is stated in any line, so position_evidence is topology_derived rather than validated. No internal loop insertions are supported by the ledger; no other terminus is extracellular. The C-terminal intracellular tail (578\u2013610) and the TM domain (557\u2013577) are not on the extracellular face and were not considered. The HiBiT tag (11 aa) is slightly below the stated 13\u201323 aa range but is the only ledger-supported insertion and is reported as-cited.",
+  "literature_rejected": []
 }

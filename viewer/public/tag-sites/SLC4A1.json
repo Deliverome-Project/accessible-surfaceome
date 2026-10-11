@@ -44,13 +44,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "Myc / HA",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "PMC9623938: kAE1-Myc (Myc at 557) used as positive-control template in mutagenesis and functional trafficking studies; surface expression and function of WT-Myc construct implied as positive control. PMC12959882: construct used for cell-based expression studies in lentiviral system. Explicit anion-transport assay result NOT STATED in ledger.",
+      "functional_impact_measured": "Surface expression of tagged WT kAE1 confirmed by immunodetection; constructs served as wild-type controls in trafficking studies of the T444N variant. Transport function of the tagged WT construct is NOT MEASURED independently in the cited work.",
       "confidence": "high",
-      "rationale": "Two independent papers (PMC9623938 and PMC12959882) explicitly name eAE1 position 557 as the insertion site for epitope tags (Myc and HA respectively) in full-length, membrane-anchored kAE1 constructs. PMC12959882 explicitly states 'position 557 (on eAE1)' confirming eAE1 canonical numbering. Python computation confirms: canonical[557]=V, canonical[558]=L; position 557 lies within EL3 (topology 542-569); 16 aa from TM4 C-terminus (541) and 13 aa from TM5 N-terminus (570), both >=3. No N-glycosylation motifs (NxS/T) or disulfide cysteines in EL3. The tag is inserted after V557 (insert_after_residue=557), placing it between V557 and L558 in the extracellular loop. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L2 explicitly names eAE1 position 557 as the Myc-tag insertion site within the third extracellular loop of kAE1; L1 independently corroborates an HA tag at the identical eAE1 position 557 in a separate construct. Python verification confirms residue 557 = V and residue 558 = L in the canonical 911-aa sequence, and that position 557 lies within the authoritative EC3 span 542\u2013569, \u226516 residues from either TM boundary. No cysteine or N-glycosylation sequon (NxS/T) is present in EC3, and the loop is 28 residues long, providing ample space for a ~15\u201323 aa insert. Full-length kAE1 constructs (pcDNA3.1-kAE1 WT-Myc and pcDNA3.1-kAE1 WT-HA) carrying a Myc or HA epitope tag at position 557 in eAE1 numbering, located in the third extracellular loop (EC3) of the membrane domain. Constructs were expressed in mammalian cells and used for expression and functional studies of SLC4A1 trafficking variants. L1 (PMC12959882) independently confirms an HA tag at the same eAE1 position 557 in a lentiviral kAE1 construct used for expression studies. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 36320073,
@@ -76,13 +76,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "V5",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface biotinylation and immunoblot analysis confirmed V5-tagged eAE1 is present at the plasma membrane (PMC11769940, Figure 2). Anion-transport function NOT MEASURED for the V5-tagged construct per ledger.",
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface biotinylation followed by immunoblot detected V5-tagged eAE1 at the cell surface of HEK293 cells, confirming correct trafficking and surface display. Anion transport function of the V5-tagged construct is NOT MEASURED in the cited work.",
       "confidence": "high",
-      "rationale": "PMC11769940 explicitly shows the construct sequence for V5-tagged eAE1: the V5 tag (GKPIPNPLLGLDST) is flanked by YNVL on the N-terminal side and MVPK on the C-terminal side. Python computation on the canonical sequence confirms YNVL = positions 555-558 (Y555, N556, V557, L558) and MVPK = positions 559-562 (M559, V560, P561, K562), pinning the insertion junction to after L558 (insert_after_residue=558). This is 1 residue C-terminal of the HA/Myc site (557). Both sites are within EL3 (542-569), >=3 aa from both TM boundaries, with no glycosylation motifs or cysteines in EL3. Surface biotinylation confirmed plasma membrane localization of the V5-tagged construct. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "rationale": "L3 provides the flanking peptide YNVL[V5]MVPK for the eAE1 EL3 construct; Python sequence search locates YNVL at eAE1 555\u2013558 and MVPK at 559\u2013562, unambiguously placing the V5 insertion after residue 558 (L558, residue_after = M559). Position 558 lies within the authoritative EC3 span 542\u2013569, \u226517 residues from TM5 (ends 541) and \u226512 from TM6 (starts 570). EC3 contains no cysteines and no N-glycosylation sequons, and the 28-residue loop accommodates a short epitope tag without steric conflict. L4 independently confirms surface biotinylation of this same V5-tagged eAE1 construct. Full-length human eAE1 with a V5 tag inserted into EL3 (residues 555\u2013576) was expressed in HEK293 cells. The flanking peptide reported in L3 is YNVL\u2013[V5]\u2013MVPK, where YNVL = eAE1 555\u2013558 and MVPK = eAE1 559\u2013562, pinning the insertion junction to after residue 558 (L). Surface display was confirmed by surface biotinylation and immunoblot (L4). [validation: surface_only; position: inferred; source: paper; cited_tag_residue: 558; entailment_verified: True]",
       "sources": [
         {
           "pmid": 39872416,
@@ -425,5 +425,12 @@
       "canonical_residue": 658,
       "left_pct": 72.76641550053822
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:07:06.572006+00:00",
+  "literature_notes": "Four ledger lines were evaluated. L1 and L2 both pin an HA or Myc tag to eAE1 position 557 in the third extracellular loop (EC3, 542\u2013569); they support the same junction (insert_after_residue=557) and are consolidated into Site 1, with L2 as the primary citation because it provides more experimental detail. L3 pins a V5 tag to the adjacent junction after residue 558 via an explicit flanking-peptide readout; L4 confirms surface display of the same construct and is treated as corroborating evidence for Site 2. Both sites are in EC3, which is the only loop long enough (28 residues) to carry a short epitope tag comfortably; all other extracellular spans in SLC4A1 are 1\u201315 residues (EC1 14 aa, EC2 15 aa, EC4 36 aa, EC5 1 aa, EC6 1 aa, EC7 7 aa). EC4 (625\u2013660, 36 aa) has no ledger-supported insertion and was not proposed. No ledger line supports any terminal tag (the N-terminus is intracellular and the C-terminus is intracellular), so no terminal sites are reported.",
+  "literature_rejected": []
 }

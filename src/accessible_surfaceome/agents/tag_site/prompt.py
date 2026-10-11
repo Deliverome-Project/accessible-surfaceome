@@ -11,7 +11,7 @@ import hashlib
 import logging
 
 from .normalize import topology_runs
-from .schema import SOURCE_TIERS, TagSiteProposal, TagSiteResult
+from .schema import SOURCE_TIERS, OtherPosition, TagSiteProposal, TagSiteResult
 
 _log = logging.getLogger(__name__)
 
@@ -56,17 +56,40 @@ say "tag" in the abstract — FLAG / HA / Myc / ALFA / V5, fluorescent-protein f
 SNAP-tag / CLIP-tag, bungarotoxin-binding site, AviTag, tetracysteine, transposon and
 domain-insertion screens.
 
-Per site:
-- `supporting_quote` — the VERBATIM ledger line, copied, never paraphrased. It is re-checked
-  against the ledger; not found -> `entailment_verified=false` and down-ranked. A fabricated
-  quote is worse than none.
-- `source_tier` — 'paper' > 'patent' > 'vendor'. A vendor page never outranks a paper.
+Per site: `supporting_clip_id` is the [Ln] id of the ONE ledger line it rests on. The quote and
+the citation are filled in from that id. `source_tier` — 'paper' > 'patent' > 'vendor'.
 
 2. POSITION
 
 UniProt canonical numbering. `insert_after_residue = N` puts the tag between N and N+1; report
 residue_before (= N) and residue_after (= N+1) COPIED from the sequence given. A mismatch
 invalidates the site.
+
+A TAGGED CONSTRUCT WITH NO RESIDUE IS STILL A SITE. Two cases, both real findings:
+- the landmarks leave exactly ONE extracellular terminus ("TfR1-v5", "Myc-tagged hA1R") — the
+  tag is there, because nowhere else is on the surface. `position_evidence`="topology_derived",
+  junction from the landmarks (prepend = 0, the mature N-terminus after a signal peptide, or
+  after the LAST residue for a C-terminal tag). The position is computed, not chosen.
+- a tag in a NAMED LOOP with no residue — set `region` ("ECL4") and leave insert_after_residue
+  null. Inventing a junction for it is not reporting it.
+Choosing a position INSIDE a loop remains forbidden: a loop offers many, a sole terminus one.
+
+ALSO RECORD WHAT IS NOT A SURFACE SITE. A scanning paper names positions that do not belong in
+`sites`, and they are worth keeping. Put them in `other_positions`:
+- an insertion that is TOLERATED but faces the cytoplasm -> kind="intracellular". It is the
+  right site for a snorkel or an intracellular label, just not for a surface tag.
+- a position where the paper says insertion ABROGATED, abolished or disrupted function ->
+  kind="abrogates_function". A known-bad site is evidence too.
+Give each the residue, the [Ln] it came from, and one clause. Do NOT promote any of them into
+`sites`.
+
+A clip that NAMES a residue outranks one that names only a loop — do not call a loop unpinnable
+because a different line about it is vague.
+
+`insert_after_residue = 0` is the N-TERMINAL PREPEND: the tag goes before residue 1, so
+residue_before is "" and residue_after is residue 1. Use it for a tag on an extracellular
+N-terminus with no signal peptide — on a GPCR it is often the only extracellular terminus
+there is.
 
 Papers state a position three ways, all valid:
 - spelled out in prose — "the tag follows the signal peptide (Alanine 34)", "at the codon for
@@ -113,6 +136,10 @@ Every site must be:
 - "validated" — a tag was published AT this residue/junction (+/-1) AND your quote names that
   position. Only then may `evidence_type` be "published tag insertion at this exact site"; set
   `cited_tag_residue` = insert_after_residue.
+- "topology_derived" — the paper reports a tagged construct of this protein but names no
+  residue, and exactly ONE terminus is extracellular, so the position comes from the landmarks.
+  Use the terminal junction; `evidence_type` is "published tag insertion in the same loop or
+  domain", never the exact-site value.
 - "inferred" — precedent is ELSEWHERE in the loop/domain and you picked this position yourself;
   `cited_tag_residue` = the residue that actually carries the published tag (tag cited at 89,
   site proposed at 120 -> cited_tag_residue=89). Never dress an inferred position as an
@@ -179,6 +206,10 @@ _CODE_SET = (
     # know the sha of the prompt it is reading, and asking produced six entries
     # in the contract that all carried the same copy-pasted hint.
     "schema_version", "prompt_sha", "prompt_version", "model", "generated_at",
+    # Resolved from supporting_clip_id. Asking for the text was paying output
+    # rates to echo our own input, and every quote failure today was a
+    # transcription artifact that cannot occur when nothing is retyped.
+    "supporting_quote",
 )
 
 #: Per-field hints for the top-level keys the model does supply.
@@ -188,8 +219,8 @@ _TOP_HINTS = {"notes": "what you considered and did not propose, and why"}
 #: being duplicated here.
 _HINTS = {
     "rank": "1 = best",
-    "insert_after_residue": "the junction",
-    "residue_before": "1-letter, AT insert_after_residue",
+    "insert_after_residue": "the junction; 0 prepends; null for a region-level site",
+    "residue_before": '1-letter, AT insert_after_residue; "" for a prepend (0)',
     "residue_after": "1-letter, AT insert_after_residue+1",
     # An "e.g." and nothing else got values ranging from "ALFA" to 112 characters
     # of argument, and two different meanings: the tag the paper used, and the tag
@@ -197,9 +228,9 @@ _HINTS = {
     "tag_type": 'the CITED study\'s tag, as a short label ("ALFA", "3xFLAG", "BBS 13 aa") '
                 "— not a justification",
     "evidence_type": "one of the three in 4",
-    "position_evidence": '"validated" | "inferred"',
+    "position_evidence": '"validated" | "topology_derived" | "inferred"',
     "cited_tag_residue": "null unless the cited tag is a point tag",
-    "evidence_detail": "what was measured/observed, in what system",
+    "evidence_detail": "the construct and the system; the RESULT goes in the next field",
     "functional_or_expression_impact_measured": (
         'assay + result, or "NOT MEASURED" -- a STRING, never true/false'
     ),
@@ -207,9 +238,32 @@ _HINTS = {
     "source_tier": " | ".join(f'"{t}"' for t in SOURCE_TIERS),
     "supporting_pmid": "null for a preprint",
     "supporting_quote": "the VERBATIM ledger line",
-    "rationale": "why this site, and what you computed",
+    "region": 'the loop, when no residue is named (e.g. "ECL4"); else ""',
+    "rationale": "why THIS position + what you computed; 2-4 sentences, no quote restated",
 }
 
+#: Hints for the TOP-level keys the model fills, keyed the same way.
+_TOP_HINTS_EXTRA = {
+    "other_positions": (
+        "published positions that are NOT surface tag sites — tolerated but "
+        "cytoplasmic, or function-abrogating; [] if none"
+    ),
+}
+
+
+
+def _literal_values(annotation: object) -> str:
+    """`Literal["a", "b"]` -> '"a" | "b"', else "".
+
+    Read off the annotation rather than the description, so a closed vocabulary
+    cannot reach the model undocumented: adding a value to the Literal updates
+    the contract, and the prompt_sha with it."""
+    import typing
+
+    args = typing.get_args(annotation)
+    if args and all(isinstance(a, str) for a in args):
+        return " | ".join(f'"{a}"' for a in args)
+    return ""
 
 
 def _enumerated(description: str | None) -> str:
@@ -218,6 +272,14 @@ def _enumerated(description: str | None) -> str:
         return ""
     text = description.strip()
     return text if "|" in text and len(text) <= 80 else ""
+
+
+def _describe(f: object) -> str:
+    """A short gloss for a field with no hand-written hint.
+
+    One line only — the contract is a shape, not a manual."""
+    text = " ".join((getattr(f, "description", "") or "").split())
+    return text if len(text) <= 90 else ""
 
 
 def _type_token(annotation: object) -> str:
@@ -232,26 +294,53 @@ def _type_token(annotation: object) -> str:
     return "list" if text.startswith("list") else "str"
 
 
+def _default_token(f: object) -> str:
+    """What a field defaults to, as the model should read it.
+
+    A `default_factory` field carries PydanticUndefined as its `default`, which
+    rendered literally as "default PydanticUndefined" — noise in the one place
+    the model is being told the exact shape to emit."""
+    factory = getattr(f, "default_factory", None)
+    if factory is not None:
+        return repr(factory())
+    return repr(getattr(f, "default", None))
+
+
 def format_output_contract() -> str:
-    """The exact JSON shape, rendered from `TagSiteResult` + `TagSiteProposal`."""
-    top = TagSiteResult.model_fields
+    """The exact JSON shape, rendered from the models themselves.
+
+    Every list-valued key the model fills gets a per-entry field table, so
+    adding a field to one of those models documents it here without anyone
+    remembering to describe it in prose."""
     lines = ["OUTPUT — ONE JSON object with exactly these keys:", ""]
-    lines.append(f"  {'sites':<10} {'list':<6} required — [] when nothing qualifies, which is a valid answer")
-    for name, f in top.items():
+    lines.append(f"  {'sites':<16} {'list':<6} required — [] when nothing qualifies, which is a valid answer")
+    for name, f in TagSiteResult.model_fields.items():
         if name == "sites" or name in _CODE_SET or name in _PIPELINE_SET:
             continue
-        req = "required" if f.is_required() else f"optional, default {f.default!r}"
-        hint = _TOP_HINTS.get(name, "")
-        lines.append(f"  {name:<10} {_type_token(f.annotation):<6} {req}{' — ' + hint if hint else ''}")
-    lines += ["", "Each entry of `sites`:", ""]
-    for name, f in TagSiteProposal.model_fields.items():
-        if name in _PIPELINE_SET or name in _CODE_SET:
-            continue
-        req = "required" if f.is_required() else f"default {f.default!r}"
-        # Fall back to the schema's own description when it already enumerates the
-        # allowed values ('"a" | "b"'), so a new closed-value field documents itself.
-        hint = _HINTS.get(name) or _enumerated(f.description)
-        lines.append(f"  {name:<42} {_type_token(f.annotation):<9} {req}{' — ' + hint if hint else ''}")
+        req = "required" if f.is_required() else f"optional, default {_default_token(f)}"
+        hint = _TOP_HINTS.get(name) or _TOP_HINTS_EXTRA.get(name, "")
+        lines.append(f"  {name:<16} {_type_token(f.annotation):<6} {req}{' — ' + hint if hint else ''}")
+
+    for label, model, width in (
+        ("sites", TagSiteProposal, 42),
+        ("other_positions", OtherPosition, 20),
+    ):
+        lines += ["", f"Each entry of `{label}`:", ""]
+        for name, f in model.model_fields.items():
+            if name in _PIPELINE_SET or name in _CODE_SET:
+                continue
+            req = "required" if f.is_required() else f"default {_default_token(f)}"
+            # Fall back to the schema's own description when it already enumerates
+            # the allowed values ('"a" | "b"'), so a new closed-value field
+            # documents itself.
+            hint = (
+                _HINTS.get(name)
+                or _enumerated(f.description)
+                or _literal_values(f.annotation)
+                or _describe(f)
+            )
+            lines.append(f"  {name:<{width}} {_type_token(f.annotation):<9} {req}{' — ' + hint if hint else ''}")
+
     lines += [
         "",
         f"Emit nothing else. {', '.join(_CODE_SET)} and "
@@ -265,7 +354,7 @@ SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 #: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
 #: `prompt_sha` fingerprints the text automatically; this is the human-readable
 #: half, so a reviewer can tell a deliberate revision from an incidental one.
-TAG_SITE_PROMPT_VERSION = "1.0.0"
+TAG_SITE_PROMPT_VERSION = "1.4.0"
 
 
 def prompt_sha() -> str:

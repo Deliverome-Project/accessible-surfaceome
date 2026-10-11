@@ -179,13 +179,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa or 3xFLAG equivalent, GS linkers",
+      "tag_type": "3xFLAG",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Non-permeabilized antibody labeling confirmed extracellular surface display of the FLAG tag; the 3F-NHE6-HA construct was used as a functional tool to study endosomal pH regulation and NHE6 trafficking \u2014 function preserved.",
+      "functional_impact_measured": "Surface FLAG immunostaining confirmed extracellular exposure of the tag on intact, non-permeabilised cells; the construct was used to study NHE6 trafficking and recycling, demonstrating normal membrane localisation and functional behaviour in the published assays.",
       "confidence": "high",
-      "rationale": "Residue 53 = M, residue 54 = D, matching the paper's explicit statement 'after residue Met 53'. Position 53 falls within the first extracellular span (EC1 = 43\u201370), 11 residues from the signal-peptide cleavage site (SP ends at 42) and 18 residues from the TM1 boundary (TM1 starts at 71), both well above the \u22653-residue minimum. The tag is inserted into the mature extracellular protein, not within the cleaved signal peptide. A triple FLAG epitope (AAA-DYKDDDDK-G-DYKDDDDK-G-DYKDDDDK-AAA) was inserted into full-length, membrane-anchored NHE6 immediately after Met53 in the first extracellular loop, generating the 3F-NHE6-HA construct. The construct was expressed in mammalian cells, the FLAG tag was accessible to antibody without permeabilization (confirming extracellular surface display), and the tagged protein was used as a functional tool to study endosomal pH regulation and trafficking. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L1 explicitly names Met53 as the insertion point within the first extracellular loop of the full-length, membrane-anchored protein; Python confirms seq[52]='M' and seq[53]='D', placing the junction squarely inside EC1 (residues 43\u201370). The site is 11 residues from the signal-peptide cleavage site (residue 42) and 18 residues from the next TM helix (residue 71), satisfying the \u22653-residue TM-clearance rule on both sides. L2 independently corroborates the same junction via the NotI-site engineering strategy, so both clips converge on a single, unambiguous site. Full-length, membrane-anchored human NHE6 (SLC9A6) expressed in mammalian cells; a triple FLAG epitope (AAA-DYKDDDDK-G-DYKDDDDK-G-DYKDDDDK-AAA) was inserted immediately after Met53 in the first extracellular loop (EC1, residues 43\u201370) by PCR-engineering an in-frame NotI site after M53 followed by annealed-primer ligation, generating the 3F-NHE6-HA construct. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
           "pmid": 27590723,
@@ -759,5 +759,12 @@
       "canonical_residue": 316,
       "left_pct": 45.15669515669516
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:29:05.554561+00:00",
+  "literature_notes": "L2 (PMC5010692) independently corroborates the L1 site by the same junction (after M53) via a different description (NotI engineering); both clips ground the same single site, so only one site entry is warranted. L3 (PMC13463026) reports a C-terminal TEV-eGFP-TwinStrep tag on rat NHE6; the C-terminus falls in the intracellular domain (residues 533\u2013701) and is therefore disqualified as an extracellular site. L4 (PMC13558669) reports a C-terminal FLAG tag on human NHE6 (residues 1\u2013701); same disqualification. L5 (PMC13558669) reports a C-terminal eGFP-STREPII tag; same disqualification. L6 (PMC2847532) reports C-terminal EGFP/mCherry fusions on NHE6.1; same disqualification. No ledger line supports any other extracellular insertion site.",
+  "literature_rejected": []
 }

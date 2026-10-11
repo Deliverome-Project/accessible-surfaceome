@@ -64,6 +64,38 @@
       "plddt": 38.3,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADORA1-terminal_n-0-lit",
+      "gene_symbol": "ADORA1",
+      "uniprot_acc": "P30542",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface expression confirmed by NanoBiT luminescence complementation in HEK293 cells; agonist-induced receptor internalization monitored with the HiBiT-tagged construct, indicating preserved trafficking function.",
+      "confidence": "high",
+      "rationale": "ADORA1 is a GPCR with no signal peptide; the topology landmarks place residues 1\u20139 extracellular and TM1 beginning at residue 10, leaving 9 residues between the prepend junction and the first TM helix (well above the \u22653-residue minimum). No residue number is stated in any ledger line, but the N-terminus is the sole extracellular terminus of this receptor, so topology_derived applies and insert_after_residue=0 is the unique solution. Three independent papers (PMC6974774, PMC4513639, PMC12229354) with three different tags (HiBiT, FLAG/SF-TAP, Myc) all report tolerated N-terminal extracellular tags on the full-length membrane-anchored receptor, converging on this single junction. HiBiT\u2013A1AR full-length construct expressed in HEK293 cells; NanoBiT complementation with exogenous purified LgBiT confirms cell-surface display of the N-terminally tagged receptor; agonist-induced internalization was subsequently monitored with this construct, demonstrating functional receptor trafficking. L7 (PMC4513639) independently reports N-terminal FLAG and SF-TAP tags on the same receptor. L9/L10 (PMC12229354) report a Myc tag engineered onto the 'extracellular region' of hA1R confirmed by flow cytometry; ADORA1 has no signal peptide and its only extracellular terminus is the N-terminus (residues 1\u20139), making this topology-derived to the same junction. [validation: surface_and_function; position: topology_derived; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 31583945,
+          "citation": "PMID 31583945",
+          "claim": "NanoBiT has provided a platform for assessing protein\u2013protein interactions in vitro in real time. 24 , 30 \u2013 32 Here, we have used the NanoBiT complementation technology to monitor the presence of the human A 1 receptor, tagged on its N-terminus with HiBiT, at the cell surface of living cells following addition of purified LgBiT ( Fig. 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [
@@ -90,5 +122,12 @@
       "left_pct": 58.4
     }
   ],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:14:07.182699+00:00",
+  "literature_notes": "L5 disqualified: the FLAG-tagged A1R plasmid is from a commercial vendor (Sinobiological) and the tag position within the construct is unstated. L6 disqualified: eYFP is fused to the C-terminus, which is intracellular (residues 291\u2013326). L8 disqualified: the YFP tag position on the A1R-Y288A mutant construct is not stated in the clip; Y288 is a point mutation within TM7 (residues 268\u2013290), not a tag insertion site, and the YFP is most likely at the intracellular C-terminus. All three qualifying independent papers (L1\u2013L4, L7, L9\u2013L10) converge on the same N-terminal prepend junction, so only one site is reported.",
+  "literature_rejected": []
 }

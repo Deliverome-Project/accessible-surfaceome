@@ -120,6 +120,7 @@ This is not optional and not per-pipeline discretion. Persist all three (plus a 
 
 **Reference implementations:**
 - `triage_run` — stores `prompt_sha`, `prompt_filename`, `prompt_variant`, `schema_version` per cell (the canonical precedent).
+- **Tag-site literature agent** — `TagSiteResult.{schema_version,prompt_sha,prompt_version,model,generated_at}` stamped in `run_tag_site_agent`, constant `TAG_SITE_PROMPT_VERSION` in [prompt.py](src/accessible_surfaceome/agents/tag_site/prompt.py), persisted onto the viewer record by `scripts/regenerate_tag_site_lit.py`.
 - **Internalization sequence pass** — `ModelPriorTrack.{prompt_sha,prompt_version}` set in [`grade_isoforms_with_model`](src/accessible_surfaceome/agents/internalization/model_prior.py), constant `MODEL_PRIOR_PROMPT_VERSION` in [models.py](src/accessible_surfaceome/agents/internalization/models.py), D1 columns `seq_prompt_sha`/`seq_prompt_version`, and the **sha-aware skip** in [`scripts/internalization_seq_sweep.py`](scripts/internalization_seq_sweep.py) (`done = {rows where seq_prompt_sha == current_sha}`).
 
 The deep-dive in-process pipeline (`surfaceome_v2`) additionally carries a global `prompt_corpus` fingerprint via [`_version_guard.py`](src/accessible_surfaceome/_version_guard.py) pinned to `PROMPT_CORPUS_VERSION`; a standalone pass with its own versioning (like internalization) is deliberately excluded from that corpus and carries its own per-record `prompt_sha`/`prompt_version` instead — but it still MUST carry them.
@@ -872,6 +873,60 @@ a Pages binding.
 
 When editing the D1 schema or adding a new uploader path, add it to
 the workflow's `paths:` filter so CI catches the change.
+
+## Tag-site literature agent
+
+`agents/tag_site/` finds PUBLISHED epitope-tag insertion sites. It is scored against
+`data/tag_sites/positive_controls.tsv` by `scripts/score_tag_sites_vs_controls.py`, which
+**refuses to run on a dirty tag-sites tree** — a score has to describe committed state.
+Cost is ~$0.8-1.0/gene, dominated by one Haiku triage call per discovered paper.
+
+### Every run writes its intermediates
+
+`data/external/tag_site_runs/{SYMBOL}.json` (gitignored, derived) holds the clip pool size,
+the boosted clips and their residues, the FULL evidence ledger, the synthesis metadata
+(`n_repair_attempts`), the agent's own `notes`, and every site a gate removed. The pool used
+to live only in memory, so any question about why a site was or was not proposed cost a
+fresh run to answer — read the artifact first.
+
+**A dropped site is recorded, not just logged.** `TagSiteResult.rejected` names the gate
+(`entailment` / `geometry`) and the failing quote. Two of the three gates used to filter
+silently, so a site the model proposed could vanish between synthesis and record with no
+trace anywhere.
+
+### Quote entailment is substring matching after normalization
+
+`quote_supported` checks the model's quote against the ledger through
+`normalize_for_quote_matching` — **shared by every pipeline that span-verifies a quote**, so a
+change there reaches the deep dive and internalization too. It folds NFKC, HTML entities,
+Greek, whitespace, case, AND typographic punctuation. That last one is not optional: NFKC does
+NOT fold U+2019 to U+0027, so a 448-character quote failed on a single curly apostrophe and
+the site was deleted.
+
+### Publishing to D1
+
+`publish_tag_sites` UPSERTs by `site_id` and scopes stale-row cleanup to the PROVENANCES the
+file carries. It is **not** replace-all: one tag-sites JSON is written by two independent
+pipelines (deterministic and literature), so a replace-all sync from a file carrying only
+literature sites deletes the gene's deterministic rows. Pass `provenances` explicitly when a
+run must clear a provenance its output no longer contains.
+
+`scripts/sync_tag_sites_to_d1.py` additionally **refuses a sync that would shrink any gene**
+(D1 holds more sites than the local JSON) unless `--allow-deletes`. The committed snapshots
+can drift below D1; a dry-run counts what would be WRITTEN and says nothing about what would
+be destroyed. Re-derive the missing sites with `scripts/regenerate_tag_sites.py` (it preserves
+literature sites) rather than overriding the guard.
+
+Citations are enriched from `paper_metadata` at publish time — `build_paper_metadata_table.py`
+sweeps `tag_site_public` as well as `surface_annotation`, so a paper cited only by a tag site
+still gets a title and byline.
+
+### The viewer reads the Worker
+
+`fetchTaggedSites(symbol, API_BASE)` prefers `/v1/tag-sites/{SYMBOL}` and falls back to the
+static `/tag-sites/{SYMBOL}.json` asset. Pass the apiBase: without it only the static path is
+tried, and those assets are not currently in the Pages export, so the section renders nothing.
+
 
 ## Doc Sync Rule
 

@@ -20,9 +20,23 @@ def check_residues(
     """None when ``before``/``after`` match ``sequence`` at the junction
     ``residue``|``residue+1``; else a human-readable mismatch reason.
 
-    ``after`` is not checked at the C-terminus (there is no residue+1 there)."""
+    ``after`` is not checked at the C-terminus (there is no residue+1 there).
+
+    ``residue == 0`` is the N-TERMINAL PREPEND: the tag goes before residue 1,
+    so there is no before-residue to read. It is a real and common junction —
+    two control rows use it, and it is the only position available on a protein
+    whose N-terminus is extracellular and which has no signal peptide, such as a
+    GPCR. Rejecting it as "outside the sequence" dropped a site the model had
+    proposed at exactly the position the benchmark expected."""
     if not sequence or residue is None:
         return "no sequence or residue to check"
+    if residue == 0:
+        real_after = sequence[0]
+        if after and after != real_after:
+            return f"claims {after} at 1 but sequence has {real_after}1"
+        if before:
+            return "an N-terminal prepend (residue 0) has no before-residue"
+        return None
     if residue < 1 or residue > len(sequence):
         return f"residue {residue} is outside the sequence (1-{len(sequence)})"
     real_before = sequence[residue - 1]
@@ -105,6 +119,28 @@ def repair_proposal(site, *, sequence: str, sp_end: int = 0) -> str | None:  # n
     if pinned is not None:
         _set_junction(site, pinned, sequence)
         return "prose_window"
+
+    # * ``letter_only`` — the junction NUMBER is corroborated (residue_before
+    #   matches the sequence there) and only the descriptive residue_after
+    #   letter is wrong. Nothing moves: the site stays at the number it named,
+    #   and the letter is read off the authoritative sequence.
+    #
+    #   This is deliberately not the guesswork the docstring warns about. The
+    #   site is not relocated, so no position is laundered. SLC5A6 lost a real
+    #   site this way — a published EL3 ALFA tag with two corroborating ledger
+    #   lines — because the model wrote T at 484 where the sequence has P, while
+    #   naming 483 and its M correctly.
+    #
+    #   The guard is uniqueness: if the PAIR the model described occurs anywhere
+    #   in the sequence, it may have meant that other junction, and choosing
+    #   between them would be exactly the guesswork we refuse. Reject instead.
+    n = site.insert_after_residue
+    if n is not None and 1 <= n <= len(sequence) and site.residue_before:
+        if site.residue_before == sequence[n - 1]:
+            claimed_pair = f"{site.residue_before}{site.residue_after or ''}"
+            if site.residue_after and sequence.count(claimed_pair) == 0:
+                site.residue_after = sequence[n] if n < len(sequence) else ""
+                return "letter_only"
     return None
 
 
@@ -120,6 +156,12 @@ def apply_geometry_pass(
     the repair would have saved."""
     kept, rejected = [], []
     for site in sites:
+        if site.insert_after_residue is None:
+            # A region-level site names a loop, not a junction. There is nothing
+            # to verify against the sequence and nothing to repair; dropping it
+            # for that would discard the published insertion it records.
+            kept.append(site)
+            continue
         if repair_proposal(site, sequence=sequence, sp_end=sp_end):
             site.position_repaired = True
 

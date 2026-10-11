@@ -27,7 +27,7 @@ SiteType = Literal["terminal_n", "terminal_c", "internal"]
 #: derived must never read as extracellular. Mirrors `compartmentAt` in
 #: viewer/lib/surface-bind.ts, which carries the same rule.
 TopologyState = Literal["extracellular", "intracellular", "membrane", "signal", "unknown"]
-PositionEvidence = Literal["validated", "inferred"]
+PositionEvidence = Literal["validated", "inferred", "topology_derived"]
 Confidence = Literal["high", "medium", "low"]
 
 # Validation strength of the cited tagging construct, best -> worst. The headline
@@ -59,11 +59,37 @@ class TagSiteProposal(BaseModel):
     #: model's ordering is discarded — do not ask for it.
     rank: int = 0
     site_type: SiteType = Field(description='"terminal_n" | "terminal_c" | "internal"')
-    insert_after_residue: int = Field(
-        description="Junction: tag sits between this residue and +1 (UniProt canonical numbering)."
+    insert_after_residue: int | None = Field(
+        default=None,
+        description=(
+            "Junction: tag sits between this residue and +1 (UniProt canonical "
+            "numbering); 0 prepends before residue 1. Null ONLY for a "
+            "region-level site, where `region` names the loop instead."
+        ),
     )
-    residue_before: str = Field(description="1-letter residue AT insert_after_residue.")
-    residue_after: str = Field(description="1-letter residue AT insert_after_residue+1.")
+    region: str = Field(
+        default="",
+        description=(
+            "The loop or domain the paper names when it reports an insertion "
+            "WITHOUT a residue number, e.g. 'ECL4'. Set this and leave "
+            "insert_after_residue null rather than guessing a junction — the "
+            "evidence is real and was being thrown away whole."
+        ),
+    )
+    residue_before: str = Field(
+        default="",
+        description=(
+            "1-letter residue AT insert_after_residue. Empty for an N-terminal "
+            "prepend (insert_after_residue = 0), which has no before-residue."
+        ),
+    )
+    residue_after: str = Field(
+        default="",
+        description=(
+            "1-letter residue AT insert_after_residue+1. Empty for a "
+            "region-level site, which names no junction."
+        ),
+    )
     topology_state: TopologyState = Field(
         default="unknown",
         description=(
@@ -83,9 +109,12 @@ class TagSiteProposal(BaseModel):
     position_evidence: PositionEvidence = Field(
         description=(
             '"validated" — a tag was published AT this exact residue/junction (or immediately '
-            'adjacent, +/-1). "inferred" — the loop/domain has tagging precedent ELSEWHERE, but '
-            "THIS specific position is your own structural choice. If the cited tag is not at "
-            "insert_after_residue, this MUST be 'inferred'."
+            'adjacent, +/-1). "topology_derived" — the paper reports a tagged construct of THIS '
+            "protein without naming a residue, and the computed topology admits exactly ONE "
+            "extracellular terminus, so the position follows from the topology rather than from "
+            'a choice. "inferred" — the loop/domain has tagging precedent ELSEWHERE and THIS '
+            "position is your own structural choice. If the cited tag is not at "
+            "insert_after_residue, this MUST NOT be 'validated'."
         )
     )
     cited_tag_residue: int | None = Field(
@@ -96,7 +125,13 @@ class TagSiteProposal(BaseModel):
             "(e.g. 89) when you inferred a different site (e.g. 120). Null if not a point tag."
         ),
     )
-    evidence_detail: str = Field(description="What was measured/observed, in what system.")
+    evidence_detail: str = Field(
+        description=(
+            "The CONSTRUCT and the system, in one clause: what was built, in what "
+            "cells. The RESULT goes in functional_or_expression_impact_measured — "
+            "do not write the measurement twice."
+        )
+    )
     functional_or_expression_impact_measured: str = Field(
         description="What was MEASURED (assay + result), or 'NOT MEASURED'. Never inferred."
     )
@@ -123,12 +158,16 @@ class TagSiteProposal(BaseModel):
     supporting_pmid: int | None = Field(
         default=None, description="PMID of the supporting paper when one exists (grounds the citation)."
     )
+    supporting_clip_id: str = Field(
+        default="",
+        description='The [Ln] id of the ONE ledger line this site is grounded in, e.g. "L3".',
+    )
     supporting_quote: str | None = Field(
         default=None,
         description=(
-            "A VERBATIM sentence copied from the cited paper (abstract/methods/results, provided "
-            "to you above) that states the tag was inserted at this site and/or its validation. "
-            "This exact string is checked against the source text — do NOT paraphrase or invent it."
+            "Filled in by the pipeline from supporting_clip_id — not asked of you. "
+            "The text comes back out of the ledger it went in as, so it cannot be "
+            "mistyped or embellished."
         ),
     )
     entailment_verified: bool = Field(
@@ -153,7 +192,17 @@ class TagSiteProposal(BaseModel):
             "instead of silent."
         ),
     )
-    rationale: str
+    rationale: str = Field(
+        description=(
+            "Why THIS position, and what you COMPUTED to pin it — the sequence "
+            "check, any numbering-frame recovery, the distance to a TM boundary. "
+            "2-4 sentences.\n"
+            "Do NOT restate supporting_quote: it ships beside this and a reader "
+            "sees both. Do not repeat evidence_detail or the measurement. Do not "
+            "narrate the topology spans you were given; they are already on the "
+            "record. What belongs here is the reasoning nothing else carries."
+        )
+    )
     confidence: Confidence = Field(description='"high" | "medium" | "low"')
 
     @computed_field  # type: ignore[prop-decorator]
@@ -166,6 +215,12 @@ class TagSiteProposal(BaseModel):
         the tag is inserted AFTER this residue, between it and residue+1. Derived
         from ``residue_before`` + ``insert_after_residue`` so it is always
         consistent regardless of how the model phrased the site."""
+        if self.insert_after_residue is None:
+            return self.region or "region"
+        if self.insert_after_residue == 0:
+            # An N-terminal prepend has no before-residue, so the usual
+            # letter+number form produced labels like "-0".
+            return "Nterm"
         return f"{self.residue_before}{self.insert_after_residue}"
 
 
@@ -191,6 +246,34 @@ class RejectedSite(BaseModel):
     supporting_quote: str | None = None
 
 
+class OtherPosition(BaseModel):
+    """A published insertion position this protein has that is NOT a surface tag site.
+
+    Two kinds, and both were being thrown away:
+
+    * INTRACELLULAR — a real, tolerated insertion facing the cytoplasm. ABCC1's
+      epitope scan names five functional positions and three are extracellular;
+      the other two (271, 653) are just as published and just as tolerated, and
+      are the right answer for a snorkel or an intracellular label. The model
+      never proposed them because the prompt asks for surface sites, so they
+      left no record at all — only numbers inside a sentence.
+    * ABROGATING — a position where the paper reports insertion DESTROYED
+      function. The same ABCC1 sentence names four (127, 417, 461, 529). That is
+      negative evidence about known-bad sites, which is worth more per character
+      than most of what we do keep, and nothing captured it."""
+
+    residue: int = Field(description="The position, in UniProt canonical numbering.")
+    kind: Literal["intracellular", "abrogates_function", "other"] = Field(
+        description=(
+            '"intracellular" — a tolerated insertion on the cytoplasmic face. '
+            '"abrogates_function" — the paper reports this insertion broke the '
+            'protein. "other" — published but neither of those.'
+        )
+    )
+    supporting_clip_id: str = Field(default="", description="The [Ln] line reporting it.")
+    note: str = Field(default="", description="One clause: what the paper says about it.")
+
+
 class TagSiteResult(BaseModel):
     # Stamped by the runner from what the caller already holds — never asked of
     # the model, which would only be echoing back its own input and failing
@@ -203,6 +286,8 @@ class TagSiteResult(BaseModel):
     sites: list[TagSiteProposal] = Field(default_factory=list)
     notes: str = ""
     rejected: list[RejectedSite] = Field(default_factory=list)
+    #: Published positions that are not surface tag sites — see OtherPosition.
+    other_positions: list[OtherPosition] = Field(default_factory=list)
 
     # Prompt provenance. Mandatory for any pipeline whose LLM output is
     # persisted (CLAUDE.md), and absent here until now: four prompt edits in one

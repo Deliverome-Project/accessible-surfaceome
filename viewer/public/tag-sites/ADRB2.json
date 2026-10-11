@@ -120,31 +120,31 @@
       "median_conservation": null
     },
     {
-      "site_id": "ADRB2-terminal_n-1-lit",
+      "site_id": "ADRB2-terminal_n-0-lit",
       "gene_symbol": "ADRB2",
       "uniprot_acc": "P07550",
       "provenance": "literature_retrieved",
       "det_path": null,
       "site_kind": "terminal_n",
-      "insert_after_residue": 1,
-      "residue_before": "M",
-      "residue_after": "G",
-      "residue_label": "M1",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "short epitope, ALFA 15 aa, GS linkers",
+      "tag_type": "SNAP-tag / Twin-Strep",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface display confirmed by live-cell TIRF microscopy and non-permeabilized M1 anti-FLAG antibody labeling; agonist-induced internalization (10 \u00b5M isoproterenol, 5 and 30 min time points) quantified in \u03b2arr1/2 DKO HEK293 cells \u2014 receptor traffics and responds to agonist normally (PMC9681205). Surface expression also confirmed by FACS with anti-HA antibody (PMC12214593).",
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "GloSensor luminescence cAMP assay: agonist-stimulated (isoprenaline and salbutamol) concentration-response curves recorded in the clonal TS-SNAP-\u03b22AR cell line, confirming preserved Gs-coupled signalling. L5 additionally reports constitutive Gs signalling with FLAG+HiBiT-tagged \u03b22AR; L6\u2013L9 confirm surface display by live-cell M1 anti-FLAG labelling in non-permeabilised cells.",
       "confidence": "high",
-      "rationale": "All five ledger lines converge on the same N-terminal extracellular position. ADRB2 has no signal peptide (UniProt P07550); the canonical sequence begins with M1 which is extracellular (topology landmark: EXTRACELLULAR 1\u201333). 'N-terminally FLAG/HA/SNAP tagged' for a signal-peptide-free GPCR means the tag is inserted after the initiator Met (insert_after_residue = 1), placing it between M1 and G2. Python computation confirms: residue 1 = M, residue 2 = G, TM1 starts at residue 34 (V), giving 33 residues of clearance from the TM boundary. No cysteines in the 1\u201333 span; glycosylation sequons at N6 and N15 are downstream and unperturbed. The strongest ledger line (PMC9681205) demonstrates both surface display and functional agonist-induced internalization, qualifying this as surface_and_function. The site is validated (not inferred) because the published tag is at this exact N-terminal junction. Multiple independent studies report N-terminally FLAG-tagged, HA-tagged, and SNAP-tagged full-length \u03b22AR expressed in HEK293 cells. PMC9681205 is the most rigorous: FLAG-tagged \u03b22AR was confirmed on the cell surface by live-cell TIRF microscopy and by M1 anti-FLAG antibody labeling (both 37 \u00b0C live and 4 \u00b0C non-permeabilized conditions), and agonist-induced (10 \u00b5M isoproterenol) internalization was quantified in \u03b2arr1/2 double-knockout HEK293 cells \u2014 demonstrating both surface display and preserved receptor function. PMC12214593 confirmed surface expression of HA-tagged \u03b22AR by FACS with AF647-coupled anti-HA antibody. PMC9246501 and PMC10853676 report SNAP-tag fused to the N-terminal domain of \u03b22AR with functional expression in HEK293 cells. PMC12962099 reports HA-B2AR-Rluc8 with surface detection by anti-HA antibody. ADRB2 (UniProt P07550) has no signal peptide; M1 is the first extracellular residue (topology: EXTRACELLULAR 1\u201333), so a tag inserted after M1 (between M1 and G2) is not cleaved. Computed: TM1 begins at position 34 (V34), placing the junction 33 residues from the TM boundary (well above the \u22653 minimum). No cysteines in the N-terminal region (1\u201333). N-glycosylation sequons at N6 (NGS) and N15 (NGS) are downstream of the tag junction and unaffected. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 1; entailment_verified: True]",
+      "rationale": "ADRB2 (UniProt P07550) carries no signal peptide; residues 1\u201333 form the sole extracellular N-terminal domain (TM1 begins at residue 34, giving 33 residues of clearance). Because there is exactly one extracellular terminus, every ledger line reporting an 'N-terminal' tag on the full-length receptor maps unambiguously to a prepend before M1 (insert_after_residue = 0, residue_after = M). No ledger line names a specific residue, so position_evidence is topology_derived. The N-terminal prepend does not disturb N6, N15, or N187 glycosylation sites, nor any disulfide cysteine (none in residues 1\u201333), and multiple independent studies confirm surface expression and full agonist-stimulated cAMP signalling. Clonal HEK293G cells stably overexpressing full-length human \u03b22AR bearing an N-terminal Twin-Strep affinity tag plus SNAP-tag (TS-SNAP-\u03b22AR); receptor is membrane-anchored and expressed at the cell surface. Corroborated by at least seven additional ledger lines (L1, L2, L3, L5, L6\u2013L9, L12, L14, L15) all reporting N-terminal FLAG, HA, HiBiT, or SNAP tags on full-length membrane-anchored \u03b22AR. [validation: surface_and_function; position: topology_derived; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "pmid": 36250629,
-          "citation": "PMID 36250629",
-          "claim": "All receptor constructs were N-terminally FLAG tagged."
+          "pmid": 38580813,
+          "citation": "PMID 38580813",
+          "claim": "Figure 2 shows the time courses of GloSensor TM luminescence responses stimulated by increasing concentrations of isoprenaline (Fig. 2a ) and salbutamol (Fig. 2b ) in a clonal HEK293G cell line overexpressing the human \u03b2 2 -adrenoceptor containing an N-terminal Twin-Strep affinity purification tag and an N-terminal SNAP-tag (TS-SNAP-\u03b2 2 AR 37 )."
         }
       ],
       "plddt": null,
@@ -286,5 +286,12 @@
       "canonical_residue": 187,
       "left_pct": 45.83333333333333
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:14:44.339584+00:00",
+  "literature_notes": "L10 and L11 report a C-terminal GFP fusion of mouse \u03b22AR; the C-terminus falls in the intracellular region (residues 328\u2013413, topology INTRACELLULAR) and therefore does not qualify as an extracellular site. L15 also lists a C-terminal Venus fusion (B2AR-Venus) which is likewise intracellular and was excluded. No ledger line reports a tag insertion in any extracellular loop (ECL1 96\u2013107, ECL2 172\u2013197, ECL3 296\u2013306) of \u03b22AR or a close ortholog, so no internal loop sites are proposed. All qualifying lines (L1\u2013L9, L12\u2013L15) converge on the same N-terminal prepend position, which is reported as a single site with the strongest functional evidence (L13) as the primary citation.",
+  "literature_rejected": []
 }

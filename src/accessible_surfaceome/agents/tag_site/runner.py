@@ -67,12 +67,28 @@ from .literature_discovery import (
     save_discovery_cache,
 )
 from .normalize import signal_peptide_end
+from .position_verify import verify_position_blind
 from .prompt import (
     SYSTEM_PROMPT,
     TAG_SITE_PROMPT_VERSION,
     build_user_prompt,
     keep_validated_sites,
     prompt_sha,
+)
+from .triage_cache import (
+    load as load_triage_cache,
+)
+from .triage_cache import (
+    save as save_triage_cache,
+)
+from .triage_cache import (
+    split as split_triage,
+)
+from .triage_cache import (
+    input_sha as triage_input_sha,
+)
+from .triage_cache import (
+    triage_prompt_sha,
 )
 from .schema import (
     VALIDATION_LEVELS,
@@ -169,8 +185,15 @@ def load_tag_select_prompt() -> str:
     return _TAG_SELECT_PROMPT_PATH.read_text()
 
 
-def format_evidence_ledger(evidence: list[Evidence]) -> str:
+def format_evidence_ledger(evidence: Iterable[Any]) -> str:
     """Render span-verified ``Evidence`` as the synthesis prompt's ledger block.
+
+    Each line carries an ``[Ln]`` id. The model cites that id and never retypes
+    the quote, which is how the clip-SELECT stage has always worked ("you only
+    pick and classify by clip_id, you never retype the quote") and makes a
+    fabricated quote structurally impossible rather than something the
+    entailment gate has to catch afterwards. It also stops paying output rates
+    to echo our own input: the quotes ran ~240 characters each.
 
     Each line is ``[<label>] <claim>`` + a verbatim ``QUOTE`` already located in
     the cited source upstream, so the synthesis stage can only ground a site in a
@@ -183,19 +206,18 @@ def format_evidence_ledger(evidence: list[Evidence]) -> str:
             "found for this protein. Return an EMPTY sites list with a rationale."
         )
     lines = [
-        "EVIDENCE LEDGER (span-verified clips — each QUOTE is VERBATIM and already "
-        "located in the cited source. Ground EVERY site in ONE ledger line: copy "
-        "its QUOTE into supporting_quote exactly — that is what identifies the "
-        "source, so the citation is filled in for you. Do NOT invent sites or "
-        "quotes beyond this ledger):"
+        "EVIDENCE LEDGER (span-verified clips, each already located VERBATIM in "
+        "its source). Ground EVERY site in ONE line and name it by its [Ln] id "
+        "in supporting_clip_id. The quote and the citation are filled in from "
+        "that id — you never retype them. Do NOT invent sites beyond this ledger):"
     ]
-    for e in evidence:
+    for i, e in enumerate(evidence, start=1):
         span = e.spans[0] if e.spans else None
         source_id = span.source.source_id if span and span.source else "?"
         pmid = source_id.split("PMID:", 1)[1] if source_id.startswith("PMID:") else None
         label = f"PMID {pmid}" if pmid else source_id
         quote = span.quote if span else ""
-        lines.append(f"- [{label}] {e.claim}\n  QUOTE: {quote}")
+        lines.append(f"- [L{i}] [{label}] {e.claim}\n  QUOTE: {quote}")
     return "\n".join(lines)
 
 
@@ -241,7 +263,9 @@ def upgrade_quotes(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSit
     return result
 
 
-def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteResult:
+def enforce_position_claims(
+    result: TagSiteResult, *, sequence: str, client: Any | None = None
+) -> TagSiteResult:
     """Downgrade ``position_evidence`` to ``inferred`` on any site whose quote
     does not NAME its position.
 
@@ -258,16 +282,66 @@ def enforce_position_claims(result: TagSiteResult, *, sequence: str) -> TagSiteR
 
     Both ``n`` and its neighbours count, because a paper may name the residue
     before or after the junction, and the quote is read with the sequence so a
-    cell line or a stray integer cannot launder a position claim."""
+    cell line or a stray integer cannot launder a position claim.
+
+    ``client`` enables a BLIND second opinion for the long tail the literal
+    matcher misses. It is consulted only when the matcher found nothing, it is
+    shown the sentence and nothing else, and it can only UPGRADE — a verifier
+    that could also downgrade would be a second way to lose a correct site, and
+    the deterministic path already decides that."""
     if not sequence:
         return result
     for s in result.sites:
         if s.position_evidence != "validated":
+            continue  # 'inferred' and 'topology_derived' already claim no exact citation
+        n = s.insert_after_residue
+        if n is None:
+            # A region-level site claims no junction, so there is no position
+            # for a quote to name; it is already labelled 'inferred' by the
+            # prompt and must not be re-judged against a residue it never gave.
             continue
         named = residue_mentions(s.supporting_quote, sequence=sequence)
-        n = s.insert_after_residue
-        if not named & {n - 1, n, n + 1}:
-            s.position_evidence = "inferred"
+        if named & {n - 1, n, n + 1}:
+            continue
+        # The matcher found nothing. Before downgrading, ask the blind verifier
+        # — it handles the spellings no pattern list covers, and returns NONE
+        # for the numbers that are durations, figures and catalogue ids.
+        stated = verify_position_blind(
+            s.supporting_quote, client=client, max_residue=len(sequence)
+        )
+        if stated is not None and stated in {n - 1, n, n + 1}:
+            # Say so. Without this the verifier is invisible: two sites were
+            # upgraded in one run and both turned out to be the deterministic
+            # span/list patterns, which is only knowable by re-deriving the
+            # match by hand. A fallback nobody can see firing cannot be
+            # evaluated, and will get credited for work it did not do.
+            log.info("  %s: %s position upheld by blind verify (quote states %d)",
+                     result.gene_symbol or "?", s.residue_label, stated)
+            s.position_repaired = True
+            continue
+        s.position_evidence = "inferred"
+    return result
+
+
+def enforce_evidence_type_coupling(result: TagSiteResult) -> TagSiteResult:
+    """An unvalidated position may not carry an exact-site ``evidence_type``.
+
+    The prompt couples them — `evidence_type` may be "published tag insertion at
+    this exact site" ONLY when the position is validated — but nothing enforced
+    it. `enforce_position_claims` downgrades `position_evidence` when the quote
+    does not name the residue and leaves `evidence_type` untouched, so a record
+    could say "I inferred this position" and "a tag was published at this exact
+    site" in the same breath. TFRC's C-terminal site shipped exactly that pair,
+    which made it read stronger than the sentence behind it.
+
+    The site is KEPT. Only the claim is corrected — a terminal position derived
+    from topology is a real finding, it just is not an exact-site citation."""
+    for site in result.sites:
+        if (
+            site.position_evidence != "validated"
+            and site.evidence_type == "published tag insertion at this exact site"
+        ):
+            site.evidence_type = "published tag insertion in the same loop or domain"
     return result
 
 
@@ -297,6 +371,36 @@ def recover_overcomplete_quotes(result: TagSiteResult, *, evidence: Iterable[Any
         clip = ledger_clip_within(site.supporting_quote, evidence)
         if clip:
             site.supporting_quote = clip
+    return result
+
+
+def fill_quotes_from_ledger(
+    result: TagSiteResult, *, evidence: Iterable[Any]
+) -> TagSiteResult:
+    """Fill ``supporting_quote`` from the ``[Ln]`` id the site cited.
+
+    The quote is OURS, not the model's: it comes back out of the same ledger it
+    went in as, so it cannot be mistyped, truncated or embellished. Every quote
+    failure today was a transcription artifact — a curly apostrophe against a
+    straight one, a sentence reproduced more completely than the clip stored —
+    and none of them can occur when the text is never retyped.
+
+    A site that cites no id keeps whatever quote it wrote, so the entailment
+    gate still has something to judge; that is the backward-compatible path."""
+    lines = list(evidence)
+    for site in result.sites:
+        cid = (getattr(site, "supporting_clip_id", "") or "").strip().upper()
+        if not cid.startswith("L"):
+            continue
+        try:
+            idx = int(cid[1:]) - 1
+        except ValueError:
+            continue
+        if not 0 <= idx < len(lines):
+            continue
+        span = next(iter(getattr(lines[idx], "spans", None) or []), None)
+        if span is not None and getattr(span, "quote", None):
+            site.supporting_quote = span.quote
     return result
 
 
@@ -376,11 +480,57 @@ def run_tag_site_agent(
     except Exception:  # noqa: BLE001 - never block on the retraction fetch
         ri = _empty_retraction()
 
+    # What the run knows SO FAR. The three _empty() paths below returned before
+    # the stamping at the end of this function, so a gene that legitimately found
+    # nothing wrote an intermediates dict holding nothing — not even its own
+    # symbol. The first library sweep produced 759 such rows out of 1,825: $344
+    # of spend that could not be attributed to a gene, and a resume that would
+    # have paid for every one of them twice, because the skip set keys on
+    # gene_symbol. _empty() exists because the RESULT had this identical hole;
+    # this closes it for the archive, and the defaults below are the correct
+    # answers for a run that stopped early rather than placeholders.
+    _progress: dict[str, Any] = {
+        "gene_symbol": gene_symbol,
+        "n_papers": 0,
+        "n_clips": 0,
+        "n_boosted": 0,
+        "boosted": {},
+        "ledger": [],
+        "synthesis_meta": {},
+        "notes": "",
+        "n_sites": 0,
+        "rejected": [],
+        "other_positions": [],
+    }
+
+    def _stamp(**final: Any) -> None:
+        """Write the run's account into the caller's dict. Every return goes
+        through here, so a new early return cannot silently skip it."""
+        if intermediates is not None:
+            intermediates.update({**_progress, **final})
+
     def _empty() -> TagSiteResult:
+        """An empty result is still a result, and carries its provenance.
+
+        There are three early returns through here — no papers, no evidence, a
+        synthesis that came back None — and each bypassed the stamping at the
+        end of the function. A gene that ran and legitimately found nothing was
+        therefore indistinguishable from one that never ran: ITGB5 came out of a
+        24-gene sweep with no prompt_sha while every other gene carried one,
+        including VANGL1, which also found nothing but reached the normal path.
+
+        "Ran under prompt X and found nothing" is exactly the fact the
+        provenance rule exists to preserve — a zero that cannot be dated has to
+        be re-run to be trusted."""
+        _stamp()
         return TagSiteResult(
             gene_symbol=gene_symbol,
             uniprot_accession=uniprot_accession,
             sequence_length=len(sequence or ""),
+            prompt_sha=prompt_sha(),
+            prompt_version=TAG_SITE_PROMPT_VERSION,
+            model=SONNET_MODEL,
+            generated_at=datetime.now(UTC).isoformat(),
         )
 
     # 1. Discovery: repo lit-search + shared web_search complement, hydrated to real
@@ -405,11 +555,29 @@ def run_tag_site_agent(
         papers.setdefault(paper_source_id(wp), wp)
     papers_by_id: dict[str, Paper] = {paper_source_id(p): p for p in papers.values()}
     save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
+    _progress["n_papers"] = len(papers_by_id)
     if not papers_by_id:
         return _empty()
 
     # 2. Abstract triage -> 3. body pool + real source store (shared).
-    outcomes = triage_abstracts(client, papers=list(papers_by_id.values()), gene=gene_symbol)
+    # Resume: reuse verdicts this gene already has under the SAME triage prompt.
+    # Triage is ~90% of a run's model calls (one per discovered paper), and it
+    # was recomputed from scratch every time — so re-running a gene after a
+    # SYNTHESIS prompt edit paid the whole triage bill again for identical
+    # verdicts. A changed triage prompt_sha invalidates the lot automatically.
+    _tsha = triage_prompt_sha()
+    _cached = load_triage_cache(gene_symbol)
+    _todo, _reused = split_triage(papers_by_id, _cached, prompt_sha=_tsha)
+    if _reused:
+        log.info("  %s: reusing %d cached triage verdict(s); %d to run",
+                 gene_symbol, len(_reused), len(_todo))
+    outcomes = _reused + (
+        triage_abstracts(client, papers=_todo, gene=gene_symbol) if _todo else []
+    )
+    save_triage_cache(
+        gene_symbol, outcomes, prompt_sha=_tsha,
+        inputs={sid: triage_input_sha(p) for sid, p in papers_by_id.items()},
+    )
     if usage_sink is not None:
         # `TriageOutcome.usage` is a populated UsageRecord (Haiku-priced) that
         # nothing collected, so abstract triage — the biggest fan-out, one call
@@ -447,6 +615,11 @@ def run_tag_site_agent(
                 log.info("      %s @%s: %s",
                          getattr(clip, "source_id", key), sorted(positions),
                          (getattr(clip, "quote", "") or "")[:110])
+    _progress.update({
+        "n_clips": len(pool),
+        "n_boosted": len(boosted),
+        "boosted": {k: sorted(v) for k, v in boosted.items()},
+    })
     selection = select_clips(
         client,
         pool=pool,
@@ -524,6 +697,8 @@ def run_tag_site_agent(
     # names the residue — ahead of the gate that would let a wholly invented
     # quote survive wearing a real but unrelated citation, which is worse than
     # dropping the site.
+    # Resolve cited ids to their quotes BEFORE any check reads a quote.
+    fill_quotes_from_ledger(result, evidence=evidence)
     verify_entailment(result, evidence=evidence)
     recover_overcomplete_quotes(result, evidence=evidence)
     verify_entailment(result, evidence=evidence)
@@ -544,7 +719,8 @@ def run_tag_site_agent(
     upgrade_quotes(result, evidence=evidence)
     #   b2) a site may claim a VALIDATED position only if its quote names it;
     #       otherwise the position came from topology, not from the citation.
-    enforce_position_claims(result, sequence=sequence)
+    enforce_position_claims(result, sequence=sequence, client=client)
+    enforce_evidence_type_coupling(result)
     if sequence and topology:
         kept, rejected = apply_geometry_pass(
             result.sites,
@@ -560,30 +736,30 @@ def run_tag_site_agent(
                 gate="geometry", reason=reason,
             ))
         result.sites = kept
-    if intermediates is not None:
-        # The clip pool and the ledger were never persisted — the code says so
-        # twice — so after a run finished there was no way to ask which clips
-        # were available, what the model was shown, or why a site was not
-        # proposed. Every such question today cost a fresh run to answer.
-        intermediates.update({
-            "gene_symbol": gene_symbol,
-            "n_papers": len(papers_by_id),
-            "n_clips": len(pool),
-            "n_boosted": len(boosted),
-            "boosted": {k: sorted(v) for k, v in boosted.items()},
-            "ledger": [
-                {
-                    "source_id": (sp.source.source_id if sp.source else None),
-                    "claim": e.claim,
-                    "quote": sp.quote,
-                }
-                for e in evidence
-                for sp in (e.spans or [])
-            ],
-            "synthesis_meta": synth_meta,
-            "notes": result.notes,
-            "rejected": [x.model_dump() for x in result.rejected],
-        })
+    # The clip pool and the ledger were never persisted — the code says so twice
+    # — so after a run finished there was no way to ask which clips were
+    # available, what the model was shown, or why a site was not proposed. Every
+    # such question cost a fresh run to answer.
+    _stamp(
+        ledger=[
+            {
+                "source_id": (sp.source.source_id if sp.source else None),
+                "claim": e.claim,
+                "quote": sp.quote,
+            }
+            for e in evidence
+            for sp in (e.spans or [])
+        ],
+        synthesis_meta=synth_meta,
+        notes=result.notes,
+        n_sites=len(result.sites),
+        rejected=[x.model_dump() for x in result.rejected],
+        # Published positions that are NOT surface sites: tolerated
+        # intracellular insertions, and positions a paper reports as
+        # function-abrogating. Both were visible only as numbers inside a ledger
+        # sentence before this.
+        other_positions=[x.model_dump() for x in result.other_positions],
+    )
 
     result.prompt_sha = prompt_sha()
     result.prompt_version = TAG_SITE_PROMPT_VERSION

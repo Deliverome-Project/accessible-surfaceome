@@ -50,7 +50,7 @@ Concise contributor guide for `accessible-surfaceome`.
 ## Prompt provenance is mandatory for every agentic pipeline
 **Any pipeline that runs an LLM prompt to produce a persisted record MUST stamp, per record, the exact prompt that produced it** — three fields, always: (1) the **model string** (`claude-opus-5`, not "opus"); (2) **`prompt_sha`** = `hashlib.sha256(system_prompt.encode()).hexdigest()` of the exact prompt text (content fingerprint — any edit changes it); (3) **`prompt_version`** = a human-bumpable module constant bumped in the same commit as any prompt edit. And the **resume/skip logic MUST treat a changed `prompt_sha` as stale** — a record written under a different prompt_sha is re-run, never skipped on `schema_version` alone (that lets a prompt edit ship without re-running affected rows — the "stale record that believes it's current" bug). Persist all three (+ `schema_version`, `generated_at`) on the record and project `prompt_sha`/`prompt_version` into the D1 flat columns so a stale row is queryable without unpacking `record_json`.
 
-Reference implementations: `triage_run` (`prompt_sha`/`prompt_filename`/`prompt_variant`, the canonical precedent); the **internalization sequence pass** — `ModelPriorTrack.{prompt_sha,prompt_version}` in `grade_isoforms_with_model`, `MODEL_PRIOR_PROMPT_VERSION` in `agents/internalization/models.py`, D1 cols `seq_prompt_sha`/`seq_prompt_version`, and the sha-aware skip in `scripts/internalization_seq_sweep.py`. The deep-dive `surfaceome_v2` also carries a global `prompt_corpus` fingerprint (`_version_guard.py`, `PROMPT_CORPUS_VERSION`); a standalone pass with its own versioning (internalization) is excluded from that corpus and carries its own per-record `prompt_sha`/`prompt_version` instead — but still MUST carry them.
+Reference implementations: `triage_run` (`prompt_sha`/`prompt_filename`/`prompt_variant`, the canonical precedent); the **internalization sequence pass** — `ModelPriorTrack.{prompt_sha,prompt_version}` in `grade_isoforms_with_model`, `MODEL_PRIOR_PROMPT_VERSION` in `agents/internalization/models.py`, D1 cols `seq_prompt_sha`/`seq_prompt_version`, and the sha-aware skip in `scripts/internalization_seq_sweep.py`; its **literature track** (`LiteratureTrack.{prompt_sha,prompt_version,model}`); and the **tag-site agent** (`TagSiteResult.{schema_version,prompt_sha,prompt_version,model,generated_at}`, constant `TAG_SITE_PROMPT_VERSION`). The deep-dive `surfaceome_v2` also carries a global `prompt_corpus` fingerprint (`_version_guard.py`, `PROMPT_CORPUS_VERSION`); a standalone pass with its own versioning (internalization) is excluded from that corpus and carries its own per-record `prompt_sha`/`prompt_version` instead — but still MUST carry them.
 
 ## Triage body-fetch: Unpaywall + PDF fallback
 `plan_trim_select` abstract-triage fetches a `worth_fetching` paper's body via a 3-step fall-through: **PMC JATS** (`pmc_id` or PMID→PMCID eLink) → **Unpaywall OA PDF**. The Unpaywall step tries **all** OA PDF locations best-quality-first (so a bot-blocked publisher copy can fall through to a repository copy), parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber; gutter-based 2-column split + font-aware run-in/bold heading detection → the JATS `SectionName` enum). Any failure → abstract fallback, never crashes the batch.
@@ -459,6 +459,31 @@ fails the check and blocks merge.
   listed, update the workflow's `scopes:` block in the same PR — don't
   invent a new one.
 - Match the commit-message subject style: terse, imperative, no trailing period.
+
+## Tag-site literature agent
+
+`agents/tag_site/` finds PUBLISHED epitope-tag insertion sites; scored against
+`data/tag_sites/positive_controls.tsv` by `scripts/score_tag_sites_vs_controls.py`, which
+refuses to run on a dirty tag-sites tree. ~$0.8-1.0/gene, dominated by one Haiku triage call
+per discovered paper.
+
+- **Read the run artifact before re-running.** `data/external/tag_site_runs/{SYMBOL}.json`
+  (gitignored) holds the clip pool, the boosted clips, the full ledger, the synthesis
+  metadata, the agent's `notes`, and every site a gate removed with the failing quote. The
+  pool is not otherwise persisted, so a question about a dropped site used to cost a fresh run.
+- **Quote entailment runs through `normalize_for_quote_matching`, which is SHARED** with the
+  deep dive and internalization. It folds typographic punctuation as well as NFKC/HTML/Greek/
+  whitespace/case — NFKC does not fold U+2019 to U+0027, and a 448-character quote was failing
+  on one curly apostrophe.
+- **`publish_tag_sites` is a scoped UPSERT, never replace-all.** One tag-sites JSON is written
+  by two independent pipelines, so deleting all of a gene's rows before inserting lets a
+  literature-only file erase the deterministic sites. `sync_tag_sites_to_d1.py` refuses a sync
+  that would shrink any gene unless `--allow-deletes`; re-derive with
+  `scripts/regenerate_tag_sites.py` (it preserves literature sites) instead of overriding.
+- **The viewer reads the Worker**: `fetchTaggedSites(symbol, API_BASE)`. Without the apiBase
+  only the static `/tag-sites/{SYMBOL}.json` is tried, and that asset is not in the Pages
+  export.
+
 
 ## Doc Sync Rule
 - Keep `AGENTS.md` and `CLAUDE.md` aligned when workflow guidance changes.

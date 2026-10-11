@@ -9,6 +9,8 @@ never leaves a stale row). The Worker serves these at ``/v1/tag-sites/:symbol``.
 
 from __future__ import annotations
 
+import logging
+
 import json
 from collections.abc import Iterable
 from datetime import UTC, datetime
@@ -121,6 +123,9 @@ def rows_for_file(data: dict[str, Any], *, version: str, synced_at: str) -> list
 
 
 
+log = logging.getLogger(__name__)
+
+
 def enrich_sources_with_paper_metadata(
     rows: list[dict[str, Any]], *, client: D1Client
 ) -> int:
@@ -158,11 +163,19 @@ def enrich_sources_with_paper_metadata(
     for i in range(0, len(ordered), 50):  # D1 caps bound parameters per query
         chunk = ordered[i : i + 50]
         marks = ", ".join(["?"] * len(chunk))
-        for m in client.query(
-            f"SELECT pmid, title, authors_short, journal, year FROM paper_metadata "
-            f"WHERE pmid IN ({marks});",
-            chunk,
-        ):
+        try:
+            rows = client.query(
+                f"SELECT pmid, title, authors_short, journal, year FROM paper_metadata "
+                f"WHERE pmid IN ({marks});",
+                chunk,
+            )
+        except Exception as exc:  # noqa: BLE001 - enrichment is additive, never required
+            # `paper_metadata` may not exist yet in a fresh database. A citation
+            # without a title is still a citation, so a missing enrichment table
+            # must not fail the publish that carries the sites themselves.
+            log.warning("paper_metadata lookup failed (%s); citations stay bare", exc)
+            return 0
+        for m in rows:
             if m.get("pmid"):
                 meta[str(m["pmid"])] = m
 

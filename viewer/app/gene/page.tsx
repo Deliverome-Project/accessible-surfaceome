@@ -266,8 +266,13 @@ export default function GeneShellPage() {
         // library nav, and the isoform/ortholog in-library pills. A miss →
         // null → no badge / nav / pills (graceful).
         fetchJson("/data/fg-library.json"),
-        // Static tag-sites asset (Worker-first fetch happens client-side; static fallback + pins).
-        fetchTaggedSites(symbol),
+        // Tag sites from the D1-backed Worker, falling back to the static asset.
+        // API_BASE was not being passed, so the Worker branch never ran and the
+        // card depended entirely on /tag-sites/{SYM}.json — which is not in the
+        // deployment, so the section never rendered. `tag_site_public` is synced
+        // now, which is the condition fetchTaggedSites documents for taking the
+        // Worker path.
+        fetchTaggedSites(symbol, API_BASE),
         // Tedman GPCR surface-expression overlay (site origin). Drives the
         // "Low surface" chip on library GPCRs (PME ≤ 1000). Miss → no chip.
         fetchJson("/data/tedman-surface.json"),

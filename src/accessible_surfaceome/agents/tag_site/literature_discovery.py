@@ -365,10 +365,36 @@ _AA_THREE = {
 }
 _MAX_RESIDUE = 40_000  # longest human protein (titin) ~34k
 
-_RE_FULL = re.compile(rf"\b({'|'.join(_AA_FULL)})\s*-?\s*(\d{{1,5}})\b", re.I)
-_RE_THREE = re.compile(rf"\b({'|'.join(_AA_THREE)})\s*-?\s*(\d{{1,5}})\b", re.I)
+_RE_FULL = re.compile(rf"\b({'|'.join(_AA_FULL)})\s*-?\s*(\d{{1,5}})(?!\d)", re.I)
+_RE_THREE = re.compile(rf"\b({'|'.join(_AA_THREE)})\s*-?\s*(\d{{1,5}})(?!\d)", re.I)
 _RE_CODE = re.compile(r"(?<![A-Za-z0-9])([ACDEFGHIKLMNPQRSTVWY])(\d{1,5})(?![A-Za-z0-9])")
 _RE_POSITIONAL = re.compile(r"\b(?:residue|position|codon)\s+(?:no\.?\s*)?(\d{1,5})\b", re.I)
+# A SPAN: "residues 484-516", "aa 120 to 135". Both boundaries are real position
+# claims — a replaced or deleted segment starts at one and ends at the other —
+# and the singular pattern above misses them twice over: on the plural "s" and
+# on the range. SLC5A6's strongest citation reads "a segment of the EL3
+# (residues 484-516) was replaced with an ALFA-tag", which names the junction
+# the site claims, and the record was downgraded to 'inferred' for want of a
+# number the quote plainly contains. A replacement or deletion is nearly always
+# written as a range, so the forms this missed were exactly the strongest ones.
+#: A deletion/replacement marker: "D484-516". Papers write a removed segment
+#: this way as often as they spell it out.
+_RE_DELTA_SPAN = re.compile(
+    r"[\u0394\u2206]\s*(\d{1,5})\s*(?:[-\u2010-\u2015\u2212]|to)\s*(\d{1,5})\b"
+)
+#: "residues 484 and 516", "aa 484, 516" — a list, not a range.
+_RE_LIST = re.compile(
+    r"\b(?:residues|positions|codons|aa|amino\s+acids)\s+"
+    r"(\d{1,5})\s*(?:,|and|&)\s*(\d{1,5})\b",
+    re.I,
+)
+#: "aa484" / "aa 484" with no separating word.
+_RE_AA_TIGHT = re.compile(r"\baa\s*(\d{1,5})\b", re.I)
+_RE_SPAN = re.compile(
+    r"\b(?:residues?|positions?|codons?|aa|amino\s+acids?)\s+"
+    r"(\d{1,5})\s*(?:[-\u2010-\u2015\u2212]|to)\s*(\d{1,5})\b",
+    re.I,
+)
 # A long uppercase nucleotide run means we are inside a primer / HDR table, where
 # a token like "A33" is sequence formatting rather than a residue label.
 _RE_DNA_RUN = re.compile(r"[ACGT]{12,}")
@@ -376,7 +402,8 @@ _RE_DNA_RUN = re.compile(r"[ACGT]{12,}")
 
 def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[int]:
     """Every residue POSITION ``text`` names, in any spelling a paper might use:
-    ``A33``, ``Ala33``, ``Thr 436``, ``alanine 34``, ``residue 64``.
+    ``A33``, ``Ala33``, ``Thr 436``, ``alanine 34``, ``residue 64``,
+    ``residues 484-516`` (a span claims both boundaries).
 
     ``sequence`` is what makes the CODE form (``A33``) safe to read at all. A bare
     letter-number token is extremely common noise: in one run every clip promoted
@@ -422,6 +449,16 @@ def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[in
             if 0 < n <= _MAX_RESIDUE and _confirmed(table[m.group(1).lower()], n):
                 out.add(n)
     for m in _RE_POSITIONAL.finditer(clean):  # no letter to confirm
+        n = int(m.group(1))
+        if 0 < n <= _MAX_RESIDUE:
+            out.add(n)
+    for rx in (_RE_SPAN, _RE_DELTA_SPAN, _RE_LIST):  # these claim BOTH numbers
+        for m in rx.finditer(clean):
+            for g in (1, 2):
+                n = int(m.group(g))
+                if 0 < n <= _MAX_RESIDUE:
+                    out.add(n)
+    for m in _RE_AA_TIGHT.finditer(clean):
         n = int(m.group(1))
         if 0 < n <= _MAX_RESIDUE:
             out.add(n)

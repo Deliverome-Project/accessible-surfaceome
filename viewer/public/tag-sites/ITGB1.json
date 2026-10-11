@@ -125,16 +125,17 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "other",
+      "tag_type": "GFP / pHluorin / Halo / SNAP",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "yes",
+      "functional_impact_measured": "Surface expression confirmed by immunocytochemistry with anti-\u03b21 integrin and anti-HaloTag antibodies in non-permeabilised cells (L6, L7). Construct well tolerated by multiple mammalian cell lines and human neural stem cells (L8). pHluorin and GFP ecto-tagged constructs used successfully for live-cell surface imaging of integrin trafficking (PMC5603536).",
       "confidence": "high",
-      "rationale": "Multiple independent publications (PMC5603536, PMC9999384) validate insertion of large and small tags at exactly this junction in full-length membrane-anchored ITGB1. Surface display was confirmed by live-cell fluorescence imaging and non-permeabilised staining. Trafficking function was assessed via pHluorin pH-sensitivity assays. The hybrid domain loop between G101 and T102 is extracellular, 627 aa from the TM helix, and structurally tolerant of insertions up to full GFP size, making it an ideal site for a short ALFA-tag with flanking GS linkers. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Python confirmed canonical position 101 = G (Gly), matching the paper's 'Gly101' exactly; canonical position 102 = T (Thr), whereas the paper states 'Tyr102' \u2014 a one-residue identity discrepancy (likely a typo or minor isoform difference in the paper) that does not affect the junction position, which is unambiguously between 101 and 102. The site sits 81 residues past the signal-peptide cleavage site (mature N-terminus at 21) and 628 residues from the TM boundary (729), satisfying all distance constraints. The insertion is in the hybrid domain of the \u03b21 integrin ectodomain, a loop region that tolerates large insertions (GFP ~240 aa) without disrupting surface trafficking or cell-type tolerance, as directly demonstrated in the cited constructs. B\u00f6ttcher et al. (PMC5603536) inserted GFP, pHluorin, Halo, and SNAP tags between residues Gly101 and Tyr102 of full-length, membrane-anchored human \u03b21 integrin (pcDNA3 expression construct) using QuikChange mutagenesis to introduce EcoRI/XhoI sites at that junction, flanked by 4- or 9-aa flexible linkers. The same Gly101/Tyr102 junction and cloning strategy were independently reproduced in PMC9999384 (L4, L5). A separate HaloTag fusion to \u03b21 integrin (PMC2359743, L6\u2013L8) confirmed cell-surface localisation of a HaloTag-bearing \u03b21 integrin in non-permeabilised cells and tolerance across multiple cell types including human neural stem cells, though that paper does not state the insertion residue. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "citation": "preprint",
+          "pmid": 28924207,
+          "citation": "PMID 28924207",
           "claim": "Each ecto-tag (GFP, pHluorin, Halo, and SNAP, in blue , N- and C-terminal sequences specified) was inserted into the hybrid domain of human \u03b21 integrin between residues Gly101 and Tyr102 (in green )."
         }
       ],
@@ -1320,5 +1321,12 @@
       "canonical_residue": 94,
       "left_pct": 11.779448621553884
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:16:35.357521+00:00",
+  "literature_notes": "Ledger lines L1\u2013L5 all converge on the single junction between canonical positions 101 (G) and 102 (T) in the hybrid domain of full-length human \u03b21 integrin; they are from two independent publications (PMC5603536 and PMC9999384) and together constitute the strongest possible evidence for this site. Ledger lines L6\u2013L8 (PMC2359743) describe a HaloTag fusion to \u03b21 integrin that is surface-localised and functionally tolerated, but those clips name no insertion residue; they cannot ground a separate site and are cited only as corroborating functional evidence. No other ledger line names a different residue or loop in ITGB1, so exactly one site is reported. The canonical sequence has no G\u2013Y dinucleotide anywhere; the paper's 'Tyr102' is almost certainly a typographic error for Thr102 (T at canonical 102), and the junction position is not in doubt.",
+  "literature_rejected": []
 }

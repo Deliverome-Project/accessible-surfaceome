@@ -210,3 +210,4 @@ data/processed/tag_site_signals/
 # Accumulated per-gene tag-site discovery (regenerable; grows every run).
 data/external/tag_site_discovery/
 data/external/tag_site_runs/
+data/external/tag_site_triage/

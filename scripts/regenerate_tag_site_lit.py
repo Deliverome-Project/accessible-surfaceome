@@ -38,6 +38,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import re
 import sys
 import urllib.request
@@ -49,6 +50,12 @@ from accessible_surfaceome.env import load_env
 
 load_env()
 
+from accessible_surfaceome.cloud.tag_site_runs import (  # noqa: E402
+    publish_run as publish_tag_site_run,
+)
+from accessible_surfaceome.agents.tag_site.record import (  # noqa: E402
+    merge as merge_record,
+)
 from accessible_surfaceome.agents.tag_site.runner import (  # noqa: E402
     run_tag_site_agent,
     to_viewer_sites,
@@ -58,6 +65,8 @@ ROOT = Path(__file__).resolve().parents[1]
 #: Per-run intermediates (clip pool, ledger, boosted clips, usage). Derived and
 #: regenerable, so it lives beside the other local caches rather than in git.
 RUNS_DIR = ROOT / "data/external/tag_site_runs"
+#: Groups one sweep in private D1's `tag_site_run`, like deep_dive_run's run_id.
+TAG_SITE_RUN_ID = os.environ.get("TAG_SITE_RUN_ID", "tag_site_adhoc")
 OUT_DIR = ROOT / "viewer/public/tag-sites"
 API_BASE = "https://api.deliverome.org/surfaceome"
 UNIPROT_BASE = "https://rest.uniprot.org/uniprotkb"
@@ -242,8 +251,8 @@ def merge_lit_sites(
     }
     kept = [s for s in rec.get("sites", []) if s.get("provenance") != "literature_retrieved"]
     merged = sorted(kept + lit_sites, key=lambda s: s["site_id"])
-    rec["sites"] = merged
-    rec["has_data"] = len(merged) > 0
+    rec = merge_record(file_data, {**rec, "sites": merged, "has_data": len(merged) > 0},
+                       owner="literature")
     if result is not None:
         # Prompt provenance (CLAUDE.md: mandatory for any persisted LLM output)
         # plus what the gates removed. Without the first, records written either
@@ -357,6 +366,11 @@ def regenerate_gene(symbol: str, *, dry_run: bool) -> dict[str, Any]:
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     (RUNS_DIR / f"{symbol}.json").write_text(json.dumps(inter, indent=2, default=str))
     log.info("  %s: wrote intermediates to %s", symbol, RUNS_DIR / f"{symbol}.json")
+    # The local artifact is gitignored derived data — one rm -rf from gone, and
+    # it is the only account of why a record says what it says. Archive it the
+    # way the deep dive archives its runs: private D1, same database.
+    if publish_tag_site_run(inter, run_id=TAG_SITE_RUN_ID, uniprot_acc=acc):
+        log.info("  %s: archived run to private D1 (run_id=%s)", symbol, TAG_SITE_RUN_ID)
 
     # 4. Merge: keep non-lit (deterministic) sites + pins + gene fields; swap lit.
     if not dry_run:
