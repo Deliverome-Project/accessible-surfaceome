@@ -144,6 +144,25 @@ Two things about panning are easy to get wrong and fail silently:
   cursor, and the pan never starts. Synthetic PointerEvents in a test
   do not reproduce this — it only shows up under a real drag.
 
+**The legend moves beside the figure when that shows it larger.** The
+panel is wider than it is tall, so a figure sharing that height with a
+legend beneath it can end up a sliver. `paper.js` lays each figure out
+both ways while the overlay is still invisible and keeps whichever
+renders the bigger picture.
+
+It is measured rather than thresholded because the answer depends on
+the figure's shape AND on how much height its legend eats AND on the
+window, and the three do not line up. In this manuscript a near-square
+figure with a long legend is 71% larger beside, while a slightly
+flatter one with a short legend is 6% *smaller* — an aspect-ratio cutoff
+mis-sorts both. Measuring costs two reflows on a hidden overlay.
+
+Measure the **picture**, not the `<img>` box: `object-fit: contain`
+letterboxes the picture inside the box, and comparing boxes made an
+earlier pass of this come out backwards. Below the stylesheet's 48rem
+breakpoint the side-by-side rules do not apply, so both measurements
+come back equal and stacked wins by default.
+
 The window takes its `aspect-ratio` from the image's own dimensions,
 set by `paper.js` when the figure opens. That indirection is load
 bearing: left to size the window itself, the image gives the window its
@@ -159,6 +178,59 @@ window.
 
 Note that the overlay's dismiss-on-click would otherwise swallow the
 zoom gesture — the image click is intercepted before that fallthrough.
+
+### Dead cross-references fail the build
+
+`filters/figures.lua` turns "Figure 3" / "Figure S4" in the prose into
+links, and warns about references it could not match — but pandoc
+warnings scroll past in a long build and the exit status stays 0, so a
+dead cross-reference ships silently. One did: the draft reads
+`(Figure S4)Two of five changed` with no space after the bracket, the
+tokeniser saw `S4)Two`, and that reference was plain text in both the
+PDF and the web edition for several builds.
+
+Tables go through the same index and the same machinery — they are
+captioned the same way and cited the same way, and "Table S1" was the
+last reference shape in the paper still rendering as plain text while
+every figure around it linked. Panel-suffixed references ("Figure 4a")
+link to their figure, which is the only sensible target since there is
+no per-panel anchor.
+
+`paper/figure_links.py` now checks the rendered HTML — covering both
+outputs, and needing nothing but lxml, so it is tested in CI where the
+`paper` extra is not installed. A reference the filter should have
+linked and did not **fails the build**.
+
+When it fires, the reference is usually malformed in the `.docx` — a
+missing space after a bracket will do it — rather than a gap in the
+filter.
+
+### Figures carry alt text from their own legend
+
+Pandoc carries no alt text out of the `.docx`, so 22 of 27 images had
+no `alt` attribute at all — not empty, absent — and a screen reader
+announced nothing for almost every figure in either edition.
+`paper/figure_alt.py` sets it from the legend's lead sentence: already
+written, already copy-edited, and it cannot drift from the caption. An
+image that already has alt text keeps it, which is what leaves the
+title band's brand marks alone.
+
+### Panel markers in legends are bold
+
+`paper/caption_panels.py` emboldens the "a)", "b)", "c)" that introduce
+each panel's sentence. Without it a multi-panel legend reads as one
+undifferentiated paragraph and finding the sentence for panel b means
+reading the whole caption.
+
+Applied to the rendered HTML, so the PDF and the web edition get the
+identical treatment from one implementation. What counts as a marker is
+deliberately narrow — it must open a clause — because this manuscript's
+captions contain `("yes", panel a)`, which a looser rule would bold
+mid-sentence. The start-of-run case is the subtle one: the first
+panel's marker sits at the start of the caption-lead span's *tail*,
+where the full stop that ends the clause is inside the span and
+invisible to the matcher, so it was the one marker per legend that got
+missed.
 
 ### Figures reserve their box before they load
 

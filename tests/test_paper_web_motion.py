@@ -605,7 +605,10 @@ def test_figure_window_gets_its_shape_from_the_image() -> None:
     `max-height: 100%` resolves against a height derived from itself,
     keeps its original size and is clipped top and bottom."""
     js = WEB_JS.read_text()
-    assert "setViewportRatio(" in js
+    # The DEFINITION, not just a call: an edit once deleted the function
+    # and left the call site behind, which a bare "setViewportRatio("
+    # check happily passed while the lightbox threw on every open.
+    assert "function setViewportRatio(" in js
     assert "aspectRatio" in js
     css = _strip_comments(WEB_CSS.read_text())
     vp = re.search(r"\.figure-lightbox__viewport\s*\{([^}]*)\}", css)
@@ -719,3 +722,110 @@ def test_figure_legend_shares_the_body_text_column() -> None:
     rule = re.search(r"\.paper-root > \.figure-block h5\s*\{([^}]*)\}", css)
     assert rule, "the figure legend has no width of its own"
     assert "width: 100%" in rule.group(1), "legend does not fill the figure column"
+
+
+# ── 7. Tall figures put the legend beside, not beneath ──────────────
+
+def test_layout_is_chosen_by_measuring_both(  # noqa: D401
+) -> None:
+    """Which layout shows the figure larger depends on its shape, on how
+    much height its legend eats, and on the window — and the three do not
+    line up, so any fixed aspect-ratio threshold mis-sorts real figures
+    in both directions. The code lays it out both ways and keeps the
+    bigger one."""
+    js = WEB_JS.read_text()
+    assert "function chooseLayout()" in js
+    body = js[js.index("function chooseLayout()"):][:400]
+    assert 'remove("is-portrait")' in body and 'add("is-portrait")' in body, (
+        "only one layout is measured, so there is nothing to compare"
+    )
+    assert "PORTRAIT_RATIO" not in js, "a fixed ratio threshold is back"
+
+
+def test_layout_is_measured_on_the_picture_not_the_box() -> None:
+    """`object-fit: contain` letterboxes the picture inside the window,
+    so the <img> box is not what the reader sees. Measuring the box
+    instead made an earlier pass of this comparison come out backwards."""
+    js = WEB_JS.read_text()
+    assert "function visiblePictureArea()" in js
+    assert "naturalRatio" in js
+
+
+def test_layout_is_chosen_before_the_overlay_is_visible() -> None:
+    """Otherwise the reader watches the two trial layouts flash past."""
+    js = WEB_JS.read_text()
+    choose = js.index("chooseLayout();")
+    opened = js.index('overlay.classList.add("is-open")')
+    unhidden = js.index("overlay.hidden = false;")
+    assert unhidden < choose < opened, (
+        "the layout trial must run after un-hiding (so there is a layout "
+        "to measure) and before is-open (so it is never seen)"
+    )
+
+
+def test_tall_figures_can_move_the_legend_beside_the_figure() -> None:
+    """The panel is wider than it is tall, so a portrait figure sharing
+    that height with its legend ends up a sliver."""
+    css = _strip_comments(WEB_CSS.read_text())
+    rule = re.search(r"\.figure-lightbox__inner\.is-portrait\s*\{([^}]*)\}", css)
+    assert rule, "no side-by-side layout"
+    assert "flex-direction: row" in rule.group(1)
+    assert "height: 100%" in rule.group(1), (
+        "the panel does not fill the overlay, so the height the switch "
+        "exists to give the figure is not there to take"
+    )
+
+
+def test_portrait_legend_is_ordered_before_the_figure() -> None:
+    """`order`, not `row-reverse`: reversing would also throw the figure
+    counter to the far left, away from the figure it counts."""
+    css = _strip_comments(WEB_CSS.read_text())
+    cap = re.search(
+        r"\.figure-lightbox__inner\.is-portrait figcaption\s*\{([^}]*)\}", css
+    )
+    assert cap, "no portrait legend rule"
+    assert "order: -1" in cap.group(1)
+    assert "row-reverse" not in css
+
+
+def test_portrait_layout_is_off_on_narrow_screens() -> None:
+    """A side-by-side split in a phone-width panel leaves neither the
+    figure nor the legend enough width to be worth reading."""
+    css = _strip_comments(WEB_CSS.read_text())
+    guarded = [
+        b for b in _media_blocks(css, "min-width") if "is-portrait" in b
+    ]
+    assert guarded, "the portrait layout is not behind a width query"
+
+
+def test_the_lightbox_helpers_are_defined_not_just_called() -> None:
+    """An edit once deleted a function and left its call site behind;
+    the lightbox threw on every open and no test noticed, because the
+    assertions matched the call rather than the definition."""
+    js = WEB_JS.read_text()
+    for name in (
+        "setViewportRatio",
+        "chooseLayout",
+        "visiblePictureArea",
+        "clampPan",
+        "applyTransform",
+        "resetZoom",
+        "zoomAt",
+        "pointIn",
+    ):
+        assert f"function {name}(" in js, f"{name} is called but not defined"
+
+
+def test_paper_js_parses() -> None:
+    """Catches the whole class of edits that leave the file unparseable,
+    which no amount of substring matching above would notice."""
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    proc = subprocess.run(
+        [node, "--check", str(WEB_JS)], capture_output=True, text=True
+    )
+    assert proc.returncode == 0, proc.stderr

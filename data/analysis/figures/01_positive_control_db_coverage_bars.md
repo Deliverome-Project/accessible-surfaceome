@@ -13,8 +13,8 @@ re-run; do not hand-edit inside these markers.*
 Three-panel bar chart showing how the five gating surface databases and the
 Sonnet triage agent cover three orthogonal positive-control target lists.
 Each panel is one target list; each bar is one source. The top y-axis tick is
-the panel's own n_total; the axis runs a little higher (1.18 × n_total) to fit
-the label above each bar (source name, count, percentage).
+the panel's own n_total; the axis runs a little higher (1.25 × n_total) to fit
+the label above each bar (count, then percentage; the source name is the rotated x tick label below it).
 
 In panel a each bar is split by the source that contributed the ADC target
 (TheraSAbDab, then Open Targets, then ADCdb, shaded dark to light teal; see
