@@ -33,12 +33,11 @@
   --paper-muted: #6f5d5a;
   --paper-rule: rgba(31, 23, 24, 0.12);
 
-  /* Wider than the 44rem first draft: at 17px this lands around 90
-   * characters, which suits a technical paper with long compound
-   * terms and inline citations better than a literary measure. Wide
-   * for prose on purpose — this is a reference document people scan
-   * and cross-link through, not an essay read start to finish. */
-  --measure: 58rem;
+  /* Prose measure. 42rem at the 17px body size sets about 75
+   * characters per line (measured on this paper); the earlier 58rem ran
+   * to ~104, long enough that the eye loses its place on the return
+   * sweep. Figures and tables get their own, wider limits below. */
+  --measure: 42rem;
   --toc-width: 16rem;
 }
 
@@ -120,7 +119,11 @@ html { -webkit-text-size-adjust: 100%; }
  * exclusion it inherited max-width:--measure + margin/padding and the
  * dark backdrop rendered as a centred box instead of covering the
  * viewport. */
-.paper-root > *:not(.paper-header):not(#TOC):not(.figure-lightbox) {
+/* :where() keeps this default at class-level specificity. As a plain
+ * :not(#TOC) chain it carried an id's weight and silently beat the
+ * wider .figure-block and table limits below, so figures were held to
+ * the prose measure too. */
+.paper-root > :where(:not(.paper-header, #TOC, .figure-lightbox)) {
   max-width: var(--measure);
   margin-inline: auto;
   padding-inline: 1.5rem;
@@ -246,9 +249,9 @@ h5 {
   /* Rail only — the filled caption card belongs to the print edition,
    * where it separates figures from two-column body text. On a white
    * single-column page it just adds noise. */
-  border-left: 3px solid var(--maroon-mid);
+  border-left: 1.5px solid rgba(146, 32, 56, 0.45);
   margin-block: 0.7rem 0;
-  padding: 0.85rem 1.1rem;
+  padding: 0.3rem 0 0.3rem 1rem;
   font-family: var(--font-sans, "Manrope"), sans-serif;
   font-weight: 400;
   font-size: 0.88rem;
@@ -263,7 +266,7 @@ h5 {
  * the .docx's own bolding of the same words, kept so a caption the
  * filter could not resolve still reads right here. */
 h5 .caption-lead,
-h5 strong { color: var(--maroon-dark); font-weight: 700; }
+h5 strong { color: var(--maroon-dark); font-weight: 600; }
 
 /* Landing highlight: clicking a cross-reference should make it
  * obvious WHICH block you just jumped to. */
@@ -340,6 +343,13 @@ span[id^="ref-"]:target {
   border-radius: 2px;
 }
 
+/* Long bare URLs (the Data / Code availability links run to 100+
+ * characters) can't wrap at any normal break point and pushed the page
+ * sideways on a phone. */
+.paper-root a {
+  overflow-wrap: anywhere;
+}
+
 /* ============================================================
  * Tables
  * ============================================================ */
@@ -359,6 +369,18 @@ th, td {
   vertical-align: top;
 }
 th { color: var(--maroon-dark); font-weight: 600; }
+
+/* Tables can use more width than the prose measure: Supplementary
+ * Table 1 is three columns of codes plus descriptions. */
+.paper-root > table,
+.paper-root > h5.table-caption {
+  max-width: min(58rem, 100%);
+}
+
+/* build.py demotes all but the first <thead> row into <tbody>; each
+ * body cell holds a reason code over its description. */
+td p { margin: 0 0 0.25em; }
+td p:first-child strong { color: var(--maroon-dark); }
 
 /* ============================================================
  * Print from the browser: fall back to something sane rather than
