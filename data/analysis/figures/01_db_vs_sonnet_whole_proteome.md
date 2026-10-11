@@ -30,7 +30,7 @@ Four buckets per caller:
 * **Sonnet = contextual** — DB must yes-vote for a match
 * **Sonnet = no** — specificity-like (dominates overall by population)
 
-10 callers total: 5 ensembles ≥1..≥5 (teal ramp, light = permissive) +
+10 callers total: 5 ensembles ≥1..≥5 (grey ramp, light = permissive) +
 5 individual DBs under their optimized cutoffs (sorted descending by
 overall agreement). Sonnet is the reference and does not appear as a
 bar — it would be 100% by construction.

@@ -20,7 +20,7 @@ denominator:
 - **dot area ∝ within-source enrichment** — % of that source's OWN calls carrying the feature (`|source ∩ feature| / |source|`)
 - **dot color = coverage** — % of the whole surface universe those proteins represent (`|source ∩ feature| / |universe|`)
 
-CSPA × glycosylation is a large, pale dot (~96% of its own calls but ~14% of the
+CSPA × glycosylation is a large, mid-tone dot (~96% of its own calls but ~14% of the
 universe — its N-glycocapture chemistry); SURFY/UniProt show the same glyco
 enrichment at larger scale (dark, high-coverage). The **1,108 zero-DB Sonnet
 rescues** split by how triage called them: the 794 called from the gene summary
