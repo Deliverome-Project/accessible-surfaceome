@@ -30,6 +30,7 @@ const VALIDATION_RANK: Record<string, number> = {
   surface_and_function: 5,
   surface_only: 4,
   function_only: 3,
+  function_perturbed: 2.5,
   detected_only: 2,
   expressed_only: 1,
   not_measured: 0,
@@ -224,6 +225,11 @@ const VALIDATION_LABEL: Record<string, { text: string; cls: string; title: strin
     text: "Function",
     cls: "badgeWeak",
     title: "The paper showed the tagged protein still works; surface display was not measured.",
+  },
+  function_perturbed: {
+    text: "Function reduced",
+    cls: "badgeWeak",
+    title: "Function WAS measured, but the tagged protein was impaired or the result was confounded — not a clean validation.",
   },
   detected_only: {
     text: "Detected",
