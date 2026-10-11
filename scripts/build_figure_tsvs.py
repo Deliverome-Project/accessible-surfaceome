@@ -19,12 +19,12 @@ Outputs (one per non-compliant figure today, written to
   • ``db_correctness_overall.tsv``
   • ``db_vs_sonnet_whole_proteome.tsv``
   • ``ensemble_vs_best_db_vs_sonnet.tsv``
-  • ``deep_dive_final_categories.tsv`` — MOCK placeholder
+  • ``deep_dive_final_categories.tsv``
 
-The remaining 4 gists already use a single canonical TSV as-is
-(``db_cutoff_tradeoff``, ``db_overlap_venn``, ``paywall_bot_block_compare``,
-``topology_coverage_by_source``, ``zero_db_rescues_by_triage``) — those
-keep their existing TSV; no per-figure copy is written for them.
+The full set of per-figure TSVs this script writes is the ``BUILDERS`` map
+at the bottom; a few gists (``db_cutoff_tradeoff``,
+``paywall_bot_block_compare``) bundle a canonical TSV that lives elsewhere
+and is not rebuilt here.
 
 Run::
 
@@ -50,11 +50,11 @@ REPS_TSV        = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.ts
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 CATALOG_TSV     = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
 FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
-# S9's FULL any-yes-vote universe (960 sonnet_only) with genome-wide topology,
-# built by scripts/export_s9_full_universe_features.py (UniProt + D1 pulls). The
+# S9's FULL any-yes-vote universe (1,108 sonnet_only) with genome-wide topology,
+# built by scripts/tsv-export/export_s9_full_universe_features.py (UniProt + D1 pulls). The
 # S9 builder reads THIS offline so the figure TSV stays reproducible-from-builder
 # while the network pulls live in the export. Supersedes the M1-limited FEATURES_TSV
-# for S9 (which under-covered the zero-DB Sonnet rescues 794 vs 960 + lacked their topology).
+# for S9 (which under-covered the zero-DB Sonnet rescues and lacked their topology).
 FEATURES_FULL_TSV = ROOT / "data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv"
 EVIDENCE_TYPES_TSV = ROOT / "data/processed/deep_dive/surface_evidence_types.tsv"
 POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
@@ -65,7 +65,7 @@ POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long
 DEEP_DIVE_TSV   = ROOT / "data/processed/deep_dive/deep_dive_records.tsv"
 # Companion triage-verdict source (one row per gene: triage_verdict +
 # triage_reason from the genome-wide Sonnet triage run), also exported by
-# scripts/export_deep_dive_figure_source.py. The S12 figure joins it against
+# scripts/export_deep_dive_figure_source.py. The S13 figure joins it against
 # the deep-dive export; kept separate so the deep-dive export stays purely
 # deep-dive-side.
 TRIAGE_VERDICTS_TSV = ROOT / "data/processed/deep_dive/triage_verdicts.tsv"
@@ -250,16 +250,22 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
     membership so the figure renders UniProt and CSPA at their
     recalibrated cutoffs (GO/HPA/SURFY/Sonnet unchanged). Also carries
     ``n_sources_optimized`` so the Sonnet-only (zero-DB) subset is
-    defined against the optimized DB vote, matching Figure 3."""
-    # Prefer the FULL any-yes-vote universe (960 sonnet_only, genome-wide
-    # topology) from scripts/export_s9_full_universe_features.py — it already
+    defined against the optimized DB vote, matching Figure 3.
+
+    Also carries ``verdict_source`` (``ncbi`` = the first-pass triage on the
+    NCBI gene summary, no literature; ``pubmed_rescue`` = called yes /
+    contextual only by a PubMed rescue lane) and ``rescue_run`` (which lane),
+    joined from the catalog on ``hgnc_id``, so S9 can split the Sonnet-only
+    row into its no-literature and PubMed-rescue halves the way Figure 3 does."""
+    # Prefer the FULL any-yes-vote universe (1,108 sonnet_only, genome-wide
+    # topology) from scripts/tsv-export/export_s9_full_universe_features.py — it already
     # carries the src_* flags, optimized cutoffs, n_sources_optimized, and the
     # 9 topology features on full coverage (fixing the M1-limited undercount
-    # 794 vs 960 + the topology-missing empty Sonnet-only row). Fall back to the
+    # and the topology-missing empty Sonnet-only row). Fall back to the
     # legacy per_protein_features path only if the full export isn't present.
     full = src.get("features_full")
     if full is not None and not full.empty:
-        return full
+        return _with_verdict_source(full, src["catalog"])
     feat = _optimized_membership(src["features"], src["opt"], "uniprot_accession")
     # GO/HPA/SURFY keep their initial src flags (not recalibrated).
     feat["n_sources_optimized"] = (
@@ -269,7 +275,19 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
         + feat["src_hpa"].fillna(0).astype(int)
         + feat["src_surfy"].fillna(0).astype(int)
     )
-    return feat
+    return _with_verdict_source(feat, src["catalog"])
+
+
+def _with_verdict_source(df: pd.DataFrame, catalog: pd.DataFrame) -> pd.DataFrame:
+    """Join the catalog's ``verdict_source`` / ``rescue_run`` onto ``df`` by
+    ``hgnc_id``. The catalog's only repeated keys are the blank-HGNC
+    mitochondrial genes, dropped here so a NaN key can never match."""
+    tag = (catalog[["hgnc_id", "verdict_source", "rescue_run"]]
+           .dropna(subset=["hgnc_id"]).drop_duplicates("hgnc_id"))
+    out = df.drop(columns=["verdict_source", "rescue_run"], errors="ignore").merge(
+        tag, on="hgnc_id", how="left", validate="many_to_one")
+    assert len(out) == len(df), "verdict_source join changed the row count"
+    return out
 
 
 def build_bench_topology_vs_universe(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -534,13 +552,13 @@ def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFr
 
     One row per published deep-dive record with real gene symbols and real
     counts (was a MOCK lognormal draw before the sweep produced records).
-    ``n_papers_found`` landed in schema 2.14.0 so a handful of legacy records
-    carry a null there — those rows are dropped from the funnel (both axes must
-    be present to plot a point). Columns:
+    Any record with a null ``n_papers_found`` (unknown discovery corpus) is
+    dropped from the funnel, since both axes must be present to plot a point;
+    none do today. Columns:
     ``gene_symbol, uniprot_acc, papers_found, papers_selected, evidence_grade,
     tier``.
 
-    Computed over the completed deep-dive sweep (5,130 genes).
+    Computed over the completed deep-dive sweep (5,332 genes).
     """
     cols = ["gene_symbol", "uniprot_acc", "papers_found", "papers_selected",
             "evidence_grade", "tier"]
@@ -555,8 +573,7 @@ def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFr
         "evidence_grade": dd["evidence_grade"].astype(str),
         "tier": [_dd_tier(r) for _, r in dd.iterrows()],
     })
-    # A point needs both axes; drop records missing either count (legacy
-    # pre-2.14.0 records have no n_papers_found).
+    # A point needs both axes; drop any record missing either count.
     out = out.dropna(subset=["papers_found", "papers_selected"])
     out["papers_found"] = out["papers_found"].astype(int)
     out["papers_selected"] = out["papers_selected"].astype(int)
@@ -588,7 +605,7 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
     back-compat; ``tier`` (the finer 5-tier call) is what the figure now facets
     every panel by (a/b: canonical/likely/low/no; c/d/e: canonical/likely/low).
 
-    Computed over the completed deep-dive sweep (5,130 genes).
+    Computed over the completed deep-dive sweep (5,332 genes).
     """
     cols = ["gene_symbol", "tier", "surface_verdict_bucket", "papers_found",
             "papers_selected", "papers_with_ec", "n_filters_evidence",
@@ -624,15 +641,15 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
 
 def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Per-gene comparison of the TRIAGE-stage call against the DEEP-DIVE call,
-    for every gene with both. Two figure panels read this one TSV:
+    for every gene with both. All three figure panels read this one TSV:
 
-      • Panel a (verdict flow): ``triage_verdict`` (yes/contextual/no from the
+      • Panel b (verdict flow): ``triage_verdict`` (yes/contextual/no from the
         genome-wide Sonnet triage run) → ``deep_dive_tier`` (the 5-tier
         ``_dd_assign_bucket`` call).
-      • Panel b (reason confusion): ``triage_reason`` × ``deep_dive_reason``
+      • Panel c (reason confusion): ``triage_reason`` × ``deep_dive_reason``
         (``surface_call_reason``), both drawn from the shared ``TriageReason``
         enum.
-      • Panel c (DB concordance): per-DB surface membership (UniProt / GO /
+      • Panel a (DB concordance): per-DB surface membership (UniProt / GO /
         SURFY / CSPA / HPA), so the figure shows what fraction of
         deep-dive-surface genes each database — and the Sonnet triage stage —
         also calls surface. The two RECALIBRATED DBs (UniProt, CSPA) use their
@@ -650,7 +667,7 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
     go_surface_flag, surfy_surface_flag, hpa_surface_flag, uniprot_optimized,
     cspa_optimized``.
 
-    Real data over the completed deep-dive sweep (5,130 genes).
+    Real data over the completed deep-dive sweep (5,332 genes).
     """
     cols = ["gene_symbol", "uniprot_acc", "triage_verdict", "triage_reason",
             "deep_dive_reason", "deep_dive_tier"]
@@ -901,7 +918,7 @@ def build_surfaceome_deterministic_features(
     Mirrors ``scripts/surfaceome_deterministic_features.py``
     ``load_data()`` — it reads this bundled single TSV.
 
-    Computed over the completed deep-dive sweep (5,130 genes).
+    Computed over the completed deep-dive sweep (5,332 genes).
     """
     feature_cols = ["tm_helix_count", "protein_length", "ecd_length_residues",
                     "has_signal_peptide",
@@ -920,7 +937,8 @@ def build_surfaceome_deterministic_features(
     frames = [out[cols]]
 
     # Fifth facet: the FULL Sonnet dual-triage surface pool (every gene the
-    # genome-wide Sonnet triage called yes/contextual, ~4,236 with topology).
+    # two-stage Sonnet triage, incl. the four PubMed rescue lanes, called
+    # yes/contextual: 4,612 with topology).
     # Its det features come from the genome-wide D1 tables, not the records
     # (those genes are mostly not deep-dived) — same DeepTMHMM/Compara/Schweke
     # computation, ~100% topology coverage. group='sonnet_dual_triage'.
@@ -1027,6 +1045,8 @@ def build_surface_evidence_assay_types(src: dict[str, pd.DataFrame]) -> pd.DataF
 
 BUILDERS: dict[str, callable] = {
     "db_overlap_venn":               build_db_overlap_venn,
+    # Figure 1 is now an UpSet plot over the same five flags; same table.
+    "db_overlap_upset":              build_db_overlap_venn,
     "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
     "db_correctness_by_class":       build_db_correctness_by_class,
     "db_correctness_overall":        build_db_correctness_overall,

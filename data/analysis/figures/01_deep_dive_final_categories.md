@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 5.** Every deep-dived protein resolves to a deep-dive surface tier, and the borderline calls carry their own reason for falling short. a) The full deep-dive cohort placed on a five-tier confidence spectrum: canonical (strict surface) and likely (broader, categorized as likely surface), then the below-likely proteins split by the deep-dive's tentative call — low (low or moderate accessibility on weak evidence), uncertain, and no (leaned not-surface). b) The composition of positive calls by cell-type-restricted and cell-state (induction-dependent) reasons behind them. Note that we explicitly required canonical proteins not to be restricted to a specific cell type. However, proteins with an induction trigger were permitted, provided their baseline expression was not reported to be low (see Methods). Counts are over the full deep-dived cohort (N = 5,332).
+> **Figure 5.** Every deep-dived protein resolves to a deep-dive surface tier, and the borderline calls carry their own reason for falling short. a) The full deep-dive cohort placed on a five-tier confidence spectrum: canonical (strict surface) and likely (broader, categorized as likely surface), then the below-likely proteins split by the deep-dive's tentative call — low (low or moderate accessibility on weak evidence), uncertain, and no (leaned not-surface). b) The composition of positive calls by cell-type-restricted and cell-state (induction-dependent) reasons behind them. Note that we explicitly required canonical proteins not to be restricted to a specific cell type. However, proteins with high state dependence were permitted, provided their baseline expression level was not reported to be low (see Methods). Counts are over the full deep-dived cohort (N = 5,332).
 <!-- END manuscript-legend -->
 
 Two-panel summary of how the deep-dive agent sorts the surface cohort, and
@@ -21,11 +21,11 @@ Each deep-dived gene is placed on a confidence spectrum:
 - **canonical** (1,783) — the strict gold-standard surface tier
 - **likely** (1,252) — the broader passes-likely surface set
 - **low** (1,014) — low/moderate accessibility but weak evidence (maybe surface)
-- **no** (1,228) — leaned not-surface
 - **uncertain** (55) — ambiguous
+- **no** (1,228) — leaned not-surface
 
 `canonical` and `likely` are exactly the frontend catalog-preset predicates
-(`passesCanonical` / `passesLikely`); the low/no/uncertain split of the
+(`passesCanonical` / `passesLikely`); the low/uncertain/no split of the
 negatives is a figure-only refinement (the presets don't cover the negatives).
 
 ## Panel b — cross-cutting surface facets, by reason

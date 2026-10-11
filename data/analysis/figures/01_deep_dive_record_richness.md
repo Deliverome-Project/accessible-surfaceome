@@ -21,8 +21,8 @@ tier's genes; there is no synthesised fan.
 ## What's plotted
 
 Five small per-panel violins (one Y axis each, because the scales range from
-feature counts 0–24 to papers in the hundreds — a shared Y would compress the
-small axes into the baseline). A faint point strip overlays the real per-gene
+feature counts 0–7 and filter counts out of 24 to papers in the hundreds — a
+shared Y would compress the small axes into the baseline). A faint point strip overlays the real per-gene
 values so the actual per-tier `n` is visible. Panels a/b keep the `no` tier;
 panels c–e drop it (non-surface proteins carry little extracellular evidence by
 definition). The `uncertain` tier (n=55) is dropped everywhere as too small to
@@ -42,12 +42,14 @@ plot.
   reads record **richness** (what the agent found), not schema completeness —
   the LLM-side analogue of panel e. Counting *any* call instead saturates near
   24 for every gene (the agent almost always makes some call), so the
-  positive-finding count is what separates the tiers: canonical ~19 → likely
-  ~17 → low ~15 (median of 24). Tiers: canonical, likely, low.
+  positive-finding count is what separates the tiers: canonical 18 → likely
+  17 → low 14 (median, of 24). Tiers: canonical, likely, low.
 - **e. Deterministic features (derived, 0–7)** — how many of the seven derived
   `deterministic_features` sub-blocks carry data (canonical_topology,
   isoform_topologies, structure, orthologs, paralogs, surface_bind,
-  homo_oligomerization). Tiers: canonical, likely, low.
+  homo_oligomerization). `homo_oligomerization` counts only when the protein
+  is a predicted homomer, and `orthologs` only when a mouse ortholog is present.
+  Tiers: canonical, likely, low.
 
 ## Reproducibility
 

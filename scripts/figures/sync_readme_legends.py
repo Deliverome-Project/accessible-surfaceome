@@ -21,6 +21,10 @@ Usage::
 
     uv run python scripts/figures/sync_readme_legends.py            # write
     uv run python scripts/figures/sync_readme_legends.py --check    # CI mode
+    uv run python scripts/figures/sync_readme_legends.py --export doc.json
+
+``--export`` refreshes the JSON from a Drive ``read_file_content`` dump of the
+manuscript (``{"fileContent": ...}``) or a plain-text export, then syncs.
 """
 
 from __future__ import annotations
@@ -56,12 +60,46 @@ def _clean(text: str) -> str:
     The label is re-added by the block template so every README renders it
     the same way regardless of how the doc happened to punctuate it.
     """
+    # Docs exports wrap a caption in heading marks ("##### **Figure 1. …") and
+    # sometimes leave a trailing "#####"; neither belongs in the legend text.
+    text = re.sub(r"^\s*#{1,6}\s*", "", text)
+    text = re.sub(r"\s*#{1,6}\s*$", "", text)
     text = re.sub(r"^\*\*", "", text)
     text = re.sub(r"^(Supplementary\s+)?Figure\s+S?\d+\.\s*", "", text)
     text = text.replace("**", "")
+    # Markdown escapes the export adds before punctuation (\~, \>, \*, …).
+    text = re.sub(r"\\([~>*_\[\]()#+.!-])", r"\1", text)
     # The gist links to its own data; the manuscript's trailing link is noise here.
     text = re.sub(r"\s*\[Figure data and script\.?\s*\]\([^)]*\)\s*$", "", text)
     return re.sub(r"\s+", " ", text).strip()
+
+
+# A legend in the doc export is one heading line: "##### **Figure 3. …" or
+# "##### **Supplementary Figure 12. …". Requiring the heading mark skips stray
+# bold "**Figure 1." paragraphs left over from earlier drafts.
+_LEGEND_LINE = re.compile(r"^#{1,6}\s*\*\*(Supplementary\s+)?Figure\s+S?(\d+)\.")
+
+
+def _export(source: Path, keys: set[str]) -> dict[str, str]:
+    raw = source.read_text(encoding="utf-8")
+    try:
+        text = json.loads(raw)["fileContent"]
+    except (ValueError, KeyError, TypeError):
+        text = raw
+    found: dict[str, str] = {}
+    for line in text.split("\n"):
+        m = _LEGEND_LINE.match(line.strip())
+        if not m:
+            continue
+        key = f"S{m.group(2)}" if m.group(1) else f"Figure {m.group(2)}"
+        if key in keys:
+            if key in found:
+                raise SystemExit(f"{key} appears twice in {source}; resolve in the doc")
+            found[key] = line.strip().lstrip("#").strip()
+    missing = sorted(keys - found.keys())
+    if missing:
+        raise SystemExit(f"legends not found in {source}: {', '.join(missing)}")
+    return found
 
 
 def _block(key: str, legend: str) -> str:
@@ -131,10 +169,21 @@ def main() -> int:
         action="store_true",
         help="Exit non-zero if any README is out of sync (CI mode); write nothing.",
     )
+    ap.add_argument(
+        "--export",
+        type=Path,
+        metavar="DOC",
+        help="Refresh manuscript_legends.json from a manuscript export, then sync.",
+    )
     args = ap.parse_args()
 
     payload = json.loads(LEGENDS_JSON.read_text(encoding="utf-8"))
     fig_to_slug: dict[str, str] = payload["figure_to_slug"]
+    if args.export:
+        payload["legends"] = _export(args.export, set(fig_to_slug))
+        LEGENDS_JSON.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
     legends: dict[str, str] = payload["legends"]
 
     drifted: list[str] = []

@@ -10,24 +10,36 @@ re-run; do not hand-edit inside these markers.*
 > **Supplementary Figure 13.** Triage and database calls agree with full-text deep-dive curation most strongly for high-confidence surface protein-coding genes (n = 5,332). a) Fraction of deep-dive canonical, likely, and low-confidence genes also flagged as surface by each database and the triage agents. b) Resolution of each triage verdict across the five deep-dive tiers. Triage-yes is 64% canonical and 28% likely; triage-contextual spreads across likely, low, and no; triage-no remains 76% no, with 22% upgraded to likely or low by the deep-dive pipeline. c) Triage reason (rows) versus deep-dive structured reason (columns); exact agreement is 50%.
 <!-- END manuscript-legend -->
 
-19×19 confusion matrix between the triage agent's first-pass
-`surface_call_reason` (rows) and the deep-dive synthesizer's
-re-derived `surface_call_reason` (columns) on the genes that have
-both a triage record AND a published deep-dive record. Both axes
-draw from the same closed `TriageReason` enum in `models.py`, so the
-diagonal (red cell outlines) is exact-reason agreement; off-diagonal
-cells split into within-bucket reassignments (same Yes / Contextual /
-No bucket, different reason) and cross-bucket flips (the rarer
-cells that flag verdict-level drift between the two agents).
+Three panels on the 5,332 genes that have both a Sonnet triage call
+and a published deep-dive record:
 
-Tick labels are colored by bucket (yes = green / contextual = orange
-/ no = grey) and thick black lines mark the bucket boundaries on each
-axis, so the reader can see at a glance whether an off-diagonal cell
-is a within-bucket reassignment or a cross-bucket flip. The expected
-real-data pattern (once the full sweep lands) is heavy diagonal
-density, moderate off-diagonal within-bucket reassignments, and rare
-cross-bucket flips — the latter are the cells worth opening for
-paper-level review.
+- **a)** For the genes the deep dive places in the canonical, likely
+  and low tiers, the share of each tier that each database (UniProt,
+  SURFY, GO, CSPA, HPA) and Sonnet triage (verdict yes or contextual)
+  also flag as surface. Every source flags more canonical genes than
+  likely, and more likely than low. Sonnet triage is the most
+  concordant source at every tier (99 / 95 / 91%); the nearest
+  database, UniProt, falls from 94% on canonical to 54% on low.
+- **b)** For each triage verdict (yes / contextual / no), the
+  deep-dive tier composition (canonical / likely / low / uncertain /
+  no).
+- **c)** 19×19 matrix of the triage `surface_call_reason` (rows)
+  against the deep-dive `surface_call_reason` (columns). Both axes use
+  the same closed `TriageReason` enum in `models.py`, so the diagonal
+  (red cell outlines) is exact-reason agreement. Tick labels are
+  colored by bucket (yes = green / contextual = orange / no = grey) and
+  thick black lines mark the bucket boundaries, so an off-diagonal cell
+  reads either as a within-bucket reassignment (same yes / contextual /
+  no bucket, different reason) or as a cross-bucket flip.
+
+Half the genes (2,654 of 5,332, 50%) sit on the diagonal. Of the
+2,678 off-diagonal genes, 769 are within-bucket reassignments (most
+often a triage multi-pass call relabeled single-pass) and 1,909 are
+cross-bucket flips. The largest flip block is triage yes-bucket
+reasons (mainly single-pass and multi-pass) moving to contextual
+deep-dive reasons such as tissue-restricted or cell-state-induced
+(917 genes), followed by contextual triage reasons moving to the
+no bucket (691 genes).
 
 ## Reproduce
 
@@ -36,13 +48,20 @@ uv run make_triage_vs_deep_dive_reason.py
 ```
 
 The bundled `triage_vs_deep_dive_reason.tsv` is the single data
-source — one row per gene with `gene_symbol`, `uniprot_acc`,
-`triage_reason`, `deep_dive_reason`. No other URLs, no other
-TSVs. Produced from
+source — 5,332 rows, one per gene, with `gene_symbol`, `uniprot_acc`,
+`triage_verdict`, `triage_reason`, `deep_dive_reason`,
+`deep_dive_tier`, `go_surface_flag`, `surfy_surface_flag`,
+`hpa_surface_flag`, `uniprot_optimized`, `cspa_optimized` (the five
+database columns are 0/1 surface membership). No other URLs, no other
+TSVs. Produced by `build_triage_vs_deep_dive_reason` in
 [`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py)
-in the project repo, which joins the production triage records
-(public D1 `triage_run_public` Sonnet/ncbi hits) against the
-published deep-dive records (Worker `/v1/genes/{SYMBOL}` index).
+in the project repo, which joins the published deep-dive records
+(`data/processed/deep_dive/deep_dive_records.tsv`, exported from public
+D1) to the Sonnet triage verdicts
+(`data/processed/deep_dive/triage_verdicts.tsv`, run
+`genome_full_sonnet_ncbi_v2`), then adds GO / SURFY / HPA surface flags
+from the catalog and UniProt / CSPA optimized-cutoff membership from
+`db_optimized_cutoffs.tsv`.
 
 ## Canonical generator
 
@@ -50,5 +69,5 @@ The in-repo canonical figure at
 [`data/analysis/figures/triage_vs_deep_dive_reason.pdf`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/figures/triage_vs_deep_dive_reason.pdf)
 is rendered by
 [`scripts/figures/triage_vs_deep_dive_reason.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_vs_deep_dive_reason.py)
-in the project repo. This gist mirror ships an equivalent
-single-panel render from the same bundled TSV.
+in the project repo. This gist mirror renders the same three-panel
+figure from the same bundled TSV.

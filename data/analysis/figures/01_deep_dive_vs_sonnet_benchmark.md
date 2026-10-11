@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 11.** For SurfaceBench proteins subjected to deep-dive analysis, the evidence-based assessment matched the soft-credit accuracy of Sonnet+NCBI triage, while the confidence tiers reflected the difficulty of each case. For 113 of the 147 SurfaceBench benchmark protein-coding genes deep-dived, each protein's deep-dive surface call and the Sonnet+NCBI triage call are scored against the curated ground-truth verdict under the soft-credit rule — a contextually-surface protein counts correct when called surface. a) Overall soft-credit accuracy. b) Accuracy split by ground-truth bucket (yes / contextual / no). The deep-dive bar is stacked by the tier it assigned to the correctly-classified protein-coding genes — canonical / likely / low (green shades) and uncertain / no (grey), the same five-tier palette as Figure 5a — so its confidence composition is visible: ground-truth-yes genes are called mostly canonical and likely, contextual genes mostly likely, and the correct not-surface calls land in uncertain / no. Sonnet+NCBI accuracy is the mean of three benchmark replicates (one dot per replicate; the error bar is the SEM across replicates); the deep dive runs once per protein, so its bar carries no replicate spread. The deep-dive verdict counts as surface when its tier is canonical, likely, or low; Sonnet and the ground truth count as surface when yes or contextual. Sonnet's SEM overlaps the deep-dive bar in every bucket, so no difference is statistically significant at this n.
+> **Supplementary Figure 11.** For SurfaceBench proteins subjected to deep-dive analysis, the evidence-based assessment matched the soft-credit accuracy of Sonnet+NCBI triage, while the confidence tiers reflected the difficulty of each case. For 113 of the 147 SurfaceBench benchmark protein-coding genes deep-dived, each protein's deep-dive surface call and the Sonnet+NCBI triage call are scored against the curated ground-truth verdict under the soft-credit rule — a contextually-surface protein counts correct when called surface. a) Overall soft-credit accuracy. b) Accuracy split by ground-truth bucket (yes / contextual / no). The deep-dive bar is stacked by the tier it assigned to the correctly-classified protein-coding genes — canonical (green), likely (teal), low (amber) and uncertain / no (greys), the same five-tier palette as Figure 5a — so its confidence composition is visible: ground-truth-yes genes are called mostly canonical (58 of 68), contextual genes mostly likely (21 of 30 correct), and the correct not-surface calls all land in no. …Sonnet and the ground truth count as surface when yes or contextual. The two methods agree overall (97.3% vs 96.8%) and on ground-truth-yes genes (both 100%); the deep dive scores higher on contextual genes (96.8% vs 89.2%) and lower on not-surface genes (85.7% vs 97.6%; both misses were called low). None of these differences is significant by an exact McNemar test on paired gene-level correctness (overall p = 1.0; contextual p = 0.63; not-surface p = 0.50)..
 <!-- END manuscript-legend -->
 
 On the SurfaceBench benchmark genes deep-dived so far (**n = 113 of 147**,
@@ -21,14 +21,22 @@ contextually-surface protein counts correct when called surface.
 - **(a)** Overall soft-credit accuracy — deep dive vs Sonnet+NCBI.
 - **(b)** Accuracy split by ground-truth bucket (yes / contextual / no).
   The deep-dive bar is **stacked by the tier** it assigned to the
-  correctly-classified genes — canonical / likely / low (green shades)
-  and uncertain / no (grey), the same five-tier palette as Figure 5a —
-  so its confidence composition is visible. Sonnet+NCBI accuracy is the
+  correctly-classified genes — canonical / likely (green and teal) and
+  low (amber), with uncertain / no (grey), the same five-tier palette as
+  Figure 5a — so its confidence composition is visible. Ground-truth-yes
+  genes are called mostly canonical and likely, contextual genes mostly
+  likely, and all 12 correct not-surface calls land in `no` (no gene in
+  this set is tiered `uncertain`). Sonnet+NCBI accuracy is the
   **mean of three mainbench replicates** (one dot per replicate; error
   bar = SEM across replicates); the deep dive runs once per gene.
 
-Deep dive and Sonnet are near-identical overall (**97% vs 97%**), and
-Sonnet's SEM overlaps the deep-dive bar in every bucket.
+Deep dive and Sonnet are near-identical overall (**97.3% vs 96.8%**,
+Sonnet as the replicate mean). By bucket they tie on `yes` (100% each);
+the deep dive is ahead on `contextual` (96.8% vs 89.2% ± 2.2 SEM) and
+Sonnet is ahead on `no` (97.6% ± 2.4 vs 85.7%). Each gap is about two
+genes: the deep dive's only errors are one contextual gene called `no`
+(PMEL) and two `no` genes called `low` (ATG9A, RPN1), while Sonnet misses
+2–4 contextual genes per replicate and at most one `no` gene.
 
 > Computed over the 113 benchmark genes that carry both a Sonnet verdict
 > and a published deep-dive record (68 `yes`, 31 `contextual`, 14 `no`).

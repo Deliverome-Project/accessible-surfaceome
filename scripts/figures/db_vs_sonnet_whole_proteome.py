@@ -2,10 +2,17 @@
 
 Whole-genome analog of the 147-gene-bench `db_correctness_by_class`
 figure. The bench has hand-curated ground truth; on the whole proteome
-it doesn't exist, so we use **Sonnet (+ NCBI)'s triage verdict as the
-reference** and ask: for each surface DB (under its bench-optimized
-cutoff) and each ≥k-DB ensemble, what fraction of genes does it agree
-with Sonnet on, split by Sonnet's verdict bucket.
+it doesn't exist, so we use the **production two-tier Sonnet triage
+verdict as the reference**: an NCBI first pass, with 379 genes upgraded
+from "no" to "yes"/"contextual" by the PubMed second-pass rescue
+(``verdict_source == "pubmed_rescue"`` in the TSV). For each surface DB
+(under its bench-optimized cutoff) and each ≥k-DB ensemble, we ask what
+fraction of genes agrees with Sonnet, split by Sonnet's verdict bucket.
+
+Data: the single TSV data/processed/figures/db_vs_sonnet_whole_proteome.tsv
+(19,324 protein-coding genes, one row each), built by
+scripts/build_figure_tsvs.py from whole_proteome_catalog.tsv and
+db_optimized_cutoffs.tsv.
 
 Soft-credit rule (same as the bench plot): a DB "yes" matches Sonnet
 "yes" *or* Sonnet "contextual"; a DB "no" matches Sonnet "no" only.
@@ -52,13 +59,15 @@ ENSEMBLE_KS = [1, 2, 3, 4, 5]
 
 DB_PALETTE = {label: CATEGORICAL_PALETTE[i] for i, label in enumerate(DB_LABELS)}
 
-# Sequential teal ramp for the ≥k ensembles (light → dark = strict → permissive).
+# Grey ramp for the k+ ensembles, light → dark as more databases must agree
+# (permissive union → strict intersection). Neutral so the ensembles can't be
+# mistaken for any single database's brand colour; shared by S5 and S6.
 ENSEMBLE_PALETTE = {
-    1: "#7AAB9F",  # teal-light  (≥1 = permissive union)
-    2: "#4D8A80",
-    3: "#3D6B60",
-    4: "#244840",
-    5: "#152E28",  # teal-deep   (≥5 = strict intersection)
+    1: "#CFCFCF",  # 1+ DB: the union
+    2: "#A7A7A7",
+    3: "#7E7E7E",
+    4: "#565656",
+    5: "#2E2E2E",  # 5+ DB: the strict intersection
 }
 
 BUCKETS = ["overall", "yes", "contextual", "no"]
@@ -79,7 +88,7 @@ def _vote_match(db_vote: str, sonnet: str) -> bool:
 
 def main() -> None:
     # Single committed TSV (built by scripts/build_figure_tsvs.py) is the
-    # source of truth — the same file the gist mirror reads via raw GitHub.
+    # source of truth — the same file the gist bundles next to its mirror.
     # It carries the per-DB flag columns AND the bench-optimized
     # uniprot_optimized / cspa_optimized flags denormalized per row, so no
     # separate db_optimized_cutoffs.tsv or whole_proteome_catalog.tsv read
@@ -131,7 +140,8 @@ def main() -> None:
     # Build caller list: ensembles first (color by k), then individual DBs sorted desc.
     callers: list[tuple[str, str]] = []
     for k in ENSEMBLE_KS:
-        callers.append((f"≥{k} DB", "ensemble"))
+        # "k+ DB" = k or more DBs vote yes (same label as the gist mirror).
+        callers.append((f"{k}+ DB", "ensemble"))
     for label in db_sorted:
         callers.append((label, "single"))
 
@@ -139,7 +149,7 @@ def main() -> None:
         if kind == "single":
             return "yes" if row[caller] else "no"
         # ensemble: ≥k DBs vote yes
-        k = int(caller.lstrip("≥").rstrip(" DB"))
+        k = int(caller.rstrip(" DB").rstrip("+"))
         return "yes" if sum(bool(row[d]) for d in DB_LABELS) >= k else "no"
 
     # Compute agreement rates per (caller, bucket).
@@ -176,18 +186,18 @@ def main() -> None:
     # Brand-style-v3 font sizes — matches the gist mirror.
     # See CLAUDE.md "Canonical generator vs gist mirror".
     plt.rcParams.update({
-        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
-        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
 
     caller_order = [c[0] for c in callers]
     palette = [
-        (ENSEMBLE_PALETTE[int(c[0].lstrip("≥").rstrip(" DB"))] if c[1] == "ensemble"
+        (ENSEMBLE_PALETTE[int(c[0].rstrip(" DB").rstrip("+"))] if c[1] == "ensemble"
          else DB_PALETTE[c[0]])
         for c in callers
     ]
 
-    fig, ax = plt.subplots(figsize=(22, 6.5))
+    fig, ax = plt.subplots(figsize=(14, 7))
     sns.barplot(
         data=plot_df,
         x="bucket_label", y="fraction",
@@ -224,21 +234,25 @@ def main() -> None:
                 patch.get_x() + patch.get_width() / 2,
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
-                ha="center", va="bottom",
-                fontsize=8, color=COLORS["dark"],
+                ha="center", va="bottom", rotation=90,
+                fontsize=14, color=COLORS["dark"],
             )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction agreeing with\nSonnet (+ NCBI) verdict")
-    ax.set_ylim(0, 1.14)
+    ax.set_ylabel("Fraction agreeing with\nSonnet triage verdict")
+    ax.set_ylim(0, 1.22)  # headroom for the vertical bar-top % labels
+    ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
 
     handles, _ = ax.get_legend_handles_labels()
-    legend_labels = [f"{lbl}  ({overall_acc[lbl]:.0%})" for lbl in caller_order]
+    legend_labels = [f"{lbl} ({overall_acc[lbl]:.0%})" for lbl in caller_order]
+    # Column-major fill: ensembles on the first row, single DBs on the second.
+    order = [0, 5, 1, 6, 2, 7, 3, 8, 4, 9]
+    handles, legend_labels = [handles[k] for k in order], [legend_labels[k] for k in order]
     ax.legend(
         handles, legend_labels,
-        title="Caller (overall agreement)",
-        loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=10,
+        title="Caller (overall agreement)", title_fontsize=18,
+        loc="lower center", bbox_to_anchor=(0.5, 1.0), ncols=5,
+        frameon=False, fontsize=16, columnspacing=1.6,
     )
 
     # Subtitle with per-bucket sample sizes.
@@ -250,13 +264,14 @@ def main() -> None:
     subtitle = (
         f"n(overall) = {totals.get('overall', 0):,}  ·  "
         f"n(yes) = {totals.get('yes', 0):,}  ·  "
-        f"n(contextual) = {totals.get('contextual', 0):,}  "
+        f"n(contextual) = {totals.get('contextual', 0):,}  ·  "
+        f"n(no) = {totals.get('no', 0):,}  "
         f"(whole protein-coding proteome with a rated Sonnet verdict)"
     )
     ax.text(
         0.5, -0.18, subtitle,
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=11, color=COLORS["neutral"],
+        fontsize=14, color=COLORS["neutral"],
     )
 
     sns.despine(ax=ax, top=True, right=True)

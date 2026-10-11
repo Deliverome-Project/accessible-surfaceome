@@ -368,13 +368,14 @@ h5 {
   break-before: avoid;
   page-break-before: avoid;
   margin: 0.4em 0 1.4em 0;
-  padding: 0.5em 0.9em 0.6em 0.9em;
-  background: var(--paper-beige);
-  border-left: 4px solid var(--maroon-mid, #922038);
-  border-radius: 2px;
+  /* A hairline rule and no fill: the filled card with a 4px bar read as
+   * heavier than the figure it describes. */
+  padding: 0.05em 0 0.1em 0.75em;
+  background: none;
+  border-left: 1.5px solid rgba(146, 32, 56, 0.45);
   font-family: "Manrope", sans-serif;
   font-weight: 400;
-  font-size: 9pt;
+  font-size: 8.5pt;
   line-height: 1.45;
   letter-spacing: 0;
   text-transform: none;
@@ -393,7 +394,8 @@ h5 {
  * function of where the column broke. A line box is not a sentence,
  * and no amount of CSS can make it one. */
 .caption-lead {
-  font-weight: 700;
+  /* Semibold, matching the figures' own type, rather than bold. */
+  font-weight: 600;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
 }
@@ -413,7 +415,7 @@ h5 {
  * innermost fictional wrapper, would repaint the first line straight
  * back over the span and reinstate the bug. */
 h5:not(:has(.caption-lead))::first-line {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--maroon-dark, #6e1428);
   letter-spacing: -0.005em;
 }
@@ -535,6 +537,38 @@ thead th {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-bottom: 2px solid var(--maroon-mid, #922038);
+}
+
+/* Body rows: build.py demotes every <thead> row after the first into
+ * <tbody>, so only the real header row gets the uppercase band. Cell
+ * paragraphs would otherwise inherit the body's justified text, which
+ * opens wide gaps in a narrow cell. */
+th p, td p {
+  margin: 0 0 0.25em;
+  text-align: left;
+  hyphens: manual;
+}
+
+td p:first-child strong {
+  color: var(--maroon-dark, #6e1428);
+}
+
+/* A heading build.py pulled into a table-block (the "Supplementary
+ * information" title) — it is already inside a spanning block. */
+.table-block > .table-block-heading {
+  column-span: none;
+  margin-top: 0;
+}
+
+/* A table caption sits ABOVE its table (build.py moves it there), so it
+ * keeps with what follows rather than what precedes it — the reverse of
+ * a figure caption. */
+h5.table-caption {
+  break-before: auto;
+  page-break-before: auto;
+  break-after: avoid;
+  page-break-after: avoid;
+  margin: 0.6em 0 0.4em 0;
 }
 
 /* ============================================================

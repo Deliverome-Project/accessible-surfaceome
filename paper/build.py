@@ -119,6 +119,11 @@ REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
 FIGURES_FILTER = REPO_ROOT / "paper" / "filters" / "figures.lua"
 SECTIONS_FILTER = REPO_ROOT / "paper" / "filters" / "sections.lua"
 CITATIONS_FILTER = REPO_ROOT / "paper" / "filters" / "citations.lua"
+BREAKABLE_IDS_FILTER = REPO_ROOT / "paper" / "filters" / "breakable_identifiers.lua"
+# Declared language. WeasyPrint only hyphenates (`hyphens: auto`) text whose
+# language is known, and pandoc emits a bare <html> without it, so the
+# justified print columns stretched into wide word gaps instead.
+LANG_ARG = "--metadata=lang:en-US"
 # Brand marks (GitHub / Zenodo) set beside the front-matter resource
 # links. Exported to the environment because a Lua filter has no way
 # to learn the repo root, and WeasyPrint resolves <img src> against
@@ -203,6 +208,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         outputfile=str(html_path),
         extra_args=[
             "--standalone",
+            LANG_ARG,
             # NOTE: NOT passing --section-divs. With it, pandoc wraps
             # each heading + its content in a <section class="levelN">,
             # which makes the body's headings and figures grandchildren
@@ -236,6 +242,8 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
             # text. MUST come after refs_dois.lua, which unwraps the
             # Zotero link around each reference entry.
             f"--lua-filter={CITATIONS_FILTER}",
+            # Let snake_case identifiers wrap at their underscores.
+            f"--lua-filter={BREAKABLE_IDS_FILTER}",
         ],
     )
 
@@ -272,6 +280,10 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
                 f"fix or relax the manifest, then re-run."
             )
 
+    from html_polish import polish_print_html  # ty: ignore[unresolved-import]
+
+    polish_print_html(html_path)
+
     # 3. WeasyPrint → PDF. The `base_url` anchors relative paths (the
     #    CSS @import of `../viewer/app/design-tokens.css` and the
     #    extracted-media images) to the HTML file's directory.
@@ -291,7 +303,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         to="jats",
         format="docx",
         outputfile=str(xml_path),
-        extra_args=["--standalone"],
+        extra_args=["--standalone", LANG_ARG],
     )
 
     return {"html": html_path, "pdf": pdf_path, "xml": xml_path, "figure_alert": figure_alert}
@@ -465,6 +477,7 @@ def build_web(
         outputfile=str(work),
         extra_args=[
             "--standalone",
+            LANG_ARG,
             "--toc",
             # Depth 2 = the <h1> title plus the <h2> section headings
             # (Introduction, Results, Discussion, Methods…). Depth 3
@@ -477,6 +490,7 @@ def build_web(
             f"--lua-filter={FIGURES_FILTER}",
             f"--lua-filter={SECTIONS_FILTER}",
             f"--lua-filter={CITATIONS_FILTER}",
+            f"--lua-filter={BREAKABLE_IDS_FILTER}",
         ],
     )
 
@@ -574,6 +588,17 @@ def build_web(
     # Group everything before the first <h2> into one <header> so the
     # stylesheet has something to anchor the banner on.
     body = doc.find("body")
+    if body is not None:
+        from html_polish import (  # ty: ignore[unresolved-import]
+            captions_above_tables,
+            demote_extra_header_rows,
+            unnest_wbr,
+        )
+
+        unnest_wbr(body)
+        demote_extra_header_rows(body)
+        captions_above_tables(body)
+
     if body is not None:
         first_h2 = body.find("h2")
         if first_h2 is not None:

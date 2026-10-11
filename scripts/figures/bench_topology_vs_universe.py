@@ -1,29 +1,34 @@
 """SurfaceBench topology distribution vs Sonnet 2-tier yes/contextual.
 
 Side-by-side grouped barplot over the same 9 topology categories the
-``topology_coverage_by_source`` 3×3 figure breaks out, with two hues:
+``topology_coverage_by_source`` figure breaks out, with two hues:
 
   • **Sonnet 2-tier yes/contextual universe** (n=4,628) — the genes
     the production pipeline calls accessible after the
-    Sonnet+NCBI sweep plus the Sonnet+PubMed rescue lane
-    (NCBI=no → PubMed=yes/contextual flips, ~177 genes recovered).
+    Sonnet+NCBI sweep plus all of the Sonnet+PubMed rescue lanes
+    (NCBI=no → PubMed=yes/contextual flips).
     This is what the catalog *actually ships*, NOT the full
     "any-DB-voted-yes" union the topology figure also breaks out.
-  • **SurfaceBench** (n=146 of 147 that join into the features TSV) —
-    the 147-protein hand-curated benchmark deliberately enriched for
-    cases where the five gating databases disagree
+  • **SurfaceBench** (n=99) — the genes in the 147-protein
+    hand-curated benchmark whose ground-truth verdict is yes or
+    contextual. The benchmark is deliberately enriched for cases where
+    the five gating databases disagree. 96 of the 99 are in the
+    universe; the other 3 (C3, SRC, TGOLN2) are genes Sonnet missed.
 
 The figure surfaces the **bench enrichment bias** the methods section
 flags: the bench is *not* a random topological sample of the surfaceome.
-DB-confusing classes (GPI-anchored, single-pass TM with ambiguous
-orientation, inner-leaflet lipidated, glycosylation-positive) are
-over-represented; the DBs-agree-easily class (multi-pass TM) is
-under-represented. SurfaceBench accuracy is therefore a *lower bound*
-on expected full-proteome accuracy, not a representative point estimate.
+Four classes reach Bonferroni-corrected significance: the bench is
+over-represented for GPI-anchored (+14.2 pp) and glycosylation-site
+(+18.9 pp) proteins and under-represented for multi-pass TM
+(−13.9 pp), the class the DBs agree on easily, and for TM without a
+signal peptide (−17.6 pp). SurfaceBench accuracy is therefore a
+*lower bound* on expected full-proteome accuracy, not a representative
+point estimate.
 
 Bench bars carry Wilson 95% binomial confidence intervals to make the
-small-n classes (Likely secreted n=4, No-TM/no-signal n=6) read as
-noisier than they would as bare bars.
+small-n classes (Likely secreted n=8, No-TM/no-signal n=4,
+Inner-leaflet lipidated n=1) read as noisier than they would as bare
+bars.
 
 Run:
     uv run python scripts/figures/bench_topology_vs_universe.py
@@ -47,9 +52,9 @@ REPO = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO / "data/analysis/figures"
 SLUG = "bench_topology_vs_universe"
 
-# Single per-figure TSV: one row per gene in the Sonnet 2-tier
-# yes/contextual universe with is_bench + 9 topology booleans
-# denormalized in. Produced by scripts/build_figure_tsvs.py.
+# Single per-figure TSV: the union of the Sonnet 2-tier yes/contextual
+# universe and the bench, with in_universe + is_bench flags and 9
+# topology booleans denormalized in. Produced by scripts/build_figure_tsvs.py.
 DATA_TSV = REPO / "data/processed/figures/bench_topology_vs_universe.tsv"
 
 # 9 categories — mirrors the topology_coverage_by_source 3×3 grid in
@@ -136,7 +141,7 @@ def _compute_distribution() -> tuple[
     """Read the committed per-figure TSV and compute topology distributions.
 
     The TSV (built by ``scripts/build_figure_tsvs.py``) already contains
-    one row per gene in the Sonnet 2-tier yes/contextual universe, with
+    one row per gene in the universe or the bench, with ``in_universe``,
     ``is_bench`` and the 9 topology flag columns denormalized in. No
     network fetch or universe recomputation is needed."""
     data = pd.read_csv(DATA_TSV, sep="\t")
@@ -180,13 +185,13 @@ def _compute_distribution() -> tuple[
 def make_plot() -> tuple[plt.Figure, plt.Axes]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
-        "xtick.labelsize": 14, "ytick.labelsize": 16, "legend.fontsize": 14,
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     feats, univ, bench, ci, pvals, n_u, n_b = _compute_distribution()
     n = len(feats)
 
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=(14, 7.5))
     width = 0.40
     x = np.arange(n)
 
@@ -216,20 +221,20 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         star = _star(p)
         # Color/weight encode SIGNIFICANCE, not magnitude: a class that
         # clears the Bonferroni gate (star != "ns") is dark ink + bold;
-        # a non-significant class is neutral gray + normal weight, so a
-        # large-but-ns delta (e.g. a +11.8 pp shift at p=0.125) doesn't
+        # a non-significant class is neutral gray + the default weight, so a
+        # large-but-ns delta (e.g. Single-pass TM, +10.5 pp at p=0.28) doesn't
         # read as "significant" the way a bold label would. Dark neutral
         # (not the bench color) so the annotations carry no red/highlight.
         significant = star != "ns"
         color = "#1F1718" if significant else "#6F5D5A"
-        weight = "bold" if significant else "normal"
+        weight = "bold" if significant else "semibold"
         label = f"{sign}{abs(delta):.1f} pp"
         if star != "ns":
             label += f"  {star}"
         ax.text(
             i, y_text, label,
             ha="center", va="bottom",
-            fontsize=12, color=color, fontweight=weight,
+            fontsize=15, color=color, fontweight=weight,
         )
 
     ax.set_xticks(x)
@@ -239,11 +244,11 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     ax.set_xlabel("")
 
     # Upper-LEFT: the left side of the plot is empty (GPI / 7TM bars are
-    # short there), whereas the tall Glyc.-site bar + its "+20.5 pp ***"
+    # short there), whereas the tall Glyc.-site bar + its "+18.9 pp ***"
     # label collides with an upper-right legend.
     ax.legend(
         loc="upper left", bbox_to_anchor=(0.01, 0.99),
-        frameon=False, fontsize=14,
+        frameon=False, fontsize=16,
     )
 
     sns.despine(ax=ax, top=True, right=True)

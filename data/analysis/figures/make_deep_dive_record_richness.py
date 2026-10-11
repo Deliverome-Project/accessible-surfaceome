@@ -34,7 +34,7 @@ non-surface proteins carry little extracellular evidence by definition; the
 ``uncertain`` tier (n=55) is dropped everywhere as too small relative to
 the other tiers to plot a stable distribution.
 
-Full deep-dive cohort (5,130 genes); the `canonical` tier uses the PR #130 gate.
+Full deep-dive cohort (5,332 genes); the `canonical` tier uses the PR #130 gate.
 
 Standalone — ``uv run make_deep_dive_record_richness.py``.
 """
@@ -44,6 +44,7 @@ from pathlib import Path
 
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
+from matplotlib.transforms import offset_copy
 import pandas as pd
 import seaborn as sns
 
@@ -111,9 +112,9 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
+        "font.weight": "semibold",
         # Per-panel description renders as a TITLE (axes.titlesize)
         # rather than the x-axis label slot, mirroring the canonical.
         "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 16,
@@ -124,7 +125,7 @@ def _apply_brand_style() -> None:
         "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 14, "ytick.labelsize": 18, "legend.fontsize": 14,
+        "xtick.labelsize": 18, "ytick.labelsize": 18, "legend.fontsize": 18,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
         "legend.frameon": False,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
@@ -144,7 +145,9 @@ PANELS = [
     ("n_det_features",     "Deterministic features (derived, 0-7)", _THREE, "Features per protein"),
 ]
 
-FIGSIZE = (25, 6.5)
+# Two rows (the 4-tier panels a/b on top, the 3-tier panels c-e below) so the
+# figure prints at a legible scale; a single 5-wide row needed a ~25 in canvas.
+FIGSIZE = (16, 10)
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
@@ -206,7 +209,11 @@ def main() -> None:
     data = _fetch_tsv(DATA_TSV)
     n_real_total = len(data)
 
-    fig, axes = plt.subplots(1, 5, figsize=FIGSIZE)
+    fig = plt.figure(figsize=FIGSIZE)
+    gs = fig.add_gridspec(2, 6)
+    axes = [fig.add_subplot(gs[0, 0:3]), fig.add_subplot(gs[0, 3:6]),
+            fig.add_subplot(gs[1, 0:2]), fig.add_subplot(gs[1, 2:4]),
+            fig.add_subplot(gs[1, 4:6])]
     panel_letters = ["a", "b", "c", "d", "e"]
 
     for idx, (ax, (key, subtitle, tiers, ylabel)) in enumerate(
@@ -219,15 +226,18 @@ def main() -> None:
         # render the per-panel subtitle as centered text above each panel.
         ax.text(
             0.5, 1.03, subtitle, transform=ax.transAxes,
-            ha="center", va="bottom", fontsize=15, fontweight="semibold",
+            ha="center", va="bottom", fontsize=17.5, fontweight="semibold",
             color=BRAND_INK,
         )
 
         # Subpanel letter (lowercase, ExtraBold) at upper-left, baseline-aligned
         ax.text(
-            -0.14, 1.03, panel_letters[idx],
-            transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=22, fontweight=800, color=BRAND_INK,
+            0.0, 1.03, panel_letters[idx],
+            # Fixed inch offset so the letter sits the same distance left of
+            # every panel regardless of its width.
+            transform=offset_copy(ax.transAxes, fig=fig, x=-0.95, units="inches"),
+            ha="left", va="bottom",
+            fontsize=27, fontweight=800, color=BRAND_INK,
         )
 
         sns.despine(ax=ax, top=True, right=True)

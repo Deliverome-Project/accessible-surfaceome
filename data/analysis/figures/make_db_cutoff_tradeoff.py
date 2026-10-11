@@ -6,11 +6,13 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``db_cutoff_tradeoff.{pdf,png}`` from the public repo.
+"""Reproduce ``db_cutoff_tradeoff.{pdf,png}`` (Supplementary Figure 4).
 
 Five per-source subplots showing the universe-size / accuracy
 trade-off across cutoff variants for each surface DB. Reads a tiny
-precomputed-points TSV (raw-fetched), so the gist stays small.
+precomputed-points TSV: the copy bundled next to this script in the
+gist first, falling back to the in-repo copy only when that is missing
+(no network fetch), so the gist stays small and self-contained.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available, per-DB sequential ramps
@@ -27,6 +29,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+from matplotlib.transforms import offset_copy
 
 
 def _log_tick_label(x: float, _pos: int) -> str:
@@ -129,7 +132,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -138,12 +141,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 20,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 16,
+        "axes.labelsize": 18,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -158,19 +161,19 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 20,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
 
 
 GROUP_ORDER = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
-# Per-DB sequential ramps, light → dark = strict → permissive. Pulled
+# Per-DB sequential ramps, dark → light = strict → permissive. Pulled
 # from BRAND_SEQUENTIAL so the visual identity matches the rest of the
 # figure set.
 GROUP_RAMP = {
@@ -186,21 +189,21 @@ CANONICAL_EDGE = BRAND_INK
 # Short labels match the canonical generator.
 SHORT_LABEL = {
     "UniProt strict-only\n(4 subcell terms)":              "strict-4",
-    "UniProt baseline":                                    "canonical",
+    "UniProt baseline":                                    "original",
     "UniProt TM-or-signal-or-surface\n(topology proxy)":   "TM+signal",
     "UniProt permissive\n(incl. plain Cell membrane)":     "permissive",
     "GO experimental+curated":                             "exp+curated",
-    "GO baseline":                                         "canonical",
+    "GO baseline":                                         "original",
     "GO permissive\n(incl. IEA-only)":                     "+ IEA",
     "HPA Enhanced-only\n(strictest tier)":                 "Enhanced",
-    "HPA baseline":                                        "canonical",
+    "HPA baseline":                                        "original",
     "HPA + Uncertain tier":                                "+ Uncertain",
     "SURFY score>0.9":                                     ">0.9",
     "SURFY score>0.7":                                     ">0.7",
     "SURFY score>0.5":                                     ">0.5",
-    "SURFY baseline":                                      "canonical",
+    "SURFY baseline":                                      "original",
     "CSPA high-conf only":                                 "HC-only",
-    "CSPA baseline":                                       "canonical",
+    "CSPA baseline":                                       "original",
     "CSPA + unspecific":                                   "+ unspecific",
 }
 
@@ -227,12 +230,19 @@ def main() -> None:
     _apply_brand_style()
     df = _fetch_tsv(POINTS_URL)
 
-    # Wider + taller than v2's (13, 11): v2's panels were noticeably taller
-    # than wide (≈4.3"w × 5.5"h each). (19, 13) gives ≈6.3"w × 6.5"h —
-    # near-square. Extra height also makes room for the per-panel caption
-    # block to breathe under v2's larger caption fontsize.
-    fig, axes = plt.subplots(2, 3, figsize=(19, 13))
+    # Sized for print at ~7 in wide (fonts here are ~2x their printed size).
+    fig, axes = plt.subplots(2, 3, figsize=(14, 11))
     axes_flat = axes.flatten()
+
+    # Per-panel key under each axes: one row per cutoff variant, its marker
+    # drawn in the point's own colour. Columns: short label, universe size,
+    # +% surface proteins recovered / -% non-surface proteins correctly
+    # excluded. Placed in points from the axes' bottom-left corner, with
+    # fixed columns so the numbers align.
+    key_fs = 14
+    key_line_pt = key_fs * 1.5
+    key_top_pt = -48  # clears the x tick labels
+    key_x_pt = {"marker": 6, "label": 18, "n": 192, "acc": 202}
 
     for gi, group in enumerate(GROUP_ORDER):
         ax = axes_flat[gi]
@@ -240,33 +250,66 @@ def main() -> None:
         ramp = GROUP_RAMP.get(group, [BRAND_NEUTRAL])
 
         # Strictness-ladder line.
-        ax.plot([p["size"] for p in pts], [p["acc"] * 100 for p in pts],
-                color=ramp[0], linewidth=1.6, alpha=0.5, zorder=2)
+        ax.plot(
+            [p["size"] for p in pts],
+            [p["acc"] * 100 for p in pts],
+            color=ramp[0],
+            linewidth=1.6,
+            alpha=0.5,
+            zorder=2,
+        )
 
-        caption_lines = []
         for idx, p in enumerate(pts):
             color = ramp[min(idx, len(ramp) - 1)]
             if p.get("recommended"):
-                marker, msize, edge = "*", 480, RECOMMENDED_EDGE
-                marker_char = "★"
+                marker, msize, edge = "*", 380, RECOMMENDED_EDGE
             elif p.get("canonical"):
-                marker, msize, edge = "D", 200, CANONICAL_EDGE
-                marker_char = "◆"
+                marker, msize, edge = "D", 160, CANONICAL_EDGE
             else:
-                marker, msize, edge = "o", 130, "white"
-                marker_char = "●"
-            ax.scatter(p["size"], p["acc"] * 100,
-                       marker=marker, s=msize, color=color,
-                       edgecolor=edge, linewidth=1.6, zorder=4)
-            short = SHORT_LABEL.get(p["label"], p["label"]).replace("\n", " ")
-            caption_lines.append(
-                f"{marker_char}  {short:<14}  n={int(p['size']):>5,}   +{p['pos']*100:.0f}/-{p['neg']*100:.0f}"
+                marker, msize, edge = "o", 100, "white"
+            ax.scatter(
+                p["size"],
+                p["acc"] * 100,
+                marker=marker,
+                s=msize,
+                color=color,
+                edgecolor=edge,
+                linewidth=1.4,
+                zorder=4,
             )
 
+            y_pt = key_top_pt - idx * key_line_pt
+
+            def _at(x_pt: float, y_pt: float = y_pt, ax=ax):
+                return offset_copy(ax.transAxes, fig=fig, x=x_pt, y=y_pt, units="points")
+
+            ax.scatter(
+                [0], [0], marker=marker, s=max(msize * 0.35, 60), color=color,
+                edgecolor=edge, linewidth=1.0, transform=_at(key_x_pt["marker"]),
+                clip_on=False, zorder=5,
+            )
+            short = SHORT_LABEL.get(p["label"], p["label"]).replace("\n", " ")
+            for col, text, ha in (
+                ("label", short, "left"),
+                ("n", f"n={int(p['size']):,}", "right"),
+                ("acc", f"+{p['pos'] * 100:.0f}/-{p['neg'] * 100:.0f}", "left"),
+            ):
+                ax.text(
+                    0, 0, text, transform=_at(key_x_pt[col]),
+                    ha=ha, va="center", fontsize=key_fs, color=BRAND_INK,
+                )
+
         ax.set_xscale("log")
-        ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=20, fontweight="bold",
-                color=ramp[0])
+        ax.text(
+            0.03,
+            0.97,
+            group,
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=18,
+            color=ramp[0],
+        )
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
         if xs:
@@ -281,56 +324,73 @@ def main() -> None:
         ax.xaxis.set_minor_locator(NullLocator())
         sns.despine(ax=ax, top=True, right=True)
 
-        # Per-panel caption block — one line per cutoff variant, marker
-        # char doubles as the visual key for matching to on-plot points.
-        # Monospace so columns align; tiny enough that even DejaVu Sans
-        # Mono fallback reads cleanly on systems without a brand mono.
-        ax.text(
-            0.0, -0.30, "\n".join(caption_lines),
-            transform=ax.transAxes,
-            ha="left", va="top",
-            fontsize=15, color=BRAND_INK,
-            family="monospace",
-        )
-
-    # 6th cell: marker-shape key + missing-rule footnote.
+    # 6th cell: marker-shape key.
     legend_ax = axes_flat[5]
     legend_ax.axis("off")
     handles = [
-        plt.Line2D([], [], marker="o", linestyle="", color=BRAND_NEUTRAL,
-                   markersize=11, markeredgecolor="white",
-                   markeredgewidth=1.4, label="Alternative cutoff (not used)"),
-        plt.Line2D([], [], marker="D", linestyle="", color=BRAND_NEUTRAL,
-                   markersize=12, markeredgecolor=CANONICAL_EDGE,
-                   markeredgewidth=1.4, label="Canonical (current merge rule)"),
-        plt.Line2D([], [], marker="*", linestyle="", color=BRAND_NEUTRAL,
-                   markersize=20, markeredgecolor=RECOMMENDED_EDGE,
-                   markeredgewidth=1.4, label="Recommended after trade-off audit"),
+        plt.Line2D(
+            [],
+            [],
+            marker="o",
+            linestyle="",
+            color=BRAND_NEUTRAL,
+            markersize=10,
+            markeredgecolor="white",
+            markeredgewidth=1.4,
+            label="Alternative cutoff (not used)",
+        ),
+        plt.Line2D(
+            [],
+            [],
+            marker="D",
+            linestyle="",
+            color=BRAND_NEUTRAL,
+            markersize=10,
+            markeredgecolor=CANONICAL_EDGE,
+            markeredgewidth=1.4,
+            label="Original rule",
+        ),
+        plt.Line2D(
+            [],
+            [],
+            marker="*",
+            linestyle="",
+            color=BRAND_NEUTRAL,
+            markersize=17,
+            markeredgecolor=RECOMMENDED_EDGE,
+            markeredgewidth=1.4,
+            label="Adopted after\nbenchmark audit",
+        ),
     ]
-    legend_ax.legend(handles=handles, loc="upper center", fontsize=20,
-                     frameon=False, title="Marker shape",
-                     title_fontsize=20)
+    legend_ax.legend(
+        handles=handles,
+        loc="upper left",
+        fontsize=16,
+        frameon=False,
+        title="Marker shape",
+        title_fontsize=18,
+        alignment="left",
+        labelspacing=0.9,
+    )
 
-    fig.supxlabel("Universe size — proteins this filter would admit "
-                  "(log scale; lower = stricter)", fontsize=20, y=0.02,
-                  color=BRAND_INK)
-    # supylabel y defaults to 0.5 (figure midline) which is what reads as
-    # "centered" against the supxlabel's default x=0.5. Earlier overrides
-    # to 0.54 (axes-content midpoint) and the dynamic equivalent were
-    # technically correct but visually off — keep the matplotlib default.
-    # x=0.02 just keeps the rotated label off the canvas-left edge under
-    # brand-style-v3's larger axes.labelsize.
-    fig.supylabel("Accuracy on\n147-gene benchmark (%)", fontsize=20,
-                  x=0.02, color=BRAND_INK)
-    plt.tight_layout(rect=[0.04, 0.03, 1, 0.985])
-    # Vertical gap between row-1 panels (with caption blocks BELOW them at
-    # axes-y=-0.30, extending further for the longest panel — 6 variants
-    # × ~22pt line height) and row-2 panels. Without this, row-1 captions
-    # crash into row-2 axes / row-2 captions extend into the supxlabel.
-    # Bumped 0.95 → 1.40 to give room for the now-larger (19, 13) figure +
-    # the recommended-cutoff line (★) below the canonical line (◆) in
-    # each panel.
-    plt.subplots_adjust(hspace=1.40)
+    fig.supxlabel(
+        "Universe size — proteins this filter would admit "
+        "(log scale; lower = stricter)",
+        fontsize=18,
+        fontweight="semibold",
+        y=0.01,
+        color=BRAND_INK,
+    )
+    fig.supylabel(
+        "Accuracy on\n147-gene benchmark (%)",
+        fontsize=18,
+        fontweight="semibold",
+        x=0.01,
+        color=BRAND_INK,
+    )
+    # tight_layout counts the per-panel key text, so the row gap and
+    # bottom margin make room for it.
+    plt.tight_layout(rect=[0.03, 0.025, 1, 1], h_pad=1.5)
 
     out_pdf = Path("db_cutoff_tradeoff.pdf")
     out_png = Path("db_cutoff_tradeoff.png")

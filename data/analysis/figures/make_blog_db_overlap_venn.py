@@ -133,7 +133,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -143,7 +143,7 @@ def _apply_brand_style() -> None:
             "savefig.bbox": "tight",
             "figure.facecolor": "none",
             "savefig.facecolor": "none",
-            "font.family": "sans-serif",
+            "font.family": ["Manrope", "DejaVu Sans"],
             "font.sans-serif": [
                 "Manrope",
                 "Outfit",
@@ -151,10 +151,10 @@ def _apply_brand_style() -> None:
                 "Liberation Sans",
                 "Arial",
             ],
-            "font.weight": "medium",
+            "font.weight": "semibold",
             "font.size": 21,
             "axes.labelsize": 25,
-            "axes.labelweight": "medium",
+            "axes.labelweight": "semibold",
             "axes.titlesize": 0,
             "axes.titlepad": 0,
             "axes.spines.top": False,

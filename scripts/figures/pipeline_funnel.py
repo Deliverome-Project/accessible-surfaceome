@@ -226,7 +226,7 @@ def _pill(ax, x, y, label, *, fill=MAROON_DARK, fg="white", size=11):
         ha="center",
         va="center",
         fontsize=size,
-        fontweight="bold",
+        fontweight="semibold",
         color=fg,
         zorder=5,
         bbox={
@@ -291,8 +291,8 @@ def _eyebrow(ax, x, y, text, color=EYEBROW):
         text,
         ha="left",
         va="center",
-        fontsize=11,
-        fontweight="bold",
+        fontsize=14,
+        fontweight="semibold",
         color=color,
         zorder=5,
     )
@@ -333,25 +333,25 @@ def build(counts: Counts):
         ax, 424, 118,
         [
             (f"{counts.db_union:,}", 34, "bold", INK),
-            ("   flagged surface", 13, "normal", MUTED),
+            ("   flagged surface", 13, "semibold", MUTED),
         ],
     )
     ax.text(
         424, 154, "UniProt \u00b7 GO CC \u00b7 HPA \u00b7 SURFY \u00b7 CSPA",
         ha="left", va="center", fontsize=12.5, color=MUTED, zorder=5,
     )
-    _pill(ax, 796, 76, "no LLM", fill=TEAL, size=10)
+    _pill(ax, 796, 76, "no LLM", fill=TEAL, size=11)
 
     # ---- Box C: the triage lane, both passes on the canvas -----------
     _card(ax, 400, 212, 450, 344)
     _eyebrow(ax, 424, 236, "ACCESSIBILITY TRIAGE AGENT")
-    _pill(ax, 800, 236, "Sonnet", fill=MAROON_DARK, size=10)
+    _pill(ax, 800, 236, "Sonnet", fill=MAROON_DARK, size=11)
 
     _card(ax, 422, 254, 406, 146, edge=PANEL_EDGE, fill=PANEL_FILL,
           lw=1.2, radius=6, z=3)
     ax.text(
         440, 276, "STAGE 1  NCBI gene + protein records",
-        ha="left", va="center", fontsize=11, fontweight="bold",
+        ha="left", va="center", fontsize=11.5, fontweight="semibold",
         color=TEAL, zorder=5,
     )
     ax.text(
@@ -361,7 +361,7 @@ def build(counts: Counts):
     )
     ax.text(
         440, 328, "STAGE 2  literature pass on the non-surface calls",
-        ha="left", va="center", fontsize=11, fontweight="bold",
+        ha="left", va="center", fontsize=11.5, fontweight="semibold",
         color=TEAL, zorder=5,
     )
     # Broken out by database support. "Zero-database" alone was wrong — the
@@ -389,7 +389,7 @@ def build(counts: Counts):
         ax, 424, 444,
         [
             (f"{counts.triage_positive:,}", 34, "bold", INK),
-            ("   called surface", 13, "normal", MUTED),
+            ("   called surface", 13, "semibold", MUTED),
         ],
     )
     ax.text(
@@ -405,7 +405,7 @@ def build(counts: Counts):
         ax, 442, 521,
         [
             (f"{counts.rescued:,}", 21, "bold", MAROON_DARK),
-            ("  flagged by no database", 12.5, "normal", MAROON_DARK),
+            ("  flagged by no database", 12.5, "semibold", MAROON_DARK),
         ],
     )
 
@@ -438,7 +438,7 @@ def build(counts: Counts):
         )
     ):
         ax.text(
-            960, 280 + 17 * i, line,
+            960, 280 + 18 * i, line,
             ha="left", va="center", fontsize=11.5, color=TRIM_EDGE, zorder=5,
         )
     _arrow(ax, (1270, 280), (1312, 280))

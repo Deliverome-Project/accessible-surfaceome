@@ -11,16 +11,32 @@ re-run; do not hand-edit inside these markers.*
 <!-- END manuscript-legend -->
 
 Each point is one (model, prompt-variant) cell of the triage agent
-benchmark: x = $/whole-genome (cost projected to a 1-replicate-per-gene
-sweep over 19,324 protein-coding genes), y = verdict accuracy on the
-147-gene labelled bench. Ten Claude cells: Haiku 4.5 × {naive, +NCBI,
-+NCBI+PubMed, +NCBI+web}, Sonnet 4.6 × same 4 variants, and Opus
-4.7 × {naive, +NCBI}. Cost amortises prompt-caching using the
-observed cache-hit rate per cell.
+benchmark. There are 11 cells: Haiku 4.5 and Sonnet 4.6 each ×
+{naive, + IDs, + IDs + PubMed, + IDs + web}, Sonnet 5 × {+ IDs}, and
+Opus 4.8 × {naive, + IDs}. "+ IDs" means the prompt carries the gene's
+resolved identifiers; "+ PubMed" and "+ web" add a PubMed or web-search
+tool on top.
 
-The y-axis floor is set at ~78% to spread the LLM-cell range; DB
-baselines are intentionally absent (they'd compress the LLM cluster
-against the bottom of the chart). For the DB-vs-LLM comparison, see
+- **y-axis:** verdict accuracy on the 147-gene labelled bench, as the
+  mean over the 3 replicates of each cell. A prediction counts as a
+  match under the soft-credit rule used by the bench figures: `yes` or
+  `contextual` matches a truth of `yes` or `contextual`; `no` matches
+  `no` only.
+- **x-axis (log scale):** projected cost of one triage pass (1
+  replicate) over all 19,324 protein-coding genes. For each cell the
+  script takes the mean tokens per call. The shared system prompt is
+  charged once at the cache-write rate and then reused at the
+  cache-read rate for every other gene; the rest of the prompt is
+  charged at the input rate and the reply at the output rate. Cells
+  that recorded no cache tokens are treated as having a 2,000-token
+  shared system prompt. Each web search adds $0.01. The per-call cost
+  is then multiplied by 19,324. Per-million-token prices are set in the
+  `_PRICE` table at the top of the script.
+
+The y-axis floor is max(78%, lowest cell accuracy − 2 points), which
+is about 79.6% here, to spread the LLM cells. DB baselines are left
+out on purpose (they would squash the LLM cluster against the bottom
+of the chart). For the DB-vs-LLM comparison, see
 `db_correctness_overall` and `db_correctness_by_class`.
 
 Run:
@@ -29,10 +45,18 @@ Run:
 uv run make_benchmark_cost_vs_accuracy.py
 ```
 
-Sources (fetched live from the public API):
-
-- Bench predictions: `https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1` (14 columns: gene / model / prompt_variant / replicate / verdict / reason / confidence / token counts / cost_usd / latency)
-- Bench truth labels: `https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv` (7 columns: gene / uniprot / class / verdict / signal / reason / rationale)
+Data: the bundled `benchmark_cost_vs_accuracy.tsv` next to the script
+(no download). It has one row per gene × model × prompt variant ×
+replicate, with token counts (prompt, completion, cache write, cache
+read), web-search count, the predicted and ground-truth verdicts, and
+the soft-credit `is_match` flag. It is built by
+`scripts/build_figure_tsvs.py` from
+`data/processed/triage_bench/mainbench_replicates_v2.tsv` (exported
+from public D1 by `scripts/tsv-export/export_mainbench_to_tsv.py`;
+truth labels from `data/eval/triage_benchmark_v1.tsv` and `is_match`
+are added by `scripts/figures/augment_figure_tsvs_with_stable_ids.py`).
+Outside a gist, the script reads the in-repo copy at
+`data/processed/figures/benchmark_cost_vs_accuracy.tsv`.
 
 Canonical in-repo generator:
-[`scripts/figures/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/triage_bench_db_barplot.py).
+[`scripts/figures/benchmark_cost_vs_accuracy.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/benchmark_cost_vs_accuracy.py).

@@ -169,10 +169,10 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "axes.labelweight": "semibold",
         "axes.titlepad": 0,
         "axes.spines.top": False,
         "axes.spines.right": False,
@@ -266,8 +266,8 @@ def _series(rows: list[dict[str, str]], rep: str, name: str, rng: random.Random)
 def make_plot() -> plt.Figure:
     _apply_brand_style()
     plt.rcParams.update({
-        "font.size": 18, "axes.labelsize": 18, "axes.titlesize": 0,
-        "xtick.labelsize": 15, "ytick.labelsize": 15, "legend.fontsize": 15,
+        "font.size": 16, "axes.labelsize": 16, "axes.titlesize": 0,
+        "xtick.labelsize": 14.5, "ytick.labelsize": 14.5, "legend.fontsize": 14.5,
     })
     rows = _read(DATA_TSV)
     full_rows = [r for r in rows if r["comparison"] == "full_rerun"]
@@ -288,7 +288,7 @@ def make_plot() -> plt.Figure:
             y += 1.25
     df["y"] = df["row"].map(dict(enumerate(ypos)))
 
-    fig, ax = plt.subplots(figsize=(15, 17.5))
+    fig, ax = plt.subplots(figsize=(13, 16))
     sns.despine(ax=ax, top=True, right=True)
     # McHugh (2012) bands, drawn contiguous so no gap shows between them.
     ax.axvspan(0.60, 0.80, color=_BAND_MODERATE, zorder=0)
@@ -323,13 +323,13 @@ def make_plot() -> plt.Figure:
             n_yes = sum(r[f"{stem}_published"] == "True" for r in full_rows)
             if min(n_yes, len(full_rows) - n_yes) < _RARE * len(full_rows):
                 opts = f"yes · no  (rare: {n_yes}/{len(full_rows)} yes)"
-        ax.text(-0.02, yy - 0.2, label, transform=trans, ha="right", va="center",
-                fontsize=15, color=BRAND_INK)
+        ax.text(-0.02, yy - 0.22, label, transform=trans, ha="right", va="center",
+                fontsize=14.5, color=BRAND_INK)
         ax.text(-0.02, yy + 0.3, f"{opts}  [{kind}]", transform=trans, ha="right",
-                va="center", fontsize=13, color=BRAND_NEUTRAL)
+                va="center", fontsize=12.5, color=BRAND_NEUTRAL)
     for yy, title in headers:
         ax.text(-0.02, yy + 0.02, title.upper(), transform=trans, ha="right",
-                va="center", fontsize=13, fontweight=800, color=_FULL_COLOR)
+                va="center", fontsize=14, fontweight="bold", color=_FULL_COLOR)
         if yy > 0:
             ax.axhline(yy - 0.32, color=BRAND_NEUTRAL, linewidth=0.8, alpha=0.5,
                        zorder=1)
@@ -350,8 +350,8 @@ def make_plot() -> plt.Figure:
         mpatches.Patch(color=_BAND_MODERATE, label="Moderate (0.60–0.79)"),
         mpatches.Patch(color=_BAND_STRONG, label="Strong (0.80–0.90)"),
         mpatches.Patch(color=_BAND_ALMOST_PERFECT, label="Almost perfect (>0.90)"),
-    ], loc="upper left", bbox_to_anchor=(0.01, 1.0), ncol=1, frameon=True,
-        facecolor="white", edgecolor="none", framealpha=1.0, handlelength=2.2,
+    ], loc="upper right", bbox_to_anchor=(-0.02, -0.03), ncol=2, frameon=False,
+        handlelength=2.2, columnspacing=1.2,
         labelspacing=0.3, borderpad=0.3)
     fig.tight_layout()
     return fig

@@ -48,15 +48,17 @@
   --paper-muted: #6f5d5a;
   --paper-rule: rgba(31, 23, 24, 0.12);
 
-  /* Wide for prose on purpose — this is a reference document people
-   * scan and cross-link through, not an essay read start to finish,
-   * and the long compound terms and inline citations want the room.
+  /* Prose measure. Narrowed on main from 58rem, which ran to ~104
+   * characters — long enough that the eye loses its place on the
+   * return sweep. Combined with the 16px body size set below, 42rem
+   * lands near 90 characters, which is both the long-standing
+   * typographic range for body text and what the reference page for
+   * this work uses (48rem at 18px, ~90 characters).
    *
-   * Measured rather than assumed: at 16px this lands near 115
-   * characters a line, not the ~90 an earlier comment here claimed.
-   * That is past the usual comfort range, and it is a deliberate
-   * trade for scanability. */
-  --measure: 58rem;
+   * Figures and tables are NOT clamped to this — they set their own
+   * wider limits below — so the narrow prose column does not shrink
+   * the figures. */
+  --measure: 42rem;
   --toc-width: 16rem;
 
   /* Motion. Deliberately quicker than the 600ms/16px that long-form
@@ -160,7 +162,11 @@ html { -webkit-text-size-adjust: 100%; }
  * exclusion it inherited max-width:--measure + margin/padding and the
  * dark backdrop rendered as a centred box instead of covering the
  * viewport. */
-.paper-root > *:not(.paper-header):not(#TOC):not(.figure-lightbox) {
+/* :where() keeps this default at class-level specificity. As a plain
+ * :not(#TOC) chain it carried an id's weight and silently beat the
+ * wider .figure-block and table limits below, so figures were held to
+ * the prose measure too. */
+.paper-root > :where(:not(.paper-header, #TOC, .figure-lightbox)) {
   max-width: var(--measure);
   margin-inline: auto;
   padding-inline: 1.5rem;
@@ -286,9 +292,9 @@ h5 {
   /* Rail only — the filled caption card belongs to the print edition,
    * where it separates figures from two-column body text. On a white
    * single-column page it just adds noise. */
-  border-left: 3px solid var(--maroon-mid);
+  border-left: 1.5px solid rgba(146, 32, 56, 0.45);
   margin-block: 0.7rem 0;
-  padding: 0.85rem 1.1rem;
+  padding: 0.3rem 0 0.3rem 1rem;
   font-family: var(--font-sans, "Manrope"), sans-serif;
   font-weight: 400;
   font-size: 0.88rem;
@@ -303,7 +309,7 @@ h5 {
  * the .docx's own bolding of the same words, kept so a caption the
  * filter could not resolve still reads right here. */
 h5 .caption-lead,
-h5 strong { color: var(--maroon-dark); font-weight: 700; }
+h5 strong { color: var(--maroon-dark); font-weight: 600; }
 
 /* Landing highlight: clicking a cross-reference should make it
  * obvious WHICH block you just jumped to. */
@@ -380,6 +386,13 @@ span[id^="ref-"]:target {
   border-radius: 2px;
 }
 
+/* Long bare URLs (the Data / Code availability links run to 100+
+ * characters) can't wrap at any normal break point and pushed the page
+ * sideways on a phone. */
+.paper-root a {
+  overflow-wrap: anywhere;
+}
+
 /* ============================================================
  * Tables
  * ============================================================ */
@@ -399,6 +412,18 @@ th, td {
   vertical-align: top;
 }
 th { color: var(--maroon-dark); font-weight: 600; }
+
+/* Tables can use more width than the prose measure: Supplementary
+ * Table 1 is three columns of codes plus descriptions. */
+.paper-root > table,
+.paper-root > h5.table-caption {
+  max-width: min(58rem, 100%);
+}
+
+/* build.py demotes all but the first <thead> row into <tbody>; each
+ * body cell holds a reason code over its description. */
+td p { margin: 0 0 0.25em; }
+td p:first-child strong { color: var(--maroon-dark); }
 
 /* ============================================================
  * Print from the browser: fall back to something sane rather than
