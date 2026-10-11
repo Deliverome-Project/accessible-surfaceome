@@ -48,17 +48,19 @@
   --paper-muted: #6f5d5a;
   --paper-rule: rgba(31, 23, 24, 0.12);
 
-  /* Prose measure. Narrowed on main from 58rem, which ran to ~104
-   * characters — long enough that the eye loses its place on the
-   * return sweep. Combined with the 16px body size set below, 42rem
-   * lands near 90 characters, which is both the long-standing
-   * typographic range for body text and what the reference page for
-   * this work uses (48rem at 18px, ~90 characters).
+  /* Wide for prose on purpose — this is a reference document people
+   * scan and cross-link through, not an essay read start to finish,
+   * and the long compound terms and inline citations want the room.
+   *
+   * NOTE this deliberately differs from main, which narrowed it to
+   * 42rem. 42rem reads as cramped for this material, and the author's
+   * call is to keep the wide column and pay for it with the smaller
+   * 16px body size set below. Expect to re-resolve this on the next
+   * merge rather than silently taking either side.
    *
    * Figures and tables are NOT clamped to this — they set their own
-   * wider limits below — so the narrow prose column does not shrink
-   * the figures. */
-  --measure: 42rem;
+   * wider limits below — so the prose column does not size them. */
+  --measure: 58rem;
   --toc-width: 16rem;
 
   /* Motion. Deliberately quicker than the 600ms/16px that long-form
