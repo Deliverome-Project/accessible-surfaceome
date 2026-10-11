@@ -48,6 +48,125 @@ The visual reference points the CSS mirrors from the Pioneer paper:
 | Block quotes | Maroon-blush background with maroon side rule |
 | Footer | "Deliverome" left, page number right, both maroon |
 
+## The web edition's motion layer
+
+`build.py --web` adds a scroll-reveal pass on top of the same pandoc
+output the PDF uses. Three files share the work, and the split is
+load-bearing rather than cosmetic:
+
+| File | Owns |
+|---|---|
+| `web_assets.py` | Stamps `class="reveal"` onto structural blocks at build time, plus the `<head>` fragments (fonts, the reveal gate). Imports no pandoc, so CI tests it on every run. |
+| `deliverome-web.css` | The motion itself — hidden state, transition, escapes. |
+| `deliverome-web.js` | The parts needing a viewport: what is already on screen, arming, the observers. |
+
+**The safety property.** The hidden state (`opacity: 0`) applies only
+under `html.js-reveal`, and that class is set by one inline `<head>`
+script which first checks for `IntersectionObserver`. A reader whose JS
+fails, a crawler, or Reader Mode therefore gets an ordinary fully
+visible paper — the `reveal` classes in the markup do nothing on their
+own. `tests/test_paper_web_motion.py` fails the build if any rule
+hides content outside that gate. **Don't "simplify" the gate away.**
+
+Two orderings also matter, and both have already bitten once:
+
+* The gate must be set **inline in `<head>`**, not from the deferred
+  `paper.js`. Set later, the page paints visible and then blanks out.
+* Arming the transition is a **separate class**, applied after whatever
+  is already on screen has been marked visible. That is what keeps the
+  opening screen from animating. It is applied synchronously after a
+  forced style flush, not in a `requestAnimationFrame` — rAF is paused
+  in a background tab, and it races the observer's first batch.
+
+Tuning lives in the `:root` block of `deliverome-web.css`
+(`--reveal-duration`, `--reveal-distance`, `--reveal-step`,
+`--reveal-ease`).
+
+**Prose reveals too, and that is the whole effect.** An earlier version
+animated only structure — headings, figures, tables — reasoning that
+`opacity: 0` text is still matched by find-in-page. The reasoning was
+sound and the result was wrong: it left 97 of 184 top-level blocks
+static, and since prose is what a reader spends almost all of their
+scrolling inside, the page read as though nothing was happening.
+Find-in-page is handled where the problem actually is instead — the
+`beforematch` / Cmd+F handler in `deliverome-web.js` drops the entire
+reveal the moment anyone starts searching. Don't "fix" find-in-page by
+taking prose back out.
+
+**Large blocks move further and slower.** A figure that travels the
+same 18px over the same 620ms as a line of text has barely shifted
+relative to its own height, so it reads as simply appearing rather than
+arriving. `.figure-block` and `table` override both tokens.
+
+**The trigger is held** (`rootMargin: 0px 0px -18% 0px`) rather than
+firing as a block clips the viewport edge. Fired at the edge, the
+animation completes below where anyone is looking and the page just
+seems to have been that way already.
+
+Only the reference list is staggered — it is the one place with a
+column of near-identical siblings. Figures here are single composite
+renders, so there is nothing to stagger inside one.
+
+### The lightbox always fits the screen
+
+Opening a figure full-screen is for seeing the whole figure, so nothing
+in the lightbox scrolls: the overlay is `overflow: hidden` and the
+panel is a flex column whose image shrinks to whatever space the
+caption leaves. Two lines carry that:
+
+* `min-height: 0` on the image. A flex item defaults to
+  `min-height: auto`, which refuses to shrink below its intrinsic
+  size — the usual reason a `max-height` on a flexbox image appears to
+  do nothing at all.
+* `object-fit: contain`, so the shrinking is done by the layout without
+  distorting the figure.
+
+Captions in this paper run to a full paragraph, so the caption is
+capped and scrolls within itself. The figure always fits; the text is
+still all reachable.
+
+### Figures reserve their box before they load
+
+`apply_image_hints` stamps intrinsic `width`/`height` on every `<img>`,
+which is what stops a figure shoving the prose below it down the page
+as it decodes. Two things make that non-obvious:
+
+* **It has to run late.** `figure_swap.swap_figures` strips
+  `width`/`height` off every `<img>` it rewrites, and the title band
+  isn't grouped into `<header>` until near the end — and that grouping
+  is how an above-the-fold image is recognised, so it can be exempted
+  from `loading="lazy"` (lazy-loading what the reader is already
+  looking at costs LCP for nothing).
+* **Most figures are SVG**, which Pillow cannot read. `_svg_size`
+  parses `width`/`height` or falls back to the `viewBox`, rejecting
+  percentage lengths — `width="100%"` is not an intrinsic size, and
+  reserving a box 100 units wide is worse than reserving none.
+
+### Appending to `<head>` or `<body>`
+
+Use `_append_fragment`, not `lxml.html.fromstring`. On a head-only
+element — `<link>`, `<meta>`, `<script>` — `fromstring` returns an
+entire `<html><head>…</head></html>` document, so appending its result
+nests a stray document inside the page. Browsers untangle it and the
+paper shipped that way for a while, but the reveal bootstrap depends on
+running before first paint, which should not rest on parser error
+recovery.
+
+### Web fonts load from `<head>`, not from the stylesheet
+
+`deliverome-web.css` used to `@import` a Google Fonts URL. That is the
+slowest path a font can take — our CSS, then Google's CSS, then the
+woff2, three serial round trips before a character renders in the brand
+face, visible as a full-page reflow on every cold load. The `<link>`
+now lives in `<head>` behind two preconnects, emitted from
+`web_assets.FONT_HEAD_LINKS`.
+
+**Adding a weight or a face means editing `FONT_HEAD_LINKS`, not the
+stylesheet.** Note the consequence for embedding: the fonts no longer
+travel with the sheet, so a site that copies `paper.css` alone gets the
+system stack unless it loads the faces itself. Every rule names a
+fallback, so that degrades rather than breaks.
+
 ## Iterating on the print look
 
 WeasyPrint reads exactly what Chrome's print emulation shows. To

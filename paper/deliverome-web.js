@@ -622,3 +622,200 @@
   });
   loadTurnstile();
 })();
+
+/*
+ * Scroll reveal.
+ *
+ * The `reveal` classes are stamped into the markup by paper/web_assets.py
+ * and the `js-reveal` gate is set by an inline <head> script, both before
+ * this file runs — see REVEAL_BOOTSTRAP_SCRIPT for why that ordering is
+ * load-bearing. What is left for here is the part that needs a viewport:
+ * deciding what is already on screen, arming the transition afterwards so
+ * the opening screen doesn't animate, and un-hiding the rest on approach.
+ *
+ * If this file never loads, the gate is still set but nothing ever adds
+ * `is-visible` — which is why the gate is conditional on
+ * IntersectionObserver, the same capability this observer needs. A
+ * browser without it never hides anything in the first place.
+ */
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  if (!root.classList.contains("js-reveal")) return;
+
+  var targets = document.querySelectorAll(".paper-root .reveal");
+
+  function show(el) {
+    el.classList.add("is-visible");
+  }
+
+  /* Anything already on screen is shown BEFORE arming, so it transitions
+   * from nothing and simply exists at first paint. Everything after this
+   * point animates. */
+  var i;
+  for (i = 0; i < targets.length; i++) {
+    var box = targets[i].getBoundingClientRect();
+    if (box.top < window.innerHeight && box.bottom > 0) show(targets[i]);
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    /* Can't happen while the gate checks the same thing, but if the gate
+     * ever moves, fail to the readable state rather than a blank page. */
+    for (i = 0; i < targets.length; i++) show(targets[i]);
+    return;
+  }
+
+  /* Commit the values above BEFORE arming, by forcing a style flush.
+   * Reading offsetWidth makes the browser resolve layout now, so the
+   * elements just marked visible settle at opacity 1 with no transition
+   * attached and simply exist at first paint.
+   *
+   * A requestAnimationFrame here is wrong twice over — the same trap the
+   * lightbox hits above. It is paused in a background tab, so a paper
+   * cmd-clicked into one would never arm; and it races the observer
+   * below, which can deliver its first batch before the frame callback
+   * runs, leaving the first block under the fold to snap in unarmed. A
+   * synchronous flush has neither problem. */
+  void document.body.offsetWidth;
+  root.classList.add("reveal-armed");
+
+  /* Find-in-page sees text that is still at opacity 0, so a reader
+   * searching the paper could be scrolled to what looks like a blank
+   * stretch. Rather than keeping prose out of the reveal — which is
+   * what makes the whole effect visible — drop the reveal entirely the
+   * moment anyone starts searching. Best-effort: the browser may claim
+   * the shortcut first in some configurations, and nothing breaks if
+   * it does; this only ever makes MORE text visible. */
+  function revealEverything() {
+    for (var k = 0; k < targets.length; k++) show(targets[k]);
+  }
+  document.addEventListener("keydown", function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === "f" || e.key === "F")) {
+      revealEverything();
+    }
+  });
+  /* Chrome fires this on a hidden element it is about to scroll a
+   * find-in-page match to. Where supported it is exact, and it also
+   * covers "scroll to text fragment" links. */
+  document.addEventListener("beforematch", revealEverything, true);
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      for (var j = 0; j < entries.length; j++) {
+        if (!entries[j].isIntersecting) continue;
+        show(entries[j].target);
+        /* Once revealed, stay revealed: re-animating on the way back up
+         * turns a page you are scanning into a flickering one. */
+        observer.unobserve(entries[j].target);
+      }
+    },
+    /* Hold the reveal until the block is ~18% of the viewport up from
+     * the bottom edge, rather than firing as it clips the edge.
+     *
+     * This is the difference between motion you see and motion you
+     * only infer. Triggered at the edge, a block has finished arriving
+     * while it is still in the last few percent of the screen — below
+     * where anyone is looking — so the page just seems to have been
+     * that way already. Held slightly, the same animation plays where
+     * the eye actually is. */
+    { rootMargin: "0px 0px -18% 0px", threshold: 0 }
+  );
+
+  for (i = 0; i < targets.length; i++) {
+    if (!targets[i].classList.contains("is-visible")) observer.observe(targets[i]);
+  }
+})();
+
+/*
+ * Contents rail — dock on scroll.
+ *
+ * The rail is fixed-position, so without this it sits beside the title
+ * band offering navigation for a paper the reader hasn't begun. Fade it
+ * in once they're past the header. Purely cosmetic: with this script
+ * absent the stylesheet leaves the rail permanently visible, which is
+ * where it was before.
+ */
+(function () {
+  "use strict";
+
+  var toc = document.getElementById("TOC");
+  var header = document.querySelector(".paper-header");
+  if (!toc || !header || !("IntersectionObserver" in window)) return;
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      /* Docked once the title band has left the viewport entirely. */
+      toc.classList.toggle("is-docked", !entries[0].isIntersecting);
+    },
+    /* No rootMargin, deliberately. A negative TOP inset shrinks the
+     * observer root down past the header, so at the top of the page —
+     * the one position where the rail must be hidden — the header reads
+     * as "not intersecting" and the rail docks immediately, inverting
+     * the whole behaviour. Plain viewport intersection is both simpler
+     * and correct: visible while any of the title band is on screen. */
+    { threshold: 0 }
+  );
+  observer.observe(header);
+})();
+
+/*
+ * Post-jump highlight.
+ *
+ * After a smooth scroll the page settles a beat before the eye catches
+ * up, and in a wall of near-identical reference lines "which one did I
+ * just land on?" is a real question. Flash the destination.
+ *
+ * Deliberately NOT wired to body-text figure cross-references: those
+ * open the figure in place rather than scrolling (see the lightbox
+ * section above), so there is no destination to point at.
+ */
+(function () {
+  "use strict";
+
+  var FLASH = "is-jump-flash";
+  var DURATION = 1200;
+  var timer = null;
+  var current = null;
+
+  function flash(id) {
+    var target;
+    try {
+      target = document.getElementById(decodeURIComponent(id));
+    } catch (e) {
+      target = document.getElementById(id);
+    }
+    if (!target) return;
+    /* citations.lua anchors a reference with an EMPTY span at its start,
+     * which has no box to highlight — paint the enclosing block. */
+    var box = target.closest("li, p, div, h2, h3, h4, section") || target;
+
+    if (current) current.classList.remove(FLASH);
+    if (timer) window.clearTimeout(timer);
+
+    /* Force a reflow between removal and re-add, or re-clicking the same
+     * link is a no-op: the class never left the computed style, so the
+     * animation is never restarted. */
+    void box.offsetWidth;
+
+    box.classList.add(FLASH);
+    current = box;
+    timer = window.setTimeout(function () {
+      box.classList.remove(FLASH);
+      if (current === box) current = null;
+    }, DURATION);
+  }
+
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if (!a) return;
+    var href = a.getAttribute("href");
+    if (!href || href === "#") return;
+    /* Let the browser do the scrolling; just mark where it lands. */
+    flash(href.slice(1));
+  });
+
+  window.addEventListener("hashchange", function () {
+    if (location.hash.length > 1) flash(location.hash.slice(1));
+  });
+})();
