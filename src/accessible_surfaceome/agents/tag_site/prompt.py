@@ -199,6 +199,20 @@ _PIPELINE_SET = (
 
 #: Top-level identity the RUNNER stamps from its own arguments. Asking the model
 #: to echo these back cost a repair round on every run and bought nothing.
+#: Pipeline-only fields the model has NEVER been shown. They are skipped from
+#: the contract like `_CODE_SET`, but NOT named in its closing sentence — that
+#: sentence exists to stop the model re-emitting fields it was once asked for,
+#: and a field it has never seen cannot be re-emitted.
+#:
+#: The distinction is not cosmetic. The closing sentence is prompt TEXT, so
+#: adding a name to it changes `prompt_sha`, and a changed sha means every
+#: record written under the old one is stale and must be re-run. Listing a field
+#: the model cannot emit would have invalidated 1,835 genes — about $1,000 of
+#: re-runs — to tell the model something it has no use for.
+_PIPELINE_INTERNAL = (
+    "supporting_source_id",
+)
+
 _CODE_SET = (
     "gene_symbol", "uniprot_accession", "sequence_length", "topology_state",
     "supporting_pmid",
@@ -317,6 +331,8 @@ def format_output_contract() -> str:
     for name, f in TagSiteResult.model_fields.items():
         if name == "sites" or name in _CODE_SET or name in _PIPELINE_SET:
             continue
+        if name in _PIPELINE_INTERNAL:
+            continue
         req = "required" if f.is_required() else f"optional, default {_default_token(f)}"
         hint = _TOP_HINTS.get(name) or _TOP_HINTS_EXTRA.get(name, "")
         lines.append(f"  {name:<16} {_type_token(f.annotation):<6} {req}{' — ' + hint if hint else ''}")
@@ -328,6 +344,8 @@ def format_output_contract() -> str:
         lines += ["", f"Each entry of `{label}`:", ""]
         for name, f in model.model_fields.items():
             if name in _PIPELINE_SET or name in _CODE_SET:
+                continue
+            if name in _PIPELINE_INTERNAL:
                 continue
             req = "required" if f.is_required() else f"default {_default_token(f)}"
             # Fall back to the schema's own description when it already enumerates

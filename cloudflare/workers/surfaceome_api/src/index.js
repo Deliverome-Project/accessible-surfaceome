@@ -3435,12 +3435,60 @@ async function handleTagSites(env, symbol) {
     plddt: r.plddt ?? null,
     conservation_rank: r.conservation_rank ?? null,
     median_conservation: r.median_conservation ?? null,
+    // Additive: the agent metadata that used to be concatenated into
+    // `rationale` as "[validation: ...; position: ...]". An older viewer
+    // ignores unknown fields; a newer one renders them as badges.
+    validation_level: r.validation_level ?? null,
+    position_evidence: r.position_evidence ?? null,
+    source_tier: r.source_tier ?? null,
+    cited_tag_residue: r.cited_tag_residue ?? null,
+    entailment_verified:
+      r.entailment_verified == null ? null : r.entailment_verified === 1,
   }));
+
+  // Per-GENE facts, which the per-SITE table cannot carry. Without these a gene
+  // the agent searched and found nothing in is indistinguishable from one
+  // nobody looked at — it has no site rows either way — and the published
+  // intracellular / function-abrogating positions have nowhere to live.
+  // LEFT JOIN semantics: absent row => never searched, which is the claim.
+  let gene = null;
+  try {
+    gene = await env.DB.prepare(
+      `SELECT prompt_sha, prompt_version, searched_at, n_papers,
+              other_positions_json, notes
+         FROM tag_site_gene_public WHERE gene_symbol = ? COLLATE NOCASE`
+    )
+      .bind(sym)
+      .first();
+  } catch {
+    // Table not provisioned yet (Worker deployed before the sync): degrade to
+    // the previous shape rather than 500, exactly as the site query does.
+    gene = null;
+  }
+
+  let otherPositions = [];
+  if (gene?.other_positions_json) {
+    try {
+      otherPositions = JSON.parse(gene.other_positions_json) || [];
+    } catch {
+      otherPositions = [];
+    }
+  }
+
   return json({
+    // Unchanged meaning for existing consumers: "are there sites to draw".
     has_data: sites.length > 0,
-    gene_symbol: rows[0]?.gene_symbol ?? sym,
+    gene_symbol: rows[0]?.gene_symbol ?? gene?.gene_symbol ?? sym,
     uniprot_acc: rows[0]?.uniprot_acc ?? "",
     sites,
+    // Presence of prompt_sha is the claim "this gene was searched", which is
+    // what lets the viewer say "Literature-validated (0)" instead of nothing.
+    prompt_sha: gene?.prompt_sha ?? null,
+    prompt_version: gene?.prompt_version ?? null,
+    generated_at: gene?.searched_at ?? null,
+    n_papers_searched: gene?.n_papers ?? null,
+    literature_other_positions: otherPositions,
+    literature_notes: gene?.notes ?? null,
   });
 }
 

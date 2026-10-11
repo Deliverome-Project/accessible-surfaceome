@@ -47,6 +47,11 @@ LITERATURE_KEYS: tuple[str, ...] = (
     "generated_at",
     "literature_notes",
     "literature_rejected",
+    # Published positions that are NOT surface tag sites — tolerated but
+    # cytoplasmic, or function-abrogating. Owned by the literature agent for the
+    # same reason its sites are: the deterministic pipeline has no opinion on
+    # them and must not erase them on its next write.
+    "literature_other_positions",
 )
 
 _OWNER_OF: dict[str, Owner] = {
