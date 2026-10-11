@@ -24,15 +24,14 @@ judgment of what the experiment shows:
   exposes intracellular epitopes.
 
 Rows judged membrane association only (fractionation), expression only or weak
-are left out. The evidence grade is graded from this same block: 2,166 of the
-2,266 genes with a direct row here carry a `direct_*` grade; the other 100 are
-graded supportive (58), conflicting (32) or weak (10).
+are left out. The evidence grade is graded from this same block, so nearly every
+gene with a direct row here carries a `direct_*` grade.
 
 We use this block rather than the evidence ledger's `evidence_type` because the
 ledger only names the technique mentioned in a quote. It labels permeabilized
 immunofluorescence and whole-cell proteomics as surface assays, so it overcounts
-immunofluorescence (2,272 genes vs 337 with direct IF) and surfaceome mass spec
-(866 vs 321).
+immunofluorescence (2,086 genes vs 328 with direct IF) and surfaceome mass spec
+(788 vs 316).
 
 ## Panels
 
@@ -70,8 +69,10 @@ family), so the subclass decides where it does:
 7. `functional_surface_assay` family → functional surface assay
 8. everything else → other
 
-Genes are restricted to surface-positive deep-dive tiers (canonical / likely / low):
-4,049 genes, of which 2,266 have at least one direct method.
+Genes are restricted to the canonical and likely deep-dive tiers, the surface
+calls the catalog presets return: 3,035 genes, of which 2,203 have at least one
+direct method. The `low` tier is left out because it is low or moderate
+accessibility on weak evidence, i.e. unlikely surface.
 
 ## Run
 

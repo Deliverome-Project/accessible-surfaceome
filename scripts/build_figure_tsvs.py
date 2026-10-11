@@ -1017,8 +1017,11 @@ def build_surface_evidence_assay_types(src: dict[str, pd.DataFrame]) -> pd.DataF
     are left out. The evidence grade is graded from the same block, so a gene
     counted as direct here almost always carries a ``direct_*`` grade.
 
-    Restricted to genes in a surface-positive deep-dive tier (canonical /
-    likely / low). One row per method category:
+    Restricted to genes in the canonical or likely deep-dive tier — the
+    surface calls the catalog presets return. ``low`` is left out: it is
+    low or moderate accessibility on weak evidence, i.e. unlikely surface,
+    so counting it would mix maybe-surface genes into "what established the
+    surface calls". One row per method category:
 
     * ``genes_direct`` — genes with at least one direct row of this method.
     * ``genes_supporting_only`` — genes with a supporting row of this method
@@ -1040,7 +1043,7 @@ def build_surface_evidence_assay_types(src: dict[str, pd.DataFrame]) -> pd.DataF
         return pd.DataFrame(columns=cols)
 
     surface = {str(r["gene_symbol"]) for _, r in dd.iterrows()
-               if _dd_tier(r) in {"canonical", "likely", "low"}}
+               if _dd_tier(r) in {"canonical", "likely"}}
     direct_rel, supports_rel = "direct_surface_accessibility", "supports_surface_localization"
     m = m[m["gene_symbol"].astype(str).isin(surface)
           & m["accessibility_relevance"].isin([direct_rel, supports_rel])].copy()

@@ -27,8 +27,8 @@ is the share of direct-evidence genes for which the method was the ONLY
 direct method: remove it and the gene has no direct surface evidence left.
 
 Color is assay family: imaging and cytometry; surface labeling or capture;
-functional surface assays; other. Genes are restricted to surface-positive
-deep-dive tiers (canonical / likely / low). The category rules live in
+functional surface assays; other. Genes are restricted to the canonical and
+likely deep-dive tiers; ``low`` (weak evidence, unlikely surface) is left out. The category rules live in
 ``scripts/build_figure_tsvs.py:build_surface_evidence_assay_types``.
 
 # Reproduction: https://gist.github.com/beccajcarlson/141184baa53bc889d2c08692b931982b
@@ -142,7 +142,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
                   f"{r.genes_direct:,} + {r.genes_supporting_only:,}",
                   va="center", ha="left", fontsize=13, color=COLORS["neutral"])
     ax_a.set_xlim(0, total.max() * 1.3)
-    ax_a.set_xlabel("Genes in surface-positive tiers\n(direct + supporting only)")
+    ax_a.set_xlabel("Genes called canonical or likely\n(direct + supporting only)")
 
     ax_b.barh(df["y"], df["pct_plot"], height=height, color=df["color"])
     for _, r in df.iterrows():

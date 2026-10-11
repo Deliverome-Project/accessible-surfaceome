@@ -17,7 +17,7 @@ membrane without showing the outside is reachable). Panel a counts genes with
 direct evidence from each method (solid) and genes where it only reached the
 supporting level (light). Panel b is the share of direct-evidence genes for
 which the method was the only direct one. Color is assay family. Genes are
-restricted to surface-positive deep-dive tiers (canonical / likely / low).
+restricted to the canonical and likely deep-dive tiers.
 
 The bundled sibling TSV is produced by ``scripts/build_figure_tsvs.py``
 (``build_surface_evidence_assay_types``), which holds the category rules, so
@@ -215,7 +215,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
                   f"{r.genes_direct:,} + {r.genes_supporting_only:,}",
                   va="center", ha="left", fontsize=13, color=BRAND_NEUTRAL)
     ax_a.set_xlim(0, total.max() * 1.3)
-    ax_a.set_xlabel("Genes in surface-positive tiers\n(direct + supporting only)")
+    ax_a.set_xlabel("Genes called canonical or likely\n(direct + supporting only)")
 
     ax_b.barh(df["y"], df["pct_plot"], height=height, color=df["color"])
     for _, r in df.iterrows():
