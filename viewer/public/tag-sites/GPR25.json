@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:32:29.925459+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) document C-terminal LgBiT fusions to Dr-GPR25 (zebrafish ortholog) expressed as full-length, membrane-anchored receptors in HEK293T cells. The C-terminus of GPR25 (residues 311\u2013361) is intracellular per the topology landmarks, so these fusions are cytoplasmic tags and do not qualify as extracellular surface tag sites. The extracellular N-terminus (residues 1\u201339, no signal peptide), ECL1 (98\u2013113), ECL2 (177\u2013198), and ECL3 (268\u2013287) are all topologically accessible surfaces, but no ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or otherwise \u2014 at any of those positions. Per the rules, structural inference alone cannot ground a site; zero qualifying sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 361,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal LgBiT fusion to Dr-GPR25 (fish ortholog) is tolerated and supports \u03b2-arrestin recruitment, but residue 361 (W) is the last residue of the intracellular C-tail (topology 311\u2013361 intracellular), making this a cytoplasmic tag site, not a surface tag site."
+    }
+  ]
 }

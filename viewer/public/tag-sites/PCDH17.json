@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDH17",
+  "uniprot_acc": "O14917",
+  "sites": [
+    {
+      "site_id": "PCDH17-internal-None-lit",
+      "gene_symbol": "PCDH17",
+      "uniprot_acc": "O14917",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk EC6-TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface staining with anti-Myc antibody confirmed extracellular accessibility of the tag; no functional assay (e.g., adhesion, signaling) reported in the cited clip.",
+      "confidence": "medium",
+      "rationale": "L1 (PMC12157453) and L2 (PMC12337331) both report a Myc tag inserted in the stalk region between EC6 and the TM helix of full-length, membrane-anchored PCDH17, with surface staining confirming extracellular accessibility. No specific residue is named in either clip, so the site is reported at region level (stalk EC6-TM, approximately residues 618\u2013705 in UniProt canonical numbering, well within the extracellular span 18\u2013705 and \u22653 residues from the TM boundary at 706). L1 is used as the primary supporting clip; L2 independently corroborates the same site. Full-length membrane-anchored PCDH17 (\u03b217) expressed in HEK or similar cells; Myc tag inserted in the extracellular stalk region between EC6 and the transmembrane helix, equivalently to previously validated clustered protocadherin constructs (ref 21 in the paper). Surface staining with anti-Myc antibody confirmed the tag is accessible on the cell surface. No specific residue number is named in the clip \u2014 only the stalk region is identified.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:19:43.083134+00:00",
+  "literature_notes": "L1 and L2 both support the same stalk-region site in PCDH17 and are treated as one site (L1 primary). L3 and L4 (PMC11188600) describe a GW1-myc-PCDH17 construct used for immunostaining in neurons to study dendritic spine morphology. The GW1-myc vector places a Myc tag at the N-terminus of the cloned insert; if the full PCDH17 sequence (starting at M1) is cloned, the Myc tag would precede the signal peptide (residues 1\u201317) and would be cleaved off during secretory processing, leaving no surface-accessible tag. The clips do not state that the tag was inserted after the signal peptide cleavage site, and the immunostaining described could be performed on permeabilized cells (intracellular labeling). Because the position of the Myc tag relative to the signal peptide is not specified, and surface accessibility is not explicitly confirmed, L3/L4 do not qualify as evidence for a surface tag site and are excluded from sites. No other ledger lines name specific residues or loops in PCDH17 that would support additional sites.",
+  "literature_rejected": []
+}

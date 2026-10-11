@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD2-terminal_n-23-lit",
+      "gene_symbol": "FZD2",
+      "uniprot_acc": "Q14332",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable integration in U-2 OS cells confirmed; surface display is the design purpose of HiBiT-FZD constructs. Direct functional assay (e.g., Wnt ligand binding) was demonstrated for HiBiT-FZD5 in the same study (L4) but NOT explicitly reported for FZD2 in the cited clips.",
+      "confidence": "medium",
+      "rationale": "The construct name 'HiBiT-FZD2-mCherry' follows the standard [N-tag]-[protein]-[C-tag] convention, placing HiBiT at the N-terminus. FZD2 has a signal peptide spanning residues 1\u201323 (authoritative landmark); a tag upstream of residue 24 would be cleaved, so the junction is insert_after_residue=23, confirmed by reading seq[23]=A and seq[24]=Q from the numbered sequence. The mature N-terminus (residue 24) lies 222 residues from TM1 (246\u2013268), well clear of any TM boundary. The C-terminus (residue 565) is intracellular, making residue 24 the only extracellular terminus and the topology-derived position unambiguous. Mouse HiBiT-FZD2-mCherry was stably integrated into U-2 OS cells (PMC12153800). The construct name places HiBiT at the N-terminus and mCherry at the C-terminus. FZD2's C-terminus (541\u2013565) is intracellular, making the mature N-terminus (residue 24, after signal-peptide cleavage at 1\u201323) the sole extracellular terminus and the only topologically consistent position for the HiBiT tag.",
+      "sources": [
+        {
+          "pmid": 40497984,
+          "citation": "PMID 40497984",
+          "claim": "Human embryonic kidney 293T (HEK293T) cells (CLS catalog number 300189), \u0394FZD 1\u201310 HEK293 cells [ 21 ], U-2 OS cells (ATCC \u00ae HTB-96 TM ) and U-2 OS cell lines with a stable integration of mouse HiBiT-FZD 1,2,4,5,7,8,9,10 -mCherry (generated in this project) were cultured in Dulbecco\u2019s modified Eagle medium (Gibco, Thermo Fisher, Waltham, MA, USA) supplemented with 10% fetal bovine serum (FBS, Thermo Fisher) and 1% penicillin\u2013streptomycin (P/S; Gibco; Thermo Fisher, Waltham, MA, USA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:57:30.242338+00:00",
+  "literature_notes": "L1 (1D4-tagged mouse FZD2, Addgene #42264) does not qualify: the clip names no residue or terminus for the 1D4 tag, and 1D4 is conventionally placed at the C-terminus of GPCRs, which is intracellular for FZD2 (541\u2013565). Because FZD2 has two termini (one extracellular, one intracellular), topology_derived derivation is not applicable to L1 \u2014 it would require knowing which terminus carries the tag, which the clip does not state. L3 lists HiBiT-FZD1,4,5,8,10-mCherry in NCI-H1703 cells but does not include FZD2 in that cell line; L2 (U-2 OS) is the direct FZD2 evidence. L4 demonstrates that HiBiT-FZD5 (same construct architecture) supports Wnt ligand-binding assays, providing indirect functional support for the design, but the functional result is not attributed to FZD2 and so does not raise the validation level above detected_only for this site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 565,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "mCherry is fused to the C-terminus of FZD2 in the HiBiT-FZD2-mCherry construct; residue 565 (V) falls within the intracellular C-terminal domain (541\u2013565), so this is an intracellular fusion, not a surface tag site."
+    }
+  ]
 }

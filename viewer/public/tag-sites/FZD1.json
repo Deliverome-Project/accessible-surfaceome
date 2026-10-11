@@ -550,6 +550,43 @@
       "plddt": 87.4,
       "conservation_rank": null,
       "median_conservation": 1.0
+    },
+    {
+      "site_id": "FZD1-terminal_n-69-lit",
+      "gene_symbol": "FZD1",
+      "uniprot_acc": "Q9UP38",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 69,
+      "residue_before": "G",
+      "residue_after": "V",
+      "residue_label": "G69",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TOPFlash luciferase reporter assay in \u0394FZD1\u201310 HEK293T cells: HiBiT-tagged FZD1 mediated WNT-3A-induced \u03b2-catenin-dependent signaling (L2). NanoBiT/BRET assay on living cells: saturable eGFP-WNT-3A binding detected with a reported Kd value, confirming surface display of the tagged receptor (L3). Both assays indicate signaling function and surface expression are preserved.",
+      "confidence": "high",
+      "rationale": "All five ledger lines converge on a single site: an N-terminal HiBiT tag on full-length, membrane-anchored human FZD1. The signal peptide (residues 1\u201369) is cleaved co-translationally, so the tag must be placed after residue 69 to remain on the mature extracellular face; this is the only possible N-terminal extracellular junction. Python confirmed residue 69 = G (last SP residue) and residue 70 = V (first mature residue), 251 aa from TM1, satisfying all distance and topology constraints. L2 provides the strongest single clip: functional WNT/\u03b2-catenin signaling preserved in a FZD-null background, ruling out rescue by endogenous receptor. PMC8205236 generated N-terminally HiBiT-tagged human FZD1 (and all 9 other FZD paralogues) as full-length, membrane-anchored constructs expressed in HEK293T cells. The paper states 'N-terminal HiBiT tag' but names no residue number. FZD1 carries a signal peptide spanning residues 1\u201369 (landmarks); a tag upstream of residue 70 would be cleaved off with the SP. The sole extracellular N-terminus is at residue 70 (Val), so insert_after_residue = 69 (Gly, last SP residue) is the unique topology-derived junction. Computed: 251 aa from mature N-terminus (70) to TM1 start (321), well clear of any TM boundary.",
+      "sources": [
+        {
+          "pmid": 34151213,
+          "citation": "PMID 34151213",
+          "claim": "Additionally, HiBiT-tagged FZD 1 , FZD 2 , FZD 4 , FZD 5 , FZD 7 , FZD 8 , and FZD 10 mediated WNT-3A-induced \u03b2-catenin-dependent signals as assessed by the TOPFlash reporter assay performed in HEK293T cells devoid of endogenous FZDs (\u0394FZD 1\u201310 HEK293T cells, Figure S1D ( 25 ))."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [],
@@ -1004,6 +1041,21 @@
       "isoform_residue": 82,
       "canonical_residue": 141,
       "left_pct": 14.36077057793345
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:57:27.828730+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) support the same N-terminal HiBiT site. L1 establishes the construct; L2 confirms \u03b2-catenin signalling function; L3 confirms surface display and WNT-3A binding affinity; L4\u2013L5 report stable integration of a dual-tagged mouse HiBiT-FZD1-mCherry in U-2 OS and HCT116 cells. The C-terminal mCherry in L4/L5 is on mouse FZD1 and falls in the intracellular C-tail (landmarks: INTRACELLULAR 623\u2013647), so it is recorded in other_positions rather than sites. No ledger line supports any internal extracellular loop insertion for FZD1; ECL1 (376\u2013403), ECL2 (469\u2013488), and ECL3 (558\u2013599) have no qualifying evidence and are not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 647,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal mCherry fused to mouse HiBiT-FZD1-mCherry; residue 647 (Val) lies in the intracellular C-tail (landmarks: INTRACELLULAR 623\u2013647), making this an intracellular tag, not a surface site."
     }
   ]
 }

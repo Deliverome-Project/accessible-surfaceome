@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "FLRT3",
+  "uniprot_acc": "Q9NZU0",
+  "sites": [
+    {
+      "site_id": "FLRT3-terminal_n-29-lit",
+      "gene_symbol": "FLRT3",
+      "uniprot_acc": "Q9NZU0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "K",
+      "residue_after": "S",
+      "residue_label": "K29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized immunofluorescence/flow cytometry (L2); LPHN3 extracellular domain binding preserved (L4).",
+      "confidence": "high",
+      "rationale": "L1 explicitly names S30 (canonical residue 30, verified: seq[29]='S') as the first FLRT3 residue of the construct, with the myc tag N-terminal to it; the junction is therefore after canonical K29 and before S30 (insert_after_residue=29). The native signal peptide (1\u201328) is replaced by the preprotrypsin leader, so the tag is correctly positioned after the cleavage site and is >500 residues from the TM boundary. L2 validates extracellular surface exposure by non-permeabilized staining; L4 shows LPHN3 binding is intact, confirming the tag does not disrupt the FLRT3 ectodomain. Full-length human FLRT3 (residues S30\u2013S649) expressed in HEK293 cells with a preprotrypsin leader sequence bearing an N-terminal myc tag (pCMV5); L2 confirms surface display by non-permeabilized anti-myc staining and flow cytometry; L4 confirms ecto-LPHN3-Fc binding to FLRT3-myc-expressing cells.",
+      "sources": [
+        {
+          "pmid": 26235030,
+          "citation": "PMID 26235030",
+          "claim": "For mammalian expression and functional analysis, full length human FLRT3 (residues S30\u2013S649), human LPHN3 (residues F20-L1447), and human Unc5B (G27-E934; Uniprot ID: Q8IZJ1 ), and mouse Unc5D (S46-L884) constructs with preprotrypsin leader sequence containing N-terminal myc, FLAG, His and His-tags, respectively, were cloned into pCMV5."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:53:50.307440+00:00",
+  "literature_notes": "L3 (PMC4210639) reports full-length FLRT3 (residues 29\u2013649) with a C-terminal mVenus/His tag in pHLSec for cell visualization. The C-terminus of FLRT3 is intracellular (residues 551\u2013649 per topology landmarks), so this tag is not an extracellular surface site and is recorded in other_positions. L4 (PMC3326387) describes the same FLRT3-myc construct as L1/L2 and corroborates function; it is not a separate site. No ledger line supports any internal extracellular loop insertion for FLRT3.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 649,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Full-length FLRT3 (residues 29\u2013649) cloned with a C-terminal mVenus and polyhistidine tag; the C-terminus (residue 649) is intracellular (topology 551\u2013649), so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

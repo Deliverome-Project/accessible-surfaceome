@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NGFR",
+  "uniprot_acc": "P08138",
+  "sites": [
+    {
+      "site_id": "NGFR-terminal_n-28-lit",
+      "gene_symbol": "NGFR",
+      "uniprot_acc": "P08138",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "A",
+      "residue_after": "K",
+      "residue_label": "A28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "S6 / A1 (ACP/PCP 12 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "S6-p75NTR-EGFP induced growth cone collapse in neurons upon proNGF administration, indistinguishable from untagged p75NTR constructs (L6); surface biotinylation and Alexa647 labelling confirmed cell-surface display (L8, L9). Function PRESERVED.",
+      "confidence": "high",
+      "rationale": "L7 explicitly places the S6 tag 'between the signal peptide (SP) and cysteine-rich domains 1 to 4 (CRD1-4)', which in the canonical 427-aa sequence corresponds to the junction after residue 28 (last residue of the signal peptide, A) and before residue 29 (K, the mature N-terminus). No specific residue number is cited in the paper, so position_evidence is topology_derived: the SP/CRD1 boundary is the only extracellular N-terminal junction available. Python lookup confirms residue 28 = A and residue 29 = K, and the junction is 223 residues from the TM boundary (252), well above the 3-residue minimum. L6 confirms full functional preservation (growth cone collapse) and L8/L9 confirm surface display. Full-length membrane-anchored P75NTR constructs bearing 12-aa ACP/PCP-family tags (A1: GDSLDMLEWSLM; S6: GDSLSWLLRLLN) inserted immediately downstream of the signal peptide, between the SP cleavage site and CRD1 of the extracellular domain, expressed in SHSY5Y cells. S6-p75NTR-EGFP localises to the plasma membrane and the S6 tag is accessible to enzymatic biotinylation and Alexa647 conjugation on the cell surface.",
+      "sources": [
+        {
+          "pmid": 31515449,
+          "citation": "PMID 31515449",
+          "claim": "The S6 tag is inserted between the signal peptide (SP) and cysteine-rich domains 1 to 4 (CRD1-4)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:00:37.673902+00:00",
+  "literature_notes": "All nine ledger lines (L1\u2013L9) from two papers (PMC4245215 and PMC6815156) describe the same single insertion event: ACP/PCP-family 12-aa tags (A1 and S6) placed immediately after the signal peptide of full-length membrane-anchored P75NTR/NGFR. No residue number is named in any clip, but the junction is uniquely determined by the SP/CRD1 boundary (after residue 28). No internal extracellular loop insertions, no C-terminal extracellular tags, no intracellular tags, and no function-abrogating positions are reported in the ledger. The EGFP fused at the C-terminus in the S6-p75NTR-EGFP construct is intracellular (C-terminus is cytoplasmic, residues 273\u2013427) and is not proposed as a surface-tag site.",
+  "literature_rejected": []
+}

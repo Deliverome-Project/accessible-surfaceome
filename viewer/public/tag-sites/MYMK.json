@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MYMK",
+  "uniprot_acc": "A6NI61",
+  "sites": [
+    {
+      "site_id": "MYMK-terminal_n-0-lit",
+      "gene_symbol": "MYMK",
+      "uniprot_acc": "A6NI61",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FLAG immunostaining: reduced surface expression for M1/M5 variants vs. WT (L1). Fusogenic activity with C2C12 myoblasts: retained at residual level for M1/M5 (L2). Reduction attributed to M1/M5 disease mutations, not the FLAG tag position.",
+      "confidence": "medium",
+      "rationale": "MYMK has exactly one extracellular terminus: the N-terminus (residues 1\u20133, MGT), since the C-terminus (residues 196\u2013221) is intracellular per the topology landmarks. The topology-derived rule therefore places the FLAG tag as an N-terminal prepend (insert_after_residue=0, residue_after=M). FLAG immunostaining without permeabilization in L1 confirms the tag is extracellularly accessible, consistent with this placement. No residue number is stated in either clip, so the position is topology-derived, not validated. Full-length FLAG-tagged human MYMK (M1 and M5 variant) constructs expressed in fibroblasts; FLAG antibody immunostaining without permeabilization confirmed extracellular accessibility of the tag, establishing it is on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 28681861,
+          "citation": "PMID 28681861",
+          "claim": "We found, however, that immunostaining with a FLAG antibody revealed a low percentage of M1 and M5 transfected protein at the membrane compared to WT."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:56:39.760246+00:00",
+  "literature_notes": "L1 and L2 both describe the same FLAG-tagged MYMK constructs from PMC5504296; neither names the insertion residue. MYMK has only one extracellular terminus (N-term, residues 1\u20133), making the topology-derived N-terminal prepend the only defensible placement. The extracellular loops (EC1: 50\u201364, EC2: 110\u2013116, EC3: 172\u2013177) are possible alternative positions, but the ledger provides no loop-specific insertion evidence and the topology-derived rule applies only to the sole extracellular terminus. The C-terminus (196\u2013221) is intracellular and was not considered for a surface tag. No ledger line names a specific residue or loop for the FLAG insertion, and no line reports an insertion that abrogates function at a named position.",
+  "literature_rejected": []
+}

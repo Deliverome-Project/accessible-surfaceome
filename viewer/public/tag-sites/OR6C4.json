@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR6C4-terminal_n-0-lit",
+      "gene_symbol": "OR6C4",
+      "uniprot_acc": "Q8NGE1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Rhodopsin-tag (1D4 epitope)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunostaining (live, non-permeabilized cells) and flow cytometry confirmed cell-surface display of the tagged receptor. Ligand-binding activity of OR6C4-related ORs was reported preserved in the same experimental system (L1/L2 context). No direct functional assay for OR6C4 specifically is reported in these clips.",
+      "confidence": "high",
+      "rationale": "OR6C4 is a class-A GPCR with no signal peptide; residues 1\u201322 form the extracellular N-terminus and TM1 begins at residue 23, placing the prepend site >22 residues from the TM boundary. Because ORs have exactly one extracellular terminus (N-terminal), a tag described as 'upstream of the N-termini' can only be a prepend (insert_after_residue=0), making the junction topology-derived. Python verification confirms residue 1 = M and residue 23 = V (first TM residue), consistent with a surface-exposed prepend. L2 from the same PMC paper independently corroborates surface display of N-terminally Flag-tagged ORs in live-cell assays. PMID 37688727 reports rhodopsin-tag epitopes inserted upstream of the N-termini of olfactory receptors (including OR6C4-class ORs) in full-length, membrane-anchored constructs expressed in heterologous cells; surface expression confirmed by immunostaining and flow cytometry. PMC3698168 (L2) independently confirms surface display of Flag-tagged ORs in live non-permeabilized HEK293T cells by anti-Flag immunofluorescence, corroborating the same N-terminal position.",
+      "sources": [
+        {
+          "pmid": 37688727,
+          "citation": "PMID 37688727",
+          "claim": "Recognizable epitopes like the rhodopsin-tag can be inserted upstream of the N-termini in ORs to enable cell surface immunostaining and detection via flow cytometry. This method enables robust measurement and comparison of cell surface expression levels of different ORs. Our approach also facilitates the study of different chaperone proteins' effects on OR trafficking and expression."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:57:28.510209+00:00",
+  "literature_notes": "L1 (Lucy tag, PMC3698168) was evaluated but does not qualify: the Lucy tag is an exogenous cleavable signal peptide that is proteolytically removed from the mature protein and therefore does not constitute a surface-retained epitope tag insertion. It was excluded from sites. L2 and L3 both ground the same N-terminal prepend position; L3 is used as the primary supporting clip because it explicitly states the tag is 'inserted upstream of the N-termini,' while L2 names the Flag tag but does not state the residue position. The C-terminus (residues 289\u2013309) is intracellular per the authoritative topology landmarks and cannot carry a surface tag. ECL1 (81\u201395), ECL2 (163\u2013191), and ECL3 (259\u2013267) are extracellular loops, but no ledger line reports a tolerated insertion in any of these loops for OR6C4 or a close ortholog; no internal sites are proposed.",
+  "literature_rejected": []
 }

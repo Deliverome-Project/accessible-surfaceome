@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PIANP",
+  "uniprot_acc": "Q8IYJ0",
+  "sites": [
+    {
+      "site_id": "PIANP-terminal_n-31-lit",
+      "gene_symbol": "PIANP",
+      "uniprot_acc": "Q8IYJ0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry surface staining with PILR\u03b1-Ig: wild-type Flag-tagged PANP is stained, confirming surface display and preserved PILR\u03b1-binding function. The T136A mutant (same Flag-tagged backbone) abolishes staining, while T83A retains staining, validating the assay sensitivity.",
+      "confidence": "medium",
+      "rationale": "PIANP is a type I transmembrane protein with a single extracellular N-terminal ectodomain (residues 32\u2013179) and an intracellular C-terminal tail (200\u2013282). The FLAG tag in the cited construct must be on the extracellular face because the protein is detected by surface flow cytometry; the only extracellular terminus available is the mature N-terminus after signal-peptide cleavage at G31. Python verification confirms G at position 31 (last signal residue) and S at position 32 (mature N-terminus), placing the tag junction at insert_after_residue=31. The 148-residue distance to the TM boundary is ample, and the wild-type tagged construct retains PILR\u03b1-Ig binding, confirming functional silence of the tag at this position. Full-length Flag-tagged PANP (PIANP) expressed in 293T cells and surface-stained by flow cytometry with PILR\u03b1-Ig fusion protein; wild-type Flag-tagged PANP is confirmed on the cell surface and retains PILR\u03b1 binding. The clip does not name the residue at which the FLAG is inserted, but PIANP is a type I single-pass transmembrane protein with a 31-aa signal peptide (1\u201331), an extracellular domain (32\u2013179), a TM helix (180\u2013199), and an intracellular tail (200\u2013282). The only extracellular terminus is the mature N-terminus beginning at S32; therefore the FLAG tag must reside after SP cleavage at position 31, placing it before S32.",
+      "sources": [
+        {
+          "pmid": 21241660,
+          "citation": "PMID 21241660",
+          "claim": "In order to test these predictions, we generated a series of Flagtagged PANP mutants\u2013the individual serine or threonine residues of which were changed to alanines. 293T cells transfected with Flag-tagged PANP in which threonine residue at position 136 was mutated to alanine (PANP-T136A) were not stained by PILR\u03b1-Ig, whereas 293T cells transfected with wild-type PANP and PANP in which threonine residue at position 83 was mutated to alanine (PANP-T83A) were stained ( Fig. 2C )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:34:28.868400+00:00",
+  "literature_notes": "L2 and L3 both describe the same PIANP-mCherry C-terminal fusion construct expressed in hippocampal neurons. Because PIANP's C-terminus is intracellular (residues 200\u2013282), this fusion is an intracellular tag and is recorded in other_positions rather than sites. The FLAG tag position in L1 is not explicitly stated (no residue number given for the tag itself); the junction at residue 31 is derived from topology (only one extracellular terminus for this type I TM protein), hence position_evidence='topology_derived' and evidence_type='published tag insertion in the same loop or domain'. The paper's functional residue numbering (T83, T136 in paper notation) does not map cleanly to canonical UniProt positions by any simple offset, so no canonical residue is flagged as abrogates_function with certainty; the T136 functional note is recorded qualitatively. No ledger line supports any internal extracellular loop insertion for PIANP.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 282,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "PIANP-mCherry C-terminal fusion expressed in hippocampal neurons; the C-terminus (residue 282) is intracellular (topology landmarks: intracellular 200\u2013282), so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

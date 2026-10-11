@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "CDH1",
+  "uniprot_acc": "P12830",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:26:14.119311+00:00",
+  "literature_notes": "CDH1 (E-cadherin) is a type I single-pass transmembrane protein: signal peptide residues 1\u201322 are cleaved, the ectodomain spans residues 23\u2013709, the TM helix spans 710\u2013730, and the cytoplasmic tail spans 731\u2013882. All three ledger lines (L1, L2, L3) describe C-terminal tags \u2014 an endogenous CRISPR/Cas9 HA knock-in (L1, L3) and a pEGFPN3 GFP fusion (L2). Because the CDH1 C-terminus (residue 882) is intracellular, every one of these tags is cytoplasmic. None of the ledger lines describes a tag at the mature N-terminus (after residue 22), in any extracellular loop, or anywhere else on the ectodomain. No ledger line qualifies as evidence for an extracellular surface tag site; therefore sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 882,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag knocked into the native CDH1 locus via CRISPR/Cas9 in BG1 cells; the CDH1 C-terminus is intracellular (residues 731\u2013882), so this tag is cytoplasmic and cannot serve as a surface epitope."
+    },
+    {
+      "residue": 882,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Full-length Cdh1 C-terminally fused to GFP via pEGFPN3; the C-terminus is intracellular, making this an intracellular fluorescent fusion, not a surface tag."
+    }
+  ]
+}

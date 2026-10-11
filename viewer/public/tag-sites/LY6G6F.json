@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LY6G6F",
+  "uniprot_acc": "Q5SQ64",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:30:08.014375+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L1 (PMC1869047) reports a C-terminal Myc-tagged full-length LY6G6F construct expressed in HEK 293T cells. LY6G6F is a type-I single-pass transmembrane protein: the C-terminus (residues 257\u2013297) is intracellular per the authoritative topology landmarks, so the C-terminal Myc tag sits on the cytoplasmic face and cannot serve as an extracellular surface tag. This insertion is recorded in other_positions. L2 (PMC2242401) describes 'epitope-tagged fusion constructs' of Ly6 superfamily members 'such as LY6G6F', but names no tag type, no insertion residue or junction, and does not confirm that LY6G6F itself (rather than other family members) was specifically tagged; it therefore cannot pin insert_after_residue and cannot ground any site under the rules. No ledger line supports a tolerated insertion on the extracellular face of LY6G6F.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 297,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal Myc tag on the full-length ORF; the C-terminus of LY6G6F (residues 257\u2013297) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

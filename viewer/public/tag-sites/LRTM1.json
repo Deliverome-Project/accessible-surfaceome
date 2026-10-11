@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRTM1",
+  "uniprot_acc": "Q9HBL6",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:24:53.403816+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe a C-terminal CFP fusion of full-length rat LRRTM1. LRRTM1 is a type I single-pass transmembrane protein: the large LRR ectodomain (residues 28\u2013288) is extracellular, the TM spans 289\u2013309, and the C-terminus (310\u2013345) is intracellular. A C-terminal CFP therefore sits on the cytoplasmic face and does not qualify as an extracellular surface tag site. No ledger line reports any tag insertion at the mature N-terminus (after residue 27), in any extracellular loop, or anywhere else on the extracellular face of LRRTM1. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 345,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal CFP fusion (LRRTM1-CFP) is functional and surface-displayed in a co-culture synaptogenic assay, but the C-terminus (residues 310\u2013345) is intracellular; this is not an extracellular surface tag site."
+    }
+  ]
+}

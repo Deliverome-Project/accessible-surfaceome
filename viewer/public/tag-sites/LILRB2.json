@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LILRB2",
+  "uniprot_acc": "Q8N423",
+  "sites": [
+    {
+      "site_id": "LILRB2-terminal_n-21-lit",
+      "gene_symbol": "LILRB2",
+      "uniprot_acc": "Q8N423",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "V",
+      "residue_after": "Q",
+      "residue_label": "V21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Chimeric receptor reporter assay and binding assay performed; construct was functional in these assays (no loss of activity reported).",
+      "confidence": "high",
+      "rationale": "L1 explicitly states that full-length LILRB2 was cloned with an N-terminal FLAG tag after the signal peptide. The topology landmarks define the signal peptide as residues 1\u201321, making residue 21 (V) the last cleaved residue and residue 22 (Q) the mature N-terminus; the tag therefore sits at insert_after_residue=21. No specific residue number is named in the paper, so position_evidence is topology_derived from the SP boundary. The extracellular domain spans 438 residues (22\u2013459) before the TM helix, providing ample clearance for a short epitope tag at this terminus. Full-length, membrane-anchored LILRB2 cloned with an N-terminal FLAG tag inserted after the signal peptide (residues 1\u201321); construct used in chimeric receptor reporter assays and binding assays in a cellular context.",
+      "sources": [
+        {
+          "pmid": 41931598,
+          "citation": "PMID 41931598",
+          "claim": "LILRB1 [National Center for Biotechnology Information (NCBI) accession NM_001081637 ], LILRB2 (NCBI accession BC036827 ), LILRB3 (NCBI accession BC112198 ), LILRB4 (NCBI accession NM_001278426 ), and LILRB5 (NCBI accession NM_006840 ) were cloned from synthesized cDNA (Genewiz) with an N-terminal Flag tag after the signal peptide."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:08:50.508551+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length, membrane-anchored LILRB2 construct with an N-terminal FLAG tag after the signal peptide, used in functional assays \u2014 this qualifies under the rules. The paper names no specific residue for the junction; the position is derived from the authoritative signal-peptide boundary (1\u201321). No internal loop insertions, C-terminal tags, or other positions are supported by the ledger. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

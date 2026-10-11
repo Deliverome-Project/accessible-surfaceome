@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL4R",
+  "uniprot_acc": "P24394",
+  "sites": [
+    {
+      "site_id": "IL4R-terminal_n-25-lit",
+      "gene_symbol": "IL4R",
+      "uniprot_acc": "P24394",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "N",
+      "residue_after": "M",
+      "residue_label": "N25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "His6",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface accessibility confirmed by trisNTA (anti-His) labeling; IL-4 binding used as a 'structural integrity' reference channel alongside the His-tagged construct, implying ligand-binding competence is preserved. Expression confirmed by co-expressed cytoplasmic eGFP.",
+      "confidence": "high",
+      "rationale": "The paper explicitly places a hexahistidine tag at the extracellular N-terminus of the full-length, single-pass receptor. Because the signal peptide spans residues 1\u201325 (canonical), the mature N-terminus begins at residue 26 (M), making insert_after_residue=25 the only possible junction for an N-terminal extracellular tag; this is topology_derived because the paper names 'N-terminal' but not residue 25. Python lookup confirms residue 25 = N and residue 26 = M, consistent with the landmarks. The position is \u22653 residues from the TM boundary (TM starts at 233, distance = 207 residues). Full-length, membrane-anchored IL-4R\u03b1* (isoform 1, P24394-1) expressed in HEK293T cells carries a hexahistidine (His-tag) at the extracellular N-terminus; the paper names the tag as 'N-terminal' without specifying residue 25. Surface display of the His-tagged receptor was confirmed by trisNTA dye labeling in confocal imaging of live HEK293T cells.",
+      "sources": [
+        {
+          "pmid": 36949079,
+          "citation": "PMID 36949079",
+          "claim": "IL-4R\u03b1* carries a hexahistidine stretch (His-tag) at the extracellular N-terminus and an intracellular C-terminal enhanced green fluorescent protein (eGFP) domain."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:48:43.134940+00:00",
+  "literature_notes": "L1 reports 13 amber-suppression (ncAA) positions in the extracellular domain of full-length IL-4R\u03b1* (paper numbering Y19, T24, K28, S36, S50, D78, K93, E100, K103, T111, E147, Y189, E195; canonical positions 38, 43, 47, 55, 69, 97, 112, 119, 122, 130, 166, 208, 214 \u2014 all verified by Python with offset +19). These are single-amino-acid substitutions (one residue replaced by bicyclononyne-lysine, BCNK) followed by bioorthogonal click labeling; they are point substitutions, not insertions of a peptide sequence, and therefore do not satisfy the ledger criterion of 'an insertion actually tolerated.' L5 names K97B (mature numbering 97 = canonical 122 = K) and Y13B (mature numbering 13 = canonical 38 = Y), which are the same positions as K103 and Y19 in L1 numbering; same disqualification applies. The C-terminal eGFP (L2/L3) is cytoplasmic and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 825,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal eGFP fused to the cytoplasmic tail of full-length IL-4R\u03b1*; confirmed intracellular (IC domain spans 254\u2013825) and used as an expression marker, not a surface tag."
+    }
+  ]
+}

@@ -488,5 +488,32 @@
       "canonical_residue": 207,
       "left_pct": 61.773700305810394
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:49:03.473799+00:00",
+  "literature_notes": "GSG1L is a 4-pass transmembrane protein with both its N-terminus (residues 1\u20138) and C-terminus (residues 239\u2013331) on the intracellular face. The two extracellular regions are ECL1 (residues 30\u2013132) and ECL2 (residues 195\u2013217). Every ledger line was evaluated: L1/L2/L3 (PMC3401968) report HA- or FLAG-tagged rat GSG1L constructs but state no tag position (no residue, no terminus, no loop named). Because both termini of GSG1L are intracellular, topology_derived reasoning cannot resolve a unique extracellular terminus \u2014 the tag could be at either intracellular end or in an unspecified loop, so no surface site can be pinned. L4, L5, L6, and L7 (PMC4778064) all explicitly describe C-terminal fusions (GFP or Myc), and the C-terminus (residues 239\u2013331) is unambiguously intracellular per the authoritative topology landmarks. None of the seven ledger lines grounds a tag insertion at an extracellular position of GSG1L. Zero qualifying sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 331,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal Myc tag explicitly placed after the last residue (V331); the entire C-tail (239\u2013331) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 331,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "GSG1L\u2013GFP C-terminal fusion expressed in hippocampal slices and shown to regulate AMPAR synaptic transmission; GFP is appended after V331, which is intracellular."
+    },
+    {
+      "residue": 331,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Mouse GSG1L\u2013GFP C-terminal fusion plasmid (OriGene MG214180) and GSG1L-IRES\u2013GFP construct; GFP is at the intracellular C-terminus."
+    }
   ]
 }

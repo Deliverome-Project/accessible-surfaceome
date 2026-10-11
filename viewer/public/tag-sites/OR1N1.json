@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:36:42.471367+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same OR1N1-3\u00d7FLAG construct, in which a 3\u00d7FLAG tag is fused to the protein's C-terminus (after residue 311). The authoritative topology landmarks place the entire C-terminal tail (residues 289\u2013311) in the intracellular compartment. OR1N1 is a canonical class-A GPCR (olfactory receptor) with an extracellular N-terminus (residues 1\u201324) and an intracellular C-terminus; the 3\u00d7FLAG tag therefore faces the cytoplasm, not the cell surface. No ledger line reports any tag insertion at an extracellular position (N-terminus, ECL1 78\u201395, ECL2 163\u2013194, or ECL3 259\u2013269). Because the ledger provides no evidence for an extracellular tag on OR1N1, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 311,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3\u00d7FLAG fused to the C-terminus of full-length OR1N1 in a lentiviral construct; topology landmarks place residue 311 (and the entire 289\u2013311 tail) in the intracellular compartment, so the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

@@ -1,0 +1,91 @@
+{
+  "has_data": true,
+  "gene_symbol": "CRB3",
+  "uniprot_acc": "Q9BUF7",
+  "sites": [
+    {
+      "site_id": "CRB3-internal-None-lit",
+      "gene_symbol": "CRB3",
+      "uniprot_acc": "Q9BUF7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECD (residues 27-59)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Used in live-cell experiments (implied surface display); no quantitative functional assay comparing tagged vs. untagged CRB3A reported in the cited clip. NOT MEASURED beyond live-cell use.",
+      "confidence": "medium",
+      "rationale": "L1 establishes that a GFP tag is tolerated somewhere within the 33-residue extracellular domain (27\u201359) of full-length, membrane-anchored CRB3A in live-cell experiments. Because no residue or junction is named, the position cannot be pinned more precisely than the region; insert_after_residue is left null per schema rules. This is a distinct ledger line from L2 (different isoform, different tag, different paper) and may represent an internal ECD insertion rather than the N-terminal junction validated by L2. Full-length CRB3A-GFP construct (CRB3A splice variant) used in live-cell experiments; GFP tag reported to be inserted 'in ECD of CRB3A' with no specific residue or junction named. The entire extracellular domain of CRB3 spans residues 27\u201359. No residue is named, so the junction cannot be pinned beyond the region.",
+      "sources": [
+        {
+          "pmid": 40702732,
+          "citation": "PMID 40702732",
+          "claim": "Further we applied the previously established expression cassettes encoding for a GFP-tag in ECD of CRB3A (CRB3A-GFP) or for a truncated form of CRB3 lacking the entire CRB3 ICD (CRB3\u0394ICD) ( 23 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "CRB3-terminal_n-26-lit",
+      "gene_symbol": "CRB3",
+      "uniprot_acc": "Q9BUF7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by detection of Myc-CRB3-CLPI in MDCK cells (L4); construct used in live-cell polarity studies. L5: stably expressed in MCF-10A mammary epithelial cells and used to investigate polarity protein function in acinar morphogenesis. Quantitative functional comparison to untagged CRB3 NOT MEASURED in the cited clips.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201326 (last residue G at position 26); 'behind the signal peptide' unambiguously places the Myc tag at the junction between residue 26 (G) and residue 27 (Q), the mature N-terminus. Python confirms seq[25]='G' and seq[26]='Q'. The extracellular domain runs 27\u201359, giving 33 residues of EC space before the TM at 60, well above the \u22653-residue minimum. L5 independently uses an 'amino-terminal myc-tagged' CRB3 in a different cell line, confirming the same terminal position is tolerated across contexts. Full-length Myc-CRB3-CLPI (a splice variant of CRB3) expressed in MDCK cells; single Myc tag placed explicitly 'behind the signal peptide' by single-primer mutagenesis, positioning it at the mature N-terminus of the extracellular domain. Confirmed by L3 (tag 'in ECD near signal peptide') and L4 (surface detection in MDCK cells). L5 (PMC6237394) independently reports an 'amino-terminal myc-tagged variant of CRB3' stably expressed in MCF-10A cells, corroborating the same junction.",
+      "sources": [
+        {
+          "pmid": 17646395,
+          "citation": "PMID 17646395",
+          "claim": "Then, using single primer mutagenesis, a single Myc tag was placed behind the signal peptide ( Makarova et al., 2000 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 26,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:02:15.438919+00:00",
+  "literature_notes": "Five ledger lines were evaluated. L2, L3, and L4 all describe the same Myc-CRB3-CLPI construct from PMC2064851; L2 was chosen as the primary supporting clip because it explicitly states 'behind the signal peptide', pinning the junction to insert_after_residue=26. L3 and L4 are corroborating clips from the same paper. L5 (PMC6237394) independently corroborates the same N-terminal position with a different cell line and is noted in the evidence_detail but not used as the primary clip. L1 (PMC13507169) describes a GFP insertion 'in ECD' of CRB3A with no residue named; it qualifies as a separate region-level site because it is a different isoform, different tag, and different paper, and the GFP could be at an internal ECD position rather than the N-terminal junction. No intracellular tag insertions and no function-abrogating insertions were reported in the ledger. CRB3\u0394ICD (L1) is a truncated construct, not a tag-insertion site, and was not promoted to a site.",
+  "literature_rejected": []
+}

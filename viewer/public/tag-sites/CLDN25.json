@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CLDN25",
+  "uniprot_acc": "C9JDP6",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:44:04.608204+00:00",
+  "literature_notes": "All six ledger lines were evaluated. L1\u2013L4 (PMC11153337) report GFP and RFP fused to the 'N-terminal side' of full-length CLDN-25 expressed in MDCKII and HEK293 cells. However, the CLDN-25 N-terminus (residues 1\u201310) is INTRACELLULAR per the authoritative topology landmarks (TM1 begins at residue 11). The protein reaches the cell surface and tight junctions, but the fluorescent tag is on the cytoplasmic face \u2014 this is an intracellular fusion, not a surface-accessible tag, and cannot support a surface-tag site. L5\u2013L6 (PMC12577684) report Flag-tagged Cldn25 constructs with functional TEER validation, but neither clip states the position of the Flag tag (no residue number, no loop name, no terminus identified). The rules require a pinnable position; without one, no site can be proposed. Zero qualifying extracellular surface sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP and RFP were fused to the N-terminal side of full-length CLDN-25; the N-terminus (residues 1\u201310) is intracellular per topology, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

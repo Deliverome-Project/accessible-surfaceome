@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GLP2R-terminal_n-24-lit",
+      "gene_symbol": "GLP2R",
+      "uniprot_acc": "O95838",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "L",
+      "residue_after": "P",
+      "residue_label": "L24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA antibody detection; GLP-2R-specific functional assay (e.g. cAMP) not reported in this study.",
+      "confidence": "medium",
+      "rationale": "L6 reports an HA epitope tag (YPYDVPDYA) placed immediately after a heterologous signal sequence on the extracellular N-terminal tail of full-length, membrane-anchored GLP-2R. The native signal peptide of GLP-2R spans residues 1\u201324 (UniProt P43220); the mature extracellular N-terminus begins at residue 25 (P). Placing the tag after residue 24 (L) and before residue 25 (P) reproduces the topology of the published construct: the tag is on the extracellular face, 149 residues from TM1 (residue 174), well clear of any TM boundary. No specific residue number is named in the paper, so the junction is derived from the signal-peptide landmark rather than from an explicit statement. PMC6750928 engineered 23 secretin-like GPCRs including GLP-2R with an N-terminal HA tag (YPYDVPDYA) placed after a heterologous 5HT3a signal sequence and a C-terminal 1D4 tag, expressed in a multiplexed GPCR-RAMP interaction study; surface detection was enabled by anti-epitope antibodies.",
+      "sources": [
+        {
+          "pmid": 31555726,
+          "citation": "PMID 31555726",
+          "claim": "In addition, an N-terminal HA tag (YPYDVPDYA) followed the 5HT3a signal sequence, and the C terminus encoded a 1D4 tag (TETSQVAPA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:19:58.229426+00:00",
+  "literature_notes": "L1 (PMC7785020) describes an 'HA signal peptide' prepended to GLP-2R \u2014 this is a signal-peptide replacement construct; the HA sequence is cleaved co-translationally and does not remain on the extracellular surface, so it does not qualify as a surface tag insertion. L4 (PMC7785020) names the construct 'HA-GLP-2R(1\u2013490)-LgBiT-TEV-OMBP-MBP'; in context (same paper as L1) the 'HA' prefix refers to the same HA signal peptide, which is cleaved \u2014 not a surface epitope tag. L2 and L3 (PMC7785020) attach LgBiT and OMBP-MBP to the C-terminus of GLP-2R; the C-terminus falls in the intracellular region (residues 439\u2013553 per topology landmarks) and these tags are therefore intracellular, not surface tags. L5 (PMC6750928) corroborates L6 for the same N-terminal HA construct but is less specific; L6 is cited as the primary evidence. The C-terminal 1D4 tag reported in L5/L6 is also intracellular and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 553,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "GLP-2R was directly fused to LgBiT at its C-terminus (PMC7785020); the C-terminus (residue 553) is intracellular per topology landmarks (INTRACELLULAR: 439\u2013553), so this tag is cytoplasmic, not a surface tag."
+    },
+    {
+      "residue": 553,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "A C-terminal 1D4 tag (TETSQVAPA) was added to GLP-2R in PMC6750928; the C-terminus (residue 553) is intracellular per topology landmarks (INTRACELLULAR: 439\u2013553), so this tag is cytoplasmic, not a surface tag."
+    }
+  ]
 }

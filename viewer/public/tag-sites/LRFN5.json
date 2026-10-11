@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRFN5",
+  "uniprot_acc": "Q96NI6",
+  "sites": [
+    {
+      "site_id": "LRFN5-terminal_n-17-lit",
+      "gene_symbol": "LRFN5",
+      "uniprot_acc": "Q96NI6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface staining of heterologous cells confirmed comparable surface expression of Myc-tagged SALM5 and its deletion variants (L2); neurite outgrowth function not measured for the tagged construct specifically.",
+      "confidence": "medium",
+      "rationale": "Mouse SALM5 (LRFN5 ortholog) carries a Myc tag between its aa 19 and 20, which is the N-terminal region of the mature ectodomain just after signal-peptide cleavage. Human LRFN5 SP ends at residue 17 (A); the equivalent N-terminal tag position in human canonical numbering is insert_after_residue=17, placing the tag before Q18 (first mature residue). This avoids the dense cysteine cluster at C20/C24/C26 (LRRNT disulfides) that begins 3 residues downstream, and is 512 residues from the TM boundary. The mouse SP length is uncertain relative to human (17 aa), so the exact mouse-to-human residue mapping carries one-residue ambiguity; the N-terminal junction (after SP cleavage) is the most defensible human equivalent. Full-length mouse SALM5 (ortholog of human LRFN5) expressed in pGW1 with a Myc epitope tag inserted between aa 19 and 20 of the mouse sequence; L2 (same paper) confirms surface display of the tagged construct by surface staining in heterologous cells.",
+      "sources": [
+        {
+          "pmid": 27225731,
+          "citation": "PMID 27225731",
+          "claim": "For Myc tagging of SALMs, the epitope was inserted between aa 16 and 17 of mouse SALM3 and aa 19 and 20 of mouse SALM5, respectively, in pGW1 (British Biotechnology)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 19,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:17:13.757524+00:00",
+  "literature_notes": "L2 (PMC4881023) validates surface expression of the same Myc-tagged SALM5 construct described in L1 and does not introduce a new junction; it is used to set validation_level=surface_only for the L1 site. L3 (PMC2602877) reports epitope-tagged SALMs distributed in neurons but names no residue and provides no construct details; it does not pin a different junction and adds no new site. The human LRFN5 N-terminal region contains a tight cysteine cluster (C20, C24, C26, C37) forming LRRNT disulfides; inserting at positions 18 or 19 (closer to C20) was considered but rejected as it would place the tag 1\u20132 residues from a disulfide cysteine. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

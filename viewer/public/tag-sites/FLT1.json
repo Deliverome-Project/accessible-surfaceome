@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "FLT1",
+  "uniprot_acc": "P17948",
+  "sites": [
+    {
+      "site_id": "FLT1-terminal_n-26-lit",
+      "gene_symbol": "FLT1",
+      "uniprot_acc": "P17948",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Conditioned media, membrane, and cytosolic fractions blotted for HA (N-terminal, ectodomain) and Flag (C-terminal, intracellular stub) fragments; surface expression and ectodomain shedding confirmed. Receptor signaling (e.g., VEGF-stimulated phosphorylation) NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "FLT1 is a type I single-pass transmembrane receptor with its N-terminus extracellular; the signal peptide spans residues 1\u201326 (cleavage after G26), so an N-terminal tag must be placed after residue 26 to avoid co-translational cleavage. The paper reports 'N-terminal HA tag' on full-length, membrane-anchored FLT1 with no residue number stated; because exactly one extracellular terminus exists, the junction is unambiguously after the signal peptide cleavage site (insert_after_residue=26, residue_before=G, residue_after=S). Python-verified: residue 26 = G, residue 27 = S, 732 residues from the mature N-terminus to the TM boundary, well clear of the \u22653-residue constraint. Full-length FLT1 (HA-VEGFR1-Myc-Flag) expressed in HEK293 cells as a membrane-anchored receptor; N-terminal HA tag placed on the extracellular face, C-terminal Myc-Flag on the intracellular face; construct used to study PMA-stimulated ectodomain cleavage and shedding.",
+      "sources": [
+        {
+          "pmid": 27017929,
+          "citation": "PMID 27017929",
+          "claim": "To determine if there were two separate cleavage events we expressed Flt1 with an N-term HA tag and a C-term Flag tag in HEK293 cells and stimulated cleavage with PMA."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:52:43.076090+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC4879079) and describe the same dual-tagged construct (HA-VEGFR1-Myc-Flag). L1 is used as the primary supporting clip. The C-terminal Myc-Flag tag (L2) is intracellular and is recorded in other_positions. No ledger line supports any internal extracellular loop insertion for FLT1; no such site is proposed. The N-terminal HA tag position is topology_derived: the paper names no residue number, but FLT1 has exactly one extracellular terminus (after signal peptide cleavage at residue 26), making the junction unambiguous.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1338,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Myc-Flag tag on full-length FLT1 (HA-VEGFR1-Myc-Flag construct); the C-terminus lies in the intracellular domain (residues 781\u20131338) and is not accessible from the extracellular face."
+    }
+  ]
+}

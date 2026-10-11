@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "SCN3B",
+  "uniprot_acc": "Q9NY72",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:11:04.208223+00:00",
+  "literature_notes": "All three ledger lines describe C-terminal or positionally ambiguous tags on SCN3B. L1 (PMC11532958) explicitly places GFP at the cytoplasmic C-terminus of rat \u03b23, which is intracellular (residues 181\u2013215 per topology landmarks). L2 and L3 (PMC7079131) describe '\u03b23-myc' (suffix naming convention = C-terminal myc, also intracellular) and 'pEGFP-\u03b23' (prefix naming = N-terminal EGFP fusion); however, neither clip states a residue number, neither confirms the tag is extracellular, and for pEGFP-\u03b23 the relationship of the EGFP to the signal peptide cleavage site (residues 1\u201322) is unresolved \u2014 an EGFP upstream of the SP would be cleaved off, and the clip provides no evidence it is placed after residue 22. Because no ledger line grounds an extracellular tag at a stated or topology-derivable position, zero surface sites qualify. The only extracellular region of SCN3B is the single Ig-like domain (residues 23\u2013159); no insertion in this domain is reported in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 215,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the cytoplasmic C-terminus of full-length rat SCN3B (SCN3B-gfp); the C-terminus (residues 181\u2013215) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 215,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "\u03b23-myc construct (suffix naming = C-terminal myc tag) expressed in transfection experiments; C-terminus of SCN3B is intracellular, confirmed by L1 showing C-terminal GFP is cytoplasmic in the same protein."
+    }
+  ]
+}

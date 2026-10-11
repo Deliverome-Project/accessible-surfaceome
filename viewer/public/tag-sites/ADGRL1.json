@@ -1,0 +1,91 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRL1",
+  "uniprot_acc": "O94910",
+  "sites": [
+    {
+      "site_id": "ADGRL1-internal-919-lit",
+      "gene_symbol": "ADGRL1",
+      "uniprot_acc": "O94910",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 919,
+      "residue_before": "Y",
+      "residue_after": "E",
+      "residue_label": "Y919",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "HEK293/HEK293T cells expressing HA-tagged full-length CL1 were incubated with neurexin-1\u03b1 and -1\u03b2 Ig-fusion proteins (\u00b1SS4 insert); specific binding was detected, demonstrating that the HA-tagged receptor is surface-displayed and retains neurexin-binding function. The HA tag in ECL1 did not abolish neurexin interaction.",
+      "confidence": "high",
+      "rationale": "L1 names the exact junction ('between Tyr918 and Glu919 in the first extracellular loop') in a full-length, membrane-anchored construct. Python search of the canonical sequence locates the YE motif at positions 919\u2013920 (a one-residue offset from the paper's numbering, consistent with a minor rat-vs-human or isoform difference); the junction is unambiguous because YE is the only such dinucleotide in ECL1. The insert sits 34 residues from the TM1 C-terminal boundary (885) and 4 residues from the TM2 N-terminal boundary (923), both satisfying the \u22653-residue clearance constraint. L2 and L3 confirm surface display and preserved neurexin binding, qualifying this as surface_and_function. Full-length CL1 (ADGRL1/latrophilin-1) expressed in HEK293/HEK293T cells with an HA epitope inserted by PCR 'between Tyr918 and Glu919 in the first extracellular loop of CL1' (L1, PMC3308797). The paper uses a numbering that is offset by one relative to the canonical human UniProt sequence (Q9ULB1): the YE motif in ECL1 (topology span 915\u2013922) falls at positions 919\u2013920 in the canonical sequence. Python search confirmed seq[918]='Y' and seq[919]='E', unambiguously locating the junction. L2 and L3 confirm that HA-tagged CL1 is displayed on the cell surface and retains the ability to bind soluble neurexin-1\u03b1 and -1\u03b2 fusion proteins.",
+      "sources": [
+        {
+          "pmid": 22262843,
+          "citation": "PMID 22262843",
+          "claim": "Only pCMVIg-CL1 Lectin that encodes CL1 residues Met 1 \u2013Tyr 131 fused to human IgG Fc fragment was cloned by direct insertion of a PCR fragment into the EcoRI-SalI site of pCMVIg vector.\npCMV-CL1-1 and pCMV-CL1-5 encode full-length CL1 lacking both splice inserts or containing an insert in SSA, respectively (CL1 FL and CL1 FL+SSA ) and were described previously ( 6 ). pCMV-CL1 HA encodes full-length CL1 lacking both splice inserts in which the HA epitope was inserted by PCR between Tyr 918 and Glu 919 in the first extracellular loop of CL1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ADGRL1-terminal_n-24-lit",
+      "gene_symbol": "ADGRL1",
+      "uniprot_acc": "O94910",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display of the N-terminally FLAG-tagged full-length receptor was used in cell-based assays (PMC3321182). The independent mouse knock-in (PMC11154861) confirmed immunolocalization of the endogenous 2xmyc-tagged Lphn1 at synapses, demonstrating surface trafficking of the tagged receptor in vivo. No quantitative functional assay result is reported for the FLAG construct alone in L4.",
+      "confidence": "high",
+      "rationale": "L4 explicitly states 'The Flag epitope was fused at Leu25 of CL1', and the topology landmarks place the signal peptide at residues 1\u201324, making Leu25 (seq[24]='L') the first residue of the mature extracellular N-terminus. The tag therefore sits after residue 24 (seq[23]='G'), well upstream of TM1 (865), with 840 residues of extracellular space between the junction and the first TM helix. L7 independently pins the identical junction in the mouse ortholog knock-in, raising confidence that this terminus tolerates an epitope tag without disrupting folding or trafficking. Full-length human CL1 (ADGRL1/latrophilin-1) expressed in cells with a FLAG epitope fused at Leu25, the first residue of the mature protein after signal-peptide cleavage (SP = residues 1\u201324). The same N-terminal junction is independently corroborated by a mouse knock-in line (L7, PMC11154861) in which a 2xmyc tag was inserted 'just after the signal peptide and before the lectin-like domain', confirming the junction is conserved and tolerated in the endogenous receptor.",
+      "sources": [
+        {
+          "pmid": 22333914,
+          "citation": "PMID 22333914",
+          "claim": "The Flag epitope was fused at Leu25 of CL1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:14:27.509295+00:00",
+  "literature_notes": "Two ledger-supported sites were identified. (1) The N-terminal junction after the signal peptide (insert_after_residue=24) is pinned by L4 (FLAG at Leu25, human CL1) and independently corroborated by L5/L6/L7 (2xmyc knock-in mouse at the identical junction); because both papers pin the same junction it is reported as one site, cited to L4 as the most precise human-sequence reference. Validation is surface_only for L4 because no quantitative functional assay result is reported for that specific construct; the mouse knock-in (L7) adds immunolocalization evidence but is an ortholog. (2) The ECL1 HA-tag site (insert_after_residue=919) is the most strongly validated site: the paper names the exact flanking residues, the construct is full-length and membrane-anchored, and neurexin binding is preserved (surface_and_function). The one-residue numbering offset between the paper (Tyr918/Glu919) and the canonical human sequence (Y919/E920) was resolved by Python sequence search; the YE motif is unique in ECL1. No ledger lines describe intracellular insertions or function-abrogating insertions for ADGRL1, so other_positions is empty. L2 and L3 are corroborating lines for Site 2 (same paper, same construct) and are not cited separately as they do not add a new junction.",
+  "literature_rejected": []
+}

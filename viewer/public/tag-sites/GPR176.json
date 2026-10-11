@@ -64,5 +64,20 @@
       "left_pct": 0.19455252918287938,
       "note": "Isoform surface expr 134 (-98% vs canonical)"
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:29:25.189812+00:00",
+  "literature_notes": "All three ledger clips (L1\u2013L3) from PMC7064540 describe a single construct: GFP fused in-frame to the C-terminus of full-length Gpr176 (entire coding sequence without stop codon). The topology landmarks place the C-terminal tail (residues 324\u2013515) entirely in the intracellular compartment. The confocal data in L3 confirm that the receptor traffics to the plasma membrane, but the GFP moiety faces the cytoplasm \u2014 this is an intracellular tag, not an extracellular surface tag. No ledger clip reports any insertion at the extracellular N-terminus (residues 1\u201342), ECL1 (101\u2013118), ECL2 (183\u2013203), or ECL3 (288\u2013302). Because the rules prohibit proposing sites not grounded in the ledger, and the sole ledger evidence is for an intracellular C-terminal fusion, zero extracellular surface tag sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 515,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused in-frame to the C-terminus of full-length Gpr176 (after residue 515); the entire C-terminal tail (residues 324\u2013515) is intracellular per topology, so this tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

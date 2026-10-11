@@ -131,5 +131,20 @@
       "canonical_residue": 43,
       "left_pct": 18.695652173913043
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:41:56.833413+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) report COOH-terminal FLAG-peptide or GFP fusions to full-length claudin-2 expressed in L fibroblasts. Per the authoritative topology landmarks, the C-terminus (residues 182\u2013230) is entirely intracellular. The immunofluorescence signal at cell-contact planes (L4, L5) confirms the protein traffics correctly to the membrane, but the FLAG tag itself faces the cytoplasm and is not accessible on the extracellular surface. No ledger line reports any insertion in ECL1 (residues 28\u201381) or ECL2 (residues 138\u2013160), nor at the N-terminus (residues 1\u20137, also intracellular). Because the ledger contains no extracellular tag insertion for CLDN2, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 230,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "COOH-terminal FLAG or GFP tag on full-length claudin-2; the C-terminus (residues 182\u2013230) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

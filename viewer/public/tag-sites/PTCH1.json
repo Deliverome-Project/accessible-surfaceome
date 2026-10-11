@@ -668,5 +668,20 @@
       "canonical_residue": 965,
       "left_pct": 66.31799163179917
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:46:57.910974+00:00",
+  "literature_notes": "The ledger contains exactly one line (L1) describing a full-length, membrane-anchored PTCH1 construct with a tag. That tag is a C-terminal 1D4 tag (TETSQVAPA) appended after the last residue (N1447). Per the authoritative topology landmarks, residues 1176\u20131447 are intracellular; the C-terminus is therefore cytoplasmic. This tag cannot serve as an extracellular surface label and does not qualify as a surface tag site. No other ledger lines exist for PTCH1. The large extracellular domains (ECD1: 122\u2013436, ECD2: 770\u20131027) are unaddressed by any ledger-supported insertion in a full-length membrane-anchored context. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1447,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 tag on full-length mouse PTCH1; the C-terminus (residue 1447, N) lies within the intracellular span 1176\u20131447 and faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

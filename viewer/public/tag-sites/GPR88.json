@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR88-terminal_n-0-lit",
+      "gene_symbol": "GPR88",
+      "uniprot_acc": "Q9GZN0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunostaining with anti-FLAG M1 antibody in non-permeabilized striatal primary dissociated neurons confirmed cell-surface display of the tagged receptor. Receptor signaling function was NOT MEASURED for the FLAG-tagged construct in these studies.",
+      "confidence": "high",
+      "rationale": "GPR88 has no endogenous signal peptide; its N-terminus (residues 1\u201333) is extracellular per the topology landmarks, and the intracellular C-terminus (339\u2013384) is the only other terminus. Because the paper names no specific residue number but the N-terminus is the sole extracellular terminus, position_evidence is topology_derived and insert_after_residue=0 (prepend). The exogenous signal sequence added by the authors is cleaved post-translationally, leaving the FLAG tag on the extracellular face before residue M1. The 33-residue extracellular N-terminal stretch provides ample distance (>3 residues) from the TM1 boundary at residue 34. Full-length human GPR88 expressed in primary striatal neurons with an exogenous signal sequence followed by a FLAG epitope tag prepended to the N-terminus (PMC3732291). Surface display confirmed by anti-FLAG M1 immunostaining of non-permeabilized neurons (L2). A second independent construct (L7, PMC9061749) also places an N-terminal FLAG on full-length GPR88 in pFastbac1 for baculovirus expression, corroborating the same junction.",
+      "sources": [
+        {
+          "pmid": 23936473,
+          "citation": "PMID 23936473",
+          "claim": "A cDNA encoding human GPR88 was obtained from cDNA.org and modified using PCR to add a signal sequence followed by Flag epitope tag at the N-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:42:00.722260+00:00",
+  "literature_notes": "L1/L2 (PMC3732291) and L7 (PMC9061749) both place a FLAG tag at the N-terminus of full-length GPR88; because they pin the identical junction (position 0, prepend), they constitute one site, with L1/L2 as primary evidence (surface display directly confirmed) and L7 as corroboration. L3\u2013L6 (PMC5871604) report a Venus fluorescent protein fused to the C-terminus of GPR88 with confirmed signaling (BRET assay and knock-in mice); the C-terminus is intracellular (residues 339\u2013384) so this does not qualify as a surface tag site and is recorded in other_positions. L7 also includes a C-terminal His tag, likewise intracellular. No ledger line supports an insertion in any of the three extracellular loops (ECL1 91\u2013113, ECL2 181\u2013191, ECL3 307\u2013318), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 384,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Venus fluorescent protein fused to the C-terminus of GPR88 via a 5-aa linker; signaling properties preserved as shown by BRET assay in HEK-293 cells and knock-in mouse characterization, but the C-terminus (residues 339\u2013384) is intracellular and therefore not a surface tag site."
+    }
+  ]
 }

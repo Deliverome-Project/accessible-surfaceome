@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "GPC5",
+  "uniprot_acc": "P78333",
+  "sites": [
+    {
+      "site_id": "GPC5-terminal_n-24-lit",
+      "gene_symbol": "GPC5",
+      "uniprot_acc": "P78333",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "S",
+      "residue_after": "E",
+      "residue_label": "S24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-HA immunostaining confirmed surface expression of HA-GPC5 in astrocytes in vivo; construct used in Gpc5 cKO rescue experiment, implying functional competence, but no quantitative function assay result is reported in this clip.",
+      "confidence": "medium",
+      "rationale": "GPC5 is a GPI-anchored protein with signal peptide residues 1\u201324 and a fully extracellular mature domain (residues 25\u2013572); there is no transmembrane segment and no cytoplasmic domain. The C-terminus carries the GPI anchor signal, which is cleaved post-translationally, making it unavailable for tagging. Therefore the mature N-terminus (after signal peptide cleavage at residue 24) is the sole extracellular terminus available, and the 'HA-GPC5' naming convention is consistent with an N-terminal HA tag placed immediately after the signal peptide. Python verification confirms residue 24 = S (last SP residue) and residue 25 = E (first mature residue), giving insert_after_residue = 24. HA-GPC5 construct expressed in mouse astrocytes in vivo via AAV2/5 under the GfaABC1D promoter; surface expression confirmed by anti-HA immunostaining in Gpc5 cKO brain tissue.",
+      "sources": [
+        {
+          "pmid": 40048429,
+          "citation": "PMID 40048429",
+          "claim": "P14 littermate Gpc5 cKO mice were injected with AAV2/5 virus expressing HA-GPC5 construct (described in 45 ), or Lck-EGFP plasmid (Addgene #105598) for control conditions, under the control of astrocyte minimal promoter GfaABC1D."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:21:11.737073+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports an HA-tagged GPC5 construct verified by immunostaining in vivo but does not state the insertion residue explicitly. GPC5 is GPI-anchored (no TM, no cytoplasmic domain), so the only extracellular terminus is the mature N-terminus after signal peptide cleavage (residue 25). The 'HA-GPC5' prefix naming is the standard convention for N-terminal tags on GPI-anchored proteins, and topology_derived placement at insert_after_residue=24 is the only defensible reading. No internal loop insertions are supported by the ledger. The C-terminus is not a candidate because the GPI anchor signal peptide (approximately the last 20\u201330 residues) is cleaved and replaced by the GPI lipid anchor. Confidence is medium rather than high because the paper does not name the insertion residue and the construct description is attributed to reference 45, which is not itself in the ledger.",
+  "literature_rejected": []
+}

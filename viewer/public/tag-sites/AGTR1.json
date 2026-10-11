@@ -37,7 +37,64 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "AGTR1-terminal_n-0-lit",
+      "gene_symbol": "AGTR1",
+      "uniprot_acc": "P30556",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface internalization assay: HiBiT-AT1R is detected at the cell surface and undergoes agonist-induced internalization, confirming surface display of the tagged receptor.",
+      "confidence": "high",
+      "rationale": "AT1R has no signal peptide (UniProt P30556); residues 1\u201327 form the extracellular N-terminus and TM1 begins at residue 28 (F), placing the prepend junction 27 residues from the TM boundary, well above the \u22653-residue minimum. The N-terminus is the sole extracellular terminus available for a prepend tag on this 7-TM receptor; the HiBiT cassette in L1 uses its own IL-6 signal sequence to drive surface display, so the tag is extracellular before M1. No specific residue is named in the paper, but exactly one extracellular terminus exists for a prepend, so the position is topology-derived. Python confirms residue_after = M (seq[0]). Human full-length AT1R N-terminally fused to a HiBiT cassette (IL-6 signal sequence + HiBiT + GS linker) expressed in cells; the cassette drives extracellular display of HiBiT at the receptor N-terminus. Used in a receptor internalization assay that monitors surface-displayed receptor.",
+      "sources": [
+        {
+          "pmid": 35078997,
+          "citation": "PMID 35078997",
+          "claim": "For the HiBiT-based receptor internalization assay, human full-length AT1R was N-terminally fused to a HiBiT cassette (HiBiT-AT1R), which contained the Interleukin 6-derived signal sequence followed by the HiBiT sequence and a linker (MNSFSTSAFGPVAFSLGLLLVLPAAFPAP VSGWRLFKKIS GGSGGGGSG; HiBiT tag underlined; gene synthesized with codon optimization)."
+        },
+        {
+          "pmid": 41953194,
+          "citation": "PMID 41953194",
+          "claim": "As expected, Myc-AT1-R was mainly detected at the cell surface, demonstrating efficient trafficking of the receptor to the plasma membrane whereas Myc-SNX12 was exclusively confined to intracellular vesicles, in agreement with its specific localization in early endosomes ( Pons et al., 2012 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:22:00.282862+00:00",
+  "literature_notes": "L5 (C-terminal Rluc fusion) is excluded from sites because the AT1R C-terminus (residues 297\u2013359) is intracellular per the topology landmarks; it is recorded in other_positions. L2 introduces the Myc-AT1-R construct and is subsumed by L3/L4 which provide the surface-validation evidence; L3 is used as the primary clip for the Myc site. Both sites map to the same junction (insert_after_residue=0, prepend before M1) but are reported separately because they rest on different ledger lines, different tags, and different species. No ledger line supports any internal extracellular loop insertion for AT1R.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 359,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal Rluc fusion to full-length AT1R used in BRET signaling assays; the AT1R C-terminus (residues 297\u2013359) is intracellular per topology landmarks, so this tag faces the cytoplasm and is not a surface site."
+    }
+  ]
 }

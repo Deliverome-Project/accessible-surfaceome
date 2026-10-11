@@ -448,5 +448,26 @@
       "canonical_residue": 172,
       "left_pct": 36.59574468085106
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:13:16.851499+00:00",
+  "literature_notes": "All six ledger lines were evaluated. L1/L2/L3 (PMC2213087) describe EGFP inserted after Leu55 (confirmed: seq[55]=L), but this is a truncation construct \u2014 DC-STAMP(1\u201355)\u2013EGFP \u2014 in which EGFP replaces TM2 through TM7; it is not a full-length membrane-anchored protein and therefore does not qualify as a surface tag site. Additionally, residue 55 is the last residue of TM1 (33\u201355), placing the junction at the TM boundary (0 residues from TM), failing the \u22653-residue constraint. L4 (PMC5386838) describes a functional DC-STAMP-GFP fusion that rescued osteoclast cell-cell fusion, but the GFP is C-terminal and the C-terminus (residue 470) is intracellular (390\u2013470); no extracellular residue is named. L5 (PMC5386838) reports surface expression of DC-STAMP constructs but names no tag insertion site. L6 (PMC3304467) describes a large chimeric domain swap (PTHR extracellular domain fused to DC-STAMP), not a short epitope tag insertion, and names no residue. No ledger line supports a short epitope tag tolerated at an extracellular position of full-length, membrane-anchored DC-STAMP. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 55,
+      "kind": "other",
+      "supporting_clip_id": "L2",
+      "note": "EGFP inserted after Leu55 in a DC-STAMP(1\u201355)\u2013EGFP truncation knock-in construct; residue 55 is the last residue of TM1 and the construct lacks TM2\u2013TM7, so this is a reporter truncation, not a full-length surface tag."
+    },
+    {
+      "residue": 470,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "DC-STAMP-GFP (C-terminal fusion) rescued osteoclast cell-cell fusion in DC-STAMP\u2212/\u2212 cells; the C-terminus (residue 470) is intracellular (390\u2013470), so the GFP is on the cytoplasmic face."
+    }
   ]
 }

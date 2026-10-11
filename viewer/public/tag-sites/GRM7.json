@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GRM7-terminal_n-34-lit",
+      "gene_symbol": "GRM7",
+      "uniprot_acc": "Q14831",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G34",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Calcium mobilisation assay (G\u03b115 coupling): in vitro potency and efficacy of HA-tagged rat mGlu7 were determined and reported as functional; tag did not abolish receptor activity.",
+      "confidence": "high",
+      "rationale": "GRM7 has a single extracellular N-terminus (residues 35\u2013590, the large Venus Flytrap/CRD ectodomain) and an intracellular C-terminus; the only extracellular terminus for a prepended tag is after signal-peptide cleavage at residue 34. Python lookup confirms residue 34 = G and residue 35 = Q in the canonical gapped numbering. L1 (rat mGlu7, HA, functional calcium assay) is used as primary because it provides the highest validation level; L2 (mGlu7a, extracellular c-myc, HEK293T) and L4 (human mGluR7, ALFA tag replacing endogenous SP) independently corroborate the identical junction. The insert site is >550 residues from the first TM helix (sequential boundary 591), satisfying the \u22653-residue TM-distance constraint, and N-terminal tagging of mGluRs is a well-established approach that does not perturb ligand binding or G-protein coupling. Full-length rat mGlu7 N-terminally tagged with HA epitope; split Renilla Luciferase 8 fragments fused to C-terminus; expressed in cells and used in calcium mobilisation assays via G\u03b115. Rat mGlu7 is a close ortholog of human mGluR7 (GRM7). The same N-terminal extracellular junction is independently supported by L2 (extracellular c-myc-tagged mGlu7a in HEK293T) and L4 (human mGluR7 with endogenous SP replaced by HA-SP + ALFA tag, placing ALFA at the identical mature N-terminus). No residue number is named in any of the three clips; the junction is derived from the single extracellular terminus: the tag must follow the cleaved signal peptide, placing it after residue 34 (last SP residue, G) and before residue 35 (Q, first residue of the mature VFT domain).",
+      "sources": [
+        {
+          "pmid": 36063995,
+          "citation": "PMID 36063995",
+          "claim": "Calcium assays in which rat mGlu 7 was coupled to calcium mobilization via the promiscuous G protein G \u03b115 were used to determine in vitro potency and efficacy and were conducted as described in ( 18 , 26 , 41 , 42 , 43 ).\ncDNAs for rat mGlu 7 and mGlu 8 were N-terminally tagged with a hemagglutinin epitope tag using standard molecular biology procedures. cDNAs encoding the split fragments of Renilla Luciferase 8, L1 (residues 1\u2013229), or L2 (residues 230\u2013311), were fused in frame to the C-terminus of mGlu 7 and mGlu 8 following the linker \u201cGSPPARAT\u201d in the pcDNA3.1 vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,21 @@
       "canonical_residue": null,
       "left_pct": 3.9045553145336225,
       "note": "Isoform surface expr 6415 (-1% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:55:17.946407+00:00",
+  "literature_notes": "L1, L2, and L4 all pin the same junction (insert_after_residue=34, after signal-peptide cleavage) and therefore constitute one site; L1 was chosen as primary because it provides functional validation (calcium assay). L4 (human mGluR7, ALFA tag) is the most directly task-relevant clip and independently confirms the same junction on the human protein. L3 describes a C-terminal eGFP/Flag/His10 fusion on a truncated human mGluR7 construct (sequential residues 1\u2013859); sequential position 859 maps to gapped position 863, which falls within the intracellular C-terminal domain (sequential 851\u2013915), so this is recorded in other_positions rather than sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 863,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "eGFP, Flag, and His10 tags fused via HRV-3C site to the C-terminus of a truncated human mGluR7 construct (sequential residues 1\u2013859; gapped position 863); sequential position 859 lies within the intracellular C-terminal domain (sequential 851\u2013915), so this tag faces the cytoplasm and is not a surface-accessible site."
     }
   ]
 }

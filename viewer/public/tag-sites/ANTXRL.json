@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "ANTXRL",
+  "uniprot_acc": "A6NF34",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:26:01.467983+00:00",
+  "literature_notes": "The sole ledger line (L1) describes an HA-tagged full-length TEM8 construct, where TEM8 is ANTXR1 (Anthrax toxin receptor 1). ANTXRL (Anthrax toxin receptor-like) is a distinct gene product; ANTXR1 is a paralog of ANTXRL, not an ortholog. The rules permit evidence from 'a close ortholog' but not from a paralog in the same species. Even setting aside the gene-identity mismatch, L1 states no residue position for the HA tag \u2014 it reports only that 'HA-tagged full-length TEM8 (isoform/variant 1)' was expressed, with no junction coordinates, primer tables, or loop names that would allow insert_after_residue to be pinned or topology-derived. A topology_derived call would require the construct to be of THIS protein (ANTXRL) with exactly one extracellular terminus; L1 does not meet that requirement. No other ledger lines are provided. Accordingly, zero sites qualify.",
+  "literature_rejected": []
+}

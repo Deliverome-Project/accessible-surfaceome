@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NTRK1",
+  "uniprot_acc": "P04629",
+  "sites": [
+    {
+      "site_id": "NTRK1-terminal_n-32-lit",
+      "gene_symbol": "NTRK1",
+      "uniprot_acc": "P04629",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 32,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G32",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG antibody feeding assays confirm surface display; NGF-induced internalization, retrograde trafficking, and signaling endosome formation monitored in compartmentalized microfluidic cultures \u2014 receptor undergoes normal ligand-induced trafficking, indicating preserved function.",
+      "confidence": "high",
+      "rationale": "NTRK1 is a single-pass type I transmembrane receptor: its N-terminus is extracellular and its C-terminus is intracellular, leaving exactly one extracellular terminus. The signal peptide spans residues 1\u201332 (cleavage after G32), so an N-terminal FLAG tag must be placed after residue 32 to avoid co-translational cleavage; the mature chain begins at A33. Python confirms residue 32 = G and residue 33 = A, and the tag position is 385 residues from the TM boundary (418), well clear of any steric constraint. L1\u2013L4 all describe the same endogenous knock-in construct; L4 is cited as it most explicitly states the tag is 'in frame with the extracellular domain' and confirms surface display by antibody feeding. FLAG epitope tag knocked into the endogenous TrkA locus in frame with the extracellular domain (TrkA FLAG/FLAG knock-in mice); full-length, membrane-anchored receptor expressed in sympathetic neurons; surface display confirmed by anti-FLAG antibody feeding assays in non-permeabilized cells.",
+      "sources": [
+        {
+          "pmid": 29549340,
+          "citation": "PMID 29549340",
+          "claim": "To investigate this, we took advantage of sympathetic neurons isolated from FLAG-TrkA knock-in mice, TrkA FLAG/FLAG , which have a FLAG tag knocked into the endogenous TrkA locus in frame with the extracellular domain of the protein 10 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:20:39.792479+00:00",
+  "literature_notes": "L1\u2013L4 all describe the same Flag-TrkA knock-in mouse line (originating from Sharma et al., 2010) and converge on a single site: FLAG inserted at the mature N-terminus of the extracellular domain. No ledger line names a specific residue number, so the position is topology-derived (the only extracellular terminus of this type I receptor). L5 and L6 describe FLAG-TrkB:A chimeric receptors in which the extracellular domain is TrkB, not TrkA; TrkA contributes only the TM and intracellular domains in those constructs, so they provide no evidence for a tag site on TrkA's extracellular surface and were excluded. No ledger line names any intracellular or function-abrogating insertion in NTRK1.",
+  "literature_rejected": []
+}

@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRC8B",
+  "uniprot_acc": "Q6P9F7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:22:36.975006+00:00",
+  "literature_notes": "The ledger contains two clips (L1, L2) both describing the same construct: Lrrc8b smFPMyclox, a knock-in mouse in which a spaghetti-monster FP and Myc epitope tag are fused to full-length, membrane-anchored LRRC8B. This satisfies the 'full-length membrane-anchored' requirement. However, neither clip names a residue, a loop, or a terminus at which the tag is inserted. The topology_derived rule (which would allow position inference without a named residue) applies only when exactly ONE terminus is extracellular \u2014 but LRRC8B has both its N-terminus (residues 1\u201323) and C-terminus (residues 337\u2013803) on the intracellular face. No extracellular terminus exists from which to derive a junction. The region-level rule requires a named loop, which neither clip provides. Because no positional anchor \u2014 residue, loop name, or sole extracellular terminus \u2014 is present in the ledger, no extracellular surface site can be proposed. The smFP/Myc tag most likely resides at an intracellular terminus (consistent with LRRC8 family practice), but even that cannot be confirmed from the clips. Zero sites is the correct answer.",
+  "literature_rejected": []
+}

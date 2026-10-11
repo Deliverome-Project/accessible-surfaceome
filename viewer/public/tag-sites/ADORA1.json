@@ -4,6 +4,43 @@
   "uniprot_acc": "P30542",
   "sites": [
     {
+      "site_id": "ADORA1-internal-None-lit",
+      "gene_symbol": "ADORA1",
+      "uniprot_acc": "P30542",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular region (loop unspecified)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry (Myc-tag detected on intact cells). Receptor function (adenosine signalling) not explicitly assayed in the cited clips.",
+      "confidence": "medium",
+      "rationale": "L8 establishes that a Myc tag inserted into an extracellular region of full-length hA1R is tolerated and surface-displayed, but the paper specifies only 'extracellular region' without naming ECL1, ECL2, ECL3, or the N-terminus. ADORA1 has four extracellular spans (N-term 1\u20139, ECL1 69\u201381, ECL2 147\u2013179, ECL3 257\u2013267); choosing among them would require inventing a position not stated in the ledger, which is forbidden. The site is therefore reported at region level with insert_after_residue = null. Ranked below the N-terminal site because the junction is unpinned. A short Myc-tag sequence was engineered onto the extracellular region of wild-type full-length human A1R to confirm cell-surface expression; surface display was validated by flow cytometry in anti-Lewis Y CAR T cells (L9 corroborates). The paper does not name a specific extracellular loop or residue.",
+      "sources": [
+        {
+          "pmid": 40610421,
+          "citation": "PMID 40610421",
+          "claim": "Due to the lack of reliable flow cytometry antibodies for the hA 1 R, a short Myc-tag sequence was engineered onto the extracellular region of the wild-type hA 1 R to confirm protein expression on the cell surface (Supplementary Fig. 2 C, and Supplementary Table 1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "ADORA1-nterm-tedman",
       "gene_symbol": "ADORA1",
       "uniprot_acc": "P30542",
@@ -83,9 +120,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Cell-surface expression confirmed by NanoBiT luminescence complementation in HEK293 cells; agonist-induced receptor internalization monitored with the HiBiT-tagged construct, indicating preserved trafficking function.",
+      "functional_impact_measured": "Surface expression confirmed by NanoBiT luminescence complementation (LgBiT added extracellularly to intact cells); agonist-stimulated receptor internalisation also monitored with the tagged construct, showing the receptor remains functional for trafficking. Ligand-binding or G-protein coupling not explicitly quantified in the cited clip.",
       "confidence": "high",
-      "rationale": "ADORA1 is a GPCR with no signal peptide; the topology landmarks place residues 1\u20139 extracellular and TM1 beginning at residue 10, leaving 9 residues between the prepend junction and the first TM helix (well above the \u22653-residue minimum). No residue number is stated in any ledger line, but the N-terminus is the sole extracellular terminus of this receptor, so topology_derived applies and insert_after_residue=0 is the unique solution. Three independent papers (PMC6974774, PMC4513639, PMC12229354) with three different tags (HiBiT, FLAG/SF-TAP, Myc) all report tolerated N-terminal extracellular tags on the full-length membrane-anchored receptor, converging on this single junction. HiBiT\u2013A1AR full-length construct expressed in HEK293 cells; NanoBiT complementation with exogenous purified LgBiT confirms cell-surface display of the N-terminally tagged receptor; agonist-induced internalization was subsequently monitored with this construct, demonstrating functional receptor trafficking. L7 (PMC4513639) independently reports N-terminal FLAG and SF-TAP tags on the same receptor. L9/L10 (PMC12229354) report a Myc tag engineered onto the 'extracellular region' of hA1R confirmed by flow cytometry; ADORA1 has no signal peptide and its only extracellular terminus is the N-terminus (residues 1\u20139), making this topology-derived to the same junction. [validation: surface_and_function; position: topology_derived; source: paper; entailment_verified: True]",
+      "rationale": "ADORA1 is a GPCR with no signal peptide; the topology landmarks place residues 1\u20139 extracellular and TM1 beginning at residue 10 (A), giving 9 residues of buffer between a prepended tag and the first TM helix \u2014 well above the \u22653-residue minimum. The N-terminus is the only extracellular terminus of a GPCR, so 'N-terminus' unambiguously maps to insert_after_residue = 0 (prepend before M1). Python confirms residue_after = 'M' (position 1). Three independent papers (PMC6974774, PMC4513639, PMC7116137/Sinobiological) all place tags at this same junction, providing convergent evidence. Full-length human A1AR with HiBiT fused to its N-terminus expressed in HEK293 cells; NanoBiT complementation with exogenous LgBiT used to monitor receptor presence at the cell surface of living cells. The same paper also reports a prior NanoLuc\u2013A1AR N-terminal fusion (replaced by HiBiT), confirming the N-terminus tolerates large protein fusions. L7 (PMC4513639) independently reports N-terminal FLAG and SF-TAP tags on the full-length receptor; L5 (PMC7116137/Sinobiological) reports a commercial N-terminal FLAG construct \u2014 both corroborate this junction.",
       "sources": [
         {
           "pmid": 31583945,
@@ -95,7 +132,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -124,10 +166,18 @@
   ],
   "ortholog_pins": [],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:14:07.182699+00:00",
-  "literature_notes": "L5 disqualified: the FLAG-tagged A1R plasmid is from a commercial vendor (Sinobiological) and the tag position within the construct is unstated. L6 disqualified: eYFP is fused to the C-terminus, which is intracellular (residues 291\u2013326). L8 disqualified: the YFP tag position on the A1R-Y288A mutant construct is not stated in the clip; Y288 is a point mutation within TM7 (residues 268\u2013290), not a tag insertion site, and the YFP is most likely at the intracellular C-terminus. All three qualifying independent papers (L1\u2013L4, L7, L9\u2013L10) converge on the same N-terminal prepend junction, so only one site is reported.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T06:15:55.275678+00:00",
+  "literature_notes": "L2, L3, L4 (PMC6974774) describe the same HiBiT\u2013A1AR construct as L1 and were used to confirm the N-terminal junction; they do not add a new site. L7 (PMC4513639) independently reports N-terminal FLAG and SF-TAP tags on the full-length receptor \u2014 same junction (position 0) as Site 1, so no additional site is created, but it raises confidence in the N-terminal position. L5 (PMC7116137) references a Sinobiological commercial plasmid with an N-terminal FLAG tag; the position is stated as N-terminal (not unstated), so it is not disqualified on that ground, but since it is a vendor product and the junction is already covered by Site 1 with higher-tier evidence, it is noted here rather than listed as a separate site. L9 (PMC12229354) corroborates L8 (same construct, same paper) and adds no new positional information. The C-terminal eYFP fusion (L6) is placed in other_positions because the C-terminus (residues 291\u2013326) is intracellular per the topology landmarks.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 326,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "eYFP fused to the C-terminus of full-length A1AR; the C-terminus (residues 291\u2013326) is intracellular per topology landmarks, so this is not a surface tag site."
+    }
+  ]
 }

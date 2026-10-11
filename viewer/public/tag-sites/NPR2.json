@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NPR2",
+  "uniprot_acc": "P20594",
+  "sites": [
+    {
+      "site_id": "NPR2-terminal_n-22-lit",
+      "gene_symbol": "NPR2",
+      "uniprot_acc": "P20594",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "R",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (9 aa, YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot with anti-HA antibody detected bands at ~120\u2013130 kDa in HA-NPR2-expressing tissues but not wild-type (L4, L9); immunofluorescence confirmed plasma-membrane localisation co-incident with GFP-HRas (L13); no explicit ligand-binding or cGMP-production assay is reported in the cited quotes.",
+      "confidence": "high",
+      "rationale": "All 13 ledger lines describe the same junction: the extracellular N-terminus of full-length NPR2 immediately after signal-peptide cleavage. Python computation confirms residue 22 = A (last SP residue) and residue 23 = R (first mature extracellular residue), so insert_after_residue = 22. The site is 433 residues from the TM boundary (456), well beyond the \u22653-residue minimum. No explicit residue number appears in any quote, so position_evidence is topology_derived rather than validated. Multiple independent CRISPR/Cas9 knock-in mouse lines (PMC7574965, PMC9627482) and human NPR2 cell-line constructs (PMC10702138) place a 9-aa HA tag at the extracellular N-terminus of full-length, membrane-anchored NPR2. The quotes name the site as 'extracellular N-terminus' but cite figures rather than an explicit residue number; the junction is therefore computed from the topology landmarks (SP 1\u201322, mature N-terminus 23), placing the tag after residue 22 (A) and before residue 23 (R). Surface expression was confirmed by anti-HA western blot (~120\u2013130 kDa, consistent with known glycosylation) and by immunofluorescence co-localisation with the plasma-membrane marker GFP-HRas.",
+      "sources": [
+        {
+          "pmid": 32384146,
+          "citation": "PMID 32384146",
+          "claim": "Mice CRISPR/Cas9 genome editing was used to generate two mouse lines in which a 9-amino acid HA epitope tag (YPYDVPDYA) was added to the extracellular N-termini of the endogenous LHR and NPR2 proteins; these modified proteins and mouse lines are referred to here as HA-LHR and HA-NPR2."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:10:13.330573+00:00",
+  "literature_notes": "All 13 ledger lines refer to the identical site: the extracellular N-terminus of NPR2 after signal-peptide cleavage (after residue 22). No ledger line supports any internal-loop, inter-domain, or C-terminal insertion. L5 and L6 report FLAG (DYKDDDDK) and PA (GVAMPGAEDDVV) tags placed at the same N-terminal position; these failed specific detection by western blot and immunofluorescence (L6), but the failure is attributed to antibody/tag-recognition issues rather than misfolding or loss of trafficking \u2014 the protein is still expressed at the expected molecular weight. Because the failure is a detection failure at the same position (not a distinct site, and not explicitly described as function-abrogating), these are not promoted to other_positions. The HA-tagged construct is the validated surface-displayed version and is the sole site the ledger supports.",
+  "literature_rejected": []
+}

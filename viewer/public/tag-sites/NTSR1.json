@@ -37,7 +37,83 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NTSR1-terminal_n-0-lit",
+      "gene_symbol": "NTSR1",
+      "uniprot_acc": "P30989",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK + GTELGS linker)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression level comparison by anti-FLAG detection on intact cells; agonist-stimulated functional assays not reported in this clip.",
+      "confidence": "high",
+      "rationale": "NTSR1 lacks a signal peptide; the topology landmarks place EC1 at residues 1\u201367, making the N-terminus the sole extracellular terminus. L7 explicitly reports a FLAG epitope prepended before M1 via a GTELGS linker in a full-length, membrane-anchored construct used for surface expression comparisons. insert_after_residue=0 (prepend); residue_after=M (residue 1, confirmed from sequence). The 67-residue EC1 provides ample space for a short epitope tag well clear of TM1 (\u226567 residues from the TM boundary). Full-length human NTSR1 was N-terminally tagged with a FLAG epitope via linker (MDYKDDDDKGTELGS) and cloned into pcDNA3.1 for surface expression level comparisons in transfected cells. NTSR1 has no signal peptide (EC1 = residues 1\u201367), so the N-terminus is extracellular and the prepended tag is surface-displayed. Exactly one extracellular terminus exists (the N-terminus); the junction is topology-derived.",
+      "sources": [
+        {
+          "pmid": 36368322,
+          "citation": "PMID 36368322",
+          "claim": "Specifically, NTSR1 was tagged with an N-terminal FLAG epitope through a linker (M DYKDDDDK GTELGS; the FLAG epitope is underlined) and inserted into the pcDNA3.1 vector. \u03b22AR and \u03bcOR were N-terminally modified with an HA signal sequence followed by a flag epitope then a flexible linker (MKTIIALSYIFCLVFA DYKDDDDK GGSGGGGSGGSSSGGG; the FLAG epitope is underlined) and inserted into the pCAGGS vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:21:59.395097+00:00",
+  "literature_notes": "All other ledger lines (L1, L2, L3, L4, L5, L6, L8, L9, L10) describe C-terminal fusions (mNeonGreen, mRuby3, RlucII, Venus-YFP, Rluc8, FLAG, GFP) appended after Y418. The authoritative topology places IC4 at residues 365\u2013418 (intracellular C-tail), so every C-terminal tag is on the cytoplasmic face and does not qualify as a surface tag site. These are recorded in other_positions. No ledger line reports a tag insertion in any extracellular loop (EC2 124\u2013142, EC3 207\u2013232, EC4 326\u2013343) of NTSR1 or a close ortholog, so no internal loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 418,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "NTSR1-Venus (C-terminal Venus-YFP fusion after Y418) expressed in HEK293 cells and knock-in mice; Gq activation EC50 indistinguishable from WT NTSR1 (NT: 1.08 nM vs 1.65 nM), confirming functional tolerance, but the C-tail is intracellular (IC4, residues 365\u2013418) and not a surface-tag site."
+    },
+    {
+      "residue": 418,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "NTSR1-mNeonGreen (C-terminal mNeonGreen fusion after Y418) expressed in HEK293T FlpIn cells for live-cell FLIM imaging; surface receptor confirmed by imaging but tag is on the intracellular C-terminus."
+    },
+    {
+      "residue": 418,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "NTSR1-RlucII (C-terminal RlucII fusion after Y418) expressed in HEK293 cells for ebBRET internalization assay; functional surface receptor confirmed but tag is intracellular."
+    },
+    {
+      "residue": 418,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "NTSR1-Rluc8 (C-terminal Rluc8 fusion after Y418) expressed in HEK293 cells for BRET saturation and internalization assays; tag is on the intracellular C-terminus."
+    },
+    {
+      "residue": 418,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "NTSR1-FLAG (C-terminal FLAG after Y418) overexpressed in HEK293T and HT29-KD cells; detected by anti-FLAG western blot of total cell lysate; tag is intracellular."
+    }
+  ]
 }

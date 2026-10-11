@@ -153,5 +153,26 @@
       "canonical_residue": 177,
       "left_pct": 80.0524934383202
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:06:13.077399+00:00",
+  "literature_notes": "CD151 is a tetraspanin with a type III topology: both the N-terminus (residues 1\u201317) and the C-terminus (residues 243\u2013253) are intracellular. The only extracellular-facing regions are the small extracellular loop (SEL, residues 44\u201358) and the large extracellular loop (LEL, residues 114\u2013221), neither of which is a terminus. All five ledger lines (L1\u2013L5) describe GFP-tagged CD151 expressed in BJAB cells, but none qualifies as a surface tag site for the following reasons: (1) No ledger line names a residue, junction, or loop in an extracellular span as the GFP insertion point. (2) The flow-cytometry readouts in L1\u2013L3 and L5 confirm CD151 surface expression via anti-CD151 antibody, not GFP surface display \u2014 GFP fluorescence and anti-GFP nanobody pulldown (L2) are both compatible with an intracellular GFP tag. (3) L4 describes commercial GenScript plasmids with N- and C-terminally tagged CD151; this is excluded by the rule against commercial plasmids with unstated tag positions, and in any case both termini of CD151 are intracellular. (4) The 'topology_derived' rule requires exactly one extracellular terminus; CD151 has zero extracellular termini, so it cannot be applied. The GFP tag in L1\u2013L3 and L5 is most plausibly at the intracellular C-terminus (standard practice for tetraspanins), recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 253,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "L4 explicitly mentions C-terminally tagged CD151 purchased from GenScript; the C-terminus (residues 243\u2013253) is intracellular per topology landmarks, so any tag appended after residue 253 faces the cytoplasm, not the extracellular space."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "L4 also mentions N-terminally tagged CD151; the N-terminus (residues 1\u201317) is intracellular per topology landmarks, so a tag prepended before residue 1 also faces the cytoplasm."
+    }
   ]
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC10A",
+  "uniprot_acc": "Q8IUN9",
+  "sites": [
+    {
+      "site_id": "CLEC10A-internal-None-lit",
+      "gene_symbol": "CLEC10A",
+      "uniprot_acc": "Q8IUN9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "N-terminal end of CRD (stalk-CRD junction)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "myc + (G4S)3 linker",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry with anti-myc antibody: 96% surface expression, comparable to anti-CD301 antibody detection. Binding properties of the CRD were investigated (L1 states the experiment was designed to assess impact on binding), but the quantitative binding result is not stated in the ledger clips.",
+      "confidence": "medium",
+      "rationale": "All three ledger lines (L1\u2013L3) describe the same CD301-linker-myc CAR construct, in which the CLEC10A CRD is used as the extracellular antigen-binding domain of a membrane-anchored CAR, with a myc-tag placed immediately N-terminal to the CRD. This qualifies because the CAR is membrane-anchored (not a soluble ectodomain) and the CRD is the same domain of CLEC10A. For native CLEC10A (type II TM, extracellular domain 58\u2013316), the N-terminal end of the CRD lies well within the extracellular span, far from the TM boundary (TM ends at residue 57). No specific residue number is given in any ledger clip, so insert_after_residue is null and the site is region-level; the position is inferred from the named domain boundary ('5'-end of the CD301 CRD'), not chosen independently. PMC10457195 describes a full-length membrane-anchored CAR construct (CD301-linker-myc) in which a (G4S)3 glycine-serine linker and a myc-tag were inserted at the 5'-end (N-terminal end) of the CLEC10A CRD, placed in the extracellular region of the CAR. Anti-myc flow cytometry confirmed surface accessibility at 96% efficiency, comparable to anti-CD301 antibody staining.",
+      "sources": [
+        {
+          "pmid": 36529796,
+          "citation": "PMID 36529796",
+          "claim": "The use of an anti-myc antibody revealed a comparable expression level (96%) of the CD301-linker-myc construct as we observed with the anti-CD301 antibody (Fig. 1D )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:46:09.502664+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) originate from the same paper (PMC10457195) and describe a single construct: a chimeric antigen receptor (CAR) in which the CLEC10A CRD serves as the extracellular binding domain, with a (G4S)3 linker and myc-tag inserted at the N-terminal end of the CRD. The construct is membrane-anchored and surface expression is confirmed at 96% by flow cytometry. Because the CAR is not native full-length CLEC10A (it uses a different TM and intracellular domain), and because no specific residue number is given in any clip, the site is classified as region-level and inferred. No ledger line names a specific residue junction, so insert_after_residue is null. No intracellular, function-abrogating, or other disqualifying positions are mentioned in the ledger.",
+  "literature_rejected": []
+}

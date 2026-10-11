@@ -817,5 +817,20 @@
       "canonical_residue": 466,
       "left_pct": 91.37254901960785
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:30:05.031191+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a full-length mouse Entpd1\u2013EGFP C-terminal fusion used in ADCC assays. Per the authoritative topology, ENTPD1 residues 500\u2013510 are INTRACELLULAR (the protein has two TM helices: TM1 17\u201337 and TM2 478\u2013499, with a large ectodomain between them and both termini cytoplasmic). The C-terminal EGFP therefore sits on the cytoplasmic face and does not qualify as an extracellular surface tag site. The N-terminus (residues 1\u201316) is also intracellular, so there is no extracellular terminus available. No ledger line reports any tag insertion in the large ectodomain (38\u2013477) \u2014 no internal loop tag, no fluorescent-protein fusion at an extracellular position, no transposon/domain-insertion screen result. Because the ledger contains no evidence of a tolerated insertion on the extracellular face, zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 510,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length mouse Entpd1 (CD39)\u2013EGFP C-terminal fusion expressed in CHO cells; the C-terminus (residues 500\u2013510) is intracellular per the authoritative two-TM topology, so the tag faces the cytoplasm, not the cell surface."
+    }
   ]
 }

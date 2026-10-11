@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ENG",
+  "uniprot_acc": "P17813",
+  "sites": [
+    {
+      "site_id": "ENG-terminal_n-25-lit",
+      "gene_symbol": "ENG",
+      "uniprot_acc": "P17813",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Patch/FRAP assay: HA- and myc-tagged ENG co-expressed at COS7 cell surface; lateral diffusion and homo-oligomerization measured and reported as functional \u2014 tagged receptors participated normally in oligomerization studies.",
+      "confidence": "high",
+      "rationale": "ENG (UniProt P17813) is a type I single-pass transmembrane protein: signal peptide residues 1\u201325, large ectodomain 26\u2013591, TM 592\u2013614, intracellular tail 615\u2013658. The tag is described as extracellular in all three ledger lines; the only extracellular terminus is the mature N-terminus beginning at residue 26. Therefore insert_after_residue = 25 (last residue of the signal peptide, A), placing the tag immediately before E26 \u2014 the canonical topology-derived junction. Python verification confirms seq[24]='A' and seq[25]='E'. L2 (PMC10799020) and L3 (PMC8916587) independently corroborate the same construct and position. Full-length ENG carrying HA or myc epitope tags was expressed at the surface of COS7 cells; patch/FRAP experiments confirmed surface display and were used to study ENG homo-oligomerization. The tag is described as extracellular; ENG is a type I TM protein with a single extracellular terminus (mature N-terminus, residue 26) and a single intracellular C-terminus \u2014 no residue number is stated in the paper.",
+      "sources": [
+        {
+          "pmid": 26157163,
+          "citation": "PMID 26157163",
+          "claim": "To study endoglin homo-oligomerization, we coexpressed hemagglutinin (HA)- or myc-tagged endoglin at the surface of COS7 cells and conducted patch/FRAP studies on the tagged receptors."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:28:04.961045+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe HA- or myc-tagged full-length ENG with an extracellular tag but none specifies an insertion residue number. ENG has exactly one extracellular terminus (mature N-terminus, residue 26), making the topology-derived junction unambiguous: insert_after_residue = 25. L1 was chosen as the primary supporting clip because it provides the highest validation level (surface display by patch/FRAP + oligomerization function measured). L2 (PMC10799020) explicitly uses the phrase 'extracellular epitope tag' and confirms the same surface-and-function level; L3 (PMC8916587) confirms expression of HA-tagged ENG in HEK293 cells but the clip does not state surface display or functional outcome. The missense variants P165L and V105D mentioned in L3 are disease-associated substitutions used as experimental comparators, not tag insertion sites, and are not promoted to sites. No ledger line names an internal loop insertion or a C-terminal (intracellular) tag for ENG.",
+  "literature_rejected": []
+}

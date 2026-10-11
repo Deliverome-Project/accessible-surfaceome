@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "IGLON5",
+  "uniprot_acc": "A6NGN9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:10:37.529785+00:00",
+  "literature_notes": "Two ledger lines were evaluated, both from PMC13170660. L1 describes a myc-tag that is 'co-expressed' as a separate transfection efficiency control alongside the untagged IgLON5 construct \u2014 the myc is on a different protein, not inserted into IgLON5, so no tag insertion into IgLON5 is reported. L2 references a commercial OriGene plasmid (#225495) described as 'Myc-DKK-tagged human IgLON5', but the tag position (junction residue) is entirely unstated in the ledger; the explicit exclusion rule disqualifies commercial plasmids with unstated tag positions because insert_after_residue cannot be pinned. IgLON5 is a GPI-anchored protein (topology: signal peptide 1\u201330, fully extracellular 31\u2013336, no TM or intracellular residues), so in principle an N-terminal tag after the signal peptide cleavage site (after residue 30) would be the natural surface-accessible junction, but no ledger line supports this with a stated position. Zero sites qualify.",
+  "literature_rejected": []
+}

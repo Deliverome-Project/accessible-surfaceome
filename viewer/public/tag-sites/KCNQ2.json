@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNQ2",
+  "uniprot_acc": "O43526",
+  "sites": [
+    {
+      "site_id": "KCNQ2-internal-None-lit",
+      "gene_symbol": "KCNQ2",
+      "uniprot_acc": "O43526",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "S1-S2 loop (EC1, residues 114-127)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression detected by chemiluminescence in Xenopus oocytes; the HA-tagged construct served as the reference for quantifying surface levels of multiple Kv7.2 variants. Electrophysiological function of the tagged channel was not explicitly reported in these clips.",
+      "confidence": "medium",
+      "rationale": "L3, L4, and L5 all explicitly state that the HA tag is located in the extracellular S1-S2 loop of full-length, membrane-anchored Kv7.2 expressed in Xenopus oocytes, and that surface expression was successfully measured by chemiluminescence. The topology landmarks place EC1 at residues 114-127 (14 aa); the central portion (positions 116-125, sequence KEYEKSSEGA) is \u22653 residues from both TM1 (ends at 113) and TM2 (starts at 128), satisfying the TM-distance constraint. No specific junction residue is named in any of the three clips, so insert_after_residue is left null and the site is reported at loop resolution. The loop length (14 aa) is sufficient to accommodate a short epitope tag. Full-length Kv7.2 (KCNQ2) expressed in Xenopus oocytes with an HA epitope tag inserted in the extracellular S1-S2 loop (EC1, residues 114-127 by topology landmarks). Surface expression was quantified by whole-oocyte chemiluminescence assay across multiple C-terminal deletion constructs.",
+      "sources": [
+        {
+          "pmid": 23115641,
+          "citation": "PMID 23115641",
+          "claim": "A systematic evaluation of Kv7.2 C-terminal deletion constructs in Xenopus oocytes revealed a remarkable effect of the linker between helices A and B on surface expression ( Fig. 1A ), which could be measured using an extracellular HA epitope tag located between S1\u2013S2 [10] , [11] ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:55:37.812871+00:00",
+  "literature_notes": "L1 (EGFP-Kv7.2-HA): Both the N-terminal EGFP and C-terminal HA are on the intracellular face \u2014 the KCNQ2 N-terminus (residues 1-92) and C-terminus (residues 312-872) are both intracellular per topology landmarks. Placed in other_positions. L2 (mCFP N-terminal): intracellular N-terminus, same reasoning. L6/L7 (5xMyc N-terminal): intracellular; L7 confirms function preserved but the tag is not on the extracellular face. Placed in other_positions. L8/L9 (FLAG knockin): The clips provide only the CRISPR guide RNA sequence (DNA), not the protein position of the FLAG insertion; the protein junction cannot be pinned from the ledger text, so no site can be proposed. L10-L14 (Halo-TAC-KCNQ2): The HaloTag is displayed extracellularly via a heterologous TAC single-pass TM domain fused upstream of KCNQ2 \u2014 it is not inserted into any extracellular loop or terminus of KCNQ2 itself. The KCNQ2 N-terminus remains intracellular. This construct does not constitute a tag on KCNQ2's own extracellular surface and does not qualify. L15/L16 (C-terminal 3xFLAG): intracellular C-terminus. Placed in other_positions. The S3-S4 loop (EC2, residues 186-190, only 5 aa) and the pore loop (EC3, residues 253-292) have no ledger support for any tag insertion and are not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "N-terminal 5xMyc tag on full-length Kv7.2 expressed in Xenopus oocytes; electrophysiological properties indistinguishable from untagged (L7), but the N-terminus (residues 1-92) is intracellular and not a surface tag site."
+    },
+    {
+      "residue": 872,
+      "kind": "intracellular",
+      "supporting_clip_id": "L15",
+      "note": "C-terminal 3xFLAG tag on mKcnq2; the C-terminus (residues 312-872) is intracellular and not a surface tag site."
+    }
+  ]
+}

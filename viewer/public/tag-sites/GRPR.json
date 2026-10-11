@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:49:55.261857+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminal fluorescent-protein or luciferase tags (mApple, RLuc8, NanoBiT) fused to full-length GRPR. GRPR is a class A GPCR whose C-terminus (residues 325\u2013384) is intracellular, lying after TM7 (302\u2013324). A tag appended after residue 384 therefore faces the cytoplasm, not the extracellular space. No ledger line describes any insertion at the extracellular N-terminus (1\u201340), ECL1 (100\u2013114), ECL2 (179\u2013208), or ECL3 (287\u2013301). Because the ledger contains zero evidence of a tolerated extracellular tag insertion on GRPR, no surface sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 384,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mApple/RLuc8/NanoBiT tag appended after the last residue (V384) of the intracellular C-tail (325\u2013384); surface-expressed and functional (GRP-stimulated endosomal trafficking, BRET beta-arrestin recruitment confirmed in L2\u2013L4), but the tag faces the cytoplasm, not the extracellular space."
+    }
+  ]
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ROBO3",
+  "uniprot_acc": "Q96MS0",
+  "sites": [
+    {
+      "site_id": "ROBO3-terminal_n-20-lit",
+      "gene_symbol": "ROBO3",
+      "uniprot_acc": "Q96MS0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA / 4xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection by anti-HA antibody staining confirmed in transfected cells (S2R+ and other cell lines); tagged Robo3 and Robo3\u0394Ig1 showed similar expression levels and surface presence. Slit-conditioned media treatment was applied to HA-tagged Robo3 transfectants (L14), but explicit quantitative functional outcome for the tag itself is NOT MEASURED in the cited clips.",
+      "confidence": "high",
+      "rationale": "All fourteen ledger clips describe N-terminal HA tags (3\u00d7 or 4\u00d7) placed immediately after the signal-peptide cleavage site of Drosophila or mouse Robo3 orthologs in full-length, membrane-anchored constructs; surface display is confirmed by anti-HA staining in multiple independent studies. Human ROBO3 has exactly one extracellular terminus (the mature N-terminus at G21, after signal peptide 1\u201320), so the tag junction is unambiguously insert_after_residue=20, with residue_before=A (position 20) and residue_after=G (position 21), both read directly from the numbered sequence. The position is topology-derived rather than validated because no ledger clip names human residue 20 or 21 explicitly; the closest named ortholog residues are DmRobo3 H21 (L1/L2/L4) and MmRobo3.1 P64 (L3). The tag site is 871 residues from the TM boundary, satisfying all distance constraints. Mouse Robo3.1 (NP_001158239.1) and Robo3.2 (EDL25431.1) full-length constructs carrying an N-terminal HA tag were expressed in Drosophila S2R+ cells and detected at the cell surface; the mature protein begins at P64 (Robo3.1) or P42 (Robo3.2) immediately after the HA tag. Multiple additional clips (L1, L2, L4\u2013L14) confirm the same N-terminal HA-tag architecture on Drosophila Robo3 and mouse Robo3 orthologs, all full-length and membrane-anchored. Human ROBO3 has a single-pass type-I topology with signal peptide 1\u201320 and a large extracellular domain beginning at G21; the N-terminus is the only extracellular terminus, so the tag position is derived from the topology landmarks.",
+      "sources": [
+        {
+          "pmid": 40609949,
+          "citation": "PMID 40609949",
+          "claim": "Mouse robo constructs include the following amino acid residues after the N-terminal HA tag, relative to the indicated Genbank reference sequences: mRobo1 ( XP_006523028.1 , P29\u2013S1615); mRobo2 ( NP_780758.3 , P31\u2013E1508); mRobo3.1 ( NP_001158239.1 , P64\u2013R1402); mRobo3.2 ( EDL25431.1 , P42\u2013K1345)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:02:49.270813+00:00",
+  "literature_notes": "All fourteen ledger clips converge on a single architectural motif: an N-terminal HA tag (3\u00d7 or 4\u00d7) placed after the signal-peptide cleavage site of full-length, membrane-anchored Robo3 (Drosophila or mouse orthologs). No clip describes an internal loop insertion, a C-terminal extracellular tag, or any tag on the human ROBO3 protein specifically. The Drosophila Robo3\u0394Ig1 construct (L1/L2) begins at DmRobo3 L119 after the HA tag, but this reflects deletion of Ig1, not an insertion into an internal loop \u2014 it does not qualify as evidence for an internal site. The cytodomain-deletion construct (L4, H21\u2013S900) similarly reflects a C-terminal truncation, not an internal tag. No ledger clip supports any internal extracellular loop insertion for ROBO3 or a close ortholog. The single site reported is the N-terminal prepend after signal-peptide cleavage, which is the only extracellular terminus and is robustly supported across multiple independent publications.",
+  "literature_rejected": []
+}

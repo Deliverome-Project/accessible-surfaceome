@@ -52,5 +52,12 @@
       "left_pct": 0.26595744680851063,
       "note": "Isoform surface expr 136 (-65% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:02:41.117407+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) derive from the same publication (PMC9774254) and describe chimeric CCR8 constructs in which CCR3 extracellular segments (N-term aa 1\u201338, ECL1 aa 96\u2013111, ECL2 aa 176\u2013207, ECL3 aa 269\u2013285) were domain-swapped into CCR8. The RAP and MAP detection tags are placed at the C-terminus of the chimeric CCR8 backbone, which is intracellular for a GPCR \u2014 not on the extracellular face of CCR3. The experimental purpose is antibody epitope mapping of CCR3 extracellular domains, a modality explicitly excluded by the rules ('ANTIBODY EPITOPE MAPPING \u2014 where an antibody binds is not where a tag was inserted'). No epitope-tag knock-in, fluorescent-protein fusion, transposon/domain-insertion screen, or surface-tag insertion at any specific CCR3 residue is reported in either line. Accordingly, zero sites qualify.",
+  "literature_rejected": []
 }

@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "CDHR5",
+  "uniprot_acc": "Q9HBB8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:31:41.209988+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe the same experimental modality: full-length CDHR5-S and CDHR5-L expressed as C-terminally tagged EGFP-fusion proteins in LLC-PK1-CL4 cells. CDHR5 is a type I single-pass transmembrane protein: the large ectodomain occupies residues 26\u2013668 (extracellular), the TM spans 669\u2013690, and the C-terminal tail occupies 691\u2013845 (intracellular). A C-terminal EGFP fusion therefore sits on the INTRACELLULAR face and does not qualify as an extracellular surface tag site. No ledger line mentions an N-terminal tag, an internal extracellular loop insertion, a FLAG/HA/Myc/ALFA/V5 tag, a HaloTag/SNAP-tag, a transposon screen, or any other modality that would ground an extracellular site. L5 explicitly flags that C-terminal tagging of CDHR5-L likely disrupts its PDZ-binding motif (PBM), and L6 reports that an untagged control was required to verify apical targeting. Because no ledger line supports an insertion on the extracellular face, sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 845,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion (after residue 845) is on the intracellular face; construct traffics correctly to the apical brush border but L5 notes it likely disrupts the PDZ-binding motif of the CDHR5-L isoform."
+    },
+    {
+      "residue": 845,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal EGFP tagging of CDHR5-L was assessed to likely disrupt PBM function because a canonical PDZ-binding motif requires a free C-terminal hydroxyl group; an untagged control (L6) was needed to confirm apical targeting was unaffected."
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "LILRB5",
+  "uniprot_acc": "O75023",
+  "sites": [
+    {
+      "site_id": "LILRB5-terminal_n-23-lit",
+      "gene_symbol": "LILRB5",
+      "uniprot_acc": "O75023",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK) + GGGGS linker",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-FLAG antibody staining (L3, PMC4476610). Ligand-binding function preserved: 293T cells expressing FLAG-tagged full-length LILRB5 showed FLAG+/FLAG\u2212 ratios of 18.03, 9.05, 1.79, and 2.82 upon incubation with EphA4, EphA7, EphA2, and EphB1 respectively, versus 1.23 for control (L7, PMC12137008).",
+      "confidence": "high",
+      "rationale": "L6 names the junction precisely as 'immediately after the signal peptide'; the topology landmarks fix the signal peptide at residues 1\u201323, so insert_after_residue = 23 is fully determined without any inference. Python verification confirms residue 23 = A and residue 24 = G. The mature N-terminus (G24) is the first residue of the 433-residue extracellular domain, placing the tag far from the TM boundary (>430 residues). L7 provides the strongest functional validation: ligand binding to multiple Eph receptors is preserved in the tagged construct, satisfying the surface_and_function criterion. L6 (PMC12137008) explicitly states FLAG (DYKDDDDK) was inserted 'immediately after the signal peptide, followed by a linker (GGGGS)' in a full-length LILRB5 construct expressed in 293T cells. The signal peptide spans residues 1\u201323 (topology landmarks), placing the junction unambiguously between A23 and G24. L8 (PMC13282697) and L9 (PMC12615798) independently describe the same design ('N-terminal Flag tag after the signal peptide') in lentiviral and truncation-series constructs. L3 (PMC4476610) confirms surface display by anti-FLAG staining.",
+      "sources": [
+        {
+          "pmid": 40145984,
+          "citation": "PMID 40145984",
+          "claim": "FLAG containing plasmids was constructed by inserting FLAG (DYKDDDDK) immediately after the signal peptide, followed by a linker (GGGGS), which is connected to the coding region of LILRB5, EphA7, and EphB1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 23,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:10:30.364177+00:00",
+  "literature_notes": "All nine ledger lines (L1\u2013L9) converge on a single extracellular tag site: an N-terminal FLAG inserted after the signal peptide of full-length, membrane-anchored LILRB5. L6 is the most explicit about the junction; L7 provides functional validation; L3 confirms surface display; L8 and L9 provide independent replication of the same design. No ledger line reports an internal loop insertion in LILRB5 or a close ortholog at a named residue. L9 describes domain-deletion (truncation) constructs, not internal tag insertions, and therefore does not ground any internal site. The C-terminal eGFP fusion (L1, L2, L4, L5) is recorded in other_positions because residue 590 is intracellular (topology: 480\u2013590). No ledger line reports a tag insertion that abrogates LILRB5 function.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 590,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal eGFP fusion reported in full-length LILRB5 constructs (PMC4476610); residue 590 lies in the intracellular domain (480\u2013590) and is not accessible for extracellular surface tagging."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNE2",
+  "uniprot_acc": "Q9Y6J6",
+  "sites": [
+    {
+      "site_id": "KCNE2-terminal_n-0-lit",
+      "gene_symbol": "KCNE2",
+      "uniprot_acc": "Q9Y6J6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface labeling and confocal immunofluorescence confirmed cell-surface display of FLAG-KCNE2; no channel-function assay (e.g. electrophysiology of KCNE2-containing complex) is reported in the cited ledger lines.",
+      "confidence": "high",
+      "rationale": "KCNE2 is a single-pass type I membrane protein with no signal peptide; the raw topology string begins with 'O' at residue 1, making the N-terminus the only extracellular terminus. Because no residue number is given in any ledger line, the junction is topology-derived: insert_after_residue=0 places the tag before M1 (residue_after='M'). L4 independently confirms surface display of the FLAG-tagged construct by surface labeling and confocal IF, elevating validation to surface_only. Multiple independent N-terminal tag constructs (HA in L1, L5, L6; 3xFLAG in L3) across different labs corroborate that this terminus tolerates short epitope tags without disrupting trafficking. Full-length KCNE2 cloned with an N-terminal 3xFLAG tag into p3XFLAG-CMV-10 (FLAG-KCNE2); surface labeling and confocal immunofluorescence in transfected cells confirmed cell-surface display of the tagged protein (L3, L4). Independent N-terminal HA-tagged constructs (HA-E2) in pcDNA3.1(+) were reported in two additional studies (L1; L5/L6), all full-length membrane-anchored protein. No residue number is stated in any ledger line; KCNE2 has no signal peptide (topology begins O at residue 1), so the N-terminus is the sole extracellular terminus and the tag prepends before M1.",
+      "sources": [
+        {
+          "pmid": 17895974,
+          "citation": "PMID 17895974",
+          "claim": "The PCR product was cloned into pCR\u00ae-Blunt II-TOPO\u00ae vector (Invitrogen) and then subcloned into the EcoR1-BamH1 sites of p3XFLAG-CMV-10 vector (Sigma) resulting in a cDNA with N-terminal FLAG tag identical to the KCNE1 construct."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:39:38.560904+00:00",
+  "literature_notes": "L1 (HA-E2) and L5/L6 (HA-KCNE2 in CHO cells) corroborate the same N-terminal prepend junction as L3; they are the same site and L3+L4 provide the strongest evidence (surface labeling confirmed), so L3 is cited as the primary supporting clip. L2 (KCNE2-EGFP C-terminal fusion) is excluded from sites because the C-terminus falls in the intracellular domain (residues 70-123 per authoritative landmarks) and is therefore not a surface tag site; it is recorded in other_positions. No ledger line supports any internal extracellular loop insertion for KCNE2.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 123,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "KCNE2-EGFP C-terminal fusion: EGFP is fused after the last residue (P123), which lies in the intracellular domain (residues 70-123); not accessible on the extracellular face."
+    }
+  ]
+}

@@ -1226,5 +1226,20 @@
       "canonical_residue": 93,
       "left_pct": 6.744017403915881
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:44:11.090509+00:00",
+  "literature_notes": "All seven ledger lines concern two tagging experiments on MET, neither of which grounds an extracellular surface site. L1\u2013L4 (PMC7753144) report mEos4b fused C-terminally to endogenous MET (MET-mEos4b). MET is a single-pass type-I receptor: its C-terminus (residue 1390) lies in the intracellular domain (IC: 956\u20131390), so this fusion is cytoplasmic and does not qualify as an extracellular tag site. L5\u2013L7 (PMC10810970) report c-MET-HiBiT in HeLa cells with confirmed HGF-stimulated phosphorylation, but no ledger clip names the residue or even the terminus at which HiBiT was inserted. MET has exactly one extracellular terminus (mature N-terminus, residue 25) and one intracellular terminus (residue 1390); the topology-derived rule requires that the paper's construct places the tag at a terminus AND that only one terminus is extracellular \u2014 but because the clips are silent on which terminus (or whether the tag is internal), the position cannot be topology-derived without guessing. Applying the rule 'doubt the evidence \u2192 drop the site', no extracellular surface site is proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1390,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mEos4b fused C-terminally to endogenous MET by PCR tagging/CRISPR; residue 1390 (S) is the last residue of the intracellular kinase domain (IC span 956\u20131390), so the fusion is cytoplasmic."
+    }
   ]
 }

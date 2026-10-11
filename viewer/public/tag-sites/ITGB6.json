@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ITGB6",
+  "uniprot_acc": "P18564",
+  "sites": [
+    {
+      "site_id": "ITGB6-terminal_n-21-lit",
+      "gene_symbol": "ITGB6",
+      "uniprot_acc": "P18564",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "RGD cluster nucleation confirmed at 15 and 60 min; live-cell adhesion assembly and dissociation from RGD clusters observed \u2014 integrin ligand-binding and adhesion dynamics preserved.",
+      "confidence": "medium",
+      "rationale": "ITGB6 is a Type I transmembrane protein with a single extracellular N-terminus (mature residue 22) and an intracellular C-terminus; an EGFP tag confirmed on the cell surface can only reside at the N-terminal position after signal-peptide cleavage. Python lookup confirms residue 21 = G (last SP residue) and residue 22 = G (first mature extracellular residue), placing the junction at insert_after_residue = 21. The ectodomain is 688 residues from the junction to the TM boundary, far exceeding the \u22653-residue clearance requirement. RGD cluster nucleation and adhesion assembly in live cells constitute a functional readout of integrin\u2013ligand engagement. Full-length EGFP-tagged integrin \u03b26 expressed in CHO-B2 cells; surface display confirmed by RGD cluster nucleation at 15 and 60 min (L2) and live-cell imaging of adhesion assembly and dissociation from RGD clusters (L3). ITGB6 is a Type I single-pass protein (extracellular 22\u2013709, TM 710\u2013730, intracellular 731\u2013788); the only extracellular terminus is the mature N-terminus after SP cleavage at residue 21.",
+      "sources": [
+        {
+          "pmid": 40492509,
+          "citation": "PMID 40492509",
+          "claim": "A) EGFP\u2010tagged integrin \u03b26, \u03b25, and \u03b23 expressed in CHO\u2010B2 cells nucleate RGD clusters in 15 and 60\u2010min."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:31:01.626084+00:00",
+  "literature_notes": "L1 (PMC8932414) was examined and disqualified: the construct spans aa22\u2013709 only (the ectodomain), with a C-terminal coiled coil replacing the TM domain; it is a soluble ectodomain reagent, not a membrane-anchored full-length protein, and therefore does not qualify per the rules. L2 and L3 both report the same EGFP-tagged \u03b26 construct in CHO-B2 cells; L2 is cited as the primary supporting clip, with L3 providing corroborating live-cell functional evidence. No residue or loop is named in either L2 or L3, but because ITGB6 is a Type I single-pass protein with exactly one extracellular terminus (the mature N-terminus after SP cleavage), the position is unambiguously topology-derived at insert_after_residue = 21. Confidence is medium rather than high because no residue is explicitly named in the source papers.",
+  "literature_rejected": []
+}

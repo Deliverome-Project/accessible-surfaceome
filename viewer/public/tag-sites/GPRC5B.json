@@ -52,5 +52,26 @@
       "left_pct": 7.1782178217821775,
       "note": "Isoform surface expr 6260 (+1% vs canonical)"
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:41:32.576976+00:00",
+  "literature_notes": "All three ledger lines describe C-terminal constructs. L1 and L2 report 'GPRC5B-HA', a standard gene-name-tag naming convention universally indicating a C-terminal HA tag. L3 reports 'GPRC5B-RLuc' and 'GPRC5B-YFP', again C-terminal fusions used in a BRET homo-oligomerization assay. The GPRC5B C-terminus (residue 403, W) lies within IC4 (residues 293\u2013403), which is the long intracellular C-tail following TM7 (272\u2013292). All three tags are therefore on the cytoplasmic face and do not qualify as extracellular surface tag sites. No ledger line names a residue, loop, or junction on the extracellular face of GPRC5B, nor does any line describe an N-terminal tag (which would be written 'HA-GPRC5B'), an internal insertion, or a tag in any of the four extracellular loops/domains (EC1 29\u201356, EC2 114\u2013126, EC3 183\u2013199, EC4 254\u2013271). The mature N-terminus begins at residue 29 (E) after signal-peptide cleavage at residue 28 (S), and EC1 is 28 residues long \u2014 a plausible surface site topologically \u2014 but no ledger line supports a tag there. Zero qualifying extracellular sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 403,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GPRC5B-HA C-terminal HA tag expressed in Flp-In T-REx HEK293 cells; residue 403 (W) is in IC4 (293\u2013403), the cytoplasmic C-tail after TM7."
+    },
+    {
+      "residue": 403,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "GPRC5B-RLuc and GPRC5B-YFP C-terminal fusions used in BRET assay; both fusions are at the intracellular C-terminus (residue 403, IC4 293\u2013403)."
+    }
   ]
 }

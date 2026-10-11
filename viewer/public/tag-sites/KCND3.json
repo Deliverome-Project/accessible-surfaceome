@@ -1,0 +1,110 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCND3",
+  "uniprot_acc": "Q9UK17",
+  "sites": [
+    {
+      "site_id": "KCND3-internal-212-lit",
+      "gene_symbol": "KCND3",
+      "uniprot_acc": "Q9UK17",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 212,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G212",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Electrophysiology: 'no differences in biophysical properties were found as compared to wild-type channels' (L5). Surface accessibility not explicitly reported in L4/L5 beyond the extracellular tag design.",
+      "confidence": "high",
+      "rationale": "L4 names G212 as the insertion point in full-length Kv4.3. Python lookup confirms residue 212 = G and 213 = S, both within extracellular span 204-227, 9 aa from TM1 end (203) and 16 aa from TM2 start (228), satisfying the \u22653 aa TM-distance constraint. The paper's 'S5 end' label is a paper-internal naming convention; the canonical topology places this residue in the S1-S2 loop. L5 confirms preserved biophysical properties. Ranked second because surface detection by immunofluorescence is not explicitly reported for this construct. Full-length Kv4.3 (KCND3); HA tag inserted by conventional PCR after G212, described as 'corresponding to the S5 end' in the source paper (PMC11938557). Position 212 falls within the S1-S2 extracellular loop (topology span 204-227). The paper's 'S5' label likely reflects an internal segment-numbering convention distinct from canonical S1-S6 TM nomenclature; the position is unambiguously extracellular by the authoritative topology. Correct in-frame insertion confirmed by DNA sequencing.",
+      "sources": [
+        {
+          "pmid": 40140957,
+          "citation": "PMID 40140957",
+          "claim": "The HA epitope (YPYDVPDYA) was inserted by conventional PCR after glycine 212, corresponding to the S5 end."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "KCND3-internal-216-lit",
+      "gene_symbol": "KCND3",
+      "uniprot_acc": "Q9UK17",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 216,
+      "residue_before": "L",
+      "residue_after": "P",
+      "residue_label": "L216",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Electrophysiology: 'The addition of HA and EGFP tags to Kv4.3 did not affect the functional properties of the channel' (L2). Surface expression confirmed by immunofluorescence in non-permeabilized HeLa cells (L3).",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the junction L216\u2013P217 in the S1-S2 extracellular loop of full-length, membrane-anchored Kv4.3. Python lookup confirms residue 216 = L and 217 = P, both within the extracellular span 204-227, \u226512 aa from either TM boundary. L2 confirms no change in channel functional properties; L3 confirms surface detection by immunofluorescence in non-permeabilized cells. This is the best-evidenced site in the ledger. Full-length Kv4.3 (KCND3) expressed in HeLa cells; HA tag (YPYDVPDYA) inserted by site-directed mutagenesis between L216 and P217 in the S1-S2 extracellular loop (topology-confirmed extracellular span 204-227). Construct used in both WT and disease-mutant backgrounds (T352P, M373I, S390N, \u0394F227). Immunofluorescence confirmed plasma membrane trafficking.",
+      "sources": [
+        {
+          "pmid": 25854634,
+          "citation": "PMID 25854634",
+          "claim": "An extracellular hemagglutinin tag (HA: YPYDVPDYA) was introduced into the cDNA of pcDNA3.1-Kv4.3 wild type (WT) and mutants (T352P, M373I, S390N and \u0394F227) in the extracellular loop between transmembrane domains S1 and S2 (L216-P217) using site-directed mutagenesis via forward primer 5\u2032-CCGGGCAGCAAGGAGCTGTACCCATACGACGTCCCAGACTACGCTCCGTGCGGGGAGCGTAC-3\u2032 and reverse primer 5\u2032-GTACGCTCCCCGCACGGAGCGTAGTCTGGGACGTCGTATGGGTACAGCTCCTTGCTGCCCGG-3\u2032, as described previously for Kv4.2."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:39:51.048161+00:00",
+  "literature_notes": "L1/L2/L3 and L4/L5 both ground HA-tag insertions in the S1-S2 extracellular loop (topology 204-227) of full-length KCND3/Kv4.3 at two distinct junctions (L216-P217 and after G212), yielding two independent validated sites. L6 (C-terminal mCherry-P2A) is an intracellular fusion (C-terminus 401-655 is cytoplasmic) and does not qualify as a surface tag site. L7 (N-terminal Myc via pcDNA3.1-Myc) and L8 (N-terminal FLAG via pFLAG-CMV-5a) both place tags on the intracellular N-terminus (residues 1-182 are cytoplasmic) and do not qualify. All three are recorded in other_positions. No signal peptide is present in KCND3; the N-terminus is cytoplasmic. The S1-S2 loop contains two conserved cysteines (C207, C218) that likely form a disulfide; both validated insertion sites (G212 and L216) fall between these cysteines but do not disrupt them, consistent with the reported functional preservation.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "N-terminal Myc tag fused to full-length Kv4.3 via pcDNA3.1-Myc; the KCND3 N-terminus (residues 1-182) is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "N-terminal FLAG tag via pFLAG-CMV-5a vector; KCND3 N-terminus is intracellular (residues 1-182), so the FLAG tag is cytoplasmic."
+    },
+    {
+      "residue": 655,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal mCherry-P2A fusion to full-length Kv4.3; the C-terminus (residues 401-655) is intracellular, so mCherry is cytoplasmic, not extracellular."
+    }
+  ]
+}

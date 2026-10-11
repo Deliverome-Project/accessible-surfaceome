@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "EDA2R",
+  "uniprot_acc": "Q9HAV5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:23:06.753772+00:00",
+  "literature_notes": "All four ledger clips (L1\u2013L4) describe the identical construct: full-length human XEDAR/EDA2R with EGFP fused at the C-terminus (XEDAR-GFP). Per the authoritative topology landmarks, EDA2R is a Type I single-pass receptor: extracellular N-terminal domain residues 1\u2013139, TM 140\u2013160, intracellular C-tail 161\u2013297. The C-terminus (residue 297) therefore lies on the cytoplasmic face. The C-terminal GFP fusion is tolerated and functional (L2: construct responds to EDA-A2 ligand), but it is an intracellular tag, not an extracellular surface tag. No ledger line reports any insertion in the extracellular domain (residues 1\u2013139) or at the extracellular N-terminus. Because the ledger provides zero evidence for an extracellular tag on EDA2R, sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 297,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal EGFP fusion (XEDAR-GFP) is explicitly constructed at the C-terminus (residue 297), which is intracellular (topology residues 161\u2013297); the tagged construct is stably expressed and functionally responsive to EDA-A2 (L2), but the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

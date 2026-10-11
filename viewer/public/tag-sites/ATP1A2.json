@@ -4,6 +4,44 @@
   "uniprot_acc": "P50993",
   "sites": [
     {
+      "site_id": "ATP1A2-internal-None-lit",
+      "gene_symbol": "ATP1A2",
+      "uniprot_acc": "P50993",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "EC loop 1 (116-127)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Ouabain-resistance assay: alpha-1 constructs with HA at position 119 conferred ouabain resistance in transfected cells, indicating functional Na/K-ATPase activity was preserved. Surface detection confirmed by immunofluorescence of intact cells.",
+      "confidence": "medium",
+      "rationale": "The ledger (L1, L2) reports HA-tag insertion at alpha-1 position 119, which is in the first extracellular loop (between TM1 and TM2) of the Na/K-ATPase alpha subunit. ATP1A2 is a close paralog of ATP1A1 sharing the same 10-TM topology; its corresponding EC loop 1 spans residues 116-127 (QAAMEDEPSNDN). Python verification confirms alpha-2 position 119 (M) falls within this loop, >=4 residues from TM1 (ends 115) and >=9 from TM2 (starts 128). Because the cited tag is in the ortholog (alpha-1), this is an inferred site; the junction within the loop cannot be pinned without alignment, so insert_after_residue is left null. PMID 8916902 inserted HA epitope tags at position 119 of the Na/K-ATPase alpha-1 subunit (ATP1A1, a close paralog of ATP1A2) in full-length, membrane-anchored constructs expressed in transfected cells. L2 confirmed by immunofluorescence of intact (non-permeabilized) cells that the tag at alpha-1 position 119 is extracellularly disposed. Alpha-1 position 119 falls in the EC loop between TM1 and TM2, which corresponds to EC loop 1 (residues 116-127) in ATP1A2.",
+      "sources": [
+        {
+          "pmid": 8916902,
+          "citation": "PMID 8916902",
+          "claim": "Immunofluorescence analysis of permeabilized and intact cells using a monoclonal antibody specific for the HA epitope showed that double tags at positions 119 and 318 were located extracellularly, whereas single or double tags at positions 173, 815, 881, 987, and 1023 were cytoplasmically disposed. These results are consistent with an eight transmembrane domain arrangement for the alpha subunit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 119,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "ATP1A2-snorkel-c",
       "gene_symbol": "ATP1A2",
       "uniprot_acc": "P50993",
@@ -32,5 +70,44 @@
     }
   ],
   "isoform_pins": [],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:40:51.097804+00:00",
+  "literature_notes": "The entire ledger (L1, L2) concerns the Na/K-ATPase alpha-1 subunit (ATP1A1, PMID 8916902), not ATP1A2 directly. ATP1A1 and ATP1A2 are close paralogs sharing ~87% sequence identity and the same 10-TM topology; the evidence is therefore classified as indirect (close ortholog). Two extracellular positions were confirmed by immunofluorescence of intact cells in alpha-1: position 119 (EC loop 1) and position 318 (EC loop 2). Both tolerated HA tags and retained ouabain-resistance function. These map to EC loop 1 (116-127) and EC loop 2 (311-317) of ATP1A2, respectively. The remaining extracellular loops of ATP1A2 \u2014 EC 794-797 (4 aa), EC 871-916 (46 aa), and EC 972-984 (13 aa) \u2014 are not supported by any qualifying ledger insertion; alpha-1 positions 797, 895, and 910 abrogated function (L1) and are recorded in other_positions. Alpha-1 position 881 was reported as cytoplasmic in L2 under the 8-TM model used in 1997; the modern 10-TM topology places the corresponding alpha-2 region (871-916) as extracellular. This discrepancy reflects the model used in the paper, not a direct measurement on alpha-2, so no site is proposed in EC 871-916. Alpha-1 positions 173, 815, 881, 987, and 1023 were confirmed cytoplasmic (L2); these map to intracellular or TM regions in alpha-2 and are recorded in other_positions. No signal peptide is present in ATP1A2; the N-terminus (residues 1-93) is intracellular, so no N-terminal extracellular tag site exists.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 173,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Alpha-1 position 173 confirmed cytoplasmic by immunofluorescence of permeabilized cells (L2); alpha-2 position 173 (G) falls in intracellular region 149-288."
+    },
+    {
+      "residue": 338,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha-1 position 338 abrogated ouabain resistance when HA-tagged (L1); alpha-2 position 338 (V) is within TM4 (318-338)."
+    },
+    {
+      "residue": 797,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha-1 position 797 abrogated ouabain resistance when HA-tagged (L1); alpha-2 position 797 (L) is in EC loop 3 (794-797)."
+    },
+    {
+      "residue": 895,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha-1 position 895 abrogated ouabain resistance when HA-tagged (L1); alpha-2 position 895 (L) is in EC loop 5 (871-916)."
+    },
+    {
+      "residue": 910,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha-1 position 910 abrogated ouabain resistance when HA-tagged (L1); alpha-2 position 910 (V) is in EC loop 5 (871-916)."
+    }
+  ]
 }

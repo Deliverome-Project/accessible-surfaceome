@@ -31,6 +31,117 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "GLP1R-internal-375-lit",
+      "gene_symbol": "GLP1R",
+      "uniprot_acc": "P43220",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 375,
+      "residue_before": "A",
+      "residue_after": "R",
+      "residue_label": "A375",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ncAA (BocK/SphK via amber suppression)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Dual fluorescent labeling confirmed site-specific ncAA incorporation and surface display (SNAP-tag N-terminal labeling); GLP-1R signaling function at this specific ECL3-modified construct was NOT MEASURED separately.",
+      "confidence": "low",
+      "rationale": "L3 names R376 as one of four ECL3 amber-codon sites tested in full-length GLP-1R. Topology places ECL3 at 375-378; R376 is confirmed extracellular. Python: res(375)=A (residue_before), res(376)=R (residue_after); the ncAA is incorporated AT position 376, equivalent to insert_after_residue=375. Distance from TM6 end (374) is 2 residues, which is below the >=3 threshold; the pipeline should flag this. Confidence is low because ECL3 is a very short loop (4 aa) and proximity to TM6 may constrain a bulky 15-23 aa epitope tag. Full-length GLP-1R bearing a SNAP-tag at the N-terminus and an amber codon at R376 (one of four ECL3 sites tested) was expressed in HEK293T cells; the amber codon was suppressed to incorporate BocK or SphK (unnatural amino acids bearing fluorescent handles) at position 376, demonstrating site-specific modification of the full-length receptor at the extracellular surface.",
+      "sources": [
+        {
+          "pmid": 35755189,
+          "citation": "PMID 35755189",
+          "claim": "Thus, we co-transformed HEK293T cells with two plasmids: one encoding GLP-1R containing a SNAP-tag at the N-terminus and an amber codon at one of four ECL3 sites (H374, R376, G377, and T378); the other encoding an orthogonal PylRS/tRNA pair for charging BocK or SphK ( Fig. 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "GLP1R-internal-376-lit",
+      "gene_symbol": "GLP1R",
+      "uniprot_acc": "P43220",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 376,
+      "residue_before": "R",
+      "residue_after": "G",
+      "residue_label": "R376",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ncAA (BocK/SphK via amber suppression)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Dual fluorescent labeling confirmed site-specific ncAA incorporation and surface display; GLP-1R signaling function at this specific ECL3-modified construct was NOT MEASURED separately.",
+      "confidence": "low",
+      "rationale": "L3 names G377 as one of four ECL3 amber-codon sites in full-length GLP-1R. Topology places ECL3 at 375-378; G377 is extracellular. Python: res(376)=R (residue_before), res(377)=G (residue_after); ncAA is AT position 377, equivalent to insert_after_residue=376. Distance from TM6 end (374) is 3 residues (passes that side) but distance from TM7 start (379) is 2 residues (fails >=3 threshold on TM7 side). Confidence is low for the same reasons as R376. Full-length GLP-1R bearing a SNAP-tag at the N-terminus and an amber codon at G377 (one of four ECL3 sites tested) was expressed in HEK293T cells; the amber codon was suppressed to incorporate BocK or SphK at position 377, demonstrating site-specific modification of the full-length receptor at the extracellular surface.",
+      "sources": [
+        {
+          "pmid": 35755189,
+          "citation": "PMID 35755189",
+          "claim": "Thus, we co-transformed HEK293T cells with two plasmids: one encoding GLP-1R containing a SNAP-tag at the N-terminus and an amber codon at one of four ECL3 sites (H374, R376, G377, and T378); the other encoding an orthogonal PylRS/tRNA pair for charging BocK or SphK ( Fig. 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "GLP1R-internal-377-lit",
+      "gene_symbol": "GLP1R",
+      "uniprot_acc": "P43220",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 377,
+      "residue_before": "G",
+      "residue_after": "T",
+      "residue_label": "G377",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ncAA (BocK/SphK via amber suppression)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Dual fluorescent labeling confirmed site-specific ncAA incorporation and surface display; GLP-1R signaling function at this specific ECL3-modified construct was NOT MEASURED separately.",
+      "confidence": "low",
+      "rationale": "L3 names T378 as one of four ECL3 amber-codon sites in full-length GLP-1R. Topology places ECL3 at 375-378; T378 is the last extracellular residue before TM7 (starts at 379). Python: res(377)=G (residue_before), res(378)=T (residue_after); ncAA is AT position 378, equivalent to insert_after_residue=377. Distance from TM7 start (379) is only 1 residue, well below the >=3 threshold; a 15-23 aa epitope tag here would likely clash with TM7. Confidence is low. Full-length GLP-1R bearing a SNAP-tag at the N-terminus and an amber codon at T378 (one of four ECL3 sites tested) was expressed in HEK293T cells; the amber codon was suppressed to incorporate BocK or SphK at position 378, demonstrating site-specific modification of the full-length receptor at the extracellular surface.",
+      "sources": [
+        {
+          "pmid": 35755189,
+          "citation": "PMID 35755189",
+          "claim": "Thus, we co-transformed HEK293T cells with two plasmids: one encoding GLP-1R containing a SNAP-tag at the N-terminus and an amber codon at one of four ECL3 sites (H374, R376, G377, and T378); the other encoding an orthogonal PylRS/tRNA pair for charging BocK or SphK ( Fig. 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "GLP1R-nterm-tedman",
       "gene_symbol": "GLP1R",
       "uniprot_acc": "P43220",
@@ -191,9 +302,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "cAMP-responsive luciferase assay in cells expressing mycGLP-1R: GLP-1 potency not significantly affected relative to untagged GLP-1R.",
+      "functional_impact_measured": "cAMP-responsive luciferase assay: myc-tagged GLP-1R showed no significant change in GLP-1 potency compared to untagged receptor.",
       "confidence": "high",
-      "rationale": "L1 and L2 explicitly state the myc-tag was placed 'directly downstream of the putative signal peptide', which by the topology landmarks corresponds to insert_after_residue=23 (the last SP residue, P23), placing the tag before R24 (first mature extracellular residue). Python confirmed P at position 23 and R at position 24. The site is 120 residues from TM1, fully extracellular, and the cAMP assay in L2 demonstrates preserved GLP-1 potency, satisfying surface_and_function. Convergent evidence from SNAP-tag CRISPR knock-in (L12), SNAP-tag stable lines (L10, L11), and GFP fusion (L4, L5) all at the same junction further corroborates high confidence. mycGLP-1R: full-length, membrane-anchored human GLP-1R with a myc-tag inserted immediately downstream of the signal peptide (after residue 23, the last SP residue), expressed in HEK293 cells. The mature extracellular N-terminus begins at R24, 120 residues from TM1 (144). Multiple independent groups also placed SNAP-tags (L10, L11, L12) and GFP (L4, L5) at the same junction, all confirming surface display. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 23; entailment_verified: True]",
+      "rationale": "L1 and L2 (same study) explicitly describe a myc-tag inserted immediately downstream of the putative signal peptide of full-length GLP-1R. The signal peptide is residues 1-23 (landmark-confirmed), so the tag goes after residue 23 (P) and before residue 24 (R), the mature N-terminus. Python confirms res(23)=P and res(24)=R. The cAMP assay result in L1 confirms functional surface expression, making this the highest-confidence site. Full-length human GLP-1R with myc-tag inserted immediately downstream of the signal peptide (after residue 23, the last residue of the 23-aa signal peptide) was expressed in cells; the mature receptor carries the myc-tag at its extracellular N-terminus.",
       "sources": [
         {
           "pmid": 28035964,
@@ -203,7 +314,13 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 23,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [],
@@ -408,10 +525,30 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:16:30.521742+00:00",
-  "literature_notes": "C-terminal tags (L3: YFP; L6/L7/L8: FLAG): the GLP-1R C-terminus falls within the intracellular span 406-463 and does not qualify as an extracellular site. ECL3 amber-codon/UAA sites (L9, H374/R376/G377/T378): H374 is the last residue of TM6 (349-374) and is not extracellular. R376, G377, and T378 lie in ECL3 (375-378), but ECL3 is only 4 residues long; Python confirmed that no position in this loop satisfies the >=3-residue buffer from both TM6 (ends 374) and TM7 (starts 379) simultaneously, and the modification reported (single unnatural amino acid incorporation via amber suppression for click-chemistry labeling) is a single-residue substitution rather than a 13-23 aa epitope-tag insertion \u2014 the loop could not accommodate such an insert. ICL3 cpGFP insertion (L13, between K336 and T343): the ICL3 span 326-348 is intracellular; excluded. L14 (FLAG at N-terminus of GLP1R ORF): the construct adds an HA secretion motif plus FLAG to the N-terminus of the full ORF; the position of the FLAG relative to the SP cleavage site is ambiguous and cannot be pinned \u2014 L1/L2 provide unambiguous evidence for the same mature N-terminal junction and are used instead.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T09:20:03.833702+00:00",
+  "literature_notes": "N-TERMINAL SITE (rank 1): Supported by nine ledger lines (L1, L2, L3, L6, L7, L8, L11, L12, L13) using myc, SNAP, GFP, FLAG, and HA tags. L1 is chosen as primary because it provides explicit functional validation (cAMP assay). The signal peptide is residues 1-23 per the landmarks; the tag goes after residue 23 (P) and before residue 24 (R), the mature N-terminus. This is the best-evidenced site. ECL3 SITES (ranks 2-4): L3 reports amber-codon ncAA incorporation at four ECL3 positions (H374, R376, G377, T378) in full-length GLP-1R. H374 falls within TM6 (349-374) per the authoritative topology landmarks and is placed in other_positions. R376, G377, and T378 are within ECL3 (375-378) and are reported as sites. However, ECL3 is only 4 residues long; no position within it satisfies the >=3 residues from BOTH TM boundaries constraint simultaneously (R376 is 2 from TM6; G377 is 2 from TM7; T378 is 1 from TM7). The ncAA insertions are also much smaller than a 15-23 aa epitope tag. These sites are reported because the ledger supports them, but confidence is low and the pipeline TM-distance filter will likely exclude them. C-TERMINAL FLAG (L9, L10): The C-terminus of GLP-1R (residues 406-463) is intracellular per the topology; the FLAG tag there is not a surface tag site and is placed in other_positions. ICL3 cpGFP (L4): The cpGFP insertion between K336 and T343 is in ICL3 (intracellular, 326-348); placed in other_positions. L5 confirms the signal peptide is residues 1-23 and supports the N-terminal tag position but does not add a new site. L13 adds FLAG+HA at the N-terminus (same site as L1/L2). L12 adds SNAP-flag at the N-terminus (same site). All redundant N-terminal evidence is noted here rather than creating duplicate sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 336,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "cpGFP module inserted between K336 and T343 in ICL3 of full-length GLP-1R; ICL3 (326-348) is intracellular, so this is not a surface tag site."
+    },
+    {
+      "residue": 463,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "C-terminal FLAG fusion on full-length hGLP-1R expressed at the plasma membrane; the C-terminus (residues 406-463) is intracellular per topology, so this tag faces the cytoplasm."
+    },
+    {
+      "residue": 374,
+      "kind": "other",
+      "supporting_clip_id": "L3",
+      "note": "Amber codon at H374 tested as an ECL3 site in L3, but topology landmarks place residue 374 within TM6 (349-374); not extracellular and therefore not a surface tag site."
+    }
+  ]
 }

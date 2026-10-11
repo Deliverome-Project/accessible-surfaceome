@@ -37,7 +37,56 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "F2RL3-terminal_n-17-lit",
+      "gene_symbol": "F2RL3",
+      "uniprot_acc": "Q96RI0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "S",
+      "residue_after": "G",
+      "residue_label": "S17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by V5-FITC flow cytometry; thrombin- and CatG-mediated cleavage of the N-terminal V5-tagged ectodomain was detected as a decrease in V5-FITC antibody binding, demonstrating that the tag does not block protease access or receptor surface trafficking.",
+      "confidence": "high",
+      "rationale": "PAR4 has a signal peptide spanning residues 1\u201317 (computed landmarks); an N-terminal tag must be placed after the cleavage site to avoid being removed with the SP. The mature N-terminus begins at residue 18 (G), so insert_after_residue=17 (S) is the only extracellular N-terminal junction. No specific residue number is named in the paper, but exactly one extracellular terminus exists, making the position topology-derived. Python verification confirms seq[16]='S' and seq[17]='G'. The 61-residue extracellular N-terminal domain (18\u201378) provides ample space for a short tag, and thrombin cleavage of the tagged receptor was functionally confirmed. Full-length human PAR4 (F2RL3) stably expressed in HEK293 Flp-In T-REx cells with an N-terminal V5 epitope tag; surface expression induced by tetracycline and confirmed by V5-FITC antibody binding via flow cytometry. Thrombin and CatG cleavage of the N-terminal domain (including the V5 tag) was measured as loss of V5-FITC signal.",
+      "sources": [
+        {
+          "pmid": 41370205,
+          "citation": "PMID 41370205",
+          "claim": "HEK293 Flp-In T-REx cells stably expressing human PAR4 variants (PAR4-WT, PAR4-R47Q, PAR4-S67A, PAR4-R47Q-S67A, or PAR4-R47Q-S67A-R68E) with N-terminal V5 epitopes were generated per Invitrogen protocol. 14 PAR4 surface expression was induced with tetracycline (250-2000 ng/mL) for 40 to 48 hours."
+        },
+        {
+          "pmid": 41266455,
+          "citation": "PMID 41266455",
+          "claim": "A Schematic of the PAR4 mRNA sequence design, which consists of the full-length human PAR4 gene, the PAR4 signal peptide, and a Flag-tag for PAR4 surface expression."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:41:49.622311+00:00",
+  "literature_notes": "All eight ledger lines converge on the N-terminal extracellular terminus of PAR4 as the only published tag-insertion site. L1\u2013L4 (PMC12927046) report human PAR4 with an N-terminal V5 tag validated by surface flow cytometry and functional thrombin/CatG cleavage assay. L5\u2013L7 (PMC12635330) report human PAR4 with an N-terminal Flag tag validated by surface flow cytometry only. L8 (PMC12036797) reports V5-tagged mouse PAR4 with surface expression measured, but names no residue and is an ortholog; it provides indirect corroboration of the N-terminal V5 approach but does not add a new site or residue. No ledger line supports any internal loop (ECL1 135\u2013151, ECL2 214\u2013243, ECL3 306\u2013320) or C-terminal intracellular tag insertion. The P322L variant in L8 is a TM7 mutation under study, not a tag-insertion site. Two sites are reported because two independent papers with two different tag types (V5 and FLAG) both pin the same N-terminal junction, with different validation levels.",
+  "literature_rejected": []
 }

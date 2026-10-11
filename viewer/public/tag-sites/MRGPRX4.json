@@ -37,7 +37,64 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MRGPRX4-terminal_n-0-lit",
+      "gene_symbol": "MRGPRX4",
+      "uniprot_acc": "Q96LA9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA detection in SBA; MRGPRX4\u2013RAMP protein complexes detected, demonstrating the tagged receptor is expressed and capable of forming functional protein\u2013protein interactions with RAMPs.",
+      "confidence": "high",
+      "rationale": "MRGPRX4 has no signal peptide (topology string contains no 'S'; residues 1\u201329 are extracellular 'O'). The N-terminal tail is the sole extracellular terminus, so the HA tag prepends before M1 (insert_after_residue=0). The 29-residue extracellular N-terminus provides ample distance (\u22653 aa) from TM1 at residue 30. L3 and L4 confirm surface expression and RAMP-interaction function of this exact construct, making this the best-validated site in the ledger. Full-length HA-MRGPRX4-1D4 expressed in Freestyle 293 cells; HA epitope on the N-terminal tail, 1D4 epitope on the C-terminal tail. MRGPRX4 has no endogenous signal peptide (topology residues 1\u201329 are directly extracellular), so the N-terminal HA tag prepends before M1. The construct was used in a multiplexed suspension bead array (SBA) with anti-HA and anti-1D4 mAbs to detect MRGPRX4\u2013RAMP complexes.",
+      "sources": [
+        {
+          "pmid": 37003505,
+          "citation": "PMID 37003505",
+          "claim": "A , MRGPRX4 was tagged at its N-terminal and C-terminal tail with HA and 1D4 mAb epitopes, respectively."
+        },
+        {
+          "pmid": 34789874,
+          "citation": "PMID 34789874",
+          "claim": "Genes for human MRGPRX2 (UniProtKB- Q96LB1 ) and human MRGPRX4 (UniProtKB- Q96LA9 ) were individually cloned into a modified pFastBac1 vector which contains a hemagglutinin (HA) signal peptide followed by FLAG-tag, His10-tag, and a TEV protease site at the N terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:51:09.617694+00:00",
+  "literature_notes": "All four ledger lines concern the extracellular N-terminus (residues 1\u201329) or the intracellular C-terminus (residues 276\u2013322) of MRGPRX4. No ledger line reports a tag insertion in any extracellular loop (ECL1 82\u201396, ECL2 159\u2013177, ECL3 242\u2013252). L1 and L2/L3/L4 both pin the same junction (prepend before M1) but via different constructs and tags; both are reported as required. The C-terminal 1D4 tag from L2 is intracellular and placed in other_positions. No ledger line names a specific residue number for any insertion, so all positions are topology_derived (sole extracellular terminus). L3 and L4 are additional validations of the L2 construct and do not introduce new sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 322,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "1D4 epitope tag placed on the C-terminal tail of MRGPRX4 in the HA-MRGPRX4-1D4 construct; the C-terminus (residues 276\u2013322) is intracellular per topology landmarks, so this is not a surface tag site."
+    }
+  ]
 }

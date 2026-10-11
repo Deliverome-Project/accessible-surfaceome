@@ -32,5 +32,26 @@
     }
   ],
   "isoform_pins": [],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:11:06.925909+00:00",
+  "literature_notes": "DAGLA is a four-pass transmembrane protein. Its only extracellular-facing regions are ECL1 (residues 44\u201360) and ECL2 (residues 121\u2013133). The two ledger entries both describe tags on intracellular termini: L1 reports a C-terminal V5 tag (residue 1042, which lies in the large intracellular domain 155\u20131042), and L2 reports an N-terminal FLAG tag (residue 1, which lies in the intracellular N-terminus 1\u201317). Neither ledger line documents any insertion in ECL1, ECL2, or any other extracellular-facing position. Because the ledger is the only permitted source of citations and neither entry supports a surface tag site, zero sites are reported. This is the correct answer, not a failure.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1042,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal V5-His tag on full-length DAGLA expressed in pcDNA3.1D/V5-His-TOPO; residue 1042 (R) falls within the large intracellular domain (155\u20131042), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal FLAG tag on full-length DAGLA expressed in pcDNA3.1; residue 1 (M) falls within the intracellular N-terminus (1\u201317), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MRGPRX1-terminal_n-0-lit",
+      "gene_symbol": "MRGPRX1",
+      "uniprot_acc": "Q96LB2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "BRIL",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor activity assay: BRIL+LgBit double-tagged construct 'only marginally affected receptor activity' (PMC10286997, S1C Fig and S1 Table). N-terminal Flag-tagged construct used for biochemical assays in mammalian cells (PMC10286997, L9).",
+      "confidence": "high",
+      "rationale": "MRGPRX1 has no signal peptide (raw topology begins O at residue 1), so the N-terminus (residues 1-29) is the sole extracellular terminus; a prepend tag (insert_after_residue=0) places the insert on the extracellular face, 29 residues upstream of TM1 (residue 30), well above the >=3-residue minimum. No paper names a specific junction residue, but topology leaves exactly one extracellular terminus, so the position is topology-derived. L3 provides the strongest functional evidence: the BRIL+LgBit double-tagged full-length receptor retained activity ('only marginally affected'). L9 independently confirms N-terminal Flag tagging in mammalian cells for biochemical assays. Full-length MRGPRX1 expressed with BRIL fused at the N-terminus and LgBit at the C-terminus (PMC10286997); the N-terminus (residues 1-29) is extracellular with no signal peptide, making it the sole extracellular terminus. Multiple independent studies (PMC10286997, PMC10435460) report BRIL fused at the N-terminus of full-length membrane-anchored MRGPRX1; PMC10286997 also reports N-terminal Flag tag in mammalian pCDNA3.1 for biochemical assays (L9).",
+      "sources": [
+        {
+          "pmid": 37347749,
+          "citation": "PMID 37347749",
+          "claim": "The fusion of BRIL and LgBit to receptor only marginally affected receptor activity ( S1C Fig and S1 Table )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:52:31.977717+00:00",
+  "literature_notes": "All ledger lines converge on two positions: the extracellular N-terminus (L3, L4, L5, L7, L8, L9) and the intracellular C-terminus (L1, L2, L6). No ledger line reports a tag insertion in any of the three extracellular loops (ECL1 86-96, ECL2 164-177, ECL3 243-254), so no internal loop sites are proposed. L4 (pFastBac, HA signal peptide + N-terminal Flag + C-terminal 10xHis) also supports the N-terminal extracellular site but is from the same paper as L3/L5/L9 (PMC10286997); L3 is used as primary because it explicitly reports functional retention. L7 and L8 (PMC10435460) independently confirm BRIL at the N-terminus of full-length MRGPRX1 for structural studies. The C-terminal tags (L1, L2, L6) are all intracellular and are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 322,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mApple red fluorescent protein fused to the intracellular C-terminus; receptor internalizes upon agonist stimulation, confirming the tag is cytoplasmic."
+    },
+    {
+      "residue": 322,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "LgBit fused to the C-terminus of MRGPRX1 as part of NanoBit tethering strategy to stabilize the MRGPRX1-G\u03b1q complex; C-terminus (residues 276-322) is intracellular."
+    },
+    {
+      "residue": 322,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "LgBit fused at the C-terminus of MRGPRX1 to stabilize the whole MRGPRX1-G\u03b1q complex for structural studies; C-terminus is intracellular."
+    }
+  ]
 }

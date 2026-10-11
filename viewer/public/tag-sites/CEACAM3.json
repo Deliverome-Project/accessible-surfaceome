@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "CEACAM3",
+  "uniprot_acc": "P40198",
+  "sites": [
+    {
+      "site_id": "CEACAM3-terminal_n-34-lit",
+      "gene_symbol": "CEACAM3",
+      "uniprot_acc": "P40198",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "A",
+      "residue_after": "K",
+      "residue_label": "A34",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection by anti-HA antibody confirmed extracellular display; CEACAM3-mediated signalling (SH2-domain recruitment, phosphotyrosine assays) was measured and found functional in the tagged constructs.",
+      "confidence": "high",
+      "rationale": "CEACAM3 is a type-I single-pass transmembrane protein whose signal peptide spans residues 1\u201334 (authoritative landmark); the mature N-terminus begins at residue 35 (K), which is extracellular. The construct naming 'HA-GFP-tagged CEACAM3' places HA first (N-terminal, extracellular) and the fluorescent protein second (C-terminal, intracellular), consistent with anti-HA surface staining. Because no residue number is stated and the mature N-terminus is the only extracellular terminus, the junction is topology-derived: insert_after_residue=34 (A\u2192K). Python confirms seq[33]='A' and seq[34]='K'; the tag sits 118 residues from the TM boundary, well clear of any constraint. Full-length CEACAM3 constructs carrying an N-terminal HA tag followed by a fluorescent protein (GFP, Cerulean, or mKate) at the C-terminus were expressed in mammalian cells and used for surface and functional studies (PMC3493956). The 'HA-[FP]-tagged CEACAM3' naming convention places HA before the mature protein, i.e. after signal-peptide cleavage at residue 34, on the extracellular face. No specific residue number is stated in the clip.",
+      "sources": [
+        {
+          "pmid": 22948154,
+          "citation": "PMID 22948154",
+          "claim": "tin were used as a positive control: f3-actln-sense 5/ -AGCGG Recombinant DNA Constructs- Mammalian expression vec GAAATCGTGCGTG-3' and f3-actin-anti 5'-GGGTACA tors encoding the HA-GFP-, HA-Cerulean-, and HA-mKate TGGTGGTGCCG-3' . tagged versions ofCEACAM3 were described previously (10, Generation of Stable Knock-down Cell Lines-Stable knock 12,17). cDNA clones for different human SH2 domain con down of Grb14 in CEACAM3 expressing HeLa cells was per taining proteins were obtained from ImaGenes (Berlin, Ger- formed 'as described using the pLKO.1 lentiviral vector (10). ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:33:51.249067+00:00",
+  "literature_notes": "L2 (PMC9418913) and L3 (PMC3493956) describe CEACAM3-mKate fusions named with mKate at the C-terminus; the C-terminus of CEACAM3 is intracellular (residues 176\u2013252), so these are intracellular tags and are recorded in other_positions. L4 (PMC3308951) describes a CEACAM3-GFP construct (C-terminal GFP, intracellular) and mentions an HA tag whose position is not independently pinned in that clip; it is subsumed by the stronger L1 evidence for the N-terminal HA site. No ledger line reports any insertion in an internal extracellular loop of CEACAM3, so no internal sites are proposed. The single extracellular Ig-like domain (residues 35\u2013152) contains no published internal tag insertion in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 252,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "CEACAM3-mKate C-terminal fusion stably expressed in HL60 cells; mKate is appended after the last residue (S252) which lies in the intracellular tail (residues 176\u2013252), so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 252,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "CEACAM3-mKate and CEACAM3-HA-GFP constructs described in the same paper (PMC3493956); the C-terminal fluorescent-protein fusions are intracellular, consistent with the topology landmark placing the C-terminus at residues 176\u2013252."
+    },
+    {
+      "residue": 252,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "CEACAM3-GFP (C-terminal GFP) expressed in 293 cells (PMC3308951); GFP is fused after S252 in the intracellular tail."
+    }
+  ]
+}

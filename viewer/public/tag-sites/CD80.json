@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD80",
+  "uniprot_acc": "P33681",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:21:30.961591+00:00",
+  "literature_notes": "All four ledger clips (L1\u2013L4) describe CD80 fused C-terminally to mCherry or GFP using the '[protein]\u2013[FP]' naming convention. CD80 is a Type I single-pass transmembrane protein: its N-terminus is extracellular (mature chain begins at residue 35 after SP cleavage at 34) and its C-terminus is intracellular (residues 269\u2013288). A C-terminal FP fusion therefore lands in the intracellular compartment, not on the extracellular face. None of the clips names a residue, loop, or junction; none states the tag is extracellular or N-terminal. The topology_derived rule requires exactly one extracellular terminus to resolve an unspecified position \u2014 CD80 has two termini (one extracellular, one intracellular), so the rule cannot force an extracellular assignment. The notation unambiguously implies the intracellular C-terminus. No ledger line supports an extracellular surface tag site; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 288,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "CD80\u2013mCherry C-terminal fusion expressed at the plasma membrane and functionally engaged by CTLA-4; the FP is appended after the last residue (V288) in the intracellular tail, not on the extracellular face."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PCDHGC4",
+  "uniprot_acc": "Q9Y5F7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:29:44.056910+00:00",
+  "literature_notes": "The single ledger line (L1) describes Pcdh-\u03b3C4-mCherry, a C-terminal fluorescent-protein fusion. By standard naming convention (ProteinName-Tag), mCherry is appended after the last residue (K938), which lies in the intracellular domain (residues 714\u2013938). The construct was used to validate a PCDHGC4-specific antibody by immunofluorescence in HEK293 cells, confirming that the full-length protein traffics to the cell surface, but the mCherry tag itself is cytoplasmic and does not constitute an extracellular tag insertion. The paper also mentions cMyc-Pcdh-\u03b3C5 (N-terminal tag on a different protein) and Pcdh-\u03b3C5-EGFP / Pcdh-\u03b3C3-EGFP (C-terminal tags on different proteins); none of these are insertions in PCDHGC4. No ledger line reports a tag on the extracellular face of PCDHGC4, so zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 938,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mCherry fusion (Pcdh-\u03b3C4-mCherry) appended after the last residue K938, which is in the intracellular domain (714\u2013938); used to validate a PCDHGC4 antibody, not an extracellular tag."
+    }
+  ]
+}

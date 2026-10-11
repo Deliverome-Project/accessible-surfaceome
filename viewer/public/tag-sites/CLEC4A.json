@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC4A",
+  "uniprot_acc": "Q9UMR7",
+  "sites": [
+    {
+      "site_id": "CLEC4A-terminal_c-237-lit",
+      "gene_symbol": "CLEC4A",
+      "uniprot_acc": "Q9UMR7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 237,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L237",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip reports cloning and expression of the tagged construct but does not detail a quantitative functional or surface-trafficking assay for the tagged protein specifically.",
+      "confidence": "high",
+      "rationale": "CLEC4A is a type II transmembrane protein: residues 1\u201346 are intracellular, 47\u201367 span the membrane, and 68\u2013237 are extracellular. The C-terminus (residue 237, L) is therefore the sole extracellular terminus, making it the unique landing site for the reported C-terminal FLAG tag. No residue number is named in the paper, so position_evidence is topology_derived; the junction is computed as insert_after_residue=237. The tag site is 170 residues from the TM boundary, well beyond the \u22653-residue minimum. Python confirmed residue 237 = L and residue 236 = H from the numbered sequence. Full-length human DCIR (CLEC4A) cloned into the EMCV-SR\u03b1 vector with a C-terminal (extracellular) FLAG epitope tag; membrane-anchored construct expressed in cells. The coding region NM016184 bases 263\u2013974 encodes exactly 237 codons, confirming the full-length 237 aa protein. The paper explicitly labels the tag '(extracellular)', consistent with CLEC4A's type II topology in which the C-terminus is the sole extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 35194806,
+          "citation": "PMID 35194806",
+          "claim": "Full\u2010length open\u2010reading frames of human Mincle (NM014358, bases 109\u2010766), DCIR (NM016184, bases 263\u2010974), or Dectin\u20102 (NM001007033, bases 151\u2010778) were cloned in to the EMCV\u2010SR\u03b1 vector followed by a C\u2010terminal (extracellular) FLAG epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:46:38.545261+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length, membrane-anchored CLEC4A construct with a C-terminal (extracellular) FLAG tag \u2014 satisfying all inclusion criteria (full-length, membrane-anchored, extracellular face, tolerated). The paper does not name a specific residue number, but CLEC4A's type II topology leaves exactly one extracellular terminus (C-terminus, residue 237), so the position is topology-derived rather than validated. No internal loop insertions, N-terminal tags, or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

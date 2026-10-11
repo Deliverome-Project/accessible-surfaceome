@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR6-terminal_n-0-lit",
+      "gene_symbol": "HTR6",
+      "uniprot_acc": "P50406",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by Nano-Glo HiBiT Extracellular Detection System (luminescent signal detected); receptor signalling function with the tagged construct NOT MEASURED in the cited study.",
+      "confidence": "high",
+      "rationale": "HTR6 is a 7-TM GPCR with no signal peptide; the topology landmarks place residues 1\u201328 extracellular and TM1 beginning at residue 29, leaving 28 residues of clearance from the prepend junction to the first TM helix. An N-terminal tag on a GPCR with no signal peptide can only sit at the single extracellular N-terminus (insert_after_residue = 0, residue_after = M), so the position is topology-derived rather than residue-validated. Python confirmed residue 1 = M and residue 29 = V (TM1 start), satisfying the \u22653-residue TM-clearance rule by a wide margin. L2 (same paper, same construct) is concordant and reinforces confidence. Full-length 5-HT6R bearing an N-terminal HiBiT tag expressed in HEK293T cells; surface accessibility confirmed with the Nano-Glo HiBiT Extracellular Detection System (PMC10083584). No specific residue number is named; 'N-terminal' on a GPCR lacking a signal peptide resolves to exactly one extracellular terminus (before residue 1).",
+      "sources": [
+        {
+          "pmid": 36989299,
+          "citation": "PMID 36989299",
+          "claim": "(Details are provided in SI Appendix , Materials and Methods .)\nThe receptor surface expression level was detected by the nanoluc system according to Nano-Glo \u00ae HiBiT Extracellular Detection System (Promega)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:06:36.124374+00:00",
+  "literature_notes": "The ledger contains two clips (L1, L2) from the same paper (PMC10083584) describing the identical construct: full-length 5-HT6R with an N-terminal HiBiT tag, surface-detected in HEK293T cells. Both clips ground the same single site; L1 is used as the primary supporting clip because it explicitly names the full-length construct and the extracellular detection system. No residue number is stated in either clip, but for a GPCR with no signal peptide the N-terminal prepend is the only possible extracellular N-terminal position, making the junction topology-derived. Three other extracellular loops exist (ECL1: 86\u201399, ECL2: 167\u2013187, ECL3: 291\u2013302) but no ledger line reports any insertion in them for HTR6 or a close ortholog, so no sites are proposed there. No intracellular or function-abrogating positions are mentioned in the ledger.",
+  "literature_rejected": []
 }

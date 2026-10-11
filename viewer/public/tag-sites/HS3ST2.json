@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "HS3ST2",
+  "uniprot_acc": "Q9Y278",
+  "sites": [
+    {
+      "site_id": "HS3ST2-terminal_c-367-lit",
+      "gene_symbol": "HS3ST2",
+      "uniprot_acc": "Q9Y278",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 367,
+      "residue_before": "E",
+      "residue_after": "",
+      "residue_label": "E367",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5 (or S-tag)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct was knocked into CHO cells for expression; the clip reports construct creation and knock-in but does not detail a functional enzymatic assay in the cited passage \u2014 NOT MEASURED beyond expression.",
+      "confidence": "high",
+      "rationale": "HS3ST2 is a type II TM Golgi sulfotransferase with its catalytic C-terminal domain (residues 38\u2013367) in the Golgi lumen (extracellular face). The C-terminus at residue 367 (E) is 330 residues from the TM boundary (residue 37), well clear of any TM constraint. The paper explicitly describes a C-terminal V5/S-tag on full-length HS3ST2 knocked into CHO cells; since the C-terminus is the sole extracellular terminus, insert_after_residue=367 is topology-derived with no ambiguity. Python confirms seq[366]='E'. Full-length human HS3ST2 with a C-terminal V5-tag (or S-tag) was constructed by PCR and knocked into CHO cells via the EPB69 donor plasmid. HS3ST2 is a type II transmembrane protein; its C-terminus (residue 367, E) lies in the extracellular/Golgi-luminal domain (residues 38\u2013367). The paper names 'C-terminal' but no specific residue; with a single extracellular terminus the junction is unambiguous.",
+      "sources": [
+        {
+          "pmid": 34936441,
+          "citation": "PMID 34936441",
+          "claim": "Full complementary DNAs of coding regions of the human HS3STs (Horizon Discovery and Harvard PlasmID Database) were used, a C-terminal S-tag or V5-tag was linked to HS3STs by polymerase chain reaction (PCR), and constructs were further cloned into the EPB69 donor plasmid."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:01:59.440310+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It supports exactly one site: a C-terminal tag on full-length HS3ST2 expressed in CHO cells. The N-terminus (residues 1\u201319) is intracellular and the TM spans residues 20\u201337, so no extracellular N-terminal site exists. No internal loop insertions are supported by the ledger. The paper does not name a specific residue number for the C-terminal junction; the position is derived from the fact that residue 367 is the sole extracellular terminus. No functional enzymatic assay result is reported in the clip, so validation_level is 'detected_only'.",
+  "literature_rejected": []
+}

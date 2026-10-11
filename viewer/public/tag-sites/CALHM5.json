@@ -55,5 +55,20 @@
       "canonical_residue": 40,
       "left_pct": 12.944983818770226
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:59:33.042693+00:00",
+  "literature_notes": "Five ledger lines were evaluated. L1\u2013L4 all describe the same CALHM5-EGFP knock-in construct in which a 3\u00d7GGGGS-EGFP cassette is inserted upstream of the stop codon, placing EGFP at the C-terminus (after residue 309). The topology landmarks place residues 200\u2013309 entirely in the INTRACELLULAR domain; the C-terminal tag therefore faces the cytoplasm, not the extracellular surface. L3 reports a 'plasma membrane pattern of EGFP fluorescence', which confirms correct trafficking and membrane insertion but does not change the intracellular orientation of the C-terminal tag. L5 reports an HA-tagged CALHM5 expressed in HeLa cells but states no junction residue, no terminus, and no loop \u2014 the tag position is completely unstated. Under the rules, a commercial or exogenous construct whose tag position is unstated cannot be pinned to insert_after_residue and therefore does not qualify as a site. No ledger line supports an extracellular insertion at any pinnable position; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 309,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion (3\u00d7GGGGS linker + EGFP upstream of stop codon) is tolerated and traffics to the plasma membrane, but residue 309 lies within the intracellular domain (200\u2013309); the tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "PTGFRN",
+  "uniprot_acc": "Q9P2B2",
+  "sites": [
+    {
+      "site_id": "PTGFRN-terminal_n-25-lit",
+      "gene_symbol": "PTGFRN",
+      "uniprot_acc": "Q9P2B2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "R",
+      "residue_after": "V",
+      "residue_label": "R25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP / FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable surface display on EVs confirmed by enrichment assays; cargo molecules fused to full-length PTGFRN exhibited potent in vitro activity (PMC8116569, L2). PTGFRN's own endogenous function was not independently assayed.",
+      "confidence": "high",
+      "rationale": "PTGFRN has a single extracellular N-terminus (residues 26\u2013832) preceded by a signal peptide cleaved after residue 25. A tag inserted after residue 25 (R) places it immediately before V26, the first mature extracellular residue, 807 residues from the TM boundary\u2014well clear of any constraint. Because the ledger names only 'the exposed N terminus' and not a specific residue, the position is topology-derived from the single available extracellular terminus. Python confirmed residue 25 = R and residue 26 = V from the canonical sequence. PMC8116569 (L1\u2013L4) reports that the topology of full-length PTGFRN makes its N-terminus the exposed extracellular face, and uses it as a surface-display scaffold on EVs. GFP fusions (L4) and FLAG-tagged GFP (L3) were expressed as stable HEK293 lines; L2 shows fusions to full-length PTGFRN retain potent in vitro activity. No specific residue number is named; the position is derived from the single extracellular terminus after signal-peptide cleavage at residue 25.",
+      "sources": [
+        {
+          "pmid": 33484965,
+          "citation": "PMID 33484965",
+          "claim": "In addition to exhibiting high levels of EV enrichment, the topology of PTGFRN makes it an attractive scaffold for displaying proteins on the EV surface through fusion to the exposed N terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:51:21.973458+00:00",
+  "literature_notes": "L1\u2013L4 all originate from PMC8116569 and describe the same N-terminal fusion site; L1 is the most explicit topological statement and anchors the site. L3 names FLAG and L4 names GFP as the tag types used. L2 provides the functional validation (potent in vitro activity of cargo fused to full-length PTGFRN). No ledger line names an internal extracellular loop insertion for PTGFRN; the only other published insertions (L5\u2013L8) are all at the C-terminus, which is intracellular (EV lumen side), and are therefore recorded in other_positions. PTGFRN\u0394687 constructs appear in L5/L7/L8 but the truncation removes the ectodomain and the fusions are explicitly to the intracellular/lumen domain, so they do not qualify as surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 879,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "L6 explicitly states that the C-terminus of PTGFRN extends into the EV lumen (intracellular face); PYL1 was fused there to create lumenal docking sites, not a surface-exposed tag."
+    },
+    {
+      "residue": 854,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "L7/L8 describe human Fc fused to the intracellular domain of PTGFRN-\u0394687, anchored to the EV membrane on the lumenal/cytoplasmic face; residue 854 is the first intracellular residue per the topology landmarks."
+    }
+  ]
+}

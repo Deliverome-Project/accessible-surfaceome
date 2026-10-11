@@ -1,0 +1,41 @@
+{
+  "has_data": false,
+  "gene_symbol": "PMEPA1",
+  "uniprot_acc": "Q969W9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:41:45.896618+00:00",
+  "literature_notes": "PMEPA1/TMEPAI is a single-pass membrane protein with its only extracellular span at residues 1\u201343 (N-terminal ectodomain, 43 aa) and a long intracellular tail (63\u2013287). Every tag insertion reported in the ledger is at the intracellular C-terminus (residue 287, Flag in L2; V5 in L4 and L5). L1 describes Flag-tagged full-length constructs carrying intracellular deletions (\u039463\u201386 and \u0394132\u2013155) but does not state where the Flag tag itself is placed, and both deletion regions are intracellular. L3 reports localization of a deletion mutant (\u0394132\u2013155), not a surface tag insertion. No ledger line reports a tolerated epitope-tag insertion, fluorescent-protein fusion, transposon hit, or any other qualifying insertion on the extracellular face of this protein. Zero surface tag sites are therefore supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 287,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Flag tag on full-length TMEPAI (TMEPAI-2YA-Flag, TMEPAI-KR-Flag); residue 287 is the last residue of the intracellular tail (topology 63\u2013287)."
+    },
+    {
+      "residue": 287,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal V5 tag on full-length TMEPAI; residue 287 is intracellular."
+    },
+    {
+      "residue": 63,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Deletion mutant \u039463\u201386 (start of intracellular tail) expressed and localized in A549 cells; region is entirely intracellular."
+    },
+    {
+      "residue": 132,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Deletion of aa132\u2013155 (dynactin-binding region, intracellular) disrupts dynactin binding and alters intracellular trafficking, causing retention at the plasma membrane rather than endosomal compartments."
+    }
+  ]
+}

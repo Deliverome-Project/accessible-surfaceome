@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRP10",
+  "uniprot_acc": "Q7Z4F1",
+  "sites": [
+    {
+      "site_id": "LRP10-terminal_n-16-lit",
+      "gene_symbol": "LRP10",
+      "uniprot_acc": "Q7Z4F1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 16,
+      "residue_before": "A",
+      "residue_after": "H",
+      "residue_label": "A16",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct described as expressed in HEK293 cells for protein-interaction studies; no dedicated surface-expression or functional assay for the FLAG-tagged construct is reported in the ledger.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the FLAG tag was inserted 'after the signal peptide of LRP10'. The signal peptide spans residues 1\u201316 (landmark-authoritative), so the junction is after residue 16 (A) and before residue 17 (H), the mature extracellular N-terminus. Python confirmed seq[16]='A' and seq[17]='H'. The site is 424 residues from the TM boundary (441), well within the large extracellular domain, and is the only extracellular terminus of this single-pass type-I receptor. Full-length human LRP10 in pcDNA3.1; PCR-based mutagenesis used to insert a FLAG tag explicitly 'after the signal peptide of LRP10' (signal peptide = residues 1\u201316, mature N-terminus = residue 17 H). Construct expressed in HEK293 cells.",
+      "sources": [
+        {
+          "pmid": 22734645,
+          "citation": "PMID 22734645",
+          "claim": "LRP10 was subcloned in the pcDNA3.1 vector, and PCR - based mutagenesis was used to insert an HA-tag at the C-terminus of LRP10 or a FLAG-tag after the signal peptide of LRP10."
+        },
+        {
+          "pmid": 33913039,
+          "citation": "PMID 33913039",
+          "claim": "Another V5 tag was introduced into the N-terminal position relative to the LRP10 insert."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 16,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:17:07.708997+00:00",
+  "literature_notes": "Four ledger lines were examined. L1 and L3 both describe N-terminal extracellular tags on full-length human LRP10 and yield two sites at the same junction (after residue 16), grounded in different papers and tag types, so both are reported. L1 also describes a C-terminal HA tag and L2 confirms its use in immunoprecipitation; both are intracellular (residue 713 lies in the cytoplasmic tail, residues 462\u2013713) and are recorded in other_positions. L4 describes a C-terminal HA on full-length mouse Lrp10, also intracellular by the same topology, and is likewise recorded in other_positions. No ledger line supports any internal extracellular loop insertion for LRP10.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 713,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA tag inserted at the C-terminus of full-length human LRP10 (residue 713); the C-terminus lies in the intracellular tail (residues 462\u2013713) and is not accessible on the extracellular face."
+    },
+    {
+      "residue": 713,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal HA tag on full-length mouse Lrp10 expressed in heterologous cells; the C-terminus is intracellular by the conserved single-pass type-I topology, confirmed by co-immunoprecipitation use only."
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRM1",
+  "uniprot_acc": "Q13255",
+  "sites": [
+    {
+      "site_id": "GRM1-internal-384-lit",
+      "gene_symbol": "GRM1",
+      "uniprot_acc": "Q13255",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 384,
+      "residue_before": "L",
+      "residue_after": "L",
+      "residue_label": "L384",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "c-Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by live-cell fluorescent anti-c-Myc antibody labeling (non-permeabilized cells). Functional assay result NOT MEASURED in the cited clip; surface display is confirmed.",
+      "confidence": "high",
+      "rationale": "L6 names residues L384 and L385 explicitly as the insertion junction for a c-Myc tag in full-length mGlu1. Python computation confirms seq[383]='L' and seq[384]='L', matching the paper exactly. Position 384 lies within the large extracellular VFT domain (topology: extracellular 19\u2013592), 209 residues from the nearest TM boundary (TM1 at 593), satisfying all distance and topology constraints. Surface display was directly confirmed by live-cell anti-Myc labeling (L7). A c-Myc epitope was inserted between residues L384 and L385 of full-length mGlu1 using overlap PCR. The construct was expressed in cells and surface expression was assessed by live-cell fluorescent anti-c-Myc antibody labeling of non-permeabilized cells, confirming the tag is displayed on the extracellular face.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2023.07.05.545810",
+          "claim": "A c-Myc epitope was introduced between residues L384 and L385 using overlap PCR (primers listed in Table S1).",
+          "source_id": "DOI:10.1101/2023.07.05.545810"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "GRM1-terminal_n-18-lit",
+      "gene_symbol": "GRM1",
+      "uniprot_acc": "Q13255",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "L",
+      "residue_after": "L",
+      "residue_label": "L18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA or c-Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Calcium imaging / functional assay: insertion of HA or c-Myc after the signal peptide and before the VFT domain 'does not alter functional properties of class C GPCRs' (mGlu and GABA-B receptors). Surface expression confirmed by live anti-Myc labeling of non-permeabilized cells; PICK1 knockdown/rescue experiment further confirms regulated surface trafficking of the tagged receptor.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states that inserting HA or c-Myc after the signal peptide and before the VFT domain does not alter functional properties of mGluR1 (and other class C GPCRs), making this the highest-confidence site. Python computation confirms that the paper's 'Serine 34' in the chimeric construct corresponds to the junction after canonical SP residue 18 (L) and before mature residue 19 (L), consistent with the authoritative topology landmark (mature N-terminus = 19). The site is 574 residues from the nearest TM helix, fully extracellular, and validated by multiple independent studies (L1\u2013L5, L7\u2013L10). Full-length mGluR1a and mGluR1b constructs were made with a chimeric signal peptide (mGluR5 SP, ~33 aa) followed by HA or c-Myc epitope, then the mGluR1 mature sequence. The paper states the mature mGluR1 coding sequence begins at 'Serine 34' in their chimeric-construct numbering, which corresponds to the junction immediately after the canonical mGluR1 signal peptide (SP 1\u201318, mature N-terminus residue 19 per authoritative topology). The tag is thus placed between the last SP residue (18, L) and the first mature residue (19, L). Constructs were expressed in HEK293 or neuronal cells and detected at the cell surface by live-cell antibody labeling.",
+      "sources": [
+        {
+          "pmid": 18627772,
+          "citation": "PMID 18627772",
+          "claim": "We previously reported that the insertion of these tags after the signal peptide, and before the Venus fly trap (VFT) ligand binding domain does not alter functional properties of class C GPCRs (both mGlu and GABAb receptors) (Ango et al., 2000; Galvez et al., 2001; Havlickova et al., 2002; Hlavackova et al., 2005; Pagano et al., 2001)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 18,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:48:13.133702+00:00",
+  "literature_notes": "Two ledger-supported sites identified. L1\u2013L5 and L7\u2013L10 all converge on the same N-terminal junction (after SP, before mature VFT domain); L2 is chosen as the single supporting clip because it is the only one that explicitly reports functional preservation. L6 pins the internal L384\u2013L385 junction with residue-level precision. The paper's 'Serine 34' (L5) reflects use of the mGluR5 signal peptide (~33 aa) in the chimeric construct; in canonical mGluR1 numbering (SP 1\u201318, mature start 19) the junction is after residue 18. No intracellular or function-abrogating positions were named in the ledger.",
+  "literature_rejected": []
+}

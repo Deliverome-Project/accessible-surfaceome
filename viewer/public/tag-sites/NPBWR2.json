@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NPBWR2-terminal_n-0-lit",
+      "gene_symbol": "NPBWR2",
+      "uniprot_acc": "P48146",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed both total and surface expression of the FLAG-tagged NPBWR2 TANGO construct; no quantitative functional (ligand-activation) result for NPBWR2 specifically is reported in these clips.",
+      "confidence": "high",
+      "rationale": "The canonical NPBWR2 sequence (333 aa) has no signal peptide \u2014 residues 1\u201345 are extracellular per the topology landmarks. The paper prepends an exogenous cleavable signal sequence and a FLAG tag to the 5\u2032-end of the full-length receptor; after signal cleavage the FLAG tag is left at the extracellular N-terminus, corresponding to insert_after_residue = 0 (prepend before residue 1, M). The C-terminus (residues 320\u2013333) is intracellular, making the N-terminus the only extracellular terminus and the only possible location for this tag. The prepend position is 45 residues from TM1 (residue 46), well clear of the \u22653-residue TM-boundary requirement. NPBWR2 TANGO construct engineered with an exogenous cleavable signal sequence followed by a FLAG epitope tag at the 5\u2032-end (N-terminus) of the full-length, membrane-anchored receptor; transfected into cells and examined by anti-FLAG immunofluorescence for total and surface expression.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:06:13.747019+00:00",
+  "literature_notes": "L1 and L2 both describe the same single construct and the same site (N-terminal FLAG in the NPBWR2 TANGO system); L1 is used as the primary supporting clip because it explicitly describes the engineering. No residue number is named in either clip, but the N-terminus is the only extracellular terminus of this 7-TM GPCR, so the position is topology-derived rather than validated. No ledger evidence supports any internal (ECL1/ECL2/ECL3) insertion for NPBWR2 or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": []
 }

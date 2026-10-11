@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "FGFR1",
+  "uniprot_acc": "P11362",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:48:56.824973+00:00",
+  "literature_notes": "All eight ledger lines (L1\u2013L8) describe tags appended to the C-terminus of full-length FGFR1. The computed topology places the C-terminus (residue 822, R) deep in the intracellular domain (IC: 396\u2013822). L1\u2013L6 report 2xMyc knock-in alleles (Fgfr1 Myc and Fgfr1 FCPGMyc) validated in vivo; L7\u2013L8 report an FGFR1-EGFP C-terminal fusion used for subcellular localisation. None of these insertions is on the extracellular face. No ledger line describes a tag at the mature N-terminus (residue 22), in any extracellular loop, or anywhere in the EC domain (22\u2013374). The mature N-terminus (after signal-peptide cleavage at residue 21) is extracellular and would in principle accept a prepended tag, but no ledger line grounds such an insertion for FGFR1 or a close ortholog. Zero surface sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 822,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "2xMyc tag appended to C-terminus of full-length FGFR1; Fgfr1 Myc/Myc mice viable and fertile, confirming tag does not compromise receptor activity \u2014 but the C-terminus (residue 822) is intracellular (IC span 396\u2013822), so this is not a surface tag site."
+    },
+    {
+      "residue": 822,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "FGFR1-EGFP C-terminal fusion (R1-GFP) used to study subcellular localisation of full-length FGFR1; C-terminus (residue 822) is intracellular, so this is not a surface tag site."
+    }
+  ]
+}

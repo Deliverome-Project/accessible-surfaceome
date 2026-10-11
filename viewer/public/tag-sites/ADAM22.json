@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADAM22",
+  "uniprot_acc": "Q9P0K1",
+  "sites": [
+    {
+      "site_id": "ADAM22-terminal_n-25-lit",
+      "gene_symbol": "ADAM22",
+      "uniprot_acc": "Q9P0K1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "C",
+      "residue_after": "G",
+      "residue_label": "C25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FAH (FLAG-AU1-HA tandem)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HA antibody detects ADAM22-FAH at the synaptic surface in non-permeabilized brain tissue (surface_only confirmed by L2, L3); LGI1 colocalization at the synaptic cleft preserved by STED imaging (L3); native ADAM22 protein complexes successfully purified from brain using the FAH tag (L1) \u2014 function preserved.",
+      "confidence": "high",
+      "rationale": "ADAM22 is a type I single-pass transmembrane protein with signal peptide residues 1\u201325 and a large extracellular domain from residue 26 to 736; the C-terminus (758\u2013906) is intracellular. Because the HA antibody detects the FAH tag at the synaptic surface in non-permeabilized tissue (L2, L3), the tag must be on the extracellular face, and the only extracellular terminus is the mature N-terminus immediately after signal peptide cleavage. The junction is therefore after residue 25 (C) and before residue 26 (G), computed from the topology landmarks. The tag supports native complex purification and preserves LGI1 co-localization, confirming both surface trafficking and function. Tandem FAH tag (FLAG, AU1, HA) knocked into the endogenous Adam22 locus in mice (Adam22 FAH/FAH); HA antibody detects ADAM22-FAH at synaptic surfaces in brain tissue, colocalizing with LGI1, PSD-95, and CASK (L2, L3); used to purify native ADAM22 protein complexes from brain (L1). No residue number is stated in the ledger; ADAM22 is type I TM (N-extracellular, C-intracellular), so the only extracellular terminus is the N-terminus after signal peptide cleavage (after residue 25).",
+      "sources": [
+        {
+          "pmid": 33397806,
+          "citation": "PMID 33397806",
+          "claim": "We generated the ADAM22 knock-in mouse harboring a tandem tag composed of F LAG, A U1, and H A (referred to as an FAH tag) ( Adam22 FAH/FAH mouse) ( SI Appendix , Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:00:16.048961+00:00",
+  "literature_notes": "L4 was examined but excluded: it describes live-staining with an antibody directed against ADAM22's own extracellular epitope (antibody epitope mapping, not a tag insertion), and the S905F variant mentioned is an intracellular disease-associated point mutation, not a tag insertion site. No residue number is named in L1\u2013L3 for the FAH tag junction; the position is derived from topology (type I TM protein, single extracellular N-terminus after SP cleavage). L2 and L3 corroborate L1 with surface and functional evidence.",
+  "literature_rejected": []
+}

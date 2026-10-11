@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "GFRA3",
+  "uniprot_acc": "O60609",
+  "sites": [
+    {
+      "site_id": "GFRA3-terminal_n-31-lit",
+      "gene_symbol": "GFRA3",
+      "uniprot_acc": "O60609",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "G",
+      "residue_after": "D",
+      "residue_label": "G31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by cell-surface binding assay; glycosylation confirmed by SDS-PAGE mobility shift (43\u201362 kDa range). Functional assay of the FLAG-tagged construct relative to untagged protein NOT MEASURED in the cited clip.",
+      "confidence": "high",
+      "rationale": "GFRA3 is a GPI-anchored protein: the N-terminal signal peptide (residues 1\u201331) is co-translationally cleaved, and the C-terminal GPI anchor signal is post-translationally cleaved and replaced by the GPI lipid moiety, meaning any C-terminal tag would be lost during GPI processing. The mature N-terminus beginning at residue 32 (D) is therefore the sole extracellular terminus available for surface tagging, making insert_after_residue=31 the topology-derived junction. Code confirmed residue 31 = G and residue 32 = D from the canonical sequence. The FLAG-tagged construct was verified on the cell surface by the cited study, supporting feasibility at this terminus. FLAG-tagged full-length GFRalpha-3 expressed in HEK cells; protein confirmed surface-displayed via GPI anchor and glycosylated (PMID 9490034). The ledger clip names no residue; position is derived from topology: signal peptide (1\u201331) is cleaved at the N-terminus, and the GPI anchor signal is cleaved at the C-terminus and replaced by the GPI lipid anchor, leaving the N-terminus (after residue 31) as the sole viable extracellular terminus for a surface tag.",
+      "sources": [
+        {
+          "pmid": 9490034,
+          "citation": "PMID 9490034",
+          "claim": "GFRalpha-3 is a protein composed of 400 amino acid residues with three potential N-linked glycosylation sites together with the features characteristic of a glycosyl-phosphatidylinositol-anchored membrane protein. The heterologous expression of a FLAG-tagged GFRalpha-3 in human embryonic kidney cells showed that the protein is bound to the cell surface via a glycosyl-PtdIns anchor and is glycosylated, with different glycoforms migrating on SDS/PAGE with apparent molecular masses ranging over 43-62 kDa."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:07:14.603739+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a FLAG-tagged full-length GFRalpha-3 confirmed on the cell surface via GPI anchor in HEK cells, but names no insertion residue. Because GFRA3 is GPI-anchored, the C-terminal GPI signal is cleaved during biosynthesis and replaced by the GPI lipid; any tag placed C-terminally would be removed with the GPI signal peptide. The N-terminus after signal peptide cleavage (after residue 31) is therefore the only viable extracellular terminus, qualifying as a topology_derived site. No internal loop insertions are supported by the ledger. No other ledger lines were provided, so no additional sites are proposed.",
+  "literature_rejected": []
+}

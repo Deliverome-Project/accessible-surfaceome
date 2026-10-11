@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GALR2-terminal_n-0-lit",
+      "gene_symbol": "GALR2",
+      "uniprot_acc": "O43603",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used for expression and purification studies; surface display is implied by the experimental design but no dedicated trafficking or functional assay result is reported in this clip.",
+      "confidence": "medium",
+      "rationale": "GALR2 is a GPCR with no endogenous signal peptide; EC1 (residues 1\u201325) is the sole extracellular terminus. The published construct prepends an exogenous HA signal sequence and FLAG before residue 1 of the full-length receptor; after HA-SP cleavage the FLAG is at the extracellular N-terminus. Because no residue number is named in the clip, the position is topology-derived: the prepend junction (insert_after_residue = 0, residue_after = M) is the only possible extracellular terminus. The tag is 26 residues from TM1, well above the 3-residue minimum. Full-length human GALR2 cloned into pcDNA3.1(+) with an exogenous N-terminal HA signal sequence followed by a FLAG epitope tag (DYKDDDDK); after HA-SP cleavage the FLAG is displayed at the extracellular N-terminus of the membrane-anchored receptor. GALR2 has no endogenous signal peptide (EC1 = residues 1\u201325), so the only extracellular terminus is the N-terminus and the tag must prepend residue 1.",
+      "sources": [
+        {
+          "pmid": 35594396,
+          "citation": "PMID 35594396",
+          "claim": "The human GALR1 and GALR2 were cloned into pcDNA3.1(+) vector (Thermo Fisher Scientific) with an N-terminal hemagglutinin (HA) signal sequence and a FLAG epitope tag (DYKDDDDK)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:05:19.372561+00:00",
+  "literature_notes": "L2 (PMC7108740) describes chimeric GALR2/GALR3 receptors carrying HiBiT tags confirmed on the plasma membrane by Nano-Glo extracellular detection. This clip was not used to propose a site because: (1) the constructs are chimeric, not pure GALR2; (2) no residue or loop is named for the HiBiT insertion point; (3) the clip cannot be pinned to any specific junction in GALR2. The C6 cysteine in EC1 is noted but is not disrupted by a prepend tag at position 0. The large intracellular C-terminus (IC4, residues 296\u2013387) is not a surface site and is not proposed.",
+  "literature_rejected": []
 }

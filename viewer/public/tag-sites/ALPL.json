@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "ALPL",
+  "uniprot_acc": "P05186",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:21:49.049192+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single experimental strategy: the GPI-anchor signal peptide of TNSALP is deleted and replaced with a FLAG-peptide (DYKDDDDK) at the C-terminus. ALPL is a GPI-anchored protein; its only membrane attachment is the GPI anchor. Removing the GPI-anchor signal and substituting FLAG produces a soluble, secreted protein \u2014 confirmed explicitly by L2 ('secreted epitope-tagged TNALP') and L4 ('soluble epitope-tagged TNALP\u2026 from mouse osteoblast culture supernatant'). The rules require that a qualifying construct be full-length and membrane-anchored; these constructs are neither. They fall squarely under the disqualifying category of 'soluble ectodomain or single-domain construct secreted as a separate protein.' No other insertion modality (fluorescent-protein fusion, transposon screen, bungarotoxin-binding site, HaloTag, etc.) appears anywhere in the ledger for ALPL. Zero sites qualify.",
+  "literature_rejected": []
+}

@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "ERVW-1",
+  "uniprot_acc": "Q9UQF0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:36:48.038335+00:00",
+  "literature_notes": "The sole ledger line (L1) describes a Syncytin-1 cDNA construct tagged with a V5 epitope from a commercial GeneCopoeia plasmid (#T0264). The clip does not state where in the protein the V5 tag is inserted. This falls squarely under the explicit disqualification rule: 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' Topology-derived reasoning cannot rescue it: Syncytin-1 has its N-terminus extracellular (mature N-terminus at residue 21, after signal-peptide cleavage at 1\u201320) and its C-terminus intracellular (residues 465\u2013538). A tag placed before the signal peptide would be cleaved off; a C-terminal tag would be intracellular; an internal tag position is entirely unspecified. Because the ledger provides no positional information, no surface tag site can be proposed. Zero sites is the correct answer.",
+  "literature_rejected": []
+}

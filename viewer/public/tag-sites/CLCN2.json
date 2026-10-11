@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLCN2",
+  "uniprot_acc": "P51788",
+  "sites": [
+    {
+      "site_id": "CLCN2-internal-None-lit",
+      "gene_symbol": "CLCN2",
+      "uniprot_acc": "P51788",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "L-M loop (EC3, residues 385-430)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by pre-permeabilization HA immunolabeling in polarized MDCK cells (L5). Trafficking and apical/basolateral distribution studied (L2). Channel electrophysiology of the HA-tagged construct is NOT MEASURED in any ledger clip.",
+      "confidence": "high",
+      "rationale": "L4 explicitly names the insertion loop ('short luminal loop between L and M \u03b1-helices') and notes it carries an N-linked glycan, uniquely identifying EC3 (residues 385\u2013430) in the provided topology landmarks \u2014 the only extracellular loop with an N-glycosylation sequon (NRT at N403, computed from the canonical sequence). No ledger clip specifies a residue number, so insert_after_residue is null and the site is loop-level. L5 confirms surface display by pre-permeabilization antibody labeling, establishing surface_only validation. The loop is 46 residues long and \u22653 residues from both flanking TM boundaries (TM5 ends at 384, TM6 starts at 431), providing ample space for a 15\u201323 aa ALFA tag with GS linkers. Full-length human CLC-2 stably expressed in MDCK cells with a hemagglutinin (HA) epitope tag inserted into the short luminal loop between helices L and M (EC3, residues 385\u2013430 per topology landmarks). The loop contains an N-linked glycan at N403 (NRT sequon), confirming extracellular placement. The same construct was delivered in vivo via lentivirus into CLC-2-KO mice. No ledger clip names a specific residue number; the position is loop-level only.",
+      "sources": [
+        {
+          "pmid": 25739457,
+          "citation": "PMID 25739457",
+          "claim": "The HA epitope is located in the short luminal loop between L and M \u03b1-helices; this loop contains an N-linked glycan."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:40:11.308240+00:00",
+  "literature_notes": "All six ledger clips (L1\u2013L6) describe the same HA-tagged CLC-2 construct originating from the Cid/Sepulveda laboratory. L3 and L4 are the most informative, naming the 'short luminal loop between L and M \u03b1-helices' as the tag location and noting the N-linked glycan in that loop. Computed from the canonical sequence, the only extracellular loop with an N-glycosylation sequon (NxS/T, x\u2260P) is EC3 (385\u2013430) at N403 (NRT), confirming the loop identity. EC1 (115\u2013133) also has an NTS sequon at N127 but is not the L-M loop by CLC helix nomenclature. No ledger clip names a specific residue, so the site cannot be promoted to 'validated'; it remains a loop-level (topology_derived) site. The other extracellular spans \u2014 EC2 (296\u2013317, 22 aa), EC4 (471, 1 aa), EC5 (542, 1 aa) \u2014 have no ledger support for tag insertion and are not proposed.",
+  "literature_rejected": []
+}

@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR50-terminal_n-0-lit",
+      "gene_symbol": "GPR50",
+      "uniprot_acc": "Q13585",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Non-permeabilized immunostaining with fluorescent anti-HA antibody confirmed plasma membrane surface display of 3HA-Mel1c receptors (platypus, X. laevis, G. gallus) in COS7 cells. Functional assays on GPR50 itself NOT MEASURED in this study.",
+      "confidence": "medium",
+      "rationale": "GPR50 has no signal peptide; the extracellular N-terminus (residues 1-30) is the only extracellular terminus of this 7-TM receptor, making it the sole topology-derived position for an N-terminal tag. L4/L5 document 3HA N-terminal tagging of Mel1c, the non-mammalian orphan melatonin receptor most closely related to GPR50, in full-length membrane-anchored constructs with surface expression confirmed by non-permeabilized staining \u2014 an indirect but structurally analogous precedent. insert_after_residue=0 places the tag before Met1, the first extracellular residue; no signal peptide is present to cleave it away. L4/L5 (PMC5846726): 3HA tag fused to the N-terminus of Mel1c (the non-mammalian melatonin receptor ortholog most closely related to GPR50) in full-length receptor constructs expressed in COS7 cells. GPR50 has no signal peptide (topology begins EXTRACELLULAR: 1-30), so the N-terminus is the sole extracellular terminus and the tag position is topology-derived.",
+      "sources": [
+        {
+          "pmid": 29529033,
+          "citation": "PMID 29529033",
+          "claim": "Immune staining of non-permeabilized COS7/3HA-Mel1c cells with a fluorescent anti-HA antibody revealed major expression of platypus, X . laevis , and G . gallus Mel1c receptors at the plasma membrane."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:37:16.196195+00:00",
+  "literature_notes": "L1, L2, and L3 all describe BRIL insertion into ICL3 of full-length human GPR50 (between residues 219 and 227), which falls entirely within the INTRACELLULAR: 210-239 span confirmed by the authoritative topology landmarks; these are recorded in other_positions. L4 and L5 describe N-terminal 3HA tagging of Mel1c (non-mammalian melatonin receptor ortholog of GPR50) with surface expression confirmed; this is the only ledger evidence for an extracellular tag site on this protein or its close orthologs. No ledger line supports an insertion in any of the short extracellular loops of GPR50 (ECL1: 86-102, ECL2: 165-188, ECL3: 261-273) in a full-length membrane-anchored construct.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 219,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "BRIL inserted after residue 219 (R) in ICL3 of full-length human GPR50 for cryo-EM structure determination; ICL3 (210-239) is intracellular \u2014 not an extracellular surface site."
+    },
+    {
+      "residue": 227,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "BRIL C-terminus reconnects to GPR50 at residue 227 (D) in ICL3; ICL3 (210-239) is intracellular \u2014 not an extracellular surface site."
+    }
+  ]
 }

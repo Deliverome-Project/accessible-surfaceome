@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR21-terminal_n-0-lit",
+      "gene_symbol": "GPR21",
+      "uniprot_acc": "Q99679",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the L2 construct was used for structural studies; no functional assay of the tagged receptor is reported in the ledger clip. L3 reports expression yield improvement but no functional assay of the GPR21 N-terminal junction specifically.",
+      "confidence": "medium",
+      "rationale": "GPR21 has no signal peptide; the raw topology string begins with 'O' at residue 1, and the landmarks place residues 1\u201328 as extracellular. The N-terminus is therefore the only extracellular terminus, and a prepend tag (insert_after_residue=0) is the topology-derived junction. L2 explicitly reports an N-terminal FLAG tag on full-length GPR21 in a membrane-anchored context. L3 provides independent corroboration: a BRIL domain (~106 aa) is tolerated fused directly to GPR21 residue 1, confirming the N-terminal extracellular face accepts large insertions. The 28-residue extracellular N-terminal span provides ample clearance (>3 residues) from TM1 at residue 29. Full-length human GPR21 cloned into pFastbac1 with an N-terminal FLAG tag for expression in insect cells (PMC9877262). GPR21 has no signal peptide (topology begins extracellular at residue 1); the N-terminus (residues 1\u201328) is the sole extracellular terminus, making the prepend junction the only possible surface position. L3 (PMC9839698) independently corroborates N-terminal extracellular accessibility via a BRIL domain fused directly to GPR21 residue 1 in a full-length membrane-anchored construct.",
+      "sources": [
+        {
+          "pmid": 36721851,
+          "citation": "PMID 36721851",
+          "claim": "The human GPR21 was synthesized by GENERAL BIOL (Chuzhou, China) and cloned into the pFastbac1 vector (Gibco), harboring an N\u2010terminal Flag tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:34:05.500564+00:00",
+  "literature_notes": "L1 (myc-tag at C-terminus) is excluded from sites because the C-terminus of GPR21 is intracellular (landmarks: 305\u2013349 intracellular); it is recorded in other_positions. L2 and L3 both pin the same N-terminal prepend junction (insert_after_residue=0): L2 places FLAG directly at the GPR21 N-terminus; L3 places BRIL at the GPR21 N-terminus (FLAG is upstream of BRIL in that construct, not at the GPR21 junction). Because they converge on the same junction, one site is reported with L2 as primary evidence and L3 noted as corroboration. No ledger line supports any internal extracellular loop (ECL1 91\u2013103, ECL2 169\u2013191, ECL3 274\u2013283) with a published insertion, so no internal sites are proposed. Validation is 'detected_only' because neither ledger clip reports a functional assay of the N-terminally tagged full-length receptor.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 349,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Myc-tag incorporated at the C-terminus of full-length GPR21 expressed in HEK293T cells; the C-terminus falls in the intracellular region (landmarks 305\u2013349), so this is not a surface tag site."
+    }
+  ]
 }

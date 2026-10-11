@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CNGA1",
+  "uniprot_acc": "P29973",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:52:21.530072+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same construct: GFP or FLAG inserted immediately before the stop codon of CNGA1, i.e., a C-terminal tag after residue 686 (T). The authoritative topology places residue 686 firmly in the intracellular C-terminal domain (390\u2013686). A C-terminal tag on CNGA1 therefore faces the cytoplasm, not the extracellular space. The two extracellular loops (EC1: 182\u2013194, 13 residues; EC2: 318\u2013370, 53 residues) are not addressed by any ledger line \u2014 no insertion, transposon hit, fluorescent-protein fusion, or epitope knock-in is reported at any extracellular position of this protein. Because no ledger line grounds an extracellular surface tag, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 686,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP and FLAG inserted immediately before the stop codon (after residue 686, T) in a cysteine-less CNGA1 background; the C-terminus lies in the intracellular domain (residues 390\u2013686), so this tag faces the cytoplasm, not the extracellular surface. Surface expression of the channel was confirmed (L2, L3), but the tag itself is intracellular."
+    }
+  ]
+}

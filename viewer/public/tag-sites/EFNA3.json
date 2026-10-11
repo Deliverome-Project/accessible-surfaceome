@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EFNA3",
+  "uniprot_acc": "P52797",
+  "sites": [
+    {
+      "site_id": "EFNA3-terminal_n-22-lit",
+      "gene_symbol": "EFNA3",
+      "uniprot_acc": "P52797",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "mCherry",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface-displayed mCherry-ephrin-A3 was used in co-infection experiments with EphA3-expressing cells; surface expression is implicit in the experimental design (receptor-ligand signaling context), but no dedicated ephrin-A3 receptor-binding or signaling assay was reported for the tagged construct specifically.",
+      "confidence": "medium",
+      "rationale": "The paper (PMC3857839) reports mCherry inserted 'between the signal peptide and the mature coding sequence' of mouse ephrin-A3 in a full-length membrane-anchored construct, placing the tag at the mature N-terminus. For human EFNA3, the signal peptide spans residues 1\u201322 (authoritative landmark), so the equivalent junction is after residue 22 (A) and before residue 23 (Q), computed from the numbered sequence. No specific residue number is cited in the paper, so position is topology-derived. The evidence is indirect (mouse ortholog), but the SP/mature junction is conserved in function and the construct was demonstrably surface-displayed. Full-length, membrane-anchored mCherry-ephrin-A3 fusion expressed via lentivirus (CS-Mm30127-Lv105-ephrin-A3) in NCI-H226 and A549 lung cancer cells; mCherry was inserted between the signal peptide and the mature coding sequence of mouse ephrin-A3 (ortholog of human EFNA3). The construct was commercially produced by GeneCopoeia and used to study EphA3 signaling.",
+      "sources": [
+        {
+          "pmid": 24348920,
+          "citation": "PMID 24348920",
+          "claim": "The CS-Mm30127-Lv105-ephrin-A3 lentivirus, with mCherry inserted between the signal peptide and the mature coding sequence of mouse ephrin-A3, and the EX-mCHER-Lv105 control lentivirus encoding mCherry were purchased from GeneCopoeia."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:24:31.415333+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC3857839) and describe the same construct; L1 was used as the primary supporting clip. The evidence is indirect (mouse ephrin-A3 ortholog) and the position is topology-derived (no residue number cited). Ephrin-A3 is GPI-anchored with no intracellular domain; the entire region 23\u2013238 is extracellular per the authoritative topology. No ledger evidence supports any internal loop insertion site. The C-terminal GPI anchor signal (approximately residues 215\u2013238) is cleaved during GPI attachment, making a C-terminal tag impossible on the mature surface protein; no ledger line supports such a site in any case.",
+  "literature_rejected": []
+}

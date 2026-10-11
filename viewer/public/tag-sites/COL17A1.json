@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "COL17A1",
+  "uniprot_acc": "Q9UMD9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:00:19.226066+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe a single CRISPR/Cas9 HDR knock-in of a DDDDK (FLAG-like) tag into exon 2 of the COL17A1 gene in HaCaT keratinocytes. COL17A1 is a type II transmembrane collagen: its N-terminus (residues 1\u2013466) is intracellular, the TM domain spans 467\u2013487, and the ectodomain runs 488\u20131497. Exon 2 of COL17A1 encodes sequence in the early N-terminal intracellular region (approximately residues 14\u201360 based on the published 56-exon gene structure of NM_000494). The DDDDK tag therefore sits on the cytoplasmic face and is used in the paper for immunoprecipitation from cell lysates and co-IP of the integrin \u03b16/\u03b24 complex \u2014 applications that require intracellular, not surface, access. No ledger line reports any insertion in the extracellular domain (488\u20131497) of full-length, membrane-anchored COL17A1. The ledger contains no evidence for a surface-accessible epitope tag site; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 14,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "DDDDK tag inserted in-frame into exon 2 of COL17A1 by CRISPR/Cas9 HDR; exon 2 encodes the early N-terminal intracellular domain (~residues 14\u201360), which is cytoplasmic (topology: intracellular 1\u2013466); used for immunoprecipitation from cell lysates, not surface labelling."
+    }
+  ]
+}

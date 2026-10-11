@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "PODXL",
+  "uniprot_acc": "O00592",
+  "sites": [
+    {
+      "site_id": "PODXL-terminal_n-22-lit",
+      "gene_symbol": "PODXL",
+      "uniprot_acc": "O00592",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "S",
+      "residue_after": "S",
+      "residue_label": "S22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Tunnel-forming phenotype in 3D acini stimulated earlier than GFP-alone control (functional activity preserved); surface display confirmed by anti-GFP antibody staining of non-permeabilized GFP-PODXL-expressing acini (L3).",
+      "confidence": "high",
+      "rationale": "PODXL has a single extracellular N-terminus (residues 23\u2013460) and a single intracellular C-terminus; the signal peptide (residues 1\u201322) is cleaved co-translationally. The paper explicitly states the GFP is extracellular and the construct is named GFP-PODXL (GFP prefix), leaving exactly one possible junction: after residue 22 (last SP residue, S) and before residue 23 (mature N-terminus, S). Python confirmed res(22)='S' and res(23)='S'. The junction is 438 residues from the TM boundary, well clear of any constraint. Canine ortholog GP135 tagged with myc-SNAP at the same N-terminal position (L7) independently corroborates this junction. Full-length, membrane-anchored GFP-PODXL (isoform A) expressed in PC3 cells via retroviral vector. The paper explicitly labels the construct 'extracellularly GFP-tagged PODXL', confirming the GFP is on the extracellular face. PODXL is a type I single-pass transmembrane protein (N-out, C-in); the only extracellular terminus is the mature N-terminus after signal-peptide cleavage at residue 22. The construct name 'GFP-PODXL' (GFP prefix) is consistent with an N-terminal fusion placed after the signal peptide.",
+      "sources": [
+        {
+          "pmid": 36735782,
+          "citation": "PMID 36735782",
+          "claim": "Expression of extracellularly green fluorescent protein (GFP)\u2013tagged PODXL [isoform A; henceforth described as wild type (WT)] in PC3 cells stimulated the tunnel-forming phenotype to occur earlier at the expense of local spreading compared to GFP alone (GFP-PODXL; fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:41:24.729403+00:00",
+  "literature_notes": "L7 (PMC12497838) reports a myc-SNAP fusion to canine GP135 (podocalyxin ortholog) expressed in MDCK cells, which maps to the same N-terminal extracellular junction (after SP cleavage) as L2. Because it is the same junction, it is not a separate site; it is indirect corroboration. L5/L6 (PMC1796660) describe a \u0394EC chimeric construct in which CD43's signal peptide plus a FLAG tag replaces 'most of Podocalyxin's extracellular domain'; this is a domain-swap experiment, not a tag insertion at a defined residue within full-length PODXL, so no junction can be pinned and it does not qualify as a site. L4 (PMC9897673) reports K431R, K525R, K526R, K547R mutagenesis within the GFP-PODXL backbone; these are mutagenesis positions, not tag-insertion sites, and are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 525,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "K525R mutation introduced into GFP-PODXL; residue 525 falls in the intracellular domain (482\u2013558) and is not a surface tag site."
+    },
+    {
+      "residue": 526,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "K526R mutation introduced into GFP-PODXL; residue 526 falls in the intracellular domain (482\u2013558) and is not a surface tag site."
+    },
+    {
+      "residue": 547,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "K547R mutation introduced into GFP-PODXL; residue 547 falls in the intracellular domain (482\u2013558) and is not a surface tag site."
+    }
+  ]
+}

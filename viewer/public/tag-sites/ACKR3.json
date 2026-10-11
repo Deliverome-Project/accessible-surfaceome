@@ -37,7 +37,118 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ACKR3-terminal_n-0-lit",
+      "gene_symbol": "ACKR3",
+      "uniprot_acc": "P25106",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "NLuc (NanoBiT)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "CXCL12-AF647 binding to NLuc-hACKR3 membranes confirmed by NanoBRET; VUF16840 and VUF15485 displaced CXCL12-AF647 in a concentration-dependent manner, demonstrating intact ligand-binding function.",
+      "confidence": "high",
+      "rationale": "The NLuc tag is explicitly described as N-terminal on full-length hACKR3 expressed in membranes. The NanoBRET assay with fluorescent CXCL12 confirms both membrane/surface display and preserved chemokine-binding function. The N-terminus (residues 1\u201345) is extracellular per topology landmarks, placing the NLuc tag on the cell surface. Full-length hACKR3 with N-terminal NLuc tag expressed in membranes; CXCL12-AF647 binding to NLuc-hACKR3-expressing membranes quantified by NanoBRET binding assay.",
+      "sources": [
+        {
+          "pmid": 41317408,
+          "citation": "PMID 41317408",
+          "claim": "Binding of fluorescent Alexa Fluor 647-labeled CXCL12 (CXCL12-AF647) to membranes expressing N-terminally NLuc-tagged hACKR3 was quantified by a homogeneous NanoBRET binding assay, 40 whereas binding of [ 3 H] VUF15485 to HA-tagged hACKR3 expressing membranes was determined after filtration of incubation mixtures and scintillation counting. 23 Coincubation of CXCL12-A647 and increasing concentrations of VUF16840 or the high-affinity small-molecule ACKR3 agonist VUF15485 23 resulted in a concentration-dependent decrease in CXCL12-A647 binding to membranes expressing the NLuc-hACKR3 ( Fig. 1 A)."
+        },
+        {
+          "pmid": 34583741,
+          "citation": "PMID 34583741",
+          "claim": "To this aim, we added a Flag epitope to the N-terminus of ACKR3 and ACKR3-Venus, and labeled the receptors at 37 \u00b0C with Flag antibody conjugated to a fluorphore (M1-Alexa-647)."
+        },
+        {
+          "pmid": 39008676,
+          "citation": "PMID 39008676",
+          "claim": "The construct bore a hemagglutinin signal peptide followed by a Flag-tag preceding the receptor sequence."
+        },
+        {
+          "pmid": 41330916,
+          "citation": "PMID 41330916",
+          "claim": "Stable HEK293 expressing SNAP-tagged ACKR3 were kindly provided by Meritxel Canals from University of Nottingham."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ACKR3-terminal_n-1-lit",
+      "gene_symbol": "ACKR3",
+      "uniprot_acc": "P25106",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "D",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Used in cell-based assays; specific surface expression or functional assay results not described in this clip.",
+      "confidence": "high",
+      "rationale": "The construct explicitly uses residues 2\u2013362 of ACKR3 with an N-terminal FLAG tag, placing the FLAG before D2 (canonical residue 2) in the expressed protein. In canonical numbering this is insert_after_residue=1 (between M1 and D2); Python confirms seq[0]='M' and seq[1]='D'. The N-terminal region (residues 1\u201345) is extracellular, so this junction is on the cell surface. This is a distinct junction from the prepend-before-M1 sites above. Full-length ACKR3 (residues 2\u2013362) in pcDNA3.1 with N-terminal FLAG tag and C-terminal RlucII fusion (ACKR3_rlucII); used in cell-based assays.",
+      "sources": [
+        {
+          "pmid": 40232828,
+          "citation": "PMID 40232828",
+          "claim": "For cell-based assays, ACKR3 (residues 2\u2013362) or CXCR4 (residues 2\u2013352) were inserted into pcDNA3.1 expression vector with an N-terminal FLAG tag and followed with a C-terminal Renilla luciferase II (ACKR3_rlucII and CXCR4_rlucII)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:57:38.603513+00:00",
+  "literature_notes": "All five ledger lines supporting surface tag sites converge on the extracellular N-terminus of ACKR3 (residues 1\u201345). No ledger line supports an internal extracellular loop (ECL1 103\u2013119, ECL2 181\u2013209, ECL3 275\u2013295) tag insertion. L2 (Venus at C-tail) and the C-terminal RlucII in L3 are intracellular and recorded in other_positions. The ACKR3 N-terminal extracellular domain contains three cysteines (C21, C26, C34) that may form disulfide bonds and potential N-glycosylation sequons (N13, N22, N39); a prepended tag at position 0 avoids all of these. L3 pins a slightly different junction (insert_after_residue=1, after M1) because the construct uses residues 2\u2013362; this is reported as a distinct site. L6 (SNAP-tag) is topology_derived because the clip names no residue.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 362,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Venus-GFP fused to the C-tail of full-length ACKR3; the C-terminus (residues 319\u2013362) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 362,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Renilla luciferase II (RlucII) fusion on full-length ACKR3 (residues 2\u2013362); C-terminus is intracellular per topology landmarks."
+    }
+  ]
 }

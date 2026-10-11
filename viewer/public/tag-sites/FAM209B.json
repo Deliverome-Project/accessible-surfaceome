@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "FAM209B",
+  "uniprot_acc": "Q5JX69",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:41:13.343801+00:00",
+  "literature_notes": "FAM209B is a single-pass type I transmembrane protein (signal peptide 1\u201319, extracellular 20\u201359, TM 60\u201373, intracellular 74\u2013171). The sole ledger entry (L1) reports a FLAG tag knocked in at the stop codon of the mouse Fam209 locus, placing the tag immediately after residue 171. Residue 171 is intracellular (topology landmarks: intracellular span 74\u2013171), so this insertion is on the cytoplasmic face and does not qualify as an extracellular surface tag site. No ledger line reports any tag, fluorescent-protein fusion, transposon insertion, or domain-insertion in the extracellular span (residues 20\u201359) or at the mature N-terminus (after residue 19). Zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 171,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag inserted at the stop codon (C-terminus, residue 171) in mouse Fam209 knock-in mice; the C-terminus lies in the intracellular span (residues 74\u2013171) and is not on the extracellular face."
+    }
+  ]
+}

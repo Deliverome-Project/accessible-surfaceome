@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "ANPEP",
+  "uniprot_acc": "P15144",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:27:47.885927+00:00",
+  "literature_notes": "ANPEP (Aminopeptidase N) is a type II single-pass transmembrane protein with a short intracellular N-terminus (residues 1-9), a TM helix (10-32), and a large extracellular ectodomain (33-967). Both ledger lines (L1, L2) describe pEGFP-C1-APN fusion constructs in which EGFP is placed at the N-terminus of the full-length APN protein by the pEGFP-C1 vector architecture. Because APN's N-terminus (residues 1-9) is intracellular, the EGFP tag in these constructs is on the cytoplasmic face \u2014 not the extracellular surface. These constructs therefore do not qualify as extracellular surface tag insertions. L2 also mentions Fc-domain fusions of the soluble ectodomain, which are explicitly excluded by the rules (soluble ectodomain / Fc-fusion reagent). No ledger line supports an insertion on the extracellular face of ANPEP; zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "pEGFP-C1-APN constructs place EGFP N-terminal to full-length APN; because APN residues 1-9 are intracellular, the EGFP tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Same pEGFP-C1 N-terminal fusion architecture applied to 17 animal APN orthologs; EGFP is on the intracellular face. The Fc-ectodomain fusions also described are excluded as soluble Fc-fusion reagents."
+    }
+  ]
+}

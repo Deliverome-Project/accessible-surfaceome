@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ERVV-2",
+  "uniprot_acc": "B6SEH9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:37:20.351882+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe C-terminal HA tagging of ERVV-2 EnvV2. The computed topology places residues 470\u2013535 in the intracellular compartment (TM: 460\u2013469; IC: 470\u2013535), so the C-terminal tag sits on the cytoplasmic face and does not qualify as an extracellular surface site. No ledger line reports any insertion at the extracellular N-terminus (after SP cleavage at residue 21) or in any extracellular loop. The ledger does not support any extracellular tag site for this protein.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 535,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag confirmed to produce a membrane-associated protein (L1, L2), but the C-terminus lies in the intracellular domain (residues 470\u2013535, 66 aa past the TM boundary at 469); not an extracellular surface site."
+    }
+  ]
+}

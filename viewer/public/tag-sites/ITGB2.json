@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "ITGB2",
+  "uniprot_acc": "P05107",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:30:34.180553+00:00",
+  "literature_notes": "L1\u2013L5 (PMC5603536) report GFP/pHluorin/Halo/SNAP insertions between Gly101 and Tyr102 of human ITGB1 (beta-1 integrin), not ITGB2. ITGB1 is a paralog of ITGB2 (different gene locus, ~45% sequence identity); it is not a close ortholog (same gene, different species) as required by the evidence rules. These clips therefore do not ground any ITGB2 surface site. L6\u2013L9 (PMC6456621, PMC12137850) confirm that ITGB2 (CD18) was fused to mCFP or mYFP in knock-in mice and a plasmid construct; the naming convention 'CD18-mCFP' and 'ITGB2-mYFP' indicates C-terminal fusions. The C-terminus of ITGB2 is residue 769 (S), which is intracellular (IC span: 724\u2013769). No clip states an internal or N-terminal extracellular insertion position for ITGB2. Accordingly, zero extracellular surface sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 769,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "ITGB2-mYFP (Addgene #8638, Springer lab) is a C-terminal fluorescent protein fusion; residue 769 (S) is the last residue of ITGB2 and lies in the intracellular domain (IC: 724\u2013769), making this tag cytoplasmic, not a surface tag."
+    },
+    {
+      "residue": 769,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "CD18-mCFP knock-in mice (PMC6456621) carry a C-terminal mCFP fusion on ITGB2; the C-terminus is intracellular (IC: 724\u2013769), confirmed by FRET imaging of cytoplasmic integrin tails."
+    }
+  ]
+}

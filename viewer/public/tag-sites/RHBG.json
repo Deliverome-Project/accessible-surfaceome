@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "RHBG",
+  "uniprot_acc": "Q9H310",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:59:11.380795+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe GFP fusions to full-length human RhBG expressed in MDCKI cells or C2C12 myotubes. L1/L2/L3/L5/L6 describe GFP-RhBG (pEGFP-C1, N-terminal GFP); L4/L5 describe RhBG-GFP (pEGFP-N3, C-terminal GFP). The authoritative topology landmarks place the N-terminus (residues 1\u201314) in the intracellular compartment and the C-terminus (residues 416\u2013458) also intracellular. Neither terminus is extracellular, so both GFP fusions reside on the cytoplasmic face. The papers confirm plasma-membrane trafficking of the protein itself, but that does not make the tag extracellular. No ledger line describes any insertion in an extracellular loop or domain of RhBG. Because the rules forbid proposing sites not grounded in the ledger, and because no ledger line supports an extracellular tag position, zero sites are reported. The six extracellular loops (EC1 35\u201361, EC2 108\u2013124, EC3 173\u2013179, EC4 241\u2013251, EC5 304\u2013306, EC6 365\u2013394) are topologically available but entirely unsupported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "N-terminal GFP fusion (pEGFP-C1, GFP-RhBG): topology places residues 1\u201314 in the intracellular compartment, so the GFP tag is on the cytoplasmic face, not the extracellular surface."
+    },
+    {
+      "residue": 458,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GFP fusion (pEGFP-N3, RhBG-GFP): topology places residues 416\u2013458 in the intracellular compartment, so the GFP tag is on the cytoplasmic face, not the extracellular surface."
+    }
+  ]
+}

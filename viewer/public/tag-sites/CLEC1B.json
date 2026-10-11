@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC1B",
+  "uniprot_acc": "Q9P126",
+  "sites": [
+    {
+      "site_id": "CLEC1B-terminal_c-229-lit",
+      "gene_symbol": "CLEC1B",
+      "uniprot_acc": "Q9P126",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 229,
+      "residue_before": "P",
+      "residue_after": "",
+      "residue_label": "P229",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface clustering at the plasma membrane and partial dynamin-dependent internalization into vesicular structures observed by fluorescence microscopy; no CLEC-2 signaling assay (e.g. NFAT reporter) was reported for this construct.",
+      "confidence": "medium",
+      "rationale": "For a type II TM protein, the C-terminus is extracellular; the 'CLEC-2-GFP' naming unambiguously places GFP after the last residue of CLEC1B. Python confirms seq[228]='P' (position 229), which is 176 residues from the TM boundary (53), well clear of any constraint. The construct reaches the plasma membrane and clusters there, confirming surface display. No specific residue is named in L6, so position_evidence is topology_derived. CLEC-2-GFP fusion protein expressed in A375 cells; the naming convention 'CLEC-2-GFP' places GFP at the C-terminus. The C-terminus of CLEC1B (residue 229, P) is extracellular (ectodomain 54\u2013229). Surface display was confirmed by fluorescence microscopy showing clustering at the plasma membrane.",
+      "sources": [
+        {
+          "pmid": 22884313,
+          "citation": "PMID 22884313",
+          "claim": "However, in studies where we monitored the subcellular localization of CLEC-2 using A375 cells transfected with a CLEC-2-green fluorescent protein (GFP) fusion protein, we found that this molecule rapidly clustered at the plasma membrane and then partially internalized in a dynamin-dependent manner into vesicular structures ( Figure 2 E and data not shown)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:48:27.009299+00:00",
+  "literature_notes": "L1, L2, L4, and L5 all describe the same SNAP/HaloTag CLEC-2 construct as L3 (same study, preprint DOI:10.21203/rs.3.rs-7742583/v1 and its published version PMC13181292); L3 was chosen as the single supporting clip because it provides the strongest functional evidence (NFAT-luciferase assay). None of L1\u2013L5 name a specific residue; the ectodomain N-terminus junction (53/54) is topology_derived from the schematic description. The C-terminal GFP site (L6) is a separate study and a separate site. No ledger line reports any intracellular tag insertion or any function-abrogating insertion for CLEC1B, so other_positions is empty.",
+  "literature_rejected": [
+    {
+      "residue_label": "I53",
+      "insert_after_residue": 53,
+      "gate": "geometry",
+      "reason": "topology: internal residue 53 is membrane, not extracellular",
+      "supporting_quote": null
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRL3",
+  "uniprot_acc": "Q9HAR2",
+  "sites": [
+    {
+      "site_id": "ADGRL3-internal-None-lit",
+      "gene_symbol": "ADGRL3",
+      "uniprot_acc": "Q9HAR2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED for ADGRL3. For the CL1 homolog, HA-tagged full-length CL1 was detected on the surface of HEK293 cells and used in neurexin binding assays (L2, PMC3308797); receptor function in the homolog context was not explicitly quantified relative to untagged CL1.",
+      "confidence": "low",
+      "rationale": "L1 reports HA insertion in the ECL1 of full-length membrane-anchored CL1 (ADGRL1), a close latrophilin-family homolog of ADGRL3. The CL1 junction (Tyr918/Glu919) maps to the TM2/ECL1 boundary of ADGRL3 (computed: TM2 ends at 918, ECL1 starts at 919), so no specific ADGRL3 residue can be derived from the cited position; the site is reported at region level (ECL1, residues 919-926, sequence NRTDQPIA). ECL1 is only 8 residues; positions 921-923 are the only ones >=3 residues from both TM boundaries. Confidence is low because the evidence is indirect (homolog) and the loop is very short for a 15-23 aa tag. An HA epitope tag was inserted between Tyr918 and Glu919 in the first extracellular loop (ECL1) of full-length, membrane-anchored CL1 (CIRL1/latrophilin-1, ADGRL1), a close homolog of ADGRL3 (PMC3308797, L1). Surface display of the HA-tagged CL1 on HEK293 cells was confirmed by incubation with neurexin-1-Ig fusion proteins (L2). In ADGRL3, ECL1 spans residues 919-926 (sequence NRTDQPIA) per the computed topology landmarks. The CL1 junction (Tyr918/Glu919) corresponds to the TM2/ECL1 boundary in ADGRL3 (ADGRL3 TM2 ends at 918, ECL1 begins at 919); no specific ADGRL3 residue is named in the ledger, so this is a region-level site.",
+      "sources": [
+        {
+          "pmid": 22262843,
+          "citation": "PMID 22262843",
+          "claim": "Only pCMVIg-CL1 Lectin that encodes CL1 residues Met 1 \u2013Tyr 131 fused to human IgG Fc fragment was cloned by direct insertion of a PCR fragment into the EcoRI-SalI site of pCMVIg vector.\npCMV-CL1-1 and pCMV-CL1-5 encode full-length CL1 lacking both splice inserts or containing an insert in SSA, respectively (CL1 FL and CL1 FL+SSA ) and were described previously ( 6 ). pCMV-CL1 HA encodes full-length CL1 lacking both splice inserts in which the HA epitope was inserted by PCR between Tyr 918 and Glu 919 in the first extracellular loop of CL1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ADGRL3-terminal_n-19-lit",
+      "gene_symbol": "ADGRL3",
+      "uniprot_acc": "Q9HAR2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "F",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface FLAG detection by non-permeabilized staining confirmed surface exposure of the tagged receptor (L7, PMC7954527). All receptor variants showed similar membrane exposure as wild-type Lphn3 (L6, PMC9135631, corroborating surface display of Flag-tagged ADGRL3). Functional assays (G-protein coupling, arrestin recruitment) were performed on these constructs in the same study.",
+      "confidence": "high",
+      "rationale": "L7 explicitly states that all Lphn3 (ADGRL3) constructs carry an N-terminal FLAG tag for cell-surface detection. ADGRL3 has a signal peptide at residues 1-19 (computed landmarks); a tag upstream of residue 20 would be cleaved with the signal peptide, so the only viable extracellular N-terminal junction is after residue 19 (A) and before residue 20 (F), the mature N-terminus. Python verification confirms seq[19]='A' and seq[20]='F'. L9 (PMC6636343) independently corroborates this junction by placing a double HA tag in the exon immediately following the signal-peptide exon of Lphn3 in knock-in mice. Full-length Lphn3 (ADGRL3) and Lphn2 constructs bearing an N-terminal FLAG epitope tag were expressed in cells to enable cell-surface detection of the receptor (PMC7954527). The tag is described as N-terminal; ADGRL3 has a signal peptide spanning residues 1-19, so the only extracellular N-terminus is the mature protein beginning at residue 20 (F). The junction is therefore after residue 19 (A), the last signal-peptide residue. A second independent study (PMC6636343, L9) introduced a double HA tag into the coding region immediately following the signal-peptide-encoding exon of Lphn3, corroborating the same junction.",
+      "sources": [
+        {
+          "pmid": 33646123,
+          "citation": "PMID 33646123",
+          "claim": "All wild-type (WT) and mutant Lphn2 and Lphn3 proteins were encoded with an N-terminal FLAG epitope tag to enable their detection on the cell surface ( Figure 1A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:20:52.210168+00:00",
+  "literature_notes": "L7 (PMC7954527) and L9 (PMC6636343) both pin the same junction (after signal peptide, residue 19/20) for ADGRL3; they are reported as one site using L7 as primary. L3, L4, L5 (PMC9221416, PMC9135631) reference 'Lphn3 HA/Flag' constructs but name no residue for the HA or Flag position and are therefore not independently pinnable; they corroborate the N-terminal site established by L7. L6 (PMC9135631) confirms cell-surface Flag exposure on ADGRL3 variants, further corroborating L7. L11 (PMC11849108) describes SNAP-FLAG-ADGRL3-CTF: this is a C-terminal fragment construct (not full-length), so it does not qualify per the rules requiring a full-length membrane-anchored construct. L8 (PMC7954527) reports T4 lysozyme insertion at Ile1039 in ICL3 of ADGRL3, which is intracellular and is recorded in other_positions. The large extracellular N-terminal domain (residues 20-868) contains the lectin, OLF, and GAIN domains; no ledger line reports a tag insertion within this region for ADGRL3 or a close homolog in a full-length membrane-anchored context, so no internal sites within the ectodomain are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1039,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "T4 lysozyme sequence inserted at Ile1039 in the third intracellular loop (ICL3, residues 1029-1052) of full-length membrane-anchored ADGRL3 to study G-protein and arrestin signaling; this position is cytoplasmic and not accessible for extracellular surface tagging."
+    }
+  ]
+}

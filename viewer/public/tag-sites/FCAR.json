@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "FCAR",
+  "uniprot_acc": "P24071",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:43:18.899783+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single experimental modality: C-terminal eGFP fused to full-length FCAR variant 1 via pEGFP-N3 (which places GFP at the C-terminus of the insert). FCAR is a type I single-pass transmembrane protein with its large N-terminal domain extracellular (residues 22\u2013227), a single TM helix (228\u2013246), and a short C-terminal cytoplasmic tail (247\u2013287). A C-terminal GFP therefore sits on the intracellular face \u2014 explicitly confirmed by L1 ('C-terminal GFP after the TM/C domain'). L2 and L3 confirm that the tagged protein reaches the plasma membrane, but this reports trafficking of the full-length protein, not extracellular display of the GFP moiety. L4 provides cloning details consistent with an intracellular C-terminal tag. No ledger line reports a tag inserted into the extracellular domain (residues 22\u2013227), at the mature N-terminus (after residue 21), or in any extracellular loop. The ledger therefore supports zero extracellular surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 287,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal eGFP fused after residue 287 (last residue of the intracellular tail); protein traffics to the plasma membrane but the GFP faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNK4",
+  "uniprot_acc": "Q9NYG8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:49:06.357817+00:00",
+  "literature_notes": "All four ledger lines come from a single paper (PMC11295008) studying mouse TRAAK (KCNK4). L1/L2/L3 describe a SEP-TAC\u2013TRAAK chimera in which full-length TRAAK is fused downstream of the SEP-TAC transmembrane reporter. The superecliptic pHluorin (SEP) tag resides on SEP-TAC's own extracellular domain; it is not inserted into any loop or terminus of TRAAK itself. The construct demonstrates surface expression of TRAAK but does not constitute an epitope-tag insertion into TRAAK's extracellular face, so it yields no qualifying site. L4 reports an HA tag at the N-terminus of mouse TRAAK; the canonical topology places residues 1\u20135 (MRSTT) in the intracellular compartment, with TM1 beginning at residue 6. The HA tag is therefore cytoplasmic, not extracellular, and is recorded in other_positions. No ledger line supports an insertion on the extracellular face of KCNK4.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "HA tag placed at the N-terminus of full-length mouse TRAAK; topology landmarks place residues 1\u20135 in the intracellular compartment (TM1 begins at residue 6), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

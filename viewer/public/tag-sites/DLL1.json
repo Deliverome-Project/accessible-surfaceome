@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "DLL1",
+  "uniprot_acc": "O00548",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:14:14.511610+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe the same experimental system from PMC8477538: C-terminal in-frame fusion of AcGFP/HA or Strep/FLAG tags to the DLL1 C-terminus. The DLL1 C-terminus (residue 723) lies within the intracellular domain (residues 567\u2013723), so these tags are on the cytoplasmic face, not the extracellular face. No ledger line describes a tag at the mature N-terminus (after signal-peptide cleavage at residue 17, mature N-terminus = Q18), in any extracellular loop, or anywhere in the extracellular domain (residues 18\u2013545). Because the ledger contains no evidence of a tolerated insertion on the extracellular face, zero sites are proposed. The C-terminal intracellular tag is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 723,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "AcGFP/HA and Strep/FLAG tags fused in-frame to the DLL1 C-terminus (residue 723) are tolerated in CHO cells and transgenic mice, but the C-terminus is intracellular (topology: 567\u2013723 cytoplasmic), so this is not an extracellular surface tag site."
+    }
+  ]
+}

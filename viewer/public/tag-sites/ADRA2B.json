@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRA2B-terminal_n-0-lit",
+      "gene_symbol": "ADRA2B",
+      "uniprot_acc": "P18089",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed: L2 describes the construct as 'full-length surface-displayed'; L4 (GFP-tagged companion construct) shows robust cell-surface expression by confocal microscopy in HEK293 cells. L5 uses anti-HA flow cytometry to measure total receptor synthesis. No agonist-stimulated signaling assay with the tagged receptor is reported in the ledger.",
+      "confidence": "high",
+      "rationale": "ADRA2B is a GPCR with no signal peptide; its N-terminus (residues 1\u201312) is extracellular and is the only extracellular terminus. Multiple independent publications (L1, L2, L3, L5) report a full-length, membrane-anchored ADRA2B construct with 3xHA prepended at the N-terminus and confirm surface display. No residue number is stated in any ledger line, so the junction is topology-derived: insert_after_residue=0 places the tag before M1, 12 residues from TM1 (well above the \u22653 aa minimum). Python-verified: seq[0]='M'. Full-length ADRA2B bearing three tandem HA (YPYDVPDYA) tags at its N-terminus expressed in pcDNA3.1(-) in mammalian cells; construct described as 'full-length surface-displayed receptor' (L2). The same N-terminal 3xHA construct is cross-referenced in L1, L3, and L5. ADRA2B has no signal peptide (UniProt P18089); the N-terminus (residues 1\u201312) is directly extracellular, making this the sole extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 31316103,
+          "citation": "PMID 31316103",
+          "claim": "All other materials were obtained as described elsewhere 35 , 36 .\n\u03b1 2B -AR tagged with three HA (YPYDVPDYA) at its N-terminus in the pcDNA3.1(-) vector was generated as described previously 8 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:19:11.019652+00:00",
+  "literature_notes": "Five ledger lines were evaluated. L1, L2, L3, and L5 all ground the N-terminal 3xHA site on the extracellular face; L2 is the primary citation as it most explicitly describes the construct as 'full-length surface-displayed.' L1, L3, and L4 also report a C-terminal GFP fusion, but the C-terminus (residues 430\u2013450) is intracellular per the authoritative topology landmarks, so that tag is recorded in other_positions. No ledger line reports any insertion in ECL1 (76\u201385), ECL2 (150\u2013170), or ECL3 (392\u2013407) of ADRA2B, so no internal sites are proposed. The N-terminal tag position is topology_derived (not validated) because no ledger line names a specific residue number for the junction.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 450,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused at the C-terminus of full-length ADRA2B; the C-terminus (residues 430\u2013450) is intracellular per topology landmarks, so this is not a surface tag site."
+    }
+  ]
 }

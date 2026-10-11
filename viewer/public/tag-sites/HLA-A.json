@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "HLA-A",
+  "uniprot_acc": "P04439",
+  "sites": [
+    {
+      "site_id": "HLA-A-terminal_n-24-lit",
+      "gene_symbol": "HLA-A",
+      "uniprot_acc": "P04439",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-HA and anti-HLA flow cytometry on 721.221 cells: surface expression pattern of HA-tagged HLA-C was indistinguishable from non-tagged HLA-C constructs. No peptide-presentation or T-cell activation assay reported in these clips.",
+      "confidence": "medium",
+      "rationale": "HLA-C is the closest ortholog of HLA-A within the classical MHC class I family, sharing the same signal-peptide/ectodomain/TM/cytoplasmic topology and nearly identical domain boundaries. The published HA insertion 'just after the signal peptide sequence' of HLA-C maps by structural equivalence to the HLA-A mature N-terminus, which begins at residue 25 (G); the tag therefore goes after residue 24 (A, the last signal-peptide residue). Python verification confirms seq[23]='A' and seq[24]='G'. The extracellular span (residues 25\u2013307, 283 aa) is far from the TM boundary, making this terminus sterically accessible. Evidence is indirect (ortholog), so position_evidence is 'inferred' and cited_tag_residue is null. Full-length HLA-C*05 and HLA-C*07 constructs (exons 1\u20138) with an HA tag inserted just after the signal peptide were expressed in 721.221 cells via lentiviral transduction. HLA-C is a close ortholog of HLA-A (both MHC class I alpha chains with identical domain architecture and signal-peptide topology). The HA tag position in HLA-C corresponds structurally to insert_after_residue=24 in HLA-A (last residue of the HLA-A signal peptide, computed from the canonical sequence). Surface HA signal was detected by flow cytometry using anti-HA antibody on GFP+ cells.",
+      "sources": [
+        {
+          "pmid": 28649982,
+          "citation": "PMID 28649982",
+          "claim": "Importantly, the expression difference between C*05 and C*07 was seen to be consistent between HA-tagged and non-tagged HLA-C constructs, suggesting that the HA tag, itself, does not change the HLA-C expression pattern or cellular characteristics, also shown by a previous study comparing HA-tagged and non-tagged HLA class I molecules 23 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:59:18.012649+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from a single paper (PMC5490200) and report HA-tag insertion at the N-terminus of HLA-C*05 and HLA-C*07, not HLA-A itself. HLA-C qualifies as a close ortholog (same MHC class I alpha-chain family, same topology, same signal-peptide architecture), so the evidence is indirect. No ledger line reports any insertion in HLA-A directly, nor any internal loop insertion, nor any intracellular or function-abrogating position for HLA-A. The note in L4 that 'a previous study comparing HA-tagged and non-tagged HLA class I molecules' also found no effect further supports class-I-wide tolerance of this N-terminal position, but that prior study is not itself in the ledger and cannot be cited. No other sites are supported by the ledger.",
+  "literature_rejected": []
+}

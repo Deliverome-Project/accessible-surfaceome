@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDH1",
+  "uniprot_acc": "Q08174",
+  "sites": [
+    {
+      "site_id": "PCDH1-terminal_n-57-lit",
+      "gene_symbol": "PCDH1",
+      "uniprot_acc": "Q08174",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 57,
+      "residue_before": "A",
+      "residue_after": "T",
+      "residue_label": "A57",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Viral infectivity (rVSV-HTNV, rVSV-ANDV, rVSV-SNV) measured as fold-change relative to non-complemented cells; Flag-tagged WT PCDH1 restored infectivity, demonstrating the tagged protein is surface-expressed and functionally active.",
+      "confidence": "high",
+      "rationale": "PCDH1 is a type I single-pass transmembrane protein (N-out, C-in); the only extracellular terminus is the N-terminus. Anti-Flag immunostaining detects the tag on the cell surface (L2), proving the Flag is extracellular, and the sole extracellular terminus is the only position consistent with this observation. The signal peptide spans residues 1\u201357 (last residue A at position 57), so the tag must be inserted after residue 57, placing it before T58 (the mature N-terminus); this was confirmed by reading residues 57 and 58 directly from the numbered sequence. L3/L4 (PMC6556216) independently corroborate surface expression of Flag-tagged PCDH1 variants in U2OS PCDH1-KO cells by anti-Flag immunostaining, providing cross-study support for this N-terminal placement. Flag-tagged full-length human PCDH1 (WT and F83L variant) expressed in primary mouse lung microvascular endothelial cells (MLMECs); anti-Flag immunostaining (L2, same study) confirmed surface exposure of the tag; viral infectivity assay with rVSVs bearing HTNV, ANDV, and SNV Gn/Gc used to assess function of the tagged construct.",
+      "sources": [
+        {
+          "pmid": 37488123,
+          "citation": "PMID 37488123",
+          "claim": "Cells were immunostained with PCDH1-specific monoclonal antibody (mAb) 3305 or a negative control mAb (Ctrl.) Scale bar, 20 \u00b5m. c Infectivity of rVSVs bearing HTNV, ANDV, or SNV Gn/Gc in primary MLMECs expressing flag-tagged, wild-type (WT) or mouse-variant (F83L) human PCDH1. rVSV infectivities are expressed as fold change relative to that in non-complemented cells (set to one)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:15:18.164760+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) concern Flag-tagged PCDH1 but none states a residue number for the tag insertion. The position is topology-derived: PCDH1 is type I TM (N-out, C-in), anti-Flag immunostaining detects surface signal, and the only extracellular terminus is the N-terminus after SP cleavage at residue 57. L1 (PMC10366084) is chosen as the primary supporting clip because it provides the strongest validation\u2014both surface expression (via L2 anti-Flag staining in the same study) and preserved function (viral infectivity assay). L3/L4 (PMC6556216) independently confirm surface expression of Flag-tagged PCDH1 in a different cell line and are noted as corroborating evidence. The F83L variant mentioned in L1 is a naturally occurring amino-acid variant of the protein used to test species-specificity of viral entry; it is not a tag insertion site and is not listed in other_positions. No intracellular tag positions and no function-abrogating insertion positions are named anywhere in the ledger.",
+  "literature_rejected": []
+}

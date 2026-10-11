@@ -39,5 +39,12 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:20:44.782596+00:00",
+  "literature_notes": "Four ledger lines were examined. L1, L2, and L3 (PMC9745132) all concern NTSR1, not NTSR2; moreover, all three fusions (Venus-YFP and RlucII) are placed at the NTSR1 C-tail, which is an intracellular terminus of a GPCR \u2014 disqualified on both grounds (wrong protein, cytoplasmic location). L4 (PMID 15637074) is the only line touching the NTSR2 gene: it reports an HA-tagged recombinant vNTS2, a 5-transmembrane splice variant of the rat NTS2/NTSR2 gene. This line fails on three independent grounds: (1) the HA tag insertion position is never stated \u2014 the clip gives no residue number, no loop name, and no primer sequence from which a junction could be derived; (2) the construct is a truncated splice isoform (281 aa, 5-TM), not the full-length 7-TM NTSR2 protein whose topology was provided; and (3) the reported result is that the tagged construct is 'poorly targeted to plasma membranes', meaning the insertion did not yield a surface-displayed receptor. Because no ledger line reports a tolerated tag insertion at a stated position on the extracellular face of full-length NTSR2, zero sites qualify. The vNTS2 HA-tag finding cannot be entered in other_positions either, because no residue number is available.",
+  "literature_rejected": []
 }

@@ -31,6 +31,43 @@
       "median_conservation": 0.0
     },
     {
+      "site_id": "KCNJ12-internal-None-lit",
+      "gene_symbol": "KCNJ12",
+      "uniprot_acc": "Q14500",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "EC loop (TM1-TM2)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED for KCNJ12. In the paralog Kir2.1, L5 reports that HA and Myc tags at the equivalent external site do not perturb channel activity; L4 confirms antibody labeling of the FLAG tag on the cell surface of intact membrane-anchored Kir2.1.",
+      "confidence": "low",
+      "rationale": "KCNJ12 (Kir2.2) has a single extracellular region, the TM1-TM2 loop spanning residues 106-157 (52 aa), with both termini intracellular. L1 establishes that the equivalent EC loop of the close paralog Kir2.1 (KCNJ2) tolerates a FLAG tag insertion (between S116 and K117); L2/L3 corroborate with a FLAG tag at T115 in mouse Kir2.1; L5 confirms function is preserved. The Kir2.1 residue numbers (115-117) do not directly transfer to KCNJ12 canonical numbering (KCNJ12 positions 115-117 = A, E, G), and without the Kir2.1 sequence available for alignment, the equivalent junction in KCNJ12 cannot be pinned to a single residue without structural inference. The site is therefore reported at region level. Cysteines at KCNJ12 positions 123, 150, and 155 (likely disulfide-bonded) and the GYG selectivity filter at 145-147 should be avoided when a specific junction is later chosen. FLAG tag inserted between S116 and K117 in the extracellular loop of full-length, membrane-anchored Kir2.1 (KCNJ2) expressed in cells for surface-display assays. Kir2.1 is a close paralog of KCNJ12 (Kir2.2) within the Kir2 subfamily. Additional ledger lines (L2/L3) report the same strategy at T115 in mouse Kir2.1, and L5 reports HA/Myc tags at an external site of Kir2.1 that do not perturb channel activity.",
+      "sources": [
+        {
+          "pmid": 34880224,
+          "citation": "PMID 34880224",
+          "claim": "FLAG tag epitopes were added into previously described extracellular loops of Kir2.1 (between S116 and K117 59 ), Kir3.1 (between K114 and A115 56 ), Asic1a (between F147 and K148 103 ), and P2X 3 (between N72 and R73 based on insertion into the paralog P2X 2 104 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "KCNJ12-snorkel-c",
       "gene_symbol": "KCNJ12",
       "uniprot_acc": "Q14500",
@@ -86,5 +123,12 @@
     }
   ],
   "isoform_pins": [],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:48:10.846499+00:00",
+  "literature_notes": "All six ledger lines describe insertions in Kir2.1 (KCNJ2), not KCNJ12 (Kir2.2). Kir2.1 and Kir2.2 are paralogs in the Kir2 inward-rectifier subfamily and share high sequence identity in the EC loop. KCNJ12 has no extracellular termini (N-terminus residues 1-80 and C-terminus residues 179-433 are both intracellular), so the only surface-accessible region is the single EC loop (106-157). The Kir2.1 insertion positions T115 and S116-K117 do not map directly onto KCNJ12 canonical numbering (KCNJ12 pos 115=A, 116=E, 117=G, 121=T which begins the conserved TPCV pore-helix entry motif). Without the Kir2.1 canonical sequence available for explicit alignment, pinning a specific junction in KCNJ12 would require structural inference, which is prohibited. The site is therefore reported at region level with null insert_after_residue. L2, L3, L4, L5, and L6 all corroborate the same Kir2.1 EC loop insertion strategy and are subsumed into the single region-level site grounded in L1.",
+  "literature_rejected": []
 }

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNJ10",
+  "uniprot_acc": "P78508",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:43:31.164630+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same construct: an N-terminal FLAG + GFP tag on full-length Kir4.1 (KCNJ10). The computed topology places the N-terminus (residues 1\u201367) on the intracellular face; TM1 runs 68\u201392, and the sole extracellular span is residues 93\u2013143 (the turret/P-loop). The N-terminal tag therefore faces the cytoplasm and does not qualify as an extracellular surface site. No ledger line describes any insertion in the extracellular loop (93\u2013143) or at any other extracellular position of this protein. The C-terminus (residues 166\u2013379) is also intracellular. Accordingly, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal FLAG (and GFP) tag placed before residue 1 of full-length Kir4.1; the N-terminus is intracellular (topology residues 1\u201367), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

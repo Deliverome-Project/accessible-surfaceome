@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR8D1-terminal_n-0-lit",
+      "gene_symbol": "OR8D1",
+      "uniprot_acc": "Q8WZ84",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "IL-6-HaloTag / Rho-tag-HaloTag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "cAMP luminescence concentration-response to sotolone measured for both N-terminal tag variants; functional surface expression confirmed for both constructs relative to empty-plasmid (Mock) control \u2014 function preserved.",
+      "confidence": "high",
+      "rationale": "All three ledger clips (L1, L2, L3) from PMC6706140 describe the same junction: an N-terminal tag prepended to full-length OR8D1. The canonical topology (authoritative landmarks) assigns residues 1\u201324 as extracellular with no signal peptide (raw topology begins with 'O', not 'S'), so 'N-terminal' unambiguously resolves to insert_after_residue=0 (before M1). Python verification confirms seq[0]='M' and the first TM boundary begins at residue 25, leaving 24 extracellular residues between the tag and the membrane \u2014 ample room for a ~15\u201323 aa insert. L1 is cited as the primary clip because it introduces both tag variants and the functional surface-expression result; L2 and L3 corroborate with explicit cAMP assay data. Full-length OR8D1 expressed in a heterologous system with two distinct N-terminal fusion tags (IL-6-HaloTag and Rho-tag-HaloTag); concentration-response relations to the odorant sotolone were measured by cAMP-dependent luminescence assay, and data were normalized to the maximum amplitude of the IL-6-HaloTag-OR8D1 construct.",
+      "sources": [
+        {
+          "pmid": 31453236,
+          "citation": "PMID 31453236",
+          "claim": "Example result of a concentration-response relation of sotolone on OR8D1, equipped with different N-terminal tags."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:01:09.447427+00:00",
+  "literature_notes": "Three ledger clips (L1, L2, L3) all originate from the same publication (PMC6706140) and all describe the identical junction \u2014 an N-terminal prepend on full-length OR8D1. They are treated as one site with L1 as the primary supporting clip. No ledger evidence exists for any internal extracellular loop (ECL1: 80\u201397, ECL2: 165\u2013196, ECL3: 261\u2013274) or for the C-terminal intracellular tail; no sites are proposed there. The two tag types cited (IL-6-HaloTag and Rho-tag-HaloTag) are both N-terminal fusions; no residue number is stated in any clip, so position_evidence is topology_derived rather than validated.",
+  "literature_rejected": []
 }

@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "ROR2",
+  "uniprot_acc": "Q01974",
+  "sites": [
+    {
+      "site_id": "ROR2-terminal_n-33-lit",
+      "gene_symbol": "ROR2",
+      "uniprot_acc": "Q01974",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 33,
+      "residue_before": "G",
+      "residue_after": "E",
+      "residue_label": "G33",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Wnt5a-stimulated signalling (JNK/Rac1 pathway) and anti-Flag antibody-mediated receptor clustering both elicit downstream responses indistinguishable from untagged controls; receptor is surface-displayed and ligand-responsive.",
+      "confidence": "high",
+      "rationale": "L4/L5 report N-terminal Flag-tagged full-length human Ror2 that is stably expressed, surface-accessible to anti-Flag antibody from outside the cell, and functionally responsive to Wnt5a. ROR2 has a signal peptide (residues 1\u201333) that is cleaved co-translationally; the only extracellular N-terminal junction is after residue 33 (G) and before residue 34 (E, the mature N-terminus). Python confirmed r(33)=G and r(34)=E. The tag is \u2265370 residues from the TM boundary (TM starts at 404), providing ample space for a short epitope tag. Ror2\u2212/\u2212 MEFs stably expressing N-terminal Flag-tagged full-length Ror2 (human); anti-Flag antibody applied extracellularly crosslinked and clustered the receptor, confirming the Flag tag is surface-exposed. Multiple lentiviral constructs (Ror2-S864A, Ror2-K507A, Ror2-S864D, Ror2-S864E) all carry the same N-terminal Flag. The paper names only 'N-terminal' with no residue number; with a signal peptide spanning 1\u201333 the sole valid extracellular N-terminal junction is after residue 33 (mature N-terminus = E34), computed from the topology landmarks.",
+      "sources": [
+        {
+          "pmid": 21078818,
+          "citation": "PMID 21078818",
+          "claim": "Ror2 (cid:2) / (cid:2) MEFs stably expressing GFP or N-terminalFlag-taggedRor2weretreated in the presence of the Tyr phosphatase inhibitor sodium vanadate (40 m M) with eithercontrolorWnt5aCM,orwithanti-HA (control)oranti-Flag(50 m g/mL)monoclonal antibodies for 1 h or 4 h."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:04:32.402090+00:00",
+  "literature_notes": "All C-terminal fusions in the ledger (Ror2-mCherry L7, Ror2-GFP L8, zfRor2-mCherry L10, ROR2-mCherry \u0394CRD L13) are intracellular because ROR2 is a type I single-pass receptor with its C-terminus in the cytoplasm (residues 426\u2013943 intracellular per topology landmarks); these are recorded in other_positions. L1/L2/L3 (CFP-ROR2, YFP-ROR2, human, PMC10654037) and L8 (GFP-Ror2, zebrafish) and L9/L11 (mCherry-Ror2, zebrafish/Xenopus) all corroborate the same N-terminal extracellular junction (after residue 33) but L4 is the strongest single line (direct human, Flag, surface crosslinking + functional readout) and is used as the primary supporting clip. No ledger line reports a tag in any internal extracellular loop of ROR2 with a named residue or a named loop; no internal site is therefore proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 943,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "Ror2-mCherry (C-terminal mCherry fusion) is surface-displayed on cytonemes but the C-terminus of ROR2 is cytoplasmic (intracellular domain 426\u2013943); the tag is intracellular, not a surface epitope site."
+    },
+    {
+      "residue": 943,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Ror2-GFP (C-terminal GFP fusion, zebrafish) is expressed and imaged on cytonemes but the C-terminus is cytoplasmic; intracellular tag only."
+    },
+    {
+      "residue": 943,
+      "kind": "intracellular",
+      "supporting_clip_id": "L13",
+      "note": "ROR2-mCherry \u0394CRD (C-terminal mCherry on human ROR2 with CRD deletion R178\u2013Y313) is used for FRET/functional studies; C-terminal position is intracellular."
+    }
+  ]
+}

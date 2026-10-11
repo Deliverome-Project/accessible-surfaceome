@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MTNR1A-terminal_n-0-lit",
+      "gene_symbol": "MTNR1A",
+      "uniprot_acc": "P48039",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used in co-IP with MRAP2 in HEK293 cells (implies expression); no dedicated surface-expression or receptor-function assay (cAMP, radioligand binding) reported in the cited clips.",
+      "confidence": "medium",
+      "rationale": "MTNR1A is a GPCR with no signal peptide (UniProt P48039); the topology landmarks place residues 1\u201329 as extracellular and the C-terminus (residues 296\u2013350) as intracellular. The N-terminus is therefore the sole extracellular terminus, making insert_after_residue=0 (prepend before M1) the unique topology-derived junction for an N-terminal tag. The prepend site sits 29 residues from the TM1 boundary (residue 30), well above the \u22653-residue minimum. Neither L1 nor L2 names a specific residue, so position_evidence is topology_derived rather than validated. Full-length MTNR1A cloned into pcDNA3.1(+) with a FLAG tag at the N-terminus; construct co-transfected with HA-MRAP2 into HEK293 cells for co-immunoprecipitation. No residue number is stated in either ledger line.",
+      "sources": [
+        {
+          "pmid": 40510472,
+          "citation": "PMID 40510472",
+          "claim": "MTNR1A and MTNR1B were integrated into the pcDNA3.1(+) plasmid with a Flag protein tag at the N-terminus, while MRAP2 was cloned into the pcDNA3.1(+) plasmid with HA protein tag at the N-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:53:44.958954+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1, L2), both from the same paper (PMC12158745) and both describing the same N-terminal FLAG-tagged full-length MTNR1A construct. No residue number is stated in either clip, so the junction is derived from topology alone (prepend = insert_after_residue 0). MTNR1A has no annotated signal peptide, so the tag is not silently cleaved. The construct was used as a co-IP tool; no surface-flow-cytometry, ELISA, or functional (cAMP/binding) data for the tagged receptor are reported in the clips, hence validation_level is detected_only. No other ledger lines support additional sites (no ECL insertions, no C-terminal extracellular tag, no transposon/FP-fusion data).",
+  "literature_rejected": []
 }

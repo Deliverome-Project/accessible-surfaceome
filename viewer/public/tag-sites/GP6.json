@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "GP6",
+  "uniprot_acc": "Q9HCN6",
+  "sites": [
+    {
+      "site_id": "GP6-terminal_n-20-lit",
+      "gene_symbol": "GP6",
+      "uniprot_acc": "Q9HCN6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP-tag / HaloTag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NFAT-luciferase reporter assay in DT40 cells: tagged GPVI signaling activity comparable to wild-type GPVI; expression level comparable to wild-type by supplemental blot (L7); single-molecule surface imaging confirmed surface display (L4).",
+      "confidence": "high",
+      "rationale": "GPVI is a type I transmembrane protein with a 20-residue signal peptide (residues 1\u201320) and a single extracellular face spanning residues 21\u2013269; the only unambiguous extracellular terminus is the mature N-terminus beginning at Q21. The ledger clips (L3\u2013L8) report SNAP-tag and HaloTag insertions 'in the extracellular region' of full-length GPVI but name no specific residue or loop, so the position is topology-derived: insert_after_residue = 20 (last signal-peptide residue A20), placing the tag immediately before Q21, 249 residues from the TM boundary. Residues confirmed by reading the numbered sequence: residue 20 = A, residue 21 = Q. Full-length GPVI bearing extracellular SNAP-tag and HaloTag fusions was transiently expressed in CHO-K1 cells and DT40 chicken B cells; single-molecule surface imaging confirmed receptor display and an NFAT-luciferase reporter assay confirmed signaling activity comparable to wild-type GPVI.",
+      "sources": [
+        {
+          "pmid": 42157993,
+          "citation": "PMID 42157993",
+          "claim": "The functionality of the tagged receptors was shown ( Figure 1 D) using an NFAT reporter assay. 33 Figure 1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:18:37.029905+00:00",
+  "literature_notes": "L3\u2013L8 all describe the same experimental system (SNAP-tag/HaloTag on extracellular GPVI) from a preprint (L3, L7, L8) and its published counterpart (L4, L5, L6); no specific residue or named loop is given in any clip, so the junction is topology-derived at the sole extracellular terminus (after signal-peptide cleavage). L1 and L2 describe a C-terminal Myc tag on full-length GPVI; the C-terminus (residue 339) is intracellular (topology landmarks: IC 290\u2013339) and is therefore recorded in other_positions only.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 339,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Myc epitope tag placed at the C-terminus of full-length GPVI in pcDNA3.1; residue 339 falls within the intracellular domain (290\u2013339) and is not accessible on the extracellular face."
+    }
+  ]
+}

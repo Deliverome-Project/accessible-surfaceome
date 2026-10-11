@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRN1",
+  "uniprot_acc": "Q9NPD7",
+  "sites": [
+    {
+      "site_id": "NRN1-terminal_n-28-lit",
+      "gene_symbol": "NRN1",
+      "uniprot_acc": "Q9NPD7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip describes construction of a tagged full-length characterization construct but reports no specific trafficking, surface-expression, or functional assay result.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names residue 29 as the HA-tag insertion site in a full-length NRN1 construct. The signal peptide ends at residue 27 (A) and the mature N-terminus begins at residue 28 (A); 'HA-tag at residue 29' is interpreted as the tag inserted after residue 28 and before residue 29, placing it one residue into the extracellular mature protein. NRN1 is GPI-anchored with no transmembrane domain, so the entire mature ectodomain (residues 28\u2013142) is extracellular and the \u00b11 residue ambiguity does not affect the extracellular classification. Python verification confirms residue 28 = A and residue 29 = G, consistent with the junction reported. Human NRN1 (NM_016588.2) full-length construct with HA tag inserted at residue 29, used for protein characterization (PMC10441612).",
+      "sources": [
+        {
+          "pmid": 37591201,
+          "citation": "PMID 37591201",
+          "claim": "Human Neuritin ( NM_016588.2 ) was modified with an HA-tag at residue 29."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:14:22.102336+00:00",
+  "literature_notes": "NRN1 is a GPI-anchored protein; the topology string shows no TM (M) or intracellular (I) residues \u2014 the entire mature protein (residues 28\u2013142) is extracellular. The only ledger line (L1) supports a single near-N-terminal HA-tag site at the junction of residues 28\u201329. No other insertions, loops, or positions are grounded in the ledger. The C-terminal GPI anchor signal region (approximately residues 121\u2013142) is cleaved in the mature protein and would not be a valid surface-tag site regardless.",
+  "literature_rejected": []
+}

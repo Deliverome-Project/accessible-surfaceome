@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "OTOA",
+  "uniprot_acc": "Q7RTW8",
+  "sites": [
+    {
+      "site_id": "OTOA-terminal_n-22-lit",
+      "gene_symbol": "OTOA",
+      "uniprot_acc": "Q7RTW8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "S",
+      "residue_after": "Y",
+      "residue_label": "S22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunostaining without detergent confirmed cell-surface display of myc-tagged WT OTOA; no functional assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "OTOA is a GPI-anchored extracellular protein (topology: SP 1\u201322, extracellular 23\u20131153, no TM). The GPI anchor signal at the C-terminus is co-translationally cleaved and replaced by a GPI lipid, so any C-terminal tag would be lost. The mature N-terminus (residue 23, Y) is therefore the sole extracellular terminus that can carry a surface-displayed tag. Python verification confirms residue 22 = S (last SP residue) and residue 23 = Y (mature N-terminus); insert_after_residue = 22 places the tag immediately after SP cleavage. The position is topology-derived because the ledger clips name no specific residue. Full-length myc-tagged WT OTOA expressed in HEK293T cells; non-permeabilized (surface) immunostaining with anti-myc antibody confirmed cell-surface display (L2). OTOA is GPI-anchored with no TM segments; the C-terminal GPI signal is cleaved and replaced by the GPI lipid anchor, making the N-terminus (after SP cleavage) the sole extracellular terminus available for a tag.",
+      "sources": [
+        {
+          "pmid": 30740825,
+          "citation": "PMID 30740825",
+          "claim": "HEK293T cells were transfected with WT OTOA and subsequently immunostained with an \u03b1-myc antibody (raised in rabbit) in the absence of a detergent for surface labeling."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:05:56.441332+00:00",
+  "literature_notes": "L1 and L2 both support the same N-terminal myc-tag site on full-length WT OTOA; L2 is the stronger clip (surface display confirmed) and is used as the primary support. L3 and L4 describe a myc-tagged truncated construct (p.Gln589ArgfsX55 in paper numbering; the nearest canonical Q is at position 580) that is NOT surface-tethered because the truncation removes the GPI anchor signal \u2014 this is recorded in other_positions. No internal loop sites are supported by the ledger: the protein has no TM segments and therefore no extracellular loops in the classical sense, and no insertion experiment within any internal region of OTOA is cited. The C-terminus is not a viable surface-tag site because the GPI anchor signal is cleaved there.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 580,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "Myc-tagged truncated OTOA (p.Gln589ArgfsX55 in paper; nearest canonical Q is at position 580) is not tethered to the cell surface; the frameshift truncation removes the GPI anchor signal, abolishing surface display."
+    }
+  ]
+}

@@ -4,6 +4,43 @@
   "uniprot_acc": "P30518",
   "sites": [
     {
+      "site_id": "AVPR2-internal-30-lit",
+      "gene_symbol": "AVPR2",
+      "uniprot_acc": "P30518",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 30,
+      "residue_before": "D",
+      "residue_after": "T",
+      "residue_label": "D30",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + HRV3C site",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by anti-Flag M1 antibody immunofluorescence before harvesting. No cAMP or ligand-binding functional assay reported for this specific construct.",
+      "confidence": "high",
+      "rationale": "L6 explicitly names the junction as 'between D30 and T31'; Python verification confirms residue 30 = D and residue 31 = T in the canonical sequence. Both positions fall within the extracellular N-terminal span (1\u201338); the junction is 9 residues from the TM1 boundary (residue 39), well above the \u22653-residue minimum. No cysteines are present in the extracellular N-terminus (1\u201338), so no disulfide constraint is violated. The tolerated 8-aa HRV3C insertion demonstrates that this loop position accommodates a short peptide insert. Full-length V2R was engineered with a FLAG tag at the N-terminus and an HRV3C protease cleavage site (LEVLFQGP, ~8 aa) inserted between D30 and T31 of the extracellular N-terminal domain, along with a TEV site following the FLAG tag and a second HRV3C site at the C-terminus; the construct was expressed in insect cells and surface expression confirmed by anti-Flag M1 immunofluorescence (Alexa-488).",
+      "sources": [
+        {
+          "pmid": 39525085,
+          "citation": "PMID 39525085",
+          "claim": "A Tobacco Etch Virus (TEV) protease cleavage site (ENLYFQG - following the Flag-tag) and 2 Human Rhinovirus 3 C protease (HRV3C) cleavage sites (LEVLFQGP - one inserted in the N-terminus between D30 and T31, the other inserted in the C-terminus between G345 and Q354 and replacing R346-TPPSLG-P353) were also added to remove N and C termini and facilitate NMR analysis ( Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "AVPR2-nterm-tedman",
       "gene_symbol": "AVPR2",
       "uniprot_acc": "P30518",
@@ -37,7 +74,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "AVPR2-terminal_n-0-lit",
+      "gene_symbol": "AVPR2",
+      "uniprot_acc": "P30518",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HiBiT-based cell-surface expression assay confirmed surface display; human V2R showed the highest surface expression among all mammalian V2Rs tested. No cAMP or ligand-binding functional assay reported for this specific tagged construct.",
+      "confidence": "high",
+      "rationale": "AVPR2 has no signal peptide; residue 1 (M) is the first extracellular residue per the topology landmarks (1\u201338 extracellular). All N-terminal tag constructs in the ledger (L1\u2013L5, L8, L9, L13) use an exogenous signal sequence that is cleaved, leaving the tag immediately before V2R M1, making insert_after_residue=0 the only possible junction. L1/L2 provide the most explicit quantitative surface confirmation via the HiBiT cell-surface assay. The extracellular N-terminus is 38 residues long, providing ample space for a short tag. Full-length human V2R was N-terminally fused to an HA signal sequence followed by a FLAG-linker-HiBiT-linker cassette (MKTIIALSYIFCLVFADYKDDDDKGGSGGGGSGGSSSGGGVSGWRLFKKISGGSGGGGSG) in the pCAGGS vector; the HA signal is cleaved, leaving the HiBiT tag before V2R residue 1 on the extracellular face. AVPR2 has no endogenous signal peptide (topology residue 1 is directly extracellular), so the tag prepends before M1.",
+      "sources": [
+        {
+          "pmid": 38658606,
+          "citation": "PMID 38658606",
+          "claim": "The V2R constructs were fused to the HA signal sequence, followed by a FLAG-linker-HiBiT-linker sequence (MKTIIALSYIFCLVFADYKDDDDKGGSGGGGSGGSSSGGGVSGWRLFKKISGGSGGGGSG), and cloned into the pCAGGS vector (a kind gift from Dr."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:44:07.806467+00:00",
+  "literature_notes": "Two extracellular surface sites are supported by the ledger. (1) The N-terminal prepend (insert_after_residue=0) is the most multiply-evidenced site: L1/L2 (HiBiT, quantitative surface assay), L3 (HiBiT, luciferase complementation), L4/L5 (FLAG, immunofluorescence in insect cells), L8 (FLAG, surface + functional studies), L9/L10 (FLAG, HEK293T surface localization), and L13 (HA tag, deep mutational scanning scaffold). L1 was chosen as the primary ledger line because it provides the most explicit quantitative surface confirmation. (2) The internal site at D30/T31 is pinned by L6/L7 with an explicit residue-level junction. The C-terminal GFP (L11) and ICL3 fusion-protein insertions (L12) are intracellular and placed in other_positions. No ledger line reports a tolerated insertion in ECL1 (98\u2013113), ECL2 (180\u2013203), or ECL3 (293\u2013306), so no sites are proposed there.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 371,
+      "kind": "intracellular",
+      "supporting_clip_id": "L11",
+      "note": "Full-length V2R was C-terminally fused to GFP (pEGFP-N1-V2R) and stably expressed in MDCK cells; residue 371 is the last residue of the intracellular C-terminus (329\u2013371)."
+    },
+    {
+      "residue": 234,
+      "kind": "intracellular",
+      "supporting_clip_id": "L12",
+      "note": "cpGFP and BRIL fusion partners were inserted between A234 and A264 in the third intracellular loop (ICL3, 230\u2013271) of V2R to aid cryo-EM particle alignment; this is a cytoplasmic insertion, not a surface site."
+    },
+    {
+      "residue": 236,
+      "kind": "intracellular",
+      "supporting_clip_id": "L12",
+      "note": "T4L was inserted between L236 and A260 in ICL3 (230\u2013271) of V2R for cryo-EM; cytoplasmic, not a surface site."
+    }
+  ]
 }

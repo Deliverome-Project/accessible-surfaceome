@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "FLT4",
+  "uniprot_acc": "P35916",
+  "sites": [
+    {
+      "site_id": "FLT4-terminal_n-24-lit",
+      "gene_symbol": "FLT4",
+      "uniprot_acc": "P35916",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "G",
+      "residue_after": "Y",
+      "residue_label": "G24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used for biochemical detection of VEGFR3 cleavage fragments; no receptor signalling or trafficking assay reported in this ledger clip.",
+      "confidence": "high",
+      "rationale": "VEGFR3 is a type-I single-pass receptor; the signal peptide spans residues 1\u201324 (topology landmarks), so the only extracellular terminus is the mature N-terminus beginning at residue 25. An N-terminal tag must be inserted after residue 24 to avoid co-translational cleavage. Python verification confirms residue 24 = G and residue 25 = Y in the numbered sequence, and residue 25 lies 752 residues from the TM boundary (well clear of the \u22653-residue constraint). The ledger quote names no specific residue, so position_evidence is topology_derived. Full-length VEGFR3 (FLT4) expressed in mammalian cells with an N-terminal HA epitope tag (plus a C-terminal FLAG tag) to detect all VEGFR3 forms and fragments after BACE2 cleavage; the construct is full-length and membrane-anchored.",
+      "sources": [
+        {
+          "pmid": 38888964,
+          "citation": "PMID 38888964",
+          "claim": "To detect all possible VEGFR3 forms and fragments after BACE2 cleavage, VEGFR3 was tagged with an N-terminal HA- and a C-terminal FLAG-epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:52:58.630862+00:00",
+  "literature_notes": "L2, L3, and L4 all describe a C-terminal V5 epitope tag on full-length FLT4. The topology landmarks place the C-terminus (residue 1363) firmly in the intracellular domain (798\u20131363); this is confirmed by the raw per-residue topology string (position 1363 = 'I'). These clips therefore do not support a surface tag site and are recorded in other_positions. L3 reports anti-V5 surface staining, but this detects the protein at the plasma membrane (consistent with the intracellular kinase domain being accessible after permeabilization or via extracellular VEGFR3 fragments), not an extracellular V5 tag. No ledger line describes an insertion in any internal extracellular loop of FLT4.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1363,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length VEGFR3; residue 1363 is in the intracellular kinase domain (topology: 798\u20131363 = intracellular), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1363,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal V5 tag introduced by site-directed mutagenesis into full-length FLT4; same intracellular C-terminus as above; confirmed to traffic to the plasma membrane (L3, L4) but the tag itself is cytoplasmic."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL7R",
+  "uniprot_acc": "P16871",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:22:55.233109+00:00",
+  "literature_notes": "The only two ledger lines (L1, L2) both describe the same IL-7R-IM construct: a 9 bp insertion engineered to induce constitutive JAK/STAT signaling in NK cells. This is a gain-of-function functional mutation, not an epitope-tag knock-in, fluorescent-protein fusion, transposon/domain-insertion screen, or antibody-epitope insertion \u2014 none of the qualifying modalities listed in the evidence rules. The insertion is explicitly not functionally silent (its purpose is to alter signaling). No residue position within the CDS is stated in either clip, so no junction can be pinned even hypothetically. IL7R constitutively activating insertions of this class are characteristically located in the transmembrane domain (residues 241\u2013263), which is not an extracellular surface. No qualifying evidence for any extracellular epitope-tag site exists in this ledger.",
+  "literature_rejected": []
+}

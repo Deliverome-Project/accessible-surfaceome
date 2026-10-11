@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "MS4A2",
+  "uniprot_acc": "Q01362",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:52:07.643941+00:00",
+  "literature_notes": "The sole ledger entry (L1) describes a full-length MS4A2 (Fc\u03b5RI-\u03b2) construct fused to mNG, mEGFP, or mScarlet via a GGGGS linker (DNA: GGTGGAGGCGGTAGC). MS4A2 is a four-pass transmembrane protein whose N-terminus (residues 1\u201359) and C-terminus (residues 198\u2013244) are both intracellular; its only extracellular-facing regions are ECL1 (81\u2013101) and ECL2 (151\u2013181). The paper does not describe a loop insertion, does not name any residue or junction, and does not place the fluorescent protein on the extracellular face. The fusion is at an intracellular terminus (C-terminal is standard for MS4A-family proteins and consistent with the construct description). Because no extracellular surface tag is reported anywhere in the ledger, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 244,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length MS4A2 fused to mNG/mEGFP/mScarlet via GGGGS linker at the intracellular C-terminus (residues 198\u2013244); no extracellular placement described."
+    }
+  ]
+}

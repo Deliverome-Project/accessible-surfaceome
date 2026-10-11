@@ -1,0 +1,37 @@
+{
+  "has_data": false,
+  "gene_symbol": "PAQR8",
+  "uniprot_acc": "Q8TEZ7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:15:32.229732+00:00",
+  "literature_notes": "The computed topology assigns the C-terminus (342\u2013354) to the intracellular compartment, directly conflicting with the experimental finding in L2 that C-terminal GFP is extracellularly accessible. PMC7660923 is a topology-determination paper; their non-permeabilized immunostaining result is the primary experimental evidence and is treated as overriding the computational prediction for this site. The N-terminus (residues 1\u201375) is intracellular per both the computed topology and the experimental result in L3 (N-terminal GFP not detected under non-permeabilized conditions), so no N-terminal surface site is proposed. L4 and L5 describe N-terminal HA attempts but the N-terminus is intracellular; these are captured in other_positions. L6 (N-terminal FLAG and C-terminal His in HEK293) does not report a surface-localization result and therefore does not independently ground a site. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [
+    {
+      "residue_label": "S354",
+      "insert_after_residue": 354,
+      "gate": "geometry",
+      "reason": "topology: C-terminus is intracellular, not extracellular",
+      "supporting_quote": null
+    }
+  ],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal GFP (GFP-mPR) showed no staining under non-permeabilized conditions, confirming the N-terminus is intracellular; consistent with computed topology placing residues 1\u201375 in the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "N-terminal HA (HA-mPR) was tested as a smaller alternative to GFP at the N-terminus after GFP impaired trafficking; the N-terminus is intracellular per topology and L3, so this tag is not on the extracellular surface."
+    }
+  ]
+}

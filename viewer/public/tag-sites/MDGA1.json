@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "MDGA1",
+  "uniprot_acc": "Q8NFP4",
+  "sites": [
+    {
+      "site_id": "MDGA1-terminal_n-18-lit",
+      "gene_symbol": "MDGA1",
+      "uniprot_acc": "Q8NFP4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (also YFP, AP, V5 at same junction)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed: HA-MDGA1 on COS7 cells bound soluble Nlg2-Fc (L3); surface HA signal quantified and used to normalize ligand binding (L4). Function validated: L9 explicitly states the tags were designed and confirmed not to alter protein folding, trafficking, or function, citing widespread dendritic/axonal localization matching untagged MDGA1. Endogenous HA-MDGA1 knock-in mice validated by Western blot (L10). MDGA1\u2013neuroligin interaction preserved (L3).",
+      "confidence": "high",
+      "rationale": "Python lookup confirms residue 18 = G (last residue of the 18-aa signal peptide MEVTCLLLLALIPFHCRG) and residue 19 = Q (first residue of the mature extracellular protein). L7 is the most explicit positional anchor: the donor oligo encodes HA-RSRD inserted after the signal sequence at the endogenous locus, confirmed by CRISPR knock-in. MDGA1 is GPI-anchored with no transmembrane helix, so the entire region 19\u2013955 is extracellular and the distance-to-TM constraint is not limiting. All 12 ledger lines converge on this single junction; no other junction is named anywhere in the ledger. Multiple independent groups inserted HA, YFP, AP, and V5 tags immediately after the signal-peptide cleavage site (residue 18 / mature aa 19) of full-length, membrane-anchored rat or mouse MDGA1. L1/L11 subclone the mature coding region (aa 19\u2013956) into spHA-C1 or spYFP-C1 vectors that prepend the tag before aa 19. L7 uses CRISPR/Cas9 HDR with a donor oligo encoding HA-RSRD flanked by 120 nt homology arms targeting the N-terminal coding region of the endogenous mouse Mdga1 locus, explicitly placing the tag after the signal sequence. L5 replaces the V5 tag of V5-MDGA1 with a 15 aa AP tag at the same N-terminal position.",
+      "sources": [
+        {
+          "pmid": 37720016,
+          "citation": "PMID 37720016",
+          "claim": "Briefly, the gRNA to mouse Mdga1 gene (5\u2019-CCCTTCCACTGTCGGGGACAAGG-3\u2019), the donor oligo containing the HA-tag-RSRD linker (5\u2019-TACCCATACGATGTTCCAGATTACGCTAGATCTCGAGAT-3\u2019) flanked by 120 nt homology arms combined on both sides and Cas9 mRNA were coinjected into fertilized mouse eggs to generate targeted knock-in (KI) offspring."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 18,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:39:41.391190+00:00",
+  "literature_notes": "All twelve ledger lines (L1\u2013L12) describe tags placed at the same junction: immediately after the signal-peptide cleavage site, before the mature N-terminus at residue 19. No ledger line names any other junction, loop, or internal site for MDGA1. L2 (YFP, ~239 aa) and L5 (AP, 15 aa) and L12 (V5, 14 aa) confirm that tags of widely varying sizes are tolerated at this terminus, consistent with the GPI-anchored topology in which the entire ectodomain is free of transmembrane constraints. L3 and L4 provide surface-display evidence; L9 provides explicit functional validation. The rat construct numbering (aa 19\u2013956) aligns with human canonical numbering (signal peptide 1\u201318, mature 19\u2013955) with a one-residue difference in total length that does not affect the junction position. No intracellular sites, function-abrogating sites, or other non-surface positions were reported in the ledger.",
+  "literature_rejected": []
+}

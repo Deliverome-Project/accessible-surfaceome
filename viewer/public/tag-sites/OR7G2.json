@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR7G2-terminal_n-0-lit",
+      "gene_symbol": "OR7G2",
+      "uniprot_acc": "Q8NG99",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG 8 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by live-cell anti-Flag immunofluorescence in non-permeabilized HEK293T cells (L1/L2). Functional assessment described only as a 'potential' future use; no cAMP or calcium assay result for OR7G2 is reported in the cited work. NOT MEASURED (function).",
+      "confidence": "high",
+      "rationale": "L2 explicitly states that OR7G2-containing constructs bearing only an 8-aa Flag tag on the 'mature protein' reached the cell surface; L1 confirms surface detection by live-cell immunofluorescence. The topology shows the N-terminus (residues 1\u201325) is the sole extracellular terminus\u2014the C-terminus falls in the intracellular region 293\u2013324\u2014so the tag must be prepended before residue 1 (insert_after_residue = 0, residue_after = M). No signal peptide is present in the computed topology, so residue 1 is already the mature N-terminus and the tag is not at risk of being cleaved. The extracellular N-terminal span is 25 residues long, providing ample room for a ~15\u201323 aa insert before the first TM helix at residue 26. PMC3698168 expressed OR7G2 (explicitly named in the 15-OR test set) in HEK293T cells with an 8-amino-acid Flag tag on the mature N-terminus, with or without an upstream Rho trafficking sequence; live-cell surface immunofluorescence with anti-Flag antibody confirmed plasma-membrane display.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "In fact, two-thirds of Lucy-tagged ORs are able to reach the cell surface synergistically with chaperones even when the Rho tag is removed (10/15 ORs), allowing for the potential assessment of OR function with only an 8-amino acid Flag tag on the mature protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:59:29.541825+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) derive from the same study (PMC3698168) and describe the same N-terminal Flag-tag construct. No residue number is stated in either clip, so position_evidence is topology_derived rather than validated; the junction is unambiguous because the C-terminus is intracellular and there is no signal peptide. No internal extracellular loop insertions are supported by the ledger for OR7G2. The four extracellular loops (ECL1 75\u201397, ECL2 165\u2013196, ECL3 261\u2013271, and the N-terminal 1\u201325) have no ledger-grounded insertion evidence beyond the N-terminal Flag tag described above.",
+  "literature_rejected": []
 }

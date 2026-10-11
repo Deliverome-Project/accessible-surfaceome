@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "NPDC1",
+  "uniprot_acc": "Q9NQX5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:07:01.176424+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) report NPDC1 expressed from the pLX304-V5 vector, which appends a V5 tag to the protein C-terminus. NPDC1 is a type I single-pass transmembrane protein: signal peptide 1\u201334 (cleaved), extracellular domain 35\u2013185, TM 186\u2013206, intracellular tail 207\u2013325. The C-terminus (residue 325) is therefore intracellular, placing the V5 tag on the cytoplasmic face. The papers use the V5 signal to confirm expression and detect the protein, while alpha-syn PFF binding is measured separately on the extracellular domain \u2014 the tag itself is never reported on the cell surface. No ledger line reports any insertion at the mature N-terminus (after residue 34) or anywhere within the extracellular span (35\u2013185). Because no ledger line grounds an extracellular tag insertion, sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 325,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal V5 tag (pLX304-V5 vector) confirmed expressed in HEK293T cells; NPDC1 C-terminus (residue 325) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

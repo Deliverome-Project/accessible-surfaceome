@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "IGSF1",
+  "uniprot_acc": "Q8N6C5",
+  "sites": [
+    {
+      "site_id": "IGSF1-terminal_n-28-lit",
+      "gene_symbol": "IGSF1",
+      "uniprot_acc": "Q8N6C5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "G",
+      "residue_after": "M",
+      "residue_label": "G28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used as a tool to study IGSF1 trafficking and cell-surface expression in heterologous cells; explicit surface-detection assay result not stated in the ledger clip.",
+      "confidence": "medium",
+      "rationale": "The construct name 'Myc-IGSF1-HA' follows the standard convention of placing the leading tag at the N-terminus. IGSF1 carries a signal peptide (residues 1\u201328, last residue G28); a tag inserted upstream of residue 29 would be cleaved with the SP, so the functional junction is after G28 (insert_after_residue=28), placing the Myc tag at the extracellular mature N-terminus (EC1 spans 29\u2013518, >490 residues from TM1). Python confirmed residue 28 = G and residue 29 = M. No explicit residue number is given in the ledger clip, so position_evidence is topology_derived; IGSF1 has exactly one extracellular N-terminus, leaving no ambiguity. Full-length human IGSF1 expressed in heterologous cells as a dual-tagged construct named Myc-IGSF1-HA (PMC3511587). The Myc prefix in the construct name places the tag at the protein N-terminus; with a signal peptide spanning residues 1\u201328, the tag must reside between the SP cleavage site and the mature N-terminus (junction 28/29) to survive to the cell surface. The paper used this construct to study IGSF1 trafficking and cell-surface expression.",
+      "sources": [
+        {
+          "pmid": 23143598,
+          "citation": "PMID 23143598",
+          "claim": "The IGSF1-CTD antibody epitope of human Myc-IGSF1-HA construct (from Dr."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:13:43.655509+00:00",
+  "literature_notes": "The ledger contains only one clip (L1) for IGSF1, reporting a dual Myc-IGSF1-HA construct used to study trafficking and cell-surface expression (PMC3511587). The Myc tag is placed at the extracellular N-terminus (after SP cleavage, junction G28/M29) and qualifies as a surface site. The HA tag, implied by the '-HA' suffix, is at the protein C-terminus (residue 1336), which falls in the intracellular span (1282\u20131336) and is recorded in other_positions. No residue number is given in the clip for either tag, so both positions are topology-derived. No internal loop insertions, transposon screens, or additional tagged constructs are present in the ledger for IGSF1, so only one surface site is reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1336,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA tag at the C-terminus of the Myc-IGSF1-HA construct; residue 1336 (I) falls within the intracellular C-terminal span (1282\u20131336), making this tag cytoplasmic and not suitable for extracellular surface labelling."
+    }
+  ]
+}

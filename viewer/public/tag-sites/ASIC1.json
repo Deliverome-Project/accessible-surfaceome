@@ -71,13 +71,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HA / FLAG",
+      "tag_type": "HA / 2\u00d7HA / FLAG",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface expression confirmed by anti-HA immunolabeling under non-permeabilized conditions (L1: channels 'exposed on the cell surface' detected). Two-HA version improved epitope exposure vs. single-HA version (L7), indicating the channel traffics to the surface. No explicit proton-sensitivity electrophysiology reported in the ledger for this specific construct.",
+      "functional_impact_measured": "Surface labelling under non-permeabilised conditions confirmed for both rat and human ASIC1a (PMC7870742); FLAG-tagged construct used in surface expression panel (PMC8654947). No explicit proton-current assay reported for the 147-site constructs in the cited clips.",
       "confidence": "high",
-      "rationale": "Python lookup confirms Phe at position 147 and Lys at position 148 in the canonical sequence, both within the extracellular domain (63\u2013437), 85 aa from TM1 and 290 aa from TM2. Three independent ledger lines (L1, L3, L4) from two separate publications pin the exact junction F147/K148 in full-length membrane-anchored ASIC1a. Surface expression is confirmed by non-permeabilized antibody labeling; no proton-gating assay for this construct is cited in the ledger, so validation is surface_only rather than surface_and_function. rASIC1a-147HA148 and hASIC1a-147HA148 (one or two copies of HA) and FLAG-tagged ASIC1a full-length constructs with insertion between Phe147 and Lys148 in the extracellular loop, expressed in heterologous cells and neurons (PMC7870742, PMC8654947). Site chosen based on high-resolution crystal structure as a disordered, exposed region. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L1 explicitly names the junction as between Phe147 and Lys148 in the extracellular loop of rat and human ASIC1a; Python verification confirms seq[147]='F' and seq[148]='K', both within the extracellular span 63-437 and 85 residues from TM1. L7 independently documents a FLAG tag at the identical junction in a multi-channel surface-expression study. L5 and L6 further characterise the 2\u00d7HA variant at this site. No functional (current) assay result is reported for this specific junction in the ledger clips, so validation is surface_only. rASIC1a-147HA148, hASIC1a-147HA148, hASIC1a-147-2HA-148, and ASIC1a-FLAG (F147|K148) full-length constructs expressed in heterologous cells and neurons; used to selectively label surface-exposed channels under non-permeabilised conditions. Constructs are membrane-anchored.",
       "sources": [
         {
           "pmid": 32996060,
@@ -87,7 +87,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "ASIC1-internal-298-lit",
@@ -107,19 +112,24 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Proton sensitivity (pH-response) and subcellular distribution both unchanged relative to untagged ASIC1a (L8: 'the HA-tag between residues 298 and 299 does not change proton sensitivity nor subcellular distribution of ASIC1a'); surface pool detected by anti-HA under non-permeabilized conditions confirming correct trafficking.",
+      "functional_impact_measured": "HA tag at 298-299 does not change proton sensitivity (pH-dependent current) nor subcellular distribution of ASIC1a (PMC13155533); surface labelling under non-permeabilised conditions confirmed (PMC7870742).",
       "confidence": "high",
-      "rationale": "Python lookup confirms Asp at position 298 and Leu at position 299 in the canonical 528-aa sequence, both deep within the extracellular domain (63\u2013437), 236 aa from TM1 and 139 aa from TM2. Multiple independent papers (PMC7870742, PMC13155533) inserted HA or pHluorin at this exact junction in full-length, membrane-anchored hASIC1a. L8 provides the strongest validation, explicitly reporting preserved proton sensitivity and subcellular distribution, qualifying this as surface_and_function. hASIC1a-298HA299 and hASIC1a-298pHluorin299 full-length constructs expressed in heterologous cells; HA epitope (YPYDVPDYA) or pH-sensitive GFP (pHluorin) inserted between Asp298 and Leu299 in the extracellular domain. Construct used in multiple independent studies (PMC7870742, PMC13155533). [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L2 explicitly names the junction as between Asp298 and Leu299 in the extracellular loop of hASIC1a; Python verification confirms seq[298]='D' and seq[299]='L', both within the extracellular span 63-437 and >139 residues from TM2. L8 independently reports that the HA tag at this site leaves proton sensitivity and subcellular distribution unchanged, elevating validation to surface_and_function. L4 further documents a pHluorin fusion at the identical junction, confirming tolerance of a much larger insert (~240 aa GFP). hASIC1a-298HA299 and hASIC1a-298pHluorin299 full-length constructs expressed in heterologous cells; HA insertion used to detect surface pool of ASIC1a; pHluorin insertion created a pH-sensitive fluorescent reporter at the same junction. Both constructs are membrane-anchored full-length channels.",
       "sources": [
         {
-          "pmid": 40712023,
-          "citation": "PMID 40712023",
-          "claim": "We detected the surface pool of ASIC1a using an influenza HA epitope in the ECD and the total pool using a C-terminal fusion to green fluorescent protein (GFP) (ASIC1a 298HA -GFP); the HA-tag between residues 298 and 299 does not change proton sensitivity nor subcellular distribution of ASIC1a ( 8 ) and did not affect the potentiation of ASIC1a currents by PCYOX1L (fig."
+          "pmid": 32996060,
+          "citation": "PMID 32996060",
+          "claim": "Based on the high-resolution structure, two exposed flexible sites were chosen for epitope insertion, the first between Phe 147 and Lys 148 (upper panel) and the second between Asp 298 and Leu 299 (lower panel)."
         }
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "ASIC1-snorkel-c",
@@ -964,10 +974,24 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:05:43.961841+00:00",
-  "literature_notes": "L9 and L10 describe N-terminal and C-terminal HA/Flag-tagged ASIC1a constructs. ASIC1a topology places the N-terminus (residues 1\u201343) and C-terminus (residues 455\u2013528) both on the INTRACELLULAR face; these tags are therefore cytoplasmic and do not qualify as extracellular surface sites. L11 uses the same N-terminal HA construct as L9 for intracellular immunofluorescence and is excluded for the same reason. L12 describes a C-terminal mCitrine fusion, also intracellular (455\u2013528), excluded. Two extracellular sites are supported: Asp298/Leu299 (rank 1, surface_and_function) and Phe147/Lys148 (rank 2, surface_only).",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T06:34:12.284175+00:00",
+  "literature_notes": "L9 reports N-terminal HA/FLAG-tagged mouse ASIC1a constructs; the N-terminus (residues 1\u201343) is intracellular per the topology landmarks, so these tags face the cytoplasm and are placed in other_positions. L10 reports C-terminal HA/FLAG constructs; the C-terminus (residues 455\u2013528) is likewise intracellular. L11 references HA-tagged ASIC1a used for neuronal localisation but names no residue and most likely refers to the same N-terminal constructs described in L9 ('described earlier'); no extracellular junction can be pinned from L11 alone. L12 describes ASIC1a-Flag constructs whose tag position is unstated (C-terminal by naming convention, hence intracellular); no extracellular junction can be derived. L4, L5, L6, L8 all corroborate the two extracellular sites already grounded in L1 and L2 and do not introduce additional junctions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "N-terminal HA/FLAG tags on mouse ASIC1a; the N-terminus (residues 1\u201343) is intracellular per topology landmarks, so these tags are cytoplasmic and do not label the cell surface."
+    },
+    {
+      "residue": 528,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "C-terminal HA/FLAG tags on ASIC1a; the C-terminus (residues 455\u2013528) is intracellular per topology landmarks, so these tags are cytoplasmic and do not label the cell surface."
+    }
+  ]
 }

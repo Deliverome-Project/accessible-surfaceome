@@ -37,7 +37,83 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCR7-terminal_n-24-lit",
+      "gene_symbol": "CCR7",
+      "uniprot_acc": "P32248",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "C",
+      "residue_after": "Q",
+      "residue_label": "C24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection by anti-FLAG antibody confirmed; no functional assay reported for the tagged construct in this study.",
+      "confidence": "high",
+      "rationale": "L6 reports a full-length CCR7 construct with an N-terminal FLAG tag expressed in Expi293F cells and detected at the cell surface by anti-FLAG antibody, confirming the tag is accessible on the extracellular face. CCR7 has a signal peptide spanning residues 1\u201324 (authoritative landmark); the mature N-terminus begins at residue 25 (Q), so the tag must be placed after residue 24 to avoid co-translational cleavage. No specific residue is named in L6, but there is exactly one extracellular N-terminus (residues 25\u201356, 32 aa from TM1), making the junction topology-derived. Python confirmed residue 24 = C and residue 25 = Q. Full-length human CCR7 was expressed in Expi293F cells with an N-terminal FLAG tag and a C-terminal 1D4 tag; surface expression was confirmed by epitope-tag-specific antibodies (anti-FLAG detecting the extracellular N-terminus).",
+      "sources": [
+        {
+          "pmid": 37134173,
+          "citation": "PMID 37134173",
+          "claim": "Each GPCR construct includes an N-terminal FLAG tag and a C-terminal 1D4 tag, except for four GPCRs belonging to the Frizzed (FZD) subfamily, which have an N-terminal HA (hemagglutinin) epitope tag and a C-terminal 1D4 epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:07:32.823638+00:00",
+  "literature_notes": "Six ledger lines were evaluated. L6 is the sole line grounding an extracellular tag site: it reports a full-length CCR7 construct with an N-terminal FLAG tag detected at the cell surface, placing the tag on the extracellular N-terminal domain (residues 25\u201356). The junction is topology-derived (insert_after_residue = 24, after signal-peptide cleavage) because L6 names no specific residue. L1 and L2 (both PMC8072677) report C-terminal EGFP and YPet fusions to full-length CCR7; L3 (PMC13436775) reports C-terminal EGFP on CCR7 isoforms; L4 and L5 (both PMC13590099) report a C-terminal FLAG-tagged CCR7 used in signaling studies. All five C-terminal tags land on the intracellular C-terminus (topology landmark: residues 330\u2013378 are intracellular) and are therefore not surface tag sites; they are recorded in other_positions. L6 also mentions a C-terminal 1D4 tag on the same construct, which is likewise intracellular and recorded in other_positions (consolidated with L1\u2013L5 at residue 378). No ledger line reports a tag in any extracellular loop (ECL1 120\u2013127, ECL2 197\u2013219, ECL3 287\u2013302), so no internal loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 378,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion to full-length CCR7 (pcDNA3-CCR7-EGFP); the C-terminus (residues 330\u2013378) is intracellular per topology landmarks, so this tag is cytoplasmic, not a surface epitope site."
+    },
+    {
+      "residue": 378,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal YPet fusion via (GGGGS)3 linker to full-length CCR7 (pcDNA3-CCR7-YPet); same intracellular C-terminus as L1."
+    },
+    {
+      "residue": 378,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal EGFP fusions to CCR7A, CCR7B, and CCR7C isoforms expressed in HEK293 cells; C-terminus is intracellular."
+    },
+    {
+      "residue": 378,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal FLAG tag (via 8-aa linker) on full-length CCR7 transduced into Jurkat cells; C-terminus is intracellular despite confirmed surface expression of the receptor."
+    },
+    {
+      "residue": 378,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal 1D4 tag on the same full-length CCR7 construct as the N-terminal FLAG (PMC10156119); C-terminus is intracellular."
+    }
+  ]
 }

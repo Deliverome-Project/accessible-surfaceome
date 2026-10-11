@@ -1,0 +1,98 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRL2",
+  "uniprot_acc": "O95490",
+  "sites": [
+    {
+      "site_id": "ADGRL2-internal-825-lit",
+      "gene_symbol": "ADGRL2",
+      "uniprot_acc": "O95490",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 825,
+      "residue_before": "T",
+      "residue_after": "N",
+      "residue_label": "T825",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HaloTag-FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Cell-impermeable HaloTag live labeling confirmed surface display of the extracellular HaloTag on HEK293T cells expressing the HaloTag-FLAG-ADGRL2 construct; no further functional assay of the receptor reported in the cited clip.",
+      "confidence": "medium",
+      "rationale": "The paper (L7/L8) states HaloTag-FLAG is placed 'immediately upstream of the native TA sequence' in full-length ADGRL2. The GPS cleavage motif HLT is located at residues 823\u2013825 (Python search confirmed H=823, L=824, T=825); GPS cleavage releases the NTF and exposes the TA starting at residue 826 (N). Therefore the HaloTag C-terminus connects to residue 826, placing the junction at insert_after_residue=825 (T\u2192N). This position is within the extracellular domain (26\u2013851) and 26 residues from TM1 (852), satisfying the \u22653-residue constraint. The large HaloTag (~33 kDa) is tolerated at this junction, supporting that a short epitope tag (~15\u201323 aa) would also be accommodated. Full-length ADGRL2 construct in which the entire NTF was replaced by HaloTag-FLAG placed immediately upstream of the native tethered agonist (TA) sequence, expressed in HEK293T cells. Surface display of the extracellular HaloTag was confirmed by cell-impermeable HaloTag live labeling.",
+      "sources": [
+        {
+          "pmid": 41794036,
+          "citation": "PMID 41794036",
+          "claim": "We initially confirmed the expression of the six fusion proteins with a cell-impermeable HaloTag live labeling protocol in HEK293T cells ( Fig. 1B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ADGRL2-terminal_n-25-lit",
+      "gene_symbol": "ADGRL2",
+      "uniprot_acc": "O95490",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "G",
+      "residue_after": "F",
+      "residue_label": "G25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Both the HA-tagged extracellular moiety and the GFP-tagged intracellular moiety of HA-Lphn2-EGFP colocalized with vinculin at cell-to-ECM adhesion sites in cultured endothelial cells, matching the pattern of endogenous LPHN2; surface display of the N-terminal HA tag on the intact membrane-anchored protein confirmed.",
+      "confidence": "high",
+      "rationale": "ADGRL2 has a signal peptide spanning residues 1\u201325 (computed landmark); the mature N-terminus begins at residue 26 (F). An N-terminal tag must be placed after SP cleavage, i.e., insert_after_residue=25, giving the junction G(25)|F(26). Python lookup confirms seq[25]=G and seq[26]=F. The paper (L4/L5/L6) reports HA-Lphn2-EGFP with the HA tag on the extracellular face, confirmed by colocalization with vinculin at ECM adhesions; L3 independently reports an N-terminal FLAG tag detected on the cell surface of Lphn2-expressing cells. Both papers name no specific residue, but the N-terminus after SP cleavage is the only extracellular terminus available for an N-terminal tag. Full-length mouse Lphn2 expressed with an N-terminal HA tag and C-terminal EGFP (HA-Lphn2-EGFP) in cultured endothelial cells; the N-terminal HA tag is extracellular and the C-terminal EGFP is intracellular. The same N-terminal extracellular junction is independently corroborated by an N-terminal FLAG tag on Lphn2 (L3) confirmed on the cell surface.",
+      "sources": [
+        {
+          "pmid": 34581723,
+          "citation": "PMID 34581723",
+          "claim": "We found that, similarly to endogenous LPHN2, both the HA-tagged extracellular and the GFP-tagged intracellular moieties of HA-Lphn2-EGFP colocalized with vinculin at cell-to-ECM adhesion sites ( Fig. 1 B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:17:00.548252+00:00",
+  "literature_notes": "Three ledger lines (L3, L4, L5/L6) all pin the same N-terminal extracellular junction (after SP cleavage at residue 25); they are treated as one site with L5 as the primary evidence (highest validation level: surface_and_function). L7/L8 pins a distinct internal junction at the GPS cleavage site (825/826) where the HaloTag C-terminus connects to the tethered agonist sequence; this is reported as a separate internal site. L1/L2 report an mVenus insertion at mouse Lphn2 position 1311/1312 (intracellular in human ADGRL2, topology 1084\u20131459) and are placed in other_positions. No ledger line supports any insertion in the short extracellular loops of the 7TM bundle (ECL1: 902\u2013909, ECL2: 973\u2013990, ECL3: 1057\u20131062).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1311,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mVenus inserted between mouse Lphn2 L1311 and T1312 in a full-length knock-in construct; human ADGRL2 residue 1311 (S) falls within the intracellular domain (1084\u20131459) and the mouse numbering does not map to an LT motif in the human sequence near this position."
+    }
+  ]
+}

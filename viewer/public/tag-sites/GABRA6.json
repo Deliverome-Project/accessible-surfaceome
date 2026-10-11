@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "GABRA6",
+  "uniprot_acc": "Q16445",
+  "sites": [
+    {
+      "site_id": "GABRA6-internal-23-lit",
+      "gene_symbol": "GABRA6",
+      "uniprot_acc": "Q16445",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 23,
+      "residue_before": "V",
+      "residue_after": "E",
+      "residue_label": "V23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG or HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed cell-surface display of the HA-tagged \u03b16 subunit; total and surface expression both measured. No electrophysiological or ligand-binding functional assay reported in these clips.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states that FLAG or HA epitopes were inserted between mature aa 4 and 5 of GABRA6 (and other \u03b1 subunits) in full-length membrane-anchored constructs. With the signal peptide spanning canonical residues 1\u201319, mature aa 4 maps to canonical residue 23 (V) and mature aa 5 to canonical residue 24 (E), computed by adding the 19-residue SP offset. The junction at canonical 23/24 lies 4 residues from the mature N-terminus and 219 residues from TM1 (canonical 242), well within the large extracellular N-terminal domain (canonical 20\u2013241). L2 (same paper) independently confirms surface display of \u03b16^HA by flow cytometry, corroborating L1. FLAG (DYKDDDDK) or HA (YPYDVPDYA) epitopes inserted between amino acids 4 and 5 of the mature GABRA6 subunit in full-length, membrane-anchored constructs expressed in HEK293T cells. The signal peptide spans canonical residues 1\u201319, so mature aa 4 = canonical residue 23 (V) and mature aa 5 = canonical residue 24 (E); the tag sits between them. \u03b16^HA was co-transfected with \u03b22, \u03b23, and FLAG-tagged \u03b32 subunits and surface expression was confirmed by flow cytometry.",
+      "sources": [
+        {
+          "pmid": 27622563,
+          "citation": "PMID 27622563",
+          "claim": "FLAG (DYKDDDDK) or HA (YPYDVPDYA) epitopes were inserted between amino acids 4 and 5 of the mature GABA A receptor subunit subtypes as needed, so that subunit total and cell surface expression could be determined by flow cytometry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 23,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:02:04.839891+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) derive from the same publication (PMC5021343) and together establish one site. L1 is the primary evidence pinning the insertion to mature aa 4/5; L2 confirms surface expression of the \u03b16^HA construct specifically. The position is computed: signal peptide = canonical 1\u201319, so mature residue n = canonical residue n+19; mature aa 4 \u2192 canonical 23 (V), mature aa 5 \u2192 canonical 24 (E). No functional electrophysiology or ligand-binding data are reported in the clips, so validation_level is surface_only. No other ledger lines support additional sites. The large intracellular loop (canonical 325\u2013419) and the short extracellular loops (291\u2013301, 442\u2013453) have no ledger support for insertions and are not proposed.",
+  "literature_rejected": []
+}

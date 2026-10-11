@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADGRG5-terminal_n-21-lit",
+      "gene_symbol": "ADGRG5",
+      "uniprot_acc": "Q8IZF4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "T",
+      "residue_after": "E",
+      "residue_label": "T21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Quantitative immunoblotting in Sf9 cell membranes: FLAG-tagged NTF detected by FLAG M1 antibody; GPS autoproteolytic cleavage confirmed at wild-type efficiency.",
+      "confidence": "high",
+      "rationale": "GPR114 is the gene product of ADGRG5; the paper's construct is the same protein. The HA signal peptide replaces the native signal peptide (residues 1\u201321), placing the FLAG epitope at the mature extracellular N-terminus, which begins at residue 22 (E). No specific residue number is stated in the paper, so the junction is topology-derived: insert_after_residue=21 is the only possible extracellular N-terminal position. Python confirmed residue 21 = T and residue 22 = E, and the mature N-terminus is 228 residues from the first TM helix, providing ample space for a short tag. Full-length GPR114 (ADGRG5) constructs were engineered with an exogenous N-terminal hemagglutinin signal peptide followed by a FLAG epitope and a TEV protease site, expressed in Sf9 cells. L3 confirms the FLAG-tagged N-terminal fragment (NTF) was detected by anti-FLAG M1 immunoblotting and that GPS autoproteolytic cleavage was preserved.",
+      "sources": [
+        {
+          "pmid": 37673336,
+          "citation": "PMID 37673336",
+          "claim": "All constructs examining cleavage efficiencies included an N-terminal hemagglutinin signal peptide followed by a FLAG epitope and a tobacco etch virus proteolytic site."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:10:04.639443+00:00",
+  "literature_notes": "L2 and L3 together describe a C-terminal GFP-His8 tag on full-length GPR114. The topology landmarks place residues 506\u2013528 in the intracellular compartment, so this tag is cytoplasmic and does not qualify as a surface tag site; it is recorded in other_positions. No ledger line grounds any internal extracellular loop insertion for ADGRG5 or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 528,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal GFP-His8 tag on full-length GPR114; the C-terminus (residues 506\u2013528) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
 }

@@ -158,5 +158,20 @@
       "canonical_residue": 48,
       "left_pct": 24.336283185840706
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:18:42.148818+00:00",
+  "literature_notes": "All four ledger clips (L1\u2013L4) describe the same construct from PMC11416636: ALFA-CD53, where the ALFA tag is prepended to the N-terminus of CD53. CD53 is a tetraspanin with an intracellular N-terminus (IC1: residues 1\u20138, authoritative topology). The decisive evidence is in L3: ALFA staining is performed on permeabilized cells (detecting 'total' protein), while surface expression is confirmed by a separate extracellular antibody on non-permeabilized cells. This two-channel design \u2014 extracellular Ab for surface, permeabilized ALFA for total \u2014 is the standard approach when the tag is intracellular. No clip places the ALFA tag in EC1 (37\u201354) or EC2 (105\u2013183), and no clip names any residue junction. Because the N-terminal ALFA tag faces the cytoplasm, it does not qualify as a surface tag site. The ledger supports zero extracellular insertion sites for CD53.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "ALFA tag is prepended to the intracellular N-terminus (IC1: residues 1\u20138); ALFA staining requires permeabilization (L3), confirming the tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

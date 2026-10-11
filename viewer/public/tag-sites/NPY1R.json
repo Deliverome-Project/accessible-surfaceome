@@ -37,7 +37,104 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NPY1R-terminal_n-0-lit",
+      "gene_symbol": "NPY1R",
+      "uniprot_acc": "P25929",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor successfully purified in complex with NPY ligand and Gi1 heterotrimer, demonstrating intact ligand binding and G-protein coupling with the N-terminal FLAG tag in place.",
+      "confidence": "high",
+      "rationale": "L2/L3 (PMC9067930) report a full-length, membrane-anchored Y1R construct carrying an exogenous HA signal peptide followed immediately by a FLAG tag at the receptor N-terminus; after HA-SP cleavage the FLAG is the first element before canonical M1, placing the junction at insert_after_residue=0. EC1 spans residues 1\u201344 and TM1 begins at residue 45, so the tag is \u226544 residues from any TM boundary. The receptor was purified as a functional NPY\u2013Gi1 complex, confirming both surface trafficking and ligand/G-protein coupling are preserved. Full-length human Y1R expressed with an exogenous HA signal peptide and a FLAG epitope tag at the N-terminus, plus a C-terminal twin-strep-tag, in a modified pFastBac1 baculovirus vector; used to purify NPY-peptide-bound YR\u2013Gi1 complexes from Sf9 insect cells.",
+      "sources": [
+        {
+          "pmid": 35507650,
+          "citation": "PMID 35507650",
+          "claim": "The human Y 1 R, Y 2 R, and Y 4 R genes were cloned into a modified pFastBac1 vector (Invitrogen) with a HA signal peptide and a Flag tag at the N terminus, and a PreScission protease site followed by a twin-strep-tag (WSHPQFEK-GGGSGGGSGGSA-WSHPQFEK) at the C terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NPY1R-terminal_n-1-lit",
+      "gene_symbol": "NPY1R",
+      "uniprot_acc": "P25929",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "N",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor expressed and purified from Sf9 membranes via anti-FLAG affinity; used for cryo-EM structure determination. Explicit functional assay (ligand binding, G-protein coupling) NOT MEASURED for this construct.",
+      "confidence": "high",
+      "rationale": "L1 (PMC8844075) explicitly states the construct is Y1R residues 2\u2013384 with a FLAG tag at its N-terminus, meaning M1 is absent and the FLAG is inserted between canonical positions 1 and 2 (insert_after_residue=1; residue_before=M, residue_after=N confirmed from the numbered sequence). EC1 spans 1\u201344 and TM1 begins at 45, so the junction is 43 residues from the TM boundary. This is a distinct junction from the L2/L3 prepend (insert_after_residue=0) and is reported separately per the two-junction rule. Validation is limited to detection by purification; no explicit surface or functional assay is described for this construct. Wild-type human Y1R construct spanning residues 2\u2013384 (M1 omitted) engineered with a FLAG tag at its N-terminus and eGFP plus a cleavable His8 tag at its C-terminus; expressed in Sf9 insect cells using the Bac-to-Bac system for cryo-EM structural studies.",
+      "sources": [
+        {
+          "pmid": 35165283,
+          "citation": "PMID 35165283",
+          "claim": "Wild-type human Y 1 R (2\u2013384) with a FLAG tag at its N-terminus as well as eGFP and a His 8 tag at its C-terminus, cleavable by HRV 3C protease, was expressed in Spodoptera frugiperda (Sf9) insect cells using the Bac-to-Bac system (Invitrogen)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 1,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:12:44.031075+00:00",
+  "literature_notes": "All six ledger lines were evaluated. L1 and L2/L3 both support N-terminal FLAG tags on full-length membrane-anchored Y1R but at slightly different junctions: L2/L3 use an exogenous HA signal peptide so the FLAG precedes canonical M1 (insert_after_residue=0), while L1 drops M1 and starts the construct at N2 so the FLAG sits between canonical positions 1 and 2 (insert_after_residue=1). Both are reported as separate sites per the two-junction rule. L4, L5, and L6 (PMC6751662) report eYFP fused C-terminally to human NPY receptors via an ADPPVV linker with confirmed plasma-membrane expression in HEK293 cells; however, the C-terminus of NPY1R is intracellular (IC4: 321\u2013384), so this tag does not qualify as an extracellular surface site and is recorded in other_positions. L3 additionally specifies that C-terminal residues R341\u2013I384 of Y1R were replaced with a twin-strep-tag; these residues are also intracellular (IC4) and are likewise recorded in other_positions. No ledger line supports an insertion in any of the extracellular loops (EC2: 98\u2013116, EC3: 176\u2013211, EC4: 282\u2013299).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 384,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "eYFP fused C-terminally to human NPY receptor via ADPPVV linker with confirmed plasma-membrane expression; the C-terminus of NPY1R falls in IC4 (321\u2013384) and is intracellular."
+    },
+    {
+      "residue": 340,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal residues R341\u2013I384 of Y1R replaced with a twin-strep-tag for purification; residues 341\u2013384 are entirely within IC4 (321\u2013384) and the replacement junction (after F340) is intracellular."
+    }
+  ]
 }

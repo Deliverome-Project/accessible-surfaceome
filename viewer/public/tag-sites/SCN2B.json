@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "SCN2B",
+  "uniprot_acc": "O60939",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:09:54.028377+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) concern the same SCN2B-YFP construct family, where YFP is fused to the cytoplasmic C-terminus of SCN2B. The C-terminus (residue 215) lies within the intracellular domain (181\u2013215), so these are intracellular tags, not extracellular surface tags. L4 describes a (Gly-Gly-Ser-Gly)2 linker inserted between residue 181 and YFP in the 181X truncated construct; residue 181 (K) is the first intracellular residue per the authoritative topology landmarks, so this junction is also cytoplasmic. No ledger line reports any tag insertion in the extracellular domain (30\u2013159) or at the mature N-terminus (residue 30). L3 mentions C127A and N42,66,74Q mutations in the extracellular domain, but these are point mutations used to probe glycosylation and disulfide bonding, not tag insertions. The ledger provides zero extracellular tag insertion evidence for SCN2B; sites = [] is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 215,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "YFP fused to the cytoplasmic C-terminus (residue 215) of full-length SCN2B; confirmed at the plasma membrane by confocal and surface biotinylation (L2, L3), but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 181,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "A (Gly-Gly-Ser-Gly)2 linker was inserted between residue 181 (K, first intracellular residue) and YFP in the 181X truncated SCN2B construct; this junction is at the cytoplasmic face of the TM domain."
+    }
+  ]
+}

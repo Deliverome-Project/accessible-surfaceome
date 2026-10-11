@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PTK7",
+  "uniprot_acc": "Q13308",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:51:05.662945+00:00",
+  "literature_notes": "PTK7 (Q13308) is a type I single-pass transmembrane receptor: extracellular 31\u2013704, TM 705\u2013720, intracellular 721\u20131070. The only ledger entry [L1] describes a 'PTK7-CFP' fusion used to validate cell-surface aptamer-mediated biotinylation. The naming convention 'PTK7-CFP' places CFP at the C-terminus, which falls entirely within the intracellular domain (residues 721\u20131070). The CFP serves as an expression reporter; the surface biotinylation is achieved by an aptamer binding the extracellular domain, not by the CFP tag. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or domain insertion \u2014 on the extracellular face of PTK7. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1070,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "PTK7-CFP C-terminal fusion places CFP in the intracellular compartment (residues 721\u20131070 are cytoplasmic); used as an expression reporter for aptamer-mediated surface biotinylation, not as an extracellular tag."
+    }
+  ]
+}

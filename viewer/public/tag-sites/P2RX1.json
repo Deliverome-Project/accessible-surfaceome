@@ -235,5 +235,32 @@
       "canonical_residue": 287,
       "left_pct": 71.9298245614035
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:06:38.728478+00:00",
+  "literature_notes": "All 13 ledger lines (L1\u2013L13) describe C-terminal epitope or fluorescent-protein tags on rat, human, or mouse P2X1 (EYMPME, His-FLAG, eYFP, His+FLAG). The authoritative topology landmarks place the C-terminus (residues 359\u2013399) in the intracellular compartment, downstream of TM2 (339\u2013358). No ledger line describes any tag insertion in the large extracellular ectodomain (residues 51\u2013338), at the extracellular mouth of TM1 (residue 51), or anywhere else on the extracellular face. Because the rules require every site to be grounded in a ledger line reporting a tolerated insertion on the extracellular face, and no such line exists, zero extracellular surface tag sites are reported. The C-terminal insertions are recorded in other_positions as intracellular.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 399,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal EYMPME epitope tag on rat P2X1 (P2X1-EE); calcium permeability fraction identical to WT confirming functional tolerance, but the C-terminus (residues 359\u2013399) is intracellular per topology landmarks \u2014 not an extracellular surface site."
+    },
+    {
+      "residue": 399,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal His-FLAG tag on human P2X1 stably expressed in HEK293 cells; tag had no effect on receptor properties, but the C-terminus is intracellular \u2014 not an extracellular surface site."
+    },
+    {
+      "residue": 399,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "C-terminal eYFP knock-in on mouse P2X1 (P2X1-eYFP); ATP-evoked currents identical to WT in urinary bladder smooth muscle cells, but the C-terminus is intracellular \u2014 not an extracellular surface site."
+    }
   ]
 }

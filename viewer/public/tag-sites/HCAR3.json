@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HCAR3-terminal_n-0-lit",
+      "gene_symbol": "HCAR3",
+      "uniprot_acc": "P49019",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Indirect cellular ELISA confirmed surface display of the N-terminal HA-tagged full-length HCAR3 receptor (L3); no ligand-binding or signalling assay reported for the tagged construct specifically.",
+      "confidence": "high",
+      "rationale": "HCAR3 carries no signal peptide; the topology landmarks place residues 1\u201328 extracellular, making the N-terminus the sole extracellular terminus of the protein. No residue number is stated in any ledger line, but exactly one extracellular terminus exists, so the junction is unambiguously computed as a prepend before M1 (insert_after_residue = 0). The N-terminal HA tag was confirmed at the cell surface by indirect cellular ELISA (L2/L3), providing direct surface-display evidence for this position. Python verification confirms residue 1 = M and residue 28 = K (last extracellular residue before TM1 at V29), consistent with a 28-residue extracellular N-terminal domain that can accommodate a short prepended tag. Full-length human HCAR3 cloned into pcDNA3.1(\u2212) with an N-terminal HA epitope (YPYDVPDYA) and C-terminal FLAG tag; cell surface expression of the N-terminal HA-tagged construct was assessed by indirect cellular ELISA in transfected cells (L2, L3). A parallel construct in pcDps with the same dual-tag arrangement was also reported (L1). Additional full-length constructs for structural studies (L5, L6, L7) independently place a FLAG epitope at the extracellular N-terminus after an exogenous signal-peptide cleavage, further corroborating N-terminal extracellular tag tolerance.",
+      "sources": [
+        {
+          "pmid": 25839160,
+          "citation": "PMID 25839160",
+          "claim": "The full length human HCAR1, human HCAR2 and human HCAR3 with an N-terminal hemagglutinin (HA) epitope (YPYDVPDYA) and a C-terminal FLAG-tag (DYKDDDDK) were inserted into the mammalian expression vector pcDNA3.1(\u2212) (Invitrogen)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:55:22.612078+00:00",
+  "literature_notes": "Seven ledger lines were evaluated. L1 and L2 both describe full-length HCAR3 with an N-terminal HA tag and a C-terminal FLAG tag; L3 explicitly confirms surface display of the N-terminal HA by cellular ELISA. L4 describes a C-terminal mRuby fusion used for trafficking studies; the C-terminus (residues 298\u2013387) is intracellular per the topology landmarks, so this is recorded in other_positions. L5, L6, and L7 describe structural-study constructs (pFastBac, bRIL fusion) with an exogenous HA signal peptide followed by a FLAG tag at the extracellular N-terminus of the full-length receptor; these are full-length membrane-anchored constructs and independently corroborate N-terminal extracellular tag tolerance, but they do not add a new position (all converge on the same N-terminal prepend). No ledger line reports a tolerated insertion in any of the three extracellular loops (ECL1 85\u2013101, ECL2 165\u2013188, ECL3 258\u2013273), so no internal sites are proposed. The C-terminal His tag in L5 is also intracellular and is not separately listed as it is redundant with L4/L1/L2 for the intracellular C-terminus.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 387,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal mRuby fluorescent-protein fusion on full-length human HCA3 used for internalization/trafficking studies; the C-terminus (residues 298\u2013387) is intracellular per topology landmarks, so this is not a surface tag site."
+    },
+    {
+      "residue": 387,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length HCAR3 in pcDps; C-terminus is intracellular (298\u2013387), confirmed by topology."
+    }
+  ]
 }

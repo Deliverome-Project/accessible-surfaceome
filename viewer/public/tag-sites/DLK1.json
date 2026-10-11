@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "DLK1",
+  "uniprot_acc": "P80370",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:13:34.366955+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) originate from PMC11917482 and describe C. elegans DLK-1, which is a dual leucine zipper kinase (the MAP3K12 ortholog in worms). This is an entirely different protein family from human DLK1 (Protein delta homolog 1, UniProt P80390/P80370), a Notch-ligand-family type-I transmembrane protein with EGF-like repeats in its ectodomain. The shared three-letter abbreviation 'DLK' is coincidental: in C. elegans it expands to 'dual leucine zipper kinase', a cytoplasmic serine/threonine kinase; in humans DLK1 is 'delta-like 1'. They share no structural or functional homology. Furthermore, even if the orthology claim were accepted, the GFP in L1/L2 is fused at the ATG (N-terminus) of a cytoplasmic kinase, placing it intracellularly \u2014 not on the extracellular face. Neither line therefore qualifies as evidence for a surface tag site on human DLK1. No other ledger lines exist. Zero sites is the correct answer.",
+  "literature_rejected": []
+}

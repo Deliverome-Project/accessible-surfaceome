@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "SEMA7A",
+  "uniprot_acc": "O75326",
+  "sites": [
+    {
+      "site_id": "SEMA7A-internal-352-lit",
+      "gene_symbol": "SEMA7A",
+      "uniprot_acc": "O75326",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 352,
+      "residue_before": "K",
+      "residue_after": "G",
+      "residue_label": "K352",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "NOT MEASURED explicitly in the ledger clip; the construct was generated to study Sema7A in its membrane-anchored context, but no specific functional assay result is reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "The paper explicitly names residue 352 as the HA-tag insertion site in full-length, membrane-anchored Sema7A. Python verification confirms position 352 = K and position 353 = G in the canonical sequence; insert_after_residue = 352 is the direct reading of 'at amino acid 352'. The site lies at position 352, well within the extracellular span (45\u2013666) and far from the signal-peptide cleavage site (residue 44). SEMA7A has no transmembrane helix in its canonical topology (it is GPI-anchored), so there is no TM-boundary constraint to violate here. Full-length membrane-anchored Sema7A construct; HA tag inserted at amino acid 352 in an exposed extracellular loop using Q5 mutagenesis, with 2 native amino acids removed to preserve loop structure. Construct expressed in cells.",
+      "sources": [
+        {
+          "pmid": 39152101,
+          "citation": "PMID 39152101",
+          "claim": "Using pAL2-T-Sema7A, an HA tag was inserted using the Q5 mutagenesis kit at an exposed loop at amino acid 352, removing only 2 native amino acids to preserve the loop."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:17:57.109546+00:00",
+  "literature_notes": "L2 (PMC10978839) reports a C-terminal Flag tag on SEMA7A-WT, 3NQ, and 5NQ constructs used for expression studies in HNSCC cell lines. SEMA7A is a GPI-anchored protein; the GPI signal peptide at the C-terminus is co-translationally cleaved and replaced by the GPI lipid anchor. A tag appended after the GPI signal would be cleaved off during processing and would never reach the cell surface; a tag inserted before the GPI signal would be buried at the membrane face and inaccessible extracellularly. The ledger clip for L2 does not state that the Flag tag was detected on the cell surface, and the construct description ('fused to a C-terminal Flag tag' for 'expression studies') is consistent with intracellular/Western-blot detection only. Accordingly, L2 does not qualify as a surface tag site and is recorded in other_positions instead. The gap at canonical position 361 (absent from the numbered sequence, which jumps from line ending at 360 to the next line starting at 362) does not affect the L1 site at 352.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 666,
+      "kind": "other",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Flag tag used for expression studies in HNSCC cells; SEMA7A is GPI-anchored and the C-terminal GPI signal is cleaved during processing, so a C-terminal tag is not accessible on the extracellular surface and cannot serve as a surface epitope tag."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "ENPP1",
+  "uniprot_acc": "P22413",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:30:39.092783+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L1 (PMC11405333) reports a FLAG-tagged full-length membrane-anchored ENPP1 construct expressed in HeLa cells, but does not state the position of the FLAG tag. ENPP1 is a type II transmembrane protein with an intracellular N-terminus (residues 1-76) and an extracellular C-terminus (residues 98-925). 'FLAG-tagged expression vector' constructs most commonly carry an N-terminal FLAG, which for a type II TM protein is intracellular and therefore not a surface tag site. The paper provides no evidence that the FLAG tag is surface-accessible or extracellular; topology_derived requires at minimum that the paper establishes the tag is on the surface (even if the residue is not named). Without that, the position is genuinely ambiguous between intracellular (N-terminal) and extracellular (C-terminal), and the site was dropped per the 'doubt the evidence -> drop the site' rule. L2 (PMC10746542) describes an HA tag fused to VH27, an antibody VH domain used in a yeast-display selection assay to measure display level during in cellulo evolution of ENPP1-binding antibody fragments; the HA tag is on the antibody, not on ENPP1, and does not qualify as evidence of an ENPP1 tag insertion.",
+  "literature_rejected": []
+}

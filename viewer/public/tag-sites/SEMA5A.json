@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "SEMA5A",
+  "uniprot_acc": "Q13591",
+  "sites": [
+    {
+      "site_id": "SEMA5A-terminal_n-22-lit",
+      "gene_symbol": "SEMA5A",
+      "uniprot_acc": "Q13591",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "P",
+      "residue_after": "E",
+      "residue_label": "P22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable expression confirmed in Panc1 cells; functional assays (invasion, migration) performed on the tagged line, but surface accessibility of the Flag tag itself was not reported in the ledger clips.",
+      "confidence": "medium",
+      "rationale": "SEMA5A is a type I single-pass TM protein with signal peptide residues 1\u201322 and mature ectodomain beginning at residue 23; the C-terminus (992\u20131074) is intracellular. Because exactly one terminus is extracellular, the topology_derived rule places the Flag tag after the SP cleavage site at residue 22, before the mature N-terminal glutamate (E23). Python confirmed residue 22 = P and residue 23 = E from the canonical sequence. The insert site is 948 residues from the TM boundary, satisfying all distance constraints. Full-length mouse Sema5A bearing a Flag epitope tag was cloned into pBK-CMV and stably transfected into Panc1 pancreatic cancer cells (PMC2888907). No residue is named in the clips; SEMA5A has exactly one extracellular terminus (N-terminus after SP cleavage at residue 22), so the position is derived from topology.",
+      "sources": [
+        {
+          "pmid": 20073063,
+          "citation": "PMID 20073063",
+          "claim": "Panc1 cells were transfected with full-length mouse Sema5A cDNA tagged with Flag epitope cloned in pBK-CMV vector (generous gift from Dr."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:16:37.345970+00:00",
+  "literature_notes": "L1 and L2 are two clips from the same paper (PMC2888907) reporting the same construct; L1 is used as the primary supporting clip. Neither clip specifies which terminus carries the Flag tag, nor do they report surface staining or flow cytometry of the tag. The topology_derived rule applies because SEMA5A has exactly one extracellular terminus. Confidence is medium rather than high because the clips do not confirm the tag is extracellular (it could be a C-terminal intracellular Flag, a common alternative). No internal loop insertions are supported by the ledger. No residue-level position is named anywhere in the ledger, so no 'validated' site can be called.",
+  "literature_rejected": []
+}

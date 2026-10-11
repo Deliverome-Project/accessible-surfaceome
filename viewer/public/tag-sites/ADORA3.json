@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADORA3-terminal_n-0-lit",
+      "gene_symbol": "ADORA3",
+      "uniprot_acc": "P0DMS8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor expressed and purified; cryo-EM structure of A3AR\u2013Gi complex resolved, demonstrating intact G protein coupling. Expression was enhanced relative to unmodified construct.",
+      "confidence": "high",
+      "rationale": "ADORA3 has no signal peptide (raw topology begins with 'O', landmarks assign residues 1\u201314 as EXTRACELLULAR), so residue 1 (M) is the mature N-terminus and the only extracellular terminus available for a prepend tag. No residue number is stated in the ledger clip, but exactly one extracellular terminus exists, making the position topology-derived rather than validated. The 14-residue extracellular N-terminal span (1\u201314) provides \u22653 residues of clearance from TM1 (begins at residue 15). The construct was functional: a cryo-EM complex with Gi was resolved, confirming G protein coupling was preserved. Full-length human A3AR (UniProt P0DMS8) expressed in Sf9 insect cells with a FLAG epitope prepended at the N-terminus; the first 22 aa of human M4 mAChR were inserted as a spacer between the FLAG and native A3AR residue 1 to enhance expression. The construct was used to obtain a cryo-EM structure of the A3AR\u2013G protein complex.",
+      "sources": [
+        {
+          "pmid": 40825947,
+          "citation": "PMID 40825947",
+          "claim": "Expression of human A 3 AR was enhanced by inserting the first 22 amino acids from the human M 4 muscarinic receptor (M 4 mAChR) between an N-terminal FLAG epitope and the wild-type (WT) human A 3 AR sequence (Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:17:01.682087+00:00",
+  "literature_notes": "L2 and L3 describe the same human A3AR FLAG-N-terminus / His-C-terminus construct as L1 (same paper, PMC12361428); L1 was chosen as the primary supporting clip. L4 (sheep A3R ortholog, PMC11544091) independently corroborates an N-terminal FLAG on a full-length membrane-anchored A3R, but is indirect (different species) and was not used as the primary clip. The C-terminal fusions (L5, L6) and the C-terminal His tag (L2) all land in the intracellular tail (residues 285\u2013318) and are recorded in other_positions. No ledger line supports an insertion in ECL1 (73\u201383), ECL2 (150\u2013177), or ECL3 (253\u2013261) of ADORA3 or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 318,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "LgBiT (large NanoLuc domain) fused to the C-terminus of full-length A3AR; residues 285\u2013318 are intracellular per topology landmarks, so this fusion is cytoplasmic, not a surface tag site."
+    },
+    {
+      "residue": 318,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "LgBiT fused to the C-terminus of full-length sheep A3R followed by a 3C site and eGFP-His8; C-terminus is intracellular."
+    },
+    {
+      "residue": 318,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Histidine tag appended to the C-terminus of human A3AR for purification; C-terminus (285\u2013318) is intracellular."
+    }
+  ]
 }

@@ -129,9 +129,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Confocal microscopy and flow cytometry confirmed robust surface expression of BBS-hERG-YFP in HEK293 cells, with BTX647 surface signals up to 100-fold above threshold; channel processing and surface trafficking were preserved. Explicit electrophysiology of the BBS-tagged construct was not reported in the cited paper.",
+      "functional_impact_measured": "Surface expression confirmed by confocal microscopy (YFP total pool + BTX647 surface pool, L6) and flow cytometry at single-cell resolution with surface signals up to 100-fold above threshold (L7, L8). No electrophysiology of the BBS construct itself is reported in these clips.",
       "confidence": "high",
-      "rationale": "L1 (PMC5917007) and L8 (PMC10568093) independently name the identical junction T436/E437 in the S1\u2013S2 extracellular loop (topology 430\u2013453) of full-length membrane-anchored hERG. Python verification confirms aa(436)=T and aa(437)=E in the canonical sequence. The junction sits 7 residues from TM1 end (429) and 17 residues from TM2 start (454), both well above the 3-residue minimum. Disulfide cysteines C445 and C449 lie 9 and 13 residues downstream of the junction and were not disrupted in the published construct. Full-length hERG1a (KCNH2) expressed in HEK293 cells; a 13-residue bungarotoxin-binding site (BBS) was inserted between residues Thr436 and Glu437 in the extracellular S1\u2013S2 loop by site-directed mutagenesis, combined with a C-terminal YFP fusion (BBS-hERG1a-YFP). Surface channels were labeled with Alexa Fluor 647-conjugated bungarotoxin in non-permeabilized cells and quantified by confocal microscopy and flow cytometry. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Python confirms seq_dict[436]='T' and seq_dict[437]='E', matching the paper's stated T436/E437 junction exactly. Position 436 lies 7 residues from the TM1 C-terminus (429) and 18 residues from the TM2 N-terminus (454), within the 24-aa S1\u2013S2 extracellular loop (430\u2013453) and \u22653 residues from either TM boundary. Two independent papers (L1, L3) pin the identical junction, and L5\u2013L8 document robust surface labelling of the BBS-hERG-YFP construct. Ranked second because no electrophysiological function measurement of the BBS construct is reported in the ledger clips. L1 (PMC:PMC5917007) and L3 (PMC:PMC10568093): a 13-residue bungarotoxin-binding site (BBS) was inserted between residues T436 and E437 in the extracellular S1\u2013S2 loop of full-length hERG1a (on a hERG1a-YFP backbone) expressed in HEK293 cells. Surface channels were detected with Alexa Fluor 647-conjugated \u03b1-bungarotoxin in non-permeabilized cells.",
       "sources": [
         {
           "pmid": 29725305,
@@ -141,7 +141,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "KCNH2-internal-443-lit",
@@ -157,22 +162,28 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HA 9 aa + 4 aa linkers",
+      "tag_type": "HA (9 aa + 4 aa flanking linkers)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Flow cytometry and confocal microscopy confirmed surface expression of HA-KCNH2 in HEK293T cells (L9). Multiple independent studies using HA tags in the same S1\u2013S2 loop explicitly state the tag 'does not interfere with channel processing or function' (L11, L14). Explicit electrophysiology of the T443/E444 junction construct specifically was not reported in L7.",
+      "functional_impact_measured": "Surface trafficking confirmed by anti-HA labelling of non-permeabilized cells; L10 and L13 explicitly state the HA tag in the first extracellular loop 'does not interfere with processing and function'; used as a functional channel in electrophysiology studies across multiple publications.",
       "confidence": "high",
-      "rationale": "L7 (DOI:10.1101/2020.02.17.952606) explicitly names the junction T443/E444 in full-length KCNH2, a distinct position from the T436/E437 BBS site. Python verification confirms aa(443)=T and aa(444)=E. The junction is 14 residues from TM1 end (429) and 10 residues from TM2 start (454). Although C445 is only 1 residue downstream of E444, the published insertion was tolerated and the channel trafficked to the surface; L11 and L14 from independent groups confirm HA tags in this same loop do not perturb processing or function. Full-length KV11.1 (KCNH2) expressed in HEK293T cells; a 9-amino-acid HA tag with flanking 4-amino-acid linkers (NSEHYPYDVPDYAVTFE, 17 aa total) was inserted between residues T443 and E444 in the extracellular S1\u2013S2 loop by inverse PCR. Surface expression of HA-KCNH2 was validated by flow cytometry and confocal microscopy; multiple control variants were generated in the same backbone. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Python confirms seq_dict[443]='T' and seq_dict[444]='E', matching the paper's stated T443/E444 junction exactly. Position 443 lies 14 residues from the TM1 C-terminus (429) and 11 residues from the TM2 N-terminus (454), well within the 24-aa S1\u2013S2 extracellular loop (430\u2013453) and \u22653 residues from either TM boundary. The HA-hERG construct has been independently validated for surface expression and channel function in at least five published studies (L9\u2013L15), making this the best-evidenced site in the ledger. L2 (DOI:10.1101/2020.02.17.952606): a 9-aa HA tag with flanking 4-aa linkers (NSEHYPYDVPDYAVTFE, 17 aa total) was inserted between T443 and E444 in the extracellular S1\u2013S2 region of full-length KCNH2 (Kv11.1) expressed in HEK cells by inverse PCR. Multiple independent labs (Akhavan et al. 2003, cited in L10/L13) use the same HA-hERG construct and explicitly state it does not interfere with channel processing or function.",
       "sources": [
         {
-          "citation": "preprint",
-          "claim": "A previously published 34 9 amino acid HA tag with surrounding 4 amino acid linkers (NSEHYPYDVPDYAVTFE) was inserted between amino acids T443 and E444 (in the extracellular region between the S1 and S2 helices) by inverse PCR 35 (Table S1)."
+          "citation": "DOI 10.1101/2020.02.17.952606",
+          "claim": "A previously published 34 9 amino acid HA tag with surrounding 4 amino acid linkers (NSEHYPYDVPDYAVTFE) was inserted between amino acids T443 and E444 (in the extracellular region between the S1 and S2 helices) by inverse PCR 35 (Table S1).",
+          "source_id": "DOI:10.1101/2020.02.17.952606"
         }
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "KCNH2-snorkel-c",
@@ -463,10 +474,24 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:07:01.611420+00:00",
-  "literature_notes": "Two extracellular sites in the S1\u2013S2 loop (topology 430\u2013453) are supported by the ledger with exact residue-level evidence. Site 1 (T436/E437, BBS) is grounded by two independent papers (L1/PMC5917007 and L8/PMC10568093) naming the identical junction. Site 2 (T443/E444, HA) is grounded by L7 and corroborated by L9, L11, and L14. The C-terminal YFP fusion described in L2 is intracellular (topology 657\u20131159) and does not qualify as an extracellular tag site. The S3\u2013S4 extracellular span is a single residue (501, topology-derived) and no ledger line reports an insertion there. The S5\u2013S6 turret loop (571\u2013638) is the longest extracellular span but no ledger line reports a tag insertion there for KCNH2 or a close ortholog. Lines L3\u2013L6, L9\u2013L16 were reviewed; they corroborate the two named junctions but do not pin additional distinct positions. The validation_level for Site 2 is elevated to surface_and_function because L11 and L14 explicitly state the HA tag in the S1\u2013S2 loop does not interfere with processing or function, and L7/L9 confirm surface display at this exact junction.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T10:42:15.076531+00:00",
+  "literature_notes": "Two extracellular regions exist in KCNH2 that could in principle carry a surface tag: the S1\u2013S2 loop (430\u2013453) and the S5\u2013S6 turret/pore loop (571\u2013638). The ledger contains no insertion reported at any residue in the S5\u2013S6 turret, so no site there is proposed. The single-residue extracellular stub at position 501 (S3\u2013S4 loop) is too short for any tag. L4 (PMC7704534) and L9\u2013L15 all refer to HA-hERG constructs in the first extracellular loop but do not name a specific residue; they corroborate the S1\u2013S2 loop sites already pinned by L1\u2013L3 and do not add new junctions. L16 describes N-terminal and C-terminal myc fusions; both termini are intracellular (residues 1 and 1159 both fall in the large intracellular spans 1\u2013408 and 657\u20131159 respectively) and are recorded in other_positions. Cysteines at positions 445 and 449 within the S1\u2013S2 loop are noted; both proposed insertion sites (436 and 443) are upstream of these cysteines, and the experimental validations confirm the tags are tolerated despite their proximity.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L16",
+      "note": "N-terminal myc fusion tag placed at the cytoplasmic N-terminus (topology: intracellular 1\u2013408); not accessible on the extracellular face."
+    },
+    {
+      "residue": 1159,
+      "kind": "intracellular",
+      "supporting_clip_id": "L16",
+      "note": "C-terminal myc fusion tag placed at the cytoplasmic C-terminus (topology: intracellular 657\u20131159); not accessible on the extracellular face."
+    }
+  ]
 }

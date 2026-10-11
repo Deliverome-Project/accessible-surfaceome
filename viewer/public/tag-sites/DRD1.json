@@ -37,7 +37,75 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "DRD1-terminal_n-0-lit",
+      "gene_symbol": "DRD1",
+      "uniprot_acc": "P21728",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "CFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by single-particle quantum-dot tracking at the plasma membrane of hippocampal neurons; receptor lateral diffusion measured. Agonist-induced confinement and synaptic enrichment observed, indicating the tagged receptor is functional in trafficking assays.",
+      "confidence": "high",
+      "rationale": "L5 explicitly states the CFP is at the 'N-terminus part' of D1R (D1R-CFP), and L8 confirms expression in hippocampal neurons for surface diffusion experiments. DRD1 has no signal peptide (topology shows EXTRACELLULAR 1-23 starting at M1), so the N-terminal prepend (insert_after_residue=0) places the tag before M1, the first extracellular residue. The N-terminus spans 23 residues before TM1 (residue 24), providing ample buffer. This is the only extracellular terminus of DRD1, making topology_derived the correct position_evidence class. D1R-CFP construct expressed in hippocampal neurons (7-10 DIV) by transfection; CFP is explicitly placed at the N-terminus of D1R (D1R-CFP). Single-particle tracking of D1R-QD at the cell surface was performed using this construct.",
+      "sources": [
+        {
+          "pmid": 24040266,
+          "citation": "PMID 24040266",
+          "claim": "NMDAR, [41] ), we tracked single D1R-QD at the surface of hippocampal neurons transfected with D1R containing at their N-terminus part a cyan fluorescent protein (D1R-CFP) ( Fig. 1A )."
+        },
+        {
+          "pmid": 20531939,
+          "citation": "PMID 20531939",
+          "claim": "Surface receptor immunoreactivity for non-permeabilized striatal primary dissociated neurons was assayed by incubating with mouse M1 anti-FLAG antibody (Sigma, 1 \u00b5g/ml for 15 min)."
+        },
+        {
+          "pmid": 42826180,
+          "citation": "PMID 42826180",
+          "claim": "For culture and tissue experiments, we used Slc6a3 -Cre x Ai9 ( 54 , 55 ), ALFADoR1 mice (this work), ALFADoR2 mice (this work) transgenic P1 to P2 pups and adult (P50 to P60) mice."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:22:09.564623+00:00",
+  "literature_notes": "L1 (PMC2878344) mentions FLAG-tagged D1R 'previously described' without stating position; L2 from the same paper confirms surface display and is used as the primary clip for the FLAG site. L3/L4 (PMC5459500) describe a C-terminal 3X-FLAG-tagged DRD1 in SH-SY5Y cells; the C-terminus (residue 446) is intracellular (topology 334-446), so this is recorded in other_positions. L6/L7 (PMC4793083) describe the same D1-CFP construct used in L5/L8 (in utero electroporation and neuron co-transfection); they support the same N-terminal CFP site and are subsumed under L5. L9/L10/L11 (PMC11992035): K165 and K167 in ECL2 are covalent labeling sites for an acyl-imidazole probe reacting with native lysines \u2014 this is chemical labeling of endogenous residues, NOT a tag insertion. The F-ST-D1 construct contains a SNAP-tag fused to D1R, but the SNAP-tag insertion position is not stated in any ledger clip. The HA-D1 construct has an HA tag at an unstated position. The SpeI restriction site at positions 169-170 is a cloning junction used for subcloning, not a tag insertion site. None of these qualify as pinnable tag insertion sites per the ledger rules. L12/L13 (DOI:10.64898/2026.09.19.752778): cpHaloTag inserted in ICL3 (intracellular loop 3, residues 216-273) \u2014 intracellular, recorded in other_positions. L14 (PMC13632744): ALFA tag in DRD1 (ALFADoR1 mice); position topology_derived as the N-terminal prepend, the only extracellular terminus.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 446,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal 3X-FLAG tag on DRD1 expressed in SH-SY5Y cells; residue 446 (T) is within the intracellular C-terminal domain (topology 334-446), not accessible for surface labeling."
+    },
+    {
+      "residue": 216,
+      "kind": "intracellular",
+      "supporting_clip_id": "L12",
+      "note": "cpHaloTag inserted in ICL3 (intracellular loop 3, residues 216-273) of hDRD1 to create a chemigenetic dopamine sensor; this loop is intracellular and not a surface tag site."
+    }
+  ]
 }

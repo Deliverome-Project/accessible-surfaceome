@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "CADM4",
+  "uniprot_acc": "Q8NFZ8",
+  "sites": [
+    {
+      "site_id": "CADM4-terminal_n-20-lit",
+      "gene_symbol": "CADM4",
+      "uniprot_acc": "Q8NFZ8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "G",
+      "residue_after": "P",
+      "residue_label": "G20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by FACS staining for HA epitope under non-permeabilized conditions; no functional assay reported in these clips.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the HA tag was inserted 'immediately after the signal peptide' of CADM4/Necl-4 in a full-length, membrane-anchored construct. The signal peptide spans residues 1\u201320 (authoritative landmark), placing the junction at insert_after_residue=20; Python confirms residue 20 = G and residue 21 = P. L2 (same paper) confirms surface display by FACS, and L3/L4 (PMC6371057) independently corroborate the same N-terminal extracellular junction with a Myc tag on a surface-displayed Cadm4 construct, providing cross-paper validation. The tag site is 303 residues from the TM boundary, well clear of any steric constraint. Full-length Necl-4/CADM4 expressed in CHO cells with an HA epitope tag inserted immediately after the signal peptide (residues 1\u201320) as predicted by SignalP; non-permeabilized FACS staining confirmed surface display of the HA epitope.",
+      "sources": [
+        {
+          "pmid": 17724124,
+          "citation": "PMID 17724124",
+          "claim": "To facilitate analysis, the sequence encoding the influenza HA epitope was added by PCR to the N terminus of each Necl protein immediately after the signal peptide as predicted by the SignalP program."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 20,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:59:14.483752+00:00",
+  "literature_notes": "L3/L4 (PMC6371057) describe a Myc-tagged Cadm4dCT construct used for surface detection in oligodendrocytes. CADM4 is a type I single-pass TM protein with only one extracellular terminus (N-terminal, after SP cleavage); topology derivation places the Myc tag at the same insert_after_residue=20 junction as L1/L2. Because both papers pin the identical junction and L1/L2 already provide a validated, residue-named site there, L3/L4 are treated as corroborating evidence for the single site rather than a separate entry. L5/L6 (PMC11427461) describe Cadm4-Flag and Cadm4-GFP constructs; the 'Cadm4-Flag' notation indicates a C-terminal fusion, and the C-terminus (residues 346\u2013388) is intracellular per the authoritative topology landmarks; these are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for CADM4.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 388,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Cadm4-Flag and Cadm4-GFP are C-terminal fusions; the C-terminus (residue 388) lies in the intracellular domain (346\u2013388) and is not accessible on the extracellular face."
+    },
+    {
+      "residue": 347,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C347 is the palmitoylation site critical for plasma membrane localization; it resides in the intracellular domain (346\u2013388) and is not a surface-tag candidate."
+    }
+  ]
+}

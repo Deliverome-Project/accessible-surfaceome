@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRTM2",
+  "uniprot_acc": "O43300",
+  "sites": [
+    {
+      "site_id": "LRRTM2-internal-None-lit",
+      "gene_symbol": "LRRTM2",
+      "uniprot_acc": "O43300",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "juxtamembrane extracellular",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "thrombin recognition site (LVPRGS, 6 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "GFP-Thr-LRRTM2* (containing the juxtamembrane thrombin insertion) expressed in hippocampal neurons and immunostained: colocalizes with endogenous PSD-95 and RIM1/2 at synapses (L4), confirming surface expression and synaptic targeting of the insertion-bearing construct. Thrombin cleavage of the extracellular domain (not the insertion itself) was subsequently shown to disrupt synaptic function, demonstrating the insertion is tolerated but the ectodomain is required for function.",
+      "confidence": "medium",
+      "rationale": "The ledger explicitly records a short-sequence insertion (thrombin site, 6 aa) at the extracellular juxtamembrane region of full-length LRRTM2, and the resulting construct traffics to synaptic surfaces in neurons. No specific residue number is given, so this is a region-level site with insert_after_residue left null. The insert is shorter than the 13\u201323 aa ALFA-tag range, but the demonstrated tolerance of an insertion in this region provides direct precedent for a similarly sized epitope tag. Validation is surface_only because the synaptic colocalization (L4) confirms surface expression of the insertion-bearing construct, but the functional readout in the paper pertains to thrombin cleavage rather than the insertion per se. A thrombin recognition sequence (LVPRGS) was inserted at an extracellular, juxtamembrane position within full-length human LRRTM2 (PMC8378824, L2). The paper describes the position as 'extracellular, juxtamembrane' but gives no specific residue number. The construct (GFP-Thr-LRRTM2*) was expressed in cultured hippocampal neurons and shown to colocalize with endogenous PSD-95 and RIM1/2 by confocal microscopy (L4), confirming surface trafficking of the insertion-bearing protein. The extracellular domain ends at residue 422 (R) and the TM begins at 423 (V); the juxtamembrane extracellular region is approximately residues 400\u2013422.",
+      "sources": [
+        {
+          "pmid": 34417170,
+          "citation": "PMID 34417170",
+          "claim": "To test the role of LRRTM2 extracellular interactions in synapse structure and function independent of synaptogenesis and genetic compensation, we adapted a previous approach ( 38 ) and inserted the short recognition sequence for the endoprotease thrombin (LVPRGS) at an extracellular, juxtamembrane position within human LRRTM2 ( Fig. 1A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "LRRTM2-terminal_n-33-lit",
+      "gene_symbol": "LRRTM2",
+      "uniprot_acc": "O43300",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 33,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A33",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "BRS (\u03b1-bungarotoxin-binding sequence, 13 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "BRS-LRRTM2 (L5): surface labeling with fluorescent \u03b1-bungarotoxin confirmed (surface_only). Myc-LRRTM2 (L10): immunostaining for synaptic markers PSD-95 and other excitatory synapse markers in hippocampal neurons confirmed synaptic localization. GFP-tagged N-terminal construct (L3/L4) used to replace endogenous LRRTM2 via shRNA knockdown and rescue, colocalizing with endogenous PSD-95 and RIM1/2 at synapses.",
+      "confidence": "high",
+      "rationale": "LRRTM2 has a single-pass topology with a large extracellular N-terminal domain (residues 34\u2013422) and an intracellular C-terminus; the mature N-terminus after signal-peptide cleavage at residue 33 is the only extracellular terminus available for a tag. The position is topology-derived: no residue number is stated in any clip, but the mature N-terminus is uniquely determined as insert_after_residue = 33 (A\u2192C). At least eight independent published constructs place tags at this position (BRS, AP, HRP, EGFP, myc), and the myc-tagged and GFP-tagged versions show synaptic localization in neurons, satisfying surface_and_function. The BRS tag (13 aa) falls within the 13\u201323 aa range appropriate for an ALFA-like epitope. Full-length LRRTM2 expressed in neurons with a 13-aa \u03b1-bungarotoxin-binding sequence (WRYYESSLEPYPD) inserted at the N-terminus in place of GFP (PMC8378824, L5). The same N-terminal position is independently validated by AP-tag (L1, L6, L7), HRP fusion (L8), EGFP fusion (L3), and myc-tag (L9, L10) constructs across multiple labs. Myc-LRRTM2 (L10) was immunostained for synaptic markers in hippocampal neurons, confirming synaptic surface targeting. The mature N-terminus (residue 34, C) is the sole extracellular terminus; the signal peptide (residues 1\u201333) is cleaved, so the tag must follow residue 33 (A). Computed: insert_after_residue = 33, residue_before = A, residue_after = C.",
+      "sources": [
+        {
+          "pmid": 34417170,
+          "citation": "PMID 34417170",
+          "claim": "For BRS-LRRTM2, GFP sequence was replaced with a sequence coding the \u03b1-bungarotoxin\u2013binding sequence (WRYYESSLEPYPD) ( 44 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:27:06.783179+00:00",
+  "literature_notes": "Ten ledger lines were evaluated. All N-terminal tag clips (L1, L3, L5, L6, L7, L8, L9, L10) converge on the same topology-derived position (insert_after_residue = 33, after signal-peptide cleavage); L5 was chosen as the primary clip because it uses a 13-aa tag (BRS) within the 13\u201323 aa ALFA-like range and explicitly states N-terminal placement. L1 (AP replacing myc) and L7 (AP at N-terminal) are redundant with L5 for Site 1. L3 and L4 (GFP-Thr-LRRTM2*) support both Site 1 (N-terminal GFP) and Site 2 (juxtamembrane thrombin site) simultaneously; L2 was chosen as the primary clip for Site 2. No ledger line names a specific residue number for either site, so both are topology_derived. No intracellular insertions or function-abrogating insertions are reported in the ledger, so other_positions is empty. The C-terminus (residues 444\u2013516) is intracellular and was not proposed as a surface-tag site.",
+  "literature_rejected": []
+}

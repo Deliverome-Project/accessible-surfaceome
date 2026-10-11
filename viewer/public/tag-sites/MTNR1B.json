@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MTNR1B-terminal_n-0-lit",
+      "gene_symbol": "MTNR1B",
+      "uniprot_acc": "P49286",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-Myc immunofluorescence in mouse photoreceptors in vivo (L5). Receptor participates in heteromer studies (BRET) but function of the Myc-tagged construct alone was not isolated. NOT MEASURED for isolated functional assay of the tagged receptor.",
+      "confidence": "high",
+      "rationale": "MTNR1B is a GPCR with no endogenous signal peptide; the N-terminus (residues 1\u201342, EC1) is extracellular and the sole extracellular terminus. A tag prepended before residue 1 (insert_after_residue=0, residue_after=M) is therefore the unique surface-accessible terminus, 42 residues from TM1 (residues 43\u201363), well beyond the \u22653-residue TM-boundary constraint. The 'Myc-MT2' naming convention unambiguously places the Myc tag at the N-terminus; no residue number is given in the paper, so position is topology-derived. Four independent ledger lines (L1\u2013L5) all converge on this same junction with FLAG or Myc tags, providing strong convergent support. Myc-MT2 wild-type receptor expressed as a full-length construct in mouse photoreceptors via lentiviral transduction under the rhodopsin promoter (PMC3867265). Anti-Myc immunofluorescence detected the tagged receptor specifically in photoreceptors (L5, same paper), confirming surface accessibility of the tag. Independently corroborated by FLAG-MTNR1B in HEK293T (L3, PMC12158745) and FLAG-tagged full-length MT2 in baculovirus Sf9 cells (L1, PMC8786939; L2, PMC6589158).",
+      "sources": [
+        {
+          "pmid": 24106342,
+          "citation": "PMID 24106342",
+          "claim": "To test whether MT 1 and MT 2 receptors form functional heteromers in the mouse photoreceptors, we developed a series of transgenic mice by transducing mouse fertilized eggs with lentiviral vectors containing Flag-MT 1 or Myc-MT 2 wild-type receptor coding regions under the control of the rhodopsin promoter to drive expression of these receptors in photoreceptor cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:55:46.277695+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) converge on a single junction: the extracellular N-terminal prepend (insert_after_residue=0). L1 (PMC8786939) and L2 (PMC6589158) use an exogenous HA signal peptide followed by FLAG on full-length MT2 in baculovirus; after HA-SP cleavage the FLAG sits at the mature N-terminus, the same junction. L3 (PMC12158745) uses FLAG directly at the N-terminus of MTNR1B in HEK293T. L4/L5 (PMC3867265) use Myc-MT2 with surface IF confirmation. Because all lines pin the identical junction (N-terminal prepend), this is reported as one site. The C-terminal His6/10xHis tags in L1 and L2 are intracellular (IC4: residues 309\u2013362) and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for MTNR1B.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 362,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Hexa-histidine tag at the C-terminus of full-length MTNR1B; the C-terminus falls in IC4 (residues 309\u2013362, intracellular) and is not surface-accessible."
+    },
+    {
+      "residue": 362,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "10\u00d7His tag at the C-terminus of the MT2-CC full-length crystallization construct; same intracellular IC4 location, not a surface tag site."
+    }
+  ]
 }

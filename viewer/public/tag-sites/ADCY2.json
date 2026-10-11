@@ -416,5 +416,20 @@
       "canonical_residue": 793,
       "left_pct": 72.78538812785388
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:01:45.470034+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same experimental construct: N-terminally HA- or FLAG-tagged full-length murine ADCY2 expressed in COS-7 cells. The topology landmarks place residues 1\u201345 in the intracellular compartment; there is no signal peptide. An N-terminal tag therefore sits on the cytoplasmic face, not the extracellular surface. No ledger line reports a tag insertion in any of the six extracellular loops (ECL1 68\u201376, ECL2 129\u2013132, ECL3 178\u2013186, ECL4 622\u2013626, ECL5 701\u2013733, ECL6 779\u2013803) or at any extracellular junction. Because the ledger provides no evidence for an extracellular tag on ADCY2, zero surface sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal HA and FLAG tags were placed before residue 1 of full-length ADCY2; the N-terminus (residues 1\u201345) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

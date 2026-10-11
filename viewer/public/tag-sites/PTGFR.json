@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGFR-terminal_n-0-lit",
+      "gene_symbol": "PTGFR",
+      "uniprot_acc": "P43088",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "2xFlag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L5: tagged receptor used directly in functional assays (wild-type FP receptor with N-terminal HA SP + Flag-tag), implying receptor is functional. L6: surface expression level quantified by HiBiT luminescence. L4: stable HEK293/EBNA cell lines confirmed surface expression by immunofluorescence/ELISA.",
+      "confidence": "high",
+      "rationale": "The N-terminus of PTGFR is extracellular (EC1: residues 1\u201329, 29 residues from TM1 boundary at residue 30), making it the only extracellular terminus available for a prepend tag on this GPCR. Two independent papers (PMC2440084, PMC10709307) report full-length FP receptor constructs with an exogenous signal peptide followed by a Flag (or HA+Flag+HiBiT) tag at the N-terminus that traffic to the plasma membrane and support functional characterization. Critically, L2 documents that the tag alone without an exogenous SP fails to reach the surface, so any ALFA-tag application must include a heterologous signal peptide preceding the tag. Python verification confirms residue 1 = M and the 29-residue EC1 span provides ample room for a 15\u201323 aa insert. Two independent studies (PMC2440084 and PMC10709307) expressed full-length human FP receptor with an exogenous signal peptide (prolactin SP or HA SP) followed by a Flag epitope tag at the N-terminus in HEK293 cells. L5 explicitly states the tagged receptor was used for functional assays; L6 quantified surface expression via HiBiT. L3 provides the exact construct sequence confirming the tag is placed immediately after signal peptide cleavage, before FP residue 1. No residue number is stated; the N-terminus (EC1: 1\u201329) is the sole extracellular terminus of this GPCR, so insert_after_residue=0 is topology-derived.",
+      "sources": [
+        {
+          "pmid": 38065938,
+          "citation": "PMID 38065938",
+          "claim": "For functional assays, we used the wild-type human FP receptor and human EP3 receptor (isoform A) with an N-terminal HA signal peptide and Flag-tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,33 @@
       "canonical_residue": null,
       "left_pct": 0.33670033670033667,
       "note": "Isoform surface expr 128 (-86% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:51:47.150874+00:00",
+  "literature_notes": "All six N-terminal tag ledger lines (L1\u2013L6) converge on the same junction (insert_after_residue=0), so they constitute one site, not multiple. L2 is an important caveat: the tag alone at the N-terminus does not support surface localization in the absence of an exogenous signal peptide; the validated construct requires [heterologous SP][tag][FP M1\u2026]. L7 (LgBiT at C-terminus) and L8/L9 (bRIL in ICL3) are intracellular insertions and are recorded in other_positions. No ledger line supports any extracellular loop (ECL1/ECL2/ECL3/ECL4) insertion for PTGFR.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 359,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "LgBiT inserted at the C-terminus of full-length human FP receptor by homologous recombination; the C-terminus falls in IC4 (residues 308\u2013359), which is intracellular."
+    },
+    {
+      "residue": 232,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "bRIL (apocytochrome b562RIL) inserted between residues 232\u2013239 of ICL3 (IC3: 226\u2013250) gave the highest purification yield (0.542 mg/L); ICL3 is intracellular, not a surface-tag site."
+    },
+    {
+      "residue": 231,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "bRIL insertions tested across ICL3 residues 231\u2013239 (IC3: 226\u2013250); all positions are intracellular."
     }
   ]
 }

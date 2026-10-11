@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:38:38.864540+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct \u2014 the 'iGlow' reporter, in which a circularly permuted fluorescent protein is inserted into the third intracellular loop (ICL3) of full-length, membrane-anchored GPR68. Per the authoritative topology landmarks, ICL3 spans residues 207\u2013228 and is entirely intracellular (between TM5, which ends at Q206, and TM6, which begins at L229). No ledger line reports any insertion on the extracellular face of GPR68 \u2014 not at the N-terminus (1\u201322), ECL1 (79\u201391), ECL2 (159\u2013181), or ECL3 (251\u2013266). Because the only published insertion is cytoplasmic, zero extracellular tag sites are supported, which is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 207,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Circularly permuted fluorescent protein inserted into ICL3 (residues 207\u2013228, intracellular) of full-length GPR68 to create the functional 'iGlow' reporter; insertion is tolerated but faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

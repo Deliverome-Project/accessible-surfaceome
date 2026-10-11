@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:45:53.720097+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L1 describes an 'HA signal peptide' added to the N-terminus of BRS3 for expression of BRS3\u2013Gq complexes. This is the hemagglutinin signal sequence used to route the receptor through the secretory pathway \u2014 it is a cleavable signal peptide, not the HA epitope tag (YPYDVPDYA). Per the instructions, a tag placed upstream of the mature protein is 'cleaved off with the SP \u2014 a silent failure'; it would not be present on the cell surface. L1 therefore does not report a surface epitope-tag insertion and does not qualify. L2 describes a C-terminal fusion of BRS3 to LgBiT (NanoBiT tethering strategy). The BRS3 C-terminus (residue 399) falls within the intracellular span 331\u2013399; this is an intracellular fusion, not a surface tag. It is recorded in other_positions. No ledger line supports a surface-displayed epitope-tag insertion at any extracellular site of BRS3.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 399,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal LgBiT fusion used for NanoBiT tethering in structural studies; residue 399 lies within the intracellular C-terminal tail (topology 331\u2013399), so this is an intracellular fusion, not a surface tag."
+    }
+  ]
 }

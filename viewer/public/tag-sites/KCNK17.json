@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNK17",
+  "uniprot_acc": "Q96T54",
+  "sites": [
+    {
+      "site_id": "KCNK17-internal-234-lit",
+      "gene_symbol": "KCNK17",
+      "uniprot_acc": "Q96T54",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 234,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S234",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Chemiluminescence surface-expression assay confirmed the HA tag is accessible at the cell surface, demonstrating correct trafficking and membrane insertion. Functional electrophysiology of the tagged construct is not explicitly reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "The ledger clip explicitly states the HA tag was introduced at amino acid position 234 of full-length human TASK-4 (KCNK17) and detected by a chemiluminescence surface assay, confirming extracellular accessibility. Python verification confirms position 234 (S) lies within the second extracellular loop (topology landmarks: EC2 = 201-243), 34 residues from the upstream TM2 boundary (200) and 10 residues from the downstream TM3 boundary (244), both well above the >=3 residue minimum. No cysteines or N-glycosylation sequons (NxS/T) are present in EC2, and no disulfide or active-site constraints are flagged. The junction is taken as insert_after=234 (tag between S234 and Q235), the most natural reading of 'introduced at amino acid position 234'; the one-residue ambiguity (233 vs 234) does not affect extracellular placement. Full-length human TASK-4 (KCNK17) expressed in HEK293 or similar cells; a 9-aa HA tag (YPYDVPDYA) was introduced at amino acid position 234, placing it in the second extracellular loop (EC2, residues 201-243). The construct was used in a chemiluminescence surface-expression assay.",
+      "sources": [
+        {
+          "pmid": 24972929,
+          "citation": "PMID 24972929",
+          "claim": "For the chemiluminescence assay, a hemagglutinin (HA)-tag (YPYDVPDYA) was introduced at amino acid position 234 of human TASK-4."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:47:03.739899+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It directly and unambiguously reports a full-length, membrane-anchored KCNK17 construct with an HA tag at position 234, validated by a chemiluminescence surface-expression assay. No other insertions, terminal tags, or loop-level precedents appear in the ledger. The N-terminus (residues 1-22, intracellular) and C-terminus (residues 265-332, intracellular) are both cytoplasmic and do not qualify as surface-tag sites. EC1 (residues 44-130) has no ledger support. No transposon, FP-fusion, or other insertion data were provided for any other loop.",
+  "literature_rejected": []
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRTM3",
+  "uniprot_acc": "Q86VH5",
+  "sites": [
+    {
+      "site_id": "LRRTM3-terminal_n-30-lit",
+      "gene_symbol": "LRRTM3",
+      "uniprot_acc": "Q86VH5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 30,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A30",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-V5 staining confirmed surface-accessible expression of the tagged construct in primary cortical neurons (L2); intracellular co-localization with APP and BACE1 was assessed in SH-SY5Y cells (L3). No explicit functional assay (e.g., synaptogenesis, binding) was reported in these clips.",
+      "confidence": "high",
+      "rationale": "LRRTM3 is a type I transmembrane protein with a signal peptide spanning residues 1\u201330 and a large extracellular domain from residue 31 to 419; the only extracellular terminus is the mature N-terminus beginning at E31. The paper states the V5 tag is 'at the amino terminus' of the full-length construct, and since anti-V5 staining successfully detected the tag (L2), it cannot have been placed upstream of the signal peptide cleavage site (where it would be cleaved off). Therefore the tag must reside after the SP cleavage site, i.e., insert_after_residue = 30, placing it at the mature extracellular N-terminus. Python verification confirms residue 30 = A (last SP residue) and residue 31 = E (first mature extracellular residue), with 389 residues of clearance to the TM boundary. Full-length human LRRTM3 (NM_178011) with a V5 tag described as placed 'at the amino terminus' was expressed via rAAV1 in primary cortical neurons and via pCMV in SH-SY5Y-APP695wt cells; anti-V5 immunostaining confirmed detection of the tagged protein in neurons (L2) and in transfected cells (L3).",
+      "sources": [
+        {
+          "pmid": 23750206,
+          "citation": "PMID 23750206",
+          "claim": "We generated a viral construct expressing a human full-length LRRTM3 cDNA ( NM_178011 ) with a V5 tag at the amino terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:24:42.652038+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same single construct from the same paper (PMC3672107): full-length human LRRTM3 with a V5 tag at the amino terminus. No residue number is stated in any clip, but LRRTM3 has exactly one extracellular terminus (the mature N-terminus after SP cleavage at residue 30/31), making the position topology-derived rather than validated. The tag was confirmed detectable by anti-V5 staining in neurons (surface_only); no synaptogenic or binding functional assay result was reported in the ledger clips. No intracellular or function-abrogating positions were named in the ledger, so other_positions is empty.",
+  "literature_rejected": []
+}

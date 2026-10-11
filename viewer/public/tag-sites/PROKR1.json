@@ -37,7 +37,77 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PROKR1-terminal_n-0-lit",
+      "gene_symbol": "PROKR1",
+      "uniprot_acc": "Q8TCW9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression quantified by FLAG epitope detection in Expi293F cells; receptor detected at the cell surface. Functional assays not reported for this construct.",
+      "confidence": "high",
+      "rationale": "PROKR1 has no endogenous signal peptide (raw topology begins O, extracellular residues 1\u201362). The library construct prepends an exogenous HA signal sequence followed by FLAG before GPCR residue 1; after signal cleavage the FLAG sits at the extracellular N-terminus, placing the junction at insert_after_residue=0 (before M1). This is the only extracellular terminus of this 7-TM receptor, so the position is topology-derived. The N-terminal extracellular domain spans 62 residues, providing ample space \u22653 residues from TM1 (which begins at residue 63). PRESTO-Tango library construct: exogenous HA signal sequence (MKTIIALSYIFCLVFA) followed by FLAG tag, then PROKR1 (one of 215 GPCRs), expressed in Expi293F cells; FLAG used to detect and quantify surface-displayed receptor.",
+      "sources": [
+        {
+          "pmid": 37134173,
+          "citation": "PMID 37134173",
+          "claim": "All GPCRs except CALCRL and FZD4, FZD5, FZD6, and FZD10 relied on the codon-optimized PRESTO-Tango library of signal sequence-FLAG-GPCRs as a starting point to generate 215 FLAG-GPCR-1D4 constructs, with the FLAG tag (DYKDDDDA) following the HA signal sequence MKTIIALSYIFCLVFA."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:43:14.473876+00:00",
+  "literature_notes": "L1 and L2 both describe the same PRESTO-Tango FLAG-GPCR-1D4 library; L1 is cited as the primary supporting line. The 1D4 tag in that same construct is appended to the C-terminus of PROKR1 (residue 393), which is intracellular (topology: INTRACELLULAR 344\u2013393) and is therefore recorded in other_positions. L3 describes a zebrafish PKR1 ortholog (zPKR1-FLAG) where the '-FLAG' suffix convention indicates C-terminal placement, also intracellular. L4 describes zPKR1 cloned into pEGFP-N1, which appends GFP C-terminally \u2014 again intracellular. L5 and L6 describe PKR1-rLuc, a C-terminal Renilla luciferase fusion used in BRET assays \u2014 intracellular. No ledger line reports a tag inserted into any extracellular loop (ECL1 120\u2013138, ECL2 200\u2013232, ECL3 306\u2013322) of PROKR1 or a close ortholog; no internal extracellular sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 393,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "1D4 tag appended to the C-terminus of PROKR1 in the PRESTO-Tango library construct; C-terminus falls in the intracellular region (topology: INTRACELLULAR 344\u2013393)."
+    },
+    {
+      "residue": 393,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Zebrafish PKR1 ortholog (zPKR1-FLAG) expressed in CHO cells; '-FLAG' suffix indicates C-terminal tag, which is intracellular in this GPCR; used for co-precipitation with zMRAP2a-His, not surface labelling."
+    },
+    {
+      "residue": 393,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Zebrafish PKR1 cloned into pEGFP-N1 (C-terminal GFP fusion); C-terminus is intracellular; construct used for expression studies."
+    },
+    {
+      "residue": 393,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "PKR1-rLuc: C-terminal Renilla luciferase fusion used in BRET assays to monitor \u03b2-arrestin-2 recruitment; C-terminus is intracellular."
+    }
+  ]
 }

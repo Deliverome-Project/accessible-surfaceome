@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNT1",
+  "uniprot_acc": "Q5JUK3",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:54:49.070439+00:00",
+  "literature_notes": "The only ledger evidence (L1) is an mTFP1 fusion to the C-terminus of full-length KCNT1 (Slack). The authoritative topology landmarks place the entire C-terminal domain (residues 326\u20131230) intracellularly; residue 1230 is the last residue and is intracellular. This tag therefore faces the cytoplasm, not the extracellular surface, and does not qualify as an extracellular surface tag site. KCNT1 has three extracellular spans (119\u2013155, 209\u2013213, 273\u2013304), but no ledger line reports any insertion tolerated in any of them. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1230,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mTFP1 fused to the C-terminus of full-length Slack (KCNT1) for FRET experiments; residue 1230 (L) lies within the intracellular span 326\u20131230, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

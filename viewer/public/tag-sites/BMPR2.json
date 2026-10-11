@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "BMPR2",
+  "uniprot_acc": "Q13873",
+  "sites": [
+    {
+      "site_id": "BMPR2-terminal_n-26-lit",
+      "gene_symbol": "BMPR2",
+      "uniprot_acc": "Q13873",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Halo/SNAP (5xGly linker)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by impermeable fluorescent-substrate staining (CA-Alexa488 or BG-Alexa488) on intact cells (L5); Western blot confirms correct molecular weight of tagged receptor (L4). BMP ligand-binding or downstream signalling activity of the tagged BMPR2 was NOT MEASURED in these papers.",
+      "confidence": "high",
+      "rationale": "BMPR2 is a single-pass type I receptor with signal peptide residues 1\u201326 and a single extracellular domain spanning residues 27\u2013150; the only extracellular terminus is the mature N-terminus at residue 27. A tag placed upstream of residue 27 would be cleaved with the signal peptide, so the sole valid N-terminal surface junction is after residue 26 (A) and before residue 27 (S). Python verification confirms residue 26 = A and residue 27 = S, consistent with the canonical sequence. The junction is 124 residues from the TM boundary (residue 151), well exceeding the \u22653-residue minimum. Six ledger clips across two independent publications document tolerated N-terminal tags (Myc, Halo, SNAP, meGFP) at this position on the intact membrane-anchored receptor, with surface display directly confirmed by impermeable dye staining. PMC9837045 (L3): full-length hBMPR2 N-terminally fused with Halo- or SNAP-tags via a 5x glycine linker placed explicitly 'downstream the signal peptide sequence' in a membrane-anchored receptor library. L4 confirms expected molecular-weight shifts by Western blot. L5 confirms surface display by impermeable CA-Alexa488/BG-Alexa488 staining of intact cells. L6 shows the same N-terminal position was also used for meGFP. L1/L2 (PMC2988369) independently confirm an N-terminal Myc tag on full-length membrane-anchored BMPR-II. No paper names a specific residue number for the junction; position is derived from the single extracellular N-terminus: the mature chain begins at residue 27 (S), so the tag inserts after residue 26 (A, last signal-peptide residue).",
+      "sources": [
+        {
+          "pmid": 36635368,
+          "citation": "PMID 36635368",
+          "claim": "BMP/TGF\u03b2 receptors, including type I receptors (hALK1-ALK6, rALK7, and hALK2-R206H) and type II receptors (hACVR2A, hACVR2B, hBMPR2, and hTGFBR2) were, therefore, N-terminally fused with Halo- or SNAP-tags separated by a 5x glycine linker downstream the signal peptide sequence, to obtain the receptor library shown in Fig. 1c ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:50:12.836301+00:00",
+  "literature_notes": "All six ledger clips converge on a single extracellular site: the N-terminal junction after signal peptide cleavage (insert_after_residue=26). No ledger clip reports a tag insertion within the extracellular domain (residues 27\u2013150) at any internal loop position, so no internal site is proposed. The C-terminal GFP (L1) is intracellular and placed in other_positions. K180, described as the 'membrane-proximal lysine' in L2, falls in the intracellular domain (residues 172\u20131038) and is also placed in other_positions. The topology string length (1036) and sequence line numbering show minor inconsistencies (gap at residue 481, overlap at 1021) in the provided data, but these do not affect the key positions verified: residue 26=A, residue 27=S, residue 1038=L, residue 180=K.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1038,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "pEGFP-N1-BMPR-II-3'GFP-tagged places GFP at the C-terminus of full-length BMPR-II; the C-terminus (residues 172\u20131038) is entirely intracellular, making this an intracellular label, not a surface tag."
+    },
+    {
+      "residue": 180,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Lys-180 is described as the 'membrane-proximal lysine of BMPR-II' and is the target of K5 ubiquitin ligase; residue 180 falls in the intracellular domain (172\u20131038) and is not a surface tag site."
+    }
+  ]
+}

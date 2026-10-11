@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL13RA2",
+  "uniprot_acc": "Q14627",
+  "sites": [
+    {
+      "site_id": "IL13RA2-terminal_n-26-lit",
+      "gene_symbol": "IL13RA2",
+      "uniprot_acc": "Q14627",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "S",
+      "residue_after": "D",
+      "residue_label": "S26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed FLAG and IL-13R\u03b12 surface expression after sorting; no IL-13 binding or downstream signaling assay reported in this clip.",
+      "confidence": "high",
+      "rationale": "IL-13R\u03b12 is a type I single-pass transmembrane protein with a signal peptide spanning residues 1\u201326 and a large extracellular domain from residue 27 to 343. The paper describes an 'N-terminal Flag tag' on the full-length, membrane-anchored protein; for a type I TM protein with a signal peptide, the only extracellular N-terminus is immediately after SP cleavage (after residue 26, before residue 27-D). Python-verified: seq[25]='S' (residue 26) and seq[26]='D' (residue 27), placing the tag junction 317 residues from the TM boundary, well clear of the \u22653-residue constraint. No specific residue number is named in the paper, so position is topology-derived rather than validated. Full-length human IL-13R\u03b12 stably expressed in U87 MG cells with an N-terminal FLAG tag (plus FLuc via IRES); cells sorted for FLAG and IL-13R\u03b12 surface expression by flow cytometry confirming surface display of the tagged construct.",
+      "sources": [
+        {
+          "pmid": 39933837,
+          "citation": "PMID 39933837",
+          "claim": "HEK293T (CRL-3216) and Clone E6-1 Jurkat (TIB-152) lines were purchased from American Type Culture Collection (ATCC), while the U87 MG (HTB-14) line was generously gifted by Professor Forest White\u2019s laboratory and transduced to stably express human IL-13R\u03b12 with an N-terminal Flag tag along with firefly luciferase (FLuc) via an internal ribosome entry site (IRES) sequence, then sorted for Flag and IL-13R\u03b12 expression to produce the IL-13R\u03b12 + U87 cell line ( online supplemental figure 4F )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:16:02.969681+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It supports a single N-terminal FLAG tag site at the mature N-terminus of IL-13R\u03b12 (after signal peptide cleavage at residue 26). The paper confirms surface display by flow cytometry but reports no functional assay (e.g., IL-13 binding, STAT6 signaling) in the cited clip, so validation_level is surface_only. No internal loop insertions, C-terminal tags, or intracellular positions are reported in the ledger.",
+  "literature_rejected": []
+}

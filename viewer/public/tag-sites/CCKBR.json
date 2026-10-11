@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCKBR-terminal_n-0-lit",
+      "gene_symbol": "CCKBR",
+      "uniprot_acc": "P32239",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HaloTag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FRET dose-response assay in HEK293T cells: HaloTag-CCKBR showed dose-dependent responses to both MF-8 (n=4) and CCK8s (n=5), confirming surface display and preserved agonist-driven signaling.",
+      "confidence": "high",
+      "rationale": "The topology assigns EC1 to residues 1\u201354 with no signal peptide, so the extracellular N-terminus is the only surface terminus available for a prepend tag. The hGH signal in the construct is an exogenous trafficking device that is cleaved post-translationally, placing HaloTag at the extracellular face before CCKBR Met-1. Python verification confirms residue 1 = M and the 54-residue EC1 span provides ample clearance (54 aa) from TM1 at residue 55, well above the 3-residue minimum. Functional FRET signaling with two agonists at the tagged receptor establishes both surface display and preserved receptor function. Full-length human CCKBR cloned into pcDNA3.1(+) with an hGH signal sequence followed by HaloTag before the receptor sequence (residue 1 = M); expressed in HEK293T cells and labeled with Fluo-Halo for surface FRET detection. The hGH signal drives secretory trafficking and is cleaved, leaving HaloTag as the extracellular N-terminal domain immediately before CCKBR residue 1. No signal peptide is encoded in the canonical CCKBR sequence itself (EC1 begins at residue 1), so the junction is unambiguously a prepend at position 0.",
+      "sources": [
+        {
+          "pmid": 41360797,
+          "citation": "PMID 41360797",
+          "claim": "E The dose-dependent response curve of MF-8 (red, n = 4) and CCK8s (blue, n = 5) at 293T cells expressing transfected HaloTag-CCKBR in the FRET assay."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,21 @@
       "canonical_residue": null,
       "left_pct": 0.1937984496124031,
       "note": "Isoform surface expr 2835 (-3% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:02:57.150543+00:00",
+  "literature_notes": "L1\u2013L4 all describe the same HaloTag-CCKBR construct and the same N-terminal junction (insert_after_residue=0); L2 was chosen as the primary clip because it contains both the construct description and the functional FRET result. L5 independently corroborates an N-terminal epitope tag (FLAG) at the identical junction in a 215-GPCR surface-expression library, but pins no different residue and therefore does not constitute a separate site. The C-terminal 1D4 tag in L5 is placed after residue 447, which falls within IC4 (394\u2013447, intracellular C-terminus) and is recorded in other_positions. No ledger line reports any insertion in ECL1 (118\u2013128), ECL2 (192\u2013219), or ECL3 (355\u2013369) of CCKBR or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 447,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal 1D4 tag placed after the last residue (G447) of CCKBR; the C-terminus falls within IC4 (394\u2013447, intracellular), making this an intracellular label, not a surface tag."
     }
   ]
 }

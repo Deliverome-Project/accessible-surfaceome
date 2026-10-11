@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PIGR",
+  "uniprot_acc": "P01833",
+  "sites": [
+    {
+      "site_id": "PIGR-terminal_n-18-lit",
+      "gene_symbol": "PIGR",
+      "uniprot_acc": "P01833",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "T",
+      "residue_after": "K",
+      "residue_label": "T18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip reports only transfection into HEK-293 cells; no surface-detection assay, trafficking, or functional readout is described.",
+      "confidence": "low",
+      "rationale": "PIGR has exactly one extracellular terminus: the mature N-terminus (residue 19, K) exposed after cleavage of the 18-residue signal peptide. The 'FLAG-tagged xlPIGR' naming convention (tag-protein) parallels the 'Myc-tagged hA1R' example in the instructions and implies N-terminal placement; because the N-terminus is the sole extracellular terminus, the topology-derived rule places the junction at residue 18/19. Python confirmed residue 18 = T and residue 19 = K, and the tag site is 621 residues from the TM boundary (640), well clear of any TM constraint. Confidence is low because the ortholog is Xenopus laevis (indirect), no terminus is stated explicitly, and no surface expression or functional assay is reported in the clip. FLAG-tagged full-length xlPIGR (Xenopus laevis PIGR ortholog) transfected into HEK-293 cells (PMC8563443). No residue is named in the clip. The naming convention 'FLAG-tagged xlPIGR' (tag-protein format) implies N-terminal placement. PIGR is a Type I single-pass transmembrane protein with exactly one extracellular terminus: the mature N-terminus beginning at residue 19, after signal-peptide cleavage at residue 18. The tag therefore maps to insert_after_residue=18 by topology. Evidence is indirect (Xenopus ortholog).",
+      "sources": [
+        {
+          "pmid": 34411303,
+          "citation": "PMID 34411303",
+          "claim": "FLAG-tagged constructs of both xlPIGR and xlFcamR, were transfected into HEK-293 cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:34:41.539588+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a FLAG-tagged full-length xlPIGR (Xenopus laevis ortholog) transfected into HEK-293 cells, with no residue, no explicit terminus, and no surface-detection or functional assay described. The site is recovered solely via the topology-derived rule: PIGR is Type I with one extracellular terminus (mature N-terminus after SP cleavage at residue 18), and the 'FLAG-tagged xlPIGR' naming convention implies N-terminal placement. No internal loop sites are supported by the ledger \u2014 L1 names no loop, no domain, and no internal residue. No intracellular or function-abrogating positions are named in the ledger either.",
+  "literature_rejected": []
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "NETO2",
+  "uniprot_acc": "Q8NC67",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:02:02.724186+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same paper (PMC5494894) and describe a single construct consistently named 'NETO2-HA'. The 'Protein-HA' suffix convention in the literature denotes a C-terminal HA tag. NETO2 is a type I single-pass transmembrane protein (EC 23\u2013349, TM 350\u2013368, IC 369\u2013525); its C-terminus (residue 525) is intracellular. A C-terminal HA tag therefore sits on the cytoplasmic face and does not qualify as an extracellular surface tag site. The topology_derived rule (one extracellular terminus, position unknown) cannot be applied here because the naming convention disambiguates the tag to the C-terminus, not the extracellular N-terminus. The paper's stated purpose \u2014 investigating subcellular distribution by lentiviral overexpression in hippocampal neurons \u2014 is fully consistent with a permeabilized-cell intracellular HA staining approach. No ledger line reports an insertion at or near the mature N-terminus (residue 23) or anywhere in the extracellular domain (23\u2013349). Zero extracellular tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 525,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "The 'NETO2-HA' construct (C-terminal HA by naming convention) places the tag in the intracellular domain (residues 369\u2013525); used for subcellular distribution imaging in permeabilized hippocampal neurons, not a surface-exposed tag."
+    }
+  ]
+}

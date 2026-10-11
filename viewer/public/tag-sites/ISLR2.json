@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "ISLR2",
+  "uniprot_acc": "Q6UXK2",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:26:25.170604+00:00",
+  "literature_notes": "The sole ledger entry (L1, PMC5940738) reports that mouse Linx (ISLR2) cDNA was subcloned into pcDNA3.1 and pRetroQ vectors to fuse the protein with V5 and SF tags, respectively. ISLR2 is a type I single-pass transmembrane protein: signal peptide 1\u201318, extracellular domain 19\u2013589, TM 590\u2013612, intracellular tail 613\u2013745. There is exactly one extracellular terminus (the mature N-terminus at residue 19, after SP cleavage) and one intracellular terminus (C-terminus at residue 745). The topology_derived rule would apply if the paper established the tag is on the extracellular face, but L1 does not specify N-terminal versus C-terminal placement. Invitrogen pcDNA3.1/V5-His vectors canonically append V5 at the C-terminus, which for a type I TM protein is intracellular; the SF tag in pRetroQ is similarly unspecified. Because the terminus carrying the tag is not stated in the clip and cannot be safely inferred, L1 does not ground any extracellular surface tag site. No other ledger lines exist. Result: zero qualifying sites.",
+  "literature_rejected": []
+}

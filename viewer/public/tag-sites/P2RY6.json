@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "P2RY6-terminal_n-0-lit",
+      "gene_symbol": "P2RY6",
+      "uniprot_acc": "Q15077",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface ELISA confirmed surface display of the HA-tagged receptor; no functional (signalling) assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "P2RY6 is a GPCR with no signal peptide; topology landmarks place residues 1\u201326 extracellular and residues 305\u2013328 intracellular, making the N-terminus the only extracellular terminus available for a prepend tag. The paper (L1/L2) reports N-terminally HA-tagged P2Y6 orthologs with confirmed cell-surface expression but names no specific residue, so the junction is topology-derived: insert_after_residue = 0, residue_after = M (residue 1, verified from the numbered sequence). The 26-residue extracellular N-terminal span provides ample clearance (\u22653 residues) from TM1 starting at residue 27. HEK293T cells transiently transfected with N-terminally HA-tagged vertebrate P2Y6 orthologs (including human P2Y6); cell-surface expression confirmed by cell-surface ELISA (PMC9305961). No signal peptide in P2RY6; the N-terminus (residues 1\u201326) is the sole extracellular terminus, so the N-terminal tag prepends before M1.",
+      "sources": [
+        {
+          "pmid": 35034430,
+          "citation": "PMID 35034430",
+          "claim": "( C ) HEK293T cells were transiently transfected with either HA\u2010tagged version of the indicated vertebrate P2Y 6 orthologs and the expression levels of receptors were measured by a cell surface ELISA (see Experimental Section )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:09:59.872617+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC9305961) and describe the same experiment (N-terminal HA tag, cell-surface ELISA); they support a single site. Neither clip names a specific residue number, so position_evidence is topology_derived. The C-terminus (residues 305\u2013328) is intracellular and therefore not a surface-tag site. The four extracellular loops (ECL1: 85\u201396, ECL2: 166\u2013188, ECL3: 266\u2013277) are not supported by any ledger clip and are not proposed. A potential N-glycosylation sequon at N5 (N-G-T) lies within the extracellular N-terminal region but downstream of the prepend junction and is not disrupted by the tag.",
+  "literature_rejected": []
 }

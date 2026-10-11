@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "HHLA2",
+  "uniprot_acc": "Q9UM44",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:58:03.865194+00:00",
+  "literature_notes": "The sole ledger line (L1) reports an 'HHLA2-YFP fusion protein' expressed in Raji cells. By standard fusion-protein naming convention (gene symbol followed by tag), YFP is appended at the C-terminus. HHLA2 is a type I single-pass transmembrane protein; its C-terminus (residues 366\u2013414) is intracellular per the authoritative topology landmarks. The paper's purpose is to demonstrate that HHLA2 traffics to the cell surface and co-localises with KIR3DL3 at the immunological synapse \u2014 the surface display is of HHLA2's ectodomain (residues 23\u2013345), not of YFP. No extracellular junction, loop, or residue is named or implied for the tag. A topology-derived N-terminal extracellular site cannot be inferred from L1 because the tag is demonstrably on the intracellular C-terminus, not the extracellular N-terminus. No other ledger lines exist. Zero extracellular tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 414,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal YFP fusion (HHLA2-YFP) is tolerated and the full construct reaches the cell surface, but the C-terminus (residues 366\u2013414) is intracellular; YFP is not surface-accessible."
+    }
+  ]
+}

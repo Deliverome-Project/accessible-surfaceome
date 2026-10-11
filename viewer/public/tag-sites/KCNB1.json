@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNB1",
+  "uniprot_acc": "Q14721",
+  "sites": [
+    {
+      "site_id": "KCNB1-internal-221-lit",
+      "gene_symbol": "KCNB1",
+      "uniprot_acc": "Q14721",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 221,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G221",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by Alexa Fluor 594-conjugated antibody labeling of the extracellular HA epitope on intact cells (L4). Electrophysiological function of the HA-tagged construct not explicitly reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the HA tag was inserted 'after glycine 221' in the first extracellular domain of full-length Kv2.1 (KCNB1), and L2 corroborates this with a named restriction-site insertion at Gly221. Python verification confirms residue 221 is G and residue 222 is Q, both within ECL1 (210\u2013231). The position is 12 aa from TM1 and 11 aa from TM2, providing ample room for a 15\u201323 aa ALFA-tag insert. Surface display of the epitope was directly demonstrated by live-cell antibody labeling. L1 reports a single HA epitope (YPYDVPDYA) inserted into the first extracellular domain of full-length Kv2.1 (KCNB1) after Gly221, expressed for surface labeling studies. L2 independently confirms a restriction-site-mediated insertion engineered at Gly221 in the same full-length Kv2.1 construct. Python confirms seq[220]='G' and seq[221]='Q'; position 221 lies within ECL1 (topology span 210\u2013231), 12 aa from the TM1 C-boundary (209) and 11 aa from the TM2 N-boundary (232), well clear of both TM edges. L4 confirms antibody detection of the extracellular epitope on surface-expressed channels.",
+      "sources": [
+        {
+          "pmid": 40426946,
+          "citation": "PMID 40426946",
+          "claim": "To generate HA-Kv2.1 and HA-Kv9.1, a single copy of the hemagglutinin (HA) epitope sequence YPYDVPDYA was inserted within the first extracellular domain after glycine 221 and 260, respectively [ 22 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:39:50.420223+00:00",
+  "literature_notes": "L3 and L4 provide loop-level support for an insertion in ECL1 (between TM1 and TM2) but name no residue; they are subsumed by L1/L2 which pin the exact junction at G221. L5 (KCNB1-HA resource table entry) and L6 (HA-tagged Kv2.1 in HEK293T) name no residue position and cannot independently pin a site; they are consistent with the G221 site but add no new junction. L7, L8, and L9 report mScarlet fused to the N-terminus of Kv2.1; the N-terminus (residues 1\u2013189) is intracellular per the authoritative topology, so these are intracellular tags recorded in other_positions. ECL2 (280\u2013294) and ECL3 (352\u2013391) are not supported by any ledger line reporting a tolerated insertion and are therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "mScarlet fused to the N-terminus of Kv2.1; the N-terminus (residues 1\u2013189) is intracellular per topology, so this is an intracellular fluorescent-protein fusion, not a surface tag."
+    }
+  ]
+}

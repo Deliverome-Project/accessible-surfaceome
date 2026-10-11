@@ -131,5 +131,20 @@
       "canonical_residue": 79,
       "left_pct": 25.320512820512818
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:37:01.031292+00:00",
+  "literature_notes": "PLPP3 is a 6-TM phospholipid phosphatase with both termini intracellular (N-terminus: residues 1\u201333; C-terminus: residues 275\u2013311) and three extracellular loops (ECL1: 55\u201385, ECL2: 150\u2013197, ECL3: 244\u2013255). The only ledger evidence (L1, L2) describes a C-terminal Flag-tag on the full-length membrane protein expressed in HEK293F cells. The C-terminus (residue 311) is unambiguously intracellular per the authoritative topology landmarks (INTRACELLULAR: 275\u2013311). This tag therefore does not constitute an extracellular surface tag site and is recorded in other_positions. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or otherwise \u2014 in any of the three extracellular loops or at any extracellular position of PLPP3. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 311,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal Flag-tag on full-length PLPP3 used for purification from HEK293F cells; residue 311 (M) lies in the intracellular C-terminal region (275\u2013311), making this a cytoplasmic tag, not an extracellular surface tag."
+    }
   ]
 }

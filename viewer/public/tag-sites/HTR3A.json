@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "HTR3A",
+  "uniprot_acc": "P46098",
+  "sites": [
+    {
+      "site_id": "HTR3A-terminal_c-478-lit",
+      "gene_symbol": "HTR3A",
+      "uniprot_acc": "P46098",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 478,
+      "residue_before": "A",
+      "residue_after": "",
+      "residue_label": "A478",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "alphaBgTx pharmatope (13 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Serotonin EC50 = 5.3 \u00b1 0.04 \u00b5M (identical to wild-type); average agonist-evoked current density 393.1 \u00b1 40.2 pA/pF in whole-cell patch-clamp; robust surface expression confirmed by [3H]BRL-43694 binding (60 pmol/mg protein). Tagged receptor declared functionally indistinguishable from wild-type.",
+      "confidence": "high",
+      "rationale": "All six ledger lines from PMC2778300 converge on a C-terminal extension of the full-length mouse 5-HT3A receptor. The human receptor's C-terminus (residue 478, A) is within the short extracellular stub (476\u2013478) that follows TM4 (ends at 475), placing the junction 3 residues from the TM boundary and satisfying the \u22653-residue constraint. L8 (PMC10179570) independently reports c-Myc/HA tags at the C-terminus of 5HT3A, further corroborating this position. Because the papers name only 'carboxyl terminus' without a specific residue, position_evidence is topology_derived: the C-terminus is the sole extracellular terminus available for a terminal_c tag, leaving no ambiguity about the junction. Mouse 5-HT3A receptor with a C-terminal alphaBgTx-pharmatope tag (plus a GN-repeat linker and a second pharmatope copy in the extended construct) stably expressed in HEK-293 cells; the tag is appended after the last coding residue of the full-length, membrane-anchored receptor.",
+      "sources": [
+        {
+          "pmid": 19715355,
+          "citation": "PMID 19715355",
+          "claim": "A HEK-293 cell line that stably expresses mouse 5-HT(3A)Rs containing a C-terminal extension that confers high-affinity binding of alpha-bungarotoxin (alphaBgTx) was established (alphaBgTx-5-HT(3A)Rs) and used to purify alphaBgTx-5-HT(3A)Rs in a lipid environment for use in structural studies using photoaffinity labeling. alphaBgTx-5-HT(3A)Rs were expressed robustly (60 pmol of [(3)H]BRL-43694 binding sites (approximately 3 microg of receptor) per milligram of protein) and displayed the same functional properties as wild-type receptors (serotonin EC(50) = 5.3 +/- 0.04 microM)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:07:28.709099+00:00",
+  "literature_notes": "L8 also reports c-Myc and HA tags at the C-terminus of 5HT3A (same junction as L1\u2013L6); this is the same site, not a second distinct site, so it is not listed separately but strengthens confidence. The mCherry insertion at G395\u2013G396 (mouse numbering, L7/L8) is in the intracellular TM3\u2013TM4 loop (human topology: 322\u2013455) and is recorded in other_positions. No ledger line supports an insertion in the large N-terminal extracellular domain (residues 24\u2013241) or in ECL1 (293\u2013302) of the full-length membrane-anchored receptor; those regions are therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 395,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "mCherry fluorescent protein inserted between TM3 and TM4 at G395\u2013G396 (mouse 5HT3A numbering); this junction lies within the large intracellular loop (human topology 322\u2013455) and is not accessible on the extracellular face."
+    }
+  ]
+}

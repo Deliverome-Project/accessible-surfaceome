@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "SEMA4D",
+  "uniprot_acc": "Q92854",
+  "sites": [
+    {
+      "site_id": "SEMA4D-terminal_n-21-lit",
+      "gene_symbol": "SEMA4D",
+      "uniprot_acc": "Q92854",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "A",
+      "residue_after": "M",
+      "residue_label": "A21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Functional rescue assay in hippocampal neurons: myc-Sema4D rescued the decrease in GABAergic synapse density caused by RNAi knockdown of endogenous Sema4D, demonstrating full functional competence of the tagged construct.",
+      "confidence": "high",
+      "rationale": "L3 (PMC3873869) reports a myc-Sema4D construct that 'contains the wildtype Sema4D C-terminus', establishing the myc tag is not C-terminal. SEMA4D is a type I transmembrane protein with a single extracellular N-terminus; after signal-peptide cleavage (SP residues 1-21, canonical), the mature protein begins at M22. The topology-derived junction is therefore insert_after_residue=21 (between the last SP residue A21 and the first mature residue M22). The construct rescued GABAergic synapse density in neurons, confirming surface trafficking and functional integrity of the tagged protein. Full-length myc-Sema4D expressed in cultured hippocampal neurons (rat). The construct retains the wildtype C-terminus, placing the myc tag at the extracellular N-terminus. SEMA4D is a type I single-pass TM protein; the only extracellular terminus is the mature N-terminus (after SP cleavage at residue 21). The paper does not state the exact junction residue.",
+      "sources": [
+        {
+          "pmid": 24036351,
+          "citation": "PMID 24036351",
+          "claim": "As a control, we demonstrated that expression of our RNAi resistant myc-Sema4D, which contains the wildtype Sema4D C-terminus, was able to rescue decreased GABAergic synapse density caused by RNAi of endogenous Sema4D ( Fig. 1B and 1C )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "SEMA4D-terminal_n-23-lit",
+      "gene_symbol": "SEMA4D",
+      "uniprot_acc": "Q92854",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "F",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "NOT MEASURED \u2014 the L1 clip describes construct engineering only; no functional or surface-expression assay result is reported in the cited clip.",
+      "confidence": "medium",
+      "rationale": "L1 (PMC11329519) explicitly names the insertion site: 'prior to the phenylalanine at codon 23' after SignalP-5.0-predicted SP cleavage. Python lookup confirms canonical position 24 = F (phenylalanine), the first F in the extracellular domain; canonical position 23 = A. The paper's 'codon 23' is the junction immediately before F24, consistent with a SignalP-5.0 SP boundary at residue 23 (one residue longer than the UniProt canonical SP of 1-21). insert_after_residue=23 is adopted; residue_before=A, residue_after=F. Both positions are deep in the extracellular domain (>710 aa from TM), satisfying all distance constraints. Full-length myc-tagged Sema4D construct engineered by Q5 mutagenesis (NEB). The paper used SignalP-5.0 to identify the SP cleavage site and inserted the myc tag 'prior to the phenylalanine at codon 23 (after signal peptide cleavage)'. In the canonical sequence, the first phenylalanine in the extracellular domain after the SP (1-21) is at position 24; the paper's 'codon 23' corresponds to the junction between canonical A23 and F24, consistent with a SignalP-5.0 prediction of SP = 1-23 (placing F at mature position 1 = canonical 24). The tag is inserted between canonical residues 23 and 24.",
+      "sources": [
+        {
+          "pmid": 39152101,
+          "citation": "PMID 39152101",
+          "claim": "After observing which amino acid begins the published structure of Sema4D and factoring where cleavage of the signal peptide (SP) is predicted to occur (SignalP-5.0), a myc tag was inserted prior to the phenylalanine at codon 23 using Q5 mutagenesis (NEB)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:18:41.402270+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 (PMC11329519) pins the myc-tag junction to 'prior to F at codon 23' in a full-length Sema4D construct; Python sequence lookup places the first extracellular F at canonical position 24, giving insert_after_residue=23 (A23|F24). The 1-residue offset from the paper's 'codon 23' is explained by the paper's use of SignalP-5.0, which likely predicts SP = 1-23 rather than the UniProt canonical SP of 1-21. L2 (PMC3873869) describes the experimental system (myc-Sema4D constructs including a C-terminal deletion and CD4 domain-swap) but does not state the tag position; it is used as context only. L3 (PMC3873869, same paper as L2) reports functional rescue by myc-Sema4D with wildtype C-terminus, establishing surface_and_function validation; the position is topology_derived (insert_after_residue=21, the canonical SP/mature boundary). The two sites differ by 2 residues and come from different papers; both are reported. No intracellular or function-abrogating positions were named in the ledger.",
+  "literature_rejected": []
+}

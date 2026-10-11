@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD24",
+  "uniprot_acc": "P25063",
+  "sites": [
+    {
+      "site_id": "CD24-terminal_n-26-lit",
+      "gene_symbol": "CD24",
+      "uniprot_acc": "P25063",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "S",
+      "residue_after": "S",
+      "residue_label": "S26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "DDK-FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Localization assay in transfected cells: surface display confirmed; GPI anchoring preserved (construct described as 'able to produce the mature GPI-anchored CD24'). C-terminal FLAG comparator lost GPI anchoring, validating the N-terminal junction as functionally silent.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201326 (authoritative landmark); 'after the ER-signal sequence' unambiguously places the tag between residue 26 (S) and residue 27 (S), the mature N-terminus. Python confirmed residue_before = S (pos 26) and residue_after = S (pos 27). CD24 is GPI-anchored with no TM helix and no cytoplasmic domain, so this terminus is fully extracellular and the only surface-accessible terminus available for a tag that must survive signal-peptide cleavage. Full-length CD24 construct with DDK-FLAG inserted explicitly 'after the ER-signal sequence' (signal peptide 1\u201326), producing a GPI-anchored, surface-displayed protein in transiently transfected cells. The paper explicitly contrasts this with a C-terminal FLAG version that disrupts GPI anchoring, confirming the N-terminal junction is the functional one.",
+      "sources": [
+        {
+          "pmid": 34360932,
+          "citation": "PMID 34360932",
+          "claim": "The localization of CD24 was investigated by transient transfection with two different plasmid constructs (as illustrated in Figure 2 ); one with the DDK-flag sequence inserted after the ER-signal sequence, able to produce the mature GPI-anchored CD24 (ER-tag CD24) and the other, not able to produce a GPI-anchor-modified CD24 due to the biochemical alteration of the GPI-anchor signal milieu by the presence of the acidic DDK-flag sequence inserted at the C-terminal of CD24 [ 46 ] (GPI-tag CD24)."
+        },
+        {
+          "pmid": 40289109,
+          "citation": "PMID 40289109",
+          "claim": "Cluster of differentiation 24 (CD24), a glycoprotein contain two N-glycosylation sites and anchors to glycosyl-phosphatidyl-inositol (GPI), 17 we first fused CD24 with enhanced green fluorescent protein (eGFP) at the N-terminus as a tag for targeting."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 26,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:11:11.748013+00:00",
+  "literature_notes": "CD24 (80 aa) is a GPI-anchored protein with signal peptide 1\u201326 and a single extracellular domain 27\u201380; it has no TM helix and no cytoplasmic tail. The only extracellular terminus available for a surface tag that survives signal-peptide cleavage is the mature N-terminus (after residue 26). L1 explicitly validates this junction with a DDK-FLAG tag in a full-length, GPI-anchored, surface-displayed construct. L2/L3 independently validate the same junction with eGFP by topology derivation (surface display confirmed, no residue named). The C-terminal FLAG from L1 is recorded in other_positions because it disrupts GPI anchoring. No internal loop insertions are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 80,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "DDK-FLAG inserted at the C-terminus of full-length CD24 disrupted GPI anchoring, preventing surface display of the mature GPI-anchored form."
+    }
+  ]
+}

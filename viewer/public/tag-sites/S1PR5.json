@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "S1PR5-terminal_n-0-lit",
+      "gene_symbol": "S1PR5",
+      "uniprot_acc": "Q9H228",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Gi signaling activity of the FLAG-tagged S1PR5 construct was measured by cAMP assay and found to be similar to wild-type S1PRs (L5).",
+      "confidence": "high",
+      "rationale": "S1PR5 is a GPCR with residues 1\u201339 forming the extracellular N-terminal domain (topology landmarks). The ledger (L1, L4) documents a full-length, membrane-anchored construct with an exogenous HA signal peptide followed by a FLAG tag prepended to the native sequence; after HA-SP cleavage the FLAG is displayed on the extracellular face before native M1. No paper names a specific residue junction, so the position is topology-derived as insert_after_residue=0 (prepend). L5 confirms that this tagged construct retains Gi signaling activity comparable to wild-type, qualifying as surface_and_function. Full-length human S1PR5 was engineered with an added HA signal peptide, FLAG-tag, and Ala-Gly-Arg-Ala linker at the N-terminus for expression in insect cells (L1/L4). The native S1PR5 has no signal peptide (topology: residues 1\u201339 extracellular); the HA signal peptide was added exogenously to drive secretory trafficking, placing the FLAG tag on the extracellular face after HA-SP cleavage, immediately before the native M1. No specific residue junction within the N-terminal extracellular span is named; the extracellular N-terminus is the only surface terminus available on a GPCR.",
+      "sources": [
+        {
+          "pmid": 34526663,
+          "citation": "PMID 34526663",
+          "claim": "Similar to wild-type S1PRs, the modified versions exhibited Gi signaling activity (Supplementary information, Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:09:05.238220+00:00",
+  "literature_notes": "L1 and L4 describe the same N-terminal FLAG construct (HA signal peptide + FLAG + AGRA linker prepended to full-length S1PR5); L5 validates its Gi signaling function. L2 describes the same N-terminal FLAG arrangement plus a BRIL domain fused into ICL3 (A223\u2013R241) and a C-terminal His-tag; the ICL3 and C-terminal positions are intracellular and are recorded in other_positions. No ledger line supports any insertion in ECL1 (96\u2013108), ECL2 (174\u2013191), or ECL3 (274\u2013287). The position is topology_derived because no paper specifies which residue of the N-terminal extracellular span carries the junction \u2014 the HA signal peptide is exogenous and its cleavage site within the added construct is not stated relative to canonical UniProt numbering.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 223,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "BRIL (apocytochrome b562RIL) was inserted between A223 and R241 in ICL3 of full-length S1PR5 to stabilize the receptor for crystallization; ICL3 spans residues 214\u2013252 (intracellular), so this is not a surface tag site."
+    },
+    {
+      "residue": 241,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "R241 is the C-terminal boundary of the BRIL insertion in ICL3 (intracellular 214\u2013252); recorded as the second named junction of the same intracellular domain-insertion event."
+    },
+    {
+      "residue": 398,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "A PreScission Protease site and decahistidine tag were added at the C-terminus of the S1PR5 crystallization construct; the C-terminus falls within the intracellular region (309\u2013398) and is not a surface tag site."
+    }
+  ]
 }

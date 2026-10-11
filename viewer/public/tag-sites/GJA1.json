@@ -4,6 +4,48 @@
   "uniprot_acc": "P17302",
   "sites": [
     {
+      "site_id": "GJA1-internal-None-lit",
+      "gene_symbol": "GJA1",
+      "uniprot_acc": "P17302",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "gap junction vestibule (E1 or E2 extracellular loop)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HA immunolabeling confirmed at gap junction plaques (surface); gap junction function confirmed by biotinylation flux through Cx43 channels into adjacent uninfected cells (function preserved).",
+      "confidence": "medium",
+      "rationale": "L5 and L6 report a full-length Cx43 construct with an HA tag detectable by immunolabeling at gap junction plaques; SMLM places the HA within the gap junction vestibule (extracellular-facing entrance to the channel pore). Gap junction function is directly confirmed by biotinylation flux into adjacent cells. This is a distinct paper (PMC13322983) and construct from L1/L2; the vestibule description is less specific than 'E2 apex' and could encompass E1 (43\u201371) as well as E2 (177\u2013207), so it is reported as a separate site. No specific residue or loop is named, so insert_after_residue is null. Full-length Cx43 fusion construct ('astrocyte network tracer') expressed in astrocytes via viral infection; HA tag is part of the construct and is detectable by immunolabeling in gap junction plaques; single-molecule localization microscopy (SMLM) confirms HA localizes within the gap junction vestibule (extracellular-facing channel entrance formed by E1 and E2 loops).",
+      "sources": [
+        {
+          "pmid": 42020738,
+          "citation": "PMID 42020738",
+          "claim": "Visualizing astrocyte gap junctional communication using the astrocyte network tracer. a , Diagram of the astrocyte network tracer construct. b , Cx43 connexons contain six connexins, only one of which needs to be the fusion protein for TID to reside on the gap junction. c , Infected astrocytes biotinylate molecules that flux through Cx43 gap junctions into adjacent, uninfected cells. d , This volume-fills in-network astrocytes with biotinylated molecules such that infected (HA + streptavidin + ), in-network (HA \u2212 streptavidin + ) and out-of-network (HA \u2212 streptavidin \u2212 ) cells can be"
+        },
+        {
+          "pmid": 22328533,
+          "citation": "PMID 22328533",
+          "claim": "Destination clones expressing Cx43-eGFP and LifeAct-mCherry were generated using the converted vectors pDEST-eGFP-N1 and pDEST-mCherry-N1 as previously described. 8\nWe targeted the relatively variable region between the two peripheral cysteines at the apex of E2 for tag insertion with a glycine\u2013proline-linked nine residue HA sequence via site-directed mutagenesis, restriction enzyme digestion, and ligation."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "GJA1-snorkel-c",
       "gene_symbol": "GJA1",
       "uniprot_acc": "P17302",
@@ -103,6 +145,39 @@
       "isoform_residue": 46,
       "canonical_residue": 46,
       "left_pct": 12.041884816753926
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:14:04.246866+00:00",
+  "literature_notes": "Two extracellular surface sites are supported by the ledger. Site 1 (L1/L2, PMC3621031): HA tag explicitly placed in the E2 loop of full-length Cx43 between peripheral cysteines C187 and C198; no specific residue number given, so reported at region level. Site 2 (L5/L6, PMC13322983): HA tag in the gap junction vestibule of a full-length Cx43 fusion construct, confirmed by immunolabeling and SMLM; gap junction function confirmed by biotinylation flux; the exact loop is unspecified ('vestibule' encompasses E1 43\u201371 and E2 177\u2013207). Four ledger lines (L3, L4, L7, L8) report C-terminal tags on full-length Cx43; the C-terminus (residue 382, 'I') is intracellular (topology span 229\u2013382) and these are recorded in other_positions. No ledger line reports an insertion in E1 with a specific residue, nor any N-terminal extracellular tag (N-terminus residues 1\u201323 are intracellular). No ledger line reports a function-abrogating insertion.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 382,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal 3C-eGFP-SpyTag003 fusion on full-length Cx43 expressed in HEK293T cells; residue 382 (I) lies in the intracellular span 229\u2013382."
+    },
+    {
+      "residue": 382,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal eGFP fusion on full-length Cx43 stably expressed in HEK293T cells; C-terminus is intracellular."
+    },
+    {
+      "residue": 382,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "C-terminal eYFP-10xHis-rho1D4 fusion on full-length human Cx43-WT; C-terminus is intracellular."
+    },
+    {
+      "residue": 382,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal HRV3C-YFP-twinStrep fusion on full-length Cx43 expressed in HEK293F cells; C-terminus is intracellular."
     }
   ]
 }

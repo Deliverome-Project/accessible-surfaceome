@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRG4",
+  "uniprot_acc": "Q8WWG1",
+  "sites": [
+    {
+      "site_id": "NRG4-terminal_n-0-lit",
+      "gene_symbol": "NRG4",
+      "uniprot_acc": "Q8WWG1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Membrane localization confirmed by immunofluorescence (surface_only). ErbB4 activation is reported for NRG4 variants with an intact EGF-like domain, but this functional assay is not explicitly attributed to the GFP-tagged construct itself.",
+      "confidence": "medium",
+      "rationale": "NRG4 is a Type I single-pass protein with its N-terminus extracellular (residues 1\u201360) and C-terminus intracellular (residues 83\u2013115); there is no signal peptide, so residue 1 (M) is the first extracellular residue. The ledger names no junction residue and no terminus explicitly, but the protein has exactly one extracellular terminus, so a surface-displayed GFP must be prepended before residue 1 (insert_after_residue = 0). Python confirms residue_after = 'M' (seq[0]). The N-terminal prepend is \u22653 residues from the TM boundary (TM begins at residue 61) and does not contact the six disulfide-forming cysteines (positions 9, 17, 23, 34, 36, 45) of the EGF-like domain. GFP-tagged NRG4 A1 (full-length, containing the predicted transmembrane region) transfected into Cos-7 cells and confirmed to localize to the plasma membrane by immunofluorescence. No junction residue is named in any ledger line.",
+      "sources": [
+        {
+          "pmid": 17545517,
+          "citation": "PMID 17545517",
+          "claim": "In transfected cells, the A type variant (NRG4 A1) was localized to the membrane, whereas the B type variant (NRG4 B1), which lacks the predicted transmembrane region, had an intracellular localization. Only the variants with an intact epidermal growth factor-like domain activated ErbB4 signaling.<h4>Conclusion</h4>NRG4 overexpression is associated with advanced-stage prostate cancer. The alternative splice variants may have different roles in cell signaling, some acting as classic receptor ligands and some with as-yet unknown functions."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:14:50.565933+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe GFP-tagged full-length NRG4 A1 expressed in mammalian cells and confirmed at the plasma membrane, but none specifies whether GFP is N- or C-terminal, nor any junction residue. The topology_derived rule is applied: NRG4 has exactly one extracellular terminus (N-terminus, residues 1\u201360), so a surface-displayed GFP must be an N-terminal prepend. L1 (PMID 17684490) and L2 (PMID 17545517) provide corroborating evidence for the same finding; L3 (PMID 17545517) is the most informative and is used as the single supporting clip. No ledger line supports any internal loop insertion, and no ledger line specifies a C-terminal tag. The intracellular C-terminus (residues 83\u2013115) is not a surface site and is not proposed. No function-abrogating insertions are reported in the ledger.",
+  "literature_rejected": []
+}

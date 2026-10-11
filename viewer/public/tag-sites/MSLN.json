@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "MSLN",
+  "uniprot_acc": "Q13421",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:54:54.943181+00:00",
+  "literature_notes": "All four ledger clips (L1\u2013L4) describe GFP-tagged full-length MSLN constructs expressed in HEK293T cells with confirmed surface display. However, none qualifies as a pinnable site under the stated rules. L1 (PMC10303918) cites a SinoBiologicals 'C-GFPSpark' commercial plasmid: the 'C-' prefix indicates a C-terminal tag, but the exact residue junction is not stated anywhere in the clip, and the rules explicitly disqualify 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' L2\u2013L4 (PMC13158456) all describe the same 'GFP-tagged human MSLN expression vector' used for biopanning; they name neither a residue nor even whether the tag is N- or C-terminal. The topology_derived rule ('exactly ONE terminus is extracellular') cannot rescue these clips: per the given landmarks, MSLN has EXTRACELLULAR: 37\u2013630 with no TM domain, so both the mature N-terminus (residue 37, after signal-peptide cleavage at 36/37) and the C-terminus (residue 630) are extracellular \u2014 two extracellular termini, not one. Even if L1's 'C-terminal' label were used to narrow to the C-terminus, the GPI-signal region (approximately residues 581\u2013630, cleaved post-translationally) makes the exact surface-exposed C-terminal junction ambiguous and not derivable from the topology landmarks alone. Because no clip names a residue, no clip is a non-commercial source with a single extracellular terminus, and the commercial-plasmid disqualification applies to L1, zero sites are reported. This is the correct answer given the ledger.",
+  "literature_rejected": []
+}

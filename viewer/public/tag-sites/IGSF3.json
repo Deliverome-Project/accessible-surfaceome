@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "IGSF3",
+  "uniprot_acc": "O75054",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:13:38.643428+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe the same experimental system: full-length IGSF3 carrying a C-terminal V5 tag ('IGSF3-V5') or a C-terminal FLAG tag ('IGSF3-FLAG') expressed in B16 or 293FT cells. IGSF3 is a Type I single-pass transmembrane protein: the large ectodomain spans residues 20\u20131124 (after signal-peptide cleavage at residue 19), the TM helix spans 1125\u20131147, and the cytoplasmic tail spans 1148\u20131194. A C-terminal tag therefore lands on the intracellular face, not the extracellular surface. The immunofluorescence detection of IGSF3-V5 at cell\u2013cell contact sites (L4) is consistent with permeabilized-cell staining of an intracellular epitope, which is standard practice; the ledger clip does not state live-cell or non-permeabilized surface staining. No ledger line describes an N-terminal extracellular tag, an internal loop insertion, a snorkel construct, or any tag placed in the extracellular span (residues 20\u20131124). Because no ledger line supports an extracellular surface tag insertion, zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1194,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "IGSF3-V5 is a C-terminal V5 fusion; the C-terminus (residue 1194, D) lies in the cytoplasmic tail (residues 1148\u20131194) and is therefore intracellular, not surface-accessible."
+    },
+    {
+      "residue": 1194,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "IGSF3-FLAG is a C-terminal FLAG fusion used in the same co-IP experiment; the C-terminus is equally intracellular and does not qualify as an extracellular surface tag site."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PLAUR",
+  "uniprot_acc": "Q03405",
+  "sites": [
+    {
+      "site_id": "PLAUR-terminal_c-335-lit",
+      "gene_symbol": "PLAUR",
+      "uniprot_acc": "Q03405",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 335,
+      "residue_before": "T",
+      "residue_after": "",
+      "residue_label": "T335",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized anti-PLAUR flow cytometry and membrane-localization imaging; anti-HIV function of the GFP-tagged construct not explicitly reported in the cited clips.",
+      "confidence": "medium",
+      "rationale": "PLAUR is a GPI-anchored protein with no TM or intracellular domain; the entire mature ectodomain (residues 23\u2013335) is extracellular per the authoritative topology landmarks. The paper reports a C-terminal GFP fusion on the full-length, membrane-anchored construct with confirmed surface display, making this a topology-derived terminal_c site. No specific junction residue is named, so insert_after_residue is set to 335 (the last residue of the canonical sequence as provided). The GPI signal at the C-terminus is not separately annotated in the provided landmarks, and the confirmed surface display of the GFP demonstrates the construct is functional as a surface-displayed tagged protein. Full-length PLAUR with C-terminal GFP expressed in 293T cells and lentivirally transduced CD4+ T cells; surface display of the tagged construct confirmed by non-permeabilized staining with anti-PLAUR antibody and flow cytometry (L1); membrane-localized pattern distinct from isotype control confirmed by imaging (L2).",
+      "sources": [
+        {
+          "pmid": 36638209,
+          "citation": "PMID 36638209",
+          "claim": "At 48 h after transfection in 293T cells or 96 h after lentiviral vector transduction in CD4 + T cells, viable cells were harvested and stained with mouse anti-PLAUR or isotype (IgG) antibodies to measure the levels of the C-terminal GFP-tagged PLAUR and non-tagged PLAUR at the cell surface using a PE-conjugated goat anti-mouse antibody ( E )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:35:40.159114+00:00",
+  "literature_notes": "L1 and L2 are from the same paper and describe the same C-terminal GFP-tagged PLAUR construct; L1 is used as the primary supporting clip. L3 describes three GFP-tagged deletion mutants (\u03941\u201322, \u039423\u201344, \u039489\u2013110) of PLAUR; these are deletion constructs, not tag insertions at named residues, and do not qualify as evidence for additional insertion sites under the rules. The outcome of those deletions is not stated in L3, so they cannot be placed in other_positions as abrogates_function. PLAUR is GPI-anchored; a C-terminal GFP on such a protein is conventionally inserted before the GPI signal sequence, which is then cleaved to leave GFP at the new C-terminus \u2014 consistent with the confirmed surface display. The topology landmarks do not annotate the GPI signal separately, so the position is topology-derived at residue 335.",
+  "literature_rejected": []
+}

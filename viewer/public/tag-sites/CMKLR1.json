@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CMKLR1-terminal_n-0-lit",
+      "gene_symbol": "CMKLR1",
+      "uniprot_acc": "Q99788",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed both total and surface expression of the FLAG-tagged full-length receptor in transfected cells.",
+      "confidence": "high",
+      "rationale": "CMKLR1 has no endogenous signal peptide; its N-terminus (residue 1, M) is directly extracellular (EC1: residues 1\u201340), 40 residues from the TM1 boundary at residue 41, well exceeding the \u22653-residue clearance requirement. The TANGO construct (L5/L6) places a FLAG tag between an exogenous cleavable signal sequence and CMKLR1 residue 1, which is the only extracellular terminus of this 7-TM receptor, making insert_after_residue=0 the unique topology-derived junction. The same N-terminal FLAG arrangement is independently corroborated by two structural studies (L1/L2, L3/L4) expressing full-length membrane-anchored CMKLR1 in Sf9 insect cells. No residue number is named in any clip, so the position is topology-derived rather than validated. Full-length CMKLR1 TANGO construct in mammalian cells: exogenous cleavable signal sequence followed by FLAG epitope tag prepended before CMKLR1 residue 1, with the receptor expressed as a membrane-anchored protein on the cell surface.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "In preliminary experiments, each TANGO-ized construct was transfected and then examined by anti-FLAG immunofluorescence for both total and surface expression ( Fig. 1b for examples)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:52:05.428471+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) converge on a single position: the N-terminal prepend (insert_after_residue=0). L1/L2 and L3/L4 (two independent structural papers, PMC10274904 and PMC10699647) describe full-length CMKLR1 with an exogenous signal peptide + FLAG + \u03b22AR N-terminal fragment fused before CMKLR1 residue 1 in Sf9 insect cells; these are membrane-anchored constructs used for cryo-EM, not soluble ectodomains or Fc-fusions. L5/L6 (PMC4424118, TANGO paper) describe a mammalian-cell construct with cleavable signal sequence + FLAG before CMKLR1 residue 1, with surface expression confirmed by anti-FLAG immunofluorescence. Because all clips pin the same junction and no clip names a specific residue number, only one site is reported. The C-terminal 8\u00d7His tag (L1/L2) falls in IC4 (residues 320\u2013373, intracellular) and is recorded in other_positions. No internal extracellular loop insertions are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 373,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 8\u00d7His tag appended after residue 373 of full-length CMKLR1; the C-terminus falls in IC4 (residues 320\u2013373, intracellular) and is not accessible on the extracellular face."
+    }
+  ]
 }

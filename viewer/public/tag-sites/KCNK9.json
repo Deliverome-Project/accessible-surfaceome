@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNK9",
+  "uniprot_acc": "Q9NPC2",
+  "sites": [
+    {
+      "site_id": "KCNK9-internal-40-lit",
+      "gene_symbol": "KCNK9",
+      "uniprot_acc": "Q9NPC2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 40,
+      "residue_before": "K",
+      "residue_after": "L",
+      "residue_label": "K40",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Cell-surface expression confirmed in HEK293 cells by Myc surface detection; channel function not explicitly reported in this construct.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states the Myc tag was inserted between aa 40 and 41 of human KCNK9. Python lookup confirms residue 40 = K and residue 41 = L, both within EXTRACELLULAR_1 (30\u2013107); the junction is 11 residues from the TM1 exit (position 29) and 68 residues from TM2 entry (position 108), well clear of both boundaries. No cysteine is present in EXTRACELLULAR_1, and the nearest predicted N-glycosylation motif (NIS at 53\u201355) is 13 residues away, so the insert does not disrupt it. Human KCNK9 was expressed in HEK293 cells with a Myc epitope tag inserted between amino acids 40 and 41 to detect cell-surface expression by immunofluorescence/surface labelling.",
+      "sources": [
+        {
+          "pmid": 23772394,
+          "citation": "PMID 23772394",
+          "claim": "For detection of cell surface expression in HEK293 cells, Kir2.1 was tagged with hemagglutinin (HA) epitope at between aa 117 and 118, rat KCNK3 was tagged with HA at between aa 213 and 214, and human KCNK9 was tagged with Myc between aa 40 and 41."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:50:36.583509+00:00",
+  "literature_notes": "L2 (PMC3759426) confirms that TASK3/KCNK9 was surface-tagged in a snorkel-approach study, but the quote explicitly lists TASK3 among the exceptions that did NOT receive the tPA leader sequence. The clip names neither a residue nor a specific extracellular loop for TASK3, so no position can be derived from it \u2014 not even a region-level null-residue site. It was therefore not promoted to a site entry. Only L1 provides a precisely pinned, validated insertion site.",
+  "literature_rejected": []
+}

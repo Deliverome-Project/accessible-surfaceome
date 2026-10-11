@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR20-terminal_n-0-lit",
+      "gene_symbol": "GPR20",
+      "uniprot_acc": "Q99678",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by antibody binding (FLAG detected on cell surface in Expi293F cells). GPR20 G-protein signaling function NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "GPR20 has no native signal peptide; its N-terminus (residues 1\u201354) is entirely extracellular per the topology landmarks, with TM1 beginning at residue 55 (54 residues of clearance). The PRESTO-Tango-derived construct prepends an HA signal sequence followed by FLAG before the native M1, so after signal cleavage the FLAG tag sits at insert_after_residue=0 (before M1). This is the sole extracellular terminus of this GPCR, making the position topology-derived. Computed: residue_after = seq[0] = 'M', distance to TM1 = 54 aa, well above the 3-residue minimum. Full-length GPR20 expressed in Expi293F cells as part of a 215-GPCR library (PMC10156119). Construct architecture: [HA signal sequence MKTIIALSYIFCLVFA (cleaved)] \u2013 [FLAG DYKDDDDA] \u2013 [native GPR20 from M1]. The HA signal is cleaved post-translationally, leaving FLAG at the extracellular N-terminus. Used for antibody selectivity profiling; surface expression confirmed by antibody binding assay.",
+      "sources": [
+        {
+          "pmid": 37134173,
+          "citation": "PMID 37134173",
+          "claim": "All GPCRs except CALCRL and FZD4, FZD5, FZD6, and FZD10 relied on the codon-optimized PRESTO-Tango library of signal sequence-FLAG-GPCRs as a starting point to generate 215 FLAG-GPCR-1D4 constructs, with the FLAG tag (DYKDDDDA) following the HA signal sequence MKTIIALSYIFCLVFA."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:32:07.133720+00:00",
+  "literature_notes": "L1 and L2 both describe the same dual-tagged GPR20 construct from PMC10156119 (the 215-GPCR antibody-selectivity library). L2 is the more informative clip (names the exact FLAG sequence and HA signal architecture) and is used as the primary supporting clip. L1 corroborates. The C-terminal 1D4 tag from the same construct is intracellular (topology landmarks place residues 301\u2013358 in the cytoplasm) and is recorded in other_positions. No ledger evidence supports any internal extracellular loop (ECL1 112\u2013123, ECL2 189\u2013196, ECL3 267\u2013276) tag insertion for GPR20; those sites are not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 358,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "The C-terminal 1D4 tag in the FLAG-GPR20-1D4 construct (PMC10156119) is appended after residue 358, which lies within the intracellular C-terminal domain (topology landmarks: INTRACELLULAR 301\u2013358); this is a cytoplasmic tag, not a surface epitope site."
+    }
+  ]
 }

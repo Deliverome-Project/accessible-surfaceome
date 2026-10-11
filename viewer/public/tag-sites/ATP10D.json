@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ATP10D",
+  "uniprot_acc": "Q9P241",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:36:15.973821+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe C-terminally HA-tagged full-length ATP10D expressed in HeLa cells or fibroblasts. The topology landmarks place the C-terminus (residue 1426) in the intracellular region (1318\u20131426), so the HA tag is on the cytoplasmic face and does not qualify as an extracellular surface tag site. The N-terminus (residues 1\u201397) is also intracellular. The five extracellular loops (EL1: 119\u2013121, 3 aa; EL2: 343\u2013369, 27 aa; EL3: 1135\u20131145, 11 aa; EL4: 1217\u20131225, 9 aa; EL5: 1277\u20131296, 20 aa) are not addressed by any ledger line. No ledger line supports any extracellular tag insertion for ATP10D; therefore zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1426,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag (insert_after residue 1426, the last residue S) is in the intracellular region (1318\u20131426) per topology landmarks; confirmed functional in lipid-transport assays but faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

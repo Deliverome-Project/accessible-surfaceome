@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "GPNMB",
+  "uniprot_acc": "Q14956",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:22:49.148816+00:00",
+  "literature_notes": "The sole ledger line (L1) describes a full-length, membrane-anchored mouse GPNMB construct named 'pCAGIP-mouse GPNMB-FLAG/HA'. Two disqualifying problems prevent it from grounding any extracellular tag site. First, the construct name follows the standard 'Protein-Tag' C-terminal convention; GPNMB is a type I single-pass protein whose C-terminus (residues 519\u2013572) is intracellular, so the FLAG/HA tag almost certainly faces the cytoplasm, not the extracellular space. Second, and independently, the clip explicitly states the plasmid 'has been described previously' \u2014 the tag position is not stated in this clip, only in a prior paper that is outside the ledger. Per the rules, a plasmid whose tag position is unstated cannot be used to pin insert_after_residue, and topology_derived cannot rescue it because the construct naming contradicts an N-terminal placement. No other ledger lines exist. Therefore zero extracellular surface tag sites are supported.",
+  "literature_rejected": []
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NPR3",
+  "uniprot_acc": "P17342",
+  "sites": [
+    {
+      "site_id": "NPR3-terminal_n-26-lit",
+      "gene_symbol": "NPR3",
+      "uniprot_acc": "P17342",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Internalization rate measured at 2.5%/min in HeLa cells by 125I-IgG uptake assay; neither ANP, BNP, nor CNP altered internalization rate, consistent with known ligand-independent constitutive internalization of WT NPR-C; surface display fully confirmed.",
+      "confidence": "high",
+      "rationale": "NPR3 is a type I single-pass transmembrane receptor with a 26-residue signal peptide (cleaved), a 457-residue extracellular domain (residues 27\u2013483), a single TM helix (484\u2013504), and an intracellular C-terminus (505\u2013541). The paper reports an extracellular FLAG tag on the full-length receptor but names no specific residue; because exactly one extracellular terminus exists (the mature N-terminus after SP cleavage), the junction is unambiguously after residue 26 (G) before residue 27 (G). Python verification confirms residue 26 = G and residue 27 = G, and the tag site is 457 residues from the TM boundary, well clear of any constraint. L2 corroborates the same construct and adds ligand-panel functional data. Full-length FLAG-NPR-C (NPR3) expressed in HeLa and 293 cells; FLAG tag placed in the extracellular domain of the intact, membrane-anchored receptor; surface display confirmed by 125I-IgG binding assay tracking the extracellular FLAG epitope.",
+      "sources": [
+        {
+          "pmid": 21498657,
+          "citation": "PMID 21498657",
+          "claim": "To specifically measure internalization of a single receptor, we developed an (125)I-IgG-binding assay that tracks extracellular FLAG-tagged versions of GC-A and NPR-C independently of each other and ligand for the first time. FLAG-GC-A bound ANP identically with wild-type GC-A and was internalized slowly (0.5%/min), whereas FLAG-NPR-C was internalized rapidly (2.5%/min) in HeLa cells. In 293 cells, (125)I-ANP and (125)I-IgG uptake curves were superimposable because these cells only express a single ANP receptor."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:09:46.758715+00:00",
+  "literature_notes": "L1 and L2 both describe the identical FLAG-NPR-C construct from PMC5180442 and ground a single site. No residue number is stated in either clip, so position is topology_derived from the single extracellular terminus. The C-terminus (residue 541) is intracellular and cannot carry an extracellular tag. No other insertion sites (internal loops, other termini) are mentioned in the ledger for NPR3. Validation is surface_and_function because the 125I-IgG assay directly confirms extracellular FLAG display, and internalization kinetics (the primary function of NPR-C as a clearance receptor) are measured and match WT behavior.",
+  "literature_rejected": []
+}

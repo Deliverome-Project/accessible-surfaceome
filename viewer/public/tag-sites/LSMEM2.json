@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LSMEM2",
+  "uniprot_acc": "Q8N112",
+  "sites": [
+    {
+      "site_id": "LSMEM2-terminal_c-164-lit",
+      "gene_symbol": "LSMEM2",
+      "uniprot_acc": "Q8N112",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 164,
+      "residue_before": "S",
+      "residue_after": "",
+      "residue_label": "S164",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "PA (GVAMPGAEDDVV)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-PA antibody detection confirmed expression of the tagged construct in skeletal muscle; no functional assay result reported in the clip for the WT-PA construct specifically.",
+      "confidence": "high",
+      "rationale": "LSMEM2 is a single-pass membrane protein with its sole extracellular face at the C-terminus (residues 119\u2013164, 46 residues beyond the TM boundary at 118). The clip reports a PA-tag fusion of full-length LSMEM2 detected by anti-PA antibody in muscle, confirming surface accessibility of the tag. Because no junction residue is named and exactly one terminus is extracellular, the position is topology-derived at residue 164 (S). Python confirmed residue 164 = S, no cysteines in the extracellular domain, and 46-residue clearance from the TM boundary. Full-length LSMEM2 WT expressed via AAV in skeletal muscle as a C-terminal PA-tag fusion (GVAMPGAEDDVV); detected by anti-PA antibody. The clip names no junction residue. LSMEM2 has a single TM (98\u2013118) with an intracellular N-terminus (1\u201397) and an extracellular C-terminus (119\u2013164); exactly one terminus is extracellular, placing the tag after residue 164 by topology.",
+      "sources": [
+        {
+          "pmid": 40525396,
+          "citation": "PMID 40525396",
+          "claim": "LSMEM2 WT and C\u2010del (deleted from aa110 [Serine] to 150 [C\u2010terminus]) fused with PA tag (GVAMPGAEDDVV) [ 13 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:26:36.324786+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It supports a single C-terminal PA-tag site on the extracellular face. The C-del mutant (deletion of ~aa110\u2013150) described in the same clip is a truncation construct whose PA tag, if C-terminal, would reside in the TM or intracellular region and does not constitute a surface tag site. The N-terminus (residue 1) is intracellular and was not considered. No internal extracellular loop insertions are supported by the ledger. A potential N-glycosylation sequon (N156-S157-S158) exists 8 residues from the C-terminus but is not at the tag junction and does not affect the terminal site.",
+  "literature_rejected": []
+}

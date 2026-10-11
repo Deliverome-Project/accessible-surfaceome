@@ -1,0 +1,98 @@
+{
+  "has_data": true,
+  "gene_symbol": "INSR",
+  "uniprot_acc": "P06213",
+  "sites": [
+    {
+      "site_id": "INSR-internal-None-lit",
+      "gene_symbol": "INSR",
+      "uniprot_acc": "P06213",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular beta-chain linker (post-furin cleavage site to pre-TM, residues ~763-957)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "TagRFP / TagGFP2 / TagBFP (FP fusion)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Insulin binding and internalization of FITC-labeled insulin confirmed (surface_and_function); ERK activation in a temporal pattern similar to endogenous receptors confirmed; AKT and ERK signaling also confirmed in C2C12 myoblasts (L7). Full surface_and_function validation.",
+      "confidence": "high",
+      "rationale": "L1-L4 (PMC4837300) and L6-L8 (PMC12963976) all report full-length INSR constructs with an interdomain fluorescent-protein or SNAP-tag insertion placed between the furin-like cleavage region (RKRR at positions 759-762) and the transmembrane domain (958-978), placing the tag within the extracellular beta-chain linker (residues 763-957). No specific residue number is given in any of these clips, so the site is region-level. Python confirmed the RKRR furin motif at positions 759-762 and the TM boundary at 958, giving a 195-residue extracellular window. Functional signaling (ERK, AKT) and insulin binding were confirmed in multiple cell types, making this the highest-validated site in the ledger. Full-length InsRA and InsRB constructs with pH-resistant fluorescent proteins (TagGFP2, TagRFP, TagBFP) inserted into the extracellular domain between the furin-like cleavage region and the transmembrane domain, expressed in cultured beta-cells. The paper explicitly avoids known functional domains. No single residue number is given; the insertion is described by flanking landmarks (furin-like region and TM domain). The extracellular beta-chain spans residues 763-957 (RKRR furin site at 759-762, TM at 958-978).",
+      "sources": [
+        {
+          "pmid": 27110488,
+          "citation": "PMID 27110488",
+          "claim": "To track the route of insulin receptors in living cells, we employed a novel tagging strategy whereby pH-resistant fluorescent proteins were placed at the extracellular domain of the insulin receptor in between the furin-like region and the transmembrane domain, avoiding the interruption of known functional domains [21] ( Figure 1 D)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "INSR-terminal_n-27-lit",
+      "gene_symbol": "INSR",
+      "uniprot_acc": "P06213",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "G",
+      "residue_after": "H",
+      "residue_label": "G27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / FLAG / Strep-tag II",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed (L12: 'surface display experiments'); EV transport experiments performed with Strep-tag II construct (L13). No explicit functional signaling assay reported in these clips for the tagged constructs.",
+      "confidence": "high",
+      "rationale": "L12 and L13 both report N-terminal epitope tags (HA/FLAG and Strep-tag II, respectively) on full-length InsR, with surface display confirmed. The only possible extracellular N-terminal junction for a full-length receptor with SP 1-27 is after residue 27 (insert_after_residue=27), placing the tag at the mature N-terminus (residue 28 = H). Python verified G at position 27 and H at position 28, consistent with the canonical sequence. A tag placed upstream of residue 27 would be within the signal peptide and cleaved off, so insert_after_residue=27 is the only valid interpretation. No functional assay is reported in these clips. L12 (PMC12167996) reports full-length InsR expression plasmids with N-terminal HA and FLAG epitopes used in surface display experiments. L13 (PMC12167996) reports a Strep-tag II epitope followed by a Gly-Ser linker and HRV 3C site added to the N-terminus of full-length InsR. Neither clip names a residue number; the junction is derived from the signal peptide landmark (SP 1-27, mature N-terminus at residue 28). Python confirmed residue 27 = G (last SP residue) and residue 28 = H (first mature residue). The tag is placed after residue 27 (after SP cleavage) so it is displayed on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 40455995,
+          "citation": "PMID 40455995",
+          "claim": "Expression plasmids directing expression of full-length InsR and EGFR with and without N-terminal HA and FLAG epitopes are described elsewhere ( 70 ), pcDNA HA-NIS was a gift from Nancy Carrasco (Vanderbilt University, TN)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:28:14.648432+00:00",
+  "literature_notes": "L5 (SNAP-tagged INSR from lentiviral vector) does not specify the position of the SNAP-tag; L6 contrasts 'inter-domain-tagged INSR' with 'terminal fusion proteins', suggesting the SNAP-tag in L5 may be a terminal fusion, but neither the terminus nor the residue is named, so it cannot be independently pinned as a surface site and is subsumed under the interdomain site (L1/L6). L9-L11 report a C-terminal myc tag used to discriminate exogenous from endogenous INSR in CHO cells; the C-terminus (residue 1382) is intracellular (topology 979-1382), so this is recorded in other_positions. The interdomain site (Site 1) has no pinned residue because none of the ledger lines for this region name a specific junction; the region spans ~195 residues (763-957) of the extracellular beta-chain. The N-terminal site (Site 2) is topology-derived: the paper says 'N-terminal' on full-length InsR, and the SP landmark (1-27) uniquely determines insert_after_residue=27.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1382,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "C-terminal myc tag used to discriminate exogenous human INSR mutants from endogenous INSR in CHO Flp-In cells; residue 1382 is within the intracellular kinase domain (topology 979-1382), not on the extracellular surface."
+    }
+  ]
+}

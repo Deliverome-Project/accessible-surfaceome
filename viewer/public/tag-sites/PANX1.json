@@ -105,5 +105,32 @@
       "canonical_residue": 97,
       "left_pct": 22.769953051643192
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:13:00.964357+00:00",
+  "literature_notes": "PANX1 has two extracellular loops (EL1: 62\u2013106; EL2: 239\u2013266) and both termini are intracellular (N-terminus IC1: 1\u201340; C-terminus IC3: 288\u2013426). Every ledger line describes a tag on an intracellular face: L1/L3/L5/L6 report C-terminal EGFP fusions at residue 426 (IC3); L2 reports a C-terminal EGFP fusion after a caspase-site truncation ending at residue 378 (also IC3); L4 reports a Gly-Ser insertion at the N-terminus (IC1). None of the six lines places any tag in EL1 or EL2, and none qualifies as a snorkel construct. Because the ledger contains no published insertion on the extracellular face of PANX1, zero sites are proposed. The intracellular positions are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 426,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion (full-length Panx1-EGFP) confirmed at cell surface by biotinylation and WGA co-distribution; tag is intracellular (IC3, residues 288\u2013426)."
+    },
+    {
+      "residue": 378,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Panx1\u2206379-EGFP truncation construct fuses EGFP after residue 378 (Val, IC3); surface levels indistinguishable from full-length Panx1-EGFP by biotinylation; tag is intracellular."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Gly-Ser insertion at the N-terminus (Panx1+GS) yields larger currents than WT in HEK293 cells; N-terminus is intracellular (IC1, residues 1\u201340), so this is an intracellular tag."
+    }
   ]
 }

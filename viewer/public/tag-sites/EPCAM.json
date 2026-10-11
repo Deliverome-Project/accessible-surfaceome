@@ -1,0 +1,79 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPCAM",
+  "uniprot_acc": "P16422",
+  "sites": [
+    {
+      "site_id": "EPCAM-terminal_n-23-lit",
+      "gene_symbol": "EPCAM",
+      "uniprot_acc": "P16422",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "PA tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display context confirmed (companion paper PMC9220218 uses anti-PA staining to detect surface-exposed EpCAM); exact functional assay result for the N-terminal PA-tagged full-length construct not detailed in this clip.",
+      "confidence": "high",
+      "rationale": "EpCAM is a type I transmembrane protein; the signal peptide spans residues 1\u201323 and is cleaved co-translationally, placing the mature N-terminus (residue 24, Q) on the extracellular face. An N-terminal tag must be inserted after residue 23 (the last SP residue, A) so it is not co-cleaved with the signal peptide. Python verification confirms seq[22]='A' and seq[23]='Q', consistent with the landmarks. This is the sole extracellular terminus; the C-terminus (residue 314) is intracellular. Full-length EpCAM with an N-terminal PA tag was subcloned into a mammalian expression vector (pCAG-Ble); deletion mutants (dN44\u2013dN244) were also produced with the same N-terminal PA tag. EpCAM is a type I single-pass transmembrane protein with signal peptide 1\u201323 and a single extracellular N-terminus at residue 24; the N-terminus is the only extracellular terminus available for tagging.",
+      "sources": [
+        {
+          "pmid": 35735360,
+          "citation": "PMID 35735360",
+          "claim": "N-terminal PA-tagged EpCAM deletion mutants (dN44, dN64, dN84, dN104, dN124, dN144, dN164, dN184, dN204, dN224, and dN244) were produced using a HotStar HiFidelity Polymerase Kit (Qiagen Inc., Hilden, Germany), and subcloned into the pCAG-Ble vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:31:54.819514+00:00",
+  "literature_notes": "L1 and L3 describe C-terminal PA-tagged full-length EpCAM; the C-terminus (residue 314) falls within the intracellular domain (289\u2013314) and is therefore not a surface tag site. L4, L5, and L6 describe C-terminal GFP/EGFP fusions; these are likewise intracellular. All five C-terminal constructs are recorded in other_positions. L6 confirms that C-terminally tagged EpCAM-EGFP traffics to the cell surface (flow cytometry), validating that the ectodomain folds and traffics correctly even with a bulky C-terminal fusion, but the EGFP itself is intracellular. No ledger line supports an internal extracellular loop insertion for EpCAM.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 314,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal PA tag on full-length EpCAM; residue 314 (A) is in the intracellular domain (289\u2013314), so the tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 314,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal PA tag (EpCAM-PA) on full-length EpCAM; same intracellular C-terminus as L1."
+    },
+    {
+      "residue": 314,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "In-frame GFP fused to the C-terminus of full-length EpCAM (pEGFP-N2 vector); C-terminus is intracellular."
+    },
+    {
+      "residue": 314,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "EpCAM-EGFP C-terminal fusion expressed in ESCs; surface expression of EpCAM ectodomain confirmed by flow cytometry, but EGFP is on the intracellular C-terminus."
+    }
+  ]
+}

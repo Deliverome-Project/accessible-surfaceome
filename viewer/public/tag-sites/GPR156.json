@@ -37,6 +37,44 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR156-terminal_n-0-lit",
+      "gene_symbol": "GPR156",
+      "uniprot_acc": "Q8NFN8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "2xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by HA immunolabeling of neonatal cochleae from Gpr156 2HA-flox/+ mice; HA signals formed a medial crescent at the apical hair cell junction identical to the pattern seen with GPR156-specific antibodies, demonstrating correct trafficking and subcellular localization. No direct signaling or electrophysiological functional assay reported in the ledger.",
+      "confidence": "high",
+      "rationale": "L5 explicitly states the two HA tags were added 'at the Gpr156 start codon (N-terminal)', pinning the junction to insert_after_residue=0 (prepend before M1). GPR156 carries no signal peptide (topology: EXTRACELLULAR 1\u201347), so the prepended tag is immediately extracellular with 47 residues of buffer before the first TM boundary at residue 48\u2014well above the \u22653-residue minimum. L2 confirms the design intent (epitopes on the extracellular face) and L3/L4 confirm surface display and correct apical localization in native cochlear hair cells, matching the untagged protein's known pattern. CRISPR/Cas9 knock-in mouse strain (Gpr156 2HA-flox) with two HA epitopes inserted in-frame immediately N-terminal to the Gpr156 start codon (before M1) in exon 2, using a plasmid-based donor vector in the C57BL/6J background. GPR156 has no signal peptide; the topology landmarks place residues 1\u201347 as extracellular, so a prepend tag is directly on the extracellular face. The first TM helix begins at residue 48, giving 47 residues of clearance from the insertion point.",
+      "sources": [
+        {
+          "pmid": 41547998,
+          "citation": "PMID 41547998",
+          "claim": "To generate the Gpr156 2HA \u2212 flox strain in the C57BL/6J background, we cloned a plasmid-based donor vector to add two HA tags at the Gpr156 start codon (N-terminal) and flank exons 2 and 3 with loxP sites."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -52,5 +90,12 @@
       "left_pct": 0.12345679012345678,
       "note": "Isoform surface expr 147 (-58% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:28:16.764516+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe the same single experiment and the same single insertion site: a dual-HA prepend before M1 of mouse Gpr156, validated in a CRISPR knock-in strain. The human GPR156 N-terminus is directly extracellular (no signal peptide; topology 1\u201347 = EXTRACELLULAR), making this the direct human equivalent. No other insertion sites\u2014internal loops, C-terminus, or other extracellular domains\u2014are described anywhere in the ledger. The four other extracellular regions (ECL1: 106\u2013123, ECL2: 186\u2013222, ECL3: 279\u2013286, and the large intracellular C-tail 310\u2013814) have no ledger support and are therefore not proposed. Validation is classified surface_only rather than surface_and_function because the ledger reports localization matching the untagged protein but no explicit signaling, hair-cell orientation, or electrophysiological assay on the tagged construct.",
+  "literature_rejected": []
 }

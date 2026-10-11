@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR32-terminal_n-0-lit",
+      "gene_symbol": "GPR32",
+      "uniprot_acc": "O75388",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry (L4) confirmed surface expression of myc-tagged GPR32 on whole blood and PBMC subsets. Direct functional impact of the tag on receptor signalling was NOT MEASURED in isolation; in vivo phenotypic studies of the transgenic model were performed but confounded by the whole-animal context.",
+      "confidence": "medium",
+      "rationale": "GPR32 is a GPCR with no signal peptide: the topology landmarks place residues 1\u201344 extracellular and residues 321\u2013356 intracellular. Flow cytometry (L4) confirms the myc tag reaches the cell surface, ruling out the intracellular C-terminus and leaving the extracellular N-terminus as the sole terminal candidate. No ledger line names a specific residue, so the junction is topology-derived at position 0 (prepend before M1). Python confirmed residue 1 = M and TM1 begins at residue 45, giving 44 residues of extracellular space\u2014well above the \u22653-residue minimum. Full-length human GPR32 with a myc reporter tag was cloned into a mammalian expression vector and expressed transgenically in mice (hGPR32myc \u00d7 Fpr2\u2212/\u2212 \u00d7 Apoe\u2212/\u2212 model). Flow cytometry on whole blood and PBMCs confirmed the myc tag is displayed on the cell surface.",
+      "sources": [
+        {
+          "pmid": 34699386,
+          "citation": "PMID 34699386",
+          "claim": "( D ) Flow cytometry histogram (representative of n = 3) showing GPR32 expression in naive whole blood from Fpr2 \u2013/\u2013 \u00d7Apoe \u2013/\u2013 (dark gray) and hGPR32 Tg\u00d7Fpr2 \u2013/\u2013 \u00d7Apoe \u2013/\u2013 (light blue) mice (left) and differential expression of hGPR32 in myc myc PBMC (purple) and neutrophil (dark blue) cell subsets (right)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:33:32.008898+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) derive from the same paper (PMC8670838) and describe the same myc-tagged full-length GPR32 construct. None names a specific insertion residue or loop. The C-terminus (residues 321\u2013356) is intracellular per the topology landmarks and is excluded by the flow-cytometry surface-detection result (L4). No internal loop insertion is supported because no ledger line pins a residue or named loop for an internal site. The position is therefore topology-derived at the extracellular N-terminus (insert_after_residue = 0). Confidence is medium rather than high because the exact junction within the N-terminal region is not stated.",
+  "literature_rejected": []
 }

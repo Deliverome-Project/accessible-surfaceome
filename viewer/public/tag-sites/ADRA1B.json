@@ -37,7 +37,70 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRA1B-terminal_n-0-lit",
+      "gene_symbol": "ADRA1B",
+      "uniprot_acc": "P35368",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "VSV-G (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by live-cell imaging with anti-VSV-G/CypHer5 antibody without permeabilization; receptor internalization tracked in real time. Receptor function (signaling) not explicitly reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L2 states the VSV-G tag was introduced 'immediately upstream' of the full-length \u03b11B-AR, meaning it is prepended before residue 1 (M). No signal peptide is present (topology begins O=extracellular at residue 1), so the tag is placed directly on the extracellular N-terminus and is not cleaved. L3 confirms surface display by live-cell imaging without permeabilization. The N-terminal extracellular span (1\u201344) provides 44 residues of buffer before TM1 at residue 45, making this a sterically unobstructed prepend. Because the paper names no specific residue number but the topology leaves exactly one extracellular terminus, position_evidence is topology_derived. Full-length human \u03b11B-AR with VSV-G epitope tag (YTDIEMNRLGK) inserted immediately upstream (N-terminus) of the receptor, stably and transiently expressed in HEK293 cells for live-cell surface trafficking studies.",
+      "sources": [
+        {
+          "pmid": 23717684,
+          "citation": "PMID 23717684",
+          "claim": "VSV-G (YTDIEMNRLGK)epitope tags were introduced immediately upstream of each human \u03b1 1A -, and \u03b1 1B -AR."
+        },
+        {
+          "pmid": 33402011,
+          "citation": "PMID 33402011",
+          "claim": "To begin, we examined the utility of performing SNAP-GPCR-CHX studies on the adrenergic family of GPCRs, which are clinical targets for numerous cardiovascular 26 and central nervous system disorders. 27 Our previous studies have demonstrated the utility of using SNAP-tag labeling to monitor adrenergic receptor (AR) protein expression and agonist-stimulated functional responses in label-free DMR assays. 16 Shown in Figure 1 are representative SNAP PAGE images of CHX-chase assays performed in HEK293 cells transiently expressing the \u03b1 1 -AR (\u03b1 1A -AR/ADRA1A [ Fig. 1A ], \u03b1 1B -AR/ADRA1B [ Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:16:32.449158+00:00",
+  "literature_notes": "Two independent papers (PMC3663791 and PMC9246501) both place tags at the N-terminal extracellular prepend (insert_after_residue = 0) of full-length \u03b11B-AR, using VSV-G and SNAP-tag respectively. No signal peptide is present; the N-terminus (residues 1\u201344) is directly extracellular. The C-terminal eGFP fusions (L5/L6) are intracellular and recorded in other_positions. No ledger evidence supports any internal extracellular loop (ECL1: 104\u2013119; ECL2: 183\u2013201; ECL3: 317\u2013330) tag insertion for this protein. The two N-terminal sites share the same junction (insert_after_residue = 0) but are grounded in separate papers with different tags; they are reported as two entries per instructions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 520,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "eGFP fused at the C-tail (after residue 520); the C-terminus falls within the intracellular domain (residues 352\u2013520 per topology landmarks), so this is not a surface tag site."
+    },
+    {
+      "residue": 520,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Same C-terminal eGFP construct as L5, described in a second citation from the same paper (PMC10707169); intracellular location confirmed by topology."
+    }
+  ]
 }

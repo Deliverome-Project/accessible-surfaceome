@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "SCARF1",
+  "uniprot_acc": "Q14162",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:08:37.386515+00:00",
+  "literature_notes": "SCARF1 is a type I single-pass transmembrane protein: signal peptide 1\u201319, large extracellular domain 20\u2013421, TM 422\u2013442, intracellular tail 443\u2013830. Both ledger lines (L1, L2) report C-terminal GFP fusions of full-length SCARF1. Because the C-terminus (residue 830) is intracellular, these tags face the cytoplasm and do not qualify as extracellular surface tag sites. No ledger line reports a tag on the extracellular N-terminus (after signal-peptide cleavage at residue 19) or anywhere within the extracellular domain (20\u2013421). The extracellular N-terminus (mature residue 20, topology_derived) would in principle be the only surface-accessible terminus, but no ledger line grounds a tag there. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 830,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion of full-length mouse SCARF1 expressed and used in functional studies; the C-terminus (residue 830) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 830,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal GFP fusion of full-length human SCARF1 transfected into HEK293T cells and used in lipoprotein-binding assays; same intracellular C-terminus, confirmed tolerated but not a surface tag."
+    }
+  ]
+}

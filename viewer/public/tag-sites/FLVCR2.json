@@ -32,5 +32,26 @@
     }
   ],
   "isoform_pins": [],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:52:36.060606+00:00",
+  "literature_notes": "All eleven ledger lines (L1\u2013L11) describe tags appended to the C-terminus of FLVCR2 (mouse Flvcr2-HA knock-in, L1\u2013L9; human FLVCR2-GFP in Xenopus oocytes, L10\u2013L11). The authoritative topology landmarks place the C-terminus within the intracellular region 488\u2013526; residue 526 (L) is cytoplasmic. Consequently, every cited tag is on the intracellular face and none qualifies as an extracellular surface tag site. The N-terminus (residues 1\u201385) is also intracellular. No ledger line reports any insertion in an extracellular loop or at an extracellular terminus of this protein. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 526,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag (with G4S linker) appended after residue 526 of endogenous mouse Flvcr2; topology places residue 526 in the intracellular region 488\u2013526, so this is a cytoplasmic tag, not an extracellular surface tag. Homozygous knock-in mice showed no effect on fertility or health (L2), confirming functional tolerance, but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 526,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "C-terminal GFP fusion on human FLVCR2 expressed in Xenopus oocytes; confocal microscopy confirmed plasma-membrane localisation (L11), but the GFP is appended after residue 526 which is intracellular per topology \u2014 this validates surface trafficking, not an extracellular tag."
+    }
+  ]
 }

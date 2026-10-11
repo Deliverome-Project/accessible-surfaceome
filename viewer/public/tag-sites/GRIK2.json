@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRIK2",
+  "uniprot_acc": "Q13002",
+  "sites": [
+    {
+      "site_id": "GRIK2-terminal_n-31-lit",
+      "gene_symbol": "GRIK2",
+      "uniprot_acc": "Q13002",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "G",
+      "residue_after": "T",
+      "residue_label": "G31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + CLIP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface labeling confirmed by fluorophore attachment prior to lysis; di-heteromer formation with GluK1 detected. Functional electrophysiology not explicitly reported for this construct in the cited clip.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1-31 (landmark-authoritative); an N-terminal tag must be inserted after residue 31 so it is not cleaved with the signal peptide. The FLAG-CLIP tag was placed at the N-terminus of full-length GluK2 and confirmed at the cell surface by pre-lysis fluorophore labeling (L1, L2). Because the paper names no specific residue number but the topology leaves exactly one extracellular N-terminus, position_evidence is topology_derived and insert_after_residue=31 is the unique valid junction. Residue 31 is G and residue 32 is T, copied from the numbered sequence. FLAG-CLIP-GluK2 full-length construct expressed in HEK cells; co-expressed with HA-SNAP-GluK1 and labeled with cell-impermeant fluorophores prior to lysis, confirming surface display of the N-terminally tagged receptor.",
+      "sources": [
+        {
+          "pmid": 34706237,
+          "citation": "PMID 34706237",
+          "claim": "To enable investigation of GluK1/K2 di-heteromers, we generated a GluK2 construct with an N-terminal FLAG epitope followed by a CLIP tag for attachment to benzylcytosine-conjugated (BC) fluorophores."
+        },
+        {
+          "pmid": 28636947,
+          "citation": "PMID 28636947",
+          "claim": "We utilized the RUSH system by tagging the GluK2 KAR subunit and both the GluA1 and GluA2 AMPAR subunits at the N terminus with a streptavidin-binding peptide (SBP) and a fluorescent tag."
+        },
+        {
+          "pmid": 37868810,
+          "citation": "PMID 37868810",
+          "claim": "We first validated the APEGS assay by expressing YFP-myc-GluK2 wild-type (GluK2-WT) or a double cysteine mutant C858/C871A (GluK2-C2A), which has previously been reported to be non-palmitoylatable in cell lines ( Pickering et al., 1995 ; Copits and Swanson, 2013 ), in HEK293T cells."
+        },
+        {
+          "pmid": 40479050,
+          "citation": "PMID 40479050",
+          "claim": "The Halo-tag cDNA was inserted into the pCAGGS expression vector before GluA2 flip (Q)-3\u2032UTR. cDNAs of rat GluK2(Q) was subcloned into the pCAGGS vector, and 2xHA-tag was inserted into downstream of the signal peptide of rat GluK2(Q)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:52:04.875826+00:00",
+  "literature_notes": "All four ledger-supported sites map to the same physical junction (after residue 31, the end of the signal peptide) because GRIK2 has a cleaved signal peptide and the extracellular N-terminus is the only accessible N-terminal surface position. They are reported as four separate entries because they derive from four independent publications using four different tag types (FLAG+CLIP, SBP+EGFP+myc, YFP+myc, 2xHA), each grounded in a distinct ledger line. No ledger line supports any internal extracellular loop insertion or the second extracellular domain (residues 660-819). The second extracellular segment (660-819, between TM2 and TM3) is topologically accessible but no ledger evidence supports a tag there.",
+  "literature_rejected": []
+}

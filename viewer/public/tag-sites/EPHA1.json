@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPHA1",
+  "uniprot_acc": "P21709",
+  "sites": [
+    {
+      "site_id": "EPHA1-terminal_n-25-lit",
+      "gene_symbol": "EPHA1",
+      "uniprot_acc": "P21709",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "A",
+      "residue_after": "K",
+      "residue_label": "A25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression of FLAG-tagged WT and Alzheimer's-associated mutant EPHA1 confirmed in HEK293 cells; functional properties of the receptor studied using the tagged constructs as the experimental system.",
+      "confidence": "high",
+      "rationale": "The paper clones EPHA1 residues A25\u2013D976 downstream of a preprotrypsin leader and FLAG tag in pFLAG-CMV3; the preprotrypsin leader replaces the native signal peptide (SP residues 1\u201325) and is cleaved co-translationally, leaving the FLAG tag exposed on the extracellular face before A25. In canonical UniProt numbering, A25 is the last SP residue and K26 is the mature N-terminus, so insert_after_residue = 25 (between A25 and K26) correctly represents the junction. Python verification confirms res(25) = A and res(26) = K. The tag is 522 residues from the TM boundary (residue 548), satisfying all distance constraints. Full-length human EPHA1 (residues A25\u2013D976) was cloned into pFLAG-CMV3 in frame with a preprotrypsin leader and N-terminal FLAG tag, generating a surface-expressed receptor in transiently transfected HEK293 cells. The construct explicitly names A25 as the first EPHA1 residue after the FLAG tag, placing the junction at the SP/mature-protein boundary (after canonical residue 25, before K26).",
+      "sources": [
+        {
+          "pmid": 39706267,
+          "citation": "PMID 39706267",
+          "claim": "A cDNA encoding human EPHA1 residues A25-D976 (GenBank accession number BC130291 ) was cloned between the NotI and BglII sites of pFLAG-CMV3 (E6783, Sigma), in frame with the preprotrypsin leader and the Flag tag to generate the pFLAG-CMV3-EPHA1 construct encoding full-length EPHA1 with an N-terminal Flag tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:34:01.037162+00:00",
+  "literature_notes": "Ledger lines L3\u2013L6 all describe a C-terminal V5/His tag on full-length EphA1 (pcDNA5-V5-His vector). The C-terminus of EPHA1 is residue D976, which lies within the intracellular kinase domain (IC span 569\u2013976). This tag is therefore on the cytoplasmic face and does not qualify as a surface tag site; it is recorded in other_positions. No ledger line supports any internal extracellular loop insertion for EPHA1. L1 and L2 both ground the same N-terminal FLAG site; L1 is used as the primary supporting clip because it explicitly names the construct junction (A25\u2013D976 + preprotrypsin leader + FLAG). L2 corroborates surface expression and functional use of the same construct.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 976,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Full-length EphA1 was tagged at the carboxy terminus (D976) with a V5/His tag for imaging and biochemical analyses; the C-terminus is intracellular (IC domain 569\u2013976), so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

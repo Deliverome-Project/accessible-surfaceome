@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "GPC6",
+  "uniprot_acc": "Q9Y625",
+  "sites": [
+    {
+      "site_id": "GPC6-terminal_n-23-lit",
+      "gene_symbol": "GPC6",
+      "uniprot_acc": "Q9Y625",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed cell-surface trafficking; furin convertase processing of GPC6 was unaffected by the HA tag (PMC12816070, PMC12485680).",
+      "confidence": "high",
+      "rationale": "GPC6 has a 23-residue signal peptide (landmarks: SP 1\u201323, mature N-terminus 24). An N-terminal HA tag must be inserted after residue 23 (the SP cleavage site) to avoid being cleaved; the tag then sits at the extracellular mature N-terminus. Python verification confirms residue 23 = A and residue 24 = D. No TM domain exists in this GPI-anchored protein, so the entire mature ectodomain (residues 24\u2013555) is extracellular and the junction is well clear of any TM boundary. L4 and L6 explicitly confirm surface display and intact furin processing, making this the highest-confidence site. N-terminal HA-tagged full-length GPC6 (HA-GPC6) expressed in mammalian cells; the HA tag is placed after the signal peptide and before the mature protein sequence. The same construct was delivered by AAV (AAV-HA.GPC6) and expressed from pDisplay HA.GPC6.",
+      "sources": [
+        {
+          "pmid": 41381859,
+          "citation": "PMID 41381859",
+          "claim": "Notably, addition of the HA tag did not interfere with GPC6 processing by furin convertases (Fig. 2 a), GPC6 trafficking to the cell surface (Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:22:53.605618+00:00",
+  "literature_notes": "L1 (C-terminal HA on full-length GPC6) was considered but rejected: GPC6 is GPI-anchored and the GPI signal sequence (approximately residues 530\u2013555, inferred from the \u0394GPI construct in L2 truncating at residue 529) is cleaved and replaced by the GPI lipid anchor during biosynthesis. A tag appended after the final residue would be removed with the GPI signal; surface display was not confirmed for this construct. L2 (\u0394GPI, aa 1\u2013529, C-terminal HA) was rejected as a secreted/soluble ectodomain lacking any membrane anchor. L7/L8 describe the same N-terminal HA construct as L3\u2013L6 (pDisplay HA.GPC6 origin) and corroborate the single site rather than defining a new one.",
+  "literature_rejected": []
+}

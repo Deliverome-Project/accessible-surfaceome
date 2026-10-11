@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRB1-terminal_n-0-lit",
+      "gene_symbol": "ADRB1",
+      "uniprot_acc": "P08588",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "MYC",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by immunofluorescence/immunoblot in HEK293S and CHO-K1 cells; receptor processing (glycosylation, trafficking) studied with tagged constructs. Functional cAMP signaling assays were performed on the tagged receptor variants in the source study (PMC11880984). SNAP-tagged \u03b21-AR family receptors additionally showed preserved agonist-stimulated functional responses in DMR assays (L9/PMC9246501).",
+      "confidence": "high",
+      "rationale": "ADRB1 has no annotated signal peptide; residues 1\u201355 form the extracellular N-terminal domain and TM1 begins at residue 56, leaving exactly one extracellular terminus. Python confirms residue 1 = M and residue 55 = Q (last EC residue before TM1). All nine ledger lines describe N-terminal tags (MYC, FLAG, HA, SNAP-tag) on full-length membrane-anchored \u03b21-AR without naming a specific residue, so the junction is topology-derived as insert_after_residue=0 (prepend before M1). The 55-residue extracellular N-terminal domain provides ample steric space for a ~15\u201323 aa ALFA-tag insert, and the convergence of five independent publications across multiple tag types and cell systems gives high confidence. Full-length h\u03b21AR variants (S49 WT, G49, T29, Q31) carrying an N-terminal MYC tag and a C-terminal FLAG tag were transiently expressed in HEK293S and CHO-K1 cells; surface display of the tagged full-length receptor was confirmed. Corroborated by L1 (same dual-tagged construct in pFT-SMMF), L4/L5 (3xFLAG knock-in mouse Adrb1 with added signal sequence, N-terminal FLAG on mature receptor), L6/L7 (HA tag at amino-terminus of \u03b21-AR in stable COS-1 cells, surface distribution confirmed), L8 (N-terminal FLAG on full-length human \u03b21AR detected by immunoblot), and L9 (SNAP-tag fused to N-terminal domain of \u03b21-AR family GPCRs with surface labeling and DMR functional responses). No ledger line names a specific residue junction; the N-terminus is the sole extracellular terminus of this GPCR (no annotated signal peptide; residues 1\u201355 are extracellular, TM1 begins at residue 56), so the junction is topology-derived as a prepend before M1.",
+      "sources": [
+        {
+          "pmid": 39206632,
+          "citation": "PMID 39206632",
+          "claim": "The h\u03b2 1 AR N\u2010terminal variants [S49 (wild\u2010type, WT), G49, T29, and Q31] with an N\u2010terminal MYC and a C\u2010terminal FLAG tag were expressed transiently in HEK293S (A, B, D, E) or CHO\u2010K1 (C, D) cells for 24 h."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:20:46.479083+00:00",
+  "literature_notes": "All nine ledger lines (L1\u2013L9) support the same N-terminal extracellular prepend position on ADRB1. No ledger line names any residue within an extracellular loop (ECL1 121\u2013132, ECL2 197\u2013222, ECL3 350\u2013354) as a tag-insertion site, so no internal sites are proposed. The C-terminal FLAG tag reported in L1/L2/L3 falls within the intracellular C-terminal tail (residues 378\u2013477) and is recorded in other_positions. L9 mentions \u03b11-AR subtypes explicitly in the quote but the clip header states \u03b21-AR family members are included; it is used only as corroboration, not as the primary clip. The HA signal peptide mentioned in L1 is a construct artifact added to drive secretory-pathway insertion; after cleavage it leaves the MYC tag at the extracellular N-terminus, consistent with insert_after_residue=0.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 477,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length h\u03b21AR; residue 477 (V) lies within the intracellular C-terminal tail (topology landmarks: intracellular 378\u2013477), so this tag faces the cytoplasm and is not a surface-display site."
+    }
+  ]
 }

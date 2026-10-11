@@ -104,5 +104,20 @@
       "canonical_residue": 43,
       "left_pct": 20.379146919431278
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:38:54.992342+00:00",
+  "literature_notes": "All four ledger lines were evaluated. L1, L2, and L3 report TagRFP-T (and EGFP) fused at the start codon of CLDN1 (residue 1), confirmed by the GGSGGSGGS linker description. Per the authoritative topology landmarks, residues 1\u20137 are intracellular; a tag prepended before residue 1 therefore faces the cytoplasm, not the extracellular space. This is a tolerated intracellular N-terminal insertion recorded in other_positions. L4 reports 'HA-tagged CLDN1' overexpressed in SW480 cells but names no residue, no loop, and no junction. CLDN1 has no extracellular terminus (N-terminus 1\u20137 and C-terminus 183\u2013211 are both intracellular), so the topology-derived rule for a sole extracellular terminus cannot be applied. The tag position is genuinely unstated and cannot be pinned to any extracellular site. No ledger line supports a surface tag site for CLDN1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "TagRFP-T (and EGFP per L3) fused via GGSGGSGGS linker at the start codon of CLDN1; residues 1\u20137 are intracellular per topology landmarks, so this N-terminal tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

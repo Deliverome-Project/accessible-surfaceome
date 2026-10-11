@@ -37,7 +37,56 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRA1D-terminal_n-0-lit",
+      "gene_symbol": "ADRA1D",
+      "uniprot_acc": "P25100",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence for both total and surface expression confirmed cell-surface display of the FLAG-tagged receptor.",
+      "confidence": "high",
+      "rationale": "ADRA1D is a class A GPCR with no native signal peptide; the topology landmarks place residues 1\u201398 extracellular and TM1 beginning at residue 99, giving 98 residues of clearance from the tag to the first TM helix. L9 directly reports surface-confirmed FLAG display on full-length ADRA1D in the PRESTO-TANGO system. No residue number is stated in the clip, but because the N-terminus is the only extracellular terminus of this receptor, the junction is unambiguously a prepend before Met-1. Python confirmed seq[0]='M', consistent with residue_after='M'. PRESTO-TANGO system: a cleavable signal sequence and FLAG epitope tag were added at the 5\u2032-end of the full-length ADRA1D construct expressed in HEK293 cells; after signal cleavage the FLAG resides at the receptor N-terminus. No residue number is stated; ADRA1D has no native signal peptide and its N-terminus (residues 1\u201398) is the sole extracellular terminus, so the junction is topology-derived as a prepend (insert_after_residue=0).",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "In preliminary experiments, each TANGO-ized construct was transfected and then examined by anti-FLAG immunofluorescence for both total and surface expression ( Fig. 1b for examples)."
+        },
+        {
+          "pmid": 32350295,
+          "citation": "PMID 32350295",
+          "claim": "To test this possibility, HEK293 cells were transiently transfected with N-terminal SNAP-epitope tagged \u03b1 1D -AR cDNA constructs (SNAP-\u03b1 1D )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:18:48.693378+00:00",
+  "literature_notes": "All nine ledger lines converge on the extracellular N-terminus of \u03b11-adrenergic receptors. L1 and L8/L9 are direct evidence for ADRA1D itself; L3\u2013L7 are indirect (\u03b11A-AR ortholog) and corroborate the same N-terminal position. No ledger line reports any insertion in ECL1 (155\u2013170), ECL2 (234\u2013253), or ECL3 (371\u2013383) of ADRA1D or its close orthologs, so no internal loop sites are proposed. The C-terminus (residues 405\u2013572) is intracellular per the topology landmarks and is not a surface-tag candidate. L6 (FLAG+T4-lysozyme fusion at the N-terminus of \u03b11A-AR for cryo-EM) was considered but not used as a primary ledger line because it is indirect (ortholog) and the same N-terminal position is already better supported by direct ADRA1D evidence (L1, L8/L9). L2 is the same construct and paper as L1 and adds no independent site. L3, L4, L5, and L7 are all indirect ortholog evidence for the same N-terminal prepend position already covered by L1 and L8/L9.",
+  "literature_rejected": []
 }

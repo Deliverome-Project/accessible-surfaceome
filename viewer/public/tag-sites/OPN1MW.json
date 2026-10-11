@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "OPN1MW",
+  "uniprot_acc": "P04001",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:24:34.444167+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same experimental construct: a C-terminal HA tag appended after residue 364 of full-length OPN1MW, expressed via AAV5 in mouse retina. Per the authoritative topology landmarks, residues 326\u2013364 constitute the intracellular C-terminal tail (IC4); the tag therefore faces the cytoplasm, not the extracellular surface. L2 and L4 confirm correct trafficking and preserved function, but those findings do not change the topology. No ledger line describes any insertion in EC1 (1\u201354), EC2 (113\u2013126), EC3 (192\u2013219), or EC4 (290\u2013304). Because the ledger contains no extracellular insertion evidence for OPN1MW, zero surface tag sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 364,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag appended after residue 364 (Ala); the entire C-tail (IC4, residues 326\u2013364) is intracellular per topology landmarks; tag is tolerated and does not impair function (L4), but faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

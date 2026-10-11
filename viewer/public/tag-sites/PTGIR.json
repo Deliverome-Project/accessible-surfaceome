@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGIR-terminal_n-0-lit",
+      "gene_symbol": "PTGIR",
+      "uniprot_acc": "P43119",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ELISA-based internalization assay (L1): HA-tagged hIP is detected on the cell surface and undergoes cicaprost-stimulated internalization, confirming surface display and ligand-driven trafficking. Functional coupling not directly measured in the tagged construct alone.",
+      "confidence": "high",
+      "rationale": "PTGIR is a GPCR with no signal peptide; residues 1\u201317 form the extracellular N-terminus and TM1 begins at residue 18. The HA tag on the full-length receptor must reside at the N-terminal prepend (insert_after_residue=0, residue_after=M) because that is the only extracellular terminus available. Python verification confirms seq[0]='M' and seq[17]='A' (TM1 start), placing 17 extracellular residues between the tag and TM1\u2014ample space for a ~15\u201323 aa insert. L4 (BRIL at N-terminus of WT IP) independently validates N-terminal fusion tolerance in a full-length membrane-anchored context. HA-tagged full-length human IP receptor (hIP/hPTGIR) stably expressed in HEK293 cells (HEK.hIP clonal line); no residue is named in any ledger clip. PTGIR has no signal peptide (topology residues 1\u201317 are extracellular); the N-terminus is the sole extracellular terminus of this GPCR, so the prepend junction (position 0, before M1) is the only location consistent with an extracellular HA tag. L4 independently confirms N-terminal tagging: a BRIL tag was fused to the N-terminus of WT full-length IP receptor for cryo-EM structural studies of IP\u2013Gs complexes.",
+      "sources": [
+        {
+          "pmid": 18498773,
+          "citation": "PMID 18498773",
+          "claim": "To begin with, we used an ELISA-based internalization assay to measure net changes in cell surface expression of hemagglutinin (HA)-tagged hIPs in response to cicaprost stimulation of HEK.hIP cells, a previously characterized clonal cell line [15,17] ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:50:49.807123+00:00",
+  "literature_notes": "L2 and L3 describe the same pcDNA5-HA-hPTGIR construct used for mutagenesis studies; they add no positional or functional information beyond what L1 already establishes and are therefore not promoted to separate sites. L4 (BRIL N-terminal fusion) corroborates the same N-terminal junction and is noted in the rationale of the single site rather than listed separately, because it pins the identical junction (position 0). L5 (LgBiT at C-terminus) is recorded in other_positions because the C-terminus of PTGIR is intracellular (residues 296\u2013386). No ledger line names a residue within any extracellular loop (ECL1 74\u201393, ECL2 160\u2013181, ECL3 261\u2013274), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 386,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "LgBiT fused to the C-terminus of full-length IP receptor (NanoBiT tethering strategy); residue 386 (C) is within the intracellular C-terminal tail (topology 296\u2013386), so this tag faces the cytoplasm and is not a surface-accessible site."
+    }
+  ]
 }

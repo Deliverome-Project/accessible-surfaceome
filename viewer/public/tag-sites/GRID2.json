@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRID2",
+  "uniprot_acc": "O43424",
+  "sites": [
+    {
+      "site_id": "GRID2-terminal_n-23-lit",
+      "gene_symbol": "GRID2",
+      "uniprot_acc": "O43424",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (GSA linker)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunostaining of intact (non-permeabilized) cells confirmed extracellular exposure of the tag; no functional assay reported in L1.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the HA-GSA tag was inserted 'immediately following the signal peptide sequence' of full-length GluD2. The signal peptide spans residues 1\u201323 (last residue A at position 23; first mature residue D at position 24), so insert_after_residue = 23, confirmed by reading the numbered sequence. The junction is 544 residues from TM1 (567), well clear of any TM boundary. L3 (rat Grid2 ortholog, \u03b2-lactamase at the identical SP/ATD junction) provides independent corroboration and is labelled indirect. Full-length, membrane-anchored human GluD2 with an HA tag plus GSA linker inserted immediately following the signal peptide (residues 1\u201323) was expressed in neurons and used for surface immunostaining. L3 (rat Grid2 ortholog, \u03b2-lactamase inserted between the signal peptide and the amino-terminal domain in a full-length membrane-anchored construct expressed in Xenopus oocytes) independently corroborates the same junction.",
+      "sources": [
+        {
+          "pmid": 39052831,
+          "citation": "PMID 39052831",
+          "claim": "For surface immunostaining, a hemagglutinin (HA) tag with a liker sequence (GSA: glycine-serine-alanine) was inserted immediately following the signal peptide sequence of each construct."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 23,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:45:57.339074+00:00",
+  "literature_notes": "L2 (PMC8776294) reports full-length GluD2 with an HA tag in a lentiviral rescue construct but does not state where the tag is inserted; no residue or junction can be pinned from this clip, so it does not independently ground a site. L3 (PMC10840383) describes rat Grid2 with \u03b2-lactamase inserted between the signal peptide and the amino-terminal domain in a full-length membrane-anchored receptor; this is the same junction as L1 and provides indirect corroboration (rat ortholog, different tag), but does not add a second distinct site. L4 (PMC10861852) reports a C-terminal GS-cMyc tag on GluD2 with surface expression confirmed by anti-Myc staining in Xenopus oocytes; however, the authoritative topology landmarks place the C-terminus (residue 1007) in the intracellular region (852\u20131007), so this tag is cytoplasmic and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1007,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GS-cMyc tag on full-length GluD2 expressed in Xenopus oocytes; the C-terminus lies in the intracellular region (topology landmarks 852\u20131007), so this is not an extracellular surface tag site."
+    }
+  ]
+}

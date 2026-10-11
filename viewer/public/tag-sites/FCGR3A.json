@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "FCGR3A",
+  "uniprot_acc": "P08637",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:44:09.216869+00:00",
+  "literature_notes": "The ledger contains two lines (L1, L2) from PMC11326286, both describing the same construct: a SNAP-tag fused to the C-terminus of full-length CD16a (FCGR3A) stably expressed in NK-92 cells. FCGR3A is a type I single-pass transmembrane protein; its C-terminus (residues 230\u2013254) is intracellular per the authoritative topology landmarks. The SNAP-tag therefore resides on the cytoplasmic face and does not qualify as an extracellular surface tag site. No ledger line reports any tag insertion on the extracellular domain (residues 17\u2013208) or at the mature N-terminus (after residue 16). Zero extracellular surface sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 254,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "SNAP-tag appended after the last residue (K254) of full-length CD16a; the C-terminus lies in the intracellular span (residues 230\u2013254), so this tag faces the cytoplasm, not the extracellular surface; used for single-molecule MINFLUX imaging of NK-92 cells."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "DPEP1",
+  "uniprot_acc": "P16444",
+  "sites": [
+    {
+      "site_id": "DPEP1-terminal_c-411-lit",
+      "gene_symbol": "DPEP1",
+      "uniprot_acc": "P16444",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 411,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L411",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Plasma membrane localization confirmed by fluorescence microscopy (DPEP1-GFP at plasma membrane vs. cytoplasmic/nuclear GFP alone); enzymatic or receptor function NOT MEASURED in the tagged construct.",
+      "confidence": "medium",
+      "rationale": "DPEP1 is a GPI-anchored single-pass extracellular enzyme with signal peptide residues 1\u201316 (cleaved) and the entire mature chain (17\u2013411) extracellular per the given topology. A C-terminal GFP fusion (pEGFPC2) is the only extracellular C-terminal position available; the paper explicitly names 'DPEP1-GFP' at the plasma membrane, so the junction is topology-derived at residue 411. Python confirms seq[410]='L' matching residue_before. No residue number is stated in the paper, so position_evidence is topology_derived rather than validated. Full-length DPEP1 cloned into pEGFPC2 (C-terminal GFP fusion vector), expressed in HCT116 cells; DPEP1-GFP localizes predominantly to the plasma membrane, confirming surface display of the tagged full-length protein.",
+      "sources": [
+        {
+          "pmid": 41053108,
+          "citation": "PMID 41053108",
+          "claim": "While GFP alone was evenly distributed throughout the cytoplasm and nucleus, DPEP1-GFP localized predominantly to the plasma membrane, weakly in the cytoplasm, and strongly in an area consistent with the endoplasmic reticulum (ER) (Supplementary Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:18:06.897709+00:00",
+  "literature_notes": "L3 (Sino Biological DPEP1-Flag, HG13543-CH) was considered but disqualified: it is a commercial plasmid whose tag position is unstated, so insert_after_residue cannot be pinned. L5 (pcDNA3.1-Flag orthologs from pig, hare, cattle, dog) was considered but disqualified: tag position is unstated and the constructs are non-human orthologs with no residue named. L4 names both pEGFPN2 (GFP-DPEP1, N-terminal GFP) and pEGFPC2 (DPEP1-GFP, C-terminal GFP); only the C-terminal fusion is supported as a surface tag \u2014 the N-terminal GFP (pEGFPN2) places GFP before the signal peptide (residues 1\u201316), which would render it cytoplasmic or non-functional as a surface label, and L2 confirms only the C-terminal construct at the plasma membrane. DPEP1 is GPI-anchored; the C-terminal GPI signal (~residues 391\u2013411) is normally cleaved during GPI attachment, so a C-terminal GFP fusion likely disrupts GPI processing \u2014 yet the paper documents plasma membrane localization, making this a published tolerated insertion that must be reported. The confidence is medium rather than high because the GPI biology complicates interpretation and no functional assay was performed on the tagged construct.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 0,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "pEGFPN2 creates a GFP-DPEP1 fusion with GFP placed before the signal peptide (residues 1\u201316); GFP at this position would be cytoplasmic and not displayed on the extracellular surface, making it unsuitable as a surface tag."
+    }
+  ]
+}

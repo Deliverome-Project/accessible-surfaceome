@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PCDH19",
+  "uniprot_acc": "Q8TAB3",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:15:51.907511+00:00",
+  "literature_notes": "All eight ledger lines (L1\u2013L8) describe a single experimental intervention: an HA-FLAG dual tag knocked in at the C-terminus of full-length PCDH19 (before the stop codon, i.e., after residue 1148) via CRISPR/Cas9 HDR in human hESCs (PMC11024992) and in a knock-in mouse model (PMC11408250, PMC11037505). PCDH19 is a single-pass type-I transmembrane protein with its C-terminus entirely intracellular (residues 702\u20131148). Residue 1148 (L) is the last intracellular residue; the tag sits after it, facing the cytoplasm. No ledger line describes any tag, fluorescent-protein fusion, transposon insertion, or domain-insertion at any extracellular position \u2014 neither at the mature N-terminus (residue 22) nor anywhere in the large ectodomain (residues 22\u2013678). Because the sole evidenced insertion is intracellular, zero extracellular surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1148,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA-FLAG tag knocked in after residue 1148 (before stop codon) at the intracellular C-terminus of full-length PCDH19; confirmed functional by immunoprecipitation and immunocytochemistry in neural rosettes and cortical organoids."
+    }
+  ]
+}

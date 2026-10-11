@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR1F-terminal_n-0-lit",
+      "gene_symbol": "HTR1F",
+      "uniprot_acc": "P30939",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed surface display of the N-terminal FLAG-tagged HTR1F construct; receptor was functional in the TANGO \u03b2-arrestin recruitment assay.",
+      "confidence": "high",
+      "rationale": "HTR1F is a GPCR with no endogenous signal peptide; the canonical N-terminus (residues 1\u201323) is extracellular per topology landmarks. The paper (L1/L2) adds an exogenous cleavable signal sequence plus FLAG before the receptor; after signal cleavage the FLAG tag sits at the extracellular N-terminus, corresponding to insert_after_residue=0 (prepend before M1). This is the only extracellular terminus: the C-terminus (residues 351\u2013366) is intracellular. The prepend position is \u226523 residues from TM1 (boundary at residue 24), well within the sterically permissive range for a short epitope tag. PMC4424118 (TANGO assay paper): HTR1F was cloned with an exogenous cleavable signal sequence followed by a FLAG epitope tag at the N-terminus of the receptor construct. After signal cleavage, the FLAG tag is displayed at the extracellular N-terminus. Anti-FLAG immunofluorescence (L2) confirmed both total and surface expression of the tagged receptor in transfected cells.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:02:45.955850+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) are from the same paper (PMC4424118) and describe the same N-terminal FLAG-tagged HTR1F construct used in the TANGO assay. Neither clip names a specific residue number; the position is topology-derived because the N-terminus (residues 1\u201323) is the sole extracellular terminus of this GPCR \u2014 the C-terminus (351\u2013366) is intracellular. No other ledger lines ground any internal loop (ECL1 83\u201397, ECL2 161\u2013179, ECL3 316\u2013329) or any other position. L2 was used as corroborating evidence for the same site already grounded in L1 and does not constitute a second independent site.",
+  "literature_rejected": []
 }

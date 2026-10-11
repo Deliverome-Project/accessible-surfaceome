@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "GABRA4",
+  "uniprot_acc": "P48169",
+  "sites": [
+    {
+      "site_id": "GABRA4-internal-39-lit",
+      "gene_symbol": "GABRA4",
+      "uniprot_acc": "P48169",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 39,
+      "residue_before": "K",
+      "residue_after": "E",
+      "residue_label": "K39",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG or HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface expression confirmed by flow cytometry (L1). A separate 3xFLAG-tagged alpha-4 construct (L2/L3, position unspecified) showed surface immunoreactivity and GABA-evoked currents comparable to untagged alpha-4 in HEK-293 cells co-transfected with beta2 and delta subunits.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the tag is inserted between mature residues 4 and 5 of the alpha-4 subunit. With the signal peptide spanning canonical residues 1\u201335, mature residue 4 maps to canonical position 39 (K) and mature residue 5 to canonical position 40 (E), confirmed by reading the numbered sequence. Position 39 lies deep within the large extracellular N-terminal domain (36\u2013257), 219 residues from the TM1 boundary, providing ample steric room for a short epitope tag. L2/L3 (PMC3371167) corroborate that FLAG tagging of GABRA4 alpha-4 is surface-tolerated and electrophysiologically functional, but those clips name no residue and cannot ground a separate site. FLAG (DYKDDDDK) or HA (YPYDVPDYA) epitopes inserted between mature residues 4 and 5 of GABRA4 (alpha-4 subunit) in full-length, membrane-anchored constructs expressed in mammalian cells; total and cell-surface expression measured by flow cytometry. A second independent paper (PMC3371167, L2/L3) reports a 3xFLAG-tagged alpha-4 construct with confirmed surface immunoreactivity and electrophysiological GABA responses comparable to untagged alpha-4, but does not state the insertion position and therefore cannot ground an independent site.",
+      "sources": [
+        {
+          "pmid": 27622563,
+          "citation": "PMID 27622563",
+          "claim": "FLAG (DYKDDDDK) or HA (YPYDVPDYA) epitopes were inserted between amino acids 4 and 5 of the mature GABA A receptor subunit subtypes as needed, so that subunit total and cell surface expression could be determined by flow cytometry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 39,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:02:20.738216+00:00",
+  "literature_notes": "L2 and L3 (both PMC3371167) describe a 3xFLAG-tagged GABRA4 alpha-4 subunit with confirmed surface display (anti-FLAG immunoreactivity) and preserved electrophysiological function (GABA responses comparable to untagged alpha-4 in HEK-293 cells). However, neither clip states the insertion position, and GABRA4 has three distinct extracellular regions (36\u2013257, 307\u2013317, 543\u2013554), so topology_derived classification does not apply and no region is named. These clips therefore cannot ground an independent site but substantially increase confidence in the L1 site. The validation_level for the L1 site is conservatively set to surface_only because L1 itself only reports flow cytometry for surface expression; the functional preservation evidence from L2/L3 is from a construct whose position is unverified relative to L1.",
+  "literature_rejected": []
+}

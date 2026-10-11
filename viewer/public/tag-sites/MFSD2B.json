@@ -278,5 +278,20 @@
       "canonical_residue": 448,
       "left_pct": 88.88888888888889
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:41:16.132430+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe a single construct: 3\u00d7FLAG fused to the N-terminus of full-length human MFSD2B (pHG8). The authoritative topology landmarks place residues 1\u201344 in the intracellular compartment; TM1 begins at residue 45. MFSD2B has no signal peptide, so the N-terminal Met-1 is cytoplasmic and the 3\u00d7FLAG tag faces the cytoplasm, not the extracellular surface. This construct is therefore an intracellular tag, not a surface tag, and is recorded in other_positions. No ledger line supports any insertion in any of the six extracellular loops (ECL1 70\u201379, ECL2 135\u2013142, ECL3 204\u2013231, ECL4 306\u2013317, ECL5 365\u2013369, ECL6 435\u2013454) or at the C-terminus (476\u2013504, also intracellular). The ledger is exhausted; zero extracellular sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3\u00d7FLAG prepended to the N-terminus of full-length MFSD2B (pHG8); topology landmarks place residues 1\u201344 in the intracellular compartment, so this tag faces the cytoplasm, not the extracellular surface. Functional S1P uptake was confirmed (L2), validating the construct but not a surface-accessible site."
+    }
   ]
 }

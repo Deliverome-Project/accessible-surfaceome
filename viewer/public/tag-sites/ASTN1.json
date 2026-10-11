@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ASTN1",
+  "uniprot_acc": "O14525",
+  "sites": [
+    {
+      "site_id": "ASTN1-terminal_c-1302-lit",
+      "gene_symbol": "ASTN1",
+      "uniprot_acc": "O14525",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 1302,
+      "residue_before": "I",
+      "residue_after": "",
+      "residue_label": "I1302",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Venus (FP fusion)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry and anti-GFP labeling of non-permeabilized cells (L1, L2); protein\u2013protein interaction with CDH2-Myc preserved by co-IP (L3); ASTN2-dependent regulation of surface levels intact (L2).",
+      "confidence": "high",
+      "rationale": "The construct is named 'ASTN1-Venus' in L2 and L3, following the standard protein\u2013FP C-terminal fusion convention; this disambiguates between ASTN1's two extracellular termini (EC1 N-terminus at residue 22 and EC2 C-terminus at residue 1302). Residue 1302 (I) is the last residue of the canonical sequence and lies within the large extracellular domain (EC2: 398\u20131302), 905 residues from the TM2 boundary \u2014 well clear of any TM constraint. No specific junction residue is named in any ledger line, so the position is topology-derived from the construct name and the landmarks. Python verification confirms seq[1301]='I' and the sequence length is 1302. Full-length ASTN1-Venus expressed in cerebellar granule cells and HEK 293T cells; flow cytometry and live imaging confirmed surface trafficking; anti-GFP labeling of non-permeabilized cells confirmed extracellular display of the Venus moiety; co-IP with CDH2-Myc confirmed the tagged construct is functional.",
+      "sources": [
+        {
+          "pmid": 20573900,
+          "citation": "PMID 20573900",
+          "claim": "Biochemical and flow cytometry experiments show that ASTN2 forms a complex with ASTN1 and regulates surface expression of ASTN1. Live imaging of Venus-tagged ASTN1 in migrating cerebellar granule cells reveals the intracellular trafficking of ASTN1-Venus, with ASTN1-Venus accumulating in the forward aspect of the leading process where new sites of adhesion will form."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:38:24.995050+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same Venus-tagged ASTN1 construct. L1 and L3 are from the same paper (PMC6196552); L2 is from PMC2905051. The construct name 'ASTN1-Venus' (used in L2 and L3) is the standard C-terminal fusion nomenclature and resolves the two-terminus ambiguity: ASTN1 has an extracellular N-terminus at residue 22 (after signal-peptide cleavage) and an extracellular C-terminus at residue 1302, both in principle accessible. Because no ledger line independently supports an N-terminal (EC1) tag and the construct name points to C-terminal, only one site is reported. No ledger line names any internal loop insertion, any intracellular insertion, or any function-abrogating position for ASTN1.",
+  "literature_rejected": []
+}

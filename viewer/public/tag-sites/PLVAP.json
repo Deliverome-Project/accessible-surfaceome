@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PLVAP",
+  "uniprot_acc": "Q9BX97",
+  "sites": [
+    {
+      "site_id": "PLVAP-terminal_c-442-lit",
+      "gene_symbol": "PLVAP",
+      "uniprot_acc": "Q9BX97",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 442,
+      "residue_before": "G",
+      "residue_after": "",
+      "residue_label": "G442",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by characterisation of PV1 expression pattern in blood vessels of transgenic mice; no quantitative functional assay reported in these clips.",
+      "confidence": "medium",
+      "rationale": "PLVAP is a type II single-pass TM protein: its N-terminus (residues 1\u201326) is intracellular and its C-terminus (residue 442, Gly) is extracellular (ectodomain 49\u2013442). The ledger clips name no residue for the 3xHA fusion, but because the N-terminus is cytoplasmic, the only extracellular terminus is residue 442; a tag confirmed to be on the cell surface (L2) must therefore sit after Gly442. Computed distance from the TM boundary (residue 48) to the C-terminus is 394 residues, well above the \u22653-residue minimum. Position is topology_derived, not validated, because no junction residue is stated in the ledger. Full-length mouse PV1 (PLVAP) fused to a 3xHA epitope tag was expressed under the VEC promoter in transgenic mice (VEC-PV1HA lines); L2 confirms surface display of the HA-tagged protein in endothelial cells of blood vessels.",
+      "sources": [
+        {
+          "pmid": 23237953,
+          "citation": "PMID 23237953",
+          "claim": "The VEC-PV1HA transgenic cassette consisting of the VEC promoter, mouse PV1 fused to 3xHA epitope, SV40 polyA signal sequence and the 5\u2032 5kb of the VE Cadherin intron 1 was used for transgenic mouse generation at Dartmouth Transgenic Facility."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:39:28.335621+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) derive from the same paper (PMC3525343) and describe a single construct \u2014 full-length mouse PV1 with a 3xHA tag confirmed at the cell surface. Neither clip names a residue number or a specific loop for the tag. PLVAP has exactly one extracellular terminus (C-terminus, residue 442); the intracellular N-terminus (1\u201326) is ruled out by the confirmed surface display. No internal ectodomain loop is named in the ledger, so no internal site can be proposed. The N-terminal intracellular position is noted conceptually but not listed in other_positions because the ledger does not report it as a tested insertion site.",
+  "literature_rejected": []
+}

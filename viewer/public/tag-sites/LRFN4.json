@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRFN4",
+  "uniprot_acc": "Q6PJG9",
+  "sites": [
+    {
+      "site_id": "LRFN4-terminal_n-16-lit",
+      "gene_symbol": "LRFN4",
+      "uniprot_acc": "Q6PJG9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 16,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A16",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip reports construct design only; no functional or trafficking assay result is described.",
+      "confidence": "medium",
+      "rationale": "SALM3 is the alternative name for LRFN4; the mouse ortholog used in L1 is the direct counterpart of human LRFN4 (UniProt Q9ULH4). The pDisplay vector places the HA tag between its own signal peptide and the cloned mature ectodomain, making the extracellular N-terminus the only possible tag location. For human LRFN4, the signal peptide spans residues 1\u201316 (authoritative landmark), so the equivalent junction is insert_after_residue = 16 (A\u2192C); Python confirms residue 16 = A and residue 17 = C. The site is 501 residues from the TM boundary (518), satisfying the \u22653-residue constraint. No specific residue number is named in L1, so position_evidence is topology_derived. Full-length mouse SALM3 (aa 28\u2013636; SALM3 = LRFN4, mouse ortholog of human LRFN4) was subcloned into pDisplay vector, which by design places the HA epitope at the extracellular N-terminus of the membrane-anchored protein. Mouse SALM3 aa 28 is the mature N-terminus (signal peptide ends at aa 27 in mouse); the HA is therefore at the extracellular face immediately after signal-peptide cleavage.",
+      "sources": [
+        {
+          "pmid": 27480238,
+          "citation": "PMID 27480238",
+          "claim": "Haemagglutinin (HA)-tagged full-length mouse SALM3 (aa 28\u2013636) was subcloned into pDisplay vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:15:40.618952+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It describes full-length mouse SALM3 (= LRFN4) in pDisplay with an HA tag at the extracellular N-terminus. No internal loop insertions, C-terminal tags, or other positions are reported in the ledger. The mature N-terminus of human LRFN4 begins with C17, which is part of a cysteine-rich region (C17, C21, C23, C34); the tag is inserted before C17 and does not displace it, so disulfide formation is not directly disrupted by the insertion itself \u2014 but this structural inference is noted only as context, not as a constraint decision. Confidence is medium rather than high because (a) the position is topology_derived (no residue named), (b) the evidence comes from the mouse ortholog, and (c) no functional assay was reported.",
+  "literature_rejected": []
+}

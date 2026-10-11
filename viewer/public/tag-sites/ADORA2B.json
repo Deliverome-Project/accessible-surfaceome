@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADORA2B-terminal_n-0-lit",
+      "gene_symbol": "ADORA2B",
+      "uniprot_acc": "P29275",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HaloTag; FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry internalization assay with 20 \u00b5M NECA (A2BR agonist): no detectable internalization of Halo-A2BR, consistent with expected human A2BR biology and confirming the tagged receptor is surface-displayed and agonist-responsive.",
+      "confidence": "high",
+      "rationale": "ADORA2B has no signal peptide; the topology landmarks place residues 1\u20137 extracellular and the C-terminus (293\u2013332) intracellular, making the N-terminus the sole extracellular terminus. Because the paper names only 'N-terminus' with no residue number, the junction is topology-derived as a prepend (insert_after_residue=0, before M1). Python confirms residue 1 is M and the 7-residue N-terminal span contains no cysteines, placing the tag \u22657 residues from TM1 (starts at 8). The HaloTag construct was validated for both surface display and agonist-driven functional response. PMC13049939 engineered full-length human ADORA2B with an N-terminal HaloTag (Halo-A2BR) and a separate N-terminal FLAG tag (FLAG-A2BR), both expressed as stable polyclonal cell lines. Surface display was confirmed with a membrane-impermeant HaloTag dye (JF635i) for Halo-A2BR and with M1 anti-FLAG antibody for FLAG-A2BR. No residue number is named; 'N-terminus' is the only positional descriptor.",
+      "sources": [
+        {
+          "pmid": 41654131,
+          "citation": "PMID 41654131",
+          "claim": "After three washes with cold PBS, cell surface receptors were labeled with 200 nM JF 635 i-HTL (HaloTagged \u03b22AR, VIPR1, or A 2B R, Fig. 1 B ) or M1 antibody conjugated to Alexa Fluor 647 (FLAG-tagged \u03b22AR or A2BR, Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:15:26.629279+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) derive from a single publication (PMC13049939) and describe the same N-terminal tagging event on full-length human ADORA2B. Two tag modalities are reported at the same junction (HaloTag and FLAG), so one site is reported with both cited. No ledger line mentions any internal loop insertion, ECL insertion, or C-terminal tag for this protein. The C-terminus (residues 293\u2013332) is intracellular per the topology landmarks and is therefore excluded. ECL1 (68\u201379), ECL2 (145\u2013181), and ECL3 (257\u2013269) are extracellular but are not mentioned in any ledger line and cannot be proposed without ledger support.",
+  "literature_rejected": []
 }

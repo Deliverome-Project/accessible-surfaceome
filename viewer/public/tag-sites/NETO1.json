@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "NETO1",
+  "uniprot_acc": "Q8TDF5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:01:17.639579+00:00",
+  "literature_notes": "NETO1 is a type I single-pass transmembrane protein (SP 1-22, ectodomain 23-343, TM 344-363, cytoplasmic tail 364-533). All five ledger lines describe tags on the intracellular C-terminus or on soluble truncation constructs lacking the TM domain. L1 and L2 (PMC2652390) describe Neto1-\u039420HA, in which two HA copies replace the C-terminal 20 residues (514-533) and are therefore appended after residue 513, which is intracellular (residue 513 = Q, topology I). L3, L4, and L5 (PMC5494894) describe NETO1-HA, an in-frame HA tag added to the C-terminus of full-length NETO1 (after residue 533 = V), also intracellular. The truncation constructs in L1 (Neto1-\u0394cytoTM-eGFP 1-340, Neto1 CUB12-eGFP 1-290, Neto1 CUB1-eGFP 1-162) carry eGFP at the C-terminus of an ectodomain fragment with no TM anchor \u2014 these are soluble ectodomain constructs secreted as separate proteins and are explicitly disqualified. Neto1-\u0394cyto-eGFP (1-363) terminates at the last TM residue (V363) and is not an extracellular surface tag. No ledger line supports an insertion at the mature N-terminus (after residue 22) or anywhere in the extracellular domain (23-343) of a full-length, membrane-anchored NETO1 construct. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 513,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Neto1-\u039420HA inserts two HA copies after residue 513 (Q), replacing the C-terminal 20 aa (514-533); residue 513 is within the intracellular tail (364-533)."
+    },
+    {
+      "residue": 533,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "NETO1-HA appends an in-frame HA tag after the final residue 533 (V) of full-length NETO1; the C-terminus is intracellular (364-533)."
+    }
+  ]
+}

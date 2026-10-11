@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD274",
+  "uniprot_acc": "Q9NZQ7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:12:36.497967+00:00",
+  "literature_notes": "L1 (HiBiT, C-terminus, PMC7940577): The tag is at the intracellular C-terminus (residue 290, topology INTRACELLULAR per landmarks); it is a valid published insertion but faces the cytoplasm, so it is recorded in other_positions only. L2 (HA-ins-PD-L1, PMC13039446): The clip names the tagged construct but specifies no residue number and no loop for the HA insertion site; the ICD deletion (260\u2013290) is a separate construct, not the insertion site; without a pinnable position this clip cannot ground a site. L3 (EGFP at start codon, mouse Cd274, PMC10085585): Insertion at the start codon places EGFP upstream of the signal peptide (residues 1\u201318 in human CD274); a tag upstream of the signal peptide is co-translationally cleaved and is not displayed on the extracellular surface; the construct is used to identify PD-L1-expressing cells by fluorescence, consistent with cytoplasmic EGFP, not a surface label. No ledger line supports an extracellular surface tag site for CD274.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 290,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HiBiT tag knocked in at the C-terminus of endogenous CD274 in PC9 cells; residue 290 (T) is the last intracellular residue per topology landmarks \u2014 tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

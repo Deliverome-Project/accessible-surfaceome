@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CA4",
+  "uniprot_acc": "P22748",
+  "sites": [
+    {
+      "site_id": "CA4-terminal_c-312-lit",
+      "gene_symbol": "CA4",
+      "uniprot_acc": "P22748",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 312,
+      "residue_before": "R",
+      "residue_after": "",
+      "residue_label": "R312",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Tagged construct used as a surface receptor in in vitro AAV library selection, implying successful surface display; carbonic anhydrase enzymatic activity not measured.",
+      "confidence": "low",
+      "rationale": "CA4 is a GPI-anchored protein with its entire mature domain (residues 19\u2013312) extracellular and no transmembrane segment. Replacing the C-terminal GPI anchor with an HA tag is the canonical approach for tagging GPI-anchored proteins on the extracellular face; the junction falls at the C-terminus of the extracellular span (after residue 312, R). The evidence is indirect (mouse CA-IV ortholog) and no residue is named, so position_evidence is topology_derived. Confidence is low because the ortholog gap and the uncertainty about whether the resulting construct remains membrane-anchored (GPI signal replaced by HA alone may yield a secreted protein, though AAV selection use implies surface display). Mouse CA-IV (ortholog of human CA4) was engineered with its C-terminal GPI anchor replaced by an HA tag, producing a full-length tagged construct used for in vitro AAV library selection. No specific residue junction is named; the C-terminal position is derived from the topology (extracellular span 19\u2013312, GPI-anchored protein with no TM domain).",
+      "sources": [
+        {
+          "pmid": 41175373,
+          "citation": "PMID 41175373",
+          "claim": "Mouse receptors LY6A and CA-IV were modified by replacing their C-terminal glycosylphosphatidylinositol (GPI) anchors with a hemagglutinin (HA) tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:55:30.838523+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports mouse CA-IV (ortholog) with GPI anchor replaced by HA tag for AAV library selection; no residue is named. The site is included as topology_derived terminal_c because: (1) the construct is described as full-length, (2) AAV library selection requires surface receptor display, and (3) the C-terminus is the only feasible extracellular tag position for a GPI-anchored protein. Confidence is low due to the ortholog gap and ambiguity about whether the HA-only replacement maintains membrane anchoring. No N-terminal tag evidence exists in the ledger. No internal loop insertion evidence exists in the ledger.",
+  "literature_rejected": []
+}

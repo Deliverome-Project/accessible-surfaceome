@@ -44,5 +44,38 @@
       "canonical_residue": 116,
       "left_pct": 23.577235772357724
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:25:30.621987+00:00",
+  "literature_notes": "ANKH is a 12-pass transmembrane protein with six short extracellular loops (42\u201348, 106\u2013131, 180\u2013190, 262\u2013275, 347\u2013372, 422\u2013427). Every ledger entry involves a terminal tag: L1/L2/L3 place a C-terminal FLAG after residue 492 (intracellular span 451\u2013492); L4/L5 use p3xFLAG-CMV-10, which appends 3xFLAG before residue 1 (intracellular span 1\u201320); L6/L7 fuse eGFP to either the N-terminus (intracellular) or C-terminus (intracellular) of full-length ANKH. All six extracellular loops are short (6\u201326 aa) and none is addressed by any ledger insertion. Because no ledger line grounds a tag in any extracellular position, zero sites qualify. The F377del and S375del CMD mutations noted in L5 fall in the TM helix 373\u2013383 and reduce protein levels markedly; they are recorded in other_positions as function-abrogating. The N- and C-terminal intracellular tags are also recorded there.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 492,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag (stop codon ablated, FLAG added to 3\u2032 end); residue 492 lies in the intracellular C-terminal span 451\u2013492; surface display confirmed but tag faces cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "N-terminal 3xFLAG via p3xFLAG-CMV-10 vector; residue 1 lies in the intracellular N-terminal span 1\u201320; tag faces cytoplasm."
+    },
+    {
+      "residue": 377,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L5",
+      "note": "F377del CMD mutant expressed as 3xFLAG construct showed markedly lower protein levels than wild-type ANK, indicating disrupted folding or trafficking; residue 377 falls in TM helix 373\u2013383."
+    },
+    {
+      "residue": 375,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L5",
+      "note": "S375del CMD mutant expressed as 3xFLAG construct showed markedly lower protein levels than wild-type ANK; residue 375 falls in TM helix 373\u2013383."
+    }
   ]
 }

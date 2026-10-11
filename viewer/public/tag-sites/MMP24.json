@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "MMP24",
+  "uniprot_acc": "Q9Y5R2",
+  "sites": [
+    {
+      "site_id": "MMP24-terminal_n-52-lit",
+      "gene_symbol": "MMP24",
+      "uniprot_acc": "Q9Y5R2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 52,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A52",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FlagM2",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-based APP metabolism assays performed with FlagM2-tagged full-length MT5-MMP (active and inactive forms); APP processing activity was measurable, indicating the tagged protein is expressed and functional at the cell surface.",
+      "confidence": "medium",
+      "rationale": "MMP24 is a type-I transmembrane protein with signal peptide residues 1\u201352 and a single extracellular N-terminus beginning at residue 53. The paper reports N-terminal FlagM2 tagging of the full-length, membrane-anchored construct but names no specific residue; because exactly one extracellular terminus exists (the mature N-terminus after SP cleavage), the junction is unambiguously insert_after_residue=52. Python confirms residue 52 is A and residue 53 is A. The tag is placed after the signal peptide cleavage site so it is not cleaved off, and it is \u2265550 residues from the TM boundary. Full-length active and inactive MT5-MMP (MMP24) constructs, plus domain-truncated variants, were all fused with a FlagM2 tag on their N-terminal part and used in cell-based assays measuring APP metabolism (DOI:10.1101/2020.09.01.258665). The constructs are full-length and membrane-anchored.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2020.09.01.258665",
+          "claim": "Differential impact of MT5-MMP domains on APP metabolism To determine the specific impact of MT5-MMP domains on APP metabolism, we designed plasmid constructs N-terminally tagged with FlagM2 (FlagM2 + ), coding for full length (FL) active (MT5 FL ) and \u0394 inactive (MT5 ) MT5-MMP, as well as truncated MT5-MMP variants lacking functional domains as follows: catalytic (MT5 CAT- ), hemopexin (MT5 HPX- ), extracellular (MT5 EXT- ), transmembrane and intracytoplasmic domains (MT5 TM/IC- ), and intracytoplasmic domain alone (MT5 IC- ) (Fig. 4A).",
+          "source_id": "DOI:10.1101/2020.09.01.258665"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:44:58.665203+00:00",
+  "literature_notes": "L1 and L2 are from the same paper and describe the same N-terminal FlagM2 tagging strategy; L1 is used as the primary supporting clip. L2 is redundant confirmation of the same site. L3 describes a 'MT5/GFP' fusion 'as previously reported'; the slash notation in the MMP literature conventionally denotes a C-terminal GFP fusion, which would place the tag in the intracellular tail (residues 624\u2013645) of MMP24 \u2014 not an extracellular surface site. Because the referenced prior publications are not in the ledger and no residue is named, this is recorded in other_positions as an intracellular tag. No ledger line names a specific internal extracellular loop residue for MMP24, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 645,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "MT5/GFP fusion expressed in cells 'as previously reported'; the slash notation indicates a C-terminal GFP fusion, which falls in the intracellular tail (residues 624\u2013645) of MMP24 and is not an extracellular surface site."
+    }
+  ]
+}

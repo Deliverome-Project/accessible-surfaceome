@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "AMIGO1",
+  "uniprot_acc": "Q86WK6",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:23:09.826053+00:00",
+  "literature_notes": "The sole ledger line (L1) describes mAMIGO1-pEYFP-N1, a full-length mouse AMIGO1 construct with eYFP fused via a VPRARDPPVAT linker to the intracellular C-terminus (residue 493, within the cytoplasmic domain 394\u2013493). This is an intracellular tag and therefore does not qualify as an extracellular surface site. No ledger line reports any tag insertion at the mature N-terminus (residue 28), in any extracellular loop, or anywhere else on the extracellular face of AMIGO1. With no qualifying evidence for a surface tag, the sites list is empty.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 493,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eYFP fused via VPRARDPPVAT linker to the intracellular C-terminus of full-length mouse AMIGO1; expressed in CHO and HEK cells for localization and electrophysiology \u2014 tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

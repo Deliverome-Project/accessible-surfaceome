@@ -37,7 +37,89 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "APLNR-terminal_n-0-lit",
+      "gene_symbol": "APLNR",
+      "uniprot_acc": "P35414",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface display confirmed by non-cell-permeant fluorophore labeling and single-molecule imaging; receptor dimerization dynamics were measurable, indicating the tagged receptor traffics to the plasma membrane. Quantitative functional assay (e.g., signaling) not reported in this clip.",
+      "confidence": "medium",
+      "rationale": "The SNAP tag is proven extracellular by non-cell-permeant dye labeling. APLNR is a GPCR with no signal peptide; the topology landmarks place residues 1\u201330 extracellular and TM1 at 31\u201352, leaving the N-terminus as the sole extracellular terminus. A prepend (insert_after_residue=0) places the tag before M1, consistent with standard GPCR N-terminal SNAP-tag practice. Python verification confirms residue 1 = M and TM1 begins at residue 31, so the prepend is \u22653 residues from any TM boundary. Full-length human APJR (APLNR) was SNAP-tagged and expressed in cells; the SNAP tag was labeled with non-cell-permeant fluorophores for single-molecule imaging of cell-surface receptor dynamics, confirming the tag is displayed on the extracellular face. No residue number is stated in the clip. APLNR has no signal peptide and exactly one extracellular terminus (N-terminus, residues 1\u201330); the non-cell-permeant labeling leaves only the N-terminal prepend as the possible extracellular attachment point.",
+      "sources": [
+        {
+          "pmid": 39747115,
+          "citation": "PMID 39747115",
+          "claim": "We initially explored the cell surface dynamics of APJR monomer and dimer formations utilizing single-molecule imaging of Snap-tagged APJR labeled with non-cell-permeant fluorophores, as previously outlined 1 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:28:24.891946+00:00",
+  "literature_notes": "L1 and L2 both describe C-terminal fusions (Venus fragments and eGFP) to full-length APLNR; the C-terminus falls in the intracellular span 312\u2013380 and cannot carry a surface tag. L4 describes mCitrine/cpGFP insertions after residues the paper calls F233, R234, K235, E236 in ICL3; Python search locates FRKE at canonical positions 232\u2013235, all within the intracellular span 221\u2013249, so these are intracellular biosensor insertions only. L5 (aplnrb-sfgfp) names only the zebrafish ortholog construct with no position, terminus, or surface-display evidence stated; it cannot ground a site. Only L3 provides evidence of an extracellular tag on full-length membrane-anchored APLNR, and topology derivation places it at the N-terminal prepend.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 380,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Venus N- and C-terminal fragments fused to the C-terminus of full-length APJ; residue 380 (D) lies in the intracellular C-tail (312\u2013380), so this is an intracellular tag, not a surface tag."
+    },
+    {
+      "residue": 380,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "eGFP fused to the C-terminus of full-length APLNR; residue 380 (D) is intracellular (312\u2013380); receptor traffics to the cell surface but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 232,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "mCitrine/cpGFP inserted after canonical F232 (paper calls it F233) in ICL3 (221\u2013249) as a conformational biosensor; intracellular position, not a surface tag site."
+    },
+    {
+      "residue": 233,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "mCitrine/cpGFP inserted after canonical R233 (paper calls it R234) in ICL3 (221\u2013249); intracellular."
+    },
+    {
+      "residue": 234,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "mCitrine/cpGFP inserted after canonical K234 (paper calls it K235) in ICL3 (221\u2013249); intracellular."
+    },
+    {
+      "residue": 235,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "mCitrine/cpGFP inserted after canonical E235 (paper calls it E236) in ICL3 (221\u2013249); intracellular."
+    }
+  ]
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRC15",
+  "uniprot_acc": "Q8TF66",
+  "sites": [
+    {
+      "site_id": "LRRC15-terminal_n-21-lit",
+      "gene_symbol": "LRRC15",
+      "uniprot_acc": "Q8TF66",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "A",
+      "residue_after": "Y",
+      "residue_label": "A21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation with FLAG-ITGB1 confirmed pull-down of HA-LRRC15, demonstrating that the tagged protein is expressed and capable of protein\u2013protein interaction; surface localisation and receptor function were NOT MEASURED explicitly.",
+      "confidence": "medium",
+      "rationale": "LRRC15 is a single-pass type-I transmembrane protein with a signal peptide spanning residues 1\u201321 (computed landmarks). The mature N-terminus begins at residue 22 (Y), making the post-SP junction (after residue 21, A) the sole extracellular terminus. The construct name 'HA-LRRC15' unambiguously places the HA N-terminally; because the C-terminus is intracellular, topology_derived reasoning assigns the tag to insert_after_residue 21. Python confirms residue 21 = A and residue 22 = Y, consistent with the sequence. The extracellular span (22\u2013540, 519 residues) provides ample clearance from the TM boundary. Full-length LRRC15 expressed from pCDH-HA-LRRC15 in HEK293T and MDA-MB-231 cells for co-immunoprecipitation with ITGB1. The 'HA-LRRC15' naming convention places the HA tag at the N-terminus. LRRC15 has a signal peptide (residues 1\u201321) and a single extracellular N-terminus beginning at residue 22; the C-terminus (residue 581) is intracellular. Exactly one extracellular terminus exists, so the topology-derived junction is after residue 21 (the last SP residue), placing the HA on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 40281111,
+          "citation": "PMID 40281111",
+          "claim": "HEK293T or MDA-MB-231 cells transfected with pCDH-HA-LRRC15 or pCDH-FLAG-ITGB1 (System Biosciences) were lysed in IP buffer (25 mM Tris-HCl, pH 7.4; 150 mM NaCl; 1% NP-40; protease inhibitors)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:19:51.690181+00:00",
+  "literature_notes": "L1 (PMC9595563) reports a C-terminal 3xFLAG on full-length LRRC15. Because LRRC15 is a type-I single-pass TM protein, the C-terminus (residue 581) falls in the intracellular segment (562\u2013581); this tag cannot reach the extracellular face and is therefore recorded in other_positions rather than sites. L2 (PMC12032112) reports pCDH-HA-LRRC15 used for co-IP; the tag position is not stated in prose, but the 'HA-LRRC15' naming convention and the single extracellular terminus allow topology_derived assignment to the post-SP junction (after residue 21). No ledger line reports an insertion in any internal extracellular loop of LRRC15, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 581,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 3xFLAG on full-length LRRC15 expressed in HeLa-ACE2 and HEK293T-ACE2/TMPRSS2 cells; residue 581 lies in the intracellular segment (562\u2013581), so the tag faces the cytoplasm and is not accessible on the extracellular surface."
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "BSG",
+  "uniprot_acc": "P35613",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:45:48.694352+00:00",
+  "literature_notes": "The sole ledger line (L1) describes a truncated BSG construct (lacking the N-terminal 100 amino acids, i.e. residues 1\u2013100, which removes the signal peptide and the first ~79 residues of the extracellular domain) cloned into pCDNA3 with an HA sequence for a co-immunoprecipitation / pull-down assay. Two independent disqualifiers apply: (a) the HA tag position is completely unstated \u2014 the clip gives no residue number, no terminus, and no junction, so insert_after_residue cannot be pinned; (b) the construct is not full-length and membrane-anchored, which is a hard requirement. Even setting aside the truncation, the rules explicitly exclude any construct 'whose tag POSITION is unstated.' No other ledger lines exist. Zero sites is the correct answer.",
+  "literature_rejected": []
+}

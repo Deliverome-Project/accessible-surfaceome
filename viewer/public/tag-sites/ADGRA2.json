@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRA2",
+  "uniprot_acc": "Q96PE1",
+  "sites": [
+    {
+      "site_id": "ADGRA2-terminal_n-33-lit",
+      "gene_symbol": "ADGRA2",
+      "uniprot_acc": "Q96PE1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 33,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G33",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "WNT7A/WNT7B co-stimulation assay in transfected cells: N-terminal FLAG-tagged GPR124 potentiated WNT signaling equivalently to untagged GPR124 \u2014 function fully preserved.",
+      "confidence": "high",
+      "rationale": "ADGRA2 and GPR124 are the same gene; L2 is therefore direct (not ortholog) evidence. The signal peptide spans residues 1\u201333 (computed landmarks), so an N-terminal FLAG tag must be placed after cleavage, i.e., insert_after_residue = 33. Python confirms seq[32]='G' and seq[33]='A', matching residue_before/after. No residue is named in the paper, so position_evidence is topology_derived \u2014 the mature N-terminus is the sole extracellular terminus available. L3 and L4 (FLAG-tagged zebrafish Gpr124 ortholog, surface ELISA and in-vivo immunostaining confirmed) independently corroborate surface display at this same topological position. L2 reports that an N-terminal FLAG tag added to full-length human GPR124 (= ADGRA2) expressed in a cell-based WNT co-stimulation assay did not interfere with receptor activity. GPR124 carries a signal peptide (residues 1\u201333); the only extracellular N-terminus available to a FLAG tag is the mature N-terminus beginning at Ala34. No residue number is named in the paper, so the junction is derived from the single available extracellular terminus: after residue 33 (last SP residue, G) and before residue 34 (A).",
+      "sources": [
+        {
+          "pmid": 25558062,
+          "citation": "PMID 25558062",
+          "claim": "Mouse GPR124 and human GPR124 also showed similar co-stimulatory activity, and addition of an N-terminal FLAG tag or a C-terminal myc tag to GPR124 did not interfere with its ability to potentiate WNT signaling ( Figures 2C and 2D )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:07:28.376395+00:00",
+  "literature_notes": "Eight ledger lines were evaluated. L2 grounds the single surface site: an N-terminal FLAG tag on full-length human GPR124/ADGRA2 with WNT function preserved; position is topology-derived (after SP cleavage, residue 33\u219234) because no residue number is stated. L3 and L4 (FLAG-tagged zebrafish Gpr124, surface ELISA and in-vivo immunostaining) corroborate the same topological position on the ortholog but do not add a distinct site. L1 (V5 after Arg1074, 10 aa downstream of TM7) is intracellular and placed in other_positions. L5, L6, L7 (C-terminal EGFP on zebrafish Adgra2) and L8 (C-terminal Myc on human GPR124) all tag the intracellular C-terminus (residues 1069\u20131338 per landmarks) and are placed in other_positions. The large extracellular domain (residues 34\u2013771) and the three short ECLs (ECL1 827\u2013836, ECL2 908\u2013924, ECL3 1041\u20131047) have no ledger evidence for internal insertions and are not proposed as sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1074,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "V5 tag + stop codon inserted after Arg1074 (10 aa downstream of TM7, within the intracellular C-terminal domain 1069\u20131338) to truncate the ICD and study its role in CNS angiogenesis."
+    },
+    {
+      "residue": 1338,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Myc epitope (EQKLISEEDL) inserted at the C-terminus of human GPR124; the C-terminus (residue 1338) falls within the intracellular domain (1069\u20131338) per topology landmarks."
+    },
+    {
+      "residue": 1338,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal EGFP fusion to zebrafish Adgra2 (ortholog of human ADGRA2); the C-terminus is intracellular; the tagged protein was functional in vivo but the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

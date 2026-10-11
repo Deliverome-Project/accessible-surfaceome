@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "SELP",
+  "uniprot_acc": "P16109",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:13:43.590586+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same construct: full-length P-selectin with eGFP fused at its C-terminus ('P-selectin-eGFP'). P-selectin is a Type I single-pass transmembrane protein: signal peptide 1\u201341, extracellular ectodomain 42\u2013773, TM 774\u2013794, intracellular tail 795\u2013830. A C-terminal fusion therefore places eGFP on the INTRACELLULAR face (after residue 830), not the extracellular surface. The papers confirm that the full-length tagged protein is trafficked to and displayed on the plasma membrane (the ectodomain is extracellular), but the eGFP tag itself is cytoplasmic. Per the instructions, a tag on an intracellular terminus without an explicit validated snorkel does not qualify as an extracellular surface tag site. No ledger line reports any tag insertion at the extracellular N-terminus (after signal cleavage at residue 41/42), in any extracellular loop, or anywhere else on the ectodomain. The ledger therefore supports zero extracellular surface tag sites for SELP.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 830,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "P-selectin-eGFP is a C-terminal fusion; the C-terminus of P-selectin (residues 795\u2013830) is intracellular, so eGFP is on the cytoplasmic face, not the extracellular surface."
+    }
+  ]
+}

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGER1-terminal_n-0-lit",
+      "gene_symbol": "PTGER1",
+      "uniprot_acc": "P34995",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "BRIL",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Expression and folding confirmed (L2: 'improve its expression and folding'); cryo-EM structure obtained, confirming proper membrane insertion and folding. Functional signaling assay (e.g., IP1, calcium mobilization) NOT MEASURED in the cited ledger clips.",
+      "confidence": "high",
+      "rationale": "EP1 has no endogenous signal peptide; its N-terminus (residues 1\u201337) is extracellular and its C-terminus (355\u2013402) is intracellular, making the N-terminus the sole extracellular terminus. The published construct places BRIL immediately before EP1 residue 1 (M), corresponding to insert_after_residue=0. The 37-residue extracellular N-terminal domain provides ample clearance from TM1 (which begins at residue 38). L2 corroborates the N-terminal placement explicitly. Since no specific residue number is named in either clip, position is topology-derived. Full-length human EP1 receptor (residues 1\u2013394) engineered with an exogenous HA signal peptide followed by a BRIL (thermostabilized apocytochrome b562RIL) domain fusion at the N-terminus; construct expressed and used for cryo-EM structural characterization (PMC12107139). The HA signal peptide drives ER targeting and is cleaved, leaving BRIL at the extracellular N-terminus of the membrane-anchored receptor.",
+      "sources": [
+        {
+          "pmid": 40366695,
+          "citation": "PMID 40366695",
+          "claim": "The human EP1 receptor (residues 1 to 394) was engineered with an N-terminal HA signal peptide and BRIL fusion for enhanced expression."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:48:16.840046+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2), both from the same paper (PMC12107139) and describing the same N-terminal BRIL fusion construct. No ledger evidence supports insertions in ECL1 (97\u2013111), ECL2 (178\u2013200), or ECL3 (320\u2013332); those sites cannot be proposed. No intracellular or function-abrogating positions are reported in the ledger. BRIL (~106 aa) is larger than the 13\u201323 aa ALFA-tag range specified, but the site itself is validated for domain-level insertion tolerance at the extracellular N-terminus.",
+  "literature_rejected": []
 }

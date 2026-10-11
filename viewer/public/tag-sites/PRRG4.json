@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "PRRG4",
+  "uniprot_acc": "Q9BZD6",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:44:06.232272+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminally tagged full-length PRRG4 constructs (myc in L1/L2; V5-His in L3/L4). PRRG4 is a single-pass type-I-like protein with topology: signal peptide 1\u201317 (cleaved), extracellular 18\u2013116, TM 117\u2013137, intracellular 138\u2013226. The C-terminus (residue 226) therefore lies on the intracellular face. No ledger line reports a tag on the extracellular domain, at the mature N-terminus (after residue 17), or in any extracellular loop. The mature N-terminus (residue 18, F) is extracellular and would in principle accept a tag after the signal-peptide cleavage site (insert_after_residue = 17), but no ledger line grounds such an insertion \u2014 the instructions forbid proposing sites the ledger does not support. Zero extracellular surface-tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 226,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal myc tag appended after residue 226; the C-terminus of PRRG4 is intracellular (topology 138\u2013226), so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 226,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal V5-His tag appended after residue 226 in pcDNA3.1/V5-His; same intracellular C-terminus as L1/L2; used for localization by V5 antibody staining in HEK293 and T47D cells."
+    }
+  ]
+}

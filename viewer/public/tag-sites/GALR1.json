@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GALR1-terminal_n-0-lit",
+      "gene_symbol": "GALR1",
+      "uniprot_acc": "P47211",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Pharmacological studies performed on the FLAG-tagged GALR1 construct (L1), implying ligand-binding function preserved; HiBiT-GALR1 (L4/L5) showed specific tracer displacement by galanin in NanoBRET target engagement assay, confirming functional galanin binding at the surface-displayed receptor.",
+      "confidence": "high",
+      "rationale": "GALR1 has no endogenous signal peptide; residues 1\u201333 are extracellular per the authoritative topology landmarks, making the N-terminus the only extracellular terminus available for tagging. The FLAG construct (L1) uses an exogenous HA signal to drive the receptor to the membrane with FLAG displayed extracellularly before residue 1 (M), placing the tag at insert_after_residue=0. No residue number is named in either L1 or L4/L5, so position is topology-derived: with a single extracellular terminus and a prepend architecture, only one junction exists. The TM1 boundary begins at residue 34, leaving 33 residues of extracellular space\u2014well beyond the \u22653-residue minimum\u2014and the pharmacological and NanoBRET data confirm both surface display and functional galanin engagement. Human GALR1 cloned into pcDNA3.1(+) with an exogenous N-terminal HA signal sequence followed by a FLAG epitope tag (DYKDDDDK), creating a full-length membrane-anchored receptor construct used for structural and pharmacological studies. Corroborated by L4/L5: HiBiT-GALR1 (same N-terminal prepend architecture) expressed on the surface of living HeLa cells, with surface display confirmed by filtered bioluminescence imaging and receptor engagement validated by NanoBRET with galanin competition.",
+      "sources": [
+        {
+          "pmid": 35594396,
+          "citation": "PMID 35594396",
+          "claim": "The human GALR1 and GALR2 were cloned into pcDNA3.1(+) vector (Thermo Fisher Scientific) with an N-terminal hemagglutinin (HA) signal sequence and a FLAG epitope tag (DYKDDDDK)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:05:53.223375+00:00",
+  "literature_notes": "L1 and L4/L5 both support the identical N-terminal prepend junction (insert_after_residue=0) with different tags (FLAG and HiBiT respectively); these are reported as one site since the junction is the same. No residue number is named in either paper, so position_evidence is topology_derived: GALR1 has no signal peptide, residues 1\u201333 are extracellular, and the prepend architecture leaves exactly one possible extracellular junction. L2/L3 (C-terminal mCherry knock-in) is placed in other_positions because the C-terminus (residues 307\u2013349) is intracellular per the authoritative topology. No ledger line supports an insertion in ECL1 (94\u2013109), ECL2 (173\u2013198), or ECL3 (269\u2013285), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 349,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal mCherry knock-in at the 3\u2032 end of the GalR1 coding sequence; the C-terminus (residues 307\u2013349) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

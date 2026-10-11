@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRA2C-terminal_n-0-lit",
+      "gene_symbol": "ADRA2C",
+      "uniprot_acc": "P18825",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FACS surface labeling with FITC-anti-HA under non-permeabilized conditions confirmed cell-surface display (L3, L6). Ligand binding function reported unaffected (L7). Receptor trafficking and intracellular localization reported unaffected (L2, L5). Validation_level: surface_and_function.",
+      "confidence": "high",
+      "rationale": "ADRA2C is a GPCR with no signal peptide; the raw topology string begins with 'O' (extracellular) at position 1, confirming M1 is the sole extracellular N-terminus. All ledger lines (L1\u2013L8) describe the tag at the 'extreme amino terminus' with no residue number, so the position is topology-derived: insert_after_residue=0, residue_after=M (position 1, confirmed by code). The tag is 50 residues from TM1 (positions 51\u201377), well beyond the \u22653-residue minimum. Multiple independent labs confirmed surface display and preserved ligand-binding function, yielding the highest validation level. Multiple independent studies (PMC4035122, PMC2919199, PMC10744278) express full-length, membrane-anchored human/murine \u03b12C AR with an HA epitope tag (YPYDVPDYA) at the 'extreme amino terminus'. No residue number is stated; ADRA2C has no signal peptide (topology residue 1 = O, extracellular), so exactly one extracellular terminus exists and the tag prepends before M1. Surface display was confirmed by FITC-conjugated anti-HA antibody labeling under non-permeabilized conditions (FACS). Pharmacological function (ligand binding) and intracellular localization were reported unchanged.",
+      "sources": [
+        {
+          "pmid": 24643471,
+          "citation": "PMID 24643471",
+          "claim": "Since no commercially available antisera were available against extracellular epitopes of either WT \u03b12 ARs, an HA epitope was introduced into the extreme amino terminus of all WT and variant forms of \u03b12 ARs."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:18:32.699603+00:00",
+  "literature_notes": "L9 and L10 (PMC10744278) describe a C-terminal EGFP fusion ('coding region fused in frame with EGFP'). The C-terminus of ADRA2C falls in the intracellular region 441\u2013462 (topology landmark), so this is not an extracellular surface-tag site; it is recorded in other_positions. No ledger line grounds a tag in any of the short extracellular loops (ECL1 115\u2013124, ECL2 191\u2013208, ECL3 408\u2013418), so no internal sites are proposed. L1\u2013L8 all converge on the same N-terminal prepend junction; they are treated as corroborating evidence for one site, not separate sites, because they all describe the same 'extreme amino terminus' position with no distinct residue numbers that would distinguish separate junctions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 462,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "Full-length \u03b12C-AR coding region fused in-frame with EGFP (six-aa spacer); the C-terminus (position 462, Q) lies in the intracellular region 441\u2013462 per topology landmarks \u2014 not an extracellular surface-tag site."
+    }
+  ]
 }

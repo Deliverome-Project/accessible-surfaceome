@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHB9",
+  "uniprot_acc": "Q9Y5E1",
+  "sites": [
+    {
+      "site_id": "PCDHB9-internal-None-lit",
+      "gene_symbol": "PCDHB9",
+      "uniprot_acc": "Q9Y5E1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed: anti-Myc antibody staining of non-permeabilized transfected cells showed labelling at the cell periphery and cell-cell junctions (L2, L3). No adhesion or signalling functional assay reported for the tagged constructs.",
+      "confidence": "medium",
+      "rationale": "L1 explicitly names \u03b2-subfamily isoforms as carrying a Myc tag in the extracellular stalk between EC6 and the TM helix; PCDHB9 (protocadherin beta-9) is a \u03b2-subfamily member and is therefore directly covered. No specific residue number is given in any ledger line, so the site is region-level with insert_after_residue left null. The stalk spans approximately residues 641\u2013689 (extracellular, \u22653 residues from the TM boundary at 690), confirmed by the computed topology. Surface display was validated by non-permeabilized anti-Myc staining; no functional assay was reported. PMC12157453 (L1) reports that a Myc epitope tag was inserted into the stalk region between EC6 and the transmembrane helix of clustered protocadherin constructs explicitly including \u03b2-subfamily isoforms, equivalently to previously validated constructs. L2 (same paper) describes the experimental system: fluorescent anti-Myc antibodies were applied to non-permeabilized transfected cells to detect surface-displayed tagged cPCDH constructs. PCDHB9 is a \u03b2-subfamily isoform and is directly covered by this description.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:26:02.829451+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC12157453) and describe the same construct design. L1 is the primary evidence line naming the stalk region and the \u03b2-subfamily; L2 describes the surface-trafficking assay; L3 reports the positive staining result for a \u03b3C3 construct (gamma subfamily), which corroborates the approach but is not direct evidence for PCDHB9. No specific residue number is given in any line, so the site cannot be pinned to a single junction and is reported at region level. No N-terminal tag, no other extracellular loop insertion, and no intracellular or function-abrogating position is described in the ledger for any \u03b2-protocadherin.",
+  "literature_rejected": []
+}

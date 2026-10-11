@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PDCD1",
+  "uniprot_acc": "Q15116",
+  "sites": [
+    {
+      "site_id": "PDCD1-terminal_n-24-lit",
+      "gene_symbol": "PDCD1",
+      "uniprot_acc": "Q15116",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "F",
+      "residue_after": "L",
+      "residue_label": "F24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by detection in transfected IHH cells (figure 2A); PD-1 signaling function was NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states the FLAG tag is placed 'immediately following the signal peptide' in a full-length, membrane-anchored PD-1 construct. The authoritative landmarks fix the signal peptide at residues 1\u201324, so the sole possible junction is after residue 24 (F) and before residue 25 (L), the mature N-terminus. Python verification confirms residue 24 = F and residue 25 = L. The tag sits 146 residues from the TM boundary (171), well within the extracellular domain (25\u2013170), satisfying the \u22653-residue clearance constraint. No residue number is cited in the paper, so position_evidence is topology_derived. Full-length PD-1 cDNA construct with an N-terminal FLAG tag inserted immediately following the signal peptide, transfected into immortalized human hepatocyte (IHH-WT and IHH-KO) cells; surface display of the tagged protein was confirmed (figure 2A). The study used this construct to investigate PCSK7 substrate interactions.",
+      "sources": [
+        {
+          "pmid": 40518289,
+          "citation": "PMID 40518289",
+          "claim": "To this end, we used the same immortalized human hepatocyte (IHH-WT) cells and IHH-KO cells where PCSK7 expression was silenced by CRISPR-Cas9, which led to the identification of the non-enzymatic activity of PCSK7 on ApoB100. 10 We transfected these cells with an empty vector or vectors carrying complementary DNAs (cDNAs) encoding for LAG3, CTLA4, TIGIT or PD1 with an N-terminal FLAG-tag immediately following the signal peptide ( figure 2A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:29:33.777428+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length, membrane-anchored PD-1 construct with an N-terminal FLAG tag after the signal peptide, surface-detected in human hepatocyte cells. The position is unambiguous from the landmark 'immediately following the signal peptide' = after residue 24. No internal loop insertions, C-terminal tags, or other extracellular sites are supported by the ledger. The intracellular tail (192\u2013288) and TM domain (171\u2013191) are not relevant for surface tagging. No other ledger lines were provided, so no additional sites are proposed.",
+  "literature_rejected": []
+}

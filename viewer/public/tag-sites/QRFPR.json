@@ -37,7 +37,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "QRFPR-terminal_n-0-lit",
+      "gene_symbol": "QRFPR",
+      "uniprot_acc": "Q96P65",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized anti-FLAG (clone 1E6) staining followed by Alexa Fluor 488 secondary antibody on intact HEK293 cells; no ligand-binding or signaling assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "QRFPR has no endogenous signal peptide (topology residues 1\u201345 are extracellular); the exogenous HA signal peptide drives membrane insertion and is cleaved, placing the FLAG epitope at the extracellular face before M1 (insert_after_residue = 0). L4 gives the exact construct sequence pinning the junction, and L5 independently confirms surface accessibility of the FLAG tag by non-permeabilized immunostaining. The insert point is 46 residues from the TM1 boundary (residue 46), well exceeding the \u22653-residue clearance requirement. L1 and L3 corroborate the same N-terminal position in independent structural-biology constructs. Full-length human QRFPR (Q96P65, no endogenous signal peptide) was expressed in HEK293 cells from a pCAGGS vector carrying an exogenous HA signal peptide (MKTIIALSYIFCLVFA) followed immediately by the FLAG epitope (DYKDDDDK) and a flexible GS linker, then QRFPR from M1. The HA signal peptide is cleaved co-translationally, leaving FLAG at the extracellular N-terminus before residue M1.",
+      "sources": [
+        {
+          "pmid": 38897996,
+          "citation": "PMID 38897996",
+          "claim": "Specifically, GPR103 was N-terminally modified with an HA signal sequence followed by a FLAG epitope and then a flexible linker (MKTIIALSYIFCLVFA DYKDDDDK GGSGGGGSGGSSSGGG; the FLAG epitope is underlined) and inserted into the pCAGGS vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:56:10.627682+00:00",
+  "literature_notes": "L1 (FLAG-BRIL-QRFPR-LgBiT-H8 in Hi5 insect cells) and L2 (BRIL-QRFPR-8\u00d7His in baculovirus) both place a tag at the same N-terminal prepend position (insert_after_residue = 0) but are cryo-EM structural constructs; the BRIL domain is a large thermostabilized apocytochrome b562RIL, not a short epitope tag, so these clips reinforce the position but L4/L5 are the primary surface-tag evidence. L3 describes the same FLAG-at-N-terminus construct as L4 in the context of FLAG affinity purification for structural work; L5 is the explicit surface-detection validation. The C-terminal LgBiT (L1, L3) and 8\u00d7His (L2) tags are at residue 431, which falls within the intracellular C-tail (topology 336\u2013431) and are recorded in other_positions. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 431,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "LgBiT (L1, L3) and 8\u00d7His (L2) fused after residue 431 (H); the C-terminus of QRFPR lies within the intracellular domain (topology 336\u2013431) and is not accessible on the extracellular face."
+    }
+  ]
 }

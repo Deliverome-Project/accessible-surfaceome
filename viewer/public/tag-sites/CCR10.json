@@ -37,7 +37,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCR10-terminal_n-1-lit",
+      "gene_symbol": "CCR10",
+      "uniprot_acc": "P46092",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "G",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface immunological detection confirmed for the HA-tagged receptor library; no ligand-binding or signalling assay reported specifically for HA-CCR10 in this study.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the HA coding sequence was inserted 'between the first 5\u2032 start codon and the second codon', placing the junction after M1 and before G2 (confirmed by reading the numbered sequence: pos 1 = M, pos 2 = G). CCR10 has no signal peptide \u2014 the topology landmarks show EXTRACELLULAR 1\u201346 beginning at residue 1 \u2014 so the tag remains on the extracellular face and is not cleaved. The insertion point is 46 residues from TM1 (boundary at 47), well beyond the \u22653-residue minimum. L3 from the same paper corroborates the N-terminal HA strategy for all class A receptors but adds no new positional information, so L2 is used as the primary clip. A genome-scale GPCR library study (PMC13575135) inserted an HA epitope tag between the first start codon (M1) and the second codon of all class A GPCRs, explicitly including CCR10, to enable universal immunological detection of the full-length, membrane-anchored receptor expressed at the cell surface.",
+      "sources": [
+        {
+          "pmid": 42736269,
+          "citation": "PMID 42736269",
+          "claim": "For GPCRs lacking an extended N-terminal domain (i.e., class A and olfactory receptors), we inserted an influenza hemagglutinin (HA)-coding sequence between the first 5\u02b9 start codon and the second codon in order to facilitate universal immunological detection."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:02:39.836100+00:00",
+  "literature_notes": "L1 (PMC12556802) reports a CCR10-RLucII C-terminal fusion used in BRET-based functional assays. The topology landmarks place the C-terminus at residue 362 within the INTRACELLULAR region (314\u2013362); this is therefore not an extracellular surface-tag site and is recorded in other_positions. L2 and L3 are from the same paper (PMC13575135) and describe the same N-terminal HA insertion strategy; L2 is the more position-specific clip and is used as the sole supporting reference for the single site reported. No ledger line grounds any insertion in ECL1 (101\u2013115), ECL2 (181\u2013204), or ECL3 (270\u2013292), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 362,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal RLucII fusion used in BRET functional assays; residue 362 (N) falls within the intracellular C-terminal tail (topology landmarks: INTRACELLULAR 314\u2013362), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

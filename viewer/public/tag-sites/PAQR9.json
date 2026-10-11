@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "PAQR9",
+  "uniprot_acc": "Q6ZVX9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:15:11.987102+00:00",
+  "literature_notes": "PAQR9 (mPR\u03b5) has an unusual topology in which BOTH the N-terminus (residues 1\u201384) and the C-terminus (residues 369\u2013377) are intracellular, per the authoritative computed landmarks. The four extracellular loops (ECL1 107\u2013118, ECL2 173\u2013206, ECL3 260\u2013280, ECL4 330\u2013347) are the only surface-exposed regions, but no ledger line reports a tag insertion in any of these loops for PAQR9 or a close ortholog. L1\u2013L5 (PMC7660923) describe 'mPR' GFP/HA constructs without specifying the isoform; L2 reports a C-terminal GFP as surface-accessible, but the computed topology places the PAQR9 C-terminus firmly intracellular (369\u2013377), and the close-ortholog data from L6/L7 (mPR\u03b2, PAQR8) independently confirm that both termini of the mPR family are intracellular. L8 covers mPR\u03b1 and mPR\u03b2 C-terminal GFP fusions in MDA231 cells \u2014 again not mPR\u03b5 and no loop residue named. Because no ledger line grounds a tolerated insertion at an extracellular position of PAQR9 or a close ortholog, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal GFP-mPR showed no surface staining under nonpermeabilized conditions, confirming the N-terminus is intracellular; consistent with computed topology placing residues 1\u201384 intracellularly."
+    },
+    {
+      "residue": 377,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "For the close ortholog mPR\u03b2 (PAQR8), C-terminal epitope tags were detected only under permeabilized conditions, indicating the C-terminus is intracellular; the computed topology for PAQR9 likewise places residues 369\u2013377 intracellularly, overriding the apparent surface signal reported in L2 for an unspecified mPR isoform."
+    }
+  ]
+}

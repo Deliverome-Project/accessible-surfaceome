@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MCEMP1",
+  "uniprot_acc": "Q8IX19",
+  "sites": [
+    {
+      "site_id": "MCEMP1-terminal_c-187-lit",
+      "gene_symbol": "MCEMP1",
+      "uniprot_acc": "Q8IX19",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 187,
+      "residue_before": "Q",
+      "residue_after": "",
+      "residue_label": "Q187",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-Flag antibody-mediated stimulation of surface-displayed MCEMP1 was demonstrated (L1); surface expression confirmed by FACS on native mast cell lines and transfected cells (L3). Tagged protein is functional as a stimulable surface receptor.",
+      "confidence": "high",
+      "rationale": "MCEMP1 is a type II transmembrane protein with its N-terminus intracellular (1\u201381) and its C-terminus extracellular (107\u2013187), giving exactly one extracellular terminus. L1 and L2 report a Flag epitope at the 'carboxyl-terminal extracellular domain' of full-length membrane-anchored MCEMP1; no residue number is stated, so the position is topology-derived as insert_after_residue=187 (the last residue, Q, confirmed by reading the numbered sequence). Python verification confirms residue 187 = Q and that the C-terminus is 81 residues from the TM boundary (106), well beyond the \u22653-residue minimum. Anti-Flag stimulation (L1) and FACS surface detection (L3) together satisfy surface_and_function. Full-length, membrane-anchored human MCEMP1 expressed in mammalian cells with a Flag epitope tag at the carboxyl-terminal extracellular domain (L1, L2). MCEMP1 is a type II single-pass TM protein (intracellular 1\u201381, TM 82\u2013106, extracellular 107\u2013187); its C-terminus is the sole extracellular terminus. No ledger line names a specific residue number, so the junction is topology-derived: insert_after_residue=187 (the final Q). L3 independently confirms the C-terminus is extracellular by FACS on native mast cell lines.",
+      "sources": [
+        {
+          "pmid": 37041174,
+          "citation": "PMID 37041174",
+          "claim": "In addition, we incorporated a Flag epitope at the carboxyl-terminal extracellular domain of MCEMP1 to employ anti-Flag antibody-mediated stimulation of MCEMP1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:35:33.586842+00:00",
+  "literature_notes": "All three ledger lines converge on the same site: the C-terminal Flag tag on full-length membrane-anchored MCEMP1. L1 is the primary clip (names tag type, location, and functional use); L2 corroborates that every MCEMP1 expression plasmid carries this C-terminal Flag; L3 provides the original topology determination and FACS surface-expression confirmation. No ledger line names an internal loop insertion or an N-terminal tag, and the N-terminus (residues 1\u201381) is intracellular so it cannot carry a surface tag. No residue number is stated in any clip, so position_evidence is topology_derived rather than validated. The sole extracellular terminus is the C-terminus (residue 187, Q), making the junction unambiguous.",
+  "literature_rejected": []
+}

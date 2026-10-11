@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "LINGO4",
+  "uniprot_acc": "Q6UY18",
+  "sites": [
+    {
+      "site_id": "LINGO4-terminal_n-28-lit",
+      "gene_symbol": "LINGO4",
+      "uniprot_acc": "Q6UY18",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct was expressed and used successfully for co-immunoprecipitation interaction studies; no dedicated surface-expression or functional assay reported.",
+      "confidence": "medium",
+      "rationale": "LINGO4 is a type I single-pass transmembrane protein whose N-terminus is extracellular after signal-peptide cleavage. The signal peptide spans residues 1\u201328 (last SP residue = G28, mature N-terminus = G29), so an N-terminal tag must be placed after residue 28 to avoid co-translational cleavage. The paper names no specific residue, only 'N-terminus', so the junction is topology-derived at insert_after_residue=28. The tag sits 503 residues from the TM boundary, well within the large extracellular domain. Full-length LINGO4 cloned with FLAG at the N-terminus into pLVX-EF1a-IRES-mCherry lentiviral vector; construct used for immunoprecipitation-based interaction studies in mammalian cells.",
+      "sources": [
+        {
+          "pmid": 42048289,
+          "citation": "PMID 42048289",
+          "claim": "Lingo4 , flanked by FLAG-tag at N-terminus and 6xHis tag at C-terminus, was cloned into pLVX-EF1a-IRES-mCherry vector (Clonetech Laboratories, Inc., No. 631987) by Gibson Assembly Cloning Kit (NEB) and confirmed by sequencing."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:10:56.418162+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It supports one extracellular surface site (FLAG at the mature N-terminus, topology-derived at residue 28/29) and one intracellular tag (6xHis at the C-terminus, placed in other_positions). The paper does not name a specific residue for the FLAG insertion, and no surface-expression assay or functional readout for the tagged construct is reported beyond its use in co-IP, so validation_level is detected_only. No internal loop sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 593,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "6xHis tag placed at the C-terminus of full-length LINGO4; the C-terminus (residues 555\u2013593) is intracellular per topology landmarks, making this tag cytoplasmic and not accessible on the extracellular surface."
+    }
+  ]
+}

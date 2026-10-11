@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR2C3-terminal_n-0-lit",
+      "gene_symbol": "OR2C3",
+      "uniprot_acc": "Q8N628",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag / Rho (22 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live, non-permeabilized HEK293T cells surface-labeled with anti-Flag antibody: detectable surface immunofluorescence confirmed membrane-associated receptor display (PMC3698168).",
+      "confidence": "high",
+      "rationale": "OR2C3 has no signal peptide; the topology landmarks place residues 1\u201326 extracellular and TM1 beginning at residue 27. The paper (PMC3698168) describes Flag and Rho tags prepended in-frame at the N-terminus of the full-length, membrane-anchored receptor, and L2 directly confirms surface display by live-cell non-permeabilized immunofluorescence. Because the paper names no specific residue number, the position is topology-derived: with exactly one extracellular terminus and no signal peptide, insert_after_residue=0 (prepend before M1) is the only consistent placement. Python verification: seq[0]='M', confirming residue_after='M'. Full-length OR2C3 expressed in HEK293T cells with N-terminal Flag and Rho tags ligated in-frame upstream of the OR coding sequence; no signal peptide is present, so the extracellular N-terminus (residues 1\u201326, confirmed by topology landmarks) is the sole extracellular terminus and the only possible location for the described N-terminal tag.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "Live, non-permeabilized HEK 293T cells were surface labeled with a Flag antibody to detect membrane associated receptor and OR surface expression was scored based on detectable surface immunofluorescence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:39:03.284919+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same study (PMC3698168) and describe the same N-terminal tag site on OR2C3. L2 is the most probative because it directly reports surface detection of the tagged receptor by live-cell immunofluorescence. L1 and L3 corroborate the construct design (Flag + 22-aa Rho tag prepended in-frame). No residue number is stated in any clip, but OR2C3 lacks a signal peptide and has exactly one extracellular terminus (residues 1\u201326), making the N-terminal prepend (insert_after_residue=0) the unambiguous placement. No ledger evidence supports any internal loop tag (ECL1 81\u201398, ECL2 168\u2013197, ECL3 262\u2013273) or C-terminal tag. No functional (cAMP/calcium signaling) assay result is reported in the ledger clips, so validation_level is surface_only. The Rho tag (L3) is also an N-terminal prepend at the same junction; it is subsumed into this single site rather than listed separately because it is the same position in the same construct family.",
+  "literature_rejected": []
 }

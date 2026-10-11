@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:56:02.515890+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same set of C-terminal fusion constructs: OX1R-Rluc, OX1R-nRluc, OX1R-cRluc, and OX1R-nYFP. L2 states explicitly that the receptor cDNA was subcloned 'to be in-frame with restriction sites of pRluc-N1, pEYFP-N1, nYFP-pcDNA3.1, cYFP-pcDNA3.1, nRluc-pcDNA3.1 and cRluc-pcDNA3.1 vectors to provide plasmids that express proteins fused to the C-terminal end.' The authoritative topology landmarks place the HCRTR1 C-terminus (residues 362\u2013425) in the INTRACELLULAR compartment. L4 confirms that the OX1R-Rluc fusion protein reaches the plasma membrane (surface display of the receptor is intact), but the Rluc/YFP tag itself faces the cytoplasm. No ledger line reports a tag on the extracellular N-terminus (residues 1\u201344), in any extracellular loop (ECL1: 109\u2013116; ECL2: 183\u2013213; ECL3: 325\u2013337), or at any other extracellular position. Because the ledger contains no qualifying extracellular insertion, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 425,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Rluc/nRluc/cRluc/nYFP fusions are appended after the last residue (P425) of OX1R; the C-terminus (residues 362\u2013425) is intracellular per topology, so these tags face the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

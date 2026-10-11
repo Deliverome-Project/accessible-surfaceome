@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "HEG1",
+  "uniprot_acc": "Q9ULI3",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:58:27.105265+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L2 (HEG1-YFP, PMC2665266) names a C-terminal YFP fusion; HEG1's C-terminus (residue 1381) is intracellular (topology 1271\u20131381), so this is not a surface tag site and is recorded in other_positions. L1 (FLAG-tagged murine HEG1, PMC4733052) reports a full-length FLAG-tagged construct but does not state whether the FLAG is at the N-terminus (extracellular, after SP cleavage at residue 29) or C-terminus (intracellular); the topology_derived rule requires knowing which terminus carries the tag, not merely that one terminus is extracellular. The experimental context (studying intracellular KRIT1 interaction; deletion mutant spanning human residues 1327\u20131335, which are intracellular) is consistent with a C-terminal FLAG but does not prove it. Because the position is genuinely ambiguous, no surface site can be proposed from L1. No ledger line supports an insertion on the extracellular face of HEG1 at a pinnable or topology-derivable position.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1381,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HEG1-YFP is a C-terminal YFP fusion; the C-terminus (residue 1381) lies in the intracellular domain (topology 1271\u20131381) and is not accessible on the extracellular face."
+    }
+  ]
+}

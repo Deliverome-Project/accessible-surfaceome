@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "NPR1",
+  "uniprot_acc": "P16066",
+  "sites": [
+    {
+      "site_id": "NPR1-terminal_n-32-lit",
+      "gene_symbol": "NPR1",
+      "uniprot_acc": "P16066",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 32,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A32",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (8 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FLAG tag at N-terminus: ANP EC50 and kinetics of guanylyl cyclase activation unchanged (Schr\u00f6ter et al., 2010, cited in L3). HA tag at N-terminus of mouse NPR1 (L1/L2): full-length receptor detected by western blot at expected molecular weight in multiple tissues; guanylyl cyclase activity not separately reported for the HA knock-in.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201332 (landmark-authoritative); the mature extracellular domain begins at G33. A tag placed upstream of residue 33 would be cleaved with the signal peptide, so the only valid extracellular N-terminal junction is insert_after_residue=32 (between A32 and G33). No clip names a specific residue number, so the position is topology-derived from the single extracellular N-terminus. L3 provides the strongest functional evidence: FLAG at this position leaves ANP-stimulated GC activity and kinetics intact. L1 independently confirms the position is tolerated in vivo via CRISPR knock-in of HA at the same terminus in mouse NPR1 (a close ortholog). L4/L5 confirm the same N-terminal FLAG strategy on full-length human NPR1 in a membrane-anchored expression system. L3 (PMC9627482) reports that a FLAG epitope tag (DYKDDDDK) added to the N-terminus of full-length, membrane-anchored NPR1 had no effect on ANP-dependent guanylyl cyclase activation or kinetics (Schr\u00f6ter et al., 2010), cited in the context of validating the HA-NPR1 knock-in strategy. L1 (same paper) reports an HA tag (YPYDVPDYA) inserted at the extracellular N-terminus of endogenous mouse NPR1 by CRISPR/Cas9 knock-in, confirmed by western blot at the expected ~120\u2013130 kDa (L2). L4/L5 (PMC12493526, PMC13230927) report full-length human NPR1/GC-A expressed with an N-terminal FLAG tag in a membrane-anchored pFastBac1 construct.",
+      "sources": [
+        {
+          "pmid": 36340689,
+          "citation": "PMID 36340689",
+          "claim": "A previous study demonstrated that addition of an epitope tag of similar size (FLAG, DYKDDDDK) to the N-terminus of NPR1 had no effect on the ANP concentration required to activate NPR1 guanylyl cyclase activity, or on the kinetics of the activation ( Schr\u00f6ter et al., 2010 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:10:40.995574+00:00",
+  "literature_notes": "Six ledger lines were evaluated. L1, L2, L3, L4, and L5 all converge on the same site: an epitope tag at the extracellular N-terminus of NPR1, after signal-peptide cleavage at residue 32. Because they all pin the identical junction (topology-derived: insert_after_residue=32), they constitute one site, not multiple; L3 was chosen as the primary clip because it carries explicit functional validation (GC activity unchanged). L6 reports a C-terminal GFP fusion on full-length human GC-A expressed in CHO-K1 cells; per the authoritative topology landmarks the C-terminus (residues 495\u20131061) is entirely intracellular, so this is recorded in other_positions rather than sites. No ledger line reports a tolerated insertion in any internal extracellular loop of NPR1, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1061,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "L6 reports a C-terminal GFP fusion on full-length human GC-A (NPR1) confirmed at the cell surface in CHO-K1 cells; however, the authoritative topology places the entire C-terminal domain (residues 495\u20131061) intracellularly, so this tag faces the cytoplasm and is not a surface-display site."
+    }
+  ]
+}

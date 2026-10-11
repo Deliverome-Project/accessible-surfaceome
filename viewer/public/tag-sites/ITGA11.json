@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ITGA11",
+  "uniprot_acc": "Q9UKX5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:26:41.367712+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same \u03b111-EGFP construct from PMC12965127. ITGA11 is a Type I single-pass transmembrane protein (signal peptide 1\u201322, extracellular 23\u20131141, TM 1142\u20131164, intracellular 1165\u20131188). The EGFP is fused to the C-terminus, which is unambiguously intracellular: the paper's central experiment swaps the cytoplasmic tails of \u03b12 and \u03b111, and the chimeric constructs (\u03b12X\u03b111C-mCherry, \u03b111X\u03b12C-EGFP) make sense only if the fluorescent protein tracks the cytoplasmic tail. No ledger line reports any insertion on the extracellular face of ITGA11. Zero extracellular tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1188,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "\u03b111-EGFP is a C-terminal fusion; the EGFP tracks the cytoplasmic tail (intracellular residues 1165\u20131188), confirmed by cytoplasmic-tail swap chimeras in the same study."
+    }
+  ]
+}

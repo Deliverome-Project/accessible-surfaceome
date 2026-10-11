@@ -37,7 +37,66 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR75-terminal_n-0-lit",
+      "gene_symbol": "GPR75",
+      "uniprot_acc": "O95800",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Endogenous GPR75 protein detected in brain by western blot and immunostaining across multiple brain regions in knockin mice; no GPCR signaling or ligand-binding assay reported in these clips.",
+      "confidence": "high",
+      "rationale": "The HDR template in L1 places the 3xFlag sequence directly before the GPR75 start codon; Python analysis confirms the oligo's ATG (position 145 in the oligo) encodes M1 of GPR75 (seq[0]='M', matching ATGAACACA). The N-terminus (residues 1\u201341) is extracellular with no signal peptide (topology begins with O), so a prepend tag sits on the extracellular face. TM1 begins at residue 42, giving 41 residues of clearance from the TM boundary. The tagged protein is expressed and detectable in vivo, confirming the insertion is tolerated. Endogenous Gpr75 locus in mouse was edited by CRISPR/Cas9 homologous replacement using an HDR oligo that places the 3xFlag coding sequence (lowercase in the oligo) immediately upstream of the GPR75 start codon (ATG = M1). The resulting 3xFlag-Gpr75 knockin mice express the tagged protein; endogenous GPR75 was detected by western blot and immunostaining across multiple brain regions.",
+      "sources": [
+        {
+          "pmid": 39137039,
+          "citation": "PMID 39137039",
+          "claim": "Gpr75 -knockout ( Gpr75 \u2013/\u2013 ) mice and 3xFlag tag Gpr75-knockin ( 3xFlag-Gpr75 ) mice were generated in our laboratory using the CRISPR/Cas9 system as described previously ( 41 ), with Gpr75 (5\u2032-ATTGGGGACATTCTGAAGCG-3\u2032) small base-pairing guide RNA (sgRNA) and the oligo template with the 3xFlag tag and flanking sequence: 5\u2032-TGAGCTGAGATCCTGACTCTTTTCCTGCTGAATTTATTTTTTTGAGAACACAAGAAAGAGACACCTCTCTCTGAAGatggactacaaagaccatgacggtgattataaagat catgatatcgattacaaggatgacgatgacaagATGAACACAAGTGCCCCGCTTCAGAATGTCCCCAATGCCACCTTGCTAAACATGC-3\u2032."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:40:28.744451+00:00",
+  "literature_notes": "L1, L2, and L3 all describe the same 3xFlag-Gpr75 knockin construct; L1 is cited as it contains the HDR oligo that pins the exact junction. L4 (C-terminal GFP) and L5 (ICL3-BRIL) both describe intracellular insertions and are recorded in other_positions. No ledger line supports an insertion in any extracellular loop (ECL1 107\u2013120, ECL2 182\u2013201, ECL3 343\u2013356) of GPR75.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 540,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "GFP fused to the C-terminus of full-length GPR75 in a knockin mouse; the C-terminus (residues 378\u2013540) is intracellular, so this is not a surface tag site."
+    },
+    {
+      "residue": 273,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "BRIL fusion engineered into ICL3 (residues 225\u2013322, intracellular) of full-length human GPR75 for cryoEM; no specific residue named in the clip, representative midpoint used; not a surface tag site."
+    }
+  ]
 }

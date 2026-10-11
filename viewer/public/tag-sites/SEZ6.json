@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "SEZ6",
+  "uniprot_acc": "Q53EL9",
+  "sites": [
+    {
+      "site_id": "SEZ6-terminal_n-19-lit",
+      "gene_symbol": "SEZ6",
+      "uniprot_acc": "Q53EL9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag-V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed; construct used for surface characterization of SEZ6 trafficking and shedding. No quantitative functional assay reported for the tagged vs. untagged protein.",
+      "confidence": "high",
+      "rationale": "SEZ6 is a type I single-pass transmembrane protein with a signal peptide spanning residues 1\u201319; the sole extracellular terminus is the mature N-terminus beginning at residue 20 (L). The construct name 'Flag-V5-hSEZ6' unambiguously places the tag N-terminal to the coding sequence; for a surface-displayed protein with a signal peptide, the tag must reside after SP cleavage (insert_after_residue = 19, between G19 and L20) to avoid being cleaved off. No specific residue number is stated in the paper, but exactly one extracellular terminus exists, making the junction unambiguous. Python verification confirms G at position 19 and L at position 20, consistent with the topology landmarks. Full-length human SEZ6 (transcript variant 1, UniProt Q53EL9-1) was cloned into pcDNA3.1 as pcDNA3.1/Flag-V5-hSEZ6-HA, placing a Flag-V5 tag at the N-terminus and an HA tag at the C-terminus, for surface-display characterization in transfected cells.",
+      "sources": [
+        {
+          "pmid": 27716410,
+          "citation": "PMID 27716410",
+          "claim": "A FLAG tag (DYKDDDDK) was cloned to the C terminus of the protein. pcDNA3.1/HA-SLIC-Flag-empty was used as control. pcDNA3.1/Flag-V5-hSEZ6-HA was generated cloning full-length Homo sapiens SEZ6, transcript variant 1 (Uniprot Q53EL9-1) into pcDNA3.1 vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:20:35.286949+00:00",
+  "literature_notes": "L1 (mouse SEZ6, HA after native SP, lentiviral surface display) and L3 (mouse SEZ6, HA after CD5 SP, pcDNA3.1) both independently corroborate an N-terminal extracellular tag at the mature N-terminus of SEZ6, but are indirect evidence (mouse ortholog). L4 is the primary citation because it uses the exact human isoform (Q53EL9-1) being analyzed. L5 describes ectodomain and CTF fragment constructs generated around the BACE1 cleavage site (mouse L906/D907); these are soluble or truncated fragments, not full-length membrane-anchored proteins, and are disqualified per the evidence rules. The C-terminal tags in L2, L3, and L4 all land in the intracellular tail (residues 947\u2013994) and are recorded in other_positions. No internal extracellular loop insertion is supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 994,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Double FLAG tag cloned to the C-terminus of full-length mouse SEZ6 in pFU; the C-terminus of SEZ6 is intracellular (residues 947\u2013994), so this tag faces the cytoplasm and cannot serve as a surface epitope."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHGC3",
+  "uniprot_acc": "Q9UN70",
+  "sites": [
+    {
+      "site_id": "PCDHGC3-internal-None-lit",
+      "gene_symbol": "PCDHGC3",
+      "uniprot_acc": "Q9UN70",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-Myc antibody staining of non-permeabilized cells showed signal at the cell periphery and cell-cell junctions, confirming surface display of the full-length tagged protein. No quantitative functional assay (e.g., homophilic binding) reported for the tagged construct.",
+      "confidence": "high",
+      "rationale": "L5 is the only ledger line that names the tag position for PCDHGC3, stating it is in the stalk region between EC6 and the transmembrane helix. The extracellular domain runs 32\u2013693 and the TM begins at 694, so the stalk is the C-terminal portion of the extracellular span immediately proximal to the membrane. No specific residue number is given in any ledger line, so insert_after_residue is left null and the region is recorded as named. Surface display was confirmed by anti-Myc staining of intact (non-permeabilized) cells showing cell-periphery and cell-cell junction signal (L2, L4), validating extracellular accessibility of the tag. Full-length membrane-anchored PCDHGC3 construct (from Maniatis lab) carrying an extracellular Myc tag positioned in the stalk region between EC6 and the transmembrane helix, co-expressed with an intracellular fluorescent protein; anti-Myc antibody staining of non-permeabilized transfected cells used to assess surface localization.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:30:31.379315+00:00",
+  "literature_notes": "All seven ledger lines (L1\u2013L7) concern the same Myc-tagged full-length PCDHGC3 construct originating from the Maniatis laboratory. L1\u2013L4 and L6\u2013L7 confirm surface display by anti-Myc staining of non-permeabilized cells but do not name a residue. L5 is the sole line that localises the tag to the 'stalk region between EC6 and the transmembrane helix', which falls within the extracellular span (residues 32\u2013693, TM at 694\u2013715). Because no specific residue number appears in any ledger line, insert_after_residue is null and the site is classified as region-level. No N-terminal (post-signal-peptide) tag, no other internal loop tag, and no intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

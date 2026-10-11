@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "FGFRL1",
+  "uniprot_acc": "Q8N441",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:51:29.405298+00:00",
+  "literature_notes": "All three ledger lines concern C-terminal fluorescent-protein fusions (GFP in L1, mEGFP in L2) or vaguely 'differentially tagged' constructs (L3). The FGFRL1 C-terminus (residue 504) lies in the intracellular span (400\u2013504), so these tags are cytoplasmic, not surface-exposed. L3 names no tag type and no residue; the FRET context strongly implies the same C-terminal FP fusions as L1/L2. No ledger line reports a tag on the extracellular face (residues 25\u2013378) of full-length, membrane-anchored FGFRL1. The mature N-terminus (residue 25, after signal-peptide cleavage at 24) is extracellular and would in principle accept a prepended tag, but no ledger line supports such an insertion \u2014 the rules forbid proposing sites the ledger does not ground.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 504,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion (L1) and C-terminal mEGFP fusion (L2) both append a fluorescent protein after the last residue (C504), which is intracellular; the tagged protein reaches the plasma membrane but the tag faces the cytoplasm."
+    }
+  ]
+}

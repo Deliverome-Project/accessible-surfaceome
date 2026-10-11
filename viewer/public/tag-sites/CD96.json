@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD96",
+  "uniprot_acc": "P40200",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:23:13.890504+00:00",
+  "literature_notes": "The single ledger entry (L1) describes an Lck:CD96-GFP construct in which the full-length CD96 coding region is subcloned into an lck:GFP vector, placing GFP at the C-terminus of CD96. CD96 is a type I single-pass transmembrane protein (extracellular 22\u2013520, TM 521\u2013541, intracellular 542\u2013585); its C-terminus is therefore cytoplasmic. The GFP fusion is intracellular, not extracellular, and does not qualify as a surface-tag site. No residue is named for the junction, and no other insertion modality (FLAG, HA, Myc, ALFA, BBS, transposon screen, etc.) on an extracellular face of CD96 appears anywhere in the ledger. The ledger supports zero extracellular surface-tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 585,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion on full-length CD96 (Lck:CD96-GFP construct); CD96 C-terminus is intracellular (residues 542\u2013585), so GFP is cytoplasmic \u2014 tolerated but not an extracellular surface tag."
+    }
+  ]
+}

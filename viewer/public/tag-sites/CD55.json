@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD55",
+  "uniprot_acc": "P08174",
+  "sites": [
+    {
+      "site_id": "CD55-terminal_n-34-lit",
+      "gene_symbol": "CD55",
+      "uniprot_acc": "P08174",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "G",
+      "residue_after": "D",
+      "residue_label": "G34",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry (T5 mAb): surface display confirmed. Functional assay: surface-free GPI levels restored to MFI 8594 in TKO cells (vs. 6515 in PIGS-HRD1-DKO control), indicating full functional competence of the HA-tagged construct.",
+      "confidence": "high",
+      "rationale": "CD55 has a 34-residue signal peptide (landmarks: SP 1\u201334, mature N-terminus 35). An N-terminal HA tag must be placed after the signal peptide cleavage site to avoid being cleaved off; insert_after_residue=34 places the tag between G34 (last SP residue) and D35 (first mature residue), confirmed by reading the numbered sequence. No residue number is stated in either clip, but CD55 has exactly one extracellular terminus (the mature N-terminus; the C-terminus carries the GPI anchor signal and is not surface-exposed as a free end), so the position is uniquely topology-derived. L2 provides both surface and functional validation in a full-length membrane-anchored context. L1 describes a full-length membrane-anchored CD55 construct (HA-CD55-TM) in which an HA tag is placed at the N-terminus of the protein; L2 confirms stable expression of HA-tagged CD55 in TKO cells with surface display verified by flow cytometry and functional rescue of surface-free GPI levels (MFI 8594 vs. 6515 in control). CD55 is GPI-anchored; the canonical sequence has no TM domain (topology: S\u00d734, O\u00d7347). The 'TM' suffix in the construct denotes an added transmembrane anchor replacing the native GPI signal, not a canonical TM helix. The HA tag is at the extracellular N-terminus of the mature protein.",
+      "sources": [
+        {
+          "pmid": 36828365,
+          "citation": "PMID 36828365",
+          "claim": "When we stably expressed HA-tagged CD55 in the TKO cells, the amounts of surface-free GPIs were restored or were even higher (geometric mean fluorescence intensity [MFI] 8594) than those in PIGS-HRD1-DKO cells (geometric MFI 6515; Fig. 3, A and B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:18:55.873862+00:00",
+  "literature_notes": "CD55 (DAF) is a GPI-anchored protein; its canonical sequence (381 aa) has no transmembrane helix \u2014 the topology string is S\u00d734 followed by O\u00d7347 with no M or I residues. The 'TM' in the HA-CD55-TM construct (L1) denotes an exogenous transmembrane anchor appended to replace the native GPI signal, enabling stable membrane display in the experimental system. Both ledger lines (L1, L2) report an HA tag at the N-terminus of the mature protein; neither names a specific residue number, so position_evidence is topology_derived. The mature N-terminus (D35) is the only free extracellular terminus; the GPI-anchored C-terminus is not a surface-accessible free end and is not supported by any ledger line. No internal loop insertions are reported in the ledger. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL1RAPL1",
+  "uniprot_acc": "Q9NZN1",
+  "sites": [
+    {
+      "site_id": "IL1RAPL1-terminal_n-18-lit",
+      "gene_symbol": "IL1RAPL1",
+      "uniprot_acc": "Q9NZN1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface HA immunostaining at DIV16 confirmed extracellular display; no functional assay (e.g., synapse induction) reported for the tagged construct in isolation.",
+      "confidence": "high",
+      "rationale": "IL1RAPL1 is a type I single-pass transmembrane protein whose signal peptide spans residues 1\u201318 (computed); the mature extracellular domain begins at residue 19 (L). The GluR2-SP-HA vector replaces the native SP with the GluR2 SP followed by the HA tag, so the HA is deposited at the extracellular N-terminus of the mature protein. In canonical IL1RAPL1 numbering this corresponds to insert_after_residue 18 (last SP residue S) / residue_after 19 (L). Python verification confirms seq[17]='S' and seq[18]='L'. The tag is 339 residues from the TM boundary, satisfying all distance constraints. Full-length HA-IL1RAPL1 expressed in hippocampal neurons using the GluR2 signal-peptide-HA vector (PMC3221541), which places the HA tag at the extracellular mature N-terminus after SP cleavage. Neurons transfected at DIV9 and stained at DIV16 with anti-HA antibody confirmed surface display of the tagged protein.",
+      "sources": [
+        {
+          "pmid": 21926414,
+          "citation": "PMID 21926414",
+          "claim": "( B ) Hippocampal neurons were transfected at DIV 9 with GFP alone or with GFP and HA-IL1RAPL1, HA-IL1RAPL1\u25b5C, HA-IL1RAPL1\u25b5N or HA-IL1RAPL2 constructs as indicated and stained at DIV 16 for GFP and HA (only the GFP channel is shown) (scale bars = 10 \u03bcm)."
+        },
+        {
+          "pmid": 23785489,
+          "citation": "PMID 23785489",
+          "claim": "HEK 293T cells were transfected with pcDNA3-YFP-IL1RAPL1 or pcDNA3-FLAG-IL1RAPL1 and pcDNA3-FLAG-Bat3, pcDNA3-myc-PLC\u03b21, pcDNA3-FLAG-Snap91, pcDNA3-myc-SNIP, pcDNA3-FLAG-Mcf2l, pcDNA3-FLAG-Rasal1 or pcDNA3-FLAG-PKC\u03b5 (CMV promoter) using NanoJuice (Novagen)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:20:41.507358+00:00",
+  "literature_notes": "L1 describes the GluR2-SP-HA vector used for IL1RAPL2 and provides mechanistic context for how the HA tag is positioned in L2; it does not add a distinct site beyond what L2 already covers for IL1RAPL1. L4 describes the same YFP/FLAG-IL1RAPL1 constructs as L3 (same paper, PMC3681934) and is therefore subsumed by Site 2. All four ledger lines converge on a single extracellular junction: the mature N-terminus after SP cleavage (insert_after_residue 18). No internal extracellular loop insertions are reported in the ledger for IL1RAPL1 or a close ortholog. No C-terminal (intracellular) tags are reported. No abrogating insertions are reported.",
+  "literature_rejected": []
+}

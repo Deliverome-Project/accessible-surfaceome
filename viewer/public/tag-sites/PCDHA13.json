@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHA13",
+  "uniprot_acc": "Q9Y5I0",
+  "sites": [
+    {
+      "site_id": "PCDHA13-internal-None-lit",
+      "gene_symbol": "PCDHA13",
+      "uniprot_acc": "Q9Y5I0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by fluorescent anti-Myc antibody staining of non-permeabilized transfected cells (PMC12337331) and by immunofluorescence in K562 cells (PMC4183217); no functional assay reported for the tagged constructs.",
+      "confidence": "high",
+      "rationale": "L1 (PMC12337331) explicitly states the Myc tag was placed 'in the stalk region between EC6 and the transmembrane helix' of cPCDH constructs including PCDHA isoforms; L2 from the same paper confirms surface display by non-permeabilized staining. L3 and L4 (PMC4183217) independently corroborate the same stalk insertion for Pcdh\u03b1 isoforms with surface localization confirmed in K562 cells. PCDHA13 is a PCDHA isoform and its stalk spans residues 660\u2013697 (computed from the topology landmarks: extracellular ends at 697, TM begins at 698); no specific junction residue is named in any clip, so insert_after_residue is left null and the region is recorded. Two independent papers converge on the same region, giving high confidence that the stalk tolerates a short epitope tag. Two independent papers (PMC12337331 and PMC4183217) report insertion of an extracellular c-Myc tag into the stalk region between EC6 and the transmembrane helix of full-length, membrane-anchored clustered protocadherin constructs explicitly including PCDHA (alpha) isoforms. The constructs were expressed in transfected cells and the tag was placed in the extracellular stalk (PCDHA13 residues ~660\u2013697, the 38-aa extracellular segment immediately N-terminal to the TM helix at 698). No specific junction residue is named in either paper.",
+      "sources": [
+        {
+          "pmid": 40737325,
+          "citation": "PMID 40737325",
+          "claim": "For derived constructs including the Myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( SI Appendix , Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:21:39.633614+00:00",
+  "literature_notes": "All four ledger clips (L1\u2013L4) describe the same insertion modality \u2014 a c-Myc epitope tag in the extracellular stalk between EC6 and the TM helix of full-length membrane-anchored PCDHA constructs \u2014 from two independent publications (PMC12337331 and PMC4183217). Because both papers name the same region without specifying a junction residue, they support a single region-level site rather than two distinct residue-level sites. No N-terminal tag evidence is present in the ledger. No intracellular or function-abrogating positions are named in any clip. The intracellular domain (residues 721\u2013950) and the signal peptide (1\u201329) are not candidates for surface tagging and are not proposed.",
+  "literature_rejected": []
+}

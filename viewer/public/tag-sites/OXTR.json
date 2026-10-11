@@ -37,7 +37,77 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OXTR-terminal_n-0-lit",
+      "gene_symbol": "OXTR",
+      "uniprot_acc": "P30559",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry: WT HA-OXTR-GFP shows robust cell-surface expression; V281M variant shows 57% reduction relative to WT, confirming the tagged WT receptor traffics normally to the surface. Receptor function (e.g., Gq signalling) NOT MEASURED in this clip.",
+      "confidence": "high",
+      "rationale": "OXTR (UniProt P30559) has no annotated signal peptide; the N-terminus (residues 1\u201338) is extracellular per the authoritative topology landmarks, and TM1 begins at residue 39, placing the prepend site 38 residues from any TM boundary. L9 explicitly states HA is placed on the N-terminus of the full-length, membrane-anchored receptor, and L10 confirms surface display by flow cytometry. Because no specific residue number is named (only 'N-terminus'), position_evidence is topology_derived: for a GPCR with no signal peptide the N-terminal prepend (insert_after_residue=0) is the unique extracellular N-terminal junction. The same N-terminal HA architecture is independently corroborated by L11 (HA-OTR reagent) and L12 (HA on N-terminus confirmed by western blot). Full-length HA-OXTR-GFP construct expressed in HEK293T cells (HA on N-terminus, GFP on C-terminus); quantitative flow cytometry used to measure cell-surface OXTR expression in WT and V281M variant backgrounds.",
+      "sources": [
+        {
+          "pmid": 35093385,
+          "citation": "PMID 35093385",
+          "claim": "We transiently transfected HEK293T cells with V281M OXTR tagged with hemagglutinin and GFP (HA-OXTR-GFP), treated them with 10 \u03bcM of each candidate drug for 16 h, then performed quantitative flow cytometry to measure cell surface OXTR ( 16 , 19 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:07:09.393663+00:00",
+  "literature_notes": "L1\u2013L8 and L14 all describe C-terminal fusions (3xHA, smFP, 3xALFA, GFP10, or other epitope tags fused immediately upstream of the stop codon or to the C-terminal end of the Oxtr coding sequence). The authoritative topology places the OXTR C-terminus in the intracellular region (IC 333\u2013389); these constructs therefore carry their tags on the cytoplasmic face and do not qualify as surface tag sites. L13 (CRISPR knock-in 'OXTR-HA' in hTERT-HM cells) uses the protein-tag naming convention suggesting a C-terminal HA, which would also be intracellular; the clip does not state the tag position explicitly, so it cannot be promoted to a surface site. L11 (HA-OTR listed as an available reagent) and L12 (N-terminal HA confirmed by western blot) both corroborate the N-terminal HA site already grounded in L9, but neither adds a new position. No ledger line reports a tolerated insertion in any of the four extracellular loops (ECL1 98\u2013113, ECL2 176\u2013202, ECL3 295\u2013309) of the full-length membrane-anchored receptor, so no internal loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 389,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3xHA fused immediately upstream of the stop codon (C-terminal knock-in); the OXTR C-terminus lies in the intracellular region (IC 333\u2013389) and is not surface-accessible."
+    },
+    {
+      "residue": 389,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "smFP fused directly to the C-terminal end of the Oxtr coding sequence; C-terminus is intracellular."
+    },
+    {
+      "residue": 389,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "3xALFA fused to the C-terminal end of Oxtr; C-terminus is intracellular."
+    },
+    {
+      "residue": 389,
+      "kind": "intracellular",
+      "supporting_clip_id": "L14",
+      "note": "GFP10 fused to the C-terminus of OXTR via a SGGKL linker for BRET assays; C-terminus is intracellular."
+    }
+  ]
 }

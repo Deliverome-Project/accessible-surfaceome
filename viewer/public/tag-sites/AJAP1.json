@@ -1,0 +1,99 @@
+{
+  "has_data": true,
+  "gene_symbol": "AJAP1",
+  "uniprot_acc": "Q9UKB5",
+  "sites": [
+    {
+      "site_id": "AJAP1-internal-114-lit",
+      "gene_symbol": "AJAP1",
+      "uniprot_acc": "Q9UKB5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 114,
+      "residue_before": "K",
+      "residue_after": "A",
+      "residue_label": "K114",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by FLAG detection in surface expression experiments; no functional assay reported for the tagged construct specifically.",
+      "confidence": "high",
+      "rationale": "The ledger explicitly names a FLAG epitope inserted after K115 in the extracellular domain of full-length, membrane-anchored AJAP1. The human canonical sequence has K at position 114 (not 115); Python search shows K114 is the only K in the immediate vicinity and the 1-residue offset is consistent with a single indel between mouse and human sequences upstream of this site. The site lies 71 residues from the mature N-terminus and 169 residues from the TM boundary, well within the extracellular domain (44\u2013282). A short ALFA-tag insert here is directly precedented by the published FLAG insertion. Full-length mouse AJAP1 (membrane-anchored) expressed in pCI vector with a FLAG epitope inserted after K115 (mouse numbering) in the extracellular domain, used for surface expression experiments. The paper (PMC11235169) uses mouse AJAP1; human canonical position 114 = K, position 115 = A; mouse K115 maps to human K114 by a 1-residue offset between orthologs. Python search confirmed K114 is the nearest K to the stated position 115 in the human sequence.",
+      "sources": [
+        {
+          "pmid": 38985877,
+          "citation": "PMID 38985877",
+          "claim": "For surface expression experiments, a FLAG epitope was inserted after K115 in the extracellular domain of AJAP1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "AJAP1-internal-170-lit",
+      "gene_symbol": "AJAP1",
+      "uniprot_acc": "Q9UKB5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 170,
+      "residue_before": "R",
+      "residue_after": "G",
+      "residue_label": "R170",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "sfGFP1-10 (split-GFP fragment)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Surface display confirmed by split-GFP complementation assay; the construct reached the cell surface with the sfGFP1-10 fragment accessible extracellularly. No independent functional assay of AJAP1 activity reported for this construct.",
+      "confidence": "high",
+      "rationale": "The ledger explicitly names R170 as the junction for a large sfGFP1-10 domain insertion (flanked by G-S linkers) in the extracellular domain of full-length, membrane-anchored AJAP1. Python lookup confirms human position 170 = R, matching the paper exactly. The site is 127 residues from the mature N-terminus and 113 residues from the TM boundary. If the extracellular domain tolerates a ~230 aa sfGFP1-10 insertion here, a ~15\u201323 aa ALFA tag with GS linkers is sterically far less demanding and is well-supported at this junction. Full-length mouse AJAP1 (membrane-anchored, pCI-AJAP1-mCherry backbone) with superfolder GFP1-10 flanked by G-S linkers inserted after R170 in the extracellular domain, generating GN-AJAP1-mCherry used for split-GFP surface display detection. Human canonical position 170 = R, an exact match to the paper's stated R170; no numbering repair needed.",
+      "sources": [
+        {
+          "pmid": 38985877,
+          "citation": "PMID 38985877",
+          "claim": "GN-AJAP1-mCherry and GN-AJAP1-SDBM-mCherry (containing superfolder GFP1\u201310 (44967, Addgene) flanked by G-S linkers after AJAP1-R170) were generated using the insert as a polymerase chain reaction primer with pCI-AJAP1-mCherry or pCI-AJAP1-SDBM-mCherry as templates."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:23:07.905586+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L3 (FLAG after K115/K114) and L2 (sfGFP1-10 after R170) both ground extracellular internal sites in full-length, membrane-anchored AJAP1 constructs and are reported above. L1 (C-terminal HA-mCherry) grounds only an intracellular tag (the C-terminus falls in the cytoplasmic domain, residues 304\u2013411) and is recorded in other_positions. The K115 (mouse) \u2192 K114 (human) offset was resolved by Python search: human position 115 = A, position 114 = K; the 1-residue discrepancy is consistent with a single indel between mouse and human AJAP1 upstream of this site. No ledger evidence supports a tag at the mature N-terminus (residue 44) or any other extracellular position.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 411,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA-mCherry fusion on full-length AJAP1; the C-terminus lies in the intracellular domain (304\u2013411) and is not accessible on the extracellular face."
+    }
+  ]
+}

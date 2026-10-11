@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR27-terminal_n-0-lit",
+      "gene_symbol": "GPR27",
+      "uniprot_acc": "Q9NS67",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Ca\u00b2\u207a response to surrogate agonist 8535n rescued (AUC 15.47 \u00b1 1.47 vs. KO 3.54 \u00b1 0.90; L4) and cAMP response to extracellular L-lactate rescued (AUC 18.08 \u00b1 3.97 vs. KO 8.20 \u00b1 1.04; L5) \u2014 function fully restored to wild-type levels.",
+      "confidence": "high",
+      "rationale": "GPR27 has no signal peptide and its N-terminus (residues 1\u201322, EC1) is extracellular per the authoritative topology landmarks; TM1 begins at residue 23, placing the prepend site well (>3 residues) from any TM boundary. The ledger names no specific residue, but exactly one extracellular terminus exists, so the position is topology-derived as a prepend before M1 (insert_after_residue = 0). Functional rescue of both Ca\u00b2\u207a and cAMP signalling in GPR27-KO cells by pFLAG27 (L4, L5) confirms the FLAG-tagged receptor is correctly folded, trafficked to the surface, and fully functional. Full-length FLAG-tagged GPR27 (pFLAG27) was transiently re-expressed in CRISPR\u2013Cas9 GPR27-knockout MEF cells. The ledger names no residue for the FLAG insertion. GPR27 is a GPCR with no signal peptide; its N-terminus (EC1, residues 1\u201322) is the sole extracellular terminus, making the N-terminal prepend the only topology-consistent placement.",
+      "sources": [
+        {
+          "citation": "DOI 10.64898/2026.08.09.743761",
+          "claim": "We used single-cell F\u00f6rster resonance energy transfer nanosensors to monitor cytosolic Ca  2+ and cAMP in wild-type 3T3 MEF cells, CRISPR\u2013Cas9 GPR27-knockout cells (GPR27KO) and GPR27-knockout cells transiently re-expressing FLAG-tagged GPR27 (GPR27-rescued).",
+          "source_id": "DOI:10.64898/2026.08.09.743761"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:33:04.129213+00:00",
+  "literature_notes": "L1/L2 describe a GPR27\u20133\u00d7(GGGGS)\u2013BioID2\u2013HA C-terminal fusion confirmed by Western blot in HEK293 cells. The C-terminus of GPR27 falls in IC4 (residues 342\u2013375, intracellular), so this tag is cytoplasmic and is recorded in other_positions rather than sites. L3/L4/L5 collectively ground the single surface site: L3 names the FLAG-tagged construct and the rescue experiment; L4 and L5 provide the quantitative functional readouts. No ledger line supports an internal extracellular-loop insertion for GPR27.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 375,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GPR27\u2013BioID2\u2013HA C-terminal fusion expressed in HEK293 cells; the C-terminus (residue 375, IC4 342\u2013375) is intracellular, so this tag faces the cytoplasm and is not a surface-tag site."
+    }
+  ]
 }

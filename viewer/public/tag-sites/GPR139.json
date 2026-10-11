@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR139-terminal_n-0-lit",
+      "gene_symbol": "GPR139",
+      "uniprot_acc": "Q6DWJ6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "c-myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Fluo-4 Ca2+ assay: myc-tagged WT EC50 = 670 nM vs untagged WT EC50 = 772 nM; equivalent response, function preserved. Surface expression confirmed by ELISA.",
+      "confidence": "high",
+      "rationale": "GPR139 has no endogenous signal peptide (topology is extracellular from residue 1), so the N-terminal extracellular face is the sole extracellular terminus; insert_after_residue=0 places the tag before M1. The position is topology-derived: no residue number is named in any ledger line, but there is exactly one extracellular terminus. Three independent papers using three different tag types (c-myc, V5, HA) all converge on this same junction, and L4 demonstrates functionally equivalent Ca2+ signaling (EC50 ratio 0.87), confirming the tag is tolerated without impairing Gq coupling. N-terminally c-myc-tagged full-length human GPR139 (NM_001002911.3) expressed in HEK cells using pEGFP-N1 vector with an exogenous mGluR5 signal peptide (cleaved post-translationally) followed by c-myc before GPR139 residue 1; surface expression confirmed by ELISA. Corroborated by two additional papers: V5-tagged GPR139 (PMC6367278, L5/L6) and HA-tagged GPR139 with HA signal peptide (PMC12287315, L7), all placing a tag at the same N-terminal extracellular junction.",
+      "sources": [
+        {
+          "pmid": 28442765,
+          "citation": "PMID 28442765",
+          "claim": "The myc-tagged wild-type (WT) receptor displayed equivalent response to 1a in the Fluo-4 Ca 2+ -assay (EC 50 = 670 nM) as compared to the untagged WT receptor (EC 50 = 772 nM) (Supplementary Fig. 2 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:25:37.635954+00:00",
+  "literature_notes": "All seven ledger lines describe N-terminal extracellular tags on full-length GPR139; no ledger line supports an internal loop insertion or a C-terminal tag. The three extracellular loops (ECL1: 87-102, ECL2: 166-181, ECL3: 250-264) have no ledger support and are not proposed. No ledger line reports an intracellular tag or a function-abrogating insertion, so other_positions is empty. The exogenous signal peptides (mGluR5 SP in L2, HA SP in L7) are construct elements cleaved before the tag reaches the cell surface; they do not shift the GPR139 residue numbering.",
+  "literature_rejected": []
 }

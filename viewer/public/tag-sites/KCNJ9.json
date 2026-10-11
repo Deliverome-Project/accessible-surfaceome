@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNJ9",
+  "uniprot_acc": "Q92806",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:46:35.275226+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same experiment: N-terminal split-YFP (BiFC) fusions to full-length GIRK3 (KCNJ9), shown to be functional (L2). However, the authoritative topology places the N-terminus (residues 1\u201358) entirely intracellular. An N-terminal tag on this protein therefore faces the cytoplasm, not the extracellular space, and cannot serve as a surface epitope tag. The sole extracellular region is the P-loop/turret (residues 83\u2013134), but no ledger line reports any insertion there. The C-terminus (157\u2013393) is also intracellular. With no ledger evidence for any extracellular-facing insertion, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal split-YFP (NYFP/CYFP) fusion to full-length GIRK3 is tolerated and functional (L2), but the N-terminus (residues 1\u201358) is intracellular per topology; this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

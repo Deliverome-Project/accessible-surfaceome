@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CYSLTR2-terminal_n-0-lit",
+      "gene_symbol": "CYSLTR2",
+      "uniprot_acc": "Q9NS75",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed for N-terminally tagged CysLT2R constructs (L4: receptor surface expression in Sf9 cells confirmed for the FLAG-bearing crystallography construct). In the same publication (PMC7948404), the closely related CysLTR2-GFP10 (C-terminal tag) construct showed dose-dependent IP1 accumulation in response to LTD4, confirming the receptor is functional when tagged; the N-terminal FLAG construct's functional result is not explicitly reported in the ledger clips.",
+      "confidence": "high",
+      "rationale": "CysLT2R (UniProt Q9NS75) has no annotated signal peptide; the topology landmarks place residues 1\u201342 as extracellular, making the N-terminus the sole extracellular terminus of the receptor. A tag prepended before M1 (insert_after_residue = 0) sits 43 residues from the TM1 boundary (residue 43), well clear of the \u22653-residue constraint. The position is topology_derived because no ledger clip names a specific residue number for the junction, but with a single extracellular terminus and no signal peptide there is exactly one possible location. Four independent ledger lines (L3, L5, L11, L12) across two publications all place a FLAG tag at the N-terminus of full-length, membrane-anchored CysLT2R, providing strong convergent support. Human CysLTR2 cloned into pcDNA3.1(+) with an N-terminal FLAG tag (DYKDDDDK) and a C-terminal 1D4 epitope tag, creating a doubly-tagged full-length receptor construct expressed in HEK293T cells. The same N-terminal FLAG arrangement is independently reported in at least three additional constructs (L3, L11, L12) across two publications.",
+      "sources": [
+        {
+          "pmid": 33288675,
+          "citation": "PMID 33288675",
+          "claim": "The synthetic vector encodes human CysLTR2 cDNA in pcDNA3.1(+) fused to an N-terminal FLAG tag (DYKDDDDK) and a C-terminal 1D4 epitope tag (TETSQVAPA) ( 2 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:12:25.382649+00:00",
+  "literature_notes": "L1 and L2 report BRIL insertion into ICL3 (between E232 and V240); ICL3 spans residues 226\u2013245 (intracellular) \u2014 not a surface site, recorded in other_positions. L6, L7, L8 report C-terminal GFP10 fusions; the C-terminus falls in the intracellular span 308\u2013346 \u2014 not a surface site, recorded in other_positions (L8 confirms function is preserved for this intracellular tag). L9 and L10 describe structural constructs with C-terminal NanoBiT and N-terminal BRIL fusions used for cryo-EM; the BRIL at the N-terminus in L10 is a large fusion protein for structure determination rather than a short epitope tag, and the construct carries additional truncations and mutations that preclude treating it as an independent validation of a surface tag site \u2014 it is subsumed by the stronger FLAG evidence. L11 also carries a C-terminal 8\u00d7His tag (intracellular) noted in other_positions. No ledger line supports any internal extracellular loop (ECL1 94\u2013123, ECL2 175\u2013204, ECL3 267\u2013286) insertion for CysLT2R.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 232,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "BRIL inserted between E232 and V240 in ICL3 (intracellular span 226\u2013245) for crystallography; tolerated but faces the cytoplasm."
+    },
+    {
+      "residue": 346,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal GFP10 fusion after the last residue (V346) in the intracellular C-tail (308\u2013346); functional \u2014 dose-dependent IP1 accumulation in response to LTD4 confirmed in HEK293T cells \u2014 but not a surface site."
+    },
+    {
+      "residue": 346,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal 1D4 epitope tag (TETSQVAPA) appended after V346 in the intracellular C-tail; tolerated but faces the cytoplasm."
+    }
+  ]
 }

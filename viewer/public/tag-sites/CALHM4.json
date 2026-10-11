@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "CALHM4",
+  "uniprot_acc": "Q5JW98",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:59:55.743644+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe C-terminal tags on full-length, membrane-anchored CALHM4 (Venus-myc-SBP, myc-His, and His6 fusions). The authoritative topology places the C-terminus (residue 314, P) deep within the intracellular domain (residues 203\u2013314). These constructs are therefore intracellular C-terminal fusions, not extracellular surface tags. No ledger line reports any tag insertion at an extracellular terminus or within either extracellular loop (ECL1: 31\u201348; ECL2: 125\u2013186). The N-terminus (residues 1\u201314) is also intracellular. With no ledger evidence grounding an extracellular insertion, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 314,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal Venus-myc-SBP and myc-His tags appended after the last residue (P314); the entire C-terminal tail (residues 203\u2013314) is intracellular per topology, so these tags face the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 314,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal His6 tag used for co-purification of heteromeric CALHM2/CALHM4 channels; appended after P314 in the intracellular domain."
+    },
+    {
+      "residue": 314,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Venus-Myc-SBP tag cloned into pcDNA3.1 for mammalian expression of human CALHM4; appended after P314 in the intracellular domain."
+    }
+  ]
+}

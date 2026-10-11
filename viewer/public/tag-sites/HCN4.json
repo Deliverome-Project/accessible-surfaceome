@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "HCN4",
+  "uniprot_acc": "Q9Y3Q4",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:57:01.463530+00:00",
+  "literature_notes": "HCN4 has an intracellular N-terminus (residues 1\u2013262) and an intracellular C-terminus (residues 512\u20131203); its only extracellular-facing spans are the short S1\u2013S2 loop (288\u2013295, 8 aa), S3\u2013S4 loop (360\u2013375, 16 aa), and the S5\u2013pore\u2013S6 turret (429\u2013491, 63 aa). L1, L2, and L3 all report eGFP or twin-strep tags fused to the N-terminus of full-length HCN4 constructs; because the N-terminus is cytoplasmic, these are intracellular tags and do not qualify as extracellular surface sites \u2014 they are recorded in other_positions. L4, L5, and L6 describe an E. coli autotransporter surface-display system in which the isolated HCN4 C-Linker-CNBD passenger domain (a soluble fragment, not full-length membrane-anchored protein) is fused to the EhaA translocator; the Myc-tag resides on the EhaA-Linker component, not within HCN4 itself. This construct is equivalent to a secreted ectodomain reagent and is explicitly excluded by the evidence rules. No ledger line grounds a tag insertion at an extracellular position of full-length, membrane-anchored HCN4; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eGFP fused immediately before residue 1 (N-terminal prepend) of full-length HCN4; the N-terminus lies in the intracellular span 1\u2013262, so this is a cytoplasmic tag \u2014 tolerated and used for MACS/FACS cell sorting, but not a surface-exposed site."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal eGFP (followed by 3C protease site) on full-length hHCN4 (\u0394782\u20131062 truncation); same intracellular N-terminus as L1 \u2014 cytoplasmic tag, not extracellular."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Twin-strep tag prepended to the N-terminus of the GFP-hHCN4\u0394282C construct for affinity purification; N-terminus is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

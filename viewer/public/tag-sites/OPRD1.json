@@ -37,7 +37,52 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OPRD1-terminal_n-0-lit",
+      "gene_symbol": "OPRD1",
+      "uniprot_acc": "P41143",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-HA immunofluorescence confirmed surface expression; receptor-mediated signal transduction, protein\u2013protein interactions, and subcellular localization were all studied via the HA handle (L4). Separately, N-terminal FLAG-\u03b4R was 'extensively confirmed' to be functional across multiple labs and assays including agonist-induced endocytosis and G-protein signalling (L6, L12).",
+      "confidence": "high",
+      "rationale": "OPRD1 has no signal peptide; the N-terminus (residues 1\u201348) is entirely extracellular and 48 residues from the first TM helix (TM1 begins at residue 49), giving ample clearance for a short epitope tag. 'Inserted immediately before the ORF' unambiguously places the tag before Met1, i.e. insert_after_residue = 0, residue_after = M. Python verification confirms seq[0] = 'M' and the 48-residue extracellular span. Four independent publications using HA, FLAG, and GFP tags at this exact junction, with surface display and functional assays confirmed, make this the highest-confidence site in the ledger. Knock-in mice were generated at the endogenous OPRD1 locus (TALEN-assisted) with an HA-tag inserted 'immediately before the ORF' of the DOR gene, producing a full-length N-terminally HA-tagged receptor expressed from the native promoter. The same N-terminal prepend topology is independently corroborated by N-terminally FLAG-tagged \u03b4R in PC12/HEK293 cells (PMC5531736), N-terminally Flag-tagged DOR in Neuro2A and CHO cells (PMC9043031), and FLAG-FDOR in a fourth study (PMC10154970).",
+      "sources": [
+        {
+          "pmid": 28300205,
+          "citation": "PMID 28300205",
+          "claim": "An HA-tag sequence was inserted right before the ORF of DOR gene to allow the expression of an HA-DOR N-terminal fusion."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:26:44.077938+00:00",
+  "literature_notes": "All twelve ledger lines describe the identical junction: an N-terminal prepend (insert_after_residue = 0) on full-length, membrane-anchored OPRD1. L1\u2013L4 (PMC5353682) use an HA knock-in at the endogenous locus; L5\u2013L9 (PMC5531736) use N-terminal FLAG and GFP in PC12/HEK293 cells; L10\u2013L11 (PMC9043031) use N-terminal Flag in Neuro2A and CHO cells; L12 (PMC10154970) uses N-terminal FLAG (FDOR) for endocytosis tracking. No ledger line names any residue in ECL1 (108\u2013122), ECL2 (189\u2013211), or ECL3 (284\u2013297), so no internal sites are proposed. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
 }

@@ -598,5 +598,12 @@
       "canonical_residue": 479,
       "left_pct": 89.05380333951763
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:09:09.407548+00:00",
+  "literature_notes": "The ledger contains two lines (L1, L2) both describing the same experiment: a 3\u00d7FLAG tag inserted at K423\u2013G424 of mouse GDE2 in a full-length, membrane-anchored knock-in construct. The ledger characterises mouse GDE2 as 'an alias of GDPD2/GDE3 family member.' However, three independent checks show this evidence cannot be mapped to human GDPD2. (1) Position 423 in human GDPD2 (UniProt canonical, 539 aa) is leucine (L), not lysine (K). (2) Human GDPD2 contains no K\u2013G junction anywhere in its sequence. (3) The flanking protein context decoded from the Gibson-cloning primers in L2 \u2014 IANLRK[tag]GHIQKL \u2014 is entirely absent from human GDPD2. Mouse GDE2 (Gdpd5) is the ortholog of human GDPD5, not human GDPD2; the ledger's phrase 'family member' is accurate but the two proteins are paralogs, not close orthologs. Because the sequence context of the tagged site cannot be located in human GDPD2 by any positional or sequence search, there is no residue at which to anchor even an 'inferred' site. Applying the rule 'Doubt the evidence \u2192 drop the site,' zero sites are reported. The large extracellular domain of human GDPD2 (residues 210\u2013490) does contain eight lysines (K223, K246, K302, K320, K328, K436, K440, K452), but none is supported by any ledger line, and structural/topological inference is explicitly forbidden as a basis for proposing sites.",
+  "literature_rejected": []
 }

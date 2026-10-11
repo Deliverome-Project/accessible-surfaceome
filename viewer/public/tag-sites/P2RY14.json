@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "P2RY14-terminal_n-0-lit",
+      "gene_symbol": "P2RY14",
+      "uniprot_acc": "Q15391",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct expressed in HEK293 cells and used for functional studies; specific assay result not stated in the ledger line.",
+      "confidence": "medium",
+      "rationale": "P2Y14 has no signal peptide (raw topology 'O' from residue 1) and its sole extracellular terminus is the N-terminus (residues 1\u201323); the C-terminus (299\u2013338) is intracellular. Because exactly one extracellular terminus exists, the topology_derived rule places the HA tag as a prepend before residue 1 (insert_after_residue = 0, residue_after = M). The 23-residue extracellular N-terminal domain provides ample separation from TM1 (which begins at residue 24), satisfying the \u22653-residue TM-boundary constraint. No residue number was named in the ledger, so cited_tag_residue is null and the position is topology-derived, not validated. Full-length human P2Y14 cloned into pcDNA3 with an HA tag and expressed in HEK293 cells for functional studies (PMC10642967). No residue number is stated in the ledger.",
+      "sources": [
+        {
+          "pmid": 37955640,
+          "citation": "PMID 37955640",
+          "claim": "Human P2Y14 or P2Y12 was cloned into a pcDNA3 vector with HA tag for expression in HEK293 cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:11:00.690734+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length HA-tagged P2Y14 construct in HEK293 cells but names no insertion residue and gives no explicit surface-detection or functional assay result. The position is derived from topology: the N-terminus (1\u201323) is the sole extracellular terminus (no signal peptide; C-terminus is intracellular). ECL1 (80\u201395), ECL2 (161\u2013185), and ECL3 (257\u2013276) are extracellular loops but are not termini, so the topology_derived rule does not extend to them without a named residue or loop. No other ledger lines ground any ECL insertion. C14 in the N-terminal domain is noted but lies downstream of the prepend junction and does not disqualify the site.",
+  "literature_rejected": []
 }

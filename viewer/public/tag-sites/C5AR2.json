@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "C5AR2-terminal_n-0-lit",
+      "gene_symbol": "C5AR2",
+      "uniprot_acc": "Q9P296",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG M1 antibody staining (DyLight594) in HEK293 stable lines; receptor function (ligand binding, signalling) NOT MEASURED in this specific tagged construct.",
+      "confidence": "high",
+      "rationale": "L1\u2013L3 all report the same FLAG\u2013C5aR2 construct; L3 is the direct surface-display confirmation. No signal peptide is present (raw topology is all 'O' at the N-terminus), so the extracellular N-terminus begins at M1 and a prepend (insert_after_residue=0) places the tag on the extracellular face. The 36-residue extracellular N-terminal domain (residues 1\u201336) provides ample buffer before the first TM helix at residue 37. No specific residue junction is named in the paper, so position_evidence is topology_derived. FLAG\u2013C5aR2 full-length construct in pcDNA3.1 stably expressed in HEK293 cells; N-terminal FLAG tag confirmed on cell surface by anti-FLAG M1 antibody (DyLight594) staining in the presence of CaCl2. No signal peptide is present (topology starts at extracellular residue 1), so the tag is prepended before M1 at the extracellular N-terminus.",
+      "sources": [
+        {
+          "pmid": 34582793,
+          "citation": "PMID 34582793",
+          "claim": "For staining FLAG tagged receptors we used anti-FLAG M1 antibody (1:100) labeled with DyLight594 (Thermo Scientific, Cat. no. 46412) dye in presence of 2 mM CaCl 2 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:53:08.640590+00:00",
+  "literature_notes": "L1, L2, and L3 all describe the same FLAG\u2013C5aR2 N-terminal tag construct; L3 is cited as the primary supporting clip because it directly confirms surface display by antibody staining. L4, L5, and L6 describe a C-terminal GFP fusion to C5aR2; the C-terminus (residues 295\u2013337) is intracellular per the topology landmarks, so this tag is not an extracellular surface site and is recorded in other_positions. No ledger line supports any internal extracellular loop insertion for C5AR2.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 337,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "GFP fused to the C-terminus of full-length C5aR2 (insert_after_residue=337); the C-terminus (residues 295\u2013337) is intracellular per topology landmarks, so this is not an extracellular surface tag site."
+    }
+  ]
 }

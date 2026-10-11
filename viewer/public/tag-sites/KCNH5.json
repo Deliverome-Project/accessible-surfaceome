@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNH5",
+  "uniprot_acc": "Q8NCM2",
+  "sites": [
+    {
+      "site_id": "KCNH5-internal-None-lit",
+      "gene_symbol": "KCNH5",
+      "uniprot_acc": "Q8NCM2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "second extracellular loop (S5-S6 linker, residues 368-446)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "BBS 13 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface labeling with \u03b1-bungarotoxin conjugates confirmed cell-surface display of the full-length tagged channel; electrophysiological function of the BBS-tagged KV10.1 was not explicitly reported in the cited clips.",
+      "confidence": "low",
+      "rationale": "L1\u2013L5 collectively document a tolerated BBS insertion at position 318 of KV10.1 (KCNH1), which lies in the second extracellular loop (S5-S6 linker) of that channel. KCNH5 (hEag2/KV10.2) is the closest paralog of KCNH1 within the EAG subfamily and shares the same 6-TM topology; its second extracellular loop spans residues 368\u2013446 (79 aa), providing ample space for a ~27-aa insert. Because the cited residue (318) is in KV10.1 numbering and no KCNH5-specific residue is named in any ledger line, the exact junction within the KCNH5 loop cannot be pinned without alignment, so insert_after_residue is left null and the site is classified as inferred. The EC1 loop (237\u2013245, only 9 residues) was considered but is too short to accommodate a 13\u201323 aa tag and has no ledger support. A 27-residue \u03b1-bungarotoxin-binding site (BBS; core 13 aa WRYYESSLEPYPD plus GS linkers) was inserted at aa 318 of KV10.1 (KCNH1/EAG1), a close EAG-subfamily paralog of KCNH5 (KV10.2/EAG2). The insertion was placed in the second extracellular loop (S5-S6 linker) of the full-length, membrane-anchored channel, mimicking the site of a naturally occurring 27-aa splice-variant insert. The tagged channel was expressed in mammalian cells and confirmed to reach the cell surface by \u03b1-bungarotoxin-conjugate binding.",
+      "sources": [
+        {
+          "pmid": 22022602,
+          "citation": "PMID 22022602",
+          "claim": "The \u03b1-bungarotoxin-binding site (BBS) was inserted into K V 10.1 at aa position 318."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 318,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:43:44.380597+00:00",
+  "literature_notes": "L6 and L7 describe full-length hEag2 (KCNH5) with a C-terminal EGFP+FLAG fusion expressed in HEK293T cells, with electrophysiological confirmation of voltage-activated delayed-rectifier function. However, the KCNH5 C-terminus falls entirely within the intracellular domain (residues 465\u2013988 per the authoritative topology landmarks); this tag is therefore not an extracellular surface tag and is recorded in other_positions. The EC1 loop (237\u2013245, 9 residues) is the only other extracellular span but is too short for a ~15\u201323 aa insert and has no ledger support. L1\u2013L5 all concern KV10.1 (KCNH1), a close EAG-subfamily paralog; they qualify as indirect evidence for the homologous second extracellular loop of KCNH5 but do not name a KCNH5 residue, so the site is inferred and ranked low confidence.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 988,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Full-length hEag2 (KCNH5) was expressed with a C-terminal EGFP+FLAG tag and confirmed functional by patch-clamp, but the C-terminus lies in the intracellular domain (residues 465\u2013988) and is not accessible on the extracellular face."
+    }
+  ]
+}

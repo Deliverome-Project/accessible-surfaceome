@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD3-terminal_n-22-lit",
+      "gene_symbol": "FZD3",
+      "uniprot_acc": "Q9NPG1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "G",
+      "residue_after": "H",
+      "residue_label": "G22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by NanoBiT complementation (LgBiT + HiBiT) and BRET-based kinetic WNT-ligand binding assays in living HEK293A cells; receptor reached the cell surface and bound ligand. WNT-3A-induced \u03b2-catenin signalling was not transduced by FZD3 (consistent with prior literature), but this reflects intrinsic signalling selectivity, not a tag-induced defect.",
+      "confidence": "high",
+      "rationale": "L1 and L2 both report an N-terminal HiBiT tag on full-length, membrane-anchored FZD3 expressed in HEK293A cells, with surface display confirmed by NanoBiT complementation and ligand-binding kinetics. The signal peptide ends at residue 22 (topology landmark), so the tag must be placed after residue 22 to avoid being cleaved; Python confirms residue 22 = G and residue 23 = H. The mature extracellular N-terminus (EC1, residues 23\u2013203) is 181 residues from TM1, providing ample space for a short tag. L1 is the primary grounding clip; L2 provides the functional confirmation. All 10 human FZD paralogues, including FZD3, were engineered with an N-terminal HiBiT tag. The signal peptide of FZD3 spans residues 1\u201322 (landmarks), so the tag is placed after residue 22 (the last signal-peptide residue), immediately before the mature N-terminus at H23. HiBiT-FZD3 constructs were transiently expressed in HEK293A cells and used in NanoBiT/BRET kinetic binding experiments in living cells, confirming surface display.",
+      "sources": [
+        {
+          "pmid": 34151213,
+          "citation": "PMID 34151213",
+          "claim": "In order to establish a nanoluciferase complementation-dependent NanoBiT/BRET binding assay format to study all human FZD paralogues, we generated constructs for all 10 receptors carrying an N-terminal HiBiT tag ( Figure S1A,B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:57:43.530693+00:00",
+  "literature_notes": "L1 and L2 both ground the same N-terminal HiBiT site on FZD3; L1 is used as the primary supporting_clip_id because it explicitly describes the engineering of the tagged construct, while L2 confirms surface expression and functional use. The position is topology_derived because neither clip names a specific residue number \u2014 the junction is uniquely determined by the signal-peptide boundary (residue 22) from the authoritative topology landmarks: an N-terminal tag on a protein with a signal peptide must go after the cleavage site. L3 describes a BRIL domain insertion in intracellular loop 3 (ICL3, residues 396\u2013420) of FZD3 for structural thermostabilisation; this is an intracellular position and does not qualify as a surface tag site. No other ledger lines support additional extracellular sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 399,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "BRIL domain inserted between ICL3 residues 399 and 412 (both within the intracellular loop 3 span 396\u2013420) for structural thermostabilisation of FZD3; this is a cytoplasmic insertion, not a surface tag site."
+    }
+  ]
 }

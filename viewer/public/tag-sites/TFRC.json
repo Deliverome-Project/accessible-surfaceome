@@ -129,9 +129,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "The construct was used for expression studies in the context of ATRAP/TfR1 interaction; surface expression of the HA-tagged TfR1 is implied by the experimental design but a quantitative surface or function assay result is not reported in the cited clip.",
+      "functional_impact_measured": "Construct used for stable lentiviral expression and co-immunoprecipitation experiments; surface display confirmed by experimental use, but no explicit transferrin-binding or endocytosis assay reported for the tagged protein alone.",
       "confidence": "high",
-      "rationale": "The paper explicitly names the junction as between residues 111 and 112 of TfR1, making this a validated, pinned site. Python confirmed residue 111 = E and residue 112 = P in the canonical UniProt sequence, and that position 111 lies in the extracellular domain (87\u2013760), 25 residues from the TM boundary (86), well above the \u22653-residue minimum. The site falls in the stalk/apical-entry region of the ectodomain, away from the core transferrin-binding apical domain. Full-length human TfR1 expressed from a lentiviral construct (pLenti_HA-human-TfR1) with an HA tag inserted between amino acids 111 and 112 of TfR1, as stated explicitly in the paper. [validation: detected_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L2 explicitly states the HA tag was inserted between amino acids 111 and 112 of TfR1. Python confirms seq[110]='E' (residue 111) and seq[111]='P' (residue 112), both within the extracellular span (87\u2013760), 25 residues from the TM boundary \u2014 well clear of the \u22653 aa minimum. The construct is full-length and membrane-anchored, not a soluble ectodomain. L1 describes the same construct but names no residue; L2 is the grounding clip. Full-length human TfR1 expressed from a lentiviral vector (pLenti_HA-human-TfR1) in stably transduced mammalian cells; HA tag inserted between residues 111 and 112, placing it in the extracellular ectodomain 25 aa from the TM boundary (TM ends at residue 86).",
       "sources": [
         {
           "pmid": 36253401,
@@ -141,7 +141,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "TFRC-surface_loop-121",
@@ -404,9 +409,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Surface display of the tagged endogenous TfR was confirmed and used for endocytic trafficking assays; transferrin uptake function was not explicitly quantified in the cited clip.",
-      "confidence": "high",
-      "rationale": "TfR1 is a type II single-pass transmembrane protein: the N-terminus (residues 1\u201365) is intracellular and the C-terminus (residues 87\u2013760) is extracellular, leaving exactly ONE extracellular terminus. The clip reports a full-length endogenous TfR fused to SBP-EGFP; because the N-terminus is intracellular, the fusion must be at the C-terminal end (after residue 760). Python confirmed residue 760 = F and that this position is 674 residues from the TM boundary, well clear of any constraint. Position is topology_derived because the clip names no residue. CRISPR-Cas9 knock-in in SUM159 breast cancer cells engineered endogenous TfR to be fused to streptavidin-binding peptide (SBP) and EGFP; the resulting construct was used as a surface-displayed transferrin receptor for trafficking studies. [validation: surface_only; position: topology_derived; source: paper; entailment_verified: True]",
+      "functional_impact_measured": "Tagged endogenous TfR used for live-cell imaging and trafficking studies in SUM159 cells; surface display confirmed. Transferrin uptake and endocytic function were not explicitly quantified for the tagged allele versus wild-type.",
+      "confidence": "medium",
+      "rationale": "L4 reports CRISPR-mediated endogenous tagging of TfR with SBP+EGFP for surface-display experiments. No residue is named, but TfR1 topology places the sole extracellular terminus at the C-terminus (residue 760, 'F'). Python confirms seq[759]='F' and that position 760 falls within the extracellular span (87\u2013760). The position is therefore topology-derived, not chosen: only one extracellular terminus exists. CRISPR-Cas9 knock-in at the endogenous TFRC locus in SUM159 breast cancer cells fused SBP and EGFP to TfR; the construct is full-length and surface-displayed. The clip names no residue, but TfR1 is a type II single-pass protein with its N-terminus intracellular (residues 1\u201365) and its C-terminus extracellular (residue 760); the C-terminus is the only extracellular terminus available for a fusion.",
       "sources": [
         {
           "pmid": 33523982,
@@ -416,7 +421,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [],
@@ -797,10 +807,18 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:28:02.456993+00:00",
-  "literature_notes": "L1 (HA at N-terminus of TfR1): DISQUALIFIED. TfR1 is a type II transmembrane protein; its N-terminus (residues 1\u201365) is intracellular per the authoritative topology landmarks. An N-terminal HA tag would reside on the cytoplasmic face, not the extracellular surface. L3 (EGFP at amino terminus of full-length hTfR): DISQUALIFIED for the same reason \u2014 the amino terminus is intracellular. L5 (chimeric TfR with extracellular RFP): DISQUALIFIED. The construct replaces the entire TfR ectodomain with RFP; this is a chimeric protein, not a tag insertion into TfR1. It provides no evidence for a tolerated insertion at any specific site within the native TfR1 ectodomain.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T15:18:50.271688+00:00",
+  "literature_notes": "L1 describes the same HA-TfR1 lentiviral construct as L2 but names no residue; L2 is the grounding clip for Site 1. L3 (EGFP fused to the amino terminus of full-length hTfR) places the tag at residue 1, which is intracellular (topology 1\u201365 = intracellular); it is recorded in other_positions. L5 describes a chimeric protein in which ubiquitin is fused to TfR's intracellular and TM domains with an extracellular RFP domain appended \u2014 this is a chimeric scaffold construct, not an epitope-tag insertion into TfR1's own extracellular sequence at a defined residue, and it does not qualify under the ledger rules. No ledger line supports an insertion at the extracellular N-terminus (residue 87, the first extracellular residue after the TM), so no terminal_n site is proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "EGFP fused to the amino terminus of full-length hTfR; residue 1 is intracellular (topology 1\u201365), so this fusion is cytoplasmic, not a surface tag."
+    }
+  ]
 }

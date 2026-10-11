@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "S1PR1-terminal_n-0-lit",
+      "gene_symbol": "S1PR1",
+      "uniprot_acc": "P21453",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by fluorescently-tagged anti-HA antibody staining (fluorescence microscopy and flow cytometry); ligand-induced internalization of the tagged receptor monitored quantitatively \u2014 receptor traffics normally in response to S1P.",
+      "confidence": "high",
+      "rationale": "S1PR1 is a GPCR with no signal peptide; the topology landmarks place residues 1\u201348 extracellular and TM1 beginning at residue 49, leaving the N-terminus as the only extracellular terminus. No residue number is named in any ledger line, but exactly one extracellular terminus exists, so the position is topology-derived as a prepend (insert_after_residue=0, residue_after=M). Python confirms residue 1 is M and TM1 is \u226548 residues away, providing ample room for a short epitope tag. The 3xHA tag was confirmed on the cell surface by antibody staining and the receptor underwent normal ligand-induced internalization, satisfying surface_and_function. Full-length S1PR1 with 3xHA fused at its N-terminus (described explicitly as 'in the lumen', i.e. extracellular) and eGFP or mCherry at the C-terminus (3xHA-S1PR1-eGFP and 3xHA-S1PR1-mCherry) expressed in cells. S1PR1 has no signal peptide; the N-terminus (residues 1\u201348) is the sole extracellular terminus, so the tag prepends before residue 1 (insert_after_residue=0). Corroborated by L7/L8 (HA-S1P1, N-terminal HA by SLIC cloning) and L9 (pBiT3.1-N HiBiT at N-terminus used in functional reversibility assays).",
+      "sources": [
+        {
+          "pmid": 26481905,
+          "citation": "PMID 26481905",
+          "claim": "The experiments were carried out with cells ectopically expressing S1PR1 fused at its N-terminus at, in the lumen, to a tandem repeat of three hemagglutinin epitope tags (3xHA) and at its C-terminus, in the cytosol, with eGFP or mCherry (3xHA-S1PR1-eGFP and 3xHA-S1PR1-mCherry, respectively)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:07:12.116953+00:00",
+  "literature_notes": "All nine ledger lines converge on two tag positions: (1) N-terminal extracellular prepend (L1, L2, L7, L8, L9) and (2) C-terminal intracellular GFP fusion (L3, L4, L5, L6). The C-terminal site is intracellular (topology landmarks: residues 313\u2013382 are intracellular) and is therefore recorded in other_positions. No ledger line reports a tag in any of the three short extracellular loops (ECL1: 104\u2013120, ECL2: 181\u2013201, ECL3: 279\u2013294); those loops are not proposed as sites because the ledger provides no qualifying insertion there. L9 names M124 only as a mutation site within TM2 (residues 121\u2013140); the tag itself is at the N-terminus (pBiT3.1-N = N-terminal HiBiT), so M124 is not a tag site. L7/L8 and L9 independently corroborate the N-terminal extracellular site already grounded in L1, so only one site is reported (not duplicated per ledger line).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 382,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal GFP fusion (PC12-S1PR1-GFP, HEK293-S1PR1-GFP) confirmed at plasma membrane by confocal imaging, but the C-terminus (residues 313\u2013382) is intracellular per topology landmarks \u2014 suitable for cytoplasmic labelling or a snorkel construct, not for extracellular surface tagging."
+    }
+  ]
 }

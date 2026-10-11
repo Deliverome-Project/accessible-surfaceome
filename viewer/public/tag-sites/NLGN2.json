@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NLGN2",
+  "uniprot_acc": "Q8NFZ4",
+  "sites": [
+    {
+      "site_id": "NLGN2-terminal_n-14-lit",
+      "gene_symbol": "NLGN2",
+      "uniprot_acc": "Q8NFZ4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 14,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A14",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Antibody-feeding internalization assay (PMC6899438): HA-NL2 is surface-accessible and internalizes to Rab5+ early endosomes and Rab11+ recycling endosomes, confirming surface display. Immunostaining in neurons (PMC11811269): HA-Nlgn2-WT localizes to gephyrin-positive synapses. No neurexin-binding or synapse-formation functional assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "All six ledger clips (L1-L6) converge on a single construct: full-length NL2 with an HA tag at its extracellular N-terminus. No residue number is stated in any clip, but the topology is unambiguous: the signal peptide occupies residues 1-14 (MWLLALCLVGLAGA), the mature N-terminus begins at residue 15 (Q), and the C-terminus is intracellular (699-835). Therefore exactly one extracellular terminus exists, and the tag must sit after residue 14 (A) and before residue 15 (Q). Python verification confirms seq[14]='A' and seq[15]='Q'. The site is >=3 residues from the TM boundary (TM starts at 678) and is the canonical position for N-terminal epitope tags on type-I single-pass receptors. Full-length NL2 with HA tag at the extracellular N-terminus expressed in COS-7 cells, HeLa cells, and hippocampal neurons (PMC6899438); and in neurons via lentiviral FSW-hSyn-HA-Nlgn2-WT vector (PMC11811269). No residue number is named in any clip; the junction is derived from the topology: signal peptide spans 1-14, mature N-terminus is residue 15 (Q), and the C-terminus is intracellular, leaving exactly one extracellular terminus at which the tag can sit.",
+      "sources": [
+        {
+          "pmid": 31775031,
+          "citation": "PMID 31775031",
+          "claim": "To investigate trafficking of NL2, we used antibody feeding to follow the internalization of NL2 containing an HA tag at its extracellular N terminus ( HA NL2)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:03:28.755589+00:00",
+  "literature_notes": "All six ledger lines (L1-L6) describe the same construct and the same junction: HA tag at the extracellular N-terminus of full-length NL2, after signal-peptide cleavage at residue 14. L1-L4 come from PMC6899438 (antibody-feeding study); L5-L6 come from PMC11811269 (lentiviral neuronal expression study). Both papers corroborate the same site; L1 is used as the primary supporting clip because it is the most explicit statement of the tag position. No internal loop insertions, C-terminal tags, transposon screens, or FP-fusion data appear in the ledger, so no additional sites are proposed. The C-terminus (699-835) is intracellular and does not qualify as a surface tag site.",
+  "literature_rejected": []
+}

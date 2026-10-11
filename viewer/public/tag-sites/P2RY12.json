@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "P2RY12-terminal_n-0-lit",
+      "gene_symbol": "P2RY12",
+      "uniprot_acc": "Q9H244",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry (non-permeabilized anti-HA staining, L7); ADP-stimulated receptor internalization preserved and measurable by ELISA (L5); ligand binding confirmed in fixed platelets (L2). Function intact.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states 'N-terminal HA-epitope tagged P2Y12' in a full-length, membrane-anchored context. P2RY12 has no signal peptide; the N-terminus (residues 1\u201327) is extracellular per the topology landmarks, and the C-terminus (302\u2013342) is intracellular \u2014 exactly one extracellular terminus exists, so the N-terminal tag prepends before M1 (insert_after_residue=0, residue_after='M'). The 27-residue extracellular N-terminal span provides ample room (>>3 residues from TM1 boundary at residue 28) for a ~15\u201323 aa ALFA-type tag. Multiple independent clips (L1\u2013L7) confirm surface display and preserved ADP-stimulated function. 1321N1 human astrocytoma cells stably expressing N-terminal HA-epitope tagged P2Y12 (full-length, membrane-anchored) were used in internalization studies confirming surface expression. Separately, HEK293 cells expressing HA-tagged P2Y12 were surface-stained by anti-HA antibody under non-permeabilized conditions (flow cytometry, L7), and ADP-stimulated internalization of the HA-tagged receptor was measured by ELISA (L5).",
+      "sources": [
+        {
+          "pmid": 22916275,
+          "citation": "PMID 22916275",
+          "claim": "In these studies we used 1321N1 human astrocytoma cells stably expressing N-terminal HA-epitope tagged versions of either receptor."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:13:13.356077+00:00",
+  "literature_notes": "L8 and L9 describe DYKDDDK (FLAG)-tagged P2RY12 constructs but do not state whether the FLAG tag is at the N- or C-terminus, and the only readout is western blot (total expression of mutant vs. wild-type). Because the tag position is ambiguous (N-terminal extracellular vs. C-terminal intracellular) and no surface expression is demonstrated for the FLAG-tagged construct, these clips do not qualify for a surface tag site under the topology_derived rule, which requires that the tag be implied to reside on the extracellular face. The HA-tag site (L1\u2013L7) is the sole ledger-supported extracellular tag site. ECL1 (83\u201398), ECL2 (164\u2013188), and ECL3 (260\u2013279) are extracellular loops that could in principle carry an internal tag, but no ledger line reports a tolerated insertion in any of these loops for P2RY12 or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": []
 }

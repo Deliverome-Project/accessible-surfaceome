@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDH10",
+  "uniprot_acc": "Q9P2E7",
+  "sites": [
+    {
+      "site_id": "PCDH10-internal-696-lit",
+      "gene_symbol": "PCDH10",
+      "uniprot_acc": "Q9P2E7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 696,
+      "residue_before": "S",
+      "residue_after": "G",
+      "residue_label": "S696",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by stable lentiviral transduction (L1). K562 cells expressing FLAG-tagged constructs (including stalk-Flag) supported WEEV infection in a viral attachment/internalization assay, demonstrating that the FLAG insertion at S696\u2013G697 does not abrogate the receptor function of the extracellular stalk (L5).",
+      "confidence": "high",
+      "rationale": "All five ledger lines name the identical S696\u2013G697 junction in the extracellular stalk of PCDH10. Python lookup confirms seq[695]='S' and seq[696]='G', matching the papers exactly. Position 696 lies within the extracellular span (19\u2013724) and is 29 residues from the TM boundary (725), well above the 3-residue minimum. The stalk region (after EC6 domain, ~G690 onward) is a flexible linker with no known ligand-contact or disulfide residues at this position, consistent with tolerance of an 8-aa FLAG insert. Full-length human PCDH10 (NM_032961.3) with endogenous signal sequence and internal FLAG tag inserted between S696 and G697, synthesized and cloned into pSFFV-IRES-puromycin lentiviral vector for stable surface expression in mammalian cells (L1). Truncation constructs carrying the same S696\u2013G697 FLAG junction (stalk-Flag, EC1-Flag, EC2-Flag) were expressed on K562 cells and tested for WEEV infection (L2, L5).",
+      "sources": [
+        {
+          "pmid": 40187344,
+          "citation": "PMID 40187344",
+          "claim": "A codon-optimized H. sapiens (human) PCDH10 ( NM_032961.3 ) or P. montanus (sparrow) PCDH10 ( XM_039733439.1 ) with the endogenous signal sequence and internal Flag-tag inserted between residues S696 and G697 ( H. sapiens PCDH10) was synthesized and cloned into the pSFFV-IRES-puromycin lentiviral transfer vector by Twist Biosciences."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:15:06.947802+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) converge on the single junction S696\u2013G697 in the extracellular stalk. L1 is the primary anchor (full-length PCDH10, stable surface expression). L5 provides functional validation via WEEV infection assay on K562 cells. L2\u2013L4 describe truncation constructs (stalk-Flag, EC1-Flag, EC2-Flag) that reuse the same junction but are not full-length membrane-anchored proteins; they corroborate the junction's tolerance but do not constitute independent sites. No other residue or loop is named in the ledger. The mature N-terminus (residue 19, after signal peptide cleavage at 18) is extracellular but no ledger line supports a tag there. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

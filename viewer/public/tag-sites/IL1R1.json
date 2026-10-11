@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL1R1",
+  "uniprot_acc": "P14778",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:19:08.793946+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe a single construct: a 3HA epitope tag placed at the 3\u2032 end of the endogenous IL-1R1 gene, which encodes a C-terminal protein fusion. IL1R1 is a type I single-pass transmembrane receptor (extracellular 18\u2013337, TM 338\u2013356, intracellular 357\u2013569); its C-terminus (residue 569, G) is therefore intracellular. The tag is placed in other_positions accordingly. L2's immunofluorescence observation that HA labeling surrounds cytoplasmic tdTomato signal confirms the full-length receptor traffics to the plasma membrane, but does not place the HA tag on the extracellular face \u2014 the HA is on the cytoplasmic tail and is detected after permeabilization or at the cytoplasmic face of the membrane. No ledger line reports any insertion in the extracellular domain (residues 18\u2013337), in any extracellular loop, or at the mature N-terminus (residue 18). Because the ledger contains no extracellular insertion evidence, zero surface tag sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 569,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3HA epitope tag fused at the C-terminus (3\u2032 end of the IL-1R1 gene) of the full-length membrane-anchored receptor; the C-terminus of this type I TM protein lies in the intracellular domain (residues 357\u2013569), so the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

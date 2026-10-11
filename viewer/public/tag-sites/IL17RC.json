@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL17RC",
+  "uniprot_acc": "Q8NAC3",
+  "sites": [
+    {
+      "site_id": "IL17RC-terminal_n-20-lit",
+      "gene_symbol": "IL17RC",
+      "uniprot_acc": "Q8NAC3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TIRF assay confirmed surface expression of V5-tagged IL-17RC on HEK-293T cells; functional signaling not explicitly measured for the tagged construct.",
+      "confidence": "high",
+      "rationale": "The paper places the V5 tag 'at the N terminus' of full-length IL-17RC but names no specific residue. The signal peptide spans residues 1\u201320 (computed landmarks), so any N-terminal tag must be inserted after residue 20 to avoid being cleaved with the signal peptide; residue 21 (L) is the mature N-terminus and the first extracellular residue. This is the sole extracellular N-terminal junction, making the position topology-derived. TIRF on transfected HEK-293T cells confirmed surface display of the tagged protein. Full-length IL-17RC with V5 tag at the N-terminus expressed in HEK-293T cells; TIRF assay used to detect surface-displayed tagged protein (WT and truncation mutants Q138*, R376*, R378*). Paper states tag is 'at the N terminus' with no residue number.",
+      "sources": [
+        {
+          "pmid": 25918342,
+          "citation": "PMID 25918342",
+          "claim": "The TIRF assay was performed on the transfected HEK-293T cells as described in \u201cCell purification and culture.\u201d V5 tag\u2013IL-17RC WT and mutant (Q138*, R376*, and R378*) vectors were constructed at the N terminus by the pcDNA3.1 Directional TOPO Expression kit (Life Technologies)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:17:20.313879+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC4419340) and describe the same V5-tagged IL-17RC construct; L1 is used as the primary supporting clip. L3 (PMC12961907) reports a C-terminal TEV protease fusion to full-length IL-17RC; the C-terminus (residue 791) falls within the intracellular domain (residues 560\u2013791 per computed landmarks) and is therefore not a surface tag site \u2014 recorded in other_positions. No ledger line supports an internal extracellular loop insertion for IL-17RC.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 791,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Full-length IL-17RC fused to TEV protease at its C-terminus; residue 791 is the last intracellular residue (topology: 560\u2013791 intracellular), so this fusion is cytoplasmic and not a surface tag site."
+    }
+  ]
+}

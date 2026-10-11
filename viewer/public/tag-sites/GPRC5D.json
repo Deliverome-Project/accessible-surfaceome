@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPRC5D-terminal_n-0-lit",
+      "gene_symbol": "GPRC5D",
+      "uniprot_acc": "Q9NZD1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag + BRIL",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed: BRIL N-terminal fusion rescued low surface expression of wild-type hGPRC5D (PMC11187071). GPCR signaling function NOT MEASURED in the cited study.",
+      "confidence": "high",
+      "rationale": "The topology assigns residues 1\u201323 as extracellular with no signal peptide (raw topology begins 'O'), making residue 1 (M) the mature N-terminus and insert_after_residue=0 the only unambiguous extracellular N-terminal junction. The paper names 'N-terminus' without a residue number, so position_evidence is topology_derived. L2 (same paper) independently confirms that the N-terminal BRIL fusion restored surface expression, satisfying the surface_only validation threshold. The 23-residue extracellular span before TM1 (residues 1\u201323) provides ample clearance (\u22653 residues) from the TM boundary for a short epitope tag. Full-length membrane-anchored hGPRC5D expressed in HEK293 cells with an HA signal peptide, Flag tag, and thermostabilized BRIL domain fused to the N-terminus; the fusion overcame low surface expression of wild-type receptor and enabled cryo-EM structural and ligand-binding studies.",
+      "sources": [
+        {
+          "pmid": 38898050,
+          "citation": "PMID 38898050",
+          "claim": "Haemagglutinin signal peptide, Flag tag, and thermostabilized Escherichia coli apocytochrome b562RIL (BRIL) 41 , 42 were added on the N-terminus to increase the expression yield of GPRC5D."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -52,5 +89,12 @@
       "left_pct": 0.33333333333333337,
       "note": "Isoform surface expr 5985 (-7% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:42:24.539298+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1, L2), both from PMC11187071, both describing the same N-terminal Flag+BRIL fusion construct on full-length membrane-anchored GPRC5D. No ledger evidence supports insertions in ECL1 (83\u201393), ECL2 (150\u2013169), or ECL3 (226\u2013241), so no internal sites are proposed. The C-terminus (residues 263\u2013345) is intracellular per the topology landmarks and is therefore excluded from surface tag sites. The BRIL domain is much larger than a short epitope tag (~13\u201323 aa), but the ledger line establishes that the N-terminal extracellular face tolerates a large fusion, making it a fortiori suitable for a short ALFA-type tag. No signal peptide is present in the canonical sequence topology, so no upstream cleavage concern applies.",
+  "literature_rejected": []
 }

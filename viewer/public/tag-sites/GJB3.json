@@ -142,5 +142,20 @@
       "canonical_residue": 49,
       "left_pct": 18.14814814814815
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:13:36.922017+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same construct: an N-terminal Flag tag on GJB3 (Cx31). Per the authoritative topology landmarks, the GJB3 N-terminus (residues 1\u201320) is INTRACELLULAR. An N-terminal tag therefore faces the cytoplasm and does not qualify as an extracellular surface tag site. The two extracellular loops (EL1: 42\u201370; EL2: 153\u2013185) are not addressed by any ledger line. No ledger line reports a tag insertion in EL1, EL2, or any other extracellular region of GJB3 or a close connexin ortholog. Accordingly, sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal Flag tag prepended before M1; the GJB3 N-terminus (residues 1\u201320) is intracellular per topology landmarks, so this tag faces the cytoplasm. Construct is expressed and functional (microtubule co-sedimentation, immunofluorescence; L2, L3), but is not a surface tag."
+    }
   ]
 }

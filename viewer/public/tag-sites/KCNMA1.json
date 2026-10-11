@@ -1,0 +1,72 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNMA1",
+  "uniprot_acc": "Q12791",
+  "sites": [
+    {
+      "site_id": "KCNMA1-terminal_n-0-lit",
+      "gene_symbol": "KCNMA1",
+      "uniprot_acc": "Q12791",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FAP + HA (dL5**)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Electrophysiology in HEK293 cells: FAP-BK\u03b1 showed similar voltage- and calcium-dependent activation to untagged BK\u03b1 (Figure 1C of PMC5671578). Endogenous CRISPR knock-in animals viable and used for surface-trafficking studies.",
+      "confidence": "high",
+      "rationale": "L8 and L10 together provide the strongest evidence: CRISPR-mediated endogenous tagging at the N-terminus of BK\u03b1 with a FAP+HA cassette, confirmed by electrophysiology to preserve channel biophysics. The topology shows no signal peptide and a large (86-aa) extracellular N-terminal domain (S0 domain), making the N-terminal prepend the only extracellular terminus. No residue number is named in any ledger line, but exactly one extracellular terminus exists, so the position is topology-derived. Python confirmed residue 1 = M and residue 86 = M (last extracellular before TM1 at W87). FAP cassette (dL5** + HA epitope YPYDVPDYA) inserted at the native Kcnma1 locus via CRISPR, fused immediately 5\u2032 of the MDAL start codon of the ZERO splice variant; separately, overexpression FAP-BK\u03b1 cDNA tested in HEK293 cells. No signal peptide is present (topology residues 1\u201386 are extracellular), so the tag prepends before residue 1. The ZERO variant's MDAL start corresponds to residue 66 of the canonical sequence, but the tag is at the N-terminus of that variant; for the canonical isoform the equivalent position is the N-terminal prepend (insert_after_residue=0). Exactly one extracellular terminus exists (residues 1\u201386), leaving no ambiguity.",
+      "sources": [
+        {
+          "pmid": 29163049,
+          "citation": "PMID 29163049",
+          "claim": "A targeting plasmid, Cas9 RNA-guided nuclease, and two sgRNAs were used to replace 195 bp of Kcnma1 exon 1 with an 855 bp insertion containing an N-terminal HA epitope (YPYDVPDYA) and dL5 \u2217\u2217 FAP ( Szent-Gyorgyi et al., 2013 ) fused immediately 5\u2032 of the MDAL start site."
+        },
+        {
+          "pmid": 28373283,
+          "citation": "PMID 28373283",
+          "claim": "To address the role of the intracellular N terminus of the \u03b21-subunit in enhancing the cell surface expression of the pore-forming \u03b1-subunit, we used a cell surface imaging assay to investigate the co-expression of \u03b21-subunit deletion and site-directed mutants with a C-terminal myc (-myc) tag (\u03b21-myc c ) and the BK channel \u03b1-subunit ZERO variant with an extracellular N-terminal FLAG (FLAG-) tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:53:10.189748+00:00",
+  "literature_notes": "L15 describes a myc tag inserted between Gln-131 and Gln-132 of the \u03b21-subunit (KCNMB1), not KCNMA1; it was excluded. The C-terminal HA and Myc tags (L1, L4, L7, L14) are intracellular (the entire C-terminal domain from residue 389 to 1236 is intracellular per topology) and are recorded in other_positions. The two sites listed are both at insert_after_residue=0 and represent the same physical junction supported by different tag types and different papers; they are listed separately because the FAP+HA (L8/L10) achieves surface_and_function validation via electrophysiology while the FLAG series (L2 etc.) achieves surface_only. The extracellular loops ECL1 (200\u2013214, 15 aa), ECL2 (261\u2013264, 4 aa), and ECL3 (322\u2013367, 46 aa, contains the selectivity filter and turret) have no ledger support for internal tag insertion in KCNMA1 and were not proposed. The MDAL sequence found at canonical residues 66\u201369 corresponds to the start of the ZERO splice variant; the FAP tag in L8 is fused before that variant's start codon, equivalent to the N-terminal prepend of the canonical isoform.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1236,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag on the BK channel \u03b1-subunit ZERO variant; the entire region from residue 389 to 1236 is intracellular per topology landmarks, confirmed by permeabilization-dependent detection in cell surface imaging assays."
+    },
+    {
+      "residue": 1236,
+      "kind": "intracellular",
+      "supporting_clip_id": "L14",
+      "note": "C-terminal Myc tag on BK channel \u03b1-subunit detected only after cell permeabilization, explicitly confirming intracellular location of the C-terminus."
+    }
+  ]
+}

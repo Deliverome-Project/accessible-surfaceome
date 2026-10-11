@@ -37,7 +37,66 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD9-terminal_n-22-lit",
+      "gene_symbol": "FZD9",
+      "uniprot_acc": "O00144",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "2xHA / V5 / HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HiBiT-FZD9 surface expression confirmed by NanoBiT/BRET binding assays (L2/L3); kinetic WNT ligand binding measured; receptor functionality verified (FZD9 non-responsiveness to WNT-3A is pre-existing biology, not a tag artifact, per L3). Stable surface expression confirmed in U-2 OS cells (L4). 2xHA/V5-tagged FZD9 expressed as full-length membrane-anchored receptor (L1).",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201322 (authoritative landmark); inserting a tag after residue 22 (A) places it immediately before the mature N-terminus at residue 23 (L), which is the start of the large extracellular domain (23\u2013232), more than 210 residues from TM1 (233\u2013254). Python lookup confirms residue 22 = A and residue 23 = L. L1 explicitly states the tag goes 'right after the signal peptide' for FZD9 in a full-length membrane-anchored construct, pinning insert_after_residue=22 exactly. L2/L3 independently validate the same N-terminal position with HiBiT and demonstrate surface display plus ligand-binding function. L1 (PMC7521923) reports 2xHA or V5 epitope inserted right after the signal peptide of full-length membrane-anchored FZD9 (and all FZD1-10 paralogs). L2/L3 (PMC8205236) report N-terminal HiBiT-tagged FZD9 expressed in HEK293A cells, verified for sequence and functionality, and used in kinetic NanoBiT/BRET ligand-binding assays. L4 (PMC12153800) reports stable U-2 OS cell lines expressing mouse HiBiT-FZD9-mCherry with confirmed surface expression.",
+      "sources": [
+        {
+          "pmid": 32924931,
+          "citation": "PMID 32924931",
+          "claim": "FZD1-10 were tagged with 2xHA or V5 epitope right after the signal peptide."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 22,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:00:45.966795+00:00",
+  "literature_notes": "Four ledger lines (L1\u2013L4) all converge on the same N-terminal junction (after residue 22, the last signal-peptide residue) as the sole extracellular tag site supported by the evidence. L5/L6/L7 describe a C-terminal V5/AviTag on zebrafish Fzd9b; the C-terminus of FZD9 falls in the intracellular domain (residues 530\u2013591 per authoritative topology landmarks), so this tag is intracellular and is recorded in other_positions. No ledger line supports any internal extracellular loop insertion for FZD9. The ECL1 (288\u2013310), ECL2 (377\u2013396), and ECL3 (469\u2013506) loops have no published insertion evidence in the ledger and are therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 591,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Zebrafish Fzd9b-V5-AVI carries V5 and AviTag at the C-terminus (L5/L6/L7); the equivalent position in human FZD9 (residue 591) lies within the intracellular C-terminal domain (530\u2013591 per topology landmarks), making this an intracellular tag, not a surface tag."
+    },
+    {
+      "residue": 591,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Mouse HiBiT-FZD9-mCherry stable cell line (L4) carries mCherry fused to the C-terminus of FZD9; the C-terminus (residues 530\u2013591) is intracellular per topology landmarks, so the mCherry fusion is cytoplasmic, not extracellular."
+    }
+  ]
 }

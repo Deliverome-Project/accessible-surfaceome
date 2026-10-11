@@ -37,7 +37,97 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NMUR2-terminal_n-0-lit",
+      "gene_symbol": "NMUR2",
+      "uniprot_acc": "Q9GZQ4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "BRET G\u03b1i1\u03b2\u03b3 biosensor (TRUPATH) assay: engineered construct showed similar pEC50 to wild-type receptor for NmU-25-induced signaling \u2014 function preserved.",
+      "confidence": "high",
+      "rationale": "L6 reports a full-length, membrane-anchored NMU2 construct with an HA signal peptide + FLAG at the N-terminus used for cryo-EM; L7 confirms signaling is preserved (similar pEC50 to WT). The topology places residues 1\u201345 as the sole extracellular terminus, so the FLAG tag is a prepend before M1 (insert_after_residue=0). L8 (PMC9019041) independently places FLAG + His at the same N-terminal position on full-length NMUR2, providing additional corroboration; L6 is cited as primary because it carries functional validation via L7. Full-length human NMU2 engineered with an HA signal peptide followed by a FLAG tag at the N-terminus (before residue 1), expressed in HEK293 cells for cryo-EM complex preparation. The HA signal peptide is cleaved, leaving FLAG at the extracellular N-terminus of the membrane-anchored receptor. The paper names no specific residue for the FLAG junction; NMUR2 has exactly one extracellular terminus (residues 1\u201345), so the junction is topology-derived as a prepend before M1.",
+      "sources": [
+        {
+          "pmid": 36575163,
+          "citation": "PMID 36575163",
+          "claim": "To facilitate expression and purification of the NmU-25\u2013NMU2\u2013G i1 complex, a hemagglutinin (HA) signal peptide followed by a flag tag was introduced at the N terminus of NMU2, while the flexible C-terminal residues of the receptor (Q356-T415) were replaced by a PreScission protease site followed by a twin-strep affinity tag (Supplementary Fig. 1a, b )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NMUR2-terminal_n-18-lit",
+      "gene_symbol": "NMUR2",
+      "uniprot_acc": "Q9GZQ4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "L",
+      "residue_after": "E",
+      "residue_label": "L18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence under non-permeabilized conditions (PBS only): FLAG-NMUR2 detected on cell surface, confirming extracellular display. Receptor signaling function was NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names residue 18 as the last replaced residue of NMUR2, placing the FLAG tag junction between L18 and E19 in canonical numbering. Python confirms seq[17]='L' and seq[18]='E', both within the extracellular span 1\u201345 and 28 residues from TM1. L2 confirms surface display of this exact construct by non-permeabilized immunofluorescence. This is a distinct junction from the prepend site (insert_after_residue=0) reported in L6, because here residues 1\u201318 are deleted and the tag precedes E19, not M1. Full-length NMUR2 construct in which the first 18 amino acids (M1\u2013L18) were replaced by a prolactin signal peptide (MNIKGSPWKGSLLLLLLVSNLLLCQSVAP) followed by a FLAG epitope tag, expressed in HEK293T cells. After prolactin SP cleavage, the FLAG tag is at the mature extracellular N-terminus preceding residue E19. The paper explicitly states 'the first 18 amino acids of NMUR2' are substituted, pinning the junction to between L18 and E19 (both within the extracellular region 1\u201345, 28 residues from TM1 at position 46).",
+      "sources": [
+        {
+          "pmid": 26317338,
+          "citation": "PMID 26317338",
+          "claim": "To construct the N-terminal tagged receptors, the first 16 amino acids of NMUR1 and the first 18 amino acids of NMUR2 or NMUR2S were substituted by a prolactin signal peptide (MNIKGSPWKGSLLLLLLVSNLLLCQSVAP) followed by an indicated epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 18,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:06:13.323562+00:00",
+  "literature_notes": "L3 and L4 confirm that the C-terminal FLAG tag on NMUR2 (full-length canonical isoform) is NOT surface-accessible under non-permeabilized conditions, consistent with the topology placing residues 328\u2013415 as intracellular; this position is recorded in other_positions. L5 reports surface-accessible C-terminal FLAG on NMUR2S, a splice variant with a distinct C-terminal topology; this does not apply to the canonical NMUR2 sequence and is excluded. L8 (PMC9019041) reports N-terminal BRIL (~106 aa thermostabilization domain) + FLAG + His-tag on full-length NMUR2; BRIL is far larger than a short epitope tag (~13\u201323 aa) and the primary purpose is thermostabilization, not surface labeling. However, the FLAG tag in L8 is at the same N-terminal prepend junction (insert_after_residue=0) as L6, so L8 provides corroborating evidence for Site 1 rather than a new site. L6 is cited as primary for Site 1 because L7 provides explicit functional validation. No ledger evidence supports tag insertion in ECL1 (105\u2013120), ECL2 (185\u2013214), or ECL3 (291\u2013303).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 415,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG tag on full-length NMUR2 showed no staining under non-permeabilized conditions, confirming the C-terminus (residues 328\u2013415, intracellular per topology) is not surface-accessible."
+    }
+  ]
 }

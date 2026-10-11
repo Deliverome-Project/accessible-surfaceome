@@ -37,7 +37,57 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "EDNRB-terminal_n-26-lit",
+      "gene_symbol": "EDNRB",
+      "uniprot_acc": "P24530",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "G",
+      "residue_after": "E",
+      "residue_label": "G26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Cys-P1 / Cys-P3 coiled-coil peptide",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Gq signaling EC50 assay: ETBR-Cys-P1 and ETBR-Cys-P3 variants showed EC50 values of 1.4\u20132.4 nM, comparable to wild-type, indicating full preservation of receptor activation.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names ETBR residues 1\u201326 as the signal peptide and states the tag is placed immediately behind it, making insert_after_residue = 26 the exact validated junction. Residue 26 is G and residue 27 is E, read directly from the numbered sequence. The site is 72 residues from TM1 (boundary at 99), well clear of any TM constraint. L2 and L3 confirm functional surface expression of the tagged receptor. Full-length human ETBR expressed in HEK293 cells with Cys-P1 or Cys-P3 coiled-coil peptide tags inserted immediately after the endogenous signal peptide (ETBR residues 1\u201326), placing the tag at the mature N-terminus (residue 27 onward). Surface display was confirmed by fluorescence microscopy using complementary fluorescent peptides (Atto488-P2 or Atto565/TAMRA-P4) on non-permeabilized cells.",
+      "sources": [
+        {
+          "pmid": 34699123,
+          "citation": "PMID 34699123",
+          "claim": "The sequences encoding the Cys\u2010P1\u2010 and Cys\u2010P3\u2010tag were positioned at the GPCR N\u2010terminus behind the endogenous signal peptides (SP) of the ET A R (ET A R 1\u221220 ) and the ET B R (ET B R 1\u221226 ).[ 30 , 31 , 32 ] The impact of the tag insertion on receptor activation was assessed in signal transduction assays using the G q signaling of both ET A R and ET B R."
+        },
+        {
+          "pmid": 40263271,
+          "citation": "PMID 40263271",
+          "claim": "Cell lines transiently expressing ET B (CHO-ET B ) were obtained using a mammalian HA-epitope tag expression vector, pHM6 (Roche Applied Science), which carries a cDNA encoding the recombinant human ET B receptor."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 26,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:24:21.199280+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) converge on a single physical junction: the mature N-terminus of ETBR immediately after signal-peptide cleavage at residue 26. L1\u2013L3 (PMC9298254) provide a validated, functionally characterised site with Cys-P1/P3 coiled-coil tags; L4\u2013L5 (PMC12015262) provide an independent surface-only confirmation with an HA tag whose exact insertion residue is not stated, so it is classified topology_derived. No ledger line mentions any internal extracellular loop insertion, any intracellular tag, or any insertion that abrogated function; therefore other_positions is empty. ECL1 (164\u2013171), ECL2 (240\u2013267), and ECL3 (346\u2013362) are not supported by any ledger line and are not proposed.",
+  "literature_rejected": []
 }

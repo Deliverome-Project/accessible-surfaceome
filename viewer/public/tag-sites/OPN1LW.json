@@ -39,5 +39,26 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:24:06.616181+00:00",
+  "literature_notes": "All five ledger lines were evaluated. L1 and L2 (PMC10895044) report a C-terminal HA tag on full-length OPN1LW expressed in AAV vectors and mouse retina; the C-terminus (residues 326\u2013364) is INTRACELLULAR per the authoritative topology landmarks, so this tag is cytoplasmic and cannot serve as an extracellular surface tag. L3 and L4 (PMC10362383) report a C-terminal myc tag on OPN1LW (ADVM-062.myc) expressed in NHP retina; the same intracellular C-terminus applies. L5 (PMC12704717) describes a C-terminal 1D4 tag on 'human green cone opsin' \u2014 that is OPN1MW (medium-wave/green), not OPN1LW (long-wave/red); it does not qualify as evidence for OPN1LW. The extracellular N-terminus (residues 1\u201354) is present and in principle accessible, but no ledger line reports any tag there. No ledger line supports an extracellular tag insertion for OPN1LW; sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 364,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag fused in-frame to full-length OPN1LW; the C-terminus (residues 326\u2013364) is intracellular per topology landmarks, so this is a cytoplasmic tag, not a surface tag."
+    },
+    {
+      "residue": 364,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal myc tag on OPN1LW (ADVM-062.myc) expressed in NHP retina; same intracellular C-terminus, confirmed by anti-myc immunohistochemistry of transduced cones."
+    }
+  ]
 }

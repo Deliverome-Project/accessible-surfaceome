@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNJ1",
+  "uniprot_acc": "P48048",
+  "sites": [
+    {
+      "site_id": "KCNJ1-internal-113-lit",
+      "gene_symbol": "KCNJ1",
+      "uniprot_acc": "P48048",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 113,
+      "residue_before": "H",
+      "residue_after": "P",
+      "residue_label": "H113",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (GGYPYDVPDYAGG)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Channel function NOT affected by HA tag insertion in the Kir1.1/KCNJ1 extracellular loop (L4, citing Yoo et al. 2003); surface display of the tagged full-length rat ROMK construct confirmed in yeast (L1).",
+      "confidence": "high",
+      "rationale": "Rat ROMK (Kir1.1/KCNJ1) and human KCNJ1 are orthologs of the same gene; the rat paper (L1) names Y113 as the insertion site in the single extracellular loop (residues 106\u2013156 by computed landmarks), and human KCNJ1 has H at the same position 113 \u2014 a conservative species substitution at an identical structural location. Python confirms position 113 is H in the human sequence, 8 residues from TM1 end (105) and 44 from TM2 start (157), satisfying the \u22653-residue boundary constraint. L4 provides direct functional validation for KCNJ1 (Kir1.1): HA tag insertion in this loop does not affect channel function. L1: HA tag (GGYPYDVPDYAGG, 13 aa) inserted at Y113 in the extracellular domain of rat ROMK (Kir1.1/KCNJ1), a close ortholog of human KCNJ1; full-length surface-displayed channel expressed in yeast. Human KCNJ1 carries H at position 113 (species variant at the same structural position; same residue number). L4 (same PMC) additionally states that HA tag insertion in the Kir1.1 (KCNJ1) extracellular loop 'has been demonstrated not to affect the function' of the channel, citing Yoo et al. 2003.",
+      "sources": [
+        {
+          "pmid": 39024255,
+          "citation": "PMID 39024255",
+          "claim": "The rat ROMK-K80M construct used in the preliminary random mutagenesis screens contained a single HA tag (GGYPYDVPDYAGG) inserted at Y113 in the extracellular domain ( Yoo et al. , 2003 ), and its use in yeast expression studies was previously reported ( O\u2019Donnell et al. , 2017 ; Mackie et al. , 2018 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:43:58.667046+00:00",
+  "literature_notes": "L2 and L3 concern Kir7.1 (KCNJ13), a distinct Kir family member; they were disqualified because they do not report an insertion in KCNJ1 or a close ortholog of it. L4 names no specific residue but explicitly validates functional preservation of HA tagging in Kir1.1 (KCNJ1); it is used as corroborating functional evidence for the L1-grounded site rather than as an independent site, because no residue is named and the instructions prohibit inventing a junction. The extracellular cysteines C121, C148, and C153 are noted; C121 is 8 residues from the insert site, but the experimental evidence (L4) directly demonstrates functional preservation, overriding any structural concern. The HA tag GGYPYDVPDYAGG is 13 aa, at the lower bound of the 13\u201323 aa window.",
+  "literature_rejected": []
+}

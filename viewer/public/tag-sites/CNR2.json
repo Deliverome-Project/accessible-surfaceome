@@ -37,7 +37,89 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CNR2-terminal_n-0-lit",
+      "gene_symbol": "CNR2",
+      "uniprot_acc": "P34972",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA + 3xThrombin-cleavage-site",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface vs. total CB2 expression quantified by thrombin cleavage of surface HA epitopes prior to fixation; surface display confirmed. Construct used in pharmacological surface-display assays.",
+      "confidence": "high",
+      "rationale": "CB2 has no signal peptide; the topology landmarks place residues 1\u201334 as extracellular, making the N-terminus the sole extracellular terminus. The paper states the HA tag is 'appended at the N-terminus' of full-length, membrane-anchored hCB2 but names no specific residue number, so the junction is topology-derived as insert_after_residue=0 (prepend before M1). L2 independently confirms the tag is surface-accessible via thrombin cleavage, validating surface display. No signal peptide is present to cleave the tag off. Full-length human CB2 (hCB2 wt) with an HA tag and three thrombin cleavage sites appended at the N-terminus, assembled by overlap-extension PCR and ligated into pcDNA5/FRT; used in surface-display assays in transfected cells.",
+      "sources": [
+        {
+          "pmid": 41275039,
+          "citation": "PMID 41275039",
+          "claim": "This hCB 2 wild-type (wt) construct (hCB 2 wt), with an haemagglutinin (HA) tag and three thrombin cleavage sites (3TCS) appended at the N-terminus of the receptor, was assembled by overlap-extension PCR, using hCB 2 sequence from the cDNA Resource Centre ( www.cdna.org , CNR0200000; 63Q single nucleotide polymorphism [ 25 ]) and synthetic DNA oligos for the tags (Integrated DNA Technologies, Coralville, IA), then ligated into pcDNA5/FRT vector (Thermo Fisher Scientific) via NheI and XhoI restriction sites using standard molecular biology techniques, and sequence verified (see also [ 26 ]"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "CNR2-terminal_n-28-lit",
+      "gene_symbol": "CNR2",
+      "uniprot_acc": "P34972",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "L",
+      "residue_after": "S",
+      "residue_label": "L28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "TCO*A ncAA + fluorophore (click chemistry)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Live-cell surface labeling confirmed at the plasma membrane. Signaling and trafficking assessed: 'little impact on CB signaling and trafficking' (L5); 'without disrupting CB signaling or trafficking' (L3).",
+      "confidence": "high",
+      "rationale": "L4 explicitly names 'CB2-S29' as the construct used for live-cell imaging, pinning the modification to residue S29. Python verification confirms seq[28]='S', placing S29 within the extracellular N-terminal domain (EC 1\u201334) and 6 residues from the TM1 boundary (35), well above the \u22653-residue minimum. The ncAA substitution at S29 is a different modality from a sequence-inserted epitope tag, so evidence_type is 'published tolerance of a different insertion'; cited_tag_residue=29. L3 and L5 corroborate that this labeling approach preserves CB2R signaling and trafficking. CB2-S29 construct: TCO*A non-canonical amino acid incorporated at position S29 of full-length CB2R in live cells; fluorophore attached via copper-free click chemistry for live-cell surface imaging alongside R-GECO calcium reporter.",
+      "sources": [
+        {
+          "pmid": 38562854,
+          "citation": "PMID 38562854",
+          "claim": "This hCB 2 wild-type (wt) construct (hCB 2 wt), with an haemagglutinin (HA) tag and three thrombin cleavage sites (3TCS) appended at the N-terminus of the receptor, was assembled by overlap-extension PCR, using hCB 2 sequence from the cDNA Resource Centre ( www.cdna.org , CNR0200000; 63Q single nucleotide polymorphism [ 25 ]) and synthetic DNA oligos for the tags (Integrated DNA Technologies, Coralville, IA), then ligated into pcDNA5/FRT vector (Thermo Fisher Scientific) via NheI and XhoI restriction sites using standard molecular biology techniques, and sequence verified (see also [ 26 ]"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 29,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:55:18.794261+00:00",
+  "literature_notes": "Two ledger-supported sites identified, both in the extracellular N-terminal domain (EC 1\u201334). L1/L2 ground the N-terminal prepend (insert_after_residue=0) via an HA+3TCS tag on full-length membrane-anchored hCB2, with surface display confirmed by thrombin cleavage. L4 (supported by L3/L5) grounds a validated site at residue S29 via ncAA (TCO*A) incorporation and click-chemistry fluorophore attachment, with signaling and trafficking preserved. No ledger evidence supports any of the three short extracellular loops (ECL1: 93\u2013104, ECL2: 173\u2013189, ECL3: 267\u2013279) for tag insertion in CB2. ECL2 (173\u2013189) contains three cysteines (C174, C175, C179) likely involved in disulfide bonds, making it a poor candidate regardless. No intracellular or function-abrogating positions were reported in the ledger for CB2.",
+  "literature_rejected": []
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MSR1",
+  "uniprot_acc": "P21757",
+  "sites": [
+    {
+      "site_id": "MSR1-terminal_c-451-lit",
+      "gene_symbol": "MSR1",
+      "uniprot_acc": "P21757",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 451,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L451",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Expression of MSR1 confirmed to be independent of EGFP cellular localisation (L4); no functional assay (ligand binding, phagocytosis, or equivalent) reported.",
+      "confidence": "medium",
+      "rationale": "MSR1 is a type II single-pass TM protein; residues 72\u2013451 are extracellular, placing the C-terminus (L451) 380 residues from the TM boundary and fully on the extracellular face. The pEGFP-N1 vector appends the HA-P2A-EGFP cassette after the last codon of MSR1, so the HA tag follows residue 451 after P2A cleavage. No residue is named in the ledger, but exactly one extracellular terminus exists for a C-terminal tag, making the junction unambiguous by topology. Python verification confirms residue 451 = L and residue 450 = T. Full-length human MSR1 cloned into pEGFP-N1 (C-terminal fusion vector) with an HA-P2A sequence inserted between MSR1 and EGFP at BamHI/AgeI sites; P2A self-cleavage releases MSR1::HA as a standalone protein, placing the HA tag at the C-terminus of MSR1 (after residue 451). No residue number is stated in the ledger; position is derived from topology: the N-terminus (1\u201350) is intracellular, so the C-terminus is the only extracellular terminus for a C-terminal tag.",
+      "sources": [
+        {
+          "pmid": 40826098,
+          "citation": "PMID 40826098",
+          "claim": "The obtained pEGFP-N1- MSR1 -HAP2A-EGFP plasmid expresses the MSR1 ::HAP2A::EGFP cassette, which will be cleaved into the MSR1 :HA and EGFP proteins at the self-cleaving 2 A peptide."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:54:05.674748+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from a single paper (PMC12359983) and describe one construct. L1 establishes the pEGFP-N1 C-terminal fusion; L2 and L3 confirm the HA-P2A insertion between MSR1 and EGFP; L4 reports expression independence from EGFP. No residue number is stated anywhere in the ledger, so position_evidence is topology_derived rather than validated. The N-terminal intracellular tail (1\u201350) is not a candidate for a surface tag. No internal loop insertions are reported in the ledger. Validation is detected_only because the paper confirms expression but reports no functional assay for MSR1 scavenger activity.",
+  "literature_rejected": []
+}

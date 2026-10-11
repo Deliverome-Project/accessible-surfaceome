@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADAM15",
+  "uniprot_acc": "Q13444",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:57:27.098564+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a C-terminal Flag tag appended to the full-length ADAM15 coding sequence (pcDNA3.1-ADAM15-Flag). Per the topology landmarks, the C-terminus (residues 716\u2013863) is entirely intracellular. The paper names no residue, no extracellular loop, and no N-terminal tag; 'appended to the coding sequence' unambiguously means C-terminal. Although the mature N-terminus (residue 18) is extracellular, topology-derivation to that terminus would contradict the paper's explicit description of a C-terminal construct. No extracellular surface tag site is supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 863,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Flag tag appended C-terminally to full-length ADAM15; the C-terminus (residues 716\u2013863) is intracellular per topology landmarks \u2014 not a surface tag site."
+    }
+  ]
+}

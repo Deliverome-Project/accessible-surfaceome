@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "PSCA",
+  "uniprot_acc": "O43653",
+  "sites": [
+    {
+      "site_id": "PSCA-terminal_n-11-lit",
+      "gene_symbol": "PSCA",
+      "uniprot_acc": "O43653",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 11,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A11",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by stable transfection in PC-3 and Du-145 cells, which lack endogenous surface PSCA protein; any detected surface signal therefore derives from the FLAG-tagged construct. Functional assays beyond surface display are NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "The forward primer sequence in L1 encodes G-DYKDDDDK-G (FLAG tag with flanking glycines) immediately followed by LLCYSCKA\u2026, which matches PSCA residues 12\u201319 exactly (confirmed by DNA decoding in code). The construct uses a heterologous signal peptide from pSecTag B, so the PSCA portion begins at residue 12; in canonical PSCA numbering the tag junction is after residue 11 (A, the last signal-peptide residue) and before residue 12 (L, the mature N-terminus). This is the extracellular face of a GPI-anchored protein, fully consistent with surface display. The C-terminus cannot carry a surface tag because the GPI anchor signal is cleaved during GPI attachment. Full-length GPI-anchored PSCA (residues 12\u2013114) with an N-terminal FLAG tag was subcloned into pSecTag B (which supplies a heterologous murine Ig kappa-chain signal peptide) and stably expressed in PC-3 and Du-145 prostate cancer cells. The forward primer (PSCA-mem-F) encodes G-DYKDDDDK-G immediately upstream of PSCA residue 12 (decoded from the primer: GDYKDDDDKGLLCYSCKA\u2026), placing the FLAG tag precisely after the PSCA signal peptide cleavage site (after residue 11).",
+      "sources": [
+        {
+          "pmid": 39113562,
+          "citation": "PMID 39113562",
+          "claim": "To generate cell lines that stably express membrane associated PSCA, the PSCA12\u2013114 containing the GPI anchoring sequence with an N-terminal flag tag was subcloned into the pSecTag B vector carrying a murine Ig kappa-chain signal peptide by using following primers:\nPSCA-mem-F: 5- ACGCGGCCCAGCCGGCC ggcgactacaaggacgatgacgataagggcctgctgtgctactcctgcaaagcc \u22123; PSCA-mem-R:\n5-CGGTTTAAACCTAGAGCTGGCCGGGTCCCCAGAG-3."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 11,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:46:42.634240+00:00",
+  "literature_notes": "PSCA is a GPI-anchored protein; the entire mature ectodomain (residues 12\u2013114) is extracellular. The C-terminal GPI anchor signal is cleaved during biosynthesis, so any C-terminal tag would be lost \u2014 no C-terminal surface site is possible. The ledger contains two clips (L1 and L2) both from the same study (PMC11312989); L1 provides residue-level evidence via the primer sequence, and L2 confirms stable surface expression of the same construct. Only one distinct junction is supported. No internal loop insertions are reported in the ledger for PSCA.",
+  "literature_rejected": []
+}

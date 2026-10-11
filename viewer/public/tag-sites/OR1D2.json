@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR1D2-terminal_n-0-lit",
+      "gene_symbol": "OR1D2",
+      "uniprot_acc": "P34982",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + Rho (20 aa bovine rhodopsin N-terminal sequence)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "CRE/luciferase reporter assay performed in HEK293 cells with FLAG-Rho-tagged OR1D2-family constructs; expression of tagged receptors confirmed by transfection. Odorant-response function of OR1D2 specifically was not individually reported in the cited clips \u2014 assay was a multi-OR family screen.",
+      "confidence": "medium",
+      "rationale": "OR1D2 has no signal peptide (topology landmarks show EXTRACELLULAR 1\u201325 with no SIGNAL annotation), so its N-terminus is directly extracellular and a prepend at position 0 places the tag on the cell surface. L1 explicitly names the OR1D2/OR17-4 family as among the ORs engineered with this N-terminal FLAG+Rho design in full-length, membrane-anchored constructs \u2014 this is the only extracellular terminus available on a GPCR, so the junction is topology-derived rather than residue-validated. The prepend sits 25 residues from TM1 (residue 26), well beyond the \u22653-residue minimum. L2 confirms these same constructs were used in a functional CRE-luciferase assay in HEK293 cells, though OR1D2's individual odorant response is not explicitly reported in the clips. Full-length OR1D2-family receptors were cloned into pME18S and engineered with an N-terminal FLAG epitope tag followed by the 20 N-terminal amino acids of bovine rhodopsin (Rho tag); constructs were transfected into HEK293 cells alongside RTP1S chaperone and a CRE-dependent luciferase reporter for functional odorant-response screening.",
+      "sources": [
+        {
+          "pmid": 35446888,
+          "citation": "PMID 35446888",
+          "claim": "Each of the amplified receptor genes was inserted into the pME18S vector to generate OR proteins fused with N-terminal epitope tags of FLAG and 20 N-terminal amino acids of bovine rhodopsin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:35:42.864678+00:00",
+  "literature_notes": "L3 (surface display of N-terminal FLAG on OR51T1) was considered but not used as the primary clip because OR51T1 is a different olfactory receptor; it provides indirect design-level support but cannot ground an OR1D2-specific site. L4 (Olfr412, the mouse ortholog of OR1D2, tagged with Lucy SP + FLAG + Rho at the N-terminus) was also considered; because Olfr412 is an ortholog it is indirect evidence, and L1 already directly names the OR1D2 family, making L1 the stronger primary clip. No ledger line names any internal extracellular loop residue of OR1D2 as a tag-insertion site, so no internal sites are proposed. No ledger line reports an intracellular tag or a function-abrogating insertion for OR1D2.",
+  "literature_rejected": []
 }

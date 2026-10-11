@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNQ5",
+  "uniprot_acc": "Q9NR82",
+  "sites": [
+    {
+      "site_id": "KCNQ5-internal-None-lit",
+      "gene_symbol": "KCNQ5",
+      "uniprot_acc": "Q9NR82",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular loop (ECL1 148-158, ECL2 220-224, or ECL3 287-326; unspecified in paper)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunostaining in Xenopus oocytes: WT HA-tagged KCNQ5 shows normal plasma membrane localization; G278S mutant shows reduced surface signal. Electrophysiological function of the HA-tagged WT construct is not explicitly reported in the ledger clip.",
+      "confidence": "low",
+      "rationale": "L1 is the sole ledger entry and confirms that an extracellular HA tag on full-length, membrane-anchored KCNQ5 is tolerated and surface-detectable. KCNQ5 has no extracellular terminus (N-term residues 1-126 are intracellular; C-term residues 346-932 are intracellular), so the tag must reside in one of the three extracellular loops (ECL1 148-158, ECL2 220-224, ECL3 287-326). Because the paper names neither a loop nor a residue, no junction can be derived without structural inference, which is prohibited; insert_after_residue is therefore null. Python verification confirms that canonical position 278 is Ile, not Gly, indicating the paper's G278S numbering reflects a shorter isoform, but this does not affect the tag-site evidence. Full-length KCNQ5 carrying an extracellular HA-tag was expressed in Xenopus oocytes (PMID 25649132). Both wild-type and G278S-mutant constructs were assessed for plasma membrane localization by surface immunostaining of the HA epitope, confirming the tag is extracellular and the WT construct is surface-displayed. The paper names no specific loop or residue for the HA insertion.",
+      "sources": [
+        {
+          "pmid": 25649132,
+          "citation": "PMID 25649132",
+          "claim": "Indeed, when expressed in Xenopus oocytes, KCNQ5 G278S subunitscarryinganextracellularHA-tagdisplayed reduced plasma membrane localization compared with similarly tagged wild-type (WT) KCNQ5 (Supplementary Fig. 1c,d)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:57:27.264534+00:00",
+  "literature_notes": "Only one ledger entry exists for KCNQ5 (L1, PMID 25649132). It confirms extracellular HA tagging of full-length KCNQ5 in Xenopus oocytes but names no specific loop or residue. KCNQ5 has three extracellular loops (ECL1 S1-S2: 148-158, 11 aa; ECL2 S3-S4: 220-224, 5 aa; ECL3 pore: 287-326, 40 aa) and no extracellular terminus, so topology_derived does not apply. The site is reported at region level with null insert_after_residue. The paper's G278S mutation maps to Ile-278 in the canonical 932-aa sequence (TM5), indicating the paper uses a shorter isoform; this discrepancy does not affect the HA-tag evidence. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

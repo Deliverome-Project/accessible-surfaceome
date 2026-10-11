@@ -166,6 +166,44 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "SCNN1A-internal-168-lit",
+      "gene_symbol": "SCNN1A",
+      "uniprot_acc": "P37088",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 168,
+      "residue_before": "T",
+      "residue_after": "T",
+      "residue_label": "T168",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Channel activity assay: the FLAG insertion at this position was explicitly stated not to affect channel activity (Firsov et al., 1996, cited in PMC11612235); surface labeling with anti-FLAG antibody at 4 \u00b0C confirmed correct trafficking and extracellular display.",
+      "confidence": "high",
+      "rationale": "Python search confirms TLVAGS occupies residues 169\u2013174 of the canonical 669-aa sequence; the tag therefore sits after residue 168 (T) and before residue 175 (R). Both flanking residues are extracellular (topology 107\u2013554), 62 aa from TM1 and 380 aa from TM2, well clear of any TM boundary. L2 states the position was previously shown not to affect channel activity, and L3 confirms surface display by cold anti-FLAG labeling, satisfying both arms of surface_and_function. Full-length membrane-anchored \u03b1-ENaC expressed in mammalian cells; FLAG sequence (DYKDDDK) replaces residues 169\u2013174 (TLVAGS) in the extracellular domain, placing the tag between residue 168 and residue 175. Anti-FLAG antibody labeling at 4 \u00b0C confirmed surface display of the intact, membrane-anchored construct.",
+      "sources": [
+        {
+          "pmid": 39402328,
+          "citation": "PMID 39402328",
+          "claim": "FLAG-\u03b1ENaC was constructed by replacing the sequence [amino acid (aa) 169\u2013174, TLVAGS] in the extracellular region with the FLAG sequence (DYKDDDK) as described previously (Firsov et al, 1996 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "SCNN1A-snorkel-c",
       "gene_symbol": "SCNN1A",
       "uniprot_acc": "P37088",
@@ -1792,5 +1830,12 @@
       "canonical_residue": 519,
       "left_pct": 79.33884297520662
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:12:10.402193+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same FLAG-replacement construct in the same paper (PMC11612235), citing the original Firsov et al. 1996 validation. They are treated as one site grounded in L1 (the most explicit residue-level description). No other insertion sites are reported in the ledger for SCNN1A. The extracellular N-terminus (residue 107, immediately after TM1) and the large ectodomain are topologically available but no ledger line supports a tag there, so no additional sites are proposed.",
+  "literature_rejected": []
 }

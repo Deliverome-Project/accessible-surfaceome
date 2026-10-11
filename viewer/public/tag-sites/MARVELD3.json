@@ -1,0 +1,53 @@
+{
+  "has_data": false,
+  "gene_symbol": "MARVELD3",
+  "uniprot_acc": "Q96A59",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:34:41.445613+00:00",
+  "literature_notes": "MARVELD3 is a four-pass transmembrane MARVEL-domain protein. Its topology places the long N-terminal domain (residues 1\u2013199) and the short C-terminal tail (residues 383\u2013401) entirely on the intracellular face, with two extracellular loops: ECL1 (221\u2013271, 51 aa) and ECL2 (326\u2013360, 35 aa). Every ledger line (L1\u2013L7) reports a tag at either the N-terminus (HA, EGFP, BirA: L1, L2, L5, L6, L7) or the C-terminus (VSV, BirA: L3, L4, L7). Both termini are intracellular per the authoritative topology landmarks, so none of these constructs places a tag on the extracellular face. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or otherwise \u2014 within ECL1 or ECL2. Because the rules require every site to be grounded in one ledger line reporting a tolerated insertion at that extracellular position, and no such line exists, the correct answer is zero surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal HA-tag on full-length MarvelD3 expressed in Caco-2 cells; the N-terminus (residues 1\u2013199) is intracellular per topology, so the tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "N-terminal EGFP fusion on marvelD3 splice variants 1 and 2 localizes to tight junctions in Caco-2 cells; the N-terminus is intracellular, so EGFP is on the cytoplasmic face."
+    },
+    {
+      "residue": 401,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal VSV epitope tag (GYTDIEMNRLGK) on full-length MarvelD3; the C-terminus (residues 383\u2013401) is intracellular per topology, so the VSV tag faces the cytoplasm."
+    },
+    {
+      "residue": 401,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminally VSV-tagged mouse MarvelD3 used in a complementation assay in Caco-2 cells; tag is intracellular and function was confirmed, but the tag is not on the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "N-terminal BirA-R118G fusion on full-length MarvelD3 isoform 1 for proximity labeling; N-terminus is intracellular."
+    },
+    {
+      "residue": 401,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "C-terminal BirA-R118G fusion on full-length MarvelD3 isoform 1 for proximity labeling; C-terminus is intracellular."
+    }
+  ]
+}

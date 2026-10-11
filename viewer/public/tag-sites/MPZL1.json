@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "MPZL1",
+  "uniprot_acc": "O95297",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:46:52.803088+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L1 (PMC5599542) reports MPZL1 subcloned into pcDNA3.1- with a 3xFLAG or GFP tag but states no tag position (N-terminal, C-terminal, or internal); this is disqualified by the rule against commercial plasmids with unstated tag positions. L2 (PMC12520572) reports 'PZR-FLAG WT' constructs used in a proximity ligation assay to detect rPG binding on the cell surface; the 'Protein-FLAG' naming convention implies a C-terminal FLAG, which on MPZL1 (a Type I single-pass TM protein with an intracellular C-terminus at residues 191-269) would be intracellular, not extracellular. The PLA result demonstrates rPG binding to PZR's ectodomain, not FLAG detection on the cell surface. The tag position is never stated in the clip. The topology-derived rule cannot rescue L2 because the tag is not shown to be at the sole extracellular terminus; it is most likely intracellular. No ledger line supports a validated or topology-derived extracellular surface tag site for MPZL1.",
+  "literature_rejected": []
+}

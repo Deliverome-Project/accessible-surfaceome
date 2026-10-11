@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC14A",
+  "uniprot_acc": "Q86T13",
+  "sites": [
+    {
+      "site_id": "CLEC14A-terminal_n-21-lit",
+      "gene_symbol": "CLEC14A",
+      "uniprot_acc": "Q86T13",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "E",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-HA antibody staining of intact HEK293T cells confirmed surface display by flow cytometry. Endogenous CLEC14A function was not independently assayed in this construct; the construct was used as a positive-control reagent to validate anti-CLEC14A monoclonal antibodies (clones C2 and C4).",
+      "confidence": "high",
+      "rationale": "The construct is named 'HA-CLEC14A', indicating an N-terminal HA tag. CLEC14A has a signal peptide spanning residues 1\u201321 (landmarks, authoritative); a tag placed upstream of residue 22 would be co-translationally cleaved with the signal peptide and lost. The only viable extracellular N-terminal junction is therefore after residue 21 (G) and before residue 22 (E), the mature N-terminus. Python verification confirms seq[20]='G' and seq[21]='E', and the mature N-terminus is 376 residues from the TM boundary (398), well beyond the \u22653-residue constraint. No residue number was stated in the paper, so position_evidence is topology_derived. HEK293T cells stably overexpressing an HA-CLEC14A construct (N-terminal HA tag, exact junction residue not stated in the paper) were stained with anti-HA antibody and confirmed to display the tag on the cell surface by flow cytometry. CLEC14A is a single-pass type I transmembrane protein; its only extracellular terminus is the mature N-terminus beginning at residue 22 (signal peptide 1\u201321 is cleaved). The HA tag must therefore reside between the signal peptide cleavage site and residue 22.",
+      "sources": [
+        {
+          "pmid": 25745997,
+          "citation": "PMID 25745997",
+          "claim": "To confirm the clones could recognise cell bound CLEC14A, HEK293T cells overexpressing HA-CLEC14A were stained with clone C2 or C4 or a monoclonal HA tag antibody."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:45:56.678557+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports an HA-CLEC14A construct with surface display confirmed by flow cytometry in HEK293T cells. The paper does not state the exact junction residue, but CLEC14A is a single-pass type I TM protein with a single extracellular terminus (mature N-terminus, residue 22), making the position unambiguous by topology. No internal extracellular loop insertions, C-terminal tags, or other positions are supported by the ledger. The C-terminus (residues 419\u2013490) is intracellular and was not reported as tagged. No abrogating or intracellular positions were reported in the ledger.",
+  "literature_rejected": []
+}

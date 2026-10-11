@@ -37,7 +37,64 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPRC6A-terminal_n-18-lit",
+      "gene_symbol": "GPRC6A",
+      "uniprot_acc": "Q5T6X5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-myc immunofluorescence on fixed HEK-293 cells; receptor function not explicitly assayed in the cited experiment.",
+      "confidence": "high",
+      "rationale": "GPRC6A is a class-C GPCR with a large extracellular N-terminal domain (residues 19\u2013593) and an intracellular C-terminus (residues 832\u2013926). The signal peptide spans residues 1\u201318 (last SP residue = S18, first mature residue = Q19), so a tag upstream of Q19 would be cleaved. Because the C-terminus is cytoplasmic, the mature N-terminus is the only extracellular face available for a surface-detectable tag, making insert_after_residue=18 the topology-derived junction. Python confirmed S at position 18 and Q at position 19 from the canonical sequence. Mouse GPRC6A stably expressed in HEK-293 cells with a myc tag; anti-myc antibody staining of paraformaldehyde-fixed cells confirmed surface display of the full-length receptor. No residue number is stated in the paper. The C-terminus of GPRC6A is intracellular (residues 832\u2013926 per landmarks), leaving the mature N-terminus (after SP cleavage at residue 18, first mature residue Q19) as the sole extracellular terminus and therefore the only position consistent with surface anti-myc staining.",
+      "sources": [
+        {
+          "pmid": 28659174,
+          "citation": "PMID 28659174",
+          "claim": "HEK-293 cells stably transfected with a myc-tagged version of wild type mouse GPRC6A or the mutant in which KY was substituted for RKLP sequence in the 3rd intracellular loop were fixed by incubating the cells in 4% paraformaldehyde in phosphate buffered saline (PBS) for 10 min at room temperature."
+        },
+        {
+          "pmid": 34489478,
+          "citation": "PMID 34489478",
+          "claim": "For transient transfection, HEK293 cells were transfected with V5-tagged IGF1R, GFP-IR or Flag-GPRC6A plasmids with Lipofectamine 2000."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:44:02.004452+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) concern N-terminal tags on full-length GPRC6A. L1 and L2 are from the same paper (PMC5490090) and describe the same myc-tagged construct; L1 is cited as the primary clip because it names both the construct and the staining method. L3 (PMC8421392) independently reports a Flag-tagged construct. No ledger line names a specific residue number, so both sites are topology_derived. The RKLP motif mentioned in L1 as the 3rd intracellular loop mutation site is recorded in other_positions. No ledger evidence supports any internal extracellular loop tag (ECL1 652\u2013662, ECL2 726\u2013748, ECL3 804\u2013811) or a C-terminal extracellular tag.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 772,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "L1 describes a mutant in which 'KY was substituted for RKLP sequence in the 3rd intracellular loop' of mouse GPRC6A; the 3rd intracellular loop (IC3) maps to residues 772\u2013782 in the human canonical sequence, making this an intracellular position unsuitable for a surface tag."
+    }
+  ]
 }

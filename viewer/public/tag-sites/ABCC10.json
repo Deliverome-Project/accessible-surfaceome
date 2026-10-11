@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ABCC10",
+  "uniprot_acc": "Q5T3U5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:51:08.143447+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same FLAG-tagged ABCC10 construct from the same publication (PMC12811381). L1 explicitly identifies it as a 'C-terminal FLAG tag'. Per the topology landmarks, the ABCC10 C-terminus falls within the intracellular region 1206\u20131492; it is not on the extracellular face. L2 and L3 add no positional information beyond what L1 states. No ledger line reports a tag at any extracellular terminus or extracellular loop of ABCC10. The N-terminus (residues 1\u201328) is extracellular, but no ledger line grounds a tag there. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1492,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "L1 explicitly reports a C-terminal FLAG tag on ABCC10; the C-terminus (residues 1206\u20131492) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

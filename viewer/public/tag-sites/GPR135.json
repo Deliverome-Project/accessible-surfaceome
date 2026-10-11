@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR135-terminal_n-0-lit",
+      "gene_symbol": "GPR135",
+      "uniprot_acc": "Q8IZ08",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by confocal microscopy with anti-HA antibody on intact (non-permeabilized) HEK293T cells (L2). No ligand-binding or signalling assay reported for the tagged construct.",
+      "confidence": "high",
+      "rationale": "All four ledger lines (L1\u2013L4) converge on a single construct: HA prepended before the first codon of GPR135. The topology landmarks confirm residues 1\u2013102 are extracellular with no signal peptide, so the tag is not cleaved and sits 102 residues from TM1 \u2014 well beyond the \u22653-residue minimum. insert_after_residue=0 is the only position consistent with 'upstream of the coding region'; no residue number is named in any ledger line, so position_evidence is topology_derived. L2 is chosen as the primary clip because it provides the strongest evidence: surface detection in intact, non-permeabilized cells. PMC5566548: N-terminally HA-tagged GPR135 expressed in HEK293T cells; HA epitope (YPYDVPDYA) added by PCR 'just upstream of the GPR135 coding region' and cloned into pcDNA3. The raw topology has no signal peptide (topology string begins O at residue 1), so the tag prepends directly before Met-1. GPR135 has no extracellular C-terminus (C-terminus is intracellular, residues 390\u2013494), making the N-terminus the sole extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 28827538,
+          "citation": "PMID 28827538",
+          "claim": "( A ) The expression of HA-tagged (N-terminal) GPR61, GPR62 and GPR135 at the cell surface of intact HEK293T cells was detected by confocal microscopy with anti-HA antibodies."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:24:13.245774+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same N-terminal HA-tag construct on GPR135 from a single paper (PMC5566548). No ledger line grounds any internal extracellular loop site (ECL1 163\u2013185, ECL2 248\u2013274, ECL3 354\u2013366) or any C-terminal site. The C-terminus (residues 390\u2013494) is intracellular per the topology landmarks and is therefore not a surface-tag candidate. No function assay (cAMP, \u03b2-arrestin, radioligand binding) was reported for the tagged construct, so validation_level is surface_only rather than surface_and_function. The 6myc-GPR135-PK2 fusion mentioned in L3 has the myc tag at the N-terminus (same site) and a PK2 fragment at the C-terminus (intracellular \u2014 not a surface site); it is a different construct for a split-complementation assay and does not add a new surface site.",
+  "literature_rejected": []
 }

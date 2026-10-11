@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MC3R-terminal_n-0-lit",
+      "gene_symbol": "MC3R",
+      "uniprot_acc": "P41968",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA + Halo/SNAP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by labeling intact (non-permeabilized) cells with membrane-impermeable dye CA-sulfo646 (HA-Halo constructs) and CLIP-surface 547 (FLAG-CLIP constructs); single-molecule pull-down experiments detected surface receptor. No cAMP or radioligand binding result is stated in the cited clip.",
+      "confidence": "high",
+      "rationale": "MC3R is a GPCR with no endogenous signal peptide; the topology landmarks place residues 1\u201343 as extracellular and TM1 begins at residue 44, so the N-terminus is the sole extracellular terminus available for a prepend tag. The papers replace nothing in MC3R itself: an exogenous signal sequence is added upstream, which is cleaved post-translationally, leaving the HA/FLAG + Halo/SNAP/CLIP module at the extracellular face immediately before MC3R residue 1 (M). Python verification confirms residue 1 = M and TM1 starts at residue 44, giving 43 residues of extracellular space\u2014well clear of the >=3-residue TM boundary constraint. Because no paper states a residue number for the junction (only the construct architecture), position_evidence is topology_derived: with a single extracellular terminus, the junction is uniquely determined. ss-HA-Halo-MC3R and ss-HA-SNAP-MC3R constructs built with exogenous signal sequence (MVLLLILSVLLLKEDVRG), linker (SAQSTR), HA tag (YPYDVPDYA), linker (TRGSGS), Halo or SNAP tag, linker (RS), then full-length human MC3R gene; expressed in transfected cells and labeled with membrane-impermeable dyes on intact non-permeabilized cells, confirming surface display. The same N-terminal architecture is independently used in PMC7618510, PMC11580913, PMC12485739 (L1\u2013L10), and a 3xHA variant in PMC3465685 (L11) and SNAP-only variant in PMC13215352 (L12).",
+      "sources": [
+        {
+          "pmid": 41401256,
+          "citation": "PMID 41401256",
+          "claim": "For ss-HA-Halo-GPCR and ss-HA-SNAP-GPCR, plasmids were constructed as follows: signal sequence (MVLLLILSVLLLKEDVRG), linker (SAQSTR), HA tag (YPYDVPDYA), linker (TRGSGS), Halo or SNAP tag, linker (RS), GPCR or MRAP2 gene."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:37:39.415666+00:00",
+  "literature_notes": "All twelve qualifying ledger lines (L1\u2013L12) converge on the same N-terminal prepend site (insert_after_residue=0). L2 and L3 are the most explicit, giving the exact exogenous signal sequence and linker architecture. L8 and L9 provide the strongest surface-display validation (membrane-impermeable dye labeling on intact cells; single-molecule imaging). L11 (3xHA-MC3R, PMC3465685) and L12 (SNAP-MC3R, PMC13215352) are independent constructs at the same junction. No ledger line supports any internal loop insertion (ECL1, ECL2, ECL3) for MC3R. L13 describes a C-terminal LgBiT fusion used for cryo-EM stabilization; the C-terminus (residues 302\u2013323) is intracellular per the topology landmarks and is recorded in other_positions. ECL2 (182\u2013186) and ECL3 (269\u2013278) are very short (5 and 10 residues respectively) and contain cysteines (C274, C276 in ECL3) that are likely involved in disulfide bonds; no ledger line supports insertion there in any case.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 323,
+      "kind": "intracellular",
+      "supporting_clip_id": "L13",
+      "note": "LgBiT subunit fused at the C-terminus of full-length MC3R via a 15-aa linker for NanoBiT tethering to stabilize the MC3R\u2013Gs complex for cryo-EM; residue 323 (G) falls within the intracellular C-terminal region (302\u2013323) per topology landmarks."
+    }
+  ]
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CXADR",
+  "uniprot_acc": "P78310",
+  "sites": [
+    {
+      "site_id": "CXADR-terminal_n-19-lit",
+      "gene_symbol": "CXADR",
+      "uniprot_acc": "P78310",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface localization confirmed by confocal microscopy (anti-HA signal at cell surface, co-localizing with endogenous VPS13B). Chimeric constructs bearing the same HA insertion showed cell-surface localization not disturbed by VPS13B KO. CXADR receptor function (virus binding/entry) NOT MEASURED for the HA-tagged construct.",
+      "confidence": "medium",
+      "rationale": "L2 establishes a dual-tag architecture: Myc is N-terminal and co-cleaved with the signal peptide (residues 1\u201319), while HA is in the 'cleaved C-terminal region (mature form)', i.e., the mature ectodomain beginning at residue 20. Because the signal peptide spans exactly residues 1\u201319 (landmark-authoritative), there is exactly one junction consistent with this description: after residue 19 (S) and before residue 20 (L), the mature N-terminus. Python confirms residue 19 = S and residue 20 = L. The tag is 218 residues from the TM boundary (residue 238), well clear of any TM constraint. Full-length CXADR expressed in IHGE gingival epithelial cells with an HA tag inserted into the mature protein and a Myc tag at the N-terminal region that is cleaved with the signal peptide. L2 explicitly states the anti-Myc signal marks the N-terminal region cleaved at the signal peptide while the anti-HA signal corresponds to the cleaved C-terminal region (mature form), uniquely placing the HA insertion after the signal peptide cleavage site (after residue 19). Surface display confirmed by confocal immunocytochemistry (L3) and cell-surface localization assays (L6).",
+      "sources": [
+        {
+          "pmid": 41730960,
+          "citation": "PMID 41730960",
+          "claim": "As shown in Supplementary Fig. 1a, the anti-Myc signal indicates the N-terminal region cleaved at signal peptide, while the anti-HA signal corresponding to the cleaved C-terminal region (mature form)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:07:43.728881+00:00",
+  "literature_notes": "All six ledger lines derive from a single paper (PMC13032043) describing one HA-inserted CXADR construct. No residue number is stated anywhere in the ledger; the position is topology-derived from the signal-peptide cleavage landmark (residue 19/20 junction). The Myc tag is co-cleaved with the signal peptide and never reaches the cell surface, so it is recorded in other_positions. The chimeric constructs (CXADR-JAM1 C-term, L4\u2013L6) carry the same HA insertion and confirm surface display, but do not add a second distinct insertion site. No ledger line supports any internal loop insertion or C-terminal extracellular tag for CXADR. Confidence is medium rather than high because no explicit residue number is cited and the exact junction is inferred from the SP cleavage landmark rather than stated in the paper.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Myc tag is prepended at the N-terminus before the signal peptide and is co-cleaved with it during protein maturation, so it never reaches the extracellular face and cannot serve as a surface tag."
+    }
+  ]
+}

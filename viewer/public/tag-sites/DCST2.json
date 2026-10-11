@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "DCST2",
+  "uniprot_acc": "Q5T1A1",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:12:03.109334+00:00",
+  "literature_notes": "All three ledger clips (L1, L2 from PMC8055269; L3 from PMC8989947) describe full-length DCST2 constructs carrying a PA-tag (L1, L2) or a 3xHA-tag (L3), expressed in mouse sperm under the Calmegin promoter for transgenic complementation experiments. The tagged constructs were functional \u2014 they restored fertility in Dcst2-null males \u2014 confirming the tag does not abolish protein function. However, none of the clips name a residue, a loop, or any positional landmark for where the tag was inserted into the protein sequence. The topology_derived rule (which allows a position to be inferred from landmarks when no residue is named) requires that exactly ONE terminus be extracellular; DCST2 has zero extracellular termini: the N-terminus (residues 1\u201325) is intracellular and the C-terminus (residues 517\u2013773) is intracellular. No loop is named in any clip, so a region-level site with a null insert_after_residue cannot be created either. Choosing a position inside one of the three extracellular spans (47\u201351, 114\u2013325, 433\u2013500) on structural or topological grounds alone is explicitly forbidden by the rules. Accordingly, zero sites qualify.",
+  "literature_rejected": []
+}

@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADAM17",
+  "uniprot_acc": "P78536",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:58:19.587559+00:00",
+  "literature_notes": "Both ledger lines describe intracellular insertions. L1 (PMC8100128) places three tandem FLAG epitopes at the C-terminus of full-length ADAM17; the C-terminus (residue 824) lies within the intracellular domain (692\u2013824) and is therefore cytoplasmic. L2 (PMC8191336) places an HA-tag after residue 699 ('following DKKLD699'), explicitly described as 'immediately C-terminal to the transmembrane domain'; residue 699 is 8 residues into the intracellular domain (692\u2013824) and is cytoplasmic. ADAM17 has a large extracellular domain (residues 18\u2013671) and a single-pass type-I topology, but no ledger line reports a tag insertion anywhere in that extracellular span. Zero extracellular surface tag sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 824,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Three tandem FLAG epitopes appended at the C-terminus of full-length ADAM17; residue 824 (C) is within the intracellular domain (692\u2013824), so the tag faces the cytoplasm."
+    },
+    {
+      "residue": 699,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA-tag with stop codon knocked in after residue 699 (D, last residue of DKKLD motif), described as immediately C-terminal to the TM domain; residue 699 is 8 residues into the intracellular domain (692\u2013824) and is cytoplasmic."
+    }
+  ]
+}

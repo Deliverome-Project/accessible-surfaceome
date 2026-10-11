@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR62-terminal_n-0-lit",
+      "gene_symbol": "GPR62",
+      "uniprot_acc": "Q9BZJ7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-HA staining of intact (non-permeabilized) HEK293T cells; receptor signalling function NOT MEASURED in this assay.",
+      "confidence": "high",
+      "rationale": "GPR62 has no signal peptide; the topology landmarks place residues 1\u201317 extracellular and TM1 beginning at residue 18 (L). A tag prepended before residue 1 (insert_after_residue = 0) therefore sits entirely on the extracellular face, 17 residues from the TM1 boundary, well above the \u22653-residue minimum. No residue number is named in the clip, but the N-terminus is the sole extracellular terminus of a GPCR and 'just upstream of the coding region' unambiguously places the tag there; position_evidence is topology_derived. L2 independently validates surface display on intact cells, confirming the tag is accessible extracellularly. L1 reports an HA epitope tag (YPYDVPDYA) added by PCR 'just upstream of the GPR62 coding region' and cloned into pcDNA3 for expression in HEK293T cells. L2 confirms that HA-tagged GPR62 (N-terminal) is detected at the cell surface of intact (non-permeabilized) HEK293T cells by confocal microscopy with anti-HA antibodies.",
+      "sources": [
+        {
+          "pmid": 28827538,
+          "citation": "PMID 28827538",
+          "claim": "( A ) The expression of HA-tagged (N-terminal) GPR61, GPR62 and GPR135 at the cell surface of intact HEK293T cells was detected by confocal microscopy with anti-HA antibodies."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:37:22.533939+00:00",
+  "literature_notes": "L3/L4 describe a 'Gpr62-Flag' construct expressed via AAV in oligodendrocytes. The protein-name-first, tag-name-second convention ('Gpr62-Flag') denotes a C-terminal Flag tag. The topology landmarks place the GPR62 C-terminus (residues 294\u2013368) entirely intracellular; accordingly this tag cannot serve as a surface epitope and is recorded in other_positions. No ledger line grounds a tag in any of the extracellular loops (ECL1 70\u201389, ECL2 151\u2013173, ECL3 263\u2013273), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 368,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Gpr62-Flag (C-terminal Flag by naming convention) expressed in oligodendrocytes via AAV; the C-terminus (residues 294\u2013368) is intracellular per topology, so the Flag tag faces the cytoplasm and is not a surface epitope, even though the protein localises to myelin internodes (L4)."
+    }
+  ]
 }

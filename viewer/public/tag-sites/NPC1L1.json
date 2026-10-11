@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "NPC1L1",
+  "uniprot_acc": "Q9UHC9",
+  "sites": [
+    {
+      "site_id": "NPC1L1-internal-986-lit",
+      "gene_symbol": "NPC1L1",
+      "uniprot_acc": "Q9UHC9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 986,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S986",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xMyc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface biotinylation confirmed plasma-membrane display of NPC1L1-3xMyc-GFP in RH7777 hepatoma cells (L3). Endocytosis was quantitatively measured by streptavidin-agarose pulldown of biotinylated surface protein over time (L4), demonstrating that the tagged protein undergoes normal clathrin-mediated internalization. Trafficking to and from the cell surface was intact.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the junction 'between residues S986 and L987' in the third extracellular domain of full-length, membrane-anchored NPC1L1. Python verification confirms canonical seq[985]='S' and seq[986]='L', both within the EXTRACELLULAR span 865\u20131138, with 121 aa clearance from the proximal TM boundary (865) and 152 aa from the distal boundary (1139). L7 (PMC10575946) states 'after 966th amino acid'; at face value canonical 966=C, but the same paper's L6 identifies this as the Wang et al. 2009 construct, and a mature-protein offset of ~20 residues reconciles the numbering to the same S986/L987 junction \u2014 the discrepancy is a numbering convention difference, not a distinct site. L3 and L4 from the same PMC4884074 paper confirm surface display and functional endocytic trafficking of the tagged construct. Full-length human NPC1L1 expressed in RH7777 hepatoma cells with a 3xMyc tag inserted between residues S986 and L987 in the third extracellular domain (ECD3, canonical residues 865\u20131138). The same construct (originally from Wang et al. 2009) is independently described in PMC10575946 (L7) as 'after the 966th amino acid', which resolves to the same junction under a mature-protein or offset numbering convention; L6 from the same paper confirms the stable cell line. Surface biotinylation with a thiol-cleavable reagent (L3/L4) confirmed cell-surface display of the tagged full-length protein.",
+      "sources": [
+        {
+          "pmid": 27075173,
+          "citation": "PMID 27075173",
+          "claim": "Antibodies to native NPC1L1 extracellular domain were not available; thus we introduced a 3xMyc tag into the third extracellular domain between residues S986 and L987 as described previously ( Wang et al. , 2009 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:11:09.197984+00:00",
+  "literature_notes": "Seven ledger lines were examined. L1 and L2 both explicitly pin the 3xMyc insertion to 'between S986 and L987' in the third extracellular domain of full-length NPC1L1; sequence verification confirms S at canonical 986 and L at 987. L3 and L4 provide surface-biotinylation and endocytosis evidence for the same construct, elevating validation to surface_and_function. L6 and L7 (PMC10575946) describe what is identified as the same Wang et al. 2009 construct; L7's stated position 'after 966th amino acid' maps to canonical C966 at face value (a cysteine pair, PSSCCRLY), but the same paper's L6 explicitly cross-references Wang et al. 2009, and a mature-protein numbering offset (~20 residues) reconciles L7's number to the S986/L987 junction. Because L7 does not independently name a different residue with unambiguous canonical numbering, it is treated as corroborating L1 rather than defining a second site. L5 (PMC11749127) reports a CRISPR knock-in FLAG-EGFP fusion immediately upstream of the stop codon of mouse Npc1l1; the C-terminus of NPC1L1 falls in the intracellular domain (canonical 1292\u20131359), so this tag is cytoplasmic and is recorded in other_positions only.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1359,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "FLAG-EGFP CRISPR knock-in fused immediately before the stop codon of mouse Npc1l1; the NPC1L1 C-terminus (canonical 1292\u20131359) is intracellular, so this tag faces the cytoplasm and is not a surface-labeling site."
+    }
+  ]
+}

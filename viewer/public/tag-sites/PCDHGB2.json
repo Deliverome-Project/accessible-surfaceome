@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHGB2",
+  "uniprot_acc": "Q9Y5G2",
+  "sites": [
+    {
+      "site_id": "PCDHGB2-terminal_n-30-lit",
+      "gene_symbol": "PCDHGB2",
+      "uniprot_acc": "Q9Y5G2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 30,
+      "residue_before": "P",
+      "residue_after": "V",
+      "residue_label": "P30",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Dendrite arborization assay in neurons: N-terminally HA-tagged B2 produced the same reduction in arborization as C-terminally GFP-tagged B2, indicating the tagged construct was functional and surface-displayed.",
+      "confidence": "high",
+      "rationale": "L3 reports an N-terminally HA-tagged full-length PCDHGB2 that is functional in neurons. No specific residue is named, but the signal peptide spans residues 1\u201330 (computed landmarks), leaving exactly one extracellular N-terminus: the mature N-terminus beginning at residue 31. The tag must therefore be inserted after residue 30 (the last SP residue, P) and before residue 31 (V), which is 662 residues from the TM boundary\u2014well clear of any constraint. Python confirmed residue 30 = P and residue 31 = V from the numbered sequence. Full-length PCDHGB2 with an N-terminal HA tag expressed in neurons; the same construct was compared against C-terminally GFP-tagged B2 in a dendrite arborization assay in mouse neurons.",
+      "sources": [
+        {
+          "pmid": 27117416,
+          "citation": "PMID 27117416",
+          "claim": "Dendrite arborization was, in contrast, drastically and identically reduced to knockout levels in neurons expressing any one of 4 GFP-tagged mis-matching \u03b3-Pcdhs: A3, A12, B2, and B6 ( Figure 6A\u2013C ; note that N-terminally HA-tagged B2 had the same effect as C-terminally GFP-tagged B2 in this assay)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:28:23.734089+00:00",
+  "literature_notes": "L1 reports full-length \u03b3B2-YFP (C-terminal YFP) that was found in intracellular accumulations rather than at the cell surface\u2014this construct failed to traffic to the plasma membrane and does not qualify as a surface tag site. L2 reports \u03b3B2\u0394ICD-GFP, which does reach cell-cell interfaces, confirming surface trafficking; however, the GFP is fused C-terminally after deletion of the intracellular domain (residues 714\u2013931), placing it on the cytoplasmic face of the TM helix\u2014it is an intracellular tag, not an extracellular one, and is recorded in other_positions. No ledger line supports an internal extracellular loop insertion for PCDHGB2.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 931,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length \u03b3B2-YFP (C-terminal YFP at residue 931) was found in intracellular accumulations in HEK293 cells and did not reach the cell surface."
+    },
+    {
+      "residue": 713,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "\u03b3B2\u0394ICD-GFP has GFP fused after the TM domain (ICD deleted, residues 714\u2013931 removed), placing the tag on the cytoplasmic face; the construct reaches the surface but the tag is intracellular."
+    }
+  ]
+}

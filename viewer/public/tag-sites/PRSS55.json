@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "PRSS55",
+  "uniprot_acc": "Q6UWB4",
+  "sites": [
+    {
+      "site_id": "PRSS55-terminal_c-None-lit",
+      "gene_symbol": "PRSS55",
+      "uniprot_acc": "Q6UWB4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "C-terminus, before GPI anchor signal",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Transgenic males carrying hPRSS55-3xFLAG-GPI on a Prss55-null background sired offspring, demonstrating full fertility rescue and confirming functional surface expression of the tagged protein.",
+      "confidence": "high",
+      "rationale": "PRSS55 is a GPI-anchored serine protease; the entire region 19\u2013352 is extracellular per the computed topology. The hPRSS55-3xFLAG-GPI construct places the 3xFLAG between the mature protein body and the GPI anchor signal sequence, so after GPI attachment and C-terminal signal cleavage the tag is displayed on the extracellular face. No specific residue junction is named in the ledger, so insert_after_residue is null and the position is topology_derived. Fertility rescue in Prss55-null mice confirms both surface display and full biological function of the tagged construct. Full-length human PRSS55 (NM_198464.4) with a C-terminal 3xFLAG tag inserted prior to the native GPI anchor signal sequence (hPRSS55-3xFLAG-GPI construct), expressed in transgenic mice on a Prss55-null background. The GPI signal is retained downstream of the tag, so after GPI attachment and signal cleavage the 3xFLAG is left at the extracellular C-terminus of the mature, membrane-anchored protein. No specific residue number is named for the tag junction in the ledger; the C-terminal extracellular position is derived from the stated topology of the construct.",
+      "sources": [
+        {
+          "pmid": 40764777,
+          "citation": "PMID 40764777",
+          "claim": "The first construct, designated hPRSS55-3xFLAG-GPI , was engineered to retain the native glycosylphosphatidylinositol (GPI) anchor signal sequence, thereby positioning the 3xFLAG tag extracellularly."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:47:45.376977+00:00",
+  "literature_notes": "Three additional C-terminal tag constructs were considered but classified as intracellular and placed in other_positions. (1) hPRSS55-TM-3xFLAG (L3): the native GPI signal is replaced by a transmembrane domain followed by 3xFLAG; the paper explicitly states the tag is intracellular. (2) Mouse Prss55-EGFP via pEGFP-N2 (L6/L7): full-length cDNA including the GPI signal is cloned upstream of EGFP, so EGFP is appended after the GPI signal sequence. When a hydrophobic GPI signal is followed by a large globular domain, the signal is not cleaved but instead acts as a single-pass TM anchor, placing EGFP on the cytoplasmic face; L7 shows membrane-localised EGFP consistent with this topology, not extracellular display. (3) proT-SP1/1-EGFP (L8/L9, PMID 18844450): same architecture \u2014 full-length C-terminal EGFP on a GPI protein \u2014 and L9 shows the fusion in the membrane fraction, again consistent with intracellular EGFP. None of these three constructs qualify as extracellular surface tag sites. No ledger line names a specific residue for any tag junction in PRSS55, so the one qualifying site is region-level (insert_after_residue null).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "hPRSS55-TM-3xFLAG: GPI anchor signal replaced by a transmembrane domain; 3xFLAG follows the TM domain and is explicitly stated to be intracellular."
+    },
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Mouse Prss55-EGFP (pEGFP-N2, full-length cDNA): EGFP is appended after the GPI signal sequence; the hydrophobic GPI signal likely acts as a TM anchor, placing EGFP on the cytoplasmic face; membrane localisation confirmed in HEK293 cells (L7)."
+    },
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "proT-SP1/1-EGFP (PMID 18844450, full-length C-terminal EGFP): protein found mainly in the membrane fraction of HEK293 cells (L9), consistent with intracellular EGFP anchored via the GPI signal acting as a TM domain."
+    }
+  ]
+}

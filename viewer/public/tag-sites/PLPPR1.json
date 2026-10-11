@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "PLPPR1",
+  "uniprot_acc": "Q8TBJ4",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:37:16.944493+00:00",
+  "literature_notes": "PLPPR1 is a 6-TM protein with both termini intracellular (N-terminus residues 1\u201316, C-terminus residues 277\u2013325). The ledger contains exactly two lines. L1 reports a C-terminal HA tag (PLPPR1-HA): the C-terminus sits in the intracellular span 277\u2013325, so this tag faces the cytoplasm and does not qualify as a surface tag site. L2 reports an N-terminal EGFP fusion (EGFP-PLPPR1): the N-terminus sits in the intracellular span 1\u201316, so this fusion also faces the cytoplasm. Neither line pins any insertion in the three extracellular loops (EL1 36\u201370, EL2 149\u2013201, EL3 245\u2013255). No ledger line supports any extracellular tag site; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 325,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag (PLPPR1-HA) reported as tolerated, but residue 325 lies in the intracellular C-terminal span 277\u2013325; tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal EGFP fusion (EGFP-PLPPR1) expressed in Neuro2a cells, but residue 1 lies in the intracellular N-terminal span 1\u201316; tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

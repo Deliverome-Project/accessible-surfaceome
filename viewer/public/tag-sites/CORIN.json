@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CORIN",
+  "uniprot_acc": "Q9Y5Q5",
+  "sites": [
+    {
+      "site_id": "CORIN-terminal_c-1042-lit",
+      "gene_symbol": "CORIN",
+      "uniprot_acc": "Q9Y5Q5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 1042,
+      "residue_before": "N",
+      "residue_after": "",
+      "residue_label": "N1042",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-V5 staining of non-permeabilized cells (L5); western blot confirms full-length ~180 kDa protein (L3, L4). L1 states the construct was used to study corin expression and function on the cell surface, but explicit quantitative functional preservation data are not reported in the ledger clips.",
+      "confidence": "high",
+      "rationale": "CORIN is a type II transmembrane serine protease: intracellular 1\u201345, TM 46\u201366, extracellular 67\u20131042. The C-terminus (residue 1042, N) therefore lies on the extracellular face, making a C-terminal tag surface-exposed. No residue number is cited in any ledger line, but 'C-terminal V5 tag' on a protein whose only extracellular terminus is the C-terminus leaves exactly one junction: after residue 1042. Python lookup of the numbered sequence confirms residue 1042 = N. The tag is >970 residues from the TM boundary, satisfying the \u22653-residue extracellular clearance requirement. Full-length human and mouse CORIN constructs carrying a C-terminal V5 tag were expressed in HEK293 cells (stable and transient). The tagged protein migrates at ~180 kDa by western blot under non-reducing conditions, confirming intact full-length membrane-anchored expression. Non-permeabilized detached cells were incubated with anti-V5 antibody to detect surface-displayed CORIN (L5), confirming the tag is on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 39833422,
+          "citation": "PMID 39833422",
+          "claim": "After 2 min at 37 \u00b0C, the detached cells were collected, washed with PBS, and incubated with an anti-V5 antibody (1:1000, Thermo Fisher, R96025 ) (for corin and matriptase-2 expression) or an anti-human LDLR antibody (1:200, Abcam, Ab204941 , against human LDLR residues 22-150)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:01:32.006000+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe the same construct: full-length CORIN with a C-terminal V5 tag expressed in HEK293 cells. No N-terminal extracellular tag, no internal loop insertion, no intracellular tag, and no function-abrogating position appears anywhere in the ledger. L5 is chosen as the primary supporting clip because it provides the most direct evidence of extracellular surface display (anti-V5 staining of intact, non-permeabilized cells). L1\u2013L4 are corroborating. Validation is classified surface_only rather than surface_and_function because the ledger clips do not explicitly report that proteolytic activity or ANP-processing function was quantitatively preserved in the V5-tagged construct; L1 states the construct was used to 'study' function but does not report a preserved-function result.",
+  "literature_rejected": []
+}

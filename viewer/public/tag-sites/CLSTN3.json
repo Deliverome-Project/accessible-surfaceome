@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLSTN3",
+  "uniprot_acc": "Q9BQT9",
+  "sites": [
+    {
+      "site_id": "CLSTN3-terminal_n-19-lit",
+      "gene_symbol": "CLSTN3",
+      "uniprot_acc": "Q9BQT9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "C",
+      "residue_after": "N",
+      "residue_label": "C19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-culture synaptogenesis assay: Myc-calsyntenin-3-CFP induced a 24.6-fold increase in synapsin clustering in contacting axons vs. control (mCFP); tags did not alter synaptogenic activity relative to untagged CST-3 (Figure S1C/S1D). Surface display confirmed by live-cell Myc immunostaining.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the Myc tag is placed at the mature N-terminus of calsyntenin-3; the topology landmarks fix the signal peptide at residues 1\u201319 and the mature N-terminus at residue 20 (N), so insert_after_residue = 19 (residue C) with residue_after = N is the unique junction. Python verification confirms position 19 = C and position 20 = N from the numbered sequence. L3 and L4 confirm the tagged construct is functional and surface-displayed, with synaptogenic activity fully preserved at 24.6-fold over control. Full-length human calsyntenin-3 dual-tagged construct (Myc-calsyntenin-3-CFP) expressed in COS cells; Myc tag placed explicitly at the mature N-terminus (after signal peptide cleavage at residue 19), CFP at the intracellular C-terminus. Construct used in co-culture synaptogenesis assay with hippocampal neurons.",
+      "sources": [
+        {
+          "pmid": 24094106,
+          "citation": "PMID 24094106",
+          "claim": "To better assess synaptogenic function of calsyntenin-3, we added a Myc-tag at its mature N-terminus and a CFP tag at its C-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 19,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:53:14.609240+00:00",
+  "literature_notes": "L1 (PMC4101519) reports 'HA-CSTs' full-length mouse CST-3 constructs with an inserted HA-epitope used in synapse-formation assays. The 'HA-' prefix naming convention is consistent with an N-terminal tag, but the clip does not explicitly state the position (N-terminal, C-terminal, or internal loop); no residue is named. Because L2 already grounds the N-terminal site with an explicit positional statement and functional validation, L1 provides corroborating indirect support but is not needed as the primary clip and cannot independently pin a second distinct site. L5 (PMC9842108) reports 'hCLSTN3-HA' used in co-immunoprecipitation from HEK-293 cell lysates; the '-HA' suffix convention suggests a C-terminal tag, which would be intracellular (residues 869\u2013956 per topology landmarks), and no residue or terminus is explicitly stated in the clip. Because the likely position is intracellular and no surface-display assay was reported, L5 does not qualify a surface tag site and is not entered in other_positions (no residue is named). The large extracellular domain (residues 20\u2013847, 828 aa) contains multiple cadherin-like and laminin-G domains; no ledger line reports a tolerated internal insertion in any of these loops, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 956,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "CFP tag placed at the C-terminus of calsyntenin-3 in the same dual-tagged construct (Myc-calsyntenin-3-CFP); residue 956 (Y) falls within the intracellular domain (residues 869\u2013956 per topology landmarks), making this an intracellular label, not a surface tag site."
+    }
+  ]
+}

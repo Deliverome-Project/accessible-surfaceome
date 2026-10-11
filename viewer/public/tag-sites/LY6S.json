@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LY6S",
+  "uniprot_acc": "P0DTL4",
+  "sites": [
+    {
+      "site_id": "LY6S-terminal_n-26-lit",
+      "gene_symbol": "LY6S",
+      "uniprot_acc": "P0DTL4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry on intact HEK293 cells confirmed surface display of the FLAG-tagged LY6S-iso1 protein; no functional assay (e.g., receptor binding, signalling) reported for the tagged construct.",
+      "confidence": "high",
+      "rationale": "LY6S is a GPI-anchored protein with signal peptide spanning residues 1\u201326 and the entire mature ectodomain (residues 27\u2013134) extracellular; there is no TM domain and no intracellular region. The only accessible extracellular terminus for tagging is the mature N-terminus, which begins at residue 27 (L). A tag placed upstream of residue 27 would be within the signal peptide and cleaved off, so the junction is unambiguously insert_after_residue=26 (last SP residue G, first mature residue L). The paper in [L1] explicitly reports a FLAG tag at the N-terminus of full-length, membrane-anchored LY6S-iso1 and confirms surface display by flow cytometry on intact cells, satisfying the requirement for a published tolerated insertion on the extracellular face. Position is topology_derived because the paper names 'N-terminus' without specifying a residue number, but exactly one extracellular terminus exists. Full-length GPI-anchored LY6S-iso1 expressed in HEK293 cells via retroviral transduction, with a FLAG epitope tag placed at the N-terminus of the mature protein (after signal peptide). Western blot confirmed the mass shift relative to untagged LY6S-iso1, and flow cytometry on intact cells confirmed cell-surface display.",
+      "sources": [
+        {
+          "pmid": 35440514,
+          "citation": "PMID 35440514",
+          "claim": "Furthermore, LY6S-iso1 protein observed in cells infected with retroviral particles coding for the native LY6S-iso1 protein migrated slightly faster than the corresponding LY6S protein that contained a Flag-epitope at its N terminus, conforming to their difference in molecular mass (compare in Fig. 6c , lane 1 [with the Flag epitope] and lane 2 [LY6S protein without the Flag epitope]).Third, by flow cytometry, 5E12 detected cell-surface LY6S-iso1 protein, albeit at low levels, on intact HK293 cells infected with retroviral particles coding for LY6S-iso1"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:29:55.139544+00:00",
+  "literature_notes": "LY6S has a single signal peptide (residues 1\u201326) and is entirely extracellular from residue 27 to 134 with no TM or intracellular segments (GPI-anchored). The ledger contains one qualifying line (L1): a FLAG-tagged full-length LY6S-iso1 detected on the cell surface by flow cytometry. The paper names 'N-terminus' without a residue number; because the only extracellular terminus is the mature N-terminus (post-SP cleavage at residue 27), the junction is unambiguously after residue 26. No C-terminal tag is supported by the ledger, and a C-terminal tag would in any case be expected to disrupt GPI-anchor attachment signal processing. No internal loop insertions are reported in the ledger for LY6S or close orthologs.",
+  "literature_rejected": []
+}

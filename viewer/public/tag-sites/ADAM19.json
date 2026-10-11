@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADAM19",
+  "uniprot_acc": "Q9H013",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:58:29.645305+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe tags placed at the native C-terminus of full-length ADAM19. The C-terminus (residue 955) lies in the intracellular domain (topology: IC 722\u2013955). L2 explicitly labels this the 'cytoplasmic-domain.' No ledger line reports any tag insertion on the extracellular face (residues 26\u2013702), at the mature N-terminus (after residue 25), or in any extracellular loop. Because the rules require every site to be grounded in a ledger line reporting a tolerated insertion on the extracellular surface, and no such line exists, zero sites qualify. The C-terminal position is recorded in other_positions as intracellular.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 955,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag fused to the native C-terminus of full-length ADAM19; residue 955 (A) is the last residue of the intracellular domain (IC: 722\u2013955), confirmed intracellular by topology landmarks."
+    },
+    {
+      "residue": 955,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "FLAG tag explicitly directed at the 'tagged cytoplasmic-domain' of ADAM19; C-terminal position is intracellular."
+    },
+    {
+      "residue": 955,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "HA epitope tagged at the C-terminus of ADAM19 coding sequence; C-terminus falls in the intracellular domain (IC: 722\u2013955)."
+    }
+  ]
+}

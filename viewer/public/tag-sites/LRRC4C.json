@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRC4C",
+  "uniprot_acc": "Q9HCJ2",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:21:01.892524+00:00",
+  "literature_notes": "The only published tag insertion for LRRC4C in the ledger (L1, L2) is a TurboID fused at the intracellular C-terminus of the full-length protein, inserted after residue 636 (Q) with the native PDZ-binding tetrapeptide ETQI (residues 637\u2013640) appended after the tag. The topology landmarks place residues 549\u2013640 in the intracellular compartment, so this junction is cytoplasmic. No ledger line reports any extracellular tag insertion \u2014 not at the mature N-terminus (residue 45), not in any of the large extracellular LRR domain (45\u2013527), and not in any extracellular loop. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 636,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "TurboID inserted after residue 636 (Q) at the intracellular C-terminus of full-length Lrrc4c, with the native PDZ-binding motif ETQI (637\u2013640) appended after the tag; confirmed expressed at correct molecular mass by western blot (L2), but the junction is cytoplasmic (intracellular domain 549\u2013640) and therefore not a surface tag site."
+    }
+  ]
+}

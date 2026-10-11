@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "NLGN4X",
+  "uniprot_acc": "Q8N0W4",
+  "sites": [
+    {
+      "site_id": "NLGN4X-terminal_n-41-lit",
+      "gene_symbol": "NLGN4X",
+      "uniprot_acc": "Q8N0W4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 41,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S41",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Electrophysiological recordings and imaging performed on neurons expressing HA-NLGN4X; WT construct used as functional control alongside ASD-associated mutants, indicating the tag does not prevent surface trafficking or synaptic function.",
+      "confidence": "high",
+      "rationale": "NLGN4X is a single-pass type-I transmembrane protein with a single large extracellular domain (residues 42\u2013676) and an intracellular C-terminal tail (698\u2013816); the N-terminus is the only extracellular terminus. The 'HA-NLGN4X' prefix notation in both L3 and L1 unambiguously places the HA tag at the N-terminus of the mature protein. The signal peptide spans residues 1\u201341 (computed), so the tag must be inserted after residue 41 (last SP residue S) and before residue 42 (mature N-terminus Q) to avoid co-translational cleavage. Python verification confirms aa(41)=S and aa(42)=Q. The tag is 635 residues from the TM boundary, well clear of any constraint. pCAG-HA-NLGN4X (WT, S712A, S712D, R704C) full-length membrane-anchored constructs expressed in neurons for biochemical, electrophysiological, and imaging experiments (PMC11913403); independently corroborated by HA-NLGN4X expressed in developing mouse cortical neurons (PMC8895740, L1).",
+      "sources": [
+        {
+          "pmid": 40032531,
+          "citation": "PMID 40032531",
+          "claim": "Human pCAG-HA-NLGN4X (WT, S712A, S712D, or R704C)-IRES-mCherry and pCAG-NLmiRs-GFP plasmids were used for biochemical, electrophysiological, and imaging experiments. pGEX-GST-NLGN ICD constructs were made as previously described ( Bemben et al., 2014 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:05:10.628009+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 (PMC8895740) and L3 (PMC11913403) both report 'HA-NLGN4X' prefix-notation constructs, converging on the same N-terminal extracellular junction (after SP cleavage at residue 41). L3 was chosen as the primary supporting clip because it names the construct explicitly (pCAG-HA-NLGN4X) and reports electrophysiological and imaging assays, yielding a surface_and_function validation level; L1 is a corroborating independent study. L2 (PMC6706319) reports 'NLGN4-HA' (suffix notation = C-terminal tag), which is intracellular and therefore recorded in other_positions only. No ledger line names a specific residue for the tag junction; the position is topology-derived from the single extracellular terminus. No internal loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 816,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "NLGN4-HA suffix notation places the HA tag at the C-terminus (residue 816), which lies in the intracellular tail (698\u2013816); not accessible on the extracellular face."
+    }
+  ]
+}

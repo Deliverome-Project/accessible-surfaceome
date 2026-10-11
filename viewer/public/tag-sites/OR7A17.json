@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR7A17-terminal_n-0-lit",
+      "gene_symbol": "OR7A17",
+      "uniprot_acc": "O14581",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + Rho20",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Heterologous expression in HEK293T cells confirmed; specific surface-expression or functional (cAMP) assay result not stated in the ledger clip.",
+      "confidence": "high",
+      "rationale": "OR7A17 has no signal peptide (topology landmarks show residues 1\u201325 as extracellular 'O', not 'S'), so the N-terminus is extracellular and is the only extracellular terminus available for a terminal tag. L1 explicitly reports a full-length, membrane-anchored OR7A17 construct with an N-terminal FLAG+Rho20 tag expressed in HEK293T cells, satisfying all ledger criteria. No residue number is named in the clip, but with a single extracellular terminus the junction is unambiguous: insert_after_residue = 0 (prepend before M1). The tag sits >25 residues from TM1 (which begins at residue 26), well within the \u22653-residue clearance requirement. Full-length OR7A17 construct carrying an 8-aa FLAG epitope tag followed by the first 20 aa of bovine rhodopsin fused to the N-terminus, cloned into pME18S and expressed in HEK293T cells (PMC12102163). The topology assigns residues 1\u201325 as extracellular with no signal peptide (raw topology string begins with 'O'), so the N-terminus is the sole extracellular terminus and the tag is necessarily prepended before residue 1.",
+      "sources": [
+        {
+          "pmid": 40410270,
+          "citation": "PMID 40410270",
+          "claim": "The DNA sequence of each OR was synthesized by GenScript Japan and inserted into a pME18S vector to generate OR proteins fused with N-terminal epitope tags of eight amino acids of FLAG tag, followed by twenty N-terminal amino acids of bovine rhodopsin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:57:56.394109+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It supports a single site: the N-terminal prepend on the extracellular face of OR7A17. The three internal extracellular loops (ECL1 80\u201397, ECL2 165\u2013196, ECL3 261\u2013273) and the short ECL4 are not grounded by any ledger evidence and are therefore not proposed. No intracellular or function-abrogating positions were named in the ledger.",
+  "literature_rejected": []
 }

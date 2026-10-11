@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR3A1-terminal_n-0-lit",
+      "gene_symbol": "OR3A1",
+      "uniprot_acc": "P47881",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "c-myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by ELISA-based quantification of c-myc-OR1740 in cell membrane nanovesicles; functional assay (e.g., ligand-induced signalling) NOT MEASURED in the cited study.",
+      "confidence": "medium",
+      "rationale": "The paper names no residue and no specific loop; the construct label 'c-myc-OR1740' follows the standard N-terminal fusion convention for GPCRs. OR3A1 has no signal peptide (topology begins extracellular at residue 1), so the N-terminus is directly extracellular (EC1, residues 1\u201328). The C-terminus (residues 296\u2013315) is intracellular, leaving exactly one extracellular terminus; topology_derived therefore places the tag as a prepend before residue 1 (insert_after_residue = 0). The prepend site is 28 residues from TM1 (starts at residue 29), well beyond the \u22653-residue minimum. PMID 26724468 reports a c-myc-tagged OR1740 (OR17-40/OR3A1) full-length receptor expressed in cells and quantified on the cell membrane surface via ELISA-based immunochemical detection in nanovesicles. The construct is named 'c-myc-OR1740', indicating an N-terminal fusion. No residue number or loop name is given.",
+      "sources": [
+        {
+          "pmid": 26724468,
+          "citation": "PMID 26724468",
+          "claim": "The applicability of the method is demonstrated through the quantification of the c-myc-olfactory receptor (OR, c-myc-OR1740) in the cell membrane NVs. The reported method opens the possibility to develop well-characterized drug-screening platforms based on G-coupled proteins embedded on membranes."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:43:57.273707+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports surface display of a c-myc-tagged OR3A1 (OR1740) in a full-length, membrane-anchored context, qualifying as a valid insertion. However, no residue number and no loop name are given; the position is derived solely from the construct naming convention ('c-myc-OR1740' = N-terminal fusion) and the fact that OR3A1 has exactly one extracellular terminus (the N-terminus, EC1 residues 1\u201328; the C-terminus is intracellular). No internal loop sites (EC2 86\u2013100, EC3 170\u2013199, EC4 264\u2013275) are supported by the ledger. Confidence is medium because the junction is topology-derived, not explicitly stated.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 315,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "The C-terminus of OR3A1 (IC4, residues 296\u2013315) is intracellular per topology landmarks; a tag here would not be surface-displayed and is not supported by L1."
+    }
+  ]
 }

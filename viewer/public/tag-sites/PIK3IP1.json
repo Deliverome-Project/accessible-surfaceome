@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PIK3IP1",
+  "uniprot_acc": "Q96FE7",
+  "sites": [
+    {
+      "site_id": "PIK3IP1-terminal_n-21-lit",
+      "gene_symbol": "PIK3IP1",
+      "uniprot_acc": "Q96FE7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FLAG-tagged WT TrIP was expressed on the cell surface (anti-FLAG flow cytometry) and used in T-cell stimulation assays (\u03b1-CD3/CD28 stimulation, GFP-gated time-course analysis in D10 T cells; PMC6279406 Fig. 1B\u2013D). Function of the tagged construct was assessed and the protein retained its inhibitory role in T-cell activation, consistent with surface_and_function.",
+      "confidence": "high",
+      "rationale": "PIK3IP1 is a single-pass type I transmembrane protein with signal peptide 1\u201321 and a large extracellular domain spanning residues 22\u2013170. L7 explicitly states the FLAG tag is placed at the N-terminus of the mature extracellular stalk, and because there is exactly one extracellular terminus (the mature N-terminus after SP cleavage), the junction is unambiguously after residue 21 (G) and before residue 22 (S). Python verification confirms res(21)=G and res(22)=S, with 149 residues separating the tag from the TM boundary (171), well above the \u22653-residue minimum. L1\u2013L4 further demonstrate that this N-terminally FLAG-tagged construct retains surface expression and participates in functional T-cell stimulation assays. Full-length murine and human PIK3IP1 (TrIP) constructs bearing an N-terminal FLAG tag were transiently expressed in D10 T cells (PMC6279406, L1\u2013L4) and HEK293T cells (PMC11615590, L5\u2013L7). L7 explicitly describes 'an N-terminal Flag-tag on the stalk' of the full-length transmembrane protein. PIK3IP1 has a single-pass type I topology with signal peptide residues 1\u201321 and exactly one extracellular terminus (mature N-terminus at residue 22); the FLAG tag must reside after SP cleavage at residue 21. Surface display was confirmed by anti-FLAG flow cytometry in all studies.",
+      "sources": [
+        {
+          "pmid": 39454954,
+          "citation": "PMID 39454954",
+          "claim": "To test this, we compared binding of the Ab\u2019s to full-length TrIP versus a construct engineered to lack the kringle domain, but still bearing an N-terminal Flag-tag on the stalk for detection."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:35:23.765733+00:00",
+  "literature_notes": "All seven Flag-tag ledger lines (L1\u2013L7) converge on the same N-terminal extracellular site; no ledger line pins a second distinct extracellular junction or names a residue number, so only one site is reported. The C-terminal Myc/6His tag (L8\u2013L9) is intracellular and is recorded in other_positions. No internal loop insertion is supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 263,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "pEF1MycHisA adds C-terminal Myc and 6His tags after residue 263, which lies in the intracellular domain (192\u2013263); detected by anti-Myc antibody, not by surface staining \u2014 not a surface tag site."
+    }
+  ]
+}

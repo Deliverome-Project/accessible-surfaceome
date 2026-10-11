@@ -37,7 +37,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "SCTR-terminal_n-22-lit",
+      "gene_symbol": "SCTR",
+      "uniprot_acc": "P47872",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "H",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "cAMP pharmacology assay: HA-SecR pEC50 = 10.6 \u00b1 0.2 vs WT-SecR pEC50 = 11.0 \u00b1 0.1 (n=4); near-equivalent activity confirming functional surface expression of the tagged full-length receptor.",
+      "confidence": "high",
+      "rationale": "The signal peptide of SCTR spans residues 1\u201322 (last residue A at position 22); the mature N-terminus begins at H23. Both PMC7435274 (L1/L2/L3) and PMC6750928 (L4/L5) replace the native signal peptide with a heterologous one and append an epitope tag (FLAG or HA) that is presented extracellularly immediately after cleavage, placing the junction at insert_after_residue=22. Python confirms residue 22 = A and residue 23 = H, consistent with the signal-peptide boundary. L3 provides direct functional validation showing near-equivalent cAMP potency (\u0394pEC50 = 0.4), qualifying this as surface_and_function. The mature ECD spans 119 residues before the first TM helix (142\u2013166), providing ample space for a short epitope tag. Full-length human SCTR with native signal peptide (residues 1\u201322) replaced by the HA signal sequence followed by a FLAG epitope (N-terminal) and an 8\u00d7HIS tag (C-terminal, flanked by 3C cleavage sites), expressed in a mammalian system for cryo-EM structural studies (PMC7435274). A parallel study (PMC6750928) used the 5HT3a signal sequence followed by an HA tag (YPYDVPDYA) at the same N-terminal position with a C-terminal 1D4 tag, in a multiplexed GPCR panel including SCTR. Both constructs place the epitope tag immediately after signal peptide cleavage at residue 22, presenting it on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 32811827,
+          "citation": "PMID 32811827",
+          "claim": "Fig. 1 Cryo-EM structure of the secretin:SecR:DNG\u03b1 s v2:Nb35 complex. a Pharmacology of the expression construct for HA-SecR versus WT-SecR (WT-SecR, pEC50 11.0 \u00b1 0.1; HA-SecR, pEC50 10.6 \u00b1 0.2; n = 4). b SEC trace of post FLAG-affinity column elution (left panel), the complex peak (gray, dotted lines) was isolated and used for cryo-EM imaging, with the right panel illustrating stability of the complex following one cycle of freeze-thawing. c Coomassie stain of the purified complex separated by PAGE (right panel)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 22,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:12:41.540053+00:00",
+  "literature_notes": "All five ledger lines converge on a single extracellular site: the N-terminal tag placed after signal peptide cleavage at residue 22. L1 and L2 describe the construct architecture; L3 provides functional validation; L4 and L5 confirm the same N-terminal tagging strategy in a separate study. No ledger line reports a tag insertion in any extracellular loop (ECL1 200\u2013216, ECL2 277\u2013291, ECL3 361\u2013367) or elsewhere in the large N-terminal ECD (23\u2013141). The C-terminal tags (8\u00d7HIS in L1\u2013L3; 1D4 in L4\u2013L5) are appended after residue 440, which falls within the intracellular C-tail (392\u2013440) and therefore do not qualify as surface tag sites; they are recorded in other_positions. No transposon, domain-insertion screen, or fluorescent-protein fusion data for SCTR appear in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 440,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 8\u00d7HIS tag (L1\u2013L3) and 1D4 tag (L4\u2013L5) appended after residue 440, which lies within the intracellular C-tail (topology 392\u2013440); not accessible on the extracellular face."
+    }
+  ]
 }

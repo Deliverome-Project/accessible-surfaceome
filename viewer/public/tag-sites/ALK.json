@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ALK",
+  "uniprot_acc": "Q9UM73",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:23:11.244177+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe C-terminal fusions (TCS::LexA and TEV-protease) to the Drosophila Alk ortholog in full-length, membrane-anchored constructs. ALK is a single-pass receptor tyrosine kinase; its C-terminus (residue 1620 in human ALK) lies entirely within the intracellular domain (residues 1058\u20131620 per the authoritative topology landmarks). These insertions are therefore intracellular, not extracellular surface tags. No ledger line supports a tag insertion at the extracellular N-terminus (after signal-peptide cleavage at residue 18, mature N-terminus = residue 19) or anywhere else in the extracellular domain (residues 19\u20131034). Because the ledger provides no evidence for any extracellular tag insertion in ALK or a close ortholog, zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1620,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal fusion of full-length Drosophila Alk with TCS::LexA and TEV-protease variants; the C-terminus of ALK is intracellular (residues 1058\u20131620), so this is not a surface-tag site, though the tagged receptor retains ligand-dependent signaling (L2)."
+    }
+  ]
+}

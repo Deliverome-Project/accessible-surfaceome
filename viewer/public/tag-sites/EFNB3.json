@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EFNB3",
+  "uniprot_acc": "Q15768",
+  "sites": [
+    {
+      "site_id": "EFNB3-terminal_n-27-lit",
+      "gene_symbol": "EFNB3",
+      "uniprot_acc": "Q15768",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "4x Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Protein detected by anti-Myc antibody in an in vitro transcription/translation system; cell-surface trafficking and receptor-binding function NOT MEASURED.",
+      "confidence": "low",
+      "rationale": "Zebra finch ephrin-B3 residue 21 is the first residue of the mature ectodomain in that ortholog (signal peptide ~20 aa); the equivalent junction in human EFNB3 is after residue 27, the last residue of the human signal peptide (landmarks: SP 1\u201327, extracellular 28\u2013227). Python confirms residue 27 = G and residue 28 = L. The junction is 200 residues from the TM boundary (TM starts at 228), satisfying the \u22653-residue rule. Position_evidence is topology_derived because the cited residue belongs to the ortholog and the human junction is recovered from the SP cleavage landmark, not from a human-specific experiment. L1 reports a full-length, membrane-anchored zebra finch ephrin-B3 construct in which four myc epitope repeats were inserted between an Ig \u03ba chain signal sequence and predicted residue 21 of zebra finch ephrin-B3 (the first residue of the mature ectodomain in that ortholog), for detection of in vitro transcribed protein.",
+      "sources": [
+        {
+          "pmid": 34117069,
+          "citation": "PMID 34117069",
+          "claim": "For detection of the in vitro transcribed protein, four repeats of the myc epitope were inserted between the Ig \u03ba chain signal sequence and predicted residue 21 of zebra finch ephrin-B3."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:25:27.134324+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length, membrane-anchored zebra finch ephrin-B3 construct with a 4x Myc tag placed at the N-terminus of the mature ectodomain (after the signal peptide), validated only in an in vitro transcription/translation system. Because the source is an ortholog and the validation is minimal (no cell-surface expression assay, no functional assay), confidence is low. No ledger evidence supports any internal extracellular loop site or the C-terminal (intracellular) terminus of human EFNB3. The large extracellular domain (residues 28\u2013227) contains the EphB-receptor-binding surface; an N-terminal tag may interfere with receptor engagement, but this was not tested in L1.",
+  "literature_rejected": []
+}

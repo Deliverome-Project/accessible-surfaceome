@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNC1",
+  "uniprot_acc": "P48547",
+  "sites": [
+    {
+      "site_id": "KCNC1-internal-231-lit",
+      "gene_symbol": "KCNC1",
+      "uniprot_acc": "P48547",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 231,
+      "residue_before": "T",
+      "residue_after": "Q",
+      "residue_label": "T231",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Cell-surface expression confirmed by surface assay (KCNC1-HA detected at the plasma membrane); channel function not explicitly re-measured in the tagged construct in this study.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names T231 as the insertion point for the HA tag in the first extracellular loop of full-length, membrane-anchored KCNC1. Python confirms residue 231 is T (residue_before=T, residue_after=Q), sits within the extracellular span 210\u2013246, and is 22 residues from the TM1 C-boundary and 16 residues from the TM2 N-boundary, satisfying the \u22653-residue clearance rule on both sides. The construct was used for cell-surface expression assays, demonstrating successful trafficking to the plasma membrane. Full-length KCNC1-HA construct with a 9-aa HA tag inserted after T231 in the first extracellular loop (S1\u2013S2 linker, topology residues 210\u2013246); used in cell-surface expression assays in a heterologous expression system.",
+      "sources": [
+        {
+          "pmid": 42347804,
+          "citation": "PMID 42347804",
+          "claim": "For cell-surface expression assays, KCNC1 -HA was synthesized to include an HA tag (YPYDVPDYA) attached to the first extracellular loop behind T231 as described previously ( Xu et al., 2007 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:36:52.061972+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It unambiguously pins the HA-tag insertion to T231 in the S1\u2013S2 extracellular loop of full-length KCNC1. No other extracellular loops, termini, or alternative positions are supported by the ledger. The N-terminus (residues 1\u2013190) is intracellular and the C-terminus (434\u2013511) is intracellular, so neither terminus is available for a surface tag. The remaining extracellular loops (S3\u2013S4 linker 292\u2013314 and S5\u2013S6/turret 367\u2013412) have no ledger support and are not proposed.",
+  "literature_rejected": []
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRP8",
+  "uniprot_acc": "Q14114",
+  "sites": [
+    {
+      "site_id": "LRP8-terminal_n-32-lit",
+      "gene_symbol": "LRP8",
+      "uniprot_acc": "Q14114",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 32,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A32",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-Flag immunofluorescence microscopy in A549 LRP8-KO cells overexpressing Flag-tagged LRP8 (L3); surface expression also confirmed by supplementary flow/imaging in K562 cells for Flag-ApoER2 iso1 (L1/L2). Receptor function not measured in these clips.",
+      "confidence": "high",
+      "rationale": "LRP8 (ApoER2) is a type I single-pass transmembrane receptor: the ectodomain spans residues 33\u2013825, the TM helix 826\u2013848, and the cytoplasmic tail 849\u2013963. The only extracellular terminus is the mature N-terminus beginning at residue 33 (after cleavage of the 1\u201332 signal peptide). A surface-detected Flag tag on a full-length membrane-anchored construct can only reside at this terminus; the junction is therefore insert_after_residue = 32 (between the last SP residue A32 and the first mature residue A33), computed from the landmarks. Python confirmed seq[31]='A' and seq[32]='A'. The tag position is 793 residues from the TM boundary, satisfying the \u22653-residue constraint with large margin. Flag-tagged full-length LRP8 overexpressed in A549 LRP8-KO cells and immunostained with anti-Flag antibody by fluorescence microscopy, confirming surface display of the tagged construct (L3). Independently corroborated by Flag-tagged full-length ApoER2 isoform 1 (residues 1\u2013963, same protein) with surface expression confirmed in K562 cells (L1/L2, same paper). No ledger line names the insertion residue; LRP8 is a type I single-pass receptor with a 793-residue N-terminal ectodomain (residues 33\u2013825) and an intracellular C-terminus (849\u2013963), leaving exactly one extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 40993380,
+          "citation": "PMID 40993380",
+          "claim": "Scale bar, 20 \u03bcm. c (left panel) , WT and A549 LRP8 -KO cell lines as well as A549 LRP8 -KO cells overexpressing Flag-tagged LRP8 were immunostained with an anti-Flag mAb and visualized by fluorescence microscopy."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:19:20.678835+00:00",
+  "literature_notes": "L1/L2 (PMC12827466) independently corroborate the N-terminal Flag tag on full-length ApoER2 isoform 1 (residues 1\u2013963) with surface confirmation in K562 cells; they are the same paper as L3's corroboration and pin the same junction, so no additional site is added. L4/L5 (pcDNA3-HA-ApoER2, pEGFP-HA-ApoER2, citing Cuitino et al. 2005) and L6 (FM4-GFP HA-ApoER2 with heterologous hGH signal sequence) also describe HA-tagged full-length ApoER2 constructs but neither clip states the insertion residue nor confirms surface expression; they corroborate the same N-terminal position but do not add a new site or raise the validation level. The domain-swap constructs in L1 (LA1-Flag residues 46\u201385 + 334\u2013963, LA2-Flag, etc.) are membrane-anchored but chimeric/truncated; the Flag position within each is not stated, so no internal site can be pinned from them. No ledger line reports an internal loop insertion or a C-terminal surface tag for LRP8/ApoER2.",
+  "literature_rejected": []
+}

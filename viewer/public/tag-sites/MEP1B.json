@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "MEP1B",
+  "uniprot_acc": "Q16820",
+  "sites": [
+    {
+      "site_id": "MEP1B-terminal_n-22-lit",
+      "gene_symbol": "MEP1B",
+      "uniprot_acc": "Q16820",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "T",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Strep",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used as functional WT backbone for variant studies; explicit surface-expression or enzymatic-activity assay of the tagged WT not described in the clip.",
+      "confidence": "medium",
+      "rationale": "MEP1B is a type I transmembrane protein (signal peptide 1\u201322, extracellular 23\u2013652, TM 653\u2013675, intracellular 676\u2013701). An 'N-terminal' tag on a full-length construct with a signal peptide must be inserted after the SP cleavage site (after residue 22) to survive to the cell surface; placement upstream of residue 1 would be cleaved off with the signal peptide. The junction is therefore uniquely determined by topology: insert_after_residue = 22, placing the strep tag at the mature extracellular N-terminus, 630 residues from the TM boundary. Python confirmed residue 22 = A and residue 23 = T. Full-length meprin \u03b2 WT pcDNA4/to construct carrying an N-terminal strep tag and a C-terminal flag tag, used as the backbone for generating the R238Q variant; expressed in a mammalian system.",
+      "sources": [
+        {
+          "pmid": 39937919,
+          "citation": "PMID 39937919",
+          "claim": "A plasmid coding for the meprin \u03b2 variant R238Q was generated on the basis of a meprin \u03b2 WT pcDNA4/to-construct that carries an N-terminal strep tag and a C-terminal flag tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:39:56.252298+00:00",
+  "literature_notes": "L1, L2, and L3 all describe a C-terminally HA-tagged murine meprin \u03b2 expressed from a Rosa26 knock-in. MEP1B is a type I TM protein whose C-terminus (residues 676\u2013701) is intracellular; the HA tag therefore faces the cytoplasm and does not qualify as an extracellular surface tag site. These are recorded in other_positions. L4 describes a doubly-tagged construct (N-terminal strep + C-terminal flag); the C-terminal flag is likewise intracellular and is also recorded in other_positions. Only the N-terminal strep tag of L4 lands on the extracellular face and is reported as a site. No ledger line names a specific residue for the N-terminal junction, so position_evidence is topology_derived. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 701,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag on murine meprin \u03b2 (Rosa26 knock-in); the C-terminus (residues 676\u2013701) is intracellular, so the HA tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 701,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal flag tag on full-length meprin \u03b2 pcDNA4/to construct; same intracellular C-terminus (676\u2013701), not accessible from the extracellular face."
+    }
+  ]
+}

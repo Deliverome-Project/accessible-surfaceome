@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADORA2A-terminal_n-0-lit",
+      "gene_symbol": "ADORA2A",
+      "uniprot_acc": "P29274",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "N-TAP (protein G + SBP); also ALFA, BC2, 6E",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Antagonist binding (radioligand): Kd indistinguishable from WT (L3). Agonist-induced cAMP accumulation: N-terminally tagged receptor behaves like untagged (no rightward shift), as stated explicitly in L4's comparison group.",
+      "confidence": "high",
+      "rationale": "A2AR has no signal peptide; the topology landmarks place residues 1\u20137 as extracellular, making insert_after_residue=0 (prepend before Met1) the sole unambiguous N-terminal extracellular junction. Both PMC3789979 (L3/L5) and PMC12633870 (L6/L7/L8) independently report full-length, membrane-anchored A2AR constructs carrying tags at this N-terminus, confirming the position is tolerated. L3 provides the strongest functional evidence: antagonist binding is WT-equivalent, and L4's explicit comparison group shows N-terminal-tagged cAMP response is indistinguishable from untagged. The 7-residue extracellular N-terminal span (MPIMGSS) provides adequate distance (\u22653 aa) from TM1 (residue 8) for a short epitope tag. PMC3789979 (L3/L5): N-terminally TAP-tagged full-length A2AR stably expressed in HEK293 cells; antagonist radioligand binding affinity indistinguishable from WT. L4 (same paper) reports that agonist-induced cAMP accumulation was shifted 20-fold in the C-terminally tagged construct 'compared with N-terminally tagged and untagged receptors', explicitly placing the N-terminal construct on par with untagged. PMC12633870 (L6/L7/L8) independently engrafted ALFA, BC2, and 6E epitope tags into the 'distal N-terminus (extracellular portion)' of full-length A2AR for nanobody-based detection. Neither paper names a specific junction residue; A2AR has no signal peptide, so the extracellular N-terminus begins at Met1 and the only unambiguous prepend position is insert_after_residue=0.",
+      "sources": [
+        {
+          "pmid": 23965991,
+          "citation": "PMID 23965991",
+          "claim": "Accordingly, we examined several constructs (see schematic representation in Fig. 1 A ); when stably expressed in HEK293 cells, both N- and C-terminally tagged constructs gave rise to receptors that bound the antagonist with an affinity indistinguishable from the wild type A 2A receptor ( Fig. 1 B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:17:43.036005+00:00",
+  "literature_notes": "Only one extracellular surface site is supported by the ledger: the N-terminal prepend (insert_after_residue=0). L3/L5 (PMC3789979) and L6/L7/L8 (PMC12633870) both pin the same junction (N-terminal prepend), so they constitute one site; L3 is cited as primary for its functional data. ECL1 (69\u201374), ECL2 (145\u2013171), and ECL3 (260\u2013264) are extracellular loops but no ledger line reports a tolerated tag insertion in any of them for A2AR or a close ortholog \u2014 no site is proposed for those loops. The C-terminal tag (L1/L2, L4) is intracellular (residues 289\u2013412) and shows perturbed agonist signaling; it is recorded in other_positions. ICL3 insertions (L9, L10) are intracellular and recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 412,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal tag (3xHA-2xMyc CRISPR knock-in, L1/L2; TAP tag, L3/L4) is intracellular (residues 289\u2013412); agonist-induced cAMP accumulation shifted ~20-fold rightward vs N-terminally tagged and untagged receptors (L4), indicating impaired G-protein coupling despite normal surface expression and antagonist binding."
+    },
+    {
+      "residue": 235,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "bRIL tag inserted in place of residues 235\u2013244 of A2AR (spanning the ICL3/TM6 boundary) as a cryo-EM crystallisation chaperone; ICL3 is intracellular (landmarks 199\u2013235)."
+    },
+    {
+      "residue": 217,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "RagA GTPase domain inserted into ICL3 of A2AR (Fusion 8) for cryo-EM structure determination; ICL3 is intracellular (landmarks 199\u2013235); no specific residue named, representative midpoint used."
+    }
+  ]
 }

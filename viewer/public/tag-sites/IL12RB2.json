@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL12RB2",
+  "uniprot_acc": "Q99665",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:16:09.260985+00:00",
+  "literature_notes": "The sole ledger entry, L1, describes a CaM tag fused to 'the extracellular domain of mIL-12R\u03b22 (D1-D6)' co-expressed with mIL-12R\u03b21-DAPK1 for formation of a purifiable receptor complex for structural/biochemical characterisation. Two independent disqualifications apply. First, the D1-D6 notation in the quote denotes the six fibronectin-type-III ectodomain modules of IL-12R\u03b22; the construct is used alongside a DAPK1 dimerisation-domain fusion and a CaM purification handle specifically to produce a soluble, purifiable complex for structural studies \u2014 it is a soluble ectodomain, not a full-length membrane-anchored receptor, and therefore falls under the explicit exclusion ('a soluble ECTODOMAIN or single-domain construct secreted as a separate protein for structure, binding or crystallography'). Second, even if the construct were accepted as full-length, the quote states no residue number for the CaM insertion; the tag position is entirely unstated, so insert_after_residue cannot be pinned. A topology-derived N-terminal placement (after signal-peptide cleavage at residue 23, giving insert_after_residue = 23, residue_before = A, residue_after = K) would require confirmed evidence of a full-length membrane-anchored construct, which the quote does not provide. The construct is also mouse IL-12R\u03b22, not human, though this alone would not disqualify it. Because both primary disqualifications hold independently, L1 does not ground any surface tag site, and the correct answer is zero sites.",
+  "literature_rejected": []
+}

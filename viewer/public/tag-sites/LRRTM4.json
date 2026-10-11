@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRTM4",
+  "uniprot_acc": "Q86VH4",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:25:08.143647+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the identical construct: full-length LRRTM4 with CFP fused to the C-terminus (LRRTM4-CFP), published in PMC2746109. LRRTM4 is a type I single-pass transmembrane protein with signal peptide 1\u201330 (cleaved), extracellular domain 31\u2013424, TM helix 425\u2013445, and intracellular C-tail 446\u2013590. A C-terminal CFP fusion therefore places the tag after residue 590, which is deep in the intracellular domain \u2014 not on the extracellular face. The construct is not a snorkel design. The robust synaptogenic activity (L2) confirms the protein traffics correctly to the neuronal surface and is functional, but this validates the full-length protein, not an extracellular tag position. No ledger line reports any insertion in the extracellular domain (31\u2013424), at the mature N-terminus (after residue 30), or in any extracellular loop. Zero extracellular surface tag sites are supported by this ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 590,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CFP fused after the last residue (N590) of LRRTM4; the C-terminus lies in the intracellular domain (residues 446\u2013590), so this tag faces the cytoplasm, not the extracellular space."
+    }
+  ]
+}

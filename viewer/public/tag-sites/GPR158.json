@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "GPR158",
+  "uniprot_acc": "Q5T848",
+  "sites": [
+    {
+      "site_id": "GPR158-terminal_n-23-lit",
+      "gene_symbol": "GPR158",
+      "uniprot_acc": "Q5T848",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by live HA immunolabeling in HEK293T cells; co-IP with PLCXD2 confirmed. Quantitative functional assay not reported.",
+      "confidence": "high",
+      "rationale": "GPR158 carries a signal peptide (residues 1\u201323, computed from landmarks); the mature N-terminus begins at residue 24 (A). The only extracellular terminus of this 7-TM protein is this N-terminus, so an HA tag detected by live surface immunolabeling must reside immediately after the SP cleavage site, placing the junction between G23 and A24. Python confirms residue 23 = G and residue 24 = A. The tag is 394 residues from TM1 (418), well beyond the \u22653-residue minimum. Full-length GPR158 expressed in HEK293T cells with an HA epitope tag accessible at the cell surface; live immunolabeling of the HA epitope specifically detected the surface pool of GPR158 and showed colocalization with PLCXD2 at the plasma membrane. The same HA-tagged construct was reciprocally co-immunoprecipitated with FLAG-PLCXD2 (L10). No residue number is stated; GPR158 has a signal peptide (residues 1\u201323) and a single extracellular N-terminus (residues 24\u2013417), making the post-SP junction the only extracellular terminus where a surface-accessible HA tag can reside.",
+      "sources": [
+        {
+          "pmid": 40393451,
+          "citation": "PMID 40393451",
+          "claim": "Live immunolabeling of the HA epitope in transfected HEK239T cells to specifically detect the surface pool of GPR158 showed clear colocalization with PLCXD2 at the PM, especially evident in orthogonal planes (Figure 1D) ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:29:48.839756+00:00",
+  "literature_notes": "L1/L2/L3/L4 (3\u00d7Flag-TeV-HA-T2A-tdTomato knock-in) and L5 (myc) and L6 (EGFP) all place tags at the GPR158 C-terminus, which is intracellular (topology landmark: INTRACELLULAR 665\u20131215); these are recorded in other_positions. L8 and L9 describe a pDisplay construct carrying only the GPR158 ectodomain (lacking the signal peptide) fused to the PDGFR transmembrane anchor \u2014 this is not full-length membrane-anchored GPR158 and is therefore disqualified per the evidence rules. L10 (co-IP of HA-GPR158 with FLAG-PLCXD2) is from the same paper and same construct as L7 and corroborates the N-terminal HA site but adds no independent position information. No ledger line supports an insertion in any of the short extracellular loops (ECL1 475\u2013481, ECL2 547\u2013577, ECL3 635\u2013641), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1215,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3\u00d7Flag-TeV-HA-T2A-tdTomato cassette knocked in at the GPR158 termination codon (C-terminus, residue 1215); topology landmark places residues 665\u20131215 in the intracellular compartment; L3 confirms the tagged mouse exhibits normal motor, cognitive, and social behavior (function preserved), but the tag faces the cytoplasm and is not a surface tag."
+    },
+    {
+      "residue": 1215,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Myc tag added to the C-terminus of the GPR158 ORF in pcDNA3.1; C-terminus is intracellular (665\u20131215); used for co-immunoprecipitation from cell lysates."
+    },
+    {
+      "residue": 1215,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal EGFP fusion (pEGFP-N1) on full-length mouse GPR158; C-terminus is intracellular (665\u20131215); used in cell-surface pulldown and binding assays as an intracellular reporter."
+    }
+  ]
+}

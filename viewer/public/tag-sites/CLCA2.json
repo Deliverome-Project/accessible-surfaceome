@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLCA2",
+  "uniprot_acc": "Q9UQC9",
+  "sites": [
+    {
+      "site_id": "CLCA2-terminal_n-31-lit",
+      "gene_symbol": "CLCA2",
+      "uniprot_acc": "Q9UQC9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Protein was detected by immunoblot and used to characterize CLCA2 biology; the paper reports successful expression and use of the tagged construct for protein characterization. Specific functional assay result (e.g., channel activity) not reported for the tagged construct in the cited clip.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the HA tag was inserted in-frame between the signal peptide and the mature protein of full-length CLCA2 in HEK 293T cells. By the topology landmarks, the signal peptide spans residues 1\u201331 (last SP residue = A at position 31) and the mature N-terminus begins at residue 32 (G). Therefore insert_after_residue = 31, placing the tag at the extracellular N-terminus, 870 residues from the TM boundary (902), well clear of any constraint. Python confirmed residue 31 = A and residue 32 = G. Full-length human CLCA2 expressed in HEK 293T cells with an N-terminal HA tag cloned in-frame between the signal peptide (residues 1\u201331) and the mature protein (residue 32 onward); the paper explicitly states the junction as between signal peptide and mature protein.",
+      "sources": [
+        {
+          "pmid": 38602325,
+          "citation": "PMID 38602325",
+          "claim": "To further characterize this protein, we cloned expression vectors that allow the production of CLCA2 fusion proteins with an amino\u2010terminal influenza hemagglutinin (HA)\u2010tag that was inserted in\u2010frame between the signal peptide and the mature protein or with a carboxy\u2010terminal FLAG\u2010tag (Figure 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 31,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:38:27.728055+00:00",
+  "literature_notes": "L1 also reports a C-terminal FLAG tag on full-length CLCA2. By the topology landmarks, the C-terminus (residues 923\u2013943) is intracellular; this tag is therefore not a surface tag and is recorded in other_positions. L2 reports a C-terminal EYFP fusion on goat CLCA2 (gCLCA2, an ortholog) expressed in HEK 293T cells; the C-terminus of CLCA2 is likewise intracellular, so this too is recorded in other_positions rather than sites. No ledger line supports any internal extracellular loop insertion for CLCA2.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 943,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length human CLCA2 expressed in HEK 293T; residue 943 falls within the intracellular tail (topology landmarks: intracellular 923\u2013943), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 943,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal EYFP fusion on goat CLCA2 (gCLCA2 ortholog) expressed in HEK 293T cells; the C-terminus of CLCA2 is intracellular (topology landmarks: intracellular 923\u2013943), so this fluorescent-protein fusion is cytoplasmic, not extracellular."
+    }
+  ]
+}

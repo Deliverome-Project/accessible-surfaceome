@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:25:25.510644+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single published construct: mCherry fused in-frame at the C-terminus of OPN3 (before the stop codon in exon 4), validated in a CRISPR knock-in mouse. OPN3 is a 7-TM opsin with standard GPCR topology: the N-terminus (residues 1\u201343) is extracellular and the C-terminus (residues 313\u2013402) is intracellular. A tag appended after residue 402 therefore faces the cytoplasm, not the extracellular surface. No ledger line describes a tag in any extracellular loop (ECL1: 101\u2013114, ECL2: 177\u2013202, ECL3: 277\u2013289) or at the extracellular N-terminus. Because the sole published insertion is intracellular, zero extracellular surface sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 402,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mCherry fused at the C-terminus of OPN3 (after residue 402, before the stop codon); the C-terminus lies in the intracellular domain (topology landmarks: INTRACELLULAR 313\u2013402), so this is a cytoplasmic tag, not a surface tag. Validated for correct localization and function in melanocytes and knock-in mouse (L3, L4)."
+    }
+  ]
 }

@@ -469,5 +469,12 @@
       "canonical_residue": 79,
       "left_pct": 24.159021406727827
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:55:40.727647+00:00",
+  "literature_notes": "The sole ledger entry (L1, PMC9917459) describes chimeric constructs SnFR-\u03b32 and SnFR-\u03b38, in which the iGluSnFR sensor domain is fused via a 12-aa linker to a NETO2-\u03b32 or NETO2-\u03b38 chimera. This is not an insertion of an epitope tag into an extracellular loop of any TARP; rather, the TARP (CACNG2 or CACNG8) serves as the C-terminal anchor portion of a wholly chimeric protein. No residue within any TARP extracellular loop is named as an insertion junction. Even treating CACNG2/CACNG8 as close paralogs of CACNG4 (\u03b3-4), the chimera architecture does not constitute a tag insertion into the TARP's own extracellular domain and therefore cannot ground a site in CACNG4. Additionally, CACNG4's N-terminus (residues 1\u20139) is intracellular per the authoritative topology landmarks, so an N-terminal fusion would not be surface-exposed. With no ledger line grounding a tolerated tag insertion at any extracellular position of CACNG4 or a directly comparable construct, zero sites qualify.",
+  "literature_rejected": []
 }

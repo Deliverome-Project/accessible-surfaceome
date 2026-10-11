@@ -518,5 +518,20 @@
       "canonical_residue": 793,
       "left_pct": 73.88535031847134
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:03:59.944973+00:00",
+  "literature_notes": "The sole ledger entry [L1] reports a C-terminal Flag tag on full-length ADCY7 expressed in HEK293 cells. Per the authoritative topology landmarks, the C-terminus (residue 1080) lies within the intracellular span 814\u20131080. ADCY7 is a 12-TM adenylate cyclase whose cytoplasmic C-terminal tail is entirely intracellular; a tag appended after residue 1080 faces the cytoplasm, not the extracellular space. This insertion therefore does not qualify as an extracellular surface tag site and is recorded in other_positions. No ledger line supports any insertion in any of the six extracellular loops/spans (55\u201363, 116\u2013125, 168\u2013175, 615\u2013620, 690\u2013717, 762\u2013796) or at the intracellular N-terminus. Zero surface sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1080,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal Flag tag appended after residue 1080 (Asn), which lies within the intracellular C-terminal domain (topology 814\u20131080); faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

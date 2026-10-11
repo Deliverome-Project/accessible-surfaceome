@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "OLR1",
+  "uniprot_acc": "P78380",
+  "sites": [
+    {
+      "site_id": "OLR1-terminal_c-273-lit",
+      "gene_symbol": "OLR1",
+      "uniprot_acc": "P78380",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 273,
+      "residue_before": "Q",
+      "residue_after": "",
+      "residue_label": "Q273",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-V5 immunofluorescence in non-permeabilized COS cells; no ligand-binding or signalling functional assay reported in this clip.",
+      "confidence": "high",
+      "rationale": "OLR1/LOX-1 is a Type II transmembrane protein with its entire C-terminal domain (residues 58\u2013273) extracellular. The pEF/V5-His vector places the V5 tag at the protein C-terminus, which is therefore extracellular and surface-accessible. L1 directly demonstrates surface display by anti-V5 staining of intact, non-permeabilized cells, making this the highest-confidence extracellular junction. Python confirms residue 273 is Q and lies 216 residues from the TM boundary, well clear of any TM constraint. No residue number for the tag junction is stated in the paper, so position_evidence is topology_derived rather than validated. Full-length human LOX-1 subcloned into pEF/V5-His (C-terminal V5-His) and expressed in COS cells; anti-V5 antibody staining of non-permeabilized cells confirmed surface display of the tagged receptor. OLR1 is a Type II single-pass TM protein (N-terminus intracellular, residues 1\u201336; TM 37\u201357; extracellular domain 58\u2013273), so the C-terminal V5-His tag is the sole extracellular terminus. No residue number is given for the tag junction in the paper; the position is derived from the topology landmarks.",
+      "sources": [
+        {
+          "pmid": 19247493,
+          "citation": "PMID 19247493",
+          "claim": "Surface expressed K/K167-V5, N/N167-V5 or LOXIN-V5 proteins were visualized with Mab anti-V5 (panels a, d and g respectively)."
+        },
+        {
+          "pmid": 37805141,
+          "citation": "PMID 37805141",
+          "claim": "Individual clonal populations were isolated and propagated to assay for tetracycline (1 \u03bcg/ml) inducible LOX-1-FLAG expression, detected by immunoblotting with mouse anti-FLAG M2 monoclonal antibody (Merck)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:22:54.488828+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) converge on C-terminal tagging of full-length LOX-1. L1, L2, and L3 are from the same paper (PMC2645694) and describe the same pEF/V5-His C-terminal construct; L1 is the strongest (surface staining in non-permeabilized cells) and is used as the primary support for site 1. L4 (PMC10641530) independently reports a C-terminal FLAG tag and is used for site 2. The 'K167' and 'N167' labels in L1/L3 refer to the K167N point mutation in the CTLD domain, not to the tag insertion position; residue 167 (K) is extracellular but no tag insertion at that residue is reported in the ledger. No internal loop insertions are supported by the ledger. The N-terminus (residues 1\u201336) is intracellular, so no N-terminal extracellular site exists for this Type II TM protein.",
+  "literature_rejected": []
+}

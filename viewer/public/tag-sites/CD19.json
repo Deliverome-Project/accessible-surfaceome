@@ -139,6 +139,43 @@
       "median_conservation": 0.0
     },
     {
+      "site_id": "CD19-internal-None-lit",
+      "gene_symbol": "CD19",
+      "uniprot_acc": "P15391",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "exon 1 (ECD N-terminal segment, ~aa 20-61)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA / FLAG / VSVg / His",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression detected by flow cytometry for tagged FL-CD19 variants; specific functional assays (e.g., signaling, CAR-T killing) NOT MEASURED for the tagged constructs in isolation.",
+      "confidence": "medium",
+      "rationale": "L3 (PMC6189457) reports that epitope tags were cloned into exon 1 of full-length, membrane-anchored CD19 for surface flow cytometry detection. Exon 1 of CD19 encodes the signal peptide (aa 1-19) and the beginning of the extracellular domain (~aa 20-61), placing any tag within this exon on the extracellular face. No specific residue number is given, so this remains a region-level site. The exon 1 ECD segment is entirely within the extracellular span (20-291) and far from the TM boundary. Full-length CD19 retroviral constructs bearing HA, FLAG, VSVg, and His epitope tags cloned into exon 1 of the intact membrane-anchored protein, used for flow cytometry surface detection of CD19 variants (including immunotherapy-resistant 105R and \u0394ex2). Exon 1 encodes the signal peptide and the N-terminal portion of the ECD (approximately aa 1-61); the tag was placed in exon 1 to avoid interference with exon 2 mutations.",
+      "sources": [
+        {
+          "pmid": 30104252,
+          "citation": "PMID 30104252",
+          "claim": "The tags were cloned into exon 1 or 3 to avoid interference with exon 2 mutations."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CD19-surface_loop-105",
       "gene_symbol": "CD19",
       "uniprot_acc": "P15391",
@@ -312,24 +349,30 @@
       "residue_after": "P",
       "residue_label": "R19",
       "topology_state": "O",
-      "extracellular": false,
-      "compartment": "O",
-      "tag_type": "VSVg",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (with G4S linkers)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "yes",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry (the construct was designed for transient CD19 surface expression via mRNA transfection); functional assays beyond surface detection NOT MEASURED in this study.",
       "confidence": "high",
-      "rationale": "VSVg tag at the same post-SP cleavage junction (after residue 19) is independently validated in PMID 30104252 alongside HA. Both tags showed robust surface detection by live-cell flow cytometry and preserved FMC63 binding. This site is listed separately to document the VSVg tag precedent, which is a different epitope sequence and may be useful when HA detection is confounded by endogenous cross-reactivity. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L1 explicitly states the FLAG tag was inserted 'between amino acids 19 and 20' of CD19 (UniProt P15391), which is the junction between the signal peptide (1-19) and the mature extracellular N-terminus (Pro20). Python verification confirms residue 19 = R and residue 20 = P in the canonical sequence. The construct includes the TM domain (aa 292-313), confirming membrane anchoring. The tag sits 272 residues from the TM boundary, well within the extracellular span. Full-length membrane-anchored CD19 construct (aa 1-317, containing ECD and TM domain) expressed transiently via mRNA transfection in mammalian cells. The FLAG tag was inserted between residues 19 and 20 (after the native signal peptide), flanked by G4S and (G4S)2 linkers, with the native CD19 sequence resuming at Pro20.",
       "sources": [
         {
-          "pmid": 30104252,
-          "citation": "PMID 30104252"
+          "pmid": 38155191,
+          "citation": "PMID 38155191",
+          "claim": "Transgenes for in vitro transcription and subsequent transient CD19 surface expression were designed by cloning a T7 promoter upstream of the native signal peptide of CD19 (Uniprot P15391 ; amino acids 1\u201319), followed by a linker sequence (G 4 S), a Flag-tag, a linker sequence (G 4 S) 2 and a truncated sequence of the native CD19 (Uniprot P15391 ; amino acids 20\u2013317) containing the extracellular domains and the transmembrane domain (sequence shown in the Supplementary Table 1 )."
         }
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -896,5 +939,12 @@
       "canonical_residue": 90,
       "left_pct": 16.15798922800718
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:12:20.484057+00:00",
+  "literature_notes": "L4 and L5 (PMC8155657) describe yeast surface display of the CD19 ECD as an Aga2p-HA-(G4S)3-CD19-ECD-cmyc fusion construct. Although yeast surface display is membrane-anchored (via Aga2p-Aga1p), this is not a full-length native CD19 construct \u2014 it is the isolated ECD fused to a yeast display scaffold, not the intact membrane protein. These lines were therefore disqualified per the rule requiring a full-length membrane-anchored construct. L6 (PMC10754921) describes the same yeast surface display approach (Aga2p-HA-SF-CD19(Pro20-Pro278)-cmyc) and was similarly disqualified. L2 (PMC6189457) provides context for the same experimental system as L3 and was subsumed into the L3-grounded sites. The exon 1 and exon 3 sites from L2/L3 cannot be pinned to specific residues because the paper names only the exon, not the exact junction residue; they are reported as region-level sites with null insert_after_residue.",
+  "literature_rejected": []
 }

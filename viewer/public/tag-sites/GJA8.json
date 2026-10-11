@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "GJA8",
+  "uniprot_acc": "P48165",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:11:19.712876+00:00",
+  "literature_notes": "GJA8 (Cx50) has two extracellular loops (EC1: 43\u201371; EC2: 176\u2013203) and no extracellular terminus \u2014 both the N-terminus (1\u201321) and C-terminus (225\u2013433) are intracellular. Every ledger line (L1\u2013L5) describes a C-terminal tag: L1/L2 report a full-length chick Cx50\u2013FLAG construct shown to be functional, L3/L4 report FLAG appended at the C-terminus of a Cx50\u0394290\u2013440 truncation (residue 290 falls in IC3, 225\u2013433), and L5 reports a C-terminal mCherry fusion via a 12-aa linker. All of these positions are on the intracellular face and therefore do not qualify as extracellular surface tag sites. No ledger line reports any insertion in EC1, EC2, or any other extracellular region of this protein or a close ortholog. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 433,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length chick Cx50 (GJA8); C-terminus (225\u2013433) is intracellular per topology landmarks; L2 confirms minimal interference with membrane distribution and channel activity, but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 290,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "FLAG appended at the C-terminus of Cx50\u0394290\u2013440 truncation construct; residue 290 lies in IC3 (225\u2013433) and is intracellular; truncation also abrogates macular localization and dye coupling (function_perturbed), restored only by addition of seven further C-terminal residues."
+    },
+    {
+      "residue": 433,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "mCherry fused C-terminally via a 12-aa linker (GVPRARDPPVAT) to full-length Cx50; C-terminus is intracellular, so this is an intracellular label, not a surface tag."
+    }
+  ]
+}

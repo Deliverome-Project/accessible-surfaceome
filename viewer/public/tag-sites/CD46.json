@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD46",
+  "uniprot_acc": "P15529",
+  "sites": [
+    {
+      "site_id": "CD46-terminal_n-34-lit",
+      "gene_symbol": "CD46",
+      "uniprot_acc": "P15529",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A34",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT (11 aa) and V5 (14 aa), each with GGG linker",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Luminescence detected on live iPSCs via HiBiT/LgBiT complementation, confirming surface display of the tagged full-length protein (L1, L2). No complement-inhibition or T-cell costimulation assay reported; L3 provides a rationale that tagging is unlikely to perturb these functions but does not measure them.",
+      "confidence": "high",
+      "rationale": "All six ledger lines (L1\u2013L6) converge on a single junction: the tag is inserted after the signal peptide and before the mature extracellular domain of full-length, membrane-anchored CD46. The topology landmarks fix the SP boundary at residue 34 (A34), making insert_after_residue=34 the computed junction; residue_before=A (pos 34) and residue_after=C (pos 35) were read directly from the numbered sequence. Because the paper names the landmark (signal peptide cleavage site) rather than a residue number, the position is topology_derived. CD46 has exactly one extracellular terminus (N-terminal, after SP; the C-terminus is intracellular at 367\u2013392), so there is no ambiguity. Both HiBiT and V5 constructs were placed at this same junction in independent HDR templates. CRISPR HDR knock-in of HiBiT or V5 tag (each followed by a GGG linker) into full-length, membrane-anchored CD46 in human iPSCs. L4 specifies the tag must be placed after the signal peptide to avoid cleavage; L5 specifies a GGG linker between the tag and the start of the extracellular portion; L6 describes two 200 bp HDR templates (one HiBiT, one V5) encoding this design. The SP boundary is residue 34 per the topology landmarks, placing the junction between A34 and C35.",
+      "sources": [
+        {
+          "pmid": 31363496,
+          "citation": "PMID 31363496",
+          "claim": "Consequently, the tag has to be knocked in after the signal peptide to avoid downstream removal."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:17:05.784867+00:00",
+  "literature_notes": "All six ledger lines derive from a single publication (PMC6640264) and describe one experimental design: CRISPR HDR knock-in of a short peptide tag (HiBiT or V5, each ~11\u201314 aa, with a GGG linker) immediately after the signal peptide of full-length CD46. Because both tags target the identical junction and the paper names the SP boundary rather than a residue number, this is reported as one topology_derived site. No internal extracellular loop insertions, no intracellular insertions, and no function-abrogating positions are described anywhere in the ledger, so other_positions is empty. The ledger contains no evidence for any other junction in CD46.",
+  "literature_rejected": []
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPHA4",
+  "uniprot_acc": "P54764",
+  "sites": [
+    {
+      "site_id": "EPHA4-terminal_n-19-lit",
+      "gene_symbol": "EPHA4",
+      "uniprot_acc": "P54764",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "V",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunoprecipitation confirmed extracellular FLAG display; receptor ligand-binding function not measured because the ectodomain is absent in this construct.",
+      "confidence": "medium",
+      "rationale": "The FLAG-EphA4-\u0394E construct retains the signal peptide, transmembrane domain, and intracellular kinase domain but lacks the ectodomain (residues 20\u2013548). The FLAG tag is therefore placed at the sole extracellular face of this construct \u2014 the mature N-terminus immediately after signal-peptide cleavage at residue 19 (A), before residue 20 (V). No specific junction residue is named in the paper, so the position is topology-derived: with the ectodomain deleted, exactly one extracellular terminus exists. The tag is 530 residues from the TM boundary (549), satisfying the \u22653-residue constraint. Python confirmed residue_before = A (pos 19) and residue_after = V (pos 20). FLAG-EphA4-\u0394E is a membrane-anchored construct (stably expressed in HEK293 cells) in which the ectodomain is deleted and a FLAG tag is placed on the extracellular face; surface immunoprecipitation and detection of secreted peptides confirmed extracellular display of the FLAG epitope.",
+      "sources": [
+        {
+          "pmid": 34931449,
+          "citation": "PMID 34931449",
+          "claim": "The generation of the constructs and oligonucleotides used is described in Tables S1 and S2\nHEK293 cells stably expressing human FLAG\u2010EphA4\u2010\u0394E (FLAG\u2010A4\u0394E), FLAG\u2010EphB2\u2010\u0394E (FLAG\u2010B2\u0394E), FLAG\u2010E\u2010cadherin\u2010\u0394E (FLAG\u2010Cad\u0394E) and FLAG\u2010C55 were cultured in Dulbecco\u00b4s modified Eagle's medium supplemented with 10% FBS and 400 \u00b5g/ml G418 or 200 \u00b5g/ml hygromycin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:32:38.089792+00:00",
+  "literature_notes": "L2 (N-terminal myc tag on ephrin-B3) was considered but disqualified: ephrin-B3 is the ligand for EphA4, not a close ortholog of EphA4 (receptor vs. ligand, different protein families \u2014 EphB-class ligand vs. EphA-class receptor). It provides no positional precedent for EphA4 tagging. L1 supports one site only: the mature N-terminus of the FLAG-EphA4-\u0394E construct. The position is topology-derived because the paper names no specific junction residue; the \u0394E deletion leaves exactly one extracellular face. Validation is surface_only: surface IP confirmed extracellular display, but ephrin-binding function cannot be assessed in the \u0394E background. No internal extracellular loop sites are supported by the ledger.",
+  "literature_rejected": []
+}

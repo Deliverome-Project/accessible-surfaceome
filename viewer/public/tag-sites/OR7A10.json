@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR7A10-terminal_n-0-lit",
+      "gene_symbol": "OR7A10",
+      "uniprot_acc": "O76100",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (8 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunofluorescence (live, non-permeabilized HEK293T cells): 10/15 ORs of the same class reached the cell surface with Flag tag alone. Odorant-evoked signaling function NOT MEASURED for the Flag-tagged constructs in these clips.",
+      "confidence": "medium",
+      "rationale": "OR7A10 is an olfactory receptor with no signal peptide; the topology-authoritative landmarks place residues 1\u201325 extracellular and TM1 at 26\u201348, making the N-terminus the sole extracellular terminus of this 7-TM protein. L2 directly states that full-length ORs (same protein class) are surface-displayed with an 8-aa Flag tag on the mature N-terminus, and L1 confirms surface detection by live-cell immunofluorescence. Python confirmed residue 1 = M, no cysteines in the N-terminal region, and \u226525-residue clearance from TM1. The position is topology-derived (no residue number stated in the paper) and the evidence is indirect (OR7A10 not individually named), so confidence is medium. PMC3698168 tested 15 olfactory receptors (same protein class as OR7A10) expressed as full-length, membrane-anchored constructs in HEK293T cells. L2 explicitly states that 10/15 ORs reached the cell surface with only an 8-aa Flag tag on the mature N-terminus (no Rho trafficking tag). L1 confirms surface detection by live-cell, non-permeabilized immunofluorescence with anti-Flag antibody. OR7A10 has no signal peptide (topology begins with O), so the mature N-terminus is residue 1 (M); the tag prepends before it (insert_after_residue=0). The N-terminal extracellular domain spans residues 1\u201325, placing the tag \u226525 residues from TM1.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "In fact, two-thirds of Lucy-tagged ORs are able to reach the cell surface synergistically with chaperones even when the Rho tag is removed (10/15 ORs), allowing for the potential assessment of OR function with only an 8-amino acid Flag tag on the mature protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:58:37.549798+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2), both from PMC3698168, describing Flag-tagging of olfactory receptors as a class at the mature N-terminus of full-length membrane-anchored constructs. OR7A10 is not individually named in either clip; the evidence is indirect (same protein family). L2 notes that 5/15 ORs in the test set failed to reach the surface with Flag alone, so trafficking success for OR7A10 specifically is uncertain. No ledger evidence supports insertions in ECL1 (75\u201397), ECL2 (165\u2013196), or ECL3 (261\u2013271) of OR7A10 or any close ortholog; those loops were considered and excluded. The N-terminal prepend (insert_after_residue=0) is the only position the ledger supports, and it is the only extracellular terminus of this GPCR. A potential NxT glycosylation sequon at positions 5\u20137 (NNT) in the N-terminal region was noted but does not affect the prepend site.",
+  "literature_rejected": []
 }

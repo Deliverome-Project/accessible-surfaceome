@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD2",
+  "uniprot_acc": "P06729",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:09:05.415336+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) concern PCDH15 (Protocadherin-15), not CD2 (T-cell surface antigen CD2). The phrase 'CD2 domain' in those clips refers to a structural cadherin-like repeat domain within PCDH15 that is named after the CD2 protein fold \u2014 it is a domain OF PCDH15, not the CD2 protein itself. No ledger line reports a tag insertion in full-length, membrane-anchored CD2. Additionally, L3 explicitly states that FLAG immunoreactivity 'could not be detected' in the PCDH15-CD2 knock-in hair cells, meaning even the PCDH15 insertion was not successfully detected and would not qualify as a tolerated insertion under the ledger rules. Because no ledger line grounds a tag on CD2 (T-cell surface antigen, UniProt P06729) at any position \u2014 terminal or internal \u2014 zero sites are reported.",
+  "literature_rejected": []
+}

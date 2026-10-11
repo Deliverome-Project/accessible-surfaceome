@@ -58,6 +58,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "KCNMB1-internal-130-lit",
+      "gene_symbol": "KCNMB1",
+      "uniprot_acc": "Q16558",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 130,
+      "residue_before": "Q",
+      "residue_after": "Q",
+      "residue_label": "Q130",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc (10 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface detection confirmed: the extracellular Myc tag (myc e) enabled antibody-based detection of the full-length membrane-anchored \u03b21 at the cell surface. Electrophysiological function of the myc c&e construct specifically was NOT MEASURED in the cited study; functional assays were performed on separate N-terminal deletion constructs.",
+      "confidence": "high",
+      "rationale": "The paper (PMC5448097) explicitly names the junction as 'between Gln-131 and Gln-132' of \u03b21, but in the canonical UniProt sequence the only pair of adjacent glutamine residues in this region is Q130\u2013Q131 (canonical positions); position 132 is Val, not Gln. Python search confirms Q130 and Q131 are the sole adjacent Gln pair, indicating the paper's numbering is offset by +1 relative to canonical UniProt numbering. The corrected canonical junction is insert_after_residue=130 (between Q130 and Q131). Both flanking residues are confirmed Q by direct sequence lookup. The site lies deep within the extracellular domain (residues 37\u2013157), 94 residues from TM1 and 28 residues from TM2, well clear of both TM boundaries. Full-length membrane-anchored human KCNMB1 \u03b21-subunit with a Myc epitope tag inserted into the extracellular loop, co-expressed with FLAG-tagged BK \u03b1-subunit in HEK293 cells; the construct (myc c&e) was used to detect surface expression of the full-length protein by antibody labelling.",
+      "sources": [
+        {
+          "pmid": 28373283,
+          "citation": "PMID 28373283",
+          "claim": "To make a construct with both extracellular and C-terminal myc tags (myc c&e ), site-directed mutagenesis with primers 5\u2032-AGCCAAATTCCAAGAGCAGAAACTCATCTCAGAAGAGGATCTTCAGG (fwd) and 5\u2032-AAGCAGTAGAAGACCTGAAGATCCTCTTCTGAGATGAGTTTCTGC (rev) were used to introduce this additional myc e tag between Gln-131 and Gln-132 of \u03b21-subunit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "KCNMB1-snorkel-c",
       "gene_symbol": "KCNMB1",
       "uniprot_acc": "Q16558",
@@ -296,6 +333,33 @@
       "isoform_residue": 72,
       "canonical_residue": 72,
       "left_pct": 37.696335078534034
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:51:37.744081+00:00",
+  "literature_notes": "L2 and L3 (C-terminal Myc-tagged \u03b21 constructs) and L4 (C-terminal HA-tagged \u03b21) all place tags at the intracellular C-terminus (residues 179\u2013191, topology INTRACELLULAR) \u2014 these are not surface tag sites and are recorded in other_positions. L5 (N-terminal His-Gly + FLAG on mouse \u03b21) places the tag at the intracellular N-terminus (residues 1\u201315, topology INTRACELLULAR) \u2014 also recorded in other_positions. L6 (HA-tagged WT \u03b21) and L7 (Myc-tagged \u03b21 C18A) do not specify the position of the tag in the cited clip; without a named residue or a sole extracellular terminus, no junction can be pinned and these clips do not qualify as sites. KCNMB1 has no extracellular N-terminus (N-terminus is intracellular) and no extracellular C-terminus (C-terminus is intracellular), so the only surface tag site supported by the ledger is the internal extracellular-loop insertion at L1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 191,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Myc-tagged \u03b21 constructs (including alanine-substitution mutants) expressed in HEK293 cells; the C-terminus (residues 179\u2013191) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 191,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "HA epitope tag added at the C-terminus of full-length human \u03b21 for Western blot and surface expression experiments; C-terminus is intracellular."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "N-terminal six-His-Gly + FLAG tag on mouse \u03b21 (HisG-pWT \u03b21-FLAG); the N-terminus (residues 1\u201315) is intracellular per topology landmarks."
     }
   ]
 }

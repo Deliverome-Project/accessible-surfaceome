@@ -37,6 +37,44 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGDR-terminal_n-0-lit",
+      "gene_symbol": "PTGDR",
+      "uniprot_acc": "Q13258",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDD)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L2: surface expression assessed by FLAG immunodetection (result: surface-expressed). L1: cAMP accumulation assay with 10 nM ligand stimulation (result: receptor functional, cAMP signaling preserved).",
+      "confidence": "high",
+      "rationale": "PTGDR is a GPCR with no native signal peptide; residues 1\u201320 form the extracellular N-terminus and TM1 begins at V21, placing the prepend site 20 residues from the first TM boundary (well above the \u22653-residue threshold). L2 explicitly describes the construct architecture as [HA-SP][FLAG][PTGDR], so after HA-SP cleavage the FLAG tag occupies the position immediately before canonical M1, giving insert_after_residue = 0 with residue_after = M (confirmed from sequence). Python confirmed seq[0] = 'M' and total length = 359. The intracellular C-terminus (327\u2013359) is the only other terminus and is not a surface site. L2 (PMC12508460) describes a full-length human PTGDR construct with an exogenous HA signal peptide (KTIIALSYIFCLVFA) followed by a FLAG tag (DYKDDDD) prepended to the receptor; after HA-SP cleavage the FLAG tag sits at the extracellular N-terminus before canonical M1. L1 (PMC3677937) independently reports a Flag-DP1 full-length construct expressed in HEK293 cells with confirmed surface expression and cAMP signaling, corroborating the same N-terminal junction.",
+      "sources": [
+        {
+          "pmid": 41062467,
+          "citation": "PMID 41062467",
+          "claim": "The construct includes an N-terminal hemagglutinin (HA) signal peptide (KTIIALSYIFCLVFA) to facilitate cell surface delivery and a Flag-tag epitope (DYKDDDD) for assessing surface expression."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -52,5 +90,12 @@
       "left_pct": 0.33783783783783783,
       "note": "Isoform surface expr 127 (-98% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:49:47.274927+00:00",
+  "literature_notes": "L3 (PMC12508460) describes the same FLAG-at-N-terminus design as L2 in an inactive-state ICL3-bRIL variant; it grounds the same junction and adds no new site. The bRIL thermostabilising domain is inserted into ICL3 (topology: intracellular, residues 220\u2013264) and is not a surface tag site; no specific residue for the bRIL junction is stated in the clip, so it cannot be entered in other_positions. ECL1 (86\u2013106), ECL2 (173\u2013196), and ECL3 (286\u2013305) are extracellular loops that could in principle carry internal tags, but no ledger line reports a tolerated insertion in any of these loops for PTGDR or a close ortholog, so no sites are proposed there.",
+  "literature_rejected": []
 }

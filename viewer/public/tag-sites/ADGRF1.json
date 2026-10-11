@@ -39,5 +39,26 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:10:57.259344+00:00",
+  "literature_notes": "All eight ledger lines were evaluated against the canonical ADGRF1 sequence (910 aa, UniProt Q5T601). L1\u2013L3 (PMC2830182) describe HA insertions in GPR110 'isoform 1' at positions 466, 1036, and 1393. Positions 1036 and 1393 exceed the canonical 910 aa length, proving that the paper's 'isoform 1' is a longer splice variant whose residue numbering does not transfer to the canonical sequence. Position 466 in isoform 1 therefore cannot be safely mapped to canonical numbering without an explicit alignment, and the rules forbid inventing a junction. L4\u2013L5 (PMC2830182) describe C-terminal HA tags on isoforms 1, 2, and 3; in the canonical 910 aa protein the C-terminus falls within the intracellular tail (topology landmark: intracellular 842\u2013910), so a C-terminal tag is cytoplasmic, not extracellular. L6\u2013L7 (PMC10139975) describe a C-terminal HA tag on GPR110 encoded by NM_153840.2 (the canonical transcript), used in HEK cells with DSS crosslinking and immunoprecipitation; the same intracellular topology applies. L8 (PMC10652204) describes a 3\u00d7FLAG tag at the C-terminus of full-length ADGRF1; again intracellular. No ledger line reports a tolerated tag insertion on the extracellular face of the canonical 910 aa ADGRF1 protein. The large N-terminal ectodomain (residues 20\u2013590) and the short extracellular loops (ECL1 646\u2013660, ECL2 721\u2013744, ECL3 813\u2013820) are unaddressed by any qualifying ledger entry.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 910,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "3\u00d7FLAG appended after the C-terminal residue (E910) of full-length ADGRF1; topology landmark places residues 842\u2013910 in the intracellular compartment, so this tag faces the cytoplasm."
+    },
+    {
+      "residue": 910,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal HA tag on GPR110 (NM_153840.2, canonical 910 aa isoform) expressed in HEK cells; C-tail (842\u2013910) is intracellular per topology landmarks."
+    }
+  ]
 }

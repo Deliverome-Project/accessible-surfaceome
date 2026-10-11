@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CSF2RB",
+  "uniprot_acc": "P32927",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:05:39.637300+00:00",
+  "literature_notes": "Both ledger clips (L1, L2) describe a CSF2RB-GFP fusion deployed as a protein-stability reporter whose readout is the GFP/mCherry fluorescence ratio by flow cytometry. This is a canonical C-terminal fusion design: GFP is appended after the last residue of CSF2RB (residue 897), which falls squarely in the intracellular domain (topology 466\u2013897). Neither clip names a residue position for the junction, and neither describes surface-display of GFP or an extracellular epitope. The topology_derived rule (assign the sole extracellular terminus when position is unstated) does not apply here because the protein-stability-reporter context makes intracellular C-terminal placement the only well-supported reading. CSF2RB has exactly one extracellular terminus (mature N-terminus after signal-peptide cleavage at residue 16), but no clip grounds a tag there. No ledger line supports an extracellular surface-tag insertion at any residue or loop of CSF2RB; sites = [] is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 897,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CSF2RB is fused in-frame to GFP as a protein-stability reporter; the C-terminus (residue 897) lies in the intracellular domain (466\u2013897), so GFP is on the cytoplasmic face, not the cell surface."
+    }
+  ]
+}

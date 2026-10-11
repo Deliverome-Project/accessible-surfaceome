@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PCDH7",
+  "uniprot_acc": "O60245",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:16:31.318533+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same experimental system: PCDH7 isoforms subcloned into the retroviral vector pQCXIP-EGFP-N1 at EcoRI/AgeI sites, producing a C-terminal EGFP fusion. In the standard pEGFP-N1 architecture the MCS is upstream of EGFP, so the insert is fused N-terminally to EGFP and the fluorescent tag lands at the protein C-terminus (after residue 1069). PCDH7 is a single-pass type-I transmembrane protein whose C-terminus (residues 901\u20131069) is intracellular per the authoritative topology landmarks. The co-localization with E-cadherin at cell\u2013cell contacts (L1) confirms correct membrane trafficking of the full-length construct, but the EGFP tag itself faces the cytoplasm. This is an intracellular tag and does not qualify as an extracellular surface-tag site under the ledger rules. No ledger line describes a tag inserted at the extracellular N-terminus (after signal-peptide cleavage at residue 28) or anywhere within the extracellular domain (residues 29\u2013879). Zero extracellular sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1069,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "PCDH7 subcloned into pQCXIP-EGFP-N1 (EcoRI/AgeI) places EGFP at the protein C-terminus (after residue 1069), which lies in the intracellular domain (residues 901\u20131069); the tagged construct traffics to the membrane (L1) but the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

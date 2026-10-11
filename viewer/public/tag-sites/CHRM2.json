@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CHRM2-terminal_n-0-lit",
+      "gene_symbol": "CHRM2",
+      "uniprot_acc": "P08172",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ELISA for surface expression: surface display confirmed (L6). Confocal microscopy showing predominant plasma membrane distribution in hippocampal neurons confirmed (L3/L4). FLAG affinity purification confirmed expression (L2). No ligand-binding or signaling functional assay reported in any supporting clip.",
+      "confidence": "high",
+      "rationale": "CHRM2 has no annotated signal peptide; the topology landmarks place residues 1\u201322 as extracellular and TM1 begins at residue 23, leaving exactly one extracellular terminus (the N-terminus). The tag therefore prepends before Met1 (insert_after_residue=0), 22 residues from the TM1 boundary, well within the \u22653-residue requirement. Three independent papers (L6 HA/ELISA, L2 FLAG/purification, L3\u2013L5 GFP-SEP/confocal) all report N-terminal tags on the full-length membrane-anchored receptor with confirmed surface display, converging on this single junction. Position is topology-derived because no clip names a specific residue number. SP-HA-M2R-WT construct: an exogenous signal peptide followed by an HA tag was cloned N-terminally to the full-length wild-type human M2 receptor; after SP cleavage the HA tag is displayed at the extracellular N-terminus. Construct used in ELISA assays for surface expression in transfected cells (PMC12935549). Corroborated by L2 (FLAG at N-terminus, FLAG-affinity purification, PMC4020789) and L3/L4/L5 (GFP/SEP at N-terminus, confocal PM distribution in hippocampal neurons, PMC6283979).",
+      "sources": [
+        {
+          "pmid": 41535472,
+          "citation": "PMID 41535472",
+          "claim": "For the ELISA assay, an HA-tag was cloned N-terminally to the WT receptor, resulting in SP-HA-M 2 R-WT, using primers 3 and 11, and 1 and 12."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:36:22.115485+00:00",
+  "literature_notes": "All ledger lines supporting a surface tag (L2, L3, L4, L5, L6) converge on the same N-terminal extracellular junction (prepend before Met1); they are not separate junctions and are therefore reported as one site. L6 is chosen as the primary supporting clip because it uses a short epitope tag (HA) and a direct surface-expression assay (ELISA), most analogous to the intended ALFA-tag application. L2 (FLAG) and L3/L4/L5 (GFP/SEP, PM confocal) are noted as corroborating evidence from independent publications. No ledger line reports a tag in any of the three short extracellular loops (ECL1 81\u201397, ECL2 163\u2013184, ECL3 410\u2013422), so no internal sites are proposed. The C-terminal intracellular tail (444\u2013466) and the large ICL3 (208\u2013388) are covered in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 218,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "T4 lysozyme (residues 2\u2013161) was inserted into ICL3 replacing M2 residues 218\u2013376 for structural studies; ICL3 (208\u2013388) is intracellular and this is not a surface tag site."
+    },
+    {
+      "residue": 466,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "eGFP fused to the C-terminus of full-length M2R (SP-M2R-WT-eGFP); the C-terminus (residues 444\u2013466) is intracellular, so this is not a surface tag site."
+    }
+  ]
 }

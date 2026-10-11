@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNN3",
+  "uniprot_acc": "Q9UGI6",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:55:15.165699+00:00",
+  "literature_notes": "KCNN3 (KCa2.3/SK3) has an intracellular N-terminus (1-282) and intracellular C-terminus (543-731), with three extracellular loops: EC1 (303-314), EC2 (379-404), and EC3 (479-521). The ledger contains three tagged constructs: (1) BLAP-KCa2.3 (L1-L6, L12-L14): L14 explicitly confirms this is an 'extracellular epitope-tagged channel' used to label and track the channel at the cell surface, but no ledger line names the loop or residue where the BLAP tag is inserted. Because KCNN3 has three extracellular loops (not a sole extracellular terminus), the topology_derived rule does not apply, and no loop is named in the ledger, so no region-level site can be created. (2) myc-KCa2.3 (L7-L11): used for surface expression and colocalization studies, but no ledger line specifies whether the myc tag is extracellular or intracellular, and no loop or residue is named. (3) SK3-FLAG (L15-L18): named 'SK3-FLAG' (suffix convention = C-terminal), and the C-terminus of KCNN3 is intracellular (543-731); the FLAG antibody detection in L18 is from a Western blot of the surface-biotinylated fraction, confirming the channel reaches the surface but not that the FLAG tag itself is extracellularly accessible. No ledger line provides a residue or loop name for any of the three tag types. The rules require either a named residue, a named loop, or a sole extracellular terminus to create a site; none of these conditions is met. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 731,
+      "kind": "intracellular",
+      "supporting_clip_id": "L15",
+      "note": "SK3-FLAG ('SK3-FLAG' suffix naming = C-terminal FLAG) expressed in HEK293 and endothelial cells; the C-terminus of KCNN3 is intracellular (residues 543-731), so this FLAG tag faces the cytoplasm and is not a surface tag site."
+    },
+    {
+      "residue": 731,
+      "kind": "other",
+      "supporting_clip_id": "L7",
+      "note": "myc-tagged KCa2.3 used for surface expression and colocalization studies in HEK cells; the insertion position of the myc tag is not stated in any ledger line, and it cannot be determined whether the tag is extracellular or intracellular."
+    },
+    {
+      "residue": 521,
+      "kind": "other",
+      "supporting_clip_id": "L14",
+      "note": "BLAP-tagged KCa2.3 confirmed as an 'extracellular epitope-tagged channel' (L14) used to label and track the channel at the plasma membrane; the tag is extracellular but no ledger line names the specific loop or residue, and with three EC loops present the position cannot be derived from topology alone."
+    }
+  ]
+}

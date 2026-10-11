@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC2L",
+  "uniprot_acc": "P0C7M8",
+  "sites": [
+    {
+      "site_id": "CLEC2L-terminal_c-214-lit",
+      "gene_symbol": "CLEC2L",
+      "uniprot_acc": "P0C7M8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 214,
+      "residue_before": "T",
+      "residue_after": "",
+      "residue_label": "T214",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry with anti-FLAG mAb confirmed robust cell-surface display; no functional assay reported in the clips.",
+      "confidence": "high",
+      "rationale": "CLEC2L is a type II transmembrane protein (intracellular 1\u201368, TM 69\u201389, extracellular 90\u2013214); the C-terminus at position 214 is therefore extracellular, 125 residues from the TM boundary. The paper names the tag position only as 'C-terminal'/'carboxyterminal', so the junction is topology-derived: there is exactly one C-terminus, at residue 214 (T). Python confirmed seq[213]='T'. Anti-FLAG flow cytometry on intact cells demonstrates the tag is accessible on the extracellular face. Full-length human CLEC2L with a C-terminal FLAG tag expressed in 293T cells; anti-FLAG flow cytometry confirmed surface display of the tagged construct. L2 corroborates with the mouse ortholog C-terminally FLAG-tagged and detected identically. Both clips are from the same paper (PMC3679072).",
+      "sources": [
+        {
+          "pmid": 23776472,
+          "citation": "PMID 23776472",
+          "claim": "Flow cytometric analyses of transiently transfected 293T cells revealed that the CLEC2L -encoded FLAG-tagged CTLR is readily expressed at the cell surface ( Figure 3A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:46:28.393323+00:00",
+  "literature_notes": "L1 and L2 are two clips from the same paper (PMC3679072) describing the same experimental approach on human (L1) and mouse (L2) CLEC2L; L1 is used as the primary supporting clip. Neither clip names a specific residue number, so position_evidence is topology_derived rather than validated. No clips in the ledger address the intracellular N-terminus, any internal loop, or any function-abrogating insertion, so other_positions is empty.",
+  "literature_rejected": []
+}

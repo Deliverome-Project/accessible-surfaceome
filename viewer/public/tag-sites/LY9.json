@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LY9",
+  "uniprot_acc": "Q9HBG7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:32:52.693834+00:00",
+  "literature_notes": "Seven ledger lines were examined. L1/L2/L3 (PMC4610628) describe HA-CD229(434\u2013655), a truncated chimeric construct in which the entire ectodomain is replaced by an HA tag fused to the short extracellular linker + TM + IC domain. Although the construct is membrane-anchored and the HA is surface-displayed, it is not a tag inserted into a site of full-length LY9 \u2014 the ectodomain (residues 48\u2013433) is entirely absent. The rules require the construct to be full-length and membrane-anchored; this one fails the full-length criterion. L4/L5 (PMC9740379) report FLAG-tagged CD229 cDNA in the commercial lentiviral vector CD513B-1, but the tag position is completely unstated; the rules explicitly exclude such cases. L6/L7 (PMC12242830) report a validated C-terminal DDK/FLAG tag inserted immediately upstream of the stop codon (after residue 655), which is intracellular (IC: 476\u2013655); this is recorded in other_positions. No ledger line supports a tag insertion at a specific site on the extracellular face of full-length, membrane-anchored LY9.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 655,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal DDK (DYKDDDDK) tag inserted immediately upstream of the stop codon (after Thr655); residue 655 is intracellular (IC: 476\u2013655), so this is not a surface tag site."
+    }
+  ]
+}

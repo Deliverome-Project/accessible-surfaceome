@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "GJE1",
+  "uniprot_acc": "A6NN92",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:14:42.549204+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe a single construct: mouse Cx23 (GJE1) fused to eGFP at the C-terminus, stably expressed in HeLa cells. The GJE1 C-terminus (residue 205, Q) falls within the intracellular region 197\u2013205 per the authoritative topology landmarks. A C-terminal eGFP on a 4-TM connexin is therefore on the cytoplasmic face, not the extracellular surface. No ledger line names any residue in ECL1 (44\u201374) or ECL2 (139\u2013170), and no ledger line describes a tag inserted into or fused to any extracellular loop or the N-terminus (which is also intracellular, 1\u201324). Because no ledger line grounds an extracellular surface insertion, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 205,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eGFP fused to the C-terminus of mCx23 (GJE1); residue 205 (Q) lies in the intracellular C-terminal tail (197\u2013205), so the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

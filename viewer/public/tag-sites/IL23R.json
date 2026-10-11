@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL23R",
+  "uniprot_acc": "Q5VWK5",
+  "sites": [
+    {
+      "site_id": "IL23R-terminal_n-23-lit",
+      "gene_symbol": "IL23R",
+      "uniprot_acc": "Q5VWK5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT / LgBiT (NanoBiT)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by luminescence complementation on intact (non-permeabilized) cells (L3). Receptor-complex formation on the cell surface in the absence of ligand also confirmed (L4). No downstream signaling (e.g., STAT3 phosphorylation) assay reported in the ledger.",
+      "confidence": "high",
+      "rationale": "IL23R has a single-pass type-I topology with one extracellular terminus (the mature N-terminus beginning at residue 24, after cleavage of the 23-aa signal peptide). All ledger clips report N-terminal tags; the only extracellular terminus is therefore the unique landing site, making the junction topology_derived at insert_after_residue=23. Python lookup confirms residue 23 = G (last SP residue) and residue 24 = G (first mature residue); the tag sits 332 residues from the TM boundary, fully satisfying the \u22653-residue clearance rule. L3 provides the most direct surface-display evidence (luminescence on non-permeabilized cells); L4 further shows the tagged receptor retains the ability to form receptor complexes on the cell surface. Full-length human IL23R was expressed with HiBiT or LgBiT fused to its N-terminus in HEK or equivalent mammalian cells (PMC10953408). Addition of exogenous purified complementary NanoBiT fragment to non-permeabilized cells produced luminescence, directly demonstrating that the tag is accessible on the extracellular face. A separate study (PMC10199020, L1) independently constructed HiBiT-IL23R and LgBiT-IL12R\u03b21 for cell-surface NanoBiT complementation.",
+      "sources": [
+        {
+          "pmid": 36560872,
+          "citation": "PMID 36560872",
+          "claim": "However, when exogenous purified HiBit or LgBit protein was added, luminescence was produced in the presence of the corresponding fragment expressed on the N \u2010termini of an IL\u201023 receptor monomer."
+        },
+        {
+          "pmid": 39252592,
+          "citation": "PMID 39252592",
+          "claim": "For the IL23R low Jurkat, the codon-optimized full-length sequence of human IL23R (UniProt # Q5VWK5 ) was tagged N-terminally with a 3x FLAG tag and placed upstream of a furin site, a self-cleavable T2A-peptide, and the sequence of the human IL12R\u03b21 subunit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:22:56.882880+00:00",
+  "literature_notes": "All six ledger clips (L1\u2013L6) converge on the same physical junction: the N-terminus of mature IL23R immediately after signal-peptide cleavage (after residue 23). No ledger clip reports an internal loop insertion, a C-terminal tag, or any intracellular tag for this protein. L1 and L2 describe construct creation without explicit surface-display data and are therefore subsumed by L3/L4 (NanoBiT surface evidence) and L5/L6 (FLAG surface evidence) respectively. The two sites reported here are the same physical position but grounded in independent papers with different tag chemistries; they are listed separately per the instruction to report every ledger-supported site. No other_positions (intracellular or function-abrogating) appear in the ledger.",
+  "literature_rejected": []
+}

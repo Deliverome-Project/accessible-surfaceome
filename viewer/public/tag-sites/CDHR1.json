@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CDHR1",
+  "uniprot_acc": "Q96JP9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:29:57.727655+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe a C-terminal FLAG tag on cdhr1a (zebrafish ortholog of human CDHR1) in a full-length, membrane-anchored construct confirmed at the cell surface by K562 aggregation assay. However, CDHR1 is a Type I single-pass transmembrane protein: the extracellular domain spans residues 20\u2013701, the TM helix spans 702\u2013722, and the C-terminus (residues 723\u2013859) is intracellular. A C-terminal FLAG tag therefore resides on the cytoplasmic face and does not qualify as an extracellular surface tag site. No ledger line describes any tag on the extracellular N-terminus (after signal-peptide cleavage at residue 19/20), in any extracellular loop, or at any other extracellular position of CDHR1 or cdhr1a. The ledger provides no basis for proposing any extracellular surface tag site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 859,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length cdhr1a (zebrafish ortholog); the C-terminus of CDHR1 lies in the intracellular domain (residues 723\u2013859), so this tag is on the cytoplasmic face, not the extracellular surface."
+    }
+  ]
+}

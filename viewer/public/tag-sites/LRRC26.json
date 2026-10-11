@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRC26",
+  "uniprot_acc": "Q2I0M4",
+  "sites": [
+    {
+      "site_id": "LRRC26-terminal_n-26-lit",
+      "gene_symbol": "LRRC26",
+      "uniprot_acc": "Q2I0M4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection confirmed by anti-FLAG antibody binding on intact, non-permeabilised live cells and by cell-surface immunoprecipitation (L2, L4). No channel-function assay (e.g., BK-channel modulation) is reported in the ledger clips.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201326 (last residue A at position 26); the mature N-terminus begins at Q27. L1 explicitly places the FLAG tag after the cleaved signal peptide and before the LRRNT unit, which maps unambiguously to insert_after_residue=26. Python verification confirms residue 26='A' and residue 27='Q'. The tag is on the extracellular face (235 residues from the TM boundary at 262), confirmed by live-cell surface staining (L2) and cell-surface immunoprecipitation (L4). L3 further validates topology by showing the C-terminal FLAG is inaccessible extracellularly. L1/L2/L4 (PMC8892010): FLAG epitope tag introduced at the N-terminus of full-length \u03b31 (LRRC26) in a membrane-anchored construct, positioned after the cleaved signal peptide (residues 1\u201326) and immediately before the LRRNT unit (mature residue 27). Expressed in mammalian cells; live, non-permeabilised cells probed with anti-FLAG antibody and used for cell-surface immunoprecipitation.",
+      "sources": [
+        {
+          "pmid": 35104503,
+          "citation": "PMID 35104503",
+          "claim": "We introduced the FLAG peptide tag to the \u03b3 subunits\u2019 N termini, located after the cleaved signal peptides and immediately in front of the LRRNT unit and C termini, respectively."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 26,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:18:14.036400+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) from PMC8892010 describe the same experimental construct: N-terminally FLAG-tagged full-length LRRC26 with the tag placed after signal-peptide cleavage. No ledger line supports any internal extracellular loop insertion or any other junction. The C-terminal FLAG construct was tested and found intracellular (L3), recorded in other_positions. No functional assay for LRRC26's role as a BK-channel auxiliary subunit is reported in the ledger clips, so validation_level is surface_only rather than surface_and_function.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 334,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminally FLAG-tagged \u03b31 (LRRC26) was not immunoprecipitated from intact cell membranes by extracellular anti-FLAG antibody, demonstrating that the C-terminus is intracellular and inaccessible from the extracellular face."
+    }
+  ]
+}

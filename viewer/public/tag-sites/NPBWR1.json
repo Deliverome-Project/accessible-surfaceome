@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NPBWR1-terminal_n-0-lit",
+      "gene_symbol": "NPBWR1",
+      "uniprot_acc": "P48145",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed both total and cell-surface expression of the FLAG-tagged NPBWR1 construct (L2); TANGO beta-arrestin recruitment assay is the functional readout of the platform but NPBWR1-specific functional data are not individually reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "NPBWR1 is a GPCR with no endogenous signal peptide; the topology landmarks place residues 1\u201337 as extracellular and residues 311\u2013328 as intracellular, leaving the N-terminus as the sole extracellular terminus. The PRESTO-TANGO construct prepends an artificial SP and FLAG before residue M1, so after SP cleavage the FLAG sits immediately N-terminal to M1 (insert_after_residue = 0, residue_after = M). The N-terminal extracellular domain spans 37 residues before TM1 (which begins at V38), providing ample space for a ~15\u201320 aa tag well clear of the TM boundary. PRESTO-TANGO platform (Kroeze et al., PMC4424118): an artificial cleavable signal sequence was prepended to NPBWR1/GPR7 followed by a FLAG epitope tag to drive membrane localization and enable surface detection; after signal-peptide cleavage the FLAG is displayed at the extracellular N-terminus of the full-length, membrane-anchored receptor.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:06:04.999071+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2), both from the same PRESTO-TANGO paper (PMC4424118) and both describing the same N-terminal FLAG construct. No ledger evidence supports any insertion in ECL1 (96\u2013110), ECL2 (178\u2013201), or ECL3 (274\u2013286). The C-terminus (311\u2013328) is intracellular and therefore not a surface-tag site. L2 was used to confirm surface expression but L1 is the primary clip pinning the tag position.",
+  "literature_rejected": []
 }

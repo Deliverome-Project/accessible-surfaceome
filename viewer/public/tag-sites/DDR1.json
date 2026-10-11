@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "DDR1",
+  "uniprot_acc": "Q08345",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:14:46.427887+00:00",
+  "literature_notes": "L1 (PMC12390941) reports a CRISPR HiBiT knock-in into DDR1 but names no residue, no loop, and no terminus. The construct label 'DDR1-HiBiT' follows the gene-tag convention implying C-terminal placement (intracellular), and HiBiT is used in both surface and intracellular contexts; the ledger clip does not resolve which face carries the tag. The topology_derived rule requires knowing the tag is at a terminus \u2014 without that, the clip cannot pin a surface site. L2/L3 (PMC10576099) report a DDR1-EGFP C-terminal fusion that traffics to the cell surface in NIH3T3 cells; the EGFP is on the intracellular C-terminus (residue 913, within the intracellular span 439\u2013913) and is therefore not a surface tag site. No ledger line grounds an extracellular tag insertion at a pinnable position, so zero surface sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 913,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "DDR1-EGFP C-terminal fusion expressed via adenovirus in NIH3T3 cells; full-length DDR1 traffics to the surface but the EGFP tag is appended to the intracellular C-terminus (residue 913, within the intracellular span 439\u2013913)."
+    }
+  ]
+}

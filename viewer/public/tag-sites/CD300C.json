@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD300C",
+  "uniprot_acc": "Q08708",
+  "sites": [
+    {
+      "site_id": "CD300C-terminal_n-20-lit",
+      "gene_symbol": "CD300C",
+      "uniprot_acc": "Q08708",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "P",
+      "residue_after": "G",
+      "residue_label": "P20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation with Flag-CD300b: HA-CD300c successfully pulled down Flag-CD300b, demonstrating the tagged construct was expressed and retained its ability to form heteromeric complexes. Surface expression not directly measured by flow cytometry or equivalent.",
+      "confidence": "high",
+      "rationale": "CD300C is a Type I single-pass transmembrane protein; its N-terminus (residues 21\u2013183) is extracellular and its C-terminus (206\u2013224) is intracellular, leaving exactly one extracellular terminus. The 'HA-CD300c' prefix notation in L1/L2 places the HA tag at the N-terminus; since no residue is named, the junction is topology-derived at insert_after_residue=20 (after signal peptide cleavage, P\u2192G). Python confirms residue 20=P and residue 21=G. The insertion site is 163 residues from the TM boundary, well clear of the \u22653-residue constraint. Full-length HA-CD300c was expressed in COS-7 cells (which lack endogenous CD300 expression) and co-transfected with Flag-CD300b to study complex formation by co-immunoprecipitation. No residue number is stated in either L1 or L2; the 'HA-' prefix notation for this Type I TM protein places the tag at the extracellular N-terminus.",
+      "sources": [
+        {
+          "pmid": 29051512,
+          "citation": "PMID 29051512",
+          "claim": "COS-7 cells, which lack endogenous CD300 expression, were co-transfected with HA-tagged CD300c and Flag-tagged CD300b in the wild type (wt) or mutant forms."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:13:06.728108+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC5648872) and both describe the same HA-CD300c construct; L1 is used as the primary supporting clip because it describes the actual experimental use. L2 is a redundant methods citation for the same construct. No residue number is named in either clip, so position_evidence is topology_derived. The intracellular C-terminus (residues 206\u2013224) does not qualify as a surface tag site. No internal loop insertions are reported in the ledger for CD300C.",
+  "literature_rejected": []
+}

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "NPHS1",
+  "uniprot_acc": "O60500",
+  "sites": [
+    {
+      "site_id": "NPHS1-terminal_n-22-lit",
+      "gene_symbol": "NPHS1",
+      "uniprot_acc": "O60500",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized Myc immunostaining in Drosophila nephrocytes (L5); fingerprint-like pattern in tangential sections and dot-like pattern in cross-sections, colocalizing with Kirre at slit diaphragm. Functional slit diaphragm maintenance was demonstrated for the C-terminal GFP construct (L2) but NOT MEASURED for the Myc-tagged construct specifically.",
+      "confidence": "medium",
+      "rationale": "Nephrin (NPHS1) is a type I single-pass transmembrane protein with a large extracellular N-terminal domain (residues 23-1064) and an intracellular C-terminus. The signal peptide spans residues 1-22 (cleavage after A22), placing the mature N-terminus at Q23; an N-terminal tag must be inserted after residue 22 to avoid being cleaved with the signal peptide. L5 explicitly confirms surface display of Myc-tagged Sns (Drosophila nephrin ortholog) by non-permeabilized staining, and L4 places the Myc tag at the second exon (N-terminal region) of the sns locus. Since no specific residue is named and exactly one extracellular terminus exists, the junction is topology_derived at insert_after_residue=22 (A|Q). L6 independently corroborates N-terminal FLAG tagging of full-length human nephrin in HEK293 cells. Myc tag inserted at the second exon of the Drosophila sns (nephrin ortholog) genomic locus by CRISPR (L4, PMC9355562), generating a full-length membrane-anchored Myc-Sns protein. L5 (PMC12489029) independently confirms surface display of this Myc-Sns construct by non-permeabilized immunostaining in nephrocytes, showing a fingerprint-like pattern and colocalization with Kirre at the slit diaphragm. Human NPHS1 is a type I single-pass TM protein with one extracellular terminus (N-terminus, after signal peptide cleavage at residue 22); topology_derived junction is insert_after_residue=22. L6 (PMC12354293) independently reports FLAG-tagged full-length human nephrin in HEK293 cells used for autoantibody detection, corroborating N-terminal tagging of the human protein.",
+      "sources": [
+        {
+          "pmid": 41034222,
+          "citation": "PMID 41034222",
+          "claim": "Myc staining reveals a fingerprint-like pattern for the tagged SD protein in a tangential section ( b ) and a dot-like pattern in a cross-section ( c ). d Visualization using IMARIS software illustrates the relationship between linear and dot-like patterns based on Airyscan fluorescent microscopy of surface detail from nephrocytes stained for Myc-Sns. e\u2013g Fluorescent microscopy of nephrocytes after co-labeling of (Myc)-Sns and Kirre shows colocalization of both SD proteins (enlarged inset)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:12:19.895903+00:00",
+  "literature_notes": "L1/L2/L3 (PMC9355562) report C-terminal sfGFP knock-in at the Drosophila sns locus. For human NPHS1, the C-terminus is intracellular (residues 1086-1241, after TM 1065-1085); this is a valid intracellular label but not an extracellular surface tag site. L2 demonstrates functional slit diaphragm maintenance with C-terminal GFP, confirming the full-length tagged protein is functional, but this does not qualify as a surface site. L6 (PMC12354293) reports FLAG-tagged full-length human nephrin in HEK293 cells; the tag position is unstated, but topology_derived reasoning (one extracellular terminus) places it at the same N-terminal junction as L5; L5 is used as the primary clip because it provides explicit surface confirmation. No ledger line names a specific internal loop residue for an extracellular insertion in human NPHS1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1241,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal sfGFP knock-in at the Drosophila sns (nephrin ortholog) locus (L1, PMC9355562); for human NPHS1 the C-terminus (residue 1241) is intracellular (topology: 1086-1241 intracellular, TM 1065-1085). L2 confirms the tagged protein is functional (slit diaphragms maintained in homozygous flies), making this a validated intracellular label site but not an extracellular surface tag site."
+    }
+  ]
+}

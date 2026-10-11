@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "RAET1G",
+  "uniprot_acc": "Q6H3X3",
+  "sites": [
+    {
+      "site_id": "RAET1G-terminal_n-25-lit",
+      "gene_symbol": "RAET1G",
+      "uniprot_acc": "Q6H3X3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "T",
+      "residue_after": "G",
+      "residue_label": "T25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP + Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by confocal microscopy (anti-RAET1G co-staining with GFP, L3) and by anti-GFP staining of non-permeabilized HT1080 stable cells (L4). Anti-Myc antibody also accessible at the surface (L4). No NKG2D-binding or NK-cell killing assay was reported for the tagged construct; functional impact NOT MEASURED.",
+      "confidence": "high",
+      "rationale": "The construct architecture described in L2 places GFP and Myc after an exogenous leader peptide and before the RAET1G cDNA, meaning the tag occupies the N-terminus of the mature ectodomain. The authoritative topology landmarks fix the signal-peptide cleavage at residue 25/26; therefore the tag sits at insert_after_residue=25, with residue_before=T (position 25, last SP residue) and residue_after=G (position 26, first mature residue), both read directly from the numbered sequence. No specific residue number is stated in the paper, so position_evidence is topology_derived: RAET1G has exactly one extracellular terminus (the mature N-terminus at residue 26), leaving no ambiguity about where the N-terminal tag resides. Surface display was confirmed by two independent methods (L3, L4), supporting high confidence. PMC2637608 (L1\u2013L4): Full-length, membrane-anchored RAET1G1 was expressed from vector PK1 with an exogenous leader peptide followed by GFP, a Myc tag, and a short linker peptide fused to the RAET1G cDNA (L2). The construct was transfected into Cos7 and stably expressed in HT1080 cells. Anti-GFP antibody stained non-permeabilized HT1080 cells at 4\u00b0C (L4), and confocal microscopy showed anti-RAET1G antiserum co-localising with GFP signal on the cell surface (L3), confirming the tag is extracellular.",
+      "sources": [
+        {
+          "pmid": 19223974,
+          "citation": "PMID 19223974",
+          "claim": "The resulting construct contained a leader peptide followed by GFP, a Myc tag, and a short linker peptide fused to the relevant cDNA."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:55:12.593432+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same publication (PMC2637608) and collectively describe a single N-terminal GFP+Myc tagging event at the mature N-terminus of RAET1G. No internal-loop insertions, C-terminal extracellular tags, or function-abrogating insertions are reported anywhere in the ledger. The intracellular C-terminus (residues 243\u2013334) is not tagged in any ledger line and is therefore not proposed. No other proteins or orthologs are cited in the ledger for RAET1G.",
+  "literature_rejected": []
+}

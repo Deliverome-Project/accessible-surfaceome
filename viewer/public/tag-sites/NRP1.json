@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRP1",
+  "uniprot_acc": "O14786",
+  "sites": [
+    {
+      "site_id": "NRP1-terminal_n-21-lit",
+      "gene_symbol": "NRP1",
+      "uniprot_acc": "O14786",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "A",
+      "residue_after": "F",
+      "residue_label": "A21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "VEGF-A-mediated signalling and sprouting enhanced by epitope-tagged NRP1 (L4, PMC10799020), confirming function preserved; surface display confirmed by anti-tag Fab' labelling and FRAP (L5); anti-FLAG surface staining confirmed for FLAG-tagged construct (L1/L2).",
+      "confidence": "high",
+      "rationale": "NRP1 is a type-I single-pass receptor (signal peptide 1\u201321, extracellular 22\u2013858, TM 859\u2013879, intracellular 880\u2013923) with exactly one extracellular terminus; no residue is named in any clip, so the junction is uniquely topology-derived as insert_after_residue=21 (after SP cleavage, placing the tag at the mature N-terminus before Phe22). Python-verified: position 21 = A, position 22 = F, 837 residues from the tag site to the TM boundary. The strongest evidence (L3\u2013L5) explicitly states 'extracellular epitope tag' and demonstrates both surface display and preserved VEGF-A signalling/sprouting activity, yielding surface_and_function validation. L3/L4/L5 (PMC10799020): full-length NRP1 carrying an explicitly extracellular myc or HA epitope tag expressed in COS7 cells; surface display confirmed by labelling with monovalent Fab' fragments and FRAP. L1/L2 (PMC10069869): FLAG-tagged full-length NRP1 expressed in COS-7 cells, surface staining with anti-FLAG antibody confirmed cell-surface localisation. L6 (PMC1500974): adenovirus-encoded FLAG-tagged NRP1 expressed in cells. L7 (PMC7612957): mCherry-NRP1 N-terminal fusion expressed in HEK293T cells, used in GFP-nanotrap co-IP with SARS-CoV-2 S1.",
+      "sources": [
+        {
+          "pmid": 38242992,
+          "citation": "PMID 38242992",
+          "claim": "To this end, we expressed ENG, NRP1 or VEGFR2 carrying an extracellular epitope tag (myc or HA) in COS7 cells (the system used to characterize the lateral diffusion of ENG and its interactions with TGF-\u03b2 receptors 30 , 49 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:17:43.662037+00:00",
+  "literature_notes": "All seven ledger clips (L1\u2013L7) converge on the same N-terminal extracellular junction (insert_after_residue=21). No clip names a specific residue number, so position_evidence is topology_derived for all; NRP1 has exactly one extracellular terminus, making the junction unambiguous. L3/L4/L5 were chosen as the primary supporting clip because they (a) explicitly state 'extracellular epitope tag', (b) confirm surface display by FRAP, and (c) demonstrate functional preservation via VEGF-A signalling and sprouting \u2014 the highest validation tier. L1/L2 (FLAG, surface staining), L6 (FLAG, adenovirus), and L7 (mCherry, co-IP) all corroborate the same site with lower functional detail. No internal loop insertions, no C-terminal extracellular tags, no intracellular tags, and no function-abrogating positions are reported in any ledger clip.",
+  "literature_rejected": []
+}

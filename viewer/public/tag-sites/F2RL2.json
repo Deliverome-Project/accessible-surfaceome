@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "F2RL2-terminal_n-21-lit",
+      "gene_symbol": "F2RL2",
+      "uniprot_acc": "O00254",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "S",
+      "residue_after": "G",
+      "residue_label": "S21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry and non-permeabilized-cell antibody staining; no functional assay (e.g., signalling, cleavage) reported in the cited clips \u2014 NOT MEASURED for function.",
+      "confidence": "high",
+      "rationale": "The ledger (L1\u2013L3) uniformly describes an 'amino terminal' tag on full-length, membrane-anchored PAR3; no residue number is stated. PAR3 has a signal peptide spanning residues 1\u201321 (last residue S at position 21); a tag upstream of residue 22 would be cleaved with the signal peptide, so the only valid N-terminal extracellular junction is after residue 21. Python confirms seq[20]='S' and seq[21]='G', placing the tag between the last SP residue (S21) and the first mature residue (G22), 74 residues from TM1 \u2014 well clear of any TM boundary. Position is topology-derived because the paper names no residue. Full-length PAR3 with an amino-terminal HA (YPYDVPDYA) or V5 (GKPIPMPLLGLDST) epitope tag was constructed by PCR and expressed in HEK293 cells as a membrane-anchored receptor. Surface display was confirmed by antibody staining of non-permeabilized cells (Alexa Fluor 647-conjugated anti-HA) and by flow cytometry with tag-specific antibodies.",
+      "sources": [
+        {
+          "pmid": 23405206,
+          "citation": "PMID 23405206",
+          "claim": "An amino terminal HA (YPYDVPDYA) or V5 (GKPIPMPLLGLDST) epitope tag was added to PAR3 or PAR4 by PCR, and the cDNAs were ligated into pLUC-N2 (HA-tagged) or pGFP 2 -N2 (V5 tagged)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:39:31.764415+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same experimental construct: an N-terminal HA or V5 tag on full-length PAR3, surface-confirmed in HEK293 cells. No other insertion sites (internal loops, C-terminus, or alternative positions) are reported in the ledger. No functional assay results (signalling, thrombin-cleavage activation) are described in the cited clips, so validation_level is surface_only. No intracellular or function-abrogating positions are mentioned in the ledger, so other_positions is empty.",
+  "literature_rejected": []
 }

@@ -2287,5 +2287,20 @@
       "canonical_residue": 979,
       "left_pct": 68.4873949579832
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:40:27.614087+00:00",
+  "literature_notes": "The sole ledger entry (L1) reports a C-terminal 1D4 epitope tag on full-length, membrane-anchored mouse Atrn. Per the authoritative topology landmarks, the C-terminus (residue 1429) lies entirely within the intracellular region (1302\u20131429). ATRN has an unusual topology: a cleaved signal peptide (1\u201328), an intracellular N-terminal segment (29\u201365), TM1 (66\u201378), a very large extracellular domain (79\u20131278), TM2 (1279\u20131301), and a long intracellular C-terminal tail (1302\u20131429). The extracellular domain has no free terminus \u2014 it is flanked on both sides by transmembrane helices \u2014 so no topology-derived extracellular terminal site exists either. Because the C-terminal tag is intracellular, L1 does not ground any extracellular surface tag site. No other ledger lines are provided. Result: zero qualifying sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1429,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 tag on full-length mouse Atrn; residue 1429 is in the intracellular C-terminal tail (1302\u20131429), so the tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

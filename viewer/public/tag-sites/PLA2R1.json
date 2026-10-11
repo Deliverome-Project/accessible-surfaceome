@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "PLA2R1",
+  "uniprot_acc": "Q13018",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:35:32.687947+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe C-terminal fusions (EGFP, 1D4, HA, GFP-HA) on full-length membrane-anchored PLA2R1. The computed topology places the C-terminus (residues 1421\u20131463) in the intracellular compartment, and L5/L6 state this explicitly: L5 reads 'C-terminus of PLA2R's intracellular domain' and L6 reads 'targeting the C-terminal intracellular domain.' No ledger line reports a tag at the extracellular N-terminus (mature residue 21, after signal-peptide cleavage at 1\u201320), in any extracellular loop, or anywhere else on the extracellular face. Because the ledger contains no qualifying insertion on the extracellular surface, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1463,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "GFP-HA (PGH construct) appended after the last residue of the intracellular C-terminal tail; L6 confirms the HA antibody detects only the membrane-retained fragment, not the shed ectodomain."
+    },
+    {
+      "residue": 1463,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal HA tag on full-length hPLA2R1 expressed in T-REx-293 cells under tetracycline induction; tag is on the intracellular tail (residues 1421\u20131463)."
+    },
+    {
+      "residue": 1463,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP or 1D4 (TETSQVAPA) fusion on full-length human PLA2R; C-terminus is intracellular per topology."
+    }
+  ]
+}

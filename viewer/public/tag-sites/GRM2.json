@@ -4,6 +4,80 @@
   "uniprot_acc": "Q14416",
   "sites": [
     {
+      "site_id": "GRM2-internal-547-lit",
+      "gene_symbol": "GRM2",
+      "uniprot_acc": "Q14416",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 547,
+      "residue_before": "N",
+      "residue_after": "A",
+      "residue_label": "N547",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "azido-phenylalanine (UAA, amber codon at A548)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display confirmed by on-cell FRET labeling; agonist-induced FRET changes measured and compared with VFT-domain (SNAP-m2) and ECL2 (azi-ECL2) sensors, demonstrating functional conformational coupling at this CRD site.",
+      "confidence": "high",
+      "rationale": "The amber codon replaces the codon for A548, incorporating the UAA at position 548; the junction is therefore between N547 and A548 (insert_after_residue=547). Python confirmed residue 547=N and residue 548=A. The topology landmarks place residue 548 within the large extracellular domain (19\u2013567), 20 residues from TM1 (568), well clear of the TM boundary. The azi-CRD sensor is surface-labeled and reports agonist-driven conformational changes, confirming functional tolerance. Full-length mGluR2 expressed in HEK293T cells with an amber codon (TAG) at position A548 (azi-CRD); 4-azido-L-phenylalanine incorporated at this position in the cysteine-rich domain (CRD) was labeled with FRET dyes on the cell surface to generate a CRD conformational sensor.",
+      "sources": [
+        {
+          "pmid": 35775730,
+          "citation": "PMID 35775730",
+          "claim": "Full length mGluR2 construct with an amber codon (TAG) mutation of amino acid A548 (azi-CRD) or N-terminal SNAP-tag (SNAP-mGluR2) were generated as previously reported ( Liauw et al., 2021 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "GRM2-internal-715-lit",
+      "gene_symbol": "GRM2",
+      "uniprot_acc": "Q14416",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 715,
+      "residue_before": "E",
+      "residue_after": "V",
+      "residue_label": "E715",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "azido-phenylalanine (UAA, amber codon)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display confirmed by on-cell FRET labeling; agonist-induced FRET changes measured and compared with VFT-domain (SNAP-m2) and CRD (azi-CRD) sensors, demonstrating functional conformational coupling at this site.",
+      "confidence": "high",
+      "rationale": "The amber codon is explicitly placed between E715 and V716 (insert_after_residue=715). Python confirmed residue 715=E and residue 716=V. The topology landmarks place this junction within the extracellular loop between TM4 (680\u2013700) and TM5 (726\u2013747), 15 residues from the TM4 boundary and 10 residues from TM5, well clear of both TM edges (\u22653 required). The azi-ECL2 sensor is surface-labeled and reports agonist-driven conformational changes, confirming functional tolerance. Full-length mGluR2 expressed in HEK293T cells with an amber codon (TAG) inserted between E715 and V716 (azi-ECL2); the unnatural amino acid 4-azido-L-phenylalanine was incorporated at this junction and labeled with FRET dyes on the cell surface to generate an inter-7TM domain conformational sensor.",
+      "sources": [
+        {
+          "pmid": 35775730,
+          "citation": "PMID 35775730",
+          "claim": "The insertion of an amber codon (TAG) between E715 and V716 in mGluR2 (azi-ECL2) was performed using the QuikChange site-directed mutagenesis kit (Agilent)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "GRM2-nterm-tedman",
       "gene_symbol": "GRM2",
       "uniprot_acc": "Q14416",
@@ -37,7 +111,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GRM2-terminal_n-18-lit",
+      "gene_symbol": "GRM2",
+      "uniprot_acc": "Q14416",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "smFRET conformational changes in response to orthosteric agonists measured; surface labeling confirmed by on-cell benzylguanine conjugation; receptor traffics to plasma membrane and reports VFT domain rearrangements consistent with functional receptor.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201318 (computed landmarks); the mature N-terminus begins at E19. A tag placed upstream of residue 19 would be cleaved with the signal peptide, so the correct junction is insert_after_residue=18 (residue_before=A, residue_after=E). Python confirmed residue 18=A and residue 19=E. The SNAP-tag construct is used across at least five independent publications for smFRET and surface-labeling experiments, all confirming plasma-membrane display and functional conformational sensing. Full-length mGluR2 expressed in HEK293T cells with SNAP-tag fused after the signal peptide (mature N-terminus, residue 19 onward); the VFT domain conformation was monitored by smFRET using donor/acceptor fluorophores conjugated to benzylguanine on the cell surface. Multiple independent studies (PMC9299836, PMC11972159, PMC10925283, PMC12394075, PMC11294631) use the identical construct architecture: signal peptide \u2192 HA epitope \u2192 SNAP-tag \u2192 mGluR2 cDNA, placing the tag extracellularly after signal-peptide cleavage at residue 18.",
+      "sources": [
+        {
+          "pmid": 39909029,
+          "citation": "PMID 39909029",
+          "claim": "To characterize the effect of the local environment on mGluR2 conformation, we first performed smFRET in various detergents ( Figure 1 ) with a mGluR2 sensor that reports the conformation of the Venus flytrap domain (VFD). 28 The VFD was tagged with SNAP-tag after the signal peptide, and smFRET changes were measured using donor and acceptor fluorophores conjugated to benzyl guanine ( Figure 1I , J )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 18,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:50:11.126332+00:00",
+  "literature_notes": "Three extracellular tag sites are supported by the ledger. (1) The N-terminal SNAP/HA site (after residue 18) is the most heavily validated, appearing across five independent publications with smFRET functional readouts. (2) The E715/V716 junction in ECL2 (between TM4 and TM5, topology positions 701\u2013725) is explicitly named in two ledger lines (L2, L3) with residue-level precision and functional validation. (3) The A548 CRD site is explicitly named in L1, L4, L5 with functional validation. The C-terminal GFP tag (L16, L17) is intracellular (topology 820\u2013872) and is recorded in other_positions. L18 names Ala681 as a stop-codon control position in the intracellular half of TM4, not a tag site. L19 (rat mGluR2-TMD starts at Q558) corroborates the N-terminal SNAP construct architecture and is subsumed by Site 1. The HA epitope tag used in L7\u2013L15 is placed at the same N-terminal junction (insert_after_residue=18) as the SNAP-tag and is therefore the same site; L6 is used as the primary clip because it most explicitly describes the SNAP-tag construct and the smFRET functional readout.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 872,
+      "kind": "intracellular",
+      "supporting_clip_id": "L16",
+      "note": "C-terminal GFP fusion (mGluR2-GFP) expressed in Xenopus oocytes and confirmed at the plasma membrane by TIRF microscopy; the C-terminus lies in the intracellular domain (topology 820\u2013872) and is not an extracellular surface site."
+    }
+  ]
 }

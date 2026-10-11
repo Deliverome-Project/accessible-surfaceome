@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "C3orf52",
+  "uniprot_acc": "Q5BVD1",
+  "sites": [
+    {
+      "site_id": "C3orf52-terminal_c-217-lit",
+      "gene_symbol": "C3orf52",
+      "uniprot_acc": "Q5BVD1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 217,
+      "residue_before": "E",
+      "residue_after": "",
+      "residue_label": "E217",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence (IF) in transfected cells: wild-type V5-tagged C3ORF52 localises along the cell membrane (surface_only). Functional assay of the tagged protein not reported.",
+      "confidence": "high",
+      "rationale": "C3orf52 is a single-pass Type II membrane protein (N-in, C-out); the only extracellular terminus is the C-terminus at residue 217. Python confirmed seq[216]='E' and seq[86]='L' (last TM residue), placing the C-terminus 130 residues from the TM boundary \u2014 well beyond the \u22653-residue requirement. Because the ledger names no specific residue for the tag junction but the topology leaves exactly one extracellular terminus, position_evidence is topology_derived and insert_after_residue is set to 217. L2 independently confirms the tagged construct reaches the plasma membrane. L1 (PMC7405639): full-length C3ORF52 cDNA with a C-terminal V5-tag cloned into pcDNA3.1 and expressed in mammalian cells. L2 (same paper) confirms the V5-tagged wild-type protein localises to the cell membrane by immunofluorescence. No residue number is stated for the tag junction; however, the protein has exactly one extracellular terminus \u2014 the C-terminus at residue 217 \u2014 because the N-terminus (1\u201366) is intracellular and the single TM helix (67\u201387) leaves the C-terminal domain (88\u2013217) extracellular. The junction is therefore unambiguously after residue 217.",
+      "sources": [
+        {
+          "pmid": 32336749,
+          "citation": "PMID 32336749",
+          "claim": "A synthetic C3ORF52 ( NM_024616.2 ) complementary DNA (cDNA) construct with a C-terminal V5-tag and a synthetic LIPH ( NM_139248.3 ) cDNA with a C-terminal HA-tag were cloned into pcDNA3.1 plasmids (Epoch Life Science, USA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:51:51.517843+00:00",
+  "literature_notes": "Only two ledger lines are available, both from PMC7405639. L1 establishes the C-terminal V5-tagged full-length construct; L2 confirms surface localisation and additionally reports that the p.Tyr164Ter truncation variant causes ER retention, recorded in other_positions. No internal extracellular loop insertion is supported by the ledger. The N-terminus (residues 1\u201366) is intracellular and therefore not a candidate for a surface tag. No intracellular tag sites are reported in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 164,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L2",
+      "note": "p.Tyr164Ter truncation causes ER retention (colocalisation with PDI) and decreased expression, indicating that the C-terminal region from Y164 onward is required for proper folding and trafficking to the plasma membrane."
+    }
+  ]
+}

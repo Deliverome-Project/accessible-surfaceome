@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "GAS1",
+  "uniprot_acc": "P54826",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:05:38.096408+00:00",
+  "literature_notes": "The sole ledger entry, L1, describes mNeon-Green insertion into yeast Gas1p (Saccharomyces cerevisiae, P22146) after its signal peptide. Although both proteins share the gene name 'GAS1' and are GPI-anchored, yeast Gas1p (a beta-1,3-glucanosyltransferase, ~559 aa) and human GAS1 (a Hedgehog signaling co-receptor, 345 aa) are not close orthologs: they belong to entirely different protein families, have very low sequence similarity, and perform unrelated biological functions. The 'close ortholog' criterion required for indirect evidence is not met. L1 therefore does not ground any site in human GAS1. No other ledger lines are present. Zero sites qualify, which is the correct answer.",
+  "literature_rejected": []
+}

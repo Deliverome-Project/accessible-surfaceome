@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "ATRNL1",
+  "uniprot_acc": "Q5VV63",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:40:34.533645+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminal tags on full-length ATRNL1: a 1D4 tag (L1/L2) and a 3\u00d7FLAG tag (L3/L4). ATRNL1 is a type I single-pass transmembrane protein whose C-terminus (residue 1379) falls within the intracellular region (residues 1253\u20131379), as established by the authoritative topology landmarks (TM: 1230\u20131252; intracellular: 1253\u20131379). A C-terminal tag therefore sits on the cytoplasmic face, not the extracellular surface. No ledger line reports a tag inserted into the large extracellular domain (residues 53\u20131229) or at the mature N-terminus (after residue 52). Because no ledger line grounds an extracellular insertion, zero sites are proposed. The C-terminal tag positions are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1379,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 tag on full-length ATRNL1; residue 1379 lies in the intracellular tail (residues 1253\u20131379), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1379,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal 3\u00d7FLAG tag on full-length ATRNL1 (ATRNL1-3Flag); same intracellular C-terminus as L1; used in co-IP and surface ELISA assays but the tag itself is cytoplasmic."
+    }
+  ]
+}

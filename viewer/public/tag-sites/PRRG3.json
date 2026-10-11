@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PRRG3",
+  "uniprot_acc": "Q9BZD7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:43:44.022199+00:00",
+  "literature_notes": "PRRG3 is a single-pass type I-like membrane protein with an extracellular N-terminal domain (residues 1\u201379), a single TM helix (80\u2013100), and a long intracellular C-terminal tail (101\u2013231). The sole ledger line (L1) reports a C-terminal myc-tagged PRRG3 construct expressed in mammalian cells. The C-terminus (residue 231, K) falls entirely within the intracellular span (101\u2013231); this tag is therefore on the cytoplasmic face and does not qualify as a surface tag site. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or domain insertion \u2014 at the extracellular N-terminus (residues 1\u201379) or anywhere else on the extracellular face of PRRG3. Because the ledger provides no extracellular insertion evidence, zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 231,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal myc tag on full-length PRRG3 expressed in mammalian cells; residue 231 (K) lies within the intracellular span (101\u2013231) and is therefore cytoplasmic, not a surface tag site."
+    }
+  ]
+}

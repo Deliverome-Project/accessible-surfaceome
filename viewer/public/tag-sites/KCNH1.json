@@ -1,0 +1,72 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNH1",
+  "uniprot_acc": "O95259",
+  "sites": [
+    {
+      "site_id": "KCNH1-internal-317-lit",
+      "gene_symbol": "KCNH1",
+      "uniprot_acc": "O95259",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 317,
+      "residue_before": "E",
+      "residue_after": "V",
+      "residue_label": "E317",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "AP (biotin ligase acceptor peptide, 35 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface biotinylation confirmed: KV10.1-AP was biotinylated at the cell surface by co-expressed BirA, demonstrating extracellular accessibility of the tag on the full-length, membrane-anchored channel. Electrophysiological function of the tagged channel was not reported in this clip.",
+      "confidence": "high",
+      "rationale": "KV10.1 is KCNH1 (hEag1, UniProt Q12791); the ledger line explicitly states the AP tag was inserted 'after residue E317'. Python confirms seq[316]='E' and seq[317]='V', placing the junction at 317|318 within the extracellular S3\u2013S4 loop (topology span 313\u2013345). The junction is 5 residues from the TM3 C-terminus (312) and 29 residues from the TM4 N-terminus (346), satisfying the \u22653-residue TM-clearance rule. The 33-residue loop provides ample room for the insert. Full-length KV10.1 (= KCNH1, same protein, UniProt Q12791) expressed in HEK293 cells; the 35-aa acceptor peptide for biotin ligase (AP) was inserted after residue E317, in the S3\u2013S4 extracellular loop, to produce KV10.1-AP for surface biotinylation.",
+      "sources": [
+        {
+          "pmid": 21559285,
+          "citation": "PMID 21559285",
+          "claim": "The sequence: TGSSGSGSGGLNDIFEAQKIEWHEGGAGGAAGGTG was inserted after residue E317 of K V 10.1 to produce K V 10.1-AP."
+        },
+        {
+          "pmid": 22022602,
+          "citation": "PMID 22022602",
+          "claim": "The \u03b1-bungarotoxin-binding site (BBS) was inserted into K V 10.1 at aa position 318."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:42:20.569352+00:00",
+  "literature_notes": "KV10.1, hEag1, and KCNH1 are all names for the same human protein (UniProt Q12791, 989 aa). All ledger lines from PMC3192180 and PMC3086910 are therefore direct (not indirect) evidence for KCNH1. The only extracellular surface site supported by the ledger is the S3\u2013S4 loop junction 317|318, evidenced by two independent tag modalities (AP tag, L6; BBS, L1/L5) from two independent publications. L8 (BBS between TM3 and TM4, PMC3531731) and L7 (AP between S3 and S4, PMC3086910) corroborate the same loop without adding a new junction. L9 (PMC3743135) confirms BTX labeling of KV10.1-BBS but is post-lysis, not strictly surface. The three extracellular spans are: S1\u2013S2 loop (240\u2013248, 9 aa, no ledger support for tag insertion), S3\u2013S4 loop (313\u2013345, 33 aa, two validated tags), and S5\u2013S6 loop (398\u2013477, 80 aa, no ledger support for tag insertion). The N-terminal EGFP fusion (L10/L11) and C-terminal mVenus fusion (L12) are both intracellular and are recorded in other_positions. The AP tag (35 aa) exceeds the 13\u201323 aa guideline but is a published tolerated insertion; the BBS core (13 aa) falls within the range.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "EGFP fused to position 1 of the hEag1 ORF (N-terminal EGFP-hEag1 chimera); the KCNH1 N-terminus (residues 1\u2013221) is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 989,
+      "kind": "intracellular",
+      "supporting_clip_id": "L12",
+      "note": "mVenus fused in-frame after the stop codon of KV10.1 (C-terminal fusion); the KCNH1 C-terminus (residues 503\u2013989) is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MMP17",
+  "uniprot_acc": "Q9ULZ9",
+  "sites": [
+    {
+      "site_id": "MMP17-internal-None-lit",
+      "gene_symbol": "MMP17",
+      "uniprot_acc": "Q9ULZ9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "hinge region",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG / Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by antibody feeding assay and cell-surface biotinylation; enzymatic function of the tagged WT construct was NOT MEASURED (the paper uses the tag for trafficking studies, not activity assays).",
+      "confidence": "medium",
+      "rationale": "L1 and L2 explicitly state that all full-length MT4-MMP constructs carry a FLAG or Myc tag in the hinge region; L3 confirms the tagged protein reaches the cell surface. The hinge region (~residues 311\u2013340 by MMP convention) lies entirely within the extracellular span (36\u2013603) as given by the topology landmarks. No specific junction residue is named in any ledger line, so insert_after_residue is left null and the region is recorded as given. The three ledger lines describe one experimental system, not three independent sites. Full-length GPI-anchored MT4-MMP (MMP17) constructs (MT4-WT-FLAG and MT4-WT-Myc) with FLAG or Myc inserted into the hinge region were expressed in mammalian cells and studied for surface trafficking by antibody feeding assay (confocal microscopy) and cell-surface protein biotinylation (western blot).",
+      "sources": [
+        {
+          "pmid": 26663028,
+          "citation": "PMID 26663028",
+          "claim": "All MT4-MMP constructs contained a FLAG tag in the hinge region (Fig. 1A)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:45:24.455679+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMID 26663028) and describe the same FLAG/Myc-tagged MT4-MMP construct; they support one site, not three. The hinge region is named but no junction residue is specified in any line, so the site is reported at region resolution only. E249A (catalytic HExxH motif, residue 249) is a point mutation used to inactivate the enzyme \u2014 it is not a tag insertion site and is not entered in other_positions. MMP17 is GPI-anchored; the entire span 36\u2013603 is extracellular per the provided topology, so the hinge region is unambiguously on the extracellular face. Validation is surface_only because the paper measures trafficking of the tagged construct, not its proteolytic activity.",
+  "literature_rejected": []
+}

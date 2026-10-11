@@ -1,0 +1,80 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCAMR",
+  "uniprot_acc": "Q8WWV6",
+  "sites": [
+    {
+      "site_id": "FCAMR-terminal_n-16-lit",
+      "gene_symbol": "FCAMR",
+      "uniprot_acc": "Q8WWV6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 16,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A16",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by stable transfection in BW5147 cells; homodimerization assessed by co-immunoprecipitation/immunoblotting of co-expressed FLAG- and HA-tagged receptor \u2014 receptor was surface-expressed and biochemically competent (dimerization assay performed, result: no homodimer detected, but both tagged forms were expressed and detectable at the surface).",
+      "confidence": "high",
+      "rationale": "L1 explicitly states that FLAG and HA tags were placed 'at the N-terminus' of the full-length, membrane-anchored Fc\u03b1/\u03bcR. Python computation confirms the signal peptide ends at residue 16 (A) and the mature ectodomain begins at residue 17 (L); insert_after_residue=16 places the tag immediately after SP cleavage, 434 residues from the TM boundary, satisfying all distance constraints. L2 and L3 (same paper) corroborate the same constructs in co-expression and immunoblotting experiments. L4/L5 (PMC8563443) provide additional indirect support via a FLAG-tagged xenopus xlFCAMR ortholog expressed in HEK-293 cells. PMID 23665380: full-length human Fc\u03b1/\u03bcR stably expressed in BW5147 cells with FLAG or HA tags explicitly placed at the N-terminus; wild-type and cytoplasmic-deletion mutant constructs were used for surface-expression and homodimerization studies. The signal peptide spans residues 1\u201316 (computed), so an N-terminal tag must be inserted after residue 16 (the SP cleavage site) to remain on the extracellular face; upstream placement would be cleaved off with the signal peptide.",
+      "sources": [
+        {
+          "pmid": 23665380,
+          "citation": "PMID 23665380",
+          "claim": "Cells and transfectants BW5147 transfectants stably expressing wild-type Fc \u03b1 / \u03bc R or mutant Fc \u03b1 / \u03bc R lacking the cytoplasmic portion from amino acids 481 to 535 ( \u0394 Cyt.Fc \u03b1 / \u03bc R), 491 to 535 ( \u0394 490.Fc \u03b1 / \u03bc R), 504 to 535 ( \u0394 503.Fc \u03b1 / \u03bc R) or 524 to 535 ( \u0394 523.Fc \u03b1 / \u03bc R) and tagged with Flag or hemagglutinin (HA) at the N-terminus were established as described previously (Cho et al., 2010; Shibuya et al., 2000)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 16,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:44:21.850144+00:00",
+  "literature_notes": "All five ledger lines converge on a single site: the extracellular N-terminus after signal-peptide cleavage (after residue 16). L1 is the most explicit, naming 'N-terminus' directly for the human receptor; L2 and L3 are the same paper and same constructs used in different assays. L4 and L5 describe a xenopus ortholog (xlFCAMR) with FLAG tag in HEK-293 cells \u2014 indirect support for the same terminal position. No ledger line reports an internal loop insertion, a C-terminal extracellular tag, or any other surface-accessible junction; the C-terminus (residues 471\u2013532) is entirely intracellular. The cytoplasmic deletion endpoints named in L1 (residues 481, 491, 504, 524) are intracellular truncation boundaries, not tag-insertion sites, and are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 481,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Start of the \u0394Cyt cytoplasmic deletion (residues 481\u2013535 removed); intracellular per topology landmarks (IC: 471\u2013532)."
+    },
+    {
+      "residue": 491,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Start of the \u0394490 cytoplasmic deletion (residues 491\u2013535 removed); intracellular."
+    },
+    {
+      "residue": 504,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Start of the \u0394503 cytoplasmic deletion (residues 504\u2013535 removed); intracellular."
+    },
+    {
+      "residue": 524,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Start of the \u0394523 cytoplasmic deletion (residues 524\u2013535 removed); intracellular."
+    }
+  ]
+}

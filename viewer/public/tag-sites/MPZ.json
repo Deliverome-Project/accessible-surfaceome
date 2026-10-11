@@ -1,0 +1,80 @@
+{
+  "has_data": true,
+  "gene_symbol": "MPZ",
+  "uniprot_acc": "P25189",
+  "sites": [
+    {
+      "site_id": "MPZ-terminal_n-29-lit",
+      "gene_symbol": "MPZ",
+      "uniprot_acc": "P25189",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "A",
+      "residue_after": "I",
+      "residue_label": "A29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc (9 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface incorporation into compact myelin confirmed by immunostaining (L4). In vitro and in vivo adhesion assays showed partial retention of P0-mediated adhesive function; the tagged protein also acted in a dominant-negative fashion on endogenous P0, indicating partial function perturbation (L5).",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the myc oligonucleotide was inserted at the MscI site in exon 2 corresponding to the NH2 terminus of the mature protein, recreating the signal peptide cleavage site in the full-length membrane-anchored construct. Python confirms residue 29 is A (last signal-peptide residue) and residue 30 is I (first mature extracellular residue), placing the junction at insert_after_residue=29. The extracellular domain spans residues 30\u2013155 (126 residues), well clear of the TM boundary. Validation level is function_perturbed because adhesive function was only partially retained and a dominant-negative effect on endogenous P0 was observed. Full-length membrane-anchored P0 (mP0TOTmyc) with a myc epitope tag inserted in-frame at the MscI site in exon 2, downstream of the signal peptide coding sequence, placing the tag at the NH2 terminus of the mature extracellular domain; the signal peptide cleavage site was recreated. Expressed as a transgene in mice.",
+      "sources": [
+        {
+          "pmid": 11086005,
+          "citation": "PMID 11086005",
+          "claim": "In mP 0 TOT(myc), an oligonucleotide encoding myc tag (5\u2032-CCATTGAGCAAAAGCTCATTTCTGAAGAGGACTTGAATG-3\u2032) was inserted in frame into the MscI site in P 0 exon 2, corresponding to the NH 2 terminus of the mature P 0 protein (see Fig. 1 ) and recreated the signal peptide cleavage site."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_perturbed",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 29,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:46:39.647861+00:00",
+  "literature_notes": "L2, L3, L4, L5, and L11 all corroborate the same myc-tag junction (after residue 29) and were considered; L1 was chosen as the primary clip because it gives the most explicit molecular description of the insertion site. L6/L7/L8/L10 describe a C-terminal HA tag: the C-terminus (residue 248) lies in the intracellular domain (180\u2013248) and is therefore not a surface tag site; placed in other_positions. L9 describes EGFP-tagged P0 constructs but does not specify whether EGFP is at the N- or C-terminus; because P0 has both an extracellular N-terminus and an intracellular C-terminus, topology_derived reasoning cannot resolve the ambiguity, and no insert_after_residue can be pinned; this clip was therefore disqualified. L6 names G155, L158, and L162 as critical for MPZ\u2013PMP22 interaction: G155 is only 1 residue from the TM boundary (below the \u22653-residue minimum) and L158/L162 are within the TM domain; all three are placed in other_positions as abrogates_function.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 248,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal HA tag on full-length MPZ used in co-immunoprecipitation experiments; residue 248 (K) falls within the intracellular domain (180\u2013248), making this an intracellular tag, not a surface tag."
+    },
+    {
+      "residue": 155,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L6",
+      "note": "G155 confirmed critical for MPZ\u2013PMP22 interaction in the context of C-terminally HA-tagged MPZ; also only 1 residue from the TM boundary, below the \u22653-residue minimum for a surface tag."
+    },
+    {
+      "residue": 158,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L6",
+      "note": "L158 confirmed critical for MPZ\u2013PMP22 interaction; residue 158 lies within the TM domain (156\u2013179) and is not accessible on the extracellular surface."
+    },
+    {
+      "residue": 162,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L6",
+      "note": "L162 confirmed critical for MPZ\u2013PMP22 interaction; residue 162 lies within the TM domain (156\u2013179) and is not accessible on the extracellular surface."
+    }
+  ]
+}

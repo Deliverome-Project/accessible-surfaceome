@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "ANTXR2",
+  "uniprot_acc": "P58335",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:26:26.177844+00:00",
+  "literature_notes": "All five ledger clips were examined. L1, L2, L4, and L5 all describe full-length ANTXR2 (CMG2 isoform 4) carrying a C-terminal V5 tag, cloned into pcDNA3.1/V5-HIS-TOPO or pcDNA3.5/V5-HIS-TOPO vectors (which append V5-His to the C-terminus of the insert). The topology landmarks place the C-terminus (residues 340\u2013489) firmly in the intracellular compartment; the V5 tag therefore faces the cytoplasm, not the extracellular space. These constructs are recorded in other_positions as intracellular tags. L3 describes an HA-tagged construct of ANTXR1 (TEM8/isoform 1), a paralog \u2014 not ANTXR2 \u2014 and no residue position is stated; it cannot ground any ANTXR2 site. No ledger clip reports a tag, fluorescent-protein fusion, transposon insertion, or any other tolerated insertion on the extracellular face of ANTXR2. The large extracellular domain (residues 34\u2013318) and the mature N-terminus (residue 34, after signal-peptide cleavage at 33) are both unaddressed by the ledger. Zero extracellular sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 489,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal V5 tag on full-length CMG2/4 (ANTXR2 isoform 4) confirmed by Western blot; the C-terminus (residues 340\u2013489) is intracellular per topology landmarks, so the tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 489,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "CMG2-V5 (C-terminal V5, intracellular) expressed in HeLa cells and used in [\u00b3H]-palmitate S-acylation assay; tag is on the cytoplasmic tail and is not a surface epitope."
+    }
+  ]
+}

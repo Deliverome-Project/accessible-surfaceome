@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "NCAM2",
+  "uniprot_acc": "O15394",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:59:05.565295+00:00",
+  "literature_notes": "Three ledger lines cover NCAM2 but none grounds an extracellular surface tag site. L1 reports an HA-tagged full-length transmembrane NCAM2 construct, but the \u0394ED logic (the same HA tag is retained in NCAM2\u0394ED comprising only aa 694\u2013837) eliminates placement at the extracellular N-terminus (residues 20\u2013693 are deleted in \u0394ED). The tag therefore lies within aa 694\u2013837, but no residue or loop is named, and the position is ambiguous between the 11-residue juxtamembrane ectodomain stub (694\u2013704) and the intracellular tail (726\u2013837). Topology_derived requires exactly one unambiguous extracellular terminus; the \u0394ED evidence removes that certainty here. Doubt \u2192 site dropped. L2 and L3 both describe a C-terminally Myc-DDK-tagged transmembrane mouse NCAM2; the C-terminus (residue 837) is intracellular per the topology landmarks (intracellular: 726\u2013837), so this tag is not a surface site and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 837,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Myc-DDK tag on transmembrane mouse NCAM2 used in HEK-cell BACE1 cleavage assay; residue 837 is intracellular per topology landmarks (intracellular: 726\u2013837)."
+    },
+    {
+      "residue": 837,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Same C-terminally Myc-DDK-tagged NCAM2-TM construct transfected into HEK cells to study BACE1-mediated proteolytic processing; C-terminus is intracellular."
+    }
+  ]
+}

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR101-terminal_n-0-lit",
+      "gene_symbol": "GPR101",
+      "uniprot_acc": "Q96P66",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FLAG staining confirmed surface expression at the membrane of pituitary somatotropes and somatomammotropes in transgenic mice, with colocalization with membrane markers Ghrhr, Pit-1, GH, and PRL. Function (GH secretion) was studied in these mice but explicit preservation of receptor function relative to untagged GPR101 is not stated in the cited clips.",
+      "confidence": "high",
+      "rationale": "L3 explicitly states the FLAG tag is placed at the N-terminus of GPR101, preceded by an exogenous signal sequence, in all transfection constructs. GPR101 carries no endogenous signal peptide (raw topology begins O=extracellular at residue 1), so after cleavage of the exogenous ss the FLAG tag is the new N-terminus immediately before M1 (insert_after_residue=0, residue_after=M). The native extracellular N-terminal span (residues 1\u201331) provides 31 residues of buffer before TM1 at residue 32, satisfying the \u22653-residue boundary constraint. L2 independently confirms surface display of the FLAG-tagged receptor by immunostaining in vivo. All GPR101 receptor constructs used for stable and transient transfection were cloned with a FLAG epitope (DYKDDDDK) at the N-terminus preceded by an exogenous signal sequence (KTIIALSYIFCLVFA). GPR101 has no endogenous signal peptide (topology: extracellular 1\u201331); after cleavage of the exogenous ss, FLAG sits before native M1. The same N-terminal FLAG design was used in transgenic mice (rat Ghrhr promoter driving FLAG-Gpr101).",
+      "sources": [
+        {
+          "pmid": 32958754,
+          "citation": "PMID 32958754",
+          "claim": "All receptors were cloned into the pIRESpuro vector (Clontech Laboratories, Mountain View, CA, USA) (for stable transfections) and/or pcDNA3.1 (Invitrogen Corporation, Carlsbad, CA, USA) (for transient transfections) after addition of the FLAG epitope (DYKDDDDK) at the N-terminus, preceded by the signal sequence (ss) KTIIALSYIFCLVFA 61 , unless specified otherwise."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:24:21.583535+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same publication (PMC7506554) and describe the same N-terminal FLAG-tagging strategy. No internal loop insertions, C-terminal tags, or other junction positions are reported anywhere in the ledger. The exogenous signal sequence (KTIIALSYIFCLVFA) is not part of GPR101's canonical sequence and is cleaved; the FLAG tag is therefore at the extracellular N-terminus (before M1). No specific residue number is cited for the junction, but 'N-terminus' combined with the extracellular topology of residues 1\u201331 leaves exactly one position (insert_after_residue=0), making this topology_derived. ECL1 (90\u2013105), ECL2 (171\u2013191), and ECL3 (425\u2013433) are not addressed by any ledger line and therefore yield no sites.",
+  "literature_rejected": []
 }

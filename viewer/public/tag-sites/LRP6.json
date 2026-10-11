@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRP6",
+  "uniprot_acc": "O75581",
+  "sites": [
+    {
+      "site_id": "LRP6-terminal_n-19-lit",
+      "gene_symbol": "LRP6",
+      "uniprot_acc": "O75581",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "VSV-G",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Lrp6-APEX2 chimeric receptor (carrying N-terminal VSV-G) rescued the ventralized phenotype caused by maternal depletion of Xenopus Lrp6 and induced axis duplication in a ligand-dependent manner when overexpressed in a ventral blastomere; surface display confirmed by translocation of the tagged receptor into cytoplasmic vesicles upon Wnt3a treatment.",
+      "confidence": "high",
+      "rationale": "L5 explicitly states the full-length human Lrp6 construct carries an N-terminal VSV-G tag; because the extracellular domain begins at residue 20 (after the native SP cleavage at 1\u201319), the VSV-G tag is placed at the same junction as the FLAG tag in L1/L2: insert_after_residue=19, residue_before=A (pos 19), residue_after=A (pos 20), confirmed by Python lookup. L4 demonstrates the doubly-tagged construct is fully functional in a stringent in vivo assay, and L6 confirms surface display. This is a second independent paper (PMC7726150 vs PMC8980801) validating the same extracellular N-terminal junction with a different tag, warranting a separate site entry at higher validation level. Full-length human Lrp6 membrane-anchored construct bearing an N-terminal VSV-G tag (extracellular) and a C-terminal linker-FLAG\u2013APEX2 fusion (intracellular). Surface display of the VSV-G-tagged receptor confirmed (L6). Functional rescue of ventralized Xenopus embryos and ligand-dependent axis duplication confirmed for this doubly-tagged construct (PMC7726150).",
+      "sources": [
+        {
+          "pmid": 33299006,
+          "citation": "PMID 33299006",
+          "claim": "The human Lrp6 contains an N-terminal VSV-G and a linker Flag-tag followed by the APEX2 enzyme."
+        },
+        {
+          "pmid": 35074428,
+          "citation": "PMID 35074428",
+          "claim": "Human LRP6 (residues 20\u20131613), with an N-terminal hemagglutinin signal peptide followed immediately by a FLAG tag, and a C-terminal His 8 tag, was first subcloned into pcDNA3.1 (Invitrogen); this was truncated at residue 1439 by overlap extension PCR."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 19,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:20:39.637160+00:00",
+  "literature_notes": "All six ledger lines concern a single junction: the mature N-terminus of LRP6 (after signal-peptide cleavage at residue 19). L1/L2 (PMC8980801) report a FLAG tag there with surface confirmation; L5/L6 (PMC7726150) report a VSV-G tag at the same position with both surface and functional validation. The C-terminal APEX2 fusion (L3/L4) and the intracellular linker-FLAG (L5) are cytoplasmic and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for LRP6, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1613,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "APEX2 appended to the cytoplasmic tail of full-length Lrp6; the C-terminus (residue 1613) lies in the intracellular domain (1395\u20131613) and is not accessible from the extracellular face."
+    },
+    {
+      "residue": 1613,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Linker FLAG tag immediately preceding the C-terminal APEX2 enzyme in the Lrp6-APEX2 construct; this FLAG is intracellular (between the TM domain and APEX2) and distinct from the extracellular N-terminal VSV-G tag in the same construct."
+    }
+  ]
+}

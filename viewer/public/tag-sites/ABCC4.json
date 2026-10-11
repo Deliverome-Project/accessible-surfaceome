@@ -203,5 +203,26 @@
       "canonical_residue": 760,
       "left_pct": 57.35849056603774
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:51:59.302414+00:00",
+  "literature_notes": "All seven ledger lines concern tags at the two cytoplasmic termini of ABCC4. L1 and L2 describe a C-terminal 3\u00d7FLAG appended after residue 1325; the topology landmark places residues 998\u20131325 firmly in the intracellular compartment, so this tag faces the cytoplasm. L3 and L4 describe an N-terminal GFP and an N-terminal Avi tag, respectively, prepended before residue 1; the topology landmark places residues 1\u201392 in the intracellular compartment, so these tags also face the cytoplasm. L5 concerns deletion of the C-terminal PDZ motif (last 4 residues, ETAL), again intracellular. L6 and L7 confirm that GFP-ABCC4 traffics to the plasma membrane (surface biotinylation with Sulfo-NHS-SS-Biotin; colocalization with WGA-647), but this demonstrates protein trafficking, not extracellular display of the GFP tag itself \u2014 the GFP is N-terminal and therefore cytoplasmic. ABCC4 has six extracellular loops (EC 114\u2013138, 234, 342\u2013350, 730\u2013772, 862, 972\u2013978), but not one ledger line reports a tag insertion in any of them. Because the ledger is the only permitted source of citations, and no ledger line grounds an extracellular tag site, the correct answer is zero sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1325,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 3\u00d7FLAG tag appended after residue 1325 (L); topology landmark 998\u20131325 is intracellular, so the tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal GFP (and Avi, L4) prepended before residue 1 (M); topology landmark 1\u201392 is intracellular, so the tag faces the cytoplasm."
+    }
   ]
 }

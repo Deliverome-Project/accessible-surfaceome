@@ -109,5 +109,32 @@
       "canonical_residue": 71,
       "left_pct": 33.97129186602871
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:44:05.046372+00:00",
+  "literature_notes": "All ten ledger clips (L1\u2013L10) describe N-terminal SNAP-tag or FLAG-tag fusions to CLDN4. The authoritative topology landmarks place the CLDN4 N-terminus (residues 1\u20139) in the intracellular compartment; there is no signal peptide. A tag prepended before M1 (insert_after_residue=0) therefore sits on the cytoplasmic face, not the extracellular surface. The papers describe these constructs as 'surface-expressed' or 'surface-displayed', meaning the full-length protein traffics correctly to the plasma membrane \u2014 not that the N-terminal tag is accessible from the extracellular space. No ledger clip reports a tag insertion in ECL1 (residues 31\u201381) or ECL2 (residues 138\u2013160), the only extracellular loops. L7 additionally reports that FLAG-Cldn4 fails to form a paracellular barrier when expressed in TJ-deficient cells, indicating functional perturbation of the construct. Because no ledger line grounds an extracellular surface tag site, the correct answer is zero qualifying sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "SNAP tag inserted at the amino terminus of endogenous CLDN4 via CRISPR knock-in; the N-terminus (residues 1\u20139) is intracellular per topology landmarks, so this tag is on the cytoplasmic face, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "FLAG tag introduced at the N-terminus of Cldn4 by PCR with a forward primer encoding FLAG before the start codon; same intracellular N-terminus as above."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Dog claudin-4 cloned into pCAGGS with N-terminal 1\u00d7FLAG and 2\u00d7StrepII tags; N-terminus is intracellular, so these tags face the cytoplasm."
+    }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL2RB",
+  "uniprot_acc": "P14784",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:20:58.822913+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe the same chimeric IL15RB construct from PMC11472742. The construct architecture is: IL-15 \u2014 c-myc tag (EQKLISEEDL) \u2014 IL2R\u03b1 extracellular shaft (EMETSQFPGEEKPQASPEGRPESETSC) \u2014 IL2R\u03b2 mature protein (residues 27\u2013551). The c-myc tag is positioned between IL-15 and the IL2R\u03b1 shaft, not at or within IL2R\u03b2's extracellular domain. IL2R\u03b2's own sequence is intact from the mature N-terminus (residue 27, A) onward; it functions as the transmembrane anchor of the chimera. No ledger line reports a tag insertion at a specific IL2R\u03b2 residue, in any IL2R\u03b2 extracellular loop, or at IL2R\u03b2's N-terminus (the IL2R\u03b1 shaft, not a tag, is fused there). The construct also does not qualify as a 'topology_derived' N-terminal tag on IL2R\u03b2 because the c-myc tag is separated from IL2R\u03b2's N-terminus by the entire 27-aa IL2R\u03b1 shaft \u2014 the tag is in the chimeric extension, not on IL2R\u03b2's surface. Under the ledger rules, zero sites qualify.",
+  "literature_rejected": []
+}

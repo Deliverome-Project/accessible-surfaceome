@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ART4",
+  "uniprot_acc": "Q93070",
+  "sites": [
+    {
+      "site_id": "ART4-terminal_n-46-lit",
+      "gene_symbol": "ART4",
+      "uniprot_acc": "Q93070",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 46,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G46",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed: monoclonal antibodies raised against the FLAG-tagged construct recognise native ART4 on the surface of living cells, indicating correct folding and trafficking. ADP-ribosyltransferase enzymatic activity was NOT MEASURED in this clip.",
+      "confidence": "high",
+      "rationale": "ART4 is GPI-anchored; the signal peptide (residues 1\u201346) is cleaved at the N-terminus and the GPI anchor signal at the C-terminus is also cleaved, leaving no free C-terminal surface handle. The only extracellular terminus available for a surface tag is immediately after the SP cleavage site. Python confirmed residue 46 = G (last SP residue) and residue 47 = S (first mature residue); insert_after_residue = 46 places the tag at the mature N-terminus, consistent with standard GPI-protein tagging practice. The paper's confirmation that mAbs against the FLAG-tagged construct recognise native ART4 on living cells validates surface display and correct folding of the tagged protein. Stable transfectants of full-length human ART4 (CD297) carrying a FLAG tag were generated; the tagged construct is membrane-anchored and surface-displayed, confirmed by monoclonal antibodies that recognise native ART4 on living cells. No residue number is stated in the clip. ART4 is GPI-anchored: the C-terminus carries the GPI anchor signal (cleaved and replaced by GPI lipid), so a C-terminal tag would be removed. The sole viable extracellular terminus for a surface-displayed tag is after the signal peptide cleavage site (after residue 46, the last SP residue G, before residue 47, the mature N-terminus S).",
+      "sources": [
+        {
+          "pmid": 16271711,
+          "citation": "PMID 16271711",
+          "claim": "ART2-which has sparked interest because of its ability to activate the cytolytic P2X7 purinergic receptor by ADP-ribosylation-is encoded by two functional gene copies in the mouse genome while the human genome carries two inactivated ART2 pseudogenes. We generated stable transfectants for FLAG-tagged versions of each of the functional human and mouse ARTs. Using genetic immunization we raised monoclonal antibodies that recognize the native human ARTs on the surface of living cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:32:12.160409+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports FLAG-tagged full-length human ART4 with confirmed surface display but names no insertion residue. Because ART4 is GPI-anchored, the C-terminus is occupied by the GPI anchor signal (cleaved in the ER and replaced by the GPI lipid moiety); any C-terminal tag would be removed co-translationally and could not appear on the cell surface. The N-terminal position after signal peptide cleavage (after residue 46) is therefore the only topology-consistent location for the observed surface-displayed FLAG tag, making this a topology_derived rather than validated site. No internal loop insertions are supported by the ledger.",
+  "literature_rejected": []
+}

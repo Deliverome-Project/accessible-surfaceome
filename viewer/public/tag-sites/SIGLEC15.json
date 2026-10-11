@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "SIGLEC15",
+  "uniprot_acc": "Q6ZMC9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:22:01.662563+00:00",
+  "literature_notes": "The single ledger entry (L1, PMC7175920) describes the S15ATM chimeric construct, in which the intact SIGLEC15 ectodomain is fused to the B7-H6 transmembrane domain to create a surface-displayed artificial protein. This is a domain-swap chimera, not a tag insertion: no epitope tag, fluorescent protein, transposon, or antibody-epitope sequence is inserted into the SIGLEC15 sequence at any named residue. It does not qualify under any of the permitted modalities (epitope-tag knock-in, FP fusion, transposon/domain-insertion screen, antibody-epitope insertion). No residue is named for a junction. A topology-derived terminal site cannot be inferred because there is no tag in the construct at all \u2014 the ectodomain itself is the functional element. With no qualifying ledger evidence, zero sites are reported.",
+  "literature_rejected": []
+}

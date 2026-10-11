@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "HCN3",
+  "uniprot_acc": "Q9P1Z3",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:55:52.131336+00:00",
+  "literature_notes": "HCN3 is a canonical 6-TM channel (topology: ICL\u2013TM1\u2013ECL1\u2013TM2\u2013ICL\u2013TM3\u2013ECL2\u2013TM4\u2013ICL\u2013TM5\u2013ECL3/pore\u2013TM6\u2013ICL). Both termini are intracellular: the N-terminus spans residues 1\u201397 (intracellular) and the entire post-TM6 C-terminus spans residues 345\u2013774 (intracellular). The sole ledger line, L1, reports a C-terminal FLAG (DYKDDDDK) tag on HCN3 expressed in pcDNA3.1 for surface expression studies. Because the C-terminus is intracellular, this tag faces the cytoplasm and does not qualify as an extracellular surface tag site. L1 names no insertion in any extracellular loop (ECL1 119\u2013126, ECL2 191\u2013208, ECL3/pore 262\u2013324). No other ledger line exists. There is therefore no ledger-grounded extracellular tag site to report; sites = [] is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 774,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag appended after the last residue (M774); the entire post-TM6 tail (residues 345\u2013774) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

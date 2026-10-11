@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL6ST",
+  "uniprot_acc": "P40189",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:22:54.221640+00:00",
+  "literature_notes": "The sole ledger line (L1) describes the 'L-gp130' chimeric construct (PMC11526557), in which wild-type IL6ST is truncated ~15 residues above the TM domain (around residue 603, computed as 618\u221215) and the entire native extracellular domain is replaced by the leucine zipper of human c-JUN fused to a FLAG tag. The FLAG tag therefore resides in the heterologous c-JUN leucine zipper sequence, not in any native IL6ST residue. This is a chimeric receptor analogous to a CAR construct: the native ectodomain is absent, so no junction in the native IL6ST extracellular span (residues 23\u2013617) can be inferred. The construct is membrane-anchored and the FLAG is extracellular, but the tag cannot be mapped to an insert_after_residue in the canonical IL6ST sequence. None of the disqualifying categories (soluble ectodomain, Fc-fusion, antibody epitope mapping, commercial plasmid with unstated position, intracellular tag) apply, but the fundamental requirement \u2014 that the tag be inserted into the native protein sequence at a pinnable position \u2014 is not met. Accordingly, zero sites are reported.",
+  "literature_rejected": []
+}

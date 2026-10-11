@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "FXYD5",
+  "uniprot_acc": "Q96DB9",
+  "sites": [
+    {
+      "site_id": "FXYD5-terminal_n-21-lit",
+      "gene_symbol": "FXYD5",
+      "uniprot_acc": "Q96DB9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "mCherry + HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "mCherry fluorescence confirmed expression in ATII cells in vivo; no explicit surface-localization or functional assay reported in the cited clips.",
+      "confidence": "medium",
+      "rationale": "FXYD5 is a type I single-pass membrane protein (N-out, C-in) with a signal peptide spanning residues 1\u201321 and a single extracellular terminus at the mature N-terminus (residue 22). The published construct places mCherry and HA N-terminally on the full-length protein; for the tags to survive signal-peptide cleavage and remain on the protein they must be inserted after the SP cleavage site (after residue 21, before residue 22). No residue number is stated in either ledger line, so the junction is topology-derived: with only one extracellular terminus and a signal peptide, insert_after_residue=21 is the unique valid position. Python confirmed residue 21 = G and residue 22 = Q; the tag site is 124 residues from the TM boundary, well clear of the \u22653-residue constraint. Full-length mouse FXYD5 bearing N-terminal mCherry and HA tags (Ad-mCherry-HA-FXYD5) was delivered intratracheally to mice via adenoviral vector and expressed in alveolar type II (ATII) epithelial cells in vivo; mCherry fluorescence confirmed expression of the tagged construct.",
+      "sources": [
+        {
+          "pmid": 28620381,
+          "citation": "PMID 28620381",
+          "claim": "WT C57BL/6 or CCR2 \u2212/\u2212 mice at 8\u201312 weeks of age were infected with Ad-mCherry-HA-FXYD5 (Ad-FXYD5; 1 \u00d7 10 9 plaque-forming units (pfu)/animal) in 50% surfactant vehicle as previously described ( 30 , 50 ) and housed in a containment facility."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:56:05.412125+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) describe the same construct from the same paper (PMC5451504) and ground the same single site. No residue number is stated in either clip, so position_evidence is topology_derived rather than validated. The paper reports in-vivo expression (mCherry fluorescence) but the clips do not describe an explicit cell-surface localization assay or a functional readout for the tagged protein, so validation_level is conservatively set to detected_only. No other sites are supported by the ledger. No intracellular or function-abrogating positions are mentioned in the ledger, so other_positions is empty.",
+  "literature_rejected": []
+}

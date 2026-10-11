@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PECAM1",
+  "uniprot_acc": "P16284",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:31:49.513194+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe a single construct: 'full-length human CD31-GFP', a C-terminal GFP fusion to PECAM-1. The C-terminus of PECAM-1 (residue 738, T) falls within the intracellular domain (residues 621\u2013738), so the GFP tag is on the cytoplasmic face. The construct confirms that the full-length protein traffics to the cell surface and is functional (CPB susceptibility restored; oligomer formation in HEK293 cells), but the tag itself is not extracellular. No ledger line describes a tag inserted at the extracellular N-terminus (after residue 27, the signal-peptide cleavage site), in any extracellular loop, or at any other extracellular position. Because the sole evidence is for an intracellular C-terminal fusion, zero extracellular surface-tag sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 738,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length CD31-GFP is a C-terminal GFP fusion; residue 738 (T) is the last residue of the intracellular domain (621\u2013738), so the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

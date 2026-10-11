@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "AVPR1A-terminal_n-0-lit",
+      "gene_symbol": "AVPR1A",
+      "uniprot_acc": "P37288",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct was expressed, purified, and used to determine the cryo-EM structure of V1aR; proper folding and membrane insertion are implied by structure determination, but no explicit ligand-binding or signalling assay is reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "L1 reports full-length WT V1aR with an artificial SP + FLAG at the N-terminus. The canonical topology (computed landmarks) places residues 1\u201350 extracellular with no native signal peptide, so after SP cleavage the FLAG sits before residue 1 (M); insert_after_residue = 0 is the only consistent assignment. TM1 begins at residue 51, leaving 50 residues of clearance. The position is topology-derived because L1 names 'N-terminus' without a residue number, and exactly one extracellular terminus exists for a prepend on this GPCR. Full-length wild-type human V1aR was expressed with an artificial signal peptide followed by a FLAG tag at its N-terminus in an insect-cell/BacMam expression system for cryo-EM structural studies (PMC12905432). The native V1aR has no signal peptide (topology shows extracellular from residue 1); after cleavage of the artificial SP, the FLAG tag occupies the extracellular N-terminus before residue 1 (M). The N-terminus is the sole extracellular terminus available for a prepend on this 7-TM receptor.",
+      "sources": [
+        {
+          "pmid": 41545407,
+          "citation": "PMID 41545407",
+          "claim": "To obtain the structure of human V1aR, we constructed an expression vector containing full-length wild-type human V1aR with a signal peptide followed by a FLAG tag at its N-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:40:36.852456+00:00",
+  "literature_notes": "L2 (PMC12905432) describes a truncated construct (residues 33\u2013418) with an artificial SP + FLAG + Avi tag before residue 33. Because residues 1\u201332 are deleted rather than tagged, this is not an insertion into the full-length protein and cannot be mapped to a distinct insert_after_residue junction in the canonical sequence; it was therefore not promoted to a separate site. L2 does corroborate that N-terminal tagging of V1aR is tolerated for structural-grade expression, reinforcing confidence in the L1-grounded site. No ledger evidence supports internal loop insertions (ECL1 110\u2013125, ECL2 190\u2013214, ECL3 313\u2013329) or C-terminal extracellular tags for this protein.",
+  "literature_rejected": []
 }

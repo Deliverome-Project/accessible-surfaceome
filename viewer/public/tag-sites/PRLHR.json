@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PRLHR-terminal_n-0-lit",
+      "gene_symbol": "PRLHR",
+      "uniprot_acc": "P49683",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by surface detection assay in Expi293F cells (PMC10156119); no functional assay for PRLHR specifically reported in this library paper.",
+      "confidence": "high",
+      "rationale": "PRLHR is a GPCR whose N-terminus (residues 1\u201360) is extracellular and whose C-terminus is intracellular; the N-terminus is therefore the sole extracellular terminus, making insert_after_residue=0 the topology-derived junction. The paper names no specific residue, but for a GPCR the N-terminal prepend is the only possible extracellular placement, so the position is unambiguous. Computed: residue 1 = M, TM1 begins at residue 61, giving 60 residues of extracellular space between the tag junction and the first TM helix, well above the \u22653-residue minimum. The exogenous HA signal sequence is cleaved post-translationally, leaving FLAG displayed on the cell surface. PMC10156119 describes a 215-member GPCR library in which PRLHR/GPR10 is engineered as a full-length, membrane-anchored FLAG-GPCR-1D4 construct. The FLAG tag (DYKDDDDA) is placed after an exogenous HA signal sequence (MKTIIALSYIFCLVFA) and before GPCR residue 1, so after signal-peptide cleavage the FLAG is exposed at the extracellular N-terminus. Constructs were expressed in Expi293F cells and confirmed for surface detection.",
+      "sources": [
+        {
+          "pmid": 37134173,
+          "citation": "PMID 37134173",
+          "claim": "Each GPCR construct includes an N-terminal FLAG tag and a C-terminal 1D4 tag, except for four GPCRs belonging to the Frizzed (FZD) subfamily, which have an N-terminal HA (hemagglutinin) epitope tag and a C-terminal 1D4 epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:41:12.184987+00:00",
+  "literature_notes": "L1 and L2 both derive from PMC10156119 and describe the same FLAG-GPCR-1D4 construct; L1 is cited as the primary clip because it explicitly states surface detection. The C-terminal 1D4 tag co-engineered in the same construct is intracellular (residues 339\u2013370 are all intracellular per the topology landmarks) and is therefore recorded in other_positions only. No ledger line supports an internal extracellular-loop insertion for PRLHR, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 370,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "The C-terminal 1D4 tag in the FLAG-GPCR-1D4 construct is appended after residue 370, which lies within the intracellular C-terminal region (339\u2013370); it is not an extracellular surface-tag site."
+    }
+  ]
 }

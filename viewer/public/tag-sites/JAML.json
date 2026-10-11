@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "JAML",
+  "uniprot_acc": "Q86YT9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:33:52.301195+00:00",
+  "literature_notes": "All three ledger lines derive from PMC2600739. L2 is the only clip that explicitly states tag position \u2014 HA at the C-terminus of full-length JAML \u2014 which maps to residue 394, within the intracellular span (297\u2013394). L1 references a different vector (pMT-JAML-HA) but names no tag position; because JAML is a type-I transmembrane protein with both an extracellular N-terminus and an intracellular C-terminus, topology derivation cannot resolve which end carries the tag from L1 alone. L3 likewise names no residue or terminus. No ledger line supports an extracellular tag insertion for JAML; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 394,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA epitope placed explicitly at the C-terminus of full-length JAML (p513-JAM-L-HA vector); residue 394 (F) falls within the intracellular span 297\u2013394 and is therefore not a surface tag site."
+    }
+  ]
+}

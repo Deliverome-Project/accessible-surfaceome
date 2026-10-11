@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHAC2",
+  "uniprot_acc": "Q9Y5I4",
+  "sites": [
+    {
+      "site_id": "PCDHAC2-internal-None-lit",
+      "gene_symbol": "PCDHAC2",
+      "uniprot_acc": "Q9Y5I4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface staining of the full-length membrane-anchored protein confirmed; the tag enables detection of surface-displayed PCDHAC2. Functional assays beyond surface trafficking NOT MEASURED in the cited clips.",
+      "confidence": "medium",
+      "rationale": "L1 explicitly names the stalk region between EC6 and the transmembrane helix of PCDHAC2 as the Myc-tag insertion site, and L2 independently corroborates the same region. The stalk spans approximately residues 660\u2013707 (extracellular span 43\u2013707, TM begins at 708), placing any insertion well within the extracellular face. No specific junction residue is named in any ledger line, so insert_after_residue is null and the region label is the authoritative position descriptor. Surface staining of the full-length construct was confirmed, establishing extracellular display. Full-length membrane-anchored PCDHAC2 with a Myc tag inserted in the stalk region between EC6 and the transmembrane helix, used in surface-trafficking experiments for clustered protocadherins. The construct was provided by the Maniatis lab and used in two independent studies (PMC12157453, PMC12337331).",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:23:34.443051+00:00",
+  "literature_notes": "L3 and L4 confirm the existence of the Myc-tagged \u03b1C2 plasmid but provide no positional information beyond what L1 and L2 already state; they were not used as the primary supporting clip. No ledger line names a specific residue junction, so the site is region-level only. The stalk region (approx. residues 660\u2013707) is the only extracellular region named in the ledger for tag insertion; no other loops or termini are mentioned. The mature N-terminus (residue 43, after signal peptide cleavage at 42) is extracellular but no ledger line supports a tag there. The intracellular domain (730\u20131007) is not proposed.",
+  "literature_rejected": []
+}

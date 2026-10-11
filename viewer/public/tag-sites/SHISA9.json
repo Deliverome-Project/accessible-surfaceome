@@ -1,0 +1,92 @@
+{
+  "has_data": true,
+  "gene_symbol": "SHISA9",
+  "uniprot_acc": "B4DS77",
+  "sites": [
+    {
+      "site_id": "SHISA9-internal-29-lit",
+      "gene_symbol": "SHISA9",
+      "uniprot_acc": "B4DS77",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 29,
+      "residue_before": "H",
+      "residue_after": "G",
+      "residue_label": "H29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG / MYC",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence in primary hippocampal neurons (DIV 21) confirmed surface display of FLAG-CKAMP44-FL; function of the tagged construct per se was not separately quantified in this experiment.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the tag is inserted after the first 29 aa of CKAMP44 including the signal peptide (SP = residues 1\u201323 by topology landmarks), placing the junction after residue 29 (H) and before residue 30 (G), both confirmed by reading the numbered sequence. Python computation confirms residue 29 is extracellular (EC span 24\u2013151), 123 residues from the TM boundary, well clear of all constraints. L3 from the same paper validates surface display by immunofluorescence in neurons. Full-length CKAMP44/Shisa9 constructs in pCMV vector with FLAG (DYKDDDDK) or MYC (EQKLISEEDL) tag inserted after the first 29 aa of CKAMP44 (including the 23-aa signal peptide), placing the tag 6 residues into the extracellular domain of the membrane-anchored protein. FLAG-CKAMP44-FL was expressed in primary hippocampal neurons (DIV 21) and detected by immunofluorescence co-stained with MAP2.",
+      "sources": [
+        {
+          "pmid": 28904854,
+          "citation": "PMID 28904854",
+          "claim": "For full\u2010length FLAG\u2010 or MYC\u2010tagged CKAMP44 DNA constructs in the pCMV vector, we cloned the coding sequence for the FLAG tag (AAs DYKDDDDK) or the MYC tag (AAs EQKLISEEDL) behind the coding sequence for the first N\u2010terminal 29 AAs of CKAMP44 (including the signal peptide)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 29,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "SHISA9-terminal_n-23-lit",
+      "gene_symbol": "SHISA9",
+      "uniprot_acc": "B4DS77",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation in HEK293T cells using anti-HA antibody confirmed expression and pull-down of interactors (Shisa9 WT and \u0394EVTV variants); surface display was not separately confirmed by live-cell staining in this study.",
+      "confidence": "high",
+      "rationale": "L4 states the HA tag was introduced between the signal peptide and the N-terminus of full-length Shisa9. The topology landmarks place the signal peptide at residues 1\u201323 and the mature N-terminus at residue 24; the junction is therefore after residue 23 (A) and before residue 24 (Q), confirmed by reading the numbered sequence. After SP cleavage the HA tag becomes the new extracellular N-terminus of the mature protein, 128 residues from the TM boundary. L5 from the same paper confirms the tagged construct is expressed and functional in co-IP assays. Full-length HA-tagged Shisa9 construct with the HA tag introduced between the signal peptide and the N-terminus of the mature protein. Expressed in HEK293T cells and used for co-immunoprecipitation with V5-tagged interactors using anti-HA antibody, validating expression and protein\u2013protein interaction of the tagged full-length construct.",
+      "sources": [
+        {
+          "pmid": 24498314,
+          "citation": "PMID 24498314",
+          "claim": "The HA-tag was introduced between the signal peptide and the N-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 23,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:21:51.269608+00:00",
+  "literature_notes": "Two independent papers (PMC5586339 and PMC3911953) both report extracellular N-proximal tag insertions in full-length membrane-anchored SHISA9/CKAMP44, but at slightly different junctions: PMC5586339 places FLAG/MYC after residue 29 (6 aa into the ectodomain, internal site), while PMC3911953 places HA directly after the signal peptide cleavage site (residue 23, terminal_n). Both are grounded in explicit ledger lines and are reported as separate sites. L2 and L3 (PMC5586339) corroborate L1 and were used to assess validation level but are not used as primary supporting clips. No intracellular or function-abrogating positions were named in the ledger for SHISA9.",
+  "literature_rejected": []
+}

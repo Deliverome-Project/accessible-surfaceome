@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCRL1",
+  "uniprot_acc": "Q96LA6",
+  "sites": [
+    {
+      "site_id": "FCRL1-terminal_n-16-lit",
+      "gene_symbol": "FCRL1",
+      "uniprot_acc": "Q96LA6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 16,
+      "residue_before": "P",
+      "residue_after": "A",
+      "residue_label": "P16",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HA-FcRL1(WT)-YFP/mCherry served as the functional wild-type control in BCR co-clustering, calcium flux, and tyrosine-phosphorylation signaling assays in primary B cells and CH27 cells; function was preserved relative to untagged FcRL1-KO rescue.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states the HA tag is 'fused to the N terminus' of full-length FcRL1, and surface display on primary B cells was confirmed by FACS. Because the signal peptide spans residues 1\u201316 (computed landmarks), any N-terminal extracellular tag must be inserted after residue 16 (P) and before residue 17 (A, the mature N-terminus); this is the only possible extracellular N-terminal junction. Python confirmed residue 16 = P and residue 17 = A, and that position 17 lies 292 residues from the TM boundary (309), well clear of any steric constraint. The same junction is corroborated by independent FLAG-tagged FCRL1 constructs in L6/L7 and L8/L9. Full-length FcRL1 with HA fused to the N-terminus and YFP/mCherry to the C-terminus (HA-FcRL1(WT)-YFP/mCherry) was stably expressed on the surface of FcRL1-KO primary B cells and CH27 cells via lentiviral transduction; surface display confirmed by FACS. The paper names 'N terminus' but no residue number; the signal peptide (residues 1\u201316) is the only N-terminal feature, so the tag must land after residue 16 (the sole extracellular N-terminal junction). The same N-terminal position is independently supported by N-terminal FLAG-tagged FCRL1 constructs in two additional papers (L6/L7, L8/L9), all confirmed by anti-FLAG surface staining on non-permeabilized cells.",
+      "sources": [
+        {
+          "pmid": 31328160,
+          "citation": "PMID 31328160",
+          "claim": "The distribution of FcRL1 molecules was visualized by expressing the HA-FcRL1-YFP chimera receptor with the hemagglutinin (HA) tag fused to the N terminus and yellow fluorescent protein (YFP) to the C terminus of FcRL1 on the surface of FcRL1-KO primary B cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:47:15.855540+00:00",
+  "literature_notes": "All nine ledger lines converge on a single extracellular tag site: the N-terminal junction after the signal peptide (residue 16/17). L1\u2013L5 (PMC6637015) report HA at the N-terminus; L6\u2013L7 (PMC8629370) and L8\u2013L9 (PMC3634363) independently report FLAG at the N-terminus, all with surface-display confirmation. No ledger line reports a tag insertion in any internal extracellular loop of FCRL1. The tyrosine-mutant constructs in L2 (Y281F, Y293F, Y339F) are point mutations used to probe ITAM-like signaling motifs, not tag insertions, so they do not qualify as insertion sites. The C-terminal YFP/mCherry fusion (L1\u2013L5) is placed in other_positions because residue 429 falls in the intracellular domain (330\u2013429).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 429,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "YFP or mCherry fused to the C-terminus of full-length FcRL1 in HA-FcRL1(WT)-YFP/mCherry constructs; residue 429 (M) is the last residue of the intracellular domain (330\u2013429), so this fusion is cytoplasmic and not accessible for extracellular epitope tagging."
+    }
+  ]
+}

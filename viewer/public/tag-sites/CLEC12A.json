@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC12A",
+  "uniprot_acc": "Q5QGZ9",
+  "sites": [
+    {
+      "site_id": "CLEC12A-terminal_c-265-lit",
+      "gene_symbol": "CLEC12A",
+      "uniprot_acc": "Q5QGZ9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 265,
+      "residue_before": "A",
+      "residue_after": "",
+      "residue_label": "A265",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-HA cross-linking of CLEC12A-HA on HEK-293T cells induces downstream signaling (L4); surface internalization following cross-linking confirmed by flow cytometry on HeLa cells (L2); tag does not interfere with CLEC12A expression (L4).",
+      "confidence": "high",
+      "rationale": "CLEC12A is a type II transmembrane receptor with its C-terminus (residues 63\u2013265) entirely extracellular; the C-terminal residue is A265 (verified in code: seq[264]='A'). L3 explicitly states the HA tag was placed at the C-terminus, pinning insert_after_residue=265 without ambiguity. The tag is 203 residues from the TM boundary, well clear of the \u22653-residue constraint. Multiple independent experiments (L2, L4, L5, L6) confirm surface display by anti-HA staining on intact cells and functional signaling upon cross-linking, satisfying both surface and function criteria. L3 (PMC8508511) explicitly states 'added a HA tag at the C-terminus' of full-length CLEC12A to track expression and induce clustering; L4 (PMC8508511) and L5/L6 (PMC8256872) confirm the same CLEC12A-HA construct is surface-displayed on HEK-293T cells and cross-linkable with anti-HA antibody on intact (non-permeabilized) cells.",
+      "sources": [
+        {
+          "pmid": 34638548,
+          "citation": "PMID 34638548",
+          "claim": "We substituted the cysteines with alanines and added a HA tag at the C-terminus to track their expression and to induce CLEC12A clustering."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 265,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:46:11.030577+00:00",
+  "literature_notes": "L1, L2, L4, L5, L6 all report the same CLEC12A-HA construct and confirm surface display and signaling; L3 is chosen as the primary supporting clip because it is the only line that explicitly names the C-terminus as the tag position. L7 reports FLAG-CLEC12A cloned in-frame downstream of an mCherry-P2A sequence in a lentiviral vector; the 'FLAG-' prefix convention places the FLAG tag at the N-terminus of CLEC12A, which is intracellular (residues 1\u201341 per topology landmarks), so this construct does not qualify as an extracellular surface-tag site and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "FLAG-CLEC12A places the FLAG tag at the CLEC12A N-terminus, which is intracellular (residues 1\u201341 per topology); not a surface-accessible site."
+    }
+  ]
+}

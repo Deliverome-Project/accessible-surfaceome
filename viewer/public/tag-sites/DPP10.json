@@ -1,0 +1,59 @@
+{
+  "has_data": false,
+  "gene_symbol": "DPP10",
+  "uniprot_acc": "Q8N608",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:18:14.657512+00:00",
+  "literature_notes": "DPP10 (Q9Y3Q4) is a type II single-pass transmembrane protein: N-terminus residues 1\u201334 are intracellular, TM spans 35\u201355, and the large ectodomain runs 56\u2013796. L1 (HA/DPP10), L2 (GFP-DPP10_789), and L3 (mEGFP-DPP10) all report N-terminal fusions; because the N-terminus is intracellular, every one of these tags sits on the cytoplasmic face and does not qualify as an extracellular surface tag site. L4 reports N\u2192Q substitutions at N90, N119, N257, and N342 that reduce plasma-membrane trafficking by >60%; these are glycosylation sites whose integrity is required for surface delivery, not tag-insertion sites, and they are recorded in other_positions as abrogates_function. No ledger line grounds an insertion that is both (a) in a full-length, membrane-anchored construct and (b) placed on the extracellular face. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA/DPP10 N-terminal HA fusion confirmed surface-expressed complex by co-IP, but the N-terminus (residues 1\u201334) is intracellular in this type II TM protein, so the tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "GFP fused to the N-terminus of DPP10_789 isoform; N-terminus is intracellular, so GFP is on the cytoplasmic face."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "mEGFP-DPP10 N-terminal fusion used for single-molecule imaging; tag is intracellular because the N-terminus (1\u201334) is cytoplasmic."
+    },
+    {
+      "residue": 90,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "N90Q substitution reduces surface expression by >60% and disrupts Kv4.3/KChIP2a complex kinetics; N90 is a required N-glycosylation site."
+    },
+    {
+      "residue": 119,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "N119Q substitution reduces surface expression by >60% and disrupts Kv4.3/KChIP2a complex kinetics; N119 is a required N-glycosylation site."
+    },
+    {
+      "residue": 257,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "N257Q substitution reduces surface expression by >60% and disrupts Kv4.3/KChIP2a complex kinetics; N257 is a required N-glycosylation site."
+    },
+    {
+      "residue": 342,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "N342Q substitution reduces surface expression by >60% and disrupts Kv4.3/KChIP2a complex kinetics; N342 is a required N-glycosylation site."
+    }
+  ]
+}

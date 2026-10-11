@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD300E",
+  "uniprot_acc": "Q496F6",
+  "sites": [
+    {
+      "site_id": "CD300E-terminal_n-17-lit",
+      "gene_symbol": "CD300E",
+      "uniprot_acc": "Q496F6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip confirms the construct was generated and used in transfection experiments but reports no functional or surface-expression assay result specific to CD300e.",
+      "confidence": "medium",
+      "rationale": "CD300E is a type I transmembrane protein with signal peptide spanning residues 1\u201317 and a single extracellular domain from residue 18 to 173. The 'HA-CD300e' prefix naming convention unambiguously places the HA tag at the N-terminus of the protein. Because the tag must be inserted after the signal-peptide cleavage site to reach the extracellular face (a tag upstream of residue 18 would be cleaved off with the signal peptide), the junction is insert_after_residue=17 (residue S) placing the tag immediately before the mature residue L18. Python verification confirms S at position 17 and L at position 18, and the tag site is 156 residues from the TM boundary, well clear of any structural constraint. PMC5648872 describes a full-length, membrane-anchored HA-CD300e construct used in mammalian cell transfection experiments. The 'HA-' prefix naming convention places the tag at the protein N-terminus. CD300E is a type I single-pass transmembrane protein whose only extracellular terminus is the mature N-terminus (residue 18, after signal-peptide cleavage at residue 17). No specific residue number is named in the ledger clip.",
+      "sources": [
+        {
+          "pmid": 29051512,
+          "citation": "PMID 29051512",
+          "claim": "Mammalian Flag-CD300b, HA-CD300a, HA-CD300b, HA-CD300c, HA-CD300c, HA-CD300e, HA-CD300f constructs were described previously 4 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:13:15.094608+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports an HA-CD300e construct used in transfection but names no specific residue and reports no functional or surface-expression data for CD300e. The position (insert_after_residue=17) is topology-derived: CD300E has a single extracellular terminus (mature N-terminus at residue 18), so the 'HA-' prefix leaves exactly one possible extracellular placement. No internal loop insertions are supported by the ledger. The intracellular tail (196\u2013205) is only 10 residues and is not mentioned in the ledger. No abrogating insertions are reported.",
+  "literature_rejected": []
+}

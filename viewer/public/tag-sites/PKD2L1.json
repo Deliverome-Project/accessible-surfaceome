@@ -516,5 +516,32 @@
       "canonical_residue": 423,
       "left_pct": 55.65789473684211
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:35:47.832933+00:00",
+  "literature_notes": "All three ledger lines describe tags on intracellular termini of PKD2L1. L1 (PMC8435292) places a C-terminal HA tag after residue 805, which falls in the intracellular C-terminal domain (topology span 556\u2013805). L2 (PMC5998024) places a Flag tag before residue 1 (N-terminal prepend), which falls in the intracellular N-terminal domain (topology span 1\u2013100). L3 (PMC8357825) places a triple FLAG + Twin-Strep tag at the N-terminus of mouse PKD2L1, again intracellular. PKD2L1 has three extracellular loops (ECL1: 122\u2013347, ECL2: 407\u2013437, ECL3: 500\u2013534), but no ledger line reports any insertion in any of these loops. No extracellular surface tag site is supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 805,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag on full-length human PKD2L1; C-terminus (residue 805) lies in the intracellular span 556\u2013805, not on the extracellular face."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal Flag tag prepended before residue 1 of human PKD2L1; the N-terminus (residues 1\u2013100) is intracellular, not extracellular."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal triple FLAG + Twin-Strep tag on mouse PKD2L1 (ortholog); N-terminus is intracellular by the same topology, so this tag is also cytoplasmic."
+    }
   ]
 }

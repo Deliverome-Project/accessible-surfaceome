@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR4B1-terminal_n-0-lit",
+      "gene_symbol": "OR4B1",
+      "uniprot_acc": "Q8NGF8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + Rho (20 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunofluorescence on live non-permeabilized HEK293T cells: OR4B1 scored positive for surface expression (tag detected at the plasma membrane). No ligand-binding or downstream signalling assay reported in these clips.",
+      "confidence": "high",
+      "rationale": "OR4B1 is a GPCR with no signal peptide (topology string begins with O at residue 1); the N-terminus (residues 1\u201323) is extracellular and is the sole extracellular terminus \u2014 the C-terminus (residues 288\u2013309) is intracellular. Both ledger lines describe N-terminal epitope tags on the full-length receptor; no residue number is stated, but with exactly one extracellular terminus the junction is unambiguous: insert_after_residue=0 (prepend before M1). Computed: residue_after = seq[0] = M; 23 aa of extracellular space separates the prepend position from TM1 (residue 24), well above the \u22653-residue minimum. L2 directly validates surface accessibility of the tag by live-cell Flag immunofluorescence. L1 (PMC9022881) reports OR4B1 cloned as a full-length receptor in pME18S with N-terminal FLAG and 20-aa bovine rhodopsin epitope tags for heterologous expression. L2 (PMC3698168) confirms surface display of Flag-tagged OR4B1 by live-cell, non-permeabilized immunofluorescence with a Flag antibody, establishing that the N-terminal tag is accessible on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "Live, non-permeabilized HEK 293T cells were surface labeled with a Flag antibody to detect membrane associated receptor and OR surface expression was scored based on detectable surface immunofluorescence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:44:42.044813+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2); both describe the same N-terminal FLAG/Rho tag construct on full-length OR4B1 and together support a single site. No ledger line mentions any internal extracellular loop (ECL1 81\u201395, ECL2 163\u2013191, ECL3 256\u2013267) or any other junction, so no internal sites are proposed. The C-terminus (residues 288\u2013309) is intracellular and cannot carry a surface tag. No signal peptide is present, so the prepended tag will not be cleaved. The cited tag in L1 is actually a dual tag (FLAG + 20-aa Rho N-terminal sequence); both are N-terminal prepends and map to the same junction.",
+  "literature_rejected": []
 }

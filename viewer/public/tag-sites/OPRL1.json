@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OPRL1-terminal_n-0-lit",
+      "gene_symbol": "OPRL1",
+      "uniprot_acc": "P41146",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG M1-AF647 labeling in non-permeabilized HEK293 cells. No functional (ligand-binding or signaling) assay reported in this clip \u2014 NOT MEASURED for function.",
+      "confidence": "high",
+      "rationale": "L1 reports a FLAG-NOP-R construct (full-length OPRL1) whose surface expression was confirmed by anti-FLAG labeling in non-permeabilized HEK293 cells, placing the FLAG tag on the extracellular face. OPRL1 has no cleaved signal peptide, so the tag is prepended before Met-1 (insert_after_residue=0); residue_after is M read from position 1 of the canonical sequence. The extracellular N-terminal domain spans residues 1-51 (>50 aa before TM1 at 52), providing ample room for a short epitope tag. Because the paper names no specific residue \u2014 only 'N-terminus' \u2014 and exactly one extracellular terminus exists, the position is topology_derived. FLAG-NOP-R full-length OPRL1 construct expressed in HEK293 cells; surface receptors labeled with anti-FLAG M1-AF647 antibody under non-permeabilized conditions, confirming extracellular display of the FLAG tag at the N-terminus. OPRL1 (UniProt P41146) carries no annotated signal peptide; the topology landmarks place residues 1-51 as extracellular, so the FLAG prepend sits entirely on the cell surface.",
+      "sources": [
+        {
+          "pmid": 41648494,
+          "citation": "PMID 41648494",
+          "claim": "HEK293 cells without stable receptor expression were additionally transfected with FLAG-\u03b4OR, FLAG-\u03baOR or FLAG-NOP-R (1 \u03bcg DNA). 16\u201324 h after transfection, surface ORs were labeled for 10 min with anti-FLAG M1-AF647 and media changed to HBS imaging solution (Hepes buffered saline with 135 mM NaCl, 5 mM KCl, 0.4 mM MgCl2,1.8 mM CaCl2, 20 mM Hepes, 1 mM d-glucose, 1% FBS, adjusted to pH 7.4)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:26:01.600775+00:00",
+  "literature_notes": "The ledger contains a single line (L1) reporting a FLAG tag at the N-terminus of full-length OPRL1 (FLAG-NOP-R) with surface display confirmed in non-permeabilized HEK293 cells. No residue number is stated; because OPRL1 has no signal peptide and the topology landmarks place residues 1-51 as extracellular, the only possible extracellular N-terminal junction is insert_after_residue=0 (prepend before Met-1). No other ledger lines exist for OPRL1, so no internal ECL sites or C-terminal sites are supported. The intracellular C-terminus (residues 323-370) and all intracellular loops are excluded as surface tag sites. No functional assay data were present in L1, so validation_level is surface_only.",
+  "literature_rejected": []
 }

@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRC55",
+  "uniprot_acc": "Q6ZSA7",
+  "sites": [
+    {
+      "site_id": "LRRC55-terminal_n-34-lit",
+      "gene_symbol": "LRRC55",
+      "uniprot_acc": "Q6ZSA7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A34",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by live-cell anti-FLAG immunoprecipitation: N-terminally FLAG-tagged \u03b33/LRRC55 was enriched from the cell surface; protein reached the plasma membrane and was accessible to antibody without permeabilization.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the FLAG tag was placed after the cleaved signal peptide and immediately before the LRRNT unit for LRRC55 (\u03b33). The signal peptide spans residues 1\u201334 (authoritative landmark), so insert_after_residue=34 places the tag between A34 and G35, the mature N-terminus. Python confirms residue 34 = A and residue 35 = G. L2 and L3 independently confirm surface accessibility of this N-terminal tag by live-cell antibody probing and immunoprecipitation, while also showing the C-terminal tag is not surface-accessible. FLAG peptide tag introduced to the N-terminus of LRRC55 (\u03b33 subunit) in full-length, membrane-anchored constructs expressed in cells, positioned after the cleaved signal peptide (residues 1\u201334) and immediately before the LRRNT unit (mature residue 35). Live-cell anti-FLAG antibody probing and immunoprecipitation from non-permeabilized cells confirmed surface accessibility of the N-terminal tag.",
+      "sources": [
+        {
+          "pmid": 35104503,
+          "citation": "PMID 35104503",
+          "claim": "We introduced the FLAG peptide tag to the \u03b3 subunits\u2019 N termini, located after the cleaved signal peptides and immediately in front of the LRRNT unit and C termini, respectively."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 34,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:20:33.713945+00:00",
+  "literature_notes": "L1\u2013L3 all derive from the same study (PMC8892010) and collectively validate a single N-terminal FLAG tag site at insert_after_residue=34 for LRRC55. L4\u2013L6 (PMC12873909) report a 3\u00d7HA-V5 tag fused to the C-terminus of endogenous LRRC55 in knock-in mice; the C-terminus falls in the intracellular region (residues 284\u2013298 per authoritative topology landmarks), and L3 independently confirms that C-terminally tagged LRRC55 is not detectable from the extracellular surface. The C-terminal tag is therefore recorded in other_positions as intracellular. No ledger line supports any internal extracellular loop insertion for LRRC55.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 298,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "3\u00d7HA-V5 fused to the C-terminus of endogenous LRRC55 by CRISPR/Cas12a HDR knock-in; the C-terminus (residue 298) lies in the intracellular region (landmarks: 284\u2013298), and L3 confirms C-terminally FLAG-tagged LRRC55 is not detectable from the live-cell surface."
+    }
+  ]
+}

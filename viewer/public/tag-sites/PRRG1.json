@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "PRRG1",
+  "uniprot_acc": "O14668",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:43:03.394958+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) report C-terminal tags (3xFlag in L1/L2; myc in L3/L4/L5) on full-length PRRG1. The computed topology places the C-terminus (residue 218, K) entirely within the intracellular domain (102\u2013218). No ledger line reports any tag insertion on the extracellular face (residues 1\u201380) or in the extracellular N-terminal region. Because the rules forbid proposing a site without a qualifying ledger line, and because an intracellular C-terminal tag does not qualify as an extracellular surface tag (no snorkel validation is mentioned), zero sites are returned. The extracellular domain (1\u201380) contains the Gla domain and is the only surface-exposed region, but no published tag insertion there is recorded in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 218,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 3xFlag tag on full-length PRRG1; residue 218 (K) lies in the intracellular domain (102\u2013218), not on the extracellular face."
+    },
+    {
+      "residue": 218,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal myc tag on full-length PRRG1 expressed in mammalian cells and transgenic flies (L3/L4/L5); residue 218 (K) is intracellular."
+    }
+  ]
+}

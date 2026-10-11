@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRN4CL",
+  "uniprot_acc": "Q8ND94",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:22:58.101475+00:00",
+  "literature_notes": "The ledger contains two lines, both from PMC7987976. L1 reports a FLAG/streptavidin tag inserted at the C-terminus of mouse Lrrn4cl (prior to the stop codon), i.e. after residue 238. Per the authoritative topology landmarks, residues 219\u2013238 are intracellular; the C-terminal tag therefore faces the cytoplasm and is not a surface tag site. L2 uses the identical LRRN4CL-FSA construct to confirm N-glycosylation via PNGase F shift; it introduces no new insertion site. No ledger line reports a tag at the extracellular N-terminus (after signal-peptide cleavage at residue 22) or anywhere in the extracellular span (23\u2013197). The C-terminal insertion is recorded in other_positions. Zero extracellular sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 238,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG+streptavidin tag inserted after the last coding residue (238) of mouse Lrrn4cl prior to the stop codon; residues 219\u2013238 are intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

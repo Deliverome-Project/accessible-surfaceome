@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHB6",
+  "uniprot_acc": "Q9Y5E3",
+  "sites": [
+    {
+      "site_id": "PCDHB6-internal-None-lit",
+      "gene_symbol": "PCDHB6",
+      "uniprot_acc": "Q9Y5E3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk (EC6-TM linker)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by fluorescent anti-Myc antibody fluorescence microscopy on transfected cells (\u03b217 isoform); no functional assay specifically for PCDHB6 reported.",
+      "confidence": "low",
+      "rationale": "The ledger (L1) explicitly names the stalk between EC6 and the TM helix as the insertion site for a Myc epitope tag in \u03b2-Pcdh isoforms closely related to PCDHB6 (\u03b217 cited). For PCDHB6 this stalk corresponds to the extracellular span immediately proximal to the TM helix (residues ~660\u2013687, with TM beginning at 688). No specific residue junction is given in the paper, so insert_after_residue is left null and the region is recorded. The evidence is indirect (\u03b217 ortholog, same subfamily) and region-level only, warranting low confidence. PMC12157453 reports Myc-tagged clustered \u03b2-Pcdh constructs (including \u03b217, a close paralog of PCDHB6) with the tag placed in the stalk region between EC6 and the TM helix, described as equivalent to previously validated constructs; surface expression was confirmed by fluorescent anti-Myc antibody staining on transfected cells (L2).",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:26:03.163168+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2), both from the same paper (PMC12157453) and both describing the same Myc-tag insertion in the stalk region of \u03b2-Pcdh isoforms (specifically \u03b217, a close paralog of PCDHB6). No specific residue number is named in either clip, so the site is reported at region level with insert_after_residue null. No N-terminal tag evidence exists in the ledger; L1 explicitly localises the tag to the stalk, not the mature N-terminus. No intracellular or function-abrogating positions are named in the ledger, so other_positions is empty. The extracellular span of PCDHB6 runs from residue 28 to 687 (TM: 688\u2013709); the stalk (EC6-TM linker) occupies approximately residues 660\u2013687.",
+  "literature_rejected": []
+}

@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR61-terminal_n-0-lit",
+      "gene_symbol": "GPR61",
+      "uniprot_acc": "Q9BZJ8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Radioligand binding ([3H]-MLT and 2-[125I]-MLT) to crude membranes from HEK293 cells expressing HA-tagged GPR61 was comparable to untagged receptor, confirming preserved ligand-binding function.",
+      "confidence": "high",
+      "rationale": "GPR61 has no signal peptide in the computed topology; residues 1\u201343 form the sole extracellular N-terminal domain, making position 0 (prepend before M1) the unique extracellular terminus for an N-terminal tag. L1\u2013L5 collectively document HA-tag addition at the amino-terminal extremity of full-length, membrane-anchored GPR61. L2 confirms surface display on intact cells and L3 confirms ligand-binding function is preserved, yielding the highest validation level. The 43-residue extracellular N-terminus provides ample space for a short epitope tag well clear of TM1 (which begins at residue 44). Full-length GPR61 with HA tag (YPYDVPDYA) added by PCR at the amino-terminal extremity, inserted into pcDNA3 and expressed in HEK293T cells. The topology shows residues 1\u201343 as extracellular with no signal peptide, so the tag prepends before residue 1 (the sole extracellular terminus). Surface display confirmed by confocal microscopy on intact (non-permeabilized) HEK293T cells with anti-HA antibodies.",
+      "sources": [
+        {
+          "pmid": 28827538,
+          "citation": "PMID 28827538",
+          "claim": "( C , D ) Binding of [ 3 H]-MLT ( C ) and 2-[ 125 I]-MLT ( D ) to crude membrane prepared from HEK293 cells expressing HA-tagged or untagged GPR61, GPR62 or GPR135."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:38:58.319846+00:00",
+  "literature_notes": "L6\u2013L8 (C-terminal Myc tag) and L10 (C-terminal FLAG tag) were considered but the C-terminus of GPR61 (residues 345\u2013451) is entirely intracellular per the computed topology; these are intracellular tags and do not qualify as surface sites. L9 (BRIL insertion in ICL3 between R233 and K285) is an intracellular insertion (ICL3 = residues 230\u2013287) used for structural studies; it does not qualify. L10 also mentions an HA signal peptide at the N-terminus of the structural construct, but this is a heterologous signal peptide used for trafficking, not a tag on the receptor surface. L11 describes a heavily engineered active-conformation structural construct (HA-SP + FLAG + TEV + BRIL + PreScission + GPR61 N-terminus + C-terminal G\u03b1s fusion); the FLAG tag is at the extracellular N-terminus of GPR61 in a full-length membrane-anchored context, which corroborates the N-terminal tagging site already established by L1\u2013L5, but L11 is not used as the primary supporting clip because L3 provides stronger functional validation with a simpler construct. The 6myc-GPR61-PK2 construct mentioned in L5 also places a 6myc tag at the N-terminus (extracellular), further corroborating the site, but again L3 is the primary anchor.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 233,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "BRIL was inserted between ICL3 residues R233 and K285 (paper numbering; K is at canonical position 284) for structural studies; ICL3 (residues 230\u2013287) is entirely intracellular."
+    },
+    {
+      "residue": 451,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Myc tag placed at the C-terminus of full-length GPR61 via pCMV6-An-His-Myc vector; the C-terminus (residues 345\u2013451) is intracellular per the computed topology."
+    },
+    {
+      "residue": 451,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "C-terminal FLAG tag on the hGPR61 ICL3 BRIL structural construct; the C-terminus is intracellular."
+    }
+  ]
 }

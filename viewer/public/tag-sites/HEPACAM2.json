@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "HEPACAM2",
+  "uniprot_acc": "A8MVW5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:57:10.735065+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe a single construct: a C-terminal FLAG tag on full-length HEPACAM2 (NM_001039372.3), confirmed by western blot. The C-terminus of HEPACAM2 is residue 462 (E), which lies within the intracellular region (372\u2013462) as defined by the authoritative topology landmarks. This tag is therefore on the cytoplasmic face and does not qualify as an extracellular surface tag site. L2 notes that the N-terminal signal peptide region was deliberately avoided, but this is the authors' stated rationale for choosing the C-terminus \u2014 it does not constitute a published extracellular tag insertion at the mature N-terminus (residue 32) or anywhere in the extracellular domain (32\u2013350). No ledger line reports any tag insertion in the extracellular span. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 462,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length HEPACAM2; residue 462 (E) is in the intracellular region (372\u2013462), confirmed by western blot in L3; not an extracellular surface tag."
+    }
+  ]
+}

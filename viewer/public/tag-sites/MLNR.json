@@ -37,7 +37,77 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MLNR-terminal_n-0-lit",
+      "gene_symbol": "MLNR",
+      "uniprot_acc": "O43193",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed surface expression of the FLAG-tagged full-length receptor (L4/L5). Structural studies (L1) produced a cryo-EM-quality complex, indicating the receptor traffics and folds correctly with the N-terminal tag.",
+      "confidence": "high",
+      "rationale": "MLNR has no signal peptide in the canonical sequence; the N-terminus (residues 1\u201337) is extracellular per the topology landmarks. A prepend (insert_after_residue=0) places the tag immediately before M1 on the extracellular face, exactly as done in the PRESTO-TANGO constructs (L4/L5) and the structural study (L1). The position is topology-derived because neither paper names a specific residue number for the junction \u2014 the tag is at the sole extracellular terminus. The 37-residue extracellular N-terminal domain provides ample space for a short epitope tag upstream of TM1 (boundary at residue 38). PRESTO-TANGO platform (PMC4424118): full-length MLNR/GPR38 engineered with a cleavable signal sequence followed by a FLAG epitope tag at the 5\u2032-end; the signal sequence is cleaved post-translationally, leaving FLAG at the extracellular N-terminus of the membrane-anchored receptor. Anti-FLAG immunofluorescence confirmed both total and surface expression. Additionally, PMC10017046 reports a structural construct with N-terminal BRIL+FLAG+10\u00d7His prepended to full-length MTLR for cryo-EM.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:43:33.697003+00:00",
+  "literature_notes": "L2 (C-terminal LgBiT) and L3 (C-terminal EGFP on truncated constructs at \u0394385, \u0394375, \u0394369) all map to the intracellular C-terminus (topology: 359\u2013412 intracellular) and are recorded in other_positions. No ledger line supports an insertion in any extracellular loop (ECL1 97\u2013112, ECL2 178\u2013246, ECL3 321\u2013337) with a named residue or loop-level precedent, so no internal sites are proposed. L4 and L5 both ground the same N-terminal FLAG site; L4 is cited as the primary clip because it describes the construct design, and L5 confirms surface display.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 412,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "LgBiT inserted at the C-terminus of full-length MTLR (residue 412, intracellular C-tail 359\u2013412) as part of the NanoBiT strategy for structural studies; not an extracellular surface site."
+    },
+    {
+      "residue": 384,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "MTLR\u0394385 truncation: EGFP fused after residue 384 (intracellular C-tail 359\u2013412); used to study desensitization and internalization, not a surface tag site."
+    },
+    {
+      "residue": 374,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "MTLR\u0394375 truncation: EGFP fused after residue 374 (intracellular C-tail 359\u2013412); used to study desensitization and internalization, not a surface tag site."
+    },
+    {
+      "residue": 368,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "MTLR\u0394369 truncation: EGFP fused after residue 368 (intracellular C-tail 359\u2013412); used to study desensitization and internalization, not a surface tag site."
+    }
+  ]
 }

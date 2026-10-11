@@ -1,0 +1,136 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRIA1",
+  "uniprot_acc": "P42261",
+  "sites": [
+    {
+      "site_id": "GRIA1-internal-280-lit",
+      "gene_symbol": "GRIA1",
+      "uniprot_acc": "P42261",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 280,
+      "residue_before": "R",
+      "residue_after": "V",
+      "residue_label": "R280",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HaloTag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Immunofluorescence + STED microscopy: GluA1-HaloTag traffics normally to postsynaptic densities (L2). Electrophysiology: channel function not significantly altered (L3).",
+      "confidence": "high",
+      "rationale": "L1 names R280 explicitly as the insertion site within the NTD of full-length, membrane-anchored GluA1. Python confirms residue 280 = R, residue 281 = V, and position 280 lies within the first extracellular domain (19\u2013538), 259 residues from TM1. L2 and L3 independently confirm preserved trafficking and channel function, making this the highest-confidence site. HITI-mediated HaloTag knock-in at R280 in the extracellular amino-terminal domain (NTD) of full-length GluA1 expressed in neurons; high knock-in efficiency confirmed by immunofluorescence.",
+      "sources": [
+        {
+          "pmid": 39146380,
+          "citation": "PMID 39146380",
+          "claim": "We used HITI to insert HaloTag into the extracellular amino-terminal domain (NTD) of GluA1 at R280 ( Figure 1A and Figure 1\u2014figure supplement 1A ), resulting in a high knock-in efficiency ( Figure 1\u2014figure supplement 1B\u2013C )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "GRIA1-internal-396-lit",
+      "gene_symbol": "GRIA1",
+      "uniprot_acc": "P42261",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 396,
+      "residue_before": "Q",
+      "residue_after": "A",
+      "residue_label": "Q396",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface labeling of GluA1::SNAP396 confirmed; construct used as a FRET pair for surface receptor studies. No electrophysiology or trafficking assay reported in this clip.",
+      "confidence": "high",
+      "rationale": "L4 names position 396 aa explicitly as the SNAP-tag insertion site within the ATD\u2013LBD linker of full-length GluA1. Python confirms residue 396 = Q and residue 397 = A; position 396 lies within the first extracellular domain (19\u2013538), 143 residues from TM1. The paper's phrasing 'at position 396 aa' most naturally means the tag follows residue 396, placing it between Q396 and A397. Full-length GluA1 with SNAP-tag inserted within the ATD\u2013LBD linker at position 396 aa (GluA1::SNAP396); expressed in cells for surface FRET-based labeling of surface GluA1.",
+      "sources": [
+        {
+          "pmid": 34795271,
+          "citation": "PMID 34795271",
+          "claim": "To label surface GluA1, a SNAP-tag was either inserted at the N-terminus (SNAP::GluA1; no FRET expected) or within the ATD-LBD linker of GluA1 at position 396 aa (GluA1::SNAP396; potential FRET pair) (Fig. 2a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "GRIA1-terminal_n-18-lit",
+      "gene_symbol": "GRIA1",
+      "uniprot_acc": "P42261",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface labeling confirmed as extracellular epitope in neuronal expression system; no functional assay reported in this clip.",
+      "confidence": "high",
+      "rationale": "L7 explicitly states the HA tag is placed 'between the signal peptide and the amino-terminal domain' of GluA1. The signal peptide spans residues 1\u201318 (landmark-authoritative), so the junction is after residue 18 (G) and before residue 19 (A, the mature N-terminus). Python confirms residue 18 = G and residue 19 = A. L5 and L6 corroborate surface display of HA-tagged GluA1 but do not add a distinct position. L4's SNAP::GluA1 N-terminal construct also supports this same junction. Full-length GluA1 construct with HA tag inserted between the signal peptide (residues 1\u201318) and the amino-terminal domain (residue 19 onward); used as extracellular epitope for surface labeling in neurons.",
+      "sources": [
+        {
+          "pmid": 40316023,
+          "citation": "PMID 40316023",
+          "claim": "An amino-terminal hemagglutinin (HA) tag between the signal peptide and the amino-terminal domain served as the extracellular epitope."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 18,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:45:42.433008+00:00",
+  "literature_notes": "L5 (HA-GluA1 flip, live surface labeling) and L6 (GluA1(HAex) in oocytes) both confirm surface display of HA-tagged GluA1 but name no residue; they are topology_derived to the same N-terminal junction already validated by L7, so they do not constitute additional distinct sites. L4 also describes a SNAP::GluA1 N-terminal construct that maps to the same junction as L7 (after SP, before ATD); this is the same position, not a new site. L8 describes mNeonGreen fused to the cytoplasmic tail of GluA1 and is recorded in other_positions as intracellular.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 906,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "mNeonGreen appended to the cytoplasmic tail of GluA1(Q); intracellular C-terminus (residues 827\u2013906), not accessible from the extracellular face."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MFRP",
+  "uniprot_acc": "Q9BY79",
+  "sites": [
+    {
+      "site_id": "MFRP-terminal_c-579-lit",
+      "gene_symbol": "MFRP",
+      "uniprot_acc": "Q9BY79",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 579,
+      "residue_before": "P",
+      "residue_after": "",
+      "residue_label": "P579",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the paper does not report a functional or surface-expression assay for the tagged construct in the cited clip.",
+      "confidence": "medium",
+      "rationale": "MFRP is a type II single-pass TM protein: the N-terminus (1\u201369) is intracellular, the TM spans 70\u201390, and the entire C-terminal ectodomain (91\u2013579) is extracellular. A C-terminal tag therefore lands on the extracellular face, 489 residues from the TM boundary, well beyond the \u22653-residue minimum. The paper names no specific residue; because there is exactly one extracellular C-terminus, the junction is unambiguously after residue 579 (topology_derived). Python confirms residue 579 = P and residue 578 = Q. Mouse MFRP is a close ortholog of human MFRP, so this counts as indirect evidence for the equivalent human junction. Full-length mouse MFRP (close ortholog of human MFRP) with a C-terminal 3\u00d7FLAG epitope tag cloned into a pTwist Lenti SFFV lentiviral expression vector; the construct is membrane-anchored and full-length, not a secreted ectodomain.",
+      "sources": [
+        {
+          "pmid": 40249779,
+          "citation": "PMID 40249779",
+          "claim": "The cDNAs of mouse MFRP (full length and deletion variants) with C-terminal 3\u00d7 FLAG epitope in the pTwist Lenti SFFV vector were obtained from Twist Biosciences."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:38:55.486632+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a C-terminal 3\u00d7FLAG tag on full-length mouse MFRP in a lentiviral vector \u2014 a genuine membrane-anchored tagged construct. No functional or surface-expression data are cited in the clip, so validation_level is not_measured. No internal-loop or N-terminal tag evidence exists in the ledger; no other sites are proposed. The N-terminus of MFRP (residues 1\u201369) is intracellular and therefore not a surface-tag candidate.",
+  "literature_rejected": []
+}

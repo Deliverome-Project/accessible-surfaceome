@@ -1,0 +1,110 @@
+{
+  "has_data": true,
+  "gene_symbol": "KIAA0319",
+  "uniprot_acc": "Q5VV43",
+  "sites": [
+    {
+      "site_id": "KIAA0319-internal-None-lit",
+      "gene_symbol": "KIAA0319",
+      "uniprot_acc": "Q5VV43",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "residues 156-183 (domain 3-18 deletion junction)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger quote describes construct design only; no explicit functional or surface-expression assay result is reported for hKAd3-18 in the cited clip.",
+      "confidence": "medium",
+      "rationale": "The hKAd3-18 construct retains the TM domain and is therefore membrane-anchored; the HA tag sits in the extracellular domain at the junction where domains 3-18 (residues ~156-183) were deleted, placing it 773-800 residues from the TM boundary. The ledger names the region but not a single residue, so insert_after_residue is left null per the rules for a named-region site. Residues 156 (Y) and 183 (T) are confirmed from the numbered sequence. This is ranked below the L4 site because no functional assay result is reported and the construct is a deletion variant rather than full-length. In PMC5905272, the hKAd3-18 deletion construct (domains 3-18 deleted, TM and intracellular domain retained, membrane-anchored) carries an N-terminal HA tag (YPYDVPDYA) inserted at the junction corresponding to residues 156-183 of full-length KIAA0319. The ledger places the HA insertion within this extracellular region; no single residue is named.",
+      "sources": [
+        {
+          "pmid": 28334068,
+          "citation": "PMID 28334068",
+          "claim": "For hKAd3-18, this sequence includes an N-terminal HA ( bold ) tag ( YPYDVPDYA RPED). e Residues derived from the vector sequence including the C-terminal tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "KIAA0319-terminal_n-20-lit",
+      "gene_symbol": "KIAA0319",
+      "uniprot_acc": "Q5VV43",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "C",
+      "residue_after": "A",
+      "residue_label": "C20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot and conditioned-medium assay: introduction of N-terminal HA tag does not affect C-terminal cleavage; cleaved fragments detected normally in conditioned medium. Anti-HA antibody detects normal expression levels of the surface-displayed protein.",
+      "confidence": "high",
+      "rationale": "KIAA0319 is a single-pass type I membrane protein with signal peptide residues 1-20 and extracellular domain 21-955. An N-terminal HA tag must be placed after signal peptide cleavage (insert_after_residue=20) to avoid being cleaved off; residue 20 is C and residue 21 is A, confirmed by reading the numbered sequence. The tag is 935 residues from the TM boundary (956), well clear of any structural constraint. L4 explicitly states the N-terminal HA tag does not affect C-terminal cleavage, and L6 corroborates surface expression via anti-HA staining of the non-permeabilized construct. Full-length KIAA0319 with an N-terminal HA tag expressed in mammalian cells (PMC3000997). The signal peptide spans residues 1-20; the HA tag is placed after cleavage, at the mature N-terminus (residue 21). The same N-terminal HA construct was used in a dual-tagged (N-HA + C-myc) experiment (L6) where anti-HA confirmed normal surface expression.",
+      "sources": [
+        {
+          "pmid": 20943657,
+          "citation": "PMID 20943657",
+          "claim": "D , introduction of N-terminal HA tag does not affect C-terminal cleavage and allows detection of cleaved fragments in conditioned medium."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:59:23.390648+00:00",
+  "literature_notes": "L1 (C-terminal V5) and L2/L5 (C-terminal myc-His/myc+His) all place tags on the intracellular C-terminus (residues 979-1072) and are recorded in other_positions. L3 is antibody epitope mapping of a native extracellular epitope \u2014 no tag was inserted \u2014 and is disqualified entirely. L6 (dual N-HA + C-myc construct) corroborates the L4 N-terminal HA site but does not add a new site; the C-myc portion is intracellular and is captured under L2/L5. Y995 (mentioned in L6 as a cleavage-regulating residue) is in the intracellular domain (979-1072) and is not a surface tag site. The L7 site is grounded in a deletion construct (hKAd3-18), not full-length KIAA0319, but the construct is membrane-anchored and the HA tag is extracellular, so it qualifies as an internal site with region-level precision only.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1072,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal V5 tag on full-length KIAA0319 (pcDKAV); the C-terminus (residues 979-1072) is intracellular, so this tag is cytoplasmic, not a surface tag."
+    },
+    {
+      "residue": 1072,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal myc-His tag on full-length KIAA0319 (pcD4KAm); same intracellular C-terminus as L1."
+    },
+    {
+      "residue": 1072,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal myc+His tag on full-length KIAA0319 overexpressed in 293T cells; C-terminus is intracellular (979-1072)."
+    }
+  ]
+}

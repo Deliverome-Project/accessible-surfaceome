@@ -1,0 +1,41 @@
+{
+  "has_data": false,
+  "gene_symbol": "ELFN1",
+  "uniprot_acc": "P0C7U0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:26:46.271708+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminal tag fusions on ELFN1 \u2014 Venus (L1, L2), myc (L3), and GFP via pEGFPN1 (L4) \u2014 appended after the last residue of the intracellular domain (residue 828) or at truncation junctions within the intracellular domain (\u0394439 through \u0394734). ELFN1 is a type-I single-pass transmembrane protein with its C-terminus (residues 439\u2013828) entirely intracellular. No ledger line reports a tag on the extracellular domain (residues 28\u2013417) or at the mature N-terminus (residue 28). The extracellular domain is a large leucine-rich repeat ectodomain, but no insertion into it is evidenced by any ledger line. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 828,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Venus fused at the intracellular C-terminus of full-length ELFN1 (ELFN1-Venus); construct traffics to membrane but tag faces the cytoplasm."
+    },
+    {
+      "residue": 828,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "myc tag appended at the intracellular C-terminus of full-length ELFN1 (ELFN1-myc); used as backbone for all truncation constructs."
+    },
+    {
+      "residue": 828,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GFP fusion via pEGFPN1 on full-length mouse Elfn1; tag is intracellular."
+    },
+    {
+      "residue": 438,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "ELFN1\u0394439-Venus truncates the intracellular domain entirely and fuses Venus at the TM/intracellular boundary (residue 438, last TM residue); tag remains on the cytoplasmic face."
+    }
+  ]
+}

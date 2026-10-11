@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ITFG1",
+  "uniprot_acc": "Q8TB96",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:25:11.910226+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe a single construct: full-length ITFG1 carrying a C-terminal Myc tag (OriGene RC204773), expressed in MDA-MB-231 cells and confirmed to traffic to the cell surface. ITFG1 is a type I single-pass transmembrane protein: signal peptide residues 1\u201333 are cleaved, the large ectodomain spans residues 34\u2013565, the TM helix spans 566\u2013590, and the short cytoplasmic tail spans 591\u2013612. The C-terminus (residue 612) therefore sits on the intracellular face. The Myc tag is intracellular and does not qualify as an extracellular surface tag site. No ledger line reports a tag at the mature N-terminus (after residue 33), in any extracellular loop, or at any internal extracellular junction. Because the ledger provides no evidence for an extracellular tag insertion, zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 612,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal Myc tag on full-length ITFG1 confirmed to reach the cell surface, but the C-terminus (residues 591\u2013612) is intracellular per topology; the tag faces the cytoplasm, not the extracellular space."
+    }
+  ]
+}

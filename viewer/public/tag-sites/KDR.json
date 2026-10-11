@@ -1,0 +1,66 @@
+{
+  "has_data": true,
+  "gene_symbol": "KDR",
+  "uniprot_acc": "P35968",
+  "sites": [
+    {
+      "site_id": "KDR-terminal_n-19-lit",
+      "gene_symbol": "KDR",
+      "uniprot_acc": "P35968",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HaloTag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "VEGF-stimulated VEGFR2 activation assay: HaloTag did not interfere with VEGFR2 activation by its ligand VEGF (L4). Surface display confirmed by cell-impermeable dye labeling (L5).",
+      "confidence": "high",
+      "rationale": "VEGFR2 has exactly one extracellular terminus: the mature N-terminus beginning at residue 20 (after signal-peptide cleavage at residue 19). The paper reports a full-length, membrane-anchored construct with HaloTag placed at the N-terminus; no residue number is stated, but topology leaves only one possible extracellular junction (after residue 19, A\u2192A). The same paper explicitly shows that a C-terminal HaloTag failed to reach the cell surface (L3), confirming the N-terminus is the sole viable extracellular attachment point. Python confirms residue 19 = A and residue 20 = A, 745 residues from the TM boundary. Full-length VEGFR2 (Halo-FLR2) with HaloTag fused at the N-terminus via an EPTTEDLYFQSDN(AIA) linker, expressed using an IL-6 secretion signal in place of the native signal peptide; construct expressed in mammalian cells and confirmed on the cell surface by cell-impermeable HaloTag ligand labeling.",
+      "sources": [
+        {
+          "pmid": 42332882,
+          "citation": "PMID 42332882",
+          "claim": "Additionally, we verified that the Halo tag on FLR2 did not interfere with VEGFR2 activation by its ligand VEGF."
+        },
+        {
+          "pmid": 38242992,
+          "citation": "PMID 38242992",
+          "claim": "To this end, we expressed ENG, NRP1 or VEGFR2 carrying an extracellular epitope tag (myc or HA) in COS7 cells (the system used to characterize the lateral diffusion of ENG and its interactions with TGF-\u03b2 receptors 30 , 49 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:57:32.764508+00:00",
+  "literature_notes": "All seven ledger lines converge on a single extracellular junction: the mature N-terminus of VEGFR2 after signal-peptide cleavage (after residue 19). L1\u2013L5 (PMC13384206) document a HaloTag N-terminal fusion with explicit VEGF-activation and surface-labeling validation. L6\u2013L7 (PMC10799020) document an independent myc/HA N-terminal fusion with signaling and FRAP validation. No ledger line supports any internal extracellular loop insertion for KDR. The C-terminal HaloTag failure (L3) is recorded in other_positions. No residue number is stated in any clip, so both sites are topology_derived: VEGFR2 has exactly one extracellular terminus (N-terminus, residue 20), making the junction unambiguous.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1356,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal HaloTag fusion (ECTM-Halo) could not express on the cell surface; the C-terminus (residue 1356) is intracellular per topology, so this is not a viable extracellular tag site."
+    }
+  ]
+}

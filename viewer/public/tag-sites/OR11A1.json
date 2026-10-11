@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR11A1-terminal_n-0-lit",
+      "gene_symbol": "OR11A1",
+      "uniprot_acc": "Q9GZK7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HaloTag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface expression quantified (HaloTag labelling); odorant-evoked signaling efficacy measured (cAMP assay). Signaling was preserved across constructs; surface expression and signaling showed no correlation across orthologs, confirming both were independently assessed and the tag did not abolish function.",
+      "confidence": "high",
+      "rationale": "The IL-6-HaloTag-pFN210A vector places HaloTag N-terminally on the full-length receptor; after IL-6 SP cleavage the HaloTag is extracellular. OR11A1 has no native signal peptide, so its M1 is the first residue of the mature protein and the tag prepends at position 0 (insert_after_residue=0, residue_after=M). No ledger line names a specific residue number, but the extracellular N-terminus (residues 1\u201326, 27 aa from TM1) is the only surface terminus available, making the junction topology-derived. L4 confirms both surface expression and signaling were measured in the same study. OR11A1 full-length coding sequence was cloned into the IL-6-HaloTag-pFN210A expression plasmid, which supplies an N-terminal IL-6 signal peptide followed by HaloTag immediately upstream of the OR11A1 ORF; the construct was expressed in HEK-293 cells. After IL-6 signal-peptide cleavage, HaloTag is the extracellular N-terminal moiety preceding OR11A1 residue M1. The N-terminus (residues 1\u201326) is the sole extracellular terminus of OR11A1; TM1 begins at residue 27 (F), leaving 27 residues of clearance. Signaling efficacies of OR11A1 and its orthologs were measured alongside cell-surface expression of the HaloTag-tagged constructs.",
+      "sources": [
+        {
+          "pmid": 38955350,
+          "citation": "PMID 38955350",
+          "claim": "Amplicons were Eco RI/ Not I-digested (#R6017/#R6435; Promega, Madison, USA), ligated with T4-DNA ligase (#M1804; Promega, Madison, USA) into the expression plasmid IL-6-HaloTag-pFN210A, 58 and verified by Sanger sequencing (Eurofins Genomics, Ebersberg, Germany) using vector internal primers ( Table S3 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:32:07.911708+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same experimental system: OR11A1 (human) and its orthologs expressed as full-length receptors with an N-terminal IL-6 signal peptide + HaloTag via the IL-6-HaloTag-pFN210A plasmid in HEK-293 cells. No ledger line names a specific residue junction; the position is topology-derived from the single extracellular N-terminus. No internal loop insertions, C-terminal tags, or alternative sites are reported in the ledger. The three other extracellular loops (ECL1 85\u201398, ECL2 168\u2013197, ECL3 263\u2013270) have no ledger-grounded insertion evidence and are therefore not proposed as sites. HaloTag (~33 kDa) is substantially larger than the 13\u201323 aa ALFA-tag range specified, but it is the tag the ledger supports; the validated junction is the deliverable.",
+  "literature_rejected": []
 }

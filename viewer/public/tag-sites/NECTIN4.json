@@ -137,6 +137,43 @@
       "plddt": 81.1,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NECTIN4-terminal_n-31-lit",
+      "gene_symbol": "NECTIN4",
+      "uniprot_acc": "Q96NY8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection by anti-FLAG antibody confirmed extracellular display in CHO cells; no functional assay (ligand binding, signalling) reported.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201331 (authoritative landmark), so the mature extracellular N-terminus begins at residue 32. The paper describes a FLAG tag at the 'N-terminal region' of a membrane-anchored full-length construct but names no specific residue; because there is exactly one extracellular N-terminus (after SP cleavage at residue 31), the junction is unambiguously insert_after_residue = 31. Python verification confirms residue 31 = A and residue 32 = G, consistent with the numbered sequence. The tag position is 318 residues from the TM boundary (TM starts at 350), well clear of any TM constraint, and no N-glycosylation motif or disulfide cysteine falls at position 32. Full-length human NECTIN4 (ectodomain residues 32\u2013351 plus TM/IC residues 350\u2013510) with a FLAG tag at the 'N-terminal region' was cloned into pcDNA3.1(+) and transiently transfected into CHO cells; surface expression was confirmed via the extracellular FLAG epitope.",
+      "sources": [
+        {
+          "pmid": 41101504,
+          "citation": "PMID 41101504",
+          "claim": "DNA sequences expressing full-length human nectin-4 (residues 32\u2013351), D1 domain (residues 32\u2013144), and D2D3 domain (residues 148\u2013349), each with transmembrane/intracellular domain (residues 350\u2013510) and FLAG tag at the N-terminal region, were synthesized, cloned into pcDNA3.1 (+), and transiently transfected into CHO cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -252,5 +289,12 @@
       "canonical_residue": 32,
       "left_pct": 6.102362204724409
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:59:19.381647+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It supports a single N-terminal FLAG-tagged full-length NECTIN4 construct with confirmed surface display in CHO cells. The paper uses the phrase 'N-terminal region' without naming a residue, so the junction is topology-derived (after the signal peptide, residue 31/32). No internal loop insertions, C-terminal tags, or intracellular positions are reported in the ledger. The six extracellular cysteines (C52, C127, C171, C223, C270, C315) are noted as likely disulfide-bonded within the three Ig-like domains; none is at or adjacent to the tagged junction.",
+  "literature_rejected": []
 }

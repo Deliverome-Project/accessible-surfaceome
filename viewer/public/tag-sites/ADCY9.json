@@ -413,5 +413,44 @@
       "canonical_residue": 264,
       "left_pct": 19.51219512195122
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:06:08.425956+00:00",
+  "literature_notes": "ADCY9 (adenylate cyclase type 9) has a cytoplasmic N-terminus (residues 1\u2013115, INTRACELLULAR per landmarks) and a cytoplasmic C-terminus (residues 997\u20131353, INTRACELLULAR). Every tag reported in the ledger falls at one of these two intracellular termini: L1 (FLAG N-term), L2 (HA N-term + FLAG C-term), L3 (HA N-term), L4 (HA N-term), L5 (GFP C-term), L6 (muGFP C-term), L7 (GFP C-term), L8/L9 (miniTurbo-FLAG C-term), L10 (YFP-twinStrep C-term, bovine ortholog). L11 describes a chimeric construct (AC9 N-terminal tail M1\u2013L105 fused to AC5) rather than a tag insertion into full-length AC9, and the AC9 fragment used (residues 1\u2013105) is itself intracellular. L12 is the same N-terminal HA construct as L3/L4. No ledger line reports a tag insertion in any of the six extracellular loops of AC9 (ECL1: 137\u2013141, ECL2: 196\u2013217, ECL3: 264\u2013280, ECL4: 808\u2013818, ECL5: 885\u2013891, ECL6: 938\u2013977). Zero extracellular surface sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag (MDYKDDDDK-GA) inserted at the N-terminus of full-length human AC9; the N-terminus (residues 1\u2013115) is intracellular per topology landmarks, so this tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminally HA-tagged AC9 expressed in striatal MSNs and visualized by confocal microscopy; the N-terminus is intracellular, so the HA tag is cytoplasmic despite the protein localizing to cilia and endosomes."
+    },
+    {
+      "residue": 1353,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "AC9-GFP (C-terminal GFP fusion) expressed in MSNs; the C-terminus (residues 997\u20131353) is intracellular per topology landmarks, so the GFP tag faces the cytoplasm."
+    },
+    {
+      "residue": 1353,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "FLAG-tag and miniTurbo (mT) fused to the C-terminus of full-length AC9 for proximity labeling in cardiomyocytes; the C-terminus is intracellular, so both tags face the cytoplasm."
+    },
+    {
+      "residue": 1353,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "Bovine AC9 expressed with a C-terminal YFP-twinStrep tag for structural studies; the C-terminus is intracellular in both bovine and human AC9."
+    }
   ]
 }

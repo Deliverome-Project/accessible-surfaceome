@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HRH2-terminal_n-0-lit",
+      "gene_symbol": "HRH2",
+      "uniprot_acc": "P25021",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "NLuc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Saturation binding assay with fluorescent ligands at live HEK293T cells stably expressing NLuc-H2R: binding was measurable and saturable, confirming functional surface expression of the tagged receptor.",
+      "confidence": "high",
+      "rationale": "HRH2 has no native signal peptide; the topology landmarks place residues 1\u201318 as extracellular and TM1 beginning at residue 19 (I), giving 18 residues of extracellular N-terminus. An N-terminal prepend (insert_after_residue=0) is the only extracellular terminus available on this GPCR, so the NLuc fusion must occupy this position. Python verification confirms residue_after = M (position 1) and an 18-residue buffer to TM1, well above the 3-residue minimum. This site is additionally corroborated by four independent ledger lines (L1: FLAG+8\u00d7His in Sf9; L3: bungarotoxin-binding site fusion; L4: FLAG for purification; L6: HA tag confirmed by flow cytometry), all reporting N-terminal tags on full-length membrane-anchored H2R. Full-length human H2R stably expressed in HEK293T cells as an NLuc-H2R N-terminal fusion protein; live-cell saturation binding experiments with fluorescent ligands confirmed surface display of the tagged receptor.",
+      "sources": [
+        {
+          "pmid": 32764682,
+          "citation": "PMID 32764682",
+          "claim": "To investigate the suitability of the synthesized fluorescent ligands ( 8 \u2013 10 ) for their use in the BRET-based binding assay, saturation binding experiments were performed at live HEK293T cells, stably expressing the NLuc-H 2 R fusion protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:01:56.159141+00:00",
+  "literature_notes": "All five qualifying ledger lines (L1, L3, L4, L5, L6) converge on the same junction: an N-terminal prepend before M1 (insert_after_residue=0). L5 was chosen as the primary supporting clip because it provides the highest validation level (live-cell binding assay confirming both surface display and ligand-binding function). L6 (HA tag, flow cytometry) independently confirms surface display. L1 (FLAG+8\u00d7His, Sf9 insect cells), L3 (bungarotoxin-binding site, TEV-cleavable), and L4 (FLAG, purification) further corroborate the same position at lower validation levels. No ledger line supports any insertion in ECL1 (78\u201392), ECL2 (157\u2013180), or ECL3 (257\u2013270). L2 describes an intracellular C-terminal LgBiT fusion (after A308 truncation) and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 308,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "LgBiT fused at the C-terminus of H2R after truncation at A308; residue 308 falls within the intracellular C-terminal tail (topology landmarks: intracellular 292\u2013359), so this is not a surface tag site."
+    }
+  ]
 }

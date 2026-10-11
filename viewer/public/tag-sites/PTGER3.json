@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGER3-terminal_n-0-lit",
+      "gene_symbol": "PTGER3",
+      "uniprot_acc": "P43115",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Subcellular localization determined by anti-HA antibody staining (Alexa Fluor 488 secondary); protein expression verified. No functional assay (ligand binding, cAMP) reported in the cited clips.",
+      "confidence": "medium",
+      "rationale": "PTGER3 is a Class A GPCR with no signal peptide; the topology landmarks place residues 1\u201353 extracellular and TM1 beginning at residue 54. The ledger phrase 'before the EP3 common region' designates the shared N-terminal/TM portion common to all EP3 isoforms, so the tag is prepended before residue 1 (insert_after_residue = 0). This is the sole extracellular terminus of the protein, making the position topology_derived. The prepend site is 53 residues from the TM1 boundary, well within the \u22653-residue clearance requirement. Full-length EP3 receptor isoforms were HA-tagged and expressed in CHO cells (PMC3832896). The tag was inserted 'before the EP3 common region' of each isoform using QuikChange site-directed mutagenesis; constructs were used to verify expression and determine subcellular localization by anti-HA immunofluorescence.",
+      "sources": [
+        {
+          "pmid": 24062570,
+          "citation": "PMID 24062570",
+          "claim": "The hemagglutinin (HA) tag was inserted before the EP3 common region of each isoform using the QuikChange site-directed mutagenesis kit (Stratagene, La Jolla, CA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -64,5 +101,12 @@
       "left_pct": 0.267379679144385,
       "note": "Isoform surface expr 1086 (+59% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:48:38.875062+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same HA-tagging experiment from PMC3832896; L1 is the primary evidence for the construct design, L2/L3 for the expression/localization readout. No residue number is named in any clip, but PTGER3 has exactly one extracellular terminus (N-terminus, residues 1\u201353, no signal peptide), so the position is unambiguously topology_derived as a prepend (insert_after_residue = 0). The three other extracellular regions (ECL1 113\u2013131, ECL2 198\u2013227, ECL3 308\u2013327) have no ledger support and are not proposed. Validation is surface_only because the clips report subcellular localization by immunofluorescence but cite no functional assay.",
+  "literature_rejected": []
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRF5",
+  "uniprot_acc": "Q8IZF2",
+  "sites": [
+    {
+      "site_id": "ADGRF5-terminal_n-21-lit",
+      "gene_symbol": "ADGRF5",
+      "uniprot_acc": "Q8IZF2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "V5 ICC: surface/membrane localisation of WT-V5 and H991A-V5 are similar (L2). Separately, FLAG-tagged mouse GPR116 (L1) supports Gq/11-coupled IP responses indistinguishable from untagged controls, indicating the N-terminal tag does not disrupt receptor function.",
+      "confidence": "medium",
+      "rationale": "ADGRF5 has a large N-terminal ectodomain (residues 22\u20131013) and an intracellular C-terminus; the mature N-terminus after SP cleavage at residue 21 is the only extracellular terminus available for a surface tag. Python confirmed residue 21 = A and residue 22 = A, placing the junction at insert_after_residue = 21. L2 directly confirms extracellular V5 display by ICC on the full-length human receptor; L1 (mouse ortholog, indirect) confirms the N-terminally FLAG-tagged full-length receptor is functionally competent for Gq/11 signalling, together supporting surface_and_function. Full-length human GPR116 (ADGRF5) bearing a V5 tag was transiently expressed in HEK293 cells; V5 immunocytochemistry confirmed membrane/surface localisation of the tagged wild-type receptor. No residue is named in the clip; the C-terminus (residues 1270\u20131346) is intracellular per topology, leaving the mature N-terminus (after SP cleavage at residue 21) as the sole extracellular terminus. L1 (FLAG-tagged mouse GPR116 ortholog, full-length) independently shows the tagged receptor supports Gq/11-dependent IP signalling, providing corroborating functional evidence for the same junction.",
+      "sources": [
+        {
+          "pmid": 36073784,
+          "citation": "PMID 36073784",
+          "claim": "( B ) Transient expression of V5-tagged H991A in HEK293 cells shows no cleavage at the GPS site by Western blot compared to the wild-type receptor; membrane localization by V5 immunocytochemistry shows similar localization of WT-V5 and H991A-V5."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:11:36.609617+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2). Neither names an explicit residue for the tag insertion; both describe full-length GPR116 constructs whose only extracellular terminus is the mature N-terminus (after SP cleavage at residue 21), making topology_derived the correct position_evidence. L1 uses mouse GPR116 (indirect ortholog evidence) and demonstrates functional Gq/11 signalling of the FLAG-tagged receptor. L2 uses human GPR116 and confirms surface display by V5 ICC. Because both clips converge on the same unique extracellular terminus, they support a single site rather than two. No internal loop insertions, intracellular tags, or function-abrogating insertions are reported in the ledger; other_positions is therefore empty. H991 mentioned in L2 is the GPS autoproteolysis site studied as a point mutation, not a tag-insertion site, and is not promoted into sites.",
+  "literature_rejected": []
+}

@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR4-terminal_n-0-lit",
+      "gene_symbol": "HTR4",
+      "uniprot_acc": "Q13639",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ebBRET assay (L3): DuET 5-HT4R recruits p11-RLuc to the plasma membrane (CAAX-rGFP reporter), statistically significant vs. pcDNA control (P<0.05, one-way ANOVA). Membrane IP (L2): construct recovered from membrane lysate by 1D4 antibody pull-down, confirming membrane-anchored expression.",
+      "confidence": "high",
+      "rationale": "HTR4 has no signal peptide (per-residue topology begins 'O' at residue 1; EC1 spans 1\u201319); the N-terminus is extracellular and is the only extracellular terminus of this 7-TM receptor. The DuET construct places a FLAG tag at the N-terminus, which by topology can only be at insert_after_residue=0 (prepend before M1). Python confirms seq[0]='M' and TM1 begins at residue 20, leaving 19 residues of extracellular N-terminal space well clear of the TM boundary. The construct is functional: ebBRET demonstrates p11 membrane recruitment indistinguishable from the assay's positive benchmark. FLAG-5HT4R-1D4 (DuET construct) expressed in HEK293T cells; N-terminal FLAG tag on full-length, membrane-anchored HTR4. No signal peptide (topology begins extracellular at residue 1); the N-terminus is the sole extracellular terminus, making insert_after_residue=0 the only possible surface position. Construct used in membrane immunoprecipitation (L2) and ebBRET p11 membrane-recruitment assay (L3).",
+      "sources": [
+        {
+          "pmid": 42814836,
+          "citation": "PMID 42814836",
+          "claim": "We used dual epitope-tagged (DuET) ( 20 ) versions of these receptors, engineered to contain N-terminal FLAG and C-terminal 1D4 epitope tags, alongside a p11 construct containing tandem C-terminal OLLAS epitope tags."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -63,6 +100,27 @@
       "canonical_residue": null,
       "left_pct": 0.24330900243309003,
       "note": "Isoform surface expr 5955 (+0% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:06:32.848121+00:00",
+  "literature_notes": "All five ledger lines derive from a single paper (PMC13626081). L1\u2013L3 describe the same FLAG-5HT4R-1D4 DuET construct; L1 is used as the primary supporting clip because it introduces the construct. L4 describes a C-terminal NLuc variant (replacing 1D4); both C-terminal tags fall in IC4 (residues 316\u2013388, intracellular) and are recorded in other_positions. L5 describes chimeric 5-HTR constructs with no new junction information. No ledger line names a specific residue for the FLAG insertion; the position is topology_derived from the sole extracellular terminus. No internal extracellular loop insertions are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 388,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 epitope tag in the DuET construct; residue 388 (T) lies in IC4 (316\u2013388, intracellular) and is not accessible from the extracellular face."
+    },
+    {
+      "residue": 388,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal NanoLuciferase (NLuc) tag replacing the 1D4 tag via Gibson assembly; same intracellular C-terminus (IC4: 316\u2013388), not a surface site."
     }
   ]
 }

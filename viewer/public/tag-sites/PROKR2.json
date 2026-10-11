@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PROKR2-terminal_n-0-lit",
+      "gene_symbol": "PROKR2",
+      "uniprot_acc": "Q8NFJ6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "2xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface trafficking to plasma membrane confirmed in CHO cells (L1, PMC8414166). Signaling function NOT MEASURED in L1. Caution: L4 (PMC8872787, different paper, different construct) reports that N-terminal 3xFLAG-3xHA tags on PROKR2 abolish MAPK/Egr1-luciferase signaling in HEK293T cells; the 2-HA tag in L1 is smaller and from a different study.",
+      "confidence": "low",
+      "rationale": "PROKR2 is a GPCR with an extracellular N-terminal domain (residues 1-53, 53 residues clear of TM1 at position 54) and an intracellular C-terminus (residues 336-384). L1 reports a full-length, membrane-anchored PROKR2 N-terminally fused to 2-HA tags expressed in CHO cells, with surface trafficking confirmed. Because the C-terminus is intracellular, the N-terminal prepend (insert_after_residue=0) is the only extracellular terminus and the position is topology-derived. Confidence is low because L4 (a separate paper) shows that a larger N-terminal tag (3xFLAG-3xHA) abolishes PROKR2 signaling, raising concern that any N-terminal tag may perturb function. Full-length PROKR2 N-terminally fused to 2-HA tags expressed in CHO cells (PMC8414166); construct used to assess importance of N7 and N27 glycosylation for receptor trafficking. The N-terminus (residues 1-53) is extracellular per topology landmarks; C-terminus is intracellular, leaving the N-terminal prepend as the sole extracellular terminus. No specific residue number is named in L1; position is topology-derived.",
+      "sources": [
+        {
+          "pmid": 34483834,
+          "citation": "PMID 34483834",
+          "claim": "To assess the importance of glycosylation at N7 and N27 of PKR2 for receptor trafficking, PKR2, PKR2-N7Q, PKR2-N27Q, and PKR2-N7/27Q N-terminally fused to 2-HA tags were transfected in CHO cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:44:56.014934+00:00",
+  "literature_notes": "L2 (PMC8872787) reports a cell-surface biotinylation assay for PROKR2-3xHA constructs but does not specify whether the 3xHA tag is at the N- or C-terminus independently of L3; L3 clarifies that both N-terminal and C-terminal 3F3H constructs were made. L4 (PMC8872787) explicitly shows that C-terminal 3F3H PROKR2 is functional (MAPK signaling preserved) while N-terminal 3F3H PROKR2 is non-functional. The C-terminal tag site (residue 384) is intracellular and is recorded in other_positions. L5 (PMC8872787) describes immunostaining of PROKR2-3F3H in COS-7 cells, consistent with L3/L4 findings. No ledger line supports an internal extracellular loop insertion for PROKR2. The N-terminal site (L1) is reported with low confidence given the conflicting functional data from L4.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 384,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal 3xFLAG-3xHA (3F3H) tag on PROKR2; C-terminus is intracellular (residues 336-384 per topology landmarks); tag is functional for MAPK/Egr1 signaling (L4) but faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

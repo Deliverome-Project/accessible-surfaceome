@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OXGR1-terminal_n-0-lit",
+      "gene_symbol": "OXGR1",
+      "uniprot_acc": "Q96P68",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "MYC",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "45Ca2+ influx assay in Xenopus oocytes: MYC-OXGR1 increased baseline Ca2+ influx and further responded to 1 mM \u03b1-ketoglutarate (\u03b1KG) vs. uninjected controls \u2014 function fully preserved (L2, PMC9294391). Surface display confirmed by confocal immunofluorescence and immunoblot (L1, PMC9294391).",
+      "confidence": "high",
+      "rationale": "OXGR1 is a GPCR with no signal peptide; residues 1\u201334 form the extracellular N-terminus and residues 306\u2013337 are intracellular, leaving exactly one extracellular terminus. The 'MYC-OXGR1' naming convention universally denotes an N-terminal fusion in GPCR literature, placing the tag before M1 (insert_after_residue=0). Python verification confirms residue 1 = M and TM1 begins at residue 35, giving 34 residues of extracellular buffer \u2014 well beyond the \u22653-residue minimum. Two independent papers (L4, L5) with different tags (Flag; Flag+BRIL) at the same N-terminal position further corroborate this junction. MYC-OXGR1 full-length construct expressed in Xenopus oocytes (PMC9294391); no residue number stated. OXGR1 carries no signal peptide (raw topology begins 'O', residues 1\u201334 are extracellular); the C-terminus (306\u2013337) is intracellular. Exactly one extracellular terminus exists, so the N-terminal prepend is the only position consistent with 'MYC-OXGR1'. Corroborated by L4 (Flag tag, HA-SP-driven N-terminal display, PMC13372822) and L5 (Flag+BRIL N-terminal fusion on full-length receptor, PMC13507345).",
+      "sources": [
+        {
+          "pmid": 35851763,
+          "citation": "PMID 35851763",
+          "claim": "MYC\u2010tagged OXGR1 was detectable at or near the oocyte surface by confocal immunofluorescence microscopy (Figure 1a and b ) and by immunoblot analysis (Figure 1c )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:05:34.901012+00:00",
+  "literature_notes": "All five ledger lines converge on the same N-terminal prepend junction (insert_after_residue=0). L1 and L2 (same paper, PMC9294391) provide surface detection and functional validation respectively for the MYC-tagged construct; L3 is the construct-injection description for the same experiment. L4 (PMC13372822) and L5 (PMC13507345) independently corroborate N-terminal tagging of full-length OXGR1 with Flag and Flag+BRIL respectively. Because all lines pin the identical junction, this is one site reported once, with L1 as the primary clip. No ledger line names any residue number, so position_evidence is topology_derived throughout. The intracellular C-terminus (306\u2013337) is not a surface-tag site and is not promoted to sites[]. No ledger line reports an insertion that abrogates function or targets an intracellular loop.",
+  "literature_rejected": []
 }

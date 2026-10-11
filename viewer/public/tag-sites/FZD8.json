@@ -37,7 +37,52 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD8-terminal_n-27-lit",
+      "gene_symbol": "FZD8",
+      "uniprot_acc": "Q9H461",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry (anti-V5): robust surface signal detected. Wnt3a and Wnt5a treatment specifically reduced V5-FZD8 surface levels, demonstrating that the tagged receptor undergoes ligand-induced endocytosis and is functionally regulated.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201327 (computed from topology landmarks); the mature N-terminus begins at residue 28. Inserting after residue 27 places the tag at the extracellular N-terminus, 250 residues from TM1 (well beyond the \u22653-residue constraint). Python confirmed residue 27 = A and residue 28 = A. L3 explicitly states 'V5 tag added to the amino terminus of each FZD after the signal peptide', pinning the junction to exactly this position. L1, L2, L4\u2013L8 independently corroborate the same junction with V5 or HiBiT tags across multiple cell lines and two independent laboratories. HEK293A and Huh7 cells stably expressing V5-FZD8, with the V5 tag placed at the amino terminus of full-length FZD8 explicitly after the signal peptide (residues 1\u201327); surface display confirmed by flow cytometry with anti-V5 antibody across multiple cell lines.",
+      "sources": [
+        {
+          "pmid": 41070826,
+          "citation": "PMID 41070826",
+          "claim": "To investigate whether Wnt induces endocytosis and degradation of FZD receptors, HEK293A cells stably expressing each of the ten V5-FZDs (with the V5 tag added to the amino terminus of each FZD after the signal peptide) were treated with control, Wnt3a-conditioned or Wnt5a-conditioned medium (CM), and the FZD levels on the cell surface were examined via flow cytometry with an anti-V5 antibody."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 27,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:00:22.902908+00:00",
+  "literature_notes": "All eight ledger lines (L1\u2013L8) converge on a single junction: an N-terminal tag placed after signal-peptide cleavage (after residue 27). L3 and L4 carry the most explicit position statement ('after the signal peptide') with V5 tags; L1, L2, and L8 report HiBiT-FZD8 constructs at the same N-terminal position (topology-derived, no residue stated independently). L5, L6, and L7 provide additional surface and functional validation for V5-FZD8. Because all lines pin the same junction, this is one site, not multiple. No internal loop insertions (ECL1, ECL2, ECL3) are reported anywhere in the ledger for FZD8, so no internal sites are proposed. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
 }

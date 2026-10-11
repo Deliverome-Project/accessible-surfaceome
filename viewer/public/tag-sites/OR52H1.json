@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR52H1-terminal_n-0-lit",
+      "gene_symbol": "OR52H1",
+      "uniprot_acc": "Q8NGJ2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG 8 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell surface immunofluorescence with anti-Flag antibody on non-permeabilized HEK 293T cells confirmed membrane-associated surface expression; olfactory receptor ligand-binding or signalling function was NOT MEASURED in this assay.",
+      "confidence": "medium",
+      "rationale": "OR52H1 is a GPCR-type olfactory receptor with no signal peptide; the topology landmarks place EC1 at residues 1\u201326, making the N-terminus extracellular. A prepend (insert_after_residue=0) places the tag before M1, with 26 aa of EC1 providing a buffer before TM1 begins at residue 27\u2014well beyond the \u22653-residue TM-clearance constraint. The ledger (L1\u2013L3, PMC3698168) documents N-terminal Flag tags on full-length, membrane-anchored ORs including OR52H1 family members, with surface display confirmed by live-cell immunofluorescence; L3 further shows the 8-aa Flag tag alone is sufficient for surface trafficking. Because no specific residue number is named in the ledger, the junction is topology-derived: for a GPCR N-terminus there is exactly one extracellular terminus, so insert_after_residue=0 is the unique valid position. PMC3698168 cloned olfactory receptors (including OR52H1 family members) with N-terminal Flag tags in full-length, membrane-anchored constructs expressed in HEK 293T cells; L3 specifically shows that two-thirds of Lucy-tagged ORs reach the cell surface with chaperones bearing only the 8-aa Flag tag on the mature protein, without the Rho tag.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "In fact, two-thirds of Lucy-tagged ORs are able to reach the cell surface synergistically with chaperones even when the Rho tag is removed (10/15 ORs), allowing for the potential assessment of OR function with only an 8-amino acid Flag tag on the mature protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:52:14.835005+00:00",
+  "literature_notes": "Three ledger lines (L1, L2, L3) all derive from the same paper (PMC3698168) and all describe N-terminal Flag tagging of full-length membrane-anchored olfactory receptors, with OR52H1 family members explicitly included. No ledger line describes an internal loop insertion, a C-terminal tag, or any insertion in EC2 (89\u201399), EC3 (167\u2013195), or EC4 (264\u2013275) of OR52H1 or a close ortholog; those loops therefore yield no sites. The C-terminus (IC4: 297\u2013314) is intracellular and cannot carry a surface tag. Confidence is medium rather than high because the ledger clips refer to 'OR52H1 family members' rather than naming OR52H1 itself by accession, making this indirect evidence; no specific residue number is cited, so position_evidence is topology_derived. The FLAG tag (8 aa, DYKDDDDK) is shorter than the 13\u201323 aa ALFA-tag range specified in the prompt, but it is the tag the ledger supports; the site geometry (26 aa EC1 buffer) is fully compatible with a longer ALFA-tag insert at the same junction.",
+  "literature_rejected": []
 }

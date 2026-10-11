@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNA4",
+  "uniprot_acc": "P22459",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:34:31.931092+00:00",
+  "literature_notes": "The single ledger line (L1) confirms that a full-length, membrane-anchored rat Kcna4 (Kv1.4) construct carrying an extracellular HA tag was used in PMC10828548. This qualifies as real evidence of a tolerated extracellular epitope tag on an ortholog of KCNA4. However, the clip names neither a residue nor a specific loop for the HA insertion. KCNA4 has both its N-terminus (residues 1\u2013307) and C-terminus (residues 558\u2013653) on the intracellular face, so there is no extracellular terminus from which topology_derived positioning could be applied (that rule requires exactly ONE extracellular terminus). The protein has three extracellular loops (ECL1: 328\u2013372, ECL2: 418\u2013449, ECL3/P-loop turret: 500\u2013535), but the ledger line names none of them. Because no residue is cited, no loop is named, and no extracellular terminus exists, the position is entirely unresolvable from the ledger. Inventing a junction within any of the three loops would be 'inferred' positioning without even a loop-level anchor \u2014 which the rules prohibit. The correct answer is therefore zero qualifying sites. A future ledger line naming the specific loop or residue (e.g., the S1\u2013S2 linker, as is conventional for Kv1-family extracellular HA tags) would unlock this site.",
+  "literature_rejected": []
+}

@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "CNNM2",
+  "uniprot_acc": "Q9H8M5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:54:39.009506+00:00",
+  "literature_notes": "Six ledger lines were evaluated. L1 and L2 (PMC8248058) place a FLAG-tag at the very N-terminus of full-length CNNM2, upstream of the signal peptide (residues 1\u201360). The paper's own immunofluorescence data show that this FLAG is undetectable in wild-type cells because the signal peptide is correctly processed and the tag is co-translationally cleaved \u2014 it is a signal-peptide processing reporter, not a surface tag. L2 additionally places an HA-tag at the C-terminus; L3 (PMC10959950) places a FLAG-tag at the C-terminus; L6 (PMC12547303) places a mCherry-HA fusion after residue 875. All three C-terminal tags land in the large intracellular domain (residues 391\u2013875) and do not qualify as extracellular surface tags. L4 (PMC7843133) and L5 (PMC8248058) describe HA-tagged mouse CNNM2 constructs but neither clip states the residue position of the HA insertion \u2014 the tag position is unstated and cannot be pinned, so no site can be derived. The large extracellular domain (residues 61\u2013259) and the short extracellular loops (335\u2013341, 380) are topologically available but no ledger line reports a tolerated insertion within them. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 875,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG-tag (L3) and C-terminal mCherry-HA fusion (L6) are both placed after residue 875, which lies within the large intracellular domain (residues 391\u2013875); not accessible on the extracellular face."
+    },
+    {
+      "residue": 875,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Mouse CNNM2 (residues 1\u2013875)-mCherry-HA fusion appends mCherry and HA after the intracellular C-terminus; confirmed intracellular by topology."
+    }
+  ]
+}

@@ -52,5 +52,26 @@
       "left_pct": 0.2044989775051125,
       "note": "Isoform surface expr 123 (-76% vs canonical)"
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:26:20.169295+00:00",
+  "literature_notes": "All nine ledger lines (L1\u2013L9) report C-terminal 1D4 epitope tags (TETSQVAPA or the 8-aa rhodopsin C-terminal peptide) appended to the full-length melanopsin/OPN4 protein. The authoritative topology places the entire C-terminal region of OPN4 intracellularly (residues 354\u2013478), so every one of these tags faces the cytoplasm, not the extracellular surface. No ledger line reports a tag on the extracellular N-terminus (residues 1\u201372), in any of the four extracellular loops (ECL1: 130\u2013144; ECL2: 210\u2013236; ECL3: 322\u2013330), or at any other extracellular position. L2 describes a chimeric tail-swap beginning at residue 457Q (also intracellular), not an epitope-tag insertion. L5 covers zebrafish orthologs with C-terminal 1D4 tags (intracellular). L6\u2013L8 cover chimeric RHO/OPN4 constructs whose 1D4 tags are likewise C-terminal and intracellular; the surface immunolabelling in L7\u2013L8 detects the opsin transmembrane body via anti-rhodopsin antibodies, not an extracellular tag. Because no ledger line grounds an extracellular insertion, the correct answer is zero surface sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 478,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 epitope tag appended after the last residue (M478) of full-length human OPN4; the entire C-terminal tail (354\u2013478) is intracellular per topology, so this tag faces the cytoplasm, not the extracellular surface. Functional BRET assays confirmed the tagged protein is expressed and functional."
+    },
+    {
+      "residue": 457,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Chimeric hOPN4 construct replaces the C-terminal section from residue 457Q onward with the musOpn4L C-terminal tail; residue 457 is intracellular (topology 354\u2013478). This is a domain-swap, not an epitope-tag insertion, and the position is cytoplasmic."
+    }
   ]
 }

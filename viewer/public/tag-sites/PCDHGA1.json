@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHGA1",
+  "uniprot_acc": "Q9Y5H4",
+  "sites": [
+    {
+      "site_id": "PCDHGA1-internal-None-lit",
+      "gene_symbol": "PCDHGA1",
+      "uniprot_acc": "Q9Y5H4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface staining confirmed extracellular display of the Myc tag on full-length membrane-anchored PCDHGA1; no quantitative functional assay (e.g., homophilic binding, synapse formation) reported specifically for the tagged construct in L5.",
+      "confidence": "medium",
+      "rationale": "L5 (PMC12337331) and L6 (PMC12157453) both report a Myc tag placed in the extracellular stalk between EC6 and the TM helix of full-length cPCDH constructs including PCDHGA1, confirmed by surface staining; neither paper names a specific residue number, so the site is region-level. The stalk spans roughly residues 650\u2013690 (all extracellular, \u22653 residues from TM start at 693), making it sterically accessible for a short epitope tag. L5 is used as the primary clip; L6 independently corroborates the same region and approach. Full-length PCDHGA1 (and other cPCDH isoforms) expressed in mammalian cells with a Myc tag placed in the extracellular stalk between EC6 and the TM helix; surface staining of the intact membrane-anchored protein was performed to confirm extracellular display.",
+      "sources": [
+        {
+          "pmid": 40737325,
+          "citation": "PMID 40737325",
+          "claim": "For derived constructs including the Myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( SI Appendix , Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:26:03.924070+00:00",
+  "literature_notes": "L1\u2013L4 all describe C-terminal mCherry fusions (pCMV-mCherry-N1 vector = tag at the protein C-terminus, residue 931), which is deep within the intracellular domain (IC: 714\u2013931). These are intracellular tags and do not qualify as extracellular surface sites; they are recorded in other_positions. L5 and L6 describe the same stalk-region Myc insertion in identical language and do not pin separate junctions, so they constitute one site. No specific residue number is given in either L5 or L6, so insert_after_residue is null and the site is classified as region-level with position_evidence='inferred'.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 931,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mCherry fusion (pCMV-mCherry-N1) places the tag after residue 931, which is within the intracellular domain (IC: 714\u2013931); confirmed functional in neurons but not an extracellular surface tag."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRTM1",
+  "uniprot_acc": "Q86UE6",
+  "sites": [
+    {
+      "site_id": "LRRTM1-terminal_n-34-lit",
+      "gene_symbol": "LRRTM1",
+      "uniprot_acc": "Q86UE6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A34",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HRP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Synaptic cleft peroxidase activity detected at excitatory synapses, confirming surface display and proper synaptic localization of the HRP-LRRTM1 fusion; synaptogenic function not separately re-assayed in this study but synaptic cleft residency is preserved.",
+      "confidence": "high",
+      "rationale": "LRRTM1 has a signal peptide spanning residues 1\u201334 (landmarks); the mature extracellular domain begins at residue 35. An N-terminal tag must be placed after the SP cleavage site (after residue 34) to avoid being cleaved off. L3 explicitly describes 'N-terminal, extracellular-facing fusions of HRP' with full-length LRRTM1, and there is exactly one extracellular terminus (the mature N-terminus), so the junction is unambiguously insert_after_residue=34. Python confirmed residue 34 = A and residue 35 = A; the site is 393 residues from the TM boundary, well clear of any constraint. Full-length LRRTM1 was engineered with an N-terminal, extracellular-facing HRP fusion and expressed in neurons; the construct was used as a synaptic cleft peroxidase to biotinylate proteins at excitatory synapses, demonstrating surface display and correct synaptic targeting of the tagged protein.",
+      "sources": [
+        {
+          "pmid": 27565350,
+          "citation": "PMID 27565350",
+          "claim": "We therefore generated N-terminal, extracellular-facing fusions of HRP with three known glutamatergic excitatory synaptic cleft-resident proteins (Nlgn1, Lrrtm1, and Lrrtm2 ( Linhoff et al., 2009 ; Song et al., 1999 )) and two known GABAergic inhibitory synaptic cleft resident proteins (Slitrk3 and Nlgn2 ( Chih et al., 2006 ; Takahashi et al., 2012 ; Varoqueaux et al., 2004 )) ( Figure 1C )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:24:51.390369+00:00",
+  "literature_notes": "L1 and L2 both describe a C-terminal CFP fusion of full-length LRRTM1 that retains synaptogenic activity. The C-terminus of LRRTM1 is intracellular (residues 449\u2013522 per the authoritative landmarks), so this is not an extracellular surface-tag site; it is recorded in other_positions. L3 grounds the sole surface site: the N-terminal extracellular HRP fusion. No ledger line names an internal extracellular loop insertion for LRRTM1, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 522,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CFP fused to the C-terminus of full-length LRRTM1; the C-terminus (residues 449\u2013522) is intracellular per topology landmarks; synaptogenic activity was robustly preserved (L2), making this a validated intracellular tag site but not a surface tag site."
+    }
+  ]
+}

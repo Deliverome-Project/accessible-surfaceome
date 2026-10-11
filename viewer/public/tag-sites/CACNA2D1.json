@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "CACNA2D1",
+  "uniprot_acc": "P54289",
+  "sites": [
+    {
+      "site_id": "CACNA2D1-internal-568-lit",
+      "gene_symbol": "CACNA2D1",
+      "uniprot_acc": "P54289",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 568,
+      "residue_before": "N",
+      "residue_after": "D",
+      "residue_label": "N568",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "CaV current enhancement by \u03b12\u03b4-1-HA was normal compared to untagged \u03b12\u03b4-1 (L2); cell-surface HA immunostaining detected in non-permeabilized cells, reduced 47% by dominant-negative Rab11a(S25N) (L4, L5).",
+      "confidence": "high",
+      "rationale": "L1 names rat Asn-549 and Asp-550 as the HA insertion junction in full-length membrane-anchored \u03b12\u03b4-1. The rat sequence (M86621) has a shorter N-terminal region than human Q01668 (rat SP ~5 aa vs. human SP 24 aa), creating a +19 offset; Python search of the human canonical sequence finds the sole N\u2013D pair near position 549 at human N568\u2013D569, confirming the equivalent junction. Position 568 is deep in the extracellular \u03b12 domain (25\u20131073), 506 residues from the TM boundary, and the tag does not perturb CaV current enhancement or surface trafficking. Full-length membrane-anchored rat \u03b12\u03b4-1 with HA tag (YPYDVPDYA) inserted between rat Asn-549 and Asp-550 (Kadurin et al., 2012), expressed in heterologous cells together with CaV2.2 and \u03b2 subunits. A BBS tag was also inserted at the identical junction (L3). Surface expression confirmed by non-permeabilized immunostaining (L4, L5); function assessed by CaV current recording (L2).",
+      "sources": [
+        {
+          "pmid": 27782881,
+          "citation": "PMID 27782881",
+          "claim": "In some experiments Ca V 2.2 was used with an N-terminal GFP ( Macabuag and Dolphin, 2015 ), or containing an extracellular BBS tag or HA tag ( Cassidy et al., 2014 ). \u03b1 2 \u03b4-1-HA (HA-tag sequence YPYDVPDYA inserted between Asn-549 and Asp-550) ( Kadurin et al., 2012 ) and \u03b1 2 \u03b4-3-HA (HA between Lys-595 and Arg-596) were used in all imaging and other experiments except when the subunits were co-expressed with Ca V 2.2-HA in hippocampal neurons, in which case untagged \u03b1 2 \u03b4-1 or \u03b1 2 \u03b4-3 were used."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 568,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:58:33.413081+00:00",
+  "literature_notes": "All seven ledger lines (L1\u2013L7) converge on a single insertion junction: HA (and BBS, L3) between rat Asn-549/Asp-550, computed as human N568\u2013D569. No ledger line supports any other extracellular junction, an N-terminal tag (after SP cleavage at residue 24), or a C-terminal extracellular tag. L6 and L7 are additional uses of the same \u03b12\u03b4-1-HA construct and add no new junction. The +19 offset between rat and human numbering was resolved by locating the unique N\u2013D dipeptide in the human sequence nearest to rat position 549.",
+  "literature_rejected": []
+}

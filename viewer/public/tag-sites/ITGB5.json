@@ -718,10 +718,18 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:22:04.824982+00:00",
-  "literature_notes": "The ledger contains only two clips (L1, L2), both from PMC10567576, both describing 'ITG\u03b25-GFP' \u2014 a GFP-tagged integrin beta-5. The naming convention 'ITG\u03b25-GFP' (protein name first, tag second) denotes a C-terminal fusion. ITGB5 is a type I single-pass transmembrane protein whose C-terminus (residues 749\u2013799) is intracellular. A C-terminal GFP therefore sits on the cytoplasmic face, not the extracellular face. The 'surface display' language in both clips refers to the integrin itself trafficking to the plasma membrane (confirmed by co-expression with the membrane marker RFP-CaaX and accumulation at nanobar ends), not to the GFP being extracellular. Neither clip names a residue, a loop, nor any extracellular domain as the insertion point. The topology_derived rule requires that the named tag be at the one extracellular terminus; here the naming convention places the tag at the intracellular C-terminus, so topology_derived cannot rescue it. No other ledger evidence exists. Zero extracellular tag sites are supported.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T10:29:12.132382+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct from PMC10567576: 'ITG\u03b25\u2013GFP', a C-terminal GFP fusion. The en-dash notation (protein\u2013FP) is the standard cell-biology convention for a C-terminal fusion. ITGB5's C-terminus (residues 749\u2013799) is intracellular per the topology landmarks. The paper's fluorescence imaging confirms surface localization of the integrin itself, not extracellular display of GFP. No residue number is named in either line. No ledger line describes an insertion on the extracellular face (residues 24\u2013722) of ITGB5 or a close ortholog. Accordingly, zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 799,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "ITG\u03b25\u2013GFP C-terminal fusion; the C-terminus (residues 749\u2013799) is intracellular; GFP tracks integrin surface localization from the cytoplasmic side, not an extracellular tag."
+    }
+  ]
 }

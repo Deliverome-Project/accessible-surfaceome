@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR2T11-terminal_n-0-lit",
+      "gene_symbol": "OR2T11",
+      "uniprot_acc": "Q8NH01",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Rho-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FACS surface-expression assay: tagged OR2T11 reached the plasma membrane; antagonist treatment enhanced surface expression, indicating the receptor is functional enough to respond to ligands. No agonist-induced cAMP/calcium signaling assay for the tagged construct is reported.",
+      "confidence": "high",
+      "rationale": "OR2T11 is a class-A GPCR (olfactory receptor) with an extracellular N-terminus spanning residues 1\u201320 and no signal peptide (topology string shows 'O' from position 1). The paper states the Rho-tag is placed 'at the N-terminus' of the full-length receptor but names no specific residue; because exactly one extracellular terminus exists at the N-terminal end, the junction is unambiguously a prepend (insert_after_residue = 0, residue_after = M at position 1). Python inspection confirms residue 1 = M and TM1 begins at residue 21, placing the prepend \u226520 residues from any TM boundary, well within the \u22653-residue constraint. Full-length human OR2T11 was cloned into pCI with a rhodopsin tag (Rho-tag) at the N-terminus to enhance plasma membrane localization; cell surface expression of the tagged receptor was confirmed by FACS, and antagonist treatment further enhanced surface levels.",
+      "sources": [
+        {
+          "pmid": 40003926,
+          "citation": "PMID 40003926",
+          "claim": "The open reading frames of the mouse Or11g7 and human OR2T11 genes were cloned from the mouse or human genome, respectively, and subcloned into pCI (Promega, Madison, WI, USA) with a rhodopsin tag (Rho-tag) at the N-terminus, which has been previously demonstrated to enhance the plasma membrane localization of multiple ORs [ 63 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:43:19.059879+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2), both from the same publication (PMC11855683) and both describing the same N-terminal Rho-tag construct. L2 corroborates L1 by confirming FACS-measured surface expression of the tagged receptor. No ledger evidence supports insertions in any of the four extracellular loops (ECL1: 77\u201394, ECL2: 162\u2013193, ECL3: 254\u2013270) or at the C-terminus (intracellular, residues 288\u2013316). The C-terminus is intracellular and therefore excluded from surface sites. No transposon, FP-fusion, or domain-insertion screen data are present in the ledger for this protein.",
+  "literature_rejected": []
 }

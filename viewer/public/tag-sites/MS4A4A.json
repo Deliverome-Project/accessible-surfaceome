@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "MS4A4A",
+  "uniprot_acc": "Q96JQ5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:52:21.515891+00:00",
+  "literature_notes": "All three ledger lines (L1\u2013L3) describe the same GFP-MS4A4A construct cloned into pEGFP-C1, which fuses EGFP to the N-terminus of MS4A4A. The topology landmarks place the MS4A4A N-terminus (residues 1\u201364) in the intracellular compartment, and the C-terminus (residues 201\u2013239) is likewise intracellular. Both extracellular loops (ECL1: 86\u2013101, ECL2: 156\u2013185) are not addressed by any ledger line \u2014 no insertion, tag, or transposon screen is reported in either loop. The GFP fusion is therefore an intracellular N-terminal tag; it demonstrates proper plasma-membrane trafficking but does not constitute evidence for an extracellular surface tag. No ledger line grounds any extracellular tag site, so sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the N-terminus of MS4A4A via pEGFP-C1; the N-terminus (residues 1\u201364) is intracellular per topology landmarks, so GFP faces the cytoplasm, not the extracellular space. Plasma-membrane localization of the full-length fusion was confirmed (L2), but the tag is not on the surface."
+    }
+  ]
+}

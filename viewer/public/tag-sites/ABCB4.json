@@ -31,6 +31,43 @@
       "median_conservation": 0.5
     },
     {
+      "site_id": "ABCB4-internal-99-lit",
+      "gene_symbol": "ABCB4",
+      "uniprot_acc": "P21439",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 99,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S99",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Immunofluorescence in non-permeabilized cells confirmed plasma membrane localisation of mCherry-ABCB4-FLAG-WT (L4); the construct served as the wild-type reference in a functional HCS assay distinguishing total from cell-surface transporter (L2). No reduction in surface expression or transport activity relative to untagged ABCB4 is reported for the WT construct.",
+      "confidence": "high",
+      "rationale": "Python lookup confirms seq[98]='S' and seq[99]='L', exactly matching the paper's stated junction (Ser99\u2013Leu100). Position 99 lies within ECL1 (topology 76\u2013116), 24 residues from the TM1 C-boundary (75) and 18 residues from the TM2 N-boundary (117), well clear of both TM walls. The same junction is independently corroborated by L2, L4, and L5, all from full-length, membrane-anchored constructs expressed in mammalian cells. Validation is scored surface_only because plasma membrane presence is directly demonstrated by immunofluorescence; functional transport activity of the tagged WT is not explicitly quantified in the cited papers. Full-length human ABCB4 with FLAG (DYKDDDDK) inserted between Ser99 and Leu100 in the first extracellular loop (ECL1, topology span 76\u2013116), expressed in mammalian cells; construct pcDNA3-ABCB4-FLAG and its mCherry-ABCB4-FLAG-WT derivative were used for high-content screening and immunofluorescence.",
+      "sources": [
+        {
+          "pmid": 34209301,
+          "citation": "PMID 34209301",
+          "claim": "Two different constructs encoding human ABCB4 were used: pcDNA3-ABCB4, which was previously described [ 28 ], and pcDNA3-ABCB4-FLAG, a modified version of ABCB4 with a FLAG tag (DYKDDDDK) within its first extracellular loop (between Ser 99 and Leu 100), prepared by Genscript (Piscataway, NJ, USA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "ABCB4-snorkel-c",
       "gene_symbol": "ABCB4",
       "uniprot_acc": "P21439",
@@ -159,6 +196,21 @@
       "isoform_residue": 95,
       "canonical_residue": 98,
       "left_pct": 7.445141065830721
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:51:03.014099+00:00",
+  "literature_notes": "L3 and L5 describe an mCherry tag at the N-terminus of ABCB4. The topology landmarks place residues 1\u201354 in the intracellular compartment, so this N-terminal mCherry is on the cytoplasmic face and is recorded in other_positions rather than sites. L2, L4, and L5 all corroborate the same Ser99\u2013Leu100 FLAG junction already grounded in L1; they add confidence but do not define a second distinct site. No other extracellular insertion positions are named in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "mCherry fused to the N-terminus of ABCB4; topology landmarks place residues 1\u201354 in the intracellular compartment, so this tag faces the cytoplasm, not the extracellular surface."
     }
   ]
 }

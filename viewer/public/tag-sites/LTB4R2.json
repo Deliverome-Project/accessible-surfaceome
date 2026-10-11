@@ -37,7 +37,52 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LTB4R2-terminal_n-1-lit",
+      "gene_symbol": "LTB4R2",
+      "uniprot_acc": "Q9NPC1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "S",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA antibody staining of intact CHO-K1 cells (L3); ligand-binding or signalling function of the HA-tagged wild-type receptor was NOT MEASURED as a separate endpoint in the cited papers (the functional study in PMC5704194 focuses on the D196G mutant).",
+      "confidence": "high",
+      "rationale": "The PCR primer sequence in L2 unambiguously encodes Met-1 followed by the full HA nonapeptide (YPYDVPDYA) followed by Ser-2 of the native sequence, placing the junction at insert_after_residue=1. LTB4R2 is a GPCR with no signal peptide; the N-terminus (residues 1\u201322) is directly extracellular per the authoritative topology landmarks, so the tag sits on the cell surface. L3 independently confirms surface display by anti-HA staining of intact CHO-K1 cells expressing this construct. The insertion point is 22 residues from the TM1 boundary (residue 23), well above the \u22653-residue minimum. Full-length human BLT2 (LTB4R2) HA-tagged construct expressed in CHO-K1 cells. The sense primer for the HA construct (L2) encodes ATG [Met-1] then TACCCCTACGACGTGCCCGACTACGCC [HA = YPYDVPDYA] then TCGGTCTGCTACCGT [= Ser-2 Val-3 Cys-4 Tyr-5 Arg-6 of native sequence], placing the tag between residue 1 (M) and residue 2 (S). Surface expression confirmed by anti-HA antibody staining (L3).",
+      "sources": [
+        {
+          "pmid": 10934230,
+          "citation": "PMID 10934230",
+          "claim": "The inserts were amplified from the genomic clone containing a full-length BLT2 by PCR with sense (5\u2032-CGGGATCCCGCCATGTCGGTCTGCTACCGT-3\u2032 and 5\u2032-CGGGATCCCGCCATGTACCCCTACGACGTGCCCGACTACGCCTCGGTCTGCTACCGTCC-3\u2032 for wild-type and HA, respectively) and antisense (5\u2032-GGAATTCAAAGGTCCCATTCCGG-3\u2032) primers, digested with BamHI and EcoRI, and subcloned into pcDNA3 vector (Invitrogen)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 1,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:27:19.932122+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same N-terminal HA-tagged hBLT2 construct; L2 provides the definitive residue-level evidence via the primer sequence. No other insertion sites appear anywhere in the ledger. The four internal extracellular loops (ECL1: 81\u201395, ECL2: 160\u2013178, ECL3: 250\u2013271) are not supported by any ledger line and are therefore not proposed. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
 }

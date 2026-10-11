@@ -453,9 +453,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Live-cell surface labeling confirmed the HA tag is accessible on the extracellular face; receptor function (ligand binding, signaling) was NOT MEASURED in this experiment.",
+      "functional_impact_measured": "Live-cell surface labeling: HA signal detected on cell surface, confirming surface display. Functional assay not reported in this clip.",
       "confidence": "medium",
-      "rationale": "AXL is a type I single-pass transmembrane receptor (extracellular N-terminus, intracellular C-terminus). After signal-peptide cleavage at residue 25, exactly one extracellular terminus exists; a surface-displayed HA tag on the full-length construct can only reside there. Python lookup confirms residue 25 = M and residue 26 = A (the mature N-terminus), placing the junction at insert_after_residue = 25, >400 residues from the TM boundary (452). The evidence is from mouse AXL (ortholog), so position_evidence is topology_derived rather than validated. HA-tagged recombinant mouse AXL (ortholog) expressed in TAM triple-knockout MEF cells; live-cell (non-permeabilized) surface labeling confirmed extracellular display of the HA epitope on the full-length, membrane-anchored construct. No residue number is named in the clip. [validation: surface_only; position: topology_derived; source: paper; entailment_verified: True]",
+      "rationale": "AXL is a type I single-pass receptor with signal peptide spanning residues 1-25 and a single extracellular domain at residues 26-451; the mature N-terminus (residue 26, A) is the only extracellular terminus available for a surface tag. Python confirmed residue 25 = M and residue 26 = A; the tag insertion point (between 25 and 26) is 426 residues from the TM boundary (452), well clear of the >=3 residue constraint. Mouse Axl is a close ortholog of human AXL with conserved type I topology, so the N-terminal HA tag placement transfers directly. Full-length HA-tagged recombinant mouse Axl expressed in TAM TKO MEF cells; live-cell surface labeling confirmed the HA epitope is accessible on the extracellular face. The paper names no residue or loop; the tag position is inferred from topology.",
       "sources": [
         {
           "pmid": 25265470,
@@ -465,7 +465,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -1111,10 +1116,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:12:23.983928+00:00",
-  "literature_notes": "Only one ledger line (L1) is available. It reports an HA-tagged full-length mouse AXL construct with confirmed cell-surface display by live-cell staining, but names no insertion residue. AXL is a type I transmembrane receptor with a single extracellular N-terminus (after SP cleavage at residue 25); this is the only extracellular terminus, so the position is topology-derived. The evidence is from mouse AXL (a close ortholog), not human AXL, so the site is classified as 'published tag insertion in the same loop or domain' rather than an exact-site validation. No internal extracellular loop sites are proposed because the ledger provides no insertion evidence for any internal position.",
+  "generated_at": "2026-10-11T06:41:11.771529+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports HA-tagged full-length mouse Axl confirmed on the cell surface by live-cell labeling but names no residue, loop, or domain junction. AXL has exactly one extracellular terminus (mature N-terminus after SP cleavage at residue 25), making the position topology-derived rather than validated. No internal loop insertions are supported by the ledger. The paper uses mouse Axl (ortholog); the N-terminal topology is conserved in human AXL. Functional assays (ligand binding, kinase activity, signaling) were not reported for the tagged construct in this clip, so validation_level is surface_only.",
   "literature_rejected": []
 }

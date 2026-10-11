@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRIT3",
+  "uniprot_acc": "Q3SXY7",
+  "sites": [
+    {
+      "site_id": "LRIT3-terminal_n-19-lit",
+      "gene_symbol": "LRIT3",
+      "uniprot_acc": "Q3SXY7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "C",
+      "residue_after": "L",
+      "residue_label": "C19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc-BioID / APEX",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Retinal function assessed in vivo (mouse knock-in) and in AAV-mediated expression; neither the Myc-BioID nor the APEX insertion disrupted LRIT3 function. IHC confirmed surface expression of Myc-tagged \u0394LRR constructs (L2). Canine ortholog with N-terminal Myc showed correct subcellular localization (L3).",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the junction 'between codons for amino acids 19 and 20' of the LRIT3 gene, which maps to the signal-peptide cleavage site in the human canonical sequence (SP: 1\u201319; mature N-terminus: residue 20). Python confirmed residue 19 = C and residue 20 = L. The tag is placed at the extracellular mature N-terminus, 563 residues from the TM boundary, and both the BioID and APEX insertions were reported not to disrupt LRIT3 function. L2 (same paper, same residue, Myc in \u0394LRR constructs) and L3 (canine ortholog, N-terminal Myc, topology-derived same junction) independently corroborate this position. Mouse LRIT3 ortholog: Myc-tagged BioID knocked into the LRIT3 gene between codons for amino acids 19 and 20 in mice (in vivo knock-in), and APEX inserted into a full-length LRIT3 AAV construct at the same junction. Separately (L2, same paper), a Myc tag was added after amino acid 19 in \u0394LRR LRIT3 constructs for IHC detection of the membrane-anchored protein. Canine LRIT3 ortholog (L3, PMC6775105) also expressed with N-terminal Myc tag in COS1 and 661W cells, confirming surface trafficking.",
+      "sources": [
+        {
+          "pmid": 42055330,
+          "citation": "PMID 42055330",
+          "claim": "We suspect this is not the case because knock-in of a Myc-tagged BioID between codons for amino acids 19 and 20 of LRIT3 gene in mice, or insertion of APEX into a full-length LRIT3 AAV construct did not disrupt LRIT3 function ( Figs."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:16:06.015671+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) converge on the same junction: the mature N-terminus after signal-peptide cleavage (after residue 19). L1 and L2 are from the same paper (PMC13224074) and both name residue 19 explicitly; L1 is chosen as the primary supporting clip because it reports functional validation. L3 (PMC6775105, canine LRIT3) names no residue but is consistent with the same topology-derived position; it is an indirect corroborant, not a separate site. Because all three lines pin the identical junction, this is one site, not three. No ledger line supports any internal extracellular loop insertion or a C-terminal extracellular tag for LRIT3. The C-terminus (residues 604\u2013679) is intracellular and therefore excluded. No ledger line reports a function-abrogating insertion or a cytoplasmic insertion for this protein.",
+  "literature_rejected": []
+}

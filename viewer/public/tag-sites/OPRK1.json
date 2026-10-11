@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OPRK1-terminal_n-0-lit",
+      "gene_symbol": "OPRK1",
+      "uniprot_acc": "P41145",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Radioligand binding ([3H]diprenorphine, Kd 1.1 nM, Bmax 2.6 pmoles/mg) confirmed surface display; G-protein coupling and MAP kinase (ERK) phosphorylation following agonist activation confirmed downstream signaling \u2014 function preserved.",
+      "confidence": "high",
+      "rationale": "All seven ledger lines describe N-terminal tags on full-length, membrane-anchored KOR; no residue number is named in any clip, but the N-terminus is the only extracellular terminus available for a prepend tag (topology: residues 1\u201357 extracellular, no signal peptide, so residue 1 M is the mature start). Python confirmed seq[0]='M' and the TM1 boundary begins at residue 58 (seq[57]='I'), placing the prepend 57 residues from the nearest TM helix \u2014 well beyond the \u22653-residue minimum. L2 provides the strongest quantitative surface evidence (binding assay); L3 confirms G-protein and MAP kinase signaling; L4\u2013L7 independently replicate N-terminal tagging with SpH, FLAG, and HA in three cell lines. FLAG epitope tag inserted at the amino terminus of full-length rat kappa-opioid receptor (rKOR) stably expressed in HEK293 cells. [3H]diprenorphine binding confirmed surface expression (Kd = 1.1 \u00b1 0.2 nM, Bmax = 2.6 \u00b1 0.4 pmoles/mg protein). Rat KOR is a close ortholog of human OPRK1; the extracellular N-terminus is conserved in topology. Multiple independent studies (L1\u2013L7) corroborate N-terminal tagging of full-length KOR with FLAG, SpH/GFP, and HA in HEK293, PC12, and CHO cells.",
+      "sources": [
+        {
+          "pmid": 18656460,
+          "citation": "PMID 18656460",
+          "claim": "A clonal HEK 293 cell line was established that stably expressed rKOR with a FLAG tag at the amino terminus. [ 3 H]Diprenorphine bound to the epitope-tagged receptor with an apparent dissociation constant (K d ) of 1.1 \u00b1 0.2 nM, and the maximum number of binding sites (B max ) was 2.6 \u00b1 0.4 pmoles/mg protein ( Fig. 1A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,21 @@
       "canonical_residue": null,
       "left_pct": 0.3436426116838488,
       "note": "Isoform surface expr 123 (-69% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:26:48.271337+00:00",
+  "literature_notes": "All seven ledger lines converge on a single site: the extracellular N-terminus of full-length KOR (insert_after_residue=0). No ledger line names a specific residue number, so position_evidence is topology_derived \u2014 the N-terminus is the sole extracellular terminus available for a prepend. L1\u2013L3 use rat KOR (close ortholog, labelled indirect); L4\u2013L7 describe KOR without explicit species but in the same N-terminal prepend configuration. The C-terminal Venus fusion reported in L7 is intracellular (topology residues 334\u2013380) and is recorded in other_positions. No ledger line supports any internal ECL site (ECL1 120\u2013132, ECL2 197\u2013222, ECL3 297\u2013311) with a tolerated insertion, so none are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 380,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "Venus fluorescent protein fragments (VN/VC) fused to the C-terminus of full-length KOR in HEK293 cells; the C-terminus falls in the intracellular domain (topology residues 334\u2013380), making this an intracellular label, not a surface tag."
     }
   ]
 }

@@ -1,0 +1,117 @@
+{
+  "has_data": true,
+  "gene_symbol": "MRAP",
+  "uniprot_acc": "Q8TCY5",
+  "sites": [
+    {
+      "site_id": "MRAP-terminal_n-0-lit",
+      "gene_symbol": "MRAP",
+      "uniprot_acc": "Q8TCY5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 L13 describes construct synthesis for transfection; no functional or surface-expression assay result is reported in the clip.",
+      "confidence": "medium",
+      "rationale": "L13 reports N-terminal FLAG on hMRAP1a (human MRAP isoform a, this protein), grounding an N-terminal extracellular tag. Because no residue is named and there is no signal peptide, the only unambiguous junction is insert_after_residue=0 (prepend before Met-1). This is a distinct junction from the L2 site (insert_after=1, after Met). The extracellular N-terminus spans residues 1\u201337, 37 residues from the TM boundary, so steric clearance is ample. Ranked below L2 because no functional or surface-detection assay is reported. Full-length human hMRAP1a and hMRAP1b were commercially synthesized with an N-terminal FLAG tag for transfection experiments (L13). No residue number is stated; the N-terminus (residue 1, Met) is extracellular per the canonical topology (residues 1\u201337 extracellular, no signal peptide), so the tag prepends before Met-1.",
+      "sources": [
+        {
+          "pmid": 35204745,
+          "citation": "PMID 35204745",
+          "claim": "N-terminal myc-tagged hMC3R and N-terminal Flag-tagged hMRAP1a, hMRAP1b, hMRAP2a, hMRAP2b, and hMRAP2c were commercially synthesized by Synbio Technologies (Monmouth Junction, NJ, USA) to generate the plasmids used for transfection."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "MRAP-terminal_n-1-lit",
+      "gene_symbol": "MRAP",
+      "uniprot_acc": "Q8TCY5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "A",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "AP (avidin-biotin acceptor peptide, 15 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ACTH-stimulated cAMP reporter assay in mammalian cells: AP\u2013MRAP supported cAMP responses comparable to unmodified MRAP (Figure 1B of PMC4947873). Function fully preserved.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the AP tag was placed 'immediately after the initiating Met' of full-length mMRAP, pinning the junction to insert_after_residue=1 (M\u2192A). The canonical human MRAP sequence has Met at position 1 and Ala at position 2, matching exactly. The extracellular span is residues 1\u201337 (37 residues to TM boundary at 38), giving ample clearance. L6 confirms functional equivalence to unmodified MRAP in a cAMP assay, making this the highest-confidence surface site. Full-length mMRAP expressed in mammalian cells with the 15-aa AP sequence (GLNDIFEAQKIEWHE) inserted immediately after the initiating Met (residue 1), yielding AP\u2013MRAP. Selective biotinylation with ER-targeted or cytoplasmic biotin ligase confirmed extracellular display of the N-terminal tag. Construct also combined with C-terminal V5\u20133xFLAG.",
+      "sources": [
+        {
+          "pmid": 27486435,
+          "citation": "PMID 27486435",
+          "claim": "AP\u2013MRAP contained the minimal AP sequence GLNDIFEAQKIEWHE immediately after the initiating Met followed by mMRAP or mMRAP\u2013V5\u20133xFlag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 1,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:49:49.316261+00:00",
+  "literature_notes": "MRAP is a single-pass type I membrane protein with a well-documented dual topology (N-out/C-in and N-in/C-out), confirmed by BiFC (L9) and biotin-ligase accessibility (L4\u2013L6). The canonical topology provided places residues 1\u201337 extracellular, TM at 38\u201360, and residues 61\u2013172 intracellular. All C-terminal tags (L1, L3, L7, L8) are therefore intracellular in the canonical orientation and are recorded in other_positions. L9 (YFP BiFC at both termini) and L10 (MRAP2 ortholog with N- and C-terminal FLAG detected on intact-cell surface) further confirm dual topology but do not change the canonical-topology classification used here. L5 mentions a Flag epitope in the AP\u2013MRAP constructs but does not specify its position independently of L2/L3, so it adds no new site. L11 and L12 report MRAP2 C-terminal FLAG by western blot only (no surface detection), providing no additional surface sites for MRAP.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 172,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "V5\u20133xFLAG appended to the C-terminus of full-length mMRAP; residue 172 (S) lies within the intracellular span (61\u2013172) of the canonical topology."
+    },
+    {
+      "residue": 172,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "AP sequence appended to the C-terminus of full-length mMRAP (MRAP\u2013AP); C-terminus is intracellular in canonical topology, confirmed by cytoplasmic biotin-ligase biotinylation."
+    },
+    {
+      "residue": 172,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "3xFLAG appended to the C-terminus of full-length human MRAP\u03b1 via p3xFLAG-CMV-14 vector; C-terminus is intracellular in canonical topology."
+    },
+    {
+      "residue": 172,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "FLAG appended to the C-terminus of full-length human MRAP\u03b1 (MRAP-FLAG); detected by immunofluorescence in permeabilized CHO cells, consistent with intracellular localisation in canonical topology."
+    }
+  ]
+}

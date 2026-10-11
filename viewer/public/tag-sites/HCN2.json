@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "HCN2",
+  "uniprot_acc": "Q9UL51",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:54:55.129781+00:00",
+  "literature_notes": "HCN2 is a six-transmembrane hyperpolarization-activated channel with both termini intracellular. The two ledger lines available are: L1 (C-terminal FLAG at residue 889, topology INTRACELLULAR 461\u2013889) and L2 (N-terminal FLAG at residue 1, topology INTRACELLULAR 1\u2013211). Both tags face the cytoplasm and are therefore not surface tag sites. The three extracellular loops \u2014 EC1 (234\u2013244, 11 aa), EC2 (309\u2013324, 16 aa), and EC3 (378\u2013440, 63 aa, the S5-pore-S6 region) \u2014 are not addressed by any ledger line. No ledger evidence supports an extracellular insertion anywhere in this protein, so sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 889,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length HCN2 used in surface biotinylation assays; residue 889 lies within the intracellular C-terminal domain (topology 461\u2013889), not on the extracellular face."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal FLAG tag on murine HCN2 in an AAV cardiac expression construct; residue 1 lies within the intracellular N-terminal domain (topology 1\u2013211), not on the extracellular face."
+    }
+  ]
+}

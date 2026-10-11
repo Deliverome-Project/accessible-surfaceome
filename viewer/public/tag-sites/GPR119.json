@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR119-terminal_n-0-lit",
+      "gene_symbol": "GPR119",
+      "uniprot_acc": "Q8TDV5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG M2-FITC staining of non-permeabilized cells; no functional (cAMP or ligand-binding) assay was reported specifically for the N-terminal FLAG tag in isolation.",
+      "confidence": "high",
+      "rationale": "GPR119 has no endogenous signal peptide in the canonical 335-aa sequence; residues 1\u20136 are extracellular and TM1 begins at residue 7. A prepend (insert_after_residue = 0) places the tag before M1 on the extracellular face, \u22656 residues from the TM1 boundary. No residue number is named in any ledger line, but the N-terminus is the only extracellular terminus of this 7-TM receptor, so the junction is unambiguous and topology-derived. Python confirmed residue_after = 'M' (seq[0]). Full-length human GPR119 (residues 1\u2013335) engineered with an exogenous HA signal peptide followed by a FLAG tag (and bRIL) at the N-terminus; after HA-SP cleavage the FLAG is displayed on the extracellular face. Cell-surface expression confirmed by incubating non-permeabilized HEK293 cells with anti-FLAG M2-FITC antibody at 4 \u00b0C (live-cell staining).",
+      "sources": [
+        {
+          "pmid": 36396650,
+          "citation": "PMID 36396650",
+          "claim": "The cell surface GPR119 expression level was detected by incubating 10 \u03bcl of cells with 10 \u03bcl of monoclonal anti-FLAG M2\u2013fluorescein isothiocyanate antibody (Sigma-Aldrich) at 4 \u00b0C for 20 min in the dark."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:24:15.514745+00:00",
+  "literature_notes": "L2 (PMC9671963) and L4/L3 (PMC10823026) also describe C-terminal FLAG/strep tags and L5 (PMC11625002) describes C-terminal LgBiT/eGFP; all C-terminal additions fall within the intracellular domain (residues 281\u2013335 per topology landmarks) and are recorded in other_positions. L3 reports surface FLAG staining for the PMC10823026 construct, which also carries an N-terminal FLAG (same architecture as L1); L3 is therefore corroborating evidence for the same N-terminal site already grounded in L1, not a separate site. L5 describes a construct with N-terminal FLAG confirmed on the surface and C-terminal LgBiT/eGFP used for BRET/NanoBiT signalling assays; the signalling assay validates receptor function but is confounded by the presence of the large bRIL fusion and cannot be cleanly attributed to the FLAG tag alone, so validation_level remains surface_only. No ledger line supports any internal extracellular loop insertion for GPR119.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 335,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "FLAG and strep tags fused after the C-terminal residue (G335); the C-terminus (residues 281\u2013335) is intracellular per topology landmarks, so these tags face the cytoplasm and cannot serve as extracellular surface labels."
+    },
+    {
+      "residue": 335,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "LgBiT and eGFP fused to the C-terminus after G335; same intracellular location as above, used for NanoBiT/BRET signalling assays rather than surface display."
+    }
+  ]
 }

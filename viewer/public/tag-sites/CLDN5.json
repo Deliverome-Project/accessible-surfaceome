@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CLDN5",
+  "uniprot_acc": "O00501",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:43:56.557256+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same experimental construct: full-length murine Cldn5 cloned into pEYFP-C1 or pmTurquoise2-C1 vectors, which append a fluorescent protein to the N-terminus of the insert. Per the authoritative topology landmarks, CLDN5's N-terminus (residues 1\u20137) is INTRACELLULAR. The FP tag therefore faces the cytoplasm, not the extracellular surface. The construct is functionally tolerated (trans-endocytosis at cell contacts was observed in MDCK-II cells), confirming the intracellular tag does not disrupt trafficking or tight-junction assembly \u2014 but it is an intracellular tag, not a surface tag. No ledger line reports any insertion in ECL1 (29\u201381), ECL2 (138\u2013160), or any other extracellular span of CLDN5. Zero extracellular surface tag sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal YFP/mTurquoise2 fusion (insert before M1) is tolerated and the tagged protein localises to cell contacts and supports trans-endocytosis in MDCK-II cells, but the N-terminus of CLDN5 (residues 1\u20137) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

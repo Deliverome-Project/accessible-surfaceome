@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD99",
+  "uniprot_acc": "P14209",
+  "sites": [
+    {
+      "site_id": "CD99-terminal_n-22-lit",
+      "gene_symbol": "CD99",
+      "uniprot_acc": "P14209",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "P",
+      "residue_after": "D",
+      "residue_label": "P22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FACS confirmed membrane-bound surface display of the myc/GFP-tagged full-length mCD99 (L3); BiFC fluorescence demonstrated that the tagged protein retains the ability to homodimerize.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the myc-tag was placed at the N-terminal end of the extracellular domain of CD99 in a full-length, membrane-anchored construct. The signal peptide spans residues 1\u201322 (authoritative landmarks), so the mature N-terminus is residue 23 (D); insert_after_residue = 22 is the unique junction satisfying this description. Python confirms residue 22 = P and residue 23 = D, and the tag site is 103 residues from the TM boundary (well above the \u22653 minimum). Surface display was independently confirmed by FACS anti-myc staining (L3), and dimerization function was preserved as shown by BiFC fluorescence. Full-length mCD99 BiFC constructs (mCD99-VN and mCD99-VC) expressed in COS7 cells carried a myc-tag epitope at the N-terminal end of the extracellular domain; no residue number is stated, but the signal peptide ends at residue 22 (P) and the mature N-terminus begins at residue 23 (D), making this the unique extracellular N-terminal junction.",
+      "sources": [
+        {
+          "pmid": 18160845,
+          "citation": "PMID 18160845",
+          "claim": "The expression of the fusion proteins of the predicted sizes was verified by western blots of the transfected cells using mAb against the myc-tag epitope that was attached to the N-terminal end of the extracellular domain of CD99 (Figure 2A)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:24:11.786791+00:00",
+  "literature_notes": "L1 describes the same BiFC constructs as L2/L3 but does not specify the GFP-half junction residue; it adds no independent site. L3 is corroborating functional/surface evidence for the L2 site, not a separate site. L4 (PMC12391334) reports rCD99WT-YFP and mutant variants introduced into Cd99\u2212/\u2212 CTL cells; the naming convention (protein-YFP) and the single-pass N-out/C-in topology of CD99 place the YFP at the intracellular C-terminus (after residue 185), which is not an extracellular surface site and is therefore recorded in other_positions. No ledger line supports an internal extracellular loop insertion for CD99.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 185,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "rCD99WT-YFP and multiple mutant variants (Cyt-Mut, TM-Mut, TJ, etc.) fused YFP to the C-terminus of full-length CD99; the C-terminus (residue 185, K) is intracellular per the authoritative topology landmarks, so this is a cytoplasmic tag, not a surface tag."
+    },
+    {
+      "residue": 185,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "BiFC constructs fused the N- and C-terminal halves of GFP (VN/VC) to full-length mCD99; with the myc-tag occupying the extracellular N-terminus (L2), the GFP halves are necessarily at the intracellular C-terminus (residue 185, K), confirmed by the single-pass N-out/C-in topology."
+    }
+  ]
+}

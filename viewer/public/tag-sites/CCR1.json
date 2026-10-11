@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCR1-terminal_n-0-lit",
+      "gene_symbol": "CCR1",
+      "uniprot_acc": "P32246",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / His8 / StrepII",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Radiolabeled competition binding assay and calcium mobilization assay both performed; chemokine binding on the extracellular surface and G-protein coupling on the intracellular surface were not hindered \u2014 values comparable to published literature (L2/L3).",
+      "confidence": "high",
+      "rationale": "CCR1 is a GPCR with no signal peptide; the N-terminus (residues 1\u201335) is fully extracellular per the provided topology landmarks. A tag prepended before M1 (insert_after_residue=0) is 35 residues from the TM1 boundary, well beyond the \u22653-residue minimum. Python verification confirms residue 1 = M and residue 35 = Q (last EC1 residue before TM1 at 36). The position is topology-derived because no specific residue number is named in the ledger \u2014 the paper states 'N-terminus' of full-length CCR1, and with no signal peptide there is exactly one extracellular N-terminal junction. Functional validation (L2/L3) confirms binding and signaling are preserved. Full-length human CCR1 expressed with HA, His8, and/or StrepII tags cloned onto the N-terminus (and/or C-terminus) in a mammalian/insect expression system (PMC2706832). CCR1 has no signal peptide; the N-terminus (residues 1\u201335) is extracellular per topology landmarks, so the tag prepends before M1. A second independent study (PMC8885419, L4) fused a FLAG tag to the same N-terminus of full-length CCR1 in pcDNA3.1.",
+      "sources": [
+        {
+          "pmid": 19275940,
+          "citation": "PMID 19275940",
+          "claim": "Nucleotides encoding HA (Hemagglutinin), His8 and/or StrepII (IBA, Germany) tags were cloned onto the N- and/or C-termini of human CCR1, CCR2, CCR3 and CCR5 constructs (see Supplementary Figure S1 for DNA sequences)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:03:06.602505+00:00",
+  "literature_notes": "L4 (PMC8885419, FLAG tag at N-terminus of full-length CCR1) independently corroborates the same N-terminal prepend junction as L1 but reports no functional assay; it does not add a second distinct site. L1 is used as the primary ledger line because it carries full functional validation (L2/L3). The C-terminal tags mentioned in L1 and L5 are intracellular and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for CCR1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 355,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA/His8/StrepII tags placed on full-length CCR1; residue 355 (F) falls in IC4 (305\u2013355), the intracellular C-tail \u2014 not a surface-tag site."
+    },
+    {
+      "residue": 327,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Rluc8 BRET fragment inserted at C-terminus of CCR1(1\u2013327); residue 327 (W) is within IC4 (305\u2013355) and is therefore intracellular \u2014 not a surface-tag site."
+    }
+  ]
 }

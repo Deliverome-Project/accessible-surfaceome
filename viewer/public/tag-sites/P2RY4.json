@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "P2RY4-terminal_n-0-lit",
+      "gene_symbol": "P2RY4",
+      "uniprot_acc": "P51582",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc (EQKLISEEDL)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Ca\u00b2\u207a imaging with 100 \u00b5M UTP: marked intracellular Ca\u00b2\u207a increase, kinetics similar to wild-type P2Y4-transfected cells; surface display confirmed by immunofluorescence showing cytoplasmic and membrane localisation.",
+      "confidence": "high",
+      "rationale": "P2Y4 has no signal peptide; the topology landmarks place residues 1\u201335 as extracellular, making the N-terminus the sole extracellular terminus available for a prepend tag. The 5\u2032-terminus Myc construct is therefore unambiguously insert_after_residue=0, with residue_after=M (residue 1). L2 and L3 confirm both surface display and preserved Gq/Ca\u00b2\u207a signalling, giving the highest validation level. Human P2Y4 cDNA cloned into pCS2 with Myc epitope tags at the 5\u2032 terminus, transiently transfected into SH-SY5Y cells. Immunofluorescence confirmed membrane localisation (L2); 100 \u00b5M UTP stimulation produced a marked Ca\u00b2\u207a increase with kinetics similar to untagged P2Y4 (L3).",
+      "sources": [
+        {
+          "pmid": 18404459,
+          "citation": "PMID 18404459",
+          "claim": "Moreover, by the use of polymerase chain reaction (PCR) with Platinum Pfx polymerase (Invitrogen, Paisley, UK), human P2Y 4 cDNA was amplified with oligonucleotides containing EcoRI and XhoI restriction sequences for the subcloning into a pCS2 plasmid containing myc epitope tags (EQKLISEEDL) at the 5\u2032 terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:11:00.321605+00:00",
+  "literature_notes": "L4/L5/L6 describe a pEGFPN1 C-terminal GFP fusion to P2Y4. The pEGFPN1 vector places GFP at the protein C-terminus (after residue 365). The topology landmarks assign residues 310\u2013365 to the intracellular compartment, so this tag faces the cytoplasm and is not a surface tag site; it is recorded in other_positions. L6 also notes that the N178T natural variant (ECL2, residue 178) shows reduced GFP fluorescence relative to WT, but this is expression-level data for a missense variant, not a tag-insertion experiment at that residue, so it does not qualify as a ledger-supported insertion site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 365,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GFP fusion (pEGFPN1) expressed in HEK-293 cells; C-terminus (310\u2013365) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

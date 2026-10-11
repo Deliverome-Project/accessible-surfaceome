@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRFN2",
+  "uniprot_acc": "Q9ULH4",
+  "sites": [
+    {
+      "site_id": "LRFN2-terminal_n-20-lit",
+      "gene_symbol": "LRFN2",
+      "uniprot_acc": "Q9ULH4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc/His (pSecTag2)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence in neurons: tagged LRFN2 localizes to dendrites and axons and is detected at the postsynapse overlapping with PSD-95 (L2, PMC5472790). Postsynaptic targeting preserved.",
+      "confidence": "high",
+      "rationale": "LRFN2 is a single-pass type I transmembrane protein with a signal peptide spanning residues 1\u201320 and a large extracellular domain from residue 21 to 534. The only extracellular terminus is the mature N-terminus beginning at residue 21; an N-terminal tag must therefore be placed after the SP cleavage site, i.e., insert_after_residue=20 (A\u2192C junction). Python verification confirms seq[19]='A' and seq[20]='C'. Two independent papers (PMC5472790 using pSecTag2 Myc/His, and PMC8296521 using mCherry) both describe N-terminal tags on full-length LRFN2 with confirmed surface display; PMC5472790 additionally demonstrates preserved postsynaptic localization and PSD-95 co-localization. L1 (PMC5472790): Full-length LRFN2 coding region inserted into N-terminally epitope-tagged pSecTag2 vector (Ig\u03ba leader + Myc/His tag), generating a membrane-anchored tagged construct expressed in neurons. L2 (same paper) confirms the tagged protein is surface-displayed in dendrites and axons, localizing to the postsynapse with PSD-95 overlap. L3 (PMC8296521) independently confirms N-terminal tagging using mCherry (LRFN1 SP\u2013mCherry\u2013LRFN2 full-length) for surface expression studies.",
+      "sources": [
+        {
+          "pmid": 28604739,
+          "citation": "PMID 28604739",
+          "claim": "The generated fragments were inserted into N-terminally epitope-tagged pSecTag2 vectors 24 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:15:50.723806+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) converge on the same N-terminal junction (insert_after_residue=20). L1 and L2 are from the same paper (PMC5472790) and together provide construct description plus functional validation; L3 (PMC8296521) is an independent paper using mCherry at the same position. No ledger line supports any internal extracellular loop insertion or C-terminal extracellular tag (the C-terminus is intracellular). No intracellular or function-abrogating positions are reported in the ledger. The pSecTag2 vector uses its own Ig\u03ba leader to drive secretion, so the LRFN2 signal peptide (1\u201320) may be replaced or rendered internal in the L1 construct; regardless, the tag ends up at the extracellular N-terminus of the mature protein. L3 uses the LRFN1 signal peptide upstream of mCherry, placing mCherry N-terminal to the LRFN2 sequence, again at the extracellular face. Both constructs are full-length and membrane-anchored, satisfying the ledger qualification criteria.",
+  "literature_rejected": []
+}

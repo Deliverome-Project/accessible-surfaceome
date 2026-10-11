@@ -427,5 +427,20 @@
       "canonical_residue": 792,
       "left_pct": 67.8082191780822
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:03:15.861923+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe a single construct: full-length human AC6 fused at its C-terminus to a 13-aa linker, miniTurbo biotin ligase, and a FLAG tag (AC6-mT-FLAG). Per the authoritative topology landmarks, the C-terminus of ADCY6 (residue 1168) lies within the intracellular span 912\u20131168; the last transmembrane helix ends at residue 911. A C-terminal tag on this protein therefore faces the cytoplasm, not the extracellular space. This insertion is recorded in other_positions. No ledger line reports any tag, fluorescent-protein fusion, transposon insertion, or any other tolerated insertion in any of the six extracellular loops of ADCY6 (EC 173\u2013177, 231\u2013236, 280\u2013284, 691\u2013695, 763\u2013811, 857\u2013895). Because the ledger provides no extracellular-face evidence, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1168,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "AC6-mT-FLAG C-terminal fusion (gene of interest \u2192 13-aa linker \u2192 miniTurbo \u2192 FLAG) is expressed and localised in cardiomyocytes, but residue 1168 (the C-terminus) is intracellular per topology landmarks (INTRACELLULAR span 912\u20131168); the tag faces the cytoplasm, not the cell surface."
+    }
   ]
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "MARCO",
+  "uniprot_acc": "Q9UEW3",
+  "sites": [
+    {
+      "site_id": "MARCO-terminal_c-520-lit",
+      "gene_symbol": "MARCO",
+      "uniprot_acc": "Q9UEW3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 520,
+      "residue_before": "V",
+      "residue_after": "",
+      "residue_label": "V520",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Confocal microscopy in HEK293T cells: full-length MARCO-Myc showed strong colocalization with VZV gE at the cell membrane; SRCR-deleted MARCO-Myc showed markedly reduced overlap, confirming the SRCR domain (and thus the full-length tagged construct) is functional for VZV gE binding. Surface trafficking and SRCR-mediated ligand binding are preserved.",
+      "confidence": "high",
+      "rationale": "MARCO is a type II transmembrane receptor (N-in, C-out); its sole extracellular terminus is the C-terminus at residue 520 (V). The 'MARCO-Myc' naming convention and the presence of Myc in both full-length and SRCR-deleted constructs (L4) together place the tag after residue 520, 455 residues from the TM boundary \u2014 well clear of the \u22653-residue constraint. L5 confirms surface display and preserved SRCR-domain function, yielding surface_and_function validation. No residue number is stated, so position_evidence is topology_derived. Full-length MARCO-Myc expressed in HEK293T cells (L4/L5, PMC13198062). The Myc tag is C-terminal: both full-length and SRCR-deleted MARCO carry the Myc tag, ruling out an internal SRCR-domain placement and placing it after the last residue of whichever construct is used; in full-length MARCO that is residue 520. MARCO is a type II single-pass TM protein with its C-terminus extracellular (residues 66\u2013520), so the C-terminal Myc is surface-exposed.",
+      "sources": [
+        {
+          "pmid": 42177488,
+          "citation": "PMID 42177488",
+          "claim": "Full-length MARCO-Myc and scavenger receptor cysteine-rich (SRCR) domain-lacking MARCO-Myc plasmids were previously reported [ 26 ]. pTargeT-VZV gE (a gift from Charles Grose; Addgene plasmid #60845) has been previously described [ 27 ], while pCMV3-hTLR2-HA plasmid was purchased from Sino Biological (HG10061-CY)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:35:22.568205+00:00",
+  "literature_notes": "L1/L2/L3 (PMC4636388) describe a GFP-MARCO construct made with the pcDNA6.2/N-EmGFP vector, which places EmGFP at the N-terminus of the cloned insert. MARCO's N-terminus (residues 1\u201347) is intracellular per the topology landmarks; therefore the GFP tag faces the cytoplasm and does not qualify as an extracellular surface site. It is recorded in other_positions. L4/L5 (PMC13198062) ground the single qualifying site: a C-terminal Myc tag on full-length MARCO that is surface-displayed and functionally competent for SRCR-mediated VZV gE binding.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "pcDNA6.2/N-EmGFP fuses EmGFP before MARCO residue 1; the MARCO N-terminus (residues 1\u201347) is intracellular, so this GFP tag is cytoplasmic and not a surface tag site."
+    }
+  ]
+}

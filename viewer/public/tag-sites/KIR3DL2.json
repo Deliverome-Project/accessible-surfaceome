@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KIR3DL2",
+  "uniprot_acc": "P43630",
+  "sites": [
+    {
+      "site_id": "KIR3DL2-terminal_n-21-lit",
+      "gene_symbol": "KIR3DL2",
+      "uniprot_acc": "P43630",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "P",
+      "residue_after": "L",
+      "residue_label": "P21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry under non-permeabilizing conditions (anti-FLAG staining without permeabilization). No functional assay (e.g., MHC-I binding, inhibitory signalling) reported for the tagged constructs.",
+      "confidence": "medium",
+      "rationale": "The ledger (L1/L2) describes full-length, membrane-anchored macaque KIR3DL constructs with a FLAG tag placed immediately after the leader peptide and before the D0 domain; surface display is confirmed by non-permeabilizing flow cytometry (L2). In KIR3DL2 the signal peptide spans residues 1\u201321 (landmarks), so the equivalent junction is after residue 21 (P) and before residue 22 (L, the mature N-terminus). Python confirms seq[20]='P' and seq[21]='L'. The position is 319 residues from the TM boundary (341), well clear of any constraint. Because the paper names the position as 'after the leader peptide' rather than a specific residue number, and the evidence is from macaque orthologs (indirect), position_evidence is topology_derived. Full-length macaque KIR3DL orthologs (KIR3DLw03*002, KIR3DL04*001, KIR3DL07*004) were engineered with an N-terminal FLAG tag inserted after the leader peptide, retaining the natural D0-D1-D2 ectodomains, transmembrane, and cytoplasmic tail, and expressed in HEK 293T cells. Surface display was confirmed by flow cytometry under non-permeabilizing conditions (L2). These are close macaque orthologs of human KIR3DL2, sharing the same domain architecture.",
+      "sources": [
+        {
+          "pmid": 39465971,
+          "citation": "PMID 39465971",
+          "claim": "Sequences for full length KIR3DLw03*002, KIR3DL04*001 and KIR3DL07*004 were obtained from IPD and plasmid constructs were engineered to encode the Mamu-KIR3DL05*008 leader peptide followed by a Flag-tag (DYKDDDDK) and the D0, D1, D2, natural transmembrane and cytoplasmic tail. cDNA fragments were synthesized (Integrated DNA Technologies) and cloned into pCGCG."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:00:33.907327+00:00",
+  "literature_notes": "Ledger lines L3 and L4 describe a tolerated insertion (36_37insFTN, higher surface expression vs. WT) and an impaired-expression mutant (N36Q) in macaque KIR3DLw03*002. The numbering is in the macaque full-length construct. Python confirms that KIR3DL2 positions 36 and 37 are S and T respectively, not N (asparagine), demonstrating that the macaque construct numbering does not map directly onto KIR3DL2 canonical numbering. Without the macaque KIR3DLw03 sequence or an explicit alignment in the ledger, the KIR3DL2-equivalent junction for 36_37insFTN cannot be determined; inventing a junction is forbidden by the rules. Accordingly, no second site is proposed from L3/L4. The N36Q impaired-expression finding likewise cannot be mapped to a KIR3DL2 residue and is omitted from other_positions for the same reason.",
+  "literature_rejected": []
+}

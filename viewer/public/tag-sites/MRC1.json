@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "MRC1",
+  "uniprot_acc": "P22897",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:49:13.795779+00:00",
+  "literature_notes": "All three ledger lines describe genomic-locus manipulations for cell-type-specific reporters or Cre drivers, not protein-level tag insertions into the MRC1 polypeptide. L1 and L2 (PMC11602655) describe an 'Mrc1 LSL-Venus-DTR knock-in construct' in which Venus and DTR are expressed from the Mrc1 genomic locus under a conditional (loxP-STOP-loxP) cassette after Cre-mediated recombination. The flow-cytometry data in L2 shows Venus and CD206 as independent axes, confirming that Venus is a separate reporter protein expressed in MRC1+ cells, not a fusion tag on the MRC1 polypeptide. No protein residue is named, and the construct does not constitute a full-length membrane-anchored MRC1 with an inserted tag. L3 (PMC12673968) describes insertion of a transgenic construct carrying iCre and eYFP into Exon 30 of the Mrc1 genomic locus to generate Mrc1-Cre driver mice; iCre and eYFP are expressed as separate proteins under the Mrc1 promoter, not fused to the MRC1 protein. None of the three lines report an epitope tag, fluorescent-protein fusion, transposon insertion, or any other tolerated insertion within the full-length, membrane-anchored MRC1 protein at any residue or loop. Zero sites qualify.",
+  "literature_rejected": []
+}

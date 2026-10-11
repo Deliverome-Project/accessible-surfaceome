@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRA1A-terminal_n-0-lit",
+      "gene_symbol": "ADRA1A",
+      "uniprot_acc": "P35348",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface labeling confirmed by SNAP PAGE imaging; protein half-life quantified by CHX-chase; agonist-stimulated functional responses measured in label-free DMR assays (cited as prior work in same system). No explicit comparison of tagged vs. untagged receptor signaling reported in this clip.",
+      "confidence": "high",
+      "rationale": "All seven ledger lines (L1\u2013L7) describe N-terminal tags on ADRA1A; the N-terminal domain (residues 1\u201325) is the sole extracellular terminus of this GPCR, so every N-terminal tag lands at insert_after_residue=0 (prepend before M1). No residue number is given in any clip, but exactly one extracellular terminus exists, making the position topology-derived. L2/L3 provide the strongest validation: SNAP-tag surface labeling in HEK293 cells confirms extracellular display. Convergent support comes from L4/L5 (FLAG after cleavable signal sequence, surface immunofluorescence confirmed) and L6/L7 (FLAG knock-in at endogenous locus). The 25-residue extracellular N-terminus is well clear of TM1 (\u226525 residues from the prepend to TM1 boundary at residue 26), and the tag is upstream of the three N-linked glycosylation sites (N7, N13, N22) so it does not occlude them. SNAP-tag fused to the N-terminal domain of full-length \u03b11A-AR/ADRA1A, transiently expressed in HEK293 cells; surface labeling performed with cell-impermeant SNAP substrate to confirm extracellular display; CHX-chase assay used to monitor receptor protein half-life.",
+      "sources": [
+        {
+          "pmid": 33402011,
+          "citation": "PMID 33402011",
+          "claim": "To begin, we examined the utility of performing SNAP-GPCR-CHX studies on the adrenergic family of GPCRs, which are clinical targets for numerous cardiovascular 26 and central nervous system disorders. 27 Our previous studies have demonstrated the utility of using SNAP-tag labeling to monitor adrenergic receptor (AR) protein expression and agonist-stimulated functional responses in label-free DMR assays. 16 Shown in Figure 1 are representative SNAP PAGE images of CHX-chase assays performed in HEK293 cells transiently expressing the \u03b1 1 -AR (\u03b1 1A -AR/ADRA1A [ Fig. 1A ], \u03b1 1B -AR/ADRA1B [ Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -75,6 +112,21 @@
       "canonical_residue": null,
       "left_pct": 0.21978021978021978,
       "note": "Isoform surface expr 743 (-65% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:18:06.720820+00:00",
+  "literature_notes": "All seven ledger lines converge on a single site: the extracellular N-terminus (insert_after_residue=0). L1 (PMC10282093) uses an exogenous HA signal peptide followed by FLAG on a truncated (1\u2013370) but membrane-anchored construct; the FLAG is still at the mature N-terminus after SP cleavage, so it maps to the same junction. L4/L5 (PMC4424118) use a cleavable signal sequence + FLAG in TANGO-ADRA1A constructs with surface expression confirmed. L6/L7 (PMC10089924) place a FLAG knock-in upstream of the endogenous coding sequence (in vivo). No ledger line supports any internal loop (ECL1, ECL2, ECL3) insertion for ADRA1A. The 8\u00d7His C-terminal tag in L1 is placed at the intracellular C-terminus (after residue 370, which falls in the intracellular domain 329\u2013466) and is recorded in other_positions. Glycosylation sites N7, N13, N22 in the N-terminal extracellular domain are downstream of the prepend position and are not disrupted by an N-terminal tag.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 370,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "The truncated \u03b11A-AR (1\u2013370) construct carries an 8\u00d7His tag at its C-terminus; residue 370 (Q) falls within the intracellular C-terminal domain (topology: intracellular 329\u2013466), so this tag faces the cytoplasm, not the extracellular surface."
     }
   ]
 }

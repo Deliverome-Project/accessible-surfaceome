@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "DGCR2",
+  "uniprot_acc": "P98153",
+  "sites": [
+    {
+      "site_id": "DGCR2-terminal_n-21-lit",
+      "gene_symbol": "DGCR2",
+      "uniprot_acc": "P98153",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "T",
+      "residue_after": "E",
+      "residue_label": "T21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct described as used to study the surface-displayed protein, implying surface expression; no explicit functional assay reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "The paper encodes DGCR2 starting at canonical residue 22 (skipping residue 21 along with the native signal peptide) and places the FLAG tag immediately before residue 22 after an artificial signal peptide. In canonical UniProt numbering this junction falls between residue 21 (T) and residue 22 (E), giving insert_after_residue = 21. Python confirmed residue 21 = T and residue 22 = E. The tag is 328 residues from the TM boundary (TM starts at 350), well within the extracellular domain and far from any TM constraint. Full-length human DGCR2 (aa 22\u2013550, native signal peptide replaced by an artificial signal peptide) was expressed with a FLAG epitope tag at the N-terminus, downstream of the artificial signal peptide, generating FLAG-hDGCR2. The construct is membrane-anchored (TM domain retained) and was used to study the surface-displayed protein.",
+      "sources": [
+        {
+          "pmid": 37480133,
+          "citation": "PMID 37480133",
+          "claim": "To generate FLAG-hDGCR2, the human DGCR2 cDNA encoding 22\u2013550 amino acids of DGCR2 without signal peptide was amplified by PCR and subcloned into pFLAG-CMV1 (Sigma, E7273) downstream of an artificial signal peptide sequence and a FLAG epitope."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 21,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:13:54.249756+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a FLAG tag at the extracellular N-terminus of full-length, membrane-anchored DGCR2 (aa 22\u2013550 with an artificial signal peptide). The construct skips native residue 21 (the mature N-terminus in the canonical sequence), placing the FLAG before canonical residue 22. No intracellular, function-abrogating, or loop-internal insertions are described in the ledger, so other_positions is empty. No additional sites beyond this one are supported by the ledger.",
+  "literature_rejected": []
+}

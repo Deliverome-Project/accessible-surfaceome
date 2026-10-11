@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR2A-terminal_n-0-lit",
+      "gene_symbol": "HTR2A",
+      "uniprot_acc": "P28223",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "epitope tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED explicitly in the clips; alleles described as 'constitutive and conditional tagged alleles' that were generated using evolutionary conservation to identify permissive sites, implying successful expression, but no explicit functional assay result is stated in the ledger clips.",
+      "confidence": "low",
+      "rationale": "L5 reports that epitope-tagged alleles of Drosophila 5-HT2A were created with the insertion at the N-terminus, explicitly analogising to mammalian GPCR N-terminal tagging strategies; L6 confirms constitutive and conditional tagged alleles were generated for Drosophila 5-HT2A using evolutionary conservation. Drosophila 5-HT2A is a recognised ortholog of human HTR2A, making this indirect evidence. Human HTR2A has no signal peptide, so the extracellular N-terminus begins at M1; a prepend (insert_after_residue=0) is the only topology-derived terminal position on the extracellular face, confirmed by Python: seq[0]='M', TM1 boundary at residue 77 leaves 76 extracellular residues. Confidence is low because the evidence is indirect (Drosophila ortholog), no residue is named, and no explicit functional validation result appears in the ledger clips. Constitutive and conditional epitope-tagged alleles of Drosophila 5-HT2A (ortholog of human HTR2A) were generated with the tag insertion placed at the N-terminus of the full-length, endogenously expressed receptor, leveraging evolutionary conservation to identify insertion-tolerant sites. Human HTR2A has no signal peptide (topology string contains no 'S'); residues 1\u201376 are extracellular and TM1 begins at residue 77, making the N-terminal prepend the sole extracellular terminus. The C-terminus (residues 383\u2013471) is entirely intracellular, so the N-terminus is the only extracellular terminal position available.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2023.12.27.573472",
+          "claim": "114 Development of constitutive and conditionally epitope-tagged GPCR alleles 115 We initially created tagged alleles for six GPCRs (5-HT1A, 5-HT1B, 5-HT2A, 5-HT7, 116 CrzR, and OAMB) where the insertion was placed at the N-terminus, similar to constructs used 117 in the past for mammalian GPCRs (Guan et al., 1992; Andersson et al., 2003; McDonald et al., 118 2007).",
+          "source_id": "DOI:10.1101/2023.12.27.573472"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:05:06.708195+00:00",
+  "literature_notes": "L1, L2, L3, and L4 all report EGFP insertion after H452 in the C-terminus of full-length human HTR2A. H452 falls within the INTRACELLULAR region 383\u2013471 (confirmed: seq[451]='H'); this is a cytoplasmic C-terminal tag, not a surface tag, so it is placed in other_positions. L2 provides the strongest validation (expression, function, and trafficking unaffected in neurons and HEK293 cells), but the intracellular location disqualifies it as a surface tag site. L5 and L6 provide indirect evidence for an N-terminal epitope tag on the Drosophila 5-HT2A ortholog; because human HTR2A has no signal peptide and its C-terminus is intracellular, the N-terminal prepend is the only topology-derived extracellular terminal site. No ledger line pins a specific residue for the N-terminal insertion, so position_evidence is topology_derived. No ledger line supports any internal extracellular loop (ECL1 134\u2013149, ECL2 213\u2013233, ECL3 349\u2013359) insertion for this protein or a close ortholog.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 452,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "EGFP inserted after H452 in the intracellular C-terminus of full-length HTR2A (residues 383\u2013471 are cytoplasmic); validated to not affect receptor expression, function, or trafficking in neurons and HEK293 cells, but the position faces the cytoplasm and is not a surface tag site."
+    }
+  ]
 }

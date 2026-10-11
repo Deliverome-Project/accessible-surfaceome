@@ -93,5 +93,26 @@
       "canonical_residue": 70,
       "left_pct": 20.114942528735632
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:44:18.846896+00:00",
+  "literature_notes": "All six ledger lines were evaluated. L1 and L2 (PMC9805020) describe a FLAG-tagged claudin-3\u0394YVF construct in which the C-terminal YV (Y219, V220) are deleted and a FLAG tag is appended; the C-terminus of claudin-3 is intracellular (residues 181\u2013220), so this is an intracellular tag, not a surface site. L4 and L5 (PMC11490706) describe 'FLAG-Cldn3', where the hyphenated prefix naming convention places FLAG at the N-terminus; the N-terminus of claudin-3 is also intracellular (residues 1\u20138), so again not a surface site. L3 (PMC13004409) describes 'CLDN3-Myc', where the suffix naming convention places Myc at the C-terminus (intracellular). L6 (PMC11490706) describes a SNAP-tagged human Cldn3 that forms TJ-like meshworks in COS-7 cells, but the ledger line names no residue and no loop \u2014 it is impossible to determine whether the SNAP tag is at the N-terminus, C-terminus, or in a loop, and neither terminus of claudin-3 is extracellular. Because no ledger line grounds a tag at an extracellular position with a pinnable residue or even a named extracellular loop, zero sites qualify. The two extracellular loops (ECL1, residues 30\u201380; ECL2, residues 137\u2013159) are structurally plausible targets but no ledger evidence supports an insertion there.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 220,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag appended at the C-terminus after deletion of Y219 and V220 (claudin-3\u0394YVF); C-terminus (181\u2013220) is intracellular, so this is not a surface tag site."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "FLAG-Cldn3 naming places FLAG at the N-terminus; the N-terminus (residues 1\u20138) is intracellular, so this is not a surface tag site."
+    }
   ]
 }

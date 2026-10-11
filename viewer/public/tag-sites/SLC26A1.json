@@ -75,9 +75,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface immunostaining of non-permeabilized Xenopus oocytes confirmed that HA-tagged WT SLC26A1 reaches the plasma membrane. No transport function assay was reported for the tagged construct itself.",
+      "functional_impact_measured": "Surface immunostaining of non-permeabilized oocytes confirmed cell-surface expression of the HA-tagged construct; transport function of the HA-tagged WT was not separately quantified in the cited paper (used as a trafficking reporter for the Leu275Pro mutant).",
       "confidence": "high",
-      "rationale": "L1 explicitly names Pro155 as the junction residue in the second extracellular loop of full-length, membrane-anchored SLC26A1, making this a validated exact-site insertion. Python confirms seq[154]='P' and seq[155]='G', consistent with the paper's statement. Position 155 sits 18 aa from the upstream TM boundary (end at 137) and 25 aa from the downstream TM boundary (start at 180), well clear of both. Two cysteines (C171, C175) and two N-glycosylation sequons (N158, N163) are present in ECL2 but are distal to the Pro155 junction; the published construct tolerated the insertion, confirming steric plausibility at this specific position. Full-length SLC26A1 (WT and Leu275Pro mutant) expressed in Xenopus oocytes; HA epitope inserted by PCR mutagenesis after Pro155 in the second extracellular loop (ECL2, topology residues 138\u2013179). Non-permeabilized oocytes were fixed with 1% PFA and immunostained with anti-HA antibody to assess cell-surface trafficking. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L1 explicitly names Pro155 as the insertion point in the second extracellular loop of full-length, membrane-anchored SLC26A1. Python verification confirms residue 155 = P and residue 156 = G, both within ECL2 (138\u2013179), 18 residues from the TM3 C-terminal boundary and 25 residues from the TM4 N-terminal boundary, well clear of the \u22653-residue TM-proximity constraint. Two cysteines (C171, C175) and two potential N-glycosylation sequons (N158, N163) lie downstream of the insertion point, not at it, so the junction itself is free of those constraints. L2 and L3 (same paper, PMC9888379) independently confirm surface display by immunostaining of intact oocytes. Full-length SLC26A1 (WT and Leu275Pro mutant) expressed in Xenopus oocytes; HA epitope inserted by PCR mutagenesis after Pro155 in the second extracellular loop (ECL2, topology residues 138\u2013179). Non-permeabilized PFA-fixed oocytes were immunostained to confirm surface display.",
       "sources": [
         {
           "pmid": 36719378,
@@ -87,7 +87,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "SLC26A1-snorkel-c",
@@ -335,10 +340,18 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:21:21.445423+00:00",
-  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same PMC9888379 study and collectively describe a single HA-tag insertion at Pro155 in ECL2 of full-length SLC26A1. L1 pins the exact residue; L2 and L3 confirm surface expression by non-permeabilized immunostaining. No functional transport assay was reported for the tagged construct, so validation_level is surface_only rather than surface_and_function. No other ledger lines support additional sites in other loops or termini of SLC26A1. The intracellular N-terminus (residues 1\u201372) and the large intracellular C-terminus (504\u2013701) are not extracellular and are not supported by any ledger evidence. ECL1 (92\u201399, 8 aa), ECL3 (229\u2013260), ECL4 (310\u2013340), ECL5 (435\u2013439, 5 aa), and ECL6 (487, 1 aa) are not mentioned in any ledger line and therefore yield no sites.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T15:12:59.806989+00:00",
+  "literature_notes": "L4 (PMID 24647542) reports FLAG tagging at the NH2 terminus of SLC26A1 with plasma-membrane localisation in HEK-293 cells. However, the topology landmarks place residues 1\u201372 in the intracellular compartment (no signal peptide; first TM helix begins at 73). A FLAG prepended to Met1 therefore faces the cytoplasm, not the extracellular surface. This site is recorded in other_positions as intracellular. L2 and L3 are from the same paper as L1 and corroborate the same Pro155 junction; they do not introduce an independent site. No other ledger lines support additional extracellular insertion sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "FLAG tag placed at the NH2 terminus of full-length SLC26A1; topology landmarks assign residues 1\u201372 to the intracellular face (first TM helix 73\u201391), so this tag is cytoplasmic, not extracellular."
+    }
+  ]
 }

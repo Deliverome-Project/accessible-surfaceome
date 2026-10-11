@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "CNTNAP2",
+  "uniprot_acc": "Q9UHC6",
+  "sites": [
+    {
+      "site_id": "CNTNAP2-terminal_n-27-lit",
+      "gene_symbol": "CNTNAP2",
+      "uniprot_acc": "Q9UHC6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "T",
+      "residue_after": "A",
+      "residue_label": "T27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface expression confirmed by surface labelling in HEK293T cells (Supplementary Fig. 1b); full-length ~170 kDa protein detected by anti-HA WB, indicating correct folding and trafficking. Proteolytic-cleavage assays performed on this construct, showing the tagged protein is functional as a substrate for ADAM10/ADAM17, consistent with preserved ectodomain structure.",
+      "confidence": "high",
+      "rationale": "The ledger (L1/L2/L3) explicitly states the HA tag is placed after the signal peptide of full-length membrane-anchored CNTNAP2. Python lookup confirms SP ends at residue 27 (T) and the mature extracellular chain begins at residue 28 (A), so insert_after_residue=27 is the exact junction. The construct was confirmed on the cell surface and used in functional cleavage assays, satisfying surface_and_function validation. Distance to TM boundary (residue 1263) is >1200 residues, so steric constraints are trivially met. Full-length human CNTNAP2 (1\u20131331 aa) expressed as pRK5-HA-CNTNAP2-Flag in HEK293T cells; HA tag inserted immediately after the signal peptide (SP residues 1\u201327), placing it at the mature extracellular N-terminus (residue 28 onward). Cell-surface expression confirmed by surface biotinylation/immunofluorescence; full-length ~170 kDa band detected by anti-HA, anti-FLAG, and anti-CNTNAP2 antibodies on western blot.",
+      "sources": [
+        {
+          "pmid": 37271769,
+          "citation": "PMID 37271769",
+          "claim": "To investigate whether CNTNAP2 undergoes proteolytic cleavage, plasmid pRK5-HA-CNTNAP2-Flag (CNTNAP2 with an HA tag after signal peptide (SP) and a Flag tag at the C-terminus; Supplementary Fig. 1a , upper) was transfected into HEK293T cells, CNTNAP2 was expressed on the cell surface (Supplementary Fig. 1b )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 27,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:58:54.394927+00:00",
+  "literature_notes": "Three ledger clips (L1, L2, L3) all describe the same dual-tagged construct. L2 is the primary citation for surface confirmation; L1 and L3 corroborate the same junction and the same construct. The C-terminal FLAG tag (after residue 1331) is intracellular (topology: 1284\u20131331) and is recorded in other_positions. No internal extracellular loop insertions are reported in the ledger for CNTNAP2; no other sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1331,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag fused to the C-terminus of full-length CNTNAP2 (residue 1331); the C-terminus lies within the intracellular domain (residues 1284\u20131331), making this an intracellular label, not a surface tag."
+    }
+  ]
+}

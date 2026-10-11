@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADAM23",
+  "uniprot_acc": "O75077",
+  "sites": [
+    {
+      "site_id": "ADAM23-terminal_n-59-lit",
+      "gene_symbol": "ADAM23",
+      "uniprot_acc": "O75077",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 59,
+      "residue_before": "S",
+      "residue_after": "S",
+      "residue_label": "S59",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by immunostaining (L1); surface-display imaging in neurons confirmed (L2). No direct assay of ADAM23 catalytic or ligand-binding function reported in either clip.",
+      "confidence": "medium",
+      "rationale": "ADAM23 has a single extracellular terminus: the mature N-terminus beginning at residue 60 (after signal-peptide cleavage at residue 59). Because neither L1 nor L2 names a residue or a loop, topology_derived applies and the junction is uniquely insert_after_residue = 59 (residue S \u2192 S). Python confirmed residue 59 = S and residue 60 = S, and the junction sits 734 residues from the TM boundary, well clear of any steric constraint. L2's pHluorin construct independently corroborates this extracellular N-terminal placement, since pHluorin must be on the extracellular face to report surface versus endosomal localisation. L1 (PMC3086669): full-length ADAM23 carrying an HA-tag was transfected into HEK293 cells and shown to be surface-displayed by immunostaining with patient anti-LGI1 antibodies. No residue or loop is named. L2 (PMC11156761) independently reports a CaMKII-ADAM23-pHluorin construct (Addgene #185539) used for surface-display imaging in neurons; pHluorin must be extracellular to function as a surface reporter. ADAM23 is a type I single-pass TM protein (SP 1-59, EC 60-793, TM 794-814, IC 815-832) with exactly one extracellular terminus, so the junction is uniquely determined.",
+      "sources": [
+        {
+          "pmid": 20580615,
+          "citation": "PMID 20580615",
+          "claim": "HEK293 cells were transfected with plasmids containing ADAM22 or ADAM23 (both constructs containing an HA-tag), or co-transfected with LGI1 and ADAM22 or LGI1 and ADAM23."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:01:10.318145+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2). Neither names a specific residue or loop; both are consistent with a single topology-derived N-terminal extracellular junction (insert_after_residue = 59). L2 uses a large pHluorin (~240 aa) rather than a short epitope tag, but it independently validates the extracellular N-terminal face for fusion. No internal loop insertions are supported by the ledger. The intracellular C-terminus (815-832) is not a surface-tag site and is not listed in other_positions because neither clip reports a cytoplasmic insertion or a function-abrogating insertion.",
+  "literature_rejected": []
+}

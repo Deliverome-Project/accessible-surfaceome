@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "NTRK2",
+  "uniprot_acc": "Q16620",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:20:48.783072+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct: full-length mouse TrkB with a FLAG epitope tag appended to its C-terminus, used in HEK293 cells for biochemical characterization of the Y434C TM-domain mutation. The C-terminus of NTRK2 falls entirely within the intracellular domain (residues 455\u2013822 per the authoritative topology landmarks). This is therefore an intracellular tag, not an extracellular surface tag, and the site is recorded in other_positions. No ledger line supports a tag insertion anywhere in the extracellular domain (residues 32\u2013433), at the mature N-terminus (after residue 31), or in any extracellular loop. The ledger contains no transposon-insertion screen, fluorescent-protein fusion, or any other modality grounding an extracellular site for NTRK2. Zero qualifying sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 822,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG epitope tag appended to the C-terminus of full-length mouse TrkB (residue 822); the C-terminus is intracellular (topology residues 455\u2013822), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGDR2-terminal_n-0-lit",
+      "gene_symbol": "PTGDR2",
+      "uniprot_acc": "Q9Y5Y4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "BRIL",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cryo-EM structure of the BRIL-PTGDR2 complex was determined, confirming proper folding and membrane insertion; surface expression of the HA-mDP2 ortholog confirmed by immunofluorescence (anti-HA and MAb-1D8 staining). No ligand-binding or signalling functional assay reported for the tagged constructs.",
+      "confidence": "high",
+      "rationale": "PTGDR2 has a 33-residue extracellular N-terminal domain (topology landmarks 1\u201333) followed by TM1 at residue 34, giving 33 residues of clearance from the TM boundary \u2014 well above the \u22653-residue minimum. The N-terminus is the only extracellular terminus of this 7-TM GPCR, so a tag reported at 'the N-terminus' of the full-length receptor can only sit at insert_after_residue=0 (prepend before M1). Python confirmed residue 1 = M and residue 34 = A. L3 and L4 both directly report BRIL at the N-terminus of human PTGDR2 in full-length membrane-anchored constructs used for structural studies; L5/L6 independently confirm surface display of an N-terminal tag on the mouse ortholog. PMC11665870 (L3) reports a BRIL tag introduced at the N-terminus of full-length, membrane-anchored human PTGDR2 (DP2), with C-terminal residues 349\u2013395 truncated, for cryo-EM structural studies. A second construct in the same paper (L4) adds a prolactin signal peptide before the BRIL and an LgBiT at the C-terminus. No residue number is named for the junction; PTGDR2 has exactly one extracellular terminus (residues 1\u201333), so the tag prepends before residue 1 (M). Indirect corroboration from PMC5386288 (L5/L6): an HA-tagged mouse DP2 ortholog showed plasma-membrane surface staining by immunofluorescence identical to anti-HA staining, confirming extracellular display of an N-terminal tag on this receptor.",
+      "sources": [
+        {
+          "pmid": 39665758,
+          "citation": "PMID 39665758",
+          "claim": "First, a BRIL tag was introduced at the N terminus of DP2, and the C-terminal residues 349 to 395 were truncated ( 24 , 25 ) ( SI Appendix , Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:49:22.895134+00:00",
+  "literature_notes": "L1 and L2 (PMC6223628) report eT4L/mT4L domain insertions into ICL3 of CRTH2 (=PTGDR2) between residues R236 and R238. The topology landmarks place ICL3 at residues 232\u2013247 (intracellular); these insertions are cytoplasmic and do not qualify as surface tag sites \u2014 recorded in other_positions. L4 also reports an LgBiT fused to the C-terminus of PTGDR2; the C-terminus (residues 309\u2013395) is intracellular per the topology landmarks and is likewise recorded in other_positions. No ledger line grounds a tag in any of the three extracellular loops (ECL1 90\u2013106, ECL2 169\u2013210, ECL3 270\u2013288), so no internal sites are proposed. L5/L6 describe HA-tagged mouse DP2 with confirmed surface staining but name no residue and no loop; since the N-terminus is the only extracellular terminus, this collapses onto the same topology_derived prepend already grounded by L3.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 236,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eT4L inserted into ICL3 between R236 and R238 of CRTH2/PTGDR2 for crystallization; ICL3 (232\u2013247) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 238,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "mT4L inserted into ICL3 of CRTH2/PTGDR2 (same loop, same paper); residue 238 (R) is within the intracellular ICL3 span 232\u2013247."
+    },
+    {
+      "residue": 395,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "LgBiT fused to the C-terminus (after residue 395, S) of full-length PTGDR2; the entire C-terminal tail (309\u2013395) is intracellular per topology landmarks."
+    }
+  ]
 }

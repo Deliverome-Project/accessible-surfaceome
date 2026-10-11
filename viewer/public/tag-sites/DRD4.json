@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "DRD4-terminal_n-0-lit",
+      "gene_symbol": "DRD4",
+      "uniprot_acc": "P21917",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by M1 anti-FLAG labeling of non-permeabilized HEK293T cells (L2/L4); BRET/NanoBiT assay demonstrates the receptor is functional at the cell surface (L1); TANGO assay (a GPCR activation reporter) confirms surface expression and receptor activation competence (L5/L6).",
+      "confidence": "high",
+      "rationale": "DRD4 has no endogenous signal peptide; its N-terminus (residues 1\u201333) is extracellular per the topology landmarks. All six N-terminal tag clips add an exogenous cleavable signal peptide upstream of a FLAG or HA tag; after SP cleavage the tag is displayed at the extracellular face immediately before residue M1, making insert_after_residue=0 the only possible junction. Python confirmed residue 1 is M and TM1 begins at residue 34, placing the tag 33 residues from the nearest TM boundary. No specific residue number is cited in any clip, but for a GPCR the N-terminus is the sole extracellular terminus, so the position is topology-derived rather than inferred. Full-length D4R (D4.4R) expressed in HEK293 cells with an exogenous cleavable HA signal peptide followed by a FLAG tag prepended to the receptor N-terminus; the construct also carries a C-terminal NanoBiT NP tag and is used in surface-expression-based BRET/NanoBiT assays. Multiple independent groups (PMC9911804, PMC9112046, PMC4424118) report the same N-terminal FLAG or HA architecture on full-length membrane-anchored DRD4.",
+      "sources": [
+        {
+          "pmid": 36778010,
+          "citation": "PMID 36778010",
+          "claim": "Thus, in addition to the C-terminal linker (GNSGSSGGGGSGGGGSSG) and NP tag (GVTGWRLCERILA), D 4 R-NP contained an N-terminal cleavable influenza hemagglutinin signal peptide (KTIIALSYIFCLVFA) to promote surface expression, followed by a FLAG tag (DYKDDDDK)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:19:55.963564+00:00",
+  "literature_notes": "Six ledger lines (L1\u2013L6) all support the same N-terminal extracellular tag site on full-length membrane-anchored DRD4; they differ only in tag type (FLAG vs HA) and assay context (BRET, TANGO, immunofluorescence) but all converge on insert_after_residue=0. L7 and L8 describe a cpGFP insertion replacing residues R217\u2013W306, which Python confirmed lies entirely within the large intracellular loop ICL3 (topology span 215\u2013346); this is a tolerated intracellular insertion and is recorded in other_positions. No ledger line supports a tag in ECL1 (94\u2013108), ECL2 (172\u2013191), or ECL3 (368\u2013382), so no internal extracellular loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 217,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "cpGFP module inserted replacing segment R217(5.67)\u2013W306(6.28) in the large ICL3 (intracellular span 215\u2013346); receptor retains significant agonist and antagonist response (L8), but the site is cytoplasmic and not accessible for extracellular surface tagging."
+    }
+  ]
 }

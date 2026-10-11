@@ -427,5 +427,20 @@
       "canonical_residue": 472,
       "left_pct": 89.32584269662921
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:30:42.248664+00:00",
+  "literature_notes": "Both ledger lines L1 and L2 describe the same PMC2562647 construct: an ER-targeted NTPDase3 in which part of the cytosolic C-terminal tail is deleted and an HA epitope (YPYDVPDYA) + GGGGS spacer + WBP1 ER-retention signal (KKLETFKKTN) is appended at the protein C-terminus. ENTPD3's C-terminus (residues 511\u2013529, sequence ATRRKRHSEHAFDHAVDSD) is INTRACELLULAR per the authoritative topology landmarks (TM2: 490\u2013510; intracellular: 511\u2013529). The HA tag therefore faces the cytoplasm, not the extracellular space. Additionally, the construct is ER-retained and never reaches the plasma membrane, so it cannot serve as a surface-display precedent. No ledger line reports any insertion in the extracellular domain (residues 44\u2013489) or at the extracellular N-terminus (which does not exist here \u2014 residues 1\u201322 are intracellular). Zero surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 529,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA epitope tag appended at the C-terminus of full-length NTPDase3 (after truncation of part of the cytosolic tail); the C-terminus (residues 511\u2013529) is intracellular, and the construct is ER-retained, not surface-trafficked."
+    }
   ]
 }

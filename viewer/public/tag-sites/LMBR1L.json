@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "LMBR1L",
+  "uniprot_acc": "Q6UX01",
+  "sites": [
+    {
+      "site_id": "LMBR1L-terminal_n-0-lit",
+      "gene_symbol": "LMBR1L",
+      "uniprot_acc": "Q6UX01",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Protein expressed and purified from HEK293T cells by anti-FLAG pull-down; surface localisation and signalling function NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "L1 explicitly states the FLAG tag is at the N-terminus of full-length LMBR1L. The authoritative topology landmarks place residues 1\u201322 in the extracellular compartment with no signal peptide (topology string begins 'O', not 'S'), making the N-terminus the sole extracellular terminus of the protein. No specific residue is named in the clip, so the junction is topology-derived: insert_after_residue = 0 (prepend before M1), with residue_after = M (position 1, confirmed from the numbered sequence). The C-terminus (453\u2013489) is intracellular and is recorded separately in other_positions. Full-length human LMBR1L bearing an N-terminal FLAG tag (and a C-terminal V5 tag) was transfected into HEK293T cells; the dual-tagged protein was recovered by anti-FLAG M2 affinity purification, confirming membrane-anchored expression of the N-terminally tagged construct.",
+      "sources": [
+        {
+          "pmid": 31073040,
+          "citation": "PMID 31073040",
+          "claim": "A construct expressing both N-terminus FLAG-tagged and C-terminus V5-tagged human LMBR1L was transfected into HEK293T cells and the recombinant protein was purified using anti-FLAG M2 agarose beads."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:10:24.817021+00:00",
+  "literature_notes": "L2 (HA-tagged LMBR1L in HEK293T co-IP) reports a tagged full-length construct but names neither terminus nor any residue. Because the protein has exactly one extracellular terminus (N-terminus, residues 1\u201322) and one intracellular terminus (C-terminus, residues 453\u2013489), topology_derived reasoning would place an extracellular HA tag at the same N-terminal prepend position already grounded by L1. L2 therefore corroborates the single site rather than defining a second distinct junction, and is not promoted to a separate site entry. The C-terminal V5 tag from L1 is intracellular and is recorded in other_positions only. No ledger line supports any internal extracellular loop insertion for LMBR1L.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 489,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal V5 tag on full-length LMBR1L expressed in HEK293T; the C-terminus (residues 453\u2013489) lies in the intracellular compartment per the authoritative topology landmarks, so this tag faces the cytoplasm and is not a surface-tag site."
+    }
+  ]
+}

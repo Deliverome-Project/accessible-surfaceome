@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CATSPERQ",
+  "uniprot_acc": "Q2WGJ8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:01:12.829175+00:00",
+  "literature_notes": "CATSPERQ (TMEM249) is a two-TM-pass protein with both termini intracellular (N-term 1\u201360, C-term 105\u2013235) and only a 10-residue extracellular loop (79\u201388). L1 reports a full-length CATSPER\u03b8-Flag construct used for co-IP in 293T cells; the '-Flag' suffix convention places the tag at the C-terminus (residue 235), which is intracellular \u2014 this is recorded in other_positions. L2 reports a two-TM-domain-deleted construct (Cyto-CS\u03b8-Flag), which is not a full-length membrane-anchored protein and is therefore disqualified. No ledger line reports any tag insertion on the extracellular face or in the extracellular loop (79\u201388). Zero surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 235,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CATSPER\u03b8-Flag (full-length) used for co-IP in 293T cells; '-Flag' suffix places tag at C-terminus (residue 235), which is intracellular (topology 105\u2013235); no extracellular surface tag position is stated or derivable."
+    }
+  ]
+}

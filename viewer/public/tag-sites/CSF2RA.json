@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CSF2RA",
+  "uniprot_acc": "P15509",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:04:09.749636+00:00",
+  "literature_notes": "The sole ledger entry [L1] describes a murine CSF2R\u03b1 His-tagged construct cloned into pCAGGS and expressed in HEK293T cells. It fails on two independent grounds. First, the tag position is entirely unstated: the quote names only 'pCAGGS-CSF2R\u03b1 (His-tagged)' with no residue, no primer table, and no prose locating the junction \u2014 exactly the disqualifying condition 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' Second, because neither N-terminal nor C-terminal placement is specified, topology-derived reasoning cannot rescue it: CSF2RA is a Type I single-pass receptor whose N-terminus (after SP cleavage, residue 23) is extracellular and whose C-terminus (residue 400) is intracellular, so the two termini face opposite compartments and the unknown placement cannot be resolved to a unique extracellular junction. Even setting those problems aside, the construct is a murine ortholog (indirect evidence at best) and the only functional readout reported is co-immunoprecipitation, which does not confirm surface display. No other ledger lines exist. Zero sites qualify, which is the correct answer.",
+  "literature_rejected": []
+}

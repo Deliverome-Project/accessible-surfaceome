@@ -301,6 +301,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "DISP1-internal-None-lit",
+      "gene_symbol": "DISP1",
+      "uniprot_acc": "Q96F81",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L3 (PMC5811216): V5DispHA detected by western blot in NIH3T3 cell lysates, confirming expression of the full-length tagged protein. L7/L8 (PMC10842732): V5/HA-tagged DISP1 WT used as the reference construct in stable Flp-In cell lines for functional Furin-cleavage studies, implying the tag is tolerated, but no explicit quantitative functional comparison of tagged vs. untagged protein is stated in the ledger clips.",
+      "confidence": "medium",
+      "rationale": "L2 is the most precise ledger line, naming the exact mouse residue (Alanine106) and providing the HDR primer sequence confirming the junction. L1 corroborates with identical loop and junction description. Human DISP1 ECL1 (residues 211\u2013499) is the topologically equivalent domain; however, human residue 106 falls in the N-terminal intracellular domain (1\u2013189) per the authoritative landmarks, so the mouse numbering cannot be transferred directly. Because no human-sequence alignment is available here, insert_after_residue is left null and the site is classified as inferred at loop level. The evidence is from a close ortholog (mouse Disp1) and qualifies as indirect. L2 (PMC5811216) reports V5 epitope tag introduced behind Alanine106 of mouse DISP1 in the first extracellular loop, in a full-length double-tagged construct (V5DispHA) expressed in NIH3T3 cells. L1 (PMC8864978) independently confirms the same junction (between mouse residues 106 and 107) in a full-length membrane-anchored construct. Mouse DISP1 is a close ortholog of human DISP1; the human ECL1 spans residues 211\u2013499 per the authoritative topology landmarks. Mouse residue 106 cannot be mapped to a specific human residue without a sequence alignment, so the site is reported at loop resolution only.",
+      "sources": [
+        {
+          "pmid": 29359685,
+          "citation": "PMID 29359685",
+          "claim": "To generate double-tagged Disp, V5 epitope tag coding sequence was introduced behind amino acid Alanine106 of pCDNA3-DispHA using the primers (forward 5\u2019 gaggctggccttgcaggtaagcctatccctaaccctctcctcggtctcgattctacggcctcccccgctttg and reverse 5\u2019 caaagcgggggaggccgtagaatcgagaccgaggagagggttagggataggcttacctgcaaggccagcctc)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "DISP1-snorkel-c",
       "gene_symbol": "DISP1",
       "uniprot_acc": "Q96F81",
@@ -1020,6 +1057,39 @@
       "isoform_residue": 906,
       "canonical_residue": 908,
       "left_pct": 59.56607495069034
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:19:19.692716+00:00",
+  "literature_notes": "All C-terminal tags (HA in L1/L2/L4/L7/L8, mEGFP in L5/L6, mCherry in L9) are appended after residue 1524, which falls within the large C-terminal intracellular domain (1128\u20131524) per the authoritative topology; they are not extracellular surface sites and are recorded in other_positions. The N-terminal HPC tag in L9 is prepended before residue 1, which is within the N-terminal intracellular domain (1\u2013189); also recorded in other_positions. L3 adds expression confirmation for the V5DispHA construct but no new position. L4 shows surface biotinylation of DispHA (HA-only construct, no V5), confirming the protein reaches the cell surface but not specifically validating the V5 position. L7/L8 use the V5/HA-tagged WT DISP1 as a functional reference but do not state a quantitative functional result for the tagged construct in the ledger clips. L9 mentions deletion of M1\u2013F175 (N-terminal intracellular domain) and G1141\u2013L1524 (C-terminal intracellular domain) as truncation constructs, not tag insertions; these are not sites. The short extracellular loops ECL2 (547\u2013556), ECL3 (625\u2013632), ECL5 (1031\u20131038), and ECL6 (1100\u20131110) have no ledger support whatsoever and are not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1524,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA tag placed at the carboxyl terminus of the mature mouse DISP1 protein; human C-terminus (residue 1524) lies within the intracellular domain 1128\u20131524 per the authoritative topology."
+    },
+    {
+      "residue": 1524,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "mEGFP fused at the C-terminus of human DISP1 and shown by imaging to be expressed on the cell membrane (protein at surface, tag intracellular); C-terminus falls in intracellular domain 1128\u20131524."
+    },
+    {
+      "residue": 1524,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "mCherry (and SBP/HA in L6) fused at the C-terminus of human DISP1; C-terminus is intracellular (domain 1128\u20131524)."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "HPC epitope tag placed at the N-terminus of human DISP1 (hDisp1-3C); the N-terminal domain (residues 1\u2013189) is intracellular per the authoritative topology."
     }
   ]
 }

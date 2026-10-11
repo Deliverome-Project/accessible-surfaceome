@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR51B4-terminal_n-0-lit",
+      "gene_symbol": "OR51B4",
+      "uniprot_acc": "Q9Y5P0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Rhodopsin tag (20 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used for heterologous expression of OR51B4; specific functional assay result not stated in the ledger clip.",
+      "confidence": "high",
+      "rationale": "OR51B4 is a class-A GPCR with no signal peptide; the topology landmarks place residues 1\u201324 as the extracellular N-terminus and TM1 begins at residue 25. The rhodopsin tag (20 aa) is fused immediately upstream of OR51B4 residue 1 (M), placing it on the extracellular face. The paper names no specific junction residue, but the N-terminus is the sole extracellular terminus of this protein, so insert_after_residue=0 is the only consistent reading. The 24-aa extracellular N-terminal span provides ample room for the ~20-aa insert, and the junction is \u226524 residues from TM1. Full-length OR51B4 cloned into pCI-vector downstream of the 20 N-terminal amino acids of human rhodopsin, creating an N-terminally tagged full-length construct for heterologous expression (PMC5342199).",
+      "sources": [
+        {
+          "pmid": 28273117,
+          "citation": "PMID 28273117",
+          "claim": "For the recombinant expression of OR51B4, the coding sequence was amplified via PCR from human DNA and cloned into a pCI-vector downstream of the coding sequence for the 20 N-terminal amino acids of the human rhodopsin-Tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:48:51.036870+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports a full-length, membrane-anchored OR51B4 construct with a 20-aa rhodopsin N-terminal tag, qualifying as a published tag insertion. The paper names no specific residue for the junction; because OR51B4 has exactly one extracellular terminus (the N-terminus, residues 1\u201324), the position is topology-derived as a prepend (insert_after_residue=0). No internal loop insertions are supported by the ledger. The three other extracellular loops (ECL1: 81\u201395, ECL2: 162\u2013193, ECL3: 259\u2013270) have no ledger-grounded insertion evidence and are therefore not proposed.",
+  "literature_rejected": []
 }

@@ -133,5 +133,26 @@
       "canonical_residue": 903,
       "left_pct": 62.8133704735376
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:51:26.904241+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) originate from the same paper (PMC11156954) and describe tags at the intracellular C-terminus of full-length ABCC5. L1 and L2 report a 2\u00d7Strep tag cloned C-terminally ('pCAG vector with C-terminal 2\u00d7strep tags'), confirmed functional by ATPase assay. L3 reports 'wt-hMRP5-GFP' and 'hMRP5-\u0394R-GFP' constructs used in immunostaining; the '-GFP' suffix convention places GFP at the C-terminus. The ABCC5 C-terminus (residues 1148\u20131437) is intracellular per the authoritative topology landmarks. The N-terminus (residues 1\u2013178) is also intracellular. No ledger line describes any tag insertion in an extracellular loop (ECL1 202\u2013218, ECL2 316, ECL3 422\u2013433, ECL4 878\u2013918, ECL5 1009, ECL6 1121\u20131126) or at any extracellular face. Because the rules require every site to be grounded in one ledger line reporting a tolerated insertion on the extracellular face, and no such line exists, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1437,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 2\u00d7Strep tag appended after the last residue (G1437); the entire C-terminal domain (1148\u20131437) is intracellular, so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 1437,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal GFP fusion ('wt-hMRP5-GFP') used for immunostaining localization; C-terminus is intracellular (1148\u20131437), so GFP is cytoplasmic, not extracellular."
+    }
   ]
 }

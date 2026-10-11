@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNN2",
+  "uniprot_acc": "Q9H2S1",
+  "sites": [
+    {
+      "site_id": "KCNN2-internal-None-lit",
+      "gene_symbol": "KCNN2",
+      "uniprot_acc": "Q9H2S1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "S1-S2 loop",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "modified HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized immunofluorescence (HA signal detected without permeabilization, confirming extracellular exposure). Channel trafficking to the plasma membrane is intact. Electrophysiological function of the tagged channel was NOT MEASURED in the cited study.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the modified HA tag was inserted 'in the end of the S1-S2 loop' of full-length SK2, making this an extracellular internal loop site. The S1-S2 loop spans residues 156\u2013164 (SWGAYDKAS, 9 residues) per the authoritative topology landmarks; no specific junction residue is named in any of L1\u2013L4, so insert_after_residue is left null and the site is classified as region-level. L3 independently confirms surface exposure by non-permeabilized immunofluorescence, establishing surface_only validation. The loop is very short (9 aa), so the tag was engineered with flanking ClC-5 D1-D2 sequences to enhance accessibility, consistent with a tolerated insertion. Full-length human SK2 channel expressed in mammalian cells; modified HA epitope flanked with ClC-5 D1-D2 loop sequences inserted at the 'end of the S1-S2 extracellular loop' (residues 156\u2013164, sequence SWGAYDKAS). No specific junction residue is named in any ledger line; the loop is 9 residues. Surface display confirmed by non-permeabilized immunofluorescence confocal microscopy (L3).",
+      "sources": [
+        {
+          "pmid": 33211795,
+          "citation": "PMID 33211795",
+          "claim": "Specifically, modified HA epitope was flanked with the ClC-5 chloride channel D1-D2 loop to increase accessibility and inserted in the end of the S1-S2 loop of the SK2 channel subunit as we described previously ( Kim et al., 2011 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:52:22.720600+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) originate from the same paper (PMC7681919) and describe a single experimental site: a modified HA tag in the S1-S2 extracellular loop of full-length SK2. L2 is the most positionally specific ('end of the S1-S2 loop') but names no residue number; accordingly, insert_after_residue is null and position_evidence is 'inferred' rather than 'validated'. The FLAG tag mentioned in L4 is on calmodulin's C-terminus (a separate cytoplasmic binding partner), not on the SK2 surface, and was excluded. The other extracellular regions of SK2 (S3-S4 loop 230\u2013253; S5-P-S6 region 330\u2013372) have no ledger support for any insertion and were not proposed. No ledger line names a specific residue, so no site reaches 'validated' position_evidence.",
+  "literature_rejected": []
+}

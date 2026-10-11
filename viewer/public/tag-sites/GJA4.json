@@ -120,5 +120,26 @@
       "canonical_residue": 46,
       "left_pct": 13.813813813813812
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:11:51.256055+00:00",
+  "literature_notes": "GJA4/Cx37 has no extracellular termini: the N-terminus (residues 1-21) and C-terminus (residues 230-333) are both intracellular. L1 reports 'Cx37-GFP', a standard C-terminal fusion placing GFP in the intracellular C-tail (after residue 333). L2 reports 'HA-tagged Cx37FL' with the HA- prefix convention indicating an N-terminal tag in the intracellular N-tail (before residue 1). The topology-derived rule (exactly one extracellular terminus) does not apply because neither terminus is extracellular. Neither clip names a residue in an extracellular loop, names a loop by name, or describes a snorkel configuration. The two extracellular loops (EL1: 43-71; EL2: 177-207) contain conserved disulfide-forming cysteines (C54, C61, C65 in EL1; C187, C192, C198 in EL2) critical for docking, but no ledger line grounds any insertion in them. Zero qualifying extracellular surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 333,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Cx37-GFP C-terminal fusion (standard suffix naming convention) places GFP after residue 333 in the intracellular C-terminus; construct is plasma-membrane-localized and functional but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA-tagged Cx37FL with HA- prefix convention places HA before residue 1 in the intracellular N-terminus; construct suppresses EdU uptake (functional) but the tag position is intracellular and the exact junction is unstated."
+    }
   ]
 }

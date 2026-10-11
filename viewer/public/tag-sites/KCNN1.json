@@ -1,0 +1,66 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNN1",
+  "uniprot_acc": "Q92952",
+  "sites": [
+    {
+      "site_id": "KCNN1-internal-None-lit",
+      "gene_symbol": "KCNN1",
+      "uniprot_acc": "Q92952",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "S3-S4 loop",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "3xMyc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface biotinylation detected rSK2-Myc in the membrane fraction of Cosm6 cells, confirming surface display of the tagged channel; function of the tagged channel was NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "L1 reports a triple Myc tag tolerated extracellularly between S3 and S4 in rSK2 (KCNN2), a close paralog of KCNN1 (SK1); L3 confirms surface display by biotinylation. The orthologous loop in KCNN1 spans residues 202-225 (24 residues), providing ample space for a 15-23 aa insert and lying well clear of both TM3 (ends at 201) and TM4 (starts at 226). No specific junction residue is named in the ledger, so this is a region-level site. Ranked first because the loop is long, the tag (3xMyc) is demanding, and surface display is biochemically confirmed. rSK2 (KCNN2) was engineered with a triple Myc tag extracellularly between the S3 and S4 domains; surface biotinylation of Cosm6 cells confirmed the tagged full-length channel is membrane-displayed (L1, L3). KCNN1 carries the orthologous extracellular S3-S4 loop at residues 202-225 (24 residues), which is the corresponding region in SK1.",
+      "sources": [
+        {
+          "pmid": 31001092,
+          "citation": "PMID 31001092",
+          "claim": "Adelman) has a triple Myc tag located extracellularly between the S3 and S4 domains."
+        },
+        {
+          "pmid": 33211795,
+          "citation": "PMID 33211795",
+          "claim": "Immunofluorescence confocal microscopy was performed using SK2 channels harboring an HA tag in the extracellular S1-S2 loop (SK2-HA) by using NP compared with permeabilized (P) conditions as we previously described ( Fig. 2 and Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:53:52.577844+00:00",
+  "literature_notes": "KCNN1 (SK1) has three extracellular loops per the authoritative topology: EC1 (S1-S2, residues 131-136, 6 aa), EC2 (S3-S4, residues 202-225, 24 aa), and EC3 (S5-pore-S6, residues 302-344, 43 aa). No ledger line reports any tag insertion in EC3 (the pore-turret region), so no site is proposed there despite its length. L2 reports an HA tag in rSK1 (KCNN1 itself) placed intracellularly between S2 and S3 (IC2, residues 161-185); this is a direct finding for KCNN1 but the tag faces the cytoplasm and is recorded in other_positions only. L3 confirms surface display of both the rSK2-Myc (extracellular tag) and rSK1-HA (intracellular tag) constructs, but the rSK1-HA tag is not extracellular. No ledger line names a specific residue junction for any extracellular site in KCNN1 or its paralogs, so both surface sites are region-level (insert_after_residue=null). The EC1 site is flagged low confidence because the 6-residue loop is very short for a 15-23 aa insert.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 173,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "rSK1 (KCNN1) was engineered with an HA tag intracellularly between the S2 and S3 domains (IC2 loop, residues 161-185); the tag faces the cytoplasm and is not accessible on the extracellular surface."
+    }
+  ]
+}

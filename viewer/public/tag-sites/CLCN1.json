@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLCN1",
+  "uniprot_acc": "P35523",
+  "sites": [
+    {
+      "site_id": "CLCN1-internal-438-lit",
+      "gene_symbol": "CLCN1",
+      "uniprot_acc": "P35523",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 438,
+      "residue_before": "G",
+      "residue_after": "D",
+      "residue_label": "G438",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc (EQKLISEEDL) / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface immunostaining of non-permeabilised HEK293T cells confirmed extracellular display of the Myc tag on WT CLC-1. The A531V disease mutant showed significantly reduced surface immunoreactivity relative to WT, but this reflects the pathogenic mutation, not the tag insertion itself. Functional impact of the tag per se was not explicitly quantified by electrophysiology in the cited papers.",
+      "confidence": "high",
+      "rationale": "L1 and L2 both explicitly name the G438\u2013D439 junction in the extracellular linker between helices L and M of full-length, membrane-anchored CLC-1. Python confirms residue 438 = G and residue 439 = D in the canonical sequence, both within EXTRACELLULAR_4 (415\u2013455), 24 residues from the preceding TM boundary (414) and 18 residues from the following TM boundary (456), well beyond the \u22653-residue minimum. L3 (same paper as L2) provides direct surface-immunostaining evidence of extracellular tag display. L1 is used as the corroborating line; L2 is the primary citation because it also provides the L3 functional confirmation. Full-length CLC-1 expressed in HEK293T cells; Myc-epitope (EQKLISEEDL) and HA-epitope inserted between G438 and D439 in the extracellular linker between the L and M helices (EXTRACELLULAR_4, residues 415\u2013455). Surface display confirmed by immunostaining of non-permeabilised HEK293T cells (L3).",
+      "sources": [
+        {
+          "pmid": 23424641,
+          "citation": "PMID 23424641",
+          "claim": "To create myc-tagged CLC-1 constructs, the overlap PCR mutagenesis method was used to insert the myc-epitope sequence (EQKLISEEDL) between the residues G438 and D439, which are located in the extracellular linker between L and M helices."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:40:02.164165+00:00",
+  "literature_notes": "L4 (Flag-CLC-1) describes an N-terminally Flag-tagged construct confirmed at the cell surface by biotinylation. However, the CLCN1 N-terminus (residues 1\u2013117) is entirely intracellular per the authoritative topology landmarks; an N-terminal tag therefore faces the cytoplasm and does not qualify as an extracellular surface site. It is recorded in other_positions. L5/L6 describe an N-terminal GFP fusion (pEGFP-C1 vector, GFP fused before residue 1); the same intracellular N-terminus argument applies \u2014 GFP would reside in the cytoplasm. L6 confirms transfection efficiency but not surface display of GFP. Both are recorded in other_positions. Only the G438/D439 junction (L1/L2/L3) qualifies as an extracellular tag site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "N-terminal Flag tag on full-length CLC-1 confirmed at the cell surface by biotinylation, but the CLC-1 N-terminus (residues 1\u2013117) is intracellular per topology landmarks, so the Flag tag faces the cytoplasm, not the extracellular space."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "N-terminal GFP fusion (pEGFP-C1) of full-length CLC-1; the N-terminus is intracellular (residues 1\u2013117), so GFP is cytoplasmic, not extracellular; L6 confirms expression but not surface display of GFP."
+    }
+  ]
+}

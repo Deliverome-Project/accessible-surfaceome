@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "FAP",
+  "uniprot_acc": "Q12884",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:41:56.002184+00:00",
+  "literature_notes": "FAP (Prolyl endopeptidase FAP, UniProt P97321/Q12884) is a Type II single-pass transmembrane protein. Its topology places residues 1\u20136 intracellularly, residues 7\u201326 in the TM helix, and residues 27\u2013760 in the large extracellular ectodomain. The sole ledger line, L1, describes a 'FAP-targeted CAR construct' bearing an N-terminal Myc tag for flow-cytometry surface detection. This fails on two independent grounds. First, the tagged entity is the CAR (chimeric antigen receptor) construct itself \u2014 a synthetic receptor designed to recognise FAP as its antigen \u2014 not full-length membrane-anchored FAP. The Myc tag confirms surface display of the CAR, not of FAP. Second, even if the clip were re-read as tagging FAP directly, the N-terminus of FAP (residues 1\u20136) is intracellular; an N-terminal tag on FAP would face the cytoplasm and is not an extracellular surface tag. No snorkel validation is mentioned. Neither reading yields a qualifying extracellular insertion site on FAP. No other ledger lines are provided. The result is zero sites, which is the correct answer given the evidence.",
+  "literature_rejected": []
+}

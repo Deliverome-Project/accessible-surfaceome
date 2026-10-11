@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "EMCN",
+  "uniprot_acc": "Q9ULC0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:26:19.743938+00:00",
+  "literature_notes": "All six ledger lines were evaluated. L1\u2013L5 (PMC7349057 and PMC11007909) describe Myc and mCherry tags placed at the C-terminus of full-length, membrane-anchored mouse or human EMCN expressed in HRECs. EMCN is a type I single-pass transmembrane protein (TM: 192\u2013212); its C-terminus (residues 213\u2013261) is intracellular. These constructs are real, tolerated, membrane-anchored tagged proteins, but the tag faces the cytoplasm, not the extracellular surface \u2014 they qualify only as other_positions (kind=intracellular). L6 (PMC9939191) reports a FLAG-tagged EMCN overexpression construct in SW480 cells but states no tag position whatsoever; it cannot be pinned to any residue and is disqualified. No ledger line supports an extracellular tag insertion for EMCN, so sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 261,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Myc + mCherry tags placed at the C-terminus of full-length membrane-anchored EMCN; residue 261 (N) is intracellular (topology 213\u2013261), so this is a cytoplasmic tag, not a surface tag."
+    }
+  ]
+}

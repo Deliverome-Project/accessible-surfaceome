@@ -82,5 +82,26 @@
       "canonical_residue": 175,
       "left_pct": 69.51672862453532
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:14:14.929639+00:00",
+  "literature_notes": "All five ledger lines report C-terminal fluorescent-protein fusions (eYFP-10His in L1; EGFP/DsRed in L2/L3; EGFP in L4/L5). GJC3 is a canonical 4-TM connexin: both the N-terminus (residues 1\u201322) and the C-terminus (residues 216\u2013279) are intracellular. The C-terminal tag therefore sits on the cytoplasmic face and cannot serve as an extracellular surface tag. No ledger line reports any insertion in ECL1 (44\u201375) or ECL2 (154\u2013194), the only two extracellular loops. L4 and L5 concern mouse Cx30.2 (a Gjb6 ortholog), not GJC3/Cx31.3, and in any case also report C-terminal tags. Because no ledger line grounds an extracellular insertion for GJC3, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 279,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal eYFP-10His fusion on full-length GJC3 (Cx31.3); the C-terminus falls in the intracellular domain (residues 216\u2013279) per the authoritative topology landmarks."
+    },
+    {
+      "residue": 279,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal EGFP or DsRed fusion on CX30.2/CX31.3 (GJC3) expressed in HeLa cells; tag is intracellular by connexin topology."
+    }
   ]
 }

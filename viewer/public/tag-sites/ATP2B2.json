@@ -1119,5 +1119,26 @@
       "canonical_residue": 991,
       "left_pct": 79.72646822204345
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:38:50.875875+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminal fusions of PMCA2: FLAG-tag (L1), His-FLAG (L1), and GFP (L2, L3, L4). The topology landmarks place the C-terminus in the intracellular domain (residues 1084\u20131243), so every one of these constructs carries its tag on the cytoplasmic face, not the extracellular surface. No ledger line describes a tag inserted into any extracellular loop (EC1 124\u2013152, EC2 411\u2013442, EC3 900\u2013905, EC4 972\u2013994, EC5 1051\u20131062) or at the N-terminus (also intracellular, residues 1\u2013102). The N-terminus is likewise intracellular, so a prepend would also be cytoplasmic. Because the ledger contains no insertion on the extracellular face of this protein, zero surface-tag sites are reported. The C-terminal fusions are recorded in other_positions as tolerated intracellular tags.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1243,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG and His-FLAG fusions appended after the last residue (L1243) of the intracellular C-terminal domain (residues 1084\u20131243); pump used in structural and functional studies of the full-length membrane-anchored protein."
+    },
+    {
+      "residue": 1243,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal GFP fusion appended after L1243 of the intracellular C-terminus; pump function confirmed by electrophysiology in CHO cells, but the tag faces the cytoplasm."
+    }
   ]
 }

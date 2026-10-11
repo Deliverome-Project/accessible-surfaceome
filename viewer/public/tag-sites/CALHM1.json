@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "CALHM1",
+  "uniprot_acc": "Q8IU99",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:59:13.798436+00:00",
+  "literature_notes": "All seven ledger lines describe C-terminal fusions (1D4, Strep-II, FLAG, EGFP) appended after the last residue of either the truncated construct (hCALHM1\u0394ct, residues 1\u2013303) or the full-length protein (residues 1\u2013346). Both termini fall within the large intracellular C-terminal domain (topology landmark: INTRACELLULAR 203\u2013346), so none of these tags is on the extracellular face. L1 mentions Lys123 (ECL2, extracellular) as the site of NHS-SS-biotin labelling used to confirm surface trafficking of the 1D4-tagged construct; this is a chemical biotinylation probe, not an epitope-tag insertion, and does not qualify under the ledger rules. L3 lists seven point-mutant positions (Leu67, Ile109, Val112, Ala116, Thr196, Val192, Ala199) that are all within transmembrane helices (TM2: 51\u201371; TM3: 107\u2013120; TM4: 182\u2013202) and represent mutagenesis probes of the pore, not tag-insertion sites. No ledger line reports a tolerated epitope-tag, fluorescent-protein, or domain insertion at any extracellular position of CALHM1. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 303,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 epitope tag appended after residue 303 of hCALHM1\u0394ct; residue 303 (Leu) lies within the intracellular C-terminal domain (topology 203\u2013346), so the tag faces the cytoplasm."
+    },
+    {
+      "residue": 346,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal EGFP (and FLAG in L5) fused after the last residue (Val346) of full-length CALHM1; residue 346 is within the intracellular C-terminal domain (topology 203\u2013346)."
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "LYPD8",
+  "uniprot_acc": "Q6UX82",
+  "sites": [
+    {
+      "site_id": "LYPD8-terminal_n-19-lit",
+      "gene_symbol": "LYPD8",
+      "uniprot_acc": "Q6UX82",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized anti-FLAG M2 FACS sorting (L2); GPI-anchored surface expression confirmed by PI-PLC cleavage assay monitored by flow cytometry (L3, L4). No ligand-binding or functional assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "The topology landmarks place the signal peptide at residues 1\u201319 and the mature N-terminus at residue 20. Python lookup of the numbered sequence confirms residue 19 = S and residue 20 = L, so insert_after_residue=19 places the FLAG tag at the extracellular mature N-terminus, exactly where the paper describes. LYPD8 is GPI-anchored with no TM domain; the entire region 20\u2013237 is extracellular, so there is no TM boundary constraint to evaluate. L2\u2013L4 independently confirm that the FLAG-tagged full-length construct reaches the cell surface in the correct GPI-anchored orientation. Full-length hLYPD8 coding sequence with a FLAG tag inserted immediately downstream of the predicted N-terminal signal sequence (residues 1\u201319), stably expressed in HEK293T cells. Non-permeabilized anti-FLAG M2 FACS confirmed cell-surface display; PI-PLC treatment (which cleaves GPI-anchored proteins) abolished the surface signal, confirming GPI-anchored surface expression of the FLAG-tagged construct.",
+      "sources": [
+        {
+          "pmid": 29259722,
+          "citation": "PMID 29259722",
+          "claim": "A FLAG-tagged sequence was inserted into the total mLypd8 and hLYPD8 coding sequence immediately downstream of the predicted N-terminal signal sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 19,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:32:08.901997+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same publication (PMC5725809) and describe a single FLAG-tag insertion site at the mature N-terminus of hLYPD8 (after signal peptide cleavage at residue 19). L1 pins the position; L2 validates surface display by non-permeabilized FACS; L3 and L4 confirm GPI-anchored surface expression via PI-PLC cleavage. No internal loop insertions, C-terminal tags, or functional assays are reported in the ledger. Because LYPD8 is GPI-anchored with no transmembrane domain, the entire ectodomain (residues 20\u2013237) is extracellular; the N-terminal mature junction is the only terminus accessible for a surface tag. No other sites are supported by the ledger.",
+  "literature_rejected": []
+}

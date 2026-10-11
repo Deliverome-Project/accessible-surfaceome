@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "DRD5-terminal_n-0-lit",
+      "gene_symbol": "DRD5",
+      "uniprot_acc": "P21918",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "YFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-GFP immunocytochemistry on intact neurons; receptor function (e.g., dopamine-stimulated signalling) NOT MEASURED in the tagged construct.",
+      "confidence": "medium",
+      "rationale": "DRD5 is a class-A GPCR whose N-terminus (residues 1\u201340) is the sole extracellular terminus; the C-terminus (362\u2013477) is intracellular. Anti-GFP immunocytochemistry on intact, non-permeabilised neurons can only detect an extracellular epitope, so the YFP must reside at the N-terminus. No signal peptide is annotated for DRD5, so the mature protein begins at Met-1 and a prepend (insert_after_residue = 0) places the tag before Met-1, fully extracellular and \u22653 residues from TM1 (which starts at residue 41). L2 independently confirms an extracellular tag at this same position. Full-length DRD5 tagged with YFP expressed in cultured hippocampal neurons (14\u201316 DIV); surface display of the tagged receptor confirmed by immunocytochemistry with anti-GFP antibodies on intact cells. The same paper (L2) further confirms an 'extracellular tag' on DRD5 by swapping SEP/myc at the same position. No residue number is stated in either clip.",
+      "sources": [
+        {
+          "pmid": 34064454,
+          "citation": "PMID 34064454",
+          "claim": "The \u03b32-GABA A subunit and the D5R were respectively tagged with a superecliptic pHluorin (SEP) or a yellow fluorescent protein (YFP), expressed in cultured hippocampal neurons and characterized after 14\u201316 days in vitro (DIV) by immunocytochemistry, using antibodies directed against the GFP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:19:57.093840+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC8125140) and describe the same N-terminal extracellular tag site on full-length DRD5; L1 is used as the primary supporting clip because it names the tag type (YFP) and explicitly reports surface display. L2 adds the myc-swap confirmation but introduces no new positional information. L3 (PMC11432204) describes a 'DRD5-nVenus' BiFC construct: by standard BiFC naming convention (receptor-tag), nVenus is fused to the C-terminus of DRD5, which is intracellular (residues 362\u2013477); this is therefore recorded in other_positions rather than sites. Confidence is medium rather than high because neither L1 nor L2 states the junction residue explicitly \u2014 the N-terminal assignment is topology-derived, not validated at a named residue.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 477,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "DRD5-nVenus BiFC fusion places the N-terminal Venus fragment at the DRD5 C-terminus (residue 477), which lies in the intracellular tail (residues 362\u2013477); not a surface tag site."
+    }
+  ]
 }

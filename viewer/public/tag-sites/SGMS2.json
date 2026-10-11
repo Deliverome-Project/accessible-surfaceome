@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "SGMS2",
+  "uniprot_acc": "Q8NHU3",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:20:11.254099+00:00",
+  "literature_notes": "All five ledger lines describe tags on intracellular faces of SGMS2. L1/L2/L3 use pEGFP-C3, which fuses GFP to the protein N-terminus; SGMS2's N-terminus (residues 1\u201375) is intracellular per the authoritative topology landmarks, so these are cytoplasmic tags. L5 places a V5 tag C-terminally (hSMS2-V5-P2A-mCherry), and the C-terminus (residues 292\u2013365) is also intracellular. L4 reports a V5-tagged SMS2 construct with no stated insertion position; both termini are intracellular and no extracellular loop residue is named, so no junction can be pinned. SGMS2 has three extracellular loops (ECL1: 101\u2013125, ECL2: 180\u2013222, ECL3: 270\u2013274), but none of the ledger lines reports a tag insertion in any of them. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "pEGFP-C3 N-terminal GFP fusion places the tag before residue 1, which lies in the intracellular N-terminal domain (residues 1\u201375); tag is cytoplasmic, not extracellular."
+    },
+    {
+      "residue": 365,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "hSMS2-V5-P2A-mCherry places V5 after the last residue (T365); the C-terminus (residues 292\u2013365) is intracellular, so the tag faces the cytoplasm."
+    }
+  ]
+}

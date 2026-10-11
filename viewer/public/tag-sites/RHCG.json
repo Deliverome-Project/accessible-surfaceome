@@ -4,6 +4,43 @@
   "uniprot_acc": "Q9UBD6",
   "sites": [
     {
+      "site_id": "RHCG-internal-None-lit",
+      "gene_symbol": "RHCG",
+      "uniprot_acc": "Q9UBD6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL2",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "double HA (LYPYDVPDYAGYPYDVPDYADL)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Reconstitution into liposomes and NH3 transport assay: tagged RhCG was fully active compared to untagged protein (PMC2812482, L5).",
+      "confidence": "high",
+      "rationale": "L2 explicitly names the double HA tag sequence and states it was introduced into the 'second extracellular loop of RhCG'. By the authoritative topology landmarks, the second extracellular loop is ECL2 (residues 107\u2013123, between TM3 ending at 106 and TM4 starting at 124), a 17-aa span. No specific residue junction is given in any ledger line, so insert_after_residue is left null and the site is reported at loop resolution. L3 and L5 confirm surface accessibility and full functional retention respectively, yielding the highest validation tier. Full-length human RhCG with a double HA tag (LYPYDVPDYAGYPYDVPDYADL) introduced into the second extracellular loop (ECL2, residues 107\u2013123), expressed in HEK293E cells; surface display confirmed by flow cytometry with anti-HA antibody; protein purified to homogeneity by immunoaffinity capture.",
+      "sources": [
+        {
+          "pmid": 20126667,
+          "citation": "PMID 20126667",
+          "claim": "Briefly, a double HA tag (LYPYDVPDYAGYPYDVPDYADL) was introduced in the second extracellular loop of RhCG."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "RHCG-snorkel-c",
       "gene_symbol": "RHCG",
       "uniprot_acc": "Q9UBD6",
@@ -185,6 +222,21 @@
       "isoform_residue": 48,
       "canonical_residue": 48,
       "left_pct": 10.020876826722338
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:01:48.972788+00:00",
+  "literature_notes": "L6\u2013L8 (PMC2692438) describe a GFP-RhCG fusion with confirmed plasma membrane localization in MDCKI cells. However, per the authoritative topology landmarks, both the N-terminus (residues 1\u201310) and the C-terminus (residues 417\u2013479) of RhCG are intracellular. The GFP fusion is therefore on an intracellular face and does not qualify as a surface tag site; it is recorded in other_positions. No ledger line grounds a tag in any other extracellular loop (ECL1 31\u201360, ECL3 171\u2013178, ECL4 240\u2013250, ECL5 303\u2013305, ECL6 363\u2013395), so no additional sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "GFP-RhCG fusion expressed at the plasma membrane of MDCKI cells (L7, L8), but both the N-terminus (1\u201310) and C-terminus (417\u2013479) are intracellular per topology landmarks; the GFP is on an intracellular face and does not constitute a surface tag."
     }
   ]
 }

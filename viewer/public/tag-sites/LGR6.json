@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LGR6-terminal_n-24-lit",
+      "gene_symbol": "LGR6",
+      "uniprot_acc": "Q9HBX8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by Cy3-labeled anti-FLAG antibody staining (L3/L4); ligand-binding function preserved \u2014 Flag-LGR6 HEK293 stable cells used in mRSPO1-Fc binding assays at 4\u00b0C and 37\u00b0C (L4), demonstrating the tagged receptor is functional.",
+      "confidence": "high",
+      "rationale": "L1 pins the junction unambiguously: the mature form begins at AA25, so the FLAG tag sits between the cleaved signal peptide (residues 1\u201324, ending in G) and the first residue of the ectodomain (residue 25, A). Python confirms seq[23]='G' and seq[24]='A'. The tag is 541 residues from the first TM helix (566\u2013587), fully extracellular, and the large leucine-rich-repeat ectodomain (25\u2013565) tolerates the N-terminal addition without disrupting surface trafficking or ligand binding. L1 explicitly states that the sequence encoding the predicted mature form of human LGR6 (AA25\u2013967) was fused with a FLAG tag at the N-terminus, then cloned downstream of a CD8 signal peptide in pIRESpuro3, generating a full-length membrane-anchored construct stably expressed in HEK293 cells. L2\u2013L4 confirm surface display by anti-FLAG antibody co-staining and use of the tagged receptor in mRSPO1-Fc binding assays.",
+      "sources": [
+        {
+          "pmid": 22615920,
+          "citation": "PMID 22615920",
+          "claim": "The sequence encoding a predicted mature form of human LGR6 (AA25\u2013967, Genbank accession number NP_001017403 ) was fused with a sequence encoding a Flag tag at the N terminus, and then cloned downstream of a sequence encoding the CD8 signal peptide (MALPVTALLLPLALLLHAA) in the vector pIRESpuro3 (Clontech) using standard, PCR-based molecular cloning procedures."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:06:22.667318+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same single construct: CD8-SP + FLAG + LGR6(25\u2013967) in HEK293 cells. No ledger line supports any insertion in the short extracellular loops (ECL1 622\u2013643, ECL2 707\u2013731, ECL3 799\u2013809) or at the C-terminus. The intracellular C-tail (831\u2013967) is not on the extracellular face and is not supported by any ledger line for a surface tag. Only one site is reported because the ledger grounds only one.",
+  "literature_rejected": []
 }

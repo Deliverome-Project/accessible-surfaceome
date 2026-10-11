@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNE3",
+  "uniprot_acc": "Q9Y6H6",
+  "sites": [
+    {
+      "site_id": "KCNE3-internal-11-lit",
+      "gene_symbol": "KCNE3",
+      "uniprot_acc": "Q9Y6H6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 11,
+      "residue_before": "Y",
+      "residue_after": "E",
+      "residue_label": "Y11",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (PYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Construct used in functional and expression studies; the ledger states it was tolerated in both contexts, though specific quantitative assay results are not detailed in the clip.",
+      "confidence": "high",
+      "rationale": "The ledger clip explicitly names residues 11 and 12 as the junction in a full-length, membrane-anchored KCNE3 construct. Python verification confirms position 11 (Y) and position 12 (E) both lie within the extracellular span (residues 1\u201357), 46 residues from the TM boundary at position 58, well exceeding the \u22653-residue clearance requirement. There is no signal peptide in KCNE3, so the N-terminal domain is directly surface-exposed and this internal insertion is unambiguously extracellular. The cited tag (HA, 8 aa) is shorter than the ALFA-tag target range but the same junction can accommodate a ~13\u201323 aa tag with flanking GS linkers. Full-length membrane-anchored KCNE3 construct with an 8-aa HA tag (PYDVPDYA) inserted between residues 11 and 12 of the extracellular N-terminal domain; used in functional and expression studies (Abbott et al., 2001, as cited in PMC2234029).",
+      "sources": [
+        {
+          "pmid": 15572349,
+          "citation": "PMID 15572349",
+          "claim": "The HA tag, PYDVPDYA, was incorporated into the NH 2 terminus of E3 between residues 11 and 12 ( Abbott et al., 2001 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:38:56.267088+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It unambiguously pins the junction to residues 11/12 in the extracellular N-terminal domain of full-length, membrane-anchored KCNE3. No other sites are supported by the ledger. KCNE3 has no signal peptide; the entire N-terminal domain (residues 1\u201357) is extracellular. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

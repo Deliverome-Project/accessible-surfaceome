@@ -104,5 +104,12 @@
       "canonical_residue": 49,
       "left_pct": 18.421052631578945
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:13:26.245762+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe GFP-, RFP-, and FLAG-tagged full-length Cx30.3 (GJB4) that assemble into gap junction plaques, confirming surface trafficking of the tagged protein. However, none of the lines names a residue, a loop, or an extracellular position for the tag. Critically, GJB4 is a 4-TM connexin whose N-terminus (residues 1\u201319) and C-terminus (residues 207\u2013266) are both INTRACELLULAR. GFP/RFP fusions to connexins are universally C-terminal in the literature, and the Origene commercial vector (RC204406, L4) likewise places its myc-DDK/FLAG tag at the C-terminus. Because both termini are cytoplasmic and no ledger line pins a tag to either extracellular loop (ECL1: 41\u201370; ECL2: 150\u2013184), the topology_derived rule does not apply (it requires exactly one extracellular terminus). No ledger line reports an insertion tolerated in ECL1 or ECL2. The result is zero qualifying extracellular surface tag sites. The intracellular C-terminal GFP/RFP/FLAG tags are not listed in other_positions because no specific residue is named in any ledger line for those constructs.",
+  "literature_rejected": []
 }

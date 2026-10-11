@@ -58,6 +58,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "CD9-internal-None-lit",
+      "gene_symbol": "CD9",
+      "uniprot_acc": "P21926",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "SEL",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "mCherry",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-CD9 mAb capture and colocalization in single-EV imaging; no functional assay of CD9 activity reported. NOT MEASURED for CD9 function per se.",
+      "confidence": "medium",
+      "rationale": "L1/L2 report mCherry inserted into the SEL of full-length, membrane-anchored CD9 with confirmed extracellular surface display on EVs. The SEL spans residues 38\u201358 (authoritative landmarks); no specific junction residue is named in the ledger, so insert_after_residue is null and the site is region-level. The insert is a large FP (~236 aa), demonstrating the loop tolerates substantial insertions; a short epitope tag (~15\u201323 aa) is expected to be at least as well tolerated. Cited_tag_residue is null because no residue number is given in the source. Full-length CD9 with mCherry inserted into the small extracellular loop (SEL, residues 38\u201358) expressed in Expi293F cells; EVs produced from this construct display mCherry on the extracellular surface of the EV membrane, confirmed by anti-CD9 antibody capture and single-EV imaging.",
+      "sources": [
+        {
+          "pmid": 42020418,
+          "citation": "PMID 42020418",
+          "claim": "Fluorescent EVs were produced by transiently transfecting Expi293F cells with plasmids encoding either mEmerald-tagged CD9 (mEm-CD9) or mCherry inserted into the small extracellular loop of CD9 (CD9-SEL-mCh) (Fig. 2a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CD9-snorkel-c",
       "gene_symbol": "CD9",
       "uniprot_acc": "P21926",
@@ -152,6 +189,27 @@
       "isoform_residue": 186,
       "canonical_residue": 163,
       "left_pct": 74.10358565737052
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:22:14.920831+00:00",
+  "literature_notes": "L3/L4 describe a C-terminal RFP fusion (CD9-RFP) that does not impair CD9 function. However, the CD9 C-terminus (residue 228) is intracellular per the authoritative topology landmarks (IC3: 218\u2013228, following TM4: 195\u2013217). This is therefore not a surface tag site and is recorded in other_positions. L1 also describes mEm-CD9 (mEmerald fused to CD9) explicitly stated to label the cytosolic side of the membrane; this is likewise intracellular and recorded in other_positions. No ledger line names a specific junction residue within the SEL, so the SEL site is region-level only (insert_after_residue null). The large extracellular loop (LEL, residues 112\u2013194) is not supported by any ledger line for an insertion and is therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 228,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal RFP tag (CD9-RFP) expressed in HEK293 cells and reported not to impair CD9 function, but residue 228 lies in IC3 (218\u2013228), the intracellular C-terminal tail following TM4 (195\u2013217); this is a cytoplasmic tag, not a surface tag."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mEm-CD9 (mEmerald fused to CD9) is explicitly described as labeling the cytosolic region of the EV membrane; the CD9 N-terminus (residues 1\u20139, IC1) is intracellular, consistent with this being an intracellular N-terminal fusion."
     }
   ]
 }

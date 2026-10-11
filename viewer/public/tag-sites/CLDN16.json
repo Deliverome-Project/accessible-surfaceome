@@ -85,6 +85,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "CLDN16-internal-None-lit",
+      "gene_symbol": "CLDN16",
+      "uniprot_acc": "Q9Y5I7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by immunofluorescence co-staining with anti-loop antibody at 37\u00b0C in both MDCK and HeLa cells; no functional assay reported for the tagged construct itself.",
+      "confidence": "medium",
+      "rationale": "CLDN16 has no extracellular terminus (N- and C-termini are both intracellular); the only extracellular regions are ECL1 (residues 27\u201379) and ECL2 (residues 141\u2013163). The HA tag overlaps with the anti-loop antibody signal on the cell surface, and in claudin biology 'the loop' antibody targets ECL1 (the larger, 53-residue loop). No residue is named in any of L1\u2013L3, so the junction cannot be pinned; the site is reported at region level. ECL1 spans 53 residues with a safe interior zone (\u22653 from TM boundaries) of residues 30\u201376. Full-length HA-tagged CLDN16 expressed in MDCK and HeLa cells; the HA signal co-localised with an anti-loop antibody (raised against the extracellular loop of Cldn16) on the cell surface by immunofluorescence, confirming the HA tag is displayed on the extracellular face within the loop region.",
+      "sources": [
+        {
+          "pmid": 16528408,
+          "citation": "PMID 16528408",
+          "claim": "HA tag (Figure 2D) and the anti-loop antibody (Figure 2E) extensively overlapped (Figure 2F), probably representing Cldn16 molecules that had been exposed on the cell surface, whereas Cldn16 molecules only labeled with the antiHA antibody likely represent molecules in transit in different compartments of the biosynthetic pathway."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CLDN16-snorkel-c",
       "gene_symbol": "CLDN16",
       "uniprot_acc": "Q9Y5I7",
@@ -266,6 +303,21 @@
       "isoform_residue": 64,
       "canonical_residue": 64,
       "left_pct": 27.23404255319149
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:42:46.037270+00:00",
+  "literature_notes": "L1 and L2 are additional clips from the same paper (PMC1395478) supporting the same HA-tagged CLDN16 construct; L3 is the most informative clip (HA/anti-loop co-localisation) and is used as the primary supporting line. L4 and L5 describe an N-terminal FLAG tag on CLDN16; the N-terminus of CLDN16 is intracellular (topology landmarks: residues 1\u20136 = INTRACELLULAR, TM1 = 7\u201326), so this tag is on the cytoplasmic face and is recorded in other_positions. No ledger clip names a specific residue for the HA tag insertion, so insert_after_residue remains null and the site is region-level only.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "N-terminal FLAG tag placed before residue 1 (Met); the N-terminus of CLDN16 is intracellular (residues 1\u20136), so this tag faces the cytoplasm, not the extracellular surface."
     }
   ]
 }

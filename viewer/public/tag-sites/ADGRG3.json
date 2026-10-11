@@ -39,5 +39,12 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:09:08.790137+00:00",
+  "literature_notes": "The single ledger entry (L1) describes a GPR97/ADGRG3 CTF-only chimeric construct in which ADGRG3 residues 1\u2013244 (the entire N-terminal fragment) are wholesale REPLACED by P2Y12 residues 1\u201334, and the HA epitope tag (positions 2\u201310) resides within the P2Y12 portion of that chimera \u2014 not within ADGRG3's own sequence. This is not a tag inserted into ADGRG3; it is a domain-swap experiment in which the NTF is deleted and a heterologous peptide carrying an HA tag is substituted. No specific ADGRG3 residue is named as a tag-insertion junction, and the HA sequence is never placed inside ADGRG3's polypeptide chain. The construct is full-length and membrane-anchored, and the HA is extracellular, but those facts do not convert a domain-replacement into a tag-insertion precedent for ADGRG3. The rules require that every site be grounded in a ledger line reporting an insertion tolerated at the site itself or in the same loop/domain of this protein; L1 does not meet that bar for any ADGRG3 residue. Accordingly, zero sites are reported.",
+  "literature_rejected": []
 }

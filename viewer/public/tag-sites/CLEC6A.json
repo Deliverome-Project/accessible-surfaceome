@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC6A",
+  "uniprot_acc": "Q6EIG7",
+  "sites": [
+    {
+      "site_id": "CLEC6A-terminal_c-209-lit",
+      "gene_symbol": "CLEC6A",
+      "uniprot_acc": "Q6EIG7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 209,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L209",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection of the membrane-anchored receptor was enabled by anti-FLAG staining; the paper reports surface display of the tagged receptor. Function not explicitly assayed in L1.",
+      "confidence": "high",
+      "rationale": "CLEC6A is a Type II transmembrane protein with its C-terminus in the extracellular space (residues 42\u2013209). The ledger clip L1 explicitly describes a C-terminal (extracellular) FLAG tag on full-length, membrane-anchored Dectin-2, confirming the tag is on the extracellular face. Because the paper names only 'C-terminal' and not a specific residue, the junction is topology-derived as insert_after_residue=209 (residue L), the sole extracellular terminus. Computed distance from the TM boundary (residue 41) is 168 residues, well exceeding the \u22653-residue constraint. Full-length human Dectin-2 (CLEC6A) cloned into EMCV-SR\u03b1 vector with a C-terminal (extracellular) FLAG epitope tag; construct is membrane-anchored and full-length. CLEC6A is a Type II single-pass TM protein (intracellular 1\u201322, TM 23\u201341, extracellular 42\u2013209), so the C-terminus is the sole extracellular terminus. No specific residue number is cited; position 209 (L) is derived from the topology landmarks as the unique extracellular terminal junction.",
+      "sources": [
+        {
+          "pmid": 35194806,
+          "citation": "PMID 35194806",
+          "claim": "Full\u2010length open\u2010reading frames of human Mincle (NM014358, bases 109\u2010766), DCIR (NM016184, bases 263\u2010974), or Dectin\u20102 (NM001007033, bases 151\u2010778) were cloned in to the EMCV\u2010SR\u03b1 vector followed by a C\u2010terminal (extracellular) FLAG epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:50:34.669166+00:00",
+  "literature_notes": "L2 and L3 both describe an N-terminal FLAG-tagged Dectin-2 construct. For a Type II transmembrane protein, the N-terminus (residues 1\u201322) is intracellular; an N-terminal tag therefore faces the cytoplasm, not the extracellular surface. L3 reports surface detection by anti-FLAG staining of this construct, which is inconsistent with the authoritative topology (N-terminus intracellular). No explicit snorkel validation is described. Per the rules, a tag on an intracellular terminus without an explicit validated snorkel does not qualify as a surface site and is recorded in other_positions. No ledger line supports an internal loop insertion for CLEC6A.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal FLAG tag on full-length Dectin-2; for a Type II TM protein the N-terminus (residues 1\u201322) is cytoplasmic, so this tag faces the intracellular compartment and is not a surface epitope site."
+    }
+  ]
+}

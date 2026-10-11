@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "HEPH",
+  "uniprot_acc": "Q9BQS7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:59:07.999132+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) report C-terminal tags (MYC-DDK and FLAG, respectively) on full-length membrane-anchored HEPH expressed in mammalian cells. HEPH is a single-pass type I transmembrane protein with its large multicopper-oxidase ectodomain extracellular (residues 24\u20131110), a single TM helix (1111\u20131131), and a short 27-residue cytoplasmic tail (1132\u20131158). The C-terminus (residue 1158) therefore sits in the intracellular compartment; both tags are intracellular, not extracellular. Neither line reports a tag at the mature N-terminus (residue 24, extracellular), in any extracellular loop, or at any internal extracellular junction. No ledger line qualifies for a surface tag site. The mature N-terminus after signal-peptide cleavage (after residue 23) is extracellular and would in principle accept a tag, but no published insertion there is recorded in the ledger, so it cannot be proposed. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1158,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal MYC-DDK tag on full-length HEPH; residue 1158 (Q) lies in the intracellular tail (1132\u20131158), 47 residues past the TM boundary \u2014 not accessible on the extracellular face."
+    },
+    {
+      "residue": 1158,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal FLAG tag on full-length HEPH (pcDNA3 construct, WT and D568H); same intracellular C-terminus as L1 \u2014 not a surface tag site."
+    }
+  ]
+}

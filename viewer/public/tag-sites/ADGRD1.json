@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADGRD1-terminal_n-25-lit",
+      "gene_symbol": "ADGRD1",
+      "uniprot_acc": "Q6QNK2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "G",
+      "residue_after": "V",
+      "residue_label": "G25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface ELISA (anti-HA, OD492nm) confirmed surface trafficking; CRE-SeAP cAMP reporter confirmed Gs signaling activity \u2014 both preserved relative to mock-transfected control.",
+      "confidence": "high",
+      "rationale": "No paper in the ledger names a specific residue for the N-terminal HA tag; however, for a signal-peptide-bearing receptor the tag must be inserted after SP cleavage (residue 25, G) to avoid being cleaved off \u2014 the mature N-terminus (V26) is the sole extracellular N-terminus, making this the only possible junction. Python confirmed seq[24]='G' and seq[25]='V', consistent with the landmarks (SP 1\u201325, extracellular 26\u2013570). The large extracellular N-terminal domain (545 residues to TM1) provides ample steric room. L5 from the same paper demonstrates that this HA-tagged WT construct reaches the cell surface and retains Gs-coupled signaling. PMC4982218 (L4/L5): Full-length human ADGRD1 was N-terminally tagged with an HA epitope and C-terminally tagged with FLAG, transfected into cells, and assessed for cell-surface expression by ELISA and for CRE-SeAP signaling activity. The WT HA/FLAG-tagged construct served as the reference baseline (surface expression 0.70 \u00b1 0.11 OD492nm; signaling 786,125 \u00b1 85,787 counts).",
+      "sources": [
+        {
+          "pmid": 27516204,
+          "citation": "PMID 27516204",
+          "claim": "The human ADGRD1 was N-terminally tagged with a haemagglutinin (HA) epitope and C-terminally tagged with a FLAG epitope based on [ 22 ]. nsSNPs were generated through site-directed mutagenesis strategy."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,33 @@
       "canonical_residue": null,
       "left_pct": 3.3112582781456954,
       "note": "Isoform surface expr 2367 (+53% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:08:36.103124+00:00",
+  "literature_notes": "All C-terminal tags in the ledger (FLAG in L4, GFP in L6, BioID2 in L7/L8/L9, Twin-Strep in L10/L11) are placed at the protein's C-terminus (after residue 874). The topology landmarks place residues 806\u2013874 in the intracellular compartment; these tags therefore face the cytoplasm and are recorded in other_positions. L6 (mouse Gpr133 N-terminal 3\u00d7FLAG knock-in) corroborates the N-terminal extracellular tag site as an ortholog but L4 is the direct human ADGRD1 evidence and is used as the primary clip. No ledger line reports a tag insertion in any of the short extracellular loops (ECL1 623\u2013631, ECL2 696\u2013711, ECL3 781\u2013784) or anywhere else in the large ectodomain at a named residue, so no additional internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 874,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal FLAG tag on full-length human ADGRD1; the C-terminus (residues 806\u2013874) is intracellular per topology landmarks, so this tag faces the cytoplasm and is not a surface-accessible site."
+    },
+    {
+      "residue": 874,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal BioID2 fusion on GPR133 (same protein); confirmed functional by cAMP HTRF assay, but the C-terminus is intracellular \u2014 not a surface tag site."
+    },
+    {
+      "residue": 874,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "C-terminal Twin-Strep-tag on GPR133 (WT and H543R cleavage-deficient); used for co-purification, but the C-terminus is intracellular \u2014 not a surface tag site."
     }
   ]
 }

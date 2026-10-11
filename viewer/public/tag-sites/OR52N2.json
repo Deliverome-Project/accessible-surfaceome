@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:52:15.389356+00:00",
+  "literature_notes": "The only ledger line (L1) reports a bRIL domain inserted between A226 and L227 of the full-length consensus OR52 construct (OR52cs, 1\u2013313) for structural studies. In OR52N2 canonical numbering, position 226 is A (matching the paper) and position 227 is V (the paper's OR52cs has L at that position \u2014 a one-residue mismatch consistent with OR52cs being a consensus sequence, not OR52N2 itself). Critically, the authoritative topology landmarks place residues 222\u2013242 in the INTRACELLULAR loop 3 (ICL3), between TM5 (196\u2013221) and TM6 (243\u2013263). The bRIL-in-ICL3 strategy is the standard GPCR structural-biology approach and is explicitly intracellular. It does not qualify as an extracellular surface tag site. No other ledger lines exist. Accordingly, zero extracellular surface tag sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 226,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "bRIL domain inserted between A226 and L227 of OR52cs for structural studies; this junction falls in ICL3 (intracellular loop 3, residues 222\u2013242 in OR52N2) and is therefore an intracellular insertion, not a surface tag site."
+    }
+  ]
 }

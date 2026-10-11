@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRP5",
+  "uniprot_acc": "O75197",
+  "sites": [
+    {
+      "site_id": "LRP5-terminal_n-31-lit",
+      "gene_symbol": "LRP5",
+      "uniprot_acc": "O75197",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TOPFlash reporter gene assay with WNT-3A stimulation: functional response preserved, confirming surface expression and signalling competence of the FLAG-tagged full-length LRP5 receptor.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names LRP5 (alongside LRP6) as carrying an N-terminal FLAG tag placed immediately after the signal peptide and before the mature coding sequence. In canonical LRP5 UniProt numbering the native signal peptide spans residues 1\u201331 (last residue A), so the tag junction is insert_after_residue=31, with residue_before=A and residue_after=S (residue 32, the mature N-terminus). Python indexing of the provided numbered sequence confirms A at position 31 and S at position 32. The tag is 1355 residues from the TM boundary (1387), fully satisfying the \u22653-residue extracellular constraint, and L2 confirms functional WNT-3A signalling is preserved. Full-length LRP5 (and LRP6) constructs were engineered with a heterologous HA signal peptide followed immediately by a FLAG tag, then the LRP5 coding sequence beginning at the mature N-terminus (residue 32, after the native signal peptide), with a C-terminal QPVAT-linker fused to Nluc or mVenus. The construct was expressed in mammalian cells and surface expression was confirmed.",
+      "sources": [
+        {
+          "pmid": 40413190,
+          "citation": "PMID 40413190",
+          "claim": "LRP5/6 constructs were constructed as follows: Influenza hemagglutinin signal peptide (MKTIIALSYIFCLVFA) \u2013 FLAG-tag \u2013 LRP5/6 coding sequence (no signal peptide) \u2013 QPVAT-linker \u2013 Nluc/mVenus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 31,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:18:28.501913+00:00",
+  "literature_notes": "L1 is the primary ledger line: it directly names LRP5 and describes the exact construct architecture (HA-SP\u2013FLAG\u2013LRP5[no native SP]\u2013QPVAT\u2013Nluc/mVenus). L2 provides the functional validation for all constructs including LRP5. L3, L4, and L5 concern LRP6 only and are therefore indirect; they are consistent with but do not independently ground an LRP5 site, so L1 is cited as the sole supporting clip. The C-terminal Nluc/mVenus fusion described in L1 is appended after residue 1615, which falls in the intracellular domain (1408\u20131615); it is recorded in other_positions. No internal extracellular loop insertions are reported in the ledger for LRP5 or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1615,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "The same L1 construct carries a C-terminal Nluc or mVenus fusion after residue 1615; this position is intracellular (topology 1408\u20131615) and is therefore not a surface tag site."
+    }
+  ]
+}

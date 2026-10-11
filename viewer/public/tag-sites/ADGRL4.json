@@ -37,7 +37,66 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADGRL4-terminal_n-19-lit",
+      "gene_symbol": "ADGRL4",
+      "uniprot_acc": "Q9HBW9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "T",
+      "residue_after": "Q",
+      "residue_label": "T19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HA-tagging did not affect processing, glycosylation, or localisation of ELTD1 (L7); cell-surface expression confirmed by flow cytometry on non-permeabilized cells with anti-HA-APC antibody (L3, L4); G protein coupling (NanoBiT complementation) assays performed on HA-tagged full-length receptor (L1, L2); N-terminal HA+GFP cassette showed no negative effect on cell-surface expression levels (L12).",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201319 (last residue T19); the mature N-terminus begins at Q20. An HA tag inserted after residue 19 is placed on the extracellular face, well upstream of TM1 (residues 433\u2013453), giving >400 residues of clearance. Python confirmed seq[18]='T' and seq[19]='Q'. L7 explicitly states HA-tagging of full-length, membrane-anchored ELTD1/ADGRL4 did not affect processing, glycosylation, or localisation; L3/L4/L5 confirm surface display by flow cytometry on non-permeabilized cells; L1/L2 show G protein coupling assays were successfully performed on the same HA-tagged construct, establishing functional tolerance. Full-length, membrane-anchored ADGRL4/ELTD1 was stably expressed in HUVECs via lentiviral transduction with an HA tag placed immediately after the native signal peptide (cleavage after residue 19, mature N-terminus Q20). Anti-HA-Alexa Fluor 488 staining and confocal microscopy confirmed cell-surface display. The same N-terminal HA placement is independently used in PMC12830901 (flow cytometry on non-permeabilized cells with G protein coupling assays) and PMC12971276 (multifunctional N-terminal cassette including HA + GFP downstream of the signal peptide, no negative effect on cell-surface expression levels).",
+      "sources": [
+        {
+          "pmid": 38939053,
+          "citation": "PMID 38939053",
+          "claim": "HA\u2010tagging of ELTD1 did not affect processing, glycosylation or localisation of ELTD1 (Sheldon et al., 2021 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 19,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:14:16.456251+00:00",
+  "literature_notes": "All ledger lines (L1\u2013L13) converge on a single extracellular tag site: the N-terminal HA (and in L10/L13, HA+GFP) epitope placed immediately after the signal peptide cleavage site (after residue 19). No ledger line reports a tag insertion in any of the short extracellular loops (ECL1: 496\u2013499, ECL2: 554\u2013573, ECL3: 640\u2013646) or in the large ectodomain at an internal position. The C-terminal SmBiT (L1/L2) and FLAG (L11) tags are placed at the cytoplasmic C-terminus (residues 668\u2013690, intracellular per topology), so they are recorded in other_positions. L9 describes tagged and untagged constructs used for functional signalling studies but does not specify the tag position beyond 'N-terminal', consistent with the same site; it was not used as the primary supporting clip because L7 is more explicit about tolerance. L13 names an HA- and GFP-tagged aGPCR cell line but does not add a new junction beyond what L10 already establishes.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 690,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal SmBiT complementation fragment tethered via a 12-aa GS linker to the cytoplasmic C-terminus of full-length ADGRL4; residues 668\u2013690 are intracellular per topology landmarks, so this tag faces the cytoplasm and is not a surface epitope site."
+    },
+    {
+      "residue": 690,
+      "kind": "intracellular",
+      "supporting_clip_id": "L11",
+      "note": "C-terminal FLAG tag used for flow cytometry detection and FLAG-Trap purification; placed at the intracellular C-terminus (668\u2013690 intracellular per topology), not accessible from the extracellular face."
+    }
+  ]
 }

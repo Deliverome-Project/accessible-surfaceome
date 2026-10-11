@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "MRAP2",
+  "uniprot_acc": "Q96G30",
+  "sites": [
+    {
+      "site_id": "MRAP2-terminal_n-0-lit",
+      "gene_symbol": "MRAP2",
+      "uniprot_acc": "Q96G30",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA-Halo / HA-SNAP / FLAG-CLIP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display of the tagged full-length MRAP2 confirmed by surface labeling with membrane-impermeant organic dyes (PMC7618510, L4). Functional impact on MRAP2 activity NOT MEASURED in isolation in the cited clips; L10 uses FLAG-MRAP2 in an MC4R signaling co-transfection assay but does not report MRAP2 function as preserved vs. perturbed.",
+      "confidence": "high",
+      "rationale": "MRAP2 is a single-pass membrane protein with its N-terminus (residues 1\u201344) entirely extracellular and no endogenous signal peptide; the TM domain begins at residue 45, leaving 44 residues of clearance. The published constructs attach the tag before MRAP2 M1 (insert_after_residue = 0) via an exogenous signal sequence that is cleaved post-translationally, placing the tag on the extracellular face. No specific MRAP2 residue number is cited in the construction description, but there is exactly one extracellular terminus, so the junction is unambiguous and topology-derived. Python verification confirms residue_after = 'M' (seq[0]). Full-length MRAP2 constructs (ss-HA-Halo-MRAP2, ss-HA-SNAP-MRAP2, ss-FLAG-CLIP-MRAP2) were built by prepending an exogenous signal sequence, a short linker, an HA or FLAG epitope, a further linker, and a Halo/SNAP/CLIP self-labeling tag immediately before the MRAP2 coding sequence (i.e., before M1). After signal-sequence cleavage the composite tag sits at the extracellular N-terminus of the membrane-anchored protein. Constructs were expressed in mammalian cells and surface-labeled with membrane-impermeant dyes (PMC7618510). The same N-terminal FLAG arrangement on full-length MRAP2 is independently used in a functional MC4R-signaling assay (PMC11891872, L10).",
+      "sources": [
+        {
+          "pmid": 41401256,
+          "citation": "PMID 41401256",
+          "claim": "For ss-HA-Halo-GPCR and ss-HA-SNAP-GPCR, plasmids were constructed as follows: signal sequence (MVLLLILSVLLLKEDVRG), linker (SAQSTR), HA tag (YPYDVPDYA), linker (TRGSGS), Halo or SNAP tag, linker (RS), GPCR or MRAP2 gene."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:49:51.451961+00:00",
+  "literature_notes": "L1, L3, and L4 (all PMC7618510) corroborate the same N-terminal prepend site as L2 and are subsumed into it rather than listed as separate sites because they describe the same junction on the same protein. L10 (PMC11891872) independently supports the same N-terminal FLAG arrangement on MRAP2 in a functional context but does not add a new junction. L9 (PMC8961526) describes commercially synthesized N-terminal Flag-tagged hMRAP2 constructs but is disqualified as a primary source because the tag position within the construct is unstated (commercial plasmid, no residue pinned). L6 (PMC8630767) concerns Xenopus laevis MRAP (xlMRAP), not human MRAP2, and is superseded by the direct MRAP2 evidence. L7 and L8 (PMC4947873) concern mouse MRAP1 (not MRAP2); they are indirect ortholog evidence for N-terminal AP-tag tolerance but are not needed given the direct MRAP2 data. The C-terminal tag in L5 (MRAP2-3xFLAG, C-terminus at residue 205) is intracellular per the topology landmarks and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 205,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "MRAP2-3xFLAG places the FLAG tag at the C-terminus (residue 205, D), which is intracellular per the topology landmarks (intracellular span 68\u2013205); not suitable for extracellular surface tagging."
+    }
+  ]
+}

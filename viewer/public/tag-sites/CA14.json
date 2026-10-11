@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CA14",
+  "uniprot_acc": "Q9ULX7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:52:32.486444+00:00",
+  "literature_notes": "L1 (PMID 10336468) reports an epitope-tagged CA14 construct expressed in COS-7 cells that localises to the plasma membrane and retains CA enzymatic activity in the membrane fraction. However, the paper names neither the tag type nor the tag position (N-terminal, C-terminal, or internal), and it does not state that the tag is on the extracellular face. CA14 is a type I single-pass membrane protein with exactly one extracellular terminus (mature N-terminus, residue 16, after SP cleavage at residue 15) and a short intracellular C-tail (residues 313\u2013337). A C-terminal intracellular epitope tag would produce identical plasma-membrane localisation data, so the topology-derived rule ('exactly one extracellular terminus, therefore the tag is there') cannot be applied with confidence \u2014 the tag could equally be intracellular. Applying the 'doubt the evidence \u2192 drop the site' rule, no surface tag site is proposed. No other ledger lines are provided.",
+  "literature_rejected": []
+}

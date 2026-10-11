@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "AREG",
+  "uniprot_acc": "P15514",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:31:24.670875+00:00",
+  "literature_notes": "The sole ledger line (L1) describes a VectorBuilder commercial lentiviral construct encoding a 'myc-tagged-hAREG-transgene' used to overexpress AREG in NSCLC lines. The tag position is entirely unstated: the paper names no residue, no terminus, and no loop. AREG is a type I single-pass transmembrane protein with an extracellular N-terminus (mature residues 20\u2013198, after signal-peptide cleavage at 1\u201319) and an intracellular C-terminus (residues 220\u2013252). Because both an extracellular terminus and an intracellular terminus exist, topology alone cannot resolve which face the Myc tag occupies; the 'exactly ONE extracellular terminus' topology-derived rule therefore does not apply. The explicit ledger exclusion for 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue' disqualifies this clip from grounding any surface-tag site. No other ledger lines are present. Zero sites qualify, which is the correct answer.",
+  "literature_rejected": []
+}

@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "HJV",
+  "uniprot_acc": "Q6ZVN8",
+  "sites": [
+    {
+      "site_id": "HJV-terminal_n-35-lit",
+      "gene_symbol": "HJV",
+      "uniprot_acc": "Q6ZVN8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "cMYC",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L1: mature membrane-anchored protein detected by anti-cMYC antibody (surface detection confirmed). L2\u2013L5 (corroborating, FLAG tag): FLAG-tagged HJV used in functional cleavage and rearrangement assays; N-terminal fragment (residues 33\u2013121) detected by anti-FLAG after TMPRSS6 cleavage, and the construct was used to demonstrate that residue 121 is critical for HJV rearrangement, indicating the tagged protein is functional.",
+      "confidence": "high",
+      "rationale": "HJV is a GPI-anchored protein with signal peptide 1\u201335 and the entire region 36\u2013426 extracellular; there is no TM domain, so the mature N-terminus (after SP cleavage at residue 35) is the only terminus on the extracellular face. Python confirmed res(35)=S and res(36)=Q. The paper's 'position 37 = end of signal peptide' is offset by 2 residues from our computed SP boundary (1\u201335), consistent with a slightly different SP prediction in the original study; the biological meaning (tag at the SP/mature junction) is unambiguous. L2\u2013L5 from a second independent paper corroborate this junction with a FLAG tag and show the construct supports functional cleavage studies, raising overall confidence. PMID 18827264 reports full-length HJV expressed in mammalian cells with a cMYC tag introduced at 'position 37 (end of the signal peptide)' to produce pcDNA3.1-HJV 37-MYC, enabling detection of the mature membrane-anchored protein. Our computed SP is 1\u201335 (mature N-terminus = 36), so the paper's 'position 37 = end of SP' corresponds to the SP/mature junction at canonical residue 35/36; the 2-residue offset reflects a minor difference in SP-boundary prediction between the paper and our topology. L2\u2013L5 (PMC4395201) independently confirm a FLAG-tagged full-length HJV with the tag at the N-terminus of the mature protein, used to detect the N-terminal fragment (residues 33\u2013121) after TMPRSS6 cleavage and to study HJV rearrangement, further corroborating this junction.",
+      "sources": [
+        {
+          "pmid": 18827264,
+          "citation": "PMID 18827264",
+          "claim": "For some experiments a cMYC tag was introduced at the end of the signal peptide, at position 37, to produce the pcDNA3.1- HJV 37-MYC construct. 11 Mutant constructs ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 35,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:02:25.823770+00:00",
+  "literature_notes": "HJV (Hemojuvelin, Q6ZVN8) is a GPI-anchored protein; the entire region 36\u2013426 is extracellular with no transmembrane domain. The ledger contains five clips, all converging on the mature N-terminus as the tag-insertion site: L1 (cMYC, PMID 18827264) names 'position 37 = end of signal peptide'; L2\u2013L5 (FLAG, PMC4395201) describe an N-terminal FLAG-tagged full-length HJV used in cleavage and rearrangement studies. Because all clips pin the same junction (after SP cleavage), only one site is reported. No internal loop insertions are evidenced in the ledger. Residue 121 (R) is recorded in other_positions as a functional/cleavage site (TMPRSS6 cleavage, critical for HJV rearrangement per L2) and should be avoided for tag insertion.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 121,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L2",
+      "note": "Residue 121 (R) is critical for rearrangement of the N-terminal heterodimeric HJV (L2) and is also the TMPRSS6 proteolytic cleavage site (L5); disruption at this position impairs HJV function and processing."
+    }
+  ]
+}

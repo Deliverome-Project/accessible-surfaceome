@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD38",
+  "uniprot_acc": "P28907",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:16:55.221405+00:00",
+  "literature_notes": "CD38 is a type II transmembrane protein (intracellular 1\u201323, TM 24\u201344, extracellular 45\u2013300). L1 describes two constructs: (1) a chimeric CD38 ecto domain (residues 45\u2013300) fused to PDGFR TMD with an HA tag at the extracellular N-terminus \u2014 this fails the 'full-length and membrane-anchored' requirement because it is a truncated CD38 ecto domain, not full-length CD38; (2) full-length CD38 fused C-terminally to CD9 (a tetraspanin with intracellular N- and C-termini) with HA at the N-terminus of the fusion \u2014 in native CD38 topology the N-terminus (residue 1) is intracellular, so this HA tag is intracellular and does not qualify as an extracellular surface tag site. L2 describes the same CD9\u2013CD38 fusion construct for exosomal display but names no epitope tag insertion at a specific residue; it is a protein\u2013protein fusion experiment, not a tag-insertion experiment. No ledger line grounds a tag insertion at an extracellular position in full-length, membrane-anchored CD38. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA tag placed at the N-terminus of the full-length CD38 + CD9 fusion construct; in native CD38 type II topology residue 1 is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADAM10",
+  "uniprot_acc": "O14672",
+  "sites": [
+    {
+      "site_id": "ADAM10-terminal_n-19-lit",
+      "gene_symbol": "ADAM10",
+      "uniprot_acc": "O14672",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip cites a prior description with no assay detail reported.",
+      "confidence": "low",
+      "rationale": "ADAM10 has a single-pass type-I topology: signal peptide 1\u201319, extracellular 20\u2013677, TM 678\u2013698, intracellular 699\u2013748. The C-terminus is cytoplasmic, leaving the mature N-terminus (residue 20, 658 residues from the TM boundary) as the only extracellular terminus; insert_after_residue=19 is the unique topology-derived junction. Residue_before=G (position 19, last SP residue) and residue_after=Q (position 20, first mature residue) were read directly from the numbered sequence. A critical caveat: ADAM10 carries a prodomain (approximately residues 20\u2013211) that is cleaved by furin at the RKKR motif (residues 210\u2013213) during maturation; a tag placed at position 19/20 sits within this prodomain and may be shed from the mature surface enzyme, making it unreliable as a stable surface label without a prodomain-cleavage-resistant design. Full-length HA-tagged ADAM10 expressed from pcDNA3.1 in mammalian cells; construct described as previously published (ref [49]). No residue or loop is named in the clip; position is derived from topology because the N-terminus (after SP cleavage at residue 19) is the sole extracellular terminus \u2014 the C-terminus (residues 699\u2013748) is intracellular.",
+      "sources": [
+        {
+          "pmid": 35269584,
+          "citation": "PMID 35269584",
+          "claim": "HA-tagged ADAM10 in the pcDNA3.1 vector was as described [ 49 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:00:28.556000+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It confirms a full-length HA-tagged ADAM10 construct but names no insertion residue, no loop, and reports no assay. The topology-derived rule places the tag at the sole extracellular terminus (after SP cleavage, insert_after_residue=19). Confidence is low because (1) no position is stated in the clip, (2) no functional or surface-expression assay is described, (3) the N-terminal region of the mature ectodomain is the prodomain, which is proteolytically removed by furin during normal ADAM10 maturation \u2014 a tag here may not persist on the mature cell-surface enzyme. No internal loop sites are supported by the ledger. The intracellular C-terminus (699\u2013748) was considered and excluded as it is cytoplasmic.",
+  "literature_rejected": []
+}

@@ -1,0 +1,136 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRG1",
+  "uniprot_acc": "Q02297",
+  "sites": [
+    {
+      "site_id": "NRG1-internal-173-lit",
+      "gene_symbol": "NRG1",
+      "uniprot_acc": "Q02297",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 173,
+      "residue_before": "T",
+      "residue_after": "T",
+      "residue_label": "T173",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct was generated and used in topology/localization studies (PMC10741733). Surface display and function NOT MEASURED in the cited clip.",
+      "confidence": "low",
+      "rationale": "L1 names residues 233-234 of NRG1 type III as the HA insertion site. NRG1 type III (700 aa) differs from the canonical type I (640 aa) by an N-terminal CRD domain of approximately 60 aa; subtracting this offset gives canonical equivalent ~173-174. Python computation confirms pos 173 = T and pos 174 = T in the canonical sequence, both extracellular (EC 1-242) and 69 residues from the TM boundary (243). The exact offset is uncertain (58-62 aa), so position_evidence is 'inferred' and cited_tag_residue is set to 233 (the type III residue actually cited). This site is consistent with the region-level evidence in L7/L8. L1 (PMC10741733) reports an HA tag inserted at residues 233-234 of NRG1 type III (700 aa) in the full-length membrane-anchored construct p3xFlag-HA-Myc-Nrg1 type III. NRG1 type III carries an N-terminal CRD domain (~60 aa) absent from the canonical type I isoform (640 aa); subtracting this offset maps type III pos 233 to canonical pos ~173. Pos 173 (T) is in the extracellular stalk between the Ig-like and EGF-like domains, consistent with L7/L8 which independently describe an HA insertion 'between Ig and EGF domains' in a full-length NRG1 construct.",
+      "sources": [
+        {
+          "pmid": 38136627,
+          "citation": "PMID 38136627",
+          "claim": "HA-tag (amino-acid residues: YPYDVPDYA; nucleic-acid sequence: TACCCATACGATGTTCCAGATTACGCT) was inserted into amino-acid residue 233\u2013234 of Nrg1 type III in the construct of p3xFlag-Myc-Nrg1 type III, following the instructions of the Quick-change Lightning Multi Site-Directed Mutagenesis Kit (Cat # 210514, Agilent Technologies, Santa Clara, CA, USA), namely, as p3xFlag-HA-Myc-Nrg1 type III."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 233,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRG1-internal-None-lit",
+      "gene_symbol": "NRG1",
+      "uniprot_acc": "Q02297",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "Ig-EGF linker",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HA immunostaining in brain sections confirmed expression of the tagged full-length NRG1 construct in vivo (L8). Surface display and function NOT MEASURED in the cited clips.",
+      "confidence": "medium",
+      "rationale": "L7 and L8 name the Ig-EGF domain boundary as the insertion site for an HA tag in a full-length membrane-anchored NRG1 construct expressed in transgenic mice. In the canonical type I sequence (640 aa), the Ig-like domain spans approximately residues 1-50 and the EGF-like domain spans approximately 176-226 (extracellular, well within EC 1-242); the intervening stalk (roughly 51-175) is the Ig-EGF linker. No residue number is given in either clip, so insert_after_residue is left null and the site is reported at region level. L7 and L8 (PMC7804852) report that an HA tag was inserted 'between the Ig and EGF domains' of NRG1 in a full-length construct expressed in gtoNrg1 transgenic mice. HA immunostaining in brain sections confirmed expression of the tagged construct. No specific residue number is given in either clip; the site is named only at the domain-boundary level.",
+      "sources": [
+        {
+          "pmid": 33436636,
+          "citation": "PMID 33436636",
+          "claim": "An HA tag was inserted between Ig and EGF domains."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRG1-terminal_n-0-lit",
+      "gene_symbol": "NRG1",
+      "uniprot_acc": "Q02297",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized anti-FLAG staining (L3). Function NOT MEASURED in the cited clips.",
+      "confidence": "high",
+      "rationale": "The canonical NRG1 type I sequence has no signal peptide and the N-terminus (pos 1, M) is directly extracellular (EC 1-242). L3 explicitly confirms via non-permeabilized immunostaining that the N-terminal FLAG tag of the full-length membrane-anchored NRG1 type III construct is displayed on the cell surface. Because the N-terminus is the sole extracellular terminus of this single-pass type I topology, insert_after_residue=0 (prepend) is the only possible junction; residue_after is M (pos 1). L9, L10/L11/L12, and L5/L6 provide convergent corroboration across human and zebrafish NRG1 isoforms. Full-length NRG1 type III (700 aa) cloned into p3xFlag-Myc-24 with 3xFLAG at the N-terminus (L2); non-permeabilized anti-FLAG immunostaining of transfected cells confirmed the N-terminal tag is displayed on the extracellular face (L3). The canonical type I sequence (640 aa) has no signal peptide and the same type I topology (EC 1-242), so the N-terminus is directly extracellular. Multiple additional ledger lines (L9: two HA tags at N-terminus of NRG1 used in myelination studies; L10/L11/L12: N-terminal HA on CRD-NRG1 in transgenic mice; L5/L6: mCherry near N-terminus of zebrafish NRG1I\u03b21 with confirmed surface localization) all corroborate N-terminal tagging of full-length membrane-bound NRG1 constructs.",
+      "sources": [
+        {
+          "pmid": 38136627,
+          "citation": "PMID 38136627",
+          "claim": "The Flag (np) staining signal ( Figure 1 D) suggested that part of the N-terminal of Nrg1 type III localized outside the cell due to a single-pass transmembrane."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:30:28.810320+00:00",
+  "literature_notes": "Ledger lines evaluated: L1-L12. L2 describes the full-length type III construct with N-terminal FLAG; L3 confirms surface display of that N-terminal tag (both used to support Site 1). L4 confirms the C-terminal Myc tag is intracellular (recorded in other_positions). L5/L6 describe mCherry inserted near the N-terminus of zebrafish NRG1I\u03b21 (ortholog, indirect); they corroborate Site 1 but do not add a new site because the zebrafish sequence differs and the exact human canonical equivalent is uncertain. L7 and L8 are from the same paper (PMC7804852) and describe the same HA insertion 'between Ig and EGF domains'; they constitute one region-level site (Site 2). L1 names a specific residue (233-234 of type III) that maps to canonical ~173-174 after correcting for the ~60 aa CRD offset; this is reported as a separate inferred site (Site 3) because a named residue outranks a loop-only citation, even when the mapping is approximate. L9, L10, L11, L12 all describe N-terminal HA tags on full-length NRG1 constructs and corroborate Site 1; they do not add new sites. No ledger line supports a tag in the juxtamembrane stalk (pos 227-242) at >=3 residues from TM with a specific validated residue; the apparent canonical pos 233-234 (EK) is only 9 residues from TM but belongs to type III numbering, not canonical type I. No ledger line supports any intracellular surface tag or a C-terminal extracellular tag (the C-terminus is intracellular per L4 and topology).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 640,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Non-permeabilized anti-Myc staining gave a negative result for the C-terminal Myc tag of full-length NRG1 type III, confirming the C-terminus is intracellular and inaccessible before permeabilization."
+    }
+  ]
+}

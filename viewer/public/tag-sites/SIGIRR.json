@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "SIGIRR",
+  "uniprot_acc": "Q6IA17",
+  "sites": [
+    {
+      "site_id": "SIGIRR-terminal_n-0-lit",
+      "gene_symbol": "SIGIRR",
+      "uniprot_acc": "Q6IA17",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence (unpermeabilized cells): peripheral-edge staining confirmed, demonstrating cell-surface expression of the FLAG-tagged construct. No functional (signalling) assay of the tagged protein reported.",
+      "confidence": "high",
+      "rationale": "SIGIRR is a single-pass type-I transmembrane protein; the computed topology places residues 1\u2013118 extracellular with no signal peptide (topology string begins O at position 1), making the N-terminus the sole extracellular terminus. Because no ledger line names a residue, the junction is topology-derived: insert_after_residue = 0 (prepend before M1), with residue_after = M (verified from the numbered sequence). The TM boundary begins at residue 119, giving 118 residues of clearance\u2014well beyond the 3-residue minimum. Multiple independent studies (L1\u2013L6) demonstrate that N-terminal epitope tags (FLAG, HA, Myc) on full-length SIGIRR are tolerated and surface-displayed. PMC9318995 (L1) reports N-terminal FLAG-tagged full-length WT-SIGIRR expressed in HEK/mammalian cells; immunofluorescence under unpermeabilized conditions shows peripheral-edge staining confirming cell-surface display of the tagged protein. The same study (L2) and PMC9527062 (L4, L5, L6) independently construct N-terminal FLAG-, HA-, and Myc-tagged full-length SIGIRR for surface and co-localisation studies. No ledger line names a specific residue; all describe the tag as N-terminal.",
+      "sources": [
+        {
+          "pmid": 35887095,
+          "citation": "PMID 35887095",
+          "claim": "Under both unpermeabilized and permeabilized conditions, the Flag-tagged WT-SIGIRR alone was expressed throughout the cells that included a peripheral edge, implying its cell surface expression ( Figure 3 A, Supplemental Figure S1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:21:48.221634+00:00",
+  "literature_notes": "All six ledger lines describe N-terminal epitope tags (FLAG, HA, Myc) on full-length SIGIRR; none names a specific residue, and none reports an internal-loop insertion. SIGIRR has exactly one extracellular terminus (N-terminus, residues 1\u2013118; no signal peptide), so the topology-derived junction (prepend, insert_after_residue = 0) is the only position the ledger supports. The \u03948-SIGIRR constructs mentioned in L2, L3, L5, and L6 are deletion-mutant variants that are intracellularly retained; they do not represent a distinct tag-insertion site and are not promoted to other_positions because the retention is a property of the mutant protein, not of the tag position. The intracellular C-terminus (residue 410, intracellular domain 141\u2013410) is not supported by any ledger line for a surface tag.",
+  "literature_rejected": []
+}

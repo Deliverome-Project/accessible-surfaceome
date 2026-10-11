@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCR6-terminal_n-0-lit",
+      "gene_symbol": "CCR6",
+      "uniprot_acc": "P51684",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry and immunoprecipitation with anti-HA (L5); CCL20-induced receptor phosphorylation measured by [32P]-orthophosphate metabolic labeling (L4) \u2014 function preserved.",
+      "confidence": "high",
+      "rationale": "CCR6 is a 7-TM GPCR with no endogenous signal peptide; the N-terminal extracellular domain spans residues 1\u201347 (47 aa, well above the \u22653-residue TM clearance threshold). A prepend at position 0 places the tag before M1 on the extracellular face, which is the only extracellular terminus available. This is confirmed by seven independent ledger lines across three papers, with L6 naming the N-terminus explicitly. Python-verified: residue_after = seq[0] = 'M'; TM1 begins at residue 48, giving 47 residues of clearance. Multiple independent studies (PMC8259436, PMC5840145, PMID 35142152) express full-length human CCR6 with an N-terminal HA or c-myc tag in P815, Jurkat, U2OS, and HEK293T cells, confirmed at the cell surface. L6 explicitly states 'HA-tag at the N-terminus of CCR6.' CCR6 has no endogenous signal peptide (UniProt P51684), so the extracellular N-terminus (residues 1\u201347, 47 residues clear of TM1 at position 48) is the sole extracellular terminus and the unambiguous tag location. L4 (PMC5840145) shows CCL20-stimulated phosphorylation of HA-tagged CCR6 by metabolic labeling and immunoprecipitation, confirming functional receptor signaling is preserved.",
+      "sources": [
+        {
+          "pmid": 35142152,
+          "citation": "PMID 35142152",
+          "claim": "All the above constructs contained a HA-tag at the N-terminus of CCR6, and a separate set of these constructs with an additional C-terminal GFP-tag were also generated."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:05:07.544881+00:00",
+  "literature_notes": "All seven ledger lines converge on a single site: the N-terminal prepend (insert_after_residue=0). No ledger line pins a tag to any internal extracellular loop (ECL1 105\u2013119, ECL2 181\u2013211, ECL3 280\u2013303), so no internal sites are proposed. The C-terminal GFP reported in L6 is intracellular (residues 322\u2013374 per topology) and is recorded in other_positions. L2 describes an exogenous IgK signal peptide added for expression enhancement followed by the tag and then CCR6 \u2014 this architecture places the tag at the extracellular N-terminus of the mature receptor (before M1), consistent with insert_after_residue=0. No ledger line names a specific residue number, so position_evidence is topology_derived throughout.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 374,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "L6 reports a C-terminal GFP tag on CCR6; residue 374 (M) falls within the intracellular C-tail (topology landmarks 322\u2013374), making this an intracellular fusion, not a surface tag site."
+    }
+  ]
 }

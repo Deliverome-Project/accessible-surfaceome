@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GRM8-terminal_n-33-lit",
+      "gene_symbol": "GRM8",
+      "uniprot_acc": "O00222",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 33,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S33",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA + SNAP (or FLAG + CLIP)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by membrane-impermeable SNAP-dye labeling in live HEK 293T cells; agonist (1 mM glutamate)-induced internalization and colocalization with GFP-2xFYVE (endosome) and Lamp1-YFP (lysosome) markers demonstrated; N-terminally SNAP-tagged constructs used for all electrophysiology recordings (function preserved); rat HA-tagged mGluR8 at same position functional in G\u03b115-coupled calcium assays.",
+      "confidence": "high",
+      "rationale": "All ledger lines describing N-terminal tags on mGluR8 (L1, L3, L4, L9\u2013L13) converge on the same architectural position: a tag placed after the signal peptide and before the mature receptor sequence. The native human mGluR8 SP spans residues 1\u201333 (computed landmarks), so insert_after_residue = 33 (S), with residue_after = 34 (Q), placing the tag at the extracellular N-terminus of the large Venus flytrap domain (34\u2013583), 550 residues from TM1. Python verification confirms S at position 33 and Q at position 34. The position is topology-derived because no ledger line names a specific residue number for the N-terminal junction, but exactly one extracellular terminus exists and the construct architecture is unambiguous. Human mGluR8 constructs were built with a heterologous N-terminal signal peptide (rat mGluR5) followed by HA and SNAP tags (or FLAG and CLIP tags) upstream of the full-length human mGluR8 sequence in pRK5. The heterologous SP drives the tag to the extracellular face; in the canonical human sequence the native SP ends at residue 33 (S), so the tag is placed between residue 33 and the mature N-terminus at residue 34 (Q). Surface display was confirmed by labeling with membrane-impermeable fluorophores (SNAP-Surface dyes), and agonist-induced internalization and colocalization with endosomal/lysosomal markers were demonstrated in live and fixed HEK 293T cells (L5\u2013L8). The same N-terminally SNAP-tagged constructs were used for all electrophysiology recordings (L13), and the rat ortholog HA-tagged at the same position was used in calcium-mobilization functional assays (L1).",
+      "sources": [
+        {
+          "pmid": 42722693,
+          "citation": "PMID 42722693",
+          "claim": "All SNAP-tagged mGluR8 (human) constructs were generated with an N-terminal signal peptide from rat mGluR5 followed by HA- and SNAP-tags in the pRK5 vector as previously described 54 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:51:11.849761+00:00",
+  "literature_notes": "All thirteen ledger lines describe tags at one of two positions: (1) the extracellular N-terminus after signal-peptide cleavage (L1, L3\u2013L13), or (2) the intracellular C-terminus (L1 RLuc8, L2 HiBiT). No ledger line reports a tag inserted into any extracellular loop or inter-domain linker of mGluR8. The N-terminal site is supported by multiple independent papers using HA, SNAP, CLIP, FLAG, Halo, and HA+FLAG tags on both rat and human mGluR8, with surface display and functional validation. L11 describes a cryo-EM construct with N-terminal HA+FLAG+AAA on full-length membrane-anchored human mGluR8, further confirming the position. The heterologous rat mGluR5 signal peptide used in L3/L4/L9/L10/L12/L13 replaces the native SP but delivers the tag to the same extracellular face; the insert_after_residue is assigned to 33 (the last residue of the native human SP) because that is the canonical junction in the UniProt sequence. position_evidence is 'topology_derived' because no clip names a residue number for the N-terminal junction \u2014 only the construct architecture (SP \u2192 tag \u2192 mGluR8) is stated.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 908,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HiBiT tag (VSGWRLFKKIS) fused C-terminally after a GSPPARAT linker; the C-terminus of mGluR8 is intracellular (residues 844\u2013908 per topology landmarks), so this is not a surface tag site."
+    },
+    {
+      "residue": 908,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Split RLuc8 fragments (L1 residues 1\u2013229 or L2 residues 230\u2013311) fused C-terminally after a GSPPARAT linker on rat mGluR8; C-terminus is intracellular, not a surface site."
+    }
+  ]
 }

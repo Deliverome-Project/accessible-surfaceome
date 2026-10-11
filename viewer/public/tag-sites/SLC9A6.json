@@ -183,9 +183,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface FLAG immunostaining confirmed extracellular exposure of the tag on intact, non-permeabilised cells; the construct was used to study NHE6 trafficking and recycling, demonstrating normal membrane localisation and functional behaviour in the published assays.",
+      "functional_impact_measured": "Surface accessibility of the extracellular 3xFLAG tag was demonstrated by anti-FLAG antibody labelling of non-permeabilized cells, confirming the tag is exposed on the extracellular face; ion-exchange function of this specific construct is NOT MEASURED in the ledger clips.",
       "confidence": "high",
-      "rationale": "L1 explicitly names Met53 as the insertion point within the first extracellular loop of the full-length, membrane-anchored protein; Python confirms seq[52]='M' and seq[53]='D', placing the junction squarely inside EC1 (residues 43\u201370). The site is 11 residues from the signal-peptide cleavage site (residue 42) and 18 residues from the next TM helix (residue 71), satisfying the \u22653-residue TM-clearance rule on both sides. L2 independently corroborates the same junction via the NotI-site engineering strategy, so both clips converge on a single, unambiguous site. Full-length, membrane-anchored human NHE6 (SLC9A6) expressed in mammalian cells; a triple FLAG epitope (AAA-DYKDDDDK-G-DYKDDDDK-G-DYKDDDDK-AAA) was inserted immediately after Met53 in the first extracellular loop (EC1, residues 43\u201370) by PCR-engineering an in-frame NotI site after M53 followed by annealed-primer ligation, generating the 3F-NHE6-HA construct. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L1 and L2 (same paper, PMC5010692) both explicitly name Met53 as the insertion point in the first extracellular loop of full-length, membrane-anchored NHE6. Python verification confirms residue 53 = M and residue 54 = D in the canonical 701-aa sequence. The site sits 10 residues from the EC1 N-boundary (TM2 end at 122) and 18 residues from the TM1 C-boundary (71), well beyond the >=3 residue minimum on both sides. L1 is used as the primary clip because it names both the loop and the residue explicitly in the context of the intact construct. Full-length membrane-anchored human NHE6 (3F-NHE6-HA construct) engineered by PCR to introduce an in-frame NotI site after Met53, followed by insertion of annealed primers encoding the triple FLAG epitope (AAA-DYKDDDDK-G-DYKDDDDK-G-DYKDDDDK-AAA) in the first extracellular loop (EC1, residues 43\u201370). The HA tag is separately at the intracellular C-terminus.",
       "sources": [
         {
           "pmid": 27590723,
@@ -195,7 +195,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "SLC9A6-surface_loop-136",
@@ -761,10 +766,30 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:29:05.554561+00:00",
-  "literature_notes": "L2 (PMC5010692) independently corroborates the L1 site by the same junction (after M53) via a different description (NotI engineering); both clips ground the same single site, so only one site entry is warranted. L3 (PMC13463026) reports a C-terminal TEV-eGFP-TwinStrep tag on rat NHE6; the C-terminus falls in the intracellular domain (residues 533\u2013701) and is therefore disqualified as an extracellular site. L4 (PMC13558669) reports a C-terminal FLAG tag on human NHE6 (residues 1\u2013701); same disqualification. L5 (PMC13558669) reports a C-terminal eGFP-STREPII tag; same disqualification. L6 (PMC2847532) reports C-terminal EGFP/mCherry fusions on NHE6.1; same disqualification. No ledger line supports any other extracellular insertion site.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T15:19:26.818047+00:00",
+  "literature_notes": "L1 and L2 both ground the same Met53 site in EC1; L1 is cited as primary. L3 (C-terminal FLAG), L4 (C-terminal eGFP-STREPII), L5 (C-terminal TEV-eGFP-TwinStrep on rat ortholog), L6 (C-terminal HA-Twin-Strep), and L7 (C-terminal EGFP/mCherry) all place tags at the intracellular C-terminal tail (residues 533\u2013701, IC_tail per topology landmarks) and therefore do not qualify as extracellular surface tag sites. They are recorded in other_positions. No ledger line supports any other extracellular loop insertion.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 701,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG tag on full-length NHE6 (residues 1\u2013701); the C-terminus falls in the intracellular tail (IC_tail, 533\u2013701) and is not surface-exposed."
+    },
+    {
+      "residue": 701,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal eGFP-STREPII tag on full-length NHE6; same intracellular C-terminus, used for structural studies."
+    },
+    {
+      "residue": 701,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "C-terminal EGFP or mCherry fusion on NHE6.1 expressed in HepG2 cells; C-terminus is intracellular, used for subcellular localisation imaging."
+    }
+  ]
 }

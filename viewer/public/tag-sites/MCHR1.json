@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MCHR1-terminal_n-0-lit",
+      "gene_symbol": "MCHR1",
+      "uniprot_acc": "Q99705",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "VSVg",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface ELISA confirmed surface display; ERK activation in response to MCH binding was preserved; VSVg tag explicitly stated to not interfere with receptor signaling (L13). mCherry-MCHR1 knock-in (L9/L10) detected in neuronal cilia of ARC and PVN at multiple developmental ages.",
+      "confidence": "high",
+      "rationale": "MCHR1 lacks a signal peptide; the topology landmarks place residues 1\u201340 extracellular, making the N-terminal prepend (before M1) the only extracellular terminus and the unique junction derivable from topology. L13 explicitly states the VSVg tag does not interfere with receptor signaling, and L12 confirms surface display by cell-surface ELISA, yielding surface_and_function validation. Python confirmed residue 1 = M and that the prepend is 40 residues from TM1 (well above the \u22653 threshold). Multiple independent ledger lines (mCherry CRISPR knock-in at start codon, 3HA co-expression) all converge on this same position. N-terminally VSVg-tagged full-length MCHR1 expressed in CHO-K1 cells; cell-surface ELISA confirmed surface display and agonist-mediated internalization; ERK activation assay used to assess signaling. MCHR1 has no signal peptide (topology: residues 1\u201340 extracellular), making the N-terminus the sole extracellular terminus; the prepend position (insert_after_residue=0, before M1) is the unique junction derivable from topology. Corroborated by L1\u2013L10 (mCherry knock-in at start codon, ciliary surface localization in neurons) and L14 (3HA-MCHR1 in functional co-expression).",
+      "sources": [
+        {
+          "pmid": 24348551,
+          "citation": "PMID 24348551",
+          "claim": "Therefore, we conclude that the presence of the VSVg tag does not interfere with receptor signaling (data not shown), and we took advantage of the sensitivity of this epitope to explore the role that receptor internalization plays in controlling the duration of MCH-mediated ERK signaling."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:38:54.385886+00:00",
+  "literature_notes": "All 15 ledger lines support the same N-terminal prepend site (insert_after_residue=0). Three distinct tag types are documented at this position: mCherry (L1\u2013L10, L15; CRISPR knock-in at start codon, ciliary surface localization confirmed), VSVg (L11\u2013L13; ERK signaling preserved, cell-surface ELISA), and 3HA (L14; functional co-expression with MRAP2). Because all converge on the identical junction, this is one site with multiple supporting lines; L13 was chosen as the primary clip for its explicit functional-preservation statement. No ledger line supports any internal extracellular loop insertion. The C-terminus (residues 315\u2013353) is intracellular per topology and no ledger line tags it, so no other_positions entry is warranted. The HA signal sequence mentioned in L3/L4/L7/L8 is an exogenous trafficking aid prepended to the mCherry-MCHR1 fusion to ensure ER threading; it is not a tag on MCHR1 itself and does not define a separate site.",
+  "literature_rejected": []
 }

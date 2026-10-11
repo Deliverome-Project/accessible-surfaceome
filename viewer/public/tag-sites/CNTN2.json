@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CNTN2",
+  "uniprot_acc": "Q02246",
+  "sites": [
+    {
+      "site_id": "CNTN2-terminal_c-None-lit",
+      "gene_symbol": "CNTN2",
+      "uniprot_acc": "Q02246",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "between FNIII4 domain and GPI signal",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "GFPSpark",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell adhesion assay: the GFPSpark-tagged full-length CNTN2 construct was employed as the active experimental reagent in cell adhesion assays, indicating surface expression and preserved adhesion function.",
+      "confidence": "medium",
+      "rationale": "CNTN2 is a GPI-anchored protein with no transmembrane or intracellular domain; the entire mature chain (residues 31 onward) is extracellular. A tag described as 'C-terminal' on such a protein must be inserted before the GPI signal sequence, which is cleaved during GPI attachment \u2014 placing it at the C-terminus of the mature, surface-displayed protein. L2 explicitly names the insertion site as 'between the FNIII4 domain and GPI region', confirming this is an internal insertion in the precursor but the effective C-terminal position of the mature GPI-anchored protein on the cell surface. No specific residue number is given in either ledger line, so insert_after_residue is left null and the region is recorded as named. Full-length human CNTN2 with a C-terminal GFPSpark tag (Sino Biological Cat: HG10457-ACG) was used in cell adhesion assays (L1). L2 from the same paper (PMC11796320) confirms the tag was inserted between the FNIII4 domain and the GPI signal region of the full-length, membrane-anchored construct; the GFP was subsequently removed by Q5 site-directed mutagenesis for other experiments, establishing the insertion site unambiguously.",
+      "sources": [
+        {
+          "pmid": 39702996,
+          "citation": "PMID 39702996",
+          "claim": "For cell adhesion assays, full\u2010length human CNTN2 with C\u2010terminal GFPSpark tag (Cat: HG10457\u2010ACG) was ordered from Sino Biological Company (Beijing, China)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:58:05.340859+00:00",
+  "literature_notes": "Only two ledger lines are available, both from PMC11796320. L1 establishes that a full-length, membrane-anchored CNTN2 construct carrying a C-terminal GFPSpark tag was used in cell adhesion assays, satisfying the requirement for a tolerated insertion in an intact, membrane-anchored protein. L2 from the same paper pins the tag location to 'between the FNIII4 domain and GPI region', ruling out ambiguity about which terminus carries the tag. Because CNTN2 is GPI-anchored (topology: entirely extracellular from residue 31 to 1040 in the precursor), the 'C-terminal' tag is necessarily placed before the GPI signal peptide, which is cleaved post-translationally; this is the standard approach for tagging GPI-anchored proteins. No specific residue number is given in either line, so the site is recorded at region level with insert_after_residue null. No N-terminal tag evidence exists in the ledger; no intracellular or function-abrogating positions are reported.",
+  "literature_rejected": []
+}

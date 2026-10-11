@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHB5",
+  "uniprot_acc": "Q9Y5E4",
+  "sites": [
+    {
+      "site_id": "PCDHB5-internal-None-lit",
+      "gene_symbol": "PCDHB5",
+      "uniprot_acc": "Q9Y5E4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface localization confirmed by anti-Myc fluorescence on non-permeabilized cells (cell periphery and cell-cell junctions stained); function of the tagged \u03b2-PCDH isoforms NOT MEASURED explicitly in this study.",
+      "confidence": "medium",
+      "rationale": "L1 explicitly states that cPCDH constructs including \u03b2-family isoforms carry a Myc tag in the stalk region between EC6 and the TM helix, referencing prior validated constructs. For PCDHB5, the extracellular domain runs 31\u2013688 and TM begins at 689, placing the stalk (approximately residues 641\u2013688, 48 aa) well within the extracellular span and \u22653 residues from the TM boundary. No specific residue is named in the ledger for any \u03b2-PCDH, so the site is region-level only; a specific junction cannot be pinned without inventing a position. Confidence is medium because PCDHB5 is not named individually, only the \u03b2 family is mentioned. Full-length cPCDH constructs spanning \u03b2 and \u03b3 family isoforms were engineered with a Myc epitope tag in the extracellular stalk between EC6 and the TM helix (Figure S1A of PMC12157453), equivalently to previously validated constructs. Anti-Myc antibody staining of non-permeabilized transfected cells confirmed surface display (\u03b3C3 isoform explicitly shown; \u03b2 family isoforms stated to be included).",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:24:59.189417+00:00",
+  "literature_notes": "All three ledger lines derive from the same paper (PMC12157453) and describe the same experimental approach: Myc-tag insertion in the extracellular stalk between EC6 and the TM helix of full-length, membrane-anchored cPCDH constructs. L1 is the primary evidence clip (names the position and the \u03b2 family); L2 and L3 describe the surface-detection assay and its result for \u03b3C3. Because no residue number is stated for any \u03b2-PCDH isoform, insert_after_residue is null and the site is classified as region-level. The N-terminus (residue 31, after signal-peptide cleavage) was considered but no ledger line supports a tag there. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

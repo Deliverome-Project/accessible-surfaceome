@@ -4,6 +4,80 @@
   "uniprot_acc": "P21554",
   "sites": [
     {
+      "site_id": "CNR1-internal-179-lit",
+      "gene_symbol": "CNR1",
+      "uniprot_acc": "P21554",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 179,
+      "residue_before": "V",
+      "residue_after": "F",
+      "residue_label": "V179",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "TCO*A (bioorthogonal unnatural amino acid)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Functional assessment showed minimal perturbation: normal internalization kinetics after WIN55,212 (10 \u00b5M) and intact calcium signaling responses to 2-AG (L12). Plasma-membrane-exclusive labeling confirmed, discriminating surface from intracellular receptor (L10/L11).",
+      "confidence": "high",
+      "rationale": "L6 explicitly names phenylalanine at position 180 (F180) in CB1R as the site of TCO*A incorporation; Python confirms res180=F within ECL1 (topology landmarks 176\u2013187). The modification replaces F180, so insert_after_residue=179 (between V179 and F180) faithfully represents the junction; cited_tag_residue=180. The site is 5 residues from TM2 end (175) and 8 residues from TM3 start (188), both \u22653. Evidence type is 'tolerance of a different insertion' because TCO*A is a single unnatural amino acid substitution rather than a classical epitope-tag insertion, but L12 confirms full functional preservation. Full-length CB1R with TCO*A incorporated at position F180 (replacing phenylalanine 180) in ECL1, expressed in mammalian cells; plasma-membrane-exclusive labeling achieved with tetrazine-dye via bioorthogonal click chemistry. Construct also carries an SSF tag at the N-terminus. Screened against multiple positions; F180 was the most successful for receptor expression and efficient TCO*A incorporation.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2024.03.21.586146",
+          "claim": "We used a CB1-GFP construct to screen several positions for the most receptor expression and efficient TCO*A incorporation, and the most successful site was found to be by replacing the phenylalanine at position 180 in CB1R ( CB1-F180)(Figure 3B and 4A).",
+          "source_id": "DOI:10.1101/2024.03.21.586146"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "CNR1-internal-25-lit",
+      "gene_symbol": "CNR1",
+      "uniprot_acc": "P21554",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 25,
+      "residue_before": "S",
+      "residue_after": "N",
+      "residue_label": "S25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GLuc (Gaussia luciferase)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Cell-surface display of the GLuc-CB1 fusion confirmed; no explicit receptor-function assay (e.g., cAMP, calcium) reported for this specific junction in the cited clip.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names 'between residues 25 and 26 of the extracellular N-terminus' as the insertion junction for a GLuc-CB1 fusion displayed at the cell surface. Python confirms res25=S and res26=N, both within the extracellular span 1\u2013116, and the junction is 91 residues from TM1 (117), well clear of any TM boundary. The position is validated because the paper names the exact residue pair. GLuc-CB1 chimeric fusion construct with GLuc inserted between residues 25 and 26 of the extracellular N-terminus of full-length CB1, expressed at the cell surface. The paper explicitly states this junction as an alternative to the N-terminal prepend, following the principle of avoiding interference with CB1 folding and topology.",
+      "sources": [
+        {
+          "pmid": 33097803,
+          "citation": "PMID 33097803",
+          "claim": "In this case, GLuc, which already contains a SP, was inserted in front of CB1 separated by a short linker to avoid interfering with the CB1 folding and topology; in some other cases the fusion of such chimeric proteins has been done between residues 25 and 26 of the extracellular N terminus following the same principle 27 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CNR1-nterm-tedman",
       "gene_symbol": "CNR1",
       "uniprot_acc": "P21554",
@@ -37,6 +111,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CNR1-terminal_n-0-lit",
+      "gene_symbol": "CNR1",
+      "uniprot_acc": "P21554",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SSF (Sushi-Signal-FLAG)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-cell-permeant anti-FLAG antibody labeling; internalization kinetics after WIN55,212 treatment also assessed (L8/L9), confirming receptor functionality is preserved.",
+      "confidence": "high",
+      "rationale": "CB1R has no signal peptide; its N-terminus (residues 1\u2013116) is entirely extracellular per the topology landmarks. A tag prepended before Met1 is therefore on the extracellular face. L4 explicitly reports SSF-CB1R surface-labeled with a non-cell-permeant antibody, and L8 reports that the same SSF-tagged construct (combined with the F180 modification) shows normal internalization kinetics, confirming surface display and function. The position is topology-derived because no residue number is stated for the N-terminal junction, but only one extracellular terminus exists here. SSF-CB1R construct expressed in neurons; non-cell-permeant Alexa647-M1-FLAG antibody applied before experiment to label surface receptor; sub-cellular localization analysis confirmed plasma-membrane display of the N-terminally tagged full-length receptor.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2024.03.21.586146",
+          "claim": "We labeled SSF-CB1 receptors with a non-cell-permeant 647Alexa-M1- UbC FLAG antibody prior to the experiment for sub-cellular localization analysis.",
+          "source_id": "DOI:10.1101/2024.03.21.586146"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +162,21 @@
       "canonical_residue": null,
       "left_pct": 0.22779043280182232,
       "note": "Isoform surface expr 758 (+485% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:58:11.525639+00:00",
+  "literature_notes": "Three sites are supported by the ledger. (1) The N-terminal prepend (insert_after_residue=0) is the most heavily corroborated: L1 (GLuc-CB1), L2 (FLAG between GLuc and CB1), L3 (3\u00d7HA-CB1), L4/L5 (SSF-CB1 with non-cell-permeant antibody), L13 (FLAG+His in Sf9), L14/L15/L16 (SBP-EGFP-CB1R in neurons), and L18 (3\u00d7FLAG-hCB1R) all report N-terminal tags on full-length surface-displayed CB1R; L4 is chosen as the primary clip because it provides the clearest surface-labeling evidence with a non-cell-permeant antibody. (2) The insert_after_25 site is explicitly named in L1 and corroborated indirectly by L17 (rat CB1R with first 25 aa replaced by IL-2 SP + tags, placing the tag at the equivalent junction). (3) F180 in ECL1 is explicitly named in L6/L7 and functionally validated in L12. L19 (SNAP tag on truncated CB1R 55\u2013472 and 91\u2013472) was considered but excluded: these are N-terminally truncated constructs used in a TR-FRET binding assay, not full-length membrane-anchored receptors as required by the rules. The C-terminal His tag in L13 is intracellular (residue 472 is in the intracellular C-tail, topology 400\u2013472) and is recorded in other_positions. L17 is rat CB1R (ortholog, indirect) and supports the insert_after_25 site already grounded in L1; it does not add a new site. L3 point mutations (Phe177Ala, Leu193Ala, Asp213Ala, Tyr275Ala, Phe379Ala, Ser383Ala) are functional-study mutations introduced to the HA-tagged construct; L3 does not report which (if any) abrogate function, so they are not added to other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 472,
+      "kind": "intracellular",
+      "supporting_clip_id": "L13",
+      "note": "C-terminal His tag on full-length CB1R expressed in Sf9 cells; residue 472 (L) falls within the intracellular C-tail (topology 400\u2013472), so this is not a surface tag site."
     }
   ]
 }

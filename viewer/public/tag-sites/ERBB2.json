@@ -368,22 +368,28 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "epitope_tag",
+      "tag_type": "V5",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "no",
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by internalization assay; no separate signaling or kinase-activity assay of the tag's impact reported in the clip.",
       "confidence": "medium",
-      "rationale": "Computed sequence confirms: residue 22 = S (last residue of signal peptide, topology landmark SP 1-22); residue 23 = T (first residue of mature ectodomain, topology landmark EC 23-653). Distance from insertion point to TM start (residue 654) is 631 residues, far exceeding the >=3 residue requirement. The V5-tagged construct is surface-displayed (internalization assay requires extracellular tag accessibility). Tag position is inferred: the ledger quote (PMC7196485) does not name the junction residue, but after-SP-cleavage is the only valid extracellular N-terminal position for a type I receptor. The other two ledger entries were excluded: PMC8415133 describes HER2t, a truncated construct lacking domain I and the cytoplasmic tail (not full-length surface HER2, out of scope); PMC3759426 describes a general snorkel method with no HER2-specific position (cannot pin insert_after_residue). No internal loop insertion sites are supported by the ledger; returning one site is the correct result. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "rationale": "L1 reports a V5-tagged full-length HER2 construct that is surface-displayed (confirmed by internalization assay), but names no insertion residue. ERBB2 has exactly one extracellular terminus: the mature N-terminus beginning at residue 23 after cleavage of the 22-aa signal peptide; the C-terminus (residue 1255) is intracellular. The tag therefore sits between the last signal-peptide residue S22 and the first mature residue T23 (insert_after_residue = 22), computed from the landmarks. The junction is 631 residues from the TM boundary, well clear of any constraint. Full-length V5-tagged HER2 (WT, S310F, L755S) stably expressed in MCF10A and NCI-H2030 cells; receptor surface display confirmed by HER2 internalization rate assay.",
       "sources": [
         {
-          "citation": "preprint",
+          "pmid": 32213539,
+          "citation": "PMID 32213539",
           "claim": "To test whether the presence of an activating mutation influences HER2 internalization rate, affecting in turn the internalization rate of ADC-HER2 complexes, we established isogenic models using a breast non-transformed cell line (MCF10A) and a lung cancer cell line (NCI-H2030) expressing either V5-tagged WT or mutant (S310F or L755S) HER2 or empty vector as control (EV)."
         }
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -1796,6 +1802,21 @@
       "isoform_residue": 68,
       "canonical_residue": 68,
       "left_pct": 5.414012738853503
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "def7ca5445c54000544a74df4e40fbb3e48feb82428fc2910b088be644d1c907",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T15:31:17.561937+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a V5-tagged full-length HER2 with confirmed surface display but states no insertion residue. Because ERBB2 has a single-pass topology with one extracellular terminus (mature N-terminus, residue 23) and an intracellular C-terminus (residue 1255), the position is topology-derived rather than validated. The S310F mutation mentioned in the clip is extracellular (residue 310, within the 23\u2013653 EC domain) and the L755S mutation is intracellular (residue 755, kinase domain); neither names a tag insertion site. No other ledger lines were provided, so no additional sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 755,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "L755S is a kinase-domain mutation (intracellular, residue 755 within 675\u20131255) mentioned in the tagged-HER2 construct; not a surface tag site."
     }
   ]
 }

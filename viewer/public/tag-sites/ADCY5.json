@@ -422,5 +422,38 @@
       "canonical_residue": 966,
       "left_pct": 76.62440570522979
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:04:23.638325+00:00",
+  "literature_notes": "ADCY5 is a twelve-transmembrane adenylate cyclase whose N-terminus (residues 1\u2013241) and C-terminus (residues 1004\u20131261) are both intracellular. All eight ledger lines describe tags at one of these two intracellular termini: L1/L2 place a VN155 BiFC fragment on the cytosolic N-terminal tail; L3/L4 place an HA tag at the N-terminus (visualised by confocal in MSNs, confirming intracellular orientation); L5/L6/L7 place FLAG+miniTurbo at the C-terminus; and L8 places Venus at the C-terminus. None of these positions is extracellular. The six extracellular loops (EC1 263\u2013267, EC2 320\u2013327, EC3 368\u2013374, EC4 783\u2013788, EC5 856\u2013905, EC6 948\u2013987) are not addressed by any ledger line. Because no ledger line reports a tolerated insertion on the extracellular face, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "VN155 BiFC fragment fused to the cytosolic N-terminal tail of AC5; N-terminus (1\u2013241) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "HA tag placed at the N-terminus of AC5 and visualised by confocal microscopy in striatal MSNs; N-terminus is intracellular."
+    },
+    {
+      "residue": 1261,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "FLAG + miniTurbo (28 kDa) fused to the C-terminus of AC5 via a 13-aa linker; C-terminus (1004\u20131261) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 1261,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Venus fluorescent protein fused to the C-terminus of AC5 (AC5-Venus-P2A-mRuby3 construct); C-terminus is intracellular."
+    }
   ]
 }

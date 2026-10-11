@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "OCLN",
+  "uniprot_acc": "Q16625",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:22:33.984454+00:00",
+  "literature_notes": "All three ledger lines describe tags at the OCLN N-terminus (residues 1\u201366), which the authoritative topology landmarks place entirely in the INTRACELLULAR compartment. L1 and L2 (PMC2946412) report N-terminal Flag-tagged full-length OCLN expressed in 786-O cells; L3 (PMC2762424) reports N-terminal Venus-OCLN that confers HCVpp susceptibility. Because OCLN is a four-pass TM protein with its N-terminus intracellular (1\u201366), all three N-terminal fusions face the cytoplasm and are not extracellular surface tags. L1 also mentions deletion mutants \u0394EL1 (aa 94\u2013128, within EL1 88\u2013139) and \u0394EL2 (aa 200\u2013238, within EL2 195\u2013243), but these are domain deletions, not tag insertions, and therefore do not qualify as evidence for a tolerated epitope-tag insertion at those positions. No ledger line reports any tag insertion in EL1 (88\u2013139) or EL2 (195\u2013243). Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal Flag tag on full-length OCLN is expressed and detected by western blot, but the N-terminus (aa 1\u201366) is intracellular per topology landmarks, so the tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal Venus fusion (Venus-OCLN) confers HCVpp susceptibility and is functionally validated, but the N-terminus (aa 1\u201366) is intracellular, so Venus faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

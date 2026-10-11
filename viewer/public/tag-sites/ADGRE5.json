@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADGRE5-terminal_n-20-lit",
+      "gene_symbol": "ADGRE5",
+      "uniprot_acc": "P48960",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "T",
+      "residue_after": "Q",
+      "residue_label": "T20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L2: stable surface expression of FLAG-CD97 in BHK-21 cells confirmed (cell line establishment assay); no functional assay cited in clip. L3: surface detection of FLAG-CD97 in GBM cells confirmed; no functional assay cited in clip.",
+      "confidence": "high",
+      "rationale": "ADGRE5 has a signal peptide spanning residues 1\u201320 (computed landmarks); the mature N-terminus begins at residue 21 (Q). An N-terminal FLAG tag on the full-length receptor must therefore be inserted after residue 20 (T), placing it at the extracellular face of the large NTF (residues 21\u2013551, >530 aa from TM1). This is the only extracellular terminus of the protein, so the junction is topology-derived from the single qualifying terminus. Python confirmed residue 20 = T and residue 21 = Q. L3 (PMC10481366) independently corroborates the same N-terminal FLAG placement on full-length CD97. L2 (PMC12965680): FLAG-tagged full-length CD97 (ADGRE5) stably expressed in BHK-21 cells, with surface-displayed FLAG-tagged CD97 confirmed. L3 (PMC10481366) independently corroborates: full-length CD97 in GBM cells with FLAG explicitly placed at the N-terminus to detect exogenously expressed CD97 at the cell surface. Neither paper names a specific residue number.",
+      "sources": [
+        {
+          "pmid": 41774756,
+          "citation": "PMID 41774756",
+          "claim": "(A) The establishment of a BHK-21 cell line stably expressing Flag-tagged CD97 was achieved."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -64,5 +101,12 @@
       "left_pct": 3.0534351145038165,
       "note": "Isoform surface expr 6403 (-0% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:10:41.949447+00:00",
+  "literature_notes": "L1 (PMC11330365) was considered but does not qualify. It describes chimeric MBP-CTF constructs in which the entire NTF of ADGRE5 (residues 21\u2013~529) is replaced by a heterologous signal sequence + HA tag + MBP + TEV site preceding the CTF. Although the CTF is membrane-anchored (contains the 7TM domain), the HA tag sits at the N-terminus of the chimeric protein and does not correspond to any specific residue in the native full-length ADGRE5 sequence; its position cannot be mapped to an insert_after_residue in the canonical protein. This is analogous to the 'commercial plasmid whose tag position is unstated' exclusion \u2014 the tag is real but unpinnable in the native sequence. L2 and L3 both pin the same junction (N-terminus after signal peptide cleavage) and therefore represent one site, not two; L2 is used as the primary supporting clip because it documents a stable cell line with confirmed surface display, and L3 is noted as corroboration in the evidence_detail.",
+  "literature_rejected": []
 }

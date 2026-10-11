@@ -438,5 +438,26 @@
       "canonical_residue": 162,
       "left_pct": 14.148471615720522
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:03:53.665055+00:00",
+  "literature_notes": "ADCY3 is a 12-transmembrane adenylate cyclase with both its N-terminus (residues 1\u201377) and C-terminus (residues 856\u20131144) on the INTRACELLULAR (cytoplasmic) face. The six extracellular loops span residues 99\u2013104, 161\u2013168, 210\u2013225, 654\u2013660, 729\u2013750, and 795\u2013839. Every ledger line (L1\u2013L7) describes a tag at either the N-terminus (HA, L4/L5/L6) or the C-terminus (HA, L1/L2/L3; muGFP, L7) of full-length ADCY3. Because both termini are cytoplasmic, none of these insertions places a tag on the extracellular face. No ledger line describes a tag insertion in any extracellular loop or at any extracellular junction. The papers confirm that the tagged constructs traffic correctly to the ciliary membrane, but that is evidence of protein folding/trafficking, not of an extracellular tag position. Zero qualifying surface tag sites result, which is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "N-terminal HA tag (HA-AC3) placed before residue 1 (Met), which lies in the cytoplasmic N-terminal domain (topology: INTRACELLULAR 1\u201377); tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1144,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag (hAC3-HA) and C-terminal muGFP (L7) appended after residue 1144 (Ser), which lies in the large cytoplasmic C-terminal domain (topology: INTRACELLULAR 856\u20131144); tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

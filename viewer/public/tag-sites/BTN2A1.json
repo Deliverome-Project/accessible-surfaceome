@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "BTN2A1",
+  "uniprot_acc": "Q7KYR7",
+  "sites": [
+    {
+      "site_id": "BTN2A1-terminal_n-28-lit",
+      "gene_symbol": "BTN2A1",
+      "uniprot_acc": "Q7KYR7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "6xHis",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "SDS-PAGE under reducing and non-reducing conditions in K562 cells confirmed expression and correct oligomerization of the tagged construct (PMC10330345, Supplemental Figure 1). Functional assays for \u03b3\u03b4 T-cell activation were performed with these constructs. NOT MEASURED whether the His tag itself alters function relative to untagged BTN2A1.",
+      "confidence": "medium",
+      "rationale": "BTN2A1 is a type I transmembrane protein with a 28-residue signal peptide; the sole extracellular N-terminus is the mature chain starting at Q29. An N-terminal tag fused before residue 1 would be cleaved with the signal peptide and lost, so the 6xHis tag in '6xHis-BTN2A1' must be positioned after SP cleavage, i.e., insert_after_residue=28. This is the only extracellular terminus available, making the junction topology-derived. The extracellular domain spans 220 residues (29\u2013248), placing this tag far from the TM boundary. Full-length BTN2A1 with an N-terminal 6xHis tag (6xHis-BTN2A1) cloned into pcDNA3.1(+) and expressed in K562 cells (PMC10330345). BTN2A1 is a type I single-pass TM protein with signal peptide 1\u201328; the only extracellular N-terminus is the mature chain beginning at residue 29. A tag prepended before residue 1 would be co-translocated with and cleaved off by the signal peptide, so the 6xHis tag must sit after the SP cleavage site (after residue 28) to be retained and detectable. Python-verified: res(28)=A, res(29)=Q; TM boundary at 249 is 220 residues away.",
+      "sources": [
+        {
+          "pmid": 37171180,
+          "citation": "PMID 37171180",
+          "claim": "We previously described cloning of full length BTN2A1 containing a C-terminal Myc tag (BTN2A1-myc) or an N-terminal 6x His tag (6xHis-BTN2A1) into pcDNA3.1 (+), as well as the mut1, mut2, L318G, W320A, and L325G mutations on both templates ( 17 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:49:38.862481+00:00",
+  "literature_notes": "L1 (Myc, C-terminal via reverse primer) and L4/L5 (Flag/affinity tags at C-terminus) all place tags at residue 527, which is intracellular (topology 270\u2013527); these are recorded in other_positions. L3 corroborates expression of the L2 constructs in K562 cells but adds no new position. L6 (BTN2A1-NL, NanoLuciferase) uses the naming convention 'BTN2A1-NL' consistent with a C-terminal fusion; the BRET assay with surface Halo589 ligand confirms surface expression of the BTN complex but does not require NL itself to be extracellular \u2014 intracellular NL (C-terminal) can still report proximity to an intracellular HaloTag on BTN3A1. Because the clip does not specify the NL junction and the naming convention points to C-terminal (intracellular), L6 does not qualify as an independent extracellular site and is grouped with the other C-terminal intracellular entries. The N-terminal 6xHis site (L2) is classified topology_derived because the paper names no specific residue; the junction is uniquely determined by the signal-peptide boundary.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 527,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal Myc tag inserted before the stop codon via reverse primer on full-length BTN2A1; residue 527 (L) is intracellular (topology 270\u2013527)."
+    },
+    {
+      "residue": 527,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Flag tag (MDYKDDDDK) inserted at the C-terminus of full-length BTN2A1 to facilitate purification; residue 527 is intracellular."
+    },
+    {
+      "residue": 527,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "BTN2A1-NL (NanoLuciferase) construct used in BRET assay; naming convention and intracellular C-terminus topology indicate NL is at residue 527 (intracellular), not on the extracellular face."
+    }
+  ]
+}

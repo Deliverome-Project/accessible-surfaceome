@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NYX",
+  "uniprot_acc": "Q9GZU5",
+  "sites": [
+    {
+      "site_id": "NYX-terminal_n-18-lit",
+      "gene_symbol": "NYX",
+      "uniprot_acc": "Q9GZU5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "V",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "EYFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ERG and RGC electrophysiology: nob phenotype fully rescued by EYFP-nyctalopin transgene (L3). Live-cell immunostaining: V5-NYX detected on intact cell surface of COS-7/HeLa cells; detergent extraction additionally revealed ER/Golgi pool (L1).",
+      "confidence": "high",
+      "rationale": "NYX encodes a GPI-anchored protein with signal peptide residues 1\u201318 and a single extracellular domain spanning residues 19\u2013476; there is no TM segment and no cytoplasmic face, so the only free extracellular terminus available for a tag is the mature N-terminus. Both L3 (EYFP-nyctalopin) and L1 (V5-NYX) name the fusion in the 'tag-protein' convention, placing the tag immediately N-terminal to the mature chain. Because no paper states a residue number, the junction is topology-derived: insert_after_residue = 18 (last residue of the signal peptide, A), placing the tag between A18 and V19. Python confirmed A at position 18 and V at position 19 from the canonical 476-aa sequence. L3 provides the strongest validation (functional rescue of the nob phenotype plus IHC/EM localisation); L1 corroborates with live-cell surface staining of V5-NYX. Transgenic mice (TgEYFP-Nyc) expressing an EYFP-nyctalopin N-terminal fusion protein in ON bipolar cells; immunohistochemical and ultrastructural studies confirmed localization to DBC dendritic tips at the OPL; expression in nob mice rescued the nob phenotype as measured by ERG and RGC spontaneous/evoked responses. L1 independently confirms that a V5-NYX N-terminal fusion is surface-displayed on living COS-7/HEK cells by differential live/detergent staining.",
+      "sources": [
+        {
+          "pmid": 17881478,
+          "citation": "PMID 17881478",
+          "claim": "To determine if postsynaptic expression of nyctalopin is necessary and sufficient to rescue the nob phenotype, we constructed transgenic mice that expressed an EYFP-nyctalopin fusion protein on the dendritic tips of the DBCs. Immunohistochemical and ultrastructural studies verified that fusion protein expression was limited to the DBC dendritic tips. Fusion gene expression in nob mice restored normal outer and inner visual function as determined by the electroretinogram and RGC spontaneous and evoked responses."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:22:31.041844+00:00",
+  "literature_notes": "L2 (PMID 16553780) confirms recombinant full-length nyctalopin is surface-displayed in HEK293 cells but names neither a tag type nor a residue, so it cannot pin a junction and does not add a site. L4 and L5 (PMC7031853) describe the same TgEYFP-Nyc transgenic line as L3 and are confirmatory; they do not introduce a new position or tag. L1 and L3 both resolve to insert_after_residue = 18 (the same junction), so they constitute one site, not two; L3 is used as the primary clip because it provides functional rescue evidence. The GPI anchor domain deletion mentioned in L1 abolishes surface display but names no specific residue, so it is not entered in other_positions. The C-terminus (residue 476) is the GPI attachment site and is not a free taggable terminus.",
+  "literature_rejected": []
+}

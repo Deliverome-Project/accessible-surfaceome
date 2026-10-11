@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR6-terminal_n-0-lit",
+      "gene_symbol": "GPR6",
+      "uniprot_acc": "P46095",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "pHluorin",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by sulfo-NHS-SS biotin labeling of the pHluorin-GPR6 construct (L2). Rat GPR6 ortholog study (L3) found pHluorin not accessible to protons, chymotrypsin, or anti-GFP antibody under non-permeabilized conditions, indicating the receptor is primarily intracellular; no functional (cAMP/signaling) assay of the tagged vs. untagged receptor was reported in any ledger line.",
+      "confidence": "medium",
+      "rationale": "GPR6 carries no signal peptide; the topology landmarks place residues 1\u201374 extracellular, making the N-terminus the sole extracellular terminus and the only position consistent with a prepended tag. insert_after_residue=0 places the tag before M1 (residue_after='M'). L2 directly confirms surface display of the full-length pHluorin-GPR6 construct by biotin labeling, satisfying the surface_only validation level. L3 (rat ortholog) shows GPR6 is predominantly intracellular, which is a known trafficking property of this constitutively active receptor and does not invalidate the tag position \u2014 it reduces confidence that a short ALFA-type tag will be robustly accessible at the surface. pHluorin-tagged human GPR6 (pHGPR6) expressed as full-length, membrane-anchored receptor in HEK293 cells; sulfo-NHS-SS biotin surface labeling was used to confirm and quantify surface display of the construct (L2, PMC3932180). The same paper (L1) states the N-terminal pHluorin is used as a cell-surface expression reporter. No residue number is named; GPR6 has no signal peptide and the N-terminus (residues 1\u201374) is extracellular per topology landmarks, so exactly one extracellular terminus exists and the position is topology-derived. A parallel study (L3, PMID 19059244) using pHluorin at the N-terminus of rat GPR6 found the tag inaccessible under non-permeabilized conditions, concluding GPR6 is primarily intracellular \u2014 a property of the receptor's constitutive trafficking rather than a failure of the tag position itself.",
+      "sources": [
+        {
+          "pmid": 21036233,
+          "citation": "PMID 21036233",
+          "claim": "We used sulfo NHS-SS biotin to label cell surface proteins and measure the relative abundance of pHluorin-tagged GPR6 (pHGPR6) and D1R (pHD1) on the cell surface."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -52,5 +89,12 @@
       "left_pct": 0.2652519893899204,
       "note": "Isoform surface expr 208 (-52% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:37:48.954812+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same N-terminal pHluorin tag position; no ECL insertions, C-terminal tags, or internal loop insertions appear anywhere in the ledger. L3 (PMID 19059244, rat GPR6) is the more mechanistically detailed study and shows the pHluorin is not accessible from the extracellular side under non-permeabilized conditions, consistent with GPR6's known predominant intracellular retention. L1/L2 (PMC3932180, human GPR6) do detect a surface fraction by biotin labeling, supporting the site but at reduced confidence. No other positions are supported by the ledger.",
+  "literature_rejected": []
 }

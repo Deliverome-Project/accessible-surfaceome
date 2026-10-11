@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL20RB",
+  "uniprot_acc": "Q6UXL0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:21:01.929941+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same paper (PMC7412674) and describe two tag configurations on the same IL20RB constructs: (1) an HA tag appended to the C-terminus of full-length IL20RB (L1, L3), and (2) a YFP fusion via the pEYFP-C1 vector, which places YFP N-terminal to the entire IL20RB coding sequence (L2, L4). IL20RB is a type I single-pass transmembrane protein: its C-terminus (residues 255\u2013311) is intracellular, so the C-terminal HA tag is intracellular. The pEYFP-C1 vector inserts YFP before the signal peptide (residues 1\u201329); because the signal peptide is co-translationally cleaved in the ER lumen, the YFP moiety is retained in the cytoplasm and is also intracellular. Neither tag is on the extracellular face. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or domain insertion \u2014 at an extracellular position of IL20RB or a close ortholog. Therefore zero surface-tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 311,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA tag appended to the C-terminus of full-length IL20RB; residue 311 falls within the intracellular domain (255\u2013311), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "YFP fused N-terminally via pEYFP-C1 vector, placing YFP before the signal peptide (1\u201329); the signal peptide is cleaved co-translationally, leaving YFP in the cytoplasm rather than on the extracellular face."
+    }
+  ]
+}

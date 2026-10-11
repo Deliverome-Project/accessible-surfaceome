@@ -71,5 +71,20 @@
       "canonical_residue": 43,
       "left_pct": 17.62295081967213
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:39:34.582374+00:00",
+  "literature_notes": "All three ledger lines originate from the same publication (PMC13386948) and concern the same mCherry-CLDN12 construct. L2 explicitly states the mCherry tag is C-terminal; CLDN12's C-terminus (residue 244) lies in the intracellular region (195\u2013244) per the authoritative topology landmarks, so this is an intracellular fusion, not a surface tag. L3 describes site-directed mutagenesis of palmitoylation cysteines (C3\u2192S, C109\u2192S) \u2014 this is not a tag insertion of any kind and does not qualify under any ledger criterion. CLDN12 has two extracellular loops (ECL1: 31\u201387; ECL2: 153\u2013173) that are topologically accessible, but no ledger line reports any insertion, epitope tag, fluorescent-protein fusion, or transposon hit in either loop or at either extracellular face. Zero surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 244,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "mCherry fused to the C-terminus of full-length CLDN12; residue 244 (T) lies in the intracellular region (195\u2013244), so this tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

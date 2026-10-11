@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CALCR-terminal_n-24-lit",
+      "gene_symbol": "CALCR",
+      "uniprot_acc": "P30988",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "P",
+      "residue_after": "A",
+      "residue_label": "P24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor pharmacology (ligand binding / signalling) shown to be comparable to untagged CTR constructs (L2); surface expression confirmed by anti-HA immunostaining (L4); construct described as previously validated (L3).",
+      "confidence": "high",
+      "rationale": "All four ledger lines describe N-terminal epitope tags (HA or Flag) on full-length, membrane-anchored human CTR. The signal peptide spans residues 1\u201324 (authoritative landmark); the mature N-terminus begins at residue 25 (A). Inserting the tag after residue 24 (P) places it immediately before the first mature extracellular residue, well upstream of TM1 (residue 147, \u2265122 residues away), ensuring the tag is extracellular and not cleaved with the signal peptide. Python verification confirms residue_before = P (position 24) and residue_after = A (position 25). L2 is chosen as the primary clip because it explicitly documents preserved pharmacology, providing the highest validation level. Full-length human CTR (CALCR) bearing an N-terminal HA epitope tag expressed in mammalian cells; the tag is placed after the signal-peptide cleavage site (residue 24) so it is displayed on the extracellular face of the mature receptor. L2 explicitly reports comparable pharmacology to untagged receptor; L3 and L4 confirm surface expression by immunostaining; L1 corroborates with an N-terminal Flag tag on the same full-length membrane-anchored construct.",
+      "sources": [
+        {
+          "pmid": 39361899,
+          "citation": "PMID 39361899",
+          "claim": "Human CLR and CTR with N-terminal hemagglutinin (HA) epitope tags were used in these experiments."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:59:32.159653+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) pin the same junction: an N-terminal epitope tag on full-length membrane-anchored human CTR, placed after signal-peptide cleavage (after residue 24). No ledger line supports any internal extracellular loop insertion for CALCR. L1 additionally describes a C-terminal 8\u00d7His tag; the C-terminus (residues 395\u2013474) is intracellular per the authoritative topology landmarks, so that tag is recorded in other_positions. No ledger evidence supports any insertion in ECL1 (205\u2013217), ECL2 (284\u2013294), or ECL3 (360\u2013367).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 474,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "L1 reports a C-terminal 8\u00d7His tag on full-length CTR; residue 474 (A) lies within the intracellular C-terminal tail (topology landmarks: intracellular 395\u2013474), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

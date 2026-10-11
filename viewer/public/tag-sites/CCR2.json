@@ -52,5 +52,20 @@
       "left_pct": 0.2777777777777778,
       "note": "Isoform surface expr 187 (+36% vs canonical)"
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:02:44.924741+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe C-terminal HaloTag7, HiBiT, or HaloTag7-HiBiT fusions appended to the intracellular C-terminus of full-length CCR2B. L1 explicitly states the tags are 'in the intracellular region.' The topology landmarks confirm residues 309\u2013374 are intracellular, so insert_after_residue 374 is an intracellular position. L5 confirms radioligand binding is retained for both constructs, but this is functional evidence for an intracellular tag, not an extracellular surface tag. No ledger line describes any insertion at the extracellular N-terminus (residues 1\u201344), ECL1 (100\u2013115), ECL2 (179\u2013200), or ECL3 (266\u2013285). The ledger therefore supports zero extracellular surface tag sites for CCR2.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 374,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HaloTag7-HiBiT and HiBiT tags appended after residue 374 (intracellular C-terminus, residues 309\u2013374); L5 confirms radioligand binding retained for both orthosteric and allosteric sites."
+    }
   ]
 }

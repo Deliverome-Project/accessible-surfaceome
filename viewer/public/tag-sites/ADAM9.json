@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADAM9",
+  "uniprot_acc": "Q13443",
+  "sites": [
+    {
+      "site_id": "ADAM9-terminal_n-28-lit",
+      "gene_symbol": "ADAM9",
+      "uniprot_acc": "Q13443",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Overexpression of HA-tagged ADAM9 in H1650 cells confirmed findings from ADAM9 knockdown experiments (L2), demonstrating that the tagged construct retains surface-displayed ADAM9 function. The HA-tagged construct was used in functional studies (L1).",
+      "confidence": "high",
+      "rationale": "The construct name 'LS-HA-ADAM9' encodes the tag position as immediately after the leader sequence (signal peptide). Computed landmarks place the signal peptide at residues 1\u201328 (ending in G28) and the mature extracellular domain beginning at A29; the tag therefore sits at insert_after_residue=28, confirmed by reading G at position 28 and A at position 29 from the numbered sequence. This is the sole extracellular N-terminal junction in a type-I transmembrane protein with a single-pass TM at 698\u2013718, placing the tag 669 residues from the TM boundary. L2 confirms the tagged construct is functional in cell-based assays. Full-length ADAM9 construct pLNCX-LS-HA-ADAM9 expressed in H1650 cells. The 'LS' designation in the construct name explicitly encodes placement after the leader sequence (signal peptide, residues 1\u201328), immediately before the mature N-terminus. No explicit residue number is stated, but the signal peptide is the only leader sequence in ADAM9, leaving exactly one extracellular N-terminal junction (between G28 and A29). The catalytically inactive companion construct pLNCX-LS-HA-ADAM9-E348A carries the same tag at the same position.",
+      "sources": [
+        {
+          "pmid": 37713503,
+          "citation": "PMID 37713503",
+          "claim": "The construction of pLNCX-LS-HA-ADAM9 and its catalytically inactive mutant pLNCX-LS-HA-ADAM9-E348A was performed by PCR amplification and site-directed mutagenesis as described previously ( 60 ). pLAS2w.ACE2.Pbsd and pcDNA(TM)3.1(+)\u22122019-nCoV-S (Wuhan strain wild type, B.1.1.7, B.1.617.2, and B.1.1.529) were provided by RNA Technology Platform and Gene Manipulation Core, Academia Sinica, Taiwan."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:01:50.332712+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) describe the same construct, pLNCX-LS-HA-ADAM9. No residue number is explicitly stated in either clip, but 'LS' unambiguously designates the leader-sequence/mature-protein junction, and ADAM9 has exactly one such extracellular N-terminal junction (G28|A29). The position is therefore topology_derived rather than validated. The catalytically inactive companion E348A is recorded in other_positions because E348A is a point mutation that abrogates metalloprotease function, not a tag insertion. No ledger line supports any internal extracellular loop insertion for ADAM9, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 348,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "E348A point mutation in the metalloprotease catalytic site renders ADAM9 catalytically inactive; used as a negative-control companion to the HA-tagged construct, demonstrating that this residue is essential for function."
+    }
+  ]
+}

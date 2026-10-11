@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHA6",
+  "uniprot_acc": "Q9UN73",
+  "sites": [
+    {
+      "site_id": "PCDHA6-internal-None-lit",
+      "gene_symbol": "PCDHA6",
+      "uniprot_acc": "Q9UN73",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-Myc antibody staining of live, non-permeabilized transfected cells confirmed surface trafficking of the tagged constructs; no functional assay of PCDHA6-specific adhesion or signalling was reported.",
+      "confidence": "medium",
+      "rationale": "L1 and L2 both explicitly place the Myc tag in the extracellular stalk between EC6 and the TM helix of full-length membrane-anchored cPCDH (alpha-4) constructs; L3 and L4 confirm surface detection by live-cell anti-Myc staining. For PCDHA6, the equivalent stalk spans approximately residues 661\u2013697 (all extracellular per topology landmarks), with the safe insertion window ending at residue 694 (\u22653 residues from TM start at 698). No specific residue is named in any ledger line, so the site is reported at region level with insert_after_residue null. Evidence is indirect because the published tag is in PCDHA4, a close ortholog. Myc epitope tag inserted in the stalk region between EC6 and the TM helix of full-length, membrane-anchored cPCDH constructs (PCDHA4 isoforms and derived variants) expressed in transfected cells; PCDHA4 is a close ortholog of PCDHA6 in the same alpha-protocadherin cluster with identical domain topology.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:20:29.130774+00:00",
+  "literature_notes": "All four ledger lines describe the same experimental strategy (Myc tag in the EC6-to-TM stalk of full-length cPCDH) applied to PCDHA4 isoforms, not PCDHA6 directly. PCDHA6 qualifies as a close ortholog (same alpha-PCDH gene cluster, same six-EC-domain plus stalk plus single-pass TM topology), so the evidence is indirect. No ledger line names a specific residue within the stalk, preventing a pinned insert_after_residue; the site is therefore reported at region level. L2, L3, and L4 corroborate L1 but add no new positional precision. No other extracellular loops or termini are supported by any ledger line for PCDHA6.",
+  "literature_rejected": []
+}

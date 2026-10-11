@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "MMP15",
+  "uniprot_acc": "P51511",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:43:03.421335+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single construct from PMC5217011: the full-length MMP15 ORF cloned into lentiviral vector GV287 whose element order is Ubi-MCS-3FLAG-SV40-EGFP. The 3\u00d7FLAG cassette sits 3\u2032 of the MCS, making it a C-terminal fusion to whatever ORF is inserted. MMP15 is a type-I transmembrane protein (N-out, C-in): its N-terminus is extracellular (mature start residue 42, after signal-peptide cleavage at 41) and its C-terminus is intracellular (residues 648\u2013669). A C-terminal FLAG therefore lands on the intracellular face and cannot serve as an extracellular surface tag. No ledger line names a residue position, and the topology-derived position (C-terminus, residue 669) is intracellular. The N-terminal extracellular terminus (after residue 41) is the only surface-accessible terminus, but no ledger line reports a tag placed there. Because the sole derivable position is intracellular, zero extracellular surface sites qualify. The C-terminal FLAG is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 669,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "The GV287 vector architecture (Ubi-MCS-3FLAG-SV40-EGFP) places 3\u00d7FLAG C-terminal to the ORF insert; for MMP15 (type-I TM, N-out C-in) the C-terminus (residues 648\u2013669) is intracellular, so the FLAG tag faces the cytoplasm and is not accessible on the cell surface."
+    }
+  ]
+}

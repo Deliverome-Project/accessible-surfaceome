@@ -233,13 +233,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "HiBiT 11 aa",
+      "tag_type": "HiBiT (11 aa)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Cell-surface HiBiT signal detected by membrane-impermeable LgBiT nanoluciferase complementation; ligand-induced surface expression preserved in response to TNF\u03b1, IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine \u2014 full inducible trafficking function confirmed.",
+      "functional_impact_measured": "Surface expression confirmed by membrane-impermeable LgBiT complementation (NanoLuc self-complementation assay). Ligand-induced upregulation in response to TNF\u03b1, IL-1\u03b1, IL-1\u03b2, LPS, VEGF165a, and histamine was preserved, demonstrating intact transcriptional regulation and surface trafficking of the tagged protein.",
       "confidence": "high",
-      "rationale": "The signal peptide spans residues 1\u201321 (landmark-authoritative); the mature extracellular domain begins at residue 22 (W). A tag placed 'on the N terminus' of the full-length membrane-anchored protein must sit after the signal-peptide cleavage site, i.e., insert_after_residue = 21, giving residue_before = A (pos 21) and residue_after = W (pos 22), both read directly from the numbered sequence. This is the only extracellular terminus; the C-terminus is intracellular (residues 578\u2013610). The tag position is 535 residues from the TM boundary, satisfying the \u22653-residue constraint. L3 confirms that the tagged protein retains its defining inducible-trafficking function across six stimuli, supporting surface_and_function validation. CRISPR-Cas9 knock-in of an 11 aa HiBiT tag onto the N-terminus of endogenous SELE in primary HUVECs and immortalized TERT2-HUVECs; the tagged allele is expressed from the native promoter. The paper states 'N terminus' but names no specific residue; E-selectin has exactly one extracellular terminus (the mature N-terminus after signal-peptide cleavage at residue 21), so the junction is unambiguous. [validation: surface_and_function; position: topology_derived; source: paper; entailment_verified: True]",
+      "rationale": "E-selectin is a type I transmembrane protein with signal peptide residues 1\u201321 cleaved co-translationally; the mature extracellular domain begins at W22. The paper reports the HiBiT tag placed at the 'N terminus' of the endogenous protein via CRISPR-Cas9, which with a signal peptide means the tag is inserted between the last signal-peptide residue (A21) and the first mature residue (W22), i.e. insert_after_residue = 21. Python verification confirms seq[20]='A' and seq[21]='W'. The insert point is 535 residues from the TM boundary (557), satisfying the \u22653-residue constraint with large margin. L3 further confirms that ligand-induced surface expression is preserved, qualifying this as surface_and_function. CRISPR-Cas9 knock-in of an 11 aa HiBiT tag at the N-terminus of endogenous SELE in primary HUVECs and immortalized TERT2-HUVECs, expressed from the native promoter. The paper states 'N terminus' without naming a specific residue; with signal peptide residues 1\u201321 cleaved, exactly one extracellular N-terminus exists (mature residue 22, W), placing the junction unambiguously after residue 21 (A).",
       "sources": [
         {
           "pmid": 37496673,
@@ -249,7 +249,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [],
@@ -553,10 +558,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:21:26.152201+00:00",
-  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same single construct from PMC10366498: an 11 aa HiBiT tag at the N-terminus of endogenous SELE. No residue number is stated in any line, so position_evidence is topology_derived rather than validated. No internal loop insertions are supported by the ledger; no other terminus is extracellular. The C-terminal intracellular tail (578\u2013610) and the TM domain (557\u2013577) are not on the extracellular face and were not considered. The HiBiT tag (11 aa) is slightly below the stated 13\u201323 aa range but is the only ledger-supported insertion and is reported as-cited.",
+  "generated_at": "2026-10-11T14:12:03.029552+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC10366498) and describe a single experiment: endogenous HiBiT knock-in at the N-terminus of SELE. L2 was chosen as the primary supporting clip because it provides the most explicit description of both the tag placement and the surface-expression assay; L3 supplies the functional validation. No ledger line supports any internal extracellular loop site or a C-terminal site. The C-terminus (residues 578\u2013610) is intracellular and therefore not eligible for a surface tag. HiBiT is 11 aa, slightly below the 13\u201323 aa exemplar range cited in the prompt, but it is a bona fide short epitope tag used in exactly this context and the ledger evidence is unambiguous, so the site is reported. No other positions are named in the ledger.",
   "literature_rejected": []
 }

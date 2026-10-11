@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCGR2A",
+  "uniprot_acc": "P12318",
+  "sites": [
+    {
+      "site_id": "FCGR2A-terminal_n-33-lit",
+      "gene_symbol": "FCGR2A",
+      "uniprot_acc": "P12318",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 33,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S33",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable lentiviral transduction and cell-surface expression of the Myc-tagged receptor is implied by the construct design; no explicit surface flow cytometry or functional assay result is reported in the cited clip.",
+      "confidence": "medium",
+      "rationale": "FCGR2A is a type I single-pass transmembrane protein: the N-terminus (after signal-peptide cleavage at residue 33) is extracellular and the C-terminus (residue 317) is intracellular. The 'pSEW-Myc-CD32a-IP' naming places Myc N-terminal to the full-length receptor sequence, which is the only extracellular terminus available; a C-terminal Myc would be cytoplasmic and would not constitute a surface tag. Python verification confirms residue 33 = S (last signal-peptide residue) and residue 34 = Q (mature N-terminus), giving insert_after_residue = 33. The extracellular span (34\u2013218) is 185 residues from the tag insertion point to the TM boundary, well beyond the \u22653-residue clearance requirement. Full-length Fc\u03b3RIIA (CD32a) was Myc-tagged and cloned into a lentiviral transfer vector (pSEW-Myc-CD32a-IP) for stable expression in human cells. The 'Myc-CD32a' naming convention places the Myc tag N-terminal to the CD32a coding sequence. No residue number is stated in the clip.",
+      "sources": [
+        {
+          "pmid": 37100283,
+          "citation": "PMID 37100283",
+          "claim": "For generation of cells overexpressing human Fc\u03b3RIIA or Fc\u03b3RIIB, the plasmids (HG10374-NM; HG10259-NM;Sino Biological, Inc) encoding for the corresponding receptor sequence were PCR amplified adding the restriction sites PacI and SpeI and cloned via the restriction sites into an LV transfer vector, encoding the spleen focus-forming virus promoter, an internal ribosome entry site element followed by a puromycin resistance gene, and the woodchuck posttranscriptional regulatory element resulting in the plasmids pSEW-Myc-CD32a-IP and pSEW-Myc-CD32b-IP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:44:11.454902+00:00",
+  "literature_notes": "Both L1 and L2 describe Myc-tagged full-length CD32a constructs in the same lentiviral system; L2 covers chimeric CD32a/CD32b variants using the identical naming convention and tag position. Because they pin the same junction (N-terminal Myc after SP cleavage), they support a single site rather than two distinct sites \u2014 L1 is used as the primary clip. No residue number is stated in either clip, so position_evidence is topology_derived: for a type I TM protein with an extracellular N-terminus, the N-terminal tag must land after the signal-peptide cleavage site (residue 33) to be surface-displayed. The C-terminus (residue 317) is intracellular and does not qualify as a surface site. No internal loop insertions are reported in the ledger. No functional assay result (e.g., IgG binding, phagocytosis, ITAM signalling) for the tagged construct is described in the cited clips, so validation_level is detected_only.",
+  "literature_rejected": []
+}

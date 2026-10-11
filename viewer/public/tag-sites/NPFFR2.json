@@ -39,5 +39,26 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:07:30.197956+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L1 (PMC12069643) reports BRIL inserted replacing residues 246-266, described by the authors as 'ICL3'. The computed topology landmarks place residues 244-261 in ICL2 (intracellular) and 262-282 in TM4; residues 246-266 therefore span ICL2 and TM4 \u2014 neither extracellular. Regardless of the loop-label discrepancy between the paper and the computed topology, this insertion is not on the extracellular face and cannot support a surface tag site. L2 (PMC3459905) reports a C-myc tag fused to the C-terminus of hNPFFR2; the computed topology places residues 438-522 in the intracellular C-terminal tail. This is a cytoplasmic tag and does not qualify as an extracellular surface site. No ledger line grounds any extracellular insertion in NPFFR2; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 246,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "BRIL replacing residues 246-266 (paper labels this ICL3; computed topology places 246-261 in ICL2 and 262-266 in TM4) \u2014 tolerated for cryo-EM but entirely intracellular/TM, not an extracellular surface site."
+    },
+    {
+      "residue": 522,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-myc tag fused to the intracellular C-terminus (residues 438-522 are cytoplasmic per computed topology); tolerated for Western blot detection but not an extracellular surface site."
+    }
+  ]
 }

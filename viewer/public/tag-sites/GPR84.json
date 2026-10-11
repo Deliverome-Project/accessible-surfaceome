@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR84-terminal_n-0-lit",
+      "gene_symbol": "GPR84",
+      "uniprot_acc": "Q9NQS5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-HA western blot (SDS-PAGE) confirmed strong expression of full-length HA-tagged GPR84 in CHO-HA-hGPR84 clone #7F12; weaker expression in clones #3E11 and CHO-HA-mGPR84 #18E7. No HA signal in untagged commercial CHO-hGPR84 (DiscoverX) or parental CHO-K1 cells. Functional assay result NOT MEASURED in the cited clips.",
+      "confidence": "high",
+      "rationale": "GPR84 is a GPCR with no signal peptide; the topology landmarks place residues 1\u201321 extracellularly, making the N-terminus the sole extracellular terminus. An N-terminal HA tag therefore prepends before M1 (insert_after_residue = 0), confirmed by Python: residue_after = seq[0] = 'M'. The 21-residue extracellular N-terminal domain provides ample clearance from TM1 (which begins at residue 22). L1 explicitly states the coding sequence is 'preceded by an N-terminal HA-tag in a Kozak setting'; L2 and L3 confirm the tag enables surface antibody recognition and is detected by western blot in the full-length membrane-anchored receptor. Full-length human GPR84 coding sequence preceded by an N-terminal HA-tag in a Kozak setting, stably expressed in CHO cells (CHO-HA-hGPR84 clones). The same construct was made for mouse GPR84. The HA tag was used to confirm surface expression by antibody recognition.",
+      "sources": [
+        {
+          "pmid": 37543157,
+          "citation": "PMID 37543157",
+          "claim": "Gene fragments containing Homo sapiens (NCBI Reference Sequence: NM_020370.3 ) and Mus musculus (NCBI Reference Sequence: NM_030720.3 , codon optimised) ( O'Leary et al., 2016 ) GPR84 coding sequences preceded by an N-terminal HA-tag in a Kozak setting and flanked by restriction enzyme sites for AflII and XbaI were designed using SnapGene\u00ae software (from Insightful Science; available at snapgene.com ) and synthesised by Twist Biosciences (San Francisco, CA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:40:37.535356+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same experimental construct and are consolidated into one site grounded on L1. No residue number is explicitly named in any clip; the position is derived from the topology (no signal peptide, single extracellular N-terminus). No internal loop insertions, C-terminal tags, or other positions appear anywhere in the ledger for GPR84. The validation level is surface_only because the clips confirm expression and antibody detection of the surface receptor but do not report a functional (e.g., signalling or ligand-binding) assay on the HA-tagged construct.",
+  "literature_rejected": []
 }

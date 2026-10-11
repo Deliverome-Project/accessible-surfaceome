@@ -37,7 +37,57 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CRHR2-terminal_n-19-lit",
+      "gene_symbol": "CRHR2",
+      "uniprot_acc": "Q13324",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "cAMP EC50 and maximum response to agonist: unchanged vs. untagged receptor (L2). Ligand-binding affinity (Ki): unchanged vs. untagged receptor (L3). Surface expression confirmed by live-cell HA immunostaining in HEK293 cells (L4).",
+      "confidence": "high",
+      "rationale": "The paper explicitly names the junction as Ala17\u2013Glu18 in CRHR2\u03b1. Python search of the canonical sequence finds Ala at position 17 (matching) but Leu at position 18 (not Glu); the sole Ala\u2192Glu junction near the N-terminus is canonical 19\u201320, the SP cleavage site, implying a 2-residue shorter SP in the \u03b1-isoform used. Inserting after canonical residue 19 places the tag at the very start of the 95-residue extracellular N-terminal domain (20\u2013114), well clear of TM1 (begins at 115). Functional assays (cAMP, binding) and surface labelling all confirm tolerance. Full-length HA-tagged human CRHR2\u03b1 expressed in HEK293 cells; HA inserted between the paper's Ala17 and Glu18 (described as 'an inert region of the amino-terminus'). The only Ala\u2192Glu junction near the N-terminus in the canonical sequence is at positions 19\u201320 (the SP/mature-protein boundary), consistent with CRHR2\u03b1 carrying a 16-aa signal peptide vs. the 19-aa canonical SP, giving a +2 offset between paper and canonical numbering. Tag is surface-displayed and used for live-cell labelling.",
+      "sources": [
+        {
+          "pmid": 23820308,
+          "citation": "PMID 23820308",
+          "claim": "The influenza hemagglutinin (HA) epitope tag (YPYDVPDYA) was inserted between residues Ala 17 and Glu 18 , which is an inert region of the amino-terminus (N-terminus) [ 19 ], using oligo-directed mutagenesis (Quick Change\u2122 kit, Stratagene, La Jolla, CA)."
+        },
+        {
+          "pmid": 39356686,
+          "citation": "PMID 39356686",
+          "claim": "The lack of tools to track the CRH receptors prompted us to use a construction of the CRHR2\u03b1 with a FLAG tag on the amino terminal to generate stable HT22-CRHR2\u03b1 clones."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 19,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:04:10.030784+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) concern the same protein region (extracellular N-terminus of CRHR2\u03b1) and reduce to two sites at the same canonical junction (insert_after_residue=19). L2 and L3 provide functional validation for the L1 HA-tag site and are cited in evidence_detail rather than as independent sites. L4 and L6 confirm surface/cellular expression for L1 and L5 respectively. No ledger line supports any internal extracellular loop insertion or C-terminal tag for CRHR2. The paper's residue numbering (Ala17\u2013Glu18) does not match canonical positions 17\u201318 (Ala\u2013Leu); Python analysis identifies canonical 19\u201320 (Ala\u2013Glu) as the only Ala\u2192Glu junction near the N-terminus, consistent with CRHR2\u03b1 having a 2-residue shorter signal peptide than the canonical \u03b2-isoform sequence. The tag at insert_after_residue=19 sits within the cleaved SP in canonical numbering but is extracellular in the expressed protein because it is placed after the actual SP cleavage site of the \u03b1-isoform.",
+  "literature_rejected": []
 }

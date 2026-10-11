@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "IFNGR2",
+  "uniprot_acc": "P38484",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:08:45.284764+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same study (PMC9008429) and describe a single construct type: full-length IFN-\u03b3R2 fused to GFP using the 'IFN-\u03b3R2-GFP' naming convention, which denotes a C-terminal fusion. IFNGR2 is a Type I single-pass transmembrane protein (signal peptide 1\u201321, extracellular 22\u2013247, TM 248\u2013271, intracellular 272\u2013337). A C-terminal GFP fusion therefore places GFP on the intracellular/cytoplasmic face after residue 337 (L). This is confirmed by the RICS diffusion measurements and PM localization assays in the clips, which are consistent with a cytoplasmic fluorescent label on a surface-resident receptor. No ledger line describes a tag inserted into the extracellular domain (22\u2013247), at the mature N-terminus (after residue 21), or in any extracellular loop. Because the sole evidence is an intracellular C-terminal fusion, zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 337,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion (IFN-\u03b3R2-GFP) places the tag after the last residue (L337) on the intracellular face; confirmed by PM localization and RICS diffusion assays in CHO and HAP1 IFN-\u03b3R2KO cells."
+    }
+  ]
+}

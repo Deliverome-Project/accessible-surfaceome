@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:12:54.617677+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct, SP-Y5R-2xHA, in which a double-HA epitope is appended to the C-terminus of NPY5R. The topology landmarks place the C-terminal span (429\u2013445) entirely in the intracellular compartment, so this tag is on the cytoplasmic face and does not qualify as an extracellular surface-tag site. The cleavable HA signal peptide mentioned in L1 is a trafficking enhancement device, not a tag at an extracellular position. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or otherwise \u2014 at an extracellular position of NPY5R or a close ortholog. Zero qualifying sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 445,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Double-HA epitope appended to the C-terminus (residue 445, intracellular span 429\u2013445) in the SP-Y5R-2xHA construct; tag faces the cytoplasm and cannot serve as an extracellular surface label."
+    }
+  ]
 }

@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "SEMA6D",
+  "uniprot_acc": "Q8NFY4",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:16:56.166108+00:00",
+  "literature_notes": "Both ledger entries (L1, L2) describe C-terminal tags on full-length membrane-anchored SEMA6D. SEMA6D is a canonical Type I single-pass transmembrane protein: signal peptide 1\u201320 is cleaved, the large ectodomain spans residues 21\u2013662, the TM helix spans 663\u2013683, and the C-terminal cytoplasmic tail spans 684\u20131073. A tag appended after residue 1073 (or anywhere in 684\u20131073) is therefore intracellular, not extracellular. Neither entry qualifies as evidence for an extracellular surface tag site. No other ledger lines exist. The result is zero sites, which is the correct answer given the evidence.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1073,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "myc or V5 tag appended after the final residue (Y1073) of full-length membrane-anchored SEMA6D; the C-terminus lies in the intracellular domain (684\u20131073), so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 1073,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Triple-FLAG tag (with EFGSGSGS linker) appended after Y1073 of full-length membrane-anchored SEMA6D; same intracellular C-terminus as L1 \u2014 not an extracellular surface tag."
+    }
+  ]
+}

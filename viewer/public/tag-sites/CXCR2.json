@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CXCR2-terminal_n-0-lit",
+      "gene_symbol": "CXCR2",
+      "uniprot_acc": "P25025",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NanoBiT-Gi1 dissociation assay: receptor coupled to Gi1 upon agonist stimulation, demonstrating surface expression and functional G protein coupling with the FLAG tag present.",
+      "confidence": "high",
+      "rationale": "CXCR2 has no endogenous signal peptide (topology string contains no 'S'; residues 1\u201349 are extracellular). The paper adds an exogenous HA-derived signal sequence upstream of a FLAG tag, so after signal-peptide cleavage the FLAG tag sits immediately before canonical Met1, placing it at insert_after_residue = 0. This is the sole extracellular terminus of the receptor (the C-terminus, residues 318\u2013360, is intracellular), so the position is topology-derived. The tag is 50 residues from the TM1 boundary (residue 50), well clear of any TM constraint. The NanoBiT-Gi1 assay requires a surface-expressed, G-protein-coupling-competent receptor, confirming both trafficking and function are preserved. Full-length membrane-anchored CXCR2 expressed with an exogenous HA-derived signal sequence followed by a FLAG-epitope tag at the N-terminus; construct used in NanoBiT-Gi1 protein dissociation assays in a mammalian cell system (PMC10336096).",
+      "sources": [
+        {
+          "pmid": 37433790,
+          "citation": "PMID 37433790",
+          "claim": "Specifically, a NanoBiT-Gi1 protein consisting of G\u03b1i1 subunit fused with a large fragment (LgBiT) at the \u03b1-helical domain (between the residues 91 and 92 of G\u03b1i1) and an N-terminally small fragment (SmBiT)-fused G\u03b32 subunit with a C68S mutation was expressed along with untagged G\u03b21 subunit and CXCR1 or CXCR2 (containing the N-terminal HA-derived signal sequence followed by the FLAG-epitope tag)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:08:19.516681+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports a full-length, membrane-anchored CXCR2 construct bearing an N-terminal FLAG tag (preceded by an exogenous HA-derived signal sequence) used in a NanoBiT-Gi1 functional assay. No residue number is stated in the clip, but CXCR2 has exactly one extracellular terminus (N-terminus, residues 1\u201349; no endogenous signal peptide), so the position is unambiguously topology-derived at insert_after_residue = 0. No other insertion sites (internal loops ECL1 107\u2013120, ECL2 183\u2013208, ECL3 274\u2013294, or C-terminal) are supported by any ledger line and are therefore not proposed.",
+  "literature_rejected": []
 }

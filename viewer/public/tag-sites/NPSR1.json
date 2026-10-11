@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NPSR1-terminal_n-0-lit",
+      "gene_symbol": "NPSR1",
+      "uniprot_acc": "Q6W5P4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence confirmed cell-surface membrane expression; NPS-induced signalling was comparable to untagged NPSR1 (data shown in PMC3244468).",
+      "confidence": "high",
+      "rationale": "L1\u2013L4 all describe 'N-terminal Myc-tagged full-length NPSR1' expressed as a membrane-anchored receptor. NPSR1 has no signal peptide (topology string begins with O at residue 1), so the N-terminus is extracellular and there is exactly one extracellular N-terminal position: a prepend before residue 1 (insert_after_residue=0, residue_after=M). No specific residue number is cited in the papers, so position_evidence is topology_derived. Python confirmed residue 1 = M and that the topology is O from position 1, with TM1 beginning at residue 53, leaving 52 extracellular residues between the tag and the first TM helix. Full-length NPSR1 cDNA with an N-terminal Myc tag expressed in HEK293 cells; immunofluorescence confirmed membrane localisation; NPS-induced signalling was compared to untagged receptor.",
+      "sources": [
+        {
+          "pmid": 22216302,
+          "citation": "PMID 22216302",
+          "claim": "HEK293 cells were transfected with N-terminal Myc-tagged NPSR1 cDNA expression vectors corresponding to different coding variants."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:09:40.769049+00:00",
+  "literature_notes": "L5, L6, and L7 (PMC4116602) describe full-length NPSR1-A-pDsRed, NPSR1-B-GFP, and NPSR1-A-GFP fusions. The naming convention 'NPSR1-X-FP' indicates C-terminal fusions. The NPSR1 C-terminus (residues 333\u2013371) is intracellular per the authoritative topology landmarks; these constructs therefore carry an intracellular fluorescent-protein tag and do not qualify as extracellular surface-tag sites. They are recorded in other_positions. L1\u2013L4 are four clips from the same paper (PMC3244468) all describing the same N-terminal Myc-tagged construct; they ground a single site, not four separate sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 371,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "NPSR1-A-pDsRed and NPSR1-B-GFP fusions (C-terminal FP) expressed in COS-7 and SH-SY5Y cells; the NPSR1 C-terminus (residues 333\u2013371) is intracellular, so these fusions label the cytoplasmic face, not the extracellular surface."
+    }
+  ]
 }

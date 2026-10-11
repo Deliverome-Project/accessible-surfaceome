@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "RHO-terminal_n-0-lit",
+      "gene_symbol": "RHO",
+      "uniprot_acc": "P08100",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Plasma membrane localisation confirmed by imaging in HeLa cells (L2); outer-segment targeting confirmed in rod photoreceptors with OS/total intensity = 0.899 \u00b1 0.063 (L5). No phototransduction or ligand-binding assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "Rhodopsin has no signal peptide (topology string contains no 'S'; residues 1\u201338 are all 'O'). The N-terminus is therefore the only extracellular terminus, and the FLAG tag described in L1/L2/L5 must sit there as a prepend (insert_after_residue = 0, residue_after = M1). The extracellular span is 38 residues long, placing the junction 39 residues from TM1 (residue 39), well beyond the \u22653-residue minimum. Python confirmed residue_after = 'M'. Full-length rhodopsin bearing an N-terminal FLAG tag (extracellular) and C-terminal GFP (intracellular) was expressed in HeLa cells (L1/L2) and in mouse rod photoreceptors via in vivo electroporation (L5). No signal peptide is present (raw topology begins O throughout residues 1\u201338), so the N-terminus is the sole extracellular terminus; the tag must prepend before M1.",
+      "sources": [
+        {
+          "pmid": 25096327,
+          "citation": "PMID 25096327",
+          "claim": "To monitor the trafficking of rhodopsin, we constructed fusion genes encoding chimeric rhodopsin proteins with a FLAG tag at their N-terminus (extracellular region) and green fluorescent protein (GFP) at their C-terminus (intracellular region; Fig. 1A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:00:17.235762+00:00",
+  "literature_notes": "L3/L4 (Tag-RFP-T C-terminal knock-in), L6/L7 (1D4 epitope C-terminal), and L8 (Rho-GFP knock-in) all place tags at the intracellular C-terminus (residues 310\u2013348, topology 'I') and are recorded in other_positions. No ledger line reports a tolerated insertion in any extracellular loop (ECL1 96\u2013111, ECL2 176\u2013203, ECL3 274\u2013285) of full-length membrane-anchored rhodopsin, so no internal extracellular sites are proposed. L5 is additional corroborating evidence for the N-terminal FLAG site already grounded in L1; L1 is cited as the primary supporting clip because it is the first and most explicit description of the construct design.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 348,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion (after A348) confirmed at plasma membrane but faces the cytoplasm (intracellular topology 310\u2013348); not a surface tag site."
+    },
+    {
+      "residue": 348,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Tag-RFP-T knock-in (P23H hRho) after A348 is intracellular; expressed in rod photoreceptors but not on the extracellular face."
+    },
+    {
+      "residue": 348,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "1D4 epitope tag (9 aa, TETSQVAPA) appended after A348 at the intracellular C-terminus; used for immunolabelling of permeabilised or fixed cells, not a surface epitope."
+    }
+  ]
 }

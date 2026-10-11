@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "GLRA3",
+  "uniprot_acc": "O75311",
+  "sites": [
+    {
+      "site_id": "GLRA3-terminal_n-35-lit",
+      "gene_symbol": "GLRA3",
+      "uniprot_acc": "O75311",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "R",
+      "residue_after": "S",
+      "residue_label": "R35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Whole-cell electrophysiology: HA-tagged GlyR \u03b13K channels responded comparably to cesium (and strychnine) as untagged GlyR \u03b13K channels; electrophysiological properties described as unaffected.",
+      "confidence": "high",
+      "rationale": "The ledger (L1, confirmed by L2) reports an HA tag inserted at '+2 in signal-peptide-processed mature GlyR \u03b13'. The signal peptide spans residues 1\u201333 (authoritative landmarks), so mature position +1 = full-sequence residue 34 (A) and mature position +2 = full-sequence residue 35 (R). Python confirms seq[34] = R and seq[35] = S, placing the junction at insert_after_residue = 35 (\u00b11 ambiguity acknowledged; both 34 and 35 are extracellular). The site is 221 residues from TM1 (boundary at 256), well clear of any TM constraint, and the large N-terminal extracellular domain of GlyR is the canonical location for epitope tags in this subunit family. Full-length GlyR \u03b13 expressed in a heterologous system with an HA epitope tag inserted at the position corresponding to +2 in the signal-peptide-processed mature protein (mature residue 2 = full-sequence residue 35). L2 explicitly compares HA-tagged vs. untagged GlyR \u03b13K channels.",
+      "sources": [
+        {
+          "pmid": 37284465,
+          "citation": "PMID 37284465",
+          "claim": "GlyR constructs are epitope-tagged (c-myc, GlyR \u03b12; HA, GlyR \u03b13), however, recent work demonstrates that epitope tags inserted at positions corresponding +2 in signal peptide processed mature GlyR proteins do not affect the electrophysiological properties of GlyR, as shown recently even for high molecular weight tags such as different fluorescent proteins ( Lemmens et al., 2022 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 35,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:18:35.377027+00:00",
+  "literature_notes": "Two ledger lines (L1, L2) both support the same single site \u2014 the HA-tag insertion near the N-terminus of the mature extracellular domain of GlyR \u03b13. L1 establishes the construct and the '+2 mature protein' position; L2 provides the direct functional comparison (tagged vs. untagged). No other insertion sites are named or implied in the ledger. The \u00b11 residue ambiguity (insert_after_residue 34 vs. 35) does not affect the classification: both positions are extracellular, both are far from TM1, and the prompt instructs that a one-residue uncertainty never justifies withholding the site. Residue 35 (R) was chosen as the primary junction because '+2 in the mature protein' most naturally denotes the second mature residue, after which the tag is appended. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

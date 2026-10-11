@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRC8C",
+  "uniprot_acc": "Q8TDW0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:22:11.084411+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 and L2 report a full-length LRRC8C-V5 knock-in mouse but never state the residue or junction at which the V5 tag is inserted. Critically, LRRC8C has no extracellular terminus: the N-terminus (residues 1\u201325) and C-terminus (residues 340\u2013803) are both intracellular per the authoritative topology landmarks, so topology_derived reasoning cannot rescue a surface-site assignment. L3 reports an insertion C-terminally to Q14 of full-length LRRC8C; residue 14 lies within the intracellular N-terminal span (1\u201325) and the insertion abolished channel activity, making it both intracellular and function-abrogating. No ledger line grounds an extracellular surface tag site for LRRC8C.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 14,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "Insertion of a six-residue flexible fragment C-terminally to Q14 (intracellular N-terminal region, residues 1\u201325) abolished LRRC8A/C channel activity, though the construct still trafficked to the plasma membrane."
+    }
+  ]
+}

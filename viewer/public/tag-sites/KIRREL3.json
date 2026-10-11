@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "KIRREL3",
+  "uniprot_acc": "Q8IZU9",
+  "sites": [
+    {
+      "site_id": "KIRREL3-terminal_n-21-lit",
+      "gene_symbol": "KIRREL3",
+      "uniprot_acc": "Q8IZU9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface FLAG signal detected on transfected neurons by live labeling (pre-fixation anti-FLAG antibody); construct used to map axonal vs. dendritic distribution of Kirrel3, demonstrating correct trafficking to the cell surface. No reduction in surface expression or mislocalization reported.",
+      "confidence": "high",
+      "rationale": "The topology landmarks place the signal peptide at residues 1\u201321 and the extracellular domain beginning at residue 22 (L). Inserting after residue 21 (G, the last SP residue) places the FLAG tag at the mature N-terminus, fully extracellular and >500 residues from the TM boundary (536). Python verification confirms residue 21 = G and residue 22 = L, matching the sequence exactly. L4 independently replicates the same junction in two Kirrel3 isoforms, and L2/L3 confirm surface accessibility by live anti-FLAG labeling. Full-length Kirrel3 expressed in the pBos mammalian vector with a FLAG tag inserted extracellularly immediately after the signal-sequence cleavage site (residues 1\u201321). Construct expressed in neurons (PMC4642954) and in mammalian cells for isoforms F and K (PMC10698715). Live-cell anti-FLAG labeling prior to fixation confirmed the tag is on the extracellular surface.",
+      "sources": [
+        {
+          "pmid": 26575286,
+          "citation": "PMID 26575286",
+          "claim": "Standard PCR cloning was used to move cDNAs to the pBos vector and add an extracellular FLAG tag after the signal sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 21,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:00:35.465371+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the identical insertion strategy: a FLAG tag placed after the signal-peptide cleavage site of full-length, membrane-anchored Kirrel3. L1 and L4 describe construct creation; L2 and L3 confirm extracellular surface display. No ledger line names any internal loop junction, any intracellular site, or any second distinct position; therefore only one site is reported. L4 covers mouse Kirrel3 isoforms F and K, which are close orthologs/isoforms of the human protein and reinforce the same junction. The validation level is surface_only rather than surface_and_function because, while the construct was used to study subcellular distribution (axonal vs. dendritic), no explicit synaptic-adhesion or trans-binding functional assay with the tagged construct is described in the ledger clips.",
+  "literature_rejected": []
+}

@@ -37,7 +37,74 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GRM6-terminal_n-29-lit",
+      "gene_symbol": "GRM6",
+      "uniprot_acc": "O15303",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression of Myc-tagged mGluR6 confirmed in HEK cells and ON-bipolar cells; surface levels comparable to untagged controls; receptor trafficking to dendritic tips of bipolar cells assessed.",
+      "confidence": "high",
+      "rationale": "L2 explicitly names the junction as between a.a. 29 and 30 of human mGluR6, placed after the SignalP-6.0-predicted signal peptide. Per our canonical landmarks, residue 29 (A) and residue 30 (A) both fall within the extracellular domain (25\u2013585), 5 and 6 residues past the canonical mature N-terminus (25), and 556 residues from TM1 (586). The tag is unambiguously extracellular and the paper validated surface display and bipolar-cell trafficking, making this the highest-confidence site. Full-length human mGluR6 with Myc tag inserted between a.a. 29 and 30, after the SignalP-6.0-predicted signal peptide cleavage site, cloned into pCDNA3.1 for HEK cell expression and pGrm6P for ON-bipolar cell expression. Surface expression was assayed by immunostaining of non-permeabilized cells.",
+      "sources": [
+        {
+          "pmid": 39681475,
+          "citation": "PMID 39681475",
+          "claim": "To make N-terminally Myc-tagged human mGluR6, the signal peptide cleavage site was predicted with SignalP-6.0 ( Teufel et al, 2022 ), and the Myc-tag sequence was inserted after the predicted signal sequence, between a.a. 29 and 30, using overlap extension PCR. pCDNA3.1 with untagged mouse mGluR6 ( NP_775548.2 ) was described previously ( Kang et al, 2014 ; Agosto et al, 2021 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:50:59.965325+00:00",
+  "literature_notes": "L3 and L4 (PMC8671642) and L5 and L6 (PMC11649943) all describe C-terminal EGFP fusions of full-length mGluR6. Per the topology landmarks, the C-terminus (residue 877) falls within the intracellular region (846\u2013877); these fusions are therefore intracellular and do not qualify as extracellular surface tag sites. They are recorded in other_positions. L1 and L2 both place a Myc tag near the N-terminus after the signal peptide, but differ by six residues in the stated junction (23 vs. 29), reflecting different SP prediction tools used by the two studies (the L1 study used an unspecified predictor giving SP=1\u201323; the L2 study used SignalP-6.0 giving SP=1\u201329). Both junctions are reported as separate validated sites. The L2 site (residue 29) is unambiguously extracellular per our canonical landmarks and is ranked first.",
+  "literature_rejected": [
+    {
+      "residue_label": "Q23",
+      "insert_after_residue": 23,
+      "gate": "geometry",
+      "reason": "topology: terminal_n at residue 23 is within the signal peptide (1-24) \u2014 the tag is cleaved off with the SP (silent failure)",
+      "supporting_quote": null
+    }
+  ],
+  "literature_other_positions": [
+    {
+      "residue": 877,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal EGFP fusion of full-length mGluR6 is tolerated and traffics correctly to ON-bipolar cell dendritic tips, but the C-terminus (residue 877) lies within the intracellular region (846\u2013877) and is not a surface tag site."
+    },
+    {
+      "residue": 877,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Full-length human mGluR6 fused to GGGSGGG-EGFP at the C-terminus; surface expression confirmed in HEK cells and bipolar cells, but the fusion is intracellular (C-terminus in region 846\u2013877)."
+    }
+  ]
 }

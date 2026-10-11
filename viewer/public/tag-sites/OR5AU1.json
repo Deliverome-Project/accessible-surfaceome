@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR5AU1-terminal_n-0-lit",
+      "gene_symbol": "OR5AU1",
+      "uniprot_acc": "Q8NGC0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + Rho (20 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED for OR5AU1 specifically; construct was made for heterologous expression but surface display and functional readout for OR5AU1 are not reported in the cited ledger line.",
+      "confidence": "medium",
+      "rationale": "L1 explicitly names OR5AU1 among the ORs cloned with N-terminal FLAG+Rho tags on the full-length receptor. The topology landmarks show no signal peptide and place residues 1\u201376 extracellular; TM1 begins at residue 77, leaving the N-terminus as the unique extracellular terminus. A prepend (insert_after_residue=0) is therefore the topology-derived junction, 76+ residues from TM1. L2 confirms surface display of the identical construct design for a related OR (OR51T1) but does not name OR5AU1, so validation remains detected_only. OR5AU1 full-length receptor cloned into pME18S with N-terminal FLAG and 20-aa bovine rhodopsin epitope tags fused upstream of residue 1; expressed in HEK293 and LNCaP cells. Topology landmarks place residues 1\u201376 extracellular with no signal peptide, making the N-terminus the sole extracellular terminus and the only possible location for the reported N-terminal tag.",
+      "sources": [
+        {
+          "pmid": 35446888,
+          "citation": "PMID 35446888",
+          "claim": "Each of the amplified receptor genes was inserted into the pME18S vector to generate OR proteins fused with N-terminal epitope tags of FLAG and 20 N-terminal amino acids of bovine rhodopsin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:54:48.318442+00:00",
+  "literature_notes": "L2 demonstrates surface display of the N-terminal FLAG tag for OR51T1 using the same pME18S FLAG+Rho construct design, providing indirect support that the N-terminal tag strategy reaches the extracellular face in ORs. However, because L2 names OR51T1 and not OR5AU1, it cannot elevate OR5AU1's validation level beyond detected_only; it was therefore used only as contextual support and not as the primary grounding clip. No ledger evidence supports any internal extracellular loop insertion for OR5AU1 or a close ortholog.",
+  "literature_rejected": []
 }

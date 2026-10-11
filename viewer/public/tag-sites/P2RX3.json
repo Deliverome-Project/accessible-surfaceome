@@ -93,5 +93,26 @@
       "canonical_residue": 271,
       "left_pct": 68.26196473551637
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:06:25.441433+00:00",
+  "literature_notes": "P2X3 (P2RX3) is a two-pass membrane protein with topology IC(1-22)\u2013TM(23-44)\u2013EC(45-328)\u2013TM(329-344)\u2013IC(345-397). Both ledger lines describe N-terminal tags on full-length, membrane-anchored P2X3: L1 places a Strep affinity tag at the N-terminus for tandem affinity purification of the P2X2/3 heteromer; L2 places mCherry at the N-terminus for expression studies. The N-terminus (residues 1\u201322) is unambiguously intracellular per the authoritative topology landmarks, so both tags face the cytoplasm and do not qualify as extracellular surface sites. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or domain insertion \u2014 in the extracellular domain (residues 45\u2013328) or at any extracellular-facing position of this protein or a close ortholog. Zero extracellular surface sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Strep affinity tag placed at the N-terminus of full-length P2X3 for tandem affinity purification; the N-terminus (residues 1\u201322) is intracellular per topology landmarks, so this tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "mCherry fluorescent protein fused to the N-terminus of full-length P2X3 in pcDNA3.1 for expression studies; the N-terminus (residues 1\u201322) is intracellular per topology landmarks, so this tag faces the cytoplasm."
+    }
   ]
 }

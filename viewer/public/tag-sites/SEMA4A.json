@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "SEMA4A",
+  "uniprot_acc": "Q9H3S1",
+  "sites": [
+    {
+      "site_id": "SEMA4A-terminal_n-32-lit",
+      "gene_symbol": "SEMA4A",
+      "uniprot_acc": "Q9H3S1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 32,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G32",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED for SEMA4A. For Sema4D the construct was generated for surface expression studies but the clip does not report the outcome.",
+      "confidence": "low",
+      "rationale": "Sema4D (CD100) is a class-4 semaphorin with identical domain architecture to SEMA4A; a myc tag tolerated before the first residue of the mature Sema4D ectodomain provides indirect precedent for the same junction on SEMA4A. The SEMA4A signal peptide spans residues 1\u201332 (last residue G32); insert_after_residue=32 places the tag between G32 and G33, entirely upstream of the 651-residue extracellular domain and well clear (>650 aa) of the TM boundary. Python confirmed residue_before=G (position 32) and residue_after=G (position 33). Confidence is low because the evidence is from a paralog and no functional result for the Sema4D construct is reported in the clip. L6 reports a myc tag inserted prior to phenylalanine at codon 23 of full-length Sema4D (after signal-peptide cleavage), generating a tagged construct for surface expression studies. Sema4D is a class-4 semaphorin paralog sharing the same type-I TM topology (large extracellular sema/PSI/Ig domain, single TM, short intracellular tail). The analogous position on SEMA4A is immediately after the signal-peptide cleavage site (residue 32, last SP residue G), placing the tag at the mature N-terminus of the extracellular domain (residue 33, G). Computed: SP ends at residue 32; mature N-terminus is residue 33; distance to TM boundary is 651 residues.",
+      "sources": [
+        {
+          "pmid": 39152101,
+          "citation": "PMID 39152101",
+          "claim": "After observing which amino acid begins the published structure of Sema4D and factoring where cleavage of the signal peptide (SP) is predicted to occur (SignalP-5.0), a myc tag was inserted prior to the phenylalanine at codon 23 using Q5 mutagenesis (NEB)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:16:47.758967+00:00",
+  "literature_notes": "L1\u2013L5 all describe C-terminal EGFP or 3xFLAG fusions on full-length SEMA4A. Because SEMA4A is a type-I transmembrane protein (extracellular 33\u2013683, TM 684\u2013704, intracellular 705\u2013761), the C-terminus (residues 705\u2013761) is cytoplasmic; these tags are intracellular and do not qualify as surface tag sites. L5 confirms the tagged protein traffics to the apical plasma membrane of RPE cells, but the GFP moiety itself faces the cytoplasm. L6 is the only ledger line that grounds an extracellular tag position, and it is indirect (Sema4D paralog). The D345H point mutation (L2) is in the extracellular domain but is a disease-associated substitution studied with a C-terminal EGFP; it does not constitute a tag-insertion precedent and is not promoted to a site. R713Q (L2) is intracellular and likewise not a tag-insertion precedent.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 760,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length SEMA4A (aa 1\u2013760) fused to EGFP at the C-terminus (pEGFP-N3) or 3xFLAG (p3xFLAG-CMV-14); the C-terminus lies in the intracellular domain (residues 705\u2013761) and is not on the extracellular face."
+    },
+    {
+      "residue": 350,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L2",
+      "note": "F350C is a retinitis-pigmentosa-associated point mutation in the extracellular sema domain; the paper generates F350C-EGFP and F350C-FLAG constructs to study its pathogenic effect, implying this residue is functionally critical and substitution disrupts normal protein behaviour."
+    }
+  ]
+}

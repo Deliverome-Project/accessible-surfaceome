@@ -515,5 +515,26 @@
       "canonical_residue": 447,
       "left_pct": 75.75757575757575
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:34:54.168102+00:00",
+  "literature_notes": "KCNA3/Kv1.3 has a large intracellular N-terminal domain (residues 1\u2013234) and an intracellular C-terminal domain (residues 478\u2013575). Every tag in the ledger lands in one of these intracellular regions. L1/L2 (PMC5973702): C-terminal FLAG/10Xhis tag \u2014 C-terminus is residue 575, within the intracellular span 478\u2013575; disqualified as intracellular. L2 also mentions an antibody recognising 'the first extracellular loop epitope' (EC1, residues 255\u2013296), but this is antibody epitope mapping, not a tag insertion \u2014 explicitly excluded by the rules. L3/L4/L5 (PMC4497498): eGFP fused 'immediately after the start codon' of full-length Kv1.3 \u2014 residue 1 is the first residue of the intracellular N-terminal domain; disqualified as intracellular (function was confirmed preserved, but the tag faces the cytoplasm). L6/L7 (DOI:10.1101/2024.01.29.577122 / PMC12989817): TurboID-V5 fused to both the 5' (N-terminal) and 3' (C-terminal) ends of Kcna3 \u2014 both termini are intracellular; disqualified. L8 (PMC12205523): GFP placed at the N-terminus via pEGFP-C2 vector \u2014 again the intracellular N-terminus; disqualified. No ledger line reports a tolerated tag insertion at any extracellular position of KCNA3. The three extracellular loops (EC1: 255\u2013296, EC2: 342\u2013369, EC3: 420\u2013455) are unaddressed by any qualifying insertion in the ledger. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "eGFP fused immediately after the start codon (N-terminus, residue 1); the entire N-terminal domain (1\u2013234) is intracellular; function confirmed preserved but tag faces cytoplasm."
+    },
+    {
+      "residue": 575,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG/10Xhis tag at residue 575; the C-terminal domain (478\u2013575) is intracellular; used to characterise surface-displayed channel in Tetrahymena but the tag itself is cytoplasmic."
+    }
   ]
 }

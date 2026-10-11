@@ -142,5 +142,20 @@
       "canonical_residue": 49,
       "left_pct": 18.773946360153257
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:13:11.872731+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single construct: full-length GJB6 (Cx30) with mScarlet fused via a 7-aa linker to the carboxy terminus. The authoritative topology landmarks place the C-terminus (residues 211\u2013261) entirely in the INTRACELLULAR compartment. A tag on an intracellular terminus does not qualify as an extracellular surface tag site unless an explicit validated snorkel strategy is described; none is mentioned anywhere in the ledger. No ledger line reports any insertion in either extracellular loop (EL1: 44\u201373; EL2: 157\u2013189) or at the extracellular-facing N-terminus (residues 1\u201322 are also intracellular). Zero surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 261,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "mScarlet fused after the last residue (S261) of the intracellular C-terminal domain via a 7-aa linker; tagging shown to have no effect on GJ channel permeability (Beltramello et al., 2005), confirming the insertion is tolerated, but the site faces the cytoplasm and is not an extracellular surface tag position."
+    }
   ]
 }

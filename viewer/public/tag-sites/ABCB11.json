@@ -93,5 +93,26 @@
       "canonical_residue": 115,
       "left_pct": 8.70552611657835
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:42:47.322194+00:00",
+  "literature_notes": "All six ledger clips (L1\u2013L6) describe C-terminal fusions on full-length ABCB11/BSEP: L1 and L2 report a GSGS-HiBiT tag appended after the last residue; L3 and L4 report C-terminal GFP; L5 and L6 describe EGFP- or GFP-tagged constructs that traffic to the canalicular membrane, referencing the same C-terminal GFP construct established in L3/L4. The C-terminus (position 1321, residue S) lies within the intracellular domain (landmarks: 1039\u20131321), 283 residues past the end of TM12 (1018\u20131038). A C-terminal tag on an intracellular terminus does not qualify as an extracellular surface tag site. No ledger clip describes a tag at the N-terminus, in any extracellular loop (EL1 83\u2013144, EL2 238\u2013242, EL3 344\u2013359, EL4 775\u2013799, EL5 897\u2013901, EL6 1001\u20131017), or at any other extracellular position. The N-terminus (residues 1\u201358) is also intracellular. Because no ledger line supports an extracellular insertion, the correct answer is zero qualifying sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1321,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GSGS-HiBiT tag appended after the last residue (S1321); the C-terminus lies in the intracellular domain (1039\u20131321), confirmed by topology landmarks; protein traffics correctly to the plasma membrane but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 1321,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal GFP fusion (wild-type and missense variants A257V, T463I, G562D) used in MDCK and hepatocellular expression studies; same intracellular C-terminal position as L1; canalicular surface display of the full-length protein is confirmed but the GFP moiety is intracellular."
+    }
   ]
 }

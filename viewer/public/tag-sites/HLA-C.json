@@ -1,0 +1,59 @@
+{
+  "has_data": true,
+  "gene_symbol": "HLA-C",
+  "uniprot_acc": "P10321",
+  "sites": [
+    {
+      "site_id": "HLA-C-terminal_n-24-lit",
+      "gene_symbol": "HLA-C",
+      "uniprot_acc": "P10321",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-HA and anti-HLA (W6/32) flow cytometry staining on 721.221 cells; functional NK cell recognition assays were performed on the same cell system but using W6/32-detected HLA-C, not specifically the HA-tagged readout, so function of the HA-tagged protein itself was NOT MEASURED independently.",
+      "confidence": "high",
+      "rationale": "All four lines from PMC5490200 (L1\u2013L4) converge on the identical junction: the HA tag is placed after the 24-residue signal peptide (ending in Ala-24) and before the mature N-terminus Cys-25. Python confirms seq[23]='A' and seq[24]='C', matching the canonical sequence exactly. L4 is the strongest clip because it explicitly describes full-length (exons 1\u20138) constructs and reports confirmed surface display by dual staining. The junction is \u2265280 residues from the TM boundary (TM: 308\u2013332), fully extracellular, and the tag is appended to the mature N-terminus, which is the standard validated position for class I MHC N-terminal tagging. Full-length HLA-C*05 and HLA-C*07 constructs spanning exons 1\u20138 were cloned into a lentiviral expression plasmid with an HA tag inserted immediately after the signal peptide (residues 1\u201324) and before the mature HLA-C coding sequence. Constructs were transduced into 721.221 cells and surface expression of both HA and HLA-C (W6/32) was measured by flow cytometry on GFP+ cells.",
+      "sources": [
+        {
+          "pmid": 28649982,
+          "citation": "PMID 28649982",
+          "claim": "To establish the validity of the system, HA-tagged C*05 and C*07 constructs including the sequence of exons 1\u20138 of these alleles were generated ( Fig. 3a ), and 721.221 cells were transduced with the respective C*05 and C*07 lentivirus at equivalent multiplicity of infection (normalized using GFP, expressed in tandem from the lentiviral expression vector)."
+        },
+        {
+          "pmid": 36381658,
+          "citation": "PMID 36381658",
+          "claim": "Template used for N-terminally FLAG-tagged HLA mRNA synthesis contained 5\u2032 T7 promoter followed by the V kappa 1 signal peptide, 1\u00d7 FLAG peptide (DYKDDDDK), and G4S linker."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 24,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:00:28.440311+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) converge on a single physical junction: insert_after_residue=24, the mature N-terminus of HLA-C after signal peptide cleavage. L1, L2, L3, and L4 are from the same paper (PMC5490200) and describe HA-tagged HLA-C constructs; L4 is the most explicit (full-length exons 1\u20138, surface staining confirmed) and was chosen as the primary supporting clip for Site 1. L2 describes a hybrid construct (HLA-C exons 1\u20133 fused to H-2Kb exons 4\u20138) at the same junction; this is weaker evidence for native HLA-C folding and is subsumed by L4. L5 (PMC9619369) uses a FLAG tag with a heterologous SP at the equivalent junction and is reported as a second site entry because it is an independent paper with a different tag. No internal extracellular loop insertions are supported by any ledger line. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

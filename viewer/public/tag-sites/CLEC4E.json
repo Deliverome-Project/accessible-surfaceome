@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC4E",
+  "uniprot_acc": "Q9ULY5",
+  "sites": [
+    {
+      "site_id": "CLEC4E-terminal_c-219-lit",
+      "gene_symbol": "CLEC4E",
+      "uniprot_acc": "Q9ULY5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 219,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L219",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by flow cytometry with anti-HA antibody (L2, L4); functional assay result not detailed in the provided clips.",
+      "confidence": "high",
+      "rationale": "CLEC4E is a type II single-pass transmembrane protein (N-terminus intracellular residues 1\u201324, TM 25\u201340, C-terminus extracellular residues 41\u2013219). L1 explicitly states the FLAG tag is 'C-terminal (extracellular)' on the full-length membrane-anchored construct, leaving exactly one extracellular terminus (residue 219, L) as the junction. Python confirmed residue 219 = L and that the C-terminus is 179 residues from the TM boundary, well above the \u22653-residue minimum. L2, L3, and L4 independently confirm HA-tagged Mincle is detected on the cell surface by flow cytometry, consistent with a C-terminal extracellular tag on this type II topology. Full-length human Mincle (NM014358) cloned into EMCV-SR\u03b1 vector with a C-terminal (extracellular) FLAG epitope tag; membrane-anchored construct expressed in cells. Corroborated by L2/L3 (HA-tagged huMincle in HEK293, surface confirmed by anti-HA flow cytometry) and L4 (HA-tagged Mincle in NIH-3T3 co-expressing FcR\u03b3, surface confirmed by anti-HA flow cytometry).",
+      "sources": [
+        {
+          "pmid": 35194806,
+          "citation": "PMID 35194806",
+          "claim": "Full\u2010length open\u2010reading frames of human Mincle (NM014358, bases 109\u2010766), DCIR (NM016184, bases 263\u2010974), or Dectin\u20102 (NM001007033, bases 151\u2010778) were cloned in to the EMCV\u2010SR\u03b1 vector followed by a C\u2010terminal (extracellular) FLAG epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:47:50.345966+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) support the same single site: a C-terminal extracellular tag at residue 219. L1 is the primary clip (explicitly names 'C-terminal (extracellular) FLAG'); L2, L3, L4 corroborate with HA-tagged constructs confirmed on the cell surface by flow cytometry. No residue number is stated in any clip, so position_evidence is topology_derived: for a type II TM protein with intracellular N-terminus (1\u201324) and extracellular C-terminus (41\u2013219), the C-terminus is the only extracellular terminus, uniquely pinning insert_after_residue = 219. An N-terminal tag on this protein would be intracellular and is not proposed. No internal loop insertions are supported by the ledger. No abrogating or cytoplasmic insertions are reported in the ledger.",
+  "literature_rejected": []
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "IGF1R",
+  "uniprot_acc": "P08069",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:10:43.533819+00:00",
+  "literature_notes": "Both ledger lines L1 and L2 describe the same experimental construct: full-length human IGF1R fused C-terminally to the fluorescent protein mEos3.2 (via a named linker in L1). IGF1R is a type I single-pass transmembrane receptor with topology: signal peptide 1\u201330 (cleaved), extracellular 31\u2013935, TM 936\u2013957, intracellular 958\u20131367. The C-terminus (residue 1367, 'C') therefore lies entirely within the intracellular domain. A C-terminal mEos3.2 fusion labels the cytoplasmic face, not the extracellular surface. Per the rules, an intracellular terminus tag does not qualify as an extracellular surface tag site unless it is an explicit validated snorkel \u2014 which neither paper claims. No ledger line supports any insertion at the extracellular N-terminus (after signal-peptide cleavage at residue 30) or at any internal extracellular loop. The ledger contains no evidence for an extracellular surface tag site on IGF1R; sites = [] is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1367,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mEos3.2 fusion to full-length membrane-anchored IGF1R; residue 1367 (C) is the intracellular C-terminus (domain 958\u20131367), so the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

@@ -37,7 +37,56 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR51E1-terminal_n-0-lit",
+      "gene_symbol": "OR51E1",
+      "uniprot_acc": "Q8TCB6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunostaining without membrane permeabilization confirmed cell-surface display of the full-length receptor in LNCaP cells (surface_only; no functional assay result stated in the cited clip).",
+      "confidence": "high",
+      "rationale": "OR51E1 has no endogenous signal peptide; residues 1\u201327 are extracellular and the N-terminus is the only extracellular terminus available for a prepend. Python confirmed residue 1 = M and TM1 begins at residue 28, giving 27 residues of extracellular space \u2014 well above the 3-residue minimum. The Lucy SP is cleaved, so the FLAG is the first element of the mature surface-displayed protein. Position is topology-derived because no residue number is cited. Full-length OR51E1 expressed in LNCaP cells using an inducible tetracycline system. Construct architecture (L2): exogenous Lucy signal peptide (17 aa, cleavable) + FLAG epitope + 20 N-terminal aa of rhodopsin + OR51E1(1\u2013318). After Lucy cleavage the mature surface protein begins with FLAG, placing it on the extracellular face before OR51E1 residue 1 (M). No residue number is stated; OR51E1 has no endogenous signal peptide and its sole extracellular terminus is the N-terminus (residues 1\u201327, 27 aa before TM1 at residue 28), so the junction is topology-derived.",
+      "sources": [
+        {
+          "pmid": 33640452,
+          "citation": "PMID 33640452",
+          "claim": "LNCaP\u2013OR51E1tet cells were grown either without or with 1 \u03bcg/ml doxycycline for 2 days, then fixed, stained with the anti-FLAG antibody ( red ) without cell membrane permeabilization and analyzed by open-field microscopy."
+        },
+        {
+          "pmid": 28116519,
+          "citation": "PMID 28116519",
+          "claim": "The antibody specificity was demonstrated by co-immunocytochemical staining of Hana3A cells heterologously expressing rho-tagged OR51E1 (see supplementary Figure S1A) and by using of a specific OR51E1-blocking peptide (Figure S2)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:50:47.013331+00:00",
+  "literature_notes": "All six ledger lines converge on the N-terminal extracellular prepend (insert_after_residue = 0). L1\u2013L4 (PMC8024707, PMC13034504) describe the Lucy-FLAG-Rho20-OR51E1 construct; L5\u2013L6 (PMC5258789, PMC5217014) describe the rho-tagged OR51E1 construct. No ledger line names a specific residue number, so both sites are topology_derived. OR51E1 has no endogenous signal peptide (raw topology string contains no 'S'; residue 1 is extracellular). The three shorter extracellular loops (ECL1: 90\u2013100, 11 aa; ECL2: 167\u2013196, 30 aa with three conserved Cys at 172/182/192; ECL3: 264\u2013275, 12 aa) are not supported by any ledger insertion and are not proposed. ECL2 contains multiple disulfide-forming cysteines typical of class-A GPCRs, making internal insertions there particularly risky even if evidence existed.",
+  "literature_rejected": []
 }

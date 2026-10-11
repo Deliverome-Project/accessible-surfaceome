@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "APP",
+  "uniprot_acc": "P05067",
+  "sites": [
+    {
+      "site_id": "APP-internal-683-lit",
+      "gene_symbol": "APP",
+      "uniprot_acc": "P05067",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 683,
+      "residue_before": "V",
+      "residue_after": "H",
+      "residue_label": "V683",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "BCNK + tetrazine-cy5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Live-cell labeling with tetrazine-cy5 confirmed surface accessibility of the BCNK at H684; anti-myc counterstaining confirmed APP expression. APP trafficking to the cell surface was intact. Secretase processing or A\u03b2 production was NOT MEASURED.",
+      "confidence": "high",
+      "rationale": "L4 (and corroborated by L5\u2013L9) names H609 in APP695 as the amber-suppression site. APP695 lacks the 75-residue KPI+OX2 insert present in APP770 (residues 290\u2013364 of APP770); therefore H609(APP695) maps to H684 in the APP770 canonical sequence, confirmed by Python lookup (seq[683]='H'). Position 684 is within the extracellular domain (18\u2013700), 17 residues from the TM boundary (701), satisfying the \u22653-residue clearance rule. Live tetrazine-cy5 labeling (L8/L9) directly demonstrates that the modification at this position is accessible from the extracellular face, making it a validated surface site. The insert_after_residue is set to 683 because the BCNK occupies position 684 (replacing H684), so an epitope tag would be placed between V683 and H684. Full-length APP695 (APP770 canonical) bearing an amber stop codon at H609 (APP695 numbering; H684 in APP770 canonical numbering) was co-expressed with PylRS-AF and Pyl-tRNA_CUA in HEK293 cells in the presence of BCNK (bicyclononyne-lysine), incorporating the non-canonical amino acid at H684 within the extracellular A\u03b2 segment. The construct also carries a C-terminal EGFP fusion (intracellular) and a myc tag for expression verification.",
+      "sources": [
+        {
+          "pmid": 33063327,
+          "citation": "PMID 33063327",
+          "claim": "(b) APP(H609TAG)\u2010EGFP expression via genetic code expansion."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 684,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:32:54.257985+00:00",
+  "literature_notes": "L1 (HiBiT-tagged APP695): The ledger clip states the protein was 'tagged with the small HiBiT tag' but gives no position. HiBiT is used both N-terminally (extracellular after SP cleavage) and C-terminally (intracellular for APP) in the literature; without a stated position the site cannot be pinned and the clip is disqualified per the rules (commercial/research construct with unstated tag position). L2/L3 (A\u03b2 segment, no residue): These clips name only the 'A\u03b2 segment' without a specific residue; they are superseded by L4/L5 which name H609 explicitly. L6/L7 corroborate L4/L5 (same construct, same cells). L8/L9 provide the surface-accessibility validation for the H609/H684 site. The C-terminal EGFP fusion in APP(H609TAG)-EGFP is intracellular (C-terminus at residue 770, within the intracellular domain 722\u2013770) and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 770,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "APP(H609TAG)-EGFP carries EGFP fused at the C-terminus (residue 770); the C-terminus of APP is intracellular (domain 722\u2013770), so this EGFP fusion is cytoplasmic, not a surface tag."
+    }
+  ]
+}

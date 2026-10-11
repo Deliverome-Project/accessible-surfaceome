@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:36:53.314209+00:00",
+  "literature_notes": "All six ledger lines covering GPR52 (L1\u2013L6) describe C-terminal GFP/acGFP fusions. L1 explicitly states 'C-terminal GFP fusion'; L4 ('GPR52-GFP') and L5 ('hGPR52-AcGFP') follow the protein-first naming convention confirming C-terminal placement. GPR52's C-terminus (residue 361, Ile) lies in the intracellular region (318\u2013361), so none of these fusions is extracellular. L7 describes OR52cs, an olfactory receptor (gene OR52), which is a distinct gene family unrelated to GPR52; it does not qualify. No ledger line reports any tag at the extracellular N-terminus (residues 1\u201344), ECL1 (109\u2013116), ECL2 (181\u2013203), or ECL3 (287\u2013296) of GPR52. Zero extracellular surface tag sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 361,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion (explicitly stated in L1; confirmed by L4 'GPR52-GFP' and L5 'hGPR52-AcGFP' naming); residue 361 (Ile) lies in the intracellular C-terminal region (318\u2013361), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

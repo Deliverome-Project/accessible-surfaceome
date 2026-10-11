@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR51A7-terminal_n-0-lit",
+      "gene_symbol": "OR51A7",
+      "uniprot_acc": "Q8NH64",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + rhodopsin-20aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used in a large-scale functional screening campaign of 412 ORs; no OR51A7-specific functional result (e.g., agonist-evoked cAMP or calcium response) is reported in the cited clip. NOT MEASURED at single-receptor resolution.",
+      "confidence": "medium",
+      "rationale": "OR51A7 is a class-A GPCR with no signal peptide; the topology landmarks place residues 1\u201324 extracellularly and the C-terminus (294\u2013312) intracellularly, making the N-terminus the sole extracellular terminus available for an N-terminal tag. The paper names no residue, so the junction is topology-derived: insert_after_residue = 0 (prepend before Met-1). Python confirms residue_after = 'M' (seq[0]). TM1 begins at residue 25, giving 24 residues of extracellular buffer between the tag and the first TM helix, well above the 3-residue minimum. OR51A7 full-length receptor cloned into pME18S with N-terminal FLAG and 20-aa bovine rhodopsin epitope tags fused to the receptor N-terminus for heterologous expression and functional screening of 412 olfactory receptors (PMC9022881). No specific residue number is named; the tag is described only as 'N-terminal'.",
+      "sources": [
+        {
+          "pmid": 35446888,
+          "citation": "PMID 35446888",
+          "claim": "Each of the amplified receptor genes was inserted into the pME18S vector to generate OR proteins fused with N-terminal epitope tags of FLAG and 20 N-terminal amino acids of bovine rhodopsin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:49:59.557339+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports a full-length, membrane-anchored OR51A7 construct carrying N-terminal FLAG and rhodopsin-20aa epitope tags used in a 412-OR heterologous-expression screen. The clip names no insertion residue, and the N-terminus is the only extracellular terminus on this GPCR (C-terminus is intracellular per landmarks), so the position is topology-derived as a prepend (insert_after_residue = 0). No internal-loop insertions are supported by the ledger; ECL1 (83\u201397), ECL2 (164\u2013195), and ECL3 (261\u2013272) are extracellular but have no ledger-grounded insertion evidence and are therefore not proposed. Validation level is 'detected_only' because the clip does not report a per-receptor functional readout for OR51A7.",
+  "literature_rejected": []
 }

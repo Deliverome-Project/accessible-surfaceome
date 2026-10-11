@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHB11",
+  "uniprot_acc": "Q9Y5F2",
+  "sites": [
+    {
+      "site_id": "PCDHB11-terminal_n-26-lit",
+      "gene_symbol": "PCDHB11",
+      "uniprot_acc": "Q9Y5F2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell anti-HA surface staining (no permeabilization) confirmed extracellular display of the HA tag (L2). Surface expression was detected but at lower levels than HA-PCDHGA3; cell clustering (adhesion function) was also reduced proportionally to the lower expression level, making it impossible to separate a tag-specific functional effect from the expression-level effect (L3).",
+      "confidence": "high",
+      "rationale": "L1 explicitly reports the HA tag cloned after the signal peptide cleavage site of full-length, membrane-anchored PCDHB11, placing the junction at residue 26 (last SP residue, A) / residue 27 (first mature extracellular residue, G). Python confirms: seq[25]='A', seq[26]='G', and the insertion point is 661 residues from the TM boundary (residues 688\u2013711), well above the >=3 residue minimum. L2 confirms surface accessibility by live-cell staining without permeabilization. L3 notes reduced expression and proportionally reduced clustering, but this confounds any tag-specific functional assessment, so validation_level is surface_only rather than surface_and_function. Full-length PCDHB11 with HA tag inserted immediately after the signal peptide cleavage site (residue 26/27 junction), fused to GFP at the C-terminus (HA-PCDHB11-GFP), expressed in K562 cells. L1 explicitly states the HA oligonucleotide was cloned after the signal peptide cleavage site of PCDHB11.",
+      "sources": [
+        {
+          "pmid": 27068704,
+          "citation": "PMID 27068704",
+          "claim": "HA-tagged PCDHB11-GFP was constructed by cloning annealed oligonucleotides coding for the HA-tag YPYDVPDYAE (Lifetech, S\u00e3o Paulo, Brasil) after the signal peptide cleavage site of PCDHB11."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 26,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:20:58.300244+00:00",
+  "literature_notes": "The ledger contains three lines (L1, L2, L3), all from the same study (PMC4828864), all describing the same HA-PCDHB11-GFP construct at the same junction (after SP cleavage site, residue 26/27). No other insertion sites are reported in the ledger. No internal loop insertions, no C-terminal extracellular tags, and no transposon/FP-fusion screens are present in the ledger for PCDHB11. L3 reports reduced surface expression and reduced cell clustering relative to HA-PCDHGA3; because the clustering reduction tracks the expression reduction, it cannot be attributed to tag interference per se, so validation_level is surface_only. The GFP fusion is at the intracellular C-terminus (after TM, residues 712\u2013797) and is not a surface tag site; it is not listed in other_positions because the ledger does not report it as a standalone validated intracellular insertion with a residue number.",
+  "literature_rejected": []
+}

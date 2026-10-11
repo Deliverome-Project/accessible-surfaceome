@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "BDKRB1-terminal_n-0-lit",
+      "gene_symbol": "BDKRB1",
+      "uniprot_acc": "P46663",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ONE-GO Gq BRET assay: receptor is surface-expressed and functionally active in Gq-coupled signaling; FLAG-tagged construct used as the wild-type reference in the assay.",
+      "confidence": "high",
+      "rationale": "Both L1 and L2 report N-terminal FLAG tags on the full-length, membrane-anchored B1R; L2 is chosen as the primary clip because it explicitly confirms surface expression and functional Gq signaling via BRET. The extracellular N-terminus (residues 1\u201338) is the only extracellular terminus (the C-terminus, residues 316\u2013353, is intracellular), so insert_after_residue=0 is the unique topology-derived junction. Python confirms residue 1 is M and TM1 begins at residue 39, placing the tag 38 residues from the TM boundary, well above the \u22653-residue minimum. No residue number is named in either paper, so position_evidence is topology_derived. Full-length human B1R (residues 1\u2013353) cloned into pcDNA3.1(+) with an exogenous HA signal peptide followed by an N-terminal FLAG tag; construct used in a ONE-GO Gq BRET assay for functional surface expression. Neither L2 nor L1 names a specific residue number; the N-terminus (residues 1\u201338, extracellular per landmarks) is the sole extracellular terminus of this GPCR, so the junction is topology-derived as a prepend before M1. BDKRB1 (P46663) carries no native signal peptide, so the exogenous HA-SP is cleaved and the FLAG tag is left at the mature extracellular N-terminus.",
+      "sources": [
+        {
+          "pmid": 42185275,
+          "citation": "PMID 42185275",
+          "claim": "For both the wild-type B1R and B2R constructs used in ONE-GO Gq BRET assay, a full-length human receptor gene (residues 1\u2013353 for B1R or residues 1\u2013391 for B2R) was cloned into a pcDNA3.1(+) vector with an N-terminal Flag tag after an HA signal peptide."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:45:10.837928+00:00",
+  "literature_notes": "L1 (structural studies construct with HA-SP + FLAG + 10\u00d7His + MBP + TEV + full-length B1R) corroborates the same N-terminal prepend site and was not dropped \u2014 it is a full-length membrane-anchored receptor, not a soluble ectodomain \u2014 but L2 is the stronger functional anchor and is used as the sole supporting_clip_id per schema rules. No internal extracellular loop site is supported by either ledger line; ECL1 (95\u2013107), ECL2 (176\u2013199), and ECL3 (273\u2013288) have no published insertion evidence in the ledger. The intracellular C-terminus (316\u2013353) is not a surface tag site.",
+  "literature_rejected": []
 }

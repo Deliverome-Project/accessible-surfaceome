@@ -373,5 +373,26 @@
       "canonical_residue": 87,
       "left_pct": 23.9010989010989
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:24:24.536346+00:00",
+  "literature_notes": "CDC50A (TMEM30A) is a type-III transmembrane protein with a single large extracellular domain (residues 71\u2013324) flanked by two TM helices. The N-terminus (1\u201349) and C-terminus (347\u2013361) are both intracellular. Every ledger line places a tag at one of these intracellular termini: L1/L2 report N-terminal FLAG-His6 tags (intracellular), and L3/L4 report C-terminal FLAG or mClover tags (intracellular, with functional rescue). L5 concerns Toxoplasma gondii CDC50 proteins (a different organism), and its C-terminal 3-HA tag would also be intracellular by the same topology. No ledger line reports any insertion within the extracellular domain (71\u2013324) or at any extracellular-facing junction. Zero surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal FLAG-His6 tag on full-length human CDC50A expressed in HeLa cells; the N-terminus (residues 1\u201349) is intracellular per the authoritative topology landmarks."
+    },
+    {
+      "residue": 361,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG or mClover tag on full-length human CDC50A expressed in C2C12 myoblasts; the C-terminus (residues 347\u2013361) is intracellular per the authoritative topology landmarks; FLAG-tagged construct rescued CDC50A-deficient morphological defects, confirming functional tolerance at this intracellular position."
+    }
   ]
 }

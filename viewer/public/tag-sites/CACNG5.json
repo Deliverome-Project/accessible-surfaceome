@@ -273,5 +273,20 @@
       "canonical_residue": 75,
       "left_pct": 27.27272727272727
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:55:49.329204+00:00",
+  "literature_notes": "CACNG5 is a four-pass transmembrane protein (tetraspanin-like TARP family) with both its N-terminus (residues 1\u20138) and C-terminus (residues 198\u2013275) on the intracellular face. The only extracellular surfaces are EC1 (residues 30\u2013100) and EC2 (residues 154\u2013176). The entire ledger consists of two clips (L1, L2) that both describe the same 'YFP\u2013\u03b3-5' fusion construct. The standard 'FP\u2013ProteinName' naming convention denotes an N-terminal fusion; the N-terminus of CACNG5 is intracellular (residues 1\u20138), so the YFP tag faces the cytoplasm. Neither clip reports any insertion into an extracellular loop or at an extracellular junction. No ledger line supports a surface-accessible tag site; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "YFP fused to the N-terminus of CACNG5 (residue M1); the N-terminus (residues 1\u20138) is intracellular, so this tag faces the cytoplasm and is not a surface tag site. The construct was functional (modulated GluR2 surface expression per L2) but is an intracellular label only."
+    }
   ]
 }

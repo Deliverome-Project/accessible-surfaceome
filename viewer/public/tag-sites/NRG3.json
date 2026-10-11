@@ -1,0 +1,181 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRG3",
+  "uniprot_acc": "P56975",
+  "sites": [
+    {
+      "site_id": "NRG3-internal-349-lit",
+      "gene_symbol": "NRG3",
+      "uniprot_acc": "P56975",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 349,
+      "residue_before": "E",
+      "residue_after": "F",
+      "residue_label": "E349",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "LOV2/J\u03b1 domain",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Constructs expressed in hippocampal neurons and used in photoactivation/cleavage experiments; NRG3 ErbB4-activating function not independently measured for this specific insertion.",
+      "confidence": "low",
+      "rationale": "L5 names mouse P349 as a LOV2 insertion site in full-length membrane-anchored mouse NRG3; the insertion was accompanied by a 5-residue deletion (\u0394ILSDP) C-terminal to the site, indicating local sequence modification was needed. Human NRG3 position 349 is E (seq[348]='E'), differing from mouse P349; the position is 12 residues from TM2 (361), safely within the >=3-residue margin. This is indirect/inferred evidence from a mouse ortholog, and the required deletion lowers confidence. Full-length mouse proNRG3 (NP_032760.1) with the LOV2/J\u03b1 domain inserted at mouse P349, accompanied by deletion of 5 residues (\u0394ILSDP) carboxyl-terminal to the insertion site. Constructs expressed in hippocampal neurons for photoactivation experiments.",
+      "sources": [
+        {
+          "pmid": 35579602,
+          "citation": "PMID 35579602",
+          "claim": "The proNRG3 insertion site was either L 362 , P 358 , S 353 , or P 349 ; insertions at P 358 and P 349 were additionally accompanied by short deletions of respectively 4 (\u0394TDHL) and 5 (\u0394ILSDP) residues located carboxyl-terminally to the insertion site (superscript numbers relative to full-length mouse proNRG3; GenBank accession number: NP_032760.1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 349,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRG3-internal-353-lit",
+      "gene_symbol": "NRG3",
+      "uniprot_acc": "P56975",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 353,
+      "residue_before": "S",
+      "residue_after": "E",
+      "residue_label": "S353",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "LOV2/J\u03b1 domain",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Constructs expressed in hippocampal neurons and used in photoactivation/cleavage experiments; NRG3 ErbB4-activating function not independently measured for this specific insertion.",
+      "confidence": "medium",
+      "rationale": "L5 names mouse S353 as one of four LOV2 insertion sites in full-length membrane-anchored mouse NRG3; uniquely among the four, S353 required no flanking deletion, making it the cleanest tolerated insertion. Human NRG3 position 353 is also S (confirmed by reading seq[352]='S'), and the position lies 8 residues from TM2 (which starts at 361), well within the >=3-residue safety margin. Mouse NRG3 is a close ortholog; the evidence is therefore indirect/inferred for the human protein. Full-length mouse proNRG3 (NP_032760.1) with GFP at N-terminus and mCherry at C-terminus was used as backbone; the LOV2/J\u03b1 domain from A. sativa phototropin 1 was inserted at mouse S353 (no flanking deletion at this site, unlike P358 and P349) between the EGF-L domain and the BACE1 cleavage site. Constructs were expressed in cultured hippocampal neurons for photoactivation experiments.",
+      "sources": [
+        {
+          "pmid": 35579602,
+          "citation": "PMID 35579602",
+          "claim": "The proNRG3 insertion site was either L 362 , P 358 , S 353 , or P 349 ; insertions at P 358 and P 349 were additionally accompanied by short deletions of respectively 4 (\u0394TDHL) and 5 (\u0394ILSDP) residues located carboxyl-terminally to the insertion site (superscript numbers relative to full-length mouse proNRG3; GenBank accession number: NP_032760.1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 353,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRG3-internal-358-lit",
+      "gene_symbol": "NRG3",
+      "uniprot_acc": "P56975",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 358,
+      "residue_before": "Q",
+      "residue_after": "R",
+      "residue_label": "Q358",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "LOV2/J\u03b1 domain",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Constructs expressed in hippocampal neurons and used in photoactivation/cleavage experiments; NRG3 ErbB4-activating function not independently measured for this specific insertion.",
+      "confidence": "low",
+      "rationale": "L5 names mouse P358 as a LOV2 insertion site in full-length membrane-anchored mouse NRG3; the insertion required a 4-residue deletion (\u0394TDHL) C-terminal to the site. Human NRG3 position 358 is Q (seq[357]='Q'), differing from mouse P358; the position is exactly 3 residues from TM2 (361), at the minimum allowed distance. This is indirect/inferred evidence from a mouse ortholog, the required deletion lowers confidence, and the proximity to TM2 is borderline. Full-length mouse proNRG3 (NP_032760.1) with the LOV2/J\u03b1 domain inserted at mouse P358, accompanied by deletion of 4 residues (\u0394TDHL) carboxyl-terminal to the insertion site. Constructs expressed in hippocampal neurons for photoactivation experiments.",
+      "sources": [
+        {
+          "pmid": 35579602,
+          "citation": "PMID 35579602",
+          "claim": "The proNRG3 insertion site was either L 362 , P 358 , S 353 , or P 349 ; insertions at P 358 and P 349 were additionally accompanied by short deletions of respectively 4 (\u0394TDHL) and 5 (\u0394ILSDP) residues located carboxyl-terminally to the insertion site (superscript numbers relative to full-length mouse proNRG3; GenBank accession number: NP_032760.1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 358,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRG3-internal-None-lit",
+      "gene_symbol": "NRG3",
+      "uniprot_acc": "P56975",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "EC upstream of EGF-L domain",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Subcellular localization tracked by HA immunostaining (surface/localization confirmed); function reported as unaltered (Wang et al., 2001 cited in L8).",
+      "confidence": "high",
+      "rationale": "L7 and L8 (same PMC article) report HA-tagged full-length Nrg3 with the tag placed upstream of the EGF-like domain (exon 2) and explicitly state this insertion does not alter neuregulin function. The EGF-L domain in human NRG3 begins at C290 (first of six EGF-like cysteines at 290, 298, 304, 317, 319, 328); 'upstream' therefore places the tag somewhere in the extracellular region 87\u2013289. No specific residue is named in any ledger line, so the site is reported at region level with insert_after_residue null. Full-length Nrg3 constructs (including mouse Nrg3) were tagged with an HA epitope upstream of the EGF-like domain (exon 2) and expressed to identify subcellular localization of the membrane-anchored protein; L8 (same paper) states this insertion site does not alter neuregulin function, citing Wang et al. 2001.",
+      "sources": [
+        {
+          "pmid": 33320083,
+          "citation": "PMID 33320083",
+          "claim": "To identify the subcellular localization of neuregulins, constructs harbored a human influenza hemagglutinin (HA) epitope tag upstream of the EGF-like domain (exon 2)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:22:12.824331+00:00",
+  "literature_notes": "L1 and L6 (V5 upstream of EGF-L domain in full-length mouse NRG3 and hFB-NRG3 isoform) support the same region-level EC site as L7/L8; L7/L8 were chosen as the primary clip because they explicitly name Nrg3 and report functional preservation. L2/L3 describe GFP fused to the N-terminus and mCherry fused to the C-terminus of full-length proNRG3; both termini are intracellular (N-terminus 1\u201368, C-terminus 382\u2013720 per topology landmarks), so these are intracellular tags recorded in other_positions. L4 describes the general LOV2 insertion strategy between EGF-L and BACE1 cleavage site; L5 provides the specific residue positions and was used as the supporting clip for Sites 2\u20134. Mouse L362 (named in L5) maps to human position 362, which falls inside TM2 (361\u2013381) per the authoritative topology landmarks; it was excluded from sites. L9 confirms surface expression of a tagged Nrg3 construct by FACS but names no insertion position and was used only as corroborating context. The LOV2 insertions at mouse P349 and P358 required flanking deletions (\u0394ILSDP and \u0394TDHL respectively), which complicates their use as precedent for a simple short epitope tag; they are reported but ranked low.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "GFP fused to the N-terminus of full-length proNRG3; the N-terminus (residues 1\u201368) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 720,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "mCherry fused to the C-terminus of full-length proNRG3; the C-terminus (residues 382\u2013720) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

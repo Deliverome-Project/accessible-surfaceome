@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "NEO1",
+  "uniprot_acc": "Q92859",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:02:44.324299+00:00",
+  "literature_notes": "NEO1 (Neogenin) is a Type I single-pass transmembrane protein with an extracellular N-terminus (mature residue 34 onward) and an intracellular C-terminus (residue 1461). Every ledger clip that specifies tag position (L1\u2013L6) places a FLAG/MYC or 6\u00d7Myc epitope at the C-terminus, which is intracellular (residues 1127\u20131461). These are recorded in other_positions. L7 ('FLAG-tagged full-length mouse NEO1') names no residue and the tag position is unstated \u2014 it cannot be pinned and is disqualified under the commercial-plasmid/unstated-position rule. L8 and L9 describe a 'NEO1-mVenus' fusion; the naming convention (protein-FP hyphenation) indicates a C-terminal fusion, again intracellular. No ledger line grounds an insertion on the extracellular face at any pinnable residue or named loop. Zero extracellular surface sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1461,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal FLAG/MYC epitope on full-length mouse Neo1 (fNeo1); function preserved (hepcidin induction unaffected), but the C-terminus of this Type I TM protein is intracellular (residues 1127\u20131461), so the tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 1461,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal 6\u00d7Myc epitope on full-length mouse Neogenin expressed in neurons; C-terminus is intracellular in this Type I TM protein."
+    },
+    {
+      "residue": 1461,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "NEO1-mVenus fusion expressed in COS-7 cells; 'NEO1-mVenus' naming indicates C-terminal fluorescent protein fusion, which is intracellular given the Type I topology of NEO1."
+    }
+  ]
+}

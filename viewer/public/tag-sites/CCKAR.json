@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCKAR-terminal_n-0-lit",
+      "gene_symbol": "CCKAR",
+      "uniprot_acc": "P32238",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cryo-EM structure of CCK1R/mGsqi complex determined at high resolution, confirming receptor folding, membrane insertion, and G-protein coupling; surface expression and functional G-protein complex formation confirmed.",
+      "confidence": "high",
+      "rationale": "CCKAR has no signal peptide (topology residues 1\u201341 are extracellular); residue 1 (M) is the mature N-terminus. The FLAG tag in the L1/L2/L3 construct is placed N-terminal to the CCK1R sequence after HA-signal cleavage, placing it on the extracellular face. The 3C protease site allows removal of the N-terminal modifications, confirming the receptor itself is intact and functional. Python confirmed residue 1 = M and TM1 begins at residue 42, giving 42 residues of clearance from the tag position to the first TM helix. Full-length human CCK1R was engineered with an HA signal sequence, N-terminal FLAG tag, and 22 aa of M4 mAChR N-terminus prepended before the receptor sequence, plus a C-terminal 8xHis tag, expressed as a membrane-anchored receptor for cryo-EM structural studies of the CCK1R/G-protein complex (PMC8208569). The HA signal is cleaved post-translationally, leaving the FLAG tag on the extracellular N-terminus. No specific CCK1R residue number is named for the FLAG junction; the N-terminus (residue 1, M) is the sole extracellular terminus, so insert_after_residue=0 is topology-derived.",
+      "sources": [
+        {
+          "pmid": 34086670,
+          "citation": "PMID 34086670",
+          "claim": "Human WT CCK1R was modified to include an N-terminal hemagglutinin (HA) signal sequence, FLAG-tag, 22 amino acids of the N-terminus of the M 4 muscarinic receptor to improve expression [ 28 , 29 ], a 3C-protease recognition sequence to remove the N-terminal modifications, and a carboxyl-terminal 8xhistadine (8xHis) tag ( S1A Fig )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:04:07.949225+00:00",
+  "literature_notes": "L1, L2, and L3 all describe the same N-terminal FLAG-tagged CCK1R construct from PMC8208569; L1 is used as the primary supporting clip. L4 (PMC8604728) describes a second independent N-terminal tagging of CCK-AR (HA-signal + 8xHis + double-MBP + TEV + receptor), corroborating that the extracellular N-terminus tolerates large N-terminal additions; it is not listed as a separate site because it pins the same junction (insert_after_residue=0) and L1 already grounds it with higher functional validation. L8 (PMC13485628) describes FLAG-tagged Aplysia CCKAR (apCCKR) mutants with surface expression comparable to WT, but no residue position is stated and the protein is a non-human ortholog; it provides indirect corroboration but cannot independently ground a site. The C-terminal miniSOG fusion (L5/L6/L7) is placed in other_positions because the C-terminus of CCKAR is intracellular (residues 374\u2013428 per topology landmarks). No ledger line supports an insertion in ECL1 (105\u2013115), ECL2 (179\u2013210), or ECL3 (335\u2013349) of human CCKAR.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 428,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "miniSOG fused to the C-terminus of CCK1R and expressed in CHO-K1 cells; photodynamic activation triggered calcium oscillations confirming functional surface receptor, but the C-terminus (residues 374\u2013428) is intracellular per topology landmarks, so this is not an extracellular surface tag site."
+    }
+  ]
 }

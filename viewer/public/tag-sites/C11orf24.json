@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "C11orf24",
+  "uniprot_acc": "Q96F05",
+  "sites": [
+    {
+      "site_id": "C11orf24-terminal_n-20-lit",
+      "gene_symbol": "C11orf24",
+      "uniprot_acc": "Q96F05",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Luminal/extracellular GFP positioning confirmed in expression studies; construct was functional for downstream experiments. Quantitative surface or functional assay not reported in available clips.",
+      "confidence": "high",
+      "rationale": "C11orf24 is a single-pass type-I membrane protein with SP (residues 1\u201320), a large ectodomain (21\u2013401), one TM helix (402\u2013422), and a short intracellular tail (423\u2013449). The L2 construct places EGFP after the SP and before the mature N-terminus, uniquely fixing the junction at insert_after_residue=20 (residue 20 = A, residue 21 = A, confirmed from the numbered sequence). This is the only extracellular terminus; no residue number is cited in the paper text, so position_evidence is topology_derived. Python confirmed residue 20 = 'A' and residue 21 = 'A'. PMC3846831 (L2): SP\u2013GFP\u2013C11ORF24(noSP) full-length membrane-anchored construct in HEK/mammalian cells. The endogenous signal peptide (residues 1\u201320) was cloned upstream of EGFP in pEGFP-C1, followed by C11ORF24 lacking its own SP (residues 21\u2013449), placing EGFP between the SP cleavage site and the mature ectodomain. The paper states this was engineered to achieve 'proper luminal GFP positioning'.",
+      "sources": [
+        {
+          "pmid": 24312644,
+          "citation": "PMID 24312644",
+          "claim": "The signal peptide was amplified by PCR from the pEGFP-N1-C11ORF24 using the primers SP-for, 5\u2019 TGTATCATATGCCAAGTACGC and SP_rev, 5\u2019 TAGCTAACCGGTCCCGCATGGCTTTCAGATAAGG and inserted before the GFP in the pEGFP-C1-noSP-C11ORF24 using the NdeI and AgeI sites (pEGFP-C1-C11ORF24). shRNA constructs in the inducible lentiviral system pTRIPZ were obtained from Openbiosystem for the control non-silencing shRNA (# RHS4743) and the C11ORF24 shRNA (#RHS4696-200755138, Mature Sense for V3THS_341691 TGGAAACAGTTGATAATAA )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:51:20.718416+00:00",
+  "literature_notes": "Three ledger lines cover C11orf24 tagging. L2 is the sole qualifying insertion: a full-length, membrane-anchored SP\u2013EGFP\u2013C11ORF24(noSP) construct that places EGFP on the extracellular/luminal face after SP cleavage. L1 describes the C-terminal EGFP construct (pEGFP-N1-C11ORF24), which L3 explicitly states 'greatly impaired protein expression'; this C-terminal position (residue 449, intracellular) is recorded in other_positions. L3 also states that naive N-terminal GFP fusion (GFP\u2013C11ORF24 without SP) was 'impossible', recorded in other_positions. No internal loop insertions are supported by any ledger line. The large ectodomain (residues 21\u2013401) contains no ledger-grounded internal tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 449,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal EGFP fusion (pEGFP-N1-C11ORF24, L1) greatly impaired protein expression per L3; residue 449 is also intracellular (cytoplasmic tail, topology landmarks 423\u2013449)."
+    },
+    {
+      "residue": 1,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "Naive N-terminal GFP fusion (GFP prepended before the signal peptide / pEGFP-C1-noSP-C11ORF24 without SP rescue) was 'impossible' per L3; the SP is required upstream of any N-terminal tag for proper ER targeting."
+    }
+  ]
+}

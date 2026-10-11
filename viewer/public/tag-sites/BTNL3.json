@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "BTNL3",
+  "uniprot_acc": "Q6UXE8",
+  "sites": [
+    {
+      "site_id": "BTNL3-terminal_n-17-lit",
+      "gene_symbol": "BTNL3",
+      "uniprot_acc": "Q6UXE8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG flow cytometry on non-permeabilized 293T cells (L2). Soluble V\u03b34+ TCR binding to FLAG-BTNL3/HA-BTNL8-expressing cells was abrogated by anti-FLAG antibody (steric hindrance by the antibody, not the tag itself) (L3). Anti-FLAG antibody inhibited activation of JRT3 V\u03b34V\u03b41 TCR transductants by FLAG-BTNL3/HA-BTNL8-expressing 293T cells (L4) \u2014 again antibody-mediated blockade, confirming the tag is extracellular and the construct is functional.",
+      "confidence": "high",
+      "rationale": "All five ledger lines describe the same N-terminal FLAG-BTNL3 construct. BTNL3 is a type I single-pass transmembrane protein with a signal peptide spanning residues 1\u201317; the mature extracellular domain begins at residue 18 (Q). An N-terminal tag on such a protein must be placed after the signal peptide cleavage site to avoid being cleaved off \u2014 there is exactly one extracellular terminus, so insert_after_residue = 17 is the unique solution. Python confirms residue 17 = G (last SP residue) and residue 18 = Q (mature N-terminus), with 220 residues of extracellular space before the TM boundary at 238. The construct drives V\u03b34 T-cell activation (L4), confirming functional integrity of the tagged protein. Full-length human FLAG-BTNL3 (N-terminal FLAG) co-expressed with HA-BTNL8 in 293T cells and CRA123 cells; surface display confirmed by anti-FLAG staining of non-permeabilized cells (L2); IP-MS confirmed full-length protein expression (L5). No residue number is stated in any ledger line; BTNL3 has a signal peptide (1\u201317) and a single extracellular N-terminus, so the junction is uniquely determined as after residue 17 (the last SP residue), placing the tag at the mature N-terminus (residue 18 onward).",
+      "sources": [
+        {
+          "pmid": 31628053,
+          "citation": "PMID 31628053",
+          "claim": "(F) Quantitation of effects of anti-FLAG and anti-HA antibodies on the staining of 293T cells expressing FLAG-BTNL3 and HA-BTNL8 with soluble V\u03b34 + TCR and anti-His monoclonal antibody (mAb)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:50:00.280041+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe the same construct: full-length human FLAG-BTNL3 with an N-terminal FLAG tag, co-expressed with HA-BTNL8. No ledger line states a specific residue number for the FLAG insertion; the position is topology-derived from the signal peptide boundary (1\u201317) and the single extracellular N-terminus. L3 notes that anti-FLAG antibody abrogates V\u03b34 TCR binding by steric hindrance \u2014 this reflects antibody occupancy of the tag near the IgV domain, not disruption of folding or trafficking by the tag itself; the construct is functional. No internal loop insertions are reported in the ledger for BTNL3. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

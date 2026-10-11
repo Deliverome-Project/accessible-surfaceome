@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:50:40.533696+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L1 (PMC8364112) reports a LgBiT fusion at the C-terminus of full-length, membrane-anchored PTH2R via a 20 aa linker \u2014 a genuine tag insertion in this protein, but the C-terminus falls entirely within the intracellular domain (residues 417\u2013550 per the topology landmarks), so it is not an extracellular surface site; it is recorded in other_positions. L2 (PMC9832379) describes c-myc- or HA-tagged RAMPs co-expressed with PTH2R to study RAMP surface localization: the tags are on the RAMP proteins, not on PTH2R, and PTH2R is the untagged GPCR partner in that experiment. L2 therefore provides zero evidence of any insertion into PTH2R and does not qualify under any reading of the ledger rules. No ledger line supports an extracellular tag insertion in PTH2R, so sites is empty.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 550,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "LgBiT fused at the C-terminus of full-length PTH2R via a 20 aa linker; residue 550 (L) lies within the intracellular C-terminal domain (topology landmarks 417\u2013550), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

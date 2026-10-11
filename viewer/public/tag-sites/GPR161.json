@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR161-terminal_n-0-lit",
+      "gene_symbol": "GPR161",
+      "uniprot_acc": "Q8N6U8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by Alexa-647-conjugated anti-M1 FLAG antibody flow cytometry on non-permeabilized cells; receptor traffics to the cell surface. Functional readout (e.g., cAMP, Gs coupling) not reported in the ledger clips for this tagged construct.",
+      "confidence": "high",
+      "rationale": "GPR161 has no endogenous signal peptide; its N-terminus (residue 1, M) is extracellular (topology landmarks: EXTRACELLULAR 1\u201330, TM1 31\u201352). The published construct prepends an exogenous HA signal peptide followed by FLAG before residue 1, so insert_after_residue=0 with residue_after=M is the only possible junction \u2014 there is exactly one extracellular terminus and no ambiguity. Python verification confirms seq[0]='M' and TM1 begins at position 31, leaving 30 extracellular residues downstream of the tag. Surface display is directly confirmed by anti-FLAG flow cytometry on intact (non-permeabilized) cells in three independent publications. Full-length human GPR161 expressed in HEK293 cells with an exogenous HA signal peptide prepended and a FLAG epitope tag (DYKDDDDA) placed between the HA-SP cleavage site and GPR161 residue 1 (M), in a tetracycline-inducible pcDNA3.1 vector. GPR161 carries no endogenous signal peptide (topology begins O at residue 1); the HA-SP drives membrane insertion and is cleaved, leaving FLAG at the extracellular N-terminus before residue 1. Surface display confirmed by anti-M1 FLAG antibody flow cytometry on non-permeabilized cells (L4/L5/L6). The same construct architecture is independently reported in at least three publications (L1, L2, L3, L7).",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2023.05.23.540554",
+          "claim": "Expression and purification of GPR161 active-state complex The human GPR161 gene with an N-terminal influenza hemagglutinin signal sequence and FLAG epitope was cloned into a pcDNA3.1 vector with zeocin resistance and a tetracycline inducible cassette, as described previously 66 .",
+          "source_id": "DOI:10.1101/2023.05.23.540554"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -87,6 +124,27 @@
       "canonical_residue": null,
       "left_pct": 0.18214936247723132,
       "note": "Isoform surface expr 647 (-86% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:29:54.759004+00:00",
+  "literature_notes": "L1/L2/L3/L7 all describe the same N-terminal HA-SP+FLAG construct for full-length membrane-anchored GPR161; L4/L5/L6 confirm surface display of that construct by flow cytometry on non-permeabilized cells. L7 states the construct was used for 'functional and surface-expression studies' but reports no specific functional result in the ledger clip, so validation_level is capped at surface_only. L8/L9 (C-terminal GFP on mouse Gpr161) and L10 (C-terminal miniGs399 fusion) are placed in other_positions because the C-terminus of GPR161 is intracellular (topology: INTRACELLULAR 327\u2013529). No ledger line supports an insertion in any extracellular loop (ECL1 86\u2013101, ECL2 167\u2013187, ECL3 293\u2013305), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 529,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal GFP fusion on full-length mouse Gpr161 stably expressed in NIH 3T3 Flp-In fibroblasts; the C-terminus (residue 529, R) lies in the intracellular region (topology: INTRACELLULAR 327\u2013529), so this is not a surface tag site."
+    },
+    {
+      "residue": 529,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "C-terminal miniGs399 fusion (preceded by a GS linker and 3C protease site) on full-length human GPR161 for active-state structural studies; C-terminus is intracellular, not a surface tag site."
     }
   ]
 }

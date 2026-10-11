@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HCAR1-terminal_n-0-lit",
+      "gene_symbol": "HCAR1",
+      "uniprot_acc": "Q9BXC0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct was expressed, purified via anti-FLAG affinity resin, and used for cryo-EM structure determination, confirming proper membrane insertion and folding. No explicit ligand-binding or signaling functional assay is reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "HCAR1 is a GPCR with no endogenous signal peptide; the canonical sequence begins at M1 and residues 1\u201316 are extracellular (topology landmark). The exogenous HA signal peptide drives membrane targeting; after its cleavage the FLAG tag sits at the extracellular N-terminus, before M1, making insert_after_residue=0 the only possible junction. Python verification confirms residue 1 = M and residue 16 = Q (last extracellular residue before TM1 at V17), giving 16 native residues between the tag and TM1\u2014sufficient clearance for a ~15\u201323 aa insert. L2 independently corroborates N-terminal FLAG tagging of full-length HCAR1 in the same expression system. Full-length human HCAR1 cloned into pFastBac with an exogenous HA signal sequence followed by a FLAG tag and HRV 3C protease site at the N-terminus, plus a C-terminal His tag; expressed in insect cells for structural/biochemical characterization (PMC12040280). Corroborated by PMC11873900 (L2), which uses the same HA-signal + FLAG arrangement with an additional bRIL fusion. HCAR1 has no endogenous signal peptide in the canonical sequence; residues 1\u201316 are extracellular. After cleavage of the exogenous HA signal peptide, the FLAG tag is exposed on the extracellular face immediately N-terminal to HCAR1 residue 1 (M). No residue number is cited; position is derived from the fact that the GPCR N-terminus is the sole extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 40233099,
+          "citation": "PMID 40233099",
+          "claim": "Wild-type human HCAR1 and HCAR2 were cloned into the pFastBac vector (Gibco) respectively, incorporating an N-terminal hemagglutinin (HA) signal sequence, Flag tag, and HRV 3C protease site, as well as a C-terminal His tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:56:01.462438+00:00",
+  "literature_notes": "L2 (PMC11873900) pins the identical N-terminal FLAG site as L1 and was used as corroboration rather than a separate site, because both papers place the FLAG tag at insert_after_residue=0 (the sole extracellular N-terminus). L3 (PMC8946183) describes cpGFP insertions LARS1.1 and LARS1.2 into full-length membrane-anchored HCAR1 that failed to yield fluorescence because cpGFP was placed too close to the plasma membrane and intracellular segments; no residue numbers are given for these constructs, so they cannot be entered in other_positions, but they are noted here as evidence that insertions near the TM boundaries or intracellular loops of HCAR1 are not tolerated. No ledger line supports any internal extracellular loop (ECL1 73\u201389, ECL2 153\u2013175, ECL3 246\u2013258) insertion for HCAR1.",
+  "literature_rejected": []
 }

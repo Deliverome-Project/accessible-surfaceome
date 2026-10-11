@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "F2RL1-terminal_n-25-lit",
+      "gene_symbol": "F2RL1",
+      "uniprot_acc": "P55085",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "T",
+      "residue_after": "I",
+      "residue_label": "T25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "IP-1 formation assay in KNRK cells stimulated with trypsin and 2-furoyl-LIGRLO-NH2: PAR2 N-FLAG/C-HA11 showed similar potency and efficacy to PAR2-muGFP (EC50 trypsin 5.4\u00d710\u207b\u2078 M, EC50 2F 7.8\u00d710\u207b\u2078 M), confirming functional equivalence of the tagged construct.",
+      "confidence": "high",
+      "rationale": "PAR2 is a GPCR with a signal peptide (residues 1\u201325); the mature extracellular N-terminus begins at residue 26 (I). An N-terminal FLAG on the full-length receptor can only reside at this single extracellular terminus \u2014 upstream is cleaved with the SP, and all other termini are intracellular or transmembrane. Python confirms residue 25 = T (last SP residue) and residue 26 = I (first mature residue), with TM1 beginning at residue 76, leaving 50 residues of extracellular space. The combined N-FLAG/C-HA11 construct was functionally validated by IP-1 assay with similar potency and efficacy to the reference PAR2-muGFP construct. L3 reports full-length, membrane-anchored PAR2 expressed in KNRK cells bearing an N-terminal FLAG epitope and a C-terminal HA11 epitope. The N-terminal FLAG must reside after the signal-peptide cleavage site (after residue 25, the last SP residue) because any tag upstream of residue 26 would be co-translationally cleaved. No specific junction residue is named in the paper; the position is derived from the single extracellular N-terminus of the mature protein.",
+      "sources": [
+        {
+          "pmid": 35110404,
+          "citation": "PMID 35110404",
+          "claim": "To verify functionality of PAR 2 -muGFP, we compared signaling of PAR 2 -muGFP and PAR 2 with N-terminal FLAG and C-terminal HA11 epitopes transiently expressed in KNRK cells, which express low levels of PAR 2 and have been used extensively to study PAR 2 functions ( 13 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:41:18.257290+00:00",
+  "literature_notes": "Ledger lines L1, L2, L4\u2013L8 all concern the PAR2-muGFP C-terminal fusion and its functional/in-vivo validation. The C-terminus of PAR2 (residues 348\u2013397) is intracellular per the authoritative topology landmarks; accordingly, the C-terminal muGFP and C-terminal HA11 tags are recorded in other_positions as intracellular, not surface sites. L3 is the only ledger line that mentions an extracellular tag (N-terminal FLAG), and it qualifies as a surface site. No ledger line reports any insertion in ECL1 (134\u2013145), ECL2 (213\u2013238), or ECL3 (314\u2013324), so no internal loop sites are proposed. The N-terminal FLAG position is topology_derived because the paper names the tag orientation ('N-terminal') but not a specific junction residue; however, exactly one extracellular terminus exists (after SP cleavage at residue 25), making the junction unambiguous.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 397,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal muGFP fusion to full-length PAR2; the C-terminus (residues 348\u2013397) is intracellular per topology landmarks \u2014 tolerated and functionally validated in vivo but not a surface tag site."
+    },
+    {
+      "residue": 397,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal HA11 epitope on the N-FLAG/C-HA11 PAR2 construct expressed in KNRK cells; intracellular C-terminus, tolerated with preserved IP-1 signalling but not accessible on the extracellular face."
+    }
+  ]
 }

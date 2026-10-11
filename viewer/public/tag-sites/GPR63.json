@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR63-terminal_n-0-lit",
+      "gene_symbol": "GPR63",
+      "uniprot_acc": "Q9BZJ6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG ICC confirmed surface-accessible localization of GPR63 in NIH 3T3 cells; no functional (signaling) assay reported in these clips.",
+      "confidence": "high",
+      "rationale": "L3 explicitly states GPR63-TANGO-FLAG carries an N-terminal FLAG tag; the topology landmarks place residues 1\u201383 extracellular with no signal peptide, so the N-terminus is the sole extracellular terminus and the tag must be prepended (insert_after_residue = 0, residue_after = M). Python confirmed residue 1 = M and that TM1 begins at residue 84, leaving 83 residues of extracellular N-terminal space. The TANGO vector system (Barnea et al.) is established for N-terminal FLAG tagging of GPCRs at exactly this position. L4 confirms anti-FLAG ICC detected the construct at the cell surface. GPR63-TANGO-FLAG construct expresses human GPR63 with an N-terminal FLAG tag under CMV promoter control, transfected into NIH 3T3 cells; anti-FLAG immunocytochemistry was used to detect GPR63 localization (L3, L4).",
+      "sources": [
+        {
+          "pmid": 31730647,
+          "citation": "PMID 31730647",
+          "claim": "GPR63-TANGO-FLAG is a plasmid designed to express human GPR63 with an N-terminal FLAG tag under the control of a CMV promoter from a Tango vector [ 48 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:37:17.604567+00:00",
+  "literature_notes": "Four ledger lines were examined. L1 and L4 are supporting context (transfection and ICC protocol) and do not independently pin a new site. L3 grounds the N-terminal FLAG site. L2 reports a C-terminal myc-DDK tag; the C-terminus of GPR63 falls in the intracellular domain (residues 374\u2013419 per topology landmarks), so this tag is on the cytoplasmic face and is recorded in other_positions only. No ledger line reports a tag in any extracellular loop (ECL1 139\u2013155, ECL2 216\u2013242, ECL3 337\u2013351), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 419,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "pCMV6-GPR63-myc carries a myc-DDK tag at the C-terminus of GPR63; the C-terminus (residues 374\u2013419) is intracellular per topology landmarks, so this tag faces the cytoplasm and is not a surface-tag site."
+    }
+  ]
 }

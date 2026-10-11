@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "HEPACAM",
+  "uniprot_acc": "Q14CZ8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:58:19.610539+00:00",
+  "literature_notes": "HEPACAM (GlialCAM) is a single-pass type I transmembrane protein: extracellular ectodomain residues 34\u2013240, TM 241\u2013261, intracellular tail 262\u2013416. Every ledger line (L1\u2013L7) describes a C-terminal tag \u2014 either 3\u00d7FLAG (L1\u2013L4) or HA (L5\u2013L7) \u2014 appended after the final residue 416, which lies in the cytoplasmic tail. The naming conventions 'GlialCAM-FLAG', 'hepaCAM-FLAG', 'hepaCAM-HA', and 'pcDNA3.1-hepaCAM-HA' all follow the protein-name-then-tag convention for C-terminal fusions, and no ledger line places any tag on the extracellular N-terminus (mature residue 34) or anywhere within the ectodomain (34\u2013240). L6 mentions 'HA immunolabeling' to assess localization, but this is consistent with permeabilized-cell staining or with 'surface' meaning 'at cell\u2013cell junctions' (as in L2 for the FLAG construct); it does not relocate the HA tag to the extracellular face. No ledger line reports an insertion tolerated on the extracellular face of HEPACAM. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 416,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 3\u00d7FLAG tag on full-length GlialCAM/HEPACAM; residue 416 is in the intracellular tail (topology 262\u2013416); construct traffics to cell\u2013cell junctions but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 416,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal FLAG tag on shRNA-resistant human hepaCAM used for astrocyte morphogenesis rescue; residue 416 is intracellular."
+    },
+    {
+      "residue": 416,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal HA tag on full-length hepaCAM (pcDNA3.1-hepaCAM-HA) expressed in astrocytes under gfaABC1D promoter; residue 416 is intracellular."
+    }
+  ]
+}

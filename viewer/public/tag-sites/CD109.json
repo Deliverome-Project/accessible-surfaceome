@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD109",
+  "uniprot_acc": "Q6YHK3",
+  "sites": [
+    {
+      "site_id": "CD109-terminal_n-21-lit",
+      "gene_symbol": "CD109",
+      "uniprot_acc": "Q6YHK3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "A",
+      "residue_after": "V",
+      "residue_label": "A21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / His",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable surface expression confirmed in HEK293T cells (passages 8\u201312); HA-tag precipitates full-length CD109 and the N-terminal cleavage fragment; the tagged protein is cleaved by meprin \u03b2, demonstrating functional integrity of the ectodomain.",
+      "confidence": "high",
+      "rationale": "CD109 is a GPI-anchored protein with signal peptide residues 1\u201321 and the entire mature ectodomain (residues 22\u20131445) extracellular; there is no transmembrane domain, so the mature N-terminus is the sole extracellular terminus. The construct name 'pCMV3-SP-CD109-N-HA' encodes the signal peptide followed by the HA-tag then the mature protein, placing the tag after SP cleavage at the junction of residue 21 (A, last of SP) and residue 22 (V, first mature residue). No specific residue number is named in any ledger clip, so the position is topology-derived from the single available extracellular terminus. Python verification confirms residue 21 = A and residue 22 = V in the canonical sequence. Two stable HEK293T cell lines were generated expressing full-length CD109 with an N-terminal HA-tag (pCMV3-SP-CD109-N-HA) and an N-terminal His-tag (pCMV3-SP-CD109-N-His). The constructs include the endogenous signal peptide, placing the tag at the mature N-terminus after SP cleavage. The tagged protein was used in co-expression experiments and meprin \u03b2 cleavage assays. L5 confirms the HA-tag is on the extracellular N-terminus: a ~70 kDa meprin \u03b2 cleavage fragment lacking the HA-tag was detected, proving the tag sits N-terminal to the cleavage site and is accessible on the cell surface.",
+      "sources": [
+        {
+          "pmid": 33738281,
+          "citation": "PMID 33738281",
+          "claim": "Both expression constructs pCMV3-SP-CD109-N-His (Sino Biological Inc., Peking, China) and pCMV3-SP-CD109-N-HA (Sino Biological Inc., Peking, China) contain an antibiotic resistance in mammalian cell systems against hygromycin B."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:12:40.887684+00:00",
+  "literature_notes": "L6 (PMC10958106) describes a CD109-Bio/6xHis Addgene plasmid (#51862) but does not state the tag position; it is disqualified per the rule excluding commercial plasmids with unstated tag positions. L1\u2013L5 all originate from the same paper (PMC7960916) and collectively describe the same N-terminal tagging event; L1 is cited as the primary clip because it introduces both constructs. The validation level is surface_and_function: L5 demonstrates that the HA-tagged protein is expressed on the cell surface (HA-tag is immunoprecipitable and the tag is extracellular as shown by the fragment-tracking experiment), and the protein retains function as a meprin \u03b2 substrate. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

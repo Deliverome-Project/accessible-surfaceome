@@ -21,9 +21,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Methotrexate binding and uptake assayed; insertion had minor effects on both \u2014 classified as functionally tolerated.",
+      "functional_impact_measured": "Methotrexate binding and uptake assays: minor effects on both binding and uptake relative to wild-type RFC.",
       "confidence": "high",
-      "rationale": "The paper explicitly names Pro-297 as the insertion site in the external loop between TM7 and TM8. Python confirms residue 297 = P (match) and residue 298 = T. The site sits 9 aa from the TM7 C-boundary (288) and 11 aa from the TM8 N-boundary (308), well clear of both TM helices. The construct is full-length and membrane-anchored (EGFP-fused), and methotrexate binding and uptake were both measured and found only minimally affected. Full-length hRFC fused to EGFP at the C-terminus, with HA epitope inserted at Pro-297 in the extracellular loop between TM7 and TM8 (EC loop 289-307), expressed in mammalian cells and assayed for methotrexate binding and uptake. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "Pro-297 falls squarely within ECL4 (289-307), confirmed by Python lookup (seq[296]='P'). It sits 9 residues from the TM7 C-terminus (288) and 11 residues from the TM8 N-terminus (308), well clear of both TM boundaries. The paper explicitly names this residue as the insertion point in the external loop between TM7 and TM8, and the HA-tagged full-length construct retained near-normal methotrexate binding and uptake. Full-length hRFC expressed in mammalian cells with HA epitope inserted at Pro-297, located in the extracellular loop between TM7 and TM8 (ECL4, residues 289-307). Each construct also carried a C-terminal EGFP fusion to monitor expression.",
       "sources": [
         {
           "pmid": 10347183,
@@ -33,7 +33,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "SLC19A1-internal-427-lit",
@@ -53,9 +58,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Methotrexate binding was preserved but uptake was selectively interfered with \u2014 function_perturbed; the tag reaches the cell surface but disrupts transport activity.",
-      "confidence": "high",
-      "rationale": "The paper explicitly names Pro-427 as the insertion site in the external loop between TM11 and TM12. Python confirms residue 427 = P (match) and residue 428 = V. The site sits 9 aa from the TM11 C-boundary (418) and 5 aa from the TM12 N-boundary (432), satisfying the \u22653 aa TM-distance constraint. However, the paper reports that this insertion selectively interfered with methotrexate uptake (while binding was preserved), indicating the tag perturbs transport function at this position; ranked lower than site 1. Full-length hRFC with HA epitope inserted at Pro-427 in the extracellular loop between TM11 and TM12 (EC loop 419-431), expressed in mammalian cells and assayed for methotrexate binding and uptake. [validation: function_perturbed; position: validated; source: paper; entailment_verified: True]",
+      "functional_impact_measured": "Methotrexate binding and uptake assays: insertion selectively interfered with uptake but not binding \u2014 uptake was reduced while binding was preserved.",
+      "confidence": "medium",
+      "rationale": "Pro-427 falls within ECL6 (419-431), confirmed by Python lookup (seq[426]='P'). It sits 9 residues from the TM11 C-terminus (418) and 5 residues from the TM12 N-terminus (432), satisfying the \u22653-residue TM-clearance rule on both sides. The paper explicitly names this residue as the insertion point in the external loop between TM11 and TM12. However, the HA insertion selectively impaired uptake (not binding), indicating partial functional perturbation; ranked below Pro-297 accordingly. Full-length hRFC expressed in mammalian cells with HA epitope inserted at Pro-427, located in the extracellular loop between TM11 and TM12 (ECL6, residues 419-431). Construct also carried a C-terminal EGFP fusion.",
       "sources": [
         {
           "pmid": 10347183,
@@ -65,7 +70,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "function_perturbed",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "SLC19A1-snorkel-c",
@@ -314,10 +324,54 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:22:43.510371+00:00",
-  "literature_notes": "Six other ledger sites were evaluated and excluded because they are intracellular: L1 Ser-225 (IC loop TM6-7, 204-268), L1 Pro-20 (IC N-terminus, 1-27), L1 Gly-492 (IC C-terminus, 453-591), L2 Gln-385 (paper numbering off-by-one; Q is at 386 in the IC loop 386-397, not extracellular), L3 C-terminal HA (IC C-terminus 453-591), L4/L5 HA after Glu226 (IC loop 204-268), L4/L6 Myc-His10 after Leu537 (IC C-terminus 453-591). L7 (SLC19A-HA) names no insertion position and cannot be pinned. L8 (BRIL at N-terminus of TM1, nanobody at C-terminus of TM12) places both fusions on the intracellular face per the authoritative topology landmarks (N-terminus 1-27 is IC; C-terminus of TM12 leads into IC region 453-591). No extracellular N-terminal terminus exists for SLC19A1 (residues 1-27 are intracellular). The two sites reported are the only ledger-grounded extracellular insertion sites.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T15:15:22.933367+00:00",
+  "literature_notes": "Eight additional ledger-grounded positions were evaluated and excluded from sites because they are intracellular or function-abrogating: (1) L1 Pro-20 and Ser-225 \u2014 intracellular N-terminal and TM6-TM7 cytoplasmic loop respectively; (2) L1 Gly-492 \u2014 intracellular C-terminal tail (453-591); (3) L2 Gln-385 \u2014 the paper labels this the cytoplasmic loop between TM10 and TM11; our topology places residue 385 at the last position of TM10 (363-385) and Q at position 386 in the adjacent intracellular loop (386-397); either reading is non-extracellular, and the insertion greatly reduced both binding and uptake; (4) L3/L7 C-terminal HA and EGFP \u2014 the C-terminus (591) is intracellular (453-591); (5) L4/L5 HA after Glu-226 \u2014 intracellular loop (204-268); (6) L4/L6 Myc-His10 after Leu-537 \u2014 intracellular C-tail (453-591); (7) L8 BRIL fused to N-terminus of TM1 \u2014 the junction is after residue 27, which is intracellular (1-27); (8) L8 anti-Fab nanobody fused to C-terminus of TM12 \u2014 the junction is after residue 452 (last TM12 residue), leading into the intracellular C-tail (453-591). ECL1 (49-67) contains the N58 glycosylation site (confirmed: seq[57]='N') and no ledger line reports a tolerated insertion there, so no ECL1 site is proposed. ECL2 (114-120), ECL3 (178-184), and ECL5 (357-362) are not supported by any ledger line and are not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 20,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion near cytoplasmic N-terminus (residues 1-27); minor effects on methotrexate binding and uptake but not an extracellular surface site."
+    },
+    {
+      "residue": 225,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion in cytoplasmic loop between TM6 and TM7 (residues 204-268); minor effects on methotrexate binding and uptake."
+    },
+    {
+      "residue": 385,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L2",
+      "note": "HA insertion at the cytoplasmic loop between TM10 and TM11 (paper's Gln-385; our topology places this at the TM10/ICL boundary); greatly reduced both methotrexate binding and uptake."
+    },
+    {
+      "residue": 492,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion near cytoplasmic C-terminus (residues 453-591); minor effects on methotrexate binding and uptake."
+    },
+    {
+      "residue": 226,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "HA epitope (YPYDVPDYAVN) inserted after Glu-226 in the TMD1-6 half-molecule construct; position is in the intracellular loop (204-268)."
+    },
+    {
+      "residue": 537,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Myc-His10 epitope inserted after Leu-537 in the TMD7-12 half-molecule construct; position is in the intracellular C-tail (453-591)."
+    },
+    {
+      "residue": 591,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal HA tag on full-length RFC; functional and plasma-membrane localized, but the C-terminus (453-591) is intracellular, not a surface tag site."
+    }
+  ]
 }

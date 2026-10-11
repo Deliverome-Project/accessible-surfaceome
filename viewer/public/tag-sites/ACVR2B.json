@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ACVR2B",
+  "uniprot_acc": "Q13705",
+  "sites": [
+    {
+      "site_id": "ACVR2B-terminal_n-18-lit",
+      "gene_symbol": "ACVR2B",
+      "uniprot_acc": "Q13705",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HaloTag / SNAP-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by impermeable fluorescent-substrate staining (CA-Alexa488 for HaloTag, BG-Alexa488 for SNAP-tag) in COS-7 cells; correct molecular weight shift confirmed by Western blot. No explicit ligand-binding or signalling functional assay result is reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "ACVR2B is a single-pass Type II receptor with its sole extracellular terminus at the mature N-terminus (residue 19 onward after SP cleavage at 18/19). The paper explicitly places the tag 'downstream of the signal peptide sequence', which by the authoritative topology landmarks (SP = 1\u201318) maps unambiguously to insert_after_residue = 18, i.e. between G18 (last SP residue) and S19 (first mature residue). Python verification confirms seq[17]='G' and seq[18]='S'. The junction is 119 residues from the TM boundary (138), well clear of the \u22653-residue constraint. Because the paper names the landmark but not a residue number, position_evidence is topology_derived; there is exactly one extracellular terminus so no ambiguity remains. PMC9837045 generated a full-length BMP/TGF\u03b2 receptor library in which hACVR2B was cloned into pcDNA3.1 with an N-terminal Halo- or SNAP-tag placed downstream of the signal peptide sequence and separated from the receptor by a 5\u00d7 glycine linker. The construct was expressed in COS-7 cells. Western blot confirmed molecular weights consistent with successful tagging (L3), and impermeable CA-Alexa488 / BG-Alexa488 staining confirmed surface display of the tagged receptor (L4).",
+      "sources": [
+        {
+          "pmid": 36635368,
+          "citation": "PMID 36635368",
+          "claim": "Further, all Halo- and SNAP-tagged receptors were positively detected using impermeable CA-Alexa488 or BG-Alexa488 staining, respectively."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:55:56.390164+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same publication (PMC9837045) and describe the same construct and experiment. L1 and L2 establish the construct design (N-terminal Halo/SNAP after SP, 5\u00d7 Gly linker, full-length receptor in pcDNA3.1, COS-7 expression). L3 confirms correct MW by Western blot. L4 provides the strongest evidence: surface display confirmed by impermeable dye staining. No ledger line supports any internal extracellular loop insertion or a C-terminal extracellular tag (the C-terminus is intracellular). No ledger line reports a tolerated intracellular insertion or a function-abrogating insertion, so other_positions is empty.",
+  "literature_rejected": []
+}

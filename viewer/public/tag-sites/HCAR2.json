@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HCAR2-terminal_n-0-lit",
+      "gene_symbol": "HCAR2",
+      "uniprot_acc": "Q8TDS4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NanoBiT-Gi1 bioluminescence complementation assay: ssHA-FLAG-HCAR2 was used as the receptor in a Gi coupling assay measuring receptor activation; the construct supported measurable Gi1 engagement, indicating the N-terminally FLAG-tagged receptor is functional.",
+      "confidence": "high",
+      "rationale": "HCAR2 is a GPCR with no native signal peptide; its N-terminus (residues 1\u201328) is extracellular per the topology landmarks, and TM1 begins at residue 29, placing the prepend site 28 residues from the TM boundary. The ssHA-FLAG construct replaces the absent native signal with an artificial one, leaving FLAG at the extracellular face of the mature receptor (before M1, i.e., insert_after_residue=0). No specific residue number is stated in the paper, but exactly one extracellular terminus exists on this GPCR, so the position is topology-derived. The same N-terminal FLAG arrangement is independently confirmed by L2, L3, L4, L5, L6, and L9 across multiple expression systems and vectors, and N-terminal BRIL fusion at the same position (L10) also yielded a functional Gi complex. Full-length HCAR2 expressed with an artificial HA-derived signal sequence followed by a FLAG epitope tag (ssHA-FLAG-HCAR2) in a membrane-anchored context; the FLAG is positioned at the extracellular N-terminus of the mature receptor after signal cleavage. Construct used in a NanoBiT-Gi1 protein complementation assay to measure receptor activation by agonist.",
+      "sources": [
+        {
+          "pmid": 37932263,
+          "citation": "PMID 37932263",
+          "claim": "Specifically, a NanoBiT-G i1 protein consisting of G\u03b1 i1 subunit fused with a large fragment (LgBiT) at the \u03b1-helical domain (between the residues 91 and 92 of G\u03b1 i1 ) and an N-terminally small fragment (SmBiT)-fused G\u03b3 2 subunit with a C68S mutation was expressed along with untagged G\u03b2 1 subunit and HCAR2 (containing the N-terminal HA-derived signal sequence followed by the FLAG-epitope tag; ssHA-FLAG-HCAR2)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:55:34.616132+00:00",
+  "literature_notes": "All qualifying ledger lines (L1\u2013L6, L9, L10) converge on a single extracellular site: the N-terminal prepend (insert_after_residue=0). L1 provides the strongest functional evidence (NanoBiT-Gi1 assay); L2\u2013L6 and L9 corroborate the same FLAG-at-N-terminus architecture across different vectors and expression systems. L10 reports a BRIL domain fusion (~100 aa, larger than a short epitope tag) at the same N-terminal position with confirmed Gi complex formation, further validating N-terminal tolerance. No ledger line pins a FLAG, HA, Myc, or other short epitope tag to any of the extracellular loops (ECL1 85\u2013101, ECL2 165\u2013185, ECL3 257\u2013271), so no internal extracellular sites are proposed. The ICL3 BRIL insertion (L7, L8, residues 219\u2013220) and C-terminal His tags (L6, L9) are intracellular and are recorded in other_positions only.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 219,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "BRIL domain inserted between residues 219 (Q) and 220 (M) in ICL3 (topology: intracellular 210\u2013231); used for crystallization of the full-length receptor but faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 363,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal His tag appended after residue 363 (P); the C-terminus lies within the intracellular span (298\u2013363) and is not accessible on the extracellular face."
+    }
+  ]
 }

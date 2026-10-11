@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KLRF2",
+  "uniprot_acc": "D3W0D1",
+  "sites": [
+    {
+      "site_id": "KLRF2-terminal_c-207-lit",
+      "gene_symbol": "KLRF2",
+      "uniprot_acc": "D3W0D1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 207,
+      "residue_before": "V",
+      "residue_after": "",
+      "residue_label": "V207",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed surface expression of C-terminally FLAG-tagged full-length NKp65 on 293-F cells; no ligand-binding or signalling functional assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "KLRF2/NKp65 is a type II transmembrane protein whose C-terminus (residue 207, V) lies entirely within the extracellular domain (EC: 52\u2013207), 156 residues from the TM boundary. The paper explicitly describes full-length, membrane-anchored NKp65 constructs carrying a C-terminal FLAG tag and demonstrates their surface expression by flow cytometry, satisfying the requirement for a tolerated extracellular tag. The paper names no specific residue number for the tag junction; 'C-terminal' on a protein with a defined last residue uniquely resolves to after position 207, making this topology_derived. Python verification confirms sequence[206]='V' (position 207) as the last residue. Full-length NKp65 (KLRF2) constructs bearing a C-terminal FLAG tag were transfected into 293-F cells; surface expression of the tagged protein was measured by flow cytometry 72 h post-transfection across polymorphic variants (Ile68/Val68 and Pro131/Thr131).",
+      "sources": [
+        {
+          "pmid": 40802609,
+          "citation": "PMID 40802609",
+          "claim": "A, Representative histograms of NKp65 expression on 293-F cells 72 h post transfection with pIRES2-eGFP vector containing cDNA encoding for NKp65 with presence of combination of either proline (Pro) or threonine (Thr) at position 131, isoleucine (Ile) or valine (Val) at position 68 and a C-terminal FLAG tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:04:44.630307+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) originate from the same paper (PMC12349009) and describe the same C-terminal FLAG tag construct; L1 is cited as the primary evidence because it directly reports surface expression by flow cytometry. L2 (immunoblot quantification of the FLAG tag) corroborates protein expression but adds no new positional information. Positions 68 and 131 mentioned in the paper are polymorphic variant residues under study, not tag insertion sites, and are not promoted to sites. The N-terminus (residues 1\u201333) is intracellular and cannot carry an extracellular surface tag.",
+  "literature_rejected": []
+}

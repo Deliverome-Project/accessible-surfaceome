@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "BTLA",
+  "uniprot_acc": "Q7Z6A9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:48:13.181560+00:00",
+  "literature_notes": "The ledger contains exactly one line (L1). L1 reports a C-terminal mGFP fusion on full-length BTLA expressed in Jurkat cells (BTLA WT-mGFP and BTLA FFFF-mGFP). BTLA's C-terminus is at residue 289, which lies in the intracellular domain (topology landmarks: intracellular = 176\u2013289). The mGFP tag therefore faces the cytoplasm, not the extracellular surface. This insertion is tolerated (IL-2 secretion assays were run successfully), but it is an intracellular tag and does not qualify as an extracellular surface tag site. The four tyrosines mentioned (Y226, Y243, Y257, Y282) are all intracellular signalling residues, not surface positions. No ledger line supports any extracellular insertion \u2014 at the mature N-terminus (after residue 30), within the extracellular IgV domain (residues 31\u2013153), or anywhere else on the extracellular face. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 289,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mGFP fused after the last residue (S289) of BTLA; the C-terminus is intracellular (residues 176\u2013289), so the tag faces the cytoplasm; the construct was functionally tolerated in IL-2 co-culture assays."
+    }
+  ]
+}

@@ -336,5 +336,38 @@
       "canonical_residue": 52,
       "left_pct": 17.869415807560138
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:58:50.849549+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) report tags exclusively at the C-terminus (1D4, Venus-Myc-SBP, myc-His) or N-terminus (L2). The authoritative topology places the N-terminus (residues 1\u201319) and the C-terminus (residues 203\u2013323) both in the intracellular compartment. No ledger line reports any insertion in either extracellular loop (EC1: residues 36\u201354, 19 aa; EC2: residues 123\u2013185, 63 aa) or at any extracellular-facing position. Because the rules forbid proposing sites not grounded in the ledger, zero surface tag sites are reported. The C-terminal and N-terminal tagged constructs are recorded in other_positions as intracellular.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 323,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 tag on full-length hCALHM2 in BV/Sf9; residue 323 (S) lies within IC3 (203\u2013323), the large intracellular C-terminal domain."
+    },
+    {
+      "residue": 323,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Venus-Myc-SBP tag on CALHM2 in mammalian cells; C-terminus is intracellular (IC3: 203\u2013323)."
+    },
+    {
+      "residue": 323,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal Venus-myc-SBP or myc-His tag on CALHM constructs including CALHM2; C-terminus is intracellular (IC3: 203\u2013323)."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminally tagged CALHM2 plasmid used in tsA201 electrophysiology; residue 1 (M) lies in IC1 (1\u201319), the intracellular N-terminal segment."
+    }
   ]
 }

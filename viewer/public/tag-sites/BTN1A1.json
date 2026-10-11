@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "BTN1A1",
+  "uniprot_acc": "Q13410",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:48:00.758124+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct from the same paper (PMC10941171): full-length BTN1A1 cloned into the pCDH lentiviral vector with a FLAG tag, used to generate stable cell lines. The construct is membrane-anchored and full-length \u2014 it clears the 'soluble ectodomain' exclusion. However, neither clip states the position of the FLAG tag. The prompt rule is explicit: 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' The naming convention 'BTN1A1-FLAG' (gene symbol followed by tag) universally denotes a C-terminal fusion. BTN1A1 is a type I single-pass membrane protein: its N-terminus (residues 27\u2013246) is extracellular and its C-terminus (residues 268\u2013526) is intracellular. A C-terminal FLAG would therefore sit on the cytoplasmic face \u2014 not an extracellular surface tag. No topology-derived N-terminal site can be inferred from a C-terminal tag name. No other ledger line names any internal extracellular loop insertion, fluorescent-protein fusion, transposon screen, or any other tolerated insertion in the extracellular domain of BTN1A1 or a close ortholog. Result: zero qualifying extracellular surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 526,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "The 'BTN1A1-FLAG' naming convention indicates a C-terminal FLAG tag; residue 526 (the C-terminus) falls within the intracellular domain (residues 268\u2013526) of this type I membrane protein, making it a cytoplasmic tag, not an extracellular surface tag. Tag position is also formally unstated in the clip."
+    }
+  ]
+}

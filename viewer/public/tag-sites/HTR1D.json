@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR1D-terminal_n-0-lit",
+      "gene_symbol": "HTR1D",
+      "uniprot_acc": "P28221",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed cell-surface display of the tagged receptor (L3). The PRESTO-TANGO construct was used in a beta-arrestin recruitment (TANGO) functional assay across 320 GPCRs, demonstrating that the N-terminal FLAG does not prevent receptor trafficking or signaling.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states that the PRESTO-TANGO HTR1D construct carries a FLAG tag at the N-terminus (5\u2032-end) after a cleavable signal sequence, placing the tag on the extracellular face. HTR1D is a GPCR with a single extracellular terminus (residues 1\u201338; TM1 begins at residue 39, giving 38 aa of clearance, well above the \u22653 aa minimum), so the junction is unambiguously a prepend before residue 1 (M). L3 corroborates surface display by anti-FLAG immunofluorescence, and L1 (PMID 11854302) independently reports a FLAG-tagged 5HT1D construct in HEK-293 cells, consistent with the same N-terminal topology-derived position. No residue number is cited in any clip, so position_evidence is topology_derived. PRESTO-TANGO full-length HTR1D construct (PMC4424118) carries an exogenous cleavable signal sequence followed by a FLAG epitope tag at the 5\u2032-end (N-terminus) of the receptor to enable surface-expression monitoring. After signal-peptide cleavage the FLAG is displayed at the extracellular N-terminus of the membrane-anchored receptor. No specific residue number is named in the clip; HTR1D has exactly one extracellular terminus (residues 1\u201338, 38 aa before TM1 at residue 39), so the junction is topology-derived as a prepend before residue 1.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:02:59.782340+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L2 and L3 (PMC4424118, PRESTO-TANGO) together provide the strongest evidence: L2 explicitly names the N-terminal FLAG placement and L3 confirms surface expression by immunofluorescence and functional use in the TANGO assay. L1 (PMID 11854302) reports a FLAG-tagged 5HT1D construct used for co-immunoprecipitation but states no tag position; because HTR1D has exactly one extracellular terminus, topology_derived reasoning places it at the same N-terminal site \u2014 it does not add a second independent site. No ledger line supports any insertion in ECL1 (98\u2013112), ECL2 (177\u2013196), or ECL3 (327\u2013337), so no internal sites are proposed. The intracellular C-terminus (360\u2013377) is not a surface site and is not proposed.",
+  "literature_rejected": []
 }

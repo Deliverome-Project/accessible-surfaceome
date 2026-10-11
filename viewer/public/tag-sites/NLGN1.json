@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "NLGN1",
+  "uniprot_acc": "Q8N2Q7",
+  "sites": [
+    {
+      "site_id": "NLGN1-terminal_n-45-lit",
+      "gene_symbol": "NLGN1",
+      "uniprot_acc": "Q8N2Q7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 45,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S45",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Membrane localization confirmed by immunostaining; synaptogenic function explicitly stated to be maintained (HEK293 co-culture synaptogenesis assay, L8). In neurons, AP-NLGN1 rescued endogenous NLGN1 knockdown and displayed normal synaptic confinement by single-molecule tracking (L1/L2). KI mouse with bAP at this position showed surface biotinylation and streptavidin visualization of endogenous NLGN1 (L4/L5).",
+      "confidence": "high",
+      "rationale": "Signal peptide spans residues 1\u201345 (authoritative landmarks); a tag upstream of residue 46 would be cleaved with the SP and silently lost. L8 explicitly states the HA tag follows the signal sequence, placing it at the unique extracellular N-terminus (insert_after_residue=45, residue_before=S, residue_after=Q). Python confirms residue 45=S and residue 46=Q. The mature ectodomain is 670 residues long, so the junction is far from the TM boundary (\u22653 residues satisfied by a wide margin). L4/L5 independently confirm 'inserted after the signal peptide' in a knock-in mouse, and L1\u2013L3 confirm N-terminal AP/bAP tags on full-length NLGN1 in neurons, all consistent with this single extracellular terminus. HA tag inserted following the signal sequence of full-length NLGN1 (B splice variant) expressed in HEK293 cells; signal sequence spans residues 1\u201345 by authoritative landmarks, placing the tag at the unique extracellular N-terminus (residue 46). Multiple independent studies (L1\u2013L8) converge on this same N-terminal position using AP/bAP or HA tags on full-length, membrane-anchored NLGN1 in neurons and HEK293 cells.",
+      "sources": [
+        {
+          "pmid": 40560725,
+          "citation": "PMID 40560725",
+          "claim": "Specifically, we used the B splice variant of NLGN1, which has been shown to preferentially induce excitatory synaptic sites but can also induce inhibitory synapses. 34 Additionally, we included a hemagglutinin (HA)-tag following the signal sequence to enable immunostaining of NLGN1-overexpressing HEK293 cells while maintaining membrane localization and synaptogenic function of the protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:03:48.123520+00:00",
+  "literature_notes": "All eight ledger lines supporting extracellular tags on NLGN1 (L1\u2013L8) converge on the same N-terminal position after the signal peptide (insert_after_residue=45). No paper names a specific residue number, so position_evidence is topology_derived: with SP=1\u201345 there is exactly one extracellular N-terminus. L8 is chosen as the primary supporting clip because it is the most explicit about position ('following the signal sequence') and explicitly reports function preserved (synaptogenic activity). L4/L5 provide independent corroboration with the strongest biological context (endogenous knock-in mouse). L6/L7 (HA-Nlgn1 in neurons) are consistent but name no residue and are subsumed by the more explicit clips. The GFP insertion at position 728 (L9/L10) falls within the TM domain (716\u2013738) and is described as 'below the transmembrane domain', placing it on the cytoplasmic face; it is recorded in other_positions as intracellular. No ledger line supports any internal extracellular loop insertion for NLGN1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 728,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "GFP inserted at position 728, which falls within the TM domain (716\u2013738) and is described as 'below the transmembrane domain' (L10), placing it on the cytoplasmic/intracellular face; not a surface tag site."
+    }
+  ]
+}

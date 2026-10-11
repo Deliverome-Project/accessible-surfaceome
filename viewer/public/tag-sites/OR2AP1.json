@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR2AP1-terminal_n-0-lit",
+      "gene_symbol": "OR2AP1",
+      "uniprot_acc": "Q8NGE2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + bovine rhodopsin N-terminal 20aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip describes cloning for heterologous expression; no surface-trafficking or functional assay result is reported for OR2AP1 specifically in the ledger line.",
+      "confidence": "medium",
+      "rationale": "OR2AP1 is a class-A GPCR with no signal peptide; the topology landmarks place residues 1\u201322 as the extracellular N-terminus and residues 289\u2013309 as the intracellular C-terminus, making the N-terminus the sole extracellular terminus available for an N-terminal tag. The prepend (insert_after_residue=0) places the tag before M1, leaving 22 residues of extracellular sequence between the tag and TM1 (boundary at residue 23), well above the 3-residue minimum. No residue number is stated in L1, so the junction is derived from topology, not from a printed position. Python verification confirms residue_after = 'M' (position 1) and sequence length = 309. OR2AP1 full-length receptor cloned into pME18S with N-terminal FLAG epitope tag and 20 N-terminal amino acids of bovine rhodopsin fused upstream of the receptor, expressed heterologously (PMC9022881).",
+      "sources": [
+        {
+          "pmid": 35446888,
+          "citation": "PMID 35446888",
+          "claim": "Each of the amplified receptor genes was inserted into the pME18S vector to generate OR proteins fused with N-terminal epitope tags of FLAG and 20 N-terminal amino acids of bovine rhodopsin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:38:13.115168+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It names OR2AP1 explicitly with N-terminal FLAG and bovine rhodopsin epitope tags on the full-length membrane-anchored receptor, satisfying the insertion-tolerated criterion. No residue number is stated, so position_evidence is topology_derived rather than validated. The C-terminus (residues 289\u2013309) is intracellular and therefore not a surface-tag site. The three extracellular loops (ECL1 81\u201395, ECL2 163\u2013191, ECL3 259\u2013267) are not supported by any ledger line and are not proposed. Confidence is medium rather than high because the clip does not report a surface-trafficking or functional assay result for OR2AP1 specifically.",
+  "literature_rejected": []
 }

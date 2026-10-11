@@ -58,6 +58,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "CD82-internal-None-lit",
+      "gene_symbol": "CD82",
+      "uniprot_acc": "P27701",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "LEL (ECL2, residues 109-227)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "foreign antigen domain (SARS-CoV-2 RBD)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Surface display of the inserted foreign antigen confirmed by the chimeric membrane-bound protein topology (L3); CD82 scaffold function (e.g., tetraspanin activity) was NOT MEASURED \u2014 the LEL is deleted in this construct, so native CD82 function is not preserved.",
+      "confidence": "medium",
+      "rationale": "L1 and L3 together establish that the LEL of CD82 (the extracellular loop between TM3 and TM4, topology landmarks 109-227) tolerates replacement with a large foreign domain while the chimeric protein remains membrane-anchored and surface-displayed. No specific residue junction is named in any ledger line, so insert_after_residue is left null and the site is classified at region level. A short epitope tag inserted anywhere within this 119-residue extracellular loop would be in the same validated region. Position_evidence is 'inferred' because the paper names the region (between TM3 and TM4) but not a specific residue, and no residue was chosen by this analysis. The tANCHOR system (PMC10713279) engineers a chimeric membrane-anchored protein using CD82 with its large extracellular loop (LEL, residues 109-227) replaced by a foreign antigen sequence. The construct is expressed as a full-length, membrane-bound protein and the inserted sequence is confirmed to be exposed extracellularly. The paper specifies the insertion is 'between transmembrane domain (TM) 3 and 4', which corresponds to the LEL region of CD82. No specific residue junction within the LEL is named.",
+      "sources": [
+        {
+          "pmid": 38090673,
+          "citation": "PMID 38090673",
+          "claim": "The constructs encode CD82-derived domains (CD82 without the LEL) for anchoring the antigen on the cell surface between transmembrane domain (TM) 3 and 4 (B) Cartoon showing the topology of extracellular displayed antigen expressed as a chimeric membrane-bound protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CD82-snorkel-c",
       "gene_symbol": "CD82",
       "uniprot_acc": "P27701",
@@ -465,6 +502,33 @@
       "isoform_residue": 37,
       "canonical_residue": 37,
       "left_pct": 11.212121212121213
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:23:17.602287+00:00",
+  "literature_notes": "L4 (ptANCHOR-CD82-V5-His-mCherry commercial vector) was considered but disqualified: it is a commercial plasmid whose V5 tag position within the CD82 scaffold is unstated \u2014 no residue or junction is given, only the vector name. L2 reports an N-terminal FLAG tag and C-terminal mCherry on the tANCHOR construct; the N-terminus of CD82 (residues 1-11) is intracellular and the C-terminus (residues 251-267) is intracellular, so neither tag is on the extracellular face and both are recorded in other_positions. L5 reports a 3xFLAG tag on the C-terminus of mouse CD82, which is likewise intracellular. The small extracellular loop (SEL, ECL1, residues 36-53) has no ledger support for any insertion and is not proposed. The tANCHOR site is classified 'medium' confidence because the insertion replaces the entire LEL rather than inserting a short tag within it, and native CD82 tetraspanin function is not preserved or measured in the construct.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal FLAG tag on the tANCHOR-CD82 construct; the CD82 N-terminus (residues 1-11) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 267,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal mCherry reporter on the tANCHOR-CD82 construct; the CD82 C-terminus (residues 251-267) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 267,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "3xFLAG tag engineered onto the C-terminus of mouse CD82 (mCD82); the C-terminus is intracellular, confirming this is not a surface tag."
     }
   ]
 }

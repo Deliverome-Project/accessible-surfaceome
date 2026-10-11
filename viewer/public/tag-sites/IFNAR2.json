@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "IFNAR2",
+  "uniprot_acc": "P48551",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:09:59.091681+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) describe the same experiment: CRISPR insertion of a HiBiT epitope tag into the Alu exon of the endogenous IFNAR2-S isoform. IFNAR2-S is a naturally truncated, soluble isoform that arises from inclusion of an Alu-derived exon that introduces an early stop codon, eliminating the transmembrane domain. The resulting protein is secreted rather than membrane-anchored. This is functionally equivalent to a 'soluble ectodomain' construct, which the rules explicitly disqualify: 'The construct must be full-length and membrane-anchored.' Additionally, the Alu exon is not present in the canonical 515-aa IFNAR2 sequence (UniProt P48551), so no position in canonical numbering can be derived. L1 and L2 are also redundant (same quote, same experiment \u2014 one PMC, one preprint DOI). No other ledger lines exist. Zero sites qualify.",
+  "literature_rejected": []
+}

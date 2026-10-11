@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "IGSF8",
+  "uniprot_acc": "Q969P0",
+  "sites": [
+    {
+      "site_id": "IGSF8-terminal_n-27-lit",
+      "gene_symbol": "IGSF8",
+      "uniprot_acc": "Q969P0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "A",
+      "residue_after": "R",
+      "residue_label": "A27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "The HAEWI-2FLAG construct was used in co-immunoprecipitation and surface-biotinylation experiments in CHO cells; surface display of the related EWI-2FLAG construct was confirmed by surface biotinylation (L3). Direct surface detection of the HA epitope itself was not separately quantified in the cited clips.",
+      "confidence": "medium",
+      "rationale": "The paper explicitly constructs a full-length, membrane-anchored EWI-2 with an HA tag placed immediately after the signal peptide, placing it at the extracellular N-terminus. The authoritative topology gives SP = 1\u201327 (A27 is the last SP residue, R28 is the mature N-terminus), so the junction is insert_after_residue=27. The paper's stated SP boundary (1\u201325) differs by two residues from the computed topology; we use the authoritative landmark (27) and note the discrepancy. No residue number is stated in the paper, so position_evidence is topology_derived. The extracellular domain spans 28\u2013579, placing this tag far (>550 residues) from the TM boundary. Full-length human EWI-2 (IGSF8) construct pcDNA3.1/HAEWI-2FLAG encodes the EWI-2 signal peptide followed immediately by the HA9 epitope (YPYDVPDYA) fused to the entire EWI-2FLAG sequence, expressed in mammalian cells. The paper states the signal peptide spans aa 1\u201325; the authoritative computed topology places the SP at 1\u201327 (cleavage after A27, mature N-terminus R28). The paper names no specific junction residue \u2014 only 'after signal peptide' \u2014 and exactly one extracellular terminus exists, so the junction is topology-derived at insert_after_residue=27.",
+      "sources": [
+        {
+          "pmid": 18382656,
+          "citation": "PMID 18382656",
+          "claim": "Plasmid pcDNA3.1/wint-FLAG encoding EWI-2 signal peptide (amino acids 1\u201325) and EWI-2 amino acids 166\u2013613 fused to FLAG tag was made by fusion-PCR from template pcDNA3.1/EWI-2FLAG. pcDNA3.1/HAEWI-2FLAG encodes EWI-2 signal peptide followed by HA9 epitope (YPYDVPDYA) tag fused to the entire sequence of EWI-2FLAG."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:14:04.632654+00:00",
+  "literature_notes": "Four ledger lines were evaluated. L2 grounds the single extracellular surface site: an HA tag inserted after the signal peptide at the N-terminus of full-length membrane-anchored EWI-2 (IGSF8). L1 and L3 describe a C-terminal FLAG tag on EWI-2; the C-terminus (residue 613) falls within the intracellular tail (603\u2013613) and is therefore not a surface tag site \u2014 recorded in other_positions. L4 describes a C-terminal GFP fusion, likewise intracellular \u2014 also recorded in other_positions. No ledger line supports any internal extracellular loop insertion for IGSF8. The paper's stated signal peptide length (1\u201325) differs by two residues from the authoritative computed topology (1\u201327); the junction is placed at residue 27 per the authoritative landmarks, and the discrepancy is noted in the rationale. Confidence is medium because the HA-tag surface display was not directly demonstrated for the HAEWI-2FLAG construct specifically (L3 confirms surface display only for the C-terminal FLAG construct).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 613,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length EWI-2 (EWI-2FLAG); residue 613 lies within the intracellular tail (603\u2013613), confirmed by surface biotinylation of the extracellular domain but the tag itself faces the cytoplasm."
+    },
+    {
+      "residue": 613,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GFP fusion of full-length EWI-2 (pDest-C-GFP vector); residue 613 is the last intracellular residue, so the GFP faces the cytoplasm."
+    }
+  ]
+}

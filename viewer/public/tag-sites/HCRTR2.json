@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HCRTR2-terminal_n-0-lit",
+      "gene_symbol": "HCRTR2",
+      "uniprot_acc": "O43614",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA antibody staining (cell-surface ELISA/flow); full-length HA-OX2R used as the functional reference for signaling assays. Truncation mutants showed ~29% reduced surface expression relative to HA-OX2R, implying HA-OX2R itself traffics and signals normally.",
+      "confidence": "high",
+      "rationale": "OX2R is a class A GPCR with no signal peptide; the topology landmarks place residues 1\u201351 extracellular and TM1 beginning at residue 52. The N-terminus is therefore the sole extracellular terminus available for a prepend tag, making insert_after_residue=0 the unique topology-derived junction. The paper names no specific residue, only 'the N-terminus', so position_evidence is topology_derived. Python confirms residue 1 is M and residue 51 (K) is \u22653 residues from TM1 boundary (residue 52), satisfying the distance constraint. Full-length HA-OX2R is used as the signaling and surface-expression reference throughout the study, supporting surface_and_function validation. Full-length OX2R (HCRTR2) was expressed as a membrane-anchored construct with an HA epitope tag (YPYDVPDYA) inserted at the N-terminus by PCR, in pcDNA3.1. The construct was used to assess both surface expression and signaling in transfected cells. Full-length HA-OX2R served as the positive-control reference against which C-terminal truncation mutants were compared.",
+      "sources": [
+        {
+          "pmid": 28487995,
+          "citation": "PMID 28487995",
+          "claim": "To generate HA-tagged OX2R fragments, the sequence encoding the HA epitope tag (YPYDVPDYA) was inserted into the pcDNA3.1-OX2R and the 3 truncated C-terminal OX2R constructs at the N-terminus by polymerase chain reaction."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:55:35.909525+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 is the primary qualifying line: a full-length, membrane-anchored HA-tagged OX2R construct with the tag at the extracellular N-terminus, used for both surface and signaling assays. L2 (western blot confirmation of expression) adds no independent positional information beyond L1. L3 describes C-terminal truncation mutants (HA-M1, HA-M2) that show reduced surface expression; these truncations begin in the intracellular C-terminal tail (residues 369\u2013444 per topology landmarks) and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for HCRTR2. No signal peptide is present in OX2R (UniProt P41976), so the N-terminal tag is not at risk of being cleaved.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 369,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Start of the 76-aa C-terminal deletion in HA-M1 (residues 369\u2013444); this region is intracellular per topology landmarks (368\u2013444 intracellular), and its deletion reduced surface expression by ~28.73% relative to full-length HA-OX2R."
+    },
+    {
+      "residue": 385,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Start of the 60-aa C-terminal deletion in HA-M2 (residues 385\u2013444); this region is intracellular per topology landmarks, and its deletion reduced surface expression by ~29.51% relative to full-length HA-OX2R."
+    }
+  ]
 }

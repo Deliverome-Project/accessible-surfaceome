@@ -193,6 +193,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "CACNG3-internal-None-lit",
+      "gene_symbol": "CACNG3",
+      "uniprot_acc": "O60359",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "EC1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "BBS 13 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Fluorescent \u03b1-bungarotoxin labelling confirmed surface display; BBS-\u03b32 enhanced AMPAR function identically to unmodified \u03b32 (AMPAR-enhancing function preserved); labelled \u03b32 co-localised with AMPAR clusters at synapses in living neurons.",
+      "confidence": "medium",
+      "rationale": "L1 reports a tolerated BBS insertion 'within the extracellular domain' of full-length CACNG2, a Type I TARP with topology identical to CACNG3; both proteins share the same large EC1 loop (TM1\u2013TM2) as their sole substantial extracellular domain. No specific residue is named in the paper, so insert_after_residue is left null and the site is reported at region level (EC1, CACNG3 residues 31\u2013105). The evidence is indirect (ortholog), so position_evidence is 'inferred' and confidence is medium; the validation level reflects what was actually measured in CACNG2 (surface display and preserved function). BBS (bungarotoxin binding site, ~13 aa) was inserted into the extracellular domain of full-length, membrane-anchored TARP \u03b32 (CACNG2/stargazin), the prototypical TARP and closest characterised ortholog of CACNG3. Both are Type I TARPs sharing identical 4-TM topology; the 'extracellular domain' in this context is the large EC1 loop (TM1\u2013TM2, residues 31\u2013105 in CACNG3). The tagged construct was expressed in neurons.",
+      "sources": [
+        {
+          "pmid": 39209103,
+          "citation": "PMID 39209103",
+          "claim": "We inserted the bungarotoxin binding site (BBS) within the extracellular domain of TARPs to enable their detection in cells exposed to fluorescent \u03b1-Btx. Focusing on the prototypical TARP \u03b32, we demonstrate that the small size of fluorescent \u03b1-Btx allows it to bind to the BBS-tagged TARP when associated with AMPARs. Importantly, labelled \u03b32 enhances AMPAR function in the same way as unmodified \u03b32. In living neurons, fluorescent \u03b1-Btx-labelled \u03b32 associates with AMPAR clusters at synapses."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CACNG3-snorkel-c",
       "gene_symbol": "CACNG3",
       "uniprot_acc": "O60359",
@@ -425,5 +462,12 @@
       "canonical_residue": 74,
       "left_pct": 23.49206349206349
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:55:49.847089+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. L1 reports a BBS tag insertion in CACNG2 (stargazin), the prototypical TARP and closest ortholog of CACNG3, within its 'extracellular domain' \u2014 no specific residue is named. This qualifies as an indirect site in CACNG3's EC1 loop (residues 31\u2013105, between TM1 and TM2). The short EC2 loop (residues 159\u2013176, between TM3 and TM4) is also extracellular but is not mentioned in L1 and cannot be proposed without ledger support. No intracellular or function-abrogating positions are reported in L1, so other_positions is empty.",
+  "literature_rejected": []
 }

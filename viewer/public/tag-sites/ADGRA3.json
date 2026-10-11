@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRA3",
+  "uniprot_acc": "Q8IWK6",
+  "sites": [
+    {
+      "site_id": "ADGRA3-terminal_n-33-lit",
+      "gene_symbol": "ADGRA3",
+      "uniprot_acc": "Q8IWK6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 33,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G33",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface ELISA against the N-terminal FLAG tag confirmed cell-surface expression (L3). Antibody-feeding internalisation assay confirmed normal receptor trafficking (L4). Reporter-gene assays with the N-terminal FLAG ADGRA3 construct characterised receptor signalling (L7). Receptor function preserved across all assays.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the 3\u00d7FLAG tag is placed between the signal peptide and residue 34 of the full-length membrane-anchored receptor, pinning the junction to insert_after_residue=33 (the last residue of the signal peptide, canonical numbering). Python lookup confirms seq[33]='G' and seq[34]='G'. The tag is therefore on the extracellular face of the large N-terminal ectodomain (residues 34\u2013761), well clear of TM1 (762\u2013783). Multiple independent papers (L2\u2013L4, L6, L7) corroborate the same N-terminal position with FLAG or Myc tags, and L3/L4 directly demonstrate surface accessibility and normal trafficking. L1 (PMC9539791) reports a 3\u00d7FLAG tag inserted explicitly 'between a signal peptide and the full-length protein (amino acid residues 34\u20131321)' in a membrane-anchored FLAG\u2013GPR125-FL construct expressed in MDCK cells. GPR125 is the approved alias for ADGRA3 (same UniProt entry Q8IWK6). L3 (PMC6899654) confirms cell-surface display of the N-terminal FLAG tag by ELISA under non-permeabilised conditions in HEK293 cells. L4 (PMC6899654) confirms receptor trafficking via antibody-feeding internalisation assay targeting the same N-terminal FLAG. L7 (PMC12059339) independently reports an N-terminal FLAG tag on a full-length ADGRA3 construct used in reporter-gene signalling assays, directly naming ADGRA3.",
+      "sources": [
+        {
+          "pmid": 36089063,
+          "citation": "PMID 36089063",
+          "claim": "We next transfected MDCK cells with the complementary DNA (cDNA) for wild-type human GPR125 (FLAG\u2013GPR125-FL), in which the 3 \u00d7 FLAG-tag was inserted between a signal peptide and the full-length protein (amino acid residues 34\u20131321) ( Fig. 1 A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:06:11.997180+00:00",
+  "literature_notes": "All seven ledger lines converge on a single extracellular site: the N-terminus of the mature protein (after signal-peptide cleavage at residue 33). L1 is the most explicit, naming residues 34\u20131321 as the full-length span and placing the 3\u00d7FLAG between the SP and residue 34. L2\u2013L4 and L6 corroborate the same N-terminal position on GPR125/ADGRA3 with FLAG or Myc tags. L7 directly names ADGRA3 with an N-terminal FLAG. No ledger line reports any insertion in an extracellular loop (ECL1 817\u2013826, ECL2 898\u2013916, ECL3 1018\u20131024) or anywhere else in the large ectodomain (34\u2013761) other than the N-terminal junction. The C-terminal tags in L5 (2\u00d7V5) and L7 (1D4) are placed at the protein C-terminus, which falls in the intracellular C-tail (residues 1046\u20131321 per topology landmarks) and are therefore recorded in other_positions only.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1321,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "L5 (PMC13631675) reports two V5 tags at the C-terminus of full-length GPR125/ADGRA3; the C-terminus (residues 1046\u20131321) is intracellular per topology landmarks, so this tag is not on the extracellular face."
+    },
+    {
+      "residue": 1321,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "L7 (PMC12059339) reports a C-terminal 1D4 tag on full-length ADGRA3; the C-terminus lies in the intracellular C-tail (1046\u20131321) and is not surface-accessible."
+    }
+  ]
+}

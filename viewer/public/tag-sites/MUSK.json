@@ -1,0 +1,66 @@
+{
+  "has_data": true,
+  "gene_symbol": "MUSK",
+  "uniprot_acc": "O15146",
+  "sites": [
+    {
+      "site_id": "MUSK-internal-None-lit",
+      "gene_symbol": "MUSK",
+      "uniprot_acc": "O15146",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "Ig2-Ig3 linker",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed surface display of myc-MuSK-GFP in BaF3 cells (L2); construct was used in functional cell-adhesion assays testing Lrp4-MuSK interaction (L3); adhesion assay result not explicitly quantified in the ledger clips but construct was employed as a functional reagent.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the myc tag was placed between the second and third Ig-like domains of full-length MuSK in a membrane-anchored retroviral construct. No specific residue number is given in the ledger, so insert_after_residue is left null and the site is reported at region level (Ig2-Ig3 linker, approximately the junction between UniProt-annotated Ig-like domain 2 ending ~211 and Ig-like domain 3 starting ~212, well within the extracellular span 24-495 and far from the TM boundary at 496). L2 and L3 confirm surface display by flow cytometry and use in functional adhesion assays, respectively, supporting surface_and_function validation. Full-length myc-MuSK-GFP expressed via retroviral vector in myoblasts and BaF3 cells; myc epitope inserted between the second and third Ig-like domains of MuSK (citing Herbst and Burden, 2000). Surface display confirmed by flow cytometry (L2); construct used in functional Lrp4-MuSK adhesion assays (L3).",
+      "sources": [
+        {
+          "pmid": 18848351,
+          "citation": "PMID 18848351",
+          "claim": "The myc epitope tag was positioned between the second and third Ig-like domains in MuSK ( Herbst and Burden, 2000 ); the Flag epitope tag was positioned twenty four amino acids following the initiator methionine in Lrp4."
+        },
+        {
+          "pmid": 23621612,
+          "citation": "PMID 23621612",
+          "claim": "Accordingly, we inserted a streptavidin-binding sequence (SBP), called SBP-Tag, into the extracellular domain of MuSK."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:58:33.021041+00:00",
+  "literature_notes": "L1, L2, and L3 all describe the same myc-MuSK-GFP construct; L1 is the primary positional evidence (names the Ig2-Ig3 linker), L2 and L3 add surface and functional validation. The GFP moiety in myc-MuSK-GFP is fused to the intracellular C-terminus (residue 869 region) and is recorded in other_positions as an intracellular tag. L4 describes a separate SBP-Tag insertion in the extracellular domain with no sub-region named; it qualifies as a distinct site but with low positional resolution. No ledger line names a specific residue for either insertion, so both sites are region-level with insert_after_residue null. No ledger line supports a terminal_n tag (mature N-terminus, residue 24) or a terminal_c tag (C-terminus is intracellular). No ledger line reports a function-abrogating insertion in the extracellular domain.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 869,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "GFP fused to the C-terminus of myc-MuSK-GFP; the MuSK C-terminus (residue 869) is intracellular (topology: 517-869), so this fusion is cytoplasmic and not a surface tag site."
+    }
+  ]
+}

@@ -166,6 +166,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "CACNG2-internal-None-lit",
+      "gene_symbol": "CACNG2",
+      "uniprot_acc": "Q9Y698",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by quantum dot-labeled anti-HA antibody detection in cortical neurons; single particle tracking of surface stargazin trajectories performed. Explicit functional assay (e.g., AMPA receptor currents) NOT MEASURED in the cited clips.",
+      "confidence": "medium",
+      "rationale": "L3 explicitly states 'this tag is extracellular when stargazin is in the plasma membrane', confirming the HA tag is surface-exposed on the full-length membrane-anchored protein. CACNG2 has two extracellular regions: ECL1 (31-105, 75 aa) and ECL2 (158-177, 20 aa); neither is named in the ledger. ECL1 is assigned as the region because it is the large extracellular loop and the canonical location for HA insertion in stargazin constructs (the Bats et al. 2007 method referenced in L4). No residue is named in any ledger clip, so insert_after_residue is null. HA-tagged stargazin (CACNG2/TARP gamma-2) expressed as full-length membrane-anchored protein in cortical neurons; the HA epitope is confirmed extracellular by quantum dot-labeled secondary antibody detection and single particle tracking experiments. The construct is used as a tool for surface diffusion tracking. No specific residue or loop is named in the ledger; ECL1 (residues 31-105) is the large extracellular loop of this 4-TM protein and the canonical location for HA in published stargazin constructs.",
+      "sources": [
+        {
+          "pmid": 30271322,
+          "citation": "PMID 30271322",
+          "claim": "To track in real time the movement of stargazin at the cell surface we transfected cortical neurons with constructs encoding Homer1C-GFP, for postsynaptic labeling, and HA-tagged stargazin; this tag is extracellular when stargazin is in the plasma membrane (Figure 2A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CACNG2-snorkel-c",
       "gene_symbol": "CACNG2",
       "uniprot_acc": "Q9Y698",
@@ -393,5 +430,12 @@
       "canonical_residue": 76,
       "left_pct": 23.52941176470588
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:57:21.911982+00:00",
+  "literature_notes": "L1-L5 all confirm an extracellular HA tag on CACNG2/stargazin in full-length, membrane-anchored constructs expressed in cortical neurons, but none name a specific residue or loop. CACNG2 has two extracellular loops: ECL1 (31-105) and ECL2 (158-177); ECL1 is assigned as the region because it is the large extracellular loop and the canonical location for HA in stargazin constructs (Bats et al. 2007, referenced in L4), but this is an inference not directly stated in the ledger. L6 (GFP-tagged TARP gamma-2) describes a biochemical purification construct used for FSEC analysis; the GFP position is not stated and the tag is not confirmed to be extracellular. For a 4-TM protein with intracellular N- and C-termini (residues 1-9 and 199-323 respectively), GFP is most likely C-terminal (intracellular) for biochemical detection purposes. L6 does not qualify as a surface tag site and is excluded. The N-terminus (1-9) and C-terminus (199-323) of CACNG2 are both intracellular and do not qualify as extracellular tag sites.",
+  "literature_rejected": []
 }

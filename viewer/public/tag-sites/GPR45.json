@@ -39,5 +39,26 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:37:45.905397+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe C-terminally tagged GPR45 constructs ('Gpr45-3xFlag' in N11 and IMCD3 cells; 'Gpr45-GFP' knock-in mice). The standard gene-then-tag naming convention places these tags after the final residue (V372). Per the authoritative topology landmarks, residues 327\u2013372 form the intracellular C-terminal tail (IC4); the tag therefore faces the cytoplasm, not the extracellular surface. No ledger line reports a tag at the extracellular N-terminus (EC1, residues 1\u201334), in any of the three extracellular loops (EC2 94\u2013109, EC3 171\u2013193, EC4 290\u2013305), or at any other extracellular position. Because every qualifying insertion in the ledger is intracellular, zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 372,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3xFlag tag appended C-terminally to GPR45 (Gpr45-3xFlag); the C-terminus (IC4, residues 327\u2013372) is intracellular, so the tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 372,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "GFP fused C-terminally to GPR45 in CRISPR knock-in mice (Gpr45-GFP); same intracellular C-terminus (IC4, residues 327\u2013372), confirmed by immunoblot in L4."
+    }
+  ]
 }

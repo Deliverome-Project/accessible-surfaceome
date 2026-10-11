@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRC37A3",
+  "uniprot_acc": "O60309",
+  "sites": [
+    {
+      "site_id": "LRRC37A3-terminal_n-35-lit",
+      "gene_symbol": "LRRC37A3",
+      "uniprot_acc": "O60309",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "K",
+      "residue_after": "E",
+      "residue_label": "K35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed extracellular surface display of the tag on membrane remnants in HeLa cells; no functional assay of the tagged construct was reported.",
+      "confidence": "medium",
+      "rationale": "L2 explicitly places the FLAG tag on the extracellular N-terminal moiety of the full-length, membrane-anchored LRRC37A paralog. For a type I transmembrane protein (N-extracellular, C-intracellular) with signal peptide spanning residues 1\u201335, the only extracellular terminus is the mature N-terminus beginning at residue 36; a tag upstream of residue 36 would be cleaved with the signal peptide. Python verification confirms residue 35 = K and residue 36 = E, placing the junction well over 1500 residues from the TM domain (1582\u20131604). The evidence is indirect because the published construct is LRRC37A, not LRRC37A3, but the two are close paralogs sharing the same type I topology. Full-length LRRC37A (close paralog of LRRC37A3) was subcloned into pFLAG-CMV-6c and expressed in HeLa cells. Anti-FLAG immunofluorescence on membrane remnants confirmed the FLAG tag resides on the extracellular amino-terminal moiety of the transmembrane precursor, prior to proteolytic cleavage and secretion of that moiety.",
+      "sources": [
+        {
+          "pmid": 23064749,
+          "citation": "PMID 23064749",
+          "claim": "Preliminary data show that the membrane remnants, forming at later stages of the overexpression, are immunofluorescently stained only by the anti-FLAG antibody and are not recognized by anti-LRRC37 antibody, confirming the proteolytic cleavage and the release in the extracellular space of the amino-terminal moiety of LRRC37A."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:20:19.633922+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) concern LRRC37A, a paralog of the target LRRC37A3; no direct LRRC37A3-tagged construct is reported. L1 names the vector (pFLAG-CMV-6c) but no residue; L2 confirms extracellular FLAG localization by immunofluorescence but again names no residue. Because the N-terminus is the sole extracellular terminus of this type I TM protein, the junction is topology-derived at residue 35/36 (after signal peptide cleavage). No internal loop insertions are supported by the ledger. The C-terminal intracellular tail (residues 1605\u20131634) is not a surface site and is not proposed. No ledger line reports a function-abrogating insertion.",
+  "literature_rejected": []
+}

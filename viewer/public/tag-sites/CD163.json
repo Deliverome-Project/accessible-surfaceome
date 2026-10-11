@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD163",
+  "uniprot_acc": "Q86VB7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:07:55.875206+00:00",
+  "literature_notes": "The ledger contains two lines (L1, L2) that both describe the same commercial GenScript plasmid pCDNA3.1-CD163-FLAG expressing pig CD163 (NM_213976.1) fused to a FLAG epitope. Neither the verbatim quotes nor any other part of the ledger entries state the position of the FLAG tag \u2014 no residue number, no terminus label, no loop name is given. The rules explicitly exclude 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' Topology-derived reasoning also cannot rescue the site: CD163 is a type I single-pass transmembrane protein with one extracellular terminus (mature N-terminus, residue 42, after signal-peptide cleavage at 1\u201341) and one intracellular C-terminus (residue 1156). A C-terminal FLAG \u2014 the most common convention for pCDNA3.1-FLAG vectors \u2014 would be intracellular and therefore not a surface tag site. An N-terminal FLAG after the signal peptide would be extracellular, but the ledger does not state which terminus carries the tag, so topology-derived reasoning cannot be applied without choosing between the two. Because no qualifying insertion position can be grounded in the ledger, zero sites are reported. The annotator gloss '(residues 1\u20131050)' in L1 does not appear in the verbatim quote and cannot be used to infer a C-terminal FLAG at the last extracellular residue (1050); even if it could, that would still require inferring the tag is C-terminal, which is not stated.",
+  "literature_rejected": []
+}

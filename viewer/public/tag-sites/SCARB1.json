@@ -610,5 +610,32 @@
       "canonical_residue": 49,
       "left_pct": 9.62671905697446
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:08:35.849546+00:00",
+  "literature_notes": "All five ledger lines describe insertions on the intracellular face of SCARB1. SCARB1 is a type III membrane protein with a short intracellular N-terminus (residues 1\u20138), a single large extracellular domain (residues 30\u2013439), and an intracellular C-terminus (residues 465\u2013552). L1 (PMC11585690) reports GFP fused to the N-terminus of SR-BI variant 1: the N-terminus is intracellular (topology landmarks: INTRACELLULAR 1\u20138), so this tag faces the cytoplasm. L2, L3, and L4 (all PMC12961326) report eGFP fused to the C-terminus of mouse SR-B1: the C-terminus is intracellular (topology landmarks: INTRACELLULAR 465\u2013552), so this tag also faces the cytoplasm; L4 confirms the tagged receptor retains HDL/LDL binding activity, but the tag itself is not extracellular. L5 (PMC2951368) reports a Myc tag on the cytoplasmic C-tail fragment (aa 479\u2013509), which is explicitly intracellular. No ledger line reports a tag insertion in the large extracellular domain (residues 30\u2013439) or at any extracellular-facing position. Because the rules forbid proposing sites not grounded in the ledger, zero extracellular surface tag sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the N-terminus of SR-BI variant 1; the N-terminus (residues 1\u20138) is intracellular per topology landmarks, so the tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 552,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "eGFP fused to the C-terminus of mSR-B1 (after residue 552); the C-terminus (residues 465\u2013552) is intracellular per topology landmarks; the tagged receptor retains HDL/LDL binding activity but the tag is cytoplasmic."
+    },
+    {
+      "residue": 479,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Myc epitope tag placed at the N-terminus of the cytoplasmic C-tail fragment (aa 479\u2013509) fused to EGFP; residues 479\u2013509 fall within the intracellular C-terminal region (465\u2013552)."
+    }
   ]
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "JAM2",
+  "uniprot_acc": "P57087",
+  "sites": [
+    {
+      "site_id": "JAM2-terminal_n-28-lit",
+      "gene_symbol": "JAM2",
+      "uniprot_acc": "P57087",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "G",
+      "residue_after": "F",
+      "residue_label": "G28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface HA signal detected on non-permeabilized cells by immunofluorescence (L3); quantified HA/V5 fluorescence intensity ratio across 10 cells confirms HA is extracellular and V5 is intracellular (L7). Membrane trafficking confirmed by co-localisation of JAM2-V5 with PH-GFP membrane marker (L4). Wild-type and disease-variant (R108H, W168C) constructs bearing the same dual-tag were compared for membrane localisation (L5); no untagged control comparison reported.",
+      "confidence": "high",
+      "rationale": "JAM2 is a type-I single-pass transmembrane protein; its signal peptide spans residues 1\u201328 (authoritative landmarks), placing the mature N-terminus at residue 29 (F). An HA tag at the amino terminus of the full-length construct must therefore sit after residue 28 to survive signal-peptide cleavage and reach the extracellular face. Python confirms seq[28]='G' and seq[29]='F'. The paper's L2 text erroneously labels this terminus 'intracellular', but the direct experimental evidence in L3 (anti-HA staining of non-permeabilized cells) and L7 (quantified HA/V5 ratio) unambiguously demonstrates extracellular surface display of the HA tag. The insertion site is 211 residues from the TM boundary, satisfying the \u22653-residue constraint. Full-length JAM2 was expressed in mammalian cells with an HA tag at the amino terminus (after the signal peptide, residues 1\u201328) and a V5 tag at the carboxyl terminus. Non-permeabilized cells were stained with anti-HA before permeabilization, directly demonstrating cell-surface accessibility of the N-terminal HA tag. The paper names no specific residue number for the insertion; JAM2 has exactly one extracellular terminus (the mature N-terminus after signal cleavage at residue 28), so the junction is topology-derived as insert_after_residue=28.",
+      "sources": [
+        {
+          "pmid": 42660533,
+          "citation": "PMID 42660533",
+          "claim": "For surface HA detection, non\u2010permeabilized cells were stained with anti\u2010HA (1:1000, Cell Signaling Technology) before permeabilization and V5 labeling."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:33:55.174166+00:00",
+  "literature_notes": "All seven ledger lines derive from a single paper (PMC13521667). L1 describes a commercial Origene pCMV V5-JAM2 construct with no stated tag position and therefore cannot alone pin a residue. L2\u2013L7 together define a dual-tagged full-length JAM2: HA at the amino terminus (extracellular, confirmed by surface staining) and V5 at the carboxyl terminus (intracellular, confirmed by the HA/V5 topology assay). L2 contains an apparent textual inversion ('V5 at extracellular C-terminus, HA at intracellular N-terminus') that contradicts the experimental results in L3 and L7; the functional data are taken as authoritative. The C-terminal V5 tag is intracellular and is recorded in other_positions. No ledger line supports any internal extracellular loop insertion for JAM2, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 298,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "C-terminal V5 tag is intracellular, confirmed by the HA/V5 topology assay showing V5 is accessible only after permeabilization; the intracellular domain spans residues 259\u2013298."
+    }
+  ]
+}

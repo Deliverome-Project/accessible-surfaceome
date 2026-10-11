@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHB3",
+  "uniprot_acc": "Q9Y5E6",
+  "sites": [
+    {
+      "site_id": "PCDHB3-internal-None-lit",
+      "gene_symbol": "PCDHB3",
+      "uniprot_acc": "Q9Y5E6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM helix",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-Myc antibody staining of non-permeabilized cells confirmed surface display: staining was observed at the cell periphery and cell-cell junctions in transfected cells, indicating intact trafficking and surface localization of the tagged full-length protein.",
+      "confidence": "medium",
+      "rationale": "All three ledger lines (L1\u2013L3) from PMC12157453 describe a Myc tag inserted in the extracellular stalk between EC6 and the TM helix of cPCDH constructs; the directly validated protein is \u03b3C3 (PCDHG-C3), making PCDHB3 an indirect/ortholog case. PCDHB3 is a beta-clustered protocadherin sharing the identical six-EC-domain + stalk + TM + ICD architecture, so the stalk region (approximately residues 630\u2013689, fully extracellular per landmarks) is the homologous insertion site. No specific residue is named in any ledger line, so insert_after_residue is null and the site is region-level. The stalk is well clear of the TM boundary (TM starts at 690), satisfying the \u22653-residue rule. PMC12157453 reports full-length cPCDH constructs (validated on \u03b3C3/PCDHG-C3) carrying a Myc epitope tag in the extracellular stalk between EC6 and the TM helix, co-expressed with an intracellular fluorescent protein; surface display was assessed by anti-Myc antibody staining of non-permeabilized transfected cells.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:24:01.406861+00:00",
+  "literature_notes": "All three ledger lines derive from a single paper (PMC12157453) and describe the same experimental approach: a Myc tag in the extracellular stalk between EC6 and the TM helix of clustered protocadherin (cPCDH) constructs. The directly validated protein is \u03b3C3 (PCDHG-C3, a gamma-protocadherin); PCDHB3 is a beta-protocadherin and a close ortholog sharing the same domain architecture. No specific residue number is given in any ledger line, so the site is region-level only (insert_after_residue = null). No ledger line supports an N-terminal extracellular tag or any other extracellular loop insertion for PCDHB3 or its close orthologs. The C-terminus (residues 712\u2013796) is intracellular and therefore not a surface-tag candidate. No abrogating insertions or intracellular insertions are reported in the ledger for this protein.",
+  "literature_rejected": []
+}

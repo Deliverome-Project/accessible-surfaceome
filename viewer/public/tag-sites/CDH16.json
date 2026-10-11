@@ -1,0 +1,59 @@
+{
+  "has_data": true,
+  "gene_symbol": "CDH16",
+  "uniprot_acc": "O75309",
+  "sites": [
+    {
+      "site_id": "CDH16-terminal_n-18-lit",
+      "gene_symbol": "CDH16",
+      "uniprot_acc": "O75309",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "P",
+      "residue_after": "K",
+      "residue_label": "P18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "MAP16 (16 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed surface display of tagged CDH16 on CHO stable transfectants (CHO/CDH16 positive, parental CHO-K1 negative); no cadherin functional assay reported.",
+      "confidence": "high",
+      "rationale": "The signal peptide of CDH16 spans residues 1-18 (per topology landmarks); the mature N-terminus begins at residue 19 (K). Placing the MAP16 tag after residue 18 is the only junction consistent with 'N-terminal tag on signal-sequence-deleted CDH16.' Python verification confirms residue 18 = P and residue 19 = K. The tag (16 aa) falls within the 13-23 aa target range, and the extracellular span (19-784, 766 residues) places the tag far from the TM boundary. Full-length CDH16 with signal-sequence deleted and MAP16 tag (PGTGDGMVPPGIEDKI) appended at the N-terminus, expressed in CHO cells via pCAG-Ble vector; stable transfectants generated and sorted by anti-MAP16 mAb (clone PMab-1) by flow cytometry.",
+      "sources": [
+        {
+          "pmid": 42776796,
+          "citation": "PMID 42776796",
+          "claim": "The signal sequence-deleted CDH16 cDNAs with an N-terminal MAP16 tag (PGTGDGMVPPGIEDKI) was subcloned into the pCAG-Ble vector (FUJIFILM Wako Pure Chemical Corporation, Osaka, Japan)."
+        },
+        {
+          "pmid": 42776796,
+          "citation": "PMID 42776796",
+          "claim": "The signal sequence-deleted CDH16 cDNAs with an N-terminal PA16-tag (GLEGGVAMPGAEDDVV) were subcloned into the pCAG-Ble vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 18,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:28:05.845353+00:00",
+  "literature_notes": "L3 and L4 provide flow-cytometry validation of surface display for both tagged constructs (MAP16 and PA16) but report no functional assay (e.g., cadherin-mediated cell-cell adhesion), so validation_level is surface_only for both sites. The ledger contains no evidence for any internal loop insertion or C-terminal tag in CDH16. L4 is used as corroborating evidence for L1/L2 but is not the primary supporting clip for either site. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

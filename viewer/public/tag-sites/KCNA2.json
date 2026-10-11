@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNA2",
+  "uniprot_acc": "P16389",
+  "sites": [
+    {
+      "site_id": "KCNA2-internal-None-lit",
+      "gene_symbol": "KCNA2",
+      "uniprot_acc": "P16389",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "S1-S2 extracellular loop (183-221)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression of the HA-tagged construct was confirmed by anti-HA staining in surface-expression and trafficking assays; electrophysiological function of the tagged channel is not explicitly reported for the tag-bearing construct itself.",
+      "confidence": "high",
+      "rationale": "L1 directly reports a full-length, membrane-anchored human KCNA2 construct with an HA epitope inserted in the extracellular loop between S1 (TM1, 164-182) and S2 (TM2, 222-242), which by the authoritative topology landmarks corresponds to residues 183-221. No specific junction residue is named in either L1 or L2, so insert_after_residue is left null and the site is classified as region-level. The loop is 39 residues long and fully extracellular, providing ample space for a short epitope tag. The N-terminal EGFP/mRFP1 fusions in the same constructs are intracellular and are recorded separately in other_positions. Full-length human KV1.2 (KCNA2) constructs bearing an N-terminal EGFP or mRFP1 fusion and an extracellular HA tag inserted 'between transmembrane helices S1 and S2' were used for surface-expression studies in transfected cells (L1). A parallel rat Kv1.2 construct with the same S1-S2 HA insertion was used for surface trafficking studies (L2, indirect). Neither paper names a specific residue junction within the loop.",
+      "sources": [
+        {
+          "pmid": 41914769,
+          "citation": "PMID 41914769",
+          "claim": "This resulted in a variant of interest in KCNA2 : Chr1(GRCh37):g.111146452C>T ENST00000485317:c.953G>A (p.Gly318Asp).\npcDNA3 plasmids containing human K V 1.2 with an N\u2010terminally fused enhanced green fluorescent protein (EGFP) or a monomeric red fluorescent protein (mRFP1) tag and an extracellular haemagglutinin (HA) site (between transmembrane helices S1 and S2, as applicable) were used; these constructs were synthesized as described previously (Nilsson et al., 2022 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:35:08.435863+00:00",
+  "literature_notes": "L3 (PMC13083917) was disqualified: the HA described there is a separate co-transfected surface-protein reporter, not an insertion into KCNA2 itself. L4 and L5 (PMC11415962) describe HA and FLAG tags engineered 'before the stop codon' of KV1.2, placing them at the intracellular C-terminus (topology landmarks: 411-499 intracellular); these are recorded in other_positions. The N-terminal EGFP/mRFP1 fusions in L1 and L2 are also intracellular (N-terminus 1-163 is intracellular) and are likewise in other_positions. No ledger line pins a specific residue junction within the S1-S2 loop, so the site is region-level with insert_after_residue null. The three other extracellular loops (S3-S4 loop 276-289 and S5-P loop 350-388) have no ledger support for any insertion and are not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 499,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "HA and FLAG tags engineered before the stop codon (C-terminal) of KV1.2 for western blot detection; the C-terminus (411-499) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal EGFP and mRFP1 fusions on full-length KCNA2; the N-terminus (1-163) is intracellular, so these are cytoplasmic tags, not surface tags."
+    }
+  ]
+}

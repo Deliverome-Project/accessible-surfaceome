@@ -116,5 +116,26 @@
       "canonical_residue": 91,
       "left_pct": 37.142857142857146
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:50:35.990448+00:00",
+  "literature_notes": "CLRN1 (Clarin-1) is a 4-TM protein with topology: ICL(1-7) \u2013 TM1(8-29) \u2013 ECL1(30-98) \u2013 TM2(99-121) \u2013 ICL2(122-134) \u2013 TM3(135-155) \u2013 ECL2(156-188) \u2013 TM4(189-209) \u2013 ICL3(210-232). Both the N-terminus (residues 1-7) and C-terminus (residues 210-232) are INTRACELLULAR. Every ledger entry (L1\u2013L12) describes HA, Venus, or YFP tags placed at one of these two intracellular termini: L1/L2/L4\u2013L12 all use a C-terminal HA or fluorescent-protein fusion (insert_after_residue=232, intracellular), and L3 places an HA tag immediately after the ATG start codon (insert_after_residue=1, also intracellular). No ledger line reports any insertion in ECL1 (30-98) or ECL2 (156-188), the only extracellular spans. Because the ledger is the sole permitted evidence source and it contains zero extracellular-loop insertions, zero surface tag sites qualify. The two intracellular tag positions are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 232,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA (and Venus/YFP in L8/L10) tag placed after the last residue (Y232); the C-terminus lies in the intracellular span 210-232 and is not accessible from the extracellular face."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal HA tag knocked in immediately after the ATG start codon (Met1) in mouse Clrn1; the N-terminus lies in the intracellular span 1-7 and is not accessible from the extracellular face."
+    }
   ]
 }

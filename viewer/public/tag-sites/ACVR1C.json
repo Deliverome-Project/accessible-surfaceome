@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ACVR1C",
+  "uniprot_acc": "Q8NER5",
+  "sites": [
+    {
+      "site_id": "ACVR1C-terminal_n-20-lit",
+      "gene_symbol": "ACVR1C",
+      "uniprot_acc": "Q8NER5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag-GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable lentiviral expression in cell lines is reported; no receptor-function assay (e.g. Smad2/3 phosphorylation, ligand binding) is described in the ledger clip. NOT MEASURED beyond expression.",
+      "confidence": "medium",
+      "rationale": "ACVR1C is a single-pass type-I receptor: signal peptide spans residues 1\u201320, the extracellular domain spans 21\u2013113, and the intracellular kinase domain spans 136\u2013493. The mature N-terminus (residue 21, E) is the only extracellular terminus; the C-terminus is intracellular and would not yield a surface tag. Topology-derived placement therefore puts the Flag-GFP tag immediately after the signal-peptide cleavage site, i.e. insert_after_residue = 20 (A), with residue_after = E (residue 21). The junction is 93 residues from the TM boundary, satisfying the \u22653-residue clearance rule. Python verification confirms residue 20 = A and residue 21 = E in the canonical sequence. Full-length human ACVR1C (NM_145259.3) carrying a Flag-GFP tag was cloned into the lentiviral vector pCDH-CMV-MCS-EF1-puro for stable cell-line expression. No residue position is named in the ledger clip.",
+      "sources": [
+        {
+          "pmid": 41578299,
+          "citation": "PMID 41578299",
+          "claim": "Human GREM1 CDS ( NM_013372.7 ) with a HA-mCherry tag or human ACVR1C CDS ( NM_145259.3 ) with a Flag-GFP tag was cloned into a pCDH-CMV-MCS-EF1-puro vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:54:32.590379+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports a Flag-GFP\u2013tagged full-length ACVR1C construct but states no insertion residue. The topology-derived rule applies because ACVR1C has exactly one extracellular terminus (mature N-terminus after SP cleavage at residue 20). The Flag-GFP tag is large (Flag ~8 aa + GFP ~239 aa); the Flag portion qualifies as a short epitope tag, and the GFP portion is a fluorescent-protein fusion \u2014 both are cited-study modalities that satisfy the ledger's inclusion criteria. The extracellular domain (21\u2013113) contains multiple disulfide-forming cysteines (C28, C30, C33, C40, C46, C63, C75, C86, C87, C92) and three potential N-glycosylation sequons (N37, N80, N94); these are internal constraints for the deterministic pipeline and do not affect the terminal N-terminal junction. No internal loop sites are proposed because L1 names no internal residue and no other ledger lines exist. Confidence is medium rather than high because the tag position is topology-derived, not explicitly stated.",
+  "literature_rejected": []
+}

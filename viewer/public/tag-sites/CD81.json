@@ -1,0 +1,69 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD81",
+  "uniprot_acc": "P60033",
+  "sites": [
+    {
+      "site_id": "CD81-internal-179-lit",
+      "gene_symbol": "CD81",
+      "uniprot_acc": "P60033",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 179,
+      "residue_before": "S",
+      "residue_after": "N",
+      "residue_label": "S179",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP / Spike domain",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "CD81::GFP::Spike fusion constructs supported SARS-CoV-2 Spike-mediated membrane fusion in cell-based assays, confirming the insertion at 179\u2013180 is tolerated for membrane trafficking and surface display. CD81::GFP alone (pDD3513) was also produced and characterized.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names residues 179\u2013180 of CD81 (UniProt P60033) as the insertion junction for both GFP and Spike domain fusions in full-length, membrane-anchored CD81. Python verification confirms residue 179 = S and residue 180 = N, both within the large extracellular loop ECL2 (topology landmarks 114\u2013201), 66 aa from the TM3 boundary and 22 aa from the TM4 boundary. The constructs were functionally characterized in viral entry assays, establishing surface display and functional tolerance. Full-length CD81 constructs (CD81::GFP, pDD3513; CD81::GFP::D614G S WA1, pDD3515; and variants) were engineered by inserting GFP and/or the SARS-CoV-2 Spike ectodomain between CD81 residues 179 and 180 (UniProt P60033 numbering). Constructs were expressed in mammalian cells and used in SARS-CoV-2 entry/fusion assays.",
+      "sources": [
+        {
+          "pmid": 39140770,
+          "citation": "PMID 39140770",
+          "claim": "Therefore, we fused S into amino acids 179 to 180 (based on UniProt ID: P60033 ) of CD81."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:23:23.381067+00:00",
+  "literature_notes": "L2 and L3 (PMC11389398) describe the same CD81::GFP and CD81::GFP::Spike constructs as L1 and do not introduce a second junction; all three lines from that paper converge on the single 179\u2013180 site. L5 (PMC11472238) independently confirms the snorkel construct of L4 but adds no new positional information. L6 (PMC8888793) reports mCherry-tagged CD81 in U-2 OS cells but names no residue; because CD81 has an intracellular N-terminus (1\u20139) and an intracellular C-terminus (228\u2013236), no extracellular position can be topology-derived from a terminus-level tag, and the site cannot be promoted to sites[]. It is recorded in other_positions as an intracellular tag.",
+  "literature_rejected": [
+    {
+      "residue_label": "Y236",
+      "insert_after_residue": 236,
+      "gate": "geometry",
+      "reason": "topology: C-terminus is intracellular, not extracellular",
+      "supporting_quote": null
+    }
+  ],
+  "literature_other_positions": [
+    {
+      "residue": 236,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "mCherry-tagged CD81 expressed in U-2 OS cells; no residue named, but both CD81 termini are intracellular (N-term 1\u20139, C-term 228\u2013236), so the mCherry fusion (most likely C-terminal by convention) faces the cytoplasm and is not a surface tag."
+    }
+  ]
+}

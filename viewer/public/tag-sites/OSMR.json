@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "OSMR",
+  "uniprot_acc": "Q99650",
+  "sites": [
+    {
+      "site_id": "OSMR-terminal_n-27-lit",
+      "gene_symbol": "OSMR",
+      "uniprot_acc": "Q99650",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Flow cytometry with the N-terminal Myc tag confirmed robust surface expression of the full-length tagged construct; truncation variants (p.Gln270*, p.Pro478Hisfs*18, p.Tyr660Serfs*16) lost surface signal, validating the assay. OSM-driven signaling function of the tagged construct was NOT MEASURED.",
+      "confidence": "high",
+      "rationale": "The paper explicitly names the junction as between residues 27 and 28, which is confirmed by the topology landmarks: residue 27 (A) is the last signal-peptide residue and residue 28 (E) is the first extracellular residue of the mature protein. Python lookup confirms residue_before=A, residue_after=E. The tag is placed at the mature N-terminus, 712 residues from the TM boundary (TM starts at 740), satisfying all distance and extracellular constraints. This is the canonical position for an N-terminal epitope tag on a type I single-pass receptor. Full-length human OSMR\u03b2 expressed in mammalian cells with a Myc tag inserted between residues 27 and 28 (immediately downstream of the signal peptide cleavage site), generating an N-terminally Myc-tagged mature OSMR\u03b2 protein used to assess surface versus intracellular localization by flow cytometry.",
+      "sources": [
+        {
+          "pmid": 42221229,
+          "citation": "PMID 42221229",
+          "claim": "A Myc tag was inserted between residues 27 and 28, immediately downstream of the signal peptide cleavage site ( 36 ), thereby generating an N-terminally Myc-tagged mature OSMR\u03b2 protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:04:01.435184+00:00",
+  "literature_notes": "L2 corroborates the surface-display assay established by L1 and additionally mentions a C-terminal GFP tag on OSMR\u03b2. The C-terminal end of OSMR\u03b2 (residue 979) falls within the intracellular domain (761\u2013979), so the C-terminal GFP is not a surface tag site and is recorded in other_positions. No other ledger lines ground additional extracellular insertion sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 979,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal GFP tag on full-length OSMR\u03b2; the C-terminus (residue 979) is intracellular (domain 761\u2013979), so this tag faces the cytoplasm and is not accessible on the cell surface."
+    }
+  ]
+}

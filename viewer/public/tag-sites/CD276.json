@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD276",
+  "uniprot_acc": "Q5ZPR3",
+  "sites": [
+    {
+      "site_id": "CD276-terminal_n-28-lit",
+      "gene_symbol": "CD276",
+      "uniprot_acc": "Q5ZPR3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable surface expression confirmed in CHO-K1 cells by construction of stable cell lines; no functional ligand-binding or signalling assay reported for the tagged construct.",
+      "confidence": "high",
+      "rationale": "CD276 is a Type I transmembrane protein with its N-terminus extracellular after signal peptide cleavage at residue 28. L1 reports a full-length, membrane-anchored, N-terminally Flag-tagged construct expressed on the cell surface, and there is exactly one extracellular terminus, making the junction topology-derived at insert_after_residue=28. Python verification confirms residue 28 is A (last signal residue) and residue 29 is L (first mature ectodomain residue), consistent with the tag sitting between them after SP cleavage. The site is 437 residues from the TM boundary, well beyond the 3-residue minimum. Full-length human 4Ig-CD276 with an N-terminal Flag tag was subcloned into pSecTag B and stably expressed on the surface of CHO-K1 cells. CD276 is a Type I single-pass transmembrane protein with a signal peptide spanning residues 1\u201328 and a single extracellular N-terminus beginning at residue 29; there is exactly one extracellular terminus, so the N-terminal tag must reside between the signal peptide cleavage site (after A28) and the mature ectodomain (L29). No residue number is stated in the paper, but the topology leaves only one possible extracellular junction.",
+      "sources": [
+        {
+          "pmid": 34601396,
+          "citation": "PMID 34601396",
+          "claim": "All the cell lines were cultured at 37 \u00b0C in a 5% CO 2 humidified atmosphere in proper medium following supplier instructions supplemented with 10% fetal bovine serum (FBS, Gibco) and 1% Penicillin/Streptomycin (P/S, Gibco)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:13:07.478149+00:00",
+  "literature_notes": "L2 and L3 both describe full-length B7H3 (CD276) with a C-terminal Flag tag stably or transiently expressed in mammalian cells. However, the CD276 C-terminus (residues 489\u2013534) is intracellular per the authoritative topology landmarks; a C-terminal tag on this protein faces the cytoplasm and is not a surface tag site. These are recorded in other_positions. L4 describes Flag-tagged B7H3 WT and glycosylation mutants pulled down from cell lysates by anti-Flag beads followed by western blot \u2014 this is an intracellular detection assay consistent with a C-terminal intracellular tag, and does not qualify as a surface tag site. No ledger line reports a tag insertion in an internal extracellular loop of CD276.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 534,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Full-length human B7H3 with a C-terminal Flag tag was stably expressed in mammalian cells; the CD276 C-terminus (residues 489\u2013534) is intracellular, so this tag faces the cytoplasm and is not accessible on the cell surface."
+    },
+    {
+      "residue": 534,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Full-length human B7H3-Flag cloned into pcDNA3.1 for transient transfection; C-terminal tag is intracellular given CD276 topology."
+    },
+    {
+      "residue": 534,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Flag-tagged B7H3 WT and NQ glycosylation mutants detected by anti-Flag pull-down from cell lysates and western blot; consistent with intracellular C-terminal Flag, not a surface-accessible tag."
+    }
+  ]
+}

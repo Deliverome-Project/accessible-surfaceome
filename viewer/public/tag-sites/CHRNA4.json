@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CHRNA4",
+  "uniprot_acc": "P43681",
+  "sites": [
+    {
+      "site_id": "CHRNA4-terminal_c-627-lit",
+      "gene_symbol": "CHRNA4",
+      "uniprot_acc": "P43681",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 627,
+      "residue_before": "I",
+      "residue_after": "",
+      "residue_label": "I627",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the paper uses the HA tag as a detection reagent for neuronal expression studies; no ion-channel function assay for the tagged construct is reported in the cited clip.",
+      "confidence": "medium",
+      "rationale": "The C-terminus of human CHRNA4 (residue 627, I) is extracellular per the authoritative topology landmarks (EXTRACELLULAR 622\u2013627). Python confirms seq[626]='I' and the distance from the TM4 boundary (residue 621) to the C-terminus is 6 residues, satisfying the \u22653-residue constraint. The cited construct is mouse Chrna4 (a close ortholog), so evidence is indirect; position is topology-derived because the paper names only 'c-terminus' with no residue number. A tag appended after residue 627 extends the extracellular stub and is sterically unobstructed. Mouse \u03b14 nAChR (Chrna4) C-terminal 3xHA-tagged construct expressed in neurons (PMC6802496). The paper states the tag was inserted 'in frame to the c-terminus of the mouse \u03b14 nAChR sequence' with no specific residue named. Human CHRNA4 topology places the C-terminus (residues 622\u2013627, WLAGMI) in the extracellular compartment after TM4 (601\u2013621), making this the sole extracellular C-terminal junction. The mouse ortholog shares the same four-TM topology and extracellular C-terminal stub, so the position is topology-derived at residue 627.",
+      "sources": [
+        {
+          "pmid": 30414940,
+          "citation": "PMID 30414940",
+          "claim": "A triple hemagglutinin (HA) tag was introduced to the c-terminal end of the mouse \u03b14 nAChR cDNA as follows: A triple HA tag sequence from plasmid pKH3 (Addgene Plasmid #12555) was inserted in frame to the c-terminus of the mouse \u03b14 nAChR sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:36:35.367432+00:00",
+  "literature_notes": "L1 (PMC11257679) reports YFP inserted into the TM3\u2013TM4 intracellular loop of CHRNA4 (\u03b14 subunit). Per the authoritative topology landmarks, residues 331\u2013600 are intracellular; this insertion is therefore not an extracellular surface site and is recorded in other_positions. No ledger line supports any insertion in the large extracellular N-terminal domain (residues 27\u2013242), the short ECL1 (298\u2013308), or the mature N-terminus (residue 27), so no sites are proposed there. The C-terminal extracellular stub (622\u2013627, WLAGMI) is only 6 residues long; a ~27 aa 3xHA tag appended after residue 627 would project extracellularly but the short native stub offers limited structural context \u2014 confidence is medium rather than high.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 465,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "YFP inserted into the TM3\u2013TM4 intracellular loop of CHRNA4 (\u03b14 subunit); topology landmarks place this entire loop (residues 331\u2013600) in the cytoplasm; no specific residue is named in the clip, so the midpoint (465) is used as a representative position."
+    }
+  ]
+}

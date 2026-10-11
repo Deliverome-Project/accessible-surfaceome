@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR2A1-terminal_n-0-lit",
+      "gene_symbol": "OR2A1",
+      "uniprot_acc": "Q8NGT9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag 8 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunofluorescence on live non-permeabilized HEK 293T cells confirmed Flag-tagged OR reached the cell surface (L2). Ligand binding and signaling were explicitly reported as unaltered by the N-terminal tag (L6).",
+      "confidence": "high",
+      "rationale": "OR2A1 is a class-A GPCR with a 23-residue extracellular N-terminus (residues 1\u201323) and an intracellular C-terminus (residues 290\u2013310); the N-terminus is the only extracellular terminus available for a surface tag, making insert_after_residue=0 the unique topology-derived junction. No specific residue number is named in any ledger line, so the position is topology_derived rather than validated. The prepend site is 23 residues from TM1 (which begins at residue 24), well beyond the \u22653-residue minimum. Python verification confirms residue_after = M (residue 1) and residue_before = '' (nothing precedes position 1). Full-length OR constructs (including OR2A1/OR2A42 in a 15-OR test panel) were expressed in HEK 293T cells with an N-terminal Flag tag (and optionally a Rho or Lucy signal-peptide tag). The Lucy signal peptide was cleaved post-translationally, leaving an 8-aa Flag tag at the mature N-terminus. Live, non-permeabilized cells were surface-labeled with a Flag antibody to confirm extracellular display.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "In fact, two-thirds of Lucy-tagged ORs are able to reach the cell surface synergistically with chaperones even when the Rho tag is removed (10/15 ORs), allowing for the potential assessment of OR function with only an 8-amino acid Flag tag on the mature protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:37:38.199895+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) from PMC3698168 converge on a single site: an N-terminal Flag (8 aa) tag on the mature extracellular N-terminus of full-length, membrane-anchored ORs including OR2A1. No ledger line names a specific residue number, so position_evidence is topology_derived (the N-terminus is the sole extracellular terminus of this GPCR). The Lucy construct used in some experiments is an artificial signal peptide that is cleaved, leaving the Flag tag at the mature N-terminus; this is consistent with insert_after_residue=0. No ledger evidence supports any internal loop insertion (ECL1 79\u201396, ECL2 166\u2013195, ECL3 259\u2013271) or any C-terminal surface tag. The Rho tag (L3) is also N-terminal and at the same junction, but is not separately listed as a distinct site because it occupies the same insert_after_residue=0 position; L5 (Flag) is cited as the primary line because it most explicitly names the tag on the mature protein and reports surface expression without the Rho tag.",
+  "literature_rejected": []
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "BMPR1B",
+  "uniprot_acc": "O00238",
+  "sites": [
+    {
+      "site_id": "BMPR1B-terminal_n-13-lit",
+      "gene_symbol": "BMPR1B",
+      "uniprot_acc": "O00238",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 13,
+      "residue_before": "T",
+      "residue_after": "K",
+      "residue_label": "T13",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Halo/SNAP (5xGly linker)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by cell-impermeable dye staining (CA-Alexa488 / BG-Alexa488; L7) and by Fab'-based FRAP labeling with quantified fluorescence intensity comparable across receptors (L4). BMP signaling function NOT MEASURED in these clips.",
+      "confidence": "high",
+      "rationale": "BMPR1B is a single-pass type I receptor whose only extracellular terminus is the mature N-terminus beginning at residue 14 (K); the C-terminus (residue 502) is intracellular. L6 explicitly states the tag is 'N-terminally fused\u2026 downstream the signal peptide sequence', placing it after the SP cleavage site at residue 13 (T) and before residue 14 (K) \u2014 the unique extracellular terminus, so topology_derived applies. Python confirmed residue 13 = T and residue 14 = K; the junction is 113 residues from the TM boundary (127), providing ample space for a 15\u201323 aa insert. L1\u2013L4 independently corroborate an extracellular epitope tag (myc/HA) on murine ALK6 at the same topological position, with surface display confirmed by Fab'-based FRAP. hALK6 (BMPR1B) was N-terminally fused with Halo- or SNAP-tags separated by a 5x glycine linker downstream of the signal peptide sequence in full-length, membrane-anchored constructs expressed in mammalian cells. All tagged receptors were positively detected by cell-impermeable CA-Alexa488 or BG-Alexa488 staining, confirming surface display. Corroborated by L1\u2013L4 (murine ALK6 with extracellular myc or HA tags expressed in COS7 cells, surface-labeled by monovalent Fab' fragments and quantified by FRAP fluorescence intensity).",
+      "sources": [
+        {
+          "pmid": 36635368,
+          "citation": "PMID 36635368",
+          "claim": "BMP/TGF\u03b2 receptors, including type I receptors (hALK1-ALK6, rALK7, and hALK2-R206H) and type II receptors (hACVR2A, hACVR2B, hBMPR2, and hTGFBR2) were, therefore, N-terminally fused with Halo- or SNAP-tags separated by a 5x glycine linker downstream the signal peptide sequence, to obtain the receptor library shown in Fig. 1c ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:45:54.811394+00:00",
+  "literature_notes": "All seven ledger lines converge on a single topological position: the extracellular N-terminus of BMPR1B after signal-peptide cleavage (after residue 13). L6 is the most explicit clip (human protein, explicit 'N-terminally fused downstream the signal peptide'), used as the primary anchor. L1\u2013L4 (murine ALK6, myc/HA tags, COS7 FRAP studies) independently corroborate the same junction and were used to inform the evidence_detail and validation_level. No ledger line names a specific residue number, so position_evidence is topology_derived throughout. No internal extracellular loop insertions are reported in the ledger. The intracellular kinase domain (residues 149\u2013502) carries no extracellular tag evidence and is excluded. No function-abrogating or cytoplasmic insertion sites are named in the ledger.",
+  "literature_rejected": []
+}

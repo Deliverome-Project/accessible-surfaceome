@@ -37,6 +37,44 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR83-terminal_n-16-lit",
+      "gene_symbol": "GPR83",
+      "uniprot_acc": "Q9NYM4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 16,
+      "residue_before": "A",
+      "residue_after": "T",
+      "residue_label": "A16",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell surface ELISA detecting the HA tag confirmed surface display of the tagged full-length receptor (L6); SP-HA-mGPR83 surface expression comparable to wild-type levels (L5). No ligand-binding or G-protein signaling assay of the tagged construct is reported in the ledger.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the HA tag was cloned downstream of the signal peptide of Gpr83, creating a full-length membrane-anchored construct. The signal peptide spans residues 1\u201316 (computed landmarks), so the junction is after residue 16 (A) and before residue 17 (T), the mature N-terminus. Python confirms seq[15]='A' and seq[16]='T'. The tag sits 55 residues from TM1 (starts at 72), well beyond the \u22653-residue minimum, in the large extracellular N-terminal domain. L5 and L6 independently confirm surface display by ELISA. Full-length, membrane-anchored GPR83 construct with HA tag cloned downstream of the signal peptide (SP-HA), expressed in COS-7 cells and confirmed at the cell surface by HA-detecting ELISA and immunofluorescence. Multiple independent groups (PMC4300838, PMC3546042, PMC3709495, PMC5148169, PMC10606834) used this identical SP-HA architecture.",
+      "sources": [
+        {
+          "pmid": 25516095,
+          "citation": "PMID 25516095",
+          "claim": "A hemagglutinin tag was cloned downstream of the signal peptide of Gpr83 (SP-HA, see Figure 1 B for schematic representation)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 16,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +89,21 @@
       "canonical_residue": null,
       "left_pct": 5.511811023622047,
       "note": "Isoform surface expr 135 (-72% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:40:57.757858+00:00",
+  "literature_notes": "All nine ledger lines converge on a single architectural motif: HA tag inserted immediately after the signal peptide cleavage site (SP-HA), which maps to insert_after_residue=16 in UniProt canonical numbering. L2, L3, and L4 also mention an 'NHA' or 'amino-terminal end' construct (tag before residue 1, i.e., insert_after_residue=0); however, a tag placed N-terminal to the signal peptide is co-translationally cleaved with the signal peptide and cannot be displayed on the extracellular surface \u2014 this is a silent failure mode, not a surface site, and it is placed in other_positions. No ledger line reports a tag in any extracellular loop (ECL1 131\u2013145, ECL2 207\u2013237, ECL3 314\u2013325) or at the C-terminus. L5 describes a deletion construct (del17\u201360) that still carries the HA at the SP-HA junction; it does not define a new insertion site. L9 references a previously described HA-tagged mGPR83 plasmid with no positional detail beyond what L1\u2013L4 already establish.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "other",
+      "supporting_clip_id": "L2",
+      "note": "NHA construct places the HA tag at the amino-terminal end (before residue 1, i.e., upstream of the signal peptide); a tag at this position is co-translationally cleaved with the signal peptide (residues 1\u201316) and cannot be displayed on the extracellular surface."
     }
   ]
 }

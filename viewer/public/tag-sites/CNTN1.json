@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "CNTN1",
+  "uniprot_acc": "Q12860",
+  "sites": [
+    {
+      "site_id": "CNTN1-internal-None-lit",
+      "gene_symbol": "CNTN1",
+      "uniprot_acc": "Q12860",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "C-terminal ectodomain (last exon, before GPI signal)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "smFP-V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by V5 immunostaining in fixed neurons; no functional assay reported for the tagged endogenous protein.",
+      "confidence": "low",
+      "rationale": "L5\u2013L6 report endogenous CRISPR tagging of Cntn1 with smFP-V5 inserted into the 'last exon'; surface display is confirmed by V5 immunostaining. For a GPI-anchored protein the insertion must lie upstream of the GPI signal to survive processing, placing it in the C-terminal ectodomain. No specific residue number is given in the ledger, so the site is recorded at region level only; a junction cannot be invented. The smFP-V5 is a large tag, but the evidence establishes that this region of the ectodomain tolerates insertion. CRISPR-mediated endogenous knock-in of smFP-V5 (spaghetti-monster fluorescent protein with V5 tags) into the last exon of Cntn1 via AAV-delivered Cas9 and sgRNA in DIV0 rat hippocampal neurons; V5 immunostaining two weeks post-transduction confirms surface display of the endogenously tagged protein.",
+      "sources": [
+        {
+          "pmid": 37884508,
+          "citation": "PMID 37884508",
+          "claim": "To endogenously label these 23 cell surface proteins, we generated two adeno-associated viruses (AAV) to transduce cultured DIV 0 rat hippocampal neurons with (1) Cas9 and (2) a gene specific single guide RNA (sgRNA), a sgRNA that recognizes donor recognition sites (DRS) flanking spaghetti monster fluorescent protein with V5 tags (smFP-V5), and smFP-V5 (Fig. 5b )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "CNTN1-terminal_n-20-lit",
+      "gene_symbol": "CNTN1",
+      "uniprot_acc": "Q12860",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by immunostaining and AIS colocalisation with \u03b24 spectrin in vitro and in vivo; no quantitative functional assay (e.g. binding, conduction) reported for the tagged construct specifically.",
+      "confidence": "medium",
+      "rationale": "CNTN1 is a GPI-anchored protein with no transmembrane or cytoplasmic domain; the pipeline topology confirms EXTRACELLULAR 21\u20131018 with signal peptide 1\u201320. Because the C-terminal GPI signal (~last 20\u201330 aa) is cleaved during GPI attachment, a C-terminal tag would be lost; the only stable extracellular terminus is the mature N-terminus at residue 21. The 'Cntn1-myc' construct shows confirmed surface display, so the Myc tag must reside after the signal-peptide cleavage site, i.e. insert_after_residue = 20. Python confirms residue 20 = A and residue 21 = E, consistent with the canonical sequence. AAV-delivered Cntn1-myc overexpression construct expressed in cultured hippocampal neurons and in vivo in cortical neurons; the Myc-tagged full-length protein is detected at the cell surface (AIS), colocalising with \u03b24 spectrin.",
+      "sources": [
+        {
+          "pmid": 36945454,
+          "citation": "PMID 36945454",
+          "claim": "Scale bar, 10 \u03bcm. d, Schematic of the Cntn1-myc overexpression vector used for in vitro and in vivo infection of neurons. e, Transduction of cultured hippocampal neurons using AAV to express Myc-tagged Cntn1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:00:45.620149+00:00",
+  "literature_notes": "CNTN1 is a GPI-anchored cell-adhesion molecule with no transmembrane or cytoplasmic domain (topology: SIGNAL 1\u201320, EXTRACELLULAR 21\u20131018). All eight ledger lines come from two papers (PMC10028829 and PMC10603070). L1\u2013L4 and L7\u2013L8 all describe the same 'Cntn1-myc' overexpression construct; L5\u2013L6 describe the smFP-V5 endogenous knock-in. Neither paper states a residue number for the tag junction. For 'Cntn1-myc', because the C-terminal GPI signal is cleaved during GPI attachment, the only extracellular terminus that can carry a surface-displayed tag is the mature N-terminus (after residue 20); the position is therefore topology_derived. For the smFP-V5 'last exon' insertion, surface display is confirmed but no residue is given, so the site is recorded at region level. No ledger line names a specific residue, so no 'validated' site can be reported. The smFP-V5 tag is far larger than the ~13\u201323 aa ALFA-class tags requested, but the evidence still establishes regional tolerance for insertion in the C-terminal ectodomain.",
+  "literature_rejected": []
+}

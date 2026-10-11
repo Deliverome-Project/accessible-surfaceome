@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ATP11C",
+  "uniprot_acc": "Q8NB49",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:37:32.896555+00:00",
+  "literature_notes": "L1 (PMC12723151) describes a FLAG/His6/EGFP/TEV N-terminal fusion on ATP11C_cryst, which is explicitly a truncated construct used for structural studies; it does not meet the full-length membrane-anchored requirement and is disqualified. L2 (PMC13382312) describes full-length murine ATP11C bearing a 9-aa 1D4 epitope tag expressed in HEK293T cells; the 1D4 tag is a canonical C-terminal tag, and the C-terminus of ATP11C (residues 1091-1132) is intracellular per the authoritative topology landmarks \u2014 this is not a surface site. No ledger line supports a tag insertion on the extracellular face of full-length, membrane-anchored ATP11C. The five extracellular loops (86-94, 312-346, 898-908, 982-995, 1047-1060) are topologically accessible but no published insertion in any of them is recorded in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1132,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Full-length murine ATP11C carries a C-terminal 1D4 (9-aa) epitope tag used for immunoprecipitation; the C-terminus (residue 1132) lies in the intracellular span (1091-1132) and is not a surface site."
+    }
+  ]
+}

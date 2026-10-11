@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CFC1",
+  "uniprot_acc": "P0CG37",
+  "sites": [
+    {
+      "site_id": "CFC1-internal-191-lit",
+      "gene_symbol": "CFC1",
+      "uniprot_acc": "P0CG37",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 191,
+      "residue_before": "L",
+      "residue_after": "R",
+      "residue_label": "L191",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5-His",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "FACS cell-surface expression: CR-CFC L191-V5 surface levels similar to untagged CR-CFC; GPI-anchored surface display confirmed. Function beyond surface trafficking NOT MEASURED for the V5-tagged construct.",
+      "confidence": "medium",
+      "rationale": "The construct name 'CR-CFC L191-V5' explicitly names residue L191 as the tag junction, confirmed by the companion 'L191stop' truncation that defines the same boundary. Python lookup of the canonical CFC1 sequence confirms residue 191 is L (Leucine) and residue 192 is R (Arginine), both within the extracellular span (26\u2013223). CFC1 is GPI-anchored with no TM domain, so residue 191 lies on the extracellular face, ~32 residues upstream of the C-terminal GPI signal. The chimeric context (CR-CFC) makes this indirect for native full-length CFC1, but the CFC1 COOH-terminal domain is the portion carrying the tag and the residue is explicitly named. Chimeric construct CR-CFC L191-V5, containing the hCFC1 COOH-terminal domain, was expressed in cells with a V5-His tag placed after residue L191 of the CFC1 sequence; the companion truncation CR-CFC L191stop confirms L191 is the precise junction. FACS analysis showed cell-surface expression of CR-CFC L191-V5 comparable to the untagged CR-CFC control.",
+      "sources": [
+        {
+          "pmid": 18930707,
+          "citation": "PMID 18930707",
+          "claim": "FACS analysis revealed that the cell-surface expression of both CR-CFC L191stop and CR-CFC L191-V5 proteins were similar to that of the CR-CFC protein ( Fig. 9 C )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:34:29.049453+00:00",
+  "literature_notes": "L1 (PMC3385650) describes a V5-His tag appended 'to the end of the GPI signal of hCFC1'. For GPI-anchored proteins the C-terminal GPI signal is cleaved at the omega site during GPI-anchor transfer; any tag appended downstream of the omega site is removed with the signal peptide and is therefore not surface-displayed. The paper's finding that GPI attachment is 'not affected' confirms the protein reaches the cell surface, but the tag itself is absent from the mature GPI-anchored form. L1 therefore does not qualify as a surface tag site and no specific residue is named for it, so it is not entered in other_positions either.",
+  "literature_rejected": []
+}

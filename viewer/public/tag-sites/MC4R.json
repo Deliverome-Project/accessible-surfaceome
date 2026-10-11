@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MC4R-terminal_n-0-lit",
+      "gene_symbol": "MC4R",
+      "uniprot_acc": "P32245",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L10: cAMP signaling measured by GloSensor and IP1 production by HTRF \u2014 receptor is functional. L16: anti-Myc surface staining without permeabilization confirms cell-surface display. L5/L6: surface labeling with organic dyes via SNAP/Halo confirmed in HEK293 cells.",
+      "confidence": "high",
+      "rationale": "MC4R topology places residues 1\u201343 extracellularly with no signal peptide, making insert_after_residue=0 (prepend before Met1) the sole extracellular terminus available for a surface tag. Python verification confirms residue 1 = M and residue 2 = V; the SPHA-Flag-hMC4R (AA 2-end) construct in L10 omits Met1 and places the FLAG directly before Val2, consistent with a canonical N-terminal prepend. At least ten independent ledger lines across six publications converge on this same junction using FLAG, HA, Myc, HiBiT, SNAP, and Halo tags, with cAMP signaling and surface staining both confirmed. L10 (PMC11445563): Full-length human MC4R cloned as SPHA-Flag-hMC4R (AA 2-end) in pcDNA3.1(+); the exogenous signal peptide + HA + FLAG precede MC4R residues 2\u2013332 at the extracellular N-terminus. Corroborated by L1 (FLAG after HA-signal sequence), L2/L3 (c-myc and 3xHA knock-in constructs), L5/L6 (mGluR2-SP + HA/FLAG + SNAP/Halo before MC4R residue 1), L9 (detailed architecture: SS\u2013SAQSTR\u2013HA\u2013TRGSGS\u2013Halo\u2013RS\u2013MC4R), L13 (N-terminal HiBiT), L15/L16 (Myc-tagged, surface-confirmed), and L19 (3HA-MC4R). MC4R has no endogenous signal peptide; residues 1\u201343 are extracellular, making the N-terminus the sole extracellular terminus. No residue number is pinned in any clip; position is derived from the unambiguous topology.",
+      "sources": [
+        {
+          "pmid": 39353917,
+          "citation": "PMID 39353917",
+          "claim": "To monitor cAMP signaling by GloSensor or IP1 production by HTRF, Flag-tagged human MC4R and human MC receptor paralogs MC1R, MC3R, and MC5R of the format SPHA-Flag-hMC4R (AA 2-end) were cloned in pcDNA3.1(+)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:38:18.013534+00:00",
+  "literature_notes": "All ledger lines reporting C-terminal tags (L3, L4, L11, L12, L14, L17, L18) place the fusion at residue 332, which falls within the intracellular C-terminal domain (residues 305\u2013332 per topology landmarks); these are recorded in other_positions. No ledger line reports any insertion in ECL1 (107\u2013123), ECL2 (187\u2013191), or ECL3 (272\u2013280). ECL2 is only 5 residues (YSDSS) and ECL3 contains two conserved cysteines (C276, C278) involved in a disulfide bridge \u2014 but neither point is invoked as a reason to exclude them; the exclusion is solely because no ledger line supports an insertion there. The R165W mutation mentioned in L2 is in ICL2 (residue 165, topology INTRACELLULAR 146\u2013165) and is a disease mutation, not a tag site. L15/L16 mention a Myc tag with no stated position; surface staining without permeabilization in L16 confirms the tag is extracellular, and the only extracellular terminus is the N-terminus, so this collapses into the same topology_derived site already reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 332,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal Venus fusion (and by extension EGFP, mCherry, YFP, 3xmNeonGreen fusions in L3, L11, L12, L14, L17, L18) lands at residue 332, which is within the intracellular C-terminal domain (residues 305\u2013332); tolerated for intracellular detection but not accessible for extracellular surface labeling."
+    }
+  ]
 }

@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPHB6",
+  "uniprot_acc": "O15197",
+  "sites": [
+    {
+      "site_id": "EPHB6-terminal_n-31-lit",
+      "gene_symbol": "EPHB6",
+      "uniprot_acc": "O15197",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK) with GS linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display confirmed by design and use in surface-display studies; the construct was used to study EphB6 clustering and signaling at the cell surface. Explicit functional rescue assay not reported for this tagged construct specifically.",
+      "confidence": "high",
+      "rationale": "The paper explicitly names residues 1\u201331 as the signal peptide and residues 32\u20131015 as the mature EphB6 body, with the FLAG tag placed between them (insert_after_residue=31). Python lookup confirms residue 31 = A and residue 32 = L, matching the numbered sequence. The tag lands at the extracellular mature N-terminus, 568 residues from the TM boundary (600), and is sterically unconstrained. This is the only extracellular terminus of EphB6 (the C-terminus is intracellular at residue 1021). Full-length EphB6 construct in PMC11021433: signal peptide (residues 1\u201331) followed by a Gly-Ser linker, FLAG tag (DYKDDDDK), another Gly-Ser linker, then EphB6 residues 32\u20131015. The construct was expressed in cells for surface-display studies, confirming the FLAG tag is displayed on the extracellular face at the mature N-terminus.",
+      "sources": [
+        {
+          "pmid": 38627519,
+          "citation": "PMID 38627519",
+          "claim": "For EphB6 or EphB1, their complete DNA constructs encode the EphB6 or EphB1 signal peptide sequence (residues 1\u201331 for EphB6, and residues 1\u201317 for EphB1, predicted by SignalP 3.0 56 and SignalP 5.0 57 , respectively), a Gly-Ser linker, a Flag tag sequence (DYKDDDDK), another Gly-Ser linker (resulting from a BamHI cloning site), the EphB6 (residues 32\u20131015) or the EphB1 (residues 18\u2013978) sequences, a (Gly-Gly-Ser) 5 linker, the mNeonGreen sequence, followed by the EphB6 (residues 1016\u20131021) or EphB1 (residues 979- 984) PDZ domain-binding motif."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:36:44.578317+00:00",
+  "literature_notes": "L2 (PMC11021433) describes the WT-EphB6-mNG construct whose C-terminal mNeonGreen is fused after residue 1015; residue 1015 falls within the intracellular domain (619\u20131021) and is therefore not a surface tag site. L3 and L4 (PMC11891606) report C-terminal Myc-DDK tags on EphB6 confirmed by western blot and surface staining of the extracellular domain, but the tag itself is at the intracellular C-terminus; recorded in other_positions. L5 (PMC6062499) reports a Myc-tagged EPHB6 construct (MDA-B6-M) with no residue number or loop name given for the Myc tag position; the commercial/conventional placement cannot be pinned to a residue or named loop, so no site can be proposed from this line alone.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1015,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mNeonGreen fused after residue 1015 (between EphB6 residues 1015 and 1016) in the WT-EphB6-mNG construct; both residues 1015 and 1016 lie in the intracellular domain (619\u20131021)."
+    },
+    {
+      "residue": 1021,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Myc-DDK tags on full-length EphB6 stably expressed in LN229 and CHO-K1 cells; the C-terminus (residue 1021) is intracellular, confirmed by topology landmarks."
+    }
+  ]
+}

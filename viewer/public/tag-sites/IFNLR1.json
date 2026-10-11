@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "IFNLR1",
+  "uniprot_acc": "Q8IU57",
+  "sites": [
+    {
+      "site_id": "IFNLR1-terminal_n-20-lit",
+      "gene_symbol": "IFNLR1",
+      "uniprot_acc": "Q8IU57",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "G",
+      "residue_after": "R",
+      "residue_label": "G20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry without permeabilization confirmed surface display of FLAG-Iso1 and FLAG-Iso2 (L3, L4). Imaging flow cytometry quantified surface-to-cytoplasmic FLAG ratios and IFNL3-stimulated internalization kinetics, showing FLAG-Iso1 is more rapidly internalized than FLAG-Iso2 (L5, L6) \u2014 receptor trafficking function preserved and measurable.",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201320 (landmark-authoritative); the mature N-terminus begins at residue 21 (R). Python confirms residue 20 = G and residue 21 = R in the canonical 520-aa sequence. Inserting the 3xFLAG after residue 20 places it at the extracellular N-terminus of the mature receptor, 207 residues from the TM boundary (228), satisfying all distance and topology constraints. L2 explicitly states UniProt-guided placement immediately downstream of the signal sequence, pinning the junction to 20/21; L3\u2013L6 confirm surface display and functional internalization in multiple cell systems. L1 and L2 (PMC10052089) report synthesis of cDNAs encoding 3X-FLAG immediately downstream of the predicted signal sequence of IFNLR1 Iso1 and Iso2, with UniProt used to guide placement. Full-length, membrane-anchored constructs expressed under a doxycycline-inducible promoter in human cell lines and iPSC-derived hepatocytes.",
+      "sources": [
+        {
+          "pmid": 36992341,
+          "citation": "PMID 36992341",
+          "claim": "To facilitate protein visualization and enable precise control of IFNLR1 expression, we synthesized cDNAs that incorporated a 3X-FLAG-epitope at the amino terminus of each IFNLR1 splice variant (referred to as FLAG-Iso1, FLAG-Iso2, FLAG-Iso3) ( Figure 1 , Supplementary Figure S1 ) under control of a doxycycline (dox)-inducible promoter [ 32 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 20,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:10:48.358996+00:00",
+  "literature_notes": "All six ledger lines converge on a single site: the 3xFLAG tag inserted after the signal peptide cleavage site (residue 20/21 junction) at the extracellular N-terminus of IFNLR1. No internal loop insertions, C-terminal tags, or other positions are reported in the ledger. FLAG-Iso3 fails to traffic to the cell surface (L3, L4) but this reflects isoform-specific biology, not a distinct insertion site; no residue-level position is named for Iso3 and it is not a surface tag site. No intracellular or function-abrogating positions are named at residue resolution in the ledger.",
+  "literature_rejected": []
+}

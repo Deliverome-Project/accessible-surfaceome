@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "PAQR5",
+  "uniprot_acc": "Q9NXK6",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:12:06.317862+00:00",
+  "literature_notes": "All eight ledger lines were evaluated. L1\u2013L5 (PMC7660923) concern mPR constructs assembled for PAQR5/mPRgamma in CHO cells. L2 reports that a C-terminally GFP-tagged construct was detected by anti-GFP immunostaining under non-permeabilized conditions, which the authors interpret as extracellular C-terminus localization. However, the authoritative computed topology for PAQR5 places residues 318\u2013330 (the C-terminal tail) firmly in the INTRACELLULAR compartment. Because the topology landmarks are authoritative for boundary decisions, the C-terminus cannot qualify as an extracellular surface site; it is recorded in other_positions. L3 confirms the N-terminus is intracellular (no non-permeabilized staining for GFP-mPR), consistent with the topology placing residues 1\u201348 intracellularly. L4 reports that an N-terminal HA tag caused impaired trafficking, further disqualifying the N-terminus. L5 describes the same constructs as L2\u2013L4 and adds no new surface-accessible position. L6\u2013L8 (PMC5507890) explicitly concern mPRbeta (PAQR8), a different PAQR family member; they cannot ground sites for PAQR5. No ledger line reports a tag insertion in any of the four extracellular loops (ECL1: 71\u201381, ECL2: 135\u2013150, ECL3: 203\u2013222, ECL4: 274\u2013294). Because no ledger line supports an extracellular tag insertion for PAQR5, sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 330,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal GFP (mPR-GFP) was detected by anti-GFP immunostaining under non-permeabilized conditions in CHO cells, which the authors interpret as extracellular; however, the authoritative computed topology places the C-terminal tail (residues 318\u2013330) intracellularly, so this terminus is not a valid extracellular surface-tag site."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminally GFP-tagged mPR (GFP-mPR) showed no staining under non-permeabilized conditions, confirming intracellular localization of the N-terminus, consistent with the authoritative topology placing residues 1\u201348 intracellularly."
+    },
+    {
+      "residue": 1,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "N-terminal HA-tag (HA-mPR) caused impaired trafficking of the full-length construct in CHO cells, making the N-terminus unsuitable even as an intracellular label without further engineering."
+    }
+  ]
+}

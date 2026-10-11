@@ -269,5 +269,26 @@
       "canonical_residue": 277,
       "left_pct": 71.72236503856041
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:07:03.019844+00:00",
+  "literature_notes": "All five ledger lines concern the same protein (P2RX6/P2X6) but none grounds an extracellular surface tag site. L1, L2, L3, and L4 all describe C-terminal fusions (pYFP-N1 and pcDNA3.1-myc are standard C-terminal fusion vectors); the P2X6 C-terminus is residue 441, which falls squarely in the intracellular span 363\u2013441 per the authoritative topology landmarks. These tags are tolerated but face the cytoplasm and are recorded in other_positions. L5 reports a FLAG-tagged P2X6 used for co-immunoprecipitation but states no insertion position; the clip cannot be used to pin a junction, and the topology_derived rule does not apply because P2X6 has no extracellular terminus (both N-terminus, residues 1\u201337, and C-terminus, residues 363\u2013441, are intracellular). No ledger line reports a tag in the large extracellular loop (residues 60\u2013344). Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 441,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal YFP fusion (pYFP-N1 vector) expressed and detected by Western blot in neuroblastoma cells; residue 441 is the last residue of the intracellular C-tail (topology span 363\u2013441), so the tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 441,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Myc fusion (pcDNA3.1-myc vector) generated from the same P2X6 cDNA; same intracellular C-terminus as the YFP construct; tolerated but not a surface site."
+    }
   ]
 }

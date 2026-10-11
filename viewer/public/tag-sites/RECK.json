@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "RECK",
+  "uniprot_acc": "O95980",
+  "sites": [
+    {
+      "site_id": "RECK-internal-942-lit",
+      "gene_symbol": "RECK",
+      "uniprot_acc": "O95980",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 942,
+      "residue_before": "S",
+      "residue_after": "A",
+      "residue_label": "S942",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "VEGFR2 TMD domain insertion",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Surface display confirmed (protein reaches cell surface as a TM-anchored form). GPI anchoring is abolished by the insertion \u2014 the construct is explicitly designed to replace GPI anchoring with TM anchoring, so native GPI-dependent function is disrupted.",
+      "confidence": "medium",
+      "rationale": "The paper explicitly names the junction 'between aa 942 and 943 of RECK', providing exact residue-level evidence. Python verification confirms residue 942 = S and residue 943 = A, both in the extracellular domain (topology O, no TM domain in GPI-anchored RECK). The insertion is a large domain (VEGFR2 TMD) that disrupts GPI anchoring; a short epitope tag at this position would sit just before the GPI anchor signal (943-971) and might preserve GPI attachment, but this has not been demonstrated. Ranked lower than the N-terminal site because the cited insertion perturbs the native anchoring mechanism. Full-length RECK in p3xFLAG-CMV-9 with a VEGFR2 TMD-FKBP1A-stop fusion inserted between aa 942 and 943 by Gibson assembly, converting GPI-anchored RECK into a single-pass transmembrane form for surface display studies.",
+      "sources": [
+        {
+          "pmid": 30304675,
+          "citation": "PMID 30304675",
+          "claim": "The VEGFR2 TMD-FKBP1A-stop fusion was inserted into p3xFLAG-CMV-9-sGPR124 between the spacer (DGGGS) and the His tag and into p3xFLAG-CMV-9-RECK between aa 942 and 943 of RECK by Gibson assembly cloning."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_perturbed",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "RECK-terminal_n-22-lit",
+      "gene_symbol": "RECK",
+      "uniprot_acc": "O95980",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct described as used for surface labeling; surface display confirmed by SNAP-tag labeling assay. Functional Wnt-signaling assay with this exact tagged construct NOT MEASURED in the cited paper.",
+      "confidence": "high",
+      "rationale": "The paper explicitly describes an N-terminally SNAP-tagged full-length RECK construct used for surface labeling, confirming the tag is on the extracellular face. RECK has a signal peptide spanning residues 1-22 (landmarks), so the mature N-terminus begins at residue 23 (E); the tag must be placed after residue 22 (A) to avoid co-cleavage with the signal peptide. No specific residue is named in the paper, but 'N-terminally' combined with the single extracellular N-terminus uniquely determines the junction at 22|23. Python verification confirms residue 22 = A and residue 23 = E. Full-length RECK in p3xFLAG-CMV-9 with SNAP tag (aa 1-182 of pSNAPf) inserted between the vector's 3xFLAG tag and the RECK insert by Gibson assembly; construct used for surface labeling of RECK on live cells.",
+      "sources": [
+        {
+          "pmid": 30304675,
+          "citation": "PMID 30304675",
+          "claim": "N-terminally SNAP-tagged expression constructs were cloned by inserting the SNAP tag (aa 1 \u2013 182, pSNAPf, New England Biolabs) in frame into p3xFLAG-CMV-9-GPR124 and p3xFLAG-CMV-9-RECK (between the 3xFLAG tag and the GPR124/RECK insert) and into pRK5-mFzd4 (between the signal peptide and the mature protein) using Gibson assembly."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:59:34.539119+00:00",
+  "literature_notes": "RECK (O94885) is a GPI-anchored glycoprotein with signal peptide 1-22 and the entire ectodomain (23-971) extracellular. Two ledger lines from the same paper (PMC6338448) support two distinct sites. L2 supports an N-terminal SNAP tag at the mature N-terminus (after SP cleavage at 22|23); the paper confirms surface display. L1 supports a domain insertion at 942|943, explicitly named in the paper, but the insertion (VEGFR2 TMD) converts GPI anchoring to TM anchoring, so native function is perturbed. No ledger evidence supports any internal loop site. The 3xFLAG tag present in the p3xFLAG-CMV-9 vector backbone is also N-terminal but its position relative to RECK residues is not independently pinnable beyond what L2 already captures.",
+  "literature_rejected": []
+}

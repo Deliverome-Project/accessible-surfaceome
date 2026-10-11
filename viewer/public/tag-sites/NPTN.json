@@ -1,0 +1,41 @@
+{
+  "has_data": false,
+  "gene_symbol": "NPTN",
+  "uniprot_acc": "Q9Y639",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:08:52.565478+00:00",
+  "literature_notes": "All five ledger lines for NPTN describe tags on the intracellular face. L1 and L2 report an EGFP fusion in which the cytoplasmic domain (aa 360\u2013393) is replaced by EGFP \u2014 this is an intracellular domain swap, not a surface tag. L3 reports a C-terminal FLAG epitope appended after the last residue (398); the C-terminus is intracellular (residues 360\u2013398). L4 reports a C-terminal GFP fusion (Np65-GFP) used in co-immunoprecipitation; again the C-terminus is intracellular. L5 reports a C-terminal RFP fusion (NPTN-RFP in pRFP-N1); same intracellular C-terminus. NPTN is a Type I single-pass transmembrane protein with a large N-terminal ectodomain (residues 29\u2013338) and a short cytoplasmic tail (360\u2013398). The mature N-terminus after signal-peptide cleavage (residue 29, Q) is extracellular and would in principle accept an N-terminal tag, but no ledger line reports any tag at that position or anywhere in the ectodomain. Because the rules require every site to be grounded in exactly one ledger line, and no ledger line supports an extracellular insertion, the correct answer is zero sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 360,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "EGFP replaces the intracellular domain (aa 360\u2013393) of NP65; the fusion is cytoplasmic, not extracellular."
+    },
+    {
+      "residue": 398,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG epitope appended after residue 398; the C-terminus of NPTN is intracellular (residues 360\u2013398)."
+    },
+    {
+      "residue": 398,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GFP fusion (Np65-GFP) used in co-immunoprecipitation; tag is on the intracellular C-terminus."
+    },
+    {
+      "residue": 398,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal RFP fusion (NPTN-RFP, pRFP-N1) used in electrophysiology experiments; tag is on the intracellular C-terminus."
+    }
+  ]
+}

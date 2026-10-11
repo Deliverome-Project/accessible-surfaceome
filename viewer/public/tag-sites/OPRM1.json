@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OPRM1-terminal_n-0-lit",
+      "gene_symbol": "OPRM1",
+      "uniprot_acc": "P35372",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by immunostaining in mouse striatum (knock-in mice, PMC8440528) and by anti-HA detection in SH-SY5Y cells (PMC8893010). Agonist-induced endocytosis of FLAG-tagged MOR observed (PMC10154970), indicating receptor remains functional. No explicit pharmacological binding or G-protein coupling assay reported in the cited clips for the HA-MOP construct specifically.",
+      "confidence": "high",
+      "rationale": "OPRM1 has no signal peptide (UniProt P35372; residue 1 = Met, extracellular span 1-69 per topology landmarks). 'Amino-terminus' of a signal-peptide-free GPCR designates exactly one extracellular junction: before residue 1 (insert_after_residue=0). Python confirms seq[0]='M'. The position is topology-derived because no specific residue number is named in the papers, but the topology leaves only one possible extracellular N-terminal junction. Multiple independent studies (knock-in mouse, CRISPR knock-in in SH-SY5Y, SNAP-tag, FLAG-tag) all confirm this N-terminal extracellular position is tolerated. HA-MOP knock-in mouse model (PMC8440528): full-length mouse MOP with HA-epitope tag (YPYDVPDYA) fused to the amino-terminus, expressed from the endogenous locus. Confirmed by western blot with anti-HA (N-terminal) and UMB-3 (C-terminal) antibodies, and by immunostaining in striatum of knock-in mice. Independently replicated by CRISPR/Cas9 knock-in of HA at the amino-terminus of endogenous MOP in SH-SY5Y cells (PMC8893010). SNAP-tag placed at the same N-terminal extracellular position in SSF-MOR constructs (PMC13523046). FLAG-tagged MOR (SSF-MOR) confirmed at cell surface by M1 anti-FLAG antibody (PMC10154970).",
+      "sources": [
+        {
+          "pmid": 34522000,
+          "citation": "PMID 34522000",
+          "claim": "We generated a novel transgenic mouse model by fusing the HA-epitope tag sequence YPYDVPDYA to the amino-terminus of MOP (HA-MOP) (Fig. 1a and Supplementary Fig. 1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -75,6 +112,21 @@
       "canonical_residue": null,
       "left_pct": 0.2242152466367713,
       "note": "Isoform surface expr 565 (-40% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:29:23.531451+00:00",
+  "literature_notes": "All ledger lines (L1-L6, L8-L10) converge on the same N-terminal extracellular junction (insert_after_residue=0). No ledger line grounds an insertion in ECL1 (129-143), ECL2 (209-232), or ECL3 (305-317), so no internal sites are proposed. L7 reports a C-terminally HA-tagged MOP (MOP-HA), but the C-terminus of OPRM1 is intracellular (residues 342-400 per topology landmarks), so this is recorded in other_positions as an intracellular tag. L8 (SNAP-tag) and L9 (FLAG-tag) both confirm the N-terminal extracellular position and are folded into the single terminal_n site rather than listed separately, as they pin the same junction. Validation_level is surface_only because the HA-MOP clips confirm surface expression (immunostaining) but do not report a pharmacological functional assay; L9 shows agonist-induced endocytosis of FLAG-MOR but this is attributed to the FMOR construct rather than specifically testing the tag's impact on receptor function.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 400,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "MOP-HA (C-terminally HA-tagged full-length receptor) used in stably transfected HEK293 cells; the C-terminus of OPRM1 (residues 342-400) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
     }
   ]
 }

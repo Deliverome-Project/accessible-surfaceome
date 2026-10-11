@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADAM11",
+  "uniprot_acc": "O75078",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:57:49.554144+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct: full-length human ADAM11 with a C-terminal FLAG tag (DYKDDDDK) in pcDNA3.1. The topology landmarks place residues 756\u2013769 in the intracellular compartment (TM ends at 755, intracellular begins at 756, protein ends at 769). A C-terminal tag appended after residue 769 is therefore intracellular, not extracellular. L2 confirms this: FLAG detection required permeabilization (total-expression readout), while surface display of the protein was measured by LGI binding without permeabilization \u2014 the FLAG tag is not accessible from the extracellular face. No ledger line reports a tag insertion at any extracellular position (N-terminus after signal-peptide cleavage, or any extracellular loop). The mature N-terminus (residue 24, T) is extracellular and would in principle accept a tag, but no ledger line supports an insertion there. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 769,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag appended after residue 769 (A); topology places residues 756\u2013769 in the intracellular compartment, and L2 confirms FLAG detection required permeabilization, consistent with an intracellular tag."
+    }
+  ]
+}

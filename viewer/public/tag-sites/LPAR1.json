@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LPAR1-terminal_n-0-lit",
+      "gene_symbol": "LPAR1",
+      "uniprot_acc": "Q92633",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FLAG-tagged LPA1 confirmed expressed and functional in affinity purification and functional assays (L1); surface display confirmed by anti-FLAG staining without permeabilization (L3, L4); HA-tagged LPA1 surface display confirmed by antibody staining and PLA (L6).",
+      "confidence": "high",
+      "rationale": "LPAR1 has no signal peptide; the extracellular N-terminus spans residues 1\u201350 (50 residues clear of TM1 at residue 51), making a prepended tag fully extracellular and well away from any TM boundary. The position is topology-derived: all six ledger lines report N-terminal tags on full-length membrane-anchored LPA1, and the N-terminus is the only extracellular terminus available for a prepend. Python confirmed residue 1 = M and sequence length = 364. L1 provides the highest validation (expressed and functional); L3/L4 add explicit surface-without-permeabilization confirmation. N-terminal FLAG-tagged full-length human LPA1 expressed in mammalian cells; used in affinity purification and functional assays (L1). Independently, L3/L4 confirm surface display of N-terminal FLAG-LPA1 by anti-FLAG staining without permeabilization. L5 reports FLAG, HA, and Myc tags all cloned at the N-terminus of LPA1 by SLIC. L6 confirms surface display of N-terminal HA-LPA1 by antibody staining and proximity ligation assay. LPAR1 has no signal peptide (UniProt P21453); the N-terminus (residues 1\u201350) is extracellular per topology landmarks, so the tag prepends before residue 1.",
+      "sources": [
+        {
+          "pmid": 36109516,
+          "citation": "PMID 36109516",
+          "claim": "We used the N-terminal FLAG (DYKDDDDK)-tagged constructs of human LPA 1 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:12:35.733445+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) converge on the same site: an N-terminal tag (FLAG or HA) on full-length human LPAR1. No ledger line describes an internal loop insertion, an intracellular tag, or a function-abrogating insertion for this protein. Because LPAR1 lacks a signal peptide, the N-terminal prepend (insert_after_residue=0) places the tag directly on the extracellular face. L1 was chosen as the primary supporting clip because it explicitly states the tagged receptor was 'expressed and functional'; L3/L4 independently confirm surface display without permeabilization, and L6 confirms HA-tagged surface display by PLA. ECL1 (108\u2013125), ECL2 (185\u2013205), and ECL3 (281\u2013290) are extracellular loops that could in principle accommodate an internal tag, but no ledger line reports any insertion in these loops for LPAR1 or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": []
 }

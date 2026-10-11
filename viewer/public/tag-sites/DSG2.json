@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "DSG2",
+  "uniprot_acc": "Q14126",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:23:02.961881+00:00",
+  "literature_notes": "Every insertion in the ledger is intracellular. L1\u2013L3 (PMC6070948) describe a TSmod FRET sensor inserted between the IA and ICS domains of the DSG2 cytoplasmic tail, pinned by the paper to G733/A734 in the paper's numbering. Python search of the canonical sequence places the nearest GA junction in that region at G734/A735 (canonical), a 1-residue offset consistent with a minor isoform or numbering convention difference; both positions fall squarely in the intracellular domain (residues 635\u20131118). L4\u2013L7 (PMC12259045, PMC12912264) describe a C-terminal EGFP fusion via pEGFP-N1, placing the tag after residue 1118, also intracellular. No ledger line reports any tag, fluorescent-protein fusion, transposon hit, or domain insertion on the extracellular face (residues 24\u2013614) of full-length, membrane-anchored DSG2. Zero surface sites is therefore the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 734,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "TSmod FRET sensor inserted between G733 and A734 (paper numbering; canonical G734/A735) in the cytoplasmic tail between the IA and ICS domains; fully intracellular, not a surface tag site."
+    },
+    {
+      "residue": 1118,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal EGFP fusion via pEGFP-N1 appended after the last residue (S1118) of the intracellular tail; confirmed to localise to cell\u2013cell contacts by FRAP (L6/L7), but the tag itself faces the cytoplasm."
+    }
+  ]
+}

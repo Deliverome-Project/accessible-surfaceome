@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "C14orf180",
+  "uniprot_acc": "Q8N912",
+  "sites": [
+    {
+      "site_id": "C14orf180-terminal_c-160-lit",
+      "gene_symbol": "C14orf180",
+      "uniprot_acc": "Q8N912",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 160,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L160",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-localization with LCK-tRFP plasma-membrane marker confirmed; no functional assay of NRAC activity reported.",
+      "confidence": "high",
+      "rationale": "The topology landmarks place the C-terminus (residue 160) firmly in the extracellular span (122\u2013160), 39 residues from the TM boundary\u2014well beyond the \u22653-residue minimum. No ledger clip names a specific residue; the N-terminus (1\u2013103) is intracellular (confirmed by L4), making the C-terminus the sole extracellular terminus and the only possible location for this tag. insert_after_residue=160 is therefore topology-derived, not chosen. Python verification confirms seq[159]='L'. Full-length Nrac (C14orf180) cloned into pCMV6-AC-GFP to create a C-terminal GFP fusion (Nrac-GFP); co-transfected with plasma-membrane marker LCK-tRFP in HEK293 cells; fluorescence imaging showed co-localization of Nrac-GFP with the PM marker.",
+      "sources": [
+        {
+          "pmid": 23029450,
+          "citation": "PMID 23029450",
+          "claim": "Fluorescence imaging of HEK293 cells transfected with plasmids encoding B) LCK-tRFP and C) Nrac-GFP and D) Merged picture."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:50:37.482247+00:00",
+  "literature_notes": "All five ledger clips derive from two papers (PMC3459823 and PMC12436663) and describe the same Nrac-GFP C-terminal fusion construct. L1 and L2 describe construct creation; L3 provides the surface-localization result (co-localization with LCK-tRFP); L4 and L5 validate the NRAC antibody using the same NRAC-GFP cells. No ledger clip names a specific insertion residue, so position_evidence is topology_derived. No internal extracellular loop insertions are reported in the ledger. The N-terminal intracellular domain (1\u2013103) is recorded in other_positions. L4 is antibody epitope mapping of the intracellular N-terminus, not a tag insertion, and does not qualify as a surface site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "L4 explicitly states the N-terminus of NRAC is intracellular ('antibody targeting the intracellular N-terminus of murine NRAC'); topology landmarks confirm residues 1\u2013103 are cytoplasmic, so any N-terminal tag would be intracellular, not a surface tag."
+    }
+  ]
+}

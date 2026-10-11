@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:34:52.347137+00:00",
+  "literature_notes": "All five ledger clips (L1\u2013L5) describe a single construct type: full-length human GPR37L1 with eYFP fused to its C-terminus (GPR37L1-eYFP). The topology landmarks place the C-terminus (residue 481) in the intracellular region (420\u2013481), after TM7 (396\u2013419). A C-terminal eYFP fusion is therefore an intracellular label, not an extracellular surface tag, and does not qualify as a surface tag site. The N-terminal truncation constructs described in L3 (\u039425, \u039480, \u0394122) are deletions used to probe signal-peptide and N-terminal-fragment function; they are not tag insertions and do not pin any junction. No ledger clip describes a tag at the mature N-terminus (residue 26, extracellular), in any extracellular loop (ECL1 190\u2013204, ECL2 270\u2013310, ECL3 382\u2013395), or in the large N-terminal extracellular domain (26\u2013129). Accordingly, zero extracellular surface tag sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 481,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eYFP fused to the C-terminus of full-length GPR37L1; the C-terminus (residue 481) lies in the intracellular region (420\u2013481) after TM7, making this an intracellular fluorescent-protein fusion, not an extracellular surface tag."
+    }
+  ]
 }

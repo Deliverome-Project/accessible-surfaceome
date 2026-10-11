@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "CACHD1",
+  "uniprot_acc": "Q5VU97",
+  "sites": [
+    {
+      "site_id": "CACHD1-internal-52-lit",
+      "gene_symbol": "CACHD1",
+      "uniprot_acc": "Q5VU97",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 52,
+      "residue_before": "M",
+      "residue_after": "R",
+      "residue_label": "M52",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "2xHA + TEV",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell anti-HA surface labelling confirmed extracellular tag display in presynaptic membranes of cultured hippocampal neurons (L5). Presynaptic targeting of the tagged protein was preserved (L6). Electrophysiological function was NOT MEASURED.",
+      "confidence": "high",
+      "rationale": "The paper (PMC9456004) explicitly states the 2xHA+TEV insert goes between the 3rd and 4th amino acid after the SignalP 4.1 cleavage site predicted at position 49 (canonical numbering). Computing: 49 + 3 = 52, so insert_after_residue = 52, with residue_before = M (canonical 52) and residue_after = R (canonical 53), both confirmed from the numbered sequence. Position 52 is extracellular in the canonical topology (EC: 36\u20131099) and lies 1048 residues from the TM boundary, well clear of any constraint. L2 from the same paper describes the same construct with slightly different wording ('4th and 5th'), which would place the junction at 53; since both clips describe the same p\u03b2A-2HA-Cachd1 construct, L1 (the more explicit description citing position 49) is taken as authoritative for a single site at residue 52. Full-length mouse Cachd1 (membrane-anchored, single-pass type I) expressed in primary cultured hippocampal neurons. A double HA tag followed by a TEV cleavage site was inserted into p\u03b2A-Cachd1 between the 3rd and 4th amino acid after the SignalP 4.1-predicted signal peptide cleavage site (paper's position 49, canonical residue 52), generating p\u03b2A-2HA-Cachd1. Live-cell surface labelling with anti-HA antibody confirmed extracellular accessibility of the tag at the presynaptic membrane.",
+      "sources": [
+        {
+          "pmid": 36077281,
+          "citation": "PMID 36077281",
+          "claim": "Fragment 3 was digested with BamHI/RsrII and finally ligated into the corresponding sites of the intermediate construct, yielding p\u03b2A-Cachd1.\np\u03b2A-2HA-Cachd1: Since it was predicted that the signal protein cleavage would be present at position 49 using SignalP 4.1, the 2HA tag followed by a TEV cleavage site was introduced into the p\u03b2A-Cachd1 between the third and fourth amino acid after the predicted signal peptide cleavage site."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 52,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:56:53.123588+00:00",
+  "literature_notes": "L1 and L2 both describe the same p\u03b2A-2HA-Cachd1 construct from PMC9456004 but use slightly different wording ('3rd and 4th' vs '4th and 5th' amino acid after the predicted SP cleavage site at position 49). Computed positions are 52 and 53 respectively. Because they describe the same construct in the same paper, this is treated as one site grounded in L1 (the more explicit description). L3 describes the PCR cloning strategy for the same construct without adding a new residue position. L4\u2013L6 confirm surface expression and presynaptic targeting of the same 2xHA-Cachd1 construct but provide no additional positional information. L7\u2013L10 describe C-terminal eGFP fusions to full-length Cachd1; the C-terminus (residues 1117\u20131274) is intracellular per the topology landmarks, so these are intracellular tags and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for CACHD1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1274,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "eGFP fused to the C-terminal end of full-length Cachd1; the C-terminus (residues 1117\u20131274) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "SELL",
+  "uniprot_acc": "P14151",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:12:58.028137+00:00",
+  "literature_notes": "All seven ledger lines (L1\u2013L7) describe a single construct: full-length human L-selectin with a V5-His tag appended to the intracellular carboxy terminus (residue 372). L2 states this explicitly ('V5-His tag at the intracellular carboxy terminus') and L3 confirms it ('C-terminal tagging of L-selectin with the V5-His tag'). L-selectin is a type I single-pass transmembrane protein; its C-terminus (residues 356\u2013372) is cytoplasmic, so this tag is not on the extracellular face. The GFP fusion mentioned in L1 ('L-selectin-GFP') has no residue stated and, given the naming convention and topology, would also be a C-terminal intracellular fusion. No ledger line reports any tag, fluorescent-protein fusion, transposon insertion, or domain insertion on the extracellular domain (residues 29\u2013333) or at the mature N-terminus (after residue 28). The rules forbid proposing sites not grounded in the ledger, so sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 372,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "V5-His tag placed after the final residue (Y372) at the intracellular carboxy terminus; explicitly described as cytoplasmic in L2 and confirmed functional (ADAM17-mediated ectodomain shedding preserved, L3/L5)."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "BEST1",
+  "uniprot_acc": "O76090",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:44:49.278079+00:00",
+  "literature_notes": "BEST1 (Bestrophin-1) has a 4-TM topology with two short extracellular loops (ECL1: residues 54\u201371; ECL2: residues 253\u2013270) and no extracellular terminus. The entire N-terminus (1\u201331) and C-terminus (289\u2013585) are intracellular. Every ledger line (L1\u2013L8) describes tags placed at intracellular positions: L1\u2013L4 and L8 report C-terminal BRIL-3xFLAG or Flag fusions (intracellular, after residue 585), and L5\u2013L7 report N-terminal Flag fusions (intracellular, before residue 1). No ledger line describes any insertion in ECL1, ECL2, or any other extracellular region of BEST1 or a close ortholog. Because the rules require every site to be grounded in one ledger line reporting a tolerated insertion at or in the same extracellular loop/domain, and no such line exists, zero extracellular surface sites qualify. The C-terminal and N-terminal positions are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 585,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal BRIL-3xFLAG tag after the last residue (S585) of the intracellular C-tail; validated by whole-cell patch-clamp, surface biotinylation, and cryo-EM \u2014 but the C-terminus is cytoplasmic, not extracellular."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "N-terminal Flag tag on hBEST1 (before M1) showed significantly lower expression than C-terminally tagged or untagged protein; the N-terminus is intracellular and this position also impairs expression."
+    }
+  ]
+}

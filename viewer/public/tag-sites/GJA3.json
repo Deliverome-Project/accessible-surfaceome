@@ -82,5 +82,20 @@
       "canonical_residue": 50,
       "left_pct": 11.990407673860911
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:10:39.849728+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) from PMC11170479 describe a C-terminal FLAG tag on chick Cx50 (GJA8), with Cx46 (GJA3) constructs used in the same study. The connexin C-terminus is unambiguously intracellular: topology landmarks place residues 223\u2013435 of GJA3 in the cytoplasm. A C-terminal tag on GJA3 would therefore face the cytoplasm, not the extracellular surface. The two extracellular loops of GJA3 (ECL1: 43\u201371; ECL2: 174\u2013201) are not addressed by any ledger line with a tolerated insertion. No ledger line supports an extracellular tag insertion on GJA3, so sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 435,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag appended to Cx50 (and Cx46 constructs) in PMC11170479; the connexin C-terminus is intracellular (topology residues 223\u2013435 for GJA3), so this tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

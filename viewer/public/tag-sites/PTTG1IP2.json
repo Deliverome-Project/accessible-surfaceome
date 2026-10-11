@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PTTG1IP2",
+  "uniprot_acc": "P0DTF9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:53:26.724984+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe C-terminal GFP fusions on PTTG1IP (the paralog), not PTTG1IP2. Two disqualifying problems compound each other. First, PTTG1IP and PTTG1IP2 are paralogs, not orthologs; the ledger rule permitting indirect evidence specifies 'a close ortholog', which is a species-level relationship, not a paralog relationship. Second, even if the most generous reading were applied and PTTG1IP were treated as an indirect precedent, the C-terminal GFP fusions described in every ledger line land on the INTRACELLULAR face of PTTG1IP2: the topology landmarks place residues 119\u2013154 (including the C-terminus at residue 154) in the cytoplasm. A C-terminal tag therefore cannot serve as an extracellular surface tag. The extracellular domain of PTTG1IP2 (residues 27\u201397, after signal-peptide cleavage) has no ledger support whatsoever for any tag insertion. Zero qualifying extracellular sites result.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 154,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusions on the paralog PTTG1IP (L1\u2013L6) map to the intracellular C-terminus of PTTG1IP2 (residues 119\u2013154 are cytoplasmic per topology landmarks); valid for an intracellular label but not an extracellular surface tag."
+    }
+  ]
+}

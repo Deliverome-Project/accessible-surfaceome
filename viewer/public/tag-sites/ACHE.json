@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ACHE",
+  "uniprot_acc": "P22303",
+  "sites": [
+    {
+      "site_id": "ACHE-terminal_n-31-lit",
+      "gene_symbol": "ACHE",
+      "uniprot_acc": "P22303",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by indirect immunofluorescence flow cytometry on intact non-permeabilized P. pastoris cells (L2); enzymatic activity of the FLAG-tagged surface-displayed AChE was NOT MEASURED in the cited clips.",
+      "confidence": "medium",
+      "rationale": "Human ACHE has a signal peptide spanning residues 1\u201331 (authoritative landmark); the mature N-terminus begins at residue 32 (E). A tag placed after residue 31 is therefore on the extracellular face, well clear of any TM boundary (the protein is GPI-anchored with no TM helix). Python verification confirms residue 31 = A and residue 32 = E in the canonical sequence. No specific residue number is cited in L1 or L3/L4; the position is topology-derived from the single free extracellular terminus of the mature protein. L1 (BmAChE) and L3/L4 (DmAChE) are both indirect evidence (insect orthologs), but both independently place a FLAG tag at the N-terminus of the full-length, membrane-anchored AChE, mapping to the same junction in human ACHE. BmAChE (Bombyx mori AChE, ortholog of human ACHE) was expressed as a full-length fusion with an \u03b1-agglutinin (AG\u03b11) membrane anchor in P. pastoris, with a FLAG tag placed at the N-terminus of the AChE coding sequence. The construct is membrane-anchored and surface-displayed; the FLAG is on the extracellular face. Surface display was confirmed by indirect immunofluorescence flow cytometry on intact (non-permeabilized) yeast cells (L2). A second independent ortholog construct (DmAChE-FLAG-Ag\u03b1 in S. cerevisiae, L3/L4) corroborates the same N-terminal junction.",
+      "sources": [
+        {
+          "pmid": 23940577,
+          "citation": "PMID 23940577",
+          "claim": "The bmace-AG\u03b11 gene with a FLAG tag (eight amino acids) at the N -terminus of AChE was subcloned into the expression vector pPIC9K."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:52:28.836305+00:00",
+  "literature_notes": "All four ledger clips concern insect AChE orthologs (BmAChE from Bombyx mori, L1/L2; DmAChE from Drosophila melanogaster, L3/L4) expressed as surface-display fusions with \u03b1-agglutinin anchors in yeast. No clip reports a tag insertion in full-length human ACHE itself. Both ortholog papers place a FLAG tag at the N-terminus of the mature AChE (after signal peptide cleavage), which maps to insert_after_residue = 31 in human ACHE canonical numbering. Because both papers support the same junction, this is reported as one site (L1 as primary clip, L3/L4 corroborating). Human ACHE is GPI-anchored; the C-terminus carries the GPI signal peptide that is cleaved during GPI attachment, making a C-terminal tag incompatible with native membrane anchoring \u2014 no ledger clip supports a C-terminal site. No internal loop insertions are supported by any ledger clip.",
+  "literature_rejected": []
+}

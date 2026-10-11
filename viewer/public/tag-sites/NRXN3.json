@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRXN3",
+  "uniprot_acc": "Q9HDB5",
+  "sites": [
+    {
+      "site_id": "NRXN3-internal-None-lit",
+      "gene_symbol": "NRXN3",
+      "uniprot_acc": "Q9HDB5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "AS5",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "double HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot detection of endogenous HA-tagged NRXN3\u03b2 in neocortical, hippocampal, and cerebellar tissue confirmed successful expression of the tagged full-length protein; no functional assay of synaptic activity or ligand binding reported in the cited clips.",
+      "confidence": "medium",
+      "rationale": "The paper explicitly places a double HA tag inside exon 24 of Nrxn3, which encodes the alternatively spliced segment AS5 in the extracellular domain of both alpha and beta isoforms. AS5 is a well-established extracellular insertion point in neurexins. No specific residue number is given in the ledger, so the site is reported at region level with insert_after_residue left null. The knockin strategy in full-length, membrane-anchored protein in vivo is strong evidence that the extracellular loop tolerates the insertion. Knockin mice were generated with a double HA epitope inserted into the coding sequence of Nrxn3 exon 24, which lies within alternatively spliced segment AS5. Both NRXN3\u03b1 and NRXN3\u03b2 isoforms carry the tag in the full-length, membrane-anchored context.",
+      "sources": [
+        {
+          "pmid": 35550065,
+          "citation": "PMID 35550065",
+          "claim": "We generated knockin mice where a double HA epitope was inserted into the coding sequence of Nrxn3 exon 24 ( Figures 1 B and S1 B)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRXN3-terminal_n-35-lit",
+      "gene_symbol": "NRXN3",
+      "uniprot_acc": "Q9HDB5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "S",
+      "residue_after": "S",
+      "residue_label": "S35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger clip reports only that the construct was generated; no expression, trafficking, or functional assay result is described.",
+      "confidence": "low",
+      "rationale": "The construct name 'V5-Nrxn3' unambiguously places the V5 tag N-terminal to the protein. For a type I TM protein with a signal peptide ending at residue 35, the only extracellular terminus is the mature N-terminus beginning at residue 36; a tag upstream of residue 36 would be cleaved with the signal peptide, so the junction is computed as insert_after_residue=35 (residue_before=S, residue_after=S). Python confirmed res(35)='S' and res(36)='S'. No functional data are available from this clip. A V5-tagged full-length Nrxn3 construct ('V5-Nrxn3') was generated for a published study. The naming convention V5-[protein] denotes an N-terminal tag. NRXN3-beta is a type I single-pass transmembrane protein; its only extracellular terminus is the mature N-terminus (after signal-peptide cleavage at residue 35), so the V5 tag must reside there.",
+      "sources": [
+        {
+          "pmid": 37543682,
+          "citation": "PMID 37543682",
+          "claim": "S\u00fcdhof) and V5-Nrxn3 which we generated here."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:18:15.389904+00:00",
+  "literature_notes": "L2 is the same knockin experiment as L1 (same paper, same mice, same construct); it was used to confirm the validation_level (detected_only by western blot) but L1 is the primary supporting clip. The V5-Nrxn3 site (L3) is ranked lower because the clip provides no expression or functional readout \u2014 only that the construct was made. The AS5 site (L1) is ranked higher because endogenous knockin expression was confirmed by western blot in multiple brain regions, but it remains detected_only because no synaptic or ligand-binding functional assay was reported in the cited clips. No ledger line supports a C-terminal extracellular tag (the C-terminus of NRXN3-beta is intracellular). No ledger line names a specific residue number for either site, so no site reaches 'validated' position_evidence.",
+  "literature_rejected": []
+}

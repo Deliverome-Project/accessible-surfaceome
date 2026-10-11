@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "MERTK",
+  "uniprot_acc": "Q12866",
+  "sites": [
+    {
+      "site_id": "MERTK-terminal_n-20-lit",
+      "gene_symbol": "MERTK",
+      "uniprot_acc": "Q12866",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "R",
+      "residue_after": "A",
+      "residue_label": "R20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface localization confirmed by design (heterologous SP drives surface targeting); ortholog HA-tagged mouse Mer confirmed on cell surface by live-cell labeling (non-permeabilized staining, PMC4206827). Receptor function not explicitly assayed for the FLAG-tagged construct.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the FLAG tag is placed between the signal peptide and the Mertk mature peptide sequence in a full-length, membrane-anchored construct, which in UniProt canonical numbering corresponds to insert_after_residue=20 (last residue of the signal peptide, R) and residue_after=21 (A, first residue of the mature extracellular domain). Python-verified: residue 20 = R, residue 21 = A, and the mature N-terminus is 481 residues from the TM boundary, well exceeding the \u22653-residue clearance requirement. L3/L4 (PMC4206827) independently show that HA-tagged mouse Mer (ortholog) is surface-displayed by live-cell labeling; topology_derived analysis of that construct also resolves to this same N-terminal junction, providing corroborating surface-validation evidence. Full-length Mertk construct (PMC11050108) with an IFN-\u03b3R2 signal peptide driving surface localization, a FLAG tag sequence, and a linker placed immediately N-terminal to the Mertk mature peptide (i.e., after the signal peptide cleavage site, before residue 21). Two independent papers (PMC4206827) additionally confirm that N-terminally HA-tagged mouse Mer (close ortholog) is detected on the cell surface by live-cell (non-permeabilized) labeling, corroborating tolerance of an N-terminal extracellular tag at this junction.",
+      "sources": [
+        {
+          "pmid": 38673989,
+          "citation": "PMID 38673989",
+          "claim": "Preceding the Mertk insert is an interferon\u2013\u03b3 receptor 2 signal peptide ( NM_005534.3 ) for surface localization, a FLAG tag sequence, and a linker sequence containing a Sal1 restriction site."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 20,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:40:47.714187+00:00",
+  "literature_notes": "L3 and L4 (PMC4206827) describe HA-tagged recombinant mouse Mer confirmed on the cell surface by live-cell (non-permeabilized) labeling and inducible expression. Neither clip specifies the insertion residue or terminus. Because MERTK is a type I single-pass receptor with exactly one extracellular terminus (the mature N-terminus after SP cleavage), topology_derived reasoning resolves both clips to insert_after_residue=20, the same junction already validated by L1. They are therefore treated as corroborating evidence for the single L1-grounded site rather than separate sites at a distinct junction. L2 describes an Emerald GFP + Myc tag fused to the C-terminus of full-length Mertk; the C-terminus (residue 999) is intracellular (topology landmarks: intracellular 523\u2013999) and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 999,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Emerald GFP and Myc tag fused after the C-terminus of full-length Mertk; residue 999 falls within the intracellular domain (landmarks: 523\u2013999), so this is a cytoplasmic tag, not a surface tag."
+    }
+  ]
+}

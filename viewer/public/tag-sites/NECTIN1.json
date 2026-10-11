@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "NECTIN1",
+  "uniprot_acc": "Q15223",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:58:34.887066+00:00",
+  "literature_notes": "Both ledger clips (L1, L2) describe the same construct: pLVX-IRES-puro-NECTIN1-2\u00d7HA-3\u00d7FLAG, synthesized by a commercial vendor (RuiBiotech). Neither clip states the position of the 2\u00d7HA-3\u00d7FLAG tags within the NECTIN1 coding sequence. The rules explicitly disqualify 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' The naming convention 'NECTIN1-2\u00d7HA-3\u00d7FLAG' (gene name followed by tag names) is consistent with C-terminal placement, which for NECTIN1 (a type I single-pass transmembrane protein with extracellular residues 31\u2013355, TM 356\u2013376, intracellular 377\u2013517) would be intracellular and therefore not a surface tag site. Even if one attempted a topology_derived reading (the only extracellular terminus is the mature N-terminus after signal peptide cleavage at residue 30), the clips do not confirm N-terminal placement and the naming convention argues against it. No qualifying insertion is grounded in the ledger; zero sites is the correct answer.",
+  "literature_rejected": []
+}

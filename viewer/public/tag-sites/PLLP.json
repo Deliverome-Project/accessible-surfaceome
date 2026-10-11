@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "PLLP",
+  "uniprot_acc": "Q9Y342",
+  "sites": [
+    {
+      "site_id": "PLLP-internal-None-lit",
+      "gene_symbol": "PLLP",
+      "uniprot_acc": "Q9Y342",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger reports hMAL-L1F was synthesized and used in surface-display studies but states no functional or expression assay result for this construct specifically.",
+      "confidence": "low",
+      "rationale": "L6 reports FLAG insertion into ECL1 of human MAL (hMAL-L1F), a PLLP paralogue with identical four-TM topology; ECL1 of PLLP spans residues 57\u201367 (DTPYHLYPAYG, 11 residues) between TM1 and TM2. No residue number is given for the MAL insertion, so the site is region-level only. ECL1 is only 11 residues long, which is a steric concern for a 15\u201323 aa tag, but the constraint evaluation is left to the deterministic pipeline. L7 reports that FLAG in MAL ECL2 (not ECL1) abolishes function, so ECL1 is not directly implicated in that abrogation. hMAL-L1F: a full-length human MAL construct with a FLAG sequence inserted into its first extracellular loop (ECL1) was synthesized and used in surface-display studies. MAL is a close PLLP family member sharing the same four-TM MARVEL-domain topology, making ECL1 (TM1\u2013TM2 loop) the corresponding loop in PLLP (residues 57\u201367). No residue number within MAL ECL1 is stated in the ledger.",
+      "sources": [
+        {
+          "pmid": 25993478,
+          "citation": "PMID 25993478",
+          "claim": "The p\u03b2-actin-EGFP-rat MAL (rMAL) and human MAL (hMAL) constructs and hMAL harboring a FLAG sequence insertion in its second extracellular loop (hMAL-L2F) have been previously published [ 56 , 58 ]. hMAL and hMAL-L2F were subcloned and inserted into the N-terminal of GFP gene in the p\u03b2-actin-EGFP vector. hMAL with a FLAG insertion in the first extracellular loop (hMAL-L1F) was synthesized with RsrII/XbaI restriction sites, and purchased from Genewiz, Inc."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:36:24.885545+00:00",
+  "literature_notes": "L1, L2, L3 (PLLP-GFP in pEGFP-N1, HepG2 cells) and L4, L5 (Pllp-GFP BAC transgenic zebrafish): pEGFP-N1 places GFP at the C-terminus of the inserted gene. PLLP's C-terminus (residue 182) falls within INTRACELLULAR_3 (163\u2013182), so these are intracellular tags and do not qualify as extracellular surface sites; they are recorded in other_positions. L6 provides indirect evidence for both ECL1 (hMAL-L1F, no functional result stated) and ECL2 (hMAL-L2F, previously published). L7 explicitly states that FLAG in MAL ECL2 abolishes ETX binding and cytotoxicity, disqualifying ECL2 as a surface tag site and placing it in other_positions as abrogates_function. Only ECL1 survives as a candidate site, grounded in L6 at region level with low confidence.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 182,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "PLLP-GFP C-terminal fusion (pEGFP-N1) expressed in HepG2 cells; residue 182 is the C-terminus and lies within the intracellular span 163\u2013182, so the GFP tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 132,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L7",
+      "note": "FLAG insertion into ECL2 of MAL (PLLP family member) abolishes ETX binding and cytotoxicity; residue 132 (R) is used as a representative midpoint of the corresponding PLLP ECL2 (123\u2013141), but no specific PLLP residue is named in the ledger."
+    }
+  ]
+}

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPBAR1-terminal_n-0-lit",
+      "gene_symbol": "GPBAR1",
+      "uniprot_acc": "Q8TDU6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct was expressed, purified, and used for cryo-EM structure determination, confirming membrane insertion and correct folding; no explicit signalling functional assay (e.g., cAMP or Ca2+ response) is reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "GPBAR1 has no signal peptide; the topology landmarks place residues 1\u201319 as the extracellular N-terminal domain and TM1 begins at residue 20, making the N-terminus the sole extracellular terminus available for a prepend tag. The clip names only 'N-terminus' with no residue number, so the junction is topology-derived (insert_after_residue = 0, before residue 1 M). The 19-residue native extracellular segment provides ample buffer (>3 aa) between the tag and TM1. The construct was successfully used for cryo-EM, confirming surface expression and correct folding. Full-length membrane-anchored GPBAR1 construct used for cryo-EM structure determination; an exogenous HA signal peptide, FLAG epitope, 3C protease site, and BRIL thermostabilizer were fused at the N-terminus of GPBAR1 to facilitate expression and purification.",
+      "sources": [
+        {
+          "pmid": 40858717,
+          "citation": "PMID 40858717",
+          "claim": "To facilitate protein expression and subsequent purification, a HA signal peptide followed by a FLAG epitope, a 3 C protease site, and thermostabilized apocytochrome b562RIL (BRIL) were added at the N-terminus of GPBAR1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:20:10.886620+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It supports a single N-terminal prepend site. No internal extracellular loop insertions are supported by the ledger. The BRIL fusion is a thermostabilizing domain rather than a short epitope tag, but the FLAG epitope within the same N-terminal cassette qualifies as the short tag. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
 }

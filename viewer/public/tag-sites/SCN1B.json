@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "SCN1B",
+  "uniprot_acc": "Q07699",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:10:03.910495+00:00",
+  "literature_notes": "Every ledger line (L1\u2013L8) describes a C-terminal V5 or CFP tag on full-length, membrane-anchored SCN1B. The authoritative topology landmarks place the C-terminus (residues 182\u2013218) in the intracellular compartment. No ledger line reports a tag on the extracellular domain (residues 19\u2013160) or at the mature N-terminus (after residue 18). Because the rules require every site to be grounded in a ledger line that reports an insertion on the extracellular face, and no such line exists, the site list is empty. The C-terminal tags are recorded in other_positions as tolerated intracellular insertions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 218,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CRISPR knock-in V5 tag appended after the last residue (E218) of SCN1B; the C-terminus lies in the intracellular region (182\u2013218) and the tagged protein was successfully immunoprecipitated from brain lysates, confirming tolerance, but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 218,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Full-length SCN1B C-terminal V5 tag in a stable mammalian cell line (\u03b21-V5-2AeGFP-CHL); tolerated and immunodetectable, but the C-terminus is cytoplasmic."
+    },
+    {
+      "residue": 218,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Rat \u03b21 (SCN1B) with CFP fused explicitly to the 'cytoplasmic C-terminus'; full-length membrane-anchored construct confirmed functional, but the tag is intracellular by design."
+    }
+  ]
+}

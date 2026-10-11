@@ -4,6 +4,81 @@
   "uniprot_acc": "P13637",
   "sites": [
     {
+      "site_id": "ATP1A3-internal-109-lit",
+      "gene_symbol": "ATP1A3",
+      "uniprot_acc": "P13637",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 109,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A109",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (double)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Ouabain-resistance assay: alpha1 subunit with HA tag at pos 119 conferred ouabain resistance (function preserved). Surface immunofluorescence of intact cells: tag detected extracellularly (surface expression confirmed). Evidence is from alpha1 paralog; direct functional data for alpha3 at this position NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "L2 (PMID 8916902) explicitly confirms by intact-cell immunofluorescence that the HA tag at alpha1 position 119 is extracellular, and L1 confirms ouabain resistance (functional pump). Alpha1 and alpha3 ECL1 carry the identical sequence 'LAYGIQAGTEDDPSGDNLY'; alpha1 has 10 extra N-terminal residues, so alpha1 pos 119 (7th residue of ECL1) maps to alpha3 pos 109 by sequence alignment. Alpha3 pos 109 lies in ECL1 (103-121), 7 residues from TM1 end (102) and 13 residues from TM2 start (122), satisfying the >=3-residue constraint on both sides. Evidence is indirect (alpha1 paralog). PMID 8916902 inserted a double HA epitope tag at position 119 of the full-length membrane-anchored alpha1 Na+/K+-ATPase subunit (ATP1A1, 1023 aa) expressed in transfected cells. Immunofluorescence of intact (non-permeabilized) cells confirmed the tag at alpha1 pos 119 is extracellular. Alpha1 and alpha3 share ~87% identity; alpha1 has 10 additional N-terminal cytoplasmic residues. The ECL1 sequence 'LAYGIQAGTEDDPSGDNLY' is identical in both isoforms. Alpha1 pos 119 is the 7th residue of ECL1 (alpha1 ECL1 starts at ~113); the equivalent 7th residue in alpha3 ECL1 (103-121) is pos 109 (A). Python-verified: seq[108]='A', seq[109]='G'.",
+      "sources": [
+        {
+          "pmid": 8916902,
+          "citation": "PMID 8916902",
+          "claim": "Immunofluorescence analysis of permeabilized and intact cells using a monoclonal antibody specific for the HA epitope showed that double tags at positions 119 and 318 were located extracellularly, whereas single or double tags at positions 173, 815, 881, 987, and 1023 were cytoplasmically disposed. These results are consistent with an eight transmembrane domain arrangement for the alpha subunit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 109,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ATP1A3-internal-None-lit",
+      "gene_symbol": "ATP1A3",
+      "uniprot_acc": "P13637",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL2",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA (double)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Ouabain-resistance assay: alpha1 subunit with HA tag at pos 318 conferred ouabain resistance (function preserved). Surface immunofluorescence of intact cells: tag detected extracellularly. Evidence is from alpha1 paralog; direct data for alpha3 ECL2 NOT MEASURED.",
+      "confidence": "low",
+      "rationale": "L2 (PMID 8916902) confirms by intact-cell immunofluorescence that the HA tag at alpha1 pos 318 is extracellular, and L1 confirms ouabain resistance. Alpha1 pos 318 is the 10th residue of ECL2 (alpha1 ECL2 ~309-319 in alpha1 numbering); the sequence-equivalent position in alpha3 ECL2 (299-309) is pos 308, which is only 2 residues from TM4 (310) and fails the >=3-residue constraint. Because no specific alpha3 residue within ECL2 can be pinned from the published alpha1 position without violating the constraint, the site is reported at region level (ECL2, null residue). Evidence is indirect (alpha1 paralog). PMID 8916902 inserted a double HA epitope tag at position 318 of the full-length membrane-anchored alpha1 Na+/K+-ATPase subunit (ATP1A1, 1023 aa). Intact-cell immunofluorescence (L2) confirmed the tag at alpha1 pos 318 is extracellular. Alpha1 pos 318 maps to the 10th residue of ECL2 (alpha1 ECL2 ~309-319); the equivalent in alpha3 ECL2 (299-309) is pos 308, which is only 2 residues from TM4 start (310) and fails the >=3-residue constraint. No alpha3 residue within ECL2 satisfying the constraint can be pinned to the published alpha1 pos 318; the site is therefore reported at region level.",
+      "sources": [
+        {
+          "pmid": 8916902,
+          "citation": "PMID 8916902",
+          "claim": "Immunofluorescence analysis of permeabilized and intact cells using a monoclonal antibody specific for the HA epitope showed that double tags at positions 119 and 318 were located extracellularly, whereas single or double tags at positions 173, 815, 881, 987, and 1023 were cytoplasmically disposed. These results are consistent with an eight transmembrane domain arrangement for the alpha subunit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "ATP1A3-snorkel-c",
       "gene_symbol": "ATP1A3",
       "uniprot_acc": "P13637",
@@ -104,6 +179,69 @@
       "isoform_residue": 975,
       "canonical_residue": 975,
       "left_pct": 96.24876604146101
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:44:05.553707+00:00",
+  "literature_notes": "The ledger contains five clips (L1-L5). L1 and L2 (PMID 8916902) are the primary evidence source: they report HA-tag insertions at multiple positions in full-length, membrane-anchored alpha1 Na+/K+-ATPase (ATP1A1, 1023 aa), with intact-cell immunofluorescence confirming extracellular topology at alpha1 positions 119 and 318. ATP1A1 and ATP1A3 are paralogs (~87% identity); alpha1 has 10 more N-terminal cytoplasmic residues. ECL1 and ECL2 sequences are identical between the two isoforms, enabling position mapping by sequence alignment. Alpha1 pos 119 maps to alpha3 pos 109 (7th residue of the identical ECL1 'LAYGIQAGTEDDPSGDNLY'); alpha1 pos 318 maps to alpha3 pos 308 (10th residue of the identical ECL2 'LSLILGYTWLE'). Alpha3 pos 308 is only 2 residues from TM4 (310), failing the >=3-residue constraint, so ECL2 is reported at region level only. L3 (PMID 9790971) reports that alpha1 Leu973 is NOT extracellular; this maps to alpha3 pos ~963 and is recorded in other_positions. L4 and L5 (PMC9458724) report a full-length N-terminal Flag-tagged ATP1A3 construct used for purification; the N-terminus (residues 1-81) is intracellular per the computed topology, so this tag is cytoplasmic and goes in other_positions. Alpha1 positions confirmed cytoplasmic by L2 (173->alpha3 163, 815->805, 881->871, 987->977, 1023->1013) and positions where insertion abrogated function per L1 (338->328, 797->787, 805->795, 868->858, 895->885, 910->900, 921->911) are all recorded in other_positions. Note: alpha1 pos 881->alpha3 pos 871 falls in ECL4 (857-909) per the computed alpha3 topology, but L2 reports it as cytoplasmic in alpha1; the computed alpha3 topology is authoritative and this position is not promoted to a surface site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Full-length ATP1A3 N-terminal Flag tag (L4/L5, PMC9458724); residues 1-81 are intracellular per computed topology, so the tag faces the cytoplasm."
+    },
+    {
+      "residue": 163,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Alpha1 pos 173 (->alpha3 pos 163) HA tag confirmed cytoplasmic by intact-cell immunofluorescence in PMID 8916902; alpha3 pos 163 is in the intracellular domain (143-280)."
+    },
+    {
+      "residue": 328,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha1 pos 338 (->alpha3 pos 328) HA insertion abolished ouabain resistance in PMID 8916902; alpha3 pos 328 is at the TM4 C-terminal boundary (310-328)."
+    },
+    {
+      "residue": 787,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha1 pos 797 (->alpha3 pos 787) HA insertion abolished ouabain resistance in PMID 8916902; alpha3 pos 787 is in ECL3 (783-792)."
+    },
+    {
+      "residue": 795,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha1 pos 805 (->alpha3 pos 795) HA insertion abolished ouabain resistance in PMID 8916902; alpha3 pos 795 is in TM6 (793-813)."
+    },
+    {
+      "residue": 858,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha1 pos 868 (->alpha3 pos 858) HA insertion abolished ouabain resistance in PMID 8916902; alpha3 pos 858 is in ECL4 (857-909)."
+    },
+    {
+      "residue": 885,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha1 pos 895 (->alpha3 pos 885) HA insertion abolished ouabain resistance in PMID 8916902; alpha3 pos 885 is in ECL4 (857-909)."
+    },
+    {
+      "residue": 900,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha1 pos 910 (->alpha3 pos 900) HA insertion abolished ouabain resistance in PMID 8916902; alpha3 pos 900 is in ECL4 (857-909)."
+    },
+    {
+      "residue": 911,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Alpha1 pos 921 (->alpha3 pos 911) HA insertion abolished ouabain resistance in PMID 8916902; alpha3 pos 911 is in TM8 (910-926)."
     }
   ]
 }

@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "KREMEN1",
+  "uniprot_acc": "Q96MU8",
+  "sites": [
+    {
+      "site_id": "KREMEN1-terminal_n-19-lit",
+      "gene_symbol": "KREMEN1",
+      "uniprot_acc": "Q96MU8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / Flag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation in HEK293T cells confirmed homodimerization of Flag-Krm1 with HA-Krm1 full-length constructs (L3); L1 states the full-length tagged constructs were used in surface immunostaining experiments. Function (homodimerization) preserved.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the junction: 'after the signal peptide sequence,' which by the authoritative landmarks ends at residue 19 (A). The tag therefore sits between residue 19 (A, last signal-peptide residue) and residue 20 (A, mature N-terminus), placing it at the extracellular face 373 residues from the TM boundary \u2014 well clear of all constraints. Python confirmed residue 19 = A and residue 20 = A from the numbered sequence. The full-length membrane-anchored constructs were validated by co-IP (homodimerization preserved) and surface immunostaining as stated in L1. PMC6494814 (L1) explicitly states that HA and Flag tags were inserted after the signal peptide sequence of Krm1, generating full-length membrane-anchored constructs. L3 (same paper) confirms Flag-Krm1 and HA-Krm1 full-length constructs were expressed in HEK293T cells and subjected to anti-Flag co-immunoprecipitation, demonstrating homodimerization through the extracellular domain. L1 states these constructs were used in surface and co-immunoprecipitation experiments.",
+      "sources": [
+        {
+          "pmid": 31069116,
+          "citation": "PMID 31069116",
+          "claim": "HA or Flag tags were inserted after the signal peptide sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 19,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:04:52.745454+00:00",
+  "literature_notes": "L2 describes HA-Krm1secECD, a secreted truncation lacking the TM and intracellular domains; this construct is disqualified as a soluble ectodomain per the rules, but the tag position it uses is the same as L1 (after signal peptide) and L1 already grounds the site. L4, L5, and L6 (PMC13556202) describe Flag-tagged KRM1 from the pCMV3-KRM1-Flag commercial backbone; L6 does not state the tag position, and per the rules a commercial plasmid with unstated tag position cannot pin insert_after_residue \u2014 these clips therefore cannot independently ground a site, though the Flag-Krm1 constructs they describe are consistent with the L1-grounded site. W94A mentioned in L4\u2013L6 is a point-mutation functional variant, not a tag insertion, and is not placed in other_positions because the ledger clips do not report it as abrogating function in explicit terms (it is used as a comparator condition, not described as loss-of-function in these clips). The C-terminus of KREMEN1 is intracellular (residues 414\u2013473) and no ledger line supports a C-terminal extracellular tag. No internal loop insertions are reported in any ledger line.",
+  "literature_rejected": []
+}

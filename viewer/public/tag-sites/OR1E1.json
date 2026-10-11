@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR1E1-terminal_n-0-lit",
+      "gene_symbol": "OR1E1",
+      "uniprot_acc": "P30953",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG 8 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by Flag antibody immunofluorescence on live non-permeabilized HEK293T cells (L1). OR function not specifically measured for OR1E1 in this study.",
+      "confidence": "medium",
+      "rationale": "L3 explicitly states that the construct carries 'only an 8-amino acid Flag tag on the mature protein' at the N-terminus of the full-length OR, and L1 confirms OR1E1 surface detection by Flag antibody on live cells. OR1E1 has no signal peptide per the computed topology (residues 1-28 are extracellular), so the mature protein begins at residue 1 (M) and the tag prepends before it (insert_after_residue=0). The N-terminal extracellular span is 28 residues, placing the junction 28 residues from TM1 (residue 29), well above the \u22653-residue minimum. No specific residue number is named in the paper; the position is derived from the single extracellular terminus of this GPCR-type receptor. PMC3698168 tested 15 human ORs including OR1E1 in HEK293T cells using constructs carrying an 8-amino-acid Flag tag on the mature N-terminus of the full-length, membrane-anchored OR. Surface expression was assessed by Flag antibody labeling of live, non-permeabilized cells. OR1E1 was among the ORs detected at the cell surface.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "In fact, two-thirds of Lucy-tagged ORs are able to reach the cell surface synergistically with chaperones even when the Rho tag is removed (10/15 ORs), allowing for the potential assessment of OR function with only an 8-amino acid Flag tag on the mature protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:36:05.982972+00:00",
+  "literature_notes": "All three ledger lines derive from the same paper (PMC3698168), which tests a panel of 15 human ORs including OR1E1 with N-terminal Flag-tagged constructs in HEK293T cells. L3 is the most informative, specifying an 8 aa Flag tag on the mature N-terminus of the full-length OR. L1 confirms surface detection of Flag-tagged ORs by live-cell immunofluorescence. L2 describes the Lucy trafficking tag added to the N-terminus to boost surface expression; the Lucy tag is cleavable and is not itself the surface epitope tag. No ledger line names a specific residue number for the Flag insertion, and no internal loop insertions are reported for OR1E1 or any close ortholog in the ledger. The paper does not report OR1E1-specific functional data (e.g., cAMP or calcium response to odorant ligand), so validation_level is surface_only. The Lucy tag construct (L2) is a cleavable trafficking aid, not a permanent surface tag, and is not proposed as a separate site. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCRL5",
+  "uniprot_acc": "Q96RD9",
+  "sites": [
+    {
+      "site_id": "FCRL5-terminal_n-15-lit",
+      "gene_symbol": "FCRL5",
+      "uniprot_acc": "Q96RD9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 15,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G15",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "gD epitope",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunological synapse formation evaluated in SVT2 cells (L1); TDB-mediated killing assay confirmed surface display of the gD epitope on cells expressing the tagged full-length construct (L3); construct was functional in both assays.",
+      "confidence": "high",
+      "rationale": "All three ledger lines describe the same membrane-anchored FCRL5 construct bearing an N-terminal gD epitope tag. The signal peptide (residues 1\u201315) is cleaved co-translationally, so the tag must be inserted after residue 15 to remain on the extracellular face; placing it upstream would result in silent cleavage. Python confirms seq[14]='G' (residue 15) and seq[15]='Q' (residue 16), and the tag sits 832 residues from the TM boundary (848), well clear of any constraint. The C-terminus is intracellular, making this the only extracellular terminus and the position unambiguous by topology. Full-length FCRL5 with an N-terminal gD expression tag was expressed in SVT2 cells via retrovirus (L1) and in a lentiviral vector as an FcRH5-mRuby2 fusion (L2); surface display of the gD epitope was confirmed in TDB killing assays (L3). No residue number is stated in any clip; the signal peptide spans residues 1\u201315 and the mature N-terminus begins at residue 16 (Q), making this the sole extracellular terminus. The junction is therefore computed as insert_after_residue=15 (G|Q).",
+      "sources": [
+        {
+          "pmid": 28262555,
+          "citation": "PMID 28262555",
+          "claim": "To evaluate the immunological synapse formation, SVT2 cells were infected with retrovirus encoding full-length FcRH5 with N-terminal gD expression tag or truncated FcRH5 (deletion of AA1-744) with N-terminal gD tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:48:45.380722+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) ground the same single site: the N-terminal gD epitope tag on full-length membrane-anchored FCRL5, placed after signal-peptide cleavage at residue 15. No ledger line names a specific residue number; the junction is topology-derived from the signal-peptide landmark. L2 additionally describes a C-terminal mRuby2 fusion, but the C-terminus of FCRL5 is intracellular (residues 870\u2013977) and therefore not a surface tag site; it is recorded in other_positions. No ledger line supports any internal loop insertion.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 977,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "mRuby2 fluorescent protein was fused to the C-terminus of FCRL5 in the pHR-FcRH5-mRuby2 lentiviral construct; the C-terminus (residues 870\u2013977) is intracellular and not accessible for extracellular surface tagging."
+    }
+  ]
+}

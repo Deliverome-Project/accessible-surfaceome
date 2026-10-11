@@ -105,5 +105,12 @@
       "canonical_residue": 49,
       "left_pct": 17.753623188405797
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:35:33.665455+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) confirm that an HA epitope-tagged PLPP2 (PAP-2c) construct was expressed in HEK293 and Sf9 cells and produced functional, membrane-associated PAP activity (L1). L2 further notes that HA-tagged PAP-2c did not display surface-accessible enzymatic activity in intact insect cells, consistent with the active site being oriented toward the lumen/cytoplasm rather than the extracellular face. However, neither L1 nor L2 states WHERE the HA tag was inserted \u2014 no residue number, no loop name, no terminus is specified. PLPP2 has no extracellular terminus (N-terminus residues 1\u20137 are intracellular; C-terminus residues 244\u2013288 are intracellular), so the topology_derived path (exactly one extracellular terminus) is also unavailable. The tag could reside in any of the three extracellular loops (29\u201354, 121\u2013170, 213\u2013224) or at an intracellular terminus; there is no basis to pin it. This matches the explicit disqualifying criterion: 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' No other ledger lines exist. Zero sites qualify.",
+  "literature_rejected": []
 }

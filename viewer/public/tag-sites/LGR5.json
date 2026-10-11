@@ -37,6 +37,44 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LGR5-terminal_n-21-lit",
+      "gene_symbol": "LGR5",
+      "uniprot_acc": "O75473",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "MarsCy1 FP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Confocal microscopy confirmed normal plasma-membrane trafficking and internalization indistinguishable from untagged LGR5; cell-surface display verified by SCi1 dye labelling of live cells.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states MarsCy1 was inserted 'immediately following the 5'-signal sequence of Lgr5', which by the authoritative landmarks ends at residue 21; the tag therefore sits between residue 21 (G) and residue 22 (G), the mature N-terminus. Python confirmed seq[20]='G' and seq[21]='G'. L3 and L4 from the same paper confirm trafficking and surface expression are unperturbed, and L1/L5/L6/L7 independently corroborate N-terminal tagging at the same junction with 3xHA or HA tags in separate studies. The 540-residue extracellular LRR ectodomain provides ample steric space for a short epitope tag at this terminus. Full-length human LGR5 with MarsCy1 fluorescent protein inserted immediately following the 5'-signal sequence (residues 1\u201321), creating a dual-tagged receptor (MarsCy1 N-terminal, EGFP C-terminal) expressed in mammalian cells and imaged by confocal microscopy.",
+      "sources": [
+        {
+          "pmid": 26678094,
+          "citation": "PMID 26678094",
+          "claim": "To confer appropriate trafficking MarsCy1 was inserted immediately following the 5\u2019-signal sequence of Lgr5."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 21,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -63,6 +101,21 @@
       "canonical_residue": null,
       "left_pct": 3.1137724550898205,
       "note": "Isoform surface expr 387 (+37% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:07:19.751014+00:00",
+  "literature_notes": "All seven ledger lines converge on a single extracellular junction: the mature N-terminus of LGR5 immediately after the signal peptide (residues 1\u201321). L2/L3/L4/L7 (MarsCy1 FP) and L1/L5/L6 (3xHA or HA) independently validate the same insert_after_residue=21 position with different tag chemistries. No ledger line reports any insertion in the large extracellular LRR domain (residues 22\u2013561) at an internal loop, nor in any of the short extracellular loops of the 7TM bundle (ECL1 617\u2013638, ECL2 702\u2013724, ECL3 792\u2013799). The C-terminal EGFP and V2R-eGFP fusions mentioned in L1, L5, and L6 land in the intracellular C-tail (topology: INTRACELLULAR 824\u2013907) and are recorded in other_positions. No ledger line reports any insertion that abrogates LGR5 function.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 907,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion (and V2R-eGFP in L5/L6) appended after the last residue of LGR5; topology landmarks place residues 824\u2013907 in the intracellular C-tail, so this is not an extracellular surface-tag site."
     }
   ]
 }

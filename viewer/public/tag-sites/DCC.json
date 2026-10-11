@@ -1,0 +1,104 @@
+{
+  "has_data": true,
+  "gene_symbol": "DCC",
+  "uniprot_acc": "P43146",
+  "sites": [
+    {
+      "site_id": "DCC-internal-1090-lit",
+      "gene_symbol": "DCC",
+      "uniprot_acc": "P43146",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 1090,
+      "residue_before": "V",
+      "residue_after": "T",
+      "residue_label": "V1090",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "pHluorin (pH-sensitive GFP)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "The construct was used to report surface-displayed DCC in neurons; the clip describes it as designed for this purpose but does not report a quantitative functional assay result beyond surface-reporting utility. NOT MEASURED for netrin-1 binding or axon guidance function.",
+      "confidence": "medium",
+      "rationale": "L3 explicitly states pHluorin was 'inserted in position 1090' of rat Dcc. Python confirms that in the human DCC canonical sequence, residue 1090 = V and residue 1091 = T, and position 1090 falls within the extracellular span (26\u20131099), 10 residues from the TM boundary (1100), satisfying the \u22653-residue clearance rule. The rat Dcc ortholog is a close ortholog; the topology is conserved. The insert_after_residue=1090 interpretation (tag between V1090 and T1091) is consistent with 'inserted in position 1090' meaning at the codon for residue 1090. A rat Dcc-pHluorin construct was engineered by inserting a pH-sensitive GFP at position 1090 of Dcc (rat ortholog), creating a surface-reporting construct used in neuronal studies. The construct is full-length and membrane-anchored, designed to report surface-displayed DCC.",
+      "sources": [
+        {
+          "pmid": 39774925,
+          "citation": "PMID 39774925",
+          "claim": "Expression plasmids for LacZ, Pard3a, Siah2, Siah2\u0394RING, and H2B-mCherry were subcloned as previously described 6 , 7 pCIG2 Dcc-pHluorin (Dcc-pH), with a pH-sensitive form of green fluorescent protein (GFP) 50 inserted in position 1090, was obtained from Franck Polleux at Columbia University."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "DCC-terminal_n-25-lit",
+      "gene_symbol": "DCC",
+      "uniprot_acc": "P43146",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "A",
+      "residue_after": "H",
+      "residue_label": "A25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Flow cytometry on transiently transfected HEK293T cells confirmed cell-surface expression of the FLAG-tagged full-length DCC construct.",
+      "confidence": "high",
+      "rationale": "The ledger (L1/L2) reports a full-length, membrane-anchored human DCC construct with an N-terminal FLAG tag whose DCC portion begins at H26 (the mature N-terminus after signal-peptide cleavage at residue 25). Python confirms residue 25 = A and residue 26 = H. The tag is placed after residue 25 (insert_after_residue=25), which is the only extracellular N-terminal junction available once the signal peptide is cleaved. Surface expression was validated by flow cytometry (L2). Full-length human DCC (H26\u2013I1442) expressed in HEK293T cells with an N-terminal FLAG tag inserted after the signal-peptide cleavage site (residue 25), creating a membrane-anchored construct. The construct description 'H26-I1442' explicitly anchors the DCC mature sequence starting at H26, placing the FLAG between residue 25 and 26.",
+      "sources": [
+        {
+          "pmid": 24400119,
+          "citation": "PMID 24400119",
+          "claim": "N-terminal flag-tagged (MGGTAARLGAVILFVVIVGLHGVRGKDYKDDDDKLE), full-length and deletion constructs for human DCC are as follows: Flag-DCC full-length (H26-I1442); Flag-DCC Ig1-4 (H26-S425-BamH1-L1098-I1442); Flag-DCC FN1-6 (S426-I1442), Flag-DCC FN4-6 (E722-I1442)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:13:54.784861+00:00",
+  "literature_notes": "L1 and L2 both ground the same N-terminal FLAG site; L2 is the surface-expression confirmation of L1's construct, so they are treated as one site with L1 as the primary clip. L4 (\u0394cyto-3xHA) places a 3xHA tag at the C-terminus of a truncated rat Dcc construct ending at residue 1125, which is intracellular (TM ends at 1120); this is recorded in other_positions. L5 (DCC-HaloTag) places HaloTag at the C-terminus of full-length human DCC (residue 1447), which is also intracellular; recorded in other_positions. Neither L4 nor L5 qualifies as a surface tag site. The pHluorin site (L3) is from rat Dcc but is treated as a close ortholog with conserved topology; position_evidence is 'validated' because the paper names residue 1090 explicitly, but confidence is medium because it is a rat construct and the functional impact on DCC signaling was not measured.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1125,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "3xHA tag placed at the C-terminus of a rat Dcc truncation construct ending at residue 1125 (3 residues into the intracellular domain, TM ends at 1120); this is an intracellular tag, not a surface tag site."
+    },
+    {
+      "residue": 1447,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "HaloTag fused to the C-terminus of full-length human DCC at residue 1447, which is intracellular; not a surface tag site."
+    }
+  ]
+}

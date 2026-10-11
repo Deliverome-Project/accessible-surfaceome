@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRIA3",
+  "uniprot_acc": "P42263",
+  "sites": [
+    {
+      "site_id": "GRIA3-terminal_n-28-lit",
+      "gene_symbol": "GRIA3",
+      "uniprot_acc": "P42263",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed (FLAG construct, L1). GFP/SEP-GluA3 (L3/L4, same junction) showed normal surface mobility by FRAP and was used to rescue A\u03b2-mediated synaptic depression in GluA3-KO neurons, indicating functional competence of the tagged receptor.",
+      "confidence": "high",
+      "rationale": "Signal peptide spans residues 1\u201328 (computed landmarks); the mature extracellular domain begins at residue 29. Python verification confirms residue 28 = G and residue 29 = G. L1 explicitly states the FLAG tag follows the signal peptide, making this a validated exact-site insertion. The tag sits 526 residues from TM1 (residue 555), well clear of any TM boundary. L4 (same N-terminal junction, topology-derived) demonstrates the GFP-tagged construct participates in synaptic function assays in neurons, supporting surface_and_function classification. Full-length human GluA3 expressed in a membrane-anchored context with a FLAG epitope inserted immediately after the 28-residue signal peptide cleavage site, placing the tag at the N-terminus of the large extracellular domain (residues 29\u2013554). Corroborated by PMC11867010 (L2/L3/L4), which reports GFP- and SEP-tagged rat GluA3 (flip isoform) used for surface FRAP imaging and A\u03b2-mediated synaptic depression assays in CA1 neurons; 'GFP-GluA3' naming and surface-display requirement place those tags at the same N-terminal junction by topology.",
+      "sources": [
+        {
+          "pmid": 40592473,
+          "citation": "PMID 40592473",
+          "claim": "The GluA3 construct was tagged with a Flag epitope at the N terminus, immediately following the signal peptide."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 28,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:45:57.069875+00:00",
+  "literature_notes": "L2, L3, and L4 (all PMC11867010) describe GFP- and SEP-tagged GluA3 constructs used for surface FRAP and synaptic assays. The 'GFP-GluA3' naming convention and the requirement for extracellular display (SEP is pH-sensitive and reports surface receptors) place these tags at the N-terminus after the signal peptide \u2014 the only extracellular terminus of this type-I receptor \u2014 converging on the same junction as L1 (insert_after_residue=28). Because all four ledger lines pin the same junction, this is one site, not multiple. The S885A and K887A mutations mentioned in L2 are point mutations in the intracellular C-tail (residues 845\u2013894), not tag insertions, and do not qualify as other_positions. No ledger line supports any internal loop insertion or a second distinct extracellular site.",
+  "literature_rejected": []
+}

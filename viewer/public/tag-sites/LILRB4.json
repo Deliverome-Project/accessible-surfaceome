@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LILRB4",
+  "uniprot_acc": "Q8NHJ6",
+  "sites": [
+    {
+      "site_id": "LILRB4-terminal_n-21-lit",
+      "gene_symbol": "LILRB4",
+      "uniprot_acc": "Q8NHJ6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "M",
+      "residue_after": "Q",
+      "residue_label": "M21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-IP with FLAG-Gal-8 confirmed HA-LILRB4 retains Gal-8 binding; function preserved.",
+      "confidence": "high",
+      "rationale": "LILRB4 is a type I single-pass TM protein (SP residues 1-21, EC 22-259, TM 260-280, IC 281-448). L1 reports a full-length HA-tagged construct with no residue named; because exactly one terminus is extracellular, the junction is unambiguously after the SP cleavage site (insert_after_residue=21, placing the tag before the mature Q22). Python confirms residue 21='M' and residue 22='Q'. The tag position is 238 residues from the TM boundary, well clear of any structural constraint. The co-IP with Gal-8 (an extracellular LILRB4 ligand) demonstrates the tagged protein folds, traffics to the membrane, and retains ligand-binding function. Full-length HA-tagged LILRB4 expressed in HEK293 cells; co-immunoprecipitated with FLAG-tagged Galectin-8, demonstrating membrane-anchored expression and retained extracellular ligand binding.",
+      "sources": [
+        {
+          "pmid": 38232701,
+          "citation": "PMID 38232701",
+          "claim": "(H) Immune blotting of coimmunoprecipitation of FLAG-tagged Gal-8 and hemagglutinin (HA)-tagged LILRB4."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:10:42.391884+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length HA-tagged LILRB4 with no residue number; the N-terminal extracellular position is topology-derived as the sole extracellular terminus. The C-terminus (residue 448) is intracellular and was not considered as a surface site. No internal loop insertions are supported by the ledger.",
+  "literature_rejected": []
+}

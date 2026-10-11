@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FFAR1-terminal_n-0-lit",
+      "gene_symbol": "FFAR1",
+      "uniprot_acc": "O14842",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor was expressed, membrane-anchored, and purified via anti-FLAG affinity chromatography for structural studies, confirming extracellular accessibility of the FLAG tag. No independent signaling or ligand-binding functional assay is reported for this specific tagged construct in L1; the co-present T4L insertion likely perturbs G-protein coupling independently of the FLAG.",
+      "confidence": "medium",
+      "rationale": "FFAR1 is a GPCR with no endogenous signal peptide; its N-terminus (residues 1\u20136, MDLPPQ) is extracellular per the authoritative topology landmarks, and TM1 begins at residue 7. A tag prepended before M1 (insert_after_residue=0) sits entirely in the extracellular span and is \u22656 residues from the TM1 boundary, satisfying the \u22653-residue clearance rule. L1 explicitly states the FLAG tag is N-terminal in a full-length, membrane-anchored construct expressed in insect cells; no residue number is given, but for a GPCR with a single extracellular N-terminus the junction is uniquely determined (topology_derived). The FLAG was used for affinity purification, confirming extracellular accessibility, but no functional assay for the FLAG-bearing construct alone is reported. Full-length human FFAR1 expressed in insect cells (pFastBac/baculovirus) with a heterologous HA signal sequence followed by a FLAG tag prepended to the receptor N-terminus. The HA signal drives membrane insertion and is cleaved post-translationally, leaving the FLAG tag exposed at the extracellular N-terminus (residues 1\u20136, MDLPPQ, are extracellular per topology). The construct also carries a T4 lysozyme insertion (intracellular, for thermostabilization) and was used for structural studies (PMC10235965).",
+      "sources": [
+        {
+          "pmid": 37216523,
+          "citation": "PMID 37216523",
+          "claim": "The codon-optimized human FFAR1 (hFFAR1) gene bearing an N-terminal HA signal sequence, FLAG tag, and a T4 lysozyme was synthesized (GenScript) and subcloned into the pFastBac vector (Thermo Fisher)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:47:47.190235+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. L1 describes a full-length FFAR1 construct in pFastBac bearing an N-terminal HA signal sequence, FLAG tag, and T4 lysozyme insertion. The FLAG tag qualifies: the construct is membrane-anchored (not a secreted ectodomain or Fc-fusion), the tag is extracellular (N-terminal, topology-confirmed), and the position is uniquely determined by topology (insert_after_residue=0, prepend). The T4 lysozyme insertion is not pinned to a specific residue in L1 and is almost certainly intracellular (ICL3, residues 204\u2013224), so it cannot be entered in other_positions with a residue number. No other extracellular loop insertions, internal tags, or functional-assay data for FFAR1 are present in the ledger. The short N-terminal extracellular span (only 6 residues before TM1) means a prepended tag must rely on the linker/tag itself for spacing from the membrane; this is standard practice for N-terminally tagged GPCRs and is what the cited construct implements. Confidence is medium rather than high because (a) no specific residue number is cited, requiring topology derivation, and (b) no independent functional validation of the FLAG-tagged construct (without T4L) is reported.",
+  "literature_rejected": []
 }

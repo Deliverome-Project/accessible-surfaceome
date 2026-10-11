@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNJ6",
+  "uniprot_acc": "P48051",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:50:45.875048+00:00",
+  "literature_notes": "KCNJ6 (GIRK2) has a two-TM topology with both the N-terminus (residues 1-89) and C-terminus (residues 189-423) intracellular; the only extracellular region is the 52-residue loop between TM1 and TM2 (residues 115-166). The sole ledger entry, L1, reports a GIRK2.eGFP fusion detected at the plasma membrane in cone photoreceptors. The dot notation (GIRK2.eGFP) is standard for a C-terminal fusion, placing the GFP at the intracellular C-terminus (~residue 423). No junction residue is stated in L1, and neither terminus of GIRK2 is extracellular, so the topology-derived rule (which requires exactly one extracellular terminus) cannot be applied to derive a surface site. The clip establishes that a C-terminal GFP fusion is tolerated and the channel traffics to the plasma membrane, but this is an intracellular tag, not an extracellular surface tag. No ledger line grounds any insertion in the extracellular loop (115-166) or at any extracellular position. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 423,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GIRK2.eGFP C-terminal fusion tolerated and traffics to the plasma membrane in cone photoreceptors (rd1 mouse), but the C-terminus (residue 423, V) is intracellular (topology residues 189-423); not a surface tag site."
+    }
+  ]
+}

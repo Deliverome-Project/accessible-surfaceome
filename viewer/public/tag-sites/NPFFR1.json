@@ -37,7 +37,96 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NPFFR1-terminal_n-0-lit",
+      "gene_symbol": "NPFFR1",
+      "uniprot_acc": "Q9GZQ6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "NanoLuciferase (Nluc)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Used as BRET donor in a ligand-binding assay; the paper notes this construct had lower assay stability and lower BRET signal than the \u03941-20 version (L1), but it was functional enough to serve as the initial assay platform.",
+      "confidence": "medium",
+      "rationale": "The paper reports Nluc fused to 'the N-terminus of NPFFR1' with no specific residue named; the topology assigns residues 1\u201342 as the sole extracellular N-terminal span with no signal peptide, so the tag prepends before residue 1 (M) \u2014 the only possible extracellular N-terminal position. The prepend is 42 residues from TM1 (43), satisfying the \u22653-residue constraint. Ranked below L1 because no residue is named and the construct was superseded by the \u03941-20 version. Full-length NPFFR1 with Nluc fused directly to the N-terminus (no deletion), used as the BRET donor in a binding assay with fluorescently labeled NPFF/NPVF analogs; this is the initial construct from the same study as L1.",
+      "sources": [
+        {
+          "pmid": 42181706,
+          "citation": "PMID 42181706",
+          "claim": "Fluorescently labeled NPFF and NPVF analogs were synthesized by conjugating a 6-carboxytetramethylrhodamine fluorophore at distinct positions, while a nanoluciferase was fused to the N-terminus of the NPFFR1 to serve as the BRET donor."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NPFFR1-terminal_n-20-lit",
+      "gene_symbol": "NPFFR1",
+      "uniprot_acc": "Q9GZQ6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "T",
+      "residue_after": "N",
+      "residue_label": "T20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "NanoLuciferase (Nluc)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "BRET-based binding assay with fluorescently labeled NPFF/NPVF analogs: construct produced a measurable BRET signal and was used as the primary assay platform; described as having improved assay stability and increased BRET signal relative to the non-truncated N-terminal fusion.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states that residues 1\u201320 are deleted and Nluc is fused to the N-terminus of the truncated receptor, pinning the junction unambiguously to after canonical residue 20 (T) and before residue 21 (N), both confirmed from the numbered sequence. Residue 20 lies within the extracellular N-terminal span (1\u201342), 22 residues from TM1 (43), well clear of the \u22653-residue boundary requirement. The construct was used in a functional BRET ligand-binding assay, demonstrating surface expression and preserved ligand-binding activity. Full-length NPFFR1 with residues 1\u201320 deleted and Nluc fused to the resulting new N-terminus, co-expressed with eYFP at the C-terminus (\u03941-20-Nluc-NPFFR1-eYFP), expressed in mammalian cells for a BRET-based ligand-binding assay.",
+      "sources": [
+        {
+          "pmid": 42181706,
+          "citation": "PMID 42181706",
+          "claim": "Thus, to improve the assay stability and increase the BRET signal, the twenty N-terminal amino acids in the NPFFR1 were deleted, resulting in the \u03941-20-Nluc-NPFFR1-eYFP receptor construct ( Fig. 3A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:09:43.706313+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) are from the same paper (PMC13191738) and both report Nluc fused to the extracellular N-terminus of NPFFR1. L1 explicitly names the deletion of residues 1\u201320, pinning the junction to after residue 20 (validated). L2 names only 'the N-terminus' with no residue, yielding a topology-derived prepend at position 0. The eYFP C-terminal fusion in L1 is intracellular (C-terminus falls in the 332\u2013430 intracellular span) and is recorded in other_positions. No ledger evidence supports any internal extracellular loop insertion for NPFFR1. No signal peptide is present in the topology (the sequence begins extracellular at residue 1), so no upstream cleavage concern applies to either N-terminal site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 430,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eYFP fused to the C-terminus of NPFFR1 in the \u03941-20-Nluc-NPFFR1-eYFP construct; the C-terminus (residue 430) lies within the intracellular span 332\u2013430 and is not accessible on the extracellular face."
+    }
+  ]
 }

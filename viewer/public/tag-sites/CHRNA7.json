@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "CHRNA7",
+  "uniprot_acc": "P36544",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:36:25.743898+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe fluorescent-protein insertions (mCherry at residue 391, YFP at an unspecified position) in the M3-M4 cytoplasmic loop of full-length \u03b17 nAChR. Per the authoritative topology landmarks, the M3-M4 loop spans residues 318\u2013469 and is entirely intracellular. No ledger line reports any tag insertion in an extracellular region of CHRNA7 (the large N-terminal ectodomain 23\u2013230, the short EC2 loop 281\u2013295, or the C-terminal tail 491\u2013502). Because the ledger provides zero extracellular insertion evidence, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 391,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "mCherry inserted at residue 391 in the M3-M4 cytoplasmic loop (318\u2013469); construct retains functional properties but the site is intracellular, not a surface tag site."
+    },
+    {
+      "residue": 0,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "YFP inserted into a structurally disordered region of the M3-M4 cytoplasmic loop; no specific residue named; intracellular, not a surface tag site."
+    },
+    {
+      "residue": 0,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Same YFP-in-M3-M4-loop parent construct as L2, used for binding, trafficking, and electrophysiology assays; intracellular insertion, not a surface tag site."
+    }
+  ]
+}

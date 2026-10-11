@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PANX3",
+  "uniprot_acc": "Q96QZ0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:10:40.942055+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe a single construct: PANX3-HA, in which the C-terminal FLAG tag of the Origene PS100001 vector was replaced by an HA tag. The PANX3 C-terminus (residues 289\u2013392) is intracellular per the authoritative topology landmarks. The tag therefore faces the cytoplasm, not the extracellular surface, and does not qualify as a surface tag site. No other insertion \u2014 epitope, fluorescent protein, transposon, or domain insertion \u2014 at any extracellular position of PANX3 or a close ortholog appears in the ledger. The two extracellular loops (EL1: 60\u2013108; EL2: 233\u2013267) are entirely unsupported by any ledger line. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 392,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal HA tag (replacing FLAG from Origene PS100001 vector) appended after the last residue P392, which lies in the intracellular C-terminal domain (residues 289\u2013392); L1 confirms predominantly intracellular localization of the tagged construct."
+    }
+  ]
+}

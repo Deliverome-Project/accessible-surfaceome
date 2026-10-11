@@ -1,0 +1,59 @@
+{
+  "has_data": true,
+  "gene_symbol": "ACVRL1",
+  "uniprot_acc": "P37023",
+  "sites": [
+    {
+      "site_id": "ACVRL1-terminal_n-21-lit",
+      "gene_symbol": "ACVRL1",
+      "uniprot_acc": "P37023",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "D",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Halo / SNAP (5xGly linker)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by impermeable cell-impermeant CA-Alexa488 (for Halo) or BG-Alexa488 (for SNAP) staining of live cells; all tagged receptors in the library were positively detected. No signaling or ligand-binding assay reported for the tagged construct.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the tag is placed 'downstream the signal peptide sequence' with a 5x glycine linker; for ACVRL1 the signal peptide spans residues 1\u201321 (computed), so the junction is after residue 21 (G) and before residue 22 (D), the mature N-terminus. L3 (same paper) confirms cell-surface display by impermeable dye staining. The extracellular domain is 99 residues long (22\u2013120), providing ample space before the TM helix at residue 121. Full-length hALK1 subcloned into pcDNA3.1 mUnc5b-SNAP/Halo backbone; Halo- or SNAP-tag fused N-terminally with a 5x glycine linker placed explicitly downstream of the signal peptide sequence, generating intact membrane-anchored receptor. Expressed in mammalian cells.",
+      "sources": [
+        {
+          "pmid": 36635368,
+          "citation": "PMID 36635368",
+          "claim": "BMP/TGF\u03b2 receptors, including type I receptors (hALK1-ALK6, rALK7, and hALK2-R206H) and type II receptors (hACVR2A, hACVR2B, hBMPR2, and hTGFBR2) were, therefore, N-terminally fused with Halo- or SNAP-tags separated by a 5x glycine linker downstream the signal peptide sequence, to obtain the receptor library shown in Fig. 1c ."
+        },
+        {
+          "pmid": 33566682,
+          "citation": "PMID 33566682",
+          "claim": "To this end, we initially coexpressed extracellularly tagged HA-ALK1 (wild type [WT], constitutively active Q201D, or kinase-dead K221R) together with myc-T\u03b2RIII."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 21,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:58:03.054772+00:00",
+  "literature_notes": "All four ledger lines concern the same junction: the N-terminal extracellular position immediately after signal-peptide cleavage (after residue 21). L1, L2, and L3 are from the same publication (PMC9837045) and together constitute a validated, surface-confirmed insertion of Halo/SNAP tags at this exact site; L2 is cited as the primary evidence because it most explicitly states the position ('downstream the signal peptide sequence'). L4 (PMC8101464) independently reports an HA-tagged ALK1 described as 'extracellularly tagged' with no residue specified; topology derivation places it at the same junction. No ledger line supports any internal extracellular loop insertion or a C-terminal extracellular tag (the C-terminus is intracellular). No other_positions are reported because no ledger line describes a tolerated intracellular insertion or a function-abrogating insertion for ACVRL1.",
+  "literature_rejected": []
+}

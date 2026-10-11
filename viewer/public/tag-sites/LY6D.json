@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LY6D",
+  "uniprot_acc": "Q14210",
+  "sites": [
+    {
+      "site_id": "LY6D-terminal_n-20-lit",
+      "gene_symbol": "LY6D",
+      "uniprot_acc": "Q14210",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "T",
+      "residue_after": "L",
+      "residue_label": "T20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display confirmed by tag-specific antibody detection on intact cells; constructs were used to study LY6D surface localisation. Functional impact on GPI-anchored protein activity not explicitly quantified in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 and L2 both explicitly name the 20/21 junction as the insertion site in full-length, membrane-anchored LY6D. Python verification confirms residue 20 = T (last SP residue) and residue 21 = L (first mature-protein residue), consistent with the topology landmark (mature N-terminus = 21). The entire mature protein (residues 21\u2013128) is extracellular in this GPI-anchored protein, so the tag sits on the extracellular face with no TM boundary proximity concern. L1 is cited as the primary construction record; L2 corroborates with the surface-accessibility rationale. Full-length LY6D expressed in mammalian cells (pcDNA3 vector); HA tag (YPYDVPDYA) and FLAG tag (DYKDDDDK) each inserted independently between residues 20 and 21 \u2014 immediately after the signal-peptide cleavage site \u2014 to generate 20HA-LY6D and 20Flag-LY6D constructs. The authors explicitly chose this junction because the signal sequence (residues 1\u201320) is cleaved upon ER entry, placing the tag at the mature extracellular N-terminus where it is accessible to tag-specific antibodies on the cell surface.",
+      "sources": [
+        {
+          "pmid": 33168631,
+          "citation": "PMID 33168631",
+          "claim": "For the construction of LY6D containing an internal HA tag (20HA-LY6D) or Flag tag (20Flag-LY6D) between amino acid residues 20 and 21, DNA fragments corresponding to the 5\u2019 of LY6D (1-60 bp), the HA (TACCCATACGACGTGCCAGACTACGCC) or Flag tag (GACTACAAAGACGATGACGACAAG) sequence, and the 3\u2019 of LY6D (61-387 bp) were ligated in this order to the pcDNA3 vector by using the In-Fusion cloning system (Takara Bio, Shiga, Japan) to generate pcDNA3-20HA-LY6D and pcDNA3-20Flag-LY6D."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:27:28.065893+00:00",
+  "literature_notes": "The ledger contains two clips (L1, L2) from the same paper (PMC7948989), both describing the identical 20/21 junction with HA and FLAG tags in full-length LY6D. No other junctions or loops are mentioned in the ledger. LY6D is a GPI-anchored Ly6/uPAR-family protein with no transmembrane domain; the entire mature sequence (residues 21\u2013128) is extracellular. The signal peptide (residues 1\u201320) is cleaved, so the 20/21 junction is the only extracellular terminus available. No internal loop insertions, C-terminal tags, or other positions appear in the ledger.",
+  "literature_rejected": []
+}

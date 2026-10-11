@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD300LF",
+  "uniprot_acc": "Q8TDQ1",
+  "sites": [
+    {
+      "site_id": "CD300LF-terminal_n-19-lit",
+      "gene_symbol": "CD300LF",
+      "uniprot_acc": "Q8TDQ1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "V",
+      "residue_after": "T",
+      "residue_label": "V19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "c-Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct expressed in CHO cells and used for binding/functional studies; surface expression implied by use of the myc tag for detection, but no explicit surface-flow or functional rescue assay result is quoted in the ledger clip.",
+      "confidence": "high",
+      "rationale": "CD300LF is a type I single-pass transmembrane protein with its N-terminus extracellular (residues 20\u2013156) and its C-terminus intracellular (residues 178\u2013290). An 'amino-terminal' tag on a full-length, membrane-anchored construct of this topology can only reside on the extracellular face. The signal peptide spans residues 1\u201319 and is cleaved co-translationally, so the tag must be inserted after residue 19 (the last SP residue, V) and before residue 20 (T, the mature N-terminus) to survive to the cell surface; placing it upstream of residue 19 would result in co-cleavage with the signal peptide. The junction is 137 residues from the TM boundary, satisfying all distance constraints. Position is topology-derived because the paper names no specific residue. Full-length CD300f (Isoform 1) with an amino-terminal c-myc epitope tag expressed in CHO cells as a membrane-anchored construct (PMC6763785). No specific residue number is named in the paper; the tag is described only as 'amino-terminal'.",
+      "sources": [
+        {
+          "pmid": 31338922,
+          "citation": "PMID 31338922",
+          "claim": "Full\u2010length CD300f cDNA (Isoform 1) containing an amino\u2010terminal c\u2010myc epitope was expressed under the CMV promoter of the pBud vector in CHO cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:14:36.597646+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length, membrane-anchored CD300f construct with an amino-terminal c-myc tag expressed in CHO cells. Because CD300LF is a type I single-pass TM protein, the N-terminus is the sole extracellular terminus, making the junction after the signal peptide cleavage site (after residue 19) the only possible location for this tag. No residue number is stated in the paper, so position_evidence is topology_derived. No internal extracellular loop insertions are supported by the ledger. The intracellular C-terminus (residues 178\u2013290) is not a surface-tag candidate and is not proposed.",
+  "literature_rejected": []
+}

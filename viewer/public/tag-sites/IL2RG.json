@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL2RG",
+  "uniprot_acc": "P31785",
+  "sites": [
+    {
+      "site_id": "IL2RG-terminal_n-22-lit",
+      "gene_symbol": "IL2RG",
+      "uniprot_acc": "P31785",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-Flag flow cytometry on intact HEK293 cells; cytokine-receptor function of the WT tagged construct not explicitly assayed (used as reference backbone for variant studies).",
+      "confidence": "medium",
+      "rationale": "IL2RG is a Type I single-pass transmembrane protein: the ectodomain (residues 23\u2013262) is N-terminal and extracellular, the C-terminus (residues 280\u2013369) is intracellular. Because the Flag antibody detects the tag on the surface of intact cells, the 3\u00d7Flag must reside in the extracellular domain. There is exactly one extracellular terminus \u2014 the mature N-terminus beginning at residue 23 (after signal-peptide cleavage at residue 22) \u2014 so the tag is placed immediately after the signal peptide, between residue 22 (G) and residue 23 (L). Python confirmed residue 22 = G and residue 23 = L from the canonical sequence; the insert site is 240 residues from the TM boundary, well clear of the \u22653-residue constraint. pCMV-3\u00d7Flag-WT-IL2RG full-length construct transfected into HEK293 cells; surface expression of the Flag-tagged protein confirmed by anti-Flag antibody staining on intact (non-permeabilised) cells by flow cytometry (L2). No residue number is stated in either L1 or L2.",
+      "sources": [
+        {
+          "pmid": 40948707,
+          "citation": "PMID 40948707",
+          "claim": "After 48 hours post-transfection, the surface expression of IL2RG (CD132) was assessed using a Flag tag antibody (Abways, AB0008, Shanghai, China) and Goat anti-Mouse IgG (H+L) Highly Cross-Adsorbed Secondary Antibody, Alexa Fluor\u2122 488 (Invitrogen, A-11029, Carlsbad, CA, USA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:21:04.118019+00:00",
+  "literature_notes": "Only two ledger lines are available (L1, L2), both from the same paper (PMC12423446). Neither names a specific residue or loop for the 3\u00d7Flag insertion. The position is topology-derived: IL2RG has a single extracellular terminus (the mature N-terminus after SP cleavage at residue 22), and surface detection by anti-Flag antibody on intact cells (L2) unambiguously places the tag there. The construct name 'pCMV-3\u00d7Flag-WT-IL2RG' (tag name preceding gene name) is consistent with N-terminal tagging convention, reinforcing the topology-derived assignment. No internal loop positions, no intracellular positions, and no function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

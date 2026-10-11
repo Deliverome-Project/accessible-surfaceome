@@ -247,6 +247,48 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "NRG2-internal-None-lit",
+      "gene_symbol": "NRG2",
+      "uniprot_acc": "O14511",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "upstream of EGF-like domain",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "ALFA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-labelling of proNRG2 on the surface of transfected HeLa cells confirmed; surface exposure demonstrated. No quantitative functional assay reported.",
+      "confidence": "high",
+      "rationale": "L5 explicitly states the ALFA tag was inserted 'instead of V5' at the same position used for all NRG2 variants in the study, which L4 defines as 'immediately upstream of the EGF-like domain.' The EGF-like domain of NRG2 begins at approximately C311 (first of six EGF cysteines at positions 311, 345, 353, 359, 370, 372); the tag therefore lies in the ECD (108\u2013405) proximal to but before C311. No specific residue number is given in any ledger line, so insert_after_residue is null and the site is region-level. The live-labelling result confirms extracellular accessibility. Also independently supported by L3 (V5, different paper) and L4/L6 (V5, same paper). Full-length proNRG2 construct with ALFA epitope tag inserted upstream of the EGF-like domain (in place of V5 at the same position), expressed in transfected HeLa cells for live surface-labelling experiments. The same upstream-of-EGF position carries V5 in all other NRG2 variants in the same study (L4) and in an independent study (L3/PMC8262096).",
+      "sources": [
+        {
+          "pmid": 36769244,
+          "citation": "PMID 36769244",
+          "claim": "For live-labeling of proNRG2 in transfected HeLa cells, an ALFA epitope tag was used instead of V5 [ 86 ]."
+        },
+        {
+          "pmid": 31838721,
+          "citation": "PMID 31838721",
+          "claim": "The cells stably expressed either single-tagged NRG2\u0394C (C-terminal HA-tag) or double-tagged NRG2\u0394C (FLAG-tag within ectodomain and C-terminal HA-tag; Fig. 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "NRG2-snorkel-c",
       "gene_symbol": "NRG2",
       "uniprot_acc": "O14511",
@@ -1567,6 +1609,29 @@
       "isoform_residue": 341,
       "canonical_residue": 330,
       "left_pct": 39.78996499416569
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:18:09.613047+00:00",
+  "literature_notes": "NRG2 (O14511, 850 aa) is a bitopic membrane protein with both termini intracellular: N-terminal cytoplasmic domain (1\u201397), TM1/signal anchor (98\u2013107), large ECD (108\u2013405), TM2 (406\u2013426), and C-terminal cytoplasmic domain (427\u2013850). There is no classical signal peptide. All three surface sites are grounded in the ECD (108\u2013405). L6 (V5-tagged proNRG2 in neurons by AAV) describes the same V5 position as L3/L4 and adds no new site. L8 is a methods description (QuikChange/inverse PCR) with no positional information and was not used to ground any site. The HA C-terminal tag (L1/L2) is intracellular and is recorded in other_positions. Sites 2 and 3 lack a pinned residue because no ledger line names one; insert_after_residue is null for both.",
+  "literature_rejected": [
+    {
+      "residue_label": "G107",
+      "insert_after_residue": 107,
+      "gate": "geometry",
+      "reason": "topology: N-terminus (residue 1) is intracellular \u2014 no extracellular N-terminus to tag (type II)",
+      "supporting_quote": null
+    }
+  ],
+  "literature_other_positions": [
+    {
+      "residue": 850,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA tag at the C-terminus of NRG2\u0394C; the C-terminal domain (residues 427\u2013850) is intracellular per topology, so this tag faces the cytoplasm and is not a surface epitope site."
     }
   ]
 }

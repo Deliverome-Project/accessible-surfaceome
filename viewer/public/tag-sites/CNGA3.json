@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "CNGA3",
+  "uniprot_acc": "Q16281",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:55:23.733510+00:00",
+  "literature_notes": "All three ledger lines describe FLAG tags at the N-terminus (L1: 3\u00d7FLAG prepended to residue 1; L2: FLAG prepended to residue 1) or C-terminus (L3: FLAG appended after residue 694) of full-length CNGA3. The authoritative topology places the N-terminus (residues 1\u2013170) and C-terminus (residues 397\u2013694) entirely in the intracellular compartment. Neither terminus is extracellular, so none of these insertions qualifies as an extracellular surface tag site. The only extracellular spans are ECL1 (residues 189\u2013199, 11 aa) and ECL2 (residues 325\u2013378, 54 aa), but no ledger line reports any insertion in either loop. Because the ledger provides no evidence of a tolerated insertion on the extracellular face, sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3\u00d7FLAG tag prepended to the N-terminus of full-length CNGA3; the N-terminus (residues 1\u2013170) is intracellular per the authoritative topology, so this is a cytoplasmic tag, not a surface tag."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal FLAG tag on full-length CNGA3 used for whole-cell recording and Ca2+ imaging; the N-terminus is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 694,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG tag on full-length CNGA3 in pcDNA3.1; the C-terminus (residues 397\u2013694) is intracellular per the authoritative topology, so this tag is cytoplasmic, not extracellular."
+    }
+  ]
+}

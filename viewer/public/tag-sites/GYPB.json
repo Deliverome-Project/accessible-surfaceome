@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "GYPB",
+  "uniprot_acc": "P06028",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:51:07.051700+00:00",
+  "literature_notes": "The sole ledger line (L1) describes C-terminal GFP fusions of full-length GYPB cloned into pEGFP-N2. pEGFP-N2 appends GFP after the last residue of the insert (residue 91, A). Per the authoritative topology landmarks, residues 82\u201391 are intracellular; the GFP is therefore on the cytoplasmic face, not the extracellular surface. This qualifies as a tolerated intracellular C-terminal fusion and is recorded in other_positions, but it does not support an extracellular tag site. No ledger line describes an N-terminal, internal-loop, or any extracellular-face insertion for GYPB. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 91,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion (pEGFP-N2) appended after the last residue of full-length GYPB; residue 91 (A) is intracellular (topology landmarks: intracellular span 82\u201391), so this is a cytoplasmic label, not an extracellular surface tag."
+    }
+  ]
+}

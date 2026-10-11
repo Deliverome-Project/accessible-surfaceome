@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "C3AR1-terminal_n-0-lit",
+      "gene_symbol": "C3AR1",
+      "uniprot_acc": "Q16581",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Functional transducer-coupling assays performed in HEK-293 cells; receptor is surface-expressed and functionally active in signalling assays (L3). Structural studies (L1) also used this tagged receptor successfully.",
+      "confidence": "high",
+      "rationale": "C3AR1 has no endogenous signal peptide; residues 1\u201324 are extracellular (topology landmark) and TM1 begins at residue 25, placing the N-terminus 24 residues from the first TM boundary \u2014 well clear of the \u22653-residue constraint. An N-terminal FLAG tag (insert_after_residue = 0, residue_after = M) is the only extracellular N-terminal position, so the junction is topology-derived. Python confirmed residue 1 = M. L3 is the primary anchor because it demonstrates surface expression and preserved transducer-coupling function in HEK-293 cells; L1 and L2 independently corroborate the same N-terminal FLAG architecture in full-length membrane-anchored constructs. HEK-293 cells transfected with N-terminal FLAG-tagged human C3aR (WT and mutants) for functional transducer-coupling assays; surface expression of the tagged full-length receptor confirmed. Corroborated by L1 (structural construct with N-terminal FLAG after exogenous HA signal sequence) and L2 (baculovirus expression with same N-terminal FLAG architecture).",
+      "sources": [
+        {
+          "pmid": 42830312,
+          "citation": "PMID 42830312",
+          "claim": "Briefly, HEK-293 cells were transfected with 3.5-5 \u03bcg of either N-terminal FLAG-tagged human C3aR or mouse C3aR (WT and mutants), along with 3.5 \u03bcg of the F22 plasmid (Promega, Cat."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:54:17.263898+00:00",
+  "literature_notes": "Four ledger lines were evaluated. L1 and L4 both describe the ICL3-BRIL replacement (residues 360\u2013370 per the paper; canonical topology places the intracellular portion at 362\u2013377); this is an intracellular insertion used to lock the receptor in an inactive conformation for structural studies \u2014 it is not a surface tag site and is recorded in other_positions. L2 describes a baculovirus/insect-cell purification construct with the same N-terminal FLAG architecture as L3; L3 is preferred as the primary clip because it provides functional validation in a mammalian cell system. No ledger line supports any insertion in ECL1 (85\u201397), the large ECL2 (160\u2013340), or ECL3 (403\u2013417), so no sites are proposed there.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 362,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "ICL3 residues 360\u2013370 (canonical intracellular span 362\u2013377) were replaced by the thermostabilised BRIL protein to lock C3aR in an inactive conformation for cryo-EM structural studies; this is an intracellular insertion, not a surface tag site."
+    }
+  ]
 }

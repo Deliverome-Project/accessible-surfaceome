@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD52",
+  "uniprot_acc": "P31358",
+  "sites": [
+    {
+      "site_id": "CD52-internal-29-lit",
+      "gene_symbol": "CD52",
+      "uniprot_acc": "P31358",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 29,
+      "residue_before": "T",
+      "residue_after": "S",
+      "residue_label": "T29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (CD5HA2); FLAG (CD5Flag2)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry in both studies; CD5HA2 used successfully for FACS-based cell sorting of human T cells; CD5Flag2 showed surface expression levels comparable to or better than CD24-based controls. CD52's own biological function (complement-mediated lysis target) was NOT MEASURED.",
+      "confidence": "high",
+      "rationale": "Python search locates SQTSSP at canonical positions 30\u201335 and GQNDT at 25\u201329, placing the tag junction unambiguously after residue 29 (T) with residue_after = S (pos 30). The NDT N-glycosylation sequon (N27-D28-T29) is preserved upstream of the insertion. The replaced stretch (SQTSSP, 30\u201335) contains no N-glycosylation sequon, no disulfide cysteine, and no known functional motif. CD52 has no TM helix (GPI-anchored), so there is no TM-proximity constraint to violate. Both L1 and L3 independently pin this same junction with different tags, providing strong convergent validation. L1 (PMC8787484): HA tag inserted into full-length, membrane-anchored CD52 by replacing the peptide SQTSSP (residues 30\u201335), placing the tag after residue 29 (T); construct CD5HA2 expressed in human T cells and detected by FACS. L3 (PMC6395743) independently replaced the same six residues downstream of the NDT glycosylation site (residues 30\u201335) with a FLAG tag (CD5Flag2), confirmed by flow cytometry and fluorescence microscopy (L10). Both constructs are full-length, GPI-anchored CD52 expressed on the plasma membrane.",
+      "sources": [
+        {
+          "pmid": 35073736,
+          "citation": "PMID 35073736",
+          "claim": "We have previously demonstrated that SORTS can be adapted for the isolation of T cell populations with precisely inactivated HIV-1 genome via the KI of a CD5HA2 marker construct in which the peptide sequence SQTSSP, located in the middle of CD52, is replaced with a hemagglutinin (HA) tag ( 32 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 29,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:18:37.018585+00:00",
+  "literature_notes": "All ten ledger lines converge on a single extracellular insertion site (after residue 29). L1, L3, L6, L7, L8, L9 all describe the CD5HA2 and CD5Flag2 constructs, which replace SQTSSP (residues 30\u201335) with an epitope tag; L2, L4, L5, L10 describe the general SORTS platform and surface-expression confirmation without naming a different residue. No ledger line reports a tag at the mature N-terminus (after residue 24) or at the C-terminus. The C-terminal region of CD52 (residues ~57\u201361, CFS) encodes the GPI-anchor attachment signal and is not available for tagging. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

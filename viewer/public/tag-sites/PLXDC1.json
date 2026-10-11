@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PLXDC1",
+  "uniprot_acc": "Q8IUK5",
+  "sites": [
+    {
+      "site_id": "PLXDC1-terminal_n-18-lit",
+      "gene_symbol": "PLXDC1",
+      "uniprot_acc": "Q8IUK5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Rim",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell staining with anti-Rim antibody on non-permeabilized HEK293 cells confirmed surface expression; no functional assay reported for the tagged PLXDC1 construct itself.",
+      "confidence": "high",
+      "rationale": "L5 explicitly states that all constructs\u2014including full-length PLXDC1 (Figure 1H in L3/L4)\u2014carry the Rim epitope tag after the secretion signal at the N-terminus. The native PLXDC1 signal peptide spans residues 1\u201318 (authoritative landmark), so the tag is placed after residue 18 and before the mature N-terminus at residue 19. No specific residue number is named in the paper, so the position is topology-derived from the single extracellular N-terminus. The tag is 408 residues from the TM boundary, satisfying the \u22653-residue constraint. Full-length PLXDC1 expressed in HEK293 cells with the Rim epitope tag engineered after the secretion signal at the N-terminus (extracellular face); live-cell staining confirmed surface expression of the tagged construct (Figure 1H).",
+      "sources": [
+        {
+          "pmid": 25535841,
+          "citation": "PMID 25535841",
+          "claim": "All constructs have the epitope tag engineered after the secretion signal at the N-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:40:13.883343+00:00",
+  "literature_notes": "L1 describes a chimeric construct in which the DCC transmembrane domain (not PLXDC1's own TM) is fused to a Rim tag and the PLXDC1 cytoplasmic tail; because the TM domain is heterologous this is not evidence for full-length PLXDC1 surface tagging and was not promoted to a site. L2 describes the AP-signal + Rim-tag construction method applied to the PLXDC1 extracellular domain, which could be a soluble ECD; L3\u2013L5 confirm that the same tag strategy was applied to the full-length membrane-anchored PLXDC1 construct (Figure 1H, live-cell staining). L6 and L7 describe a C-terminal myc tag on full-length PLXDC1 used in co-immunoprecipitation; the C-terminus (residues 448\u2013500) is intracellular per the authoritative topology landmarks, so this tag is not on the extracellular surface and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 500,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Full-length PLXDC1 carries a C-terminal myc tag used in co-immunoprecipitation; the C-terminus (residues 448\u2013500) is intracellular per topology landmarks, so this tag is not on the extracellular surface."
+    }
+  ]
+}

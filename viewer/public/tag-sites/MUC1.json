@@ -1,0 +1,91 @@
+{
+  "has_data": true,
+  "gene_symbol": "MUC1",
+  "uniprot_acc": "P15941",
+  "sites": [
+    {
+      "site_id": "MUC1-internal-None-lit",
+      "gene_symbol": "MUC1",
+      "uniprot_acc": "P15941",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "DSTR (downstream non-regular repeats, pre-TM extracellular region, ~961\u20131162)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the paper presents the construct diagram and primary structure of MUC1 fragments used; no functional or surface-expression assay result for the FLAG-tagged construct is described in the ledger clip.",
+      "confidence": "medium",
+      "rationale": "The construct diagram in L3 places the FLAG tag between the DSTR (downstream non-regular repeats) and the TM domain, which in canonical numbering corresponds to the extracellular region spanning approximately residues 961\u20131162. No specific residue is named in the paper for the FLAG junction, so insert_after_residue is left null and the region is recorded. The entire DSTR region is extracellular (topology landmarks: extracellular 24\u20131162, TM 1163\u20131183), so the insertion is on the correct face. This site is ranked lower than Site 1 because no residue is pinned and no expression or functional data are reported. Full-length membrane-anchored MUC1 construct with FLAG epitope tag inserted between the VNTR/tandem-repeat region and the TM domain, as shown in the construct diagram (signal peptide | VNTR | TR21 | USTR | DSTR | FLAG | TM | CT). The construct is membrane-anchored and surface-displayed.",
+      "sources": [
+        {
+          "pmid": 25093113,
+          "citation": "PMID 25093113",
+          "claim": "L \u2013 signal peptide; VNTR \u2013 region with a variable number of tandem repeats; TR21 \u2013 21 tandem repeat from VNTR; USTR and DSTR \u2013 non-regular repeats located upstream of VNTR and downstream of VNTR, respectively; F \u2013 FLAG epitope, TM \u2013 transmembrane domain, CT \u2013 cytoplasmic domain\n\nThe primary structure of the mucin MUC1 fragments used to create the constructions."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "MUC1-terminal_n-62-lit",
+      "gene_symbol": "MUC1",
+      "uniprot_acc": "P15941",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 62,
+      "residue_before": "S",
+      "residue_after": "S",
+      "residue_label": "S62",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "6xHis + FLAG + EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display of the tagged mucin reporter confirmed; the construct was designed and validated as a cell-surface mucin TR reporter. No assay of native MUC1 signalling or ligand-binding function was reported.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states that the MUC1 signal peptide spans aa 1\u201362 in their reporter construct, placing the 6xHis/FLAG/EGFP tags immediately after residue 62 in canonical UniProt numbering. Python verification confirms residue 62 = S and residue 63 = S, both within the extracellular domain (24\u20131162), and 1101 residues from the TM boundary\u2014well clear of any constraint. Because the paper names the exact junction (after aa 62), this is a validated position, not merely topology-derived. L2 independently corroborates the same construct architecture (N-terminal GFP + FLAG + MUC1 TM anchor). Full-length, membrane-anchored MUC1 transmembrane reporter construct expressed in mammalian cells: MUC1 signal peptide (aa 1\u201362, used as the secretion leader) fused to 6xHis, FLAG, and EGFP tags, followed by mucin tandem-repeat sequences and the MUC1 membrane-anchoring domain (aa 1042\u20131138). The construct is surface-displayed with the tag on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 34210959,
+          "citation": "PMID 34210959",
+          "claim": "The transmembrane mucin TR reporters were designed by fusion of human MUC1 signal peptide (amino acids 1\u2013-62, Uniprot P15921 ) with 6xHis, Flag-tag, EGFP, multiple cloning site, and the membrane anchoring domain of human MUC1 (amino acids 1042\u20131138) (Fig. 1 and Supplementary Table 1 ) 15 , 72 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 62,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:56:33.636921+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 and L2 both describe the same construct architecture (MUC1 SP aa 1\u201362 + N-terminal GFP/FLAG tags + MUC1 TM anchor); L1 is more specific (names aa 1\u201362 as the signal peptide boundary) and was used as the primary citation for Site 1, with L2 as corroboration. The paper's 'signal peptide' of aa 1\u201362 is an extended leader used for the reporter; the canonical UniProt SP is 1\u201323 (mature N-terminus = 24). The tag in the reporter is placed after residue 62 in canonical numbering, which is within the extracellular domain (24\u20131162). L3 grounds Site 2 as a region-level internal site in the DSTR/pre-TM extracellular region; no specific residue is named and no functional data are reported for that construct. The intracellular domain (1184\u20131255) carries no ledger-supported surface tag sites and was not proposed. No sites were found that abrogate function per the ledger.",
+  "literature_rejected": []
+}

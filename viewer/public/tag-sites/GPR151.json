@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR151-terminal_n-0-lit",
+      "gene_symbol": "GPR151",
+      "uniprot_acc": "Q8TDV0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Reporter gene assay confirmed functional signaling (L1); fluorescence microscopy confirmed surface display and agonist-induced internalization (L2). Tag is tolerated for both surface trafficking and receptor function.",
+      "confidence": "high",
+      "rationale": "GPR151 has no signal peptide (topology string begins O, not S), so the N-terminus (residues 1\u201337) is the sole extracellular terminus; the C-terminus (residues 310\u2013419) is entirely intracellular. Because neither L1 nor L2 names a residue, the position is topology-derived: the tag prepends before residue 1 (insert_after_residue=0, residue_after=M). Python confirmed residue 1 = M and TM1 begins at residue 38, placing the prepend 37 residues from the first TM helix. L1 is used as corroborating functional evidence for the same construct. HA-tagged full-length GPR151 transiently transfected into CHO cells; the same construct was used in both a reporter gene assay (L1) and fluorescence microscopy showing surface localization and GUM3-induced internalization (L2). No residue number is stated in either clip.",
+      "sources": [
+        {
+          "pmid": 42104714,
+          "citation": "PMID 42104714",
+          "claim": "Representative images of GPR151 localization by fluorescence microscopy in transiently transfected CHO cells with HA\u2010tagged GPR151 expression vector treated for 6 h with (c) vehicle and (d) 100 \u03bcM GUM3, showing GPR151 internalization after GUM3 stimulation."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:27:29.654269+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same HA-tagged GPR151 construct; no residue is named in either. The N-terminus (1\u201337) is the only extracellular terminus (C-terminus 310\u2013419 is intracellular), so the position is unambiguously topology-derived as a prepend. No internal loop residues are named in the ledger, and no abrogating or intracellular insertions are reported. ECL1 (95\u2013115), ECL2 (175\u2013200), and ECL3 (272\u2013286) are extracellular but have no ledger support for any insertion.",
+  "literature_rejected": []
 }

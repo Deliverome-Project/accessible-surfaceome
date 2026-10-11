@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "GPC4",
+  "uniprot_acc": "O75487",
+  "sites": [
+    {
+      "site_id": "GPC4-terminal_n-18-lit",
+      "gene_symbol": "GPC4",
+      "uniprot_acc": "O75487",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by PI-PLC shedding assay (human HA-GPC4, L1/L2); function NOT MEASURED for the human HA-tagged construct. Zebrafish GFP-Gpc4 ortholog rescued C&E defects in gpc4 mutants (L5), confirming functional integrity of the post-SP insertion in the ortholog.",
+      "confidence": "high",
+      "rationale": "GPC4 is a GPI-anchored protein whose signal peptide spans residues 1\u201318 (authoritative landmarks). An N-terminal HA tag on a full-length, membrane-anchored construct must reside after the SP cleavage site (residue 18) to survive to the cell surface; a tag upstream would be co-translationally cleaved with the SP. Python confirms residue 18 = A and residue 19 = A. The zebrafish ortholog evidence (L3\u2013L6) independently places GFP at the equivalent post-SP junction and demonstrates functional rescue, strongly corroborating this as the tolerated insertion point. No other extracellular junction is named anywhere in the ledger. PMC8387153 (L1/L2): full-length human GPC4 with an N-terminal HA tag (pCAG nHA GPC4) expressed in HEK293T cells; PI-PLC treatment released the tagged protein into conditioned media, confirming GPI-anchored surface display of the HA-tagged construct. No specific residue number is stated for the tag junction. Corroborated by PMC8488972 (L3\u2013L6): zebrafish Gpc4 ortholog with EGFP inserted immediately after its signal peptide (AA1\u201323), expressed on the plasma membrane of endodermal cells and functionally rescuing convergence-and-extension defects in gpc4 mutants.",
+      "sources": [
+        {
+          "pmid": 34301723,
+          "citation": "PMID 34301723",
+          "claim": "N-terminal HA-tagged GPC4 was transfected into HEK293T cells, and media were collected with and without PI-PLC treatment ( Fig. 1 B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:21:59.475591+00:00",
+  "literature_notes": "All six ledger lines converge on a single site: the N-terminal extracellular junction immediately after the signal peptide cleavage site (after residue 18). L1 and L2 are direct human GPC4 evidence (HA tag, surface confirmed by PI-PLC); L3\u2013L6 are zebrafish Gpc4 ortholog evidence (GFP after SP AA1\u201323, surface-localised and functionally validated). Because both papers describe the same conceptual junction\u2014post-signal-peptide on the extracellular N-terminus\u2014this is one site, not two. No ledger line names any internal loop insertion, any C-terminal tag, or any intracellular position for GPC4/Gpc4. The C-terminal GPI anchor signal (roughly residues ~491\u2013556) is cleaved during GPI attachment, making a C-terminal surface tag structurally impossible; no ledger line proposes one. No abrogating insertions are reported in the ledger.",
+  "literature_rejected": []
+}

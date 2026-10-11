@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNK10",
+  "uniprot_acc": "P57789",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:46:36.949749+00:00",
+  "literature_notes": "The sole ledger entry [L1] reports a TREK-2-mCherry C-terminal fusion expressed in HEK-293 cells. Per the authoritative topology landmarks, the C-terminus (residues 320\u2013538) is entirely intracellular (INTRACELLULAR: 320\u2013538; TM4 ends at 319). The mCherry fusion therefore sits on the cytoplasmic face and does not qualify as an extracellular surface tag. The nanobody reagents (Nb58/Nb57-mVenus) described in the same paper bind the extracellular Cap domain of TREK-2 but are exogenous antibody-like probes, not insertions into the KCNK10 sequence \u2014 antibody epitope mapping is explicitly excluded. No ledger line reports any tag insertion at an extracellular position of KCNK10 or a close ortholog. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 538,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mCherry fusion appended after the last residue (N538); the entire C-terminal tail (residues 320\u2013538) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

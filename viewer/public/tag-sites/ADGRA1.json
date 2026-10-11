@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADGRA1-terminal_n-0-lit",
+      "gene_symbol": "ADGRA1",
+      "uniprot_acc": "Q86SQ6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized HA immunostaining in primary hippocampal neurons (L3). Receptor signaling function of the HA-tagged construct was NOT MEASURED explicitly; the \u0394N variant (not the HA-tagged construct) was used for functional studies.",
+      "confidence": "high",
+      "rationale": "Human ADGRA1 has no signal peptide; the topology landmarks place residues 1\u201319 extracellular and TM1 beginning at residue 20, leaving exactly one extracellular terminus. The N-terminal HA tag on the mouse ortholog (L1\u2013L5) therefore maps unambiguously to a prepend before human residue 1 (M), confirmed by Python: residue_after = seq[0] = 'M'. The 19-residue extracellular N-terminal domain provides ample clearance from TM1 (>>3 residues). The mouse N-terminal sequence (MTQWDLKTVLSLPQYPGEFLHP, 22 aa) aligns closely with the human sequence (MDLKTVLSLPRYPGEFLHP, 19 aa), supporting transferability of the tagging strategy. Mouse ADGRA1 (UniProt Q8C4G9, close ortholog) was expressed as a full-length, membrane-anchored construct carrying an N-terminal HA tag in primary hippocampal neurons via lentivirus. Non-permeabilized immunostaining detected HA signal along MAP2-labeled dendrites and AnkG-labeled axon initial segments, confirming surface display of the tagged receptor. A \u0394N variant replacing the first 22 mouse residues (MTQWDLKTVLSLPQYPGEFLHP) with 8\u00d7Gly was also described, establishing that the N-terminal extracellular region tolerates large substitutions without loss of surface trafficking.",
+      "sources": [
+        {
+          "pmid": 41961591,
+          "citation": "PMID 41961591",
+          "claim": "Neurons sparsely receiving HA-ADGRA1 overexpression displayed surface HA signals along both MAP2-labeled dendrites and AnkG-labeled axon initial segments, suggesting subcellular localization to both pre- and postsynaptic sites ( Figure 2A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -52,5 +89,12 @@
       "left_pct": 0.21598272138228944,
       "note": "Isoform surface expr 111 (-96% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:05:23.063866+00:00",
+  "literature_notes": "All five ledger clips (L1\u2013L5) report the same experimental construct: N-terminally HA-tagged mouse ADGRA1 (Q8C4G9) expressed as a full-length, membrane-anchored receptor. L3 and L4/L5 confirm surface display by non-permeabilized staining. No internal extracellular loop insertions, C-terminal tags, or any other tag positions are reported in the ledger. The C-terminus of human ADGRA1 is intracellular (residues 306\u2013560) and therefore does not qualify. The short extracellular loops ECL1 (75\u201384), ECL2 (156\u2013175), and ECL3 (278\u2013284) have no ledger-grounded insertion evidence and are not proposed. The \u0394N variant (L1/L2) demonstrates that the N-terminal extracellular region is dispensable for surface trafficking, further supporting tolerance of an N-terminal tag, but it is not itself a tag-insertion site.",
+  "literature_rejected": []
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MUC21",
+  "uniprot_acc": "Q5SSG8",
+  "sites": [
+    {
+      "site_id": "MUC21-terminal_n-24-lit",
+      "gene_symbol": "MUC21",
+      "uniprot_acc": "Q5SSG8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "S",
+      "residue_after": "N",
+      "residue_label": "S24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L1: surface expression and function of MUC21 characterized with FLAG-tagged construct (surface_and_function). L2: MUC21 role in NK cell inhibition studied with Myc-tagged construct (function measured). L3/L4: surface display of N-FLAG-Muc21 confirmed by flow cytometry in CHO-K1 cells.",
+      "confidence": "high",
+      "rationale": "MUC21 is a single-pass type I transmembrane mucin with signal peptide spanning residues 1\u201324 (authoritative landmarks); the mature N-terminus begins at residue 25 (N), making insert_after_residue=24 the only extracellular N-terminal junction. Python verification confirms seq[23]='S' (position 24) and seq[24]='N' (position 25), consistent with the landmarks. The tag site is 455 residues from the TM boundary (480), well clear of any steric constraint. L1 and L2 directly validate this junction on human MUC21 with FLAG and Myc tags respectively, both in full-length membrane-anchored constructs with functional readouts; L3/L4 provide ortholog (mouse Muc21) corroboration with flow-cytometric surface confirmation. Full-length human MUC21 cDNA FLAG-tagged at its amino terminus in pcDNA3.1(\u2212), expressed in mammalian cells to characterize MUC21 surface expression and function (L1). Corroborated by L2 (Myc tag at N-terminus of full-length human MUC21 in pSB-tet-RB, NK cell inhibition assay), and L3/L4 (N-terminal FLAG on full-length mouse Muc21 with 84 tandem repeats in pcDNA3.1, CHO-K1 surface display confirmed by flow cytometry). No residue number is named in any paper; the junction is derived from the single extracellular terminus: the mature N-terminus after signal-peptide cleavage at residue 24.",
+      "sources": [
+        {
+          "pmid": 35410995,
+          "citation": "PMID 35410995",
+          "claim": "A pcDNA3.1(\u2212) vector containing the full-length human MUC21 cDNA FLAG-tagged at its amino terminal was generated as previously described [ 11 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:55:57.073734+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) converge on the same site: the extracellular N-terminus of full-length, membrane-anchored MUC21/Muc21, tagged with FLAG (L1, L3, L4) or Myc (L2). No paper names a specific residue number; the junction (insert_after_residue=24) is topology-derived from the authoritative signal-peptide landmark (SP 1\u201324, mature N-terminus 25). No internal loop insertions are reported anywhere in the ledger. No intracellular or function-abrogating positions are named. The topology string shows 20 S-characters (suggesting SP ends at 20) but the authoritative landmarks specify SP=1\u201324; the landmarks were used as instructed.",
+  "literature_rejected": []
+}

@@ -1,0 +1,111 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRG6",
+  "uniprot_acc": "Q86SQ4",
+  "sites": [
+    {
+      "site_id": "ADGRG6-internal-550-lit",
+      "gene_symbol": "ADGRG6",
+      "uniprot_acc": "Q86SQ4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 550,
+      "residue_before": "D",
+      "residue_after": "K",
+      "residue_label": "D550",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Cy5 via UAA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Surface display confirmed by confocal microscopy (Cy5 signal on cell surface); receptor function confirmed by cAMP elevation comparable to wild-type receptor (L12).",
+      "confidence": "medium",
+      "rationale": "Position 551 (K) lies within the large N-terminal ectodomain (residues 38-868), 318 residues from TM1 (residue 869), confirming it is extracellular and far from any TM boundary. The UAA substitution at K551 with subsequent Cy5 labeling demonstrates that this position tolerates a bulky chemical modification on the extracellular surface without disrupting trafficking or cAMP signaling. The insert_after_residue is set to 550 (D) because the UAA replaces K551, placing the modification at the 550-551 junction; cited_tag_residue=551 reflects the paper's stated position. This qualifies as tolerance of a different (non-peptide) insertion modality. Full-length ADGRG6 expressed in mammalian cells with an unnatural amino acid (UAA) incorporated site-specifically at position 551 (K551) via amber suppression, followed by Cy5 conjugation via click chemistry. Confocal microscopy confirmed surface display of the Cy5-labeled receptor. L12 confirms that UAA-labeled receptor sensors elevated cAMP at levels comparable to wild-type.",
+      "sources": [
+        {
+          "pmid": 42599991,
+          "citation": "PMID 42599991",
+          "claim": "( D ) Confocal microscopy images of cells expressing ADGRG6-GFP with one unnatural amino acid at position 551 labeled with Cy5."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ADGRG6-terminal_n-37-lit",
+      "gene_symbol": "ADGRG6",
+      "uniprot_acc": "Q86SQ4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 37,
+      "residue_before": "G",
+      "residue_after": "C",
+      "residue_label": "G37",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-HA antibody detection; receptor function confirmed by cAMP elevation upon anti-HA antibody crosslinking in COS-7 cells transfected with HA-tagged WT GPR126 (statistically significant increase vs. empty vector control).",
+      "confidence": "high",
+      "rationale": "Signal peptide spans residues 1-37 (computed landmarks); the mature N-terminus begins at residue 38 (C). Inserting the tag after residue 37 (G) places it at the extracellular face, well upstream of TM1 (residue 869), satisfying the >=3 residue distance constraint. L1 explicitly states the HA tag was inserted 'right after the predicted signal peptide', which by the topology landmarks is after residue 37. L3 confirms both surface display and functional cAMP response, yielding the highest validation level. Full-length GPR126/ADGRG6 expressed in COS-7 cells with HA epitope tag inserted immediately after the predicted signal peptide (residues 1-37), placing the tag at the mature N-terminus (residue 38 onward) on the extracellular face. The same construct also carried a C-terminal FLAG tag before the stop codon.",
+      "sources": [
+        {
+          "pmid": 35813217,
+          "citation": "PMID 35813217",
+          "claim": "Due to the lack of antibodies targeting the endogenous GPR126 sequence, we used the hemagglutinin (HA) epitope for our experimental setup and inserted it right after the predicted signal peptide of the receptor ( Figure 1A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 37,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:13:30.721847+00:00",
+  "literature_notes": "L2, L6, L7, L8, L10, L13, L14 all corroborate the N-terminal extracellular tag site (insert_after_residue=37) with HA, FLAG, or mRuby tags on full-length ADGRG6/GPR126; L1 is the most explicit about the junction and is used as the primary supporting clip. L4/L5 describe a truncated construct (residues 41-1185) with an N-terminal FLAG tag; since the construct lacks the signal peptide and residues 38-40, the FLAG is before residue 41 in that construct, which is a slightly different junction from the full-length site; these lines are subsumed by the stronger L1 evidence for the full-length N-terminal site. L9 describes C-terminal mEGFP+FLAG tags used for smFRET; the C-terminus of ADGRG6 is intracellular (residues 1114-1221), so these are not surface sites and are recorded in other_positions. L12 provides functional validation for the L11 UAA site. No ledger evidence supports tag insertions in ECL1 (918-928), ECL2 (993-1018), or ECL3 (1089-1092).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1221,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal FLAG tag inserted right before the stop codon; the C-terminus of ADGRG6 is intracellular (topology landmarks: 1114-1221 intracellular), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1221,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "C-terminal mEGFP and FLAG tags used for smFRET receptor immobilization; C-terminus is intracellular (1114-1221), confirming these tags are cytoplasmic."
+    },
+    {
+      "residue": 1221,
+      "kind": "intracellular",
+      "supporting_clip_id": "L14",
+      "note": "C-terminal GFP tag on Gpr126 construct; C-terminus is intracellular (1114-1221), so this tag is not on the extracellular face."
+    }
+  ]
+}

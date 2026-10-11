@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "MPL",
+  "uniprot_acc": "P40238",
+  "sites": [
+    {
+      "site_id": "MPL-terminal_n-25-lit",
+      "gene_symbol": "MPL",
+      "uniprot_acc": "P40238",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "TOLLES-YPet FRET pair",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by FRET imaging; receptor traffics to the cell surface and to lysosomes; JAK2 WT and V617F contexts both examined, confirming the tagged receptor is surface-expressed and responsive to signaling context.",
+      "confidence": "high",
+      "rationale": "L1 and L2 (same paper, PMC12380609) report a TOLLES-YPet FRET pair fused to the N-terminus of full-length, membrane-anchored TpoR. No residue number is stated, but TpoR has exactly one extracellular terminus \u2014 the mature N-terminus beginning at residue 26 after signal-peptide cleavage at position 25 (S|Q). The tag must therefore sit after residue 25 (insert_after_residue=25), giving residue_before=S and residue_after=Q. The junction is 468 residues from the TM boundary, satisfying the \u22653-residue constraint with wide margin. Full-length membrane-anchored TpoR with TOLLES-YPet FRET pair fused to its N-terminus (construct called SRAI-TpoR) expressed in mammalian cells; surface display confirmed by FRET imaging in the presence of JAK2 WT and JAK2 V617F.",
+      "sources": [
+        {
+          "pmid": 40610764,
+          "citation": "PMID 40610764",
+          "claim": "We used a TOLLES-YPet FRET pair and fused it to the N-terminus of TpoR henceforth called SRAI-TpoR (Fig. 1A )."
+        },
+        {
+          "pmid": 33384332,
+          "citation": "PMID 33384332",
+          "claim": "Selective and efficient labeling of TPO-R extracellularly fused to a nonfluorescent, monomeric EGFP (mXFP) was achieved via anti-GFP nanobodies conjugated with Rho11 and Dy647, respectively ( Fig. 2 A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:45:49.921694+00:00",
+  "literature_notes": "All three ledger clips (L1, L2, L3) describe N-terminal extracellular fusions to full-length membrane-anchored TpoR; none names a specific residue number. TpoR has a single-pass type I topology with a large extracellular domain (residues 26\u2013493) and an intracellular C-terminus (514\u2013635), so the mature N-terminus (after signal-peptide cleavage at position 25) is the only extracellular terminus. No ledger clip supports any internal loop insertion or C-terminal extracellular tag. L1 and L2 are from the same paper and describe the same SRAI-TpoR construct; they are reported as one site. L3 is an independent paper and is reported as a second site at the same junction. No clips describe intracellular insertions or function-abrogating insertions for MPL.",
+  "literature_rejected": []
+}

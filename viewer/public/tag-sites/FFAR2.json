@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FFAR2-terminal_n-0-lit",
+      "gene_symbol": "FFAR2",
+      "uniprot_acc": "O15552",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor undergoes robust agonist (propionate)-induced internalization blocked by dynamin inhibitor Dyngo-4a, demonstrating the FLAG-tagged receptor is functional at the cell surface.",
+      "confidence": "high",
+      "rationale": "FFAR2 carries no signal peptide; the canonical sequence begins at M1 (EC1: residues 1\u20138) and TM1 starts at residue 9. The N-terminal prepend (insert_after_residue = 0) is therefore the only extracellular terminus, and the topology uniquely determines the junction. The tag is separated from TM1 by the full 8-residue EC1 span, well above the >=3-residue minimum. Live-cell M1 anti-FLAG labeling before stimulation directly confirms extracellular accessibility, and agonist-induced internalization confirms receptor function. Full-length FLAG-FFA2 expressed in HEK293 cells; M1 anti-FLAG antibody applied to live, intact cells prior to agonist stimulation confirms the FLAG tag is displayed on the extracellular face. FFAR2 has no signal peptide (EC1 spans residues 1\u20138, TM1 begins at residue 9), so the N-terminal prepend is the sole extracellular terminus. No residue number is stated in the clip; position is derived from the topology.",
+      "sources": [
+        {
+          "pmid": 32853993,
+          "citation": "PMID 32853993",
+          "claim": "Figure 2 Propionate-Dependent G\u03b1i/o Signaling Requires Receptor Internalization (A) Representative confocal microscopy images of HEK 293 cells expressing FLAG-FFA2 were pre-treated with either DMSO (vehicle) or Dyngo-4a (50 \u03bcM, 45 min), fed with M1 anti-FLAG antibody prior to stimulation with either NaCl or sodium propionate (Pro) (1 mM, 20 min)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:48:06.205383+00:00",
+  "literature_notes": "L1 and L2 are duplicate clips from the same paper (PMC7452316) reporting the same FLAG-FFA2 construct; L1 was used as the primary supporting clip. L3 and L4 (PMC4424118) corroborate the same N-terminal FLAG topology in a TANGO construct that adds an artificial cleavable signal sequence upstream of the FLAG tag; after signal-peptide cleavage the FLAG is left at the N-terminus, confirming the same insert_after_residue=0 site. L5 (PMC12570966) describes 'eYFP-tagged forms of FFA2' confirmed functional by cAMP assay, but the clip does not state whether eYFP is N- or C-terminal; because the position cannot be assigned to the extracellular face from the clip alone, no surface site is proposed from L5. L6 (PMC8887895) explicitly places eYFP at the intracellular C-terminal tail of hFFA2-DREADD and is recorded in other_positions. L7 (PMC11947310) inserts BRIL into ICL3 (IC3: residues 201\u2013220), also intracellular, recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 330,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "eYFP fused to the intracellular C-terminal tail of hFFA2-DREADD (IC4: 277\u2013330); BRET with \u03b2-arrestin-2-Renilla-luciferase confirms functional surface expression, but the tag faces the cytoplasm and is not an extracellular surface site."
+    },
+    {
+      "residue": 210,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "BRIL inserted into ICL3 (IC3: residues 201\u2013220) of FFA2 to facilitate cryo-EM structure determination; no specific residue stated in the clip, representative midpoint residue 210 (P) used; the loop is intracellular and not a surface tag site."
+    }
+  ]
 }

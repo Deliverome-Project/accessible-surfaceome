@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "SDC2",
+  "uniprot_acc": "P34741",
+  "sites": [
+    {
+      "site_id": "SDC2-terminal_n-18-lit",
+      "gene_symbol": "SDC2",
+      "uniprot_acc": "P34741",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by confocal immunofluorescence (L1) and SIM imaging (L2) in HUVECs; the tagged construct participates in SDC2/DEP1/VEGFR2 complex visualization. SDC2 intrinsic function (e.g., heparan sulfate-dependent signaling) not explicitly assayed for the tagged construct.",
+      "confidence": "high",
+      "rationale": "SDC2 is a type-I single-pass transmembrane protein; its only extracellular terminus is the mature N-terminus beginning at residue 19 (after signal-peptide cleavage at residue 18). An N-terminal tag must therefore be placed after residue 18 (insert_after_residue=18, residue_before='A', residue_after='E'). No paper in the ledger names a specific residue number, so the junction is topology-derived from the landmark. The position is 130 residues from the TM boundary (149), well clear of the \u22653-residue constraint, and the 130-residue ectodomain provides ample steric room for a short epitope tag. Four independent ledger lines (L1/L2 SNAP-tag, L3/L4 HA-tag, L5 FLAG-tag) all report N-terminal tags on full-length membrane-anchored SDC2 with surface display confirmed. Human SDC2 carrying an N-terminal SNAP-tag (SDC2-SNAP) was expressed in HUVEC cells and visualized by confocal immunofluorescence and SIM imaging alongside DEP1-HA, confirming surface display of the full-length tagged protein. The same paper also reports N-terminal HA-tagged syndecans (including SDC2) accessible on the core protein without heparinase pre-treatment (L3). A separate paper (L4, PMC6450910) independently confirms HA-tagged SDC2 accessibility. L5 (PMC13345059) explicitly uses an N-FLAG-SDC2 construct transfected in HUVECs.",
+      "sources": [
+        {
+          "pmid": 36212522,
+          "citation": "PMID 36212522",
+          "claim": "Scale bar: 25 \u03bcm. b , confocal image of HUVEC cells in basal conditions expressing both human DEP1 carrying N-terminal HA-tag (DEP1-HA, red) and human Sdc2 carrying N-terminal SNAP-tag (SDC2-SNAP, green) proteins."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:12:11.408724+00:00",
+  "literature_notes": "All six ledger lines converge on the same N-terminal extracellular junction (after SP cleavage, residue 18\u219219): L1/L2 (SNAP-tag, surface display confirmed by confocal and SIM), L3/L4 (HA-tagged SDC2 accessible on core protein, two independent papers), L5 (N-FLAG-SDC2 in HUVECs). No ledger line names a specific residue number, so position_evidence is topology_derived for all. L6 (V5-tagged mouse Sdc2 via adenovirus) does not state whether the tag is N- or C-terminal; the C-terminus of SDC2 is intracellular (residues 170\u2013201), so a C-terminal V5 would not be a surface site. Because the quote is silent on position, L6 cannot be placed in either sites or other_positions with confidence and is noted here only. No internal ectodomain insertions are reported in the ledger for SDC2. No function-abrogating or cytoplasmic insertions are reported in the ledger.",
+  "literature_rejected": []
+}

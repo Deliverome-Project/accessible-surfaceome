@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR1E-terminal_n-0-lit",
+      "gene_symbol": "HTR1E",
+      "uniprot_acc": "P28566",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed surface expression of the FLAG-tagged HTR1E construct; functional activity was assessed in the TANGO \u03b2-arrestin recruitment assay and the receptor was active.",
+      "confidence": "high",
+      "rationale": "HTR1E has no native signal peptide; residues 1\u201322 form the sole extracellular N-terminal domain before TM1 (residue 23). The PRESTO-TANGO construct prepends an exogenous signal + FLAG to the native sequence, placing the FLAG at the mature extracellular N-terminus (insert_after_residue = 0, residue_after = M1). This is the only extracellular terminus available for an N-terminal tag, so the position is topology-derived. Surface expression was directly confirmed by anti-FLAG immunofluorescence, and the receptor was functional in the TANGO assay. PRESTO-TANGO platform (Kroeze et al. 2015, PMC4424118) engineered an exogenous cleavable signal sequence followed by a FLAG epitope tag at the N-terminus of each GPCR construct including HTR1E. HTR1E has no native signal peptide (topology: residues 1\u201322 extracellular), so the FLAG is placed immediately before native residue 1 (the mature extracellular N-terminus). Cell-surface display was confirmed by anti-FLAG immunofluorescence in transfected cells.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:02:53.522998+00:00",
+  "literature_notes": "L3 (C-terminal Myc tag, Origene plasmid) was evaluated: the C-terminus of HTR1E (residues 348\u2013365) is intracellular per the topology landmarks, so this tag is not on the extracellular face and cannot serve as a surface epitope tag site. It is recorded in other_positions. L1 and L2 both ground the same N-terminal FLAG site (L1 describes the construct design, L2 confirms surface expression); L1 is used as the primary supporting clip. No ledger evidence supports any internal extracellular loop (ECL1, ECL2, ECL3) insertion for HTR1E.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 365,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Myc tag on full-length HTR1E (Origene plasmid); the C-terminus (residues 348\u2013365) is intracellular per topology, so this is not a surface tag site."
+    }
+  ]
 }

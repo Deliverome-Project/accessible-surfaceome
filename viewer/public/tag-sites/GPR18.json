@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR18-terminal_n-0-lit",
+      "gene_symbol": "GPR18",
+      "uniprot_acc": "Q14330",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-HA immunolabelling of living Flp-in HEK cells under non-permeabilising conditions (L4, L5, PMC4806671). Functional signalling assays were performed with HA11-tagged GPR18 in HEK293 cells (L6, L7, PMC2865488) but the clips do not report the quantitative outcome of those assays; receptor-level function relative to untagged GPR18 is NOT MEASURED in the ledger clips.",
+      "confidence": "high",
+      "rationale": "GPR18 is a class-A GPCR with no signal peptide; the computed topology places residues 1\u201322 extracellular and TM1 beginning at residue 23, leaving exactly one extracellular terminus. All seven ledger lines describe N-terminal HA or HA11 tags on full-length, membrane-anchored GPR18 without naming a residue, so the junction is uniquely determined as a prepend before M1 (insert_after_residue = 0). The 22-residue extracellular N-terminal stretch provides ample distance (>3 aa) from the TM1 boundary. L4 and L5 directly confirm that the HA-tagged receptor reaches the cell surface in living cells under non-permeabilising conditions, establishing surface_only validation. Multiple independent groups expressed full-length human GPR18 with N-terminal HA (PMC4806671, L2\u2013L5) or HA11 (PMC2865488, L6\u2013L7) tags in HEK293/Flp-in HEK cells. L4 and L5 (PMC4806671) confirmed surface display of HA-hGPR18 by anti-HA immunolabelling of living cells under non-permeabilising conditions. L3 (PMC4806671) used a 3\u00d7HA variant with an exogenous bovine pre-prolactin signal sequence (pplss-3HA-hGPR18); after pplss cleavage the 3\u00d7HA tag is at the same N-terminal junction. L1 (PMC4451551) provides indirect corroboration via the murine ortholog. No ledger line names a residue number; the N-terminus (residues 1\u201322, no signal peptide) is the sole extracellular terminus, so the junction is topology-derived as a prepend before M1.",
+      "sources": [
+        {
+          "pmid": 27018161,
+          "citation": "PMID 27018161",
+          "claim": "Anti-HA labelling of Flp-in HEK cells stably expressing HA-hGPR18 (A, B, C) or HA-TCS-hCB1 (D, E, F)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:31:35.812856+00:00",
+  "literature_notes": "All seven ledger lines (L1\u2013L7) converge on a single N-terminal prepend junction. L1 is indirect (murine GPR18 ortholog); L2\u2013L7 are direct (human GPR18). L3 describes a distinct construct (pplss-3HA-hGPR18) that lands at the same junction after exogenous signal cleavage and is therefore not a separate site. No ledger line supports any insertion in ECL1 (80\u201391), ECL2 (160\u2013182), ECL3 (258\u2013268), or any intracellular loop; those loops are not proposed. The C-terminus (residues 290\u2013331) is intracellular and has no ledger support for a surface tag.",
+  "literature_rejected": []
 }

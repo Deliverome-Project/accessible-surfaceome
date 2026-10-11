@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL12RB1",
+  "uniprot_acc": "P42701",
+  "sites": [
+    {
+      "site_id": "IL12RB1-terminal_n-23-lit",
+      "gene_symbol": "IL12RB1",
+      "uniprot_acc": "P42701",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "LgBit",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression on HEK293T cells confirmed; LgBit-IL12R\u03b21 was functional in a BRET-based IL-23 receptor competition assay, demonstrating participation in receptor complex formation at the cell surface.",
+      "confidence": "high",
+      "rationale": "IL12RB1 is a type I single-pass transmembrane protein with signal peptide 1\u201323 and a single extracellular N-terminus beginning at residue 24 (C). Because the signal peptide is cleaved co-translationally, any N-terminal tag must be inserted after residue 23 (the last SP residue, A) to survive to the cell surface; a tag upstream of position 24 would be cleaved off with the signal peptide. This is the only extracellular terminus, so the junction is uniquely determined from the topology landmarks (insert_after_residue = 23, residue_before = A, residue_after = C). The mature N-terminus lies 523 residues from the TM boundary (547), satisfying all distance constraints, and the published LgBit fusion (~156 aa) demonstrates that even a large protein domain is tolerated here, making a short ALFA-type tag (~15 aa) highly plausible. Full-length IL12R\u03b21 was cloned into a pc3.1 zeo expression vector with an N-terminal LgBit fusion and expressed on HEK293T cells for use in a BRET-based IL-23 receptor competition assay (PMC10199020). The paper names no specific residue; it states only 'N-terminal LgBit fusion' on the full-length receptor.",
+      "sources": [
+        {
+          "pmid": 37208328,
+          "citation": "PMID 37208328",
+          "claim": "HiBit-IL23R and LgBit-IL12R\u03b21 expression vectors were created by restriction cloning IL12R\u03b21 or IL23R into pc3.1 zeo expression vectors with N- terminal HiBit or LgBit fusion (kindly donated by Dr Mark Soave 44 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:17:42.249562+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length, membrane-anchored LgBit\u2013IL12R\u03b21 fusion expressed on HEK293T cells and used in a functional BRET assay, satisfying the inclusion criteria. No residue number is named in the paper, but IL12RB1 has exactly one extracellular terminus (the mature N-terminus after SP cleavage at position 23/24), so the junction is topology-derived rather than validated. No internal loop insertions, C-terminal extracellular tags, or intracellular tags are reported in the ledger. The sequence reconstruction from the numbered lines revealed a one-residue display overlap at position 181 (line 121 has 61 characters); the conflict was resolved by treating line-start numbers as authoritative and taking the first assignment, yielding the stated 662-residue sequence consistent with the topology string.",
+  "literature_rejected": []
+}

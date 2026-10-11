@@ -1,0 +1,136 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRXN1",
+  "uniprot_acc": "P58400",
+  "sites": [
+    {
+      "site_id": "NRXN1-internal-340-lit",
+      "gene_symbol": "NRXN1",
+      "uniprot_acc": "P58400",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 340,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S340",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (GGQ-flanked)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED for Nrxn1\u03b2 specifically. The L4 paper (Nrxn1\u03b1) used the HA-tagged construct for co-immunoprecipitation and immunostaining but no functional assay for the \u03b2 isoform at this junction is described in the clip.",
+      "confidence": "low",
+      "rationale": "L4 names the junction 'upstream of stalk residues QTTD' in Nrxn1\u03b1. Python finds QTTD beginning at position 341 in the Nrxn1\u03b2 canonical sequence (verified: Q=341, T=342, T=343, D=344), placing insert_after_residue at 340 (S). Residue 340 is extracellular (within span 51\u2013397) and 58 residues from the TM boundary at 398, well beyond the 3-residue minimum. The stalk sequence including QTTD is shared between \u03b1 and \u03b2 isoforms; the \u03b1-isoform precedent is therefore the closest available evidence for \u03b2, classified as inferred. C353 and C363 (potential disulfide pair) are 13 and 23 residues downstream and should be avoided in any final design. L4 (PMC8024894) reports an HA tag flanked by GGQ spacers inserted upstream of stalk residues QTTD in full-length mouse Nrxn1\u03b1. The QTTD motif is present in the shared stalk region of both \u03b1 and \u03b2 isoforms. Python locates QTTD at positions 341\u2013344 in the Nrxn1\u03b2 canonical sequence, placing the junction at residue 340 (S\u2192Q). The cited paper uses Nrxn1\u03b1, making this indirect evidence for Nrxn1\u03b2.",
+      "sources": [
+        {
+          "pmid": 33586859,
+          "citation": "PMID 33586859",
+          "claim": "To generate HA\u2010Nrxn1\u03b1, an HA tag flanked by GGQ spacers was inserted upstream of stalk residues QTTD (see Fig 4A for stalk sequence) into mouse Nrxn1\u03b1 (splice\u2010isoform SS1\u2212, SS2\u2212, SS3+, SS4\u2212, SS5+, SS6+)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 340,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRXN1-internal-None-lit",
+      "gene_symbol": "NRXN1",
+      "uniprot_acc": "P58400",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular stalk (between Cys-loop domain and TM)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "double HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection of all Nrxn1 isoforms confirmed by the HA tag; the paper states the tag enables detection at the cell surface. No ligand-binding or synaptic-function assay is described in the cited clip.",
+      "confidence": "high",
+      "rationale": "L2 and L3 together establish a full-length, membrane-anchored Nrxn1 conditional knock-in in which a double HA tag was tolerated in the extracellular stalk between the Cys-loop domain and the TM helix; surface detection of the tagged protein was confirmed. No single residue is named in the clip, so the site is reported at region level. The stalk in Nrxn1\u03b2 spans approximately residues 300\u2013397 (all within the computed extracellular span 51\u2013397), well clear of the TM boundary at 398. Because no residue is specified, insert_after_residue is left null per the rules for a named-loop site. Conditional knock-in mouse (PMC6683742) with a double HA-epitope tag plus loxP sequence inserted into the extracellular stalk of Nrxn1 between the Cys-loop domain and the TM region; full-length membrane-anchored Nrxn1 proteins (\u03b1, \u03b2, \u03b3 isoforms) confirmed in the absence of Cre.",
+      "sources": [
+        {
+          "pmid": 31262725,
+          "citation": "PMID 31262725",
+          "claim": "Specifically, we inserted a double HA-epitope tag and loxP sequence into the extracellular stalk region of Nrxn1 between the Cys-loop domain and the transmembrane region ( Fig. 1, A and B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "NRXN1-terminal_n-50-lit",
+      "gene_symbol": "NRXN1",
+      "uniprot_acc": "P58400",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 50,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G50",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED in the cited clip; the construct is referenced as previously described and used in the study without reporting a functional or trafficking assay.",
+      "confidence": "medium",
+      "rationale": "The 'HA-' prefix on a full-length type-I TM protein with a signal peptide (residues 1\u201350) unambiguously places the tag after the signal-peptide cleavage site, i.e., after residue 50 (G) and before residue 51 (A), the mature N-terminus. This is the only extracellular terminus in Nrxn1\u03b2; the C-terminus is intracellular (residues 419\u2013472). Python confirms residue 50 = G and residue 51 = A. The position is topology-derived because no residue number is stated in the clip. L9 (APEX2-NRXN1\u03b1) provides additional indirect support that an N-terminal fusion on a neurexin is tolerated. L8 (PMC11622183) references 'HA-Nrx1\u03b2 SS4\u2212' as a previously characterised full-length construct. Nrxn1\u03b2 is a type-I single-pass TM protein whose only extracellular terminus is the mature N-terminus (residue 51, after signal-peptide cleavage at residue 50). The 'HA-' prefix therefore places the tag after the signal peptide, at the unique extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 39424368,
+          "citation": "PMID 39424368",
+          "claim": "Plasmid constructs HA-CD4 and HA-Nrx1\u03b2 SS4\u2212 , lacking an insert in splice site number 4, 50 have been described previously 50,51 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:20:08.823221+00:00",
+  "literature_notes": "L1 (Nrx1bS4(+)S5(\u2212)-3xFLAG): disqualified because the clip does not state where the FLAG tag is inserted; the suffix naming convention suggests a C-terminal (intracellular) position, but the position is unstated and cannot be pinned. L5/L6/L7 (Flag in cytoplasmic tail): the insertion is intracellular and goes to other_positions. L6 and L7 confirm expression and surface trafficking are unaffected by the cytoplasmic Flag, but this is not a surface-tag site. L9 (APEX2-NRXN1\u03b1): the fusion is to the \u03b1 isoform, not \u03b2, and APEX2 is a proximity-labeling enzyme rather than an epitope tag; it provides only weak indirect support for N-terminal fusions on neurexins and is not used as a primary citation for any site. Two cysteines (C353, C363) in the stalk region may form a disulfide; any final design for the stalk site (L2/L3) or the QTTD site (L4) should avoid disrupting this pair.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 419,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Flag sequence inserted into the cytoplasmic tail of Nrxn1 (all isoforms); L6 confirms expression/transport unaffected and L7 confirms surface expression unaffected, but the tag faces the cytoplasm and is not accessible from the extracellular face."
+    }
+  ]
+}

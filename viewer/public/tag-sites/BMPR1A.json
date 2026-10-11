@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "BMPR1A",
+  "uniprot_acc": "P36894",
+  "sites": [
+    {
+      "site_id": "BMPR1A-terminal_n-23-lit",
+      "gene_symbol": "BMPR1A",
+      "uniprot_acc": "P36894",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by point-confocal fluorescence intensity measurement under non-permeabilized conditions (PMC8855587, L3); tagged receptors showed surface levels similar to other ED-tagged BMP/TGF\u03b2 receptors. BMP signaling function of the tagged construct was NOT MEASURED in either study.",
+      "confidence": "high",
+      "rationale": "BMPR1A is a type I single-pass receptor with signal peptide (residues 1\u201323), a 130-aa extracellular domain (24\u2013153), a single TM helix (154\u2013174), and an intracellular kinase domain (175\u2013532). The only extracellular terminus is the mature N-terminus; the C-terminus is cytoplasmic. Because no residue is named in any ledger line, the junction is topology-derived: the tag must follow the signal-peptide cleavage site, placing it after residue 23 (G) and before residue 24 (Q). Python verification confirms seq_dict[23]='G' and seq_dict[24]='Q', and the insert sits 130 residues from the TM boundary, well beyond the \u22653-residue minimum. Two independent publications (PMC8855587 with myc/HA; DOI:10.1101/2022.03.04.482944 with Halo/SNAP) both target this same junction, providing strong convergent support. PMC8855587 reports full-length human ALK3 (BMPR1A) constructs carrying an extracellular-domain (ED) myc or HA epitope tag expressed in COS7 cells and used in FRAP studies of receptor lateral diffusion and interactions. No residue number is named. Separately, DOI:10.1101/2022.03.04.482944 reports N-terminal Halo- and SNAP-tag fusions of hALK3 placed 'downstream of the signal peptide sequence' with a 5\u00d7 glycine linker, confirming the same junction in an independent construct.",
+      "sources": [
+        {
+          "pmid": 35177083,
+          "citation": "PMID 35177083",
+          "claim": "The cell surface expression levels of the tagged receptors, as measured by the fluorescence levels using point-confocal measurement of the fluorescence intensity by the FRAP instrumentation under identical labeling and illumination conditions (see \u201c Methods \u201d), were similar (Fig. 1 a)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:46:03.278094+00:00",
+  "literature_notes": "All five ledger lines converge on a single extracellular N-terminal tag site (after SP cleavage, insert_after_residue=23). L1, L2, and L3 are from the same paper (PMC8855587) describing myc/HA-tagged ALK3 in COS7 cells; L3 is the most informative because it explicitly reports surface-expression confirmation under non-permeabilized conditions. L4 and L5 are from the same preprint (DOI:10.1101/2022.03.04.482944) and describe Halo/SNAP tags placed 'downstream of the signal peptide sequence', independently corroborating the same junction with a different (and larger) tag type. Because both papers pin the identical junction (after SP cleavage), this is one site, not two. No residue number is named in any ledger line, so position_evidence is topology_derived. No intracellular insertions and no function-abrogating insertions are reported in the ledger, so other_positions is empty.",
+  "literature_rejected": []
+}

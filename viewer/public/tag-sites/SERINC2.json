@@ -166,6 +166,43 @@
       "median_conservation": 0.5
     },
     {
+      "site_id": "SERINC2-internal-None-lit",
+      "gene_symbol": "SERINC2",
+      "uniprot_acc": "Q96SA4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL4",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-HA immunofluorescence staining of surface-immobilised virions confirmed robust surface display of the HA tag on SERINC2-containing virions; SERINC2 iHA showed higher staining intensity than SERINC5 iHA. No explicit HIV-restriction or other functional assay reported for the tagged construct.",
+      "confidence": "high",
+      "rationale": "L1 directly reports an HA epitope-tag knock-in into ECL4 of full-length, membrane-anchored SERINC2, satisfying the insertion-in-this-protein criterion. ECL4 spans residues 290\u2013317 per the authoritative topology landmarks (28 residues, ample room for a ~15\u201323 aa tag). No residue within ECL4 is named in L1 or L2, so insert_after_residue is left null and the site is classified at region level. L2 independently confirms the tag is surface-accessible on virions, supporting surface_only validation. Full-length SERINC2 iHA construct with HA tag inserted into extracellular loop 4 (ECL4, topology landmarks 290\u2013317), expressed in cells and incorporated into HIV virions; surface accessibility confirmed by anti-HA Alexa Fluor 568 staining of surface-immobilised virions (L2). No specific residue within ECL4 is named in either clip.",
+      "sources": [
+        {
+          "pmid": 38785977,
+          "citation": "PMID 38785977",
+          "claim": "To ensure robust incorporation of SER5 and SER2 into the virions, we performed immunofluorescence (IF) measurements by utilizing the HA tag inserted into the extracellular loop 4 of SER5 and SER2 (referred to as iHA), as previously described [ 24 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "SERINC2-snorkel-c",
       "gene_symbol": "SERINC2",
       "uniprot_acc": "Q96SA4",
@@ -608,5 +645,12 @@
       "canonical_residue": 293,
       "left_pct": 65.11111111111111
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:17:13.984681+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1, L2), both from PMC11118262 and both describing the same iHA construct. They establish one site \u2014 an HA tag in ECL4 of full-length SERINC2 \u2014 with surface validation but no pinned residue. ECL4 contains one cysteine (C294) that may participate in a disulfide; the deterministic pipeline should flag it. No ledger evidence supports sites in any other extracellular loop (ECL1 62\u201395, ECL2 151\u2013157, ECL3 226\u2013236, ECL5 410\u2013421) or at either terminus. No intracellular or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
 }

@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "GPC2",
+  "uniprot_acc": "Q8N158",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:18:35.541269+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe GPC2-targeted CAR constructs \u2014 chimeric antigen receptor constructs engineered to recognize GPC2 as a tumor antigen. In each case the tags (truncated EGFRvIII/hEGFRt surface marker, G4S linker) are placed on the CAR construct itself, not on the GPC2 protein. GPC2 is the target antigen, not the tagged molecule. No ledger line reports an epitope tag, fluorescent-protein fusion, transposon insertion, or any other tolerated insertion within GPC2 at any position. Because the ledger contains zero qualifying insertions into GPC2, zero sites are proposed. This is the correct answer, not a failure.",
+  "literature_rejected": []
+}

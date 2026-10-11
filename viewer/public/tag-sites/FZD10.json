@@ -37,7 +37,70 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD10-terminal_n-20-lit",
+      "gene_symbol": "FZD10",
+      "uniprot_acc": "Q9ULW2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "I",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TOPFlash \u03b2-catenin reporter: WNT-3A-induced signaling preserved in \u0394FZD1\u201310 HEK293T cells (L2). NanoBiT/BRET binding assay: saturable eGFP-WNT-3A binding, Kd 2.3\u201329.9 nM (L3). Surface expression confirmed.",
+      "confidence": "high",
+      "rationale": "All three lines L1\u2013L3 describe the same N-terminal HiBiT-tagged FZD10 construct. The signal peptide spans residues 1\u201320 (landmark-authoritative); a tag upstream of residue 21 would be co-cleaved with the SP, so the junction is after residue 20 (A) and before residue 21 (I). No residue number is stated in the papers, but exactly one extracellular terminus exists for this tag placement, making the position topology_derived. L2 and L3 together provide both functional (WNT/\u03b2-catenin signaling) and surface-binding (Kd measurement) validation, the strongest evidence tier. N-terminal HiBiT-tagged full-length FZD10 expressed in HEK293T and \u0394FZD1\u201310 HEK293T cells. The tag is placed at the mature N-terminus after signal-peptide cleavage (SP residues 1\u201320); the mature chain begins at residue 21 (Ile). Functional readout: WNT-3A-induced \u03b2-catenin/TOPFlash signaling in \u0394FZD1\u201310 HEK293T cells (L2); saturable eGFP-WNT-3A binding with Kd 2.3\u201329.9 nM in living HEK293A cells (L3).",
+      "sources": [
+        {
+          "pmid": 34151213,
+          "citation": "PMID 34151213",
+          "claim": "Additionally, HiBiT-tagged FZD 1 , FZD 2 , FZD 4 , FZD 5 , FZD 7 , FZD 8 , and FZD 10 mediated WNT-3A-induced \u03b2-catenin-dependent signals as assessed by the TOPFlash reporter assay performed in HEK293T cells devoid of endogenous FZDs (\u0394FZD 1\u201310 HEK293T cells, Figure S1D ( 25 ))."
+        },
+        {
+          "pmid": 37516754,
+          "citation": "PMID 37516754",
+          "claim": "HA-FZD 4 -Nluc and HA-FZD 10 -Nluc were cloned by amplifying the receptor-encoding sequences from HiBiT-FZD 4 and HiBiT-FZD 10 , respectively 54 , and exchanging the FZD 5 -encoding sequence in HA-FZD 5 -Nluc (with linker) using BamHI and XbaI restriction sites."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:57:55.019013+00:00",
+  "literature_notes": "L1\u2013L3 and L6 all ground N-terminal tags on FZD10 at the same topology-derived junction (after signal-peptide cleavage, insert_after_residue=20). L2 and L3 provide the strongest validation (surface binding + WNT/\u03b2-catenin function preserved). L6 adds an HA-tag variant at the same position but without an independent functional readout in the ledger. L4 and L5 describe dual-tagged HiBiT-FZD10-mCherry constructs; the N-terminal HiBiT is the same site already covered by L1\u2013L3, while the C-terminal mCherry falls in the intracellular C-tail (residues 524\u2013581) and is recorded in other_positions. L7 (pmCherry-FZD10-mCherry) similarly has an N-terminal mCherry (topology_derived same junction) and a C-terminal mCherry (intracellular); the N-terminal mCherry is a large FP fusion (~236 aa) rather than a short epitope tag, and the ledger clip provides no functional readout for FZD10 specifically, so it is subsumed by the better-evidenced HiBiT site rather than listed as a separate site. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 581,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal mCherry fusion on HiBiT-FZD10-mCherry; residue 581 (V) is the last residue of the intracellular C-tail (topology 524\u2013581), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 581,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal Nluc on HA-FZD10-Nluc; same intracellular C-tail position (524\u2013581), not a surface tag."
+    }
+  ]
 }

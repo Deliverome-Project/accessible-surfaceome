@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LINGO3",
+  "uniprot_acc": "P0C6S8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:11:45.903017+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 and L2 both describe the same pCMV3-mLINGO3-GFP construct expressed in HEK293 cells. The naming convention 'LINGO3-GFP' (protein-GFP) and the pCMV3 vector architecture indicate a C-terminal GFP fusion. LINGO3 is a type I single-pass transmembrane protein (N-out, C-in): extracellular 25\u2013526, TM 527\u2013549, intracellular 550\u2013592. A C-terminal GFP therefore sits in the intracellular compartment (after residue 592) and is not a surface tag. The flow-cytometry result demonstrates that the full-length protein reaches the cell surface and that its extracellular domain binds TFF2 ligand, but the GFP reporter itself is not extracellularly exposed. This construct is recorded in other_positions. L3 describes a 'Flag-tagged LINGO3' used in CHO-cell co-immunoprecipitation experiments. The ledger clip does not state whether the Flag tag is at the N-terminus (which would be extracellular after signal-peptide cleavage at residue 24) or the C-terminus (which would be intracellular). Co-IP from cell lysate is compatible with either orientation, so the clip provides no evidence that the Flag is on the extracellular face. The tag position is unstated; insert_after_residue cannot be pinned; the topology-derived rule does not apply because surface localisation of the tag itself is not confirmed. L3 therefore does not qualify any surface site. No ledger line supports a tag insertion on the extracellular face of LINGO3 at a pinnable position.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 592,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "LINGO3-GFP (pCMV3-mLINGO3-GFP) is a C-terminal GFP fusion; for this type I TM protein (C-terminus intracellular, residues 550\u2013592) the GFP tag is cytoplasmic, not surface-exposed."
+    }
+  ]
+}

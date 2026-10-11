@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCRL2",
+  "uniprot_acc": "Q96LA5",
+  "sites": [
+    {
+      "site_id": "FCRL2-terminal_n-19-lit",
+      "gene_symbol": "FCRL2",
+      "uniprot_acc": "Q96LA5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by FACS (L2: expression levels comparable across chimeric constructs after puromycin selection). Signaling function was assessed in the chimeric context (Fc\u03b3RIIb intracellular domain), so native FCRL2 intracellular signaling was NOT MEASURED for this construct.",
+      "confidence": "medium",
+      "rationale": "The pDisplay vector places its HA tag immediately after the Ig \u03ba-chain leader sequence and before the first residue of the displayed protein; in the chimeric FCRL2 construct the displayed sequence begins at the mature FCRL2 N-terminus (residue 20, after SP cleavage at residue 19). FCRL2 has exactly one extracellular terminus (the N-terminus; the C-terminus is intracellular), so the tag position is unambiguously topology-derived as insert_after_residue=19. Python confirmed residue 19 = S (last SP residue) and residue 20 = L (first extracellular residue), and the tag site is 381 residues from the TM boundary (>>3), satisfying the distance constraint. Confidence is medium rather than high because the construct is chimeric (non-native intracellular domain) and no specific junction residue is named in the paper. PMC5381824 (L1/L2): A chimeric FCRL2 construct (FCRL2 extracellular + transmembrane domain fused to Fc\u03b3RIIb intracellular domain) was built using the pDisplay vector, which appends the Ig \u03ba-chain leader sequence followed by an HA tag immediately before the displayed protein's mature N-terminus. The chimera was stably transduced into mouse A20 IIA1.6 B cells. The construct is membrane-anchored and the HA tag is explicitly placed on the extracellular surface. No specific residue number is named for the junction.",
+      "sources": [
+        {
+          "pmid": 21068405,
+          "citation": "PMID 21068405",
+          "claim": "For retroviral transduction, cDNAs encoding the chimeric proteins were excised from pDisplay (Invitrogen), adding the Ig \u03ba-chain leader sequence and HA tag to the FCRL2 chimeric protein, and cloned into pMX-PIE, a retroviral expression vector that expresses the gene of interest upstream of an internal ribosomal entry site element and the enhanced GFP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:46:05.616176+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) describe the same chimeric FCRL2 construct from PMC5381824. L1 establishes the HA tag placement via pDisplay at the extracellular N-terminus; L2 confirms surface expression by FACS. The construct qualifies because it is membrane-anchored (retains FCRL2 EC + TM domains) and the tag is on the extracellular face \u2014 it is not a soluble ectodomain, Fc-fusion, or antibody epitope-mapping result. The chimeric intracellular domain (Fc\u03b3RIIb) means native FCRL2 signaling function was not assessed in this tagged construct, capping validation at surface_only. No other ledger lines name internal loop insertions, C-terminal tags, or any other positions in FCRL2; accordingly only one site is reported.",
+  "literature_rejected": []
+}

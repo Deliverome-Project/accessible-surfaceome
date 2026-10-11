@@ -37,7 +37,72 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "F2R-terminal_n-21-lit",
+      "gene_symbol": "F2R",
+      "uniprot_acc": "P25116",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "S",
+      "residue_after": "A",
+      "residue_label": "S21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG M1 antibody labeling under non-permeabilized conditions (4\u00b0C). Receptor responds to agonist and undergoes internalization (L3), demonstrating preserved trafficking and signaling function.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the FLAG epitope was inserted after the signal peptide of full-length human PAR1, placing the tag at the mature N-terminus (after residue 21, before residue 22). Python confirms residue 21 = S (last of SP) and residue 22 = A (first of mature ectodomain). L3 and L4 independently confirm surface display by non-permeabilized anti-FLAG labeling, and L3 further demonstrates agonist-induced internalization, establishing functional competence. The N-terminal extracellular domain (22\u2013102) is 81 residues from TM1, providing ample space for a short epitope tag. Full-length human PAR1 expressed in HEK293 cells with FLAG epitope inserted immediately after the signal peptide (residues 1\u201321) at the mature N-terminus (residue 22). Confirmed by non-permeabilized anti-FLAG M1 antibody labeling at 4\u00b0C in multiple cell lines (HeLa, Rat1 fibroblasts, HEK293). Receptor was also used for crystallography purification, confirming stable folded expression.",
+      "sources": [
+        {
+          "pmid": 23222541,
+          "citation": "PMID 23222541",
+          "claim": "To facilitate purification, an N-terminal FLAG epitope was inserted after a signal peptide and a C-terminal deca-histidine tag was introduced."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 21,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:40:16.200031+00:00",
+  "literature_notes": "L3 and L4 both corroborate the L1 site (FLAG after signal peptide, insert_after_residue=21) and elevate its validation to surface_and_function; they are not independent sites. L2 describes a T4 lysozyme insertion in the third intracellular loop (A301\u2013A303, topology INTRACELLULAR 292\u2013311) and is recorded in other_positions as intracellular. L5 describes SEAP reporter insertions at R41 and R46 \u2014 the canonical thrombin and APC cleavage sites in the extracellular N-terminal domain \u2014 but these constructs are explicitly designed to block protease-mediated receptor activation (R41Q and R46Q mutations abolish cleavage, and SEAP occludes the tethered-ligand region); they are recorded in other_positions as abrogates_function. No other ledger lines support additional surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 301,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "T4 lysozyme (residues 2\u2013161) inserted between A301 and A303 (removing V302) in the third intracellular loop (topology INTRACELLULAR 292\u2013311); used for crystallography, not a surface tag site."
+    },
+    {
+      "residue": 41,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L5",
+      "note": "SEAP inserted at R41 (with R41Q mutation) to block thrombin cleavage and report APC cleavage; insertion at the canonical thrombin cleavage site abolishes normal tethered-ligand activation of PAR1."
+    },
+    {
+      "residue": 46,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L5",
+      "note": "SEAP inserted at R46 (with R46Q mutation) to block APC cleavage; insertion at this protease cleavage site disrupts normal receptor activation by APC."
+    }
+  ]
 }

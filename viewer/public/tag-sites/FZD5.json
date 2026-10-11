@@ -37,7 +37,66 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD5-terminal_n-26-lit",
+      "gene_symbol": "FZD5",
+      "uniprot_acc": "Q13467",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by flow cytometry with anti-V5 antibody; Wnt3a- and Wnt5a-induced reduction of surface FZD5 levels measured, demonstrating receptor-mediated endocytosis is intact and the tag does not block Wnt-induced trafficking.",
+      "confidence": "high",
+      "rationale": "L5 explicitly states the V5 tag is placed 'after the signal peptide' on the amino terminus of FZD5, which by the topology landmarks means insert_after_residue=26 (last residue of the 1\u201326 signal peptide). Python lookup confirms residue 26 = A and residue 27 = A. The tag sits in the large extracellular N-terminal domain (residues 27\u2013236), 210 residues from TM1, and surface display was directly confirmed by flow cytometry. The same junction is independently corroborated by HA-tagged constructs (L1\u2013L3, L14, L15) and HiBiT-tagged constructs (L12\u2013L13), all reporting surface-displayed full-length FZD5. HEK293A and Huh7 cells stably expressing V5-FZD5, with the V5 tag explicitly placed at the amino terminus after the signal peptide, in a pCDH lentiviral vector; full-length membrane-anchored receptor.",
+      "sources": [
+        {
+          "pmid": 39463927,
+          "citation": "PMID 39463927",
+          "claim": "To investigate whether Wnt induces endocytosis and degradation of FZD receptors, HEK293A cells stably expressing each of the ten V5-FZDs (with the V5 tag added to the amino terminus of each FZD after the signal peptide) were treated with control, Wnt3a-conditioned or Wnt5a-conditioned medium (CM), and the FZD levels on the cell surface were examined via flow cytometry with an anti-V5 antibody."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 26,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:59:02.210539+00:00",
+  "literature_notes": "The ledger supports a single extracellular tag site: the N-terminal junction after the signal peptide (insert_after_residue=26). This site is corroborated by at least 12 ledger lines using three different tag types (V5: L5, L6, L8\u2013L11; HA: L1\u2013L3, L14, L15; HiBiT: L12\u2013L13). L5 is chosen as the primary clip because it is the most explicit about position ('after the signal peptide') and provides the strongest functional readout (Wnt-induced endocytosis). The C-terminal 1D4/V5 tags (L2, L6, L7, L15) are intracellular (C-tail residues 523\u2013585) and are recorded in other_positions. The HaloTag at K439 (L4) is in ICL3 (424\u2013450) and is also intracellular, recorded in other_positions. No ledger line supports an insertion in any extracellular loop (ECL1 292\u2013312, ECL2 379\u2013398, ECL3 471\u2013501) of full-length membrane-anchored FZD5.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 585,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "V5 tag knocked into the C-terminus of endogenous FZD5 before the stop codon via CRISPR/Cas9; the C-terminus falls in the intracellular span 523\u2013585 and is not accessible on the extracellular face."
+    },
+    {
+      "residue": 439,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "HaloTag inserted after K439 in the third intracellular loop (ICL3, topology span 424\u2013450) of HA-FZD5-Nluc; tolerated but cytoplasmic, not a surface tag site."
+    }
+  ]
 }

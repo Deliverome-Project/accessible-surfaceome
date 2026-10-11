@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GHRHR-terminal_n-22-lit",
+      "gene_symbol": "GHRHR",
+      "uniprot_acc": "Q02643",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "G",
+      "residue_after": "H",
+      "residue_label": "G22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDD)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Constructs used for NanoBiT receptor\u2013G-protein interaction assay and cell-based functional studies in pcDNA3.1; surface expression and signalling function assessed. For the SV1 variant (L2/L3), surface expression explicitly confirmed stable across all assays.",
+      "confidence": "high",
+      "rationale": "The construct architecture [HA-signal][FLAG][GHRHR residues 1\u2013423] places the FLAG tag between the cleaved signal peptide and the mature receptor N-terminus. In canonical UniProt numbering the native signal peptide spans residues 1\u201322 (last residue G22) and the mature protein begins at H23; the FLAG therefore sits at junction 22/23, which is 106 residues from TM1 (residue 129) and fully within the large extracellular N-terminal domain. No residue number is stated in the paper, but exactly one extracellular N-terminus exists after signal cleavage, so the position is topology-derived. Python confirmed residue_before=G (pos 22) and residue_after=H (pos 23). Full-length human GHRHR cloned into pcDNA3.1 with an HA signal sequence followed by an N-terminal FLAG tag (DYKDDDD) preceding the mature receptor sequence; constructs used for NanoBiT and functional assays in mammalian cells (PMC7567103). L2/L3 (PMC8501799, DOI:10.1101/2021.08.20.457043) provide indirect corroboration: the same HA-signal + N-terminal FLAG design was applied to SV1, a GHRHR splice variant sharing the N-terminal extracellular domain, with surface expression confirmed stable across all assays.",
+      "sources": [
+        {
+          "pmid": 33060564,
+          "citation": "PMID 33060564",
+          "claim": "In addition to clone the constructs into the pBiT vector (Promega) for NanoBiT assay, they all contained an N-terminal Flag tag (DYKDDDD) proceeded by a HA signal sequence, and were cloned into the pcDNA3.1 vector (Invitrogen) for functional studies."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:10:10.597655+00:00",
+  "literature_notes": "L4 (PMC7567103) describes replacing the native signal peptide with an HA sequence for structural/cryo-EM studies; the HA here functions as the signal peptide itself and is cleaved off, leaving no extracellular tag \u2014 this does not qualify as a surface tag site and is excluded entirely. L1 (PMC11423342) reports a C-terminal FLAG on full-length GHRHR; the C-terminus (residue 423) falls within the intracellular C-tail (topology landmarks 380\u2013423) and is therefore not a surface site \u2014 recorded in other_positions. L2 and L3 describe the same SV1 construct and are treated as a single indirect corroboration of L5; they do not independently pin a second junction. No ledger line supports any internal extracellular loop (ECL1 186\u2013201, ECL2 267\u2013281, ECL3 348\u2013355) insertion for GHRHR.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 423,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag engineered into full-length human GHRHR (pcDNA3, PMC11423342); residue 423 (C) lies within the intracellular C-tail (topology landmarks 380\u2013423), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

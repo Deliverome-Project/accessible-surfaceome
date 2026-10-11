@@ -37,7 +37,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRA2A-terminal_n-0-lit",
+      "gene_symbol": "ADRA2A",
+      "uniprot_acc": "P08913",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized anti-HA FITC labeling; [\u00b3H]RX821002 binding Kd = 3.43 \u00b1 0.58 nM, indistinguishable from untagged receptor; authors explicitly state the tag does not interfere with receptor trafficking, folding, or function.",
+      "confidence": "high",
+      "rationale": "L1 explicitly reports an HA tag at the 'extreme amino terminus' of full-length, membrane-anchored \u03b12A-AR and states it does not interfere with trafficking, folding, or function. The topology landmarks confirm residues 1\u201348 are extracellular with no signal peptide, so insert_after_residue = 0 (prepend before M1) is the only possible N-terminal extracellular junction; residue_after is M (residue 1, read from the numbered sequence). L4 provides quantitative ligand-binding confirmation (Kd preserved), and L2/L3 confirm plasma-membrane surface display by non-permeabilized antibody labeling. The 48-residue extracellular N-terminal span provides ample steric room for a 13\u201323 aa epitope tag. Full-length \u03b12A-AR with an HA epitope tag at the extreme extracellular amino terminus was expressed in mammalian cells; surface display was confirmed by FITC-conjugated anti-HA antibody labeling under non-permeabilized conditions (L2, L3). Ligand binding was assessed by [\u00b3H]RX821002 saturation binding (L4). The topology landmarks place residues 1\u201348 as extracellular with no signal peptide, so the tag prepends before residue 1 (M). Multiple independent constructs from the same group also place EGFP (RUSH, L6/L7/L8), mCherry (L9), and SNAP-tag (L11) at the same N-terminal position, and a HiBiT construct (IL6-HiBiT-\u03b12A-AR-HaloTag, L10) uses an IL-6 signal peptide to deliver HiBiT to the extracellular N-terminus.",
+      "sources": [
+        {
+          "pmid": 20059747,
+          "citation": "PMID 20059747",
+          "claim": "All \u03b1 2 -AR constructs possess an extracellular HA epitope tag at the extreme amino terminus where it has previously been shown not to interfere with receptor trafficking, folding or function ( 4 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:19:10.460363+00:00",
+  "literature_notes": "All ledger lines (L1\u2013L11) converge on a single extracellular surface site: the N-terminal prepend. L1\u2013L4 are the primary evidence for \u03b12A-AR specifically, with explicit surface and functional validation. L5\u2013L9 (EGFP, mCherry, RFP, Rluc8 at NT via RUSH) and L11 (SNAP-tag at NT of adrenergic receptors) corroborate the same junction with different tag chemistries. L10 (IL6-HiBiT-\u03b12A-AR-HaloTag) places HiBiT at the extracellular N-terminus via an IL-6 signal peptide; the HaloTag position is not stated in the clip and cannot be pinned, so it is not proposed as a separate site. The C-terminal GFP fusion (L5) is intracellular per the topology landmarks (residues 445\u2013465 = intracellular) and is recorded in other_positions. No ledger line supports an insertion in ECL1 (112\u2013121), ECL2 (188\u2013209), or ECL3 (411\u2013424) of this protein, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 465,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "GFP fused at the C-terminus of full-length \u03b12A-AR (L5); the topology landmarks place residues 445\u2013465 in the intracellular compartment, so this is not a surface tag site."
+    }
+  ]
 }

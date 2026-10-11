@@ -37,7 +37,52 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CHRM4-terminal_n-1-lit",
+      "gene_symbol": "CHRM4",
+      "uniprot_acc": "P08173",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "A",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface ELISA with anti-HA antibody confirmed surface display of the tagged receptor in stable cell lines. No ligand-binding or signalling functional assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the 3xHA tag was subcloned after the initiating Met codon of the full-length, membrane-anchored hM4 receptor, pinning insert_after_residue=1 (M\u2192A). The topology landmarks place residues 1\u201331 in the extracellular domain with no signal peptide, so the tag is on the extracellular face; the insertion point is 30 residues from TM1 (which begins at residue 32), well above the \u22653-residue minimum. Python confirmed residue 1 = M and residue 2 = A from the numbered sequence. L2 independently confirms surface display by ELISA, elevating validation to surface_only. Full-length human M4 muscarinic receptor (hM4) subcloned into pcDNA3 with a triple HA epitope tag inserted after the initiating Met codon (residue 1); stable mammalian cell lines generated. Surface expression of the HA-tagged receptor confirmed by receptor ELISA with anti-HA primary antibody (L2).",
+      "sources": [
+        {
+          "pmid": 15850493,
+          "citation": "PMID 15850493",
+          "claim": "Johnny N\u00e4sman, University of Kuopio) was subcloned from pBluescript into pcDNA3 mammalian expression vector and a triple hemagglutinin (HA) epitope tag was subcloned after the initiating Met codon of the hM4 gene."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 1,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:34:57.302938+00:00",
+  "literature_notes": "The ledger contains two lines (L1, L2) both describing the same construct and experiment: a 3xHA tag inserted after Met1 of full-length hM4 in pcDNA3, with surface expression confirmed by ELISA. L1 pins the junction; L2 provides the surface-validation assay. No functional assay (e.g. ACh binding, cAMP, IP1) is reported in either clip, so validation_level is surface_only rather than surface_and_function. No other insertion sites (internal loops, C-terminus) are mentioned in the ledger for CHRM4, so only one site is reported. Potential N-glycosylation sequons at N3, N8, and N13 lie downstream of the insertion point and are not disrupted by the tag at position 1.",
+  "literature_rejected": []
 }

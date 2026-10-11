@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "GJA5",
+  "uniprot_acc": "P36382",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:11:05.484558+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) report tags fused to the carboxyl terminus of Cx40 (GJA5): L1\u2013L3 describe a V5/6-His C-terminal tag (with trafficking and functional validation), and L4\u2013L6 describe C-terminal YFP fusions. Per the authoritative topology landmarks, the C-terminus of GJA5 falls entirely within the intracellular domain (residues 225\u2013358). A C-terminal tag therefore faces the cytoplasm, not the extracellular space, and cannot serve as a surface epitope tag. No ledger line reports any insertion in ECL1 (residues 43\u201371) or ECL2 (residues 176\u2013205), the only two extracellular loops. Because no ledger line grounds an extracellular tag site, the correct answer is zero surface sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 358,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "V5/6-His tag fused to the C-terminus of Cx40; the C-terminus (residues 225\u2013358) is intracellular per topology landmarks, so this is a cytoplasmic tag, not a surface tag."
+    },
+    {
+      "residue": 358,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "YFP fused to the C-terminus of human Cx40; same intracellular C-terminal position as L1\u2013L3; confirmed trafficking to gap junction plaques but faces the cytoplasm."
+    }
+  ]
+}

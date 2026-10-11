@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "SDC3",
+  "uniprot_acc": "O75056",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:10:46.894843+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a C-terminal 3xFlag tag on full-length human SDC3 expressed in THP-1 cells. SDC3 is a type I single-pass transmembrane protein: signal peptide 1\u201346 (cleaved), extracellular 47\u2013388, TM 389\u2013409, intracellular 410\u2013442. The C-terminus (residue 442, 'A') lies in the intracellular domain; a C-terminal tag therefore faces the cytoplasm, not the extracellular surface. This disqualifies L1 as evidence for an extracellular surface tag site. No other ledger lines exist for SDC3. The extracellular domain (47\u2013388) is large and in principle tolerant of internal tags, and the mature N-terminus after signal-peptide cleavage (residue 47) is a classical surface-tag position, but neither is grounded in any ledger line. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 442,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 3xFlag tag on full-length SDC3 expressed in THP-1 cells; residue 442 is in the intracellular domain (410\u2013442), so the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

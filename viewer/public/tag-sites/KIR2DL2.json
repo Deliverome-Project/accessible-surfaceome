@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "KIR2DL2",
+  "uniprot_acc": "P43627",
+  "sites": [
+    {
+      "site_id": "KIR2DL2-terminal_n-21-lit",
+      "gene_symbol": "KIR2DL2",
+      "uniprot_acc": "P43627",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "P",
+      "residue_after": "H",
+      "residue_label": "P21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry with anti-HA antibody on intact (non-permeabilized) cells confirmed surface expression of all 13 allelic variants; no functional assay (e.g., HLA-C binding or NK inhibition) was reported for the HA-tagged constructs.",
+      "confidence": "high",
+      "rationale": "KIR2DL2 is a type I single-pass receptor with its C-terminus intracellular; the mature extracellular N-terminus (residue 22, H) is the only extracellular terminus available for a tag. The signal peptide spans residues 1\u201321 (ending at P21), so an N-terminal tag must be placed after residue 21 to avoid co-translational cleavage. Python confirmed residue_before = P (pos 21) and residue_after = H (pos 22), 221 residues from the TM boundary. The paper names no specific residue number, so position is topology_derived from the single available extracellular terminus. Thirteen full-length KIR2DL2/3 allelic products were engineered with an N-terminal HA tag and expressed by transient transfection in the KIR-negative NKL cell line. Pre-permeabilization staining with anti-HA antibody confirmed the tag is accessible on the extracellular face of the intact cell.",
+      "sources": [
+        {
+          "pmid": 23686481,
+          "citation": "PMID 23686481",
+          "claim": "Eighteen hours post-transfection, cells were stained with an antibody specific for HA, and, following cell permeabilization, intracellularly stained for the KIR C-terminal V5 tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:57:31.073560+00:00",
+  "literature_notes": "L1 and L2 both ground the N-terminal HA site; L2 is the more probative clip (direct surface staining result) and is used as the supporting_clip_id. L3 corroborates surface expression of V5-tagged constructs (without HA) via flow cytometry and surface biotinylation, but the V5 tag is C-terminal and intracellular \u2014 it is recorded in other_positions. L4 establishes that pEF-DEST51 encodes the C-terminal V5 tag, confirming its intracellular location. No ledger line reports an insertion in any internal extracellular loop of KIR2DL2, so no internal sites are proposed. The sequence reconstructed from the numbered lines is 348 residues, consistent with SEQUENCE_LENGTH: 348; a raw-string count of 349 was a transcription artefact and was discarded.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 348,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "The pEF-DEST51 vector encodes a C-terminal V5 tag appended after the last residue (P348); residue 348 falls within the intracellular domain (265\u2013348), so this tag faces the cytoplasm and is not a surface-accessible site."
+    }
+  ]
+}

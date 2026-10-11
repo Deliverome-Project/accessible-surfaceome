@@ -460,5 +460,26 @@
       "canonical_residue": 151,
       "left_pct": 53.736654804270465
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:16:54.450760+00:00",
+  "literature_notes": "CD37 is a tetraspanin with both termini intracellular (N-terminus residues 1\u201313, C-terminus residues 266\u2013281). All six ledger lines describe terminal fusions: L1/L2/L5 use 'GFP-CD37' (N-terminal GFP, intracellular), L3/L4 use 'ALFA-CD37' (N-terminal ALFA tag, intracellular), and L6 uses 'CD37-sGFP2' (C-terminal sGFP2, intracellular). The biotinylation experiments in L1/L2 confirm the tagged protein reaches the cell surface, but the biotinylated bands are the glycosylated ECL2 portions of the protein \u2014 the GFP/ALFA tags themselves are not biotinylated, consistent with their intracellular location. No ledger line describes any insertion in ECL1 (39\u201355) or ECL2 (110\u2013241), nor any snorkel construct. Because no ledger line grounds a tag on the extracellular face, zero surface sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "ALFA-CD37 construct places the ALFA tag at the intracellular N-terminus (residues 1\u201313); surface expression of the protein is confirmed by plasma-membrane biotinylation but the tag itself is cytoplasmic."
+    },
+    {
+      "residue": 281,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "CD37-sGFP2 construct places sGFP2 at the intracellular C-terminus (residues 266\u2013281); used for functional studies of CD37 tyrosine-based motifs."
+    }
   ]
 }

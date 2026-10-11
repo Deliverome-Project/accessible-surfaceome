@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "FAM171A2",
+  "uniprot_acc": "A8MVW0",
+  "sites": [
+    {
+      "site_id": "FAM171A2-terminal_n-29-lit",
+      "gene_symbol": "FAM171A2",
+      "uniprot_acc": "A8MVW0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "G",
+      "residue_after": "K",
+      "residue_label": "G29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot on HEK293T cell lysates confirmed expression and antibody detection of the HA-tagged construct; surface localisation and function were NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "FAM171A2 is a single-pass type-I transmembrane protein with its N-terminus extracellular (residues 30\u2013315) and its C-terminus intracellular (residues 338\u2013826). An N-terminal HA tag is therefore the only extracellular terminus available, so the junction is topology-derived: the tag must be placed after the signal-peptide cleavage site (residue 29, G) and before the mature N-terminus (residue 30, K). Python confirmed seq[29]='G' and seq[30]='K'. The extracellular domain spans 286 residues, providing ample steric room for a short epitope tag at this position. Full-length Fam171a2 expressed as an N-terminal HA epitope-tagged construct in HEK293T cells; the tagged protein was detected by western blot on cell lysates to validate antibody specificity. No residue number is named in the clip.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2025.09.18.675241",
+          "claim": "We analyzed their specificity on lysates of HEK293T cells that were transfected with all three Fam171 family members (Fam171a1, Fam171a2 and Fam171b), containing an N-terminal hemagglutinin (HA) epitope tag ( Figure 1B ).",
+          "source_id": "DOI:10.1101/2025.09.18.675241"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:40:27.740775+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports a full-length, membrane-anchored N-terminal HA-tagged FAM171A2 construct expressed in HEK293T cells, validated only by western blot on cell lysates (antibody specificity assay). No residue number is stated, but because the protein has exactly one extracellular terminus (the mature N-terminus after signal-peptide cleavage at residue 29), the junction is unambiguous and topology-derived. The C-terminus (residues 338\u2013826) is entirely intracellular and therefore not a surface-tag site. No internal extracellular loop insertions are supported by the ledger. Validation level is 'detected_only' because the western blot confirms expression but does not demonstrate surface display or preserved function.",
+  "literature_rejected": []
+}

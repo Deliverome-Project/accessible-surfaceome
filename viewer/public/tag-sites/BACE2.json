@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "BACE2",
+  "uniprot_acc": "Q9Y5Z0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:40:37.981458+00:00",
+  "literature_notes": "The ledger contains exactly two lines (L1, L2), both from the same paper (PMC11324312). Both describe tagging of VEGFR3, the substrate that BACE2 cleaves, not BACE2 itself. L1 reports that VEGFR3 was engineered with an N-terminal HA-tag and a C-terminal FLAG-tag to detect all VEGFR3 forms after BACE2-mediated shedding. L2 confirms that the BACE2 construct used in the same experiment is murine full-length Bace2 in pcDNA3.1 with no tag mentioned. Neither line reports a tag insertion on BACE2 at any position, in any loop, or at any terminus. No qualifying evidence exists in the ledger for any surface tag site on BACE2; zero sites is the correct answer.",
+  "literature_rejected": []
+}

@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR4-terminal_n-0-lit",
+      "gene_symbol": "GPR4",
+      "uniprot_acc": "P46093",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-myc immunofluorescence (L5) and cell-surface fraction Western blot (L7) in HEK293T cells. Transfection efficiency (% myc-positive cells) measured for WT and histidine-mutant constructs (L6). pH-dependent function of the WT-myc construct itself is NOT MEASURED in the cited clips; functional assays in L6 concern histidine mutants, not the tag per se.",
+      "confidence": "medium",
+      "rationale": "GPR4 has a single extracellular terminus: the N-terminal span (residues 1\u201317, extracellular per topology landmarks), which is 17 residues from TM1 (beginning at residue 18), well beyond the 3-residue minimum. The C-terminus (residues 290\u2013362) is intracellular, so surface detection of myc by non-permeabilized immunofluorescence and cell-surface biotinylation/WB (L5\u2013L7) uniquely localises the tag to the N-terminal prepend position (insert_after_residue = 0, residue_after = M). This is topology_derived because no residue number is stated in the clips. L8 provides corroborating indirect precedent: the closest paralog OGR1/GPR68 tolerates a 3\u00d7FLAG tag inserted 'in front of' its coding sequence (i.e., N-terminal prepend) in a functional knock-in. L5/L6/L7 (PMC11376338): Full-length mGPR4-myc constructs expressed in HEK293T cells; anti-myc immunofluorescence detects surface-positive cells (L5, L6), and a biotinylation-based cell-surface Western blot probed with anti-myc confirms myc accessibility on the extracellular face (L7). No residue number is stated. GPR4's C-terminus is intracellular (residues 290\u2013362 per topology landmarks), leaving the N-terminal extracellular span (residues 1\u201317) as the only extracellular terminus; the tag must therefore be prepended before residue 1. Additional indirect support from L8 (PMC2684630): a 3\u00d7FLAG tag inserted 'in front of' OGR1 (GPR68), the closest proton-sensing paralog of GPR4, at its N-terminus in a knock-in construct.",
+      "sources": [
+        {
+          "pmid": 39107057,
+          "citation": "PMID 39107057",
+          "claim": "A , Representative images of WT and histidine mutant GPR4-myc constructs expressed in HEK293T cells; scale bar, 30 \u00b5m."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:37:12.857062+00:00",
+  "literature_notes": "L1\u2013L4 (PMC10928412) all describe a C-terminal HA tag (GSSG-YPYDVPDYA) on GPR4, validated by cAMP assay (L2) and in vivo hypercapnic ventilatory response (L3). This tag is functionally silent and robustly validated, but the C-terminus of GPR4 is intracellular (residues 290\u2013362 per topology landmarks); it therefore cannot serve as an extracellular surface tag site and is recorded in other_positions. L8 (PMC2684630) describes an N-terminal 3\u00d7FLAG on OGR1/GPR68 (close paralog); this is indirect evidence for GPR4 and points to the same N-terminal prepend position already grounded in L5\u2013L7, so no additional site is added. No ledger line pins a tag to any of the three extracellular loops (ECL1 75\u201387, ECL2 155\u2013177, ECL3 247\u2013266) of GPR4.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 362,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal HA tag (GSSG-YPYDVPDYA) appended after the last residue Q362; functionally silent in pH-dependent cAMP assay (HEK293T) and in vivo HCVR (knock-in mice), but the C-terminus lies in the intracellular domain (residues 290\u2013362) and is not accessible on the extracellular face."
+    }
+  ]
 }

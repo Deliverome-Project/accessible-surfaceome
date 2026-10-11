@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CDH2",
+  "uniprot_acc": "P19022",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:28:30.910086+00:00",
+  "literature_notes": "The sole ledger clip (L1) describes a full-length CDH2 tandem fluorescent timer (sfGFP + TagRFP) transgenic zebrafish construct that localises to cell-cell adhesions in vivo. The clip names no residue number and no terminus. CDH2 is a type I single-pass transmembrane protein: its N-terminus is extracellular (mature residue 26, after SP cleavage at residue 25) and its C-terminus is intracellular (residue 906). The topology-derived rule requires knowing that the tag is at a terminus AND that terminus is extracellular; here the clip is silent on which terminus carries the tag. Tandem fluorescent timers (sfGFP-TagRFP, ~480 aa combined) on cadherins are overwhelmingly placed at the C-terminus (intracellular) in the zebrafish developmental biology literature, including the Revenu et al. 2014 construct that L1 explicitly cites. Because the clip does not establish extracellular placement, and doubt mandates dropping the site, zero surface tag sites are proposed. The construct is recorded in other_positions as a likely intracellular C-terminal fusion.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 906,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length CDH2 tagged with tandem sfGFP-TagRFP (fluorescent timer); clip names no terminus, but tandem FP timers on type I cadherins are standardly C-terminal (intracellular residue 906); the tag is not on the extracellular face and therefore does not qualify as a surface tag site."
+    }
+  ]
+}

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR7D4-terminal_n-0-lit",
+      "gene_symbol": "OR7D4",
+      "uniprot_acc": "Q8NG98",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "c-myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor displayed on nanovesicle surface and used for quantitative odorant\u2013receptor binding studies; odorant binding was measurable, confirming functional surface expression of the N-terminally tagged construct.",
+      "confidence": "high",
+      "rationale": "All five ledger lines (L1\u2013L5) converge on a single site: the N-terminus of OR7D4 carries a c-myc tag in a full-length, membrane-anchored construct. The topology landmarks show residues 1\u201325 are extracellular with no signal peptide (topology string 'O', not 'S'), so the tag prepends before Met1 (insert_after_residue=0) and is not at risk of cleavage. The paper names only 'N-terminus' without a residue number; because OR7D4 has exactly one extracellular terminus (the N-terminus, residues 1\u201325), the junction is unambiguous and position_evidence is topology_derived. The chimpanzee ortholog is a close primate paralog of human OR7D4, so this counts as indirect evidence per the instructions. Chimpanzee OR7D4 (close primate ortholog of human OR7D4) expressed as a full-length membrane-anchored receptor with an N-terminal c-myc epitope tag in Saccharomyces cerevisiae nanovesicles (~100 nm diameter). Membrane anchoring confirmed by total membrane fractionation (L4); monomeric expression confirmed by Western blot at ~26 kDa (L5); surface display confirmed by nanovesicle presentation (L1).",
+      "sources": [
+        {
+          "pmid": 29235485,
+          "citation": "PMID 29235485",
+          "claim": "Natural nanovesicles (NVs) from Saccharomyces cerevisiae, ~100\u2009nm in diameter, carrying either the human OR17-40 or the chimpanzee OR7D4 olfactory receptor (OR) tagged with the c-myc epitope at their N-terminus, are presented as model systems to quantify the interaction between odorant and olfactory receptors."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:59:34.703091+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) are from the same paper (PMC5727543) and describe the identical construct: chimpanzee OR7D4 with an N-terminal c-myc tag in yeast nanovesicles. No ledger line supports any internal extracellular loop insertion (ECL1 75\u201397, ECL2 164\u2013196, ECL3 261\u2013273) or any other position. The three internal extracellular loops are topologically accessible but have no ledger-grounded insertion evidence and are therefore not proposed. The evidence is indirect (chimpanzee ortholog, not human OR7D4), but the gene name and protein family are identical and the ortholog qualifies per the instructions.",
+  "literature_rejected": []
 }

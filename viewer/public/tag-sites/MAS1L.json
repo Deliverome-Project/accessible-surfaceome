@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MAS1L-terminal_n-0-lit",
+      "gene_symbol": "MAS1L",
+      "uniprot_acc": "P35410",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cryo-EM structure of MAS1 was obtained with the tag in place, demonstrating that the tagged full-length receptor was expressed, purified, and correctly folded; no explicit signaling or binding functional assay is reported in the cited clip.",
+      "confidence": "low",
+      "rationale": "L1 reports an N-terminal HA tag on full-length membrane-anchored MAS1, a Mas-related GPCR paralog of MAS1L; this counts as indirect evidence. MAS1L topology landmarks show residues 1\u201376 are extracellular with no signal peptide, making the N-terminus the only extracellular terminus and the prepend position (insert_after_residue=0, residue_after=M) the unique topology-derived junction. Python verification confirms seq[1]=M and TM1 begins at residue 77, placing the prepend 77 residues from any TM boundary, well beyond the \u22653-residue minimum. No residue number is named in L1 for MAS1L, so position_evidence is topology_derived, not validated. Full-length, membrane-anchored MAS1 (Mas1 receptor, a close paralog of MAS1L in the Mas-related GPCR subfamily) was engineered with an N-terminal HA epitope tag plus 6\u00d7His and bRIL for cryo-EM expression and purification. MAS1L has no signal peptide (topology landmarks place residue 1 as extracellular), so the sole extracellular terminus is the N-terminus; a prepend (insert_after_residue=0) is the only position consistent with 'N-terminal' on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 41912627,
+          "citation": "PMID 41912627",
+          "claim": "To enable efficient expression and purification, we engineered the wild-type full-length Mas1 receptor with an N-terminal hemagglutinin (HA) epitope tag, a 6\u00d7His tag for affinity purification, and a bRIL fusion tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:34:36.951714+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports an N-terminal HA tag on full-length MAS1 (Mas1 receptor, PMC13187490), a paralog of MAS1L in the Mas-related GPCR subfamily; it does not report any tag on MAS1L itself. The evidence is therefore indirect and the position topology-derived. No ledger line grounds any internal extracellular loop (ECL1 132\u2013147, ECL2 214\u2013221, ECL3 287\u2013296) or the intracellular C-terminus (318\u2013378) of MAS1L. The bRIL fusion mentioned in L1 is a thermostabilizing insert commonly placed in ICL3 of GPCRs; because the clip does not specify its position and ICL3 is intracellular, no additional site is proposed. Confidence is low because the sole supporting evidence is from a paralog, not MAS1L itself.",
+  "literature_rejected": []
 }

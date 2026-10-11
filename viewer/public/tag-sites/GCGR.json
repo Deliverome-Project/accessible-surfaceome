@@ -37,7 +37,66 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GCGR-terminal_n-25-lit",
+      "gene_symbol": "GCGR",
+      "uniprot_acc": "P47871",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "S",
+      "residue_after": "A",
+      "residue_label": "S25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FACS with M1 FLAG antibody confirmed plasma membrane surface display of the tagged receptor; receptor was used in glucagon-stimulated internalization experiments, confirming functional trafficking.",
+      "confidence": "high",
+      "rationale": "The SSF-GCGR construct places a FLAG tag immediately after the signal peptide cleavage site (after residue 25, S; before residue 26, A), which is the canonical position for an N-terminal extracellular tag on a GPCR with a signal peptide. Python confirmed residue 25 = S and residue 26 = A. The tag sits 115 residues from TM1 (residue 141), well within the large extracellular N-terminal domain (26\u2013140). Surface display was directly validated by M1 FLAG antibody FACS in stably expressing HEK293 cells. SSF-GCGR (signal sequence FLAG-tagged GCGR) construct expressed stably in HEK293 cells; FLAG tag is inserted after the signal peptide (residues 1\u201325) and before the mature N-terminus (residue 26), placing it on the extracellular face. Surface display confirmed by M1 FLAG antibody labeling and FACS analysis.",
+      "sources": [
+        {
+          "pmid": 35767325,
+          "citation": "PMID 35767325",
+          "claim": "(F) Upon 30-min treatment with 1 \u03bcM glucagon, HEK293 cells stably expressing SSF-GCGR were labeled with M1 Flag antibody conjugated to Alexa Fluor 647, fixed, and prepared for flow cytometry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 25,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:05:48.182685+00:00",
+  "literature_notes": "L3 also mentions a commercial pCMV6-GCGR-MycDDK construct (OriGene MR207767) but the tag position is unstated and cannot be pinned to a residue \u2014 disqualified per rules. L4 (GCGR-FLAG) and L5 (GCGR-GFP, C-terminal) both place tags at the intracellular C-terminus (residues 404\u2013477) and are recorded in other_positions. L1, L2, and L3 all support the same SSF-GCGR junction; L1 is cited as the primary clip because it most explicitly documents surface display by FACS.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 477,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "GCGR-FLAG construct used for immunoprecipitation/LC-MS/MS; C-terminal FLAG tag at residue 477 is intracellular per topology (intracellular domain 404\u2013477)."
+    },
+    {
+      "residue": 477,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal GFP-tagged GCGR expressed in HEK293T cells to monitor internalization; C-terminus at residue 477 is intracellular per topology (intracellular domain 404\u2013477)."
+    }
+  ]
 }

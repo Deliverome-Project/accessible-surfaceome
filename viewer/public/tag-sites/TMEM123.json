@@ -264,18 +264,24 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "NOT MEASURED (surface display confirmed by design; no functional assay result reported in the cited clip)",
+      "functional_impact_measured": "Surface display confirmed (Fig. 4a of the cited preprint); no functional assay result reported beyond surface localisation.",
       "confidence": "high",
-      "rationale": "The paper explicitly names Ala34 as the insertion anchor ('following the signal peptide (Alanine 34)'), and Python lookup confirms seq[33]='A' and seq[34]='S', matching residue_before/after exactly. Position 34 lies 7 residues into the extracellular span (27\u2013168), 135 residues from the TM boundary (169), satisfying all distance constraints. The construct is full-length and membrane-anchored, so the tag is genuinely surface-displayed; insert_after_residue=34 is the direct reading of 'at Alanine 34'. Full-length TMEM123 construct with ALFA tag inserted after Ala34 in the extracellular N-terminal region, following the signal peptide (SP cleavage at residue 26, mature N-terminus at residue 27). The tag was engineered for surface display in a membrane-anchored context, exploiting the predicted unstructured nature of the extracellular domain. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The paper explicitly names 'Alanine 34' as the insertion point, and canonical residue 34 is indeed A (confirmed by reading the numbered sequence). The tag is placed after residue 34 (residue_before=A, residue_after=S at position 35), 8 residues into the extracellular domain and 135 residues from the TM boundary \u2014 well clear of all topology constraints. Because the paper names the exact residue and reports a surface-displayed construct, position_evidence is 'validated' and evidence_type is the exact-site value. Full-length TMEM123 expressed in mammalian cells with an ALFA tag inserted after Ala34, 8 residues into the extracellular domain (canonical residues 27\u2013168), which the authors describe as predicted unstructured. The construct was engineered to display the tag on the cell surface.",
       "sources": [
         {
-          "citation": "preprint",
-          "claim": "The extracellular region of TMEM123 is predicted to be unstructured, so we added the Alfa tag to the N-terminal region following the signal peptide (Alanine 34) (Fig. 4a)."
+          "citation": "DOI 10.1101/2025.06.08.658482",
+          "claim": "The extracellular region of TMEM123 is predicted to be unstructured, so we added the Alfa tag to the N-terminal region following the signal peptide (Alanine 34) (Fig. 4a).",
+          "source_id": "DOI:10.1101/2025.06.08.658482"
         }
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "TMEM123-surface_loop-160",
@@ -755,10 +761,10 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:26:41.787753+00:00",
-  "literature_notes": "Only one ledger line (L1) was provided, grounding a single site at Ala34. No other extracellular insertions, loop-level precedents, or terminal tags are described in the ledger. The intracellular C-terminus (191\u2013208) and the signal peptide region (1\u201326) were considered but are not extracellular and have no ledger support. The mature N-terminus (residue 27) was considered as a terminal_n prepend site but the ledger names Ala34 specifically, not the terminus, so no separate terminal_n site is warranted.",
+  "generated_at": "2026-10-11T15:18:42.892359+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It names a single, exact residue (Ala34) in the extracellular domain of full-length TMEM123, with an ALFA tag confirmed at the cell surface. No other insertions, loops, or positions are mentioned in the ledger, so no additional sites are proposed. The mature N-terminus (residue 27) was not itself tagged; the insertion is 8 residues downstream, making this an internal rather than terminal_n site. No intracellular or function-abrogating positions were reported in the ledger.",
   "literature_rejected": []
 }

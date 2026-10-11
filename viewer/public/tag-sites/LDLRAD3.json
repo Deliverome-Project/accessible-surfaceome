@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LDLRAD3",
+  "uniprot_acc": "Q86YD5",
+  "sites": [
+    {
+      "site_id": "LDLRAD3-terminal_n-17-lit",
+      "gene_symbol": "LDLRAD3",
+      "uniprot_acc": "Q86YD5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-FLAG flow cytometry on non-permeabilized cells in two independent studies (PMC7769003, PMC8550936). FLAG-tagged WT LDLRAD3 supported VEEV pseudovirus infection in Neuro2a cells, demonstrating preserved receptor function.",
+      "confidence": "high",
+      "rationale": "All four ledger lines describe the identical junction: an N-terminal FLAG tag placed immediately downstream of the signal peptide in full-length, membrane-anchored LDLRAD3. The signal peptide spans residues 1\u201317 (authoritative landmark), so the tag sits between residue 17 (S) and residue 18 (Q), the mature N-terminus. No paper names a residue number explicitly, but exactly one extracellular terminus exists (the mature N-terminus at 18), making the junction uniquely determined by topology. Python verification confirms residue 17 = S and residue 18 = Q in the canonical 345-aa sequence. Full-length mouse/human LDLRAD3 cDNA bearing an N-terminal FLAG tag inserted downstream of the signal sequence (residues 1\u201317) was expressed in \u0394B4galt7 \u0394Ldlrad3 Neuro2a cells via lentiviral transduction. Surface expression was confirmed by anti-FLAG flow cytometry on non-permeabilized cells (L1, PMC7769003) and by plasma-membrane staining in a second independent study (L2\u2013L4, PMC8550936). The same FLAG-tagged WT construct was used as the positive control in SINV\u2013VEEV(TrD)\u2013GFP infection assays (L3).",
+      "sources": [
+        {
+          "pmid": 33208938,
+          "citation": "PMID 33208938",
+          "claim": "Anti-FLAG staining of \u0394 B4galt7 N2a cells (control, black) and lentivirus complemented \u0394 B4galt7 \u0394 Ldlrad3 N2a cells with empty vector (red) or Ldlrad3 cDNA (blue) containing an N-terminal FLAG-tag sequence ( left panel )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:06:22.585684+00:00",
+  "literature_notes": "Ledger lines L1\u2013L4 all converge on a single site: the N-terminal FLAG tag inserted after the signal peptide cleavage site (after residue 17, before the mature N-terminus at residue 18). L1 (PMC7769003) and L2\u2013L4 (PMC8550936) are independent publications, both confirming surface display by anti-FLAG flow cytometry on non-permeabilized cells; L3 additionally shows the FLAG-tagged construct supports VEEV infection, establishing functional integrity. No ledger line describes any internal extracellular loop insertion, any C-terminal extracellular tag (the C-terminus is intracellular), or any intracellular insertion. The intracellular C-terminal tail (residues 195\u2013345) is not proposed because no ledger line supports a surface tag there. No other sites were found.",
+  "literature_rejected": []
+}

@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CXCR4-terminal_n-0-lit",
+      "gene_symbol": "CXCR4",
+      "uniprot_acc": "P61073",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "AP tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-AP antibody binding confirmed surface accessibility; ligand stimulation did not affect anti-AP antibody binding, demonstrating ligand-binding function is preserved.",
+      "confidence": "high",
+      "rationale": "CXCR4 (UniProt P61073) carries no signal peptide; the topology landmarks place residues 1\u201338 as extracellular, making the N-terminus the sole extracellular terminus. A tag prepended before M1 (insert_after_residue=0) is therefore unambiguously extracellular. The ledger contains at least eight independent clips (L1\u2013L11, L13\u2013L14) reporting N-terminal tags on full-length membrane-anchored CXCR4; L6 is selected as the primary clip because it explicitly confirms both surface accessibility (anti-AP antibody binding) and functional integrity (ligand binding unaffected). No residue number is stated in any clip, so position_evidence is topology_derived: with a single extracellular terminus and no signal peptide, the junction is uniquely M1. AP (acceptor peptide) tag fused at the N terminus of full-length CXCR4 stably expressed in RBL cells; the tag is accessible to anti-AP antibody on the cell surface, and ligand stimulation does not affect anti-AP antibody binding, confirming the tag does not interfere with ligand binding.",
+      "sources": [
+        {
+          "pmid": 27310579,
+          "citation": "PMID 27310579",
+          "claim": "Ligand stimulation did not affect anti-AP or anti-receptor antibody binding thus specific interaction between anti-AP antibody and AP-tag does not interfere with ligand-binding."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,27 @@
       "canonical_residue": null,
       "left_pct": 0.2808988764044944,
       "note": "Isoform surface expr 445 (-45% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:10:06.756092+00:00",
+  "literature_notes": "All sixteen ledger lines converge on two junction classes: (1) N-terminal prepend (L1\u2013L11, L13\u2013L14, L16) \u2014 multiple tag types (NLuc, HiBiT, LgBiT, AP, HA, FLAG, Venus-VN) all placed before M1 on the extracellular face, with surface display confirmed by cell-impermeant reagents (L2, L4, L14) and ligand-binding function confirmed (L6); (2) C-terminal fusion (L12, L15) \u2014 FLAG and Venus-VC fused after S352, which the topology landmarks place firmly in the intracellular domain (306\u2013352), so these are recorded in other_positions only. No ledger line reports a tag insertion in any extracellular loop (ECL1 97\u2013110, ECL2 176\u2013195, ECL3 262\u2013283), so no internal sites are proposed. The N-terminal site is the only surface-tag site the ledger supports.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L12",
+      "note": "FLAG tag fused at the C-terminus of full-length CXCR4 for cryo-EM structural studies; the C-terminus lies in the intracellular domain (residues 306\u2013352) and is not a surface-tag site."
+    },
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L15",
+      "note": "Venus C-terminal fragment (VC) fused at the C-terminus of full-length CXCR4 for BiFC dimerization studies; intracellular location confirmed by topology landmarks."
     }
   ]
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNQ4",
+  "uniprot_acc": "P56696",
+  "sites": [
+    {
+      "site_id": "KCNQ4-internal-None-lit",
+      "gene_symbol": "KCNQ4",
+      "uniprot_acc": "P56696",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "S1-S2 loop (ECL1)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA / Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Patch-clamp electrophysiology in HEK293T cells: tagged channels (Myc-KCNQ4, HA-KCNQ4) exhibited normal channel properties compared to untagged KCNQ4 (L4, L6, L8). Surface expression confirmed by non-permeabilized immunofluorescence (L2).",
+      "confidence": "high",
+      "rationale": "The S1-S2 extracellular loop (topology landmarks: TM1 ends at 119, TM2 begins at 132; loop = residues 120-131, sequence TIQEHQELANEC) is the only loop named across all ledger lines. No paper specifies a residue within the loop, so insert_after_residue is left null per the rules. The loop is only 12 residues; C131 is a conserved cysteine likely involved in a disulfide and must be avoided; the safe interior zone (\u22653 from each TM boundary) is residues 122-129. Three independent publications confirm both surface display and preserved electrophysiological function, making this the highest-confidence extracellular tag site in KCNQ4. Multiple independent studies (PMC3729637, PMC3576372, PMC9435748) inserted HA or Myc epitope tags into the first extracellular loop (S1-S2 loop, topology residues 120-131) of full-length KCNQ4 expressed in HEK293T cells. Surface display was confirmed by anti-HA immunofluorescence in non-permeabilized cells (L2). No paper names a specific residue within the loop.",
+      "sources": [
+        {
+          "pmid": 23750663,
+          "citation": "PMID 23750663",
+          "claim": "Both the WT and mutant KCNQ4 channels were tagged with a HA epitope at the extracellular loop between the S1 and S2 domains and expressed in HEK293T cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:55:39.766359+00:00",
+  "literature_notes": "All ledger lines converge on a single site: the first extracellular loop (S1-S2, ECL1, residues 120-131). L1/L2 (PMC3729637) confirm surface display by non-permeabilized immunofluorescence; L3/L4 (PMC3576372) and L5/L6 (PMC3729637) confirm normal channel properties; L7-L10 (PMC9435748) independently confirm both surface localization and normal electrophysiology. None of the papers names a specific residue within the loop, so the site is reported at region level with insert_after_residue null. The second extracellular loop (S3-S4, residues 192-196, GTQGN) and the pore-turret loop (S5-S6, residues 259-297) are not mentioned in any ledger line and therefore receive no site. L11 (C-terminal EGFP) is placed in other_positions because the C-terminus falls in the long intracellular C-terminal domain (topology 318-695).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 695,
+      "kind": "intracellular",
+      "supporting_clip_id": "L11",
+      "note": "EGFP fused at the C-terminus of full-length KCNQ4 as a transfection marker; the C-terminus lies within the intracellular domain (topology 318-695), so this is not a surface tag site."
+    }
+  ]
+}

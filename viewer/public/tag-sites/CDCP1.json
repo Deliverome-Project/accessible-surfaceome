@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CDCP1",
+  "uniprot_acc": "Q9H5V8",
+  "sites": [
+    {
+      "site_id": "CDCP1-terminal_n-29-lit",
+      "gene_symbol": "CDCP1",
+      "uniprot_acc": "Q9H5V8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "A",
+      "residue_after": "F",
+      "residue_label": "A29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG surface staining on intact cells confirmed surface display; NTF membrane retention after Px-mediated proteolysis was unaffected. No CDCP1 signaling/kinase function assay was reported for the FLAG-tagged construct specifically.",
+      "confidence": "high",
+      "rationale": "CDCP1 is a type I single-pass transmembrane protein with a signal peptide spanning residues 1\u201329; the mature N-terminus begins at F30. An 'N-terminal FLAG tag' on a surface-displayed, membrane-anchored construct must be inserted after signal peptide cleavage (insert_after_residue = 29), placing the tag at the extracellular mature N-terminus. Python verification confirms seq[28]='A' (position 29, last SP residue) and seq[29]='F' (position 30, first mature extracellular residue). The site is 638 residues from the TM boundary (668), well within the extracellular domain. L3 directly confirms surface accessibility by anti-FLAG staining on intact cells. Full-length CDCP1 with an N-terminal FLAG tag (and R368/K369 replaced by a PreScission Protease site) was stably expressed in HEK293T and other human cell lines. Anti-FLAG staining of intact cells confirmed that the FLAG-tagged N-terminal fragment (NTF) remains membrane-associated and surface-accessible after proteolysis.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2021.06.14.448427",
+          "claim": "Despite this, staining by anti5 FLAG and IgG 4A06 were unaffected with Px treatment, indicating that the NTF remains membrane-associated after proteolysis.",
+          "source_id": "DOI:10.1101/2021.06.14.448427"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:26:54.439689+00:00",
+  "literature_notes": "L1 and L2 describe the same N-terminal FLAG-tagged CDCP1 construct as L3 (preprint vs. published paper); L3 was chosen as the single supporting clip because it is the most probative, directly confirming surface display. L4 (FLAG-tagged CDCP1-Y734F) does not state the FLAG tag position and cannot be used to pin a junction; Y734 is intracellular and is recorded in other_positions. L5 (CDCP1res-F and CDCP1res-HA) does not state tag positions and yields no pinnable site. L6 (\u0394ECD-FLAG) is a deletion construct lacking the extracellular domain; the tag position is unstated and the construct is not full-length, so no surface site can be derived from it.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 734,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Y734 is a Src-family kinase phosphorylation site in the intracellular domain (residues 689\u2013836); L4 describes a FLAG-tagged CDCP1-Y734F mutant expressed in HeLa cells, but the FLAG tag position is unstated and Y734 itself is cytoplasmic, not a surface tag site."
+    }
+  ]
+}

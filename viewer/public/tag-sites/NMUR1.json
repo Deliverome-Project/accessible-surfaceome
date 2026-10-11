@@ -37,7 +37,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NMUR1-terminal_n-0-lit",
+      "gene_symbol": "NMUR1",
+      "uniprot_acc": "Q9HB89",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L1: surface display confirmed by non-permeabilized anti-FLAG immunofluorescence in 293T cells (receptor reaches plasma membrane). L5: N-terminally tagged full-length NMUR1 formed a stable complex with Gq and NMU peptide suitable for cryo-EM structure determination, demonstrating preserved ligand binding and G-protein coupling.",
+      "confidence": "high",
+      "rationale": "NMUR1 has no signal peptide; residues 1\u201359 are extracellular per the topology landmarks, making the N-terminus the only extracellular terminus available for a tag. L1 explicitly states that the first 16 residues of NMUR1 were replaced by a prolactin SP + FLAG, pinning the junction: after SP cleavage the FLAG tag precedes native residue 17 (P), which is equivalent to an N-terminal prepend (insert_after_residue = 0) in canonical numbering. Python confirms residue 1 = M and residue 17 = P; the tag is \u226544 residues from TM1 (starts at residue 60). L5 independently confirms the same N-terminal position with a larger fusion on full-length NMUR1 used in a functional cryo-EM study, elevating the validation to surface_and_function. Full-length NMUR1 expressed in 293T cells with the first 16 native residues replaced by a prolactin signal peptide (MNIKGSPWKGSLLLLLLVSNLLLCQSVAP) followed by a FLAG epitope tag; after SP cleavage the FLAG tag is displayed at the extracellular N-terminus. A second independent construct (L5, PMC9019041) fused BRIL + FLAG + 10\u00d7His N-terminally to full-length human NMUR1 and was used to determine the cryo-EM structure of the NMUR1\u2013Gq\u2013NMU complex, confirming surface trafficking, ligand binding, and G-protein coupling.",
+      "sources": [
+        {
+          "pmid": 26317338,
+          "citation": "PMID 26317338",
+          "claim": "To construct the N-terminal tagged receptors, the first 16 amino acids of NMUR1 and the first 18 amino acids of NMUR2 or NMUR2S were substituted by a prolactin signal peptide (MNIKGSPWKGSLLLLLLVSNLLLCQSVAP) followed by an indicated epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:06:05.524016+00:00",
+  "literature_notes": "L2, L3, and L4 describe N-terminal and C-terminal FLAG tags on NMUR2 and NMUR2S (not NMUR1). NMUR2S has an extracellular C-terminus (unique short isoform), but NMUR1's C-terminus is intracellular (residues 360\u2013426 per topology landmarks), so these lines do not support a C-terminal surface site on NMUR1. L6 (C-terminal LgBiT on NMUR1) is intracellular and is recorded in other_positions. No ledger line supports an internal loop insertion on NMUR1 or a close ortholog; ECL1 (119\u2013135), ECL2 (200\u2013229), and ECL3 (324\u2013336) are not grounded by any ledger evidence and are therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 426,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "LgBiT was inserted at the C-terminus of full-length human NMUR1 by homologous recombination; the C-terminus falls within the intracellular span 360\u2013426 per topology landmarks, so this tag faces the cytoplasm and is not a surface site."
+    }
+  ]
 }

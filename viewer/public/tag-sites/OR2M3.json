@@ -37,7 +37,56 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR2M3-terminal_n-0-lit",
+      "gene_symbol": "OR2M3",
+      "uniprot_acc": "Q8NG83",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "39aa Rho-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Functional signaling assay: Rho-tagged OR2M3 outperformed all other tag configurations (IL-6-HaloTag, Rho-tag-HaloTag) \u2014 receptor is expressed at the cell surface and signals.",
+      "confidence": "high",
+      "rationale": "OR2M3 has no signal peptide; the topology landmarks place residues 1\u201325 as extracellular, making the N-terminus the sole extracellular terminus available for a prepend tag. The papers name only 'N-terminal' as the tag position, so the junction is topology-derived: insert_after_residue=0, residue_after=M (residue 1, confirmed from the numbered sequence). L2 explicitly reports that this Rho-tagged construct outperformed all other configurations in functional signaling assays, establishing surface expression and preserved function. Full-length OR2M3 cloned into pI2-dk(39aa-rho-tag), placing a 39-aa N-terminal rhodopsin tag on the intact, membrane-anchored receptor; expressed in HEK293 cells for cell-based functional assays.",
+      "sources": [
+        {
+          "pmid": 31453235,
+          "citation": "PMID 31453235",
+          "claim": "S2 ), with the exception of OR2M3, where the Rho-tagged receptor outperformed all other tags ( Fig."
+        },
+        {
+          "pmid": 31453235,
+          "citation": "PMID 31453235",
+          "claim": "Here, we used a bi-functional N-terminal tag, called 'interleukin 6 (IL-6)-HaloTag<sup>\u00ae</sup>', with IL-6 facilitating functional cell surface expression of recombinant ORs, and the HaloTag<sup>\u00ae</sup> protein, serving as a highly specific acceptor for cell-impermeant or cell-permeant, fluorophore-coupled ligands, which enable the quantification of odorant receptor expression by live-cell flow cytometry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:41:56.159374+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe N-terminal tag fusions to full-length, membrane-anchored OR2M3. No ledger line supports any internal loop insertion. The topology places residues 1\u201325 extracellularly with no signal peptide, so the N-terminal prepend (insert_after_residue=0) is the only extracellular terminus. L1 and L2 describe the same Rho-tag construct; L2 is used as the primary clip for Site 1 because it provides the functional result. L3 describes a distinct IL-6-HaloTag construct at the same position with surface expression confirmed but inferior signaling. No internal ECL sites are proposed because the ledger provides no insertion evidence for any ECL of OR2M3.",
+  "literature_rejected": []
 }

@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRC8D",
+  "uniprot_acc": "Q7L1W4",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:23:21.289096+00:00",
+  "literature_notes": "LRRC8D has four transmembrane helices with two extracellular loops (ECL1: 49\u2013163; ECL2: 331\u2013360), an intracellular N-terminus (1\u201323), and a large intracellular C-terminal LRR domain (387\u2013858). Every ledger line that names a tag position places it at the C-terminus: L1/L2 (human LRRC8D, C-terminal GFP-His8 / EGFP in Sf9 cells), L3 (mouse LRRC8D, C-terminal mCherry in Sf9 cells), and L5 (full-length LRRC8D, C-terminal Venus-myc-SBP). The C-terminus (residue 858) falls within INTRACELLULAR_3 (387\u2013858) and therefore does not qualify as an extracellular surface tag site. L4 reports an 'epitope-tagged' LRRC8D knock-in mouse but names neither the tag type nor the insertion residue, so no junction can be pinned. L6 reports a tdTomato fusion to the endogenous LRRC8D locus but likewise names no position. Because no ledger line grounds an insertion on the extracellular face, the site list is empty.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 858,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP-His8 tag on full-length human LRRC8D expressed in Sf9 cells; C-terminus falls in INTRACELLULAR_3 (387\u2013858), not on the extracellular surface."
+    },
+    {
+      "residue": 858,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal mCherry tag on full-length mouse LRRC8D expressed in Sf9 cells for cryo-EM; C-terminus is intracellular (ortholog, same topology)."
+    },
+    {
+      "residue": 858,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal Venus-myc-SBP tag on full-length human LRRC8D for transient transfection and BacMam expression; C-terminus is intracellular."
+    }
+  ]
+}

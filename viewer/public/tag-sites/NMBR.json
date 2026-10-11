@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NMBR-terminal_n-0-lit",
+      "gene_symbol": "NMBR",
+      "uniprot_acc": "P28336",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed surface expression of the FLAG-tagged NMBR construct; receptor signalling function was not explicitly assayed in the cited experiment.",
+      "confidence": "high",
+      "rationale": "NMBR has no native signal peptide (raw topology begins O at residue 1); the exogenous signal sequence in the TANGO construct is added solely to drive membrane insertion. After signal cleavage, the FLAG tag is left at the extracellular N-terminus immediately before canonical residue 1 (M), making insert_after_residue=0 the only possible junction. No specific residue number is stated in either L1 or L2, so the position is topology-derived: the N-terminus (residues 1\u201344) is the sole extracellular terminus of this 7-TM receptor, and the C-terminus (residues 328\u2013390) is intracellular. Python confirmed residue 1 = M and residue 45 = V (first TM boundary), placing the tag well outside the TM core. Full-length NMBR was expressed in the TANGO assay platform with an exogenous cleavable signal sequence prepended to a FLAG epitope tag at the N-terminus of the receptor. The construct was transfected into cells and examined by anti-FLAG immunofluorescence for both total and surface expression, confirming cell-surface display.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:03:38.148398+00:00",
+  "literature_notes": "L1 and L2 describe the same TANGO-assay construct and ground a single site. No residue number is named in either clip, so the position is topology-derived from the sole extracellular terminus. The intracellular C-terminus (residues 328\u2013390) is not a surface site. ECL1 (102\u2013118), ECL2 (182\u2013210), and ECL3 (288\u2013303) have no ledger support whatsoever and were not proposed.",
+  "literature_rejected": []
 }

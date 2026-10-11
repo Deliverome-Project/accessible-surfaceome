@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "GYPA",
+  "uniprot_acc": "P02724",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:51:59.499779+00:00",
+  "literature_notes": "The ledger contains only two lines (L1, L2), both describing the same CD4-GPA chimeric fusion construct from PMC13519646. That construct fuses the CD4 signal peptide and D1D2 extracellular domains (~180 aa) to the N-terminus of full-length GPA, with a nine-amino-acid linker, to display CD4 on erythrocyte surfaces as a viral decoy receptor. It is disqualified on two independent grounds: (1) the rules explicitly exclude 'decoy-receptor reagent' constructs, and L2 describes the purpose as 'present CD4 on the erythrocyte surface as a viral decoy receptor'; (2) CD4 D1D2 is a large folded protein domain, not a short epitope tag (13\u201323 aa) of the kind the task targets. No other ledger lines exist for GYPA. Zero sites qualify.",
+  "literature_rejected": []
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KCNE4",
+  "uniprot_acc": "Q8WWG9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:39:31.251940+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe a single construct: a C-terminal triple-HA tag inserted immediately upstream of the KCNE4 stop codon (after residue 221, S). The authoritative topology landmarks place residues 110\u2013221 entirely in the intracellular compartment, so this tag sits on the cytoplasmic face. It qualifies only as a tolerated intracellular tag and is recorded in other_positions. No ledger line supports any insertion on the extracellular face (residues 1\u201386, the N-terminal ectodomain). The extracellular N-terminus (residue 1, M) is in principle accessible for a prepend tag, but no ledger evidence grounds such a site for KCNE4, so none is proposed. Result: zero extracellular surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 221,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Triple HA tag inserted immediately upstream of the stop codon (after residue 221, S); topology places the entire C-terminal tail (110\u2013221) intracellularly; tag does not affect KCNQ1 inhibition or binding (L2), confirming tolerance, but the face is cytoplasmic, not extracellular."
+    }
+  ]
+}

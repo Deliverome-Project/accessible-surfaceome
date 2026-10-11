@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR2A4-terminal_n-0-lit",
+      "gene_symbol": "OR2A4",
+      "uniprot_acc": "O95047",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (8 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface immunofluorescence on live non-permeabilized HEK 293T cells: OR2A4 scored positive for surface expression with the 8-aa Flag tag alone. No ligand-binding or cAMP/calcium signaling assay reported in these clips.",
+      "confidence": "high",
+      "rationale": "OR2A4 is a GPCR with no signal peptide; the computed topology places residues 1\u201323 on the extracellular face, making the N-terminus the sole extracellular terminus. A prepend (insert_after_residue=0) places the tag before M1, 23 residues from TM1 (residue 24), well above the 3-residue minimum. No residue number is named in any ledger line, so the junction is topology-derived from the single available extracellular terminus. Python confirms residue_after = 'M' (position 1). Full-length OR2A4 was expressed in HEK 293T cells with an N-terminal Flag tag (8 aa) on the mature protein (no signal peptide; topology residues 1\u201323 are extracellular). Live, non-permeabilized cells were surface-labeled with anti-Flag antibody by immunofluorescence. OR2A4 is among the two-thirds of Lucy-tagged ORs (10/15) confirmed to reach the cell surface with the Flag tag alone, without the Rho trafficking tag.",
+      "sources": [
+        {
+          "pmid": 23840901,
+          "citation": "PMID 23840901",
+          "claim": "In fact, two-thirds of Lucy-tagged ORs are able to reach the cell surface synergistically with chaperones even when the Rho tag is removed (10/15 ORs), allowing for the potential assessment of OR function with only an 8-amino acid Flag tag on the mature protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:37:37.700386+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same N-terminal tag position on OR2A4. L1 and L3 establish the construct design (N-terminal Flag + Rho tags); L2 and L4 report the surface expression result. L4 is the most informative result: OR2A4 is among the ORs confirmed surface-positive with the 8-aa Flag tag alone (no Rho tag). No internal loop insertions, C-terminal tags, or intracellular positions are mentioned anywhere in the ledger. The extracellular loops ECL1 (79\u201396), ECL2 (166\u2013195), and ECL3 (260\u2013271) are not addressed by any ledger line and therefore yield no sites. No function-abrogating or intracellular positions are reported.",
+  "literature_rejected": []
 }

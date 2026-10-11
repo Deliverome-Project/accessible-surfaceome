@@ -1,0 +1,72 @@
+{
+  "has_data": true,
+  "gene_symbol": "GABRA1",
+  "uniprot_acc": "P14867",
+  "sites": [
+    {
+      "site_id": "GABRA1-internal-31-lit",
+      "gene_symbol": "GABRA1",
+      "uniprot_acc": "P14867",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 31,
+      "residue_before": "L",
+      "residue_after": "Q",
+      "residue_label": "L31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Coimmunoprecipitation assay; trafficking function reported not influenced by the FLAG insertion.",
+      "confidence": "high",
+      "rationale": "Python confirms residue 31 = L and residue 32 = Q, both within the large extracellular domain (28\u2013251), 4 residues after signal-peptide cleavage and 220 residues from TM1. L1 reports the exact insertion; L2 (independent paper) replicates it and explicitly states no trafficking perturbation, satisfying surface_and_function. The junction is well within the unstructured N-terminal stretch of the mature ectodomain. FLAG tag inserted between Leu31 and Gln32 of full-length GABRA1 in HEK293 cells (QuikChange II mutagenesis); L2 confirms the same construct was used for coimmunoprecipitation and explicitly states it does not influence trafficking function.",
+      "sources": [
+        {
+          "pmid": 41178115,
+          "citation": "PMID 41178115",
+          "claim": "The FLAG tag was inserted between Leu31 and Gln32 in the \u03b11 subunit for coimmunoprecipitation experiments, which do not influence trafficking function."
+        },
+        {
+          "pmid": 36244453,
+          "citation": "PMID 36244453",
+          "claim": "Myc tag (EQKLISEEDL) was inserted between the fourth and fifth residue of the mature \u03b11, \u03b23, or \u03b32S cDNA ( 7 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:02:06.579254+00:00",
+  "literature_notes": "L3 and L4 both report CFP insertion at Lys364\u2013Asn365, explicitly described as the TM3\u2013TM4 intracellular loop (canonical positions 335\u2013421 per topology landmarks). These are not surface sites and are recorded in other_positions. L5 maps to the identical junction as L1/L2 (Leu31\u2013Gln32) by computation; it is retained as a separate site entry because it is an independent ledger line with a different tag, but it does not add a new surface position. No ledger line supports any other extracellular insertion site for GABRA1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 364,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "CFP inserted between Lys364 and Asn365 in the TM3\u2013TM4 intracellular loop of full-length GABRA1; topology landmarks place residues 335\u2013421 in the intracellular compartment, so this is not a surface tag site."
+    },
+    {
+      "residue": 364,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Independent replication of CFP at Lys364\u2013Asn365 in the TM3\u2013TM4 intracellular loop; same intracellular classification as L3."
+    }
+  ]
+}

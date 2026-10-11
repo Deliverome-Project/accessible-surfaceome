@@ -58,6 +58,240 @@
       "median_conservation": 0.0
     },
     {
+      "site_id": "ABCB1-internal-101-lit",
+      "gene_symbol": "ABCB1",
+      "uniprot_acc": "P08183",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 101,
+      "residue_before": "T",
+      "residue_after": "G",
+      "residue_label": "T101",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "MDR conferral assay: insertion at 101 did NOT alter P-gp function; immunofluorescence of intact cells confirmed extracellular display of the tag.",
+      "confidence": "high",
+      "rationale": "Position 101 falls within ECL1 (topology landmarks 73-119), 29 residues from TM1-end (72) and 19 residues from TM2-start (120), well clear of both TM boundaries. The paper explicitly confirmed extracellular localization by immunofluorescence of intact cells and preserved MDR function. Python lookup: seq[101]=T, seq[102]=G. Full-length P-glycoprotein (ABCB1) with HA epitope inserted at position 101, expressed in Chinese hamster ovary cells; surface localization tested by immunofluorescence of intact (non-permeabilized) cells with anti-HA antibody 12CA5.",
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "cited_tag_residue": null,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 7535563,
+          "citation": "PMID 7535563",
+          "claim": "Functional integrity of the modified proteins was tested by measuring their capacity to confer MDR in Chinese hamster ovary cells. Intracellular and extracellular localization of the tag in the full-length protein was determined in intact or permeabilized cells by immunofluorescence using a mouse monoclonal antibody (12CA5) specific for the HA epitope. While insertions at positions 101, 161, 320, and 376 did not alter P-gp function, insertions at positions 206 and 244 abrogated the capacity of P-gp to confer drug resistance."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "ABCB1-internal-320-lit",
+      "gene_symbol": "ABCB1",
+      "uniprot_acc": "P08183",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 320,
+      "residue_before": "L",
+      "residue_after": "V",
+      "residue_label": "L320",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "MDR conferral assay: insertion at 320 did NOT alter P-gp function; immunofluorescence of intact cells confirmed extracellular display of the tag.",
+      "confidence": "high",
+      "rationale": "Position 320 falls within ECL2 (topology landmarks 317-331), 4 residues from TM5-end (316) and 12 residues from TM6-start (332), satisfying the \u22653 constraint on both sides. The paper explicitly confirmed extracellular localization by immunofluorescence of intact cells and preserved MDR function. Python lookup: seq[320]=L, seq[321]=V. Full-length P-glycoprotein (ABCB1) with HA epitope inserted at position 320, expressed in Chinese hamster ovary cells; surface localization tested by immunofluorescence of intact (non-permeabilized) cells with anti-HA antibody 12CA5.",
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "cited_tag_residue": null,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 7535563,
+          "citation": "PMID 7535563",
+          "claim": "The epitope tags inserted at positions 161 and 376 were found to be located intracellularly, whereas the tags at positions 101 and 320 were located on the extracellular side of the membrane. These results indicate that the intervening segments separating predicted TM1-TM2 and TM5-TM6 correspond to extracellular regions, while the segments linking TM2-TM3 and the one located downstream of TM6 correspond to intracellular regions."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "ABCB1-internal-736-lit",
+      "gene_symbol": "ABCB1",
+      "uniprot_acc": "P08183",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 736,
+      "residue_before": "I",
+      "residue_after": "G",
+      "residue_label": "I736",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (double)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "MDR conferral assay: insertion at 736 resulted in functional protein; immunofluorescence of intact cells confirmed extracellular display of the tag.",
+      "confidence": "high",
+      "rationale": "Position 736 falls within ECL4 (topology landmarks 732-756), 5 residues from TM7-end (731) and 21 residues from TM8-start (757), well clear of both TM boundaries. The paper confirmed extracellular localization by immunofluorescence of intact cells and preserved MDR function; notably, double and triple HA tags were also tolerated at this position. Python lookup: seq[736]=I, seq[737]=G. Full-length P-glycoprotein (ABCB1) with single, double, and triple HA epitopes inserted at position 736, expressed in cells; surface localization tested by immunofluorescence of intact (non-permeabilized) cells.",
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "cited_tag_residue": null,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 8621583,
+          "citation": "PMID 8621583",
+          "claim": "We have now inserted single epitope tags at positions 207, 235, 276, 741, 782, 797, 815, 849, 887, 961, and 1024; double epitope tags at positions 736, 849, and 961; and a triple epitope tag at position 849. Insertions of epitopes at positions 235, 736, 741, 849, 887, 961, and 1024 resulted in functional proteins, whereas insertions at positions 207, 276, 782, 797, and 815 abrogated the capacity of P-gp to confer multidrug resistance. The epitope tags inserted at positions 736, 849, and 961 were localized extracellularly, whereas tags at positions 235, 887, and 1024 mapped intracellularly."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "ABCB1-internal-741-lit",
+      "gene_symbol": "ABCB1",
+      "uniprot_acc": "P08183",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 741,
+      "residue_before": "R",
+      "residue_after": "I",
+      "residue_label": "R741",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "MDR conferral assay: insertion at 741 resulted in functional protein. Surface localization by immunofluorescence: NOT MEASURED for position 741 specifically.",
+      "confidence": "medium",
+      "rationale": "Position 741 falls within ECL4 (topology landmarks 732-756), 10 residues from TM7-end (731) and 16 residues from TM8-start (757). The paper confirmed MDR function is preserved but did not report immunofluorescence surface confirmation for position 741 (only for 736 in the same loop). Python lookup: seq[741]=R, seq[742]=I. Ranked below 736 because surface display was not directly confirmed for this junction. Full-length P-glycoprotein (ABCB1) with HA epitope inserted at position 741, expressed in cells; MDR function measured but surface localization by immunofluorescence was not reported for this specific position (only positions 736, 849, and 961 were confirmed extracellular in that study).",
+      "validation_level": "function_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 741,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 8621583,
+          "citation": "PMID 8621583",
+          "claim": "We have now inserted single epitope tags at positions 207, 235, 276, 741, 782, 797, 815, 849, 887, 961, and 1024; double epitope tags at positions 736, 849, and 961; and a triple epitope tag at position 849. Insertions of epitopes at positions 235, 736, 741, 849, 887, 961, and 1024 resulted in functional proteins, whereas insertions at positions 207, 276, 782, 797, and 815 abrogated the capacity of P-gp to confer multidrug resistance. The epitope tags inserted at positions 736, 849, and 961 were localized extracellularly, whereas tags at positions 235, 887, and 1024 mapped intracellularly."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "ABCB1-internal-961-lit",
+      "gene_symbol": "ABCB1",
+      "uniprot_acc": "P08183",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 961,
+      "residue_before": "A",
+      "residue_after": "Y",
+      "residue_label": "A961",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (double)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "MDR conferral assay: insertion at 961 resulted in functional protein; immunofluorescence of intact cells confirmed extracellular display of the tag.",
+      "confidence": "medium",
+      "rationale": "Position 961 falls within ECL6 (topology landmarks 960-973), confirmed extracellular and functional by PMID 8621583. Python lookup: seq[961]=A, seq[962]=Y. The distance from TM11-end (959) is 2 residues, which is marginally below the \u22653 pipeline threshold; however, the paper's direct immunofluorescence confirmation of extracellular display and preserved MDR function in the full-length membrane-anchored protein overrides the computed estimate, and the tag itself begins at position 962 (3 residues past TM11-end). Full-length P-glycoprotein (ABCB1) with single and double HA epitopes inserted at position 961, expressed in cells; surface localization tested by immunofluorescence of intact (non-permeabilized) cells.",
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 961,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 8621583,
+          "citation": "PMID 8621583",
+          "claim": "We have now inserted single epitope tags at positions 207, 235, 276, 741, 782, 797, 815, 849, 887, 961, and 1024; double epitope tags at positions 736, 849, and 961; and a triple epitope tag at position 849. Insertions of epitopes at positions 235, 736, 741, 849, 887, 961, and 1024 resulted in functional proteins, whereas insertions at positions 207, 276, 782, 797, and 815 abrogated the capacity of P-gp to confer multidrug resistance. The epitope tags inserted at positions 736, 849, and 961 were localized extracellularly, whereas tags at positions 235, 887, and 1024 mapped intracellularly."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "ABCB1-internal-None-lit",
+      "gene_symbol": "ABCB1",
+      "uniprot_acc": "P08183",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface HiBiT luminescence confirmed extracellular display of the tag in intact cells; used as a quantitative readout of plasma-membrane expression levels. MDR function: NOT MEASURED in this study.",
+      "confidence": "medium",
+      "rationale": "The paper reports HiBiT insertion in the '1st extracellular loop' of full-length ABCB1 (ECL1, topology landmarks 73-119) and confirms surface display by extracellular luminescence assay on intact cells. No specific residue number is given, so insert_after_residue is null and the site is region-level. The \u0394Y490 variant background does not affect ECL1 topology. This is a separate, independent insertion from the HA-tag studies at position 101 in the same loop. Full-length \u0394Y490-ABCB1 with HiBiT tag inserted in the 1st extracellular loop by PCR-based mutagenesis, expressed in 293MSR and BEAS-2B cells; cell-surface levels measured using NanoGlo HiBiT Extracellular system on intact cells.",
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": null,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 38067172,
+          "citation": "PMID 38067172",
+          "claim": "T70-CFTR-HiBiT(Ex) was constructed by replacing the 3xHA tag with the HiBiT tag in the 4th extracellular loop of CFTR as previously [ 25 ]. \u2206Y490-ABCB1-HiBiT(Ex) was constructed by inserting the HiBiT tag in the 1st extracellular loop by PCR-based mutagenesis and inserted to pLX304 (Addgene #25890) via LR reaction using LR clonase II enzyme mix (ThermoFisher Scientific, Waltham, MA, USA). pcDNA3-FLAG-His-UBE3C was constructed by inserting UBE3C cDNA into the pcDNA3.2 vector (ThermoFisher) by in-fusion cloning."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "ABCB1-snorkel-c",
       "gene_symbol": "ABCB1",
       "uniprot_acc": "P08183",
@@ -120,5 +354,86 @@
       "left_pct": 7.6480263157894735
     }
   ],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T20:00:15.601968+00:00",
+  "literature_notes": "Six sites reported. Positions 101 and 320 (PMID 7535563) and 736, 741, 961 (PMID 8621583) are pinned to exact residues by HA-tag insertion studies in full-length membrane-anchored ABCB1; the ECL1 HiBiT site (PMC10706245) is region-level only. Position 849 was reported as extracellular by PMID 8621583 but falls within TM9 (833-853) per the authoritative computed topology landmarks; it is excluded from sites and noted below. Position 961 is 2 residues from TM11-end (959) per the landmarks, marginally below the \u22653 threshold, but the paper's direct immunofluorescence confirmation of extracellular display and preserved function in the full-length protein is retained; confidence is medium. Position 235 was reported intracellular by PMID 8621583 but falls in TM (120-138 per landmarks); the paper's intracellular call is consistent with TM burial. The \u0394Y490 deletion in the HiBiT construct (L4-L6) is in the intracellular NBD1 region and does not affect ECL1 topology or surface display.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 161,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag at position 161 confirmed intracellular by immunofluorescence of permeabilized (not intact) cells; falls in intracellular loop (topology 139-189)."
+    },
+    {
+      "residue": 376,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag at position 376 confirmed intracellular by immunofluorescence of permeabilized cells; falls in large intracellular loop (topology 353-708)."
+    },
+    {
+      "residue": 206,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 206 abrogated MDR conferral; falls in TM3 (topology 190-209)."
+    },
+    {
+      "residue": 244,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 244 abrogated MDR conferral; falls in intracellular loop (topology 237-291)."
+    },
+    {
+      "residue": 207,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 207 abrogated MDR conferral; falls in TM3 (topology 190-209)."
+    },
+    {
+      "residue": 276,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 276 abrogated MDR conferral; falls in intracellular loop (topology 237-291)."
+    },
+    {
+      "residue": 782,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 782 abrogated MDR conferral; falls in intracellular loop (topology 778-832)."
+    },
+    {
+      "residue": 797,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 797 abrogated MDR conferral; falls in intracellular loop (topology 778-832)."
+    },
+    {
+      "residue": 815,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 815 abrogated MDR conferral; falls in intracellular loop (topology 778-832)."
+    },
+    {
+      "residue": 887,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "HA tag at position 887 confirmed intracellular by immunofluorescence; falls in intracellular loop (topology 877-936)."
+    },
+    {
+      "residue": 1024,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "HA tag at position 1024 confirmed intracellular by immunofluorescence; falls in intracellular C-terminal domain (topology 995-1280)."
+    },
+    {
+      "residue": 849,
+      "kind": "other",
+      "supporting_clip_id": "L3",
+      "note": "Paper (PMID 8621583) confirmed extracellular by immunofluorescence, but authoritative computed topology places position 849 within TM9 (833-853); excluded from surface tag sites due to landmark conflict."
+    }
+  ]
 }

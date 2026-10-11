@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CEACAM6",
+  "uniprot_acc": "P40199",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:32:34.337169+00:00",
+  "literature_notes": "The sole ledger line (L1) describes A549 cells transfected with UNTAGGED full-length CEACAM6 (CD66c), monitored by flow cytometry to confirm surface expression. No tag, fusion protein, transposon, or domain insertion is reported at any residue or loop. This is surface-trafficking confirmation of an untagged construct, which does not qualify as evidence of a tolerated insertion under any of the four accepted modalities (epitope-tag knock-in, fluorescent-protein fusion, transposon/domain-insertion screen, antibody-epitope insertion). With no qualifying ledger line, zero sites are proposed. CEACAM6 is a GPI-anchored protein in most isoforms, but the topology provided here shows a single-pass type I arrangement (TM 333\u2013343, intracellular tail 344). The mature extracellular domain spans residues 35\u2013332; the N-terminus after signal-peptide cleavage (residue 35, K) and the membrane-proximal extracellular junction (residue 332, G) are both plausible positions structurally, but neither is grounded in any ledger line and therefore neither is proposed.",
+  "literature_rejected": []
+}

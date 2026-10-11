@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADAM8",
+  "uniprot_acc": "P78325",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:03:02.381519+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 (PMID 16542157) describes AP-tagged APP used as a substrate to measure ADAM8 shedding activity; no tag is placed on ADAM8 itself, and the E330Q mutation is a catalytic point substitution, not a tag insertion \u2014 disqualified. L2 (PMID 16542157) confirms a C-terminal BiPro epitope tag on full-length ADAM8 expressed in HEK293 cells; the C-terminus (residue 824) falls in the intracellular domain (topology 678\u2013824), so this is not an extracellular surface site \u2014 recorded in other_positions. L3 (PMC11100242) reports 'Flag-ADAM8 (GeneChem)' full-length and deletion constructs used to study intracellular interactions with the nuclear transcription factor Fra-1; the clip names a commercial plasmid and states no tag position, which the rules explicitly disqualify ('a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue'). The intracellular-interaction context further raises doubt that the Flag is extracellular. No ledger line supports a surface tag site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 824,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal BiPro epitope tag on full-length ADAM8 confirmed by anti-BiPro western blot in HEK293 cells; residue 824 lies in the intracellular domain (topology 678\u2013824), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

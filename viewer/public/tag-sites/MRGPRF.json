@@ -37,7 +37,56 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MRGPRF-terminal_n-0-lit",
+      "gene_symbol": "MRGPRF",
+      "uniprot_acc": "Q96AM1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed both total and cell-surface expression of the FLAG-tagged MRGPRF construct in transfected cells. No MRGPRF-specific functional (signalling) assay was reported.",
+      "confidence": "high",
+      "rationale": "MRGPRF is a GPCR with no endogenous signal peptide; the extracellular N-terminus (residues 1\u201348, 48 residues before TM1 at position 49) is the only extracellular terminus available for a surface tag. The PRESTO-TANGO construct places FLAG between the cleaved exogenous signal and M1, confirmed at the cell surface by anti-FLAG immunofluorescence. Python lookup confirms seq[0]='M', consistent with residue_after='M'. The 48-residue extracellular N-terminal span provides ample steric room for a short epitope tag. PRESTO-TANGO system (Kroeze et al. 2015, PMC4424118): an exogenous cleavable signal sequence followed by a FLAG epitope tag was appended to the N-terminus of full-length MRGPRF (and 319 other GPCRs) to enable surface-expression monitoring. MRGPRF has no endogenous signal peptide (topology is extracellular from residue 1); after cleavage of the exogenous signal, FLAG sits at the extracellular N-terminus, i.e. before residue M1. No specific residue number is named in the paper, but the N-terminus is the only extracellular terminus of this 7-TM receptor, so the junction is uniquely determined as insert_after_residue=0.",
+      "sources": [
+        {
+          "pmid": 25895059,
+          "citation": "PMID 25895059",
+          "claim": "At the 5\u2032-end, we included a cleavable signal sequence to promote membrane localization 23 and a FLAG epitope tag in order to be able to monitor cell surface expression by immunohistochemistry."
+        },
+        {
+          "pmid": 40033362,
+          "citation": "PMID 40033362",
+          "claim": "( E ) Mouse MrgF cDNA was inserted into the pEGFP-C1 vector to creat the pEGFP-MrgF fusion plasmid, which was transfected into NIH3T3 cells alongside the empty vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:49:46.223791+00:00",
+  "literature_notes": "Both ledger entries (L1/L2 and L3/L4) converge on the same junction: the extracellular N-terminus of MRGPRF (insert_after_residue=0, before M1). L1/L2 is the primary evidence (human MRGPRF, FLAG tag, surface expression confirmed by anti-FLAG immunofluorescence in the PRESTO-TANGO system). L3/L4 is independent corroborating evidence from the mouse ortholog MrgF with an N-terminal EGFP fusion. No ledger evidence supports insertions in any of the three extracellular loops (ECL1 102\u2013117, ECL2 182\u2013196, ECL3 266\u2013270) or the C-terminus (intracellular, 296\u2013343). The sequence length computed from the provided string is 344, one more than the stated 343; all residue lookups used the provided numbered sequence directly and are unaffected by this discrepancy.",
+  "literature_rejected": []
 }

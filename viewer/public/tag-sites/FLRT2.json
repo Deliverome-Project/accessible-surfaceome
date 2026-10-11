@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "FLRT2",
+  "uniprot_acc": "O43155",
+  "sites": [
+    {
+      "site_id": "FLRT2-terminal_n-35-lit",
+      "gene_symbol": "FLRT2",
+      "uniprot_acc": "O43155",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-GFP pull-down from HEK293 lysate co-transfected with FLAG-FLRT2, Myc-Lphn3, and HA-Unc5D-mVenus demonstrated that full-length Unc5D pulls down both Lphn3 and FLRT2, confirming cell-surface expression and participation in a ternary complex (L3). L2 additionally reports surface detection via the HA tag.",
+      "confidence": "high",
+      "rationale": "FLRT2 is a type-I single-pass transmembrane protein with signal peptide residues 1\u201335; the mature extracellular domain begins at residue 36. The only extracellular terminus is the N-terminus, so an N-terminal tag must be placed after residue 35 (insert_after_residue=35, residue_before=A, residue_after=C). Python verification confirms seq[34]='A' and seq[35]='C'. L3 demonstrates the FLAG-tagged construct is functional at the cell surface (ternary complex pull-down); L2 independently corroborates the same N-terminal position with an HA tag. The tag site is 506 residues from the TM boundary, posing no steric conflict. FLAG-FLRT2 full-length construct expressed in HEK293 cells (L3); HA-tagged full-length FLRT2 transmembrane construct with tag placed after the vector secretion signal sequence (L2). Both constructs are membrane-anchored and place the tag at the extracellular N-terminus after signal-peptide cleavage. No specific residue number is stated in either paper; position is derived from the single extracellular terminus (mature N-terminus at residue 36, after SP cleavage at residue 35).",
+      "sources": [
+        {
+          "pmid": 27091502,
+          "citation": "PMID 27091502",
+          "claim": "To verify that full-length cell surface Lphn3, FLRT2 and Unc5D form a ternary complex, we performed an anti-GFP pull-down from lysate of cells transfected with a full-length HA-Unc5D mono-Venus (mV) fusion protein, Myc-Lphn3 and FLAG-FLRT2, showing that full-length Unc5D can pull down both Lphn3 and FLRT2 ( Fig. 2f )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:52:53.907054+00:00",
+  "literature_notes": "L1 (mVenus C-terminal fusion, residues 35\u2013660) places the fluorescent tag after residue 660, which falls in the intracellular domain (563\u2013660); it is recorded in other_positions. L2 and L3 both pin the same N-terminal junction (after SP cleavage at residue 35); since they converge on one junction rather than two distinct ones, a single site is reported, grounded in L3 (stronger functional evidence) with L2 noted in the rationale. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 660,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length FLRT2 (residues 35\u2013660) was fused to mVenus and a polyhistidine tag at the C-terminus; residue 660 lies within the intracellular domain (563\u2013660), making this an intracellular tag, not a surface tag."
+    }
+  ]
+}

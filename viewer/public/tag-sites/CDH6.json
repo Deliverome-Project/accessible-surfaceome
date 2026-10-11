@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CDH6",
+  "uniprot_acc": "P55285",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:28:44.534544+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single construct: the Cdh6-HA knock-in mouse in which two tandem HA copies are inserted in-frame at the CDH6 stop codon (C-terminus, after residue 790). CDH6 is a type-I single-pass cadherin; the topology landmarks place residues 635\u2013790 in the intracellular compartment. The HA tag therefore faces the cytoplasm, not the extracellular surface, and the site is recorded in other_positions. No ledger line reports any tag insertion at an extracellular position \u2014 not at the mature N-terminus (residue 19), not in any of the five extracellular cadherin-repeat domains (residues 19\u2013613), and not in any inter-domain linker. Because the rules forbid proposing sites not grounded in the ledger, sites is empty.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 790,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Two tandem HA copies inserted in-frame at the CDH6 stop codon (after residue 790, S); the C-terminus lies in the intracellular span (residues 635\u2013790), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

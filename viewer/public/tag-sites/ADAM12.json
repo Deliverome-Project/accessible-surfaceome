@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADAM12",
+  "uniprot_acc": "O43184",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:58:13.358710+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe C-terminal tags on full-length, membrane-anchored ADAM12. L1 reports ADAM12-GFP (C-terminal GFP fusion); L2 reports ADAM12-myc-His constructed by ligation into pcDNA3.1/myc-His, which appends the tag after the last coding residue; L3 reports co-localization of the GFP-tagged WT and myc-tagged L792F constructs \u2014 the same constructs as L1/L2, adding no new junction; L4 reports ADAM12-pcDNA6-myc (another C-terminal myc); L5 validates expression of the L4 construct by siRNA knockdown. The authoritative topology places the ADAM12 C-terminus at residue 909 within the intracellular domain (730\u2013909), which begins immediately after the TM helix (709\u2013729). No ledger line reports a tag at the extracellular N-terminus (mature residue 29 onward), within the large ectodomain (29\u2013708), or at any internal extracellular loop. Because the ledger contains no insertion on the extracellular face, zero surface-tag sites are proposed. The intracellular C-terminal junction (after residue 909) is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 909,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion (L1) and myc-His fusion (L2) both append tags after the last residue (K909); the C-terminus lies in the intracellular domain (730\u2013909), not on the extracellular surface."
+    }
+  ]
+}

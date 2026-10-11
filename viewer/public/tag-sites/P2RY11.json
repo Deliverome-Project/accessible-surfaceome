@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:08:18.514201+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a V5-His6 tag fused to the C-terminus of full-length human P2RY11. The C-terminus (residue 374) lies within IC4 (residues 326\u2013374), which is intracellular per the authoritative topology landmarks. A C-terminal tag on an intracellular tail does not place any sequence on the extracellular face and therefore does not qualify as a surface tag site. No ledger line reports any tag insertion at the extracellular N-terminus (EC1, residues 1\u201329), in any of the four extracellular loops (EC2 88\u2013103, EC3 167\u2013201, EC4 271\u2013297), or at any other extracellular position. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 374,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "V5-His6 tag placed at the C-terminus of full-length P2RY11; residue 374 (Q) falls in IC4 (326\u2013374), the intracellular C-terminal tail \u2014 not accessible from the extracellular face."
+    }
+  ]
 }

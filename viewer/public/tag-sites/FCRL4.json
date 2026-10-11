@@ -1,0 +1,66 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCRL4",
+  "uniprot_acc": "Q96PJ5",
+  "sites": [
+    {
+      "site_id": "FCRL4-terminal_n-19-lit",
+      "gene_symbol": "FCRL4",
+      "uniprot_acc": "Q96PJ5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression studies performed (assay details not specified in ledger clip); surface display implied by experimental design of pFLAG-CMV-3 system.",
+      "confidence": "medium",
+      "rationale": "pFLAG-CMV-3 places FLAG at the extracellular N-terminus of the mature protein; the only extracellular N-terminus of FCRL4 is after signal-peptide cleavage at residue 19 (A), making insert_after_residue=19 the topology-derived junction. Computed: SP ends at residue 19 (A), mature chain begins at residue 20 (A), TM starts at residue 386 \u2014 the N-terminal tag is 366 residues from the TM boundary. No residue is named in the ledger clip, so position_evidence is topology_derived. Full-length human FcRL4 cDNA ligated into pFLAG-CMV-3 (Sigma), which provides its own Ig-kappa signal sequence followed by the FLAG epitope at the N-terminus; construct used for surface expression studies in transfected cells.",
+      "sources": [
+        {
+          "pmid": 22491254,
+          "citation": "PMID 22491254",
+          "claim": "In order to test for Ig binding by FcRL family members, cDNA encoding mouse FcRH3/FcRL5, human CD200R, FcRL1, FcRL3, FcRL4, FcRL5 (Open Biosystems), and FcRL6( 7 ) were ligated into pFLAG-CMV-3 (Sigma, St."
+        },
+        {
+          "pmid": 16157685,
+          "citation": "PMID 16157685",
+          "claim": "(B) Lysates from 293T cells transiently transfected with the FcRH-GFP fusion constructs, HA-FcRH fusion constructs or empty vector control constructs were subjected to immunopreciptation with the 2A6 anti-FcRH4 antibody."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:47:33.550013+00:00",
+  "literature_notes": "L1 and L2 both describe a C-terminal GFP fusion on full-length FcRH4 with surface display confirmed by intact-cell staining. However, the C-terminus (residue 515) falls within the intracellular domain (residues 409\u2013515 per authoritative landmarks), so this is an intracellular tag and cannot qualify as a surface tag site; it is recorded in other_positions. L3 and L4 both support an N-terminal tag at the extracellular mature N-terminus (after SP cleavage at residue 19); since no residue is named in either clip, both are topology_derived at insert_after_residue=19. They are reported as two separate sites because they represent different tags from different papers, with L4 ranked higher due to explicit surface expression context. The FLAG and HA sites share the same physical junction \u2014 a downstream pipeline should treat them as corroborating evidence for the same position.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 515,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion on full-length FcRH4 was surface-expressed and detected by intact-cell anti-FcRH4 staining, but residue 515 lies within the intracellular domain (residues 409\u2013515), so the GFP tag itself is cytoplasmic, not extracellular."
+    }
+  ]
+}

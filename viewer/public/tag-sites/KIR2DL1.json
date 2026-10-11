@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KIR2DL1",
+  "uniprot_acc": "P43626",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:57:21.122535+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from a single paper (PMC3824574) and describe one construct: KIR2DL1-tdEosFP. KIR2DL1 is a type I single-pass transmembrane receptor (signal peptide 1\u201321, extracellular 22\u2013243, TM 244\u2013264, intracellular 265\u2013348). The construct name 'KIR2DL1-tdEosFP' places tdEosFP C-terminally, after residue 348, which is intracellular. The paper confirms surface display of the receptor and tracks membrane dynamics via the cytoplasmic fluorescent tag \u2014 a standard approach that does not place any tag on the extracellular face. No ledger line describes an N-terminal, loop-internal, or any other extracellular insertion for KIR2DL1. The mature N-terminus (residue 22, H) is extracellular and in principle accessible, but no ledger line grounds a tag there. Zero extracellular tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 348,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal tdEosFP fusion appended after residue 348 (Pro); the entire C-terminus of KIR2DL1 (residues 265\u2013348) is intracellular, so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

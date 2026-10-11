@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CDHR3",
+  "uniprot_acc": "Q6ZTQ4",
+  "sites": [
+    {
+      "site_id": "CDHR3-terminal_n-19-lit",
+      "gene_symbol": "CDHR3",
+      "uniprot_acc": "Q6ZTQ4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface biotinylation followed by streptavidin-agarose isolation confirmed that FLAG-tagged CDHR3 (both variants) is displayed at the cell surface of stably transduced HeLa cells. No functional assay (e.g., ligand binding, virus infection) is reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the FLAG tag is inserted between the signal sequence (residues 1\u201319) and EC1 (residue 20), placing insert_after_residue=19. Python verification confirms residue 19 = A (last signal-peptide residue) and residue 20 = L (first extracellular residue), consistent with the paper's description. The insertion is 691 residues from the TM boundary (711), well clear of any TM constraint. L3 independently confirms surface display of this exact construct by surface biotinylation. Full-length CDHR3 (both C529 and Y529 variants) with a FLAG tag (DYKDDDDK) inserted between the signal sequence (residues 1\u201319) and EC1 (residue 20) was expressed transiently and stably (retroviral transduction) in HeLa cells; stable lines fCR3C and fCR3Y were established.",
+      "sources": [
+        {
+          "pmid": 30532249,
+          "citation": "PMID 30532249",
+          "claim": "Plasmids for transient eukaryotic expression of FLAG-tag-CDHR3 C529 and Y529 variants (pCDHR3-FLAG-C529 and pCDHR3-FLAG-Y529), which have a FLAG-tag (DYKDDDDK) inserted between the CDHR3 signal sequence (residues 1\u201319) and its EC1 (residue 20), were previously described [ 15 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:31:34.986502+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC6301718) and converge on a single site: the junction between the signal peptide (residues 1\u201319) and EC1 (residue 20). L1 pins the position exactly; L2 confirms stable mammalian expression; L3 confirms surface display by biotinylation. No functional assay (e.g., RV-C infection, cadherin binding) is reported in the clips, so validation_level is surface_only rather than surface_and_function. No other insertion sites are grounded anywhere in the ledger; no other sites are proposed.",
+  "literature_rejected": []
+}

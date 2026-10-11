@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR171-terminal_n-0-lit",
+      "gene_symbol": "GPR171",
+      "uniprot_acc": "O14626",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed: myc-tagged mGPR171 was used to validate rat anti-GPR171 antibody specificity in CHO cells (antibody staining requires surface accessibility). Signaling function of the myc-tagged construct itself was NOT MEASURED in the ledger; cAMP assays were performed with separately described FLAG-tagged constructs.",
+      "confidence": "medium",
+      "rationale": "The pCMV-myc N-terminal vector name is an explicit position statement: the myc tag is appended to the N-terminus of the cloned insert. GPR171 carries no signal peptide (all of residues 1\u201319 are annotated O in the topology string, confirmed by Python), so the N-terminus is the mature extracellular face; insert_after_residue=0 places the tag before M1, which is the sole extracellular terminus. TM1 begins at residue 20, leaving 19 extracellular residues between the tag and the membrane\u2014well above the \u22653-residue minimum. L4 independently confirms the myc-tagged construct reaches the cell surface. Mouse GPR171 cDNA was subcloned into pCMV-myc N-terminal Epitope Tagging Mammalian Expression Vector (Stratagene) and expressed in mammalian cells. The vector name explicitly designates the tag as N-terminal. GPR171 has no signal peptide (topology landmarks show residues 1\u201319 as extracellular O, not S), so the N-terminal myc tag prepends before M1. A second paper (L4, PMC5150984) confirms the myc-tagged mGPR171 construct was expressed in CHO cells and detected by rat anti-GPR171 antibodies, confirming surface accessibility.",
+      "sources": [
+        {
+          "pmid": 27117253,
+          "citation": "PMID 27117253",
+          "claim": "Mouse GPR19 , GPR108 , GPR165 , and GPR171 cDNAs (complementary DNAs) were obtained from Open Biosystems and subcloned into pCMV- myc -N-terminal epitope tagging mammalian expression vector (Stratagene) according to the manufacturer\u2019s protocol ( 13 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:30:14.021659+00:00",
+  "literature_notes": "L1, L2, and L3 (PMC5150984) all describe DYKDDDDK (FLAG)-tagged full-length GPR171 constructs stably expressed in CHO cells and used in functional cAMP assays, but none of these lines states where the FLAG tag is inserted in the sequence. The alanine mutants named in L2 (Y99A, K169A, H177A, C184A, Y239A, R243A) are predicted ligand-contact residues, not tag-insertion positions. Because the FLAG tag position is unstated, these lines constitute a commercial-plasmid citation with no pinnable junction and do not qualify under the ledger rules. L4 (PMC5150984) confirms myc-tagged mGPR171 expression but adds no position information beyond what L5/L6 already provide via the vector name. L6 (PMC5150984) describes the identical construct and vector as L5 (PMC5147544); L5 is used as the primary supporting clip because it is the earlier publication. The FLAG-tagged constructs (L1\u2013L3) are noted here as additional evidence that full-length GPR171 tolerates an epitope tag and is functional in CHO cells, but they cannot be promoted to sites without a stated junction.",
+  "literature_rejected": []
 }

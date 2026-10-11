@@ -1,0 +1,99 @@
+{
+  "has_data": true,
+  "gene_symbol": "SERINC5",
+  "uniprot_acc": "Q86VE9",
+  "sites": [
+    {
+      "site_id": "SERINC5-internal-290-lit",
+      "gene_symbol": "SERINC5",
+      "uniprot_acc": "Q86VE9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 290,
+      "residue_before": "E",
+      "residue_after": "H",
+      "residue_label": "E290",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression detected by flow cytometry; Nef-mediated downregulation of surface SERINC5 measured \u2014 construct is functional and traffics to the cell surface.",
+      "confidence": "high",
+      "rationale": "Residues 290 and 291 are both within ECL4 (282\u2013310), confirmed extracellular by the authoritative landmarks. Python confirms residue 290 = E and residue 291 = H. The junction is \u22659 aa from either TM boundary, well within the 29-residue loop, and the HA-tagged construct traffics to the surface and supports functional readouts. This exact junction is independently corroborated by L2, L3, L4, L5, and L6 with HA and FLAG tags across multiple labs. Full-length SERINC5 with HA tag inserted between residues 290 and 291 (SERINC5(iHA)) expressed in human cells; used to study surface expression and Nef-mediated downregulation. The junction is explicitly named in the paper. ECL4 (282\u2013310) is confirmed extracellular by the authoritative topology landmarks; residue 290 (E) sits 9 aa from TM7 end (281) and 20 aa from TM8 start (311).",
+      "sources": [
+        {
+          "pmid": 26416733,
+          "citation": "PMID 26416733",
+          "claim": "SERINC5(iHA) has an HA tag inserted between residues 290 and 291 of SERINC5."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "SERINC5-terminal_c-423-lit",
+      "gene_symbol": "SERINC5",
+      "uniprot_acc": "Q86VE9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 423,
+      "residue_before": "P",
+      "residue_after": "",
+      "residue_label": "P423",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used in HIV-1 infectivity assays alongside env-defective provirus; SERINC5 antiviral activity was measured \u2014 construct is functional.",
+      "confidence": "high",
+      "rationale": "The authoritative topology places residues 413\u2013423 in ECL5 (extracellular), so a C-terminal tag appended after residue 423 (P) is on the extracellular face. Python confirms residue 423 = P. The tag is 11 aa from TM9 end (412), satisfying the \u22653 aa distance constraint. L4 explicitly describes this construct as carrying a C-terminal HA in addition to the internal FLAG, and it was used in functional HIV infectivity assays. Full-length SERINC5 bearing both an internal FLAG (290/291) and a C-terminal HA tag (SERINC5-iFLAG, HA) was expressed in HEK293T cells and used in HIV-1 infectivity assays. The C-terminus (residue 423, P) falls within ECL5 (413\u2013423), which is extracellular per the authoritative topology landmarks; TM9 ends at 412, placing the tag 11 aa from the last TM boundary.",
+      "sources": [
+        {
+          "pmid": 31907454,
+          "citation": "PMID 31907454",
+          "claim": "To this end, 200,000 HEK293T cells were transfected with 800 ng of an env -defective and nef -defective HIV-1 NL4-3 provirus construct together with 100 ng of PBJ5-HXB2-Env 2 and a plasmid encoding variants of SERINC5 harbouring an internal FLAG epitope (DYKDDDDKDI, inserted between residues 290 and 291) and a C-terminal HA tag (SERINC5-iFLAG, HA), or an appropriate empty vector control using calcium phosphate."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 423,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:20:06.176453+00:00",
+  "literature_notes": "Six ledger lines (L1\u2013L6) independently pin the same junction at 290/291 in ECL4 with HA or FLAG tags across multiple laboratories and assay systems, making this the most robustly validated internal surface-tag site in the ledger. L4 additionally reports a C-terminal HA on the same construct, grounding a second site at the extracellular C-terminus (after residue 423, ECL5). L7 claims 'position 314 (extracellular loop 4)' but the authoritative topology landmarks place residue 314 firmly within TM8 (311\u2013331); this conflicts with the paper's topology annotation and the site cannot be proposed as extracellular. It is recorded in other_positions. No ledger line supports any other extracellular junction.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 314,
+      "kind": "other",
+      "supporting_clip_id": "L7",
+      "note": "L7 reports an internal HA placed at 'position 314 (extracellular loop 4)' by overlap PCR, but the authoritative computed topology places residue 314 (T) within TM8 (311\u2013331); the site cannot be classified as extracellular and is excluded from surface-tag sites."
+    }
+  ]
+}

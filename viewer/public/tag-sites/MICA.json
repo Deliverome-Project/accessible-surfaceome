@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MICA",
+  "uniprot_acc": "Q29983",
+  "sites": [
+    {
+      "site_id": "MICA-terminal_n-23-lit",
+      "gene_symbol": "MICA",
+      "uniprot_acc": "Q29983",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "E",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by FCM in two independent cell lines (MC38 and HCT116); NKG2D-ligand function of the tagged construct was NOT MEASURED explicitly for the tagged protein.",
+      "confidence": "medium",
+      "rationale": "MICA is a type I single-pass membrane protein with its N-terminus extracellular (after SP cleavage at residue 23) and its C-terminus intracellular. FCM detection of surface EGFP fluorescence without permeabilization uniquely identifies the extracellular N-terminus as the fusion site, because a C-terminal EGFP would be cytoplasmic and invisible to surface FCM. There is therefore exactly one extracellular terminus, making this a topology_derived position: insert_after_residue = 23 (last SP residue, A), placing the tag between A23 and E24 (the mature N-terminus). Computed distance from the junction to the TM boundary is 284 residues, well clear of any TM proximity constraint. Full-length MICA (allele 001) fused to EGFP was stably expressed in MC38 and HCT116 tumor cell lines via lentiviral transduction. Surface display of the EGFP-tagged construct was confirmed by flow cytometry (FCM) in both cell lines, with wild-type cells as negative controls (L2, L3). No residue number is stated in the ledger; the junction is derived from topology.",
+      "sources": [
+        {
+          "pmid": 39999840,
+          "citation": "PMID 39999840",
+          "claim": "(E\u2013G) EGFP + MC38 cells stably expressing human full-length MICA or MICA \u0394\u03b11/2 were validated by FCM (wild-type MC38 cells as negative controls) (E) and injected into C57BL/6 mice ( n = 6 per group) via the tail vein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:41:49.139874+00:00",
+  "literature_notes": "L1 describes a commercial lentiviral vector from Cyagen Biosciences with no stated tag position and therefore does not independently qualify as a pinned site per the ledger rules. L2 and L3 report the experimental result \u2014 surface FCM confirmation of EGFP-tagged full-length MICA in two cell lines \u2014 and do qualify as evidence of a tolerated insertion in a full-length, membrane-anchored construct. Because no residue number is given in any ledger line, the junction is topology_derived: MICA's single extracellular terminus (N-terminal, after SP cleavage) is the only location consistent with surface FCM detection of EGFP. The \u0394\u03b11/2 deletion variant mentioned in the same papers is a truncated construct and does not provide an additional independent site. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

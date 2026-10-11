@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "MR1",
+  "uniprot_acc": "Q95460",
+  "sites": [
+    {
+      "site_id": "MR1-terminal_n-22-lit",
+      "gene_symbol": "MR1",
+      "uniprot_acc": "Q95460",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "S",
+      "residue_after": "R",
+      "residue_label": "S22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunoprecipitation with anti-HA antibody after E. coli incubation confirmed surface expression; construct explicitly stated to be fully functional equivalent to wild-type MR1 (L2/L3).",
+      "confidence": "high",
+      "rationale": "MR1 has exactly one extracellular terminus: the mature N-terminus at residue 23, exposed after cleavage of the 22-residue signal peptide. Because the ledger names no insertion residue, the junction is topology-derived at insert_after_residue=22 (residue S22 \u2192 R23), placing the tag 278 residues from the TM boundary. Python verification confirms S at position 22 and R at position 23. The anti-HA surface IP on intact cells (L3) and explicit functional equivalence statement (L2) together support surface_and_function validation. HA-tagged MR1 stably expressed in Thp1 cells (Thp1.MR1.HA); the ledger clips (L1\u2013L3) name the construct but do not state the insertion residue. MR1 is a type I transmembrane protein with a single extracellular terminus: the mature N-terminus beginning at residue 23 (after signal-peptide cleavage at residue 22). The anti-HA immunoprecipitation performed on intact cells after overnight E. coli incubation (L3) demonstrates that the HA epitope is surface-accessible, consistent with placement immediately after the signal-peptide cleavage site. The construct is confirmed fully functional equivalent to wild-type MR1 (L2).",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2022.09.20.508788",
+          "claim": "Thp1 and Thp1.MR1.HA cells were incubated overnight with fixed E. coli and MR1 was immunoprecipitated using an antibody directed against the HA tag.",
+          "source_id": "DOI:10.1101/2022.09.20.508788"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:48:48.575104+00:00",
+  "literature_notes": "L4\u2013L10 all describe MR1-GFP constructs. The consistent 'MR1-GFP' nomenclature (protein name first, then GFP) denotes a C-terminal fusion; MR1's C-terminus (residues 324\u2013341) is intracellular per the topology landmarks. These constructs therefore carry GFP on the cytoplasmic face and do not qualify as extracellular surface-tag sites. They are recorded in other_positions. No ledger line reports an insertion in any internal extracellular loop of MR1, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 341,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "MR1-GFP fusion (C-terminal GFP) expressed in HeLa and C1R cells; MR1's C-terminus (residues 324\u2013341) is intracellular, so GFP resides on the cytoplasmic face and is not a surface tag."
+    },
+    {
+      "residue": 341,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Doxycycline-inducible TET-MR1GFP construct in BEAS-2B cells; same C-terminal GFP fusion, intracellular face confirmed by topology."
+    }
+  ]
+}

@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD6-terminal_n-18-lit",
+      "gene_symbol": "FZD6",
+      "uniprot_acc": "O60353",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "G",
+      "residue_after": "H",
+      "residue_label": "G18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "HiBiT-FZD6 was used in kinetic WNT-3A binding experiments in living HEK293A cells, confirming surface display. FZD6 did not transduce WNT-3A-induced \u03b2-catenin/TOPFlash signaling, consistent with known FZD6 biology (non-canonical Wnt receptor), not a tag-induced defect. No canonical signaling assay was passed, but surface display was confirmed by the binding assay itself.",
+      "confidence": "high",
+      "rationale": "The ledger (L1) explicitly reports an N-terminal HiBiT tag on full-length FZD6 used in live-cell binding assays, confirming surface display. The signal peptide ends at residue 18 (G) and the mature extracellular domain begins at residue 19 (H), making insert_after_residue=18 the sole possible extracellular N-terminal junction; this is computed from the authoritative topology landmarks, not chosen. The position is topology_derived because the paper names 'N-terminal' but no residue number. Multiple independent constructs (Nluc-FZD6, SNAP-FZD6, N-terminal mCherry) from three separate publications converge on this same junction, providing strong convergent support. Full-length human FZD6 carrying an N-terminal HiBiT tag was generated and expressed in HEK293A cells for NanoBiT/BRET kinetic binding assays (PMC8205236). The construct sequence was verified and used in live-cell binding experiments. The same N-terminal position is independently supported by Nluc-FZD6 (PMC12605013, L3/L5) and SNAP-FZD6 (PMC12605013, L4) constructs, and by the N-terminal mCherry in pmCherry-FZD6-mCherry (PMC7324525, L6). The paper states 'N-terminal HiBiT tag' but names no residue number; the signal peptide spans 1\u201318 (MATURE_N-TERMINUS = 19), so the only extracellular N-terminal junction is after residue 18 (G) and before residue 19 (H).",
+      "sources": [
+        {
+          "pmid": 34151213,
+          "citation": "PMID 34151213",
+          "claim": "In order to establish a nanoluciferase complementation-dependent NanoBiT/BRET binding assay format to study all human FZD paralogues, we generated constructs for all 10 receptors carrying an N-terminal HiBiT tag ( Figure S1A,B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:00:03.026489+00:00",
+  "literature_notes": "Six ledger lines were evaluated. L1\u2013L5 all support the same N-terminal extracellular junction (after signal peptide cleavage at residue 18); they differ only in tag identity (HiBiT, Nluc, SNAP) and publication, not in position, so they constitute one site. L6 (pmCherry-FZD6-mCherry) provides both an N-terminal mCherry (same extracellular site) and a C-terminal mCherry; the C-terminus falls within IC4 (residues 495\u2013706, intracellular) and is recorded in other_positions. No ledger line reports a tag insertion in any of the short extracellular loops (EC2: 255\u2013283, EC3: 349\u2013368, EC4: 438\u2013472), so no internal loop sites are proposed. The \u0394CRD-FZD6 construct (L4, starting from D156) is a truncated ectodomain-deleted construct used as a cloning template, not a validated internal insertion site, and is not promoted to a site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 706,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal mCherry in pmCherry-FZD6-mCherry; residue 706 (T) lies within IC4 (495\u2013706), the long intracellular C-terminal tail, so this tag faces the cytoplasm and is not a surface tag site."
+    }
+  ]
 }

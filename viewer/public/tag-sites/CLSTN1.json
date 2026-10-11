@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CLSTN1",
+  "uniprot_acc": "O94985",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:49:58.650938+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same construct: full-length human CLSTN1 with a 3xGGGGS linker fused to mNeonGreen or V5 at the protein C-terminus (after residue 981). Per the authoritative topology landmarks, residues 881\u2013981 are intracellular; the C-terminal tag therefore faces the cytoplasm, not the extracellular surface. Flow cytometry in L1/L3 was used to confirm overall expression levels of the lentiviral construct, not to demonstrate surface accessibility of the tag itself. No ledger line reports a tag insertion at an extracellular position of CLSTN1 (e.g., after the signal-peptide cleavage site at residue 28, or within the large extracellular domain 29\u2013861). Because the sole evidence is an intracellular C-terminal fusion, zero extracellular surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 981,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal 3xGGGGS-mNeonGreen/V5 fusion appended after the last residue (Y981) of full-length CLSTN1; the entire C-terminal domain (residues 881\u2013981) is intracellular per topology, so this tag is cytoplasmic and not accessible on the extracellular face."
+    }
+  ]
+}

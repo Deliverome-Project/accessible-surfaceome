@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR3-terminal_n-0-lit",
+      "gene_symbol": "GPR3",
+      "uniprot_acc": "P46089",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Whole-cell ELISA confirmed surface expression; the construct showed enhanced surface expression levels compared to wildtype GPR3. No receptor signalling assay (e.g. cAMP) is reported in this clip.",
+      "confidence": "high",
+      "rationale": "GPR3 has no signal peptide in the canonical topology (residues 1\u201344 are extracellular, raw topology string contains no 'S'), so an N-terminal tag prepends before residue 1 (insert_after_residue=0, residue_after=M). The paper explicitly states 'N-terminal HA-Tag of these GPR3 constructs' and confirms surface display by whole-cell ELISA, making this the sole extracellular terminus available for a surface tag. L4 (FLAG with exogenous leader, PMC3771882) and L5 (FLAG after cleavable HA-signal peptide, PMC12391488) independently corroborate the same N-terminal extracellular junction with a FLAG tag, but L2 provides the strongest direct surface-expression evidence. Full-length GPR3 construct bearing an N-terminal HA-tag expressed in HEK293 cells; the same construct also carries HaloTag in ICL3 and NanoLuc at the C-terminus. Surface expression of the N-terminally HA-tagged receptor was confirmed by whole-cell ELISA.",
+      "sources": [
+        {
+          "pmid": 42096618,
+          "citation": "PMID 42096618",
+          "claim": "This GPR3-HaloTag/Nluc fusion construct even showed enhanced surface expression levels compared to wildtype GPR3, confirmed by whole-cell ELISA using the N-terminal HA-Tag of these GPR3 constructs ( Figure b)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:34:17.424717+00:00",
+  "literature_notes": "L1 (PMC13195669): HaloTag inserted between Arg231 and His232 in ICL3 (INTRACELLULAR span 215\u2013248) \u2014 confirmed intracellular, placed in other_positions. L3 (PMC3694969): 'GPR3-HA' construct with surface expression confirmed by cell-surface biotinylation; however, the clip does not state where the HA tag is placed. 'GPR3-HA' naming in GPCR literature most commonly denotes a C-terminal tag, and the GPR3 C-terminus (298\u2013330) is intracellular; surface biotinylation detects the receptor at the plasma membrane regardless of tag location. Because the extracellular position of the HA tag cannot be established from this clip alone, L3 does not qualify a surface site and is excluded. L4 (PMC3771882) and L5 (PMC12391488) both describe N-terminal FLAG-tagged full-length GPR3 constructs at the same junction (insert_after_residue=0) as L2; since all three clips pin the identical junction, they constitute one site, reported above using L2 as the primary clip for its explicit surface-expression readout. L6 (PMC12391488) describes C-terminal RLuc8/mVenus fusions on the same FLAG-GPR3 backbone; the C-terminus (residue 330) is intracellular and is placed in other_positions. L7 (PMC10907358) describes a C-terminal LgBiT fusion on full-length GPR3; likewise intracellular.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 231,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HaloTag inserted between Arg231 and His232 in GPR3's third intracellular loop (ICL3, topology span 215\u2013248); confirmed intracellular, used as a BRET conformational biosensor donor site."
+    },
+    {
+      "residue": 330,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal fusions (RLuc8, mVenus in L6; LgBiT in L7) appended after the last residue Val330, which lies in the intracellular C-tail (topology span 298\u2013330)."
+    }
+  ]
 }

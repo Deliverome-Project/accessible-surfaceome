@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FFAR4-terminal_n-0-lit",
+      "gene_symbol": "FFAR4",
+      "uniprot_acc": "Q5NUL3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "RLuc8",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Used in EDA and ALA binding assays; ligand binding to the N-terminally tagged full-length receptor was measured, confirming the construct is functional for ligand engagement.",
+      "confidence": "high",
+      "rationale": "L5 explicitly states RLuc8 was fused to the N-terminus of full-length, membrane-anchored GPR120 (FFAR4). The topology landmarks confirm residues 1\u201340 are extracellular with no signal peptide (topology string begins with 'O'), so a prepend (insert_after_residue=0) places the tag on the extracellular surface. Python confirmed residue 1 = M and TM1 begins at residue 41, giving 40 residues of clearance\u2014well above the \u22653-residue minimum. The paper names 'N-terminus' but no specific residue number; exactly one extracellular terminus exists, so the position is topology-derived. Full-length GPR120 (FFAR4) with Renilla luciferase (RLuc8) fused to the N-terminus (pcDNA3.1\u2013RLuc8\u2013GPR120) expressed in cells for EDA and ALA ligand binding assays. The topology shows no signal peptide (EC region begins at residue 1), so the N-terminal prepend (insert_after_residue=0) places the tag on the extracellular face, 40 residues from TM1.",
+      "sources": [
+        {
+          "pmid": 41419665,
+          "citation": "PMID 41419665",
+          "claim": "For EDA and ALA binding assays, a Renilla luciferase (RLuc8) tag was fused to the N-terminus of GPR120 (pcDNA3.1\u2013RLuc8\u2013GPR120)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:48:12.858312+00:00",
+  "literature_notes": "L1, L2, L3 (FFA4\u2013Nluc, FFA4\u2013YFP) and L6 (GPR120\u2013YFP) all place tags at the C-terminus, which the topology landmarks assign to the intracellular region (residues 324\u2013361); these are recorded in other_positions. L4 (mFFA4\u2013HA knock-in) names no residue and no loop, and the clip does not specify whether the HA tag is at the N- or C-terminus; because both termini are plausible for an HA knock-in and the clip is ambiguous, the topology_derived rule (requiring exactly one extracellular terminus to be unambiguous) cannot be applied\u2014L4 is therefore dropped as unpositionable. No ledger line supports an internal extracellular loop insertion for FFAR4.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 361,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FFA4\u2013Nluc (NanoLuc at C-terminus) is functional by BRET and cAMP assays but the C-terminus (residues 324\u2013361) is intracellular per topology landmarks; not a surface tag site."
+    },
+    {
+      "residue": 361,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "FFA4\u2013YFP (YFP at C-terminus) expressed in HEK293T cells and imaged by HILO microscopy; C-terminus is intracellular, not a surface tag site."
+    },
+    {
+      "residue": 361,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "GPR120\u2013YFP (YFP appended to C-terminus of full-length GPR120/FFAR4) used in \u03b2-arrestin recruitment BRET assays; C-terminus is intracellular per topology landmarks."
+    }
+  ]
 }

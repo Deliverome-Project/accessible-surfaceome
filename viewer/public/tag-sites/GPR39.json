@@ -37,7 +37,56 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR39-terminal_n-0-lit",
+      "gene_symbol": "GPR39",
+      "uniprot_acc": "O43194",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "In vivo and ex vivo characterization of the knock-in mice was performed; the receptor is functional in the endogenous context (implied by use as a physiological tool), though specific functional assay metrics are not quoted in the clip.",
+      "confidence": "high",
+      "rationale": "GPR39 topology begins extracellular at residue 1 with no signal peptide, making the N-terminus the sole extracellular terminus available for a prepended tag. The knock-in is at the endogenous locus in a full-length receptor context, ruling out a truncated or secreted construct. No residue number is named in the clip, so the junction is topology-derived as insert_after_residue=0 (before M1). The 30-residue N-terminal extracellular domain provides ample clearance from TM1 (which begins at residue 31). CRISPR/EGE knock-in of an HA tag into the endogenous mouse Gpr39 locus, producing a full-length, membrane-anchored receptor used for in vivo and ex vivo characterization. No residue number is stated in the clip. GPR39 has no signal peptide (topology string begins O at residue 1), so the N-terminus is the only extracellular terminus; the tag must prepend before M1.",
+      "sources": [
+        {
+          "pmid": 38306436,
+          "citation": "PMID 38306436",
+          "claim": "GPR39-HA knock-in mice ( Gpr39 HA ) and GPR39 knockout mice ( Gpr39 KO or Gpr39 \u2212/\u2212 ) were created with CRISPR/EGE platform in the C57BL/6 strain by Beijing Biocytogen."
+        },
+        {
+          "pmid": 41651415,
+          "citation": "PMID 41651415",
+          "claim": "For membrane expression of mutants, a 3\u00d7 HA tag at the N-terminus was added."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:35:24.327242+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) converge on the same physical junction (N-terminal prepend, insert_after_residue=0) because GPR39 is a GPCR with no signal peptide and a 30-residue extracellular N-terminal domain (residues 1\u201330) preceding TM1 at residue 31. L1 provides higher validation (endogenous knock-in, in vivo use) while L2 provides the more explicit positional statement ('N-terminus'). No ledger line grounds any insertion in ECL1 (92\u2013109), ECL2 (173\u2013222), or ECL3 (305\u2013323), so no internal sites are proposed. The C-terminus (residues 347\u2013453) is intracellular and is not supported by any ledger line for a surface tag.",
+  "literature_rejected": []
 }

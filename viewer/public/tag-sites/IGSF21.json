@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "IGSF21",
+  "uniprot_acc": "Q96ID5",
+  "sites": [
+    {
+      "site_id": "IGSF21-terminal_c-443-lit",
+      "gene_symbol": "IGSF21",
+      "uniprot_acc": "Q96ID5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 443,
+      "residue_before": "S",
+      "residue_after": "N",
+      "residue_label": "S443",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by cell-based coculture assay; mIgSF21-HA expressed on HEK293/HEK293T cells induced clustering of VGAT (inhibitory presynaptic vesicle protein) along contacting axons of wild-type hippocampal neurons, but not VGLUT1 (excitatory marker), demonstrating preserved selective synaptogenic function. VGAT clustering was absent on Nrxn2alpha KO neuron axons, confirming specificity.",
+      "confidence": "medium",
+      "rationale": "L1 reports an HA epitope tag inserted 4 aa upstream of the GPI anchor signal in full-length, membrane-anchored mouse IgSF21 (close ortholog of human IGSF21). The human IGSF21 C-terminal sequence ends with GPTGARLTLVLALTVILELT (residues 448-467), a canonical GPI signal (hydrophobic tail LTLVLALTVILELT at 454-467 plus spacer PTGAR at 449-453); the GPI signal boundary is estimated at residue 448. Placing the tag 4 aa upstream of residue 448 yields insert_after_residue=443 (S443|N444), with NGSI (444-447) as the intervening spacer. The site is extracellular (GPI-anchored protein, no TM domain), well clear of the GPI signal cleavage site, and the mouse ortholog construct showed full surface display and selective VGAT-clustering function (L2, L4). Tanabe et al. 2017 (PMC5581337) engineered full-length, GPI-anchored mouse IgSF21 with an HA epitope tag inserted in-frame 4 aa upstream of the putative C-terminal GPI anchor signal sequence, creating mIgSF21-HA expressed on the surface of HEK293 and HEK293T cells. Mouse IgSF21 is the close ortholog of human IGSF21. The position in human IGSF21 was computed by identifying the GPI anchor signal boundary (estimated at residue 448, the start of GPTGARLTLVLALTVILELT) and placing the junction 4 aa upstream, after residue 443 (S), leaving NGSI (444-447) between the tag and the GPI signal.",
+      "sources": [
+        {
+          "pmid": 28864826,
+          "citation": "PMID 28864826",
+          "claim": "For IgSF21-HA, an HA epitope coding sequence was inserted in frame 4 aa residues upstream of the putative C-terminal GPI anchor signal sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:15:33.699289+00:00",
+  "literature_notes": "All four ledger lines (L1-L4) describe the same construct: full-length, GPI-anchored mouse IgSF21 with an HA tag inserted 4 aa upstream of the C-terminal GPI anchor signal (mIgSF21-HA, Tanabe et al. 2017). L2 and L4 provide functional validation (VGAT clustering in hippocampal neuron coculture); L3 independently confirms the same construct. Because the evidence is for the mouse ortholog and no specific residue number is cited in the paper, position_evidence is 'inferred' and the junction (after S443) was computed by locating the GPI signal boundary in the human IGSF21 sequence. Confidence is 'medium' rather than 'high' because (a) the evidence is from the mouse ortholog, not human IGSF21 directly, and (b) the exact GPI signal start position in human IGSF21 is estimated (\u00b12 residues). No N-terminal tag evidence exists in the ledger for IGSF21. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

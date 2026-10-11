@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "MOG",
+  "uniprot_acc": "Q16653",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:46:04.835163+00:00",
+  "literature_notes": "All five ledger lines were evaluated. L1, L2, and L3 describe C-terminal HA or FLAG tags on full-length membrane-anchored MOG. The canonical topology places the C-terminus (residue 247) firmly in the intracellular region (230\u2013247); these tags are therefore intracellular and cannot serve as extracellular surface-tag sites. L4 describes a bare expression construct (pIRES2-DsRed2) with no tag whatsoever and does not qualify. L5 describes insertion of a stop codon after Gly155 to create a C-terminally truncated (ECD-only) construct; this is a truncation, not a tag insertion, and does not qualify under any ledger category. No ledger line reports a tag inserted at an extracellular position on full-length, membrane-anchored MOG. The large extracellular IgV domain (residues 30\u2013155) and the single-residue extracellular loop at position 219 are both unaddressed by any qualifying insertion in the ledger. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 247,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag on full-length MOG (L1); C-terminus falls in the intracellular region (residues 230\u2013247) per authoritative topology landmarks."
+    },
+    {
+      "residue": 247,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal FLAG tag on full-length MOG detected by anti-FLAG flow cytometry (L2); despite surface-display language in the paper, the canonical C-terminus is intracellular (230\u2013247)."
+    },
+    {
+      "residue": 247,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG tag on full-length MOG used for anti-FLAG affinity purification and surface display (L3); C-terminus is intracellular per topology."
+    }
+  ]
+}

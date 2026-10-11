@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GRM3-terminal_n-22-lit",
+      "gene_symbol": "GRM3",
+      "uniprot_acc": "Q14832",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA + SNAP-tag (or FLAG + CLIP-tag)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by membrane-impermeable fluorophore labeling in live HEK293T cells (L3/L6). Functional receptor confirmed: SNAP-mGluR3 recruits beta-arrestin-2-YFP to the plasma membrane upon 1 mM glutamate treatment (L4), and agonist-induced internalization is quantified and intact (L6).",
+      "confidence": "high",
+      "rationale": "All ledger lines L1-L6, L8-L9 describe the same construct architecture: a heterologous signal peptide followed by HA/SNAP or FLAG/CLIP tags placed upstream of the mGluR3 sequence in a full-length, membrane-anchored receptor. The human GRM3 signal peptide spans residues 1-22 (computed landmark); the mature N-terminus begins at residue 23 (L). Because the tag is placed between the signal peptide and the mature receptor, and this is the sole extracellular terminus of the protein, the junction is unambiguously insert_after_residue=22 (residue_before=S, residue_after=L). Python-verified: sequence[22]='S', sequence[23]='L'. Multiple papers confirm surface display and full agonist-induced signaling, establishing surface_and_function validation. Full-length rat mGluR3 expressed in HEK293T cells with a heterologous N-terminal signal peptide from rat mGluR5 followed by HA and SNAP-tag (or FLAG and CLIP-tag) upstream of the mGluR3 sequence in pRK5 vector. The construct is membrane-anchored and surface-displayed. No specific residue number is named in the papers; the tag is placed between the signal peptide and the mature receptor sequence.",
+      "sources": [
+        {
+          "pmid": 39090128,
+          "citation": "PMID 39090128",
+          "claim": "All SNAP-mGluR constructs contain an N-terminal signal sequence from rat mGluR5 followed by an HA epitope and the SNAP-tag self-labelling enzyme upstream of the mGluR sequence and are inserted in a pRK5 vector backbone."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:51:13.690651+00:00",
+  "literature_notes": "The ledger contains 11 lines for GRM3/mGluR3. Lines L1-L6, L8-L9 all describe the same N-terminal tag architecture (heterologous SP + HA/SNAP or FLAG/CLIP upstream of mGluR3 sequence), yielding one site (insert_after_residue=22). L10 describes an HA-mGluR3-mCitrine construct with both N-terminal HA (extracellular) and C-terminal mCitrine (intracellular); the N-terminal HA is subsumed by the same site already reported; the C-terminal mCitrine is intracellular and goes to other_positions. L7 describes a C-terminal mVenus + Twin-Strep-tag on full-length rat mGluR3 for cryo-EM; the C-terminus (829-879) is intracellular per the topology landmarks, so this is also an intracellular tag and goes to other_positions. L11 describes CTD chimeras replacing residues 830-879 and ST-region deletions at 841-860; these are all intracellular manipulations. No ledger line supports an insertion in any of the short extracellular loops (ECL1: 635-638, ECL2: 710-734, ECL3: 792-802) or within the large extracellular domain (23-576) at a specific internal site. The single qualifying surface site is the N-terminal junction at residue 22/23.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 879,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "Full-length rat mGluR3 carries a C-terminal thrombin cleavage site followed by mVenus and Twin-Strep-tag; the C-terminus (residues 829-879) is intracellular per topology landmarks, making this an intracellular tag, not a surface tag."
+    },
+    {
+      "residue": 879,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "pcDNA3.1-HA-mGluR3-mCitrine places mCitrine at the C-terminus of full-length mGluR3; the C-terminus (829-879) is intracellular, so this C-terminal fluorescent protein fusion is an intracellular label."
+    },
+    {
+      "residue": 841,
+      "kind": "intracellular",
+      "supporting_clip_id": "L11",
+      "note": "mGluR3 ST-region (residues 841-860) was used for deletion and chimera cloning; this region falls within the intracellular C-terminal domain (829-879) and is not a surface tag site."
+    }
+  ]
 }

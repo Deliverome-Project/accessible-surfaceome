@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "MEGF10",
+  "uniprot_acc": "Q96KG7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:37:58.502141+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe a C-terminal eGFP fusion (MEGF10-eGFP, separated by a 3\u00d7Gly linker with a 6\u00d7His tag after eGFP). Per the authoritative topology landmarks, MEGF10's C-terminus (residues 879\u20131140) is intracellular; the eGFP tag therefore faces the cytoplasm and does not qualify as an extracellular surface tag site. L2 confirms the construct is expressed and functionally active (fusion index reduced to 7.5%), but that functional read-out does not change the topology. No ledger line reports any insertion on the extracellular domain (residues 26\u2013857) or at the mature N-terminus (after residue 25). Because the ledger contains no evidence for an extracellular tag on MEGF10, sites[] is empty, which is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1140,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eGFP fused after the last residue (E1140) of the intracellular C-terminus via a 3\u00d7Gly linker; construct is expressed and functional in myoblasts but the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

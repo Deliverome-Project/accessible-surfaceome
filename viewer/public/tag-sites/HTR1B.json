@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR1B-terminal_n-0-lit",
+      "gene_symbol": "HTR1B",
+      "uniprot_acc": "P28222",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "VSV-G",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface detection of the membrane-anchored receptor confirmed by VSV-G immunostaining (L2). The construct was used in a FRET/FlAsH conformational study; ligand-binding or signalling function of the VSV-G-tagged receptor was NOT MEASURED independently of the multiply-tagged construct.",
+      "confidence": "high",
+      "rationale": "HTR1B has no signal peptide; its N-terminus (residues 1\u201349) is extracellular by topology. L3 describes the construct architecture as [mGluR5 leader]\u2013[VSV-G]\u2013[5-HT1B], placing the VSV-G immediately upstream of HTR1B M1 (insert_after_residue = 0). Because no HTR1B residue number is stated, the position is topology-derived: the extracellular N-terminus is the sole terminus on the cell surface, leaving exactly one valid junction. Python confirmed residue 1 = M and residue 390 = S (intracellular), so the prepend is the only extracellular terminal option. Full-length human 5-HT1B receptor expressed in mammalian cells with an exogenous mGluR5 leader sequence followed by the VSV-G peptide epitope prepended to the native N-terminus (residue M1); the construct also carried FlAsH in ICL3 and CFP at the C-tail. L2 explicitly states the VSV-G enables surface detection of the membrane-anchored receptor. No specific HTR1B residue number is named for the junction \u2014 the tag sits between the mGluR5 leader and HTR1B M1, making this a topology-derived prepend.",
+      "sources": [
+        {
+          "pmid": 34552493,
+          "citation": "PMID 34552493",
+          "claim": "In addition, it contained the VSV-G peptide epitope within the extracellular N-terminal domain ( Figure 3B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:02:58.691894+00:00",
+  "literature_notes": "All five ledger lines derive from a single publication (PMC8450432) describing one multiply-tagged full-length 5-HT1B construct. L2 and L3 ground the N-terminal VSV-G surface site; L1, L4 ground the intracellular FlAsH (ICL3) and CFP (C-tail) insertions, which are recorded in other_positions. L5 confirms the construct vector but adds no positional information. No ledger line supports a tag in ECL1 (110\u2013123), ECL2 (187\u2013206), or ECL3 (340\u2013348); those loops are not proposed. The mGluR5 leader in the published construct functions as an exogenous signal peptide to drive surface trafficking; the VSV-G sits between that leader and HTR1B M1, consistent with insert_after_residue = 0.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 230,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "FlAsH motif FLNCCPGCCMEP inserted into ICL3 (linking TM5\u2013TM6, topology residues 230\u2013314); intracellular loop, not a surface tag site."
+    },
+    {
+      "residue": 390,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CFP fused in-frame to the C-terminal tail of full-length 5-HT1B; the C-terminus (residues 372\u2013390) is intracellular, so this is not a surface tag site."
+    }
+  ]
 }

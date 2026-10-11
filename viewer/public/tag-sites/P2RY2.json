@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "P2RY2-terminal_n-0-lit",
+      "gene_symbol": "P2RY2",
+      "uniprot_acc": "P41231",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor was expressed and used for purification and characterization; no explicit ligand-binding or signaling assay result reported in the ledger clip.",
+      "confidence": "high",
+      "rationale": "P2RY2 is a GPCR with no endogenous signal peptide; TM1 begins at residue 34, leaving residues 1\u201333 as the sole extracellular N-terminal domain (33 residues, well above the \u22653-residue TM-clearance threshold). The paper adds an exogenous HA signal peptide to drive secretory-pathway targeting; after its cleavage, the FLAG tag sits immediately before M1, equivalent to a prepend at insert_after_residue=0. No residue number is named in the clip, but exactly one extracellular terminus exists, so the junction is topology-derived. Python confirms residue_after = M (position 1) and residue_before = '' (prepend). Full-length, membrane-anchored P2Y2R was engineered with an exogenous HA signal peptide followed by a FLAG tag (DYKDDDDA) at the extracellular N-terminus; construct used for purification and characterization (PMC12075631).",
+      "sources": [
+        {
+          "pmid": 40360475,
+          "citation": "PMID 40360475",
+          "claim": "The constructs included an N-terminal hemagglutinin (HA) signal peptide sequence, followed by a FLAG tag (DYKDDDDA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:10:05.698374+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It describes a full-length, membrane-anchored P2Y2R construct with an exogenous HA signal peptide followed by a FLAG tag placed at the extracellular N-terminus, used for purification and characterization. No residue number is stated, but P2RY2 has a single extracellular N-terminal domain (residues 1\u201333) with TM1 starting at residue 34, making the prepend position unambiguous. C25 lies within the N-terminal extracellular region but is downstream of the tag insertion point (prepend before M1) and does not conflict with the tag placement. No ledger evidence supports insertions in ECL1 (92\u2013103), ECL2 (172\u2013194), or ECL3 (272\u2013282), so no sites are proposed there. The C-terminus (residues 310\u2013377) is intracellular and was not supported by any ledger line for a surface tag.",
+  "literature_rejected": []
 }

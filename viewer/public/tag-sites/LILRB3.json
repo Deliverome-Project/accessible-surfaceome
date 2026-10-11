@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "LILRB3",
+  "uniprot_acc": "O75022",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:09:20.898512+00:00",
+  "literature_notes": "All five ledger lines were examined carefully. L1 and L2 describe antibody epitope-mapping experiments using LILRB3 domain-deletion constructs transfected into HEK293F cells; these are explicitly excluded because 'where an antibody binds is not where a tag was inserted.' L3, L4, and L5 all describe chimeric receptor constructs in which the LILRB3 ectodomain is fused to an intracellular signaling domain (CD3\u03b6 or PILR\u03b2-TM-ICD) for functional ligand-screening assays. None of these lines reports an epitope-tag knock-in, fluorescent-protein fusion, transposon/domain-insertion screen, or antibody-epitope insertion at any specific residue or loop of the LILRB3 extracellular domain. No ledger line qualifies under the evidence rules, so zero sites are proposed.",
+  "literature_rejected": []
+}

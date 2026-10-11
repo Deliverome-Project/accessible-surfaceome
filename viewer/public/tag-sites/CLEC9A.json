@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLEC9A",
+  "uniprot_acc": "Q6UXN8",
+  "sites": [
+    {
+      "site_id": "CLEC9A-terminal_c-241-lit",
+      "gene_symbol": "CLEC9A",
+      "uniprot_acc": "Q6UXN8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 241,
+      "residue_before": "V",
+      "residue_after": "",
+      "residue_label": "V241",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct expressed in NIH3T3 fibroblasts and used to characterize structural features of hCLEC9A; specific surface-expression or functional assay not detailed in the cited clip.",
+      "confidence": "medium",
+      "rationale": "CLEC9A is a type II single-pass transmembrane protein (N-terminus intracellular residues 1\u201334, TM 35\u201356, C-terminus extracellular 57\u2013241). The only extracellular terminus is the C-terminus at residue 241 (V). L1 reports a full-length, membrane-anchored human CLEC9A HA-tagged construct expressed in NIH3T3 cells; no residue is named, but topology leaves exactly one extracellular terminus, making position 241 the topology-derived junction. L2 from the same paper explicitly states 'C-terminally HA-tagged' for the murine ortholog, confirming the C-terminal strategy. The C-terminus is 185 residues from the TM boundary, well clear of the \u22653-residue constraint. Full-length human CLEC9A ORF cloned into pFBneo retroviral vector containing an HA tag, expressed in NIH3T3 fibroblasts to characterize structural features of the receptor. CLEC9A is a type II transmembrane protein with its C-terminus in the extracellular domain; the same paper explicitly reports C-terminal HA tagging for the murine ortholog (L2), confirming the C-terminal placement strategy.",
+      "sources": [
+        {
+          "pmid": 18408006,
+          "citation": "PMID 18408006",
+          "claim": "Generation of Constructs and Transduced Cell Lines \u2014The complete CLEC9A open reading frame (ORF) was isolated from human PBMC cDNA by PCR and cloned into the pFBneo (Stratagene) retroviral vector containing an HA tag ( 16 ) using the following primers; AAAGAATTCCCACCATGCACGAGGAAGAAATATAC and AAACTCGAGGACAGAGGATCTCAACGC."
+        },
+        {
+          "pmid": 39633178,
+          "citation": "PMID 39633178",
+          "claim": "The coding sequences of pEF6-mCLEC9A(WT)-V5 and pEF6-mCLEC9A(Y7F)-V5 were synthesized by Integrated DNA Technologies and inserted into a modified pEF6 backbone."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:51:08.552186+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) converge on the C-terminus as the only extracellular tag site for CLEC9A. L1 and L3 describe the same human HA-tagged construct from PMC2562446; L1 is used as the primary clip. L2 (same paper, murine, explicitly C-terminal HA) confirms the C-terminal placement strategy for the PMC2562446 constructs and was not promoted to a separate site because it is the murine ortholog of the same junction already covered by L1. L4 (different paper, murine, explicitly C-terminal V5) provides independent indirect support and is reported as a second site entry because it is a distinct paper with a distinct tag. No ledger line names an internal extracellular loop insertion. The N-terminus (residues 1\u201334) is intracellular and cannot carry a surface tag. The Y7F mutant mentioned in L4 is a point mutation in the intracellular domain (residue 7), not a tag insertion, and does not qualify for other_positions.",
+  "literature_rejected": []
+}

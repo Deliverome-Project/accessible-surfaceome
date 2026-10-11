@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CNNM3",
+  "uniprot_acc": "Q8NE01",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:55:15.715389+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a FLAG-tagged full-length human CNNM3 cloned into the commercial pCMV-4A vector (Sigma), which appends its FLAG epitope at the N-terminus of the insert. CNNM3 carries a signal peptide at residues 1\u201325; the default pCMV-4A FLAG placement therefore sits upstream of the SP and would be co-translationally cleaved during ER translocation, leaving no surface-displayed tag. No residue, loop, or domain is named in L1, and the original construction paper (ref 72 in the citing article) is not in the ledger. The clip therefore falls under the disqualifying rule for commercial plasmids with unstated tag position, and the topology-derived rule cannot rescue it because extracellular display cannot be confirmed. The only extracellular spans are the large N-terminal ectodomain (residues 26\u2013137) and the short loop between TM2 and TM3 (residues 214\u2013222); the C-terminus (residue 707) is intracellular. No ledger line grounds a tag in either extracellular span with sufficient positional evidence to propose a site.",
+  "literature_rejected": []
+}

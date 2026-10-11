@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "ALCAM",
+  "uniprot_acc": "Q13740",
+  "sites": [
+    {
+      "site_id": "ALCAM-terminal_n-27-lit",
+      "gene_symbol": "ALCAM",
+      "uniprot_acc": "Q13740",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "G",
+      "residue_after": "W",
+      "residue_label": "G27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip describes construct generation only; no surface-expression or functional assay result is reported in the ledger entry.",
+      "confidence": "medium",
+      "rationale": "L1 reports a FLAG-tagged full-length mouse ALCAM construct (residues 28\u2013583) in which an exogenous signal peptide is followed immediately by the FLAG tag and then ALCAM starting at residue 28; this places the tag at the extracellular mature N-terminus, which is the only surface-exposed terminus available on a type-I single-pass protein. Python confirmed that residue 27 (G) is the last residue of the native signal peptide and residue 28 (W) is the first residue of the mature ectodomain, 500 residues from the TM boundary. Mouse ALCAM is a close ortholog of human ALCAM with an identical signal-peptide length (1\u201327), so the junction transfers directly; the evidence is classified as 'same loop or domain' because the tagged protein is the mouse ortholog rather than human ALCAM itself. Mouse ALCAM residues 28\u2013583 (full-length, membrane-anchored: ectodomain 28\u2013527, TM 528\u2013548, IC 549\u2013583) was subcloned into pCS2+ with an exogenous signal peptide followed by an in-frame FLAG tag, placing the FLAG at the mature N-terminus immediately before residue 28. The paper explicitly names residue 28 as the start of the ALCAM coding region, pinning the junction to after the SP cleavage site.",
+      "sources": [
+        {
+          "pmid": 41740737,
+          "citation": "PMID 41740737",
+          "claim": "The cDNA sequence encoding mouse ALCAM 28\u2013583 was subcloned into a pCS2+ expression vector containing a signal peptide followed by an in-frame FLAG tag using the BspEI and XbaI restriction sites ( Supplemental Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 28,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:21:45.067190+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a FLAG tag at the mature N-terminus of full-length mouse ALCAM (residues 28\u2013583), a membrane-anchored construct that includes the TM and intracellular domains, so it is not a soluble ectodomain and qualifies under the rules. No functional or surface-expression assay result appears in the clip, so validation_level is not_measured. No internal-loop or C-terminal tag sites are supported by the ledger. The intracellular C-terminus (549\u2013583) has no ledger support and is not proposed.",
+  "literature_rejected": []
+}

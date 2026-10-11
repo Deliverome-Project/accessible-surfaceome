@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "PGAP6",
+  "uniprot_acc": "Q9HCN3",
+  "sites": [
+    {
+      "site_id": "PGAP6-terminal_n-34-lit",
+      "gene_symbol": "PGAP6",
+      "uniprot_acc": "Q9HCN3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A34",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / His-FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable CHO cell lines expressing HA-PGAP6 and His-FLAG-PGAP6 were established and used for biochemical characterization of PGAP6 (GPI-AP remodeling activity); expression of tagged protein confirmed by Western blot (sucrose-gradient fractionation, L4). Explicit quantitative comparison of tagged vs. untagged PGAP6 enzymatic activity NOT MEASURED in the cited ledger lines.",
+      "confidence": "high",
+      "rationale": "The ledger quote in L1 explicitly names HA-PGAP6 and His-FLAG-PGAP6 as N-terminally tagged full-length constructs and, in the same sentence, defines the convention via HA-CRYPTIC as 'HA-tagged at the N terminus after the ER signal sequence.' Python confirms residue 34 (A) is the last signal-peptide residue and residue 35 (G) is the first extracellular residue; the tag therefore sits at the 34/35 junction, 511 residues from TM1 (546). L2, L3, and L4 independently corroborate the same N-terminal tagging strategy for TMEM8A (= PGAP6). Because no ledger line states a residue number, position_evidence is topology_derived, not validated. Multiple full-length PGAP6 constructs with N-terminal epitope tags (HA-PGAP6, His-FLAG-PGAP6 in L1; HA-TMEM8A, HF-TMEM8A in L2/L3/L4) were stably expressed in CHO 3B2A cells. The parallel construct 'HA-CRYPTIC (human CRYPTIC HA-tagged at the N terminus after the ER signal sequence)' in the same quote establishes the naming convention: HA-X places the tag after signal-peptide cleavage. PGAP6 signal peptide spans residues 1\u201334 (mature N-terminus = residue 35), so the tag is inserted between residue 34 and residue 35. No residue number is stated explicitly in any ledger line, but exactly one extracellular terminus exists (the mature N-terminus after SP cleavage), making the junction unambiguous.",
+      "sources": [
+        {
+          "pmid": 32816994,
+          "citation": "PMID 32816994",
+          "claim": "CHO cells usedinthisstudywereCHO3B2AcellsderivedfromCHOK1 cells (ATCC) and stably express two human GPI-APs: CD59andDAF(27).AllCHOcelllinesincludingWT3B2A and 3B2A cells stably expressing HA-PGAP6, His-FLAGPGAP6, PGAP6-FLAG, or HA-CRYPTIC (human CRYPTIC HA-taggedattheNterminusaftertheERsignalsequence)were culturedinHam \u2019 sF-12mediumcontaining10%fetalcalfserum with 6 m g/ml blasticidin, 10 m g/ml puromycin, or 500 m g/ml hygromycin, if necessary."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:34:11.455945+00:00",
+  "literature_notes": "Five ledger lines were examined. L1 and L2 each report three tagged PGAP6/TMEM8A constructs: two N-terminal (HA and His-FLAG) and one C-terminal (FLAG). L3 and L4 corroborate the N-terminal HA and His-FLAG tags from L2. L5 reports a C-terminally 3HA-tagged construct (pME-Hyg-hPGAP6-3HA). All C-terminal tags (PGAP6-FLAG from L1/L2, TMEM8A-Flag from L2, hPGAP6-3HA from L5) land at residue 771, which lies within the intracellular C-terminal span (738\u2013771); these are recorded in other_positions. No ledger line reports any insertion in the small extracellular loops (590\u2013605, 649\u2013657, 712\u2013719) of the multi-pass TM domain, so no internal sites are proposed. The single extracellular surface site is the mature N-terminus (after SP cleavage at residue 34), supported by four independent ledger lines.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 771,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "PGAP6-FLAG (C-terminal FLAG tag) places the tag after residue 771, which falls within the intracellular C-terminal tail (topology span 738\u2013771); not an extracellular surface site."
+    },
+    {
+      "residue": 771,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "pME-Hyg-hPGAP6-3HA places a 3\u00d7HA tag C-terminally after residue 771, confirmed intracellular by topology (span 738\u2013771); not an extracellular surface site."
+    }
+  ]
+}

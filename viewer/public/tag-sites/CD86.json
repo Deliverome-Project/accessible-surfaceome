@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD86",
+  "uniprot_acc": "P42081",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:22:18.181108+00:00",
+  "literature_notes": "All nine ledger clips (L1\u2013L9) describe a single class of construct: full-length human CD86 with GFP or mCherry fused to its C-terminus. L1 is the most explicit: 'GFP tagged to the C-terminus of CD86.' Computed topology places the CD86 C-terminus (residue 329) firmly in the intracellular domain (residues 269\u2013329). The tagged protein is surface-displayed and functional (it supports CTLA-4-mediated transendocytosis), but the fluorescent tag itself faces the cytoplasm, not the extracellular space. No ledger line describes an N-terminal extracellular insertion, an internal loop insertion, or any tag on the extracellular domain (residues 24\u2013247). Because the sole evidence class is a cytoplasmic C-terminal fusion, zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 329,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the C-terminus of full-length CD86; residue 329 (F) is intracellular (topology residues 269\u2013329), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

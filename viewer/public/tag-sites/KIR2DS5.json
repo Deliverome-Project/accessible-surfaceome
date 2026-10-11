@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "KIR2DS5",
+  "uniprot_acc": "Q14953",
+  "sites": [
+    {
+      "site_id": "KIR2DS5-terminal_n-21-lit",
+      "gene_symbol": "KIR2DS5",
+      "uniprot_acc": "Q14953",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "P",
+      "residue_after": "H",
+      "residue_label": "P21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry for surface HA and intracellular V5: KIR2DS5*001 allele showed intracellular V5 staining but NO detectable HA surface staining on either cell line tested (L3), indicating the *001 allele protein was retained intracellularly. No positive surface HA result for any KIR2DS5 allele is reported in the ledger; the failure is attributed to allele-specific trafficking of the protein, not to the tag-position design.",
+      "confidence": "low",
+      "rationale": "The paper explicitly designed the N-terminal HA tag as a surface marker for KIR2DS5, placing it after the signal peptide cleavage site. With signal peptide spanning residues 1\u201321 (authoritative landmark), the tag junction is after residue 21 (P) and before residue 22 (H, the mature N-terminus), which is 224 residues from the TM boundary \u2014 well clear of any constraint. The only surface-expression result in the ledger (L3) is negative for the *001 allele due to allele-specific intracellular retention, not a tag-position failure; the ledger contains no confirmed positive surface HA result for any KIR2DS5 allele, so validation_level is not_measured. Full-length membrane-anchored KIR2DS5 was engineered with an N-terminal HA tag (for surface detection) and a C-terminal V5 tag (for total expression) and expressed in NKL cells and a second cell line. The HA tag was placed after the signal peptide at the extracellular mature N-terminus; no specific residue number is stated in the paper, so the junction is derived from the signal-peptide landmark (residues 1\u201321).",
+      "sources": [
+        {
+          "pmid": 18682925,
+          "citation": "PMID 18682925",
+          "claim": "Because an Ab specific for KIR2DS5 was not available, expression was measured with KIR carrying an N-terminal HA tag and a C-terminal V5 tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:59:18.489545+00:00",
+  "literature_notes": "The ledger contains four clips, all from PMC5848465. L1 and L4 describe C-terminal V5 tags on full-length KIR2DS5; the C-terminus (residue 304) is intracellular (IC region 267\u2013304) and therefore not a surface tag site \u2014 placed in other_positions. L2 grounds the N-terminal HA site (topology-derived, after signal peptide). L3 is a negative result: KIR2DS5*001 with the N-terminal HA + C-terminal V5 dual-tag construct showed no detectable HA surface staining, indicating the *001 allele protein was not surface-displayed; this is reported as an allele-specific trafficking failure. No ledger line reports a confirmed positive surface HA result for any KIR2DS5 allele, so the N-terminal site is classified not_measured and confidence is low. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 304,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal V5 tag engineered on full-length membrane-anchored KIR2DS5 by replacing the stop codon with a glycine codon; residue 304 (Y) is the last residue of the intracellular tail (IC region 267\u2013304), making this an intracellular tag, not a surface tag."
+    }
+  ]
+}

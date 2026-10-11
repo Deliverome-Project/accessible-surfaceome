@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "S1PR2-terminal_n-0-lit",
+      "gene_symbol": "S1PR2",
+      "uniprot_acc": "O95136",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by confocal imaging in HEK 293T cells; co-localization with \u03b2-arrestin 1 observed upon receptor activation. No quantitative receptor function assay (e.g., calcium flux, ERK phosphorylation) reported for the tagged construct specifically.",
+      "confidence": "medium",
+      "rationale": "L2 and L3 together report a full-length, membrane-anchored zebrafish S1p2 construct with an N-terminal HA tag that reaches the cell surface in HEK 293T cells. Zebrafish S1p2 is the direct ortholog of human S1PR2; the N-terminal extracellular domain is conserved in topology. Human S1PR2 carries no signal peptide (raw topology begins with 'O'), so a tag prepended before M1 is not cleaved and remains extracellular. The sole extracellular terminus of this GPCR is the N-terminus (residues 1\u201334), making insert_after_residue=0 the unique topology-derived junction. Position is indirect (ortholog) and no residue number is cited, so position_evidence is topology_derived. Zebrafish S1p2 (close ortholog of human S1PR2) was cloned full-length into pCS2+ with an HA tag at the N-terminus and expressed in HEK 293T cells. Confocal imaging (L3) confirmed surface display of the HA-tagged receptor co-localizing with flag-tagged \u03b2-arrestin 1. No residue number is named; the tag is at the N-terminus. Human S1PR2 has no signal peptide (topology begins with extracellular residues 1\u201334), so the N-terminal prepend (insert_after_residue=0, before M1) places the tag on the extracellular face. TM1 begins at residue 35, giving 34 residues of extracellular buffer.",
+      "sources": [
+        {
+          "pmid": 25555130,
+          "citation": "PMID 25555130",
+          "claim": "Zebrafish S1p2 was amplified from cDNA of 24 hpf (hours postfertilization) zebrafish embryos and cloned into pCS2+ via ClaI and StuI restriction sites with a HA tag at the N-terminus of S1p2."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:06:28.315254+00:00",
+  "literature_notes": "L1 reports a C-terminal FLAG tag on full-length human S1PR2 in pEG-BacMam. The C-terminus falls within the intracellular span 291\u2013353 (computed landmarks), so this tag is cytoplasmic and is recorded in other_positions rather than sites. L2 and L3 are the only ledger lines supporting an extracellular tag site; they ground a single N-terminal prepend site via the zebrafish ortholog. No ledger line supports any internal extracellular loop insertion (ECL1 92\u2013108, ECL2 169\u2013189, ECL3 256\u2013269) for S1PR2 or a close ortholog, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 353,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on full-length human S1PR2 (pEG-BacMam); residue 353 (V) lies within the intracellular C-terminal tail (computed span 291\u2013353), so this tag faces the cytoplasm and is not a surface-display site."
+    }
+  ]
 }

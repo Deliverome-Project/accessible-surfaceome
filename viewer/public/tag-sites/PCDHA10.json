@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHA10",
+  "uniprot_acc": "Q9Y5I2",
+  "sites": [
+    {
+      "site_id": "PCDHA10-internal-None-lit",
+      "gene_symbol": "PCDHA10",
+      "uniprot_acc": "Q9Y5I2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk between EC6 and TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Fluorescent anti-Myc antibody labelling of non-permeabilized transfected cells confirmed surface display of the Myc epitope; no functional assay (e.g. homophilic binding or cell aggregation) result is reported in the cited ledger lines.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names PCDHA10 (alpha-10) as one of the constructs carrying a Myc tag in the stalk between EC6 and the TM helix; L3 (same source) confirms surface display by anti-Myc staining of live, non-permeabilized cells. The stalk spans approximately residues 661\u2013695 (all within the computed extracellular span 29\u2013695, well clear of the TM boundary at 696). No specific residue number is given in any ledger line, so insert_after_residue is left null and the site is recorded at region level. Full-length membrane-anchored PCDHA10 (alpha-10) construct with a Myc tag inserted in the extracellular stalk between EC6 and the transmembrane helix, expressed in transfected cells; an intracellular fluorescent protein was co-encoded in the same construct.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:17:59.467793+00:00",
+  "literature_notes": "L1 and L3 are from the same PMC source (PMC12157453) and together provide the strongest evidence: L1 names PCDHA10 explicitly and pins the tag to the EC6\u2013TM stalk; L3 confirms surface display by live-cell anti-Myc staining. L2 and L4 (PMC12337331) corroborate the same stalk placement for cPCDH constructs broadly. Neither source names a specific residue number, so the site is recorded at region level (insert_after_residue = null). No ledger line supports any other extracellular position (e.g. N-terminus after signal peptide cleavage, or any individual EC1\u2013EC5 loop), so no additional sites are proposed. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LY6G6C",
+  "uniprot_acc": "O95867",
+  "sites": [
+    {
+      "site_id": "LY6G6C-terminal_n-18-lit",
+      "gene_symbol": "LY6G6C",
+      "uniprot_acc": "O95867",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "epitope tag (type unspecified)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FACS confirmed surface display; ligand-binding assay on K562 cells confirmed functional binding activity of the tagged construct (PMC2242401, L3).",
+      "confidence": "medium",
+      "rationale": "LY6G6C is a GPI-anchored Ly-6 family member (confirmed by L2); the GPI anchor signal at the C-terminus is cleaved and replaced by the GPI lipid, making any exogenous C-terminal tag non-viable. The mature N-terminus (residue 19, D) after signal peptide cleavage at residue 18 (A) is the only extracellular terminus available for tagging. Python confirmed residue 18 = A and residue 19 = D from the canonical sequence. The topology_derived position is insert_after_residue=18, placing the tag between A18 and D19, i.e., immediately after the signal peptide cleavage site and before the mature ectodomain. PMC2242401 reports epitope-tagged fusion constructs of human LY6G6C expressed in full-length, membrane-anchored form. The tagged protein was used for FACS-based surface detection and ligand-binding studies on K562 cells. No residue is named in any ledger line; position is derived from topology: LY6G6C is GPI-anchored, so the C-terminal GPI signal is cleaved post-translationally and replaced by the GPI lipid anchor \u2014 an exogenous C-terminal tag would be removed with that signal. The N-terminus after signal peptide cleavage (residue 19, D) is the sole accessible extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 17008713,
+          "citation": "PMID 17008713",
+          "claim": "Lymphocyte Antigen 6 (Ly-6) superfamily members are cysteine-rich, generally GPI-anchored cell surface proteins, which have definite or putative immune related roles. There are 27 members of this family described so far in the human genome and 37 in the mouse. Five of them are clustered in the class III region of the human and mouse MHCs. Following computational analyses, we functionally characterized the encoded proteins by creating epitope-tagged fusion constructs to determine molecular weight, complex formation, subcellular localization, post-translational modifications and ligand binding."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:28:00.053497+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same publication (PMC2242401) and describe the same epitope-tagged LY6G6C construct; none names a residue, a terminus, or a tag type. The position is topology_derived: GPI-anchored proteins have only one accessible extracellular terminus (the mature N-terminus after SP cleavage), because the C-terminal GPI signal is cleaved and replaced by the GPI lipid anchor. Confidence is medium rather than high because the tag type and exact junction are not stated in the paper, and the topology_derived inference \u2014 while standard for GPI proteins \u2014 is not explicitly confirmed by the authors. No internal loop insertions are supported by the ledger; no intracellular or function-abrogating positions are reported.",
+  "literature_rejected": []
+}

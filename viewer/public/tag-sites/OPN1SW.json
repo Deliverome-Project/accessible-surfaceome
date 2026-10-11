@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:25:12.771598+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a C-terminal 1D4 epitope tag on zebrafish sws1a and sws1b, which are OPN1SW orthologs, expressed in HEK293T cells. Per the authoritative topology landmarks, the C-terminus of OPN1SW (residues 304\u2013345) is entirely intracellular. A C-terminal tag therefore faces the cytoplasm and cannot serve as an extracellular surface tag. No ledger line reports any tag insertion at an extracellular position of OPN1SW or a close ortholog \u2014 not at the N-terminal extracellular domain (residues 1\u201332), nor in any of the four extracellular loops (ECL1: 91\u2013105; ECL2: 170\u2013196; ECL3: 268\u2013280). Because the ledger contains no evidence grounding an extracellular insertion, zero sites are proposed. This is the correct answer, not a failure.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 345,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 tag (9 aa) appended after the last residue (N345) of sws1a/sws1b OPN1SW orthologs; the C-terminus of OPN1SW lies in the intracellular domain (residues 304\u2013345), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

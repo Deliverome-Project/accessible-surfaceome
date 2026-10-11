@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LHCGR-terminal_n-26-lit",
+      "gene_symbol": "LHCGR",
+      "uniprot_acc": "P22888",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "R",
+      "residue_after": "E",
+      "residue_label": "R26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L6: receptor ELISA on intact (non-permeabilized) HEK 293T cells confirmed surface display of FLAG-tagged WT mLHR; no functional (cAMP or binding) assay result is reported in the ledger for the tagged construct itself. L4: western blot of HA-LHR from preovulatory follicles confirmed protein of expected size. L5: stable CHO surface detection confirmed. Functional assays beyond surface detection: NOT MEASURED in the ledger.",
+      "confidence": "high",
+      "rationale": "All seven ledger lines converge on a single site: the extracellular N-terminus of full-length, membrane-anchored LHCGR, after cleavage of the 26-residue signal peptide. Python computation confirms signal peptide ends at R26 and the mature chain begins at E27; the tag is placed between these two residues (insert_after_residue = 26). The LHCGR C-terminus is intracellular (residues 627\u2013699), so the N-terminus is the only extracellular terminus, making the position unambiguous by topology. The junction is 338 residues from the first TM helix (364\u2013385), well clear of any TM boundary. L6 is chosen as the primary clip because it provides the most explicit surface-display evidence (intact-cell ELISA) for the FLAG-tagged full-length receptor. Multiple independent groups have expressed full-length, membrane-anchored LHCGR with a small epitope tag (FLAG or HA) placed at the extracellular N-terminus of the mature receptor. L6 (PMC12905377) reports N-terminally FLAG-tagged mouse LHR expressed in HEK 293T cells and assayed by receptor ELISA on intact (non-permeabilized) cells, confirming surface display. L5 (PMC3938991) reports a stable CHO cell line expressing human LHR N-terminally coupled to the FLAG epitope. L1\u2013L4 (PMC7574965) report CRISPR/Cas9 endogenous knock-in of a 9-aa HA tag at the extracellular N-terminus of mouse LHR, validated by western blot. L7 (PMC11510345) reports HA-tagged LHR constructs expressed in Drosophila, detected by HA antibody. No ledger line states a specific residue number; the junction is topology-derived: the signal peptide ends at residue 26 (R), so the mature N-terminus begins at residue 27 (E), and an N-terminal extracellular tag is placed after residue 26.",
+      "sources": [
+        {
+          "pmid": 41507463,
+          "citation": "PMID 41507463",
+          "claim": "Cell surface mLHR expression was measured by receptor ELISA in intact HEK 293 T cells transiently transfected with N-terminally FLAG-tagged WT or T465I mLHR or empty vector as described previously (Newton et al, 2021 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:08:43.819032+00:00",
+  "literature_notes": "All seven ledger lines (L1\u2013L7) describe the same single site: the extracellular N-terminus of full-length membrane-anchored LHCGR, after signal-peptide cleavage. L2 explicitly states the HA insertion position used in the CRISPR mouse is 'the same as previously used to tag the LHR in cell lines,' confirming cross-study convergence on one junction. No ledger line names a specific residue number, so the position is topology-derived (signal peptide 1\u201326, mature N-terminus at 27). L7 describes HA-tagged LHR D578Y expressed in Drosophila; D578Y is a gain-of-function disease variant in TM6 (residues 571\u2013590) and is not a tag-insertion site. No ledger line supports any internal extracellular loop insertion or a C-terminal extracellular tag for LHCGR.",
+  "literature_rejected": []
 }

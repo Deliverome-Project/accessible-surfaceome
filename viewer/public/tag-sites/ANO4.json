@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "ANO4",
+  "uniprot_acc": "Q32M45",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:25:50.501287+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) concern C-terminal tags (c-Myc, Rho-1D4, GFP/pEGFPN1) appended to full-length ANO4. The computed topology places the C-terminus (residues 899\u2013955) firmly in the INTRACELLULAR compartment, so every one of these tags faces the cytoplasm, not the extracellular surface. The N-terminus (residues 1\u2013352) is likewise intracellular. No ledger line reports any insertion into an extracellular loop or domain of ANO4 or a close ortholog. L6 further confirms that GFP-tagged ANO4 shows mainly cytoplasmic fluorescence, consistent with intracellular localisation of the tag (and possible trafficking issues). Because no ledger line grounds a tag on the extracellular face, zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 955,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Myc tag (and GFP fusion via pEGFPN1) appended after residue 955; the C-terminus lies in the intracellular region 899\u2013955, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 955,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal Rho-1D4 tag appended after residue 955 in pCEP1.4; same intracellular C-terminus, not an extracellular surface site."
+    },
+    {
+      "residue": 955,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "GFP-tagged ANO4 expressed in H295R cells showed mainly cytoplasmic fluorescence, indicating the C-terminal GFP tag is intracellular and the protein may not traffic efficiently to the plasma membrane."
+    }
+  ]
+}

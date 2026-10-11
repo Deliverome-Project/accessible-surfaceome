@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADGRG1-terminal_n-25-lit",
+      "gene_symbol": "ADGRG1",
+      "uniprot_acc": "Q9Y653",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "G",
+      "residue_after": "R",
+      "residue_label": "G25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SpyTag + HaloTag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Auto-proteolytic (GAIN domain self-cleavage) activity confirmed intact by expression in COS-7 cells (L12); surface display confirmed by SpyCatcher engagement assay (L11); mutant variants (H381S, T383A, F385A, L388A/M389A) also expressed as surface receptors (L13), demonstrating the N-terminal tag does not impair trafficking or GPCR function.",
+      "confidence": "high",
+      "rationale": "L14 explicitly states the SpyTag and HaloTag were introduced 'downstream of the signal peptide sequence' in the full-length ADGRG1 cDNA, which maps unambiguously to insert_after_residue=25 (the last residue of the signal peptide, G25, with the mature N-terminus R26 immediately following). Python confirms res(25)='G' and res(26)='R'. L12 validates intact auto-proteolytic activity and L11 confirms surface display, giving the highest validation tier. Full-length ADGRG1 (SpyTag-HaloTag-G1-EGFP) expressed in COS-7 cells; L14 states SpyTag and HaloTag were introduced 'downstream of the signal peptide sequence in the cDNA', placing both tags immediately after the SP cleavage site (residue 25/26 junction). L11 confirms surface display on migrating COS-7 cells engaging SpyCatcher-coated surfaces.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2025.09.16.676693",
+          "claim": "A SpyTag and HaloTag were introduced downstream of the signal peptide sequence in the cDNA to generate the SpyTag-HaloTag-G1-WT-EGFP construct.",
+          "source_id": "DOI:10.1101/2025.09.16.676693"
+        },
+        {
+          "pmid": 33837725,
+          "citation": "PMID 33837725",
+          "claim": "The myc-tagged GPR56 wild-type (GPR56 WT) vector (pIRESpuro3-myc-hGPR56) encoding amino acids 26 to 693 was previously described ( 13 ) and the mutant GPR56\u0394STP vector (pIRESpuro3-myc-hGPR56\u0394STP) lacking the STP domain was generated in a similar manner."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 25,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:12:28.780703+00:00",
+  "literature_notes": "Two extracellular surface tag sites were identified, both at the same junction (insert_after_residue=25, the mature N-terminus after SP cleavage). They are reported as separate entries because they derive from independent papers with different tags and different validation levels. L9 (C-terminal EGFP) was excluded from sites because the C-terminus of ADGRG1 is intracellular (topology landmarks: residues 658\u2013693 are intracellular); it is recorded in other_positions. L15 (GAIN domain Q115\u2013E395 in pDisplay) was excluded because it is a domain fragment construct, not a full-length membrane-anchored receptor, violating the 'full-length and membrane-anchored' requirement. L8 ('HaloTag N-terminal to the PLL domain') is consistent with L14 ('downstream of the signal peptide sequence') and does not indicate a separate internal insertion site; the PLL domain begins after the STP domain (~residue 178), but 'N-terminal to PLL' in the context of the NTF simply describes the overall NTF location, not a specific internal loop insertion. No ledger evidence supports an internal loop insertion in ECL1 (463\u2013476), ECL2 (540\u2013567), or ECL3 (629\u2013636) for ADGRG1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 693,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "C-terminal EGFP fusion to full-length ADGRG1; the C-terminus (residues 658\u2013693) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

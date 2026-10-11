@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "HYAL2",
+  "uniprot_acc": "Q12891",
+  "sites": [
+    {
+      "site_id": "HYAL2-terminal_n-20-lit",
+      "gene_symbol": "HYAL2",
+      "uniprot_acc": "Q12891",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "M",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor activity assay: FLAG-tagged construct retains full receptor activity of human HYAL2 (PMC1262777, L1).",
+      "confidence": "high",
+      "rationale": "L1 explicitly reports a full-length, membrane-anchored HYAL2 construct bearing a FLAG tag at the mature N-terminus, with receptor activity preserved. The topology landmarks confirm signal peptide cleavage after residue 20 (A) and the mature N-terminus at residue 21 (M); Python verification confirms residue_before=A, residue_after=M. Because HYAL2 is GPI-anchored (no TM or intracellular domain in the topology), the N-terminus is the only extracellular terminus, making insert_after_residue=20 the unique topology-derived junction. No residue number is named in the paper, so position_evidence is topology_derived. Full-length, membrane-anchored human HYAL2 expressed with the native signal peptide (residues 1\u201320) replaced by a preprotrypsin signal sequence followed by a FLAG peptide tag; the mature protein therefore carries the FLAG at its extracellular N-terminus. HYAL2 is GPI-anchored with no TM domain, so the N-terminus (residue 21) is the sole extracellular terminus and the only possible surface location for this tag.",
+      "sources": [
+        {
+          "pmid": 16191204,
+          "citation": "PMID 16191204",
+          "claim": "However, this signal can be replaced with a preprotrypsin signal sequence followed by a Flag peptide tag without affecting the receptor activity of human Hyal2 [ 5 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:06:23.361205+00:00",
+  "literature_notes": "L2 describes the same FLAG-at-N-terminus construct design used in a series of N-terminal deletion mutants to map receptor-activity determinants; it corroborates L1 but does not add a distinct junction or residue, so it does not generate a separate site. No other tag positions (internal loops, C-terminus) are mentioned anywhere in the ledger. HYAL2 is GPI-anchored; the C-terminus (residue 473) is extracellular in principle but no ledger evidence supports a C-terminal tag, so none is proposed.",
+  "literature_rejected": []
+}

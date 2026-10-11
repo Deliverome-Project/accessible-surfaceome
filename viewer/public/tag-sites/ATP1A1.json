@@ -4,6 +4,80 @@
   "uniprot_acc": "P05023",
   "sites": [
     {
+      "site_id": "ATP1A1-internal-119-lit",
+      "gene_symbol": "ATP1A1",
+      "uniprot_acc": "P05023",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 119,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A119",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Ouabain resistance conferred (pump function preserved); anti-HA immunofluorescence on intact (non-permeabilized) cells confirmed extracellular surface display.",
+      "confidence": "high",
+      "rationale": "Position 119 falls within the first extracellular loop (computed EXTRACELLULAR span 118\u2013129), flanked by TM1 (96\u2013117) and TM2 (130\u2013150). The paper explicitly names residue 119 as the insertion site and L2 confirms by intact-cell immunofluorescence that the HA tag is accessible on the extracellular face. Python lookup confirms seq_dict[119]='A' (residue_before) and seq_dict[120]='A' (residue_after). The loop is 12 residues long, providing room for a short tag; the pipeline's \u22653-residue-from-TM constraint is noted as a downstream check. Full-length Na+/K+-ATPase alpha-1 subunit with HA epitope tag inserted at position 119, expressed in transfected mammalian cells. Construct conferred ouabain resistance (pump function preserved) and protein was detectable in the plasma membrane. Intact-cell immunofluorescence with anti-HA antibody confirmed the tag is extracellularly disposed.",
+      "sources": [
+        {
+          "pmid": 8916902,
+          "citation": "PMID 8916902",
+          "claim": "Immunofluorescence analysis of permeabilized and intact cells using a monoclonal antibody specific for the HA epitope showed that double tags at positions 119 and 318 were located extracellularly, whereas single or double tags at positions 173, 815, 881, 987, and 1023 were cytoplasmically disposed. These results are consistent with an eight transmembrane domain arrangement for the alpha subunit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ATP1A1-internal-318-lit",
+      "gene_symbol": "ATP1A1",
+      "uniprot_acc": "P05023",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 318,
+      "residue_before": "L",
+      "residue_after": "E",
+      "residue_label": "L318",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Ouabain resistance conferred (pump function preserved); anti-HA immunofluorescence on intact (non-permeabilized) cells confirmed extracellular surface display.",
+      "confidence": "high",
+      "rationale": "Position 318 falls within the second extracellular loop (computed EXTRACELLULAR span 313\u2013319), flanked by TM3 (291\u2013312) and TM4 (320\u2013340). The paper explicitly names residue 318 as the insertion site and L2 confirms by intact-cell immunofluorescence that the HA tag is accessible on the extracellular face. Python lookup confirms seq_dict[318]='L' (residue_before) and seq_dict[319]='E' (residue_after). The loop is only 7 residues long; the pipeline's \u22653-residue-from-TM constraint is noted as a downstream check given proximity to TM4. Full-length Na+/K+-ATPase alpha-1 subunit with HA epitope tag inserted at position 318, expressed in transfected mammalian cells. Construct conferred ouabain resistance (pump function preserved) and protein was detectable in the plasma membrane. Intact-cell immunofluorescence with anti-HA antibody confirmed the tag is extracellularly disposed.",
+      "sources": [
+        {
+          "pmid": 8916902,
+          "citation": "PMID 8916902",
+          "claim": "Immunofluorescence analysis of permeabilized and intact cells using a monoclonal antibody specific for the HA epitope showed that double tags at positions 119 and 318 were located extracellularly, whereas single or double tags at positions 173, 815, 881, 987, and 1023 were cytoplasmically disposed. These results are consistent with an eight transmembrane domain arrangement for the alpha subunit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "ATP1A1-snorkel-c",
       "gene_symbol": "ATP1A1",
       "uniprot_acc": "P05023",
@@ -153,6 +227,93 @@
       "isoform_residue": 985,
       "canonical_residue": 985,
       "left_pct": 96.28543499511241
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:37:58.744302+00:00",
+  "literature_notes": "Two extracellular surface sites are supported by the ledger, both from PMID 8916902 (L1/L2). L1 reports eight tolerated HA insertions (119, 173, 318, 815, 881, 953, 987, 1023) and seven function-abrogating ones (338, 797, 805, 868, 895, 910, 921). L2 then resolves topology by intact-cell vs. permeabilized immunofluorescence: only positions 119 and 318 are confirmed extracellular; positions 173, 815, 881, 987, and 1023 are cytoplasmic. Position 881 is in the computed EXTRACELLULAR span 874\u2013919 but L2 explicitly shows it is cytoplasmically disposed \u2014 the experimental result overrides the computed topology, and 881 is placed in other_positions as intracellular. Position 953 is in TM (952\u2013974) per topology and is not mentioned in L2's immunofluorescence analysis; it is tolerated for function but is not an extracellular surface site. Positions 797, 895, and 910 are in extracellular spans but abrogated function and are excluded from sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 173,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag at position 173 (intracellular loop, IC 151\u2013290) was tolerated for ouabain resistance (L1) but confirmed cytoplasmically disposed by intact-cell immunofluorescence (L2); not a surface site."
+    },
+    {
+      "residue": 338,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 338 (TM4, 320\u2013340) was unable to confer ouabain resistance; function abrogated."
+    },
+    {
+      "residue": 797,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 797 (extracellular loop 797\u2013801) was unable to confer ouabain resistance; function abrogated."
+    },
+    {
+      "residue": 805,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 805 (TM6, 802\u2013822) was unable to confer ouabain resistance; function abrogated."
+    },
+    {
+      "residue": 815,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag at position 815 (TM6, 802\u2013822) was tolerated for ouabain resistance (L1) but confirmed cytoplasmically disposed by immunofluorescence (L2); not a surface site."
+    },
+    {
+      "residue": 868,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 868 (TM7, 854\u2013873) was unable to confer ouabain resistance; function abrogated."
+    },
+    {
+      "residue": 881,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag at position 881 (computed extracellular 874\u2013919, but confirmed cytoplasmically disposed by intact-cell immunofluorescence in L2); tolerated for ouabain resistance (L1) but not a surface site."
+    },
+    {
+      "residue": 895,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 895 (extracellular loop 874\u2013919) was unable to confer ouabain resistance; function abrogated."
+    },
+    {
+      "residue": 910,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 910 (extracellular loop 874\u2013919) was unable to confer ouabain resistance; function abrogated."
+    },
+    {
+      "residue": 921,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 921 (TM8, 920\u2013936) was unable to confer ouabain resistance; function abrogated."
+    },
+    {
+      "residue": 953,
+      "kind": "other",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 953 (TM9, 952\u2013974) was tolerated for ouabain resistance and plasma membrane trafficking (L1), but falls within a TM helix and was not tested by intact-cell immunofluorescence in L2; not an extracellular surface site."
+    },
+    {
+      "residue": 987,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag at position 987 (TM10, 986\u20131004) was tolerated for ouabain resistance (L1) but confirmed cytoplasmically disposed by immunofluorescence (L2); not a surface site."
+    },
+    {
+      "residue": 1023,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag at position 1023 (C-terminal intracellular tail, IC 1005\u20131023) was tolerated for ouabain resistance (L1) but confirmed cytoplasmically disposed by immunofluorescence (L2); not a surface site."
     }
   ]
 }

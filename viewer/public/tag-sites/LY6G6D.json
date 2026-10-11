@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LY6G6D",
+  "uniprot_acc": "O95868",
+  "sites": [
+    {
+      "site_id": "LY6G6D-terminal_n-20-lit",
+      "gene_symbol": "LY6G6D",
+      "uniprot_acc": "O95868",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "N",
+      "residue_after": "R",
+      "residue_label": "N20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface capture by anti-HA and anti-FLAG antibodies confirmed on cells expressing the tagged constructs; the paper uses these constructs as the primary reagent for studying LY6G6D surface biology \u2014 surface display is intact.",
+      "confidence": "high",
+      "rationale": "Python confirms residue 20 = N and residue 21 = R in the canonical 133-aa sequence. The signal peptide spans 1\u201319 (authoritative landmark), so residue 20 is the first residue of the mature extracellular domain; inserting after it places the tag at the mature N-terminus, fully extracellular. The nearest cysteine is at position 24 (four residues away), and there are no N-glycosylation sequons at or immediately flanking the junction. L2 from the same paper independently confirms that tag-specific antibodies capture the surface protein, providing surface-display validation. This is a GPI-anchored protein with no transmembrane helix, so the entire mature ectodomain (20\u2013133) is extracellular and the junction is well clear of any TM boundary. PMC7948989 reports two full-length, membrane-anchored LY6G6D (called LY6D) constructs \u2014 20HA-LY6D and 20Flag-LY6D \u2014 expressed in pcDNA3. The tag is placed between residues 20 and 21, immediately after the signal-peptide cleavage site (SP = residues 1\u201319, mature N-terminus = residue 20). The DNA assembly is explicit: the 5\u2032 fragment covers codons 1\u201320 (1\u201360 bp), the tag sequence is inserted, and the 3\u2032 fragment resumes at codon 21 (61\u2013387 bp). Tag-specific antibodies capture the surface-displayed protein, confirming extracellular exposure.",
+      "sources": [
+        {
+          "pmid": 33168631,
+          "citation": "PMID 33168631",
+          "claim": "For the construction of LY6D containing an internal HA tag (20HA-LY6D) or Flag tag (20Flag-LY6D) between amino acid residues 20 and 21, DNA fragments corresponding to the 5\u2019 of LY6D (1-60 bp), the HA (TACCCATACGACGTGCCAGACTACGCC) or Flag tag (GACTACAAAGACGATGACGACAAG) sequence, and the 3\u2019 of LY6D (61-387 bp) were ligated in this order to the pcDNA3 vector by using the In-Fusion cloning system (Takara Bio, Shiga, Japan) to generate pcDNA3-20HA-LY6D and pcDNA3-20Flag-LY6D."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:27:46.612681+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) come from the same paper (PMC7948989) and describe the same junction (between residues 20 and 21). L1 is used as the primary supporting clip because it contains the explicit construction details; L2 corroborates surface display. No other junctions are named in the ledger. LY6G6D is a GPI-anchored Ly6/uPAR-family protein; the topology landmarks show the entire mature protein (residues 20\u2013133) is extracellular with no TM segment, so the only terminal site on the extracellular face is the mature N-terminus (after residue 20). The C-terminus (residue 133) carries the GPI-anchor signal and is not available for tagging. No internal loop insertions are reported in the ledger.",
+  "literature_rejected": []
+}

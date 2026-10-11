@@ -164,5 +164,20 @@
       "canonical_residue": 63,
       "left_pct": 18.91891891891892
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:55:53.277407+00:00",
+  "literature_notes": "All eight ledger lines (L1\u2013L8) describe C-terminal tags (HA, GFP, or cherry) appended after the last residue of MYADM (V322). The authoritative topology places residues 313\u2013322 in the INTRACELLULAR compartment, so every cited tag faces the cytoplasm, not the extracellular surface. The N-terminus (residues 1\u201334) is likewise intracellular, ruling out an N-terminal surface tag. No ledger line describes any insertion in any of the four extracellular loops (56\u201366, 121\u2013137, 193\u2013204, 261\u2013293). Because no ledger line grounds an extracellular surface insertion, zero sites are proposed. The C-terminal HA/GFP constructs are recorded in other_positions as intracellular tolerated insertions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 322,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag appended after V322 (and GFP/cherry fusions via pEGFP-N1/pmCherry-N1, L5) is tolerated and functionally rescues MYADM-knockout phenotypes (PeV-A1 infection, L2; cell spreading and migration, L7\u2013L8), but residues 313\u2013322 are intracellular per the authoritative topology, so the tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

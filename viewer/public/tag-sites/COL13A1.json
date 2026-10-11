@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "COL13A1",
+  "uniprot_acc": "Q5TAT6",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:58:44.523758+00:00",
+  "literature_notes": "The ledger contains two clips (L1, L2) about a FLAG-tagged COL13A1 construct expressed in MCF-10A cells. L1 describes cloning the full-length protein into a 'FLAG-tagged pCDH-EF1-MCS-T2A-Puro' lentiviral vector. This is a commercial vector whose FLAG tag position relative to the insert is not stated anywhere in the ledger clips \u2014 the clips name neither the terminus nor a residue at which the FLAG is placed. The rules explicitly disqualify 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' Even attempting a topology_derived inference is blocked: COL13A1 is a type II transmembrane protein with its N-terminus intracellular (residues 1\u201346) and its C-terminus extracellular (residues 62\u2013717), so there is exactly one extracellular terminus \u2014 but the ledger does not tell us whether the FLAG is on the N-terminal (intracellular) or C-terminal (extracellular) end of the protein. The forward primer in L1 (5\u2032-AATTGCTAGCGCCACCATGGTAGCGGAGCGCACCCAC-3\u2032) begins at M1 of COL13A1, which is consistent with either orientation. L2 confirms expression by western blot in cell lysates only \u2014 no surface-detection assay (flow cytometry, non-permeabilized immunofluorescence, surface biotinylation) is reported, so even if the position were known the validation level would be at most detected_only. Because the tag position is genuinely indeterminate from the ledger, no site can be proposed, and zero is the correct answer.",
+  "literature_rejected": []
+}

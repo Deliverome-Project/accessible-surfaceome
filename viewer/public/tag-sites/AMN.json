@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "AMN",
+  "uniprot_acc": "Q9BXJ7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:25:00.370840+00:00",
+  "literature_notes": "All four ledger lines describe C-terminally tagged full-length AMN constructs (L1/L2: five c-myc tags; L3: mycDDK from OriGene; L4: GFP-tagged). AMN is a type I single-pass membrane protein with its C-terminus in the intracellular domain (residues 384\u2013453), so every confirmed C-terminal tag faces the cytoplasm and cannot serve as an extracellular surface tag. L4 ('GFP-tagged amnionless') names neither N- nor C-terminus; because AMN has one extracellular terminus (mature N-terminus, residue 20) AND one intracellular terminus (residue 453), the topology_derived rule \u2014 which requires exactly one extracellular terminus to resolve the position \u2014 does not apply, and the GFP site cannot be pinned to the extracellular face. No ledger line reports a tag insertion at any extracellular position of AMN or a close ortholog. Zero qualifying surface sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 453,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal c-myc tag (five copies) on full-length human AMN expressed in mammalian cells; C-terminus falls in the intracellular domain (residues 384\u2013453), confirmed functional for studying endocytic signals."
+    },
+    {
+      "residue": 453,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal mycDDK tag on full-length human AMN (OriGene plasmid) used in flow-cytometry expression studies; same intracellular C-terminus."
+    }
+  ]
+}

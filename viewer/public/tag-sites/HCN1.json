@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "HCN1",
+  "uniprot_acc": "O60741",
+  "sites": [
+    {
+      "site_id": "HCN1-internal-None-lit",
+      "gene_symbol": "HCN1",
+      "uniprot_acc": "O60741",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "S5-S6 extracellular loop (ECL3, residues 309-371)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA; SNAP-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Stable cell line expression of SNAP-HCN1 confirmed (L3); surface labeling and channel function of the HA/SNAP-tagged construct not explicitly reported in the cited clips.",
+      "confidence": "medium",
+      "rationale": "L2 explicitly names the S5-S6 extracellular loop as the site of HA insertion in full-length mouse HCN1, and reports that SNAP-tag (and mRuby3) were subcloned into this same backbone; L3 confirms stable cell line expression of SNAP-HCN1. The named loop maps to ECL3 (residues 309\u2013371) in the human canonical sequence, which is 63 residues long and fully extracellular. No specific junction residue is given in either clip, so insert_after_residue is null and the site is reported at region level. Python confirmed ECL3 spans 309\u2013371 and contains four cysteines (C309, C314, C329, C358) that are likely involved in disulfide bonds and should be avoided when a specific junction is later chosen. Full-length mouse HCN1 with HA-tag inserted in the S5-S6 extracellular loop (HA-HCN1, ref [46] in PMC9182292); SNAP-tag and mRuby3-tag subsequently subcloned into the same HA-HCN1 backbone to generate SNAP-HCN1 and mRuby3-HCN1 membrane-anchored constructs expressed in stable cell lines.",
+      "sources": [
+        {
+          "pmid": 35679272,
+          "citation": "PMID 35679272",
+          "claim": "The pSNAPf plasmid was obtained from New England Biolabs (cat. # N9183S) and the SNAP-tag was subcloned into a previously described plasmid encoding mouse HCN1 containing an HA-tag inserted into the extracellular loop between the S5 and S6 transmembrane domain (HA-HCN1) [ 46 ] to make SNAP-HCN1. pKanCMV-mRuby3-18aa-actin was a gift from Michael Lin (Addgene plasmid # 74255; http://n2t.net/addgene:74255 ; RRID:Addgene_74255) [ 47 ] and the mRuby3-tag was subcloned into the HA-HCN1 plasmid to make mRuby3-HCN1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:57:32.056416+00:00",
+  "literature_notes": "L1 (PMC2730639) reports EGFP inserted between mouse HCN1 'alanine residues 885 and 886'. Python confirmed that human canonical positions 885 (R) and 886 (F) are not alanines, consistent with species-specific sequence divergence in the C-terminal tail; regardless of exact numbering, the entire region 392\u2013890 is intracellular in the human topology, so this is an intracellular C-terminal tag used for trafficking studies and cannot serve as a surface epitope site. It is recorded in other_positions. L2 and L3 both originate from PMC9182292 and describe the same S5-S6 loop insertion; L2 is used as the primary supporting clip because it names the loop and the construct explicitly.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 885,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "EGFP inserted between mouse HCN1 alanine residues 885 and 886 for trafficking studies; human topology places the entire region 392\u2013890 in the intracellular compartment, so this is not a surface tag site."
+    }
+  ]
+}

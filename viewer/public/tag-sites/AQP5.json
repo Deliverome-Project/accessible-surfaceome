@@ -153,5 +153,32 @@
       "canonical_residue": 37,
       "left_pct": 13.962264150943396
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:31:02.411366+00:00",
+  "literature_notes": "AQP5 is a six-TM aquaporin with both termini intracellular (N-terminus residues 1\u201312; C-terminus residues 226\u2013265). All eight ledger lines describe tags at one of these two termini: L1\u2013L4 report C-terminal GFP (after residue 265, intracellular), L5 and L8 report N-terminal HA (before residue 1, intracellular), and L6\u2013L7 report N-terminal SNAP (before residue 1, intracellular). None of the ledger lines reports any insertion in the three extracellular loops (ECL1: 34\u201342, ECL2: 109\u2013131, ECL3: 180\u2013204). Because every published insertion is at an intracellular face, no extracellular surface-tag site is supported by the ledger, and zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 265,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion (AQP5-GFP) expressed in HEK293 cells; residue 265 lies in the intracellular C-terminal tail (topology 226\u2013265 INTRACELLULAR); membrane insertion confirmed by FM 4-64 co-localization but the tag itself faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "N-terminal HA tag (YPYDVPDYA) on full-length hAQP5; residue 1 lies in the intracellular N-terminal segment (topology 1\u201312 INTRACELLULAR); paper explicitly evaluates intracellular localization via immunofluorescence for the HA tag."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "N-terminal SNAP tag fused to full-length hAQP5 (SNAP-hAQP5 1-265) expressed in NS-SV-AC cells; residue 1 is intracellular (topology 1\u201312 INTRACELLULAR); construct confirmed by western blot at ~42 kDa."
+    }
   ]
 }

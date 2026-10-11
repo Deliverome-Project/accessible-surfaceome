@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ASGR2",
+  "uniprot_acc": "P07307",
+  "sites": [
+    {
+      "site_id": "ASGR2-terminal_c-311-lit",
+      "gene_symbol": "ASGR2",
+      "uniprot_acc": "P07307",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 311,
+      "residue_before": "A",
+      "residue_after": "",
+      "residue_label": "A311",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot detection of HA-tagged ASGR2 confirms expression of the tagged full-length construct; no surface-specific assay (e.g. flow cytometry, surface biotinylation) or quantitative functional readout is reported in the ledger clips.",
+      "confidence": "high",
+      "rationale": "ASGR2 is a type II single-pass transmembrane protein (N-terminus intracellular residues 1\u201355, TM 56\u201374, C-terminus extracellular 75\u2013311). The C-terminus is therefore the sole extracellular terminus, making it the only position consistent with a C-terminal tag on the extracellular face. Python verification confirms residue 311 is 'A' (residue_before) and lies 237 residues from the TM boundary, well clear of the \u22653-residue constraint. No residue number is named in any ledger clip, so position is topology_derived rather than validated. L2 and L3 describe the same construct in additional cell lines and are subsumed by L1. Full-length human ASGR2 subcloned into pcDNA 3.1 with a C-terminal HA tag; expressed in HepG2-PCSK9-KO and HEK293 cells and detected by western blot with HA-HRP antibody. No residue number is stated; 'C-terminal' is the only positional descriptor.",
+      "sources": [
+        {
+          "pmid": 34508778,
+          "citation": "PMID 34508778",
+          "claim": "Human ASGR1 and its mutants (Q240A/W244A and Q240A/W244A/E253A) and human ASGR2 were subcloned into pcDNA 3.1 vector (Invitrogen) containing a C-terminal Flag tag (ASGR1) or HA tag (ASGR2)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:33:16.208377+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the identical C-terminal HA-tagged ASGR2 construct from PMC8479480; they are not separate sites. No internal extracellular loop insertions, N-terminal tags, or other tag modalities are reported for ASGR2 in the ledger. The N-terminus (residues 1\u201355) is intracellular and therefore not a surface-tag candidate. Validation is detected_only because the ledger clips report only western blot detection; no flow cytometry, surface biotinylation, or quantitative functional assay result is captured in the clips.",
+  "literature_rejected": []
+}

@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "ASIC2",
+  "uniprot_acc": "Q16515",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:33:59.513762+00:00",
+  "literature_notes": "ASIC2 (UniProt Q16515) is a two-pass membrane protein with topology: intracellular N-terminus (1\u201342), TM1 (43\u201359), large extracellular domain (60\u2013434), TM2 (435\u2013455), intracellular C-terminus (456\u2013512). All five ledger lines describe tags at one of the two cytoplasmic termini. L1 and L3 (PMC4967927) report GFP/mCherry fused to the N-terminus (pEGFP-C1 / mCherry-C1 vectors = tag precedes the insert, i.e. GFP-ASIC2) and to the C-terminus (pEGFP-N1 = ASIC2-GFP); both termini are intracellular. L2 (PMC4967927) reports HA-ASIC2a/b immunostaining for subcellular localisation; the 'HA-' prefix indicates an N-terminal fusion, which is intracellular. L4 (PMC3390797) reports N-terminal YFP (pEYFP-C1) and N-terminal FLAG (pFLAG-CMV-2) fusions; again intracellular. L5 (PMC13273826) reports a C-terminal HA tag on ASIC2aG430V; the C-terminus (456\u2013512) is intracellular. No ledger line reports any insertion in the extracellular domain (60\u2013434). Zero extracellular surface tag sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the N-terminus of full-length ASIC2a/2b (residues 1\u201342 are intracellular per topology landmarks); used to study subcellular localisation, not a surface-accessible site."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "N-terminal FLAG tag (pFLAG-CMV-2) and N-terminal YFP (pEYFP-C1) on full-length ASIC2a/2b; N-terminus is intracellular (residues 1\u201342)."
+    },
+    {
+      "residue": 512,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "HA epitope tag inserted at the C-terminus of ASIC2aG430V; C-terminus (residues 456\u2013512) is intracellular per topology landmarks."
+    }
+  ]
+}

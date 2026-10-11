@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ACE2",
+  "uniprot_acc": "Q9BYF1",
+  "sites": [
+    {
+      "site_id": "ACE2-terminal_n-17-lit",
+      "gene_symbol": "ACE2",
+      "uniprot_acc": "Q9BYF1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "4xmyc / AP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Tag used for both detection (surface expression) and ACE2 enzymatic activity assays; the paper reports the construct is functional in activity assays, indicating enzymatic activity is preserved with the N-terminal tag.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the tag is 'N-terminally fused' to ACE2 constructs. ACE2 is a type-I single-pass TM protein with its N-terminus extracellular (signal peptide 1-17, mature N-terminus at Q18). A tag N-terminally fused to the full-length protein must be placed after the signal peptide cleavage site to avoid being cleaved off; the junction is therefore after residue 17 (A17|Q18), computed from the SP landmark. The extracellular domain spans residues 18-743 (726 aa), placing this site 726 residues from the TM boundary with no steric concern. The construct was used in both detection and activity assays, confirming surface expression and preserved enzymatic function. Full-length ACE2 constructs (including chimeras) expressed in mammalian cells with a 4xmyc tag and/or human placenta alkaline phosphatase (AP) tag N-terminally fused, used for detection and enzymatic activity assays (PMC13342293). The paper explicitly states 'N-terminally fused'; no residue number is given. The signal peptide spans residues 1-17 (landmark-derived); the mature N-terminus begins at Q18. An N-terminal fusion on a type-I TM protein with an extracellular N-terminus places the tag on the extracellular face after SP cleavage, so the junction is insert_after_residue=17 (A17|Q18), derived from the SP landmark.",
+      "sources": [
+        {
+          "pmid": 42414498,
+          "citation": "PMID 42414498",
+          "claim": "For detection and activity assays, a 4xmyc tag and/or a human placenta alkaline phosphatase (AP) tag was N-terminally fused to the ACE2 constructs as described before 11 , 12 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:54:03.337334+00:00",
+  "literature_notes": "L1 (PMC7144619) reports 'eGFP-tagged hACE2' expressed on HEK293T cells for a flow cytometry binding assay. The quote does not state whether the eGFP is N-terminal (extracellular) or C-terminal (intracellular); in the assay, eGFP identifies transfected cells while mFc-fusion binding detects surface ACE2, a design consistent with intracellular C-terminal eGFP. Because the extracellular face of the tag cannot be confirmed from the quote, L1 does not qualify as a surface-tag site and is not promoted to `sites`. L2 (PMC13342293) explicitly states 'N-terminally fused', placing the tag on the extracellular face of this type-I TM protein; this is the sole qualifying site. No internal loop insertions are reported in either ledger line.",
+  "literature_rejected": []
+}

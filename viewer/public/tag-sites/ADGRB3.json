@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADGRB3",
+  "uniprot_acc": "O60242",
+  "sites": [
+    {
+      "site_id": "ADGRB3-terminal_n-24-lit",
+      "gene_symbol": "ADGRB3",
+      "uniprot_acc": "O60242",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-adhesion and binding assays (L1); rescue and signaling experiments with dual-tagged construct (L2) \u2014 function preserved in both contexts.",
+      "confidence": "high",
+      "rationale": "Both L1 and L2 independently report a FLAG tag inserted after the signal peptide of full-length BAI3, placing it at the extracellular N-terminus. The signal peptide spans residues 1\u201324 (landmark-authoritative); the tag therefore sits between residue 24 (last SP residue, A) and residue 25 (first mature-protein residue, A), which is confirmed by Python lookup. The mature N-terminus is 857 residues from TM1 (882), providing ample steric room. L2 further validates the construct in rescue and signaling assays, establishing surface_and_function level evidence. Full-length human BAI3 (ADGRB3) expressed in mammalian cells with a FLAG tag inserted after a preprotrypsin leader signal peptide, placing the tag at the extracellular N-terminus. L2 independently confirms the same junction (Flag after signal peptide) in a dual-tagged full-length construct used in rescue and signaling experiments.",
+      "sources": [
+        {
+          "pmid": 34758294,
+          "citation": "PMID 34758294",
+          "claim": "Mouse full length BAI1 cDNA ( NM_174991.3 ), BAI2 cDNA ( NM_173071.3 ), BAI3 cDNA ( NM_175642.4 ) and human BAI3 full length ( Bolliger et al., 2011 ) without signal peptide were inserted into pCAG-GFP plasmid (Addgene) after a preprotrypsin leader signal peptide and a Flag tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 24,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:09:00.966384+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 and L2 both ground the same extracellular N-terminal FLAG site (insert_after_residue=24); L2 is the stronger functional validation and was used to set validation_level=surface_and_function, while L1 is cited as the primary supporting clip because it is the cleaner, earlier description of the junction. L2's HA tag ('before PLDVQEGDFQTEV') maps by Python search to residue 1509\u20131510, which falls within the intracellular C-terminal domain (INTRACELLULAR: 1147\u20131522) and is therefore not a surface site; it is recorded in other_positions. L3's C-terminal EGFP likewise maps to the intracellular tail (after residue 1522, within INTRACELLULAR: 1147\u20131522) and is also recorded in other_positions. No ledger line supports any internal extracellular loop insertion for ADGRB3.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1509,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag inserted before 'PLDVQEGDFQTEV' (residue 1510) in the C-terminus of full-length BAI3; Python search confirms this position falls within the intracellular domain (1147\u20131522), not on the extracellular face."
+    },
+    {
+      "residue": 1522,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal EGFP fused to full-length BAI3 after the last residue (V1522); the entire C-terminal tail from residue 1147 onward is intracellular per topology landmarks, so this tag faces the cytoplasm."
+    }
+  ]
+}

@@ -220,6 +220,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "SERINC3-internal-311-lit",
+      "gene_symbol": "SERINC3",
+      "uniprot_acc": "Q13530",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 311,
+      "residue_before": "L",
+      "residue_after": "A",
+      "residue_label": "L311",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry on non-permeabilised cells detecting the HA tag (L3); protein traffics to the plasma membrane and is detectable at the cell surface. Functional impact on SERINC3 HIV-restriction activity not explicitly quantified in the cited clips, but the tagged construct was used as the primary reagent for surface-expression assays without reported trafficking defects.",
+      "confidence": "high",
+      "rationale": "L1 and L2 independently name residues 311 and 312 as the exact junction for an HA tag in full-length, membrane-anchored SERINC3. Python confirms seq[310]='L' and seq[311]='A', matching residue_before and residue_after. Position 311 lies 22 aa from the upstream TM boundary (ends at 289) and 21 aa from the downstream TM boundary (starts at 332), well within the 290\u2013331 extracellular loop and far from any TM helix. L3 confirms the tag is accessible on the extracellular face of non-permeabilised cells. Full-length SERINC3 stably expressed via retroviral vector (pLXIN_SERINC3_HA) with HA tag inserted by Gibson Assembly between residues 311 and 312, within the large extracellular loop (ECL, topology span 290\u2013331). Independently replicated in a second study (L2) using a gBlock-synthesised SERINC3(iHA) construct cloned into pSELECT-\u0394GFP. Surface display confirmed by flow cytometry on non-permeabilised cells (L3).",
+      "sources": [
+        {
+          "pmid": 30262884,
+          "citation": "PMID 30262884",
+          "claim": "The construct for stable overexpression of HA-tagged SERINC3, pLXIN_SERINC3_HA, was made using Gibson Assembly to introduce an HA tag between residues 311 and 312 of SERINC3 (within an extracellular loop), inserted into the pLXINmod vector linearised with HpaI."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "SERINC3-snorkel-c",
       "gene_symbol": "SERINC3",
       "uniprot_acc": "Q13530",
@@ -622,6 +659,45 @@
       "isoform_residue": 67,
       "canonical_residue": 67,
       "left_pct": 14.194915254237289
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:18:13.424126+00:00",
+  "literature_notes": "L4: The verbatim quote describes MBP fusions of five intracellular loop segments (NTT 1\u201339, ICL1 120\u2013131, ICL2 181\u2013204, ICL3 259\u2013267, ICL4 354\u2013404) expressed as soluble constructs for structural studies; the quote does not mention an HA tag at position 314 or any extracellular insertion, so L4 does not qualify as evidence for a surface site. L5: Reports an HA-tagged SERINC3 plasmid used in a co-transfection assay but names no residue; SERINC3 has no extracellular terminus (both N-terminus residues 1\u201339 and C-terminus residues 467\u2013473 are intracellular), making topology_derived position assignment impossible \u2014 no site proposed. L6: Reports a Clover-tagged SERINC3 clone (SERINC3-Clover B6) confirmed by Sanger sequencing but names no insertion residue; same terminus problem as L5 \u2014 no site proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "N-terminal tail (NTT, residues 1\u201339) cloned as MBP fusion for structural studies; intracellular by topology, not a surface tag site."
+    },
+    {
+      "residue": 120,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "ICL1 (residues 120\u2013131) cloned as MBP fusion for structural studies; intracellular by topology."
+    },
+    {
+      "residue": 181,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "ICL2 (residues 181\u2013204) cloned as MBP fusion for structural studies; intracellular by topology."
+    },
+    {
+      "residue": 259,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "ICL3 (residues 259\u2013267) cloned as MBP fusion for structural studies; intracellular by topology."
+    },
+    {
+      "residue": 354,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "ICL4 (residues 354\u2013404) cloned as MBP fusion for structural studies; intracellular by topology."
     }
   ]
 }

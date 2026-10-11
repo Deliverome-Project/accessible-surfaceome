@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "NFAM1",
+  "uniprot_acc": "Q8NET5",
+  "sites": [
+    {
+      "site_id": "NFAM1-terminal_n-42-lit",
+      "gene_symbol": "NFAM1",
+      "uniprot_acc": "Q8NET5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 42,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G42",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface FLAG detected by antibody staining of non-permeabilized 293 cells transfected with N-terminal FLAG-NFAM1; surface signal confirmed. No functional (signalling or ligand-binding) assay was reported for the tagged construct.",
+      "confidence": "high",
+      "rationale": "NFAM1 has a signal peptide spanning residues 1\u201342 (authoritative landmark); the mature N-terminus begins at residue 43 (Q). An N-terminal FLAG tag must be inserted after the signal-peptide cleavage site (after residue 42) to remain on the protein surface \u2014 placement upstream would be cleaved off with the signal peptide. The paper names no specific residue number, but with exactly one extracellular terminus the junction is uniquely determined: insert_after_residue = 42, residue_before = G (42), residue_after = Q (43). L3 confirms surface detection of the N-terminal FLAG tag, establishing this as a validated surface-display site. Full-length NFAM1 with an N-terminal FLAG tag was expressed in HEK 293 cells (pcDNA3.1 vector). Non-permeabilized cell-surface staining detected FLAG only on the N-terminal-tagged construct, confirming the tag is extracellular and the full-length protein is surface-displayed.",
+      "sources": [
+        {
+          "pmid": 35095847,
+          "citation": "PMID 35095847",
+          "claim": "We detected cell surface expression of FLAG on cells that were transfected with the N-terminal but not the C-terminal tagged construct, while we detected intracellular FLAG in cells transfected with both constructs ( Supplemental Figures 1A, B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:00:13.137410+00:00",
+  "literature_notes": "Three ledger lines (L1, L2, L3) all derive from the same PMC8793151 experiment. L1 and L2 describe construct design and transfection; L3 reports the result and is the probative clip. The C-terminal FLAG construct was also tested but FLAG was detected only intracellularly (not on the cell surface), consistent with the intracellular topology of the C-terminus (residues 186\u2013270); it is recorded in other_positions. No internal extracellular-loop insertion is supported by any ledger line, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 270,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal FLAG tag on full-length NFAM1 was detected intracellularly but not on the cell surface, consistent with the C-terminus residing in the cytoplasm (residues 186\u2013270); not a surface-tag site."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD33",
+  "uniprot_acc": "P20138",
+  "sites": [
+    {
+      "site_id": "CD33-terminal_n-17-lit",
+      "gene_symbol": "CD33",
+      "uniprot_acc": "P20138",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "M",
+      "residue_after": "D",
+      "residue_label": "M17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "6xHis",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Construct was expressed on AML cell lines and used as the functional target in T-cell-engaging (BiTE/immunotherapy) efficacy studies; surface display was confirmed by its use as the antigen in these assays. Quantitative function relative to untagged CD33 was not separately reported.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the junction: signal peptide aa 1\u201317, then 6xHis tag, then ECD aa 18\u2013259, in a full-length membrane-anchored construct. By the canonical sequence, residue 17 is M (last signal-peptide residue) and residue 18 is D (first mature-ectodomain residue), so insert_after_residue = 17 is the exact published junction. The tag is placed on the extracellular face after signal-peptide cleavage, 243 residues from the TM boundary, satisfying all distance and topology constraints. The construct was expressed on AML cell lines and used in functional immunotherapy assays, confirming surface trafficking. Full-length, membrane-anchored CD33 construct (CD33 FL) expressed on AML cell lines: signal peptide (aa 1\u201317) followed immediately by a 6-histidine tag and 3\u00d7 glycine linker, then the CD33 ECD (aa 18\u2013259), CD33 TM, and CD33 ICD (aa 260\u2013364). The construct retains all membrane-anchoring elements and was used in T-cell-engaging immunotherapy efficacy assays.",
+      "sources": [
+        {
+          "pmid": 33589747,
+          "citation": "PMID 33589747",
+          "claim": "\u201cCD33 FL [full-length CD33] + CD22 4D\u201d was generated using the endogenous CD33 signal peptide (amino acids [aa] 1-17), a 6-histidine tag, 3x glycine linker, the human CD33 extracellular domain (ECD, aa 18-259), a portion of the human CD22 ECD comprising C2-type domains 3-6 (aa 331-683), the CD33 transmembrane domain, and the CD33 intracellular domain (aa 260-364)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:15:23.743874+00:00",
+  "literature_notes": "L2 (CD33 \u0394E3-4) describes a domain-deletion construct that removes exons 3\u20134 (the C2-set domain) to bring the V-set epitope closer to the membrane; no epitope tag is inserted and no tag-insertion residue is named, so it does not qualify as a tag-insertion site. L3 describes chimeric CD33+CD22 constructs in which large CD22 ECD segments are inserted to extend epitope-membrane distance; these are large-domain fusions used as experimental tools, not short epitope-tag insertions, and no specific residue junction for a tag is named. Neither L2 nor L3 supports an additional site under the ledger rules. Only one site is supported by the ledger.",
+  "literature_rejected": []
+}

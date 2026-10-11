@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADIPOR1",
+  "uniprot_acc": "Q96A54",
+  "sites": [
+    {
+      "site_id": "ADIPOR1-terminal_c-375-lit",
+      "gene_symbol": "ADIPOR1",
+      "uniprot_acc": "Q96A54",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 375,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L375",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Confocal imaging confirmed plasma-membrane localisation of PAQR-1::GFP in transgenic worms; no functional assay of the GFP-tagged protein was reported separately from the untagged protein.",
+      "confidence": "medium",
+      "rationale": "AdipoR1 has an inverted topology (N-terminus intracellular, C-terminus extracellular). The authoritative topology landmarks place residues 359\u2013375 in the extracellular compartment, 17 residues beyond the end of TM7 (residue 358), well clear of any TM boundary. The C-terminus is the only extracellular terminus of this protein, so the PAQR-1::GFP fusion (C-terminal) maps unambiguously to insert_after_residue 375. Python confirmed residue 375 is L and the extracellular span is 359\u2013375. C-terminal GFP translational fusion to full-length PAQR-1 (C. elegans AdipoR1 ortholog) expressed from the paqr-1 promoter in transgenic C. elegans; confocal imaging showed the fusion protein localised to plasma membranes in gonad sheath cells and intestine, confirming surface display of the C-terminally tagged full-length receptor.",
+      "sources": [
+        {
+          "pmid": 32750056,
+          "citation": "PMID 32750056",
+          "claim": "(D) Confocal images of transgenic adult C . elegans expressing Ppaqr-1 :: PAQR-1WT :: GFP and Ppaqr-1 :: PAQR-1R109C :: GFP , with frequencies of transgenic worms expressing the reporter in gonad sheath cells or intestine indicated (n = 50)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:13:04.102101+00:00",
+  "literature_notes": "L1 (Flag-tagged full-length AdipoR1, HEK293 western blot) was considered but the clip does not state where the Flag tag is placed (N- or C-terminal), so no junction can be pinned and it does not qualify as a site. L2/L3/L4 (HA::PAQR-1, N-terminal tag on C. elegans ortholog) were considered: the N-terminus of AdipoR1 is intracellular (residues 1\u2013134 per topology landmarks), so this tag is intracellular and is recorded in other_positions. The four short extracellular loops (ECL1 158\u2013170, ECL2 224\u2013234, ECL3 284\u2013299, ECL4 359\u2013375) are not supported by any ledger line reporting an insertion within them, so no internal loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag fused to the start codon (N-terminus) of C. elegans PAQR-1 (AdipoR1 ortholog) via CRISPR/Cas9; the N-terminus of human AdipoR1 is intracellular (residues 1\u2013134), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

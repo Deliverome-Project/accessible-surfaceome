@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "FAM187A",
+  "uniprot_acc": "A6NFU0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:40:37.476038+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) report C-terminal tags on FAM187A or its orthologs (zebrafish Fam187a-3xFLAG-sfGFP in L1; C. elegans SPE-40-eGFP in L2). FAM187A is a type I single-pass transmembrane protein: signal peptide 1\u201317 is cleaved, the large ectodomain spans residues 18\u2013379, the TM helix spans 380\u2013395, and the C-terminal tail (396\u2013413) is intracellular. A tag appended after residue 413 therefore faces the cytoplasm, not the extracellular surface. No ledger line reports a tag at the mature N-terminus (after residue 17) or anywhere within the extracellular domain (18\u2013379). Accordingly, zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 413,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Zebrafish Fam187a-3xFLAG-sfGFP is a C-terminal fusion; the C-terminus of FAM187A (residues 396\u2013413) is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 413,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C. elegans SPE-40 (FAM187 ortholog) eGFP knocked in at the endogenous C-terminus; by the same type I topology the C-terminal tag is intracellular, not a surface epitope."
+    }
+  ]
+}

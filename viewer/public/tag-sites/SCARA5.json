@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "SCARA5",
+  "uniprot_acc": "Q6ZMJ2",
+  "sites": [
+    {
+      "site_id": "SCARA5-terminal_c-495-lit",
+      "gene_symbol": "SCARA5",
+      "uniprot_acc": "Q6ZMJ2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 495,
+      "residue_before": "H",
+      "residue_after": "",
+      "residue_label": "H495",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-V5 immunoblot confirmed expression; anti-V5 immunofluorescence confirmed surface localisation. Functional ferritin-uptake assay was performed with the tagged construct in transfected cells (PMC2652503), but the paper does not report a side-by-side comparison of tagged vs. untagged uptake rates, so functional preservation of the tag itself is NOT MEASURED independently.",
+      "confidence": "high",
+      "rationale": "SCARA5 is a single-pass type II transmembrane protein: the N-terminus (residues 1\u201360) is intracellular, the TM helix spans residues 61\u201381, and the entire C-terminal domain (residues 82\u2013495) is extracellular. The N-terminus is therefore buried in the cytoplasm and cannot carry a surface tag. The C-terminus (residue 495, H) is the sole extracellular terminus, so a C-terminal V5 tag appended after residue 495 is unambiguously on the extracellular face \u2014 414 residues from the TM boundary, well clear of any steric constraint. No residue number is stated in the ledger for the junction; the position is derived from the single available extracellular terminus. L1 and L2 (PMC2652503): full-length SCARA5-V5 was cloned into pcDNA3.1+ using a BamHI forward primer (starting at Met1) and a PmeI reverse primer lacking a stop codon, producing a C-terminally V5-tagged construct. The tagged protein was expressed in Trvb and MSC-1 cells and authenticated by anti-V5 immunoblot and immunofluorescence confirming surface display.",
+      "sources": [
+        {
+          "pmid": 19154717,
+          "citation": "PMID 19154717",
+          "claim": "Trvb cells (a kind gift of McGraw et al., 1987 ) and MSC-1 cells (a kind gift of McGuinness et al., 1999) were transfected with Scara5, selected with G418 (400 \u03bcg/ml) and authenticated by anti-V5 immunoblots (1:5,000 Invitrogen) or immunofluorescence (1:2,000)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:08:14.146372+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1, L2), both from PMC2652503, both describing the same Scara5-V5 construct. L1 describes the cloning strategy (BamHI/PmeI, pcDNA3.1+, full-length); L2 describes expression and surface authentication. No residue number is named for the tag junction in either line, so position_evidence is topology_derived rather than validated. The N-terminal intracellular domain (residues 1\u201360) was considered but excluded because it faces the cytoplasm. No internal extracellular loop insertions are supported by the ledger. No other tag modalities (FLAG, HA, GFP, transposon screens, etc.) appear in the ledger for SCARA5.",
+  "literature_rejected": []
+}

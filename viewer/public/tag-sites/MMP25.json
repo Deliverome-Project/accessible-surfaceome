@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MMP25",
+  "uniprot_acc": "Q9NPA2",
+  "sites": [
+    {
+      "site_id": "MMP25-terminal_n-21-lit",
+      "gene_symbol": "MMP25",
+      "uniprot_acc": "Q9NPA2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "A",
+      "residue_after": "P",
+      "residue_label": "A21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "PI-PLC release confirms GPI-anchored surface display; proteolytic activity preserved as shown by TIMP-1 and TIMP-2 inhibition assays; TIMP-2 complex formation confirmed.",
+      "confidence": "high",
+      "rationale": "MMP25 is a GPI-anchored protein with no transmembrane domain; the entire ectodomain (residues 22\u2013562) is extracellular. The C-terminus carries the GPI anchor signal sequence (cleaved and replaced by the GPI lipid moiety), making it unavailable for tagging. Therefore exactly one free extracellular terminus exists \u2014 the mature N-terminus beginning at residue 22 \u2014 and the FLAG tag must reside there, inserted after the signal peptide cleavage site at residue 21 (A). Python verification confirms canonical_seq[21]='A' and canonical_seq[22]='P', consistent with the landmarks. FLAG-tagged full-length MT6-MMP (MMP25) expressed in MCF-7 breast carcinoma and HT1080 fibrosarcoma cells; surface display confirmed by PI-PLC release of the GPI-anchored protein; no specific insertion residue is named in the paper.",
+      "sources": [
+        {
+          "pmid": 20308072,
+          "citation": "PMID 20308072",
+          "claim": "In addition, a number of its biochemical features are both conflicting and controversial. To reassess the biochemical features of MT6-MMP, we have expressed the MT6-MMP construct tagged with a FLAG tag in breast carcinoma MCF-7 and fibrosarcoma HT1080 cells. We then used phosphatidylinositol-specific phospholipase C to release MT6-MMP from the cell surface and characterized the solubilized MT6-MMP fractions. We now are confident that cellular MT6-MMP partially exists in its complex with TIMP-2. Both TIMP-1 and TIMP-2 are capable of inhibiting the proteolytic activity of MT6-MMP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:44:50.910544+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports a FLAG-tagged full-length GPI-anchored MT6-MMP (MMP25) construct that is surface-displayed and functionally active, but names no specific insertion residue. Because MMP25 is GPI-anchored (topology: SIGNAL 1\u201321, EXTRACELLULAR 22\u2013562, no TM domain), the C-terminal GPI anchor signal precludes C-terminal tagging, leaving the mature N-terminus (after signal peptide cleavage at residue 21) as the sole extracellular terminus available. The position is therefore topology_derived. No internal loop insertions are reported in the ledger, and none are proposed. The paper confirms both surface display (PI-PLC release) and preserved function (TIMP-1/TIMP-2 inhibition, TIMP-2 complex formation), supporting a surface_and_function validation level.",
+  "literature_rejected": []
+}

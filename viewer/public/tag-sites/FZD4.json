@@ -37,7 +37,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD4-terminal_n-36-lit",
+      "gene_symbol": "FZD4",
+      "uniprot_acc": "Q9ULV1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 36,
+      "residue_before": "G",
+      "residue_after": "F",
+      "residue_label": "G36",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TOPFlash reporter assay in \u0394FZD1\u201310 HEK293T cells: HiBiT-tagged FZD4 mediated WNT-3A-induced \u03b2-catenin-dependent signaling indistinguishable from untagged controls; surface display confirmed by NanoBiT luminescence on intact (non-permeabilized) cells.",
+      "confidence": "high",
+      "rationale": "The signal peptide of human FZD4 spans residues 1\u201336 (confirmed by L12, which explicitly states 'without its signal peptide (aa 1\u201336)'), so the mature N-terminus begins at F37. An N-terminal tag must be placed after residue 36 to avoid co-translational cleavage; insert_after_residue=36 is the only valid extracellular N-terminal junction. Python verification confirms seq[35]='G' and seq[36]='F', matching the reported boundary. The large extracellular domain (37\u2013220) provides ample space, and the junction is 184 residues from TM1. Multiple independent groups (L1\u2013L3, L6\u2013L10, L12\u2013L14) have placed diverse tags (HiBiT, FLAG, Nluc, mCherry, V5) at this same position on human or mouse FZD4 with confirmed surface display; L2 additionally validates WNT/\u03b2-catenin signaling. Human FZD4 constructs carrying an N-terminal HiBiT tag (all 10 FZD paralogs) were expressed in \u0394FZD1\u201310 HEK293T cells. L12 explicitly names the FZD4 signal peptide as aa 1\u201336, placing the mature N-terminus at residue 37 and pinning the tag junction to the 36|37 boundary. L1\u2013L3 (same lab, same construct series) confirm surface display by NanoBiT complementation and kinetic binding assays.",
+      "sources": [
+        {
+          "pmid": 34151213,
+          "citation": "PMID 34151213",
+          "claim": "Additionally, HiBiT-tagged FZD 1 , FZD 2 , FZD 4 , FZD 5 , FZD 7 , FZD 8 , and FZD 10 mediated WNT-3A-induced \u03b2-catenin-dependent signals as assessed by the TOPFlash reporter assay performed in HEK293T cells devoid of endogenous FZDs (\u0394FZD 1\u201310 HEK293T cells, Figure S1D ( 25 ))."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 36,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:59:44.326673+00:00",
+  "literature_notes": "Every ledger line (L1\u2013L15) reports either an N-terminal tag (L1\u2013L10, L12\u2013L14) or a C-terminal tag (L11, L13\u2013L15) on FZD4 or its mouse ortholog. No ledger line reports any insertion within an extracellular loop (ECL1 276\u2013299, ECL2 366\u2013385, ECL3 458\u2013474) or anywhere internal to the large N-terminal ECD (37\u2013220) other than at the N-terminus itself. The C-terminal tags (L11 eYFP, L13 mCherry, L14 BioID, L15 Nluc) are placed after residue 537, which falls in the intracellular C-tail (497\u2013537 per topology landmarks); these are recorded in other_positions. Mouse Fzd4 constructs (L4, L5, L6\u2013L8, L13) are close orthologs and corroborate the N-terminal site but do not add new junction positions. L12 is the single ledger line that explicitly names the signal peptide boundary (aa 1\u201336), making the 36|37 junction 'validated' rather than merely topology-derived.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 537,
+      "kind": "intracellular",
+      "supporting_clip_id": "L11",
+      "note": "Full-length FZD4 (residues 1\u2013537) fused with eYFP at the C-terminus retains TOPFlash signaling activity, but residue 537 lies within the intracellular C-tail (topology landmarks: INTRACELLULAR 497\u2013537), so this is a cytoplasmic tag position, not an extracellular surface site."
+    }
+  ]
 }

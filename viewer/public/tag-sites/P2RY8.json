@@ -37,7 +37,56 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "P2RY8-terminal_n-0-lit",
+      "gene_symbol": "P2RY8",
+      "uniprot_acc": "Q86VZ1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "OX56",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry (anti-OX56 staining) in P2RY8-KO Ly8 cells; receptor function assessed in parallel migration assay with chemoattractant CXCL12 and P2RY8 ligand GGG, and proliferation screen \u2014 tagged receptor used as the functional reference construct throughout the DMS.",
+      "confidence": "high",
+      "rationale": "The construct encodes P2RY8 aa 2\u2013358 with an exogenous preprolactin signal peptide and OX56 tag placed immediately N-terminal to Q2; the native M1 start codon is absent, so in canonical UniProt numbering the tag is a prepend (insert_after_residue=0, residue_after=M). The extracellular N-terminus spans residues 1\u201323 (23 aa before TM1 at residue 24), placing the tag well beyond the \u22653-residue TM-boundary requirement. Surface display was directly confirmed by FACS and the receptor drove measurable migration and proliferation responses, establishing surface_and_function validation. Full-length P2RY8 (aa 2\u2013358) expressed with an exogenous preprolactin signal peptide followed by an OX56 epitope tag at the N-terminus in a lentiviral construct (PRL-OX56-P2RY8-P2A-GFP); transduced into P2RY8-KO OCI-Ly8 (DLBCL) cells for deep mutational scanning.",
+      "sources": [
+        {
+          "pmid": 40093123,
+          "citation": "PMID 40093123",
+          "claim": "The synthesized DNA consisted of the coding sequence for P2RY8 amino acids 2\u2013358 (all codons excepting start and stop codons) along with preceding 35 bp (corresponding to OX56 tag and 5 nucleotides in preceding linker) and succeeding 35 bp (corresponding to a portion of P2A sequence)."
+        },
+        {
+          "pmid": 25274307,
+          "citation": "PMID 25274307",
+          "claim": "S1PR2, P2RY8 and Tbxa2r were inserted in frame with a preprolactin leader and FLAG-epitope encoding sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:12:41.159985+00:00",
+  "literature_notes": "All six ledger lines describe N-terminal extracellular tags on full-length, membrane-anchored P2RY8; no ledger line supports an internal loop insertion or a C-terminal tag. L2, L3, L4, L5, and L6 all describe the same OX56 N-terminal construct (PRL-OX56-P2RY8); L2 is used as the primary supporting clip for Site 1 because it most precisely describes the construct architecture, with L4/L5/L6 providing corroborating surface and functional evidence. L1 describes a distinct FLAG-tagged full-length construct from a different study and is reported as a separate site at the same junction with lower validation. The preprolactin signal peptide is an exogenous trafficking signal that is cleaved post-translationally, leaving the epitope tag at the extracellular N-terminus; P2RY8 itself has no signal peptide (residue 1, M, is extracellular per topology landmarks). No ledger lines describe intracellular insertions or function-abrogating positions for P2RY8.",
+  "literature_rejected": []
 }

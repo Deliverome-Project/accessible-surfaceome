@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNJ15",
+  "uniprot_acc": "Q99712",
+  "sites": [
+    {
+      "site_id": "KCNJ15-internal-97-lit",
+      "gene_symbol": "KCNJ15",
+      "uniprot_acc": "Q99712",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 97,
+      "residue_before": "P",
+      "residue_after": "G",
+      "residue_label": "P97",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface luminescence assay in Xenopus oocytes confirmed cell-surface display of the HA-tagged KCNJ15 channel; electrophysiological function NOT MEASURED for the tagged construct in isolation.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names position 97 for KCNJ15, and L2 provides the flanking sequence GDLEP(97)-[PGG-HA-PGG]-(98)EPIS, unambiguously placing the junction after P97 and before G98. Python verification confirms seq[96]='P' and seq[97]='G', matching the paper exactly. Position 97 lies 6 residues from the TM1 C-terminal boundary (residue 91) and 46 residues from TM2 (residue 143), well within the extracellular loop (residues 92\u2013142). The two extracellular cysteines (C107, C139) are 10 and 42 residues downstream, so the insertion does not directly disrupt the putative disulfide pair. HA epitope tag inserted into the extracellular loop of full-length KCNJ15 after residue 97 (P97), flanked by PGG linkers on both sides (creating ...GDLEP[97]-PGG-YPYDVPDYA-PGG-[98]EPIS...), expressed as cRNA in Xenopus laevis oocytes. Surface expression measured by luminescence assay two days post-injection.",
+      "sources": [
+        {
+          "pmid": 33811157,
+          "citation": "PMID 33811157",
+          "claim": "For surface luminescence measurements, an external hemagglutinin (HA) epitope tag was introduced via QuikChange site-directed mutagenesis (Strategene, Germany) into the extracellular loop of KCNJ10 and KCNJ15 at positions 98 and 97 respectively."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:46:02.140735+00:00",
+  "literature_notes": "Only one extracellular loop exists in KCNJ15 (residues 92\u2013142, between TM1 and TM2). L1 and L2 together pin the validated junction to after P97. L3 corroborates surface expression but its verbatim quote names KCNJ10/KCNJ16 rather than KCNJ15; it was used only as supporting context and not as the primary grounding clip. No other ledger lines support additional sites. The N-glycosylation sequon N103-H-T (NHT) is 6 residues downstream of the insertion; the paper's successful surface display suggests the tag does not abolish trafficking, but proximity to this sequon should be noted. C107 and C139 likely form a conserved Kir disulfide; the insertion at 97 is upstream of both and was tolerated in the published construct.",
+  "literature_rejected": []
+}

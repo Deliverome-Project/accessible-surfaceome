@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ITGA6",
+  "uniprot_acc": "P23229",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:27:51.636269+00:00",
+  "literature_notes": "The sole ledger line (L1) reports mouse ITGA6 cloned into the CD63-pEGFP C2 vector backbone (Addgene #62964) using SacI and EcoRI restriction sites. Addgene #62964 is a construct in which EGFP is fused to the intracellular C-terminus of CD63 (a tetraspanin whose C-terminus faces the cytoplasm). When ITGA6 replaces CD63 in this backbone, EGFP is placed at the intracellular C-terminus of ITGA6 (residue 1130, topology INTRACELLULAR per landmarks). The alternative reading \u2014 EGFP N-terminal to ITGA6 \u2014 would place EGFP upstream of the signal peptide (residues 1\u201323), where it would be co-translationally cleaved or cause misfolding; this is not a valid extracellular surface tag. In neither reading does L1 support an extracellular surface tag. Additionally, the ledger clip does not state the junction residue, so the commercial-plasmid exclusion ('a commercial plasmid whose tag position is unstated; you cannot pin insert_after_residue') independently bars it from sites. No other ledger lines exist. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1130,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Mouse ITGA6 fused to EGFP via the CD63-pEGFP C2 backbone (Addgene #62964); the vector places EGFP at the intracellular C-terminus of the insert protein, corresponding to residue 1130 of ITGA6, which lies in the cytoplasmic tail (topology INTRACELLULAR, residues 1077\u20131130)."
+    }
+  ]
+}

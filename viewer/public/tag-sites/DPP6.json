@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "DPP6",
+  "uniprot_acc": "P42658",
+  "sites": [
+    {
+      "site_id": "DPP6-terminal_c-865-lit",
+      "gene_symbol": "DPP6",
+      "uniprot_acc": "P42658",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 865,
+      "residue_before": "D",
+      "residue_after": "",
+      "residue_label": "D865",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP / mCherry",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Filopodia density assay (L2): DPP6-GFP-expressing DPP6-KO neurons showed significantly increased immature dendritic filopodia density vs. GFP control (p<0.05, unpaired t-test). Filopodia stability assay (L3): DPP6-GFP rescued filopodia stability in DPP6-KO neurons to wild-type levels. Both assays confirm functional, surface-displayed tagged construct.",
+      "confidence": "high",
+      "rationale": "pEGFP-N1 places GFP at the C-terminus of the cloned insert; the construct is full-length DPP6 (1\u2013865), so the tag follows residue 865. Per the authoritative topology landmarks, residue 865 lies within the extracellular span (117\u2013865), placing the tag on the extracellular face, 749 residues from the TM boundary\u2014well clear of any steric constraint. L2 and L3 confirm the tagged protein is functional and surface-displayed in primary neurons, satisfying surface_and_function. No residue number is stated in any clip, so position_evidence is topology_derived from the single extracellular C-terminus. Full-length rat DPP6 subcloned into pEGFP-N1 or pmCherry-N1 (Clontech), placing the fluorescent protein immediately after the last residue of DPP6. Expressed in DPP6-KO hippocampal neurons. DPP6 is a type II single-pass TM protein; its C-terminus (residue 865) is the sole extracellular terminus, placing the tag on the extracellular face. No residue number is stated in the clip; position is derived from topology landmarks.",
+      "sources": [
+        {
+          "pmid": 23912628,
+          "citation": "PMID 23912628",
+          "claim": "DPP6-GFP or DPP6-mCherry constructs was prepared by PCR on construct rat pcDNA3-DPP6 21 and subcloned into the pEGFP-N1 or pmCherry-N1 vector (Clontech, Mountain View, CA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:18:25.066148+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same construct (DPP6-GFP / DPP6-mCherry, C-terminal fusion). L1 establishes the construct; L2 and L3 provide independent functional validation. No internal loop insertions, no N-terminal extracellular tags, and no intracellular or function-abrogating positions are reported in the ledger. The N-terminus (residues 1\u201395) is intracellular and therefore not a surface tag site. Only one site is supported.",
+  "literature_rejected": []
+}

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ACKR2-terminal_n-0-lit",
+      "gene_symbol": "ACKR2",
+      "uniprot_acc": "O00590",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed surface expression of HA-ACKR2 in stable clones (L1/L2); functional assays with the tagged construct are not described in the cited clips.",
+      "confidence": "high",
+      "rationale": "ACKR2 has no signal peptide (raw topology begins O, not S), so the N-terminus (residues 1\u201346) is directly extracellular; insert_after_residue = 0 places the tag before residue 1 (M), the sole extracellular N-terminus. L1 explicitly states 'extreme N-terminus' for a full-length, membrane-anchored construct, leaving exactly one possible junction; the position is therefore topology-derived rather than residue-validated. The 46-residue extracellular N-terminal domain provides ample space for a ~15\u201323 aa epitope tag, and TM1 begins only at residue 47, well beyond the \u22653-residue clearance requirement. Python verification confirms seq[0] = M and seq[46] = V (TM1 start). Full-length human ACKR2 stably expressed in mammalian cells with an HA tag (MYPYDVPDYAG) introduced at the extreme N-terminus by PCR; surface expression of the tagged receptor confirmed by flow cytometry in stable clones. L2 (same paper) corroborates the same construct and assay. L3 (PMC9723398) independently reports HA-tagged ACKR2 used for conditional surface expression studies in HEK293 T-Rex cells.",
+      "sources": [
+        {
+          "pmid": 24644289,
+          "citation": "PMID 24644289",
+          "claim": "Nucleotides encoding an N-terminal HA tag (MYPYDVPDYAG) were introduced into human ACKR2 cDNA by PCR to generate HA-ACKR2 as described ( 44 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:53:31.669805+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC4007430) and describe the identical HA-ACKR2 construct; L1 is the primary clip (explicit 'extreme N-terminus' and HA sequence), L2 is corroborating. L3 (PMC9723398) independently supports an N-terminal HA tag on full-length ACKR2 for surface expression studies but names no residue, so it reinforces rather than adds a second site. L4 (PMC5511891) reports a FLAG tag 'fused in frame' with full-length D6/ACKR2 but states no position (N-terminal vs. C-terminal); the C-terminus of ACKR2 (residues 316\u2013384) is entirely intracellular, and without knowing which end carries the FLAG tag the site cannot be pinned to the extracellular face \u2014 L4 is therefore dropped per the 'tag position unstated' disqualification rule. No ledger line supports an internal loop insertion (ECL1, ECL2, or ECL3) for ACKR2.",
+  "literature_rejected": []
 }

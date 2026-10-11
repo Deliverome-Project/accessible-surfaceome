@@ -59,5 +59,12 @@
     }
   ],
   "isoform_pins": [],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:26:37.986427+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) report hEMP2-GFP constructs expressed in A549 and HEK293T cells, confirmed by immunofluorescence and immunoblot. However, neither clip names a residue, a loop, or even specifies whether GFP is fused at the N-terminus, C-terminus, or internally. The 'topology_derived' rule requires that exactly ONE terminus be extracellular, so the position can be uniquely inferred. EMP2 is a 4-TM protein of the PMP22/EMP/MP20 family: both its N-terminus (residues 1\u20134) and C-terminus (residues 164\u2013167) are intracellular per the authoritative landmarks. There is therefore NO unique extracellular terminus from which to derive a junction. The most common architecture for such constructs is a C-terminal GFP fusion, which would place GFP in the intracellular compartment \u2014 not on the cell surface. Because the clips provide no residue, no loop name, and no evidence that the tag faces the extracellular space, no surface tag site can be grounded in the ledger. Zero sites is the correct answer.",
+  "literature_rejected": []
 }

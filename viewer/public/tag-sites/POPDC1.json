@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "POPDC1",
+  "uniprot_acc": "Q8NE79",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:40:00.717047+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminal tags on POPDC1 or its chicken ortholog Bves. Per the authoritative topology, the C-terminus (residues 114\u2013360) is entirely intracellular \u2014 the large Popeye cAMP-binding domain faces the cytoplasm. A C-terminal Flag (L1/L2/L3) or ECFP (L4) therefore sits on the intracellular face and does not qualify as an extracellular surface tag site. The membrane-localized 'wire-mesh' immunostaining in L1 reflects the protein's junctional trafficking, not extracellular display of the Flag epitope. The only extracellular spans are residues 1\u201339 (N-terminal) and 87\u201392 (a 6-residue loop between TM2 and TM3); neither is supported by any ledger insertion. No ledger line grounds an N-terminal prepend or an insertion in the extracellular loop. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 360,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal Flag tag on full-length chicken Bves (POPDC1 ortholog) localizes to cell membrane but the C-terminus (residues 114\u2013360) is intracellular per topology; the tag is on the cytoplasmic face, not the extracellular surface."
+    },
+    {
+      "residue": 360,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal ECFP fusion to full-length human POPDC1 (pECFP-N1 vector); the C-terminus is intracellular (residues 114\u2013360), so the fluorescent protein tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

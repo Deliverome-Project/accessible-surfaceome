@@ -37,7 +37,52 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR51T1-terminal_n-0-lit",
+      "gene_symbol": "OR51T1",
+      "uniprot_acc": "Q8NGJ9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell surface staining detected the FLAG-tagged receptor on the plasma membrane of both HEK293 and LNCaP cells; no functional (signalling) assay result is reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "OR51T1 is a class-A GPCR olfactory receptor with no cleavable signal peptide; the topology landmarks place residues 1\u201326 in the extracellular compartment and TM1 begins at residue 27, so the N-terminus is the sole extracellular terminus available for a prepend tag. The published construct places the FLAG tag directly before Met-1 (insert_after_residue = 0), confirmed by live-cell anti-FLAG staining. Python verification confirms residue 1 = M and residue 27 = V (first TM residue), placing the junction 26 residues from the TM boundary, well above the \u22653-residue minimum. OR51T1 was cloned into pME18S with an N-terminal FLAG epitope tag (plus a 20-aa rhodopsin tag) and expressed in HEK293 and LNCaP cells; live-cell staining with an anti-FLAG antibody confirmed surface display of the full-length receptor.",
+      "sources": [
+        {
+          "pmid": 35446888,
+          "citation": "PMID 35446888",
+          "claim": "However, OR51T1 was detected on the surface of HEK293 as well as LNCaP cells in live-cell staining experiments to detect the N-terminal FLAG-tag of OR51T1 proteins ( Fig 5A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:49:09.327907+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) originate from the same publication (PMC9022881) and describe the same N-terminal prepend junction on OR51T1. L1 is used as the primary supporting clip because it directly reports the surface-detection result; L2 corroborates the construct design (FLAG + 20-aa rhodopsin tags). No other insertion sites are mentioned in the ledger for OR51T1 or any close ortholog. The four internal extracellular loops (ECL1 90\u201399, ECL2 166\u2013198, ECL3 264\u2013275) are not supported by any ledger line and are therefore not proposed. No functional assay result (e.g., cAMP, calcium flux) is captured in either clip, so validation_level is surface_only rather than surface_and_function.",
+  "literature_rejected": []
 }

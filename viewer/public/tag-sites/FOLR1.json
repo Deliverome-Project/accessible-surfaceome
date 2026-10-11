@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "FOLR1",
+  "uniprot_acc": "P15328",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:54:03.152546+00:00",
+  "literature_notes": "Three ledger lines were evaluated; none qualifies. L1 and L2 both describe the same C. elegans FOLR-1::GFP C-terminal fusion used for expression-pattern imaging. Even treating C. elegans FOLR-1 as a close ortholog (indirect evidence), the construct is disqualifying on a structural-biology ground that is not an inference but a fact about GPI-anchored proteins: FOLR1 (and its C. elegans ortholog) is GPI-anchored, meaning the C-terminal GPI signal peptide is enzymatically cleaved during GPI-anchor attachment. A GFP fused immediately after the last coding residue (before the stop codon) sits within or immediately downstream of the GPI signal; it would be cleaved off together with the signal or would disrupt GPI anchoring entirely, producing a secreted or intracellularly retained protein rather than a surface-tagged one. The topology landmarks confirm that the entire span 25\u2013257 is annotated extracellular/O, consistent with a GPI-anchored ectodomain, and the C-terminal hydrophobic stretch (AWPFLLSLALMLLWLLS, ~241\u2013257) is the GPI signal that is cleaved. A tag fused there is not an extracellular surface tag. L3 reports a Myc-tagged human FOLR1 construct expressed in K562 cells and detected by western blot, which is direct evidence for human FOLR1. However, the clip does not state where the Myc tag is inserted (N-terminal, internal, or C-terminal), and per the rules a plasmid whose tag position is unstated cannot be pinned to insert_after_residue. Western blot detection alone does not confirm surface localization. This line therefore cannot ground any site.",
+  "literature_rejected": []
+}

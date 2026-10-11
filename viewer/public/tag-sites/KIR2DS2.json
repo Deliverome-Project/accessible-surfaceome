@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "KIR2DS2",
+  "uniprot_acc": "P43631",
+  "sites": [
+    {
+      "site_id": "KIR2DS2-terminal_n-21-lit",
+      "gene_symbol": "KIR2DS2",
+      "uniprot_acc": "P43631",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "P",
+      "residue_after": "H",
+      "residue_label": "P21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA staining of intact (non-permeabilized) NKL cells by flow cytometry; 13 allelic products detected at the cell surface, demonstrating correct trafficking and membrane insertion of the tagged constructs.",
+      "confidence": "high",
+      "rationale": "L3 explicitly states the HA tag was inserted between the leader peptide and the first Ig domain of full-length KIR2DL2/3, which are the closest orthologs of KIR2DS2 and share identical signal peptide architecture. In KIR2DS2 canonical numbering the signal peptide spans residues 1-21 (landmark-authoritative), so the junction is after residue 21 (P) and before residue 22 (H), the mature N-terminus. Python confirms residue 21 = P and residue 22 = H. L2 confirms the HA epitope is accessible on the extracellular face of intact cells, validating surface exposure. This is classified as indirect evidence (close ortholog) but the junction is topology-derived to a single unambiguous position. Full-length KIR2DL2/3 constructs (close orthologs of KIR2DS2, sharing the same domain architecture and signal peptide boundary) were engineered with an HA tag (YPYDVPDYA) inserted between the leader peptide and the first Ig domain, i.e. immediately after the signal peptide cleavage site (after residue 21 in canonical KIR2DS2 numbering). Constructs were transiently transfected into KIR-negative NKL cells and surface expression was assessed by flow cytometry with anti-HA antibody on intact, non-permeabilized cells.",
+      "sources": [
+        {
+          "pmid": 23686481,
+          "citation": "PMID 23686481",
+          "claim": "Finally, a sequence coding for YPYDVPDYA was inserted between the regions encoding the leader peptide and the KIR first Ig domain in order to generate N-terminal HA-tagged constructs."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 21,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:03:26.918595+00:00",
+  "literature_notes": "L1 and L2 corroborate L3 (same study, same constructs) and add no new junction information beyond what L3 provides; they are not cited as separate sites but support the same N-terminal HA site. L4 describes a C-terminal V5 tag on KIR2DL2/3; the C-terminus of KIR2DS2 falls in the intracellular domain (residues 267-304 per authoritative landmarks), so this tag is cytoplasmic and is recorded in other_positions rather than sites. No ledger line supports any internal extracellular loop insertion for KIR2DS2 or its close orthologs.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 304,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal V5 tag on full-length KIR2DL2/3 (close ortholog); the KIR2DS2 C-terminus at residue 304 lies in the intracellular domain (267-304 per authoritative landmarks), so this is a cytoplasmic tag, not a surface tag."
+    }
+  ]
+}

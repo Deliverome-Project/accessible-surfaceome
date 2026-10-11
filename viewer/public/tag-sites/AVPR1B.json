@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "AVPR1B-terminal_n-0-lit",
+      "gene_symbol": "AVPR1B",
+      "uniprot_acc": "P47901",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Radioligand binding confirmed ligand-binding competence; flow cytometry confirmed surface display of the tagged receptor in AtT20 cells \u2014 both function and surface expression preserved.",
+      "confidence": "medium",
+      "rationale": "AVPR1B has no signal peptide (topology landmarks: extracellular 1\u201333, TM1 34\u201358), so the N-terminus is extracellular and a prepended tag (insert_after_residue=0) is not cleaved. The paper's flow cytometry assay requires the Myc epitope to be surface-accessible, and the N-terminus is the only extracellular terminus of this GPCR; ECL1/2/3 are loops, not termini. The insert point sits 33 residues from TM1, well beyond the \u22653-residue minimum. Radioligand binding confirms the tagged receptor retains function. AVPR1B (V1b/V3 receptor) expressed in AtT20 corticotroph cells as a dual GFP+Myc-tagged full-length construct. Flow cytometry with anti-Myc antibody was used to quantify surface export; radioligand binding confirmed receptor function. The Myc epitope must be extracellular for flow cytometry detection without permeabilization. AVPR1B is a GPCR with no signal peptide; its N-terminus (residues 1\u201333) is the sole extracellular terminus, making it the only position consistent with surface-accessible Myc detection.",
+      "sources": [
+        {
+          "pmid": 15528211,
+          "citation": "PMID 15528211",
+          "claim": "Little is known about endoplasmic reticulum (ER) export signals, particularly those of members of the G-protein-coupled receptor family. We investigated the structural motifs involved in membrane export of the human pituitary vasopressin V1b/V3 receptor. A series of V3 receptors carrying deletions and point mutations were expressed in AtT20 corticotroph cells. We analyzed the export of these receptors by monitoring radioligand binding and by analysis of a V3 receptor tagged with both green fluorescent protein and Myc epitopes by a novel flow cytometry-based method."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:40:16.601536+00:00",
+  "literature_notes": "L1 is the sole ledger line. It reports a full-length, membrane-anchored AVPR1B construct carrying both a Myc epitope and GFP, validated by flow cytometry (surface) and radioligand binding (function) in AtT20 cells. The quote names no residue and no specific loop; position is topology_derived to the N-terminal prepend because (a) the Myc tag must be extracellular for the flow cytometry assay, (b) AVPR1B has no signal peptide so the N-terminus is extracellular and not cleaved, and (c) the N-terminus is the only extracellular terminus of this 7-TM receptor. Confidence is medium rather than high because the exact junction residue is not stated in the quote. The GFP tag is placed in other_positions as intracellular (C-terminal fusion, standard for GPCRs). No ledger evidence supports any ECL insertion for AVPR1B.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 424,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the same AVPR1B construct; C-terminus (residues 342\u2013424) is intracellular per topology landmarks, so the GFP tag faces the cytoplasm and is not a surface-tag site."
+    }
+  ]
 }

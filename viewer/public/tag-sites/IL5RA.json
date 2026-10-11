@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL5RA",
+  "uniprot_acc": "Q01344",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:22:24.802041+00:00",
+  "literature_notes": "The sole ledger line (L1) reports stable expression of full-length human IL-5R\u03b1 (residues 1\u2013420) on the surface of TF-1 cells, used to evaluate anti-IL-5R\u03b1 antibody antagonism of IL-5-dependent proliferation. It describes a plain overexpression construct \u2014 no epitope tag, fluorescent-protein fusion, transposon/domain-insertion screen, or antibody-epitope knock-in is mentioned anywhere in the clip. Because the ledger qualification rule requires an insertion actually tolerated, L1 does not ground any surface-tag site. The mature extracellular N-terminus begins at residue 21 (D) after signal-peptide cleavage at residue 20 (A), and the extracellular domain runs to residue 341 (E) before the TM helix (342\u2013362); these landmarks are noted for completeness but cannot be used to propose a site without a qualifying ledger line.",
+  "literature_rejected": []
+}

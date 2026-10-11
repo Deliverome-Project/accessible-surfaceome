@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL17RA",
+  "uniprot_acc": "Q96F46",
+  "sites": [
+    {
+      "site_id": "IL17RA-terminal_n-32-lit",
+      "gene_symbol": "IL17RA",
+      "uniprot_acc": "Q96F46",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 32,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S32",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED explicitly in the cited clip; the HA-tagged construct was used for characterization of WT and truncation mutant, implying the tagged protein was expressed and detectable, but no surface flow cytometry or IL-17 signaling assay result is reported in the ledger clip.",
+      "confidence": "high",
+      "rationale": "IL17RA is a type I transmembrane receptor (signal peptide 1\u201332, ectodomain 33\u2013320, TM 321\u2013341, intracellular 342\u2013866). The only extracellular terminus is the mature N-terminus beginning at residue 33; a tag placed before residue 33 would be inside the signal peptide and cleaved. Python-verified: residue 32 = S (last SP residue), residue 33 = L (first mature ectodomain residue). The junction 32|33 is 288 residues from the TM boundary, providing ample space. Four independent papers (L1\u2013L4) all report N-terminal-tagged full-length IL17RA constructs expressed in mammalian cells, converging on this single extracellular terminus; L1 is cited as primary (HA tag, functional context), L2\u2013L4 corroborate with Flag tag. Full-length human IL17RA with an N-terminal HA tag (IL17RA-HA construct) was expressed in cells and used to characterize wild-type receptor and the Y391* truncation mutant (PMC11796622). The same N-terminal position is independently corroborated by three additional reports of Flag-IL-17RA stable HEK293 lines used to study protein stability/degradation and receptor phosphorylation (PMC11047997; PMC13576895 x2). No residue number is stated in any clip; the junction is derived from topology: IL17RA is a type I single-pass receptor with signal peptide 1\u201332 and mature ectodomain beginning at residue 33. An N-terminal tag must be placed after SP cleavage (after residue 32) to reside on the extracellular face; upstream of residue 33 is cleaved off with the signal peptide.",
+      "sources": [
+        {
+          "pmid": 39911581,
+          "citation": "PMID 39911581",
+          "claim": "Using skin cDNA from a healthy control individual, expression vectors were constructed for an N-terminal HA-tagged IL17RA (IL17RA-HA), IL17RA-Y391*-HA, and Il17RC-FLag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:17:42.878015+00:00",
+  "literature_notes": "L2, L3, and L4 all describe Flag-IL-17RA constructs at the same N-terminal junction (insert_after_residue=32) as L1; because they pin the same junction they corroborate site 1 rather than constituting separate sites. L5 (mouse IL-17RA-tTA) describes a C-terminal fusion; the C-terminus of IL17RA is intracellular (residues 342\u2013866), so this is not a surface-tag site and is recorded in other_positions. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 866,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Mouse IL-17RA-tTA C-terminal fusion expressed on NIH-3T3 cells and shown to recruit IL-17RC-TEV upon cytokine binding; the C-terminus of IL17RA (residue 866, intracellular domain 342\u2013866) faces the cytoplasm, making this an intracellular fusion, not a surface tag."
+    }
+  ]
+}

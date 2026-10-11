@@ -31,68 +31,6 @@
       "median_conservation": 0.0
     },
     {
-      "site_id": "EGFR-internal-420-lit",
-      "gene_symbol": "EGFR",
-      "uniprot_acc": "P00533",
-      "provenance": "literature_retrieved",
-      "det_path": null,
-      "site_kind": "internal",
-      "insert_after_residue": 420,
-      "residue_before": "F",
-      "residue_after": "E",
-      "residue_label": "F420",
-      "topology_state": "O",
-      "extracellular": false,
-      "compartment": "O",
-      "tag_type": "epitope_tag",
-      "tag_length_aa": null,
-      "linker": null,
-      "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "no",
-      "confidence": "medium",
-      "rationale": "The REMAP study inserted the RIEDL peptide at multiple positions within EGFR domain III (dN313 construct, residues 313-482) and expressed constructs on the cell surface for antibody-binding assays. The EMab-51 epitope was localized to residues 375-380; insertions outside this epitope were tolerated for surface expression. Position 420 is inferred to lie in a tolerated loop region away from the epitope and EGF-binding surface. EGF signaling function was NOT MEASURED. [validation: detected_only; position: inferred; source: paper; entailment_verified: True]",
-      "sources": [
-        {
-          "pmid": 34424763,
-          "citation": "PMID 34424763"
-        }
-      ],
-      "plddt": null,
-      "conservation_rank": null,
-      "median_conservation": null
-    },
-    {
-      "site_id": "EGFR-internal-481-lit",
-      "gene_symbol": "EGFR",
-      "uniprot_acc": "P00533",
-      "provenance": "literature_retrieved",
-      "det_path": null,
-      "site_kind": "internal",
-      "insert_after_residue": 481,
-      "residue_before": "F",
-      "residue_after": "G",
-      "residue_label": "F481",
-      "topology_state": "O",
-      "extracellular": false,
-      "compartment": "O",
-      "tag_type": "epitope_tag",
-      "tag_length_aa": null,
-      "linker": null,
-      "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "no",
-      "confidence": "medium",
-      "rationale": "The REMAP study used EGFR/dN482 as a deletion mutant boundary, indicating the region around residue 482 (domain III/IV linker) is accessible and the protein is expressed on the cell surface. RIEDL insertions were made throughout the dN313 construct spanning this region. Position 481 (F481/G482) is inferred as a tolerated insertion site at the domain III/IV boundary. EGF signaling function was NOT MEASURED. [validation: detected_only; position: inferred; source: paper; entailment_verified: True]",
-      "sources": [
-        {
-          "pmid": 34424763,
-          "citation": "PMID 34424763"
-        }
-      ],
-      "plddt": null,
-      "conservation_rank": null,
-      "median_conservation": null
-    },
-    {
       "site_id": "EGFR-surface_loop-347",
       "gene_symbol": "EGFR",
       "uniprot_acc": "P00533",
@@ -212,24 +150,31 @@
       "residue_after": "L",
       "residue_label": "A24",
       "topology_state": "O",
-      "extracellular": false,
-      "compartment": "O",
-      "tag_type": "fluorescent_protein_fusion",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag (3xFLAG-like 8 aa)",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "yes",
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "EGF-induced phosphorylation at Tyr1086 and Tyr978 was preserved at levels comparable to wild-type; downstream ERK levels and ERK phosphorylation upon EGF activation were unaltered (L6, A549 cells).",
       "confidence": "high",
-      "rationale": "FAP (~130 aa) was fused to the N-terminus of the EGFR ectodomain after SP cleavage at residue 24 by CRISPR/Cas9 knock-in at the endogenous locus, yielding near-endogenous expression levels. Surface display confirmed by MG-Bis-SA dye labeling of live non-permeabilized cells. EGF-induced endocytosis and pH-dependent trafficking validated. A shorter epitope tag (13-23 aa) inserted here is expected to be equally or better tolerated. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "The landmarks fix the signal peptide at residues 1\u201324 (last residue A) and the mature N-terminus at residue 25 (L); insert_after_residue=24 places the tag in the extracellular domain, 621 residues from the TM boundary, with no proximity concern. L6 (same construct as L2/L3) confirms EGF-induced phosphorylation and ERK signalling are intact, meeting the surface_and_function threshold. L1 independently validates the identical junction via CRISPR knock-in of a FAP tag at the endogenous locus, confirming the position is tolerant of insertions of varying size. Python verified residue_before=A and residue_after=L from the canonical sequence. Flag-EGFR and Flag-EGFR-HaloTag constructs were transfected into A549 cells; the Flag tag was placed on the N-terminus of the ECD, explicitly downstream of the signal peptide and upstream of the mature EGFR sequence. Surface display was confirmed by anti-Flag flow cytometry (L3). A parallel CRISPR knock-in of a FAP tag at the identical junction in the endogenous locus was also reported (L1).",
       "sources": [
         {
-          "pmid": 33654955,
-          "citation": "PMID 33654955"
+          "source_id": "DOI:10.1101/2024.12.21.629933",
+          "citation": "DOI 10.1101/2024.12.21.629933",
+          "claim": "In order to validate that the tagged EGFR constructs functioned properly upon EGF ligand activation, we incubated the engineered cells with EGF and observed significant activation of wellknown and functional phosphorylation sites on EGFR, Tyr1086 and Tyr978, 27 at comparable levels to the wild-type cells ( Figure 1C ).We also confirmed that the cell engineering did not significantly alter the patterns of downstream ERK levels or ERK phosphorylation upon EGF activation."
         }
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 24,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -1257,6 +1202,21 @@
       "isoform_residue": 73,
       "canonical_residue": 73,
       "left_pct": 6.033057851239669
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "def7ca5445c54000544a74df4e40fbb3e48feb82428fc2910b088be644d1c907",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T15:32:12.028606+00:00",
+  "literature_notes": "All six ledger lines converge on a single extracellular junction: the mature N-terminus of EGFR immediately after signal-peptide cleavage (after residue 24). L1 reports a FAP-tag CRISPR knock-in at this junction; L2\u2013L5 report a Flag-tag fusion at the same position; L6 provides functional validation for the Flag construct. Because all lines pin the same junction, one site is reported (ranked by the strongest evidence, L6). The HaloTag fused to the intracellular C-terminus (L2/L4/L5) is recorded in other_positions. No ledger line supports any internal extracellular loop insertion for EGFR.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1210,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HaloTag fused to the C-terminus of the intracellular domain (ICD) of EGFR; confirmed intracellular by topology (residues 668\u20131210 are cytoplasmic) \u2014 not a surface tag site."
     }
   ]
 }

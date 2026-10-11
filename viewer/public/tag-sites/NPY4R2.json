@@ -4,6 +4,43 @@
   "uniprot_acc": "P0DQD5",
   "sites": [
     {
+      "site_id": "NPY4R2-internal-None-lit",
+      "gene_symbol": "NPY4R2",
+      "uniprot_acc": "P0DQD5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL2",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "NanoLuc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "High NanoBRET signals were obtained, enabling determination of equilibrium Kd values and kinetic binding data, confirming functional surface display of the tagged receptor with an intact ligand-binding pocket.",
+      "confidence": "high",
+      "rationale": "L3 and L4 together report that a NanoLuc insertion within ECL2 of full-length hY4R produces a stably expressed, surface-displayed receptor capable of high-quality NanoBRET binding measurements, demonstrating both surface trafficking and a functional ligand-binding pocket. ECL2 (177\u2013212) is 36 residues long, providing ample room for a ~19 aa NanoLuc-linker insert well away from TM4 (ends at 176) and TM5 (starts at 213). No residue number was specified in the paper, so the site is reported at region level with insert_after_residue=null. NanoLuc (Nluc) was inserted into ECL2 of full-length hY4R (NPY4R2) to generate a stably expressed HEK293T-hY4R-Nluc(intraECL2) construct. ECL2 spans residues 177\u2013212 (36 aa) by the authoritative topology landmarks. No specific junction residue was named in the paper; the insertion is reported only as 'in ECL2'. The construct was used for NanoBRET binding assays.",
+      "sources": [
+        {
+          "pmid": 38633582,
+          "citation": "PMID 38633582",
+          "claim": "To establish a Y 4 R NanoBRET binding assay, HEK293T cells were stably transfected with two different hY 4 R-Nluc fusion constructs, either with N-terminally fused Nluc (HEK293T-Nluc-hY 4 R cells) or with the Nluc inserted in the extracellular loop (ECL) 2 of the receptor (HEK293T-hY 4 R-Nluc(intraECL2) cells)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "NPY4R2-nterm-tedman",
       "gene_symbol": "NPY4R2",
       "uniprot_acc": "P0DQD5",
@@ -37,7 +74,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NPY4R2-terminal_n-0-lit",
+      "gene_symbol": "NPY4R2",
+      "uniprot_acc": "P0DQD5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Fluorescence microscopy confirmed cell surface expression; inositol turnover assay showed WT-like potency and efficacy for G protein activation.",
+      "confidence": "high",
+      "rationale": "L1 reports an N-terminally HA-tagged full-length hY4R construct that traffics to the cell surface and retains WT-like G protein activation. NPY4R2 has no native signal peptide (topology is extracellular from residue 1), so the tag prepends before M1 (insert_after_residue=0, residue_after=M). The extracellular N-terminus is 40 residues long, well clear of TM1. L5 independently corroborates an N-terminal FLAG tag on hY4R in a large-scale GPCR panel, further supporting this terminus as tag-tolerant. Full-length hY4R (NPY4R2) was engineered with an N-terminal HA tag and C-terminal EYFP fusion, cloned into pVitro2-hygro-mcs, and expressed in mammalian cells for fluorescence microscopy and functional studies. NPY4R2 has no signal peptide (topology begins extracellular at residue 1), so the N-terminal tag prepends before M1. The N-terminal extracellular domain spans residues 1\u201340, providing ample distance from TM1 (which begins at residue 41).",
+      "sources": [
+        {
+          "pmid": 27818291,
+          "citation": "PMID 27818291",
+          "claim": "The cDNA of the N-terminally hemagglutinin (HA)-tagged hY 4 R enhanced yellow fluorescent protein (EYFP) fusion protein was cloned into the pVitro2-hygro-mcs vector (Cayla-Invivogen, Toulouse, France) as described [ 17 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:13:39.106047+00:00",
+  "literature_notes": "Two extracellular sites are supported by the ledger. (1) The N-terminal prepend (L1, corroborated by L5) is the best-validated site: HA-tagged full-length hY4R shows surface expression by fluorescence microscopy and WT-like G protein activation by inositol turnover. L5 adds an independent FLAG-tag construct across 215 GPCRs including hY4R, but provides no per-receptor functional data, so L1 is the primary citation. (2) The ECL2 NanoLuc insertion (L3/L4) is also surface_and_function validated via NanoBRET binding assays. L4 notes that an N-terminal Nluc fusion gave no BRET signal; this reflects geometric distance from the ligand-binding pocket for NanoBRET, not a trafficking failure, and does not contradict the HA-tag surface expression shown in L1. The C-terminal EYFP fusion (L1/L2) is placed in other_positions because the C-terminus is intracellular (residues 326\u2013375). ECL1 (101\u2013115) and ECL3 (287\u2013301) are not supported by any ledger line and are not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 375,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EYFP fusion on full-length hY4R; the C-terminus (residues 326\u2013375) is intracellular per topology landmarks, so this is not a surface tag site."
+    }
+  ]
 }

@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "CACNA2D4",
+  "uniprot_acc": "Q7Z3S7",
+  "sites": [
+    {
+      "site_id": "CACNA2D4-terminal_n-72-lit",
+      "gene_symbol": "CACNA2D4",
+      "uniprot_acc": "Q7Z3S7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 72,
+      "residue_before": "I",
+      "residue_after": "P",
+      "residue_label": "I72",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "2xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Live-cell surface labeling confirmed protein reaches the plasma membrane in primary hippocampal neurons; subcellular distribution analyzed. Channel function (calcium current) not measured in the ledger clips.",
+      "confidence": "high",
+      "rationale": "L1 states the 2HA tag was inserted 'after residue I71' using the paper's SP prediction of 1\u201368; L2 independently specifies 'between the fourth and fifth amino acid after the predicted signal peptide cleavage site.' Computed from the canonical sequence: the 4th residue after position 68 is position 72 (I, isoleucine), and the 5th is position 73 (P, proline). The paper's label 'I71' is offset by one from UniProt canonical numbering (position 71 = K, position 72 = I), but the amino acid identity I and the 4th/5th-after-SP description both anchor the junction unambiguously to insert_after_residue = 72 in canonical numbering. Position 72 lies well within the extracellular domain (SP = 1\u201319, extracellular = 20\u20131137) and the entire mature protein is extracellular, so no TM-proximity constraint applies. Full-length membrane-anchored \u03b12\u03b4-4 construct (p\u03b2A-\u03b12\u03b4-4) expressed in HEK293 cells and primary hippocampal neurons; 2HA tag introduced by overlapping-primer PCR into the extracellular N-terminal region immediately after the signal peptide, enabling live-cell surface labeling.",
+      "sources": [
+        {
+          "pmid": 36077281,
+          "citation": "PMID 36077281",
+          "claim": "The strongest prediction was that the signal peptide would comprise residues 1\u201368; therefore, the 2HA tag was introduced into p\u03b2A-\u03b1 2 \u03b4-4 after residue I71."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:56:55.447359+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same paper (PMC9456004) and describe a single experimental construct: a 2xHA tag inserted near the N-terminus of full-length membrane-anchored \u03b12\u03b4-4. L1 and L2 pin the junction; L3 describes the cloning method; L4 reports the neuronal expression result. No other insertion positions are mentioned in the ledger. The paper's stated SP prediction (1\u201368) differs from the canonical topology (SP 1\u201319), but this affects only the paper's internal rationale for choosing the site, not the absolute residue number. The amino acid identity I (isoleucine) at canonical position 72 \u2014 confirmed by the L2 '4th/5th after SP' description \u2014 resolves the one-residue offset between the paper's numbering ('I71') and the UniProt canonical sequence. The \u03b12\u03b4-4 subunit is a peripheral membrane protein whose entire mature sequence (residues 20\u20131137) is extracellular; there are no transmembrane segments in the canonical topology, so TM-proximity constraints do not apply to this site.",
+  "literature_rejected": []
+}

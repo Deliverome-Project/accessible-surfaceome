@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR173-terminal_n-0-lit",
+      "gene_symbol": "GPR173",
+      "uniprot_acc": "Q9NS66",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface localization confirmed by anti-FLAG-HRP in non-permeabilized HEK293T cells (for GPR27 ortholog); no functional assay reported for the tagged construct. NOT MEASURED for GPR173 directly.",
+      "confidence": "medium",
+      "rationale": "GPR173 has a 23-residue extracellular N-terminus (residues 1\u201323) with no signal peptide, making insert_after_residue=0 the topology-derived prepend position; residue_after is M (residue 1). L1 establishes that the same N-terminal position in the close SREB-family ortholog GPR27 tolerates a FLAG tag and reaches the plasma membrane surface. No residue number is named in L1 for GPR173, so position_evidence is topology_derived. The 23-aa extracellular span between the tag and TM1 (residue 24) satisfies the \u22653-residue TM-distance constraint with ample margin. L1 reports a full-length, membrane-anchored human GPR27 (SREB1) construct with an N-terminal FLAG tag expressed in HEK293T cells; surface display was confirmed by anti-FLAG-HRP staining of non-permeabilized cells. GPR27 is the closest characterized paralog of GPR173 (both SREB-family orphan GPCRs). GPR173 topology shows residues 1\u201323 as extracellular with no signal peptide, so the N-terminal prepend is the sole extracellular terminus available.",
+      "sources": [
+        {
+          "citation": "DOI 10.21203/rs.3.rs-7641991/v1",
+          "claim": "Although GPR27 showed signi\u0000cant cellular effects in the absence of ligand stimulation, which were not mediated by G proteins, it localized at i/o/z the plasma membrane as demonstrated by the detection of an anti-FLAG-HRP-conjugated antibody in non-permeabilized and permeabilized conditions of HEK293T cells expressing human N-terminally FLAG-tagged GPR27 (Figure 1d).",
+          "source_id": "DOI:10.21203/rs.3.rs-7641991/v1"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:28:56.185369+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It provides indirect evidence via the GPR27 (SREB1) ortholog for an N-terminal tag on GPR173 (SREB3). No ledger lines support insertions in ECL1 (81\u201397), ECL2 (161\u2013184), or ECL3 (308\u2013322), so no internal sites are proposed. The C-terminus (residues 344\u2013373) is intracellular and therefore excluded. Confidence is medium rather than high because L1 names GPR27, not GPR173, and no functional assay was reported even for the GPR27 tagged construct.",
+  "literature_rejected": []
 }

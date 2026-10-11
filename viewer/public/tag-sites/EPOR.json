@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPOR",
+  "uniprot_acc": "P19235",
+  "sites": [
+    {
+      "site_id": "EPOR-terminal_n-24-lit",
+      "gene_symbol": "EPOR",
+      "uniprot_acc": "P19235",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "W",
+      "residue_after": "A",
+      "residue_label": "W24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression of myc-tagged EpoR variants confirmed by anti-myc flow cytometry (L1, chimeric constructs); surface expression of the full-length hEpoR myc-tagged construct is NOT MEASURED in the ledger clips.",
+      "confidence": "medium",
+      "rationale": "L2 explicitly states that the full-length hEpoR expression vector retains both the N-terminal signal peptide and a myc tag, placing the tag at the mature N-terminus after SP cleavage. EPOR has a single-pass topology with one extracellular terminus (residues 25\u2013250), so the tag position is unambiguous: it follows the SP cleavage site at residue 24 (W) and precedes the mature protein starting at residue 25 (A). Python verification confirms res(24)=W and res(25)=A. The tag is 226 residues from the TM boundary (residue 251), well clear of any steric constraint. Full-length hEpoR expression vector retaining the N-terminal signal peptide and a myc tag, described in PMC13505329. The same paper (L1) confirms surface expression of myc-tagged EpoR variants by flow cytometry in Ba/F3-gp130 cells, though those flow-cytometry constructs are chimeric (VHH replacing D1). The full-length hEpoR construct with myc tag is described at the vector level (L2); no residue number is stated, but exactly one extracellular terminus exists (mature N-terminus, residue 25), so the junction is computed from the signal-peptide landmark: insert_after_residue = 24 (last residue of SP = W; first residue of mature protein = A25).",
+      "sources": [
+        {
+          "pmid": 42632025,
+          "citation": "PMID 42632025",
+          "claim": "For hEpoR, the N-terminal signal peptide and myc tag remained in the vector after linearization."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:36:59.004392+00:00",
+  "literature_notes": "L1 describes myc-tagged chimeric EpoR variants (G VHH EpoR\u0394D1 series) in which domain 1 of EpoR is replaced by a VHH nanobody; these are not standard full-length EPOR and the myc tag position cannot be mapped to a specific residue in the canonical EPOR sequence. L1 therefore cannot independently pin a second site. The intracellular tyrosine residues mentioned in L1 (Y426, Y454, Y456, and the \u0394Y426\u2013S480 / \u0394Y454\u2013S480 truncations) are deletion/mutation targets in the intracellular domain (residues 273\u2013508) and are not tag-insertion sites; they are excluded from both sites and other_positions. Only one surface tag site is supported by the ledger.",
+  "literature_rejected": []
+}

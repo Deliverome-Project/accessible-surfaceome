@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ERVFRD-1",
+  "uniprot_acc": "P60508",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:36:28.791443+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single construct: a 2\u00d7HA tag appended to the protein C-terminus. The authoritative topology landmarks place the C-terminus (residues 500\u2013538) in the intracellular compartment; Syncytin-2 is a single-pass type-I membrane protein with a large extracellular ectodomain (residues 16\u2013489), a single TM helix (490\u2013499), and a short cytoplasmic tail (500\u2013538). A C-terminal tag therefore faces the cytoplasm, not the cell surface, and cannot serve as an extracellular epitope tag. No ledger line reports any insertion in the extracellular domain (residues 16\u2013489) or at the mature N-terminus (after residue 15). Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 538,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "2\u00d7HA tag appended after the final residue (F538) of the intracellular C-terminal tail (residues 500\u2013538); construct was tolerated \u2014 cells showed normal morphology and EV size distributions were unchanged (L3) \u2014 but the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

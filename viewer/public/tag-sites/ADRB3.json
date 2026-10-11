@@ -37,7 +37,64 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADRB3-terminal_n-0-lit",
+      "gene_symbol": "ADRB3",
+      "uniprot_acc": "P13945",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Agonist (SR-58611A) dose-response cAMP assay in HEK293 cells: cAMP formation was comparable between untagged ADR\u03b23 and HA-ADR\u03b23-GFP, indicating the HA tag has no effect on receptor function.",
+      "confidence": "high",
+      "rationale": "ADRB3 is a GPCR with no signal peptide; the topology landmarks place residues 1\u201336 extracellular and TM1 beginning at residue 37. The paper explicitly places the HA tag at the 'extracellular N-terminus' of the full-length, membrane-anchored receptor, which resolves to a single junction: a prepend before residue 1 (insert_after_residue=0, residue_after=M). The 36-residue extracellular N-terminal stretch provides ample distance (>3 aa) from the TM1 boundary. Functional validation by cAMP assay confirms surface_and_function status. Full-length ADRB3 cloned into pLenti-C-mGFP with HA tag at the extracellular N-terminus and GFP at the intracellular C-terminus (HA-ADR\u03b23-GFP); expressed in HEK293 cells. Paper states 'HA tag at the extracellular N-terminus' without naming a specific residue number. ADRB3 has no signal peptide (topology landmarks confirm residues 1\u201336 are extracellular), so exactly one extracellular N-terminal junction exists: before residue 1 (insert_after_residue=0).",
+      "sources": [
+        {
+          "pmid": 34072007,
+          "citation": "PMID 34072007",
+          "claim": "To evaluate the impact of tryptophan to arginine substitution on ADR\u03b2 3 expression and function, we engineered ADR\u03b2 3 construct with an HA tag at the extracellular N-terminus and a GFP tag at the intracellular C-terminus (as illustrated in Figure 1 A)."
+        },
+        {
+          "pmid": 30541923,
+          "citation": "PMID 30541923",
+          "claim": "A ,WTorpalmitoylation-deficientFLAG-m AR( Mouse ;at left ) a 3 3 t orFLAG-h (cid:2) AR( Human ;at right )weretransientlyexpressedinHEK293cells.Plasma-membranereceptorabundancewasassessedbyextracellularlabeling KO 3 (cid:2) (cid:3) (cid:5) (cid:4) withanti-FLAGAbfollowedbyFACS.MutationofCys-358withinthem ARresultedinasmall( 8%)decreaseinmembrane-receptorabundance; n 3.*, p B 3 (cid:2) 0.005bytwo-tailedunpairedStudent\u2019s t test.Mutationofallfour S -palmitoylatedCys(C4A)withintheh ARorseparatemutationofCys-153,Cys-292,or E (cid:3) (cid:5) (cid:2) 3 UN Cys-361/363resultedinalarger("
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:21:04.248738+00:00",
+  "literature_notes": "The ledger (L1\u2013L8) supports only N-terminal extracellular tags for ADRB3. L1\u2013L5 (PMC8199065) describe an HA tag at the extracellular N-terminus with full functional validation (cAMP assay). L6\u2013L8 (PMC6378987) describe a FLAG tag at the N-terminus confirmed by non-permeabilized FACS. Both resolve to the same junction (insert_after_residue=0) because ADRB3 has no signal peptide and residues 1\u201336 are the sole extracellular N-terminal span. No ledger line supports any internal ECL insertion (ECL1: 98\u2013111, ECL2: 175\u2013203, ECL3: 315\u2013327). The C-terminal GFP (L1/L5) is intracellular and placed in other_positions. Palmitoylation sites mentioned in L6/L8 (Cys-153, Cys-292, Cys-361/363) are not tag-insertion sites and are not included.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 408,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the intracellular C-terminus of full-length ADRB3 (residues 347\u2013408 are intracellular per topology landmarks); not a surface-accessible site."
+    }
+  ]
 }

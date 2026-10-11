@@ -52,5 +52,12 @@
       "left_pct": 3.5294117647058822,
       "note": "Isoform surface expr 140 (-98% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:06:24.722196+00:00",
+  "literature_notes": "",
+  "literature_rejected": []
 }

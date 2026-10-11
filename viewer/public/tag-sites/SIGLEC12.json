@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "SIGLEC12",
+  "uniprot_acc": "Q96PQ1",
+  "sites": [
+    {
+      "site_id": "SIGLEC12-terminal_n-18-lit",
+      "gene_symbol": "SIGLEC12",
+      "uniprot_acc": "Q96PQ1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "K",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L2: stable cell line shows SIGLEC12\u2013FLAG at the plasma membrane and cytosolic puncta during necroptosis by confocal microscopy; L1: transfected cells show FLAG signal by IF; L3: FLAG detected by immunoblot. Necroptosis function (TSE-induced cell death) is preserved in the tagged line. No surface-specific (non-permeabilized) staining or flow cytometry reported to confirm extracellular FLAG accessibility.",
+      "confidence": "medium",
+      "rationale": "SIGLEC12 is a type I transmembrane protein with a signal peptide (residues 1\u201318) and a single extracellular N-terminus beginning at residue 19 (K); the C-terminus (503\u2013595) is intracellular. Because exactly one terminus is extracellular, a terminus-placed FLAG tag must reside after the SP cleavage site (insert_after_residue = 18, residue_before = A, residue_after = K), computed from the authoritative landmarks. The insertion point is 463 residues from the TM boundary, well clear of any steric constraint. No clip names a residue, so position_evidence is topology_derived. Full-length SIGLEC12\u2013FLAG constructs were expressed in HeLa-RIPK3\u2013HA cells (L1), in a stable HT-29 SIGLEC12-KO line (L2), and in 293T cells (L3); all are membrane-anchored, full-length constructs detected by anti-FLAG immunofluorescence, immunoprecipitation, and immunoblot. No clip states the FLAG position in sequence, but SIGLEC12 is type I single-pass with exactly one extracellular terminus (mature N-terminus after SP cleavage at residue 18/19) and an intracellular C-terminus (503\u2013595); the FLAG must therefore reside at the mature N-terminus.",
+      "sources": [
+        {
+          "pmid": 41225007,
+          "citation": "PMID 41225007",
+          "claim": "SIGLEC12 was localized to the plasma membrane and cytosolic puncta during necroptosis. d , Human normal colon and colon tumour tissue biopsies from patients were stained with SIGLEC12 ( n = 3). e , The HT-29- SIGLEC12 -KO-SIGLEC12\u2013FLAG stable cell line was treated with TSE, and SIGLEC12\u2013FLAG was immunoprecipitated and analysed by transmission electron microscopy. f , g , HT-29 cells ( f ) and HT-29- SIGLEC12 -KO-SIGLEC12\u2013FLAG stable cells ( g ) were treated with TSE for the indicated times."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:22:23.880866+00:00",
+  "literature_notes": "All three ledger clips (L1, L2, L3) report full-length SIGLEC12\u2013FLAG constructs but none states the FLAG position in sequence. The topology_derived rule applies because SIGLEC12 has exactly one extracellular terminus (mature N-terminus, residue 19, after SP cleavage at 18/19) and an intracellular C-terminus; a terminus-placed FLAG must therefore be at the N-terminus. L3 also describes a truncated SIGLEC12-\u0394N\u2013FLAG (residues 22\u2013410) that lacks the TM domain (482\u2013502) and is therefore a soluble ectodomain construct \u2014 disqualified per the rules. No clip names an internal loop insertion. Confidence is medium rather than high because no clip explicitly confirms the FLAG is N-terminal or surface-accessible (e.g., by live-cell non-permeabilized staining or flow cytometry).",
+  "literature_rejected": []
+}

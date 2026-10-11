@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ECSCR",
+  "uniprot_acc": "Q19T08",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:22:01.751498+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same paper (PMC3123356). L1 explicitly names pEGFP-N1 and p3\u00d7FLAG-CMV-14, both of which append the tag to the protein C-terminus. The computed topology places the C-terminus (residues 146\u2013205) in the intracellular compartment, so these are intracellular tags and do not qualify as surface sites. L2 additionally mentions a myc-tagged construct, but the clip states no residue number and no terminus assignment for the myc tag; the position is therefore unstated and the site cannot be pinned (rule: 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue'). Even if myc were inferred to be N-terminal (extracellular), the clip provides no junction residue and the topology-derived rule requires that exactly one extracellular terminus be unambiguous \u2014 here the myc placement is genuinely ambiguous between N- and C-terminal vectors. No ledger line supports any extracellular insertion. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 205,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP (pEGFP-N1) and 3\u00d7FLAG (p3\u00d7FLAG-CMV-14) fusions are tolerated and confirm membrane expression, but the C-terminus (residues 146\u2013205) is intracellular per the computed topology."
+    }
+  ]
+}

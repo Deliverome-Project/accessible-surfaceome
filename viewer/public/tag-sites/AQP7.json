@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "AQP7",
+  "uniprot_acc": "O14520",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:32:03.984698+00:00",
+  "literature_notes": "All five ledger lines describe tags at topologically intracellular termini. L1 and L2 (PMC4551902) place a c-Myc epitope 'in front of the first ATG', i.e. prepended to residue 1; the computed topology assigns residues 1\u201340 to the intracellular face, so this tag faces the cytoplasm. L3 (PMC4551902) confirms surface trafficking of the c-Myc-AQP7 G264V construct but does not relocate the tag \u2014 it remains at the intracellular N-terminus; G264 itself falls in TM6 (253\u2013276) and is not an insertion site. L4 and L5 (PMC7339978) place a myc-HIS tag at the C-terminus; residues 277\u2013342 are intracellular. AQP7 has three extracellular loops (EC1: 60\u201367, 8 aa; EC2: 134\u2013167, 34 aa; EC3: 221\u2013252, 32 aa), but no ledger line reports any insertion in any of them. Zero surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "c-Myc epitope inserted before residue 1 (N-terminal prepend); the N-terminus (residues 1\u201340) is intracellular per topology landmarks, so the tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 342,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "myc-HIS tag appended after residue 342 (C-terminal); the C-terminus (residues 277\u2013342) is intracellular per topology landmarks, so the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

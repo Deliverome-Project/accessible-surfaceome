@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNA5",
+  "uniprot_acc": "P22460",
+  "sites": [
+    {
+      "site_id": "KCNA5-internal-307-lit",
+      "gene_symbol": "KCNA5",
+      "uniprot_acc": "P22460",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 307,
+      "residue_before": "P",
+      "residue_after": "S",
+      "residue_label": "P307",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by live-cell anti-FLAG staining of non-permeabilized cells; channel trafficking to the plasma membrane was not disrupted. Electrophysiological function of the FLAG-tagged construct is not explicitly reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names residues 307 and 308 as the junction in a full-length, membrane-anchored KV1.5 construct. Python lookup confirms residue 307 = P and residue 308 = S, both within the authoritative S1\u2013S2 extracellular loop (270\u2013322). The insertion sits 38 residues from the S1 TM boundary and 15 residues from the S2 TM boundary, satisfying the \u22653-residue clearance rule on both sides. The FLAG tag (8 aa) is shorter than the 13\u201323 aa ALFA-tag target but establishes that this loop tolerates an insertion at this exact junction. Full-length KV1.5 in a KV\u03b21.3\u2013IRES\u2013KV1.5 bicistronic construct; FLAG epitope inserted between residues 307 and 308 of the S1\u2013S2 extracellular loop by overlapping PCR. The tagged channel was expressed in mammalian cells and used for surface-trafficking studies.",
+      "sources": [
+        {
+          "pmid": 33572906,
+          "citation": "PMID 33572906",
+          "claim": "Another construction tagged with a FLAG sequence into the S1\u2013S2 external loop of the K V 1.5 (between residues 307 and 308) of the K V \u03b21.3\u2013IRES\u2013K V 1.5 cDNA was obtained by the overlapping PCR technique ( Table 1 ) previously described [ 43 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:36:34.231004+00:00",
+  "literature_notes": "L2 (HA tag, KV\u03b21.3\u2013IRES\u2013KV1.5\u2013HA) was evaluated but does not qualify: the clip describes a restriction-enzyme (BlpI/AflII) cDNA swap with no residue position stated, making it impossible to pin insert_after_residue or confirm the tag is extracellular. The conventional 'KV1.5-HA' naming suggests a C-terminal tag, which would be intracellular (residues 516\u2013613), but this is inference, not evidence. L3 (PMC185199) was evaluated but does not qualify: it reports an antibody that recognises an extracellular epitope in the S1\u2013S2 linker of Kv1.5 on live, non-permeabilised cells. Per the rules, antibody epitope mapping \u2014 where an antibody binds \u2014 is not evidence of where a tag was inserted, and L3 is therefore excluded. No other ledger lines were provided.",
+  "literature_rejected": []
+}

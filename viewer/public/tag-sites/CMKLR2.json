@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:51:43.255434+00:00",
+  "literature_notes": "Both ledger clips concern GPR1, which is the same protein as CMKLR2 (Chemerin-like receptor 2). L1 reports a GPR1-eYFP construct: the 'Protein-FP' naming convention in GPCR literature denotes a C-terminal fusion, and the CMKLR2 C-terminus (residues 308\u2013355) is intracellular per the topology landmarks \u2014 this is a tolerated intracellular tag, recorded in other_positions. L2 reports an 'Nluc-tagged GPR1' used in a nanoBRET binding assay but does not state whether the Nluc is at the N- or C-terminus; the topology-derived rule requires the paper to confirm the tag is on the extracellular face before the single extracellular terminus can be inferred as the junction. Because L2 is silent on which terminus carries the tag, it cannot ground an extracellular surface site. No other ledger lines are present. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 355,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GPR1-eYFP C-terminal fusion is tolerated (arrestin3 recruitment and internalization confirmed), but the CMKLR2 C-terminus (residues 308\u2013355) is intracellular and therefore not a surface-tag site."
+    }
+  ]
 }

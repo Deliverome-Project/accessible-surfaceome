@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CDH8",
+  "uniprot_acc": "P55286",
+  "sites": [
+    {
+      "site_id": "CDH8-terminal_n-29-lit",
+      "gene_symbol": "CDH8",
+      "uniprot_acc": "P55286",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "M",
+      "residue_after": "A",
+      "residue_label": "M29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "PA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Homozygous Cdh8^PA/PA mice show normal viability and fertility, confirming the tagged protein supports CDH8 function in vivo.",
+      "confidence": "high",
+      "rationale": "The ledger clip reports a PA tag knocked into the endogenous Cdh8 locus in a full-length, membrane-anchored, surface-displayed context. The quote names no residue, so the position is topology-derived: CDH8 has a signal peptide spanning residues 1\u201329 (authoritative landmarks), a single extracellular N-terminus beginning at residue 30 (A), and an intracellular C-terminus (643\u2013799), leaving insert_after_residue=29 as the sole extracellular terminal junction. Python verification confirms residue 29 = M and residue 30 = A. Normal viability and fertility of homozygous knock-in mice validates surface expression and functional tolerance. CRISPR/Cas9-mediated knock-in of a PA tag into the endogenous mouse Cdh8 locus, generating Cdh8-PA knock-in mice. The construct is full-length and membrane-anchored (surface-displayed CDH8). The ledger quote names no specific residue; CDH8 has a single extracellular terminus (mature N-terminus at residue 30, after signal peptide cleavage at residue 29), making insert_after_residue=29 the only topology-consistent placement for a surface PA tag.",
+      "sources": [
+        {
+          "pmid": 41277071,
+          "citation": "PMID 41277071",
+          "claim": "Classic cadherin cell-cell adhesion molecules with self-organizing activities play roles in segregating distinct populations of cells at developing brain regions and/or boundaries. However, the protein dynamics of each cadherin subclass in the mouse embryonic brain is poorly described due to the low antigenicity. Here, we generate Cdh6-HA and Cdh8-PA tag knock-in (KI) mice by CRISPR/Cas9-mediated genome editing and establish Cdh6<sup>HA/HA</sup>; Cdh8<sup>PA/PA</sup>; Cdh11<sup>EGFP/EGFP</sup> triple tag KI homo mice with normal viability and fertility."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:31:21.539944+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports a PA tag knock-in at the endogenous Cdh8 locus with no residue number stated in the quote. The position is topology-derived as the mature N-terminus (after SP cleavage at residue 29) is the sole extracellular terminus. No internal loop insertions, C-terminal tags, or intracellular positions are reported in the ledger. The C-terminus (residues 643\u2013799) is intracellular and therefore excluded. No abrogating insertions are reported.",
+  "literature_rejected": []
+}

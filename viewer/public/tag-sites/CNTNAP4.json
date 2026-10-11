@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CNTNAP4",
+  "uniprot_acc": "Q9C0A0",
+  "sites": [
+    {
+      "site_id": "CNTNAP4-terminal_n-25-lit",
+      "gene_symbol": "CNTNAP4",
+      "uniprot_acc": "Q9C0A0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "eGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger clips describe reporter knock-in mice used to identify Cntnap4-expressing cells; no surface-trafficking assay or functional assay for the tagged protein is reported in the cited clips.",
+      "confidence": "medium",
+      "rationale": "CNTNAP4 is a type-I single-pass transmembrane protein with its N-terminus extracellular (residues 26\u20131241) and its C-terminus intracellular (residues 1263\u20131308); the only extracellular terminus is the mature N-terminus beginning at Gly26. L2 explicitly states that the signal sequence (residues 1\u201325) was replaced by eGFP, placing the tag at the mature N-terminus; L3 corroborates with a second independent knock-in at the same locus. The topology-derived junction is insert_after_residue = 25 (Ala25 \u2192 Gly26), which is the signal-peptide cleavage site; a tag placed here is on the extracellular face and satisfies the \u22653-residue distance from the TM boundary (>1200 residues away). Because no residue number is explicitly named in either clip, position_evidence is topology_derived. Two independent knock-in mouse lines place eGFP at the N-terminus of full-length CNTNAP4/Caspr4. L2 (PMC4281262) describes a targeting vector that replaced the first exon (encoding the ATG and signal sequence, residues 1\u201325) with in-frame eGFP, yielding a full-length GFP-tagged protein. L3 (PMC3898991) describes a parallel Caspr4 GFP knock-in where GFP-pA is inserted immediately after the methionine start codon of the Caspr4 gene. No specific junction residue is named in either clip; the position is derived from the single extracellular terminus of this type-I transmembrane protein.",
+      "sources": [
+        {
+          "pmid": 24870235,
+          "citation": "PMID 24870235",
+          "claim": "The Cntnap4 targeting vector was designed to replace a genomic fragment of 585 bp containing the first exon of the gene, encoding the ATG and the signal sequence, with an in frame egfp , followed by an oppositely directed neo gene ( Fig.1B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:01:26.629322+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC4281262) and describe the same knock-in construct; L2 is cited as the primary clip because it is more explicit about the construct design (signal sequence replaced by eGFP). L3 (PMC3898991) independently corroborates the N-terminal eGFP placement in a separate Caspr4 knock-in line. All three ledger lines describe reporter knock-in mice; none explicitly confirms cell-surface display of the tagged protein, so validation_level is not_measured. The intracellular C-terminus (residues 1263\u20131308) is not a surface-tag site and is not proposed. No internal extracellular loop insertion is supported by any ledger line.",
+  "literature_rejected": []
+}

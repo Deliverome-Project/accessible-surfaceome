@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADCY1",
+  "uniprot_acc": "Q08828",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:02:21.872699+00:00",
+  "literature_notes": "Both ledger clips (L1, L2) derive from the same paper (PMID 12421367) reporting 'HA-tagged AC1' / 'HA-AC1'. Neither clip names a residue, a loop, or states whether the tag is extracellular. The 'HA-AC1' prefix convention indicates an N-terminal fusion; ADCY1's N-terminus (residues 1\u201361) is intracellular per the authoritative topology landmarks. The C-terminus (801\u20131119) is also intracellular. Because neither terminus is extracellular, the topology_derived rule cannot place the tag on the cell surface. No loop or residue is named in either clip, so no internal extracellular site can be grounded. The immunostaining described is consistent with labeling of permeabilized cells (the paper's stated goal is subcellular localization). Zero extracellular surface tag sites qualify from this ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA-AC1 naming convention indicates N-terminal HA fusion; ADCY1 residues 1\u201361 are intracellular per topology landmarks, so the tag faces the cytoplasm, not the extracellular space."
+    }
+  ]
+}

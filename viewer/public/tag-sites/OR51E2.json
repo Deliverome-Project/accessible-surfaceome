@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR51E2-terminal_n-0-lit",
+      "gene_symbol": "OR51E2",
+      "uniprot_acc": "Q9H255",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by cell-surface detection assay; OR51E2 showed the most pronounced surface expression among three ORs tested. Functional agonist-response assays not reported in these clips.",
+      "confidence": "high",
+      "rationale": "OR51E2 is a GPCR with residues 1\u201323 extracellular and residues 294\u2013320 intracellular; the N-terminus is the sole extracellular terminus available for a surface FLAG tag. No residue number is stated in L1/L2, so the junction is topology-derived: insert_after_residue=0 places the tag before M1, 23 residues from TM1 (residues 24\u201348), well above the \u22653-residue minimum. L3 independently confirms the N-terminal FLAG design on the full-length membrane-anchored receptor, corroborating this position. Full-length OR51E2 with a FLAG epitope tag trafficked robustly to the plasma membrane in HEK293 cells without requiring a Lucy signal peptide or chaperones (PMC5131280). A second study (PMC10580732) explicitly engineered the full-length receptor with an N-terminal influenza hemagglutinin signal sequence followed by a FLAG tag for cryo-EM structural characterization, confirming the N-terminal extracellular placement of the tag on the membrane-anchored receptor.",
+      "sources": [
+        {
+          "pmid": 27905542,
+          "citation": "PMID 27905542",
+          "claim": "As shown in Fig. 1d , Flag-tagged full-length constructs encoding OR1J1, OR6A2 and OR51E2 were able to traffic to the cell surface under certain conditions; surface expression of OR51E2 was the most pronounced among the three ORs."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:51:25.109378+00:00",
+  "literature_notes": "L1 and L2 (same paper, PMC5131280) report surface expression of a Flag-tagged full-length OR51E2 construct but do not state the residue position of the tag. L3 (PMC10580732) explicitly places an HA signal sequence + FLAG at the N-terminus of the full-length receptor for cryo-EM; this confirms the N-terminal extracellular placement and is treated as corroborating the same site. Both converge on a single N-terminal prepend site (insert_after_residue=0). L4 reports a C-terminal miniG\u03b1s fusion; the C-terminus is intracellular (residues 294\u2013320) and miniG\u03b1s is not an epitope tag, so this is recorded in other_positions only. No ledger line supports an insertion in any of the extracellular loops (ECL1 83\u201396, ECL2 163\u2013194, ECL3 261\u2013272), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 320,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal miniG\u03b1s protein fused to OR51E2 for cryo-EM structural characterization; the C-terminus (residues 294\u2013320) is intracellular per topology landmarks, making this an intracellular fusion, not a surface tag site."
+    }
+  ]
 }

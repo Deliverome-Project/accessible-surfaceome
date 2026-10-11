@@ -37,7 +37,60 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "RXFP3-terminal_n-0-lit",
+      "gene_symbol": "RXFP3",
+      "uniprot_acc": "Q9NSD7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Radioligand binding studies performed with HA-RXFP3 (L1); surface expression confirmed by anti-HA western blot for 3xHA-RXFP3 (L5); surface expression confirmed by anti-FLAG IHC for FLAG-RXFP3 (L7, L8). Binding-competent receptor confirms trafficking and folding preserved.",
+      "confidence": "high",
+      "rationale": "RXFP3 has no signal peptide in the canonical topology (EC1 spans residues 1\u201381, TM1 begins at residue 82), so residue 1 (M) is the mature extracellular N-terminus and insert_after_residue=0 is the correct prepend junction. The tag sits >81 residues from the TM1 boundary, satisfying the >=3 aa constraint. L1 explicitly states the ATG was replaced to create HA-RXFP3 and the construct was used in binding studies, establishing both surface delivery and ligand-binding function. Four independent ledger lines (L1, L3/L4, L7, L8) using two different tag types (HA, FLAG) all converge on this single extracellular junction, making it the highest-confidence site in the ledger. Full-length human RXFP3 with 1xHA tag at the N-terminus (pcDNA3.1zeo(+)-HA-RXFP3) was constructed by replacing the ATG start codon with the HA-tagged vector backbone; the construct was expressed in mammalian cells and used in radioligand binding and mutagenesis studies. Additional independent support: L3/L4/L5 (3xHA-RXFP3 in HEK293 cells, western blot confirmed), L7 (N-terminal FLAG on WT and mutant RXFP3 for surface expression measurement), L8 (FLAG + cleavable signal sequence in PRESTO-TANGO, surface expression by IHC).",
+      "sources": [
+        {
+          "pmid": 23440673,
+          "citation": "PMID 23440673",
+          "claim": "The 1XHA-tagged human RXFP3 vector (pcDNA3.1zeo (+)-HA-RXFP3) was produced by ligating a polymerase chain reaction (PCR) generated RXFP3 construct missing the ATG start codon and with a Eco RV site at the 5\u2032 end and a Xho I site at the 3\u2032 end following the TGA stop site (primers listed in Table 2 ) into the pcDNA3.1zeo (+)-HA construct."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:06:44.738268+00:00",
+  "literature_notes": "All eight ledger lines converge on the extracellular N-terminus (insert_after_residue=0) as the sole validated surface-tag site. L2 (HA-RXFP3 \u03941\u201333) describes a truncated construct in which residues 1\u201333 are deleted and the HA tag is placed at the new N-terminus; this is not a tag insertion into full-length RXFP3 at a distinct residue and does not define a second junction. L6 describes a cryo-EM engineering construct with an N-terminal HA signal peptide + 10\u00d7His + BRIL (same position 0 junction) and a C-terminal LgBiT fusion; the C-terminal fusion lands in IC4 (residues 393\u2013469, intracellular) and is recorded in other_positions. No ledger line reports a tolerated tag insertion in any of the extracellular loops (EC2 141\u2013152, EC3 236\u2013264, EC4 352\u2013367), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 469,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "LgBiT subunit fused at the C-terminus of RXFP3 in a cryo-EM stabilisation construct; residue 469 (Y) falls within IC4 (393\u2013469), the intracellular C-terminal tail, so this fusion is cytoplasmic and not a surface-tag site."
+    }
+  ]
 }

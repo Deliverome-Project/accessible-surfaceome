@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "NTRK3",
+  "uniprot_acc": "Q16288",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:19:50.213535+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a V5 epitope tag at the carboxyl terminus of ETV6-NTRK3 and MYO5A-NTRK3 oncogenic fusion constructs. Two disqualifying problems apply simultaneously. First, ETV6-NTRK3 and MYO5A-NTRK3 are cytoplasmic fusion oncoproteins that retain only the NTRK3 kinase domain; they lack the extracellular domain and the transmembrane segment, so the construct is not a full-length membrane-anchored receptor \u2014 it is a soluble/cytoplasmic fusion protein, which the rules explicitly exclude. Second, even if one imagined the tag placed at the C-terminus of full-length NTRK3, residue 839 falls within the intracellular span (454\u2013839) and is therefore not on the extracellular face. No ledger line supports any insertion in the extracellular domain (residues 32\u2013433) or at the mature N-terminus (after residue 31). Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 839,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "V5 tag placed at the carboxyl terminus of ETV6-NTRK3/MYO5A-NTRK3 fusion constructs; even in full-length NTRK3 the C-terminus (residue 839) is intracellular (topology span 454\u2013839), and the fusion constructs themselves are not membrane-anchored."
+    }
+  ]
+}

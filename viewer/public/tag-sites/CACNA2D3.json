@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "CACNA2D3",
+  "uniprot_acc": "Q8IZS8",
+  "sites": [
+    {
+      "site_id": "CACNA2D3-internal-36-lit",
+      "gene_symbol": "CACNA2D3",
+      "uniprot_acc": "Q8IZS8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 36,
+      "residue_before": "Q",
+      "residue_after": "I",
+      "residue_label": "Q36",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "double HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Cell-surface HA immunostaining confirmed (PMC8119971, L5/L6); steady-state surface expression detected though typically weaker than \u03b12\u03b4-1-HA; surface level not reduced by dominant-negative Rab11a(S25N), indicating intact surface trafficking via a Rab11a-independent route (L7). No direct voltage-gated calcium channel current measurement reported for this tagged construct.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the junction as between aa 36 and 37 of mouse CACNA2D3; mouse and human CACNA2D3 share a 28 aa signal peptide (UniProt Q8VHN6 vs Q8IZS9), so mouse aa 36 maps directly to human aa 36. Python confirms residue 36 = Q and residue 37 = I in the canonical human sequence, both within the extracellular span (29\u20131091). The site is 8 residues into the mature ectodomain, well clear of the signal-peptide cleavage site and any TM boundary. L2, L5, L6, and L7 all independently confirm that this HA-tagged \u03b12\u03b4-3 construct reaches the cell surface. Full-length mouse CACNA2D3 with a double HA-tag inserted between aa 36 and 37, expressed in a heterologous system; the same construct (\u03b12\u03b4-3-HA, ref 14) is used in PMC8119971 for cell-surface immunostaining and trafficking experiments.",
+      "sources": [
+        {
+          "pmid": 32414783,
+          "citation": "PMID 32414783",
+          "claim": "For the \u03b12\u03b43, the double HA-tag was inserted between aa 36 and 37 of mouse CACNA2D3 (provided by Prof."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "CACNA2D3-terminal_n-28-lit",
+      "gene_symbol": "CACNA2D3",
+      "uniprot_acc": "Q8IZS8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "G",
+      "residue_after": "D",
+      "residue_label": "G28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "double HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell immunolabeling of the HA epitope confirmed surface display of the full-length membrane-anchored \u03b12\u03b4-3 construct (L4). No channel current or other functional assay reported for this specific construct.",
+      "confidence": "medium",
+      "rationale": "L3 states the tag is placed 'right after the signal sequence' in their independently cloned mouse CACNA2D3 constructs; no residue number is given, so the position is topology-derived. The canonical signal peptide of both mouse and human CACNA2D3 ends at residue 28 (G), making insert_after_residue = 28 the unique junction consistent with 'right after the signal sequence'. Python confirms residue 28 = G and residue 29 = D (the mature N-terminus). This is a distinct construct from L1 (different GenBank accessions, different paper, different description). L4 confirms the tag is accessible on the extracellular surface by live-cell labeling. PMC8040823 (L3/L4) engineered a double HA-tag into the N-termini of all three \u03b12\u03b4 subunits cloned from mouse brain cDNA (GenBank MK327276/MK327277/MK327280) 'right after the signal sequence'; live-cell surface immunolabeling of the HA epitope was used to compare isoform surface expression.",
+      "sources": [
+        {
+          "pmid": 33782113,
+          "citation": "PMID 33782113",
+          "claim": "To this end a double HA-tag was engineered into N termini of all three \u03b1 2 \u03b4 subunits cloned from mouse brain complementary DNA (GenBank accession numbers MK327276 , MK327277 , and MK327280 ) right after the signal sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:58:08.030941+00:00",
+  "literature_notes": "L2, L5, L6, and L7 all originate from PMC8119971 and reference the same \u03b12\u03b4-3-HA construct as L1 (cited as ref 14 in that paper); they provide additional validation evidence for Site 1 but do not introduce new positions. L4 corroborates L3 for Site 2. No ledger line reports an insertion that abrogates function or that is intracellular for CACNA2D3, so other_positions is empty. The entire ectodomain (residues 29\u20131091) is extracellular per the authoritative landmarks; both sites are far from any TM boundary.",
+  "literature_rejected": []
+}

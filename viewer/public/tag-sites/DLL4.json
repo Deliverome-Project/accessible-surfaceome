@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "DLL4",
+  "uniprot_acc": "Q9NR61",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:15:15.485481+00:00",
+  "literature_notes": "DLL4 is a type I single-pass transmembrane protein (signal peptide 1\u201326, ectodomain 27\u2013531, TM 532\u2013552, intracellular 553\u2013685). Both ledger lines describe C-terminal epitope tags on full-length membrane-anchored constructs. L1 (PMC10132381) explicitly fuses Myc and Flag tags to the C-terminus of the intracellular domain (after residue 685). L2 (PMC4482573) uses a reverse PCR primer encoding an HA tag, which by definition appends the tag at the coding-sequence C-terminus \u2014 also intracellular (after residue 685). Neither line reports any insertion on the extracellular face (residues 27\u2013531), at the mature N-terminus (after residue 26), or in any extracellular loop. No ledger line supports an extracellular surface tag site; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 685,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length membrane-anchored DLL4 construct carries C-terminal Myc (EQKLISEEDL) and Flag (DYKDDDDK) tags after the last intracellular residue V685; tags face the cytoplasm."
+    },
+    {
+      "residue": 685,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag appended via reverse PCR primer to the C-terminus of full-length Dll4; for a type I TM protein this places the tag in the intracellular domain after residue 685."
+    }
+  ]
+}

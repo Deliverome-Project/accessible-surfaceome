@@ -493,5 +493,44 @@
       "canonical_residue": 73,
       "left_pct": 26.258992805755394
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:22:19.381081+00:00",
+  "literature_notes": "GPM6A is a four-transmembrane proteolipid-family protein whose N-terminus (residues 1\u201329) and C-terminus (residues 233\u2013278) are both intracellular. The two extracellular loops are ECL1 (48\u201379) and ECL2 (154\u2013212). Every ledger line describes a fluorescent-protein fusion at one of the two intracellular termini: L2/L3 report an N-terminal EGFP fusion (pEGFP-C1, tag before residue 1, intracellular); L1/L3/L4 report C-terminal EGFP fusions (tag after residue 278, intracellular); L5/L6 report GFP/RFP fusions used in trafficking studies, with the 'M6aRFP' naming convention indicating a C-terminal fusion (also intracellular). None of the six ledger lines describes a tag inserted into ECL1, ECL2, or any other extracellular-facing position. Because the ledger contains no qualifying extracellular insertion, zero sites are reported. The intracellular tags and the mutagenesis positions (K255, E258, Y251) are captured in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminal EGFP fusion (pEGFP-C1) places the tag before residue 1 (M), which lies in the intracellular N-terminal domain (1\u201329); the construct is plasma-membrane-localised but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 278,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion on full-length Gpm6a (1\u2013278 aa) places the tag after residue 278 (T), which lies in the intracellular C-terminal domain (233\u2013278); the construct is surface-displayed but the tag faces the cytoplasm."
+    },
+    {
+      "residue": 255,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "Alanine substitution of K255 in the intracellular C-terminal domain reduces total expressed protein and diminishes the amount of Gpm6a at the cell surface."
+    },
+    {
+      "residue": 258,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "Alanine substitution of E258 in the intracellular C-terminal domain diminishes the amount of Gpm6a at the cell surface."
+    },
+    {
+      "residue": 251,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Y251A mutant of M6a was studied in GFP/RFP-tagged constructs for surface expression and endocytosis; Y251 lies in the intracellular C-terminal domain (233\u2013278)."
+    }
   ]
 }

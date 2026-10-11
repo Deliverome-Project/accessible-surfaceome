@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "FGFR3",
+  "uniprot_acc": "P22607",
+  "sites": [
+    {
+      "site_id": "FGFR3-terminal_n-22-lit",
+      "gene_symbol": "FGFR3",
+      "uniprot_acc": "P22607",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "S",
+      "residue_after": "E",
+      "residue_label": "S22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "AP (alkaline phosphatase)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "AP-FGFR3c: AP activity detected at cell surface and released into conditioned medium after shedding, confirming surface display and intact ectodomain shedding function. V5-FGFR3-GFP: anti-V5 signal recovered in membrane fraction by Western blot, anti-GFP signal in whole-cell lysate, confirming dual-tagged receptor is membrane-anchored with V5 in the ectodomain.",
+      "confidence": "high",
+      "rationale": "The signal peptide of FGFR3 spans residues 1\u201322 (authoritative landmarks); 'downstream of the signal peptide' and 'attached to the N-terminus of the full-length WT protein' both unambiguously place the tag after residue 22, the last signal-peptide residue (S), immediately before the mature N-terminus at residue 23 (E). Python verification confirms seq[21]='S' and seq[22]='E'. The junction is 351 residues from the TM boundary (TM starts at 374), well clear of any structural constraint. Two independent papers (PMC3192865 and PMC8003738) pin the same junction with different tag chemistries (V5 and AP), providing convergent validation; the AP shedding assay constitutes a functional readout. Full-length FGFR3c (and FGFRs 1c, 2c, 4) were N-terminally fused to an alkaline phosphatase module such that AP resided in the extracellular domain of the surface-displayed receptor; constructs were expressed in mammalian cells and used in ectodomain-shedding assays. Independently, a V5 epitope was inserted downstream of the signal peptide of full-length wtFGFR3-GFP (dual-tagged V5-FGFR3-GFP) transiently expressed in Cos7 cells; Western blot of membrane fractions with anti-V5 confirmed the tag is extracellular.",
+      "sources": [
+        {
+          "pmid": 33804608,
+          "citation": "PMID 33804608",
+          "claim": "In both cases, an AP-tag was attached to the N-terminus of the full-length WT protein."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 22,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:50:43.991942+00:00",
+  "literature_notes": "L1, L2, and L3 (PMC3192865) independently support the same insert_after_residue=22 junction with a V5 tag on full-length FGFR3-GFP; because they pin the identical junction as L5/L6, this is one site, not two. L5 is used as the primary clip because the AP shedding assay provides the stronger (surface_and_function) validation. L4 reports C-terminal GFP on full-length FGFR3 IIIc isoforms; the C-terminus (residue 806) is intracellular and therefore not a surface-tag site \u2014 recorded in other_positions. L7 reports a C-terminal V5 tag (hFGFR3-V5) used to generate a stable 293T cell line; the C-terminus is likewise intracellular \u2014 recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 806,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GFP fusion on full-length FGFR3 IIIc; residue 806 lies in the intracellular kinase domain (topology: 394\u2013806 intracellular), so the tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 806,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "C-terminal V5 tag on hFGFR3 (hFGFR3-V5 stable line in 293T cells); same intracellular C-terminus as L4, not accessible from the extracellular face."
+    }
+  ]
+}

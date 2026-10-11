@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD44",
+  "uniprot_acc": "P16070",
+  "sites": [
+    {
+      "site_id": "CD44-terminal_n-20-lit",
+      "gene_symbol": "CD44",
+      "uniprot_acc": "P16070",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "PA16 (GLEGGVAMPGAEDDVV)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by flow cytometry with NZ-1 anti-PA16 mAb; no functional assay (ligand binding, signalling) reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "L1 explicitly describes full-length, membrane-anchored CD44s and CD44v3-10 constructs carrying the PA16 tag immediately after the signal sequence. The signal peptide spans residues 1\u201320 (Ala-20 is the last SP residue; Gln-21 is the mature N-terminus), so insert_after_residue = 20 places the tag at the extracellular N-terminus, confirmed by Python: residue_before = A (pos 20), residue_after = Q (pos 21). The PA16 tag is 16 aa, within the 13\u201323 aa window. The insertion is 629 residues from the TM boundary, satisfying the \u22653-residue constraint. L2 independently corroborates the same junction with the same tag in the same vector system. Full-length CD44s and CD44v3-10 ORFs subcloned into pCAG-Ble-ssPA16 vector; the vector supplies its own signal sequence followed immediately by the 16-aa PA16 tag (GLEGGVAMPGAEDDVV), placing the tag at the extracellular N-terminus of the mature protein (after residue 20, the last residue of the endogenous signal peptide). Constructs expressed in mammalian cells and detected on the cell surface by the anti-PA16 mAb NZ-1.",
+      "sources": [
+        {
+          "pmid": 37189717,
+          "citation": "PMID 37189717",
+          "claim": "The CD44s and CD44v3\u201310 ORFs were subcloned into a pCAG-Ble-ssPA16 vector possessing signal sequence and N-terminal PA16 tag (GLEGGVAMPGAEDDVV) [ 28 , 34 , 35 , 36 , 37 ], which is detected by NZ-1, which was originally developed as an anti-human podoplanin mAb [ 38 , 39 , 40 , 41 , 42 , 43 , 44 , 45 , 46 , 47 , 48 , 49 , 50 , 51 , 52 , 53 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 20,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:19:12.848169+00:00",
+  "literature_notes": "L1 and L2 both ground the same N-terminal PA16 site (insert_after_residue = 20); L1 is cited as the primary supporting clip because it covers both CD44s and CD44v3-10 full-length isoforms. L2 is a corroborating independent publication for the same junction and tag. L3 describes N-terminal deletion mutants (dN224\u2013dN562) of CD44v3-10 that carry the PA16 tag at the new N-terminus of each truncated construct; these are not insertions within the full-length protein and do not constitute additional tag-insertion sites. L4 confirms surface expression of the L2/L3 constructs by NZ-1 staining but adds no new junction. No internal-loop or C-terminal extracellular tag insertions are reported anywhere in the ledger for CD44.",
+  "literature_rejected": []
+}

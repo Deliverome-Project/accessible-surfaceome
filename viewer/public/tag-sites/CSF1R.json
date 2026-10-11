@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "CSF1R",
+  "uniprot_acc": "P07333",
+  "sites": [
+    {
+      "site_id": "CSF1R-terminal_n-19-lit",
+      "gene_symbol": "CSF1R",
+      "uniprot_acc": "P07333",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "G",
+      "residue_after": "I",
+      "residue_label": "G19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GGGS-6xHis-Flag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "NOT MEASURED in PMC12797715 (L1; construct described but no assay result reported). Independent support from PMC8093967 (L5): HEK293T cells transfected with HA-CSF1R-EGFP showed CSF1R ectodomain shedding in conditioned medium; Batimastat (ADAM inhibitor) blocked shedding and caused full-length CSF1R accumulation, confirming surface-expressed tagged protein undergoes normal ectodomain processing.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the tag was inserted 'between 19 and 20 aa (after signal peptide)' in human full-length membrane-anchored CSF1R, making this a validated position. Sequential position 19 (G) is the last residue of the signal peptide (landmarks: SP 1-19); position 20 (I) is the first residue of the mature extracellular domain (landmarks: EC 20-517). The tag therefore sits at the mature N-terminus, 498 residues from the TM boundary (518), well clear of any structural constraint. L3/L4/L5 (PMC8093967) independently corroborate this topology with an HA-CSF1R-EGFP construct on the same 972-aa backbone, showing surface expression and preserved ectodomain shedding. Human full-length CSF1R (NM_001349736.2) cloned into pIRES2-EGFP; a GGGS linker, 6\u00d7His tag, and Flag tag were inserted between aa 19 and 20 (explicitly after the signal peptide), creating a membrane-anchored tagged construct. A second independent study (PMC8093967, L3/L4/L5) engineered HA-CSF1R-EGFP with N-terminal HA on the same full-length 972-aa human CSF1R backbone and demonstrated surface expression and ADAM-mediated ectodomain shedding in HEK293T cells.",
+      "sources": [
+        {
+          "pmid": 41350870,
+          "citation": "PMID 41350870",
+          "claim": "Human full length CSF1R ( NM_001349736.2 ) was cloned into pIRES2-EGFP vectors, and a GGGS linker, 6\u00d7His tag and a Flag tag were inserted between 19 and 20 aa (after signal peptide)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:09:35.660905+00:00",
+  "literature_notes": "L2 (PMC12797715) describes a C-terminal HA tag on mouse full-length CSF1R inserted before the stop codon. The C-terminus of CSF1R (residue 972) lies in the intracellular domain (landmarks: IC 539-972); this is not a surface tag site and is recorded in other_positions. L3/L4/L5 (PMC8093967) describe HA-CSF1R-EGFP where EGFP is fused at the C-terminus; this C-terminal EGFP is also intracellular and is recorded in other_positions. The N-terminal HA in HA-CSF1R-EGFP (L3/L4/L5) supports the same junction as L1 (after residue 19) but names no residue number; since L1 already provides a validated, residue-explicit anchor for this same position, no separate site entry is warranted. No ledger line supports any internal extracellular loop insertion in CSF1R.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 972,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Mouse full-length CSF1R with C-terminal GGGS-HA tag inserted before the stop codon; residue 972 (C) is in the intracellular domain (IC 539-972) \u2014 not a surface tag site."
+    },
+    {
+      "residue": 972,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "HA-CSF1R-EGFP construct has EGFP fused at the C-terminus of full-length CSF1R; the C-terminus (residue 972, intracellular) carries the EGFP \u2014 not a surface tag site."
+    }
+  ]
+}

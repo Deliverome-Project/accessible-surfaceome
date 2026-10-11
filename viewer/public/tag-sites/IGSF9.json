@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "IGSF9",
+  "uniprot_acc": "Q9P2J2",
+  "sites": [
+    {
+      "site_id": "IGSF9-terminal_n-28-lit",
+      "gene_symbol": "IGSF9",
+      "uniprot_acc": "Q9P2J2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "S",
+      "residue_after": "V",
+      "residue_label": "S28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc / EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED for IGSF9; for the cited IgSF9b construct, surface display was characterized (surface expression confirmed by the experimental design), but no functional assay result for IGSF9 is reported in the ledger.",
+      "confidence": "low",
+      "rationale": "The only ledger entry [L1] documents a tolerated Myc/EGFP insertion at residues 28\u201329 of IgSF9b (IGSF9B), the closest human paralog of IGSF9. By analogy, residue 28 of IGSF9 (S|V junction) represents the corresponding N-terminal extracellular position: it lies 8 residues into the mature ectodomain (signal peptide 1\u201320, mature start at 21), is firmly extracellular (topology 21\u2013736), and is 709 residues from the TM boundary. Python verification confirms residue 28 = S and residue 29 = V in the canonical IGSF9 sequence. Confidence is low because the evidence comes from a paralog (IGSF9B), not IGSF9 itself, and no direct tagging of IGSF9 at this or any position is reported in the ledger. PMC3678166 reports Myc epitope (EQKLISEEDL) and EGFP inserted between residues 28 and 29 of full-length IgSF9b (IGSF9B, protein turtle homolog B) in membrane-anchored constructs (pGW1 and pEGFP-N1), enabling surface display characterization. IGSF9B is the closest human paralog of the target IGSF9 (turtle homolog A), sharing the same type-I single-pass TM topology and IgSF ectodomain architecture. Both proteins have a ~20 aa signal peptide, placing residue 28 approximately 8 residues into the mature extracellular domain in each.",
+      "sources": [
+        {
+          "pmid": 23751499,
+          "citation": "PMID 23751499",
+          "claim": "Myc epitope (EQKLISEEDL) and EGFP was inserted between residues 28 and 29 of IgSF9b in pGW1 and pEGFP-N1, respectively."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 28,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:16:05.168253+00:00",
+  "literature_notes": "The ledger contains a single entry [L1] describing a Myc/EGFP insertion in IgSF9b (IGSF9B, UniProt Q9P2J2), which is a paralog of the target IGSF9 (turtle homolog A, UniProt Q9P2J5). The instructions permit 'close ortholog' evidence labelled indirect; IGSF9B is accepted here as the closest human paralog (both are human turtle homologs with identical domain architecture). The proposed site at residue 28 is the direct numerical transfer of the IgSF9b junction to IGSF9, justified by both proteins having a ~20 aa signal peptide so that residue 28 occupies the same relative position (~8 aa into the mature ectodomain) in each. No other ledger lines exist; no internal loop sites, C-terminal sites, or intracellular sites are supported by the ledger. The large intracellular tail (758\u20131179) is not a surface-tag candidate. The extracellular domain (21\u2013736) contains multiple IgSF loops that could in principle tolerate insertions, but no ledger evidence pins any internal loop of IGSF9 or IGSF9B, so none are proposed.",
+  "literature_rejected": []
+}

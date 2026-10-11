@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRC8A",
+  "uniprot_acc": "Q8IWT6",
+  "sites": [
+    {
+      "site_id": "LRRC8A-internal-76-lit",
+      "gene_symbol": "LRRC8A",
+      "uniprot_acc": "Q8IWT6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 76,
+      "residue_before": "G",
+      "residue_after": "P",
+      "residue_label": "G76",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "BRIL (apocytochrome b562RIL)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Cryo-EM structure of the hexameric channel complex was obtained, confirming proper folding, membrane insertion, and oligomeric assembly of the tagged full-length construct; electrophysiological channel function was NOT MEASURED in the tagged construct per the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names residues 76 and 91 as the flanking junctions of the BRIL insertion in the extracellular loop of mmLRRC8A, placing the N-terminal junction at insert_after_residue=76. Python lookup confirms human LRRC8A residue 76 is G and residue 77 is P, both within ECL1 (49\u2013123), 28 aa from TM1 and 48 aa from TM2 \u2014 well clear of both boundaries. The BRIL (~106 aa) is larger than the requested ALFA tag (~15\u201323 aa), so a shorter epitope tag at this same junction is well-supported by the demonstrated loop tolerance. The site is classified as indirect because the published insertion is in the mouse ortholog, but the loop is conserved and the residue numbering aligns. Full-length mmLRRC8A with BRIL inserted between residues 76 and 91 (replacing the native loop segment 77\u201390) expressed in Sf9 insect cells; construct used for cryo-EM structural determination of the hexameric VRAC channel. The paper explicitly names both flanking residues (76 and 91) of the insertion in the extracellular loop (ECL1, human topology 49\u2013123). Mouse LRRC8A is a close ortholog; human residue 76 is G and 91 is D, both confirmed in ECL1.",
+      "sources": [
+        {
+          "pmid": 41388024,
+          "citation": "PMID 41388024",
+          "claim": "The sequence for apocytochrome b562RIL (BRIL) 14 , 28 was then codon optimized for Spodoptera frugiperda and inserted into the LRRC8A extracellular loop, between residues 76 and 91, generating a construct for expression of mmLRRC8A(76-BRIL-91)-SNS-LEVLFQGP-SRGGSGAAAGSGSGS-sfGFP-GSS-7xHis (LRRC8A BRIL )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:23:00.411480+00:00",
+  "literature_notes": "L1 and L2 describe the same BRIL insertion event; L1 is used as the supporting clip because it names both flanking residues (76 and 91). L2 adds no additional positional information. The BRIL replaces native residues 77\u201390 (14 aa) with the ~106 aa BRIL domain; the N-terminal junction (after 76) is reported as the canonical insert_after_residue. The C-terminal junction (after 90, before 91) is part of the same published insertion and is not reported as a separate site. L3 (FLAG), L4 (3xHA), and L5 (FLAG KI) all describe C-terminal tags; the topology landmarks place residue 810 firmly in the intracellular domain (343\u2013810), so none qualify as extracellular surface sites \u2014 they are recorded in other_positions. L5 does not state a residue position, but the pattern matches C-terminal tagging consistent with L3/L4. No ledger evidence supports any insertion in ECL2 (287\u2013316).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 810,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminally FLAG-tagged LRRC8A showed surface staining in 293T cells, but the C-terminus lies in the intracellular domain (topology 343\u2013810); the surface staining reflects the extracellular epitopes of the channel, not the FLAG tag itself."
+    },
+    {
+      "residue": 810,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "3xHA epitopes fused to the carboxy terminus of LRRC8A used in knock-in mice for immunostaining; C-terminus is intracellular (343\u2013810), so this tag faces the cytoplasm."
+    },
+    {
+      "residue": 810,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Flag tag knocked into the endogenous SWELL1 (LRRC8A) C-terminal locus in HeLa cells for immunoprecipitation; C-terminus is intracellular (343\u2013810)."
+    }
+  ]
+}

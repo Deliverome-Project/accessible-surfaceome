@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRC25",
+  "uniprot_acc": "Q8N386",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:17:44.937909+00:00",
+  "literature_notes": "The sole ledger line (L1) reports a LRRC25-GFP C-terminal fusion that localizes to the HeLa cell membrane. LRRC25 is a Type I single-pass membrane protein: signal peptide residues 1\u201320 (cleaved), extracellular domain residues 21\u2013165, TM residues 166\u2013187, intracellular tail residues 188\u2013305. The C-terminus (residue 305) is therefore intracellular, so the GFP in LRRC25-GFP is on the cytoplasmic face \u2014 not an extracellular surface tag. L1 cannot be used to derive a topology_derived extracellular site because the reported tag terminus is the intracellular one, not the extracellular mature N-terminus. No ledger line reports any insertion on the extracellular domain (residues 21\u2013165) or at the mature N-terminus (after residue 20). Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 305,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "LRRC25-GFP C-terminal fusion traffics to the plasma membrane in HeLa cells; GFP is appended after the last residue (H305) of the intracellular tail (residues 188\u2013305), placing it on the cytoplasmic face \u2014 a valid intracellular label but not an extracellular surface tag site."
+    }
+  ]
+}

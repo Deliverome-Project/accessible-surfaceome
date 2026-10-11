@@ -105,5 +105,12 @@
       "canonical_residue": 51,
       "left_pct": 18.021201413427562
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:36:28.418343+00:00",
+  "literature_notes": "PLPP1 (PAP-2a/LPP1) is a 6-TM phospholipid phosphatase with an intracellular N-terminus (residues 1\u20138), an intracellular C-terminus (residues 247\u2013284), and three extracellular loops: EC1 (30\u201355, 26 aa), EC2 (122\u2013173, 52 aa), and EC3 (216\u2013227, 12 aa). Both ledger lines (L1, L2) confirm that an HA-epitope-tagged PAP-2a construct was expressed in HEK293 and Sf9 cells and produced functional, surface-displayed phospholipid phosphatase activity. However, neither L1 nor L2 specifies WHERE the HA tag was inserted: no residue number, no loop name, and no terminus is named in either quote. The topology_derived rule requires exactly ONE extracellular terminus; PLPP1 has zero (both termini are intracellular), so that rule does not apply. The tag must reside in one of the three extracellular loops, but the ledger is silent on which one. Selecting a loop would constitute structural inference, which is forbidden by the evidence rules. Therefore, no site can be grounded in the ledger, and zero sites are reported. This is the correct answer, not a failure.",
+  "literature_rejected": []
 }

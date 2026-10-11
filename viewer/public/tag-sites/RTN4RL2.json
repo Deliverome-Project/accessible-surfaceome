@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "RTN4RL2",
+  "uniprot_acc": "Q86UN3",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:04:48.318132+00:00",
+  "literature_notes": "The sole ledger line (L1) reports RTN4RL2 cDNA cloned into the pDisplay vector for cell-surface binding assays. This does not constitute an epitope-tag insertion into RTN4RL2: RTN4RL2 is the insert, not the recipient of a tag; no epitope tag (FLAG, HA, Myc, ALFA, etc.) is placed at any specific residue of RTN4RL2; pDisplay is a commercial vector and the junction position within RTN4RL2 is unstated, making insert_after_residue impossible to pin; and the construct is used for ligand-binding assays, not tag-position validation. The commercial-plasmid exclusion rule therefore applies. RTN4RL2's canonical topology (signal peptide 1\u201346, extracellular 47\u2013420, no TM domain) means the entire mature protein is extracellular, but that structural inference cannot substitute for a qualifying ledger line. Zero sites are reported.",
+  "literature_rejected": []
+}

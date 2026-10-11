@@ -1,0 +1,99 @@
+{
+  "has_data": true,
+  "gene_symbol": "MMP14",
+  "uniprot_acc": "P50281",
+  "sites": [
+    {
+      "site_id": "MMP14-internal-111-lit",
+      "gene_symbol": "MMP14",
+      "uniprot_acc": "P50281",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 111,
+      "residue_before": "R",
+      "residue_after": "Y",
+      "residue_label": "R111",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Constructs described as previously validated and used in functional studies of MT1-MMP biology; WT construct implies proteolytic activity retained. No explicit functional assay result stated in this clip; validation details are in the cited reference (ref 33 of PMC10267602). NOT MEASURED in this clip.",
+      "confidence": "medium",
+      "rationale": "L5 describes a FLAG tag 'between the propeptide and catalytic domain' of full-length MT1-MMP. The MMP14 propeptide ends at R111 (the last residue of the RRKR furin site at positions 108-111); the catalytic domain begins at Y112. Python confirms residue 111 = R and residue 112 = Y. After furin cleavage, the propeptide (21-111) is released and the FLAG tag at position 111/112 becomes the new extracellular N-terminus of the catalytic domain, remaining surface-displayed. The position is inferred from the domain boundary description since no residue number is given in the clip. Full-length WT and catalytically inactive human MT1-MMP constructs with an N-terminal Flag tag inserted 'between the propeptide and catalytic domain' were used in a published study (PMC10267602). The propeptide of MMP14 spans residues 21-111 (ending at the RRKR furin cleavage site at 108-111); the catalytic domain begins at residue 112 (Y). The tag is placed after R111 so that after furin-mediated propeptide removal, the FLAG tag is retained at the new N-terminus of the catalytic domain and remains surface-displayed.",
+      "sources": [
+        {
+          "pmid": 37169079,
+          "citation": "PMID 37169079",
+          "claim": "WT or catalytically inactive human MT1-MMP constructs with an N-terminal Flag tag between the propeptide and catalytic domain were previously described ( 33 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 111,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "MMP14-terminal_n-20-lit",
+      "gene_symbol": "MMP14",
+      "uniprot_acc": "P50281",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "T",
+      "residue_after": "A",
+      "residue_label": "T20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by 125I-anti-FLAG M2 antibody internalization assay and Western blot in CHO-K1 cells. Internalization kinetics of the tagged protein were studied. Proteolytic function of MMP14 not explicitly assayed in these clips.",
+      "confidence": "high",
+      "rationale": "L1, L2, and L3 all report the same MT1-F construct with a FLAG tag at the NH2 terminus of full-length, membrane-anchored MMP14 expressed in CHO-K1 cells. MMP14 has a signal peptide spanning residues 1-20; the mature N-terminus is residue 21 (A), so the tag must go after residue 20 (T) to avoid being cleaved with the signal peptide. This is the sole extracellular N-terminus, making the junction unambiguous. Python confirms residue 20 = T and residue 21 = A, consistent with the numbered sequence. Full-length human MT1-MMP (MMP14) with a FLAG epitope tag at the NH2 terminus (construct MT1-F) expressed in CHO-K1 cells; surface display monitored by 125I-labeled anti-FLAG M2 antibody internalization assay and Western blot. The paper names the NH2 terminus but no residue number; MMP14 has a single extracellular N-terminus (residue 21, after SP cleavage at 20/21), so the junction is topology-derived as insert_after_residue=20.",
+      "sources": [
+        {
+          "pmid": 11756481,
+          "citation": "PMID 11756481",
+          "claim": "To study the internalization of MT1-MMP, we expressed human MT1-MMP having a FLAG tag at the NH 2 terminus (MT1-F) in CHO-K1 cells, and monitored the fate of MT1-F on the cell surface."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:46:15.195564+00:00",
+  "literature_notes": "L4 (MT1-MMP-pHluorin and MT1-MMP-mCherry): These are C-terminal fluorescent protein fusions. The C-terminus of MMP14 is intracellular (residues 563-582); these fusions are therefore intracellular labels, not surface tags, and are recorded in other_positions. L6 (HA-tagged MT1-MMP): The clip confirms functional activity of HA-tagged MMP14 (dose-dependent LDLR reduction in Huh7.5 cells) but does not specify the position of the HA tag anywhere in the extracellular domain (21-541). MMP14 has multiple extracellular loops and domains; without a residue, loop name, or terminus designation, the junction cannot be pinned and no site can be proposed. L6 is noted here but does not generate a site. L1 and L2 both ground the same construct (MT1-F) and the same junction; L1 is used as the primary supporting clip for Site 1, with L2 and L3 providing corroborating evidence for the same site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 582,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "MT1-MMP-pHluorin and MT1-MMP-mCherry are C-terminal fluorescent protein fusions expressed in Xenopus embryos; the C-terminus of MMP14 (residue 582, V) is intracellular (residues 563-582), so these fusions are cytoplasmic labels, not surface tags."
+    }
+  ]
+}

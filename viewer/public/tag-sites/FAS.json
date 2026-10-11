@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "FAS",
+  "uniprot_acc": "P25445",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:42:26.959790+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 and L2 (PMC9588774) describe the same construct: full-length CD95/FAS with an HA signal peptide swapped in at the N-terminus and a FLAG/hexahistidine tag appended at the C-terminus. The HA sequence is part of the signal peptide and is cleaved co-translationally \u2014 it never reaches the cell surface. The FLAG/His tag is at the intracellular C-terminus (FAS is a type I single-pass receptor; residues 191\u2013335 are cytoplasmic). Neither position qualifies as an extracellular surface tag site. L3 (PMC12217004) reports a myc-tag inserted into the full extracellular domain of membrane-bound FasL (CD95 Ligand / TNFSF6), which is the cognate ligand of FAS, not FAS itself (CD95 / TNFRSF6). These are distinct proteins; a tag in FasL's ECD provides no positional precedent for a tag in FAS. No ledger line supports an extracellular surface tag on FAS at any residue or loop. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 335,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG/hexahistidine tag appended at the C-terminus of full-length CD95; FAS is a type I transmembrane protein whose C-terminus (residues 191\u2013335) is entirely intracellular \u2014 this is a cytoplasmic tag, not a surface tag."
+    }
+  ]
+}

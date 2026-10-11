@@ -58,6 +58,80 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "OTOP1-internal-227-lit",
+      "gene_symbol": "OTOP1",
+      "uniprot_acc": "Q7RTM1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 227,
+      "residue_before": "N",
+      "residue_after": "E",
+      "residue_label": "N227",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression rescued (folding defect of loop-deletion mutant corrected); proton channel function characterized in the full-length tagged construct.",
+      "confidence": "high",
+      "rationale": "L1 names the exact replaced residues (E228-T255) in the extracellular S5-S6 loop of full-length OTOP1; Python confirms residue 228 = E and residue 255 = T. The junction is placed after N227 (8 residues from TM boundary at 219, well above the >=3 threshold), and the replaced region ends 14 residues before the next TM at 269. L3 corroborates the same construct and confirms functional rescue, supporting surface_and_function classification. Note that C252 and C254 within the replaced region are removed in the paper's construct; a short-tag insertion strategy should account for these cysteines. Full-length OTOP1 expressed in HEK293 cells; the L5-6/3HA construct replaces native residues E228-T255 in the extracellular S5-S6 loop (EC 220-268) with three tandem HA tags flanked by two glycine residues on each side. L3 (same paper, same construct) reports that this 3xHA loop replacement rescued the expression defect caused by the loop deletion, restoring folding and enabling functional characterization of the proton channel.",
+      "sources": [
+        {
+          "pmid": 36266567,
+          "citation": "PMID 36266567",
+          "claim": "The loop replacement mutation L5\u20136/3HA had its amino acid E228-T255 replaced with three copies of HA tags that are bracketed with two glycine residues on each side."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "OTOP1-internal-565-lit",
+      "gene_symbol": "OTOP1",
+      "uniprot_acc": "Q7RTM1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 565,
+      "residue_before": "C",
+      "residue_after": "R",
+      "residue_label": "C565",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "1xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Epitope tag detected on the extracellular face of the full-length membrane-anchored construct; channel function characterization reported in the same paper. Specific functional outcome for this construct not stated in the clip.",
+      "confidence": "medium",
+      "rationale": "L2 names the exact replaced residues (R566-V577) in the extracellular S11-S12 loop of full-length OTOP1; Python confirms residue 566 = R and residue 577 = V. The junction is placed after C565 (2 residues from TM boundary at 563), which is borderline for the >=3 rule; however, the tag itself begins at R566 (3 residues from TM), matching the paper's construct. The EC loop is only 13 residues (564-576) and the replacement extends to the TM boundary at 577, so a short tag here must be designed carefully. C565 immediately precedes the junction and may participate in a disulfide; the paper's construct leaves C565 intact. Full-length OTOP1 expressed in the same study (PMC9585144); the L11-12/HA construct replaces native residues R566-V577 in the extracellular S11-S12 loop (EC 564-576) with one HA tag flanked by two glycine residues on each side. The replacement extends to V577, which is the first residue of TM 577-597 per the authoritative landmarks, so the paper's construct spans to the TM boundary.",
+      "sources": [
+        {
+          "pmid": 36266567,
+          "citation": "PMID 36266567",
+          "claim": "The loop replacement mutation L11\u201312/HA has its residues R566-V577 replaced with one HA tag that is bracketed with two glycine residues on each side."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "OTOP1-snorkel-c",
       "gene_symbol": "OTOP1",
       "uniprot_acc": "Q7RTM1",
@@ -240,5 +314,12 @@
       "canonical_residue": 420,
       "left_pct": 68.75
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:05:36.561509+00:00",
+  "literature_notes": "Both sites are grounded in PMC9585144, which reports loop-replacement constructs in full-length OTOP1. L1 and L3 describe the same construct (L5-6/3HA); L1 was used as the primary supporting clip because it names the exact residues. L3 was used only to establish the functional outcome (folding rescue + channel function). The S5-S6 loop (EC 220-268) contains C252 and C254 within the replaced region; a short-tag insertion that does not remove these residues would need to avoid disrupting any disulfide they may form. The S11-S12 loop (EC 564-576) is very short (13 residues) and the paper's replacement extends to the TM boundary (V577); confidence is medium because the insert point (after C565) is only 2 residues from the preceding TM. No other extracellular loops in OTOP1 are supported by any ledger line.",
+  "literature_rejected": []
 }

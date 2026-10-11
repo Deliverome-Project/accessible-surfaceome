@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "ITGB3",
+  "uniprot_acc": "P05106",
+  "sites": [
+    {
+      "site_id": "ITGB3-terminal_n-26-lit",
+      "gene_symbol": "ITGB3",
+      "uniprot_acc": "P05106",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "G",
+      "residue_after": "G",
+      "residue_label": "G26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "RGD cluster nucleation assay: EGFP-tagged ITGB3 nucleated RGD clusters at 15 and 60 min, indistinguishable from positive controls \u2014 extracellular function preserved.",
+      "confidence": "low",
+      "rationale": "ITGB3 is a Type I single-pass transmembrane protein with exactly one extracellular terminus \u2014 the mature N-terminus beginning at residue 27 (after signal-peptide cleavage at residue 26) \u2014 and an intracellular C-terminus (residues 745\u2013788). L1 reports a full-length, membrane-anchored EGFP-tagged ITGB3 construct in CHO-B2 cells with preserved RGD cluster nucleation, confirming surface expression and extracellular function. Because no residue or loop is named, the topology_derived rule places the tag after residue 26 (the sole extracellular terminus). Confidence is low because the paper does not explicitly state whether EGFP is N- or C-terminal; a C-terminal EGFP would be intracellular and would still permit surface expression and RGD binding, making the extracellular assignment uncertain. Full-length EGFP-tagged ITGB3 expressed in CHO-B2 cells (mammalian, membrane-anchored); no residue or loop position is named in the paper.",
+      "sources": [
+        {
+          "pmid": 40492509,
+          "citation": "PMID 40492509",
+          "claim": "A) EGFP\u2010tagged integrin \u03b26, \u03b25, and \u03b23 expressed in CHO\u2010B2 cells nucleate RGD clusters in 15 and 60\u2010min."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:30:50.088970+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports EGFP-tagged full-length ITGB3 in CHO-B2 cells with RGD cluster nucleation preserved, but names neither a residue nor a loop. The topology_derived rule assigns the tag to the mature N-terminus (insert_after_residue=26) because that is the sole extracellular terminus of this Type I TM protein. Confidence is low because C-terminal EGFP (intracellular, residues 745\u2013788) is equally consistent with the reported phenotype; the paper does not disambiguate. No other ledger lines exist to support additional sites. The intracellular C-terminus (residue 788) is noted in other_positions as a plausible alternative location for the EGFP that would not constitute a surface tag.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 788,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion is equally consistent with the L1 data (surface expression and RGD cluster nucleation do not require an extracellular tag); if EGFP is C-terminal it is intracellular and not a surface tag site."
+    }
+  ]
+}

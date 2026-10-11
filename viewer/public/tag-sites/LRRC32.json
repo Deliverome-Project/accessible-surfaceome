@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRRC32",
+  "uniprot_acc": "Q14392",
+  "sites": [
+    {
+      "site_id": "LRRC32-terminal_n-19-lit",
+      "gene_symbol": "LRRC32",
+      "uniprot_acc": "Q14392",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "Q",
+      "residue_after": "H",
+      "residue_label": "Q19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by FACS in 293T cells; TGF\u03b21 activation function not explicitly assayed for the FLAG-tagged construct alone in these clips.",
+      "confidence": "high",
+      "rationale": "The ledger (L1\u2013L4) reports a FLAG tag placed at the N-terminus of full-length LRRC32. The signal peptide spans residues 1\u201319 (last SP residue = Q19); a tag upstream of the mature protein must be inserted after residue 19 to survive SP cleavage and reach the cell surface, which is confirmed by FACS detection of surface FLAG-GARP. There is exactly one extracellular N-terminus (residue 20, H), so the junction is topology-derived at insert_after_residue = 19. Python verification confirms seq[18]='Q' and seq[19]='H', consistent with the landmarks. Full-length human GARP (LRRC32) was subcloned into a modified pLEXm vector with a FLAG tag at the N-terminus (L1). The construct was expressed in 293T cells and surface FLAG-GARP was detected by FACS (L2, L3, L4), confirming cell-surface display of the N-terminally FLAG-tagged full-length protein.",
+      "sources": [
+        {
+          "pmid": 22278742,
+          "citation": "PMID 22278742",
+          "claim": "GARP was subcloned into a modified pLEXm vector ( Aricescu et al. , 2006 ) with a FLAG tag at the N-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:20:02.815027+00:00",
+  "literature_notes": "L5\u2013L7 (PMC3127830) describe GFP fused to either the N- or C-terminus of full-length LRRC32. The N-terminal GFP construct (N-GFP/LRRC32) places GFP before the signal peptide; L7 shows the resulting 31 kDa band (GFP + ~2 kDa LRRC32 fragment) is consistent with SP cleavage removing the GFP, so this is NOT a surface tag and is not proposed as a site. The C-terminal GFP construct (C-GFP/LRRC32) places GFP after residue 662, which is intracellular (topology: 649\u2013662 = intracellular); this is recorded in other_positions. L8 (PMC9472209) describes HA-tagged chimeric human/murine GARP constructs but does not state the position of the HA tag insertion; it cannot be pinned to a residue or junction and is therefore not proposed as a site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 662,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal GFP fusion (C-GFP/LRRC32) places GFP after the last residue (A662), which is intracellular (topology 649\u2013662); not a surface tag site."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PDPN",
+  "uniprot_acc": "Q86YL7",
+  "sites": [
+    {
+      "site_id": "PDPN-terminal_n-22-lit",
+      "gene_symbol": "PDPN",
+      "uniprot_acc": "Q86YL7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "RIEDL pentapeptide",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry on CHO/RIEDL-wPDPN cells: surface signal detected by both anti-RIEDL mAb (LpMab-7) and anti-wPDPN mAb (PMab-237), confirming surface display of the tagged protein. No functional assay reported in these clips.",
+      "confidence": "medium",
+      "rationale": "PDPN is a single-pass type-I transmembrane protein with signal peptide residues 1\u201322 and a single extracellular N-terminus beginning at residue 23 (A); the only extracellular terminus is therefore the mature N-terminus, placing the tag junction after residue 22 (G) and before residue 23 (A), confirmed by reading the numbered sequence. The walrus PDPN ortholog carries the same topology, so the N-terminal tag position transfers directly; position_evidence is topology_derived because no specific residue number is cited in the paper. The tag is 110 residues from the TM boundary (residue 132), well clear of the \u22653-residue constraint. Full-length walrus podoplanin (wPDPN, an ortholog of human PDPN) was expressed in CHO cells with an N-terminal RIEDL pentapeptide tag (recognised by anti-RIEDL mAb LpMab-7) subcloned into a mammalian expression vector (pCAG-Neo). The construct is full-length and membrane-anchored.",
+      "sources": [
+        {
+          "pmid": 32715101,
+          "citation": "PMID 32715101",
+          "claim": "CHO/RIEDL-wPDPN was detected by anti-RIEDL tag mAb (LpMab-7) and anti-wPDPN mAb (PMab-237) in flow cytometry ( Fig. 1 B)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:30:47.727689+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1, L2), both from the same paper (PMC7369347) describing the same N-terminal RIEDL-tagged walrus PDPN construct. The evidence is indirect (ortholog, not human PDPN), hence 'medium' confidence and 'published tag insertion in the same loop or domain' rather than exact-site. The RIEDL pentapeptide (5 aa) is shorter than the 13\u201323 aa ALFA-tag range specified in the prompt, but it is the cited tag type and the position evidence is what is being assessed. No ledger lines support any internal extracellular loop insertion or C-terminal (intracellular) tag for PDPN. The native human PDPN sequence contains the motif RIEDL at positions 79\u201383 (extracellular domain), which is coincidental \u2014 the paper's RIEDL tag is inserted at the N-terminus of the walrus ortholog, not at this native position.",
+  "literature_rejected": []
+}

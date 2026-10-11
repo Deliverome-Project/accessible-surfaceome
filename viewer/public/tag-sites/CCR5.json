@@ -37,7 +37,76 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCR5-terminal_n-0-lit",
+      "gene_symbol": "CCR5",
+      "uniprot_acc": "P51681",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG-FITC FACS on non-permeabilized cells (L8). The FLAG-CCR5-VN construct was used in BiFC assays to study receptor\u2013receptor associations, indicating the receptor traffics to the plasma membrane and retains the capacity to interact with partner receptors. Direct chemokine-binding or G-protein signaling assays were NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "CCR5 is a GPCR with no signal peptide; the topology landmarks place residues 1\u201332 extracellularly, making the N-terminus the only extracellular terminus available for a prepend tag. Anti-FLAG FACS on intact (non-permeabilized) cells in L8 directly confirms the FLAG tag is on the cell surface, not intracellular. The position is topology-derived (insert_after_residue=0, before M1) because no residue number is stated in the clip, but exactly one extracellular terminus exists. Python confirmed residue 1 = M and that TM1 begins at residue 33, leaving 32 extracellular residues between the tag and the first TM helix. FLAG-CCR5-VN full-length construct expressed in HEK293 cells; anti-FLAG-FITC staining on non-permeabilized (intact) cells used to enrich FLAG-positive cells by FACS, confirming the FLAG tag is accessible on the extracellular face. CCR5 has no signal peptide (topology: residues 1\u201332 are extracellular), so the N-terminal prepend is retained on the cell surface.",
+      "sources": [
+        {
+          "pmid": 36993221,
+          "citation": "PMID 36993221",
+          "claim": "The population of CXCR4-VN or CCR5-VN positive cells was enriched by FACS, in which cells were washed in Dulbecco's phosphate buffered saline (PBS) supplemented with 0.2% bovine serum albumin (BSA), stained with 1:200 chicken anti-FLAG-FITC (Immunology Consultants Laboratory) in PBS-BSA, washed and resuspended for sorting on a BA FACS Aria II."
+        },
+        {
+          "pmid": 38139265,
+          "citation": "PMID 38139265",
+          "claim": "HA-CCR5-\u0394Cter was obtained from HA-CCR5-\u0394Cter-Rluc via the insertion in the CCR5 coding region of a STOP codon, immediately after the sequence coding for the glycine at position 301."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:07:20.195839+00:00",
+  "literature_notes": "L1/L2: CCR5-RLuc3-1D4 places the 1D4 epitope tag at the C-terminal tail of full-length CCR5. The topology landmarks place residues 301\u2013352 in the intracellular compartment; this is therefore an intracellular C-terminal tag and does not qualify as a surface site. Recorded in other_positions. L3: Amber-suppression constructs incorporate noncanonical amino acids (azF, CpK, TCOK) at F182, Y184 (ECL2, extracellular 166\u2013192), or L352 (intracellular C-terminus) for bioorthogonal click-chemistry labeling. These are single-residue substitutions, not insertions of a peptide tag between two residues; they do not meet the ledger criterion of a tolerated epitope-tag knock-in, FP fusion, transposon, or domain insertion. F182 and Y184 are extracellular and tolerated as substitution sites but are not insertion sites and so are not proposed as sites. L352 is intracellular and recorded in other_positions. L5/L6: CCR5-GFP and CCR5-HA with GFP or HA fused to the C-terminal region are intracellular tags (C-terminus 301\u2013352 is intracellular); recorded in other_positions. L7/L9: These clips describe the same FLAG-CCR5-VN and myc-CCR5-VC constructs as L8/L10 but without explicit surface-display confirmation; L8 and L10 are the stronger evidence lines and are used as the primary support. The myc-CCR5-VC construct places myc at the N-terminus (same junction as FLAG) and Venus-C at the intracellular C-terminus; the myc tag is extracellular by the same topology argument, but L8 (FLAG, surface-confirmed) is the stronger grounding line and is used for the FLAG site. No ledger line supports an internal extracellular loop insertion for CCR5.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "1D4 epitope tag (DEASTTVSKTETSQVAPA) fused to the C-terminal tail of full-length CCR5 in the CCR5-RLuc3-1D4 construct; residue 352 (L) is in the intracellular C-terminus (301\u2013352 per topology landmarks)."
+    },
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "GFP or HA fused to the C-terminal region of full-length CCR5 (CCR5-GFP / CCR5-HA); C-terminus (301\u2013352) is intracellular per topology landmarks."
+    },
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Amber-suppression ncAA incorporation at L352 for bioorthogonal labeling in CCR5-RLuc3-1D4 context; L352 is in the intracellular C-terminus (301\u2013352)."
+    }
+  ]
 }

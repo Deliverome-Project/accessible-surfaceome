@@ -31,6 +31,43 @@
       "median_conservation": 0.5
     },
     {
+      "site_id": "P2RX7-internal-125-lit",
+      "gene_symbol": "P2RX7",
+      "uniprot_acc": "Q99572",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 125,
+      "residue_before": "R",
+      "residue_after": "R",
+      "residue_label": "R125",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP / RFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "FRET signal detected between fluorescently tagged subunits in Xenopus oocytes, confirming surface expression and proper oligomeric assembly; ATP-gated ion-channel current not explicitly reported in this clip.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states GFP/RFP was inserted after P2X7 codon 125 in a full-length, membrane-anchored construct. Python lookup confirms position 125 = R (residue_before) and position 126 = R (residue_after), both within the extracellular domain (49\u2013329), 77 residues from TM1 and 205 residues from TM2, well clear of both TM boundaries. Although C119 and C129 flank this junction, the GFP insertion (~238 aa, far larger than a short epitope tag) was tolerated for FRET, providing direct experimental support that this loop position accommodates large inserts without disrupting folding or membrane trafficking. Full-length human P2X7 with GFP or RFP cDNA inserted after codon 125 (singly or in tandem), expressed in Xenopus oocytes for inter-subunit FRET studies. Construct is membrane-anchored and full-length.",
+      "sources": [
+        {
+          "pmid": 29213241,
+          "citation": "PMID 29213241",
+          "claim": "Likewise, we inserted GFP and RFP cDNA either singly or in tandem after P2X4 codon 122 or P2X7 codon 125."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "P2RX7-snorkel-c",
       "gene_symbol": "P2RX7",
       "uniprot_acc": "Q99572",
@@ -890,5 +927,12 @@
       "canonical_residue": 281,
       "left_pct": 47.22689075630252
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:09:37.643066+00:00",
+  "literature_notes": "L2 (PMC10896738) reports a FLAG-tagged full-length human P2X7R expressed in HEK293 cells but states no residue position for the FLAG tag. P2X7 has no extracellular terminus (both N- and C-termini are intracellular per the topology landmarks), so there is no single topology-derived surface junction to fall back on. The clip therefore cannot be pinned to any insert_after_residue and was dropped. The proximity of C119 and C129 to the L1 junction at 125 is noted; the published GFP insertion demonstrates experimental tolerance despite this proximity, so no constraint violation is recorded.",
+  "literature_rejected": []
 }

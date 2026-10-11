@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CRB1",
+  "uniprot_acc": "P82279",
+  "sites": [
+    {
+      "site_id": "CRB1-terminal_n-25-lit",
+      "gene_symbol": "CRB1",
+      "uniprot_acc": "P82279",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "S",
+      "residue_after": "F",
+      "residue_label": "S25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation pull-down assay: tagged CRB1 was expressed and successfully pulled down interaction partners, demonstrating protein expression and preserved protein-protein interaction capability. Surface localization and primary biological function (cell polarity) were NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "L1 reports N-terminal FLAG and HA tags on full-length CRB1 expressed in HEK293T cells. CRB1 topology places the N-terminus extracellularly (residues 26-1347) and the C-terminus intracellularly (residues 1369-1406), so the N-terminal tag is the sole extracellular terminus available. The signal peptide spans residues 1-25 (last residue S at position 25), so the tag must be inserted after residue 25 to avoid being cleaved with the signal peptide; the mature N-terminus begins at F26. Python-verified: seq[25]='S', seq[26]='F', and the insert site is 1322 residues from the TM boundary (well clear of the \u22653-residue constraint). Full-length CRB1 with N-terminal FLAG and HA tags expressed in HEK293T cells; used for co-immunoprecipitation pull-down assays. CRB1 has a single extracellular N-terminus (residues 26-1347) and an intracellular C-terminus (residues 1369-1406), so the N-terminal tag lands on the extracellular face after signal-peptide cleavage at residue 25.",
+      "sources": [
+        {
+          "pmid": 38570189,
+          "citation": "PMID 38570189",
+          "claim": "To generate N-terminal (CRB1) and C-terminal (CRB2, CRB3, and GFP) FLAG- and HA-tagged constructs, cDNA was amplified by PCR using primers carrying attb1 and attb2 recombination site overhangs."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:03:49.537951+00:00",
+  "literature_notes": "The ledger contains one line (L1) for CRB1, reporting N-terminal FLAG and HA tags on full-length CRB1 in HEK293T cells for co-IP. No residue number is named, but CRB1 has exactly one extracellular terminus (N-terminal, residues 26-1347), making the position topology-derived at insert_after_residue=25 (after signal peptide cleavage). The C-terminal tags mentioned in the same paper are applied to CRB2, CRB3, and GFP \u2014 not CRB1 \u2014 consistent with CRB1's C-terminus being intracellular (residues 1369-1406), recorded in other_positions. No internal loop insertions are supported by the ledger. Validation is detected_only because the paper reports co-IP pull-down (protein-protein interaction preserved) but does not explicitly measure surface localization or CRB1's primary biological function (cell polarity/retinal lamination).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1406,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CRB1 C-terminus (residue 1406, topology 1369-1406 intracellular) is not a surface site; the same paper applies C-terminal tags to CRB2, CRB3, and GFP but explicitly uses N-terminal tags for CRB1, consistent with the intracellular location of CRB1's C-terminus."
+    }
+  ]
+}

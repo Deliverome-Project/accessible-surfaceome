@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HRH1-terminal_n-0-lit",
+      "gene_symbol": "HRH1",
+      "uniprot_acc": "P35367",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "3H-mepyramine radioligand binding and histamine-stimulated 3H-inositol phosphate accumulation in CHO-K1 cells: Myc-H1 and Myc-GFP H1 pharmacology identical to wild-type H1R.",
+      "confidence": "high",
+      "rationale": "HRH1 has no signal peptide; the topology landmarks place residues 1\u201327 as extracellular and residues 472\u2013487 as intracellular, making the N-terminus the only extracellular terminus. The paper names no residue number, so position_evidence is topology_derived and insert_after_residue is 0 (prepend before Met1). Python confirmed seq[0]='M' (residue 1) and that TM1 begins at residue 28, leaving a 27-residue extracellular buffer well beyond the \u22653-residue minimum. The published Myc-tagged construct retained full pharmacology, providing the highest validation tier. Full-length human H1R with an N-terminal myc tag (Myc-H1) and a dual N-terminal myc / C-terminal GFP version (Myc-GFP H1) were stably expressed in CHO-K1 cells. No specific residue number is named; 'N-terminal' is the only description of placement. The N-terminus (residues 1\u201327) is the sole extracellular terminus of H1R (C-terminus is intracellular, residues 472\u2013487), so the junction is unambiguously the prepend position before Met1. Corroborated by L2/L4, which describe an independently constructed N-terminal HA-tagged H1R that was functional in HEK293T NFAT-luciferase assays.",
+      "sources": [
+        {
+          "pmid": 16086035,
+          "citation": "PMID 16086035",
+          "claim": "The aim of the present study was to investigate the cellular pathway involved in histamine-stimulated internalization of the human H1-receptor in CHO-K1 cells expressing N-terminal myc-tagged H1-receptor (Myc-H1) or N-terminal myc-C-terminal green fluorescent protein (Myc-GFP H1) versions of the receptor. Studies of 3H-mepyramine binding and histamine-stimulated 3H-inositol phosphate accumulation in these cells showed that the Myc-H1 and Myc-GFP H1-receptors had identical pharmacology to the wild-type H1-receptor."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:02:02.451228+00:00",
+  "literature_notes": "L2 and L4 describe the same N-terminal HA-H1R construct at the same junction (prepend before Met1) and corroborate L1 but do not add a second site. L3 describes an engineered structural construct in which ICL3 (residues 217\u2013408, intracellular) was replaced by mBRIL and the C-terminal residues 484\u2013487 (intracellular) were replaced by a K3-ALFA tag; both insertions are cytoplasmic and are recorded in other_positions. No ledger line supports an insertion in any of the three extracellular loops (ECL1 87\u2013100, ECL2 166\u2013187, ECL3 438\u2013450), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 217,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "ICL3 residues 217\u2013408 were deleted and replaced by mBRIL in a structural engineering construct; this loop falls within the intracellular span 212\u2013416 and is not a surface-tag site."
+    },
+    {
+      "residue": 484,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal residues 484\u2013487 were replaced by a K3-ALFA tag in the same structural construct; this region falls within the intracellular C-terminal span 472\u2013487 and is not a surface-tag site."
+    }
+  ]
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNJ2",
+  "uniprot_acc": "P63252",
+  "sites": [
+    {
+      "site_id": "KCNJ2-internal-116-lit",
+      "gene_symbol": "KCNJ2",
+      "uniprot_acc": "P63252",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 116,
+      "residue_before": "S",
+      "residue_after": "K",
+      "residue_label": "S116",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by FLAG/HA antibody binding on non-permeabilized (intact) cells in multiple independent studies; pulse-chase metabolic labeling confirms trafficking to the cell surface. Electrophysiology of the epitope-tagged channel itself is NOT MEASURED in the cited ledger lines.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the junction as between S116 and K117 in human Kir2.1, placing the insert 10 residues from the TM1 C-boundary (residue 106) and 39 residues from the TM2 N-boundary (residue 156), well within the single extracellular loop (107\u2013155). Python verification confirms residue 116 = S and residue 117 = K in the canonical sequence. L10 independently confirms the FLAG tag occupies positions 116\u2013123 and is surface-accessible by antibody labeling. Multiple additional ledger lines (L2, L3, L7, L8) using HA tags in the same extracellular loop of full-length membrane-anchored Kir2.1 further corroborate that this loop tolerates short epitope insertions without disrupting surface trafficking. Full-length human Kir2.1 (KCNJ2) with a FLAG tag inserted between S116 and K117 in the single extracellular loop (topology landmarks: extracellular 107\u2013155), expressed in mammalian cells. L10 (PMC9951526) independently confirms the FLAG occupies positions 116\u2013123 and that antibody labeling is disrupted by mutations at those positions, corroborating extracellular accessibility. L2/L3 (PMC3139129) and L7/L8 (PMC12775956) report HA-tagged full-length Kir2.1 with the tag in the same extracellular loop, confirmed by antibody binding on non-permeabilized cells and pulse-chase trafficking assays. L4/L5 (PMC9273215) report the same loop insertion in mouse Kir2.1 citing Stockklausner et al. 2001 (the same original reference cited in L1 for the S116\u2013K117 junction), providing indirect ortholog support for this junction.",
+      "sources": [
+        {
+          "pmid": 34880224,
+          "citation": "PMID 34880224",
+          "claim": "FLAG tag epitopes were added into previously described extracellular loops of Kir2.1 (between S116 and K117 59 ), Kir3.1 (between K114 and A115 56 ), Asic1a (between F147 and K148 103 ), and P2X 3 (between N72 and R73 based on insertion into the paralog P2X 2 104 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:49:41.411093+00:00",
+  "literature_notes": "L2, L3, L6, L7, L8 all report extracellular HA or Myc tags on full-length Kir2.1 but do not specify the insertion residue; they are consistent with the L1-validated S116\u2013K117 junction and were used to inform the validation level but do not independently pin a second site. L4 and L5 (PMC9273215) report a FLAG tag 'at position T115' in mouse Kir2.1 (UniProt P35561), citing Stockklausner et al. 2001 \u2014 the same original reference that L1 cites for the S116\u2013K117 human junction. Human residue 115 = A (not T), indicating a single-residue species difference; the mouse T115 insertion is most parsimoniously the ortholog of the human S116\u2013K117 junction rather than a distinct adjacent junction, so no separate site at human position 115 is reported. L9 (PMC10592817) reports EGFP fused to the C-terminus of Kir2.1; the C-terminus falls entirely within the intracellular domain (topology landmarks: intracellular 177\u2013427), so this is recorded in other_positions as an intracellular tag, not a surface site. No ledger line supports any N-terminal extracellular tag (the N-terminus, residues 1\u201381, is intracellular). The protein has only one extracellular loop (107\u2013155), so no additional internal sites exist beyond what the ledger grounds.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 427,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "EGFP fused to the C-terminus of Kir2.1 (insert_after_residue=427); the C-terminus lies in the intracellular domain (topology landmarks: intracellular 177\u2013427), so this tag faces the cytoplasm and is not a surface epitope site."
+    }
+  ]
+}

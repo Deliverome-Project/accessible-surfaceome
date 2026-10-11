@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "LYPD2",
+  "uniprot_acc": "Q6UXB3",
+  "sites": [
+    {
+      "site_id": "LYPD2-terminal_c-None-lit",
+      "gene_symbol": "LYPD2",
+      "uniprot_acc": "Q6UXB3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "C-terminal, immediately before GPI attachment site",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG staining of transfected HEK-293T cells (L3); expression confirmed by Western blot (n=3, L4); no functional assay reported.",
+      "confidence": "high",
+      "rationale": "LYPD2 is a GPI-anchored protein with no TM domain; the signal peptide (residues 1\u201322) is cleaved and the C-terminus is GPI-anchored, leaving exactly one viable surface tag position: immediately before the GPI signal. L2 explicitly places the FLAG tag at this junction ('immediately N-terminal to the predicted GPI attachment residue'), and L3 confirms the tagged protein reaches the cell surface. Because the GPI omega-site residue number is not stated in the paper, insert_after_residue is null and the position is topology_derived from the single available C-terminal extracellular junction. Full-length M. musculus and R. norvegicus lypd2 constructs carrying a FLAG epitope placed immediately N-terminal to the predicted GPI attachment residue (as determined by mendel.imp.ac.at/gpi) were expressed in HEK-293T cells. Surface display was confirmed by anti-FLAG staining (L3); expression confirmed by Western blot (L4). The exact omega-site residue number is not stated in the paper.",
+      "sources": [
+        {
+          "pmid": 36441793,
+          "citation": "PMID 36441793",
+          "claim": "HEK-293T cells were transfected with the indicated amounts of each construct and stained for presence of C-terminal FLAG epitope."
+        },
+        {
+          "pmid": 18288889,
+          "citation": "PMID 18288889",
+          "claim": "LY6D and LYPD2 were tagged C-terminally with an HA tag.\n293T cells were cultivated in Dulbecco's modified Eagle Medium (DMEM; Invitrogen) supplemented with 10% heat-inactivated fetal bovine serum (FBS) and 50 \u03bcg/ml gentamycin. 293T cells (3 \u00d7 10 6 cells) were cotransfected with 20 \u03bcg total of DNA (empty pCI vector + increasing amounts of pCI vector containing the gene of interest) using the calcium phosphate technique."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:32:19.252291+00:00",
+  "literature_notes": "LYPD2 (125 aa) has a signal peptide (1\u201322) and is GPI-anchored with no TM domain; the entire mature sequence (23\u2013125) is extracellular. The only viable surface tag position is the C-terminal junction immediately before the GPI signal, which is the position both ledger papers used. No ledger line supports an N-terminal tag (the N-terminus is cleaved with the signal peptide and no paper describes a tag there), nor any internal loop insertion. L4 (Western blot confirmation of FLAG constructs) is from the same paper as L2/L3 and provides additional expression evidence for Site 1 but does not constitute a separate site. The exact GPI omega-site residue for LYPD2 is not stated in any ledger line; running the GPI prediction server (mendel.imp.ac.at) on the canonical sequence would be required to pin insert_after_residue precisely.",
+  "literature_rejected": []
+}

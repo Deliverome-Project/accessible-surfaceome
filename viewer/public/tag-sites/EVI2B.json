@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EVI2B",
+  "uniprot_acc": "P34910",
+  "sites": [
+    {
+      "site_id": "EVI2B-terminal_n-21-lit",
+      "gene_symbol": "EVI2B",
+      "uniprot_acc": "P34910",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "S",
+      "residue_after": "K",
+      "residue_label": "S21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "His-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry with anti-His-tag antibody; endogenous EVI2B function not independently assayed in the tagged construct.",
+      "confidence": "high",
+      "rationale": "The paper places the His-tag 'N-terminal to the full-length EVI2B sequence' (L1). EVI2B carries a signal peptide at residues 1\u201321; any tag upstream of the cleavage site would be co-translationally removed and could not be detected on the cell surface. Because L2 demonstrates surface detection by anti-His-tag antibody, the tag must reside after the SP cleavage site, i.e., at the mature N-terminus (insert_after_residue = 21, between S21 and K22). EVI2B has exactly one extracellular terminus (residues 22\u2013204 precede the single TM helix at 205\u2013225), so the position is unambiguously topology_derived. Python confirmed residue 21 = S and residue 22 = K from the canonical sequence. His-tagged full-length EVI2B expressed transiently (pcDNA3.1/EVI2B) and stably (pAS3w.Ppuro/EVI2B) in human cells; L1 states the His-tag was inserted N-terminal to the full-length EVI2B coding sequence; L2 confirms surface display of the His-tag by flow cytometry with anti-His-tag antibody.",
+      "sources": [
+        {
+          "pmid": 31289297,
+          "citation": "PMID 31289297",
+          "claim": "After 48 h, surface expression of EVI2B or CXCR2 was determined by Western blotting and by flow cytometry with mouse anti-EVI2B Ab (Thermo Fisher Scientific, MEM-216), anti-CXCR2 Ab (R&D Systems, MAB331), or anti-His tag Ab as described above."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:38:08.952359+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same His-tagged EVI2B construct and the same N-terminal junction; they do not pin separate residues or separate loops, so only one site is reported. No residue number is stated in any line, but the combination of 'N-terminal to the full-length sequence' (L1) and confirmed surface detection of the His-tag (L2) uniquely resolves the junction to after the signal-peptide cleavage site (residue 21/22). No internal extracellular loop insertions, C-terminal tags, or intracellular insertions are reported in the ledger.",
+  "literature_rejected": []
+}

@@ -37,6 +37,81 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GNRHR-terminal_n-0-lit",
+      "gene_symbol": "GNRHR",
+      "uniprot_acc": "P30968",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "IP formation assay in HEK 293 cells: Buserelin-stimulated inositol phosphate formation by FLAG-hGnRH-RI was similar to untagged hGnRH-RI, confirming the FLAG epitope does not alter signaling potential.",
+      "confidence": "high",
+      "rationale": "GNRHR (UniProt P30968) has no annotated signal peptide; the topology landmarks place residues 1-38 as extracellular, making the N-terminus the sole extracellular terminus available for a tag. L5 reports FLAG-hGnRH-RI with equivalent IP signaling to untagged receptor in HEK 293 cells, providing direct human-protein evidence with functional validation. No specific residue is named in L3/L4/L5, so the junction is topology-derived as a prepend (insert_after_residue=0, before M1). The tag is >36 residues from TM1 (boundary at 39), well clear of any TM constraint. FLAG epitope tag fused to the amino terminus of full-length hGnRH-RI (open-reading frame only) expressed in HEK 293 cells; the construct was validated by comparing its signaling capacity to untagged hGnRH-RI.",
+      "sources": [
+        {
+          "pmid": 20628612,
+          "citation": "PMID 20628612",
+          "claim": "Our data revealed that Buserelin, a metabolically stable GnRH agonist, stimulated similar levels of inositol phosphate (IP) formation by both FLAG-hGnRH-RI- and hGnRH-RI cDNA-expressing HEK 293 cells ( Fig. 1A ) suggesting that the FLAG epitope does not alter the signaling potential of the receptor."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "GNRHR-terminal_n-1-lit",
+      "gene_symbol": "GNRHR",
+      "uniprot_acc": "P30968",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "A",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression detected by immunological detection in the GPCR library screen; functional assays for GnRHR specifically NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "L16 explicitly states the HA tag was inserted 'between the first 5' start codon and the second codon' for class A GPCRs including GnRHR, pinning the junction to after M1 (insert_after_residue=1, residue_before=M, residue_after=A as read from the canonical sequence). This is a named-residue validated position distinct from the prepend (site 1). The junction is 38 residues from TM1 (boundary at 39), well within the extracellular N-terminal domain (1-38). Python confirmed seq[0]='M' and seq[1]='A'. For class A GPCRs (including GnRHR) lacking an extended N-terminal domain, an HA-coding sequence was inserted between the first start codon and the second codon in a GPCR library to enable immunological detection of surface-expressed receptors.",
+      "sources": [
+        {
+          "pmid": 42736269,
+          "citation": "PMID 42736269",
+          "claim": "For GPCRs lacking an extended N-terminal domain (i.e., class A and olfactory receptors), we inserted an influenza hemagglutinin (HA)-coding sequence between the first 5\u02b9 start codon and the second codon in order to facilitate universal immunological detection."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -52,5 +127,12 @@
       "left_pct": 0.4016064257028112,
       "note": "Isoform surface expr 141 (-12% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:25:45.680297+00:00",
+  "literature_notes": "GNRHR (P30968, 328 aa) is a GPCR with no annotated signal peptide; the N-terminal 38 residues are extracellular per the topology landmarks. All ledger lines converge on the extracellular N-terminus as the only published tag-insertion site. Two distinct junctions are supported: (1) a prepend before M1 (insert_after_residue=0), grounded in L3/L4/L5 (FLAG-hGnRHR with function validation) and corroborated by L1/L2 (NanoLuc-hGnRHR, surface confirmed), L6/L7/L9/L10 (HA-hGnRHR, surface confirmed), and indirect ortholog evidence in L11 (rat HA-GnRHR), L12/L13 (mouse HA-GnRHR), L14 (pig/fish FLAG-GnRHR); (2) after M1 (insert_after_residue=1), explicitly named in L16 for class A GPCRs including GnRHR. No ledger line supports an insertion in ECL1 (98-115), ECL2 (185-212), or ECL3 (301-306) as a tag site. The K191\u0394 deletion mentioned in L1/L2 is a receptor modification to improve surface trafficking, not a tag insertion site, and is not placed in other_positions as it does not fit 'intracellular' or 'abrogates_function' categories (it is a deletion that improves expression). The NanoLuc construct in L1/L2 uses an IL6 secretory signal peptide fused to NanoLuc itself (not to hGnRHR), so the hGnRHR N-terminus remains the tag-attachment point; however, the K191\u0394 co-modification confounds independent function assessment of the N-terminal tag alone, so this line is used as corroborating evidence for site 1 rather than primary.",
+  "literature_rejected": []
 }

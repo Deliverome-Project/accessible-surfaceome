@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CADM3",
+  "uniprot_acc": "Q8N126",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:59:03.397602+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) reference the same commercial GeneCopoeia plasmid (NM_021189.4-HA) with no stated tag position. The rules explicitly exclude 'a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.' The topology_derived path cannot rescue these lines because the commercial-plasmid exclusion is explicit and takes precedence. CADM3 is a type I single-pass transmembrane protein (EC: 25\u2013331, TM: 332\u2013352, IC: 353\u2013398); its N-terminus (after SP cleavage at residue 24, mature N-terminus = residue 25 N) is the sole extracellular terminus and would in principle be a topology_derived candidate, but the evidence does not qualify. The G368C variant studied in L2 falls at position 368 (intracellular, >352), confirming the paper is a disease-variant study, not a tag-engineering study. No qualifying insertion evidence exists in the ledger; zero sites is the correct answer.",
+  "literature_rejected": []
+}

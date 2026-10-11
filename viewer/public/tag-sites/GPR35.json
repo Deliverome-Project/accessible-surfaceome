@@ -37,7 +37,83 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR35-terminal_n-0-lit",
+      "gene_symbol": "GPR35",
+      "uniprot_acc": "Q9HC97",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ELISA on intact (non-permeabilized) HEK293A cells confirmed surface-accessible FLAG signal, demonstrating correct membrane trafficking; receptor activation studies (L1/L2) confirmed functional agonist responses from the FLAG-tagged construct.",
+      "confidence": "high",
+      "rationale": "GPR35 has no signal peptide (topology landmarks show EXTRACELLULAR 1\u201320, not SIGNAL); the N-terminus is therefore constitutively extracellular and a prepend tag (insert_after_residue=0) sits on the cell surface. Python confirms residue 1 is M and the extracellular span extends 20 residues before TM1 begins at residue 21, placing the junction well beyond the \u22653-residue TM-clearance requirement. L6 is the strongest evidence because it explicitly uses intact (non-permeabilized) cells for ELISA, directly demonstrating surface accessibility of the FLAG tag; L1, L2, and L5 corroborate with functional receptor assays using the same N-terminal FLAG architecture. Because no paper names a specific residue number for the junction (only 'N-terminal'), position_evidence is topology_derived: the extracellular N-terminus is the sole extracellular terminus available for a prepend tag. N-terminally FLAG-tagged GPR35 short and long isoforms expressed in HEK293A cells; surface expression quantified by ELISA on intact (non-permeabilized) cells. The same N-terminal FLAG prepend architecture is independently reported in L1 (NanoBiT vector, \u03b2-arrestin2 recruitment) and L2 (pcDNA vector, receptor activation studies), and in the FLAG-hGPR35a-eYFP construct of L5.",
+      "sources": [
+        {
+          "pmid": 35933013,
+          "citation": "PMID 35933013",
+          "claim": "Prior to pharmacologically characterizing the GPR35 isoforms, we first quantified the expression levels of N-terminally FLAG-tagged GPR35 short and long, which only differ by a 31 amino acid long extension ( Fig. 2 A ), on the surface of HEK293A cells by performing ELISA experiments with intact cells ( Figs. 2 B and S1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:35:31.078781+00:00",
+  "literature_notes": "All C-terminal tags in the ledger (LgBiT in L1/L2, HA in L3/L4, eYFP in L5/L7/L8, GFP/EGFP in L9/L10/L11) are attached after residue 309, which falls in the intracellular C-terminal tail (topology landmarks: INTRACELLULAR 280\u2013309). None qualifies as a surface tag site. L4 (anti-HA probing) was examined carefully: the quote does not specify non-permeabilized cells, and the C-terminus is topologically intracellular, so this cannot be read as surface detection of the HA tag. L8 names five phospho-acceptor residues (Ser287, Ser294, Ser300, Ser303, Thr307) in the intracellular C-terminal tail; four of the five alanine substitutions reduced BRET signals and are recorded in other_positions. No ledger line reports any insertion in ECL1 (78\u201387), ECL2 (155\u2013169), or ECL3 (240\u2013256), so no internal extracellular loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 287,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L8",
+      "note": "Ser287Ala in the intracellular C-terminal tail of hGPR35a-eYFP reduced maximal zaprinast-stimulated BRET signal, indicating this residue contributes to arrestin-recruitment signalling."
+    },
+    {
+      "residue": 294,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Ser294Ala in the intracellular C-terminal tail did NOT reduce BRET signal; position is intracellular and not function-perturbing by this assay."
+    },
+    {
+      "residue": 300,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L8",
+      "note": "Ser300Ala in the intracellular C-terminal tail of hGPR35a-eYFP reduced maximal zaprinast-stimulated BRET signal."
+    },
+    {
+      "residue": 303,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L8",
+      "note": "Ser303Ala in the intracellular C-terminal tail of hGPR35a-eYFP reduced maximal zaprinast-stimulated BRET signal."
+    },
+    {
+      "residue": 307,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L8",
+      "note": "Thr307Ala in the intracellular C-terminal tail of hGPR35a-eYFP reduced maximal zaprinast-stimulated BRET signal."
+    }
+  ]
 }

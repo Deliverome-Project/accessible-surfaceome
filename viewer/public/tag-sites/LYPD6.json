@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LYPD6",
+  "uniprot_acc": "Q86Y78",
+  "sites": [
+    {
+      "site_id": "LYPD6-terminal_n-22-lit",
+      "gene_symbol": "LYPD6",
+      "uniprot_acc": "Q86Y78",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used in transgenic mice to track Lypd6 expression; surface localisation implied by use in vivo but no explicit functional assay result is reported in the ledger clip.",
+      "confidence": "medium",
+      "rationale": "LYPD6 is a GPI-anchored protein with signal peptide residues 1\u201322 and an entirely extracellular mature domain (residues 23\u2013171); the C-terminal hydrophobic stretch (CLWLWLGLML, ~residues 162\u2013171) is the GPI-anchor signal that is cleaved during GPI attachment, making the C-terminus inaccessible for a surface tag. Therefore the mature N-terminus (after SP cleavage at residue 22/23) is the sole extracellular terminus available. Python confirmed position 22 = A and position 23 = A; insert_after_residue = 22 places the HA tag between the last SP residue and the first mature residue, so after SP cleavage the tag is the new extracellular N-terminus. The position is topology_derived because the ledger clip names no residue number. Full-length Lypd6 HA-tagged construct expressed in transgenic mice (PMC2716416). The ledger header states the HA tag is at the amino-terminus of Lypd6; the quote states 'The Lypd6 ORF was fused to the amino-terminus of the HA epitope (YPYDVPDYA).' No residue number is named.",
+      "sources": [
+        {
+          "pmid": 19403274,
+          "citation": "PMID 19403274",
+          "claim": "The Lypd6 ORF was fused to the amino-terminus of the HA epitope (YPYDVPDYA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:31:36.771440+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It describes a full-length, membrane-anchored Lypd6 construct with an HA tag at the protein's amino-terminus used in transgenic mice, which qualifies under the rules. The quote wording ('Lypd6 ORF was fused to the amino-terminus of the HA epitope') is ambiguous but the ledger header resolves it as an N-terminal HA tag on Lypd6; a C-terminal tag would be cleaved with the GPI anchor signal and would not yield a surface-detectable tag, making the N-terminal interpretation the only biologically coherent one. No residue number is stated, so the position is topology_derived from the single extracellular terminus. Confidence is medium rather than high because the quote wording is internally ambiguous and the ledger clip does not report an explicit surface-detection or functional assay result.",
+  "literature_rejected": []
+}

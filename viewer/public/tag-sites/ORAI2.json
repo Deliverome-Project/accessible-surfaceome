@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "ORAI2",
+  "uniprot_acc": "Q96SN7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:03:00.806166+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe N-terminal Myc or CFP tags on full-length ORAI2. The authoritative topology landmarks place the ORAI2 N-terminus (residues 1\u201365) in the intracellular compartment; ORAI2 has no signal peptide and both termini are cytoplasmic. The two extracellular loops (ECL1: 80\u201393; ECL2: 172\u2013195) are not addressed by any ledger line. No ledger line reports a tolerated insertion on the extracellular face of ORAI2, so zero sites qualify. The N-terminal tags are recorded in other_positions as intracellular. L3 names no residue and is consistent with the same N-terminal placement used in L1/L4 (pCruz Myc / pCMV-myc vectors); it adds no independent position information.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Myc tag placed at the N-terminus of full-length Orai2 (insert_after_residue=0); residues 1\u201365 are intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular space."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "N-terminally CFP-tagged ORAI2 construct; same cytoplasmic N-terminus (residues 1\u201365 intracellular), tag is on the intracellular face."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "cMyc tag explicitly placed at the N-terminus of the ORAI2 ORF in pCMV-myc; N-terminus is intracellular (residues 1\u201365), so the tag is cytoplasmic."
+    }
+  ]
+}

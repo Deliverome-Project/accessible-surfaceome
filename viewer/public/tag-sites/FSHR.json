@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FSHR-terminal_n-17-lit",
+      "gene_symbol": "FSHR",
+      "uniprot_acc": "P23945",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "G",
+      "residue_after": "C",
+      "residue_label": "G17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-FLAG ELISA/flow cytometry on intact Expi293F cells; FSH binding or cAMP signaling not reported.",
+      "confidence": "high",
+      "rationale": "FSHR has a signal peptide spanning residues 1\u201317 (authoritative landmark); the mature N-terminus begins at residue 18 (C), which is extracellular (span 18\u2013366, 349 residues from TM1). An N-terminal FLAG tag must be placed after the signal-peptide cleavage site to avoid being cleaved off; the only valid extracellular N-terminal junction is therefore after residue 17 (G). The paper names no specific residue, but exactly one extracellular terminus exists, so the position is topology-derived. Python confirmed residue 17 = G and residue 18 = C from the canonical sequence. PMC10156119 describes a dual epitope-tagged GPCR library in which full-length, membrane-anchored FSHR carries an N-terminal FLAG tag and a C-terminal 1D4 tag; constructs are expressed in Expi293F cells and surface levels are quantified by ELISA/flow cytometry using the N-terminal FLAG epitope.",
+      "sources": [
+        {
+          "pmid": 37134173,
+          "citation": "PMID 37134173",
+          "claim": "Each GPCR construct includes an N-terminal FLAG tag and a C-terminal 1D4 tag, except for four GPCRs belonging to the Frizzed (FZD) subfamily, which have an N-terminal HA (hemagglutinin) epitope tag and a C-terminal 1D4 epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,21 @@
       "canonical_residue": null,
       "left_pct": 2.690582959641256,
       "note": "Isoform surface expr 167 (-56% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:56:18.576477+00:00",
+  "literature_notes": "L1 is the sole ledger line. It supports two tag positions: (1) N-terminal FLAG after the signal-peptide cleavage site (extracellular, reported as a surface site above) and (2) C-terminal 1D4 at residue 695 (intracellular, reported in other_positions). No residue number is named in the paper for either tag; the N-terminal position is topology-derived because exactly one extracellular N-terminus exists after SP cleavage. No internal loop insertions are supported by the ledger. The large ectodomain (18\u2013366) and the three short extracellular loops (ECL1 422\u2013443, ECL2 509\u2013528, ECL3 594\u2013608) have no ledger-grounded insertions and are therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 695,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal 1D4 tag in the same construct lands at the last residue of FSHR (intracellular C-terminus, span 630\u2013695); suitable for total-expression quantification but not for a surface epitope tag."
     }
   ]
 }

@@ -1,0 +1,91 @@
+{
+  "has_data": true,
+  "gene_symbol": "ISLR",
+  "uniprot_acc": "O14498",
+  "sites": [
+    {
+      "site_id": "ISLR-terminal_c-428-lit",
+      "gene_symbol": "ISLR",
+      "uniprot_acc": "O14498",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 428,
+      "residue_before": "F",
+      "residue_after": "",
+      "residue_label": "F428",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence in C2C12 cells confirmed correct localization (L3). Secretion into conditioned medium confirmed by western blot in HEK293FT cells (L7). No functional perturbation reported.",
+      "confidence": "high",
+      "rationale": "L1 states GFP was inserted at the C-terminus of full-length Islr; no explicit residue number is given, but ISLR has no TM domain (topology: extracellular 19\u2013428, no M or I residues), so the C-terminus at position 428 is the only possible location and is unambiguously extracellular. Python confirms seq[427]='F'. The position is topology_derived because no residue number is cited, but the junction is uniquely determined. Three additional ledger lines (L3, L6, L7) corroborate C-terminal tagging of ISLR across two independent papers and two cell systems. Islr-GFP construct: GFP fused at the C-terminus of full-length mouse Islr, expressed in C2C12 cells (L1). Immunofluorescence for tubulin confirmed correct localization of the GFP-tagged construct (L3). The same C-terminal position is independently supported by an Islr-HA construct from the same paper (L6) and by hISLR-HA overexpressed in HEK293FT cells with confirmed secretion into the supernatant (L7, PMC7110107).",
+      "sources": [
+        {
+          "pmid": 30510196,
+          "citation": "PMID 30510196",
+          "claim": "Error bars represent the means \u00b1 s.d. *** P < 0.001; Student\u2019s t test\nTo localize Islr expression in C2C12 cells in vitro, we generated an Islr expression vector in which green fluorescent protein (GFP) was inserted at the C-terminus of Islr (Islr-GFP)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ISLR-terminal_n-18-lit",
+      "gene_symbol": "ISLR",
+      "uniprot_acc": "O14498",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "C",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Immunofluorescence in C2C12 cells showed the same localization pattern as the independently validated Islr-GFP construct; no functional perturbation reported.",
+      "confidence": "high",
+      "rationale": "L2 and L5 both explicitly state the FLAG tag was inserted after amino acid 18, the last residue of the signal peptide, placing the tag at the very N-terminus of the mature secreted protein (residue 19 onward). Python verification confirms seq[17]='A' (position 18) and seq[18]='C' (position 19). ISLR has no TM domain; the entire mature protein is extracellular, so this N-terminal position is unambiguously on the extracellular face. The construct localizes correctly in C2C12 cells. L-Flag-Islr construct: FLAG tag fused immediately after amino acid 18 (the signal/leader peptide) of mouse Islr, expressed in C2C12 cells. Immunofluorescence with anti-FLAG antibody confirmed correct subcellular localization identical to the Islr-GFP construct (L4). L5 provides the cloning description; L2 reports the functional equivalence.",
+      "sources": [
+        {
+          "pmid": 30510196,
+          "citation": "PMID 30510196",
+          "claim": "Meanwhile, an expression vector fusing a Flag-tag after amino acid 18 (the leader peptide) of Islr was also constructed (L-Flag-Islr), yielding the same result as the Islr-GFP plasmid (Fig. 1g )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:26:23.231436+00:00",
+  "literature_notes": "ISLR (UniProt Q14392) is a secreted protein with no transmembrane domain; the entire mature protein (residues 19\u2013428) is extracellular per the provided topology landmarks. This means both termini are on the extracellular face. L3 and L4 are immunofluorescence confirmation experiments for the GFP and FLAG constructs respectively, not independent insertion reports; they are cited in the rationale but not as primary supporting_clip_ids. L5 is a cloning description that duplicates L2's position claim; L2 is used as the primary clip for the N-terminal site because it also reports the functional equivalence result. L6 (C-terminal HA) and L7 (hISLR-HA, secreted into supernatant) both independently corroborate the C-terminal site already grounded in L1; since they pin the same junction (residue 428), they are noted as additional support rather than separate sites. The disqualification for 'soluble ectodomain' does not apply to L7 because ISLR is naturally secreted (no TM domain) and hISLR-HA is the full-length protein, not a truncated construct.",
+  "literature_rejected": []
+}

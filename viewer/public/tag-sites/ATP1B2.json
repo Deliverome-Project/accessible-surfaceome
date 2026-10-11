@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ATP1B2",
+  "uniprot_acc": "P14415",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:36:25.233991+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct: YFP fused to the N-terminal cytoplasmic tail of ATP1B2. The topology landmarks place the N-terminus (residues 1\u201340) unambiguously in the intracellular compartment; the single TM helix (41\u201361) is followed by the entire extracellular domain (62\u2013290). Because the tag faces the cytoplasm and neither line describes a snorkel arrangement, this insertion does not qualify as an extracellular surface-tag site. No ledger line reports any tag, fluorescent-protein fusion, transposon hit, or epitope insertion anywhere in the extracellular domain (residues 62\u2013290), including the extracellular C-terminus (residue 290). Zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "YFP fused to the N-terminal cytoplasmic tail (residues 1\u201340) of full-length ATP1B2; tag is on the intracellular face, not the extracellular surface."
+    }
+  ]
+}

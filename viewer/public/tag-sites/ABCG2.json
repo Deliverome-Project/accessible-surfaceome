@@ -4,6 +4,81 @@
   "uniprot_acc": "Q9UNQ0",
   "sites": [
     {
+      "site_id": "ABCG2-internal-423-lit",
+      "gene_symbol": "ABCG2",
+      "uniprot_acc": "Q9UNQ0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 423,
+      "residue_before": "I",
+      "residue_after": "Q",
+      "residue_label": "I423",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Transport activity assay: insertion at 423 produced a functional mutant (activity preserved). Surface immunofluorescence confirmed extracellular location of the HA tag.",
+      "confidence": "high",
+      "rationale": "Residue 423 lies within ECL1 (computed extracellular span 416-427), 8 residues from TM1 end (415) and 5 residues from TM2 start (428), satisfying the >=3 residue buffer on both sides. The paper directly reports HA insertion at residue 423 is extracellular (non-permeabilized cell staining) and functionally tolerated (transport activity preserved). Python-verified: seq[422]='I', seq[423]='Q', consistent with insert_after_residue=423. Full-length ABCG2 with HA tag inserted after residue 423 expressed in mammalian cells; surface accessibility tested by immunofluorescence in non-permeabilized cells (PMC2649121).",
+      "sources": [
+        {
+          "pmid": 19063604,
+          "citation": "PMID 19063604",
+          "claim": "Insertions at residues 423, 454, 462, 499, 529, 532, and 651 produced functional mutants, whereas insertions at residues 560, 594, and 623 resulted in mutants with significantly reduced activity and insertions at residues 387, 420, 474, and 502 completely abrogated the activity. HA tags inserted at residues 387, 474, 529, 532, 560, and 651 were localized intracellularly, whereas those inserted at residues 420, 423, 454, 499, 502, 594, and 623 revealed an extracellular location. Residue 462 was localized in a transmembrane (TM) segment."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ABCG2-internal-499-lit",
+      "gene_symbol": "ABCG2",
+      "uniprot_acc": "Q9UNQ0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 499,
+      "residue_before": "L",
+      "residue_after": "K",
+      "residue_label": "L499",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Transport activity assay: insertion at 499 produced a functional mutant (activity preserved). Surface immunofluorescence confirmed extracellular location of the HA tag.",
+      "confidence": "high",
+      "rationale": "Residue 499 lies within ECL2 (computed extracellular span 498-505), 7 residues from TM4 start (506). Distance from TM3 end (497) is 2 residues, which is below the >=3 guideline, but the paper directly validates HA at this exact position as extracellular and functionally tolerated, providing the strongest possible evidence. Python-verified: seq[498]='L', seq[499]='K', consistent with insert_after_residue=499. Full-length ABCG2 with HA tag inserted after residue 499 expressed in mammalian cells; surface accessibility tested by immunofluorescence in non-permeabilized cells (PMC2649121).",
+      "sources": [
+        {
+          "pmid": 19063604,
+          "citation": "PMID 19063604",
+          "claim": "Insertions at residues 423, 454, 462, 499, 529, 532, and 651 produced functional mutants, whereas insertions at residues 560, 594, and 623 resulted in mutants with significantly reduced activity and insertions at residues 387, 420, 474, and 502 completely abrogated the activity. HA tags inserted at residues 387, 474, 529, 532, 560, and 651 were localized intracellularly, whereas those inserted at residues 420, 423, 454, 499, 502, 594, and 623 revealed an extracellular location. Residue 462 was localized in a transmembrane (TM) segment."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 499,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "ABCG2-snorkel-c",
       "gene_symbol": "ABCG2",
       "uniprot_acc": "Q9UNQ0",
@@ -99,5 +174,80 @@
       "left_pct": 100.0
     }
   ],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:54:03.171718+00:00",
+  "literature_notes": "L1 (PMC2649121) is the primary evidence source, reporting HA tag insertions at 13 positions in full-length ABCG2. Two positions (423 in ECL1, 499 in ECL2) are both extracellular (non-permeabilized immunofluorescence) and functionally tolerated (transport activity preserved). Position 454 is reported as extracellular and functional by the paper but falls within the computed intracellular span (449-477); per the authoritative topology landmarks, it is classified as intracellular and placed in other_positions. Positions 420, 502, 594, and 623 are extracellular per the paper but abrogate or significantly reduce transport activity; they are placed in other_positions. L2-L5 (PMC9917445) report N-terminal GFP-tagged ABCG2 with preserved expression, surface display, and transport function. However, ABCG2's N-terminus (residue 1) is intracellular per the computed topology (INTRACELLULAR: 1-394); an N-terminal GFP fusion is therefore an intracellular tag, not an extracellular surface tag, and does not qualify as a surface site. L6-L9 (PMC10941402, PMC10327217) report N-terminal FLAG tags on zebrafish ABCG2 homologs; same reasoning applies \u2014 N-terminus is intracellular. L10 (PMC7900420) reports N-terminal SBP tag in a RUSH trafficking study; again intracellular. Position 560 is in the computed extracellular ECL3 (557-627) but the paper reports it as intracellular with reduced activity; it is placed in other_positions as abrogates_function.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 420,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 420 is extracellular (non-permeabilized staining positive) but completely abrogates transport activity."
+    },
+    {
+      "residue": 454,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Paper reports HA at 454 as extracellular and functional, but computed topology places residue 454 in the intracellular span (449-477); topology landmarks are authoritative."
+    },
+    {
+      "residue": 502,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 502 is extracellular (non-permeabilized staining positive) but completely abrogates transport activity."
+    },
+    {
+      "residue": 560,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 560 results in significantly reduced transport activity; paper reports intracellular localization though computed topology places it in ECL3."
+    },
+    {
+      "residue": 594,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 594 is extracellular (non-permeabilized staining positive) but results in significantly reduced transport activity."
+    },
+    {
+      "residue": 623,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 623 is extracellular (non-permeabilized staining positive) but results in significantly reduced transport activity."
+    },
+    {
+      "residue": 387,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 387 is intracellular (permeabilized-only staining) and completely abrogates transport activity."
+    },
+    {
+      "residue": 474,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 474 is intracellular (permeabilized-only staining) and completely abrogates transport activity."
+    },
+    {
+      "residue": 529,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 529 is intracellular (permeabilized-only staining) and transport activity is preserved."
+    },
+    {
+      "residue": 532,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 532 is intracellular (permeabilized-only staining) and transport activity is preserved."
+    },
+    {
+      "residue": 651,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at 651 is intracellular (permeabilized-only staining) and transport activity is preserved."
+    }
+  ]
 }

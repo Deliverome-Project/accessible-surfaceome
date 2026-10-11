@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LVRN",
+  "uniprot_acc": "Q6Q4G3",
+  "sites": [
+    {
+      "site_id": "LVRN-terminal_c-990-lit",
+      "gene_symbol": "LVRN",
+      "uniprot_acc": "Q6Q4G3",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 990,
+      "residue_before": "T",
+      "residue_after": "",
+      "residue_label": "T990",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "His",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed cell-surface display of the His-tagged full-length LVRN protein; no enzymatic or binding functional assay reported in the clip.",
+      "confidence": "high",
+      "rationale": "LVRN is a type II single-pass TM protein (intracellular 1\u201313, TM 14\u201336, extracellular 37\u2013990). The N-terminus is cytoplasmic and cannot carry a surface-accessible tag; the C-terminus at residue 990 is the sole extracellular terminus, 954 residues from the TM boundary. The '-His' suffix convention and the flow-cytometric surface confirmation together place the tag at the C-terminus. Python confirmed residue 990 = T and residue 989 = N. PMC10495628 reports a full-length hLVRN-His construct expressed in Swan71 human trophoblast cells; surface display of the His-tagged protein was confirmed by flow cytometric analysis. No specific residue is named in the clip.",
+      "sources": [
+        {
+          "pmid": 37705960,
+          "citation": "PMID 37705960",
+          "claim": "The cell surface expression of LVRN in Swan71_LVRN was also confirmed by the flow cytometric analysis ( Figure 1 B)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": false
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:28:18.657517+00:00",
+  "literature_notes": "L1 is the only ledger line. It names no specific residue; the C-terminal position is derived from the type II topology (single extracellular terminus). The clip reports surface display by flow cytometry but no enzymatic activity, ligand-binding, or trafficking assay, so validation_level is surface_only. No internal loop insertions are supported by the ledger.",
+  "literature_rejected": []
+}

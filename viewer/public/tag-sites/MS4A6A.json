@@ -423,5 +423,20 @@
       "canonical_residue": 174,
       "left_pct": 70.16129032258065
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:52:40.714377+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe a single study (PMC3711070) in which MS4A6A was expressed as an EGFP-MS4A6A fusion using the pEGFP-C1 vector. In pEGFP-C1, EGFP is N-terminal to the cloned insert, placing the GFP tag at the intracellular N-terminus of MS4A6A (topology: residues 1\u201346 are intracellular). Critically, the fusion protein was NOT detected at the plasma membrane; it was retained intracellularly in the perinuclear trans-Golgi complex (co-localisation with giantin). Because the protein never reached the cell surface, this construct provides no evidence of a tolerated extracellular tag insertion. No other ledger lines exist for MS4A6A. The two extracellular loops (ECL1: 68\u201386; ECL2: 138\u2013185) are topologically available but are entirely unsupported by any ledger evidence of a tolerated insertion. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the N-terminus of MS4A6A (pEGFP-C1); the N-terminus is intracellular (residues 1\u201346) and the fusion protein was retained in the trans-Golgi complex, never reaching the plasma membrane (L2\u2013L4)."
+    }
   ]
 }

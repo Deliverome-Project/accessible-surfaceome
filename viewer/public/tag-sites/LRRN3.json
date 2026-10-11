@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRN3",
+  "uniprot_acc": "Q9H3W5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:22:20.300920+00:00",
+  "literature_notes": "",
+  "literature_rejected": []
+}

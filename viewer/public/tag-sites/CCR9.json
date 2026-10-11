@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCR9-terminal_n-0-lit",
+      "gene_symbol": "CCR9",
+      "uniprot_acc": "P51686",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TR-FRET CCL25 binding assay performed on cells expressing SNAP-CCR9; a lanthanide donor on the SNAP tag and a fluorophore on CCL25 produced a measurable FRET signal, confirming surface expression and preserved ligand-binding function.",
+      "confidence": "high",
+      "rationale": "CCR9 has no signal peptide, so its N-terminus begins at Met1 and is extracellular (topology span 1\u201349, \u226549 residues from TM1 boundary at residue 50). The ledger clip explicitly states 'snap tag fused to the receptor N-terminus' for CCR9 in a full-length, membrane-anchored construct. Because there is exactly one extracellular N-terminal position for this GPCR, the junction is topology-derived as a prepend (insert_after_residue = 0, residue_after = M). Python confirmed residue 1 = M and the 49-residue clearance from TM1. L3 reports a SNAP tag fused to the N-terminus of full-length CCR9 expressed on the cell surface, used in a TR-FRET assay measuring CCL25 binding. CCR9 is a GPCR with no signal peptide; its N-terminus (residues 1\u201349) is entirely extracellular per the authoritative topology landmarks. The paper names the N-terminus as the fusion point but gives no residue number; because exactly one extracellular terminus exists for an N-terminal tag on this topology, the junction is unambiguously before residue 1 (prepend, insert_after_residue = 0).",
+      "sources": [
+        {
+          "citation": "DOI 10.64898/2026.01.23.701245",
+          "claim": "Binding of CCL25 to CCR9 or ACKR4 was determined by Time-Resolved Fluorescence Resonance Energy Transfer (TR-FRET) between a lanthanide donor attached to a snap tag fused to the receptor N-terminus and a fluorophore on the C-terminus of CCL25 preprint (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in (AZ647) ( Fig. 3A ).",
+          "source_id": "DOI:10.64898/2026.01.23.701245"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,33 @@
       "canonical_residue": null,
       "left_pct": 0.2801120448179272,
       "note": "Isoform surface expr 653 (-84% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:06:11.866926+00:00",
+  "literature_notes": "L1 (CCR9-RlucII) and L4 (CCR9-RlucII) both report C-terminal luciferase fusions used for BRET assays. The authoritative topology places the C-terminus (residues 322\u2013369) in the intracellular compartment; these are therefore intracellular tags and do not qualify as surface tag sites. L2 (CCR9-RLuc8) is the same situation for the C-terminal fusion; the alanine-scanning mutants listed (K40A, R44A, Y126A, Y202A, S207A, T208A, K211A, Q267A, N271A, S292A, D296A, F299A) are point substitutions, not tag insertions, and the ledger clip does not report which ones abrogate function \u2014 only that they were generated \u2014 so they cannot be classified as abrogates_function and are not promoted to sites. L3 is the sole ledger line supporting an extracellular tag insertion.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 369,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal RlucII fusion (CCR9-RlucII) used for BRET-based G-protein recruitment; the C-terminus (residues 322\u2013369) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 369,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal RLuc8 fusion (CCR9-RLuc8) in lentiviral vector used for functional characterization; same intracellular C-terminus as L1."
+    },
+    {
+      "residue": 369,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal RlucII fusion used for \u03b2-arrestin2 BRET assay; same intracellular C-terminus as L1 and L2."
     }
   ]
 }

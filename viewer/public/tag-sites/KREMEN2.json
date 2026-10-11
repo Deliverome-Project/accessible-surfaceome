@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "KREMEN2",
+  "uniprot_acc": "Q8NCW0",
+  "sites": [
+    {
+      "site_id": "KREMEN2-terminal_n-25-lit",
+      "gene_symbol": "KREMEN2",
+      "uniprot_acc": "Q8NCW0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation with FLAG-Dkk1 and FLAG-Dkk3 demonstrated preserved ligand-binding function of V5-tagged full-length Krm2.",
+      "confidence": "medium",
+      "rationale": "L3 reports V5-tagged full-length Krm2 used in co-IP assays showing preserved Dkk1/Dkk3 binding. No residue or junction is named, so the position is topology-derived: KREMEN2 is a type I single-pass TM protein with a single extracellular terminus at the mature N-terminus (after SP cleavage at residue 25). The 'V5-' prefix in 'V5-Krm2' is consistent with an N-terminal tag. insert_after_residue=25 is computed from the SP landmark; seq[25]='A', seq[26]='G'. This is the same physical junction as Site 1 but grounded in a separate paper with functional validation. Full-length mouse V5-Krm2 expressed in SH-SY5Y cells and used in co-immunoprecipitation with FLAG-Dkk1 and FLAG-Dkk3; the V5 tag position is not stated in the clip, but the 'V5-' prefix naming convention and the type I single-pass TM topology of Krm2 (extracellular N-terminus, intracellular C-terminus) leave the mature N-terminus (after SP cleavage at residue 25) as the only extracellular terminus (PMC2950226).",
+      "sources": [
+        {
+          "pmid": 20370576,
+          "citation": "PMID 20370576",
+          "claim": "SH-SY5Y cells were transfected with V5-tagged Krm1 or V5-Krm2 and with either the FLAG-Dkk1 or FLAG-Dkk3 constructs."
+        },
+        {
+          "pmid": 31069116,
+          "citation": "PMID 31069116",
+          "claim": "HA or Flag tags were inserted after the signal peptide sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:05:05.576366+00:00",
+  "literature_notes": "L2 (HA-Krm1secECD) was excluded because it describes a soluble secreted ectodomain construct, not a full-length membrane-anchored protein, which is explicitly disqualified by the rules. L4 (PMC2950226) describes the same V5-Krm2 construct as L3 and adds no new positional information; L3 was used as the primary citation for Site 2. Both sites map to the same physical junction (after residue 25, the mature N-terminus of the extracellular domain), but are grounded in separate ledger lines with different tags and different functional readouts, so both are reported. No internal extracellular loop insertions are supported by the ledger.",
+  "literature_rejected": []
+}

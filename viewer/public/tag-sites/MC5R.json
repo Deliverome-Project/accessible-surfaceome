@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MC5R-terminal_n-0-lit",
+      "gene_symbol": "MC5R",
+      "uniprot_acc": "P33032",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression quantified by Nano-Glo HiBiT Extracellular Detection System (surface luminescence) and total receptor levels by Lytic Detection System; receptor traffics to the plasma membrane. Signaling function not reported in this clip.",
+      "confidence": "medium",
+      "rationale": "MC5R is a GPCR with no signal peptide; the topology landmarks place residues 1\u201337 extracellularly (EC1) and TM1 begins at residue 38, leaving 37 residues of clearance from the prepend site to the TM boundary (well above the \u22653 requirement). The 'HiBiT-MC5R' naming and the use of the extracellular (non-lytic) Nano-Glo detection system together establish that the HiBiT tag is surface-exposed; the only extracellular terminus is the N-terminus, so insert_after_residue=0 is the unique solution. No residue number is stated in the paper, so position_evidence is topology_derived. PMC9583845 reports a 'HiBiT-MC5R' construct (tag-name-first naming convention) expressed in CHO cells; the Nano-Glo HiBiT Extracellular Detection System quantifies HiBiT-tagged MC5R on the cell membrane surface, confirming the tag is extracellularly exposed. MC5R has no signal peptide and its N-terminus (EC1, residues 1\u201337) is the sole extracellular terminus; the tag must therefore be prepended before residue 1.",
+      "sources": [
+        {
+          "pmid": 36277187,
+          "citation": "PMID 36277187",
+          "claim": "Nano-Glo \u00ae HiBiT Extracellular Detection System can quantify HiBiT-tagged MC5R expressed on the cell membrane, while the Lytic Detection System can determine the total HiBiT-tagged MC5R levels in cultured cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:35:55.080417+00:00",
+  "literature_notes": "L3 (PMC9583845) describes the same HiBiT-MC5R construct and transfection protocol as L2 and is subsumed by L2 as the primary clip. L1 (PMC10390531) reports an LgBiT C-terminal fusion on MC5R used for cryo-EM NanoBiT tethering; the C-terminus (residue 325, D) falls in IC4 (298\u2013325), which is intracellular, so this site is recorded in other_positions. No ledger line supports an internal extracellular loop insertion for MC5R.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 325,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "LgBiT fused to the C-terminus of full-length MC5R via a 15-aa linker for cryo-EM NanoBiT tethering; residue 325 (D) is in IC4 (298\u2013325), the intracellular C-terminal tail."
+    }
+  ]
 }

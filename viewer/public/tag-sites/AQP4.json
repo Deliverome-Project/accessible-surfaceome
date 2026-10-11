@@ -4,6 +4,48 @@
   "uniprot_acc": "P55087",
   "sites": [
     {
+      "site_id": "AQP4-internal-None-lit",
+      "gene_symbol": "AQP4",
+      "uniprot_acc": "P55087",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL3",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc 10 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L2 explicitly states that the Myc epitope insertion in the second extracellular loop 'was shown not to affect AQP4 function, targeting or assembly' (Crane et al. 2008 precedent confirmed for all three isoforms). Surface display confirmed by live-cell anti-Myc labeling (L3).",
+      "confidence": "high",
+      "rationale": "The second extracellular loop of AQP4 (Loop E in aquaporin nomenclature) corresponds to ECL3 in the computed topology, spanning residues 206\u2013231 between TM5 (185\u2013205) and TM6 (232\u2013252). This is the larger of AQP4's two extracellular loops (26 residues) and is the site of the published Myc insertion. No specific junction residue is named in any of L1\u2013L3, so insert_after_residue is left null and the region is set to ECL3. The loop identity is unambiguous: AQP4 has exactly two extracellular loops, and the 'second' one is ECL3 (206\u2013231). Function, targeting, and OAP assembly were all confirmed unaffected. Full-length rat AQP4 M1, M23, and Mz isoforms expressed from pcDNA3.1 in mammalian cells, each carrying a 10-residue Myc epitope (EQKLISEEDL) inserted into the second extracellular loop (Loop E, ECL3, residues 206\u2013231 in canonical human numbering). The original Crane et al. 2008 study (cited in L2) established the tag for M1 and M23; L1\u2013L3 extend it to Mz and confirm plasma membrane targeting of all three isoforms.",
+      "sources": [
+        {
+          "pmid": 21491501,
+          "citation": "PMID 21491501",
+          "claim": "For these studies a Myc epitope was inserted into the second extracellular loop of Mz ( Fig. 3A ), as was done previously for M1 and M23, where the epitope insertion was shown not to affect AQP4 function, targeting or assembly ( Crane et al., 2008 )."
+        },
+        {
+          "pmid": 41057305,
+          "citation": "PMID 41057305",
+          "claim": "Based on the successful design of an Aqp4-GFP fusion protein described previously 20 , we introduced the open reading frame of the red fluorescent protein mRuby3 into exon 2 of the aquaporin 4 ( Aqp4 ) gene coding for the second extracellular loop leading to expression of an AQP4-mRuby3 fusion protein in these Aqp4-mRuby3 knock-in reporter mice (Fig. 1a, b ; Supplementary Fig. 1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "AQP4-snorkel-c",
       "gene_symbol": "AQP4",
       "uniprot_acc": "P55087",
@@ -273,6 +315,21 @@
       "isoform_residue": 67,
       "canonical_residue": 67,
       "left_pct": 19.08831908831909
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:31:27.993200+00:00",
+  "literature_notes": "L9 (GFP-tagged M23-AQP4) names no loop, terminus, or residue for the tag position and therefore cannot be pinned to any site; it was not promoted. AQP4 has no extracellular N-terminus (the N-terminus, residues 1\u201336, is intracellular) and no signal peptide, so no terminal_n site is possible. The C-terminus (residues 253\u2013323) is also intracellular, ruling out a terminal_c surface site. ECL1 (58\u201369, 12 aa) and ECL2 (137\u2013155, 19 aa) are not mentioned in any ledger line as sites of insertion and were not proposed. Both qualifying sites map to the same loop (ECL3, 206\u2013231) but are grounded in separate papers with separate tag modalities (Myc vs. mRuby3), so they are reported as two distinct sites per the instructions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 323,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal GFP and mCherry fusions of full-length AQP4 M1 and M23 were expressed and showed plasma membrane staining (L4/L5), but the C-terminus of AQP4 (residues 253\u2013323) is intracellular per the computed topology; this is not a surface tag site."
     }
   ]
 }

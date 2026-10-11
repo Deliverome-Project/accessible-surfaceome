@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "LTBR",
+  "uniprot_acc": "P36941",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:27:48.033827+00:00",
+  "literature_notes": "All three ledger lines were examined carefully. L1 (PMC8024344) describes a GPI-anchor-tagged variant of the LT\u03b2R ectodomain (LT\u03b2Red-GPI): this is an ectodomain-only construct in which the GPI anchor replaces the native transmembrane domain, making it a non-full-length, non-membrane-anchored receptor; it is disqualified as a 'soluble ectodomain' surface-display construct, and no tag-insertion residue is named in any case. L2 (PMC9546553) describes an artificial immune receptor (AIR) in which the extracellular and transmembrane domains of LTBR are retained but the intracellular domain is replaced by CD28 and CD3-\u03b6 signaling domains; the fusion is entirely intracellular \u2014 no extracellular epitope tag is inserted and no residue is named \u2014 so this does not qualify as an extracellular tag insertion. L3 (DOI:10.21203/rs.3.rs-5233856/v1) describes a chimeric receptor in which the extracellular region of mouse LT\u03b2R is fused to the transmembrane and intracellular domains of human Fas; this is a domain-swap construct with no epitope tag inserted, uses the mouse ortholog, and names no residue. None of the three lines reports an epitope tag, fluorescent-protein fusion, transposon/domain-insertion screen hit, or any other tolerated insertion at a named extracellular position of full-length human LTBR. Zero sites qualify.",
+  "literature_rejected": []
+}

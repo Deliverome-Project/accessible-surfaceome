@@ -866,5 +866,26 @@
       "left_pct": 77.98295454545455
     }
   ],
-  "ortholog_pins": []
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:12:24.557101+00:00",
+  "literature_notes": "SCNN1D has an intracellular N-terminus (residues 1\u2013250), a single large extracellular domain (272\u2013691), and an intracellular C-terminus (716\u2013802). The only ledger evidence (L1 and L2, same paper PMC13109204) describes a dual-tagged guinea pig \u03b4-ENaC construct carrying an N-terminal HA-tag and a C-terminal V5-tag. Computed topology places residue 1 (and the entire 1\u2013250 span) in the cytoplasm, and residue 802 (and the entire 716\u2013802 span) in the cytoplasm. Both tags therefore face the intracellular compartment and are recorded in other_positions. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or domain insertion \u2014 anywhere in the extracellular domain (272\u2013691). Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal HA-tag placed before residue 1 (Met); the entire N-terminus (1\u2013250) is intracellular per computed topology, so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 802,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal V5-tag placed after residue 802 (Thr); the entire C-terminal tail (716\u2013802) is intracellular per computed topology, so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
 }

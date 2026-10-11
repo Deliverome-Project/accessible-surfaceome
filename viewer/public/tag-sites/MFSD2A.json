@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MFSD2A",
+  "uniprot_acc": "Q8NA29",
+  "sites": [
+    {
+      "site_id": "MFSD2A-terminal_c-543-lit",
+      "gene_symbol": "MFSD2A",
+      "uniprot_acc": "Q8NA29",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 543,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L543",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Functional assay (vesicular pit suppression): MFSD2A-GFP reduced vesicular pit number in PANC-1 cells vs GFP-alone controls (L1). Functional assay (caveolar uptake): Mfsd2a-GFP reduced cholera toxin subunit-B uptake by ~50% vs GFP-alone (L2). Localization: GFP-tagged constructs correctly localized (L3). Function PRESERVED \u2014 the reductions in pit number and CTB uptake are the expected gain-of-function phenotype of MFSD2A expression, not a loss of tag-construct activity.",
+      "confidence": "high",
+      "rationale": "The construct name 'MFSD2A-GFP' follows the gene-tag convention universally used for C-terminal fusions; no ledger line names a residue, so the position is topology-derived. MFSD2A has two extracellular spans (N-term 1-46, C-term 506-543), but the naming convention uniquely resolves the junction to the C-terminus (after residue 543, which is L). Python confirms residue 543 = L, lying 38 residues from the TM12 boundary at 505, well within the extracellular EC6 span. Both human (L1) and mouse ortholog (L2) GFP fusions are functional, and localization is confirmed (L3). Full-length human MFSD2A-GFP stably expressed in PANC-1 cells (L1); full-length mouse Mfsd2a-GFP expressed in a second cell line (L2); localization of GFP-tagged constructs confirmed (L3). The construct name 'MFSD2A-GFP' (gene-tag order) is the standard convention for a C-terminal fusion. Both termini of MFSD2A are extracellular (N-term 1-46, C-term 506-543); the naming convention uniquely identifies the C-terminus as the tag site.",
+      "sources": [
+        {
+          "pmid": 28416077,
+          "citation": "PMID 28416077",
+          "claim": "A similar reduction in vesicular pit number was observed in a human pancreatic cancer cell line, PANC-1, stably transfected with human MFSD2A-GFP, compared to control cells stably transfected with GFP alone ( Figures 1F\u20131H , Table S4A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:42:30.954446+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC5474951) and describe GFP-tagged full-length MFSD2A/Mfsd2a. No ledger line names a specific residue or junction; the position is topology-derived from the 'MFSD2A-GFP' naming convention (C-terminal). MFSD2A has two extracellular regions at its termini (N-term 1-46 and C-term 506-543); the naming convention disambiguates to the C-terminus. The N-terminal extracellular span (1-46) is not supported by any ledger line as a tag site \u2014 no 'GFP-MFSD2A' construct is described. No internal loop insertions are reported in the ledger. The 50% CTB-uptake reduction in L2 is the expected phenotype of MFSD2A overexpression (suppression of caveolae), not a reduction in tagged-protein function.",
+  "literature_rejected": []
+}

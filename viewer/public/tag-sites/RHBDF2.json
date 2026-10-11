@@ -1,0 +1,74 @@
+{
+  "has_data": true,
+  "gene_symbol": "RHBDF2",
+  "uniprot_acc": "Q6PJF5",
+  "sites": [
+    {
+      "site_id": "RHBDF2-terminal_c-856-lit",
+      "gene_symbol": "RHBDF2",
+      "uniprot_acc": "Q6PJF5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 856,
+      "residue_before": "H",
+      "residue_after": "",
+      "residue_label": "H856",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ADAM17-mediated ectodomain shedding of alkaline-phosphatase-tagged Areg, TGF\u03b1, TNF\u03b1, EGF, and BTC preserved in DKO MEFs transduced with iRhom2-3xHA vs. GFP control (L7); surface biotinylation confirmed cell-surface display (L1).",
+      "confidence": "high",
+      "rationale": "The C-terminus of human RHBDF2 is residue 856 (H), which lies within EXTRACELLULAR_4 (826\u2013856), 31 residues from the end of TM7 (825), well beyond the \u22653-residue TM-boundary requirement. Multiple independent studies place a 3xHA tag here: a CRISPR knockin at the endogenous locus (L4), overexpressed constructs with surface biotinylation (L1), and functional shedding assays showing full ADAM17 activity (L7). Python-verified: residues[856]='H', residues[855]='L'; no residue follows 856. Endogenous human iRhom2 C-terminally tagged with 3xHA by CRISPR knockin in HEK293T cells (L4); independently, overexpressed iRhom2-3xHA in MEFs confirmed by surface biotinylation/neutravidin enrichment (L1) and immunofluorescence (L2); functional ADAM17 shedding assays with multiple substrates performed on the same C-terminal 3xHA constructs (L7).",
+      "sources": [
+        {
+          "pmid": 38183983,
+          "citation": "PMID 38183983",
+          "claim": "A HEK293T cell line in which endogenous iRhom2 was C-terminally tagged with a 3XHA tag by CRISPR knockin confirmed previous observations 13 that endogenous human iRhom2 exists as both full-length and shorter C-terminal forms."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 856,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:00:57.778520+00:00",
+  "literature_notes": "L1, L2, L3, L6, L7, and L9 all corroborate the C-terminal 3xHA site; L4 (CRISPR knockin) is chosen as the primary anchor because it tags the endogenous protein at its native locus, eliminating any concern about overexpression artefacts. L3 uses isoform 2 (aa 51\u201379 deleted from the intracellular N-terminal domain), which does not change the C-terminal junction. L9 is a mouse truncation construct (\u0394NT aa 367\u2013829) with C-terminal 3xHA; it provides indirect corroboration but is superseded by the human full-length evidence. No ledger line supports any insertion in the large extracellular loop (EXTRACELLULAR_1, 427\u2013666) or the short extracellular loops (EXTRACELLULAR_2 712\u2013724, EXTRACELLULAR_3 769\u2013770) of the membrane-spanning region, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "N-terminal HA tag placed on full-length iRhom2; residue 1 (M) lies in INTRACELLULAR_1 (1\u2013403), so this tag faces the cytoplasm, not the extracellular space."
+    },
+    {
+      "residue": 58,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "R18 peptide (PHCVPRDLSWLDLEANMCLP) inserted in place of mouse iRhom2 S58-V59-S60; the equivalent region in human RHBDF2 is within INTRACELLULAR_1 (1\u2013403), confirming a cytoplasmic insertion."
+    },
+    {
+      "residue": 83,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "R18 peptide also inserted in place of mouse iRhom2 S83-L84-S85-Q86-S87; the equivalent region in human RHBDF2 is within INTRACELLULAR_1 (1\u2013403), a cytoplasmic insertion."
+    }
+  ]
+}

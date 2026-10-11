@@ -37,7 +37,97 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MRGPRD-terminal_n-0-lit",
+      "gene_symbol": "MRGPRD",
+      "uniprot_acc": "Q8TDS7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor used in functional BRET-based G protein coupling assays in mammalian cells (PMC12006980); the FLAG-MRGPRD-Rluc8 construct was employed for functional assays, implying receptor activity was preserved.",
+      "confidence": "medium",
+      "rationale": "L5 reports a full-length human MRGPRD construct with an N-terminal FLAG tag used in functional assays. MRGPRD has no signal peptide and its N-terminus (residues 1-28) is extracellular per topology landmarks; this is the only extracellular terminus available for an N-terminal tag. Without a primer sequence, the junction is topology-derived as a prepend (insert_after_residue=0, before M at position 1). The extracellular N-terminus is 28 residues long, cysteine-free, and well clear of TM1 (>=3 residue constraint satisfied). Full-length human MRGPRD cloned into pcDNA3.1 with an N-terminal FLAG tag and C-terminal Rluc8 for functional BRET assays in mammalian cells (PMC12006980). No primer sequence is provided, so the exact junction cannot be pinned to a residue; 'N-terminal' on a GPCR with an extracellular N-terminus (residues 1-28, no signal peptide) and no other extracellular terminus available for a prepend places the tag before residue 1 (insert_after_residue=0).",
+      "sources": [
+        {
+          "pmid": 39580805,
+          "citation": "PMID 39580805",
+          "claim": "For the Gq protein, we used the same mini-GaqiN heterotrimer (referred to Gq hereinafter) construct that was firstly reported in the expression of HTR2A-Gq-NBOH complex. 24 For the functional assays, the human MRGPRD gene was cloned into the pcDNA3.1 vector containing an N-terminal FLAG tag with a C-terminal Rluc8 gene."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "MRGPRD-terminal_n-1-lit",
+      "gene_symbol": "MRGPRD",
+      "uniprot_acc": "Q8TDS7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 1,
+      "residue_before": "M",
+      "residue_after": "N",
+      "residue_label": "M1",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor expressed and used for functional characterization (PMC2947157 describes expression and functional characterization of HA-tagged human MrgD); specific assay results not detailed in ledger clip.",
+      "confidence": "high",
+      "rationale": "The forward PCR primer in L1 encodes M-YPYDVPDYA-NQTLNSS, where NQTLNSS matches residues 2-8 of canonical human MRGPRD (UniProt). Python decoding of the primer codons confirms the HA tag is inserted after M(1) and before N(2), placing it within the 28-residue extracellular N-terminus (topology landmarks 1-28), 27 residues from TM1. No cysteines or disulfide bonds are present in this region, and the junction is well clear of the TM boundary (>=3 residue constraint satisfied). Full-length human MrgD expressed in mammalian cells with HA tag inserted after the start Met (residue 1) and before Asn (residue 2), as decoded from the forward PCR primer (Kozak-ATG-YPYDVPDYA-NQTLNSS...) in PMC2947157. The primer sequence unambiguously encodes M(start)-HA-N(2)Q(3)T(4)L(5)N(6)S(7)S(8)..., placing the tag between residue 1 and residue 2 of the canonical sequence.",
+      "sources": [
+        {
+          "pmid": 20936132,
+          "citation": "PMID 20936132",
+          "claim": "Human MrgD (Accession number AY427820 ) was amplified from human genomic DNA (Clontech, Palo Alto, CA) by PCR using the forward primer Xba 1 5\u2032-CTAG TCT AGA GCC GCC ACC ATG TAC CCA TAC GAT GTT CCA GAT TAC GCT AAC CAG ACT TTG AAT AGC AGT-3\u2032 and the reverse primer EcoR 1 5\u2032-CCG GAA TTC TCA AGC CCC CAT CTC ATT GGT-3\u2032."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 1,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:50:56.982833+00:00",
+  "literature_notes": "L1 and L2 both describe the same HA-tagged human MrgD construct from PMC2947157; L1 is used as the primary citation because it contains the primer sequence that unambiguously pins the junction to residue 1. L2 is redundant with L1 and does not add a new site. L3 and L4 describe a c-Myc-tagged rat MrgD ortholog from the same paper (PMC2947157); the rat primer encodes M-EQKLISEEDL(Myc)-NYTPYSS, placing the tag after the start Met of rat MrgD. This is indirect evidence for the same N-terminal junction in human MRGPRD, but since L1/L2 already directly validate the human protein at residue 1, L3/L4 do not add a new site and are not separately reported. The C-terminal Rluc8 fusion in L5 is intracellular (topology landmarks place residues 281-321 intracellularly) and is recorded in other_positions. ECL1 (85-99), ECL2 (164-179), and ECL3 (248-259) are not supported by any ledger line for internal tag insertion and are therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 321,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal Rluc8 fusion on full-length MRGPRD (PMC12006980); the C-terminus (residues 281-321) is intracellular per topology landmarks, so this is not a surface tag site."
+    }
+  ]
 }

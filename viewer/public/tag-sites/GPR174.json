@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR174-terminal_n-0-lit",
+      "gene_symbol": "GPR174",
+      "uniprot_acc": "Q9BXC1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NanoBiT mini-G\u03b1s recruitment assay performed with this FLAG-tagged construct; receptor-mediated signaling was detected, demonstrating both surface expression and functional coupling.",
+      "confidence": "high",
+      "rationale": "GPR174 has no endogenous signal peptide; the topology landmarks place residues 1\u201318 as extracellular and TM1 begins at residue 19, leaving 18 extracellular residues between the prepend junction and the first TM helix (well above the \u22653-residue minimum). The exogenous HA signal peptide in the L1 construct is cleaved post-translationally, depositing the FLAG tag before M1 on the extracellular face; this is the only possible extracellular N-terminal junction. L3 (PMC13152116) independently confirms an N-terminal FLAG on the same receptor, though with an intervening BRIL domain, further corroborating extracellular accessibility at this terminus. Full-length GPR174 expressed in HEK293 cells with an exogenous HA signal peptide followed immediately by a FLAG tag (DYKDDDDA) at the N-terminus of the receptor, in pcDNA3.1; construct used for NanoBiT mini-G\u03b1s recruitment signaling assays. GPR174 has no endogenous signal peptide (topology: EXTRACELLULAR 1\u201318), so after HA-SP cleavage the FLAG tag sits directly before residue M1 on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 37737235,
+          "citation": "PMID 37737235",
+          "claim": "All GPCR sequences used in this study were subcloned from the PRESTO-Tango GPCR Kit 54 into the pcDNA3.1 vector, with an N-terminal hemagglutinin (HA) signaling peptide (MKTIIALSYIFCLVFA) following by a FLAG tag (DYKDDDDA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:29:31.518780+00:00",
+  "literature_notes": "Five ledger lines were evaluated. L1 and L3 both describe N-terminal FLAG tags on full-length, membrane-anchored GPR174; L1 is the primary citation because the FLAG is placed directly before residue 1 (no intervening domain), and the construct was used in functional signaling assays. L3 corroborates the extracellular N-terminal location but interposes a BRIL domain between FLAG and residue 1, so it is not a clean pin of the insert_after_residue=0 junction and is used only as corroboration. L2, L4, and L5 all describe C-terminal fusions (LgBiT or smBiT); the topology landmarks place the C-terminus (residues 296\u2013333) firmly intracellular, so these are recorded in other_positions only. No ledger line supports any insertion in the extracellular loops (ECL1 78\u201388, ECL2 156\u2013181, ECL3 256\u2013268).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 333,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminus of GPR174 (residue 333, topology INTRACELLULAR 296\u2013333) fused to LgBiT\u2013TEV\u20132\u00d7MBP in a full-length membrane-anchored construct used for complex purification; intracellular location confirmed by topology landmarks."
+    },
+    {
+      "residue": 333,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminus fused to LgBiT\u2013TEV\u2013tandem MBP in the GPR174 structural/functional construct (PMC13152116); same intracellular junction as L2."
+    },
+    {
+      "residue": 333,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "smBiT tag (VTGYRLFEEIL) added to the C-terminus of GPR174 with a flexible linker for NanoBiT mini-G\u03b1s recruitment assay; C-terminus is intracellular (topology 296\u2013333)."
+    }
+  ]
 }

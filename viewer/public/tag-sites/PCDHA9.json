@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHA9",
+  "uniprot_acc": "Q9Y5H5",
+  "sites": [
+    {
+      "site_id": "PCDHA9-terminal_n-29-lit",
+      "gene_symbol": "PCDHA9",
+      "uniprot_acc": "Q9Y5H5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip reports construction of the tagged full-length construct and its insertion into an expression vector; no surface-expression or functional assay result is described in the ledger clip.",
+      "confidence": "medium",
+      "rationale": "PCDHA9 has a signal peptide (residues 1-29) followed by a 668-residue extracellular domain; the mature N-terminus begins at residue 30 (Q). An N-terminal Flag tag on the full-length protein must be placed after the signal-peptide cleavage site (after residue 29) to remain on the extracellular face \u2014 upstream placement would be cleaved off with the signal peptide. No residue number is stated in the paper, but there is exactly one extracellular terminus, making the junction unambiguous and topology-derived. Python confirmed residue 29 = G and residue 30 = Q from the canonical sequence. Full-length human PCDHA9 was fused with a Flag tag at the N-terminus and cloned into the pCMS-EGFP expression vector (PMC10928119). PCDHA9 is a single-pass type-I transmembrane protein with signal peptide residues 1-29, extracellular domain 30-697, TM 698-720, and intracellular tail 721-950. The N-terminus is the sole extracellular terminus; the C-terminus is cytoplasmic.",
+      "sources": [
+        {
+          "pmid": 38467605,
+          "citation": "PMID 38467605",
+          "claim": "The hPCDHA9 (gifts from Jiahuai Han\u2019s lab) that fused with the Flag tag at N-terminal and inserted into the pCMS-EGFP vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:19:52.427430+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports a Flag tag at the N-terminus of full-length PCDHA9 in an expression vector; no internal loop insertions, no C-terminal tags, and no functional or surface-expression validation data are described in the clip. The C-terminus (residues 721-950) is intracellular and therefore not a candidate for a surface tag. No other sites are supported by the ledger.",
+  "literature_rejected": []
+}

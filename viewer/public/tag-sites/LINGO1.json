@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LINGO1",
+  "uniprot_acc": "Q96FE5",
+  "sites": [
+    {
+      "site_id": "LINGO1-terminal_n-41-lit",
+      "gene_symbol": "LINGO1",
+      "uniprot_acc": "Q96FE5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 41,
+      "residue_before": "G",
+      "residue_after": "C",
+      "residue_label": "G41",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression of HA-LINGO1 confirmed by surface assay in HEK293 cells; HA-tagged construct used in co-expression experiments assessing LINGO1 modulation of BK channel surface trafficking. Explicit quantitative function readout for LINGO1 itself: NOT MEASURED separately from surface detection.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states the HA tag is inserted at amino acid position 42 of full-length LINGO1, downstream of the signal sequence. The signal peptide spans residues 1\u201341 (G at 41 is the last SP residue; C at 42 is the first mature extracellular residue), so the tag sits between residue 41 and residue 42, confirmed by the forward primer whose HA-encoding codons are immediately followed by sequence encoding C42-P43-P44-R45. This is the mature N-terminus, 516 residues from the TM boundary (558), satisfying all distance and topology constraints. L2 (same junction in LINGO1-\u0394LRR) and L3 (Flag-tagged full-length LINGO1, topology-derived to the same junction) provide independent corroboration from the same publication. Full-length LINGO1 in pCMV6 (membrane-anchored, type-I TM) with HA tag engineered by PCR at amino acid position 42 (immediately downstream of the signal sequence cleavage site at residue 41), expressed in mammalian cells for surface expression assays alongside BK channels.",
+      "sources": [
+        {
+          "pmid": 40752573,
+          "citation": "PMID 40752573",
+          "claim": "The HA epitope sequence (YPYDVPDYA) was engineered into the ED of full-length LINGO1 in PCMV6 and LINGO2 in pcDNA3 clones by PCR, at amino acid position 42 in LINGO1 and amino acid position 28 in LINGO2, downstream of the signaling sequence using the following primers as described previously ( 9 ):\nLINGO1-HA-fwd: TAC CCA TAC GAT GTT CCA GAT TAC GCT tgcccgccccgct\nLINGO1-HA-rev: AGCGTAATCTGGAACATCGTATGGGTAgcccgtggccga."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:11:38.302824+00:00",
+  "literature_notes": "L2 (PMC12423400) pins the identical junction (position 42) in the LINGO1-\u0394LRR deletion construct; because it is the same physical junction as L1 and the same paper, it is treated as corroboration rather than a separate site. L3 (PMC12423400) reports Flag-tagged full-length LINGO1 used in surface expression assays but names no residue; LINGO1 is a type-I single-pass TM protein with its entire ectodomain N-terminal to the TM helix and an intracellular C-terminus (581\u2013620), leaving exactly one extracellular terminus \u2014 the mature N-terminus after SP cleavage \u2014 so topology_derived reasoning places the Flag tag at the same insert_after_residue=41 junction. No ledger line supports any internal extracellular loop insertion, any C-terminal extracellular tag, or any intracellular tag on LINGO1 itself. No ledger line reports a function-abrogating insertion.",
+  "literature_rejected": []
+}

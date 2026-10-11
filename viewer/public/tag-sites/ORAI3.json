@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "ORAI3",
+  "uniprot_acc": "Q9BRQ5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:03:15.433618+00:00",
+  "literature_notes": "ORAI3 is a 4-TM channel with both termini intracellular (N-term: 1\u201364; C-term: 265\u2013295) and two extracellular loops (ECL1: 81\u201395, ECL2: 173\u2013243). All three ledger lines (L1, L2, L3) describe Myc or FLAG/mCherry tags fused to the N-terminus of the full-length ORF. Because the ORAI3 N-terminus is intracellular, these are cytoplasmic tags \u2014 they do not place any epitope on the extracellular face. The C-terminus is likewise intracellular. No ledger line reports any insertion in ECL1 or ECL2, nor any other extracellular-facing position. Accordingly, zero extracellular surface tag sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Myc tag fused to the N-terminus of full-length ORAI3 (pCMV-myc); the N-terminus (residues 1\u201364) is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Myc-epitope tagged ORAI3 in IRES-GFP bicistronic vector; same N-terminal intracellular placement as L1 \u2014 not an extracellular surface tag."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "FLAG-mCherry tag on full-length Orai3 via mCherry-Red-p3XFLAG vector (NotI 5\u2032/SalI 3\u2032 cloning); tag is at the N-terminus, which is intracellular (residues 1\u201364); even a C-terminal placement would be intracellular (residues 265\u2013295)."
+    }
+  ]
+}

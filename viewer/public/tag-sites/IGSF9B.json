@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "IGSF9B",
+  "uniprot_acc": "Q9UPX0",
+  "sites": [
+    {
+      "site_id": "IGSF9B-internal-28-lit",
+      "gene_symbol": "IGSF9B",
+      "uniprot_acc": "Q9UPX0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 28,
+      "residue_before": "E",
+      "residue_after": "E",
+      "residue_label": "E28",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc / EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Tagged constructs were used in functional studies of inhibitory synapse formation (PMC3678166); surface expression of the Myc-tagged protein was confirmed by immunostaining of non-permeabilized cells, and the EGFP-tagged construct was used to visualize IgSF9b at synapses. Both tags were tolerated for surface trafficking and synaptic localization.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the tag was inserted 'between residues 28 and 29 of IgSF9b' in the full-length, membrane-anchored protein, making this a validated exact-site insertion. Python lookup confirms residues[28]='E' and residues[29]='E' in the canonical sequence; the junction is 8 residues into the mature ectodomain (SP cleavage after residue 20), well within the extracellular span (21-726) and 699 residues from the TM helix (727-744). Both a short epitope tag (Myc, 10 aa) and a large globular domain (EGFP, ~239 aa) were tolerated, strongly supporting steric permissiveness for a ~13-23 aa ALFA-type tag. Full-length membrane-anchored IgSF9b expressed in mammalian cells (pGW1 / pEGFP-N1 vectors); a Myc epitope (EQKLISEEDL, 10 aa) and, in a separate construct, EGFP (~239 aa) were each inserted between residues 28 and 29 of the full-length protein. Residue 28 lies 8 positions C-terminal to the signal-peptide cleavage site (SP: 1-20, mature N-terminus: 21), placing the junction squarely in the extracellular N-terminal region and 699 residues from the TM boundary (727). Python verification: residues[28]='E', residues[29]='E'; both positions confirmed extracellular.",
+      "sources": [
+        {
+          "pmid": 23751499,
+          "citation": "PMID 23751499",
+          "claim": "Myc epitope (EQKLISEEDL) and EGFP was inserted between residues 28 and 29 of IgSF9b in pGW1 and pEGFP-N1, respectively."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:14:34.765418+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It unambiguously pins a single site at junction 28|29 in the extracellular N-terminal region of full-length IGSF9B. No other insertions, loop-level precedents, or terminal tags are described in the ledger. The large extracellular domain (21-726) contains multiple Ig-like domains that could in principle accommodate tags in inter-domain linkers, but no ledger evidence supports any other specific position, so no additional sites are proposed. The intracellular tail (745-1349) is extensive but no snorkel or cytoplasmic tag is reported in the ledger.",
+  "literature_rejected": []
+}

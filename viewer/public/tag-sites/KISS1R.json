@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "KISS1R-terminal_n-0-lit",
+      "gene_symbol": "KISS1R",
+      "uniprot_acc": "Q969F8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-HA antibody colocalization on HEK293 cell membrane (L6); agonist peptide 7 binds the HA-tagged receptor on the surface, consistent with intact ligand-binding pocket, but no explicit downstream signalling assay (e.g. IP1, Ca2+) of the HA-tagged receptor is reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "KISS1R lacks a signal peptide (raw topology begins O=extracellular at residue 1), so the N-terminus is the sole extracellular terminus and the only position where a prepended tag can reach the cell surface; insert_after_residue=0 places the tag before M1. Python confirms residue 1 = M and TM1 begins at residue 43, giving 42 residues of extracellular N-terminal space well beyond the \u22653-residue TM-distance requirement. Seven independent ledger lines (L1\u2013L7) all report N-terminal tags on full-length membrane-anchored KISS1R, and L6 explicitly confirms surface display by anti-HA antibody colocalization. HEK293 cells stably expressing full-length hGPR54 (KISS1R) with an N-terminal HA tag were used for dual-colour fluorescence imaging; the HA-tagged receptor was confirmed on the cell surface by colocalization of AF647-anti-HA antibody signal with a BODIPY-labelled kisspeptin agonist (peptide 7) on the plasma membrane. Multiple independent constructs also place FLAG (L2, L3) and FLAG+BRIL (L1) at the same N-terminal extracellular position. No residue number is stated in any paper; the position is derived from topology: KISS1R has no signal peptide and residue 1 (M) is the first extracellular residue, leaving exactly one extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 38516305,
+          "citation": "PMID 38516305",
+          "claim": "Having confirmed the agonist activity of peptide 7 , we next assessed its application for fluorescence imaging of HEK293 cells that stably expressed hGPR54 equipped with an additional N\u2010terminal hemagglutinin (HA) tag for dual color staining."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:03:03.167380+00:00",
+  "literature_notes": "All seven ledger lines converge on the extracellular N-terminus (insert_after_residue=0) as the sole supported surface-tag site. No ledger line reports a tag in any extracellular loop (ECL1 102\u2013116, ECL2 181\u2013202, ECL3 286\u2013303). L1 and L3 also report C-terminal fusions (LgBiT+6\u00d7His and EYFP respectively), but the C-terminus of KISS1R falls in the intracellular span 327\u2013398 and is therefore not a surface site; these are recorded in other_positions. L1's HA element is used as a signal peptide replacement rather than a standalone surface tag, but the FLAG+BRIL moieties in the same construct are genuine N-terminal extracellular tags at the same junction. The single site reported here is supported by five independent publications and two distinct tag types (FLAG and HA), both confirmed on the cell surface.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 398,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "LgBiT and 6\u00d7His tag added at the C-terminus of full-length KISS1R in the structural construct; residue 398 (L) lies within the intracellular C-terminal tail (topology 327\u2013398), so this is not a surface-tag site."
+    },
+    {
+      "residue": 398,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "GPR54-EYFP C-terminal fusion expressed in MEF cells; the C-terminus is intracellular (topology 327\u2013398), so EYFP is cytoplasmic and not accessible on the extracellular face."
+    }
+  ]
 }

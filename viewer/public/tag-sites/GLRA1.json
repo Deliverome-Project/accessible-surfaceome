@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "GLRA1",
+  "uniprot_acc": "P23415",
+  "sites": [
+    {
+      "site_id": "GLRA1-terminal_n-30-lit",
+      "gene_symbol": "GLRA1",
+      "uniprot_acc": "P23415",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 30,
+      "residue_before": "R",
+      "residue_after": "S",
+      "residue_label": "R30",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression of the HA-tagged GlyR \u03b13 construct was confirmed by surface staining in non-permeabilized cells (GLRA3); functional impact on GLRA1 NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "GLRA3 and GLRA1 are both glycine receptor alpha subunits sharing the same pentameric LGI-C architecture and a homologous large extracellular N-terminal domain; the HA insertion at mature positions 2\u20133 of GLRA3 maps to after canonical residue 30 (R) of GLRA1, placing the tag 2 residues into the mature extracellular domain (residues 29\u2013250), 221 residues from TM1. Python confirmed residue 30 = R and residue 31 = S in the GLRA1 canonical sequence. The position is well clear of the signal peptide cleavage site (residue 28) and any TM boundary, and sits at the extracellular N-terminus where a short tag is sterically unobstructed. HA epitope tag (YPYDVPDYA) inserted between mature positions 2 and 3 of full-length, membrane-anchored GlyR \u03b13 (GLRA3), a close paralog of GLRA1, in a mammalian expression system for surface expression analysis. The paper notes this is 'a location suitable for GlyR surface staining using epitope tags' with prior validation cited.",
+      "sources": [
+        {
+          "pmid": 40987909,
+          "citation": "PMID 40987909",
+          "claim": "HA-epitope tagged constructs used for analysis of GlyR surface expression were generated likewise by inserting the epitope tag YPYDVPDYA between the second and third amino acid position in the mature signal peptide-cleaved GlyR \u03b13, which is a location suitable for GlyR surface staining using epitope tags 22 , 23 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:17:46.500960+00:00",
+  "literature_notes": "L2 (myc tag at the N-terminus of mature GlyR \u03b2 / GLRB) cannot ground a GLRA1 site because GLRB is a distinct gene with different topology and sequence. L3 (GLRB myc tag requiring permeabilization) further shows that the GLRB N-terminal tag is not extracellularly accessible; this is irrelevant to GLRA1 and cannot be entered in other_positions because the residue numbering is GLRB-specific, not GLRA1 canonical. The single site reported here rests on indirect (paralog) evidence from L1; confidence is medium because the tag was validated in GLRA3, not GLRA1 itself, and no functional assay for the tagged GLRA1 construct is reported in the ledger.",
+  "literature_rejected": []
+}

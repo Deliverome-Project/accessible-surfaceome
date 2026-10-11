@@ -155,5 +155,20 @@
       "canonical_residue": null,
       "left_pct": 46.04651162790698
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:09:45.019993+00:00",
+  "literature_notes": "The sole ledger entry (L1) describes a full-length, membrane-anchored LIM2 (MP20) construct carrying a C-terminal His+FLAG tag expressed from pcDNA3.1(+). LIM2 has four transmembrane helices (TM1: 6-25, TM2: 66-86, TM3: 99-119, TM4: 140-160) with both the N-terminus (residues 1-5) and C-terminus (residues 161-173) on the intracellular face. The C-terminal tag therefore sits on the cytoplasmic side and does not qualify as an extracellular surface tag site. The two extracellular loops (EL1: 26-65, EL2: 120-139) are not addressed by any ledger line. No ledger evidence supports an extracellular tag insertion on LIM2; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 173,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length LIM2 with C-terminal His+FLAG tag expressed in pcDNA3.1(+); the C-terminus (residues 161-173) is intracellular per topology, so this tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

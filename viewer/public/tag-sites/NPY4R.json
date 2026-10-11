@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "NPY4R",
+  "uniprot_acc": "P50391",
+  "sites": [
+    {
+      "site_id": "NPY4R-terminal_n-0-lit",
+      "gene_symbol": "NPY4R",
+      "uniprot_acc": "P50391",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-FLAG staining under non-permeabilized conditions (L4); receptor activation assays and radioligand binding showed wild-type-like properties for the FLAG-tagged construct (L2).",
+      "confidence": "high",
+      "rationale": "NPY4R has no endogenous signal peptide (topology residues 1\u201340 are extracellular, raw topology begins with 'O'); therefore exactly one extracellular N-terminus exists and the FLAG tag prepends before residue 1 (M), giving insert_after_residue=0 by topology derivation. The N-terminal extracellular span is 40 residues long, placing the tag well above the 3-residue minimum from TM1 (which begins at residue 41). Python confirmed residue 1 = M and residue 40 = V (last extracellular residue before TM1). Functional validation from L2 (same paper, same tag architecture) and surface confirmation from L4 together support surface_and_function. Full-length human Y4R with an N-terminal FLAG epitope tag was cloned into pcDNA3.1 for mammalian cell expression and functional assays (L3); cell surface expression was confirmed by anti-FLAG antibody staining of non-permeabilized cells (L4); a parallel construct (L2) with the same N-terminal FLAG tag (preceded by an exogenous HA signal peptide for insect-cell expression) was validated by receptor activation assays and radioligand binding showing wild-type-like properties.",
+      "sources": [
+        {
+          "pmid": 35507650,
+          "citation": "PMID 35507650",
+          "claim": "The N-terminal flag-tagged wild-type receptor, receptor mutants, and a chimeric G protein G\u03b1 \u03946qi4myr , which redirects the G\u03b1 i signaling pathway to the G\u03b1 q phospholipase C pathway ( 60 ), were cloned into the expression vector pcDNA3.1/V5-His-TOPO (Invitrogen)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:12:02.260757+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) are from the same publication (PMC9067930) and all support the same N-terminal FLAG tag site on NPY4R. L1 and L2 describe insect-cell cryo-EM constructs with an exogenous HA signal peptide followed by FLAG; L3 and L4 describe the wild-type mammalian pcDNA3.1 construct with N-terminal FLAG. No ledger line supports any insertion in ECL1 (101\u2013115), ECL2 (177\u2013212), or ECL3 (287\u2013301). The C-terminal twin-strep-tag (L1, L2) replaces residues S343\u2013I375, which fall entirely within the intracellular C-terminal tail (topology: 326\u2013375 intracellular); it is recorded in other_positions. No ledger line reports any insertion that abrogates function.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 343,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal residues S343\u2013I375 were replaced with a twin-strep-tag for cryo-EM purification; the entire C-terminal tail (residues 326\u2013375) is intracellular per topology, so this tag is not on the extracellular face."
+    }
+  ]
+}

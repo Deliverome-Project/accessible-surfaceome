@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR2C1-terminal_n-0-lit",
+      "gene_symbol": "OR2C1",
+      "uniprot_acc": "O95371",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Rho (rhodopsin N-terminal tag)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger clip describes construct design and subcloning for heterologous expression; no specific assay result (surface staining, cAMP, calcium imaging) is reported in the clip.",
+      "confidence": "medium",
+      "rationale": "L1 explicitly reports a full-length, membrane-anchored OR2C1 construct carrying an N-terminal Rho tag, satisfying the requirement for a tolerated insertion in a membrane-anchored protein. Topology landmarks place residues 1\u201324 as extracellular with no signal peptide, so the tag prepends before M1 (insert_after_residue=0); this is the sole extracellular terminus and the position is topology-derived, not chosen. Python confirms seq[0]='M' (residue_after) and the TM1 boundary begins at residue 25, placing the prepend 24 residues from the nearest TM helix, well above the \u22653-residue minimum. No specific residue number is cited in the clip, so position_evidence is topology_derived and evidence_type cannot be the exact-site value. Full-length OR2C1 was engineered with an N-terminal rhodopsin (Rho) tag and subcloned into a pCI expression vector for heterologous expression (PMC9861704). The paper states 'N-terminal' but names no specific residue number. OR2C1 has no signal peptide (topology confirms residues 1\u201324 are extracellular, no 'S' state), so the N-terminus is the only extracellular terminus available for a prepend, making insert_after_residue=0 the unique solution.",
+      "sources": [
+        {
+          "pmid": 36675176,
+          "citation": "PMID 36675176",
+          "claim": "The full-length genomic of OR2C1 was amplified by the specific primers tag with N-terminal rhodopsin and was subcloned into pCI vector between Mlu I and Not I restriction enzyme sites."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:38:56.028626+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It supports a single N-terminal Rho-tag site on full-length OR2C1 expressed heterologously. The three extracellular loops (ECL1: 80\u201399, ECL2: 167\u2013196, ECL3: 257\u2013272) and the C-terminal intracellular tail have no ledger support and are therefore not proposed as sites. The Rho tag used here is the standard N-terminal rhodopsin sequence (typically the first ~9\u201320 aa of bovine rhodopsin, e.g. MNGTEGPNFY\u2026) routinely prepended to olfactory receptors to improve surface trafficking and enable immunodetection; its placement at the extracellular N-terminus of a GPCR lacking a signal peptide is unambiguous. Validation level is not_measured because the clip describes only construct construction and subcloning, not a surface-expression or functional assay result.",
+  "literature_rejected": []
 }

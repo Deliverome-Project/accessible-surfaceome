@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHGB3",
+  "uniprot_acc": "Q9Y5G1",
+  "sites": [
+    {
+      "site_id": "PCDHGB3-internal-None-lit",
+      "gene_symbol": "PCDHGB3",
+      "uniprot_acc": "Q9Y5G1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk (EC6\u2013TM)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell anti-Myc immunofluorescence of non-permeabilized transfected cells: staining detected at cell periphery and cell\u2013cell junctions, confirming surface display of the full-length tagged protein. A control construct lacking the Myc tag showed no staining above threshold, confirming tag specificity. No quantitative adhesion or function assay reported for \u03b3C3 specifically.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names the stalk region between EC6 and the transmembrane helix as the insertion site for the Myc tag in clustered protocadherin constructs including \u03b3C3/PCDHGB3, and states this is equivalent to previously validated constructs. L3 confirms this exact protein (PCDHGB3, \u03b3C3) with the extracellular Myc tag is surface-displayed by live-cell antibody staining. The stalk falls within the extracellular span 31\u2013691 (TM begins at 692), well clear of the TM boundary. No specific residue number is given in any ledger line, so insert_after_residue is left null and the region is named; no junction was invented. Full-length PCDHGB3 (\u03b3C3) construct with an extracellular Myc tag inserted in the stalk region between EC6 and the transmembrane helix (residues ~631\u2013691, extracellular span 31\u2013691, TM at 692\u2013713), expressed in transfected cells; anti-Myc antibody staining of non-permeabilized live cells confirmed surface display at the cell periphery and cell\u2013cell junctions.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:29:21.015488+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) derive from the same paper (PMC12157453) and describe the same Myc-tagged PCDHGB3 construct. L1 is the primary evidence naming the insertion region ('stalk region between EC6 and the transmembrane helix'); L2\u2013L4 corroborate surface display and tag specificity. No ledger line provides a specific residue number or junction, so insert_after_residue is null and the site is reported at region level. The stalk region corresponds approximately to extracellular residues 631\u2013691 (TM starts at 692); all of this span is \u22653 residues from the TM boundary. Validation is surface_only: live-cell anti-Myc staining confirms surface display, but no quantitative adhesion or signalling assay for \u03b3C3 specifically is reported in the ledger. L1 notes the construct is 'equivalently to previously validated constructs (21)', but reference [21] is outside the ledger and cannot be cited. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

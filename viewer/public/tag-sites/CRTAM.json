@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CRTAM",
+  "uniprot_acc": "O95727",
+  "sites": [
+    {
+      "site_id": "CRTAM-terminal_n-17-lit",
+      "gene_symbol": "CRTAM",
+      "uniprot_acc": "O95727",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG flow cytometry in two independent cell lines (HEK 293 and BWZ.36); no functional assay of native CRTAM activity was reported for this chimeric construct.",
+      "confidence": "high",
+      "rationale": "The paper describes an N-terminal FLAG tag on the CRTAM extracellular Ig domains in a membrane-anchored chimeric construct; no residue number is stated, but 'N-terminal' combined with the signal-peptide topology (SP cleavage after residue 17, mature N-terminus at residue 18) leaves exactly one extracellular terminus, placing the junction unambiguously at insert_after_residue=17. Python confirmed residue 17 = A and residue 18 = S from the canonical sequence. The tag is 272 residues from the TM boundary and well within the extracellular domain. The construct is membrane-anchored (not a soluble ectodomain) and surface display was validated by flow cytometry, satisfying the ledger qualification criteria. A chimeric construct was engineered in which an N-terminal FLAG epitope tag was placed upstream of both CRTAM extracellular Ig domains (residues 18\u2013289), fused to the chicken CD8\u03b1 transmembrane domain and murine CD3\u03b6 cytoplasmic domain; the construct was stably expressed in HEK 293 and BWZ.36 cells.",
+      "sources": [
+        {
+          "pmid": 24339981,
+          "citation": "PMID 24339981",
+          "claim": "In order to produce a CRTAM specific mab we generated two cell lines with a N-terminal FLAG-tagged CRTAM version that displayed both extracellular Ig domains fused to the chicken CD8 transmembrane and murine CD3\u03b6 cytoplasmic domains."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:03:51.069397+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) from PMC3858274 describe the same construct and the same N-terminal FLAG site; L1 is cited as the primary clip because it most completely describes the construct design. L2 and L3 provide independent flow-cytometry confirmation of surface display. L4 provides cloning details confirming the N-terminal FLAG position in the vector. The chimeric nature of the construct (heterologous TM/cyto domains) does not disqualify it because the CRTAM extracellular Ig domains are intact and the construct is membrane-anchored and surface-displayed. No residue number is stated in any ledger line, so position_evidence is topology_derived rather than validated. No other sites are supported by the ledger: there are no reports of internal loop insertions, C-terminal extracellular tags, or intracellular tags for CRTAM in the provided evidence.",
+  "literature_rejected": []
+}

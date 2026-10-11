@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CXCR5-terminal_n-0-lit",
+      "gene_symbol": "CXCR5",
+      "uniprot_acc": "P32302",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "BRET assay in HEK293 cells measuring \u03b2-arrestin1 and \u03b2-arrestin2 recruitment upon CXCL13 stimulation; receptor is functional and surface-displayed with the HA tag intact.",
+      "confidence": "high",
+      "rationale": "CXCR5 has no signal peptide; the extracellular N-terminus (residues 1\u201351) is the only extracellular terminus available for a prepend tag. Python confirms residue 1 = M and TM1 begins at residue 52, giving 51 extracellular residues before the first TM helix\u2014ample space for a short epitope tag. The HA-CXCR5-Rluc8 construct in L2 demonstrates both surface display and preserved \u03b2-arrestin signalling, making this the highest-confidence site. Multiple independent clips (L3, L4, L5, L6, L7 for FLAG/HA; L8 for SNAP-tag) corroborate the same N-terminal prepend junction. HA-CXCR5-Rluc8 full-length receptor expressed in HEK293 cells; HA tag placed at the extracellular N-terminus (residues 1\u201351, upstream of TM1 at residue 52), Rluc8 at the intracellular C-terminus. No signal peptide in CXCR5 (UniProt P32302), so the N-terminus is directly extracellular from M1. No specific junction residue is named in the clip; position is derived from the sole extracellular terminus.",
+      "sources": [
+        {
+          "pmid": 39472027,
+          "citation": "PMID 39472027",
+          "claim": "(B\u2013C). \u03b2 -arrestin1/2 recruitment to CXCR5 was measured by BRET in HEK293 cells (B) or \u03b2 -arrestin1/2 double knockout HEK293 cells (DKO) (C) expressing HA-CXCR5-Rluc8 and \u03b2 -arrestin1-GFP 10 or \u03b2 -arrestin2-GFP 10 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:10:27.712632+00:00",
+  "literature_notes": "All eight ledger lines converge on a single extracellular junction: the N-terminal prepend (insert_after_residue=0) of full-length membrane-anchored CXCR5. L2 is chosen as the primary supporting clip because it provides the strongest functional evidence (BRET \u03b2-arrestin assay). L3, L4, L5, L6, and L7 corroborate FLAG- and HA-tagged constructs at the same position but add no new junction. L8 (SNAP-tag fused to the N-terminal domain of CXCR5 in HEK293 cells, CHX-chase assay) independently supports the same N-terminal prepend with a structurally larger tag, further validating tolerance at this site. No ledger line names a specific residue for any N-terminal tag, so all are topology_derived. No ledger line supports an internal extracellular loop insertion (ECL1, ECL2, ECL3) for CXCR5. The C-terminal Rluc8 fusion (L1, L2) is intracellular and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 372,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Rluc8 fused in-frame to the C-terminal cytoplasmic tail of full-length CXCR5 (residues 325\u2013372 are intracellular per topology landmarks); used as BRET donor for \u03b2-arrestin recruitment assays, not a surface-accessible site."
+    }
+  ]
 }

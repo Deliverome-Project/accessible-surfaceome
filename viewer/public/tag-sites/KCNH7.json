@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNH7",
+  "uniprot_acc": "Q9NS40",
+  "sites": [
+    {
+      "site_id": "KCNH7-internal-441-lit",
+      "gene_symbol": "KCNH7",
+      "uniprot_acc": "Q9NS40",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 441,
+      "residue_before": "R",
+      "residue_after": "R",
+      "residue_label": "R441",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5 (GKPIPNPLLGLDST)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Non-permeabilizing confocal immunofluorescence confirmed plasma membrane localisation of both wild-type and Arg394His KCNH7 constructs carrying the tag; channel electrophysiology was not separately reported for the tagged construct in this study.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the V5 tag was inserted between amino acids 441 and 442 of the S1-S2 extracellular loop of full-length KCNH7. Python verification confirms position 441 (R) and 442 (R) both fall within the authoritative extracellular span 433-452, 9 residues from the TM1 C-terminus (432) and 12 residues from the TM2 N-terminus (453), both well above the \u22653 aa minimum. Two downstream cysteines (444, 448) are present in the loop but are C-terminal to the insert junction, and the paper demonstrates successful surface trafficking, indicating the tag does not disrupt folding or membrane targeting. Full-length KCNH7 (Kv11.3/ERG3) carrying a V5 epitope tag (GKPIPNPLLGLDST, 14 aa) inserted between residues 441 and 442 in the S1-S2 extracellular loop was expressed in Neuro-2a cells; surface display was assessed by indirect immunofluorescence under non-permeabilizing conditions.",
+      "sources": [
+        {
+          "pmid": 24986916,
+          "citation": "PMID 24986916",
+          "claim": "To assess membrane localization of KCNH7 subunits, the V5 epitope tag (GKPIPNPLLGLDST) was inserted between amino acids 441 and 442 of the S1-S2 extracellular loop of KCNH7 and indirect immunofluorescence labeling was performed under non-permeabilizing conditions."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:43:28.064539+00:00",
+  "literature_notes": "Two ledger lines (L1 and L2) both derive from PMC4222358 and describe the same V5 insertion at the 441|442 junction; L1 is the primary citation as it contains the explicit residue statement and tag sequence. No other extracellular insertion sites are supported by the ledger. The S3-S4 loop (513-519, only 7 residues) and the S5-S6 pore loop (571-641) are extracellular but no ledger line reports a tolerated insertion in those regions for KCNH7 or a close ortholog. The large intracellular N-terminus (1-411) and C-terminus (663-1196) are not surface-accessible and were not considered. Cysteines at 444 and 448 in the S1-S2 loop are noted; they lie downstream of the 441|442 junction and the paper's positive surface-trafficking result demonstrates they are compatible with the insert.",
+  "literature_rejected": []
+}

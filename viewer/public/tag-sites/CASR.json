@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "CASR",
+  "uniprot_acc": "P41180",
+  "sites": [
+    {
+      "site_id": "CASR-internal-371-lit",
+      "gene_symbol": "CASR",
+      "uniprot_acc": "P41180",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 371,
+      "residue_before": "D",
+      "residue_after": "T",
+      "residue_label": "D371",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG / Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface and total expression quantified by ELISA on intact cells; Western blotting, co-immunoprecipitation, and time-resolved fluorescence (TRF) analysis performed; multiple independent studies confirm surface display with no reported functional impairment.",
+      "confidence": "high",
+      "rationale": "Six independent ledger lines (L1\u2013L6) all explicitly name the junction between residues 371 and 372 in full-length human CaSR as the insertion site for FLAG or Myc epitopes. Python verification confirms residue 371 = D and residue 372 = T, both within the extracellular span 20\u2013612, 242 residues from the nearest TM boundary (613). The authors describe this as a 'functionally silent loop in the ECD', and the tagged constructs are used routinely for surface ELISA, co-IP, and TRF assays across multiple publications. Full-length human CaSR with FLAG (DYKDDDDK) or Myc (EQKLISEEDL) epitope inserted between residues 371 and 372 in the VFT domain ECD loop, transiently transfected in HEK-293 cells; described as a 'functionally silent loop in the ECD'.",
+      "sources": [
+        {
+          "pmid": 35848051,
+          "citation": "PMID 35848051",
+          "claim": "( 31 ) For the generation of suitable CaSR constructs, we used a WT human CaSR and a variant that had been modified by the insertion of a FLAG epitope tag DYKDDDDK in the receptor's VFT domain, between residues 371 and 372, ( 35 ) to permit quantitation of total and surface expression by ELISA."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "CASR-terminal_n-19-lit",
+      "gene_symbol": "CASR",
+      "uniprot_acc": "P41180",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "Y",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG-SNAP / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "IP accumulation assay (L8): pEC50 for Ca2+ of 2.50 \u00b1 0.02 (FLAG-SNAP-CaSR WT) vs 2.39 \u00b1 0.03 (HA-CaSR WT) \u2014 no significant difference, confirming Gq/11 pathway activation is preserved. Surface expression confirmed by ELISA (L7) and FACS on intact cells (L13, L14).",
+      "confidence": "high",
+      "rationale": "Multiple papers report N-terminal tags (FLAG-SNAP, HA) on full-length human CaSR that are accessible on the extracellular face of intact cells. CaSR has a signal peptide (residues 1\u201319) and a large extracellular N-terminus beginning at residue 20; the N-terminal tag must be placed after signal peptide cleavage (insert_after_residue = 19, residue_before = A, residue_after = Y). No residue is named in any clip, so the junction is topology-derived: the mature N-terminus is the sole extracellular terminus available. L8 demonstrates function is fully preserved (Ca2+-induced IP accumulation indistinguishable from HA-CaSR WT); L13/L14 confirm surface accessibility by FACS on intact cells. Full-length human CaSR with N-terminal FLAG-SNAP tag (L7\u2013L9, PMID 31399503) and N-terminal HA tag (L13\u2013L14, DOI 10.1101/2024.07.08.602375) expressed in HEK293 cells; surface display confirmed by ELISA (L7) and FACS of intact non-permeabilized cells with PE-conjugated anti-HA antibody (L14). No specific residue is named; the junction is derived from the signal peptide cleavage site (residues 1\u201319) leaving the mature N-terminus at residue 20.",
+      "sources": [
+        {
+          "pmid": 31399503,
+          "citation": "PMID 31399503",
+          "claim": "In a functional IP accumulation assay there was no difference in agonist potency of Ca 2 1 for thetwo receptor constructs (Fig. 1A;pEC values of 2.50 6 0.02 and 2.39 6 0.03 for FLAG-SNAP-CaSR WT and HACaSR WT, respectively), thereby confirming that the SNAP tag did not prevent Ca 2 1 -mediated activation of the G q/11 pathway."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:04:45.414428+00:00",
+  "literature_notes": "L10 (Myc-tagged asCasr, axolotl CaSR ortholog) provides indirect support for the N-terminal site but names no residue and is an ortholog; it is subsumed by the direct human CaSR evidence in L7\u2013L9 and L13\u2013L14. L11 (EGFP-tagged CaSR, PMC9299317) reports plasma membrane localisation but names no position; EGFP fusions on GPCRs are most commonly C-terminal (intracellular in CaSR, residues 857\u20131078), so this clip cannot ground a surface site and no residue can be assigned. L12 (myc-tagged hCaSR, DOI 10.1101/2024.07.08.602375) confirms surface display by whole-cell immunisation but names no position; it is subsumed by the stronger L13/L14 evidence for the N-terminal site. The small extracellular loops ECL1 (668\u2013679), ECL2 (745\u2013770), and ECL3 (824\u2013836) are not addressed by any ledger line and are therefore not proposed.",
+  "literature_rejected": []
+}

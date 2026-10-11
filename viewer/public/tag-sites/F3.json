@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "F3",
+  "uniprot_acc": "P13726",
+  "sites": [
+    {
+      "site_id": "F3-terminal_n-32-lit",
+      "gene_symbol": "F3",
+      "uniprot_acc": "P13726",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 32,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A32",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed indirectly: the HA-tagged construct was used to validate an anti-TF antibody, implying the tagged protein reached the cell surface in a recognisable form. No coagulation or FVIIa-binding functional assay is reported in the clip.",
+      "confidence": "medium",
+      "rationale": "TF has exactly one extracellular terminus \u2014 the mature N-terminus after signal-peptide cleavage \u2014 making the junction topology-derived rather than residue-validated. Python verification confirms position 32 = A (last signal-peptide residue) and position 33 = S (first mature-chain residue), consistent with the landmarks. The mouse construct is a close ortholog (same topology, conserved signal-peptide boundary), so the precedent is directly applicable to human TF at this junction. No residue number appears in the clip, so position_evidence is topology_derived and evidence_type is 'published tag insertion in the same loop or domain'. Mouse full-length TF (flTF), membrane-anchored, HA-tagged construct expressed ectopically; used to validate specificity of an anti-TF antibody. No residue number is stated in the clip. TF is a type I single-pass transmembrane protein: the N-terminus (after signal-peptide cleavage) is the sole extracellular terminus, so the HA tag must reside there. Human TF signal peptide spans residues 1\u201332 (landmark-authoritative); the mature N-terminus is residue 33 (S). The tag therefore maps to insert_after_residue = 32 (junction A|S).",
+      "sources": [
+        {
+          "pmid": 40940518,
+          "citation": "PMID 40940518",
+          "claim": "The specificity of this anti-TF antibody was validated with the ectopically expressed, HA-tagged mouse flTF protein and was further confirmed in later experiments (Supplementary information, Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:39:41.454768+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports an HA-tagged mouse full-length membrane-anchored TF used for antibody validation. The clip names no residue; because TF is a type I single-pass protein with a cleaved signal peptide, the N-terminus after cleavage is the only extracellular terminus, making the junction uniquely determinable (insert_after_residue = 32, A|S in human canonical numbering). The C-terminal tail (residues 275\u2013295) is intracellular and is recorded in other_positions. No internal-loop insertion is supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 295,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "The C-terminus of full-length TF lies in the cytoplasm (landmarks: intracellular 275\u2013295); any C-terminal tag would be intracellular, not a surface tag site."
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD5",
+  "uniprot_acc": "P06127",
+  "sites": [
+    {
+      "site_id": "CD5-terminal_n-24-lit",
+      "gene_symbol": "CD5",
+      "uniprot_acc": "P06127",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "G",
+      "residue_after": "R",
+      "residue_label": "G24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed surface display of the myc-tagged N-terminus in control T cells; western blot confirmed total protein expression. No CD5 signalling or ligand-binding assay was reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "CD5 has exactly one extracellular terminus: the mature N-terminus beginning at residue 25 (after the 1\u201324 signal peptide). The paper places a myc epitope 'on the N-terminus' of the full-length construct, so the junction is unambiguously after the signal-peptide cleavage site. Computed position: insert_after_residue = 24 (G), residue_after = 25 (R), 357 residues from the TM boundary \u2014 well clear of any constraint. The C-terminal FLAG and mScarlet tags from the same paper land in the intracellular tail (residues 399\u2013495) and are recorded in other_positions. Full-length, membrane-anchored CD5 bearing a myc epitope on the N-terminus and a FLAG tag on the C-terminus was ectopically expressed in primary human T cells (endogenous CD5 knocked out by CRISPR-Cas9). Surface display of the tagged construct was confirmed by flow cytometry and total protein by western blot.",
+      "sources": [
+        {
+          "pmid": 38986621,
+          "citation": "PMID 38986621",
+          "claim": "To investigate whether the lack of CD5 detection was due to the loss of CD5 protein, we removed the endogenous CD5 gene using CRISRP-Cas9 and ectopically expressed an engineered CD5 construct tagged with a myc epitope on the N terminus and with a FLAG tag on the C terminus ( Figure 1 G)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:18:20.642055+00:00",
+  "literature_notes": "Five ledger lines (L1\u2013L5) all derive from a single PMC paper (PMC11293353). L1/L2/L5 describe the same dual-tagged (myc N-terminal / FLAG C-terminal) CD5 construct; L3/L4 describe a C-terminal mScarlet fusion. The myc tag on the extracellular N-terminus is the only surface-facing tag in the ledger and yields one site. The FLAG (L1/L5) and mScarlet (L3/L4) C-terminal fusions both land in the intracellular tail (topology: IC 399\u2013495) and are therefore not surface tag sites; they are recorded in other_positions. No ledger line reports any insertion in an internal extracellular loop of CD5, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 495,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag placed on the C-terminus of full-length CD5; the C-terminus (residue 495) lies in the intracellular tail (IC: 399\u2013495), so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 495,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "mScarlet fluorescent protein fused to the C-terminus of full-length CD5 for live-imaging; same intracellular position (IC: 399\u2013495), not a surface tag."
+    }
+  ]
+}

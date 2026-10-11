@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRIA2",
+  "uniprot_acc": "P42262",
+  "sites": [
+    {
+      "site_id": "GRIA2-terminal_n-24-lit",
+      "gene_symbol": "GRIA2",
+      "uniprot_acc": "P42262",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "S",
+      "residue_after": "N",
+      "residue_label": "S24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry (L6/L7): surface APC signal and total GFP signal both detected, confirming surface trafficking of HA-tagged GluA2 flip and flop variants. AP-tag KI (L4): endogenous GluA2-containing AMPARs successfully biotinylated and labelled with avidin probes at the cell surface, with TEV-reversible labelling. SEP KI (L3): surface-localised fluorescence confirmed. No electrophysiological function assay reported for the HA-tagged constructs in these studies.",
+      "confidence": "high",
+      "rationale": "L6 uniquely pins the junction: the HA tag sits 'between the signal peptide and the amino-terminal domain', which in UniProt canonical numbering places the insert after residue 24 (the last SP residue, S) and before residue 25 (N, the first mature residue). Python confirms seq[23]='S' and seq[24]='N'. The site is 521 residues from TM1 (546), well clear of any TM boundary. Six independent ledger lines (L1\u2013L4, L6\u2013L7, L9) all report tolerated N-terminal tags on full-length, membrane-anchored GluA2, and none names any other extracellular position, making this the sole ledger-supported surface site. Validation is classified surface_only because the flow-cytometry and surface-labelling assays confirm trafficking but no electrophysiological function measurement was reported for the tagged constructs. L6 (PMC12152890): full-length GluA2 (flip and flop) with an HA tag placed explicitly 'between the signal peptide and the amino-terminal domain', expressed in HEK cells; L7 (same paper) confirms surface display by flow cytometry (APC surface signal vs GFP total signal). Corroborated by: L1/L2 (PMC11798926) HA-GluA2 live surface-labelled in COS7 cells; L4 (PMC9328687) AP-tag CRISPR knock-in at endogenous GluA2 N-terminus enabling BirA biotinylation surface labelling; L3 (PMC7946428) SEP CRISPR knock-in at GluA2 N-terminus for surface visualisation; L9 (PMC8842155) HA at N-terminus of GluA2 detected by Western blot.",
+      "sources": [
+        {
+          "pmid": 40316023,
+          "citation": "PMID 40316023",
+          "claim": "An amino-terminal hemagglutinin (HA) tag between the signal peptide and the amino-terminal domain served as the extracellular epitope."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 24,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:44:55.868916+00:00",
+  "literature_notes": "All nine ledger lines were evaluated. L1, L2, L3, L4, L6, L7, and L9 all describe N-terminal tags on full-length, membrane-anchored GluA2 and converge on a single site (insert_after_residue=24). L8 describes an extracellular HA tag on GluA1 (a close ortholog) in Xenopus oocytes; it provides indirect corroboration of the same N-terminal position but does not add a new site and was not needed as the primary clip given the direct GluA2 evidence. L5 describes mNeonGreen fused to the cytoplasmic tail of GluA2(Q) and is recorded in other_positions. No ledger line reports any insertion in the second extracellular domain (residues 646\u2013812) or in any internal extracellular loop of GluA2; accordingly no such sites are proposed. Validation is surface_only rather than surface_and_function because none of the cited studies reports an electrophysiological or ligand-binding functional assay on the tagged GluA2 construct itself.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 883,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "mNeonGreen appended to the cytoplasmic C-terminal tail of GluA2(Q) (PMC12152890); residue 883 (I) lies within the intracellular domain (834\u2013883) and is not accessible for extracellular surface tagging."
+    }
+  ]
+}

@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR85-terminal_n-0-lit",
+      "gene_symbol": "GPR85",
+      "uniprot_acc": "P60893",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED explicitly in the clip \u2014 the tagged construct was used in reporter assays (cAMP, CRE, SRE) but the clip does not state the outcome for the tagged vs. untagged receptor",
+      "confidence": "medium",
+      "rationale": "GPR85 has no signal peptide (topology string contains no 'S'; residues 1\u201324 are extracellular per landmarks), so M1 is the true mature N-terminus and the only extracellular terminus of the receptor. The N-terminal FLAG tag in pcDNA3.1-N-DYK places the tag before M1, giving insert_after_residue = 0 by topology derivation. The 24-residue extracellular N-terminal stretch (residues 1\u201324) provides ample clearance from TM1 (which begins at residue 25). Surface display of an N-terminal FLAG tag on the close SREB-family paralog GPR27 was explicitly confirmed by anti-FLAG-HRP detection in non-permeabilized HEK293T cells (L1), and N-terminal FLAG tagging of GPR85 itself is further corroborated by L3 and L4 (pcDEF3-FLAG constructs used in expression studies). Full-length human GPR85 was cloned into pcDNA3.1-N-DYK vector, which places a FLAG (DYK) tag at the N-terminus of the receptor; the forward primer (5'-CCTAGGTACCATGGCGAACTATAGCC-3') encodes GPR85 starting at M1, confirmed by sequence match (MANYSH). The construct was used alongside cAMP (pGloSensor-22F), CRE-luciferase (pGL4.29), and SRE-luciferase (pGL4.33) reporter assays in HEK293T cells.",
+      "sources": [
+        {
+          "citation": "DOI 10.21203/rs.3.rs-7641991/v1",
+          "claim": "Human GPR85 (SREB2) was ampli\u0000ed by PCR using pcDNA3.1(+)-GPR85 (cDNA Resource Center, The Bloomsburg University Foundation, PA, USA) as template and the following primers: forward - 5\u2019- CCTAGGTACCATGGCGAACTATAGCC - 3\u2019 reverse - 5\u2019 \u2013 GCTCGGATCCTCATATAACACAGTAAGG - 3\u2019 The ampli\u0000ed fragment was inserted into pcDNA3.1-N-DYK vector between KpnI and BamHI restriction sites. pGloSensorTM-22F cAMP plasmid, pGL4.29[luc2P/CRE/Hygro], pGL4.33[luc2P/SRE/Hygro] were purchased from Promega Corporation (Madison, WI, USA).",
+          "source_id": "DOI:10.21203/rs.3.rs-7641991/v1"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:42:12.443734+00:00",
+  "literature_notes": "Five ledger lines were evaluated. L2, L3, and L4 all directly report N-terminal FLAG tagging of full-length GPR85; L2 was chosen as the primary clip because it is the most explicit description of the cloning strategy (pcDNA3.1-N-DYK, forward primer anchored at M1). L1 (GPR27/SREB1 paralog) provides the only explicit surface-display confirmation for an N-terminal FLAG tag in the SREB family (anti-FLAG-HRP in non-permeabilized cells), strengthening confidence that the GPR85 N-terminal tag reaches the cell surface. L5 (GPR27 C-terminal BioID2-HA) was not used as a surface site because the C-terminus of GPR27 \u2014 like GPR85 \u2014 is intracellular. The C-terminal myc-His construct from L3 is recorded in other_positions as intracellular. No ledger line supports an insertion in any of the three short extracellular loops (ECL1: 79\u201395, ECL2: 159\u2013183, ECL3: 307\u2013320), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 370,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Full-length GPR85 was subcloned into pcDNA4/TO/myc-His, appending a myc-His tag after the C-terminal residue I370; the C-terminus (residues 342\u2013370) is intracellular per topology landmarks, so this tag faces the cytoplasm and is not a surface site."
+    }
+  ]
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCGR2B",
+  "uniprot_acc": "P31994",
+  "sites": [
+    {
+      "site_id": "FCGR2B-terminal_n-42-lit",
+      "gene_symbol": "FCGR2B",
+      "uniprot_acc": "P31994",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 42,
+      "residue_before": "G",
+      "residue_after": "T",
+      "residue_label": "G42",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used for surface expression studies (lentiviral overexpression); no quantitative functional assay result is reported in the cited clip for the tagged receptor itself.",
+      "confidence": "medium",
+      "rationale": "FCGR2B is a Type I single-pass transmembrane protein with signal peptide residues 1\u201342, a single extracellular ectodomain (43\u2013223), one TM helix (224\u2013245), and an intracellular C-terminus (246\u2013310). There is exactly ONE extracellular terminus: the mature N-terminus beginning at residue 43 (T). The construct name 'pSEW-Myc-CD32b-IP' follows the '[tag]-[protein]' convention universally indicating an N-terminal tag; for a Type I receptor the only surface-accessible terminus is the mature N-terminus, so the tag must sit after the signal-peptide cleavage site at residue 42 (G). Python verification confirms residue 42 = G and residue 43 = T. No residue number is stated in the clip, so position_evidence is topology_derived, not validated. Full-length human Fc\u03b3RIIB (CD32b) was PCR-amplified from a commercial plasmid (Sino Biological HG10259-NM) and cloned into a lentiviral transfer vector (pSEW-Myc-CD32b-IP) for stable overexpression in cells; the construct name 'Myc-CD32b' indicates an N-terminal Myc tag on the full-length, membrane-anchored receptor used for surface expression studies.",
+      "sources": [
+        {
+          "pmid": 37100283,
+          "citation": "PMID 37100283",
+          "claim": "For generation of cells overexpressing human Fc\u03b3RIIA or Fc\u03b3RIIB, the plasmids (HG10374-NM; HG10259-NM;Sino Biological, Inc) encoding for the corresponding receptor sequence were PCR amplified adding the restriction sites PacI and SpeI and cloned via the restriction sites into an LV transfer vector, encoding the spleen focus-forming virus promoter, an internal ribosome entry site element followed by a puromycin resistance gene, and the woodchuck posttranscriptional regulatory element resulting in the plasmids pSEW-Myc-CD32a-IP and pSEW-Myc-CD32b-IP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:44:15.602818+00:00",
+  "literature_notes": "L1 and L2 both describe Myc-tagged full-length Fc\u03b3RIIB in lentiviral vectors for surface expression; L1 covers the base construct and L2 covers chimeric/mutant variants. Neither clip names a residue or junction, so the commercial-plasmid disqualification (unstated position) would normally apply \u2014 however, FCGR2B's topology leaves exactly one extracellular terminus (mature N-terminus after SP cleavage at residue 42/43), making topology_derived applicable per the rules. Both clips ground the same single site; L1 is used as the primary supporting clip. No internal extracellular loop insertions are supported by the ledger. The intracellular C-terminus (246\u2013310) is not a surface site and is not proposed. No abrogating insertions are reported in the ledger.",
+  "literature_rejected": []
+}

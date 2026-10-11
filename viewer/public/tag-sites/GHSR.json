@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GHSR-terminal_n-0-lit",
+      "gene_symbol": "GHSR",
+      "uniprot_acc": "Q92847",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by FACS (FLAG M1 antibody) in HEK-293T cells (L1). Construct used for cryo-EM structure determination of full-length receptor (L3), indicating proper folding and membrane integration. Ligand-binding or G-protein signaling assay not reported in these clips.",
+      "confidence": "high",
+      "rationale": "GHSR is a GPCR with no annotated signal peptide; the topology landmarks place residues 1\u201347 extracellular and TM1 beginning at residue 48. An N-terminal FLAG tag therefore sits on the extracellular face and cannot be cleaved. Because no clip names a specific residue, the junction is topology-derived: insert_after_residue = 0 (prepend before M1), residue_after = M (verified from the numbered sequence). Three independent publications using this exact construct, including one yielding a cryo-EM structure, provide high confidence that the tag is tolerated. Three independent studies (L1, L2, L3) expressed full-length, membrane-anchored human GHSR with an N-terminal FLAG tag in HEK-293T or insect cells. GHSR has no signal peptide (UniProt P49682; chain 1\u2013366), so the N-terminus (residues 1\u201347, extracellular per topology landmarks) is the only extracellular terminus and the only location where an N-terminal tag can reside on the cell surface. L1 confirmed surface display by FACS with a fluorescent FLAG M1 antibody.",
+      "sources": [
+        {
+          "pmid": 34737341,
+          "citation": "PMID 34737341",
+          "claim": "The surface expression of wtGHSR and various mutants in HEK-293T cells was determined and confirmed using FACS with a fluorescent FLAG M1 antibody (homemade)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,21 @@
       "canonical_residue": null,
       "left_pct": 0.34602076124567477,
       "note": "Isoform surface expr 198 (-87% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:11:08.689950+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same N-terminal FLAG tag on full-length human GHSR; no internal extracellular loop insertion is reported in the ledger. L3 additionally carries a C-terminal 10\u00d7His tag, but the C-terminus (residue 366) falls within the intracellular span (324\u2013366) and is therefore recorded in other_positions, not sites. No ledger line reports any insertion in ECL1 (102\u2013117), ECL2 (182\u2013208), or ECL3 (286\u2013302), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 366,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal 10\u00d7His tag appended after residue 366 in the cryo-EM construct; residue 366 lies within the intracellular C-tail (topology landmarks: intracellular 324\u2013366), so this tag faces the cytoplasm and is not a surface-display site."
     }
   ]
 }

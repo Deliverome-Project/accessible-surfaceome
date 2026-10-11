@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LY6H",
+  "uniprot_acc": "O94772",
+  "sites": [
+    {
+      "site_id": "LY6H-terminal_n-25-lit",
+      "gene_symbol": "LY6H",
+      "uniprot_acc": "O94772",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation with YFP-tagged \u03b17 nAChR from TARO-YFP cells confirmed surface expression and preserved interaction with \u03b17 nAChR (L2).",
+      "confidence": "high",
+      "rationale": "LY6H is GPI-anchored with topology S(1-25)/O(26-140); there are no TM segments and no intracellular loops, leaving exactly one extracellular terminus \u2014 the mature N-terminus at residue 26. The paper reports an N-terminal FLAG tag on the full-length mouse ortholog without naming a residue, so the junction is topology-derived as insert_after_residue=25 (last SP residue G, first mature residue L). Python confirmed seq[24]='G' and seq[25]='L'. The ortholog evidence is indirect but the N-terminal position is structurally invariant across Ly6 family members. Mouse Ly6H (NM_011837), a close ortholog of human LY6H, was expressed as a full-length construct with an N-terminal FLAG tag in HEK293 cells via a pCherry/P2A vector (L1). LY6H is a GPI-anchored Ly6/uPAR-family protein with a single extracellular domain and no transmembrane loops; the only extracellular terminus is the mature N-terminus after signal-peptide cleavage (residue 26 in the human canonical sequence). The FLAG tag must therefore reside at this junction (insert_after_residue=25, G|L).",
+      "sources": [
+        {
+          "pmid": 32686737,
+          "citation": "PMID 32686737",
+          "claim": "The DNA fragments encoding human Lynx1 [ NM_177457 ] and mouse Ly6H [ NM_011837 ] with N-terminal FLAG-tag were synthesised by GeneArt Gene Synthesis and inserted into XhoI- and BamHI-digested pCherry/P2A vector, in frame, at the back of Cherry/P2A using In-Fusion HD Cloning Kit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:29:26.072408+00:00",
+  "literature_notes": "LY6H is a GPI-anchored Ly6/uPAR-family protein (signal peptide 1-25, fully extracellular mature domain 26-140, GPI anchor signal at the C-terminus cleaved post-translationally). The ledger contains two lines (L1, L2) both from PMC7371702, both describing the same N-terminal FLAG-tagged mouse Ly6H construct. No internal loop insertions, no C-terminal tags, and no transposon/domain-insertion screen data are present in the ledger for this protein. The C-terminal hydrophobic stretch (residues ~121-140, WALAGGLLLSLGPALLWAGP) is the GPI anchor signal and is cleaved \u2014 a tag there would be lost. No other sites are supported by the ledger.",
+  "literature_rejected": []
+}

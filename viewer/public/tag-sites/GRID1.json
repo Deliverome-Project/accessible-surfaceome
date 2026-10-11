@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRID1",
+  "uniprot_acc": "Q9ULK0",
+  "sites": [
+    {
+      "site_id": "GRID1-terminal_n-20-lit",
+      "gene_symbol": "GRID1",
+      "uniprot_acc": "Q9ULK0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface immunostaining with anti-HA antibody confirmed the tag is accessible on the extracellular face of the plasma membrane. Construct was used to study GluD1 surface trafficking and synapse formation in the context of neurexin/Cbln1 interactions; surface expression was confirmed. Receptor function per se (ion channel gating) was NOT MEASURED with this tagged construct.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names residues 20 and 21 as the flanking positions of the HA insert, confirmed by Python lookup: seq[19]='A' (residue 20, last of SP) and seq[20]='D' (residue 21, first of mature extracellular domain). The tag is therefore at the extracellular N-terminus of the mature protein, 541 residues from the nearest TM helix \u2014 no steric or topological concern. L2 (same paper, same construct, GSA linker detail) and L3 (human GRID1, beta-lactamase at the identical SP/ATD junction) independently corroborate this junction; because all three pin the same residue-level position, this is one site grounded in L1 as the most explicit source. Full-length mouse GluD1 expressed in neurons/HEK cells; HA tag (with TR linker, full insert TRYPYDVPDYA) placed between residues 20 and 21 \u2014 explicitly stated as 'between amino acids 20 and 21' in the construct description. The same junction is independently confirmed by L2 (GSA-linked HA after the signal peptide of the same construct) and by L3 (beta-lactamase fused in-frame between the signal peptide and the amino-terminal domain of human GRID1 in pCI-Neo). Residue 20 (A) is the last residue of the signal peptide (SP: 1\u201320); residue 21 (D) is the first residue of the mature extracellular N-terminus (extracellular span: 21\u2013561), placing the tag 541 residues from the first TM boundary (562).",
+      "sources": [
+        {
+          "pmid": 39052831,
+          "citation": "PMID 39052831",
+          "claim": "The cDNAs of the following genes were used: mouse grid1 (GenBank 14803) in pcDNA3 for GluD1 with an HA tag inserted at the N terminus between amino acids 20 and 21 (20-TRYPYDVPDYA-21); mouse grid2 (GenBank 14804) for GluD2 in pcDNA3; Nrxn1 as Nrx1bS4(+)S5(\u2212)-3xFLAG in pCAGGS; Cbln1 as Myc-Cbln1 in pCAG; WT EGFP in pcDNA3."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:46:32.649421+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) converge on the single junction after residue 20 (last of signal peptide) / before residue 21 (first of mature extracellular ATD). L1 and L2 are from the same paper (PMC11295041) and describe the same mouse GluD1-HA construct; L3 (PMC10840383) independently uses the identical SP/ATD junction for a beta-lactamase fusion in human GRID1. Because they all pin the same junction, this is one site, not three. No ledger line supports any internal extracellular loop insertion, any C-terminal tag, or any intracellular tag for GRID1. The second extracellular span (659\u2013830) has no ledger support and is not proposed.",
+  "literature_rejected": []
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "DCST1",
+  "uniprot_acc": "Q5T197",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:11:16.961856+00:00",
+  "literature_notes": "The sole ledger entry (L1) reports a 3xHA tag at the C-terminus of full-length mouse DCST1. The authoritative topology landmarks place the C-terminus (residues 572\u2013706) in the intracellular compartment, so this tag faces the cytoplasm, not the extracellular surface. The N-terminus (residues 1\u201344) is likewise intracellular. No ledger line reports any tag insertion in any of the three extracellular spans (66\u201379, 134\u2013375, 481\u2013550). Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 706,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "3xHA tag appended after the final residue (G706) of full-length DCST1; the entire C-terminal tail (572\u2013706) is intracellular per topology landmarks, so this tag is cytoplasmic, not a surface label."
+    }
+  ]
+}

@@ -4,6 +4,43 @@
   "uniprot_acc": "P16671",
   "sites": [
     {
+      "site_id": "CD36-internal-None-lit",
+      "gene_symbol": "CD36",
+      "uniprot_acc": "P16671",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular domain (31-439)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "V5 (\u00d77)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-V5 immunofluorescence without permeabilization; plasma membrane translocation monitored. Ligand-binding or transport function NOT MEASURED in the cited clips.",
+      "confidence": "medium",
+      "rationale": "L1\u2013L4 all report the same CD36-V5\u00d77-GFP construct in which seven V5 tags are distributed across the extracellular domain (residues 31\u2013439) and are accessible to anti-V5 antibody from the extracellular face without permeabilization, establishing that the ectodomain tolerates short epitope-tag insertions. No individual residue junction is named in any of the four clips, so insert_after_residue is left null and the site is classified at region level. The position_evidence is 'inferred' because the exact junctions were not disclosed; the cited_tag_residue is null for the same reason. This is the strongest extracellular-surface evidence in the ledger for CD36. Full-length CD36 with seven V5 epitope tag sequences inserted into the extracellular domain (residues 31\u2013439) and GFP fused to the intracellular C-terminus, expressed in mammalian cells (CD36-V5\u00d77-GFP reporter). Anti-V5 immunofluorescence without cell permeabilization confirmed that the V5 tags are surface-displayed when the reporter reaches the plasma membrane.",
+      "sources": [
+        {
+          "pmid": 42353282,
+          "citation": "PMID 42353282",
+          "claim": "We inserted seven V5 epitope tag sequences into the extracellular domain, and fused GFP to the C terminus, generating CD36-V5\u00d77-GFP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CD36-snorkel-c",
       "gene_symbol": "CD36",
       "uniprot_acc": "P16671",
@@ -247,6 +284,27 @@
       "isoform_residue": 317,
       "canonical_residue": 317,
       "left_pct": 67.16101694915254
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:16:12.279483+00:00",
+  "literature_notes": "L5\u2013L6 report a HaloTag fused to the N-terminus of full-length CD36. Per the authoritative topology landmarks, CD36 residues 1\u20137 are intracellular; the N-terminus is therefore cytoplasmic, making this an intracellular label (used for single-molecule TIRFM imaging with a membrane-permeable dye), not a surface-accessible epitope tag. It is recorded in other_positions. The GFP fused to the C-terminus in L1\u2013L3 is likewise intracellular (residues 467\u2013472 are intracellular per the landmarks) and is also recorded in other_positions. No ledger clip names a specific residue junction for any extracellular V5 insertion, so no 'validated' or residue-pinned site can be reported; the single site above is region-level only.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "HaloTag fused to the N-terminus of full-length CD36; residues 1\u20137 are intracellular per topology landmarks, so this tag faces the cytoplasm and is not surface-accessible."
+    },
+    {
+      "residue": 472,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the C-terminus of CD36 in the CD36-V5\u00d77-GFP reporter; residues 467\u2013472 are intracellular per topology landmarks, so this fusion is cytoplasmic."
     }
   ]
 }

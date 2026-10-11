@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "PACC1",
+  "uniprot_acc": "Q9H813",
+  "sites": [
+    {
+      "site_id": "PACC1-internal-277-lit",
+      "gene_symbol": "PACC1",
+      "uniprot_acc": "Q9H813",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 277,
+      "residue_before": "S",
+      "residue_after": "A",
+      "residue_label": "S277",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Live (non-permeabilized) anti-FLAG labeling confirmed surface display of FLAG at position 277; PAC-FLAG_277 functioned as a quantitative reporter of surface PAC levels in an endocytosis assay \u2014 Y10A and L13A mutants showed stronger plasma membrane FLAG signal than WT, consistent with regulated endocytosis of the tagged channel.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names position 277 as the FLAG insertion site in the extracellular loop of full-length human PAC expressed in stable HEK293 cells. Python confirms residue 277 (S) falls within the extracellular span 86\u2013301, is 192 residues from TM1 end and 25 residues from TM2 start, satisfying the \u22653-residue TM-clearance constraint. L2 and L3 provide additional validation: live-cell (non-permeabilized) labeling confirmed surface exposure of the FLAG epitope, and the construct served as a functional endocytosis reporter, establishing that the tag does not disrupt trafficking or surface expression. Stable inducible HEK293 cell lines expressing full-length human PAC with FLAG inserted at position 277 in the extracellular loop (PAC-FLAG_277); live (non-permeabilized) anti-FLAG immunostaining confirmed surface display; construct used as functional reporter in endocytosis assay comparing WT vs. Y10A/L13A endocytosis-deficient mutants.",
+      "sources": [
+        {
+          "pmid": 33503418,
+          "citation": "PMID 33503418",
+          "claim": "To test whether the YxxL motif is required for PAC endocytosis, we substituted Y or L with alanine (A) and generated inducible HEK293 stable cell lines expressing human PAC with FLAG tag at the C terminus (in the cytosol, PAC-FLAG C ) or at position 277 (in the extracellular loop, PAC-FLAG 277 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:10:49.831496+00:00",
+  "literature_notes": "L4 ('Red circles indicate FLAG insertion sites') and L5 ('FLAG-tagged hPAC immunostained with anti-FLAG') are from PMC7305803 and confirm FLAG-tagging of hPAC with surface display, but neither clip names a specific residue number; they cannot pin an independent site and were not used to propose one. L6 (PMC12901492) reports triple-HA-tagged PACC1 constructs used in an acid-induced cell death assay but specifies no insertion position and does not state whether the tag is extracellular or intracellular; no site can be derived from it. The C-terminal FLAG described in L1 (PAC-FLAG_C) is explicitly cytosolic and is recorded in other_positions. Y10 and Y13 (endocytosis motif residues mutated in L3) are intracellular (within the IC span 1\u201364) and are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 350,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag at the C-terminus (PAC-FLAG_C) is explicitly described as cytosolic; C-terminus falls in the intracellular span 319\u2013350."
+    },
+    {
+      "residue": 10,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Y10 is part of the cytoplasmic YxxL endocytosis motif; Y10A mutation reduces PAC endocytosis; position 10 is within the intracellular span 1\u201364."
+    },
+    {
+      "residue": 13,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "L13 is part of the cytoplasmic YxxL endocytosis motif; L13A mutation reduces PAC endocytosis; position 13 is within the intracellular span 1\u201364."
+    }
+  ]
+}

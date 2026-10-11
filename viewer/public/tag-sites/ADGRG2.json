@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADGRG2-terminal_n-37-lit",
+      "gene_symbol": "ADGRG2",
+      "uniprot_acc": "Q8IZP9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 37,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S37",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-based ELISA (non-permeabilized, anti-HA) confirmed surface display of the N-terminal 3HA tag on full-length ADGRG2 in HEK cells (L4, L8). Signaling cascades were investigated with the tagged receptor (L6). Surface expression was comparable to or higher than untagged controls depending on the mutant background (L4).",
+      "confidence": "high",
+      "rationale": "The signal peptide of ADGRG2 spans residues 1\u201337 (explicitly stated in L7 and confirmed by the topology landmarks); the mature N-terminus therefore begins at residue 38 (L). An N-terminal tag must be placed after residue 37 to avoid being cleaved with the signal peptide. Python verification confirms residue 37 = S and residue 38 = L. The position is topology_derived because no paper names residue 37 by number, but L7 names the signal peptide boundary (aa 1\u201337) and the tag is placed immediately after it \u2014 exactly one extracellular N-terminus exists, leaving no ambiguity. The large extracellular NTF domain (38\u2013632) provides ample space for a short epitope tag without steric conflict with TM helices (TM1 begins at 633, >595 residues away). Full-length membrane-anchored ADGRG2 (FL construct) expressed in HEK cells with an N-terminal 3HA tag and C-terminal V5 tag (L3/PMC7236788). L7 (PMC7211037) explicitly states the signal sequence spans aa 1\u201337 and was replaced by the HA signal sequence to drive surface expression, placing the HA tag immediately after signal cleavage at the mature N-terminus (residue 38). Surface expression of the N-terminal HA tag was confirmed by cell-based ELISA under non-permeabilized conditions (L4, L8). Signaling cascades from the tagged receptor were studied (L6). Multiple independent groups (PMC7236788, PMC7211037, PMC8263569) used this same N-terminal tagging strategy on full-length or NTF-truncated but membrane-anchored ADGRG2/GPR64.",
+      "sources": [
+        {
+          "pmid": 31502283,
+          "citation": "PMID 31502283",
+          "claim": "FL and mutant receptors are N-terminally tagged with 3HA and C-terminally tagged with V5 (named here as FL, \u0394NTF, S608, F609, and so on)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -123,6 +160,21 @@
       "canonical_residue": null,
       "left_pct": 4.451345755693581,
       "note": "Isoform surface expr 728 (-12% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:12:21.265533+00:00",
+  "literature_notes": "All ten ledger lines converge on a single surface site: the N-terminal tag placed after signal peptide cleavage at residue 37. L1, L2, L9, L10 use NTF/Stachel-truncated but still membrane-anchored ADGRG2 constructs; L3, L4, L8 use full-length ADGRG2; L5, L6, L7 use GPR64 (the same gene, ADGRG2). The ECL2 mutagenesis data in L1/L9/L10 (CWI\u2192CWA/CAI/CAA substitutions) describes amino-acid substitutions in ECL2 (757\u2013783) that affect surface expression \u2014 these are not tag insertions into ECL2 and do not qualify as insertion sites. The C-terminal V5 tag reported in L2, L3, L5, L6 is intracellular (IC4: 882\u20131017) as confirmed by L8 (anti-V5 staining requires permeabilization); it is recorded in other_positions. No ledger line reports a tag inserted into any of the short extracellular loops (ECL1: 682\u2013692, ECL2: 757\u2013783, ECL3: 855\u2013857), so no internal loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1017,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal V5 tag on ADGRG2 is intracellular (IC4: 882\u20131017); anti-V5 staining requires cell permeabilization, confirming cytoplasmic location (L8); also reported in L2, L3, L5, L6."
     }
   ]
 }

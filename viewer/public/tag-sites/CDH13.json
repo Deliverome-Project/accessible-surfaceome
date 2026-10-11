@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "CDH13",
+  "uniprot_acc": "P55290",
+  "sites": [
+    {
+      "site_id": "CDH13-internal-138-lit",
+      "gene_symbol": "CDH13",
+      "uniprot_acc": "P55290",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 138,
+      "residue_before": "R",
+      "residue_after": "S",
+      "residue_label": "R138",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "MAP16 (16 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display confirmed by flow-cytometric sorting with anti-MAP16 antibody (clone PMab-1) on live cells; no functional assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "CDH13 is a GPI-anchored cadherin with no TM domain; the entire mature protein (residues 23\u2013713) is extracellular. The paper explicitly deletes aa 1\u2013138 and places an N-terminal MAP16 tag on the resulting construct, pinning the tag junction to between canonical residues 138 (R) and 139 (S), verified by Python lookup. The site is 116 residues from the signal-peptide cleavage site and there are no TM boundaries in this protein, so the \u22653-residue TM-clearance constraint is trivially satisfied. Surface expression was confirmed by anti-tag flow cytometry (L3). L1 (PMC13214481): The mature form of CDH13 cDNA lacking the prodomain (aa 1\u2013138) was subcloned into pCAG-Ble with an N-terminal MAP16 tag and stably expressed in LN229 or CHO-K1 cells. L3 (same paper) confirms surface display by flow cytometry using anti-MAP16 mAb clone PMab-1.",
+      "sources": [
+        {
+          "pmid": 42200830,
+          "citation": "PMID 42200830",
+          "claim": "The mature form of CDH13 cDNA lacking the prodomain (amino acids 1 to 138) was subcloned into the pCAG-Ble vector with an N-terminal MAP16 tag."
+        },
+        {
+          "pmid": 42200830,
+          "citation": "PMID 42200830",
+          "claim": "Additionally, the mature form of CDH13 cDNA with an N-terminal PA16 tag was constructed."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:27:26.171012+00:00",
+  "literature_notes": "CDH13 is a GPI-anchored T-cadherin with no transmembrane domain; the entire mature protein (residues 23\u2013713) is extracellular. The ledger (L1\u2013L3) supports only one physical junction (after residue 138, before residue 139) but with two distinct peptide tags (MAP16 and PA16), each described in a separate clip and each confirmed on the cell surface by flow cytometry. Both are reported as separate sites because they rest on separate ledger lines. The 'prodomain' deleted in the paper's constructs (aa 1\u2013138) encompasses the signal peptide (1\u201322) plus the first ~116 residues of the mature ectodomain; the tag is therefore internal to the full-length ectodomain, not at the canonical mature N-terminus (residue 23). No ledger evidence supports a tag at the mature N-terminus (residue 23) or anywhere else in the ectodomain. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

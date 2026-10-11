@@ -66,5 +66,20 @@
       "canonical_residue": null,
       "left_pct": 45.535714285714285
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:52:42.030693+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminal FLAG or GFP fusions on full-length FLVCR1. The authoritative topology places the C-terminus (IC7: residues 512\u2013555) in the intracellular compartment; a tag appended after residue 555 faces the cytoplasm, not the extracellular space. L1/L2 describe 'surface staining under non-permeabilized conditions', but the instructions require using the provided topology landmarks for every boundary decision \u2014 the C-terminus is intracellular by those landmarks, and the paper does not describe a snorkel arrangement. L3/L4 report GFP signal 'on the plasma membrane', which confirms the protein traffics to the membrane but does not mean the GFP moiety is extracellular; the topology is again authoritative. The N-terminus (IC_1: 1\u2013107) is also intracellular, so no N-terminal prepend qualifies either. No ledger line describes any insertion in any of the six extracellular loops (EC1 132\u2013147, EC2 196\u2013199, EC3 259\u2013275, EC4 353\u2013369, EC5 421\u2013425, EC6 481\u2013491). Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 555,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag appended after residue 555 (IC7: 512\u2013555 is intracellular per authoritative topology); L2 corroborates the same construct; L3/L4 describe a C-terminal GFP fusion at the same position, also intracellular."
+    }
   ]
 }

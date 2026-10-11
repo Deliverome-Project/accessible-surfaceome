@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR5A-terminal_n-0-lit",
+      "gene_symbol": "HTR5A",
+      "uniprot_acc": "P47898",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA/FLAG/15xHis/BRIL",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG-FITC antibody staining of intact (non-permeabilized) Hi5 cells; receptor reached the plasma membrane. No explicit ligand-binding or G-protein coupling assay reported specifically for the N-terminal-tagged construct.",
+      "confidence": "high",
+      "rationale": "HTR5A has no signal peptide; the computed topology places residues 1\u201339 extracellular, making the N-terminus the sole extracellular terminus of this GPCR. L1 reports multiple N-terminal tags on the full-length, membrane-anchored receptor; L2 explicitly confirms surface display via non-permeabilized anti-FLAG-FITC labeling, establishing insert_after_residue=0 (prepend before M1) by topology derivation. L3 independently corroborates BRIL at the same N-terminal position. The 39-residue extracellular N-terminal stretch provides ample buffer (>3 residues) from TM1 boundary at residue 40. Full-length human 5-HT5A cloned into pFastBac with N-terminal HA, FLAG, 15\u00d7His, and BRIL tags; expressed in Hi5 insect cells; surface display confirmed by anti-FLAG-FITC labeling of non-permeabilized cells at 4\u00b0C (L2). Construct used for cryo-EM structural studies (L1, L3).",
+      "sources": [
+        {
+          "pmid": 35610220,
+          "citation": "PMID 35610220",
+          "claim": "The human full-length 5-HT 5A was cloned into the pFastBac with an N-terminal haemagglutinin (HA) sequence followed by a Flag-tag, 15\u00d7 His-tag, BRIL-tag, and a LgBiT sequence at the C-terminus to facilitate the protein expression and purification."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:06:03.645246+00:00",
+  "literature_notes": "L2 and L3 both ground the same N-terminal prepend site as L1 and are treated as corroborating evidence rather than separate sites. L4 (LgBiT at C-terminus) is intracellular and placed in other_positions. No ledger line supports any internal extracellular loop insertion for HTR5A.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 357,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "LgBiT fused at the C-terminus via a 15-aa flexible linker for NanoBiT G-protein coupling assays; the C-terminus (residues 342\u2013357) is intracellular per computed topology, so this is not a surface tag site."
+    }
+  ]
 }

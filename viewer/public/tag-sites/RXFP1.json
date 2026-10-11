@@ -39,5 +39,28 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:07:49.214036+00:00",
+  "literature_notes": "The ledger supports a single extracellular surface-tag site for RXFP1: the N-terminal junction between the signal peptide and the mature extracellular domain (after canonical residue 22, before residue 23). This junction is supported by at least ten independent ledger lines (L1\u2013L3, L5\u2013L6, L8, L10\u2013L18) using FLAG, HiBiT, NanoLuc, and mCitrine tags; all are at the same junction and are therefore one site. L6 (NanoLuc/mCitrine inserted between FLAG and LDLa) and L8 (HiBiT with 12-aa linker) are also at this same 22/23 junction and add no new junction. L4 describes a C-terminal TEV-tTA addition that is intracellular and is recorded in other_positions. L7/L9/L17/L18 describe C-terminal Rluc8, Venus, or GFP fusions to the intracellular C-terminus (residues 684\u2013757); these are also recorded in other_positions. No ledger line pins any insertion in any of the short extracellular loops (ECL1: 464\u2013486, ECL2: 549\u2013577, ECL3: 651\u2013660) of the GPCR 7TM bundle, so no internal loop sites are proposed.",
+  "literature_rejected": [
+    {
+      "residue_label": "G22",
+      "insert_after_residue": 22,
+      "gate": "geometry",
+      "reason": "topology: N-terminus (residue 1) is signal \u2014 no extracellular N-terminus to tag (type II)",
+      "supporting_quote": null
+    }
+  ],
+  "literature_other_positions": [
+    {
+      "residue": 757,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "C-terminal Rluc8 and Venus fusions appended after the last residue (S757) of RXFP1; the C-terminus lies in the intracellular domain (residues 684\u2013757); cAMP assay confirmed these fusions did not adversely affect receptor signalling (L9), but the position is cytoplasmic and not a surface-tag site."
+    }
+  ]
 }

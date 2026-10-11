@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CNGA2",
+  "uniprot_acc": "Q16280",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:54:06.652263+00:00",
+  "literature_notes": "CNGA2 is a 6-TM voltage-gated-family channel with both its N-terminus (residues 1\u2013141) and C-terminus (residues 369\u2013664) on the intracellular face. Its only extracellular-facing regions are ECL1 (163\u2013173, 11 residues) and ECL2 (297\u2013350, 54 residues). The ledger contains four lines. L3 and L4 (PMC12549891) directly concern CNGA2: a Flag tag was placed at the N-terminus of CNGA2 in a full-length, membrane-anchored tri-cistronic construct, and the channel was shown to be functional (EC50 ~5 \u00b5M cAMP, Ki ~160 \u00b5M Ca2+ block). However, the N-terminus of CNGA2 is unambiguously intracellular (topology landmark: INTRACELLULAR 1\u2013141); this tag therefore faces the cytoplasm and is recorded in other_positions. L1 and L2 (PMC8026354) describe CNG\u03b11-MYC (CNGA1, a close ortholog) expressed in mouse rods with outer-segment localization confirmed, but: (a) no residue or junction is stated for the MYC tag, (b) CNGA1 shares the same 6-TM topology with an intracellular N-terminus and intracellular C-terminus, and (c) no extracellular terminus exists on either CNGA1 or CNGA2 from which a topology-derived position could be computed. Neither ECL1 nor ECL2 of CNGA2 is pinned by any ledger line. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Flag tag placed at the N-terminus (before residue 1, M) of full-length CNGA2 in a membrane-anchored tri-cistronic construct; the N-terminus lies in the intracellular span (residues 1\u2013141) per topology landmarks, so this is a cytoplasmic tag, not a surface tag."
+    }
+  ]
+}

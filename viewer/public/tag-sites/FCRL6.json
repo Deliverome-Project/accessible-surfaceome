@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCRL6",
+  "uniprot_acc": "Q6DN72",
+  "sites": [
+    {
+      "site_id": "FCRL6-terminal_n-19-lit",
+      "gene_symbol": "FCRL6",
+      "uniprot_acc": "Q6DN72",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "W",
+      "residue_after": "L",
+      "residue_label": "W19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by FACS staining with anti-HA antibody (hybridoma screening); no functional assay of FCRL6 signalling or ligand binding reported in these clips.",
+      "confidence": "high",
+      "rationale": "FCRL6 is a type I single-pass transmembrane protein with a 19-residue signal peptide (positions 1\u201319) and a 288-residue extracellular domain (positions 20\u2013307). The only free extracellular terminus is the mature N-terminus beginning at residue 20; the C-terminal end of the ectodomain (residue 307) is continuous with the TM helix and is not a free terminus. Because the ledger reports an HA-tagged full-length membrane-anchored FCRL6 construct with confirmed surface display but names no specific residue, the tag position is topology-derived: it must lie after the signal-peptide cleavage site, i.e., insert_after_residue = 19 (W), placing the tag immediately before the mature residue 20 (L). Python-verified: res(19)='W', res(20)='L'; the insertion point is 288 residues from the TM boundary, well exceeding the \u22653-residue minimum. Full-length FCRL6 retroviral transductants in BW5147 murine T-cell lymphoma cells were generated with an HA tag on the surface-displayed construct; the tagged cells were used to screen hybridoma clones by FACS staining, confirming cell-surface display of the HA-tagged full-length, membrane-anchored FCRL6 protein (PMC7033751).",
+      "sources": [
+        {
+          "pmid": 32117244,
+          "citation": "PMID 32117244",
+          "claim": "At 10\u201314 days after fusion, hybridoma clones were screened for specificity and cross-reactivity by staining hemagglutinin (HA)-tagged FCRL1, FCRL5 (C57BL/6 and BALB/c alleles), and FCRL6 TM transductants generated as previously ( 41 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:47:37.885002+00:00",
+  "literature_notes": "L1 and L2 both derive from PMC7033751 and describe the same HA-tagged FCRL6 TM transductant system; L1 is used as the primary supporting clip because it explicitly describes surface staining. L3, L4, and L5 (PMC4876727) describe an FCRL6\u03b6 chimeric construct in which the FCRL6 ectodomain is fused to a heterologous transmembrane region and the CD3\u03b6 cytoplasmic ITAM domain. Although this chimera is membrane-anchored and its surface expression is confirmed by antibody staining, it does not report an epitope-tag insertion at any specific residue; it is a domain-fusion chimera used for functional reporter assays, not a tag knock-in. No residue-level insertion position can be derived from L3\u2013L5, so they do not ground an additional site. The FCRL6\u03b6 data do corroborate that the FCRL6 ectodomain tolerates display on the cell surface in a heterologous membrane context, which is consistent with the N-terminal HA-tag site.",
+  "literature_rejected": []
+}

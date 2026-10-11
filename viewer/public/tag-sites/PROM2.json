@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PROM2",
+  "uniprot_acc": "Q8N271",
+  "sites": [
+    {
+      "site_id": "PROM2-terminal_n-26-lit",
+      "gene_symbol": "PROM2",
+      "uniprot_acc": "Q8N271",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 26,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G26",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Plasma-membrane protrusion localisation confirmed by co-localisation with prominin-1; no functional assay reported. NOT MEASURED beyond surface localisation.",
+      "confidence": "low",
+      "rationale": "PROM2 is a 5-TM protein whose N-terminus (residue 27 onward) is extracellular after cleavage of the 26-residue signal peptide, while the C-terminus (residue 834) is intracellular. Because exactly one terminus is extracellular, the topology_derived rule places the GFP fusion after residue 26 (the SP cleavage junction), giving residue_before=G (residue 26) and residue_after=A (residue 27). The junction is 77 residues from TM1 (residue 104), well clear of the \u22653-residue TM boundary constraint. Confidence is low because the paper does not state whether GFP is N- or C-terminal; the C-terminal (intracellular) possibility cannot be excluded from the text alone. PROM2 expressed as a GFP fusion chimera in CHO cells (PMID 12514187); the construct localises to plasma membrane protrusions and co-localises with prominin-1. No residue or terminus is named in the paper.",
+      "sources": [
+        {
+          "pmid": 12514187,
+          "citation": "PMID 12514187",
+          "claim": "Although the amino acid identity between prominin-2 and prominin-1 is low (<30%), their genomic organization is strikingly similar, suggesting an early gene duplication event. Like prominin-1, prominin-2 exhibits a characteristic membrane topology with five transmembrane segments and two large glycosylated extracellular loops. Upon its ectopic expression in Chinese hamster ovary cells as a green fluorescent protein fusion chimera, prominin-2 was also found to be associated with plasma membrane protrusions, as revealed by its co-localization with prominin-1, suggesting a related role."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:45:49.499078+00:00",
+  "literature_notes": "Only one ledger line (L1) is available. It reports a GFP fusion chimera of full-length PROM2 in CHO cells with plasma-membrane protrusion localisation but names neither the terminus nor any residue. The topology_derived rule is applied: PROM2 has exactly one extracellular terminus (N-terminus after SP cleavage at residue 26), yielding insert_after_residue=26. The C-terminal position (residue 834) is intracellular and is recorded in other_positions. No internal loop insertions are supported by the ledger. Confidence is low throughout because the GFP terminus is not stated in the paper.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 834,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminus of PROM2 is intracellular (IC3, residues 801-834); if the GFP fusion reported in PMID 12514187 is C-terminal, it faces the cytoplasm and is not a surface tag site."
+    }
+  ]
+}

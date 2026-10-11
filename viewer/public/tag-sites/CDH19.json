@@ -1,0 +1,58 @@
+{
+  "has_data": true,
+  "gene_symbol": "CDH19",
+  "uniprot_acc": "Q9H159",
+  "sites": [
+    {
+      "site_id": "CDH19-terminal_n-21-lit",
+      "gene_symbol": "CDH19",
+      "uniprot_acc": "Q9H159",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "PA16 (16 aa peptide tag)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by flow cytometry (anti-PA16 NZ-1 sorting) and membranous IHC staining (anti-PA16 NZ-33); no functional assay reported in the ledger.",
+      "confidence": "high",
+      "rationale": "The paper (L1) reports a full-length, membrane-anchored CDH19 construct with an N-terminal PA16 tag from which the propeptide (residues 22\u201343) was deleted; the signal peptide (residues 1\u201321) is retained to direct trafficking. After SP cleavage the tag is the first extracellular element, placing the junction at residue 21/22 in canonical UniProt numbering. Python verification confirms residue 21 = G (last SP residue) and residue 22 = A (first mature residue), with 575 residues separating the tag from the TM boundary (597), far exceeding the \u22653-residue minimum. No residue number is named in the paper, so position_evidence is topology_derived. Full-length CDH19 construct (propeptide deleted) with N-terminal PA16 tag stably expressed in CHO cells; surface display confirmed by flow cytometry sorting with anti-PA16 mAb NZ-1 (L3) and by membranous IHC staining with anti-PA16 mAb NZ-33 (L4). The signal peptide ends at residue 21 (G) and the mature extracellular domain begins at residue 22 (A); the tag is placed after SP cleavage, so insert_after_residue=21 is the only valid N-terminal extracellular junction in canonical numbering.",
+      "sources": [
+        {
+          "pmid": 41899458,
+          "citation": "PMID 41899458",
+          "claim": "The CDH19 cDNA without the pro-peptide was subcloned into the pCAG-Ble vector with an N-terminal PA16 tag [ 22 ]."
+        },
+        {
+          "pmid": 41899458,
+          "citation": "PMID 41899458",
+          "claim": "Additionally, the CDH19 cDNA with an N-terminal MAP16 tag [ 23 ] was constructed."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:28:04.566635+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) concern the same N-terminal extracellular junction of CDH19 (insert_after_residue=21). L1 and L2 describe two independent tagged constructs (PA16 and MAP16 respectively) at that junction; L3 confirms surface display of both by flow cytometry; L4 provides additional IHC confirmation for the PA16 construct. No internal loop insertions, C-terminal extracellular tags, or intracellular tags are reported in the ledger. The propeptide (residues 22\u201343, ending at the furin-like RVKR motif at positions 40\u201343) is deleted in both constructs; the tag is placed between the cleaved signal peptide and the mature ectodomain. No functional assays (adhesion, signalling) are reported in any ledger clip, so validation_level is surface_only for both sites. No other positions qualify.",
+  "literature_rejected": []
+}

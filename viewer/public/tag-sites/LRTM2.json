@@ -1,0 +1,91 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRTM2",
+  "uniprot_acc": "Q8N967",
+  "sites": [
+    {
+      "site_id": "LRTM2-internal-None-lit",
+      "gene_symbol": "LRTM2",
+      "uniprot_acc": "Q8N967",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular juxtamembrane",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "thrombin cleavage site (LVPRGS) with GGGGS flanking linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "GFP-Thr-LRRTM2* (the construct carrying both the N-terminal GFP and the juxtamembrane thrombin site) is expressed in cultured hippocampal neurons and colocalizes with endogenous PSD-95 and RIM1/2 by confocal microscopy (L10), confirming that the thrombin-site insertion does not prevent surface trafficking or synaptic localization prior to thrombin cleavage.",
+      "confidence": "medium",
+      "rationale": "L6 explicitly describes a short-sequence insertion (LVPRGS + GGGGS linkers) tolerated at the extracellular juxtamembrane position of full-length, membrane-anchored human LRRTM2. L8 names residues S386\u2013S389 in the paper's construct numbering, but Python computation confirms these numbers exceed the canonical 370-aa length and cannot be converted to a unique canonical position without knowing the exact cDNA and construct architecture used; the site is therefore region-level. The extracellular region ends at canonical residue 310 (T) and the TM begins at 311 (V), so the juxtamembrane extracellular region is approximately residues 290\u2013310. The insert is \u22653 residues from the TM boundary and faces the extracellular space. Confidence is medium because the canonical residue cannot be pinned. A thrombin recognition sequence (LVPRGS) flanked by GGGGS flexible linkers was inserted at an extracellular, juxtamembrane position within full-length human LRRTM2 (L6). L8 specifies that the four Ser residues S386\u2013S389 (paper's construct numbering) were replaced by the thrombin site; however, this numbering cannot be mapped to the canonical 370-aa UniProt sequence (Q9ULH4) because the paper's construct includes an N-terminal EGFP (239 aa) and possibly a different cDNA isoform, placing the paper's residue 386 beyond the canonical sequence length. The site is therefore reported at region level (extracellular juxtamembrane, near the TM boundary at canonical residue 311) without a pinnable canonical residue.",
+      "sources": [
+        {
+          "pmid": 34417170,
+          "citation": "PMID 34417170",
+          "claim": "To test the role of LRRTM2 extracellular interactions in synapse structure and function independent of synaptogenesis and genetic compensation, we adapted a previous approach ( 38 ) and inserted the short recognition sequence for the endoprotease thrombin (LVPRGS) at an extracellular, juxtamembrane position within human LRRTM2 ( Fig. 1A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "LRTM2-terminal_n-35-lit",
+      "gene_symbol": "LRTM2",
+      "uniprot_acc": "Q8N967",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "AP tag (15 aa biotin acceptor peptide, GLNDIFEAQKIEWHE)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "AP-LRRTM2 co-expressed with BirA-ER displays selective surface biotinylation in neurons (L2, L3); AP-LRRTM2 labeled with monomeric streptavidin is displayed at the plasma membrane and used for single-molecule tracking (L5); GFP-Thr-LRRTM2* (N-terminal GFP fusion) colocalizes with endogenous PSD-95 and RIM1/2 at synapses by confocal microscopy in hippocampal neurons (L10), confirming surface expression and synaptic targeting are preserved.",
+      "confidence": "high",
+      "rationale": "The signal peptide of LRTM2 spans residues 1\u201335 (canonical UniProt Q9ULH4, 370 aa); the mature N-terminus begins at residue 36 (L). Placing the tag after residue 35 (A) positions it at the extracellular face immediately following signal cleavage, 275 residues from the TM boundary (311). L1 explicitly states the AP tag replaces the myc-tag from myc-LRRTM2, establishing that the N-terminal extracellular junction (after signal peptide) has been used for tag insertion in full-length membrane-anchored LRRTM2. This junction is corroborated by at least eight additional ledger lines spanning AP, GFP, BRS, SEP, and HA tags, all in full-length constructs expressed in neurons with confirmed surface localization and synaptic function. AP-LRRTM2 was generated by replacing the myc-tag from myc-LRRTM2 with the AP tag (GLNDIFEAQKIEWHE), placing the tag at the N-terminal extracellular region of full-length, membrane-anchored LRRTM2. The same junction is independently confirmed by L2 (AP tag at N-terminal region with BirA-ER surface biotinylation), L3 (AP tag at N-terminal of LRRTM2 co-expressed with BirA-ER), L5 (AP tag in N-terminal domain, plasma membrane display), L7 (EGFP appended to N-terminus), L9 (BRS replacing GFP at N-terminus), L10 (GFP-Thr-LRRTM2* synaptic colocalization), L11 (HA-Lrtm2, topology-derived), and L12 (SEP substituted for YFP in YFP-LRRTM2). The signal peptide spans residues 1\u201335 (computed); the tag is placed after residue 35 (A), immediately before the mature N-terminus at residue 36 (L).",
+      "sources": [
+        {
+          "pmid": 26979420,
+          "citation": "PMID 26979420",
+          "claim": "AP-LRRTM2 was generated using the In-Fusion HD Cloning kit (Clontech), replacing the myc-tag from myc-LRRTM2 by the AP Tag (amino-acid sequence GLNDIFEAQKIEWHE)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 35,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:29:18.688358+00:00",
+  "literature_notes": "All twelve ledger lines were evaluated. L1\u2013L5, L7, L9\u2013L12 all ground the same N-terminal extracellular junction (after signal peptide cleavage at residue 35); L1 is the primary citation because it explicitly names the AP tag sequence and the junction (replacing myc-tag in myc-LRRTM2). L6 and L8 ground the juxtamembrane extracellular thrombin-site insertion; L8's residue numbers (S386\u2013S389) cannot be mapped to the canonical 370-aa sequence\u2014Python confirms no SSSS motif exists near the TM boundary in the canonical sequence, and the paper's construct numbering includes an N-terminal EGFP (239 aa) making direct offset arithmetic ambiguous\u2014so this site is reported at region level. L11 (HA-Lrtm2) names no residue or loop; because LRTM2 has exactly one extracellular terminus (the mature N-terminus after signal cleavage), the position is topology-derived and collapses into Site 1. L12 (SEP-LRRTM2) similarly names no residue and collapses into Site 1. No intracellular insertions or function-abrogating insertions were reported in the ledger.",
+  "literature_rejected": []
+}

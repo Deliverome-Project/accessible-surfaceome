@@ -180,5 +180,20 @@
       "canonical_residue": 33,
       "left_pct": 12.547528517110266
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:41:22.234084+00:00",
+  "literature_notes": "Both ledger clips (L1, L2) from PMC3864651 describe C-terminal mCherry/EGFP fusions on full-length AQP0/MIP. The authoritative topology landmarks place the C-terminus (residues 224\u2013263) in the intracellular compartment; the N-terminus (residues 1\u201311) is likewise intracellular. Neither terminus is extracellular. The three extracellular loops (ECL1: 33\u201341, ECL2: 108\u2013130, ECL3: 179\u2013202) are not addressed by any ledger clip \u2014 no insertion, transposon, or epitope-tag experiment in any extracellular loop of MIP/AQP0 appears in the ledger. Because the ledger is the only permitted source of citations, and no ledger line supports an extracellular tag insertion, sites[] is empty.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 263,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mCherry/EGFP fusions on full-length AQP0 expressed in MDCK cells; the C-terminus (residues 224\u2013263) is intracellular per topology landmarks, so this is an intracellular tag, not a surface tag."
+    }
   ]
 }

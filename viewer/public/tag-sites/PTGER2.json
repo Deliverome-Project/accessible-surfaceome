@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "PTGER2-terminal_n-0-lit",
+      "gene_symbol": "PTGER2",
+      "uniprot_acc": "P43116",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor expressed and purified as a functional EP2\u2013Gs complex suitable for cryo-EM; no independent functional assay (e.g., cAMP, ligand binding) reported separately for the tagged construct.",
+      "confidence": "high",
+      "rationale": "L4 explicitly reports a FLAG tag placed at the N-terminus of full-length membrane-anchored EP2 after replacement of the native signal peptide with an HA signal peptide. The computed topology assigns residues 1\u201325 as extracellular (EC1) with no signal-peptide designation (raw topology begins 'O'), so the canonical mature N-terminus is M1; the FLAG tag therefore prepends before M1, giving insert_after_residue=0. EC1 (1\u201325) is the only extracellular terminus of this 7-TM receptor; no residue number is named for the FLAG junction, so position_evidence is topology_derived. Python confirmed res(1)=M and that TM1 begins at residue 26, placing the prepend site >25 residues from any TM boundary. Full-length human EP2 construct used for cryo-EM structural studies of the EP2\u2013Gs complex: native signal peptide replaced with HA signal peptide, followed by a FLAG tag (DYKDDDK) at the N-terminus of the mature receptor, with the membrane-anchored receptor expressed in HEK293 cells for complex purification.",
+      "sources": [
+        {
+          "pmid": 33811074,
+          "citation": "PMID 33811074",
+          "claim": "Native signal peptide was replaced with the hemagglutinin signal peptide (HA) to enhance receptor expression, followed by a Flag tag (DYKDDDK) to facilitate the purification of the complex."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:48:33.850366+00:00",
+  "literature_notes": "Four ledger lines were evaluated. L4 (and corroborating L2) ground the single extracellular site: a FLAG tag at the N-terminus of full-length EP2, used for cryo-EM complex purification. No residue number is named for the FLAG junction, but the N-terminus is the only extracellular terminus of this GPCR, so the position is topology_derived (insert_after_residue=0, prepend before M1). L1 and L3 report a BRIL thermostabilizing domain inserted between ICL3 residues R224 and A257; ICL3 is intracellular (landmarks: 220\u2013263), so this is recorded in other_positions only. L2 describes the same construct as L4 (HA-SP + FLAG at N-terminus + BRIL in ICL3) and adds no new extracellular site. No ledger line supports an insertion in EC2 (92\u2013110), EC3 (177\u2013194), or EC4 (287\u2013297), so no sites are proposed there.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 224,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "BRIL thermostabilizing domain inserted between ICL3 residues R224 and A257 (intracellular loop 3, landmarks 220\u2013263) in full-length EP2 for cryo-EM; R224 confirmed as R by sequence lookup."
+    },
+    {
+      "residue": 257,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "A257 is the C-terminal junction of the BRIL insertion in ICL3 (linker ERARSTL connects BRIL C-terminus to A257); confirmed as A by sequence lookup; intracellular per landmarks 220\u2013263."
+    }
+  ]
 }

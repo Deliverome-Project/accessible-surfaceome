@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "GLRA2",
+  "uniprot_acc": "P23416",
+  "sites": [
+    {
+      "site_id": "GLRA2-terminal_n-29-lit",
+      "gene_symbol": "GLRA2",
+      "uniprot_acc": "P23416",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "D",
+      "residue_after": "H",
+      "residue_label": "D29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "c-myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Electrophysiological properties measured and confirmed unaffected; the paper explicitly states epitope tags at this position 'do not affect the electrophysiological properties of GlyR, as shown recently even for high molecular weight tags such as different fluorescent proteins'.",
+      "confidence": "high",
+      "rationale": "Signal peptide spans residues 1\u201327 (authoritative landmarks); the mature N-terminus is canonical residue 28 (K). '+2 in signal-peptide-processed mature protein' means after the 2nd residue of the mature chain, placing the junction after canonical residue 29 (D) and before residue 30 (H), confirmed by reading the numbered sequence. The site is 228 residues from TM1 (257), well within the large extracellular domain (28\u2013256), and satisfies all distance and topology constraints. Electrophysiological function was explicitly confirmed preserved. Full-length GlyR \u03b12 expressed in neurons with a c-myc epitope tag inserted at the position corresponding to +2 in the signal-peptide-processed mature protein (canonical residue 29, 2nd residue of the mature chain after SP cleavage at residue 27). The paper further notes that even high-molecular-weight fluorescent protein tags inserted at this same position do not affect GlyR electrophysiological properties.",
+      "sources": [
+        {
+          "pmid": 37284465,
+          "citation": "PMID 37284465",
+          "claim": "GlyR constructs are epitope-tagged (c-myc, GlyR \u03b12; HA, GlyR \u03b13), however, recent work demonstrates that epitope tags inserted at positions corresponding +2 in signal peptide processed mature GlyR proteins do not affect the electrophysiological properties of GlyR, as shown recently even for high molecular weight tags such as different fluorescent proteins ( Lemmens et al., 2022 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 29,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:18:18.710851+00:00",
+  "literature_notes": "L2 (PMC12908935) reports mEos4b N-terminal fusions to GlyR \u03b11 (rat, UniProt P07727-1) and GlyR \u03b2 (human, UniProt P48167-1) in full-length, membrane-anchored lentiviral constructs. These are different subunits from GlyR \u03b12 and L2 names no residue for \u03b12; it provides indirect corroboration that N-terminal tagging of GlyR subunits is tolerated but does not add a distinct site beyond what L1 already validates directly for \u03b12. L2 was therefore not used to generate an additional site entry. The large intracellular loop (residues 339\u2013420) and the short extracellular loops (305\u2013315, 442\u2013452) have no ledger support for insertions and were not proposed.",
+  "literature_rejected": []
+}

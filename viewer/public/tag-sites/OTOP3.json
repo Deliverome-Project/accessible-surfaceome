@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "OTOP3",
+  "uniprot_acc": "Q7RTS5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:04:22.436080+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe N-terminal tags on OTOP3 or its close Xenopus ortholog XtOTOP3. The computed topology places residues 1\u201388 in the intracellular compartment, and L3 provides direct experimental confirmation: an N-terminal GFP on XtOTOP3 was resistant to extracellular protease but was cleaved after digitonin permeabilization, proving the N-terminus faces the cytoplasm. L1, L2, and L5 report N-terminal His8-eGFP or FLAG tags on mouse OTOP3 used for electrophysiology \u2014 these are functional intracellular fusions, not extracellular surface tags. L4 confirms the N-terminally tagged XtOTOP3 is functional at the plasma membrane but again the tag is intracellular. No ledger line reports any insertion in an extracellular loop or at an extracellular terminus of OTOP3 or any close ortholog. The six extracellular spans (112\u2013120, 183\u2013193, 249\u2013289, 359\u2013372, 437\u2013448, 550\u2013563) are all short (9\u201341 aa) and none is supported by any ledger insertion. The C-terminus (582\u2013596) is also intracellular. Zero extracellular surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal GFP on XtOTOP3 (close ortholog) was shown by extracellular protease protection + digitonin permeabilization to face the cytoplasm, confirming the N-terminus is intracellular; the same N-terminal tag position is used in L1, L2, L4, and L5 for mouse OTOP3."
+    }
+  ]
+}

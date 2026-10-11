@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPHA2",
+  "uniprot_acc": "P29317",
+  "sites": [
+    {
+      "site_id": "EPHA2-terminal_n-23-lit",
+      "gene_symbol": "EPHA2",
+      "uniprot_acc": "P29317",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by non-permeabilized IFA (peripheral staining pattern); no functional assay of the tagged construct reported. L5 reports WT FLAG-EphA2 surface expression is detectable; a point-mutant variant (M3) shows reduced surface expression, but this reflects the mutation, not the tag.",
+      "confidence": "high",
+      "rationale": "EphA2 is a type I single-pass transmembrane receptor with signal peptide spanning residues 1\u201323 (landmarks, authoritative). The mature N-terminus begins at residue 24 (A), so an N-terminal tag on the extracellular face must be inserted after residue 23 (A). Python verification confirms seq[23]=A and seq[24]=A. Because the paper names no residue number but EphA2 has exactly one extracellular terminus, the position is topology_derived and uniquely determined. The tag is >500 residues from the TM boundary (TM starts at 541), satisfying the \u22653-residue clearance constraint. Full-length EphA2 constructs (NM_004431.5) were engineered with an N-terminal HA-tag and expressed in mammalian cells. Non-permeabilized immunofluorescence assays confirmed a peripheral (plasma-membrane) staining pattern for all six constructs, establishing that the HA-tag is displayed on the extracellular face. L4/L5 (PMC8254660) independently confirm a FLAG-tagged full-length EphA2 whose FLAG epitope is detected on the cell surface by anti-FLAG antibody, consistent with the same N-terminal extracellular position.",
+      "sources": [
+        {
+          "pmid": 36513700,
+          "citation": "PMID 36513700",
+          "claim": "Immuno-fluorescence assays (IFAs) against the extracellular HA-tag performed without cell-permeabilization showed a peripheral pattern of protein expression for all constructs, confirming their presence on the plasma membrane (Fig. 2 b)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:33:44.360702+00:00",
+  "literature_notes": "L1\u2013L3 (PMC9746569) and L4\u2013L5 (PMC8254660) both support the same junction (after residue 23, the signal-peptide cleavage site) via different tags (HA and FLAG respectively). Because both papers pin the identical junction on the identical protein, this is one site, not two; L3 is used as the primary clip (strongest surface evidence). No ledger line supports any internal loop insertion in EphA2. L4 mentions EGFP co-tagging; EGFP on a type I TM protein is almost certainly C-terminal (intracellular) and is not proposed as a surface site because no ledger line confirms extracellular EGFP display, and the C-terminus of EphA2 is intracellular (residues 559\u2013976). L5 notes that the M3 point-mutant shows reduced surface FLAG signal, but this reflects the mutant's trafficking defect, not a tag-position effect; no other_position entry is warranted because the paper does not report the M3 mutation as a tag-insertion site.",
+  "literature_rejected": []
+}

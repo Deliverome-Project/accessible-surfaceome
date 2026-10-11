@@ -131,5 +131,32 @@
       "canonical_residue": 163,
       "left_pct": 33.71335504885993
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:08:50.201192+00:00",
+  "literature_notes": "CYBB (NOX2) has a six-transmembrane topology in which the N-terminus (residues 1\u20138) is intracellular and the C-terminus (residues 290\u2013570) is the large cytoplasmic NADPH/FAD-binding domain, also intracellular. All three ledger lines report tags at these intracellular termini: L1 and L3 fuse twin-Strep+eGFP and Clover, respectively, to the N-terminus; L2 fuses SmBiT to the C-terminus. None of these constructs places a tag on the extracellular face. The three extracellular loops (EC1 30\u201351, EC2 122\u2013169, EC3 225\u2013269) are not addressed by any ledger line with a tolerated insertion. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "twin-Strep+eGFP fused to the N-terminus of full-length NOX2; residues 1\u20138 are intracellular per the authoritative topology landmarks, so this tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Clover (GFP) fused to the N-terminus of full-length NOX2 (Clover-NOX2) in COS-7 cells; same intracellular N-terminus as L1."
+    },
+    {
+      "residue": 570,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "SmBiT fused to the C-terminus of full-length NOX2; residues 290\u2013570 form the large cytoplasmic NADPH/FAD-binding domain, so this tag faces the cytoplasm."
+    }
   ]
 }

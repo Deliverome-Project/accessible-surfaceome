@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "GGT1",
+  "uniprot_acc": "P19440",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:08:26.177692+00:00",
+  "literature_notes": "GGT1 (UniProt P19440) is a type II single-pass membrane protein. The authoritative topology landmarks place residues 1\u20134 (MKKK) intracellularly, the TM helix at residues 5\u201325, and the entire large catalytic ectodomain at residues 26\u2013569. All four ledger lines (L1\u2013L4) describe the same experimental construct: an N-terminal FLAG tag (DYKDDDDK) fused to the very N-terminus of full-length human GGT1, expressed in HepG2 cells. Because the N-terminus of GGT1 faces the cytoplasm, this tag is on the intracellular face \u2014 it is not an extracellular surface tag. L3 confirms the construct retains enzymatic activity (21,900 \u00b1 450 units/mg), so the tag is tolerated, but it is cytoplasmic. No ledger line reports any insertion in the extracellular domain (residues 26\u2013569), at the extracellular C-terminus (residue 569), or in any extracellular loop. The C-terminus (residue 569, Y) is extracellular and would in principle accept a tag, but no ledger line supports it. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 0,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal FLAG tag (DYKDDDDK) prepended before M1 of full-length GGT1; the N-terminus (residues 1\u20134) is intracellular in this type II membrane protein, so the tag faces the cytoplasm; the construct retains full GGT enzymatic activity (21,900 \u00b1 450 units/mg), confirming tolerance, but the tag is not on the extracellular surface."
+    }
+  ]
+}

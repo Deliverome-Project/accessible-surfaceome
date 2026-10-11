@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "KIR2DS4",
+  "uniprot_acc": "P43632",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:58:14.288899+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct: a C-terminal V5 tag appended after the stop codon of KIR2DS4, i.e., after residue 304 (A). KIR2DS4 topology places residues 267\u2013304 in the intracellular domain; the C-terminus is therefore cytoplasmic. L2 explicitly states that 'detection of the C-terminal V5 tags measured total KIR protein expression', confirming the V5 tag is used for intracellular/total-protein detection, while surface staining relied on a KIR2DS4-specific mAb against the extracellular domain. No ledger line reports a tag insertion on the extracellular face (residues 22\u2013245) of this protein. Zero extracellular sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 304,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal V5 tag appended after residue 304 (A, last residue); the C-terminus of KIR2DS4 is intracellular (residues 267\u2013304), so this tag faces the cytoplasm and is used for total-protein detection, not surface labelling (L2)."
+    }
+  ]
+}

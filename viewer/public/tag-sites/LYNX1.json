@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LYNX1",
+  "uniprot_acc": "P0DP58",
+  "sites": [
+    {
+      "site_id": "LYNX1-terminal_n-20-lit",
+      "gene_symbol": "LYNX1",
+      "uniprot_acc": "P0DP58",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L2: construct used in HEK293 nAChR interaction assay (functional result not stated in clip). L1: expression confirmed by western blot in HEK293 cell lysates. Neither clip reports a quantitative functional outcome.",
+      "confidence": "medium",
+      "rationale": "LYNX1 is a GPI-anchored Ly-6/uPAR family protein with signal peptide residues 1\u201320 and a fully extracellular mature domain (residues 21\u2013116); there is no TM segment, so the only conventional extracellular terminus for tag insertion is the mature N-terminus immediately after signal-peptide cleavage. Both L1 (mCherry-Lynx1) and L2 (FLAG-Lynx1) describe N-terminal fusions to the full-length protein used in HEK293 cells, consistent with tag placement after residue 20 (the last signal-peptide residue, A) and before residue 21 (L, the first mature residue). No residue is named in either clip, so the junction is topology-derived from the single available extracellular terminus. L2 is used as the primary clip because it explicitly describes a short epitope tag (FLAG) in a functional experimental context. Human LYNX1 with an N-terminal FLAG tag was cloned into pCherry/P2A vector and transfected into HEK293 cells to examine nAChR interactions (L2). Separately, an mCherry-Lynx1 N-terminal fusion was co-expressed with nAChR subunits in HEK293 cells and confirmed by western blot (L1). Neither paper names a specific residue; LYNX1 has a signal peptide (residues 1\u201320) and is GPI-anchored with no TM domain, leaving the mature N-terminus (after residue 20) as the sole extracellular terminus accessible for tagging.",
+      "sources": [
+        {
+          "pmid": 32686737,
+          "citation": "PMID 32686737",
+          "claim": "The DNA fragments encoding human Lynx1 [ NM_177457 ] and mouse Ly6H [ NM_011837 ] with N-terminal FLAG-tag were synthesised by GeneArt Gene Synthesis and inserted into XhoI- and BamHI-digested pCherry/P2A vector, in frame, at the back of Cherry/P2A using In-Fusion HD Cloning Kit."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:31:07.136623+00:00",
+  "literature_notes": "LYNX1 is a GPI-anchored protein (Ly-6/neurotoxin family) with signal peptide residues 1\u201320 and a single extracellular domain spanning residues 21\u2013116; there is no transmembrane segment and no intracellular domain. The C-terminus (residue 116) carries the GPI anchor signal and is processed co-translationally; it is not accessible for conventional tag insertion. Both ledger lines (L1, L2) describe N-terminal tags on the full-length protein in HEK293 cells, both pointing to the same junction (insert_after_residue=20). Because they pin the same position, one site is reported (using L2 as primary, L1 noted in rationale). No internal loop insertions are supported by the ledger. No residue-level position is named in either clip, so position_evidence is topology_derived. Validation is detected_only because neither clip reports a quantitative functional result for the tagged construct.",
+  "literature_rejected": []
+}

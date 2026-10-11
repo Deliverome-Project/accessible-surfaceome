@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KIRREL1",
+  "uniprot_acc": "Q96J84",
+  "sites": [
+    {
+      "site_id": "KIRREL1-terminal_n-16-lit",
+      "gene_symbol": "KIRREL1",
+      "uniprot_acc": "Q96J84",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 16,
+      "residue_before": "S",
+      "residue_after": "Q",
+      "residue_label": "S16",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG immunofluorescence confirmed correct subcellular localization of the tagged wild-type protein; no functional assay (e.g., binding, signalling) reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "Both L1 and L2 describe the same N-terminally FLAG-tagged full-length KIRREL1 construct used for localization studies. The signal peptide spans residues 1\u201316 (computed landmarks), so a tag placed 'at the N-terminus' of the mature protein sits after residue 16 (S) and before residue 17 (Q), 480 residues from the TM boundary \u2014 well within the extracellular domain. Because the C-terminus is intracellular, this is the sole extracellular terminus and the position is unambiguous by topology. Python confirmed residue_before = S (pos 16) and residue_after = Q (pos 17). PMC6756928 reports full-length KIRREL1 constructs (wild-type and patient mutants) carrying a FLAG tag described as 'at the N-terminus'. The construct is membrane-anchored (not a secreted ectodomain), expressed in cells, and detected by anti-FLAG immunofluorescence microscopy. No specific residue number is named; the paper says only 'N-terminus'. With signal peptide 1\u201316 and the C-terminus intracellular (519\u2013757), the only extracellular terminus is the mature N-terminus beginning at residue 17, so the tag must follow the signal-peptide cleavage site at residue 16.",
+      "sources": [
+        {
+          "pmid": 31472902,
+          "citation": "PMID 31472902",
+          "claim": "To test this hypothesis, we generated cDNA constructs containing patient\u2019s mutant alleles with inserted Flag tag at the N-terminus ( Fig.2A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:00:55.132894+00:00",
+  "literature_notes": "L1 and L2 are two clips from the same paper (PMC6756928) describing the same construct; they ground one site, not two. No residue number is stated, so position_evidence is topology_derived rather than validated. The C-terminus (residues 519\u2013757) is intracellular and therefore not a candidate for a surface tag. No other ledger lines describe internal-loop insertions, transposon screens, or fluorescent-protein fusions in KIRREL1 or close orthologs, so no internal sites are proposed.",
+  "literature_rejected": []
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ILDR1",
+  "uniprot_acc": "Q86SU0",
+  "sites": [
+    {
+      "site_id": "ILDR1-terminal_n-23-lit",
+      "gene_symbol": "ILDR1",
+      "uniprot_acc": "Q86SU0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "FLAG-tagged WT ILDR1 localizes correctly to tricellular contacts in LSR-knockdown cells, co-distributing with tricellulin and claudin-3; surface display confirmed by non-permeabilized anti-FLAG immunostaining. Correct junctional localization is the established functional readout for this scaffolding receptor.",
+      "confidence": "high",
+      "rationale": "ILDR1 has a single extracellular span (residues 24\u2013170) and a single-pass type I topology; the only extracellular terminus is the mature N-terminus beginning at residue 24 (L). Anti-FLAG surface immunostaining of the Q195X truncation mutant (which eliminates the C-terminal intracellular tail) confirms the FLAG is N-terminal, not C-terminal. Python verification confirms residue 23 = S (last signal-peptide residue) and residue 24 = L (first mature-protein residue), placing the tag junction at insert_after_residue = 23, 147 residues from the TM boundary (171), well within the safe distance. Full-length human ILDR1 was subcloned into pCAG-cFLAG2 and stably expressed in LSR-knockdown epithelial cells; anti-FLAG mAb immunostaining (without permeabilization) confirmed surface display and correct localization to tricellular tight junctions. The Q195X truncation mutant (which removes most of the intracellular C-terminal tail) retains anti-FLAG immunostaining, demonstrating the FLAG tag is N-terminal rather than C-terminal. ILDR1 is a type I single-pass TM protein (N-out, C-in); the only extracellular terminus is the mature N-terminus after signal-peptide cleavage at residue 23. The junction is therefore after residue 23 (S) and before residue 24 (L).",
+      "sources": [
+        {
+          "pmid": 25668204,
+          "citation": "PMID 25668204",
+          "claim": "(B) LSR knockdown cells stably expressing the mock FLAG vector (C) or wild-type (WT) human ILDR1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:24:28.704989+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same study (PMC4323246) and describe the same pCAG-cFLAG2-ILDR1 construct. No ledger line explicitly states the residue number of the FLAG insertion. The position is topology-derived: ILDR1 is a type I TM protein with a single extracellular N-terminus; anti-FLAG surface immunostaining (non-permeabilized) and retention of the FLAG epitope in the Q195X intracellular-truncation mutant together establish that the FLAG is N-terminal (after signal-peptide cleavage at residue 23). The C-terminus (residue 546) is intracellular and is not a surface-tag site; it is not separately reported in the ledger as a tested position. No internal extracellular loop insertions are reported in the ledger. No ledger line qualifies as a validated exact-residue site (no residue number is named for the junction), so position_evidence is topology_derived throughout.",
+  "literature_rejected": []
+}

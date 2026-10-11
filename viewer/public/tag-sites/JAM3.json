@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "JAM3",
+  "uniprot_acc": "Q9BX67",
+  "sites": [
+    {
+      "site_id": "JAM3-internal-None-lit",
+      "gene_symbol": "JAM3",
+      "uniprot_acc": "Q9BX67",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "membrane-proximal extracellular domain",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HRP/GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "Tagging at this position was previously shown to have no effect on ligand binding or localisation (L8); surface display of the tagged full-length protein confirmed in HUVECs (L9).",
+      "confidence": "medium",
+      "rationale": "L7 reports a full-length, membrane-anchored JAM-C (JAM3) construct with HRP fused in the 'membrane-proximal region of the extracellular domain'; L8 explicitly states this tagging position has no effect on ligand binding or localisation. No specific residue is named in any ledger line, so insert_after_residue is left null and the region is recorded as given. The extracellular domain spans residues 32\u2013243 (TM begins at 244), so the membrane-proximal region corresponds to the C-terminal portion of the ectodomain (roughly residues 220\u2013243), well within the extracellular span and at least 3 residues from the TM boundary. Full-length, membrane-anchored JAM-C (JAM3) constructs with HRP (JAM-C\u2013HRPout) or GFP (JAM-C\u2013GFPout) fused in the membrane-proximal region of the extracellular domain were expressed in HUVECs; surface display was confirmed by western blot and cell-surface assays.",
+      "sources": [
+        {
+          "pmid": 31790392,
+          "citation": "PMID 31790392",
+          "claim": "We generated a version of JAM-C fused to horseradish peroxidase (HRP) in the membrane-proximal region of the extracellular domain (JAM-C\u2013HRPout)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:35:18.252788+00:00",
+  "literature_notes": "L1 (HA-tagged JAM3 in Origene pCMV) was considered but disqualified: it is a commercial plasmid with no stated tag position, which the rules explicitly exclude. L2\u2013L6 describe JAM2 (a paralog) constructs with HA at the N-terminus and V5 at the C-terminus; L3 confirms the N-terminal HA is surface-accessible on JAM2 (non-permeabilized staining). However, these lines concern JAM2, not JAM3, and L1 (the only JAM3-specific line from that paper) gives no position \u2014 so no N-terminal site for JAM3 can be grounded. L7\u2013L10 (PMC6907879) provide the only qualifying evidence: full-length JAM-C (JAM3) with HRP/GFP in the membrane-proximal extracellular region, with functional validation (L8: no effect on ligand binding or localisation). No specific residue is named in any of these lines, so the site is reported at region level with insert_after_residue = null. The murine JAM-C\u2013GFPout construct (L10) is the same architecture, providing additional confidence that the insertion is tolerated across species.",
+  "literature_rejected": []
+}

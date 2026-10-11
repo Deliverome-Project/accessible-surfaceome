@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "SEMA6A",
+  "uniprot_acc": "Q9H2E6",
+  "sites": [
+    {
+      "site_id": "SEMA6A-terminal_n-18-lit",
+      "gene_symbol": "SEMA6A",
+      "uniprot_acc": "Q9H2E6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-Sema6A and anti-HA immunostaining confirmed expression; overall retinal lamination unaffected in homozygous knock-in mice \u2014 function preserved.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the HA tag was knocked in 'downstream of the signal peptide in exon 2 at the N-terminus of the extracellular domain of Sema6A' in a full-length membrane-anchored construct. The signal peptide spans residues 1\u201318 (last residue A at position 18), so the tag sits after residue 18 and before the mature N-terminus at residue 19 (G); Python confirms residue_before='A', residue_after='G'. The junction is 631 residues from the TM boundary (TM starts at 650), well clear of any structural constraint. L1/L3 confirm expression and immunostaining; L4 independently corroborates the same exon-2 N-terminal position with a 3xHA tag; L5/L6 corroborate with an N-terminal myc tag showing surface display and preserved PlexinA2 engagement. Sema6a HA-F knock-in allele: HA epitope tag inserted downstream of the signal peptide in exon 2 at the N-terminus of the extracellular domain of full-length, membrane-anchored Sema6A in mouse. Homozygous Sema6a HA-F/HA-F retinas were examined by anti-Sema6A and anti-HA immunostaining. Corroborated by L4 (3xHA in exon 2, PMC10703890) and L5/L6 (N-terminal myc tag on full-length Sema6A, surface expression and PlexinA2 binding confirmed, PMC4938514).",
+      "sources": [
+        {
+          "pmid": 39495936,
+          "citation": "PMID 39495936",
+          "claim": "In Sema6a HA-F , a hemagglutinin (HA) tag was knocked in downstream of the signal peptide in exon 2 at the N-terminus of the extracellular domain of Sema6A."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 18,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:17:40.742540+00:00",
+  "literature_notes": "L4 (PMC10703890, 3xHA in exon 2) independently corroborates the same insert_after_residue=18 junction and could serve as a co-primary citation; L2 was chosen as the single supporting_clip_id because it most explicitly names the landmark ('downstream of the signal peptide in exon 2'). L5/L6 (PMC4938514, N-terminal myc tag) also corroborate: no residue is named, but the only extracellular terminus of this type-I single-pass protein is after the signal peptide, making the position topology_derived to the same junction; surface expression and PlexinA2 binding were confirmed, adding functional validation. L7 (3xFLAG C-terminus) and L8/L9 (C-terminal GFP) describe tags at the intracellular C-terminus (residue 1030, within IC domain 674\u20131030) and are recorded in other_positions. No internal extracellular loop insertions are supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1030,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "3xFLAG tag with EFGSGSGS linker at the C-terminus of full-length SEMA6A; the C-terminus falls within the intracellular domain (residues 674\u20131030), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1030,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "GFP fused to the C-terminus of full-length Sema6A (Sema6a-GFP); surface expression of the protein was confirmed by anti-SEMA6A staining on non-permeabilised cells, but the GFP moiety itself is intracellular (C-terminus in IC domain 674\u20131030)."
+    }
+  ]
+}

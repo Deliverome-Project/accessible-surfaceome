@@ -4,6 +4,43 @@
   "uniprot_acc": "O95279",
   "sites": [
     {
+      "site_id": "KCNK5-internal-214-lit",
+      "gene_symbol": "KCNK5",
+      "uniprot_acc": "O95279",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 214,
+      "residue_before": "N",
+      "residue_after": "P",
+      "residue_label": "N214",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by chemiluminescence in Xenopus oocytes; the paper reports successful surface detection of the HA-tagged channel, indicating the insertion is tolerated for trafficking and membrane targeting. Electrophysiological function of the tagged construct is not explicitly reported in the ledger clip.",
+      "confidence": "high",
+      "rationale": "L1 explicitly names position 214 in the P2-M4 extracellular loop of KCNK5 as the HA-tag insertion site. Python verification confirms residue 214 is N (Asn) and residue 215 is P (Pro), both within the authoritative extracellular span 185\u2013225. The insertion is 30 residues from the upstream TM3 boundary (ends at 184) and 12 residues from the downstream TM4 boundary (starts at 226), satisfying the \u22653-residue clearance on both sides. No cysteine residues are present in this extracellular span, removing disulfide-bond concern at this site. HA epitope (YPYDVPDYA) flanked by PGG linkers on each side was inserted at amino acid position 214 in the extracellular P2-M4 loop of human TASK-2 (KCNK5, construct called TASK-\u0394i20); cRNA injected into Xenopus oocytes and surface expression assayed by chemiluminescence after 48 h.",
+      "sources": [
+        {
+          "pmid": 26794006,
+          "citation": "PMID 26794006",
+          "claim": "A hemagglutinin (HA)-epitope (YPYDVPDYA), preceded and followed by a proline\u2013glycine\u2013glycine linker, was inserted in the extracellular P2-M4 loop of human TASK-\u0394i20 at amino acid position 214. cRNA of HA-tagged channels was injected into Xenopus oocytes and surface expression was analyzed after 48 h."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "KCNK5-snorkel-c",
       "gene_symbol": "KCNK5",
       "uniprot_acc": "O95279",
@@ -262,5 +299,12 @@
       "canonical_residue": 83,
       "left_pct": 16.533864541832667
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:50:46.954832+00:00",
+  "literature_notes": "L2 (PMC6724686) describes an HA tag in the P2-M4 interdomain of hK2P17.1 (TALK-2/TASK-4), a close K2P ortholog, using the same Friedreich et al. method as L1. Because L2 names no residue number for KCNK5 itself, it cannot pin an independent junction and does not add a second site; it corroborates the P2-M4 loop as a permissive region but is fully subsumed by L1. The first extracellular region (residues 27\u2013112, between TM1 and TM2) contains a cysteine at position 51 that likely participates in a conserved K2P disulfide; no ledger line reports a tag insertion there, so no site is proposed for that loop. The large intracellular C-terminal domain (residues 243\u2013499) is not an extracellular surface and is excluded. No ledger evidence supports any N-terminal or C-terminal extracellular tag for KCNK5.",
+  "literature_rejected": []
 }

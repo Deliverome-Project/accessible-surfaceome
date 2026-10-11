@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "CADM1",
+  "uniprot_acc": "Q9BY67",
+  "sites": [
+    {
+      "site_id": "CADM1-terminal_n-44-lit",
+      "gene_symbol": "CADM1",
+      "uniprot_acc": "Q9BY67",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 44,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G44",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "The HA-CADM1 construct and its F86S mutant were expressed via lentiviral transduction; surface display is implied by the experimental use of the tagged construct, but no explicit binding, adhesion, or trafficking assay result is reported for the tag itself in the cited clip.",
+      "confidence": "high",
+      "rationale": "CADM1 has a single-pass type-I topology with signal peptide 1\u201344 and a large extracellular domain (residues 45\u2013375). An N-terminal HA tag on a signal-peptide-bearing protein must be inserted between the last signal-peptide residue and the first mature residue (after G44, before Q45) to reach the cell surface; any upstream placement is cleaved. Python confirmed seq[43]='G' and seq[44]='Q'. Because the paper names only 'N-terminal' and there is exactly one extracellular terminus, the position is topology-derived rather than validated at a named residue. Full-length human CADM1 carrying an N-terminal HA tag (HA-CADM1) was cloned into a lentiviral expression vector (pLenti7.3-V5/DEST) and expressed in cells. The signal peptide spans residues 1\u201344; the mature N-terminus begins at residue 45 (Q). An N-terminal tag on a protein with a signal peptide must be inserted after the cleavage site (after residue 44) to survive to the cell surface \u2014 placement upstream would be cleaved off with the signal peptide. Because the paper names only 'N-terminal' and CADM1 has exactly one extracellular terminus (the mature N-terminus at residue 45), the junction is uniquely determined as insert_after_residue = 44.",
+      "sources": [
+        {
+          "pmid": 35213073,
+          "citation": "PMID 35213073",
+          "claim": "Human CADM1 with an N\u2010terminal HA tag (HA\u2010CADM1) 19 and its F86S mutant were inserted into pLenti7.3\u2010V5/DEST (Thermo Fisher Scientific, Waltham, MA, USA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:57:28.072685+00:00",
+  "literature_notes": "L2 and L3 both describe CFP inserted within the cytosolic tail of SynCAM 1 (CADM1) \u2014 explicitly intracellular, placed there to avoid interfering with extracellular interactions. L4 and L5 both describe a 2\u00d7FLAG tag inserted within the middle of the cytosolic sequence of SynCAM 1 (CADM1) in a transgenic mouse model \u2014 also explicitly intracellular. None of these qualify as extracellular surface-tag sites and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for CADM1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 397,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "CFP tag inserted within the cytosolic tail of SynCAM 1 (CADM1) to minimally interfere with extracellular interactions; intracellular region begins at residue 397 and the exact junction within the tail is not specified."
+    },
+    {
+      "residue": 397,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Two FLAG epitopes inserted within the middle of the cytosolic sequence of SynCAM 1 (CADM1) for transgenic expression; intracellular region begins at residue 397 and the exact junction within the tail is not specified."
+    }
+  ]
+}

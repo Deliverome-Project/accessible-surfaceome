@@ -224,5 +224,20 @@
       "canonical_residue": 230,
       "left_pct": 40.92526690391459
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:03:59.080290+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same N-terminal 8xHis-eGFP-3C fusion on full-length mouse OTOP2 expressed for electrophysiology. Per the authoritative topology landmarks, OTOP2 residues 1\u201329 are INTRACELLULAR; the first TM helix begins at residue 30. Therefore the N-terminal tag faces the cytoplasm, not the extracellular space, and does not qualify as an extracellular surface tag site. No other tag insertions are reported in the ledger for any extracellular loop or terminus of OTOP2 or a close ortholog. The six extracellular loops (EC 53\u201361, 124\u2013133, 190\u2013240, 310\u2013323, 390\u2013398, 514\u2013526) are entirely unsupported by any ledger insertion. Zero qualifying sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "8xHis-eGFP N-terminal fusion prepended before residue 1 of full-length mouse OTOP2 for electrophysiology; the N-terminus (residues 1\u201329) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    }
   ]
 }

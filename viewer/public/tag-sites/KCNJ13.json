@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNJ13",
+  "uniprot_acc": "O60928",
+  "sites": [
+    {
+      "site_id": "KCNJ13-internal-90-lit",
+      "gene_symbol": "KCNJ13",
+      "uniprot_acc": "O60928",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 90,
+      "residue_before": "D",
+      "residue_after": "A",
+      "residue_label": "D90",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface localisation confirmed by the design intent and use of the knock-in mouse for localisation studies; explicit electrophysiological functional assay not reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 and L2 both explicitly name the junction as between D90 and V91 in mouse Kir7.1, confirmed by sequencing. Python lookup of the human O60928 canonical sequence confirms D at position 90 and A at position 91 (a conservative V\u2192A species substitution at the residue immediately after the junction, which does not affect the junction itself). Position 90 sits 13 residues from the TM1 C-terminal boundary (77) and 45 residues from the TM2 N-terminal boundary (135), well within the extracellular span (78\u2013134) and safely beyond the \u22653-residue TM clearance requirement on both sides. CRISPR/Cas9 knock-in mouse (Kir7.1-HA) expressing endogenous mouse Kir7.1 with an HA epitope (G-YPYDVPDYA) inserted between residues D90 and V91 of the mouse sequence, confirmed by sequencing. The equivalent human junction is D90|A91 (mouse V91 is A91 in human O60928). The tag was placed in the predicted extracellular loop immediately after TM1, confirmed to face the extracellular surface.",
+      "sources": [
+        {
+          "pmid": 29740340,
+          "citation": "PMID 29740340",
+          "claim": "The chromatogram in Figure 2A shows that the HA tag was inserted in frame between residues D90 and V91 and rest of the channel open reading frame was identical to the known cDNA mouse sequence (NCBI Reference Sequence: NM_001110227.2 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:43:16.846207+00:00",
+  "literature_notes": "L3 and L4 are corroborating clips from the same paper (PMC5925607) confirming the extracellular topology and CRISPR knock-in strategy; L1 and L2 are the residue-pinning clips and L1 is cited as the primary supporting line. L5 and L6 (PMC10541187) describe GFP-tagged Kir7.1 constructs but do not state the position of the GFP tag, so they cannot be used to pin a junction and are excluded per the 'tag position unstated' rule. L7 (PMC13646276) reports a FLAG tag at the N-terminus and GFP/10\u00d7His at the C-terminus of full-length human Kir7.1; both termini are intracellular per the authoritative topology landmarks (N-terminus residues 1\u201354 intracellular, C-terminus residues 156\u2013360 intracellular), so neither qualifies as an extracellular surface tag site \u2014 they are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "FLAG tag placed at the N-terminus of full-length human Kir7.1; the N-terminus (residues 1\u201354) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 360,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "GFP and 10\u00d7His fused to the C-terminus of full-length human Kir7.1; the C-terminus (residues 156\u2013360) is intracellular per topology landmarks, so this tag also faces the cytoplasm."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "FCGRT",
+  "uniprot_acc": "P55899",
+  "sites": [
+    {
+      "site_id": "FCGRT-terminal_n-23-lit",
+      "gene_symbol": "FCGRT",
+      "uniprot_acc": "P55899",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "G",
+      "residue_after": "A",
+      "residue_label": "G23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "IgG transcytosis across MDCK monolayers preserved bidirectionally (L4); pH-dependent IgG endocytosis preserved in HMEC-1 cells (L7); surface expression confirmed by pulse-chase IgG loading (L3, L6). Full FcRn function retained with both HA (N-terminal) and EGFP (C-terminal) tags simultaneously present.",
+      "confidence": "high",
+      "rationale": "FCGRT is a type I single-pass membrane protein with a large extracellular ectodomain (residues 24\u2013299) and a short cytoplasmic tail. The only extracellular terminus is the mature N-terminus beginning at residue 24 (A), immediately after signal peptide cleavage at residue 23 (G). Multiple independent studies (L2, L5, L6, L7, L12, L13, L16) report HA or mCherry fused to this N-terminal lumenal position in full-length, membrane-anchored FcRn, with surface display and preserved IgG transport confirmed. Python verification confirms residue 23 = G and residue 24 = A, placing the junction 276 residues from the TM boundary \u2014 well within constraints. Full-length human FcRn heavy chain tagged with HA at the N-terminal lumenal domain and EGFP at the C-terminal cytoplasmic tail, stably expressed in MDCK cells (pcDNA3.1/HA-FcRn-EGFP). The HA epitope is placed on the extracellular (lumenal) N-terminus of the mature receptor. No specific residue number is named in the paper; the tag is described as fused to 'the N-terminus' of the heavy chain. FCGRT has exactly one extracellular terminus \u2014 the mature N-terminus after signal peptide cleavage at residue 23 \u2014 so the junction is unambiguously after residue 23 (G) and before residue 24 (A).",
+      "sources": [
+        {
+          "pmid": 19451275,
+          "citation": "PMID 19451275",
+          "claim": "We prepared MDCK cells stably coexpressing the human \u03b2 2 m and the FcRn heavy chain fused at the N terminus to the hemaglutinin epitope HA, with or without EGFP at the C terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:46:37.683550+00:00",
+  "literature_notes": "All ledger lines (L1\u2013L17) concern only two tag positions on full-length membrane-anchored FCGRT: (1) the N-terminal lumenal/extracellular face (HA, mCherry, GFP/mRFP \u2014 extracellular surface tag site, reported here) and (2) the C-terminal cytoplasmic tail (EGFP, GFP, mRFP, mCherry \u2014 intracellular, reported in other_positions). No internal extracellular loop insertions are reported in any ledger line. No residue number is ever named for the N-terminal tag; the junction is topology-derived as the sole extracellular terminus (after SP cleavage at residue 23). The C-terminal tag is well-validated for function but is intracellular and therefore not a surface tag site. L16 also mentions N-terminal mCherry but the C-terminal construct was selected for FLIM-FRET studies; both are captured. L8\u2013L11 describe GFP/mRFP at both termini in trafficking studies, reinforcing both positions without adding new sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 365,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP (with GSSGSS linker) fused to the cytoplasmic tail of full-length FcRn; IgG transcytosis fully preserved (L4), but this terminus is intracellular (residues 322\u2013365 are cytoplasmic) and is not accessible on the extracellular face."
+    }
+  ]
+}

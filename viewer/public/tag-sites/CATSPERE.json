@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CATSPERE",
+  "uniprot_acc": "Q5SY80",
+  "sites": [
+    {
+      "site_id": "CATSPERE-terminal_n-19-lit",
+      "gene_symbol": "CATSPERE",
+      "uniprot_acc": "Q5SY80",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip confirms extracellular placement but reports no functional or trafficking assay result for the tagged construct.",
+      "confidence": "medium",
+      "rationale": "CATSPER\u03b5 has a single TM domain (904\u2013924) with one extracellular terminus: the mature N-terminus beginning at residue 20. The signal peptide (1\u201319) is cleaved co-translationally, so a tag placed after residue 19 emerges on the extracellular face. Python confirmed residue 19 = A and residue 20 = L. The paper explicitly states the HA tag follows the native signal peptide and is extracellular; because no residue number is named, the position is topology-derived from the single available extracellular terminus. The construct is described as truncated but is a membrane-anchored transgene (not a secreted ectodomain), so the surface-display inference holds. HA tag engineered at the N-terminus after the native signal peptide in a truncated CATSPER\u03b5 transgene construct (Catspere-TG); the clip states the tag is positioned extracellularly. Signal peptide spans residues 1\u201319 (computed); insert_after_residue=19 is the unique extracellular terminus of this single-pass type I protein (extracellular 20\u2013903, TM 904\u2013924).",
+      "sources": [
+        {
+          "pmid": 41604475,
+          "citation": "PMID 41604475",
+          "claim": "Sequences encoding the native signaling peptide and HA tag are placed at the 5\u2032 region of the Catspere-TG sequences."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:02:01.065160+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It supports a single terminal_n site at the mature N-terminus (after signal peptide cleavage at residue 19). The construct is described as 'truncated' (Catspere-TG), which introduces some uncertainty about whether it is fully equivalent to the wild-type full-length protein, hence medium confidence. No residue number is named in the clip, so position_evidence is topology_derived. No intracellular insertions or function-abrogating positions are reported in the ledger.",
+  "literature_rejected": []
+}

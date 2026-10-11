@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PRND",
+  "uniprot_acc": "Q9UKY0",
+  "sites": [
+    {
+      "site_id": "PRND-terminal_n-25-lit",
+      "gene_symbol": "PRND",
+      "uniprot_acc": "Q9UKY0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "Q",
+      "residue_after": "T",
+      "residue_label": "Q25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Diagnostic N-glycosidase F and phosphatidylinositol-specific phospholipase C digestions confirmed the tagged protein retained N-glycosylation and GPI-anchor attachment, matching untagged Dpl. Surface display confirmed by pull-down from intact N2a cells.",
+      "confidence": "high",
+      "rationale": "L1 reports a FLAG tag inserted before residue 27 of mouse Dpl in a full-length, membrane-anchored construct. The topology landmarks for human PRND (UniProt canonical) place the signal peptide at 1-25 and the mature N-terminus at residue 26 (T); the authoritative instruction states an N-terminal tag goes after residue 25. Mouse Dpl residue 27 is the first or second mature residue depending on mouse SP length, but in either case the biological intent is the same: tag placed immediately after SP cleavage at the extracellular N-terminus. Python verification confirms residue 25 = Q and residue 26 = T. L2 and L3 corroborate surface display and functional integrity of the tagged construct. Full-length mouse Dpl expressed in pcDNA3 with a FLAG tag (DYKDDDDK) inserted before residue 27 of mouse Dpl (the mature N-terminus after the signal peptide). Stably expressed in mouse neuroblastoma N2a cells and used as bait in surface pull-down interactome experiments. The paper states the tag was inserted 'before residue 27 of mouse Dpl'; the topology landmarks for human PRND place the SP cleavage after residue 25, making insert_after_residue=25 the human canonical equivalent of the mouse junction.",
+      "sources": [
+        {
+          "pmid": 19798432,
+          "citation": "PMID 19798432",
+          "claim": "FLAG affinity tags (N-DYKDDDDK-C) were inserted before residue 29 of mouse PrP, residue 27 of mouse Dpl, and residue 26 of mouse Sho (all in the pcDNA3 mammalian expression vector) using standard PCR-based mutagenesis techniques."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:42:41.444515+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) concern the same construct and the same junction \u2014 the N-terminal FLAG tag on full-length mouse Dpl expressed in N2a cells. L1 pins the position ('before residue 27 of mouse Dpl'), L2 confirms stable surface expression, and L3 confirms biochemical integrity (N-glycosylation and GPI anchor preserved). The human PRND topology landmarks authoritatively place this junction at insert_after_residue=25 (between the last SP residue Q25 and the mature N-terminus T26). PRND is a GPI-anchored protein with no transmembrane domain; the entire mature ectodomain (residues 26-176) is extracellular, so there are no TM-proximity constraints. No other ledger lines support internal loop insertions or C-terminal sites. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

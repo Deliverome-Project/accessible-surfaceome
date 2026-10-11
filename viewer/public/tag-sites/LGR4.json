@@ -37,6 +37,44 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LGR4-terminal_n-24-lit",
+      "gene_symbol": "LGR4",
+      "uniprot_acc": "Q9BXB1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "A",
+      "residue_after": "A",
+      "residue_label": "A24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-based functionality test confirmed the 3HA\u2013LGR4\u2013FLAG construct retains receptor function (L2, PMC5602029).",
+      "confidence": "high",
+      "rationale": "The paper explicitly places the 3HA tag 'downstream [of the] signaling peptide', which by the topology landmarks ends at residue 24; the tag therefore sits between residue 24 (A) and residue 25 (A), the first residue of the 518-residue extracellular domain (span 25\u2013542). Python confirmed residue 24 = A and residue 25 = A. The site is 518 residues from TM1 (residue 543), far exceeding the \u22653-residue minimum. Functional validation is provided by the cell-based assay in L2, and endogenous-locus tolerance is confirmed by the knock-in in L3. Full-length human LGR4 was expressed as a membrane-anchored receptor with a 3HA tag inserted immediately downstream of the signal peptide (residues 1\u201324) and a FLAG tag at the intracellular C-terminus, in the pK-myc backbone (L1). The same 3HA tag was knocked into the endogenous mouse Lgr4 locus using a construct with homology arms flanking the tag sequence (L3). A cell-based functionality test of the tagged receptor was performed (L2).",
+      "sources": [
+        {
+          "pmid": 28634819,
+          "citation": "PMID 28634819",
+          "claim": "The 3HA\u2013LGR4\u2013FLAG construct encoding human LGR4 including N-terminal insertion of the 3HA tag (downstream signaling peptide) and with the FLAG tag at its C-terminus was generated in the pK-myc backbone (Valenta et al. 2006 ) using human LGR4 cDNA ( NM_018490 ; purchased from OriGene) and a site-directed mutagenesis kit (Stratagene)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 24,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +89,33 @@
       "canonical_residue": null,
       "left_pct": 2.8047464940668827,
       "note": "Isoform surface expr 243 (-96% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:06:28.852030+00:00",
+  "literature_notes": "L4 and L5 report LgBiT and GFP fused to the C-terminus of full-length LGR4. The topology landmarks place the C-terminus (residues 805\u2013951) in the intracellular compartment; these fusions are therefore not extracellular surface sites and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for LGR4.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 951,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag fused to the C-terminus of full-length LGR4; topology landmarks place residues 805\u2013951 in the intracellular compartment."
+    },
+    {
+      "residue": 951,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "LgBiT fragment fused to the C-terminus of full-length LGR4 for a NanoBiT proximity assay; C-terminus is intracellular (805\u2013951)."
+    },
+    {
+      "residue": 951,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "GFP fused to the C-terminus of full-length LGR4 for structural and cell-based studies; C-terminus is intracellular (805\u2013951)."
     }
   ]
 }

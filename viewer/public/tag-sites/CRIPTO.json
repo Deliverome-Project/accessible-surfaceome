@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CRIPTO",
+  "uniprot_acc": "P13385",
+  "sites": [
+    {
+      "site_id": "CRIPTO-terminal_n-30-lit",
+      "gene_symbol": "CRIPTO",
+      "uniprot_acc": "P13385",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 30,
+      "residue_before": "G",
+      "residue_after": "L",
+      "residue_label": "G30",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry in the context of a PGAP6-mediated GPI-AP shedding assay; tagged CRIPTO was shed from the cell surface by PGAP6, demonstrating it is correctly GPI-anchored and surface-localised. CRIPTO's own signalling function was not independently assayed in this study.",
+      "confidence": "high",
+      "rationale": "CRIPTO is a GPI-anchored protein (topology: signal 1\u201330, extracellular 31\u2013188, no TM helix), so the mature N-terminus after signal cleavage is the only extracellular terminus available for a surface tag. L1 explicitly describes a full-length human CRIPTO construct with an HA tag placed after the signal sequence at the N-terminus, stably expressed and detected on the HEK293T cell surface. Python confirms residue 30 is G and residue 31 is L, consistent with the signal-peptide boundary at position 30. No residue number is stated in the paper, so position_evidence is topology_derived rather than validated. Full-length human CRIPTO with an HA tag inserted after the signal sequence (residues 1\u201330) at the mature N-terminus was stably expressed in HEK293T cells (pME-pgkpuro-HA-CR1 construct). The same N-terminal HA-after-signal-sequence strategy was applied to a panel of human GPI-APs including CRIPTO using a CD59 signal sequence plus HA tag vector (L3). CRIPTO is a GPI-anchored protein with no TM domain; the mature N-terminus (residue 31) is the sole extracellular terminus, making insert_after_residue=30 the unique valid junction.",
+      "sources": [
+        {
+          "pmid": 32816994,
+          "citation": "PMID 32816994",
+          "claim": "HEK293TcellsstablyexpressingHA-taggedCRIPTOwere established by transfection of linearized pME-pgkpuro-HACR1 and cultured in Dulbecco \u2019 s modified Eagle \u2019 s medium containing 10% fetal calf serum and 10 m g/ml puromycin as describedbefore(9).TopreparepME-pgkpuro-HA-CR1,we obtained human CRIPTO cDNA (Kazusa DNA Research Institute, Kisarazu, Japan) and cloned it into a mammalian expression plasmid pME bearing puromycin resistance gene and a segment of signal sequence plus HA tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:03:33.460178+00:00",
+  "literature_notes": "L2 describes HA-tagged human CRYPTIC (CFC1, a paralog), not CRIPTO itself, tagged by the same N-terminal after-signal strategy; it corroborates the approach but L1 already directly covers CRIPTO, so L2 does not add a second independent site. L3 describes the same CRIPTO construct as L1 (N-terminal HA after CD59 signal sequence) and was used as corroborating evidence but is not a separate site. No ledger line names an internal loop insertion or a C-terminal tag for CRIPTO; the GPI anchor occupies the C-terminus (residues ~163\u2013188 are the GPI-attachment signal), so a C-terminal surface tag is not supported by the ledger and would in any case be cleaved with the GPI signal. Only one site is reported.",
+  "literature_rejected": []
+}

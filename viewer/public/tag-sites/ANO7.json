@@ -362,5 +362,20 @@
       "canonical_residue": 814,
       "left_pct": 90.2547065337763
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:25:35.265455+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the identical construct: a Myc epitope tag appended to the carboxyl terminus of NGEP-L (ANO7 long form, 933 aa). The topology landmarks place the C-terminal tail (residues 873\u2013933) in the intracellular compartment; the last transmembrane helix ends at residue 872. A C-terminal Myc tag on this protein therefore faces the cytoplasm, not the extracellular space. Per the rules, an intracellular terminus tag does not qualify for `sites` unless it is an explicit validated snorkel \u2014 no such claim is made in any ledger line. The four extracellular loops/regions (377\u2013416, 522\u2013543, 609\u2013710, 785\u2013851) are not addressed by any ledger line with a tolerated insertion. No ledger line supports any extracellular surface tag site; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 933,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Myc epitope tag placed at the carboxyl terminus of NGEP-L (ANO7); the C-terminus (residues 873\u2013933) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    }
   ]
 }

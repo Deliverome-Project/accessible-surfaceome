@@ -393,24 +393,30 @@
       "residue_after": "A",
       "residue_label": "T21",
       "topology_state": "O",
-      "extracellular": false,
-      "compartment": "O",
-      "tag_type": "ALFA",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "LgBiT",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Cell-surface biotinylation and western blot confirmed CD320-FLAG on the cell surface of HEK293 and HepG2 cells. Vitamin B12 uptake function of the tagged construct was not measured in isolation.",
-      "confidence": "medium",
-      "rationale": "CD320 shares the LDLR-like repeat architecture with LDLR. An N-terminal FLAG tag after the signal peptide was confirmed on the cell surface by biotinylation, providing indirect support for the same approach in LDLR. A GS linker between the tag and A22 is recommended to avoid steric clash with the first disulfide-bonded LDL-binding repeat beginning at C27. [validation: surface_only; position: inferred; source: paper; entailment_verified: False]",
+      "functional_impact_measured": "L3: PCSK9-LDLR binding assay performed with LgBiT-LDLR stably expressed on HEK293 cell surface \u2014 binding detected, construct functional for PCSK9 engagement. L6: flow cytometry confirmed surface display of moxGFP-LDLR in transfected cells.",
+      "confidence": "high",
+      "rationale": "LDLR is a single-pass type-I receptor with signal peptide (residues 1\u201321), a large extracellular domain (22\u2013789), a single TM helix (790\u2013810), and an intracellular tail (811\u2013860). The only extracellular terminus is the mature N-terminus at residue 22 (Ala), placing the tag junction unambiguously after residue 21 (Thr, last SP residue). Python verification confirms residue 21 = T and residue 22 = A. L3 demonstrates the construct is surface-displayed and functionally competent for PCSK9 binding; L6 independently corroborates surface expression with a different tag (moxGFP). The tag must be placed after the SP cleavage site (after residue 21) to avoid co-translational cleavage. Full-length human LDLR with LgBiT fused to its N-terminus was stably expressed in HEK293 cells and used in a PCSK9-LDLR cell-surface binding assay (L3). A second study (L6) independently fused moxGFP to the N-terminus of full-length LDLR and confirmed surface expression by flow cytometry. Neither paper names a specific residue number for the junction; however, LDLR has exactly one extracellular terminus \u2014 the mature N-terminus after signal-peptide cleavage at residue 21/22 \u2014 so the junction is unambiguously insert_after_residue=21.",
       "sources": [
         {
-          "pmid": 39551142,
-          "citation": "PMID 39551142"
+          "pmid": 28611099,
+          "citation": "PMID 28611099",
+          "claim": "For the PCSK9-LDLR binding assay, LgBiT is fused to the N-terminus of LDLR and stably expressed in HEK293 cells."
         }
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -2912,6 +2918,21 @@
       "isoform_residue": 94,
       "canonical_residue": 135,
       "left_pct": 11.449451887941535
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:07:31.564935+00:00",
+  "literature_notes": "L1 and L2 both describe a C-terminal FLAG-tagged full-length LDLR expressed in HepG2 cells; the C-terminus (residue 860) falls within the intracellular domain (811\u2013860) and is therefore not an extracellular surface site \u2014 recorded in other_positions. L4 and L5 reference a FLAG-tagged WT LDLR plasmid used as a mutagenesis backbone, but neither paper states the position of the FLAG tag; per the rules a construct whose tag position is unstated cannot be pinned and does not qualify. L6 independently corroborates the N-terminal junction supported by L3 and is noted in evidence_detail of that site; it is not listed as a separate site because it pins the same unique junction.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 860,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag appended after residue 860 (Ala), which lies within the intracellular domain (residues 811\u2013860); tolerated and detected by anti-FLAG immunostaining and antibody-based proteolytic-cleavage assays in HepG2 cells, but not accessible on the extracellular face."
     }
   ]
 }

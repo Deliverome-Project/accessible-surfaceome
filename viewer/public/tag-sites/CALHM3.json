@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CALHM3",
+  "uniprot_acc": "Q86XJ0",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:59:17.981174+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe C-terminal GFP or 3\u00d7FLAG fusions of full-length CALHM3. The authoritative topology places the C-terminus (residue 344) within the intracellular span (199\u2013344); a C-terminal fusion therefore faces the cytoplasm, not the extracellular surface. No ledger line reports any tag insertion in either extracellular loop (EC1: 32\u201349, 18 residues between TM1 and TM2; EC2: 120\u2013177, 58 residues between TM3 and TM4), nor at the N-terminus (1\u201310, also intracellular). The N-terminus is likewise intracellular (1\u201310), so a prepend tag would also face the cytoplasm. Because the ledger contains no evidence of a tag placed on the extracellular face of CALHM3, zero surface tag sites are reported. The C-terminal fusion site is recorded in other_positions as intracellular.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 344,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal GFP and 3\u00d7FLAG fusions (pEGFP-N1 / p3\u00d7FLAG) are appended after residue 344, which lies in the intracellular C-terminal domain (199\u2013344); the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

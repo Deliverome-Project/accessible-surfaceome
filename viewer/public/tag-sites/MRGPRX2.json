@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MRGPRX2-terminal_n-0-lit",
+      "gene_symbol": "MRGPRX2",
+      "uniprot_acc": "Q96LB1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "PMC13266011 (L2): receptor used as membrane-anchored, surface-displayed construct for MRGPRX2 signaling studies; surface display confirmed. PMC9150435 (L1): full-length receptor purified from insect-cell membranes for structural (cryo-EM) studies, confirming membrane integration.",
+      "confidence": "high",
+      "rationale": "MRGPRX2 is a GPCR with no endogenous signal peptide; the N-terminus (residues 1\u201331, EC1) is the sole extracellular terminus, and the C-terminus (residues 284\u2013330, IC4) is intracellular. Both L1 and L2/L3 describe constructs in which an exogenous HAss drives a FLAG tag to the extracellular N-terminus; after HAss cleavage the FLAG sits immediately before residue M1, giving insert_after_residue = 0. No residue number is named in either quote, but exactly one extracellular terminus exists, so the junction is topology-derived. The tag position is 31 residues from TM1 (starts at 32), well above the \u22653-residue minimum. Full-length human MRGPRX2 expressed as HAss-FLAG-MRGPRX2 in pcDNA3.1 in mammalian cells (PMC13266011; L2/L3); independently replicated as HAss-FLAG-His10-TEV-MRGPRX2 in pFastBac1 for insect-cell expression (PMC9150435; L1). In both constructs an exogenous HA signal peptide drives the FLAG tag to the extracellular face; the HAss is cleaved post-translationally, leaving FLAG displayed at the receptor N-terminus.",
+      "sources": [
+        {
+          "pmid": 42107641,
+          "citation": "PMID 42107641",
+          "claim": "WT human MRGPRX2 with an N-terminal hemagglutinin signal sequence (\u201cHAss\u201d) followed by a FLAG tag was PCR amplified from the MRGPRX2 TANGO plasmid ( 73 ) (Addgene plasmid 66440), adding a stop codon following the MRGPRX2 coding sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:50:49.002188+00:00",
+  "literature_notes": "L4 (GeneCopoeia commercial plasmid, pReceiver-MO6) was excluded because the tag position is unstated \u2014 the rules explicitly disqualify commercial plasmids with no pinned insert site. L5 (PMC9273857) reports surface vs. total expression of an HA-tagged MRGPRX2 but names no residue and does not describe the construct design; it adds no independent position information and was not used. L6 (PMC13035742) describes a MRGPRX2-HA construct (C-terminal HA by naming convention) used for immunoprecipitation and phosphorylation studies; the C-terminus falls in IC4 (residues 284\u2013330, intracellular) and is therefore not a surface tag site \u2014 recorded in other_positions. L1 and L2/L3 both support the same N-terminal prepend junction; a single site is reported (ranked by best functional evidence, L2) rather than two, because both papers pin the identical junction.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 330,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "MRGPRX2-HA construct used for immunoprecipitation and phospho-Ser327/Ser328 detection; the C-terminus (IC4, residues 284\u2013330) is intracellular, so this HA tag is cytoplasmic and not a surface tag site."
+    }
+  ]
 }

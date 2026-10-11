@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHA2",
+  "uniprot_acc": "Q9Y5H9",
+  "sites": [
+    {
+      "site_id": "PCDHA2-internal-None-lit",
+      "gene_symbol": "PCDHA2",
+      "uniprot_acc": "Q9Y5H9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "stalk EC6-TM",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by fluorescent anti-Myc antibody staining of live transfected cells (cell periphery and cell\u2013cell junctions stained); no functional assay of the tagged construct reported beyond surface localization.",
+      "confidence": "medium",
+      "rationale": "L1 (and independently L2) explicitly state that the Myc tag was placed in the stalk region between EC6 and the transmembrane helix of full-length membrane-anchored cPCDH constructs, and that surface display was confirmed by antibody staining. For PCDHA2, the topology landmarks place the extracellular domain at 23\u2013697 and TM at 698\u2013720, so the stalk region is approximately residues 661\u2013697. No specific residue number is given in any ledger line, so insert_after_residue is null and the site is reported at region level. The evidence is indirect because the published constructs are gamma-subfamily cPCDH (\u03b3C3), not PCDHA2 alpha, though both share identical domain architecture. Full-length membrane-anchored cPCDH constructs (including gamma-C3, a clustered protocadherin sharing the EC1\u2013EC6 + stalk + TM architecture with PCDHA2) were engineered with a Myc tag in the stalk region between EC6 and the transmembrane helix. Anti-Myc antibody staining of transfected cells confirmed extracellular surface display of the tagged construct.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "For derived constructs including the myc tag, the tag was positioned in the stalk region between EC6 and the transmembrane helix ( Figure S1A ), equivalently to previously validated constructs ( 21 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:19:55.850358+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) converge on a single experimental finding: a Myc tag in the stalk region between EC6 and TM of clustered protocadherin constructs, validated for surface display. L1 and L2 are the most position-informative (naming the stalk region explicitly); L3\u2013L6 corroborate surface display. No ledger line names a specific residue, so only a region-level site can be reported. The evidence is indirect for PCDHA2 specifically (the published constructs are gamma-C3, a different cPCDH subfamily member), but the stalk-region tagging strategy is described as equivalent across cPCDH constructs. No ledger evidence supports any other extracellular site (e.g., N-terminus after signal peptide cleavage, or any EC1\u2013EC5 loop) for this protein.",
+  "literature_rejected": []
+}

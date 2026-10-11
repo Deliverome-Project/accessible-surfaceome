@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "AGTR2-terminal_n-0-lit",
+      "gene_symbol": "AGTR2",
+      "uniprot_acc": "P50052",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (NHA construct)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA western blot and flow cytometry (L7). Membrane expression confirmed by immunofluorescence in HEK293 cells for rat ortholog N-terminal Myc/HA constructs (L3). Receptor used in RUSH trafficking assays monitoring surface delivery (L5). Signaling function not explicitly assayed in these clips.",
+      "confidence": "high",
+      "rationale": "AGTR2 has no signal peptide (residue 1 is Met, the mature N-terminus), so the extracellular N-terminal domain (residues 1\u201345, 45 aa from TM1) is the only extracellular terminus available for a prepended tag. The 'NHA' nomenclature in L7 unambiguously encodes an N-terminal HA tag on full-length human AT2R, and surface detection by anti-HA antibody confirms the tag is accessible on the cell surface. Because no specific residue number is named in any clip, the position is topology-derived: insert_after_residue = 0 is the sole valid junction for an N-terminal prepend on a signal-peptide-free GPCR. The rat AT2R N-terminal Myc/HA data (L1/L3/L4) and the 3HA human AT2R trafficking data (L5) independently corroborate this site. L7 (PMC6770525): adenoviral AdNHA-AT2R construct expresses full-length human AT2R with an N-terminal HA tag ('NHA' = N-terminal HA) in MDA-MB-231 cells; surface presence confirmed by anti-HA western blot and flow cytometry. L1/L3/L4 (PMC3466278) independently report N-terminal Myc- and HA-tagged rat AT2R (close ortholog, ~92% identity) with confirmed membrane expression in HEK293 cells. L5 (PMC10551652) reports a 3HA-tagged human AT2R used in RUSH trafficking assays.",
+      "sources": [
+        {
+          "pmid": 31484460,
+          "citation": "PMID 31484460",
+          "claim": "So, we overexpressed AT2R in these cells using an adenovirus encoding AT2R (AdNHA-AT2R), which contained a bicistronic vector that permits co-expression of both the angiotensin receptor coupled to an HA-tag and the green fluorescent protein (GFP) [ 24 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:22:29.385176+00:00",
+  "literature_notes": "Four ledger lines (L1, L2, L3, L4) describe C-terminal GFP and FLAG tags on rat AT2R; these are placed after residue 363, which falls in the intracellular C-tail (IC 319\u2013363) and therefore do not qualify as extracellular surface-tag sites \u2014 they are recorded in other_positions. No ledger line reports a tag insertion in any of the four extracellular loops (ECL1 103\u2013119, ECL2 180\u2013208, ECL3 279\u2013297) at a named residue, so no internal loop site is proposed. L5 and L6 describe 3HA-tagged human AT2R constructs used in RUSH assays but do not specify the tag position by residue; given L7's explicit 'NHA' nomenclature and the standard GPCR N-terminal tagging convention, these are treated as additional support for the N-terminal site rather than independent sites. No ledger line supports any insertion in ECL1, ECL2, or ECL3 of AGTR2 or a close ortholog.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 363,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG and GFP tags on rat AT2R (L1/L2/L3/L4) are appended after the last residue (S363), which lies in the intracellular C-tail (IC 319\u2013363); these are valid intracellular labels but not extracellular surface-tag sites."
+    }
+  ]
 }

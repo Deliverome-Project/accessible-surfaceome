@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "MCAM",
+  "uniprot_acc": "P43121",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:38:25.143228+00:00",
+  "literature_notes": "Four ledger lines were evaluated. L1, L2, and L3 all describe the same MCAM-BirA*-HA construct, in which BirA* and HA are fused to the C-terminus of full-length MCAM. Per the authoritative topology landmarks, the C-terminus of MCAM (residues 581\u2013646) is intracellular; this tag therefore faces the cytoplasm and cannot serve as an extracellular surface tag. The construct is well-validated (stable expression confirmed by Western blot in L2; correct membrane localisation confirmed by confocal imaging in L3), so it is recorded in other_positions. L4 describes full-length CD146 (MCAM) bearing either a FLAG or Myc tag used for co-immunoprecipitation, but no tag position is stated \u2014 no residue number, no loop name, and no terminus is identified. The rules explicitly disqualify constructs whose tag position is unstated. No ledger line reports a tolerated insertion at any extracellular position of MCAM; sites is therefore empty, which is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 646,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "BirA*-HA fused to the C-terminus of full-length MCAM; the C-terminus (residues 581\u2013646) is intracellular per topology landmarks, so this tag is cytoplasmic, not extracellular. Construct confirmed expressed (L2) and correctly localised (L3)."
+    }
+  ]
+}

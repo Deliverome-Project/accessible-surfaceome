@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADCY8",
+  "uniprot_acc": "P40145",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:05:17.860059+00:00",
+  "literature_notes": "All four ledger lines were examined. L2/L3 report a YFP fusion at the N-terminus of AC8 (pEYFP-C1 places YFP before residue 1); the topology landmark places residues 1\u2013181 in the cytoplasm, so this tag is intracellular and does not qualify as a surface site. L4 reports a C-terminal 3C-YFP-TwinStrep on bovine AC8; the topology landmark places residues 915\u20131251 in the cytoplasm, so this tag is also intracellular. L1 reports an HA tag 'engineered into AC8' with no residue number, no loop name, and no other landmark that would uniquely identify the junction; ADCY8 has six distinct extracellular loops (ECL1 203\u2013211, ECL2 266, ECL3 311\u2013320, ECL4 734\u2013740, ECL5 807\u2013832, ECL6 874\u2013898), so the topology-derived rule (exactly one extracellular terminus) does not apply and the position cannot be pinned. No ledger line supports a pinnable extracellular tag site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "YFP fused to the N-terminus of AC8 via pEYFP-C1; topology places residues 1\u2013181 in the cytoplasm, so this tag faces the cytoplasm, not the extracellular space."
+    },
+    {
+      "residue": 1251,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "3C-YFP-TwinStrep fused to the C-terminus of bovine AC8; topology places residues 915\u20131251 in the cytoplasm, so this tag faces the cytoplasm, not the extracellular space."
+    }
+  ]
+}

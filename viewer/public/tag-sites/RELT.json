@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "RELT",
+  "uniprot_acc": "Q969Z4",
+  "sites": [
+    {
+      "site_id": "RELT-terminal_n-25-lit",
+      "gene_symbol": "RELT",
+      "uniprot_acc": "Q969Z4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "T",
+      "residue_after": "S",
+      "residue_label": "T25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation and functional assays performed with HA-RELT construct; construct is expressed and functional in these assays.",
+      "confidence": "medium",
+      "rationale": "RELT is a type I single-pass transmembrane protein: signal peptide spans residues 1\u201325, the ectodomain spans 26\u2013164, the TM helix 165\u2013185, and the cytoplasmic tail 186\u2013430. The C-terminus (residue 430) is therefore intracellular, leaving exactly ONE extracellular terminus \u2014 the mature N-terminus beginning at residue 26. The 'HA-RELT' naming convention (prefix) is consistent with an N-terminal HA tag placed after signal-peptide cleavage, i.e., after residue 25 (T) and before residue 26 (S), confirmed by reading the numbered sequence. Python computation confirms residue 25 = T and residue 26 = S, and that this junction is 139 residues from the TM boundary \u2014 well clear of the \u22653-residue minimum. Because no residue is named in either ledger clip, the position is topology_derived. L2 reports a full-length, membrane-anchored HA-RELT expression plasmid used in co-immunoprecipitation and functional assays; L1 uses the same HA-RELT backbone for a mutagenesis study. Neither clip states the residue at which the HA tag is inserted.",
+      "sources": [
+        {
+          "pmid": 39767574,
+          "citation": "PMID 39767574",
+          "claim": "The expression plasmid constructs for HA-RELT, HA-RELL1, Flag-RELL1, HA-RELL2, Flag-RELL2, Flag-OXSR1 (OSR1), and the Flag-OXSR1 K46M mutant construct were described previously [ 9 , 22 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:58:12.048955+00:00",
+  "literature_notes": "L1 describes a site-directed mutagenesis study converting RFRV\u2192RARA at amino acids 349\u2013352 of the intracellular domain (confirmed intracellular: all four residues fall within the 186\u2013430 cytoplasmic span). This is a point-mutation functional study, not a tag-insertion experiment, so it does not qualify as a surface tag site and does not belong in other_positions. The ledger contains only two clips, both from the same paper (PMC11727564), and neither pins the HA tag to a specific residue or loop \u2014 only the construct name and topology allow the junction to be derived. Confidence is medium rather than high because the tag position is inferred from naming convention plus topology, not stated explicitly.",
+  "literature_rejected": []
+}

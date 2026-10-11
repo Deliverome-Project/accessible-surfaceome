@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD244",
+  "uniprot_acc": "Q9BZW8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:11:35.850386+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the identical construct: full-length mouse 2B4 with EGFP fused to its C-terminus (2B4-EGFP), expressed retrovirally in primary T cells. CD244 is a type I single-pass transmembrane protein (extracellular 22\u2013226, TM 227\u2013248, intracellular 249\u2013370). The C-terminus (residue 370) is therefore intracellular; the EGFP fusion is a cytoplasmic tag, not an extracellular surface tag. The construct is functionally validated \u2014 surface localisation confirmed by imaging, CD48-dependent microcluster formation preserved \u2014 but none of this constitutes evidence for an extracellular insertion. No ledger line reports any tag at the mature N-terminus (residue 22), in any extracellular loop, or anywhere in the ectodomain (22\u2013226). Because the ledger contains no qualifying extracellular insertion, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 370,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion on full-length mouse 2B4; tag is tolerated (surface expression and CD48-dependent microcluster formation confirmed) but the C-terminus lies in the intracellular domain (residues 249\u2013370) and is not accessible on the extracellular face."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "CA9",
+  "uniprot_acc": "Q16790",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:52:32.180702+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe a BirA* biotin-ligase fused to the C-terminus of full-length CA9. Per the authoritative topology landmarks, the C-terminus (residues 436\u2013459) is intracellular; the tag therefore faces the cytoplasm, not the extracellular space. The FACS result in L2 confirms robust surface trafficking of the full-length fusion protein but does not place the tag on the extracellular face. No ledger line reports any insertion in the extracellular domain (residues 38\u2013414) or at the mature N-terminus (residue 38). Because the ledger contains no evidence of a tolerated tag on the extracellular face, zero sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 459,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "BirA* fused to the C-terminus of full-length CA9; the C-terminal tail (residues 436\u2013459) is intracellular per topology landmarks, so this fusion faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

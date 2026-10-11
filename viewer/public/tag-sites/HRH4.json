@@ -37,7 +37,70 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HRH4-terminal_n-0-lit",
+      "gene_symbol": "HRH4",
+      "uniprot_acc": "Q9H3N8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface expression confirmed by flow cytometry; Gi-coupling activity confirmed by NanoBiT-G protein dissociation assay (L11, PMC12205060)",
+      "confidence": "high",
+      "rationale": "H4R has no endogenous signal peptide; EC1 (residues 1-15) is directly extracellular. All N-terminal tags in the ledger use exogenous signal peptides that are cleaved, placing the tag before M1 (insert_after_residue=0). L10 explicitly describes FLAG at the N-terminus of full-length H4R; L11 from the same paper confirms cell-surface expression by flow cytometry and Gi-coupling by NanoBiT assay, providing surface_and_function validation. The position is topology-derived because no residue number is named for the junction, but exactly one extracellular terminus exists on this type-I GPCR topology. Full-length human H4R subcloned with N-terminal HA signal peptide followed by FLAG-tag (DYKDDDDK) and C-terminal EGFP-His8, expressed in insect cells; the exogenous HA signal peptide is cleaved, leaving the FLAG tag displayed at the extracellular N-terminus before M1. H4R has no endogenous signal peptide, so EC1 (residues 1-15) is the extracellular N-terminus.",
+      "sources": [
+        {
+          "pmid": 40579541,
+          "citation": "PMID 40579541",
+          "claim": "The human H 4 R gene was subcloned into a modified pFastBac vector 48 , with an N-terminal haemagglutinin signal peptide followed by the Flag-tag epitope (DYKDDDDK) and a C-terminal GS linker (15 amino acids) followed by Human Rhinovirus (HRV) 3 C protease recognition site and an EGFP-His 8 tag 50 ."
+        },
+        {
+          "pmid": 39333117,
+          "citation": "PMID 39333117",
+          "claim": "One copy of BN for H1R and H3R, and two copies for H2R and H4R were fused at the N-terminus of the receptors with a TEV protease cleavage site."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:03:58.993120+00:00",
+  "literature_notes": "All ledger lines reporting N-terminal tags (L1, L2, L3, L4, L6, L8, L9, L10) converge on the same position: a prepend before M1 (insert_after_residue=0), using exogenous signal peptides that are cleaved to display the tag extracellularly. H4R has no endogenous signal peptide (EC1 residues 1-15 are directly extracellular). The two sites reported here differ only in tag type (FLAG vs. BN), both at the same junction; L10+L11 provide the highest validation (surface_and_function). No ledger line reports any insertion in the extracellular loops EC2 (74-87), EC3 (154-172), or EC4 (326-341). The bRIL insertion (L1) is an ICL3 replacement (intracellular, 196-304) and not a surface site. The ICL3 truncation in L2 is likewise intracellular. C-terminal tags (L5, L7, L12) are intracellular (IC4: 362-390) and recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 378,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "LgBiT fused at C-terminus after Q378 truncation; IC4 (362-390) is intracellular, so this is a cytoplasmic C-terminal tag, not a surface site."
+    },
+    {
+      "residue": 390,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "LgBiT attached to the C-terminus of H4R (residue 390) as part of NanoBiT tethering system; IC4 (362-390) is intracellular."
+    }
+  ]
 }

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR10J5-terminal_n-0-lit",
+      "gene_symbol": "OR10J5",
+      "uniprot_acc": "Q8NHC4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (within LucyFlagRho)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Confocal imaging with anti-FLAG antibody confirmed cell-surface localization (L3); flow cytometry confirmed surface expression (L4); odorant-induced functional assays (cAMP/calcium signaling) were performed in the same transfected Hana3A cells (L2), indicating the tagged receptor is functional at the surface.",
+      "confidence": "high",
+      "rationale": "The LucyFlagRho system places FLAG extracellularly by prepending an exogenous cleavable SP + FLAG + Rho before OR10J5 residue 1 (M); after SP cleavage the FLAG epitope is the first extracellular element. OR10J5 residues 1\u201324 are extracellular and TM1 begins at residue 25, so the prepended tag is at least 24 residues from any TM boundary. The paper names no residue number, but because OR10J5 has no endogenous SP and only one extracellular terminus, insert_after_residue = 0 is the unique solution. Python verification confirms residue 1 = M and residue 24 = Q (last extracellular before TM1). OR10J5 was expressed as a LucyFlagRho-OR-pCI construct in Hana3A cells co-transfected with RTP1S. The construct prepends a 17-aa leucine-rich cleavable signal peptide (MRPQILLLLALLTLGLA) followed by FLAG and Rho sequences to the N-terminus of OR10J5. After signal-peptide cleavage, FLAG is exposed on the extracellular face. No specific residue number is named; the position is derived from the fact that OR10J5 has no endogenous signal peptide and its N-terminus (residues 1\u201324) is extracellular per topology, leaving exactly one extracellular terminus for this prepend-style tag.",
+      "sources": [
+        {
+          "pmid": 28842679,
+          "citation": "PMID 28842679",
+          "claim": "To promote surface expression of ORs, a leucine-rich 17-amino acid cleavable signal peptide (MRPQILLLLALLTLGLA) was followed by the FlAG and Rho sequences at the N-terminus of ORs, according with the method of Shepard et al . 48 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:29:34.019946+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same construct and the same site. L1 describes the tag architecture; L2 the transfection system; L3 confocal surface confirmation; L4 flow-cytometry surface confirmation. No ledger line supports any internal extracellular loop insertion for OR10J5. The extracellular loops ECL1 (83\u201397), ECL2 (167\u2013195), and ECL3 (260\u2013270) are not addressed by any ledger line and are therefore not proposed as sites. The Rho sequence in the LucyFlagRho tag is a trafficking aid (first ~20 aa of bovine rhodopsin) and is not itself a short epitope tag; the FLAG portion is the epitope. The tag size (FLAG 8 aa + Rho ~20 aa) slightly exceeds the 13\u201323 aa window but the FLAG epitope alone (8 aa) is within range; the construct is reported as tolerated and functional.",
+  "literature_rejected": []
 }

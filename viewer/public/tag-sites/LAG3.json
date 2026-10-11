@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "LAG3",
+  "uniprot_acc": "P18627",
+  "sites": [
+    {
+      "site_id": "LAG3-terminal_n-22-lit",
+      "gene_symbol": "LAG3",
+      "uniprot_acc": "P18627",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "P",
+      "residue_after": "L",
+      "residue_label": "P22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by shedding assay; LAG-3 shedding was induced and detected, demonstrating the tagged construct reaches the cell surface. Functional equivalence to untagged LAG-3 NOT MEASURED explicitly.",
+      "confidence": "medium",
+      "rationale": "LAG3 is a type I transmembrane protein with a signal peptide spanning residues 1\u201322 and a single extracellular N-terminus beginning at residue 23. The ledger names no residue for the FLAG tag, but there is exactly ONE extracellular terminus available (the mature N-terminus after SP cleavage), making the junction topology_derived at insert_after_residue=22. Placing the tag upstream of residue 22 would embed it in the signal peptide and result in co-translational cleavage; the junction after residue 22 (P) and before residue 23 (L) is the only position consistent with confirmed surface display. Computed distance from TM boundary (residue 450) is 428 residues, well clear of any steric constraint. Full-length FLAG-tagged LAG-3 stably transduced into HEK293T, HeLa, and Jurkat T cells; surface expression confirmed by induced LAG-3 shedding assay (Figure S1). No residue is named in the ledger clip.",
+      "sources": [
+        {
+          "pmid": 41756920,
+          "citation": "PMID 41756920",
+          "claim": "To evaluate induced LAG-3 shedding, we stably transduced HEK293T, HeLa, and Jurkat T cells with FLAG-tagged LAG-3 ( Figure S1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:04:17.281352+00:00",
+  "literature_notes": "L2 and L3 both describe an LAG3-EGFP fusion construct (protein named first, FP named second = C-terminal fusion). LAG3's C-terminus lies in the intracellular domain (residues 472\u2013525 per topology landmarks), so the EGFP is on the cytoplasmic face and does not qualify as an extracellular surface tag site. It is recorded in other_positions. No ledger line names an internal extracellular loop residue for any insertion in LAG3, so no internal sites are proposed. The FLAG-tag site (L1) is topology_derived because the clip confirms surface expression of the full-length tagged construct but does not state the junction residue; the mature N-terminus (after residue 22) is the sole extracellular terminus and is therefore the only position consistent with the observation.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 525,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "LAG3-EGFP fusion (C-terminal EGFP) stably expressed in HEK-293T; EGFP appended after the last residue of the intracellular tail (residue 525), confirmed on cell surface by anti-LAG-3 sdAb flow cytometry (L3), but the fusion tag itself faces the cytoplasm and is not an extracellular surface tag."
+    }
+  ]
+}

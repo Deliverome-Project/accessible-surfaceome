@@ -37,7 +37,77 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CHRM5-terminal_n-0-lit",
+      "gene_symbol": "CHRM5",
+      "uniprot_acc": "P08912",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Receptor was functional and trafficked to the cell surface; used successfully for cryo-EM structure determination and radioligand binding assays confirming agonist/antagonist pharmacology consistent with wild-type M5.",
+      "confidence": "high",
+      "rationale": "The ledger (L1/L2/L3/L4) reports an anti-FLAG tag added to the N-terminus of the full-length, membrane-anchored M5 mAChR. The canonical topology places residues 1\u201329 extracellular with TM1 beginning at residue 30; a prepend (insert_after_residue=0) places the tag 30 residues from the TM1 boundary, well above the \u22653-residue minimum. No specific junction residue is named in the paper, but the N-terminus is the only extracellular terminus of a GPCR and the only location consistent with the description; position is therefore topology-derived. The exogenous HA signal sequence drives surface trafficking and is cleaved, leaving the FLAG tag exposed on the extracellular face. Modified full-length M5 mAChR construct used for cryo-EM structural and functional studies: ICL3 residues 237\u2013421 removed, exogenous HA signal sequence added, and anti-FLAG epitope tag incorporated at the N-terminus. Construct expressed in mammalian cells and used for receptor pharmacology and structure determination.",
+      "sources": [
+        {
+          "pmid": 39975287,
+          "citation": "PMID 39975287",
+          "claim": "A modified M 5 mAChR construct was used where residues 237\u2013421 of ICL3 were removed and HA signal sequence and anti-Flag epitope tag were added to the N terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:35:31.508257+00:00",
+  "literature_notes": "L1, L2, L3, and L4 all describe the same N-terminal FLAG-tagged M5 construct (two papers citing the same engineering strategy); L1 is used as the primary supporting clip. L5 describes a T4 lysozyme insertion replacing ICL3 residues 225\u2013430, which is entirely within the large intracellular loop 3 (topology: 215\u2013443 intracellular) and therefore does not qualify as a surface tag site. The ICL3 deletion (residues 237\u2013421) in L1\u2013L4 is likewise intracellular and is recorded in other_positions. No ledger line supports an insertion in any of the short extracellular loops (ECL1: 88\u2013104, ECL2: 170\u2013191, ECL3: 465\u2013478) or the C-terminal intracellular tail.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 237,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal boundary of the ICL3 deletion (residues 237\u2013421 removed) in the structural construct; lies within the large intracellular loop 3 (topology 215\u2013443), not on the extracellular surface."
+    },
+    {
+      "residue": 421,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal boundary of the ICL3 deletion (residues 237\u2013421 removed) in the structural construct; lies within the large intracellular loop 3 (topology 215\u2013443), not on the extracellular surface."
+    },
+    {
+      "residue": 225,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "N-terminal junction of the T4 lysozyme insertion replacing ICL3 residues 225\u2013430 in the crystallization construct; entirely within the intracellular loop 3 (topology 215\u2013443)."
+    },
+    {
+      "residue": 430,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal junction of the T4 lysozyme insertion replacing ICL3 residues 225\u2013430 in the crystallization construct; entirely within the intracellular loop 3 (topology 215\u2013443)."
+    }
+  ]
 }

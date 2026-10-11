@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "GABRP",
+  "uniprot_acc": "O00591",
+  "sites": [
+    {
+      "site_id": "GABRP-internal-27-lit",
+      "gene_symbol": "GABRP",
+      "uniprot_acc": "O00591",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 27,
+      "residue_before": "N",
+      "residue_after": "V",
+      "residue_label": "N27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed robust cell-surface expression of tagged subunits; receptor assembly and surface trafficking preserved (surface expression quantified and used as functional readout). L2 additionally shows normal receptor insertion/removal kinetics by fluorescent bungarotoxin labelling.",
+      "confidence": "high",
+      "rationale": "Both L1 and L2 explicitly state the tag is inserted between mature amino acids 4 and 5. With a 23-residue signal peptide (canonical positions 1\u201323), mature aa 4 = canonical position 27 (N) and mature aa 5 = canonical position 28 (V), confirmed by reading the numbered sequence directly. The junction sits 216 residues from TM1 (residue 243), deep within the large extracellular N-terminal domain, well clear of any TM boundary. Python computation confirms residue_before = N (pos 27) and residue_after = V (pos 28). FLAG (DYKDDDDK) or HA (YPYDVPDYA) epitopes inserted between mature amino acids 4 and 5 of GABA-A receptor subunits (including GABRP-related subunits) in full-length, membrane-anchored constructs expressed in mammalian cells; total and cell-surface expression assessed by flow cytometry. Corroborated by L2 (PMC4159110), which independently inserts pHGFP and a 13-aa bungarotoxin-binding site (BBS) at the identical mature-aa-4/5 junction to track surface trafficking in live cells.",
+      "sources": [
+        {
+          "pmid": 27622563,
+          "citation": "PMID 27622563",
+          "claim": "FLAG (DYKDDDDK) or HA (YPYDVPDYA) epitopes were inserted between amino acids 4 and 5 of the mature GABA A receptor subunit subtypes as needed, so that subunit total and cell surface expression could be determined by flow cytometry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 27,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:03:34.832456+00:00",
+  "literature_notes": "L1 and L2 both pin the identical junction (mature aa 4/5 = canonical 27/28) in full-length, membrane-anchored GABA-A receptor subunit constructs. L1 uses FLAG/HA epitopes with flow-cytometric surface quantification; L2 uses pHGFP plus a 13-aa bungarotoxin-binding site (BBS) with live-cell trafficking assays \u2014 both at the same residue pair. Because the junction is the same, a single site is reported (grounded in L1), with L2 noted as independent corroboration. No other residues or loops are named in the ledger. The extracellular loop between TM2 and TM3 (ECL2, residues 293\u2013304) and the short C-terminal extracellular stub (439\u2013440) are topologically surface-exposed but receive no ledger support and are therefore not proposed.",
+  "literature_rejected": []
+}

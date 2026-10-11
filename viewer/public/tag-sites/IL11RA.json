@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "IL11RA",
+  "uniprot_acc": "Q14626",
+  "sites": [
+    {
+      "site_id": "IL11RA-terminal_n-22-lit",
+      "gene_symbol": "IL11RA",
+      "uniprot_acc": "Q14626",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A22",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger line does not report a specific surface-expression or functional assay result for the myc-tagged construct itself; it is cited as a previously described reagent.",
+      "confidence": "low",
+      "rationale": "IL-11RA is a type I single-pass transmembrane protein with its N-terminus extracellular (mature start residue 23, after signal-peptide cleavage at residue 22) and its C-terminus intracellular (residues 390\u2013422). Because exactly one terminus is extracellular, the topology_derived rule places the myc-tag at insert_after_residue = 22 (between the cleaved signal peptide Ala-22 and the mature ectodomain Ser-23). Python verification confirms residue 22 = A and residue 23 = S, consistent with the landmarks. The tag site is 346 residues from the TM boundary, satisfying all distance constraints. Full-length human IL-11R (pcDNA3.1) carrying a myc-tag was engineered and used to characterize receptor variants (IL-11R-KKSS, IL-11R-R296W, IL-11R-\u0394V363_L372, IL-11R-\u0394H353_S362) in a mammalian expression system. The ledger names no residue for the tag.",
+      "sources": [
+        {
+          "pmid": 33566379,
+          "citation": "PMID 33566379",
+          "claim": "The fluorescently labeled antibodies anti\u2010mouse\u2010IgG\u2010IRDye 680RD, anti\u2010rabbit\u2010IgG\u2010IRDye 680RD, anti\u2010mouse\u2010IgG\u2010IRDye 800CW, and anti\u2010rabbit\u2010IgG\u2010IRDye 800CW were purchased from LI\u2010COR Biosciences (Lincoln, NE, USA).\npcDNA3.1 expression plasmids for myc\u2010tagged hIL\u201011R have been described previously. 38 Expression plasmids encoding the IL\u201011R variants IL\u201011R\u2010KKSS and IL\u201011R\u2010R296W have been described previously. 20 The IL\u201011R deletion variants IL\u201011R\u2010\u0394V363_L372 and IL\u201011R\u2010\u0394H353_S362 have been described previously."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:14:50.317501+00:00",
+  "literature_notes": "L1 is the only ledger line. It establishes that a myc-tagged full-length IL-11R construct exists and was used to study receptor variants, but it does not name the residue or loop carrying the tag. The topology_derived rule is applied because IL-11RA has exactly one extracellular terminus (mature N-terminus at residue 23). Confidence is low because the tag position is inferred from topology alone, not from any stated residue or loop in the paper; the actual tag could in principle be at the intracellular C-terminus (used for Western blot detection), which would make it a non-surface site. The deletion variants \u0394V363_L372 and \u0394H353_S362 mentioned in L1 are deletions near the EC/TM boundary, not tag insertions, and are recorded in other_positions. R296W is a disease-associated point variant, not a tag insertion, and is not recorded.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 363,
+      "kind": "other",
+      "supporting_clip_id": "L1",
+      "note": "Start of deletion variant \u0394V363_L372 (spans extracellular residue 363 to TM residue 372); this is a deletion, not a tag insertion, and spans the EC-TM boundary."
+    },
+    {
+      "residue": 353,
+      "kind": "other",
+      "supporting_clip_id": "L1",
+      "note": "Start of deletion variant \u0394H353_S362 (extracellular residues 353\u2013362); this is a deletion, not a tag insertion."
+    }
+  ]
+}

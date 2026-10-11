@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "ACE",
+  "uniprot_acc": "P12821",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:50:58.221564+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe a 3xHA epitope tag inserted after the signal peptide of ACE2 (Angiotensin-converting enzyme 2, UniProt Q9BYF1, gene ACE2), not ACE (Angiotensin-converting enzyme 1, UniProt P12821, gene ACE). ACE and ACE2 are human paralogs \u2014 both encoded in the human genome by different genes \u2014 not orthologs. The rules permit evidence from 'a close ortholog' (same gene in a different species), which ACE2 is not. No ledger line reports a tolerated tag insertion in ACE itself or in a genuine ortholog of ACE (e.g., mouse Ace). Accordingly, no site is grounded in the ledger and the site list is empty. For completeness: ACE (P12821) is a type-I transmembrane protein with signal peptide 1\u201329, a large extracellular domain 30\u20131259, TM 1260\u20131277, and a short cytoplasmic tail 1278\u20131306. The mature N-terminus (residue 30, L) is extracellular and would be the topologically analogous position to the ACE2 site described in L1\u2013L6, but without a qualifying ledger line for ACE, no site can be proposed.",
+  "literature_rejected": []
+}

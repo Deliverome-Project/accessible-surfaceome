@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "RYK",
+  "uniprot_acc": "P34925",
+  "sites": [
+    {
+      "site_id": "RYK-terminal_n-25-lit",
+      "gene_symbol": "RYK",
+      "uniprot_acc": "P34925",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "P",
+      "residue_after": "P",
+      "residue_label": "P25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "2xMyc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used in published experiments (co-IP, cell-based assays) without reported loss of surface expression or function; no dedicated functional rescue assay quoted in the ledger clip itself.",
+      "confidence": "medium",
+      "rationale": "RYK is a type I single-pass receptor with a signal peptide spanning residues 1\u201325 (authoritative landmarks); the mature extracellular N-terminus begins at residue 26. An 'amino-terminal' tag on the full-length membrane-anchored protein can only reside at this single extracellular terminus \u2014 upstream of residue 26 would be cleaved with the signal peptide. Python lookup confirms residue 25 = P and residue 26 = P; the junction is 205 residues from the TM boundary, well clear of any constraint. Position is topology-derived because the clip names no specific residue. Full-length human RYK bearing an amino-terminal 2\u00d7 Myc epitope tag (pcDNA3.Myc2.hRYK) expressed in mammalian cells; construct described in PMC3776778 as previously published and actively used in co-immunoprecipitation and cell-based experiments.",
+      "sources": [
+        {
+          "pmid": 24058687,
+          "citation": "PMID 24058687",
+          "claim": "Full-length human RYK with an amino-terminal 2\u00d7 Myc epitope tag (pcDNA3.Myc2.hRYK) was described previously [17] ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:06:34.722457+00:00",
+  "literature_notes": "L1 (FLAG at human RYK residues 598\u2013599) and L2 (FLAG at mouse Ryk codons 585\u2013586) both fall in the intracellular kinase domain (topology landmarks place intracellular domain at 251\u2013607); they are recorded in other_positions. L4 corroborates the same intracellular C-terminal FLAG strategy as L2 but names no specific residue and is therefore subsumed by L2 in other_positions. No ledger line reports any insertion in the extracellular domain (residues 26\u2013230) other than the N-terminal Myc tag of L3. The extracellular domain of RYK contains a WNT-binding Frizzled-like cysteine-rich domain; no internal loop insertion within it is supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 598,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG epitope inserted between residues 598 and 599 of full-length human RYK (NP_002949.2); position 598 falls in the intracellular kinase domain (topology 251\u2013607), not on the extracellular face."
+    },
+    {
+      "residue": 585,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "FLAG epitope inserted between codons 585 and 586 of mouse Ryk (NP_038677.3) in the Myc2.Ryk.FLAG.CT construct; the equivalent human position (585) is intracellular, confirming this is a cytoplasmic C-terminal tag, not a surface tag."
+    }
+  ]
+}

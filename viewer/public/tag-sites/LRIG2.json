@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRIG2",
+  "uniprot_acc": "O94898",
+  "sites": [
+    {
+      "site_id": "LRIG2-terminal_n-40-lit",
+      "gene_symbol": "LRIG2",
+      "uniprot_acc": "O94898",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 40,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A40",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot (anti-FLAG) confirmed expression of the tagged protein (L2). Immunofluorescence microscopy with anti-FLAG staining confirmed surface-accessible signal in stably transduced glioblastoma cell lines (L3). No quantitative functional assay (e.g., receptor signalling, ligand binding) comparing tagged vs. untagged LRIG2 was reported.",
+      "confidence": "high",
+      "rationale": "The schematic in L5 unambiguously places the FLAG tag after the signal peptide and before the LRR ectodomain, fixing the junction at residue 40|41. Python confirms residue 40 = A (last of SP) and residue 41 = G (first of mature extracellular chain), 767 residues from the TM boundary. The tag is on the extracellular face, well clear of TM, and the construct was expressed and detected at the cell surface by immunofluorescence (L3). Position is validated, not inferred. Full-length LRIG2 was cloned with an N-terminal 3\u00d7FLAG tag into pLVX-puro-3\u00d7FLAG-LRIG2 and stably transduced into glioblastoma cell lines. The domain schematic (L5) explicitly orders: SP \u2192 FLAG \u2192 LRR domains \u2192 Ig-C2 \u2192 TM \u2192 Cyto, placing the FLAG tag between the signal-peptide cleavage site (residue 40) and the mature extracellular N-terminus (residue 41). The construct is full-length and membrane-anchored.",
+      "sources": [
+        {
+          "pmid": 25353163,
+          "citation": "PMID 25353163",
+          "claim": "Indicated are the signal peptides (SP), Flag tag (Flag), the leucine-rich repeat domains, consisting of cysteine-rich N-flanking domain (NF), 15 leucine-rich repeats (LRR) and cysteine-rich C-flanking domain (CF), three immunoglobulin-like domains (Ig-C2), the transmembrane domain (TM) and the cytoplasmic tail (Cyto)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 40,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:15:41.249758+00:00",
+  "literature_notes": "Ledger lines L1\u2013L5 all concern the same N-terminal 3\u00d7FLAG construct; L5 is the most position-informative (domain schematic) and is used as the primary anchor. L1\u2013L4 corroborate expression and surface detection. Ledger lines L6\u2013L8 describe a C-terminal HA-tagged murine Lrig2 construct; the C-terminus of LRIG2 falls within the intracellular region (residues 829\u20131065 per the authoritative topology landmarks), so this tag is cytoplasmic and is recorded in other_positions, not sites. No internal extracellular loop insertions are reported anywhere in the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1065,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Murine Lrig2 cDNA was fused with a C-terminal HA-epitope tag and expressed in transgenic mice; the C-terminus of LRIG2 (residue 1065) lies within the intracellular region (829\u20131065) and is therefore cytoplasmic, not a surface-accessible site."
+    }
+  ]
+}

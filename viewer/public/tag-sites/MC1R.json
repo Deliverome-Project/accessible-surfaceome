@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "MC1R-terminal_n-0-lit",
+      "gene_symbol": "MC1R",
+      "uniprot_acc": "Q01726",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG staining without membrane permeabilization (non-permeabilized condition); receptor reached the cell surface. Signaling and trafficking studies were conducted with the FLAG-tagged construct (L3), implying functional competence, but explicit quantitative comparison to untagged receptor is not reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "MC1R is a GPCR with no signal peptide; residue M1 is the mature N-terminus and the entire span 1\u201342 is extracellular per the topology landmarks, placing an N-terminal prepend (insert_after_residue=0) 42 residues from the first TM boundary (residue 43). No residue number is stated in any ledger line, but for a GPCR with a single extracellular N-terminus and no signal peptide there is exactly one location for an N-terminal tag, so the junction is topology-derived. L2 from the same paper explicitly confirms the FLAG epitope is surface-accessible by non-permeabilized immunostaining, and L3 documents use of the same construct in signaling and trafficking assays. Full-length human MC1R with FLAG fused in-frame to the N-terminus expressed in mammalian cells; anti-FLAG immunostaining performed under non-permeabilized conditions confirmed surface display of the tagged receptor (PMC10532403). The same N-terminal FLAG construct was used in signaling and trafficking studies across WT and RHC variants (PMC4676704). A separate study used N-terminal 3xHA-tagged human MC1R in pcDNA3.1 for receptor characterization (PMC11430673).",
+      "sources": [
+        {
+          "pmid": 37762683,
+          "citation": "PMID 37762683",
+          "claim": "In all cases, the flag epitope was fused in frame to the N terminus of the MC1R to yield proteins comparably reacting with a high-affinity antibody."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:36:18.820528+00:00",
+  "literature_notes": "All ten ledger lines were evaluated. L1, L2, L3, L4, L7 directly support the N-terminal extracellular tag on human MC1R; L6, L9, L10 provide ortholog (chicken, Xenopus) corroboration for the same N-terminal position. The single qualifying extracellular surface site is the N-terminal prepend (insert_after_residue=0). No ledger line reports a tolerated tag insertion in any of the short extracellular loops (ECL1 101\u2013118, ECL2 182\u2013185, ECL3 268\u2013279), so no internal loop sites are proposed. L5 reports cpGFP in ICL3 (intracellular, 212\u2013244) \u2014 recorded in other_positions. L6 and L8 report C-terminal FLAG/Myc-DDK tags; the MC1R C-terminus (301\u2013317) is intracellular per the topology landmarks \u2014 recorded in other_positions. L8 is a commercial OriGene clone; the C-terminal position is stated but is intracellular. L9/L10 (Xenopus) and L6 (chicken) N-terminal tags are indirect ortholog evidence that reinforces but does not independently create a new site beyond what L1\u2013L4 and L7 already establish for human MC1R.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 228,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "cpGFP inserted into ICL3 (residues 212\u2013244, intracellular) of human MC1R to create the FLARE_MC fluorescent sensor; no specific residue stated, representative midpoint residue 228 (Q) used. This is an intracellular insertion, not a surface tag site."
+    },
+    {
+      "residue": 317,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "Human MC1R C-terminal Myc-DDK tag (OriGene pCMV6-Entry); the C-terminus (residues 301\u2013317) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 317,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Chicken MC1R C-terminal FLAG tag; the GPCR C-terminus is intracellular in all melanocortin receptors, so this ortholog tag is cytoplasmic and not a surface tag site."
+    }
+  ]
 }

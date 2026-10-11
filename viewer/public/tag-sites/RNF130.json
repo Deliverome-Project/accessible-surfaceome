@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "RNF130",
+  "uniprot_acc": "Q86XS8",
+  "sites": [
+    {
+      "site_id": "RNF130-terminal_n-27-lit",
+      "gene_symbol": "RNF130",
+      "uniprot_acc": "Q86XS8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Immunofluorescence in HEK293 and HepG2 cells confirmed correct localization to endocytic/endosomal compartments (co-staining with Rab27-GFP). C-terminal tagging was explicitly shown to be non-functional, validating the N-terminal position as the functional configuration.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the 3xFLAG tag was engineered 'at amino acid position 28, immediately after the signal peptide.' The signal peptide spans residues 1\u201327 (last residue A at position 27), so insert_after_residue=27 places the tag between A(27) and D(28), the mature N-terminus. Python verification confirms seq[26]='A' and seq[27]='D'. L2 corroborates the junction and explains that C-terminal tagging is non-functional, making this the only validated surface-accessible position. L3 confirms the construct was used in functional localization assays. Full-length membrane-anchored human RNF130 with a 3xFLAG tag engineered immediately after the signal peptide (residues 1\u201327), placing the tag at the mature N-terminus (residue 28). Construct expressed in HEK293 and HepG2 cells and used for immunofluorescence localization studies with endosomal markers.",
+      "sources": [
+        {
+          "pmid": 36876496,
+          "citation": "PMID 36876496",
+          "claim": "Human RNF130 was also generated with a 3xFLAG epitope engineered at amino acid position 28 after the signal peptide as a double-stranded DNA gBlock (IDT Technologies)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:58:08.649544+00:00",
+  "literature_notes": "Three ledger lines (L1, L2, L3) all describe the same construct and junction: 3xFLAG inserted after the signal peptide cleavage site (after residue 27, before the mature D28). L2 explicitly disqualifies C-terminal tagging as non-functional. The second extracellular span (residues 406\u2013419, 14 aa) is topologically surface-exposed but no ledger line supports an insertion there, and L2's statement about C-terminal non-functionality covers any tag at or near the C-terminus. No other internal extracellular loop insertions are reported in the ledger for RNF130.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 419,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal tagging of RNF130 renders the protein non-functional (data shown in the paper); the authors switched to N-terminal tagging after the signal peptide for all functional studies."
+    }
+  ]
+}

@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FPR2-terminal_n-0-lit",
+      "gene_symbol": "FPR2",
+      "uniprot_acc": "P25090",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG antibody labeling at the cell surface (flow cytometry); receptor internalization in response to WKYMVm measured and intact; \u03b2-arrestin 1 and 2 recruitment confirmed in BRET assay (L3); fluorescent ligand binding confirmed by flow cytometry (L5); G-protein (mini-Gsi) coupling confirmed by BRET (L6). Function fully preserved across multiple orthogonal assays.",
+      "confidence": "high",
+      "rationale": "FPR2 is a class A GPCR with no signal peptide; the topology landmarks place residues 1\u201327 extracellular and TM1 beginning at residue 28, giving a 27-residue extracellular N-terminus. The N-terminal prepend (insert_after_residue=0, residue_after=M) is the only extracellular terminus available, so the position is topology-derived from the landmarks. Multiple independent papers (L1\u2013L6, L10 for FLAG; L7\u2013L9 for HA) all confirm surface display and preserved receptor function with an N-terminal epitope tag on the full-length membrane-anchored receptor. Python verification confirms seq[0]='M' matching residue_after. HEK293 cells stably expressing N-terminal FLAG-tagged full-length FPR2 were surface-labeled with AlexaFluor-conjugated anti-FLAG M1 antibody prior to stimulation with WKYMVm and analyzed by flow cytometry for internalization. FPR2 is a GPCR with no signal peptide; the N-terminus (residues 1\u201327) is extracellular per the topology landmarks, so the N-terminal prepend is the sole extracellular terminus and the tag position is topology-derived.",
+      "sources": [
+        {
+          "pmid": 39706266,
+          "citation": "PMID 39706266",
+          "claim": "HEK293 cells stably expressing N-terminal FLAG-tagged FPR2 were pretreated with AlexaFluor-M1-647 and either ( A ) Dyngo4a (40 \u03bcM), ( B ) Pitstop2 (20 \u03bcM), or ( C ) RNAi against AP2\u03bc, stimulated with 1 \u03bcM WKYMVm for 30 min, and analyzed using flow cytometry."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:56:26.148600+00:00",
+  "literature_notes": "The entire ledger (L1\u2013L10) describes only two tag positions on full-length membrane-anchored FPR2: (1) N-terminal FLAG or HA prepend (surface, extracellular \u2014 reported above) and (2) C-terminal Rluc8/luciferase fusion (intracellular \u2014 reported in other_positions). No ledger line describes any insertion in ECL1 (84\u2013100), ECL2 (163\u2013205), or ECL3 (267\u2013286), so no internal loop sites are proposed. FLAG (L1\u2013L6, L10) and HA (L7\u2013L9) map to the identical junction (insert_after_residue=0) and are therefore one site; L1 is cited as primary because it provides the most explicit surface-display and functional evidence. The HA-tagged construct (L7\u2013L9) provides independent corroboration of the same junction with trafficking and internalization data.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 351,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal Renilla luciferase 8 (Rluc8) fusion appended after the last residue (M351) of FLAG-tagged FPR2; the C-terminus lies in the intracellular region (307\u2013351) per topology landmarks, so this is an intracellular label, not a surface tag."
+    }
+  ]
 }

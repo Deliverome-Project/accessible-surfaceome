@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CXCR3-terminal_n-0-lit",
+      "gene_symbol": "CXCR3",
+      "uniprot_acc": "P49682",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression measured by HiBiT luciferase complementation: CXCR3A-HiBiT extracellular luciferase activity confirmed robust plasma membrane display. Ligand-binding or signaling function NOT MEASURED in this assay.",
+      "confidence": "high",
+      "rationale": "CXCR3 has no endogenous signal peptide; the canonical sequence begins at M1, which is extracellular (topology landmarks: residues 1\u201353 extracellular, TM1 starts at 54). A tag prepended before M1 therefore sits on the extracellular face, 53 residues from the TM1 boundary \u2014 well clear of the >=3-residue constraint. Because no paper names a specific residue number for the junction, the position is topology_derived: with only one extracellular terminus on a GPCR lacking a signal peptide, insert_after_residue=0 is the unique solution. Three independent publications (L5/L6 PMC10183793, L1 PMC13089336, L3 PMC11953467) all report N-terminal tags on full-length membrane-anchored CXCR3, converging on this single junction. Full-length CXCR3 (isoform A) expressed in mammalian cells with HiBiT fused at the N-terminal; surface display quantified by extracellular luciferase complementation assay (LgBiT added to medium). CXCR3A-HiBiT showed robust surface signal (~6-fold above CXCR3B). Corroborated by L1 (PMC13089336: full-length CXCR3 with exogenous HA-SS + FLAG + TEV at N-terminus for structural/pharmacological studies) and L3 (PMC11953467: full-length CXCR3 with N-terminal FLAG tag in pcDNA3.1 for functional GPCR signaling studies).",
+      "sources": [
+        {
+          "pmid": 36799104,
+          "citation": "PMID 36799104",
+          "claim": "We investigated the membrane expression of the proteins by conducting HiBiT assays in cells expressing the receptors tagged with HiBiT at the N-terminal."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +88,33 @@
       "canonical_residue": null,
       "left_pct": 0.24096385542168677,
       "note": "Isoform surface expr 127 (-76% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:09:39.057286+00:00",
+  "literature_notes": "L1 (PMC13089336) reports a full-length CXCR3 construct with an exogenous HA signal sequence + FLAG + TEV at the N-terminus, used for structural and pharmacological studies; the HA-SS drives the FLAG to the extracellular face and the TEV site allows post-trafficking tag removal. L3 (PMC11953467) reports N-terminal FLAG on full-length CXCR3 for GPCR functional studies. Both corroborate the same N-terminal prepend junction as L5/L6 and are noted in the rationale but L5 is chosen as the primary supporting clip because it provides the most explicit surface-expression measurement (extracellular HiBiT luciferase). L6 (PMC10183793) adds that CXCR3A-HiBiT surface signal is ~6-fold above CXCR3B, confirming the tag does not prevent trafficking of the canonical isoform. L7 (PMC10183793) reports that HiBiT-CXCR3Alt is not efficiently surface-expressed; this is an isoform-specific failure, not a failure of the junction per se, and is captured in other_positions. No ledger line supports any internal extracellular loop insertion (ECL1, ECL2, ECL3) for CXCR3, so no internal sites are proposed. The C-terminus (residue 368) is intracellular (topology: 322\u2013368 intracellular) and is captured in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 368,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Full-length CXCR3 C-terminus engineered with 3C protease + GFP + 2xStrep tag (PMC13089336); the C-terminus lies in the intracellular domain (topology: 322\u2013368 intracellular), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 368,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal HA- or FLAG-tagged CXCR3 variants used to investigate receptor expression (PMC10183793); C-terminus is intracellular."
+    },
+    {
+      "residue": 368,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal SmBiT fusion on full-length CXCR3 in pCAGGS (PMC11953467); C-terminus is intracellular."
     }
   ]
 }

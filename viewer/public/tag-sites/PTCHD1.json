@@ -542,5 +542,38 @@
       "canonical_residue": 91,
       "left_pct": 10.247747747747747
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:49:18.923645+00:00",
+  "literature_notes": "Every ledger line was examined. The protein has 12 TM segments; its N-terminus (residues 1\u201325) and C-terminus (residues 847\u2013888) are both INTRACELLULAR per the authoritative topology landmarks. C-terminal GFP (L1/L2/L5/L6) is tolerated and membrane-associated but faces the cytoplasm \u2014 not an extracellular surface tag. N-terminal 3xFlag (L9/L10/L12) is likewise tolerated but intracellular. N-terminal GFP (L3) abrogates membrane localization entirely. The only ledger line reporting an insertion into an extracellular loop (L4, GFP in the 'second extracellular loop', ECL2 residues 319\u2013328) explicitly states the construct produced no fluorescence in neurons or HEK293 cells, i.e., the insertion is not tolerated. No ledger line supports a tolerated, extracellular-face tag insertion in PTCHD1. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 888,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal GFP (PTCHD1-GFP) is tolerated and shows membrane-associated synaptic labelling in hippocampal neurons, but the C-terminus (847\u2013888) is intracellular per topology; this is an intracellular tag, not an extracellular surface tag."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "N-terminal 3xFlag insertion (before residue 1) is tolerated in co-IP and localization studies (WT traffics to plasma membrane per L12), but the N-terminus (1\u201325) is intracellular per topology; the tag faces the cytoplasm."
+    },
+    {
+      "residue": 1,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal GFP (GFP-PTCHD1) causes uniform distribution including the nucleus, indicating GFP at the N-terminus disrupts membrane localization of PTCHD1."
+    },
+    {
+      "residue": 319,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "GFP inserted within the second extracellular loop (ECL2, residues 319\u2013328) produced no fluorescence in neurons or HEK293 cells; the insertion is not tolerated, possibly due to conformational constraints of the loop on GFP structure."
+    }
   ]
 }

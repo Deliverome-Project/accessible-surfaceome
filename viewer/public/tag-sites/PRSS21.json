@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PRSS21",
+  "uniprot_acc": "Q9Y6M0",
+  "sites": [
+    {
+      "site_id": "PRSS21-terminal_n-19-lit",
+      "gene_symbol": "PRSS21",
+      "uniprot_acc": "Q9Y6M0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "R",
+      "residue_after": "K",
+      "residue_label": "R19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry confirmed cell-surface display; protease activity assays confirmed the HA tag does not affect testisin enzymatic activity. Both surface expression and function are preserved.",
+      "confidence": "high",
+      "rationale": "PRSS21/testisin has a signal peptide spanning residues 1\u201319 (landmark-authoritative) and is entirely extracellular from residue 20 onward; there is exactly one extracellular N-terminus. The paper states the HA tag is at 'the N-terminus of testisin' with no residue number, so the junction is topology-derived: insert_after_residue=19, placing the tag between R19 (last signal-peptide residue) and K20 (first mature residue). Python confirmed seq[18]='R' and seq[19]='K'. L2 and L3 corroborate the same construct but provide no additional positional information beyond what L1 already establishes. Full-length membrane-anchored testisin expressed from pDisplay.Testisin carries an HA tag described as positioned at 'the N-terminus of testisin'; the construct was stably expressed in ES-2-Luc ovarian cancer cells and in lentiviral systems. The paper names no specific residue number.",
+      "sources": [
+        {
+          "pmid": 30911775,
+          "citation": "PMID 30911775",
+          "claim": "The HA-tag is positioned at the N-terminus of testisin for ease of detection and has been shown not to affect testisin activity or cell surface expression [ 15 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:44:25.623469+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same HA-tagged testisin construct from the same laboratory (pDisplay.Testisin). L1 is the primary evidence because it explicitly states both the tag position ('N-terminus of testisin') and the functional validation (activity and surface expression unaffected). L2 and L3 confirm the construct was used in lentiviral and stable-cell-line contexts but add no new positional information; they are not promoted to separate sites. The S238A catalytic mutant mentioned in L2 identifies S238 as the active-site serine; this residue is recorded in other_positions. No internal loop insertions are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 238,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L2",
+      "note": "S238 is the catalytic serine of testisin; the S238A substitution produces a catalytically inactive enzyme, indicating this residue is essential for protease function and is not a permissive site for tag insertion."
+    }
+  ]
+}

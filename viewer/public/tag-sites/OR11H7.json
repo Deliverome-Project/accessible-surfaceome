@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR11H7-terminal_n-0-lit",
+      "gene_symbol": "OR11H7",
+      "uniprot_acc": "Q8NGC8",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Rho-tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface FACS confirmed plasma-membrane localization of the Rho-tagged receptor; agonist-driven cAMP responses were measured (functional readout reported in the same study), but the specific functional impact of the tag itself versus untagged receptor was not isolated.",
+      "confidence": "medium",
+      "rationale": "All three ledger lines describe a single construct: full-length Or11g7 (mouse ortholog of OR11H7) with an N-terminal Rho-tag, surface-confirmed by live-cell FACS. No residue number is stated, but the topology landmarks place the N-terminus (residue 1\u201324) as the only extracellular terminus \u2014 the C-terminus (residues 291\u2013314) is intracellular \u2014 so the junction is unambiguously insert_after_residue=0 (prepend before M1). There is no signal peptide in the topology, so the tag is not at risk of being cleaved. The 24-residue extracellular N-terminal domain provides ample clearance (>3 residues) from TM1 at residue 25. Mouse ortholog Or11g7 was cloned full-length into pCI with an N-terminal rhodopsin (Rho) tag; surface display was confirmed by FACS with an anti-Rho-tag antibody on live, non-permeabilized HEK293 cells, including under RTP1S co-expression conditions.",
+      "sources": [
+        {
+          "pmid": 40003926,
+          "citation": "PMID 40003926",
+          "claim": "The cell-surface localization of Or11g7 was assessed using fluorescent-activated cell sorting (FACS) with an antibody against the N-terminal rhodopsin tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:32:54.974927+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) converge on the same construct and the same site: an N-terminal Rho-tag on the mouse ortholog Or11g7. Because Or11g7 is a close ortholog (not the human protein itself), the evidence is indirect and confidence is medium. No ledger line reports any internal loop insertion, C-terminal tag, or any other junction for this protein or its ortholog. The C-terminus (residues 291\u2013314) is intracellular and cannot carry a surface tag. The four extracellular loops (ECL1: 84\u201397, ECL2: 165\u2013193, ECL3: 262\u2013271, and the N-terminal domain 1\u201324) are not addressed by any ledger line beyond the N-terminal site, so no internal sites are proposed.",
+  "literature_rejected": []
 }

@@ -1,0 +1,91 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLCA4",
+  "uniprot_acc": "Q14CN2",
+  "sites": [
+    {
+      "site_id": "CLCA4-internal-594-lit",
+      "gene_symbol": "CLCA4",
+      "uniprot_acc": "Q14CN2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 594,
+      "residue_before": "I",
+      "residue_after": "T",
+      "residue_label": "I594",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot confirms FLAG-CLCA4 protein expression; colony formation assay shows ectopic CLCA4 inhibits MCF7 proliferation, indicating the tagged protein retains tumour-suppressor function. Surface localisation of the tagged construct was NOT MEASURED explicitly.",
+      "confidence": "medium",
+      "rationale": "Nucleotide 1782 after the start codon falls exactly at the end of codon 594 (codon 594 occupies nt 1780\u20131782; computed as 1782/3 = 594.0), placing the FLAG insertion after residue 594 (I) and before residue 595 (T). Residue 594 lies within the extracellular span 22\u2013919 confirmed by topology landmarks. The tag is validated at this exact nucleotide-defined junction by Western blot expression and a functional colony-formation assay showing preserved tumour-suppressor activity, though explicit surface-detection of the FLAG epitope was not reported. Ranked second because surface localisation was not directly demonstrated. Full-length CLCA4 with a FLAG tag inserted at nucleotide position 1782 after the start codon, lentivirally transduced into MCF7 breast cancer cells. Expression confirmed by Western blot (L5). Colony formation assay used to assess proliferation inhibition.",
+      "sources": [
+        {
+          "pmid": 24386311,
+          "citation": "PMID 24386311",
+          "claim": "A Flag tag was inserted into CLCA4 sequence at nucleotide position1782 after the start codon."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 594,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "CLCA4-internal-None-lit",
+      "gene_symbol": "CLCA4",
+      "uniprot_acc": "Q14CN2",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "between FnIII and GPI anchor domains",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Anti-FLAG Western blot detects C-CLCA4-FLAG exclusively in cell pellets (not supernatant), confirming surface retention; PI-PLC release confirms GPI anchor is functional. Surface localisation and GPI anchor function both preserved.",
+      "confidence": "high",
+      "rationale": "The paper explicitly places a FLAG tag between the FnIII and GPI anchor domains of full-length, membrane-anchored CLCA4 and validates surface display by cell-pellet fractionation and PI-PLC release. No specific residue number is given in the ledger text, so insert_after_residue is left null and the named inter-domain region is recorded. The entire span 22\u2013919 is extracellular per the topology landmarks, so any junction in this region is on the cell surface. Ranked first because surface localisation and GPI anchor function are both experimentally confirmed. Full-length human CLCA4 (residues 22\u2013917) with a FLAG (DYKDDDDK) sequence inserted between the predicted FnIII and GPI anchor domains (CLCA4-FLAG), expressed in mammalian cells. L2 confirms the C-terminal FLAG-tagged fragment (C-CLCA4-FLAG) is cell-associated (detected only in cell pellets, not media). L3 confirms PI-PLC treatment releases C-CLCA4-FLAG into medium, demonstrating GPI anchorage and surface localisation.",
+      "sources": [
+        {
+          "pmid": 38825009,
+          "citation": "PMID 38825009",
+          "claim": "We created a FLAG-tagged full-length human CLCA4 (22\u2013917) by inserting a FLAG sequence (DYKDDDDK) between the predicted FnIII and GPI anchor domains (CLCA4-FLAG) ( Fig. 1 A )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:41:24.219471+00:00",
+  "literature_notes": "Two independent FLAG-tag insertions in CLCA4 are supported by the ledger, from two different publications. L1\u2013L3 (PMC11231702) describe a FLAG inserted between the FnIII and GPI anchor domains of full-length CLCA4 (22\u2013917); no residue number is given so the site is recorded at region level. L4\u2013L5 (PMC3873418) give a precise nucleotide coordinate (nt 1782 after start codon) that computes unambiguously to after residue 594 (I|T). These are distinct sites: residue 594 is roughly 65% through the protein, whereas the FnIII\u2013GPI anchor inter-domain region is near the C-terminus. The entire extracellular span (22\u2013919) is a single continuous domain per the topology landmarks (no TM segment; the C-terminal hydrophobic stretch is the GPI signal peptide that is cleaved and replaced by GPI in the mature protein). No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

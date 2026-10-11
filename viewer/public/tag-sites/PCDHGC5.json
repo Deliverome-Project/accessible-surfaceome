@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDHGC5",
+  "uniprot_acc": "Q9Y5F6",
+  "sites": [
+    {
+      "site_id": "PCDHGC5-terminal_n-29-lit",
+      "gene_symbol": "PCDHGC5",
+      "uniprot_acc": "Q9Y5F6",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "G",
+      "residue_after": "Q",
+      "residue_label": "G29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface trafficking confirmed by live-cell fluorescent anti-Myc antibody staining; quantitative fluorescence microscopy used to assess surface levels of wildtype and variant isoforms. Functional assays beyond surface delivery not reported for this tag position.",
+      "confidence": "medium",
+      "rationale": "PCDHGC5 is a type I single-pass transmembrane protein with a signal peptide (residues 1\u201329) and a single extracellular N-terminus (residues 30\u2013693); the C-terminus is intracellular. Because exactly one extracellular terminus exists, an 'extracellular Myc tag' on a cPCDH construct can only reside at the mature N-terminus, after signal-peptide cleavage. Python confirmed residue 29 (G) is the last signal-peptide residue and residue 30 (Q) is the first mature extracellular residue; insert_after_residue = 29 places the tag at the mature N-terminus, 664 residues from the TM boundary. Evidence is indirect (\u03b3C3 ortholog, same \u03b3C subfamily, same domain architecture), so position_evidence is topology_derived. PMC12157453 (L2) reports clustered PCDH constructs \u2014 including the \u03b3C3 isoform, a close ortholog of \u03b3C5 in the same \u03b3C subfamily \u2014 engineered with an extracellular Myc tag and an intracellular fluorescent protein. Surface staining with fluorescent anti-Myc antibodies in transfected cells confirmed surface trafficking of the tagged constructs. No residue number is stated in the clip.",
+      "sources": [
+        {
+          "pmid": 40502045,
+          "citation": "PMID 40502045",
+          "claim": "Using cPCDH constructs containing an extracellular Myc tag and an intracellular fluorescent protein (FP; Figure S1A ), we added fluorescent anti-Myc antibodies (Ab) to transfected cells and collected fluorescence microscopy images."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:30:45.929308+00:00",
+  "literature_notes": "L1 (PMC3209968) reports a C-terminal EGFP fusion on full-length Pcdh-\u03b3C5 expressed in HEK293 cells, confirmed by anti-Pcdh-\u03b3C5 immunofluorescence. The C-terminus (residue 944) falls entirely within the intracellular domain (715\u2013944); this tag is therefore not a surface tag and is recorded in other_positions. L2 (PMC12157453) is the sole ledger line supporting an extracellular tag; it names \u03b3C3 explicitly and cPCDH constructs generally, making it indirect evidence for \u03b3C5. No residue number is given, but topology_derived reasoning yields a unique junction (after residue 29). No ledger line supports any internal extracellular loop insertion for PCDHGC5 or a close ortholog.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 944,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fused to full-length Pcdh-\u03b3C5 and expressed in HEK293 cells; the C-terminus (residue 944) lies in the intracellular domain (715\u2013944), so this tag faces the cytoplasm and is not a surface epitope site."
+    }
+  ]
+}

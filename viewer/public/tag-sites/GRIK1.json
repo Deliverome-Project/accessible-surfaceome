@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "GRIK1",
+  "uniprot_acc": "P39086",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:44:11.320489+00:00",
+  "literature_notes": "The single ledger line (L1) describes a GluK1-SP_GluK2 construct cloned into pEZT-BM and fused in-frame via a thrombin recognition site to mVenus and a Twin-Strep affinity tag. The pEZT-BM vector (Morales-Perez et al., 2016) appends tags C-terminally; the phrasing 'fused in frame \u2026 to mVenus and a Twin-Strep affinity tag' confirms the tag follows the GluK1 coding sequence. GluK1's C-terminus (residue 918) lies in the intracellular domain IC2 (856\u2013918), so this is an intracellular tag used for baculovirus-based membrane-protein purification and cryo-EM, not an extracellular surface tag. No ledger line reports an insertion at the extracellular N-terminus (after SP cleavage at residue 30/31), in the large EC1 domain (31\u2013577), or in the EC2 loop (675\u2013834). Because no ledger line grounds an extracellular tag site, zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 918,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal mVenus + Twin-Strep fusion (via thrombin site) in pEZT-BM baculovirus vector; residue 918 is in the intracellular C-terminal domain IC2 (856\u2013918), so the tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

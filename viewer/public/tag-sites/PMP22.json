@@ -71,13 +71,13 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "Myc (10 aa, EQKLISEEDL)",
+      "tag_type": "myc (EQKLISEEDL)",
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion at this exact site",
-      "functional_impact_measured": "Surface display confirmed by anti-myc immunofluorescence on non-permeabilized cells (GPMVs and intact cells); trafficking to plasma membrane unaffected; folding and function explicitly reported as non-perturbed across at least five independent studies (PMC13382790, PMC7322011, PMC9860121, PMC3110552, PMC3563111).",
+      "functional_impact_measured": "Trafficking to plasma membrane confirmed by immunofluorescence with anti-myc antibody in non-permeabilized cells (surface-only labeling); tag demonstrated non-perturbative of PMP22 folding and trafficking across multiple studies; surface display in GPMVs confirmed by confocal fluorescence microscopy with anti-myc AF647.",
       "confidence": "high",
-      "rationale": "L1 and L2 both name the junction explicitly as 'between residues 125 and 126' in full-length human PMP22; Python confirms seq[124]='H' and seq[125]='L', matching the reported letters. Position 125 sits 9 residues from the TM3 C-terminal boundary (116) and 8 residues from the TM4 N-terminal boundary (134), well within ECL2 (117\u2013133) and clear of TM helices. No cysteines, N-glycosylation sequons, or known functional residues are present in ECL2, and the insert has been validated across multiple cell types and expression systems. Full-length human PMP22 in lentiviral (pCW57.1) and pCDNA3.1/pIRES2 expression vectors; 10-residue myc tag (EQKLISEEDL) inserted between residues 125 and 126 in the second extracellular loop (ECL2, topology residues 117\u2013133); expressed in HEK293T, HeLa, HEC-1A, and Schwann-cell-derived lines. Anti-myc antibody labeling of non-permeabilized cells confirms surface display; multiple independent groups report no effect on folding, ER exit, plasma-membrane trafficking, or function. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "rationale": "L1 and L2 explicitly state the myc tag is inserted between residues 125 and 126 of human PMP22 in ECL2 (topology span 117\u2013133). Python confirms seq[124]='H' and seq[125]='L', both \u22659 residues from TM boundaries (TM3 ends at 116, TM4 starts at 134). Multiple independent publications (L6\u2013L14) corroborate the same ECL2 myc-tag construct with surface display and preserved trafficking/function. Full-length human PMP22 (NM_153321) with a 10-residue myc tag (EQKLISEEDL) inserted between residues 125 and 126 in the second extracellular loop (ECL2), expressed in stable inducible cell lines (pCW57.1 vector). Multiple independent studies confirm this exact junction in full-length, membrane-anchored human PMP22.",
       "sources": [
         {
           "pmid": 42320627,
@@ -87,7 +87,49 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "PMP22-internal-None-lit",
+      "gene_symbol": "PMP22",
+      "uniprot_acc": "Q01453",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL2",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA (haemagglutinin)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Tag in this position neither affects the processing nor the trafficking of the protein (stated explicitly in L4); mouse PMP22 is a close ortholog of human PMP22.",
+      "confidence": "medium",
+      "rationale": "L3 and L4 report an HA tag in the second extracellular loop of mouse PMP22 (a close ortholog) in a full-length, membrane-anchored construct, with explicit statement that the tag does not affect processing or trafficking. No residue number is given, so the site is reported at region level (ECL2, spanning 117\u2013133 in the human canonical sequence) without a pinned junction. This is ranked below the validated human myc-tag site at residue 125. Mouse PMP22 cDNA with an HA epitope tag inserted in the second extracellular loop (ECL2), expressed in full-length membrane-anchored form in the pCMX vector. The exact junction residue within ECL2 is not named in the cited text.",
+      "sources": [
+        {
+          "pmid": 23127255,
+          "citation": "PMID 23127255",
+          "claim": "To make non-palmitoylated PMP22, a cDNA encoding the WT (wild-type) mouse protein with a human influenza HA (haemagglutinin) epitope tag sequence in the second extracellular loop in the pCMX vector was used as a template ( Tobler et al., 1999 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     },
     {
       "site_id": "PMP22-snorkel-c",
@@ -176,10 +218,24 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:23:25.805877+00:00",
-  "literature_notes": "L3/L4 (HA tag, mouse PMP22 ECL2), L5/L20 (Myc tag, human N41Q), L6\u2013L14/L18/L19 (Myc tag, ECL2, various labs) all corroborate the same ECL2 insertion but name no independent residue; they reinforce L1/L2 rather than defining a second site. L15/L16 (ALFA tag) and L17 (GFP) report C-terminal fusions: the authoritative topology places residues 157\u2013160 in the intracellular compartment, so these tags are not extracellular and are excluded. The N-terminus (residues 1\u20134) is likewise intracellular. No ledger line supports an ECL1 insertion with a named residue, so no ECL1 site is proposed.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T13:40:46.975746+00:00",
+  "literature_notes": "L1/L2 provide the strongest evidence: exact residue 125|126 junction in human PMP22 ECL2, validated in multiple independent studies (L6\u2013L14) for surface display and preserved trafficking/function. L3/L4 add an independent HA-tag precedent in mouse ECL2 (indirect/ortholog), reported at region level only because no residue is named. L5 and L15 describe the N41Q glycosylation-deficient variant used to improve plasma-membrane trafficking efficiency; N41 is a glycosylation site in ECL1, not a tag insertion site, and no ledger line reports a tag inserted in ECL1. L16/L17 (C-terminal ALFA tag) and L18 (C-terminal GFP) are placed in other_positions because the PMP22 C-terminus (residues 157\u2013160) is intracellular per the authoritative topology landmarks (INTRACELLULAR: 157\u2013160), making these cytoplasmic labels, not surface tags.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 160,
+      "kind": "intracellular",
+      "supporting_clip_id": "L16",
+      "note": "C-terminal ALFA tag on full-length PMP22 localizes to plasma membrane in HEK293T cells, but the C-terminus (residues 157\u2013160) is intracellular per topology; this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 160,
+      "kind": "intracellular",
+      "supporting_clip_id": "L18",
+      "note": "GFP fused to the PMP22 C-terminus used for co-immunoprecipitation; C-terminus is intracellular (topology: 157\u2013160 INTRACELLULAR), so this is a cytoplasmic fusion, not a surface tag."
+    }
+  ]
 }

@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD207",
+  "uniprot_acc": "Q9UJ71",
+  "sites": [
+    {
+      "site_id": "CD207-terminal_c-328-lit",
+      "gene_symbol": "CD207",
+      "uniprot_acc": "Q9UJ71",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 328,
+      "residue_before": "P",
+      "residue_after": "",
+      "residue_label": "P328",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "YFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Fluorescence microscopy in M10 melanoma cells: Lang-YFP displayed an identical cellular distribution to wild-type Langerin (L4). Trafficking to Birbeck granule-associated compartments was unperturbed.",
+      "confidence": "high",
+      "rationale": "CD207 is a type II single-pass TM protein; its C-terminus (residue 328, P) is extracellular and is the only extracellular terminus. The ledger (L3, confirmed by L4) reports a full-length, membrane-anchored Lang-YFP construct with YFP at the 'C-terminal luminal/extracellular position' that recapitulates wild-type Langerin cellular distribution. Because there is exactly one extracellular terminus, the junction is unambiguously after residue 328; insert_after_residue is topology-derived, not chosen. The tag is 264 residues from the TM boundary, well clear of any constraint. Lang-YFP: full-length, membrane-anchored CD207 (Langerin) with YFP fused at the C-terminal luminal/extracellular end, expressed in M10 melanoma cells. CD207 is a type II transmembrane protein (intracellular N-terminus residues 1\u201343, TM 44\u201364, extracellular C-terminus 65\u2013328); the C-terminus is the sole extracellular terminus, so the junction is unambiguously residue 328. The paper names the position as 'C-terminal luminal/extracellular' but gives no residue number; position is computed from topology landmarks.",
+      "sources": [
+        {
+          "pmid": 23577166,
+          "citation": "PMID 23577166",
+          "claim": "We previously used a Langerin-YFP fusion protein having a C-terminal luminal YFP tag to dynamically decipher the molecular and cellular processes which accompany the traffic of Langerin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:10:46.969371+00:00",
+  "literature_notes": "CD207 (Langerin) is a type II single-pass transmembrane protein with an intracellular N-terminus (1\u201343), TM helix (44\u201364), and a large extracellular C-terminal domain (65\u2013328). The ledger contains four lines, all from PMC3618057. L1 and L2 describe YFP-Lang (YFP at the N-terminal cytoplasmic end) \u2014 intracellular, not a surface tag site, and L4 shows it perturbs trafficking. L3 and L4 describe Lang-YFP (YFP at the C-terminal luminal/extracellular position) \u2014 the only extracellular terminus, tolerated with identical WT distribution. No ledger line supports any internal extracellular loop insertion. evidence_type is 'published tag insertion in the same loop or domain' rather than 'at this exact site' because the paper names the position descriptively ('C-terminal luminal/extracellular') without a residue number; the junction at 328 is topology-derived. cited_tag_residue is set to 328 as the computed junction.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "YFP-Lang places YFP at the N-terminal cytoplasmic end of full-length Langerin (residues 1\u201343 are intracellular); L4 shows this construct coalesces in enlarged structures, indicating perturbed trafficking \u2014 both intracellular and function-perturbing."
+    }
+  ]
+}

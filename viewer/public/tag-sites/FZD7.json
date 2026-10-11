@@ -37,7 +37,66 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "FZD7-terminal_n-32-lit",
+      "gene_symbol": "FZD7",
+      "uniprot_acc": "O75084",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 32,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A32",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HiBiT (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TOPFlash luciferase reporter assay in \u0394FZD1\u201310 HEK293T cells: WNT-3A-induced \u03b2-catenin-dependent signalling was preserved (L2, L14). NanoBiT/BRET assay: saturable eGFP-WNT-3A binding detected with Kd 2.3\u201329.9 nM range across FZD paralogs including FZD7 (L3). Surface display confirmed by membrane-impermeable LgBiT on live genome-edited SW480 cells (L9/L10).",
+      "confidence": "high",
+      "rationale": "The signal peptide spans residues 1\u201332 (last residue A at position 32); the mature extracellular N-terminus begins at Q33. An N-terminal tag inserted after residue 32 is therefore displayed on the extracellular face, >220 residues from TM1 (255\u2013277), within the large cysteine-rich domain (CRD). Python confirmed residue_before=A (pos 32) and residue_after=Q (pos 33). Multiple independent studies (overexpression in HEK293T and endogenous CRISPR knock-in in SW480) all place the HiBiT tag at this exact junction, and both surface localisation and WNT/\u03b2-catenin signalling are preserved. Full-length human FZD7 with an N-terminal HiBiT tag (11 aa) was expressed as a membrane-anchored construct in \u0394FZD1\u201310 HEK293T cells. The tag is placed after the signal peptide (SP: 1\u201332) so that it is displayed on the extracellular face of the mature receptor. The same junction was also introduced at the endogenous FZD7 locus in SW480 cells by CRISPR-Cas9 HDR (L7\u2013L12), and surface localisation was confirmed with membrane-impermeable LgBiT on live cells (L9/L10).",
+      "sources": [
+        {
+          "pmid": 34151213,
+          "citation": "PMID 34151213",
+          "claim": "Additionally, HiBiT-tagged FZD 1 , FZD 2 , FZD 4 , FZD 5 , FZD 7 , FZD 8 , and FZD 10 mediated WNT-3A-induced \u03b2-catenin-dependent signals as assessed by the TOPFlash reporter assay performed in HEK293T cells devoid of endogenous FZDs (\u0394FZD 1\u201310 HEK293T cells, Figure S1D ( 25 ))."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 32,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:01:10.961451+00:00",
+  "literature_notes": "L4/L5 (APEX2+V5 on mouse Fzd7) and L13 (mCherry on mouse HiBiT-FZD7) both place tags at the cytoplasmic C-terminus (IC4: 550\u2013574) \u2014 these are intracellular and go into other_positions. L6 (FLAG at N-terminus + Twin-Strep at C-terminus of human FZD7 in insect cells) describes the same N-terminal junction as L1\u2013L3 for the FLAG tag; the C-terminal Twin-Strep is intracellular. L16 (Nluc-FZD7) places a large NanoLuciferase (~19 kDa) at the same N-terminal junction; this further supports tolerance of inserts at that site but is not a short epitope tag and does not add a new junction. No ledger line reports a tolerated insertion in any of the short extracellular loops (ECL1 310\u2013337, ECL2 403\u2013422, ECL3 492\u2013526), so no internal loop sites are proposed. The FLAG tag in L6 is at the same N-terminal junction (insert_after_residue=32) as the HiBiT tags; it does not constitute a separate site because the junction is identical. L15 references previously characterised HiBiT-FZD7 constructs without adding new positional information.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 574,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "APEX2 and V5 epitope tag fused to the cytoplasmic C-terminus of mouse Fzd7 (IC4: 550\u2013574) for proximity-labelling experiments; not an extracellular surface site."
+    },
+    {
+      "residue": 574,
+      "kind": "intracellular",
+      "supporting_clip_id": "L13",
+      "note": "mCherry fused to the C-terminus of mouse HiBiT-FZD7 in stable U-2 OS lines; C-terminus lies in the intracellular IC4 region (550\u2013574)."
+    }
+  ]
 }

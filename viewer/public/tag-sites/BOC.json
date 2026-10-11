@@ -1,0 +1,66 @@
+{
+  "has_data": true,
+  "gene_symbol": "BOC",
+  "uniprot_acc": "Q9BWV1",
+  "sites": [
+    {
+      "site_id": "BOC-terminal_n-30-lit",
+      "gene_symbol": "BOC",
+      "uniprot_acc": "Q9BWV1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 30,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A30",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag-BirA*",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Proximity-dependent biotinylation of cell-surface proteins confirmed by streptavidin capture and mass spectrometry in HEK293 T-Rex cells; the tagged construct is functional as a proximity-labeling bait.",
+      "confidence": "high",
+      "rationale": "BOC has a single-pass type I topology with signal peptide 1\u201330 and a large extracellular domain 31\u2013855. The FlagBirA*-BOC construct places a Flag tag and the BirA* enzyme at the N-terminus of full-length BOC; for extracellular proximity biotinylation to succeed, BirA* must be on the extracellular face, which is only possible if the fusion is after the signal-peptide cleavage site. Python confirmed residue 30 = A and residue 31 = D; the junction is 825 residues from the TM boundary, well clear of any constraint. L6 confirms the construct is functionally expressed and performs proximity labeling. FlagBirA*-BOC fusion expressed in HEK293 T-Rex cells; BirA* is a large (~35 kDa) extracellular enzyme that must reside on the extracellular face to biotinylate proximal cell-surface proteins. BOC is a type I single-pass TM protein with signal peptide 1\u201330 and a single extracellular N-terminus beginning at residue 31; the N-terminal Flag-BirA* fusion therefore maps to the junction after signal-peptide cleavage (after residue 30).",
+      "sources": [
+        {
+          "pmid": 39640588,
+          "citation": "PMID 39640588",
+          "claim": "We fused the biotin ligase, BirA, to human BOC so that proteins in close proximity to BOC could be biotinylated in cells."
+        },
+        {
+          "pmid": 25848697,
+          "citation": "PMID 25848697",
+          "claim": "We also included an N-terminal HA epitope tag and a C-terminal MYC tag to validate this result."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:46:09.740473+00:00",
+  "literature_notes": "All six ledger lines concern the same N-terminal extracellular junction (after signal-peptide cleavage, residue 30/31). L1 and L2 corroborate L3 (HA tag on full-length BOC and surface detection) but add no independent positional information. L4 corroborates L3 by confirming expression of HA::Boc::MYC. L6 corroborates L5 by confirming functional proximity labeling. No ledger line reports an insertion in any internal extracellular loop of BOC. The C-terminal MYC tag (L3) is intracellular and is recorded in other_positions. The BOC::GPI construct mentioned in L2 is a modified topology (GPI anchor replacing TM) and does not provide an independent site for full-length BOC.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1114,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal MYC tag on HA::Boc::MYC construct; residue 1114 lies within the intracellular domain (879\u20131114) and is not accessible on the extracellular face."
+    }
+  ]
+}

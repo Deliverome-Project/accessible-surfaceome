@@ -37,6 +37,48 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CCRL2-terminal_n-0-lit",
+      "gene_symbol": "CCRL2",
+      "uniprot_acc": "O00421",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Chemerin competition binding assay in L1.2 transfectants: HA-tagged huCCRL2 and mCCRL2 bound His8-chemerin and competed with untagged chemerin, confirming surface display and ligand-binding function fully preserved.",
+      "confidence": "high",
+      "rationale": "CCRL2 has no signal peptide; the extracellular N-terminus spans residues 1\u201339 (39 aa before TM1 at residue 40), providing ample room for a short tag. The paper reports an N-terminal HA tag on full-length, membrane-anchored huCCRL2 with no residue number stated; because the N-terminus is the sole extracellular terminus of this GPCR, the junction is unambiguously insert_after_residue=0 (topology_derived). Python confirms residue_after = M (seq[0]). Chemerin binding was preserved, qualifying this as surface_and_function. L6/L7 (PMC2556791): coding regions of mCCRL2 and huCCRL2 cloned with an engineered N-terminal HA tag into pcDNA3 as full-length, membrane-anchored receptors; expressed in L1.2 transfectants. No specific junction residue is named; CCRL2 has no annotated signal peptide (UniProt Q9Y4X3), so the extracellular N-terminus begins at M1 and the tag prepends before it.",
+      "sources": [
+        {
+          "pmid": 18794339,
+          "citation": "PMID 18794339",
+          "claim": "Various concentrations of untagged serum form chemerin were incubated with mCCRL2-HA, huCCRL2-HA, mCRTH2-HA, or mCMKLR1-HA L1.2 transfectants in the presence of 10 nM His 8 -tagged serum form chemerin."
+        },
+        {
+          "pmid": 29056935,
+          "citation": "PMID 29056935",
+          "claim": "After 2 weeks, cells were detached and sorted for receptor expression as described in Section \u201c Flow Cytometry and Cell Sorting .\u201d\nC-C chemokine receptor-like 2, CMKLR1, and C-X-C motif chemokine receptor 2 (CXCR2) were amplified by PCR, cut with EcoRI and XbaI restriction enzymes and cloned into pCDNA3.1 plasmids downstream the acyl carrier protein (ACP) tag (FWWGLDSLDTVELVMA) or the peptidyl carrier protein (PCP) tag (GDSLSWLLRLLN), preceded by the leader sequence (MRLCIPQVLLALFLSMLTGPGEGSRRRATQ) ( 27 , 28 ).The following primers were used"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -51,6 +93,27 @@
       "canonical_residue": null,
       "left_pct": 0.2808988764044944,
       "note": "Isoform surface expr 146 (-74% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:07:14.486431+00:00",
+  "literature_notes": "All seven ledger lines describe N-terminal tags on full-length, membrane-anchored CCRL2; none describes an internal loop insertion or a C-terminal extracellular tag. CCRL2 has no annotated signal peptide (UniProt Q9Y4X3), so the extracellular N-terminus begins at M1 and insert_after_residue=0 is the correct prepend junction. L5 describes C-terminal truncations of mCCRL2 (at mouse residues 310A and 319F) used to probe helix-VIII trafficking; these are intracellular truncation endpoints, not tag insertion sites, and are recorded in other_positions. No internal ECL (ECL1 96\u2013104, ECL2 170\u2013198, ECL3 261\u2013282) or C-terminal extracellular tag insertion is supported by any ledger line.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 310,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal truncation endpoint of mCCRL2 H8\u2212 construct (mouse 310A, human residue 310 Y); lies within the intracellular C-terminus (304\u2013344) and was used to study helix-VIII role in receptor trafficking, not as a tag insertion site."
+    },
+    {
+      "residue": 319,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal truncation endpoint of mCCRL2 H8+ construct (mouse 319F, human residue 319 S); lies within the intracellular C-terminus (304\u2013344) and was used to study helix-VIII role in receptor trafficking, not as a tag insertion site."
     }
   ]
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CLSTN2",
+  "uniprot_acc": "Q9H4D0",
+  "sites": [
+    {
+      "site_id": "CLSTN2-terminal_n-20-lit",
+      "gene_symbol": "CLSTN2",
+      "uniprot_acc": "Q9H4D0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger clip describes construct design only ('encode full-length mouse CSTs containing an inserted HA-epitope'); no surface-expression or functional assay result is reported in the clip.",
+      "confidence": "medium",
+      "rationale": "CLSTN2 is a type-I single-pass protein; its only extracellular terminus is the mature N-terminus beginning at residue 21 (signal peptide spans 1\u201320). L1 reports a full-length, membrane-anchored mouse CLSTN2 construct with an inserted HA-epitope but names no residue or loop, satisfying the topology_derived rule: exactly one extracellular terminus exists, so the junction is insert_after_residue = 20. Python confirms residue 20 = G (last signal-peptide residue) and residue 21 = S (first mature residue). The mouse ortholog is a close paralog; the evidence is indirect but the construct class (full-length, membrane-anchored, HA-inserted) is unambiguous. L1 (PMC4101519) reports full-length mouse CLSTN2 constructs (HA-CSTs) carrying an inserted HA-epitope tag in a membrane-anchored context. No residue or loop is named in the clip. CLSTN2 is a single-pass type-I transmembrane protein with exactly one extracellular terminus (mature N-terminus at residue 21, after signal-peptide cleavage at residue 20). By topology_derived logic the tag is placed at the sole extracellular terminus, i.e. after the signal peptide, between residue 20 (G, last of signal) and residue 21 (S, first of mature ectodomain).",
+      "sources": [
+        {
+          "pmid": 24613359,
+          "citation": "PMID 24613359",
+          "claim": "HA-CSTs encode full-length mouse CSTs containing an inserted HA-epitope."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:51:17.513187+00:00",
+  "literature_notes": "L2 (PMC3821696) describes a Myc-at-mature-N-terminus / CFP-at-C-terminus construct for CLSTN3 (calsyntenin-3/alcadein-\u03b2), a close paralog. The clip itself explicitly states 'no equivalent CLSTN2-specific tagged construct is described in these clips,' so L2 cannot ground any CLSTN2 site and was not used. The CLSTN3 Myc-N-terminus precedent is noted for context only: it would support the same terminal_n junction in CLSTN2 by analogy, but the rules require a ledger line that reports an insertion tolerated in this protein or a close ortholog \u2014 L2's own disclaimer disqualifies it. No ledger line names an internal loop, a specific residue, or a C-terminal (intracellular) tag for CLSTN2, so no internal or terminal_c sites are proposed. The large ectodomain (residues 21\u2013832) contains multiple cadherin-like and LNS/laminin-G domains; internal sites within it may well be tolerable, but no ledger evidence supports them.",
+  "literature_rejected": []
+}

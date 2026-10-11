@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "BACE1",
+  "uniprot_acc": "P56817",
+  "sites": [
+    {
+      "site_id": "BACE1-internal-45-lit",
+      "gene_symbol": "BACE1",
+      "uniprot_acc": "P56817",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 45,
+      "residue_before": "R",
+      "residue_after": "E",
+      "residue_label": "R45",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence in H4 cells showed the HA-tagged construct traffics to punctate cytoplasmic structures co-localizing with transferrin receptor (sorting/recycling endosomes), Rab7 (maturing endosomes), and Lamp-1 (late endosomes/lysosomes), confirming surface trafficking and internalization. Enzymatic function of BACE1 was NOT MEASURED directly for the tagged construct.",
+      "confidence": "medium",
+      "rationale": "L1 reports a single HA tag inserted 'after the propeptide cleavage site' of full-length, membrane-anchored BACE1. UniProt P56817 annotates the propeptide as residues 22-45 (furin cleavage at RLPR|E), placing the junction at R45|E46; both residues lie within the extracellular domain (22-456), 412 residues from the TM boundary. L2 (same paper, same construct) confirms surface trafficking by immunofluorescence co-localization with endosomal/lysosomal markers. The position is classified topology_derived because the paper names the biological landmark (propeptide cleavage site) rather than an explicit residue number, and the junction is computed from the UniProt propeptide annotation. Full-length BACE1 construct with a single HA tag inserted after the propeptide cleavage site (after R45, the last residue of the UniProt-annotated propeptide 22-45), with a stop codon after K501, expressed in human neuroglioma H4 cells. The propeptide cleavage junction (R45|E46) is the sole specific biological landmark named; the residue number 45 is computed from UniProt P56817 annotation of the propeptide span 22-45.",
+      "sources": [
+        {
+          "pmid": 22553349,
+          "citation": "PMID 22553349",
+          "claim": "A single HA tag was inserted after the propeptide cleavage site and a stop codon was introduced after residue K501 to stop the expression of GFP using site-directed mutagenesis (Stratagene, La Jolla, CA)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:42:19.884901+00:00",
+  "literature_notes": "L1/L2 (PMC3374752): HA tag after propeptide cleavage site \u2014 the sole qualifying extracellular surface tag site. Position computed as insert_after_residue=45 from UniProt P56817 propeptide annotation (22-45); residue_before=R, residue_after=E. L2 confirms surface trafficking of the same construct. L3/L4 (PMC6938271): BACE1FL-SBP-EGFP \u2014 full-length construct with SBP+EGFP fused at the C-terminus (residue 501), which is intracellular (478-501); placed in other_positions as intracellular. L5 (PMC2793532): myc-tagged BACE1 \u2014 no residue or loop named, tag position entirely unstated; dropped per rules (tag position unstated, cannot pin insert_after_residue). L6 (PMC9576659): BACE1-VC (Venus C-terminal fragment 155-238) \u2014 C-terminal fusion, intracellular; placed in other_positions as intracellular.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 501,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Full-length BACE1 fused with SBP and EGFP at the C-terminus (K501); the C-terminus is intracellular (residues 478-501), so this is not a surface tag site."
+    },
+    {
+      "residue": 501,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "BACE1 fused to Venus C-terminal fragment (residues 155-238) at the C-terminus (K501); intracellular terminus, not a surface tag site."
+    }
+  ]
+}

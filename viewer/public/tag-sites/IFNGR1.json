@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "IFNGR1",
+  "uniprot_acc": "P15260",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:09:02.310734+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC9008429) and describe a single construct type: full-length IFN-\u03b3R1 fused to GFP at its C-terminus ('IFN-\u03b3R1-GFP'). IFNGR1 is a Type I single-pass transmembrane receptor: the N-terminus (residue 18, after signal-peptide cleavage at residue 17) is extracellular, and the C-terminus (residue 489) is intracellular (intracellular domain spans residues 269\u2013489, 221 residues beyond the TM). The C-terminal GFP fusion therefore sits on the cytoplasmic face and does not qualify as an extracellular surface tag. No ledger line reports any insertion in the extracellular domain (residues 18\u2013246), at the mature N-terminus, or in any extracellular loop. The ledger provides zero evidence for an extracellular tag site on IFNGR1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 489,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP fusion ('IFN-\u03b3R1-GFP') expressed in CHO cells; the C-terminus of this Type I receptor is intracellular (residues 269\u2013489), so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

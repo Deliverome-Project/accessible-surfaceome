@@ -37,7 +37,77 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HRH3-terminal_n-0-lit",
+      "gene_symbol": "HRH3",
+      "uniprot_acc": "Q9Y5N1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Xpress epitope",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation and western blot confirmed expression of Xpress-H3R; BRET signal detected between Xpress-H3R and H3R-YFP, indicating receptor dimerization is preserved. Canonical H3R ligand-binding or G-protein signaling was NOT MEASURED for the tagged construct specifically.",
+      "confidence": "high",
+      "rationale": "H3R has no endogenous signal peptide (EC1 begins at Met1 per the topology landmarks), so an N-terminal tag prepends before residue 1 (insert_after_residue=0, residue_after=M). This is the sole extracellular terminus available for an N-terminal tag on this seven-TM GPCR, making the position topology_derived. The same junction is independently supported by L2 (FLAG+8\u00d7His with exogenous bovine prolactin SP in Sf9 cells), L3 (BN NanoBiT at N-terminus in Sf9), L7 (same Xpress construct as L6), and L11 (FLAG tag in purification construct); L6 is chosen as the primary clip because it demonstrates mammalian-cell surface expression with co-IP and BRET readout. Python confirmed residue 1 = M. HEK293 cells co-transfected with Xpress-H3R (N-terminal Xpress epitope tag) and H3R-YFP (C-terminal YFP); both constructs expressed and detected by co-immunoprecipitation and western blot in a BRET-based receptor dimerization study. The N-terminus of H3R (EC1: residues 1\u201334) is extracellular per topology; no endogenous signal peptide is present, so the tag prepends directly before Met1. No specific residue number is named in the paper, but the N-terminus is the only extracellular terminus available for an N-terminal tag on this GPCR.",
+      "sources": [
+        {
+          "pmid": 34638980,
+          "citation": "PMID 34638980",
+          "claim": "HEK293 cells were co-transfected with two different H 3 R constructs, H 3 R-YFP and Xpress-H 3 R, expressing the receptor tagged at its N-terminus with an Xpress epitope."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:03:11.869246+00:00",
+  "literature_notes": "Five ledger lines (L2, L3, L6, L7, L11) all independently support an N-terminal extracellular tag on full-length H3R; they converge on the same single junction (prepend before Met1) and are therefore one site, not five. L1 reports a HaloTag substitution spanning IL3 residues Arg230\u2013Arg347, which falls entirely within the intracellular IC3 loop (topology: 223\u2013359) and is recorded in other_positions. L4 (LgBiT), L5 (YFP/RLuc), L8/L9/L10 (GFP), and the C-terminal MBP of L11 are all C-terminal fusions; the C-terminus of H3R is intracellular (IC4: 416\u2013445) and these are recorded in other_positions. No ledger line reports any insertion in an extracellular loop (ECL1 93\u2013108, ECL2 175\u2013196, ECL3 381\u2013395), so no internal extracellular sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 230,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HaloTag substituted into IL3 from Arg230 to Arg347 (IC3: 223\u2013359 per topology) as part of a NanoBRET conformational biosensor; entirely intracellular, not a surface tag site."
+    },
+    {
+      "residue": 445,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "LgBiT fused directly to the C-terminus of H3R (after residue 445); the C-terminus lies in IC4 (416\u2013445) and is intracellular."
+    },
+    {
+      "residue": 445,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal YFP and RLuc fusions to H3R used for BRET dimerization studies; C-terminus is intracellular (IC4: 416\u2013445)."
+    },
+    {
+      "residue": 445,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal GFP fusion (H3R_FL-GFP and H3R_i3d-GFP) expressed in yeast; C-terminus is intracellular (IC4: 416\u2013445)."
+    }
+  ]
 }

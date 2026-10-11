@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "LRRN1",
+  "uniprot_acc": "Q6UXK5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:24:08.928709+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) document C-terminal HA or myc tags on full-length LRRN1. Per the authoritative topology landmarks, the intracellular domain spans residues 653\u2013716 (last residue W716), placing every C-terminal tag on the cytoplasmic face. No ledger line reports an N-terminal tag (which would need to follow the signal-peptide cleavage at residue 25 to reach the extracellular face) or any internal extracellular insertion. Because no ledger evidence supports an extracellular tag site, sites = [].",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 716,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA and myc tags appended after W716 (last residue of the intracellular domain, 653\u2013716); confirmed expressed on-cell (L2) and functional (L3), but the tag itself faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

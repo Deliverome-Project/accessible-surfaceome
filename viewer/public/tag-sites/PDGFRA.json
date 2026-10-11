@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "PDGFRA",
+  "uniprot_acc": "P16234",
+  "sites": [
+    {
+      "site_id": "PDGFRA-terminal_n-23-lit",
+      "gene_symbol": "PDGFRA",
+      "uniprot_acc": "P16234",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "C",
+      "residue_after": "Q",
+      "residue_label": "C23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by flow cytometry using anti-myc antibody staining of intact cells. Trimer (gH/gL/gO-sfGFP) binding was proportional to PDGFR\u03b1 surface levels. PDGF ligand competition (equimolar PDGF-AA, AB, BB, CC) inhibited trimer binding, demonstrating that the tagged receptor retains PDGF-family ligand binding activity.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the myc tag precedes 'the mature polypeptide (a.a. 24\u20131089)', placing the junction after residue 23 (the last residue of the signal peptide, C) and before residue 24 (Q, the mature N-terminus). Python verification confirms full_seq[23]='C' and full_seq[24]='Q'. The insert site is 505 residues from the TM boundary (528), well within the extracellular domain. L2 and L3 from the same paper confirm surface display and functional ligand competition, yielding the highest validation tier. Full-length human PDGFR\u03b1 isoform 1 (NM_006206.4) was cloned into pCEP4 with an N-terminal HA leader, myc-tag, and GSPGGASG linker placed immediately before the mature polypeptide (a.a. 24\u20131089), expressed in Expi293F cells as a membrane-anchored receptor. The paper's own HA leader replaces the native signal peptide but the junction is identical: the myc tag is extracellular and immediately N-terminal to residue 24.",
+      "sources": [
+        {
+          "pmid": 32559251,
+          "citation": "PMID 32559251",
+          "claim": "Human PDGFR\u03b1 isoform 1 (GenBank NM_006206.4 ) was cloned in to the NheI-XhoI sites of pCEP4 (Invitrogen) with a N-terminal HA leader (MKTIIALSYIFCLVFA), myc-tag, linker (GSPGGASG), and followed by the mature polypeptide (a.a. 24\u20131,089)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 23,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:30:57.575641+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC7329128) and describe the same construct and the same insertion site. L1 is the primary evidence (construct design with explicit residue numbering); L2 and L3 provide functional and surface-expression validation. No other insertion sites are described in the ledger. The paper uses a synthetic HA leader in place of the native signal peptide, but the mature-protein junction (before aa24) is identical to what a tag inserted after the native signal peptide cleavage would produce. No intracellular or function-abrogating positions were reported in the ledger.",
+  "literature_rejected": []
+}

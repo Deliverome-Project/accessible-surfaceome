@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CLRN3",
+  "uniprot_acc": "Q8NCR9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:50:23.932979+00:00",
+  "literature_notes": "The entire ledger (L1, L2) describes zebrafish clrn1 (Clarin-1) carrying a C-terminal HA tag. Zebrafish clrn1 is the species ortholog of human CLRN1, not CLRN3; CLRN1 and CLRN3 are paralogs (distinct genes in the clarin family) and the ledger rule requires the same gene in a close ortholog, not a paralog. Even setting aside the ortholog issue, the C-terminal tag in L1/L2 would map to CLRN3 residues 201\u2013226, which the authoritative topology landmarks place entirely intracellular (INTRACELLULAR: 201\u2013226). No ledger line reports any insertion \u2014 epitope tag, fluorescent-protein fusion, transposon, or domain-insertion \u2014 in either of CLRN3's two extracellular loops (EC1: 29\u201393; EC2: 148\u2013179) or at any extracellular position of this protein or a true ortholog. Zero surface tag sites qualify.",
+  "literature_rejected": []
+}

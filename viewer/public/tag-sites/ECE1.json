@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ECE1",
+  "uniprot_acc": "P42892",
+  "sites": [
+    {
+      "site_id": "ECE1-terminal_c-770-lit",
+      "gene_symbol": "ECE1",
+      "uniprot_acc": "P42892",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 770,
+      "residue_before": "W",
+      "residue_after": "",
+      "residue_label": "W770",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc/Flag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot with anti-Flag antibody confirmed expression of the tagged full-length protein in stable cell clones (L2). No surface trafficking assay or enzymatic activity assay reported for the tagged construct.",
+      "confidence": "medium",
+      "rationale": "ECE-1 is a type II transmembrane metalloprotease with a large extracellular ectodomain (residues 90\u2013770); the C-terminus at W770 is extracellular and is the only extracellular terminus. Python verification confirms seq[769]='W' and len=770. The paper explicitly states the tag is on the 'C-terminal end' of the full-length membrane-anchored protein, leaving no ambiguity about which terminus carries the tag. Validation is limited to Western blot detection; no surface or functional assay was reported for the tagged construct. Full-length ECE-1c with a C-terminal Myc/Flag tag expressed via a pLVX-IRES-mCherry bicistronic lentiviral vector in stable mammalian cell clones (PMC11515556). ECE1 is a type II single-pass TM protein; the C-terminus (residue 770, W) lies entirely within the extracellular ectodomain (residues 90\u2013770), 681 residues from the TM boundary. The paper names 'C-terminal end' of the full-length protein with no specific residue number; topology gives exactly one extracellular C-terminal junction.",
+      "sources": [
+        {
+          "pmid": 39443981,
+          "citation": "PMID 39443981",
+          "claim": "For obtention of stable cell clones overexpressing Myc/Flag-tagged (C-terminal end) ECE-1c forms, a pLVX-IRES-mCherry bicistronic lentiviral vector (Takara Bio, CA, USA) was used."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:22:49.662835+00:00",
+  "literature_notes": "The ledger contains two clips (L1, L2) both from PMC11515556, both describing the same C-terminal Myc/Flag-tagged ECE-1c construct. L1 describes the construct design; L2 describes Western blot confirmation of expression. Both ground the same single site. No internal loop insertions, N-terminal tags, or other isoform-specific sites are reported in the ledger. Confidence is medium rather than high because (1) no specific residue number is cited (position is topology-derived), (2) only Western blot detection was reported \u2014 no surface trafficking (flow cytometry, immunofluorescence) or enzymatic activity assay was performed on the tagged construct, and (3) the isoform is ECE-1c, which differs from the canonical isoform a in its N-terminal cytoplasmic tail, but shares the same C-terminus (W770 in canonical numbering).",
+  "literature_rejected": []
+}

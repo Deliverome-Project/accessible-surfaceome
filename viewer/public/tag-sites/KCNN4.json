@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNN4",
+  "uniprot_acc": "O15554",
+  "sites": [
+    {
+      "site_id": "KCNN4-internal-None-lit",
+      "gene_symbol": "KCNN4",
+      "uniprot_acc": "O15554",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL2",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "BLAP (15 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Electrophysiology and pharmacology: Ca2+ sensitivity, activation by DCEBIO, and inhibition by clotrimazole were all unaffected by the BLAP insertion (L3). Surface biotinylation confirmed basolateral membrane display in FRT cells (L5); trafficking studies in polarized epithelia confirmed surface expression (L4).",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the BLAP tag was inserted into the second extracellular loop of full-length KCa3.1, which corresponds to ECL2 (residues 121\u2013149) in the canonical KCNN4 topology. No junction residue is named in any ledger line, so insert_after_residue is left null and the site is reported at loop resolution. L3 confirms full functional preservation (Ca2+ sensitivity, DCEBIO activation, clotrimazole block), and L4/L5 confirm surface display, making this the highest validation tier. ECL2 contains C127, which may participate in a disulfide; the successful insertion demonstrates the tag was placed away from that cysteine, but the exact junction cannot be recovered from the ledger. The 15-aa BLAP sequence (GLNDIFFEQKIEWHE) was inserted into the second extracellular loop (ECL2, residues 121\u2013149) of full-length, membrane-anchored KCa3.1 (KCNN4) and expressed in FRT, MDCK, and Caco-2 polarized epithelial cells. The ledger names the loop but not the exact junction residue.",
+      "sources": [
+        {
+          "pmid": 28101059,
+          "citation": "PMID 28101059",
+          "claim": "The biotin ligase acceptor peptide (BLAP) sequence (GLNDIFFEQKIEWHE) was inserted into the second extracellular loop of KCa3.1 as previously described (Balut et al., 2010a ; Gao et al., 2010 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:54:03.307590+00:00",
+  "literature_notes": "L1 mentions HA- and myc-tagged KCa3.1 constructs in addition to BLAP, but gives no residue or loop position for any of them ('previously described' with no coordinates in the ledger clip). They cannot be pinned to a junction and do not constitute additional sites beyond the ECL2 BLAP site already grounded in L2. ECL1 (46\u201355, 10 aa) and ECL3 (227\u2013264, 38 aa) are extracellular but no ledger line reports any insertion in them. The large C-terminal intracellular domain (283\u2013427) is cytoplasmic and excluded. No ledger line names a specific residue within ECL2, so the site is reported at region resolution with insert_after_residue null.",
+  "literature_rejected": []
+}

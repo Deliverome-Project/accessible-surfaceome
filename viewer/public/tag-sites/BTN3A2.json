@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "BTN3A2",
+  "uniprot_acc": "P78410",
+  "sites": [
+    {
+      "site_id": "BTN3A2-terminal_n-29-lit",
+      "gene_symbol": "BTN3A2",
+      "uniprot_acc": "P78410",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface FLAG staining of V\u03943A2 by live-cell flow cytometry confirmed extracellular display, but surface expression required co-transduction of intact BTN3A molecules; V\u03943A2 alone did not traffic efficiently to the surface. Function is confounded by the presence of intact BTN3A co-expressed in the same cells.",
+      "confidence": "low",
+      "rationale": "BTN3A2 is a type I single-pass transmembrane protein with a single extracellular N-terminus; after signal peptide cleavage (residues 1\u201329), the mature protein begins at Q30. The V\u0394 construct places FLAG at this sole extracellular terminus in a full-length membrane-anchored molecule, and live-cell flow cytometry confirms surface display. However, the entire V domain (approximately residues 30\u2013130) is deleted rather than simply tagged, and surface expression requires co-expression of intact BTN3A molecules, indicating a trafficking defect in the absence of helper proteins. The position is topology-derived (no residue named in the paper); insert_after_residue=29 is the signal-peptide/mature-protein boundary confirmed from the canonical sequence (A29, Q30). Full-length, membrane-anchored BTN3A2 V\u0394 construct in which the entire V domain was replaced by a FLAG sequence preceded by a BTN3A1 leader sequence; expressed in transduced human cells and assessed by flow cytometry on live (surface) and permeabilized (total) cells. The FLAG tag is at the extracellular N-terminus of the construct, the only extracellular terminus of this type I single-pass protein. No specific residue junction is named; position is derived from the signal-peptide/mature-protein boundary (residue 29/30) of the canonical BTN3A2 sequence.",
+      "sources": [
+        {
+          "pmid": 36824912,
+          "citation": "PMID 36824912",
+          "claim": "Cell surface FLAG-staining of V\u03943A2 also required co-transduction of intact 3A-molecules."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_perturbed",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:50:22.207401+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe the same experimental system: a BTN3A2 V\u0394 construct in which the V domain is replaced by a FLAG tag preceded by a BTN3A1 leader sequence, expressed as a full-length membrane-anchored protein. L1 and L3 describe construct design; L2 and L4/L5 describe the flow cytometry readout. The critical finding in L2 is that surface FLAG staining of V\u03943A2 required co-transduction of intact BTN3A molecules, meaning the construct does not independently traffic to the surface. This co-expression requirement means validation_level is 'function_perturbed' rather than 'surface_only'. No ledger line names a specific residue junction; the position is topology-derived from the signal peptide boundary. The V domain deletion (approximately residues 30\u2013130) is a substantial structural change beyond a simple short-tag insertion, further reducing confidence that a minimal ALFA-tag insertion at this junction would behave equivalently. No internal loop sites, C-terminal sites, or intracellular sites are described in any ledger line. No abrogating insertions are reported.",
+  "literature_rejected": []
+}

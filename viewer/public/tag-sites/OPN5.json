@@ -37,7 +37,77 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OPN5-terminal_n-None-lit",
+      "gene_symbol": "OPN5",
+      "uniprot_acc": "Q6U736",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "EC1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by immunostaining without membrane permeabilization (FLAG detected extracellularly); photoreceptor function of OPN5-HEK cells was the subject of the study but the ledger clip does not report a direct functional assay result for the tagged construct vs. untagged.",
+      "confidence": "medium",
+      "rationale": "OPN5 is a GPCR with no signal peptide; the topology landmarks place EC1 (residues 1\u201333) as the sole extracellular N-terminal region. The paper (PMC12814955) reports a FLAG tag displayed on the outside of the cell via a snorkel structure in a full-length, membrane-anchored OPN5 construct, confirmed by non-permeabilized immunostaining. No specific residue or junction is named in either L1 or L2, so the position is topology-derived to the EC1 region rather than a pinned junction. The snorkel language indicates an engineered extracellular display construct rather than a simple prepend, so insert_after_residue is left null and the region is recorded as EC1. Full-length OPN5 expressed in HEK293T cells with a FLAG tag engineered onto the extracellular face via a described 'snorkel structure'; the construct is membrane-anchored and full-length.",
+      "sources": [
+        {
+          "pmid": 41561484,
+          "citation": "PMID 41561484",
+          "claim": "This is a well-known phenomenon, and the main causes are the promotion of non-radiative recombination, and absorption of NIR light by water molecules. 55\nTo create OPN5-expressing HEK293T cells (OPN5-HEK), we constructed an OPN5 plasmid with a FLAG tag on the outside of the cell using a snorkel structure (Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:26:42.697305+00:00",
+  "literature_notes": "L1 and L2 both ground the same FLAG-snorkel site; L1 is cited as the primary supporting clip. L3 (PMC12457702), L4 (PMC10432815), L5 (PMC8766551), and L6 (PMC12405127) all report rho1D4 (ETSQVAPA) appended to the C-terminus of OPN5 or close orthologs; the C-terminus falls in IC4 (residues 310\u2013354), which is intracellular per the authoritative topology landmarks, so these are recorded in other_positions rather than sites. No ledger line names a specific extracellular residue or junction for any insertion, so no 'validated' or pinned-residue site can be reported. The snorkel site is the only extracellular tag supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 354,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "rho1D4 epitope (ETSQVAPA) appended to the C-terminus of hOPN5; the C-terminus lies in IC4 (residues 310\u2013354), which is intracellular per topology landmarks."
+    },
+    {
+      "residue": 354,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "rho1D4 epitope at C-terminus of Opn5 variants expressed via pCAGGS; C-terminus is intracellular (IC4)."
+    },
+    {
+      "residue": 354,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Rho1D4 at C-terminus of C-terminal-truncated X. tropicalis Opn5m in pCAGGS; C-terminus is intracellular (IC4) even in the truncated construct."
+    },
+    {
+      "residue": 354,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Rho1D4 at C-terminus of C-terminal-truncated X. tropicalis Opn5m; same construct and topology as L5, intracellular."
+    }
+  ]
 }

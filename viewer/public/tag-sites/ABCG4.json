@@ -176,5 +176,26 @@
       "canonical_residue": 593,
       "left_pct": 91.79566563467493
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:50:33.510442+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe GFP fusions on ABCG4, but ABCG4 has an intracellular N-terminus (residues 1\u2013395, the NBD domain) and an intracellular C-terminus (residues 638\u2013646). L1 explicitly states the pEGFP-C1 vector was used, which produces an N-terminal GFP fusion; L2 confirms the same GFP-ABCG4 construct in HEK cells; L3 describes 'ABCG4 fused with GFP' with ambiguous direction, but both termini are intracellular regardless. None of the ledger lines describe a tag placed on the extracellular face. The three extracellular loops (ECL1: 415\u2013425, 11 aa; ECL2: 495\u2013502, 8 aa; ECL3: 556\u2013617, 62 aa) are not supported by any ledger insertion. Proposing a site in any ECL would require structural inference (loop accessibility, distance from TM boundaries), which is explicitly forbidden. Zero qualifying surface tag sites result.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal GFP fusion (pEGFP-C1 vector) places the tag before residue 1, which lies in the intracellular NBD domain (topology 1\u2013395); validated for expression and co-IP but not a surface tag."
+    },
+    {
+      "residue": 646,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal GFP fusion (ABCG4-GFP naming convention in L3) would place the tag after residue 646, which lies in the intracellular C-terminal tail (topology 638\u2013646); not a surface tag."
+    }
   ]
 }

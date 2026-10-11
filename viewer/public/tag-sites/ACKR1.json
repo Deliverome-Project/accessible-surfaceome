@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ACKR1-terminal_n-0-lit",
+      "gene_symbol": "ACKR1",
+      "uniprot_acc": "Q16570",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface expression confirmed (construct made explicitly for cell-surface expression studies); chemokine-binding function with the tagged construct NOT MEASURED in the cited clip.",
+      "confidence": "high",
+      "rationale": "ACKR1/DARC is a 7-TM protein with no signal peptide; the extracellular N-terminus spans residues 1\u201360 (60 aa) before TM1 begins at residue 61 (A). An N-terminal FLAG prepend (insert_after_residue=0, residue_after=M) places the tag entirely within this 60-aa extracellular domain, \u226560 residues from the TM1 boundary, satisfying all distance and steric constraints. The paper names no specific junction residue, so position_evidence is topology_derived: with only one extracellular terminus on a 7-TM protein, the N-terminal prepend is the only possible location for an N-terminal tag. Python confirmed residue 1 = M and residue 61 = A from the numbered sequence. Full-length DARC/ACKR1 cloned in pcDNA3.1 with an N-terminal FLAG tag for cell-surface expression studies; a second construct in pVL1393 added the M4 receptor N-terminal region (residues 2\u201323) after the FLAG tag as a trafficking aid. ACKR1 has no signal peptide (UniProt P23945); the N-terminus (residues 1\u201360) is directly extracellular, making the N-terminal prepend the sole extracellular terminus. The paper names no specific residue junction, but with exactly one extracellular terminus the position is unambiguous.",
+      "sources": [
+        {
+          "pmid": 39089252,
+          "citation": "PMID 39089252",
+          "claim": "The cDNA coding region of DARC was cloned in pcDNA3.1 vector with an N-terminal FLAG tag and in pVL1393 vector with an N-terminal FLAG tag followed by the N-terminal region of M4 receptor (residue no. 2-23)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -52,5 +89,12 @@
       "left_pct": 0.2958579881656805,
       "note": "Isoform surface expr 2971 (-41% vs canonical)"
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:51:46.598031+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a full-length, membrane-anchored FLAG-tagged DARC/ACKR1 construct used for cell-surface expression studies \u2014 this qualifies under the rules (full-length, membrane-anchored, tag tolerated on the surface). No residue number is named in the clip, but ACKR1 has no signal peptide and its N-terminus (residues 1\u201360) is the sole extracellular terminus, so the position is topology-derived rather than validated. The second construct in L1 (pVL1393 with M4 receptor residues 2\u201323 appended after the FLAG tag) is a trafficking-enhancement variant of the same N-terminal tag site, not a separate site. No other ledger lines were provided, so no internal loop sites (ECL1 119\u2013130, ECL2 188\u2013207, ECL3 263\u2013283) could be proposed \u2014 the ledger does not support them.",
+  "literature_rejected": []
 }

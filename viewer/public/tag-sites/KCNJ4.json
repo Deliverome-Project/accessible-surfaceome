@@ -58,6 +58,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "KCNJ4-internal-None-lit",
+      "gene_symbol": "KCNJ4",
+      "uniprot_acc": "P48050",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular loop (81-148)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Construct used as a surface-accessible tagged channel; surface expression confirmed by the experimental design (HA used as extracellular surface marker). Specific functional assay result not stated in the ledger clip.",
+      "confidence": "medium",
+      "rationale": "L1 directly reports an HA tag inserted into the extracellular domain of full-length, membrane-anchored KCNJ4 (Kir2.3). KCNJ4 has exactly one extracellular region\u2014the loop between TM1 (57\u201380) and TM2 (149\u2013169), spanning residues 81\u2013148\u2014so the region is unambiguous from topology landmarks. No specific residue is named in the ledger clip, so insert_after_residue is left null and the region is reported. Constraints within the loop include disulfide cysteines C114, C141, C146 and the selectivity filter TTIGYGFR (134\u2013140), which any downstream design must avoid. Full-length Kir2.3 (KCNJ4) in a pGW1 mammalian expression vector with an HA epitope tag (YPYDVPDYA) inserted into the extracellular domain; construct is membrane-anchored. The paper names the extracellular domain but no specific residue.",
+      "sources": [
+        {
+          "pmid": 25408847,
+          "citation": "PMID 25408847",
+          "claim": "Kir2.1-HA and Kir2.3-HA with the HA tags (influenza hemagglutinin epitope: YPYDVPDYA) inserted into the extracellular domains of the channels were inserted in a pGW1 vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "KCNJ4-snorkel-c",
       "gene_symbol": "KCNJ4",
       "uniprot_acc": "P48050",
@@ -234,5 +271,12 @@
       "canonical_residue": 88,
       "left_pct": 19.775280898876403
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:48:30.368793+00:00",
+  "literature_notes": "L1 is the only ledger line for KCNJ4. It confirms a tolerated HA tag in the single extracellular loop (residues 81\u2013148) of the full-length, membrane-anchored channel, but names no specific residue. No intracellular or terminus extracellular sites are supported by the ledger. The N-terminus (1\u201356) and C-terminus (170\u2013445) are both intracellular per the topology landmarks and are not candidates for surface tags. Within the extracellular loop, the selectivity filter (TTIGYGFR, 134\u2013140), disulfide cysteines C114, C141, C146, and the >=3-residue TM-boundary exclusion zones (residues 81\u201383 near TM1, residues 146\u2013148 near TM2) are constraints that a deterministic pipeline should enforce when choosing a specific junction.",
+  "literature_rejected": []
 }

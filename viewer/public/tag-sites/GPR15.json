@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR15-terminal_n-0-lit",
+      "gene_symbol": "GPR15",
+      "uniprot_acc": "P49685",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface and trafficking studies were performed with the Myc-tagged construct, indicating surface expression was confirmed; receptor signaling function was NOT MEASURED in the cited clip.",
+      "confidence": "high",
+      "rationale": "GPR15 is a GPCR with an extracellular N-terminus (residues 1\u201333, confirmed by topology landmarks) and no signal peptide, making a prepended Myc tag the only extracellular N-terminal option. The pCMVmyc vector places the tag before residue 1 (insert_after_residue=0); residue_after is M (residue 1), 33 residues from TM1 start (residue 34), well clear of the TM boundary. No residue number is named in the clip, but exactly one extracellular terminus exists, so the position is unambiguously topology-derived. Full-length human GPR15 cloned into pCMVmyc vector to generate N-terminal Myc-tagged GPR15 for surface and trafficking studies in mammalian cells (PMC5555655). GPR15 has no signal peptide; the N-terminus (residues 1\u201333) is extracellular per topology landmarks, so the Myc tag is placed before residue 1 (prepend). Exactly one extracellular terminus exists for this GPCR; the position is topology-derived.",
+      "sources": [
+        {
+          "pmid": 28615320,
+          "citation": "PMID 28615320",
+          "claim": "The human GPR15 gene was cloned in pCDNA3.1(+) vector (Life Technologies), pCMVmyc vector ( Okamoto and Shikano, 2011 ), and pEGFPN2 vector (Clontech) to generate no-tagged GPR15, N-terminal Myc-tagged GPR15, and C-terminal GFP-tagged GPR15 plasmids, respectively."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:26:12.134670+00:00",
+  "literature_notes": "L2 (PMC12663730): The HA at the N-terminus is used as a heterologous signal peptide (cleaved during trafficking), not as a surface epitope tag; the C-terminal twin-strep/FLAG is appended after residue 360, which is intracellular (residues 306\u2013360). Neither element qualifies as an extracellular surface tag site. L3, L4, and L5 (all PMC13136880) report C-terminal FLAG tags (endogenous CRISPR knock-in and overexpression constructs); the C-terminus (residue 360) is intracellular and these are recorded in other_positions. No ledger line supports an insertion in any of the three extracellular loops (ECL1 91\u2013103, ECL2 171\u2013192, ECL3 267\u2013281).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 360,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal GFP tag (pEGFPN2) placed after residue 360; the C-terminus (residues 306\u2013360) is intracellular per topology landmarks \u2014 not a surface tag site."
+    },
+    {
+      "residue": 360,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Endogenous GPR15 C-terminal FLAG introduced by CRISPR knock-in in SW48 cells; C-terminus is intracellular."
+    },
+    {
+      "residue": 360,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal FLAG fusion in pLVX-IRES-Puro overexpression construct in HCT-8 cells; C-terminus is intracellular."
+    }
+  ]
 }

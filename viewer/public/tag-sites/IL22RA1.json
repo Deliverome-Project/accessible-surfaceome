@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "IL22RA1",
+  "uniprot_acc": "Q8N6P7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:20:51.199792+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) concern a single construct: full-length IL22RA1 (574 aa, including signal peptide) cloned into pcDNA6/myc-His A, which appends a myc-His tag at the protein C-terminus. The IL22RA1 C-terminus (residues 250\u2013574) is entirely intracellular per the authoritative topology landmarks. The tag therefore sits on the cytoplasmic face and does not qualify as a surface tag site. L2 confirms that the receptor reaches the cell surface and that ABR binders recognise it there, but it reports no tag insertion position and is not an epitope-mapping line that could be repurposed. No ledger line reports any insertion \u2014 epitope tag, fluorescent protein, transposon, or domain insertion \u2014 on the extracellular domain (residues 16\u2013228) of IL22RA1 or a close ortholog. Zero surface sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 574,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "pcDNA6/myc-His A appends myc-His at the protein C-terminus (residue 574); the IL22RA1 C-terminus lies in the intracellular domain (residues 250\u2013574), so the tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

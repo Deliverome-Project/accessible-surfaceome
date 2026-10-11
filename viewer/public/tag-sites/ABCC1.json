@@ -1,0 +1,264 @@
+{
+  "has_data": true,
+  "gene_symbol": "ABCC1",
+  "uniprot_acc": "P33527",
+  "sites": [
+    {
+      "site_id": "ABCC1-internal-1001-lit",
+      "gene_symbol": "ABCC1",
+      "uniprot_acc": "P33527",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 1001,
+      "residue_before": "D",
+      "residue_after": "D",
+      "residue_label": "D1001",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYAS)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Etoposide (VP-16) resistance assay in HeLa cells: PRESERVED (functional protein). Immunofluorescence in intact (non-permeabilized) cells with anti-HA antibody: epitope detected on extracellular face.",
+      "confidence": "high",
+      "rationale": "L2 explicitly states the HA epitope at position 1001 is on the extracellular side of the plasma membrane by IF in intact cells, and L1 confirms the tagged protein confers etoposide resistance. Python lookup of the numbered sequence confirms residue 1001 = D and residue 1002 = D, both within the extracellular span 993-1022. This is the best-evidenced site: longest extracellular loop, furthest from TM boundaries, dual validation (surface + function). Full-length MRP1/ABCC1 with HA epitope inserted at position 1001, expressed in HeLa cells. The extracellular loop 993-1022 (MSD3) is 30 residues long; position 1001 is 9 residues from the proximal TM boundary (992) and 22 from the distal (1023). N1006 is a glycosylation site 5 residues downstream.",
+      "sources": [
+        {
+          "pmid": 9485377,
+          "citation": "PMID 9485377",
+          "claim": "The intracellular versus extracellular location of the HA epitopes present in biologically active MRP variants was then established in intact and permeabilized cells by immunofluorescence using an anti-HA antibody. Epitopes inserted at positions 1001 and 1222 were located on the extracellular side of the plasma membrane, while the epitope inserted at position 938 was located intracellularly. These results are consistent with a six TM rather than a four TM domain model for the membrane portion of the carboxy-terminal half of MRP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ABCC1-internal-1222-lit",
+      "gene_symbol": "ABCC1",
+      "uniprot_acc": "P33527",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 1222,
+      "residue_before": "R",
+      "residue_after": "H",
+      "residue_label": "R1222",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYAS)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Etoposide (VP-16) resistance assay in HeLa cells: PRESERVED (functional protein). Immunofluorescence in intact (non-permeabilized) cells with anti-HA antibody: epitope detected on extracellular face.",
+      "confidence": "medium",
+      "rationale": "L2 explicitly states the HA epitope at position 1222 is on the extracellular side of the plasma membrane by IF in intact cells, and L1 confirms the tagged protein confers etoposide resistance. Python lookup confirms residue 1222 = R and residue 1223 = H, within the extracellular span 1222-1226. Ranked last because the loop is only 5 residues long and position 1222 is only 1 residue from the TM boundary (1221); the experimental validation is real but steric accommodation of a 15-23 aa tag in this very short loop is a concern. Full-length MRP1/ABCC1 with HA epitope inserted at position 1222, expressed in HeLa cells. The extracellular loop 1222-1226 (MSD3) is only 5 residues long (RHSLS); position 1222 is 1 residue from the proximal TM boundary (1221) and 5 from the distal (1227). This is a very short loop.",
+      "sources": [
+        {
+          "pmid": 9485377,
+          "citation": "PMID 9485377",
+          "claim": "The intracellular versus extracellular location of the HA epitopes present in biologically active MRP variants was then established in intact and permeabilized cells by immunofluorescence using an anti-HA antibody. Epitopes inserted at positions 1001 and 1222 were located on the extracellular side of the plasma membrane, while the epitope inserted at position 938 was located intracellularly. These results are consistent with a six TM rather than a four TM domain model for the membrane portion of the carboxy-terminal half of MRP."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ABCC1-internal-163-lit",
+      "gene_symbol": "ABCC1",
+      "uniprot_acc": "P33527",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 163,
+      "residue_before": "E",
+      "residue_after": "D",
+      "residue_label": "E163",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYAS)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Etoposide (VP-16) resistance assay in HeLa cells: PRESERVED (functional protein). Immunofluorescence in intact (non-permeabilized) cells with anti-HA antibody: epitope detected on extracellular face.",
+      "confidence": "high",
+      "rationale": "L3 explicitly states the HA epitope at position 163 is localized extracellularly by IF in intact cells, and the tagged protein confers drug resistance. Python lookup confirms residue 163 = E and residue 164 = D, within the extracellular span 158-172. The loop is 15 residues long with the insertion point 6 residues from the nearest TM boundary, satisfying the >=3 residue constraint. Full-length MRP1/ABCC1 with HA epitope inserted at position 163, expressed in HeLa cells. The extracellular loop 158-172 (MSD1, ECL2) is 15 residues long; position 163 is 6 residues from the proximal TM boundary (157) and 10 from the distal (173).",
+      "sources": [
+        {
+          "pmid": 9334225,
+          "citation": "PMID 9334225",
+          "claim": "Insertion of epitopes at positions 4, 163, 271, 574, and 653 produced functional proteins while insertions at positions 127, 417, 461, and 529 abrogated the capacity of MRP to confer drug resistance. Epitopes inserted at positions 4, 163, and 574 were localized extracellularly, whereas those inserted at positions 271 and 653 revealed an intracellular location. Although a single epitope inserted at position 461 was compatible with MRP function, it was inaccessible to the anti-epitope antibody and two copies of the tag at that site abrogated MRP function."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ABCC1-internal-4-lit",
+      "gene_symbol": "ABCC1",
+      "uniprot_acc": "P33527",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 4,
+      "residue_before": "R",
+      "residue_after": "G",
+      "residue_label": "R4",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYAS)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Etoposide (VP-16) resistance assay in HeLa cells: PRESERVED (functional protein). Immunofluorescence in intact (non-permeabilized) cells with anti-HA antibody: epitope detected on extracellular face.",
+      "confidence": "high",
+      "rationale": "L3 explicitly states the HA epitope at position 4 is localized extracellularly by IF in intact cells, and the tagged protein confers drug resistance. Python lookup confirms residue 4 = R and residue 5 = G, within the extracellular N-terminal span 1-36. ABCC1 has no signal peptide so position 4 is a genuine extracellular internal insertion, 33 residues from TM1. Ranked below 163 and 574 because the N-terminal domain is less loop-like and the glycosylation sites N17/N23 are nearby. Full-length MRP1/ABCC1 with HA epitope inserted at position 4, expressed in HeLa cells. ABCC1 has no signal peptide; the N-terminal extracellular domain spans residues 1-36 (36 residues). Position 4 is 33 residues from the TM1 boundary (37). N-glycosylation sites N17 and N23 are 13 and 19 residues downstream respectively.",
+      "sources": [
+        {
+          "pmid": 9334225,
+          "citation": "PMID 9334225",
+          "claim": "Insertion of epitopes at positions 4, 163, 271, 574, and 653 produced functional proteins while insertions at positions 127, 417, 461, and 529 abrogated the capacity of MRP to confer drug resistance. Epitopes inserted at positions 4, 163, and 574 were localized extracellularly, whereas those inserted at positions 271 and 653 revealed an intracellular location. Although a single epitope inserted at position 461 was compatible with MRP function, it was inaccessible to the anti-epitope antibody and two copies of the tag at that site abrogated MRP function."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ABCC1-internal-574-lit",
+      "gene_symbol": "ABCC1",
+      "uniprot_acc": "P33527",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 574,
+      "residue_before": "N",
+      "residue_after": "N",
+      "residue_label": "N574",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYAS)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Etoposide (VP-16) resistance assay in HeLa cells: PRESERVED (functional protein). Immunofluorescence in intact (non-permeabilized) cells with anti-HA antibody: epitope detected on extracellular face.",
+      "confidence": "high",
+      "rationale": "L3 explicitly states the HA epitope at position 574 is localized extracellularly by IF in intact cells, and the tagged protein confers drug resistance. Python lookup confirms residue 574 = N and residue 575 = N, within the extracellular span 568-581. The loop is 14 residues long with the insertion point 7 residues from each TM boundary, well satisfying the >=3 residue constraint. Full-length MRP1/ABCC1 with HA epitope inserted at position 574, expressed in HeLa cells. The extracellular loop 568-581 (MSD2) is 14 residues long; position 574 is 7 residues from the proximal TM boundary (567) and 8 from the distal (582).",
+      "sources": [
+        {
+          "pmid": 9334225,
+          "citation": "PMID 9334225",
+          "claim": "Insertion of epitopes at positions 4, 163, 271, 574, and 653 produced functional proteins while insertions at positions 127, 417, 461, and 529 abrogated the capacity of MRP to confer drug resistance. Epitopes inserted at positions 4, 163, and 574 were localized extracellularly, whereas those inserted at positions 271 and 653 revealed an intracellular location. Although a single epitope inserted at position 461 was compatible with MRP function, it was inaccessible to the anti-epitope antibody and two copies of the tag at that site abrogated MRP function."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 574,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:35:46.760000+00:00",
+  "literature_notes": "Five sites are supported by the ledger, all validated by HA epitope insertion in full-length ABCC1 expressed in HeLa cells (PMID 9334225 [L3] and PMID 9485377 [L1/L2]). Extracellular localization was confirmed by immunofluorescence in intact (non-permeabilized) cells; function was confirmed by etoposide resistance. L4 (PMID 12146977) reports FLAG insertions in MSD1 and MSD3 extracellular loops with normal transport function, but names no specific residue numbers for the FLAG insertion positions, so it does not add new pinned sites beyond those already grounded in L2/L3; it does corroborate that extracellular loops of MSD1 and MSD3 tolerate epitope tags. Position 461 (extracellular span 461-464) was excluded from sites: L3 reports that a single HA copy was compatible with function but inaccessible to the anti-HA antibody, and two copies abrogated function \u2014 this is not a usable surface tag site. The N-glycosylation sites N17, N23 (in the 1-36 extracellular domain) and N1006 (in the 993-1022 loop) are noted as constraints for tag design near positions 4 and 1001 respectively.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 938,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA epitope at position 938 is intracellular by immunofluorescence in intact cells; the tagged protein is functional (etoposide resistance preserved), but the epitope faces the cytoplasm (topology span 608-971)."
+    },
+    {
+      "residue": 271,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "HA epitope at position 271 is intracellular by immunofluorescence; the tagged protein is functional (etoposide resistance preserved), but the epitope faces the cytoplasm (topology span 192-319)."
+    },
+    {
+      "residue": 653,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "HA epitope at position 653 is intracellular by immunofluorescence; the tagged protein is functional (etoposide resistance preserved), but the epitope faces the cytoplasm (topology span 608-971)."
+    },
+    {
+      "residue": 127,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 127 abrogated MRP1-mediated etoposide resistance in HeLa cells (intracellular, topology span 127-135)."
+    },
+    {
+      "residue": 417,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 417 abrogated MRP1-mediated etoposide resistance in HeLa cells (intracellular, topology span 386-439)."
+    },
+    {
+      "residue": 461,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "Single HA copy at position 461 was compatible with function but inaccessible to anti-HA antibody in intact cells; two copies abrogated function. Extracellular span 461-464 is only 4 residues \u2014 not usable as a surface tag site."
+    },
+    {
+      "residue": 529,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "HA insertion at position 529 abrogated MRP1-mediated etoposide resistance in HeLa cells (intracellular, topology span 486-546)."
+    },
+    {
+      "residue": 1084,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 1084 abrogated MRP1-mediated etoposide resistance in HeLa cells (intracellular, topology span 1044-1089)."
+    },
+    {
+      "residue": 1175,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 1175 abrogated MRP1-mediated etoposide resistance in HeLa cells (intracellular, topology span 1133-1200)."
+    },
+    {
+      "residue": 1295,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "HA insertion at position 1295 abrogated MRP1-mediated etoposide resistance in HeLa cells (intracellular, topology span 1248-1531)."
+    }
+  ]
+}

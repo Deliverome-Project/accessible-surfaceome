@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR1A-terminal_n-0-lit",
+      "gene_symbol": "HTR1A",
+      "uniprot_acc": "P08908",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "cAMP GloSensor assay performed in HEK293T cells expressing the FLAG-tagged receptor (L4): receptor is functional (agonist-induced cAMP response measured). ebBRET assay (L7) shows significant p11 membrane recruitment, consistent with functional receptor signalling. Surface display confirmed by anti-FLAG FITC staining of fixed cells (L5).",
+      "confidence": "high",
+      "rationale": "HTR1A is a GPCR with no endogenous signal peptide; its N-terminus (residues 1\u201336) is extracellular per the authoritative topology landmarks, and TM1 begins at residue 37, placing the prepend site 36 residues from the nearest TM boundary (well above the \u22653-residue minimum). L5 explicitly states 'N-terminal FLAG tag on the receptor construct' and confirms surface display by anti-FLAG FITC staining of fixed HEK293T cells; L4 describes the same construct and reports a functional cAMP assay. Because no residue number is named, only the N-terminal location, the position is topology-derived: a prepend (insert_after_residue = 0) is the unique extracellular N-terminal junction. L7 provides independent corroboration with a second N-terminal FLAG construct (DuET 5-HT1AR) shown functional by ebBRET. Full-length human HTR1A bearing an exogenous HA signal sequence followed by a FLAG epitope tag at the N-terminus, cloned into pcDNA3 and expressed in HEK293T cells (L4). Fixed-cell anti-FLAG FITC immunostaining confirmed extracellular surface display of the FLAG tag (L5). A second independent construct (DuET 5-HT1AR) also carries an N-terminal FLAG tag and was used in ebBRET assays in HEK293T cells (L7).",
+      "sources": [
+        {
+          "pmid": 40749070,
+          "citation": "PMID 40749070",
+          "claim": "Fixed cells were incubated overnight at 4\u00b0C in the blocking solution with anti-FLAG FITC (fluorescein isothiocyanate) antibody (GeneScript) targeting the N-terminal FLAG tag on the receptor construct."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:04:06.005296+00:00",
+  "literature_notes": "L1 (Myc-tagged 5-HT1A) and L3 (Flag-tagged 5-HT1A in DIO-AAV) were considered but neither states the tag position; they cannot pin insert_after_residue and are excluded. L6 describes a full-length baculovirus construct with N-terminal FLAG+10xHis+TEV for structural studies; the tags are designed to be cleaved by TEV before use, so this is not evidence of a stable surface tag, though it is consistent with N-terminal accessibility. L8 and L10 report epitope-tag insertions in the 3rd intracellular loop of Drosophila 5-HT1A; these are intracellular and the Drosophila residue G631 cannot be mapped to human UniProt canonical numbering without an explicit alignment, so they are recorded in other_positions at the level of the human ICL3 region (217\u2013346) without a specific residue. L9 (Drosophila N-terminal tag) provides indirect support for the N-terminal site but L4/L5/L7 already ground it directly in human HTR1A.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 422,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "5-HT1A-YFP C-terminal YFP fusion expressed in COS-7 cells as BRET acceptor; C-terminus (residue 422) falls within the intracellular region 404\u2013422 per topology landmarks."
+    },
+    {
+      "residue": 422,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "DuET 5-HT1AR carries a C-terminal 1D4 epitope tag; C-terminus (residue 422) is intracellular (region 404\u2013422), making this an intracellular label, not a surface tag."
+    }
+  ]
 }

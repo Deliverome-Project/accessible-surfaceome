@@ -82,5 +82,26 @@
       "canonical_residue": 72,
       "left_pct": 34.78260869565217
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:39:29.742233+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) describe FLAG tags appended to the COOH terminus of claudin-11. The topology landmarks place residues 178\u2013207 firmly in the INTRACELLULAR compartment (the cytoplasmic C-terminal tail). L1\u2013L4 (PMC2185072) report a C-terminal FLAG used to track claudin-11 localisation to cell\u2013cell borders in L fibroblasts; the immunofluorescence result demonstrates correct trafficking of the full-length protein, not extracellular exposure of the tag \u2014 claudin-11 is a tetra-span protein whose C-terminus is cytoplasmic. L5 (PMC12127104) explicitly labels the same region 'C-terminal cytoplasmic domain' and places the 3\u00d7FLAG tag there alongside Tyr191/Tyr192 phosphomutants and a del191\u2013206 deletion, all of which are within the intracellular tail. No ledger line reports any insertion in ECL1 (28\u201382), ECL2 (144\u2013155), or any other extracellular span. Because no ledger line grounds an extracellular tag site, the correct answer is zero sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 207,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag appended after the last residue (Val207); the entire C-terminal tail (178\u2013207) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular space."
+    },
+    {
+      "residue": 191,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "Tyr191 (and Tyr192) lie within the intracellular C-terminal tail (178\u2013207); L5 explicitly calls this region the 'C-terminal cytoplasmic domain' and attaches a 3\u00d7FLAG tag there for pull-down experiments, not surface labelling."
+    }
   ]
 }

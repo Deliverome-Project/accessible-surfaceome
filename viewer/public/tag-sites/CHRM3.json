@@ -37,7 +37,66 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CHRM3-terminal_n-0-lit",
+      "gene_symbol": "CHRM3",
+      "uniprot_acc": "P20309",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Whole-cell ELISA on non-permeabilized cells confirmed surface expression at levels comparable across all constructs; tagged receptors used for pharmacological assays (PMC13005129). CLIP-Lumi4Tb binding to intact cells confirmed surface delivery of HA-CLIP-hM3 RASSL (PMC4505543). Function preserved in pharmacological and FRET/BRET signaling studies.",
+      "confidence": "high",
+      "rationale": "CHRM3 (UniProt P20309) has no signal peptide; residue 1 (M) is the first extracellular residue and the N-terminal domain spans residues 1\u201367, placing a prepended tag 67 residues from TM1 (starts at 68) \u2014 well clear of the >=3-residue TM boundary constraint. Three independent publications (PMC13005129, PMC4505543, PMC10960872) each report a tag (HA, HA+CLIP, FLAG respectively) at the N-terminus of the full-length membrane-anchored receptor expressed in mammalian or insect cells, with surface display confirmed on intact/non-permeabilized cells in two of the three studies. insert_after_residue=0 (prepend); residue_after=M (residue 1) read directly from the numbered sequence. PMC13005129: full-length human M3 muscarinic receptor bearing an N-terminal HA epitope tag expressed in mammalian cells; surface display confirmed by whole-cell ELISA on non-permeabilized cells detecting the extracellular HA tag, and by anti-HA-biotin antibody on intact cells. Constructs used for pharmacological studies. Independently corroborated by PMC4505543 (HA+CLIP tag at N-terminus of full-length hM3 RASSL, surface delivery confirmed by CLIP-Lumi4Tb binding to intact cells) and PMC10960872 (N-terminal FLAG tag on full-length human M3 receptor).",
+      "sources": [
+        {
+          "pmid": 40489785,
+          "citation": "PMID 40489785",
+          "claim": "To confirm that all receptor constructs were expressed at similar levels on the cell surface, we employed a whole-cell ELISA strategy that can selectively detect the extracellular HA-tag fused to the N-terminus of all receptor constructs 32 , 38 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:36:08.149676+00:00",
+  "literature_notes": "All eight ledger lines were evaluated. L2, L3, L4 (PMC13005129), L5, L6, L7 (PMC4505543), and L8 (PMC10960872) all support the same N-terminal prepend position (insert_after_residue=0); L3 was chosen as the primary supporting clip because it most explicitly confirms extracellular surface display via whole-cell ELISA on non-permeabilized cells. L1 (ICL3 T4L replacement, residues 260\u2013481) is an intracellular insertion used for crystallography and is recorded in other_positions. L8 also mentions a C-terminal His-tag, which maps to the intracellular C-terminus (residues 548\u2013590) and is likewise recorded in other_positions. No ledger line supports an insertion in any extracellular loop (ECL1 126\u2013142, ECL2 208\u2013229, ECL3 514\u2013527) of the full-length membrane-anchored receptor.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 260,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "ICL3 residues 260\u2013481 replaced with T4 lysozyme (residues 1\u2013161) for crystallization; the entire replaced segment is within the intracellular loop (topology: intracellular 253\u2013492)."
+    },
+    {
+      "residue": 590,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal His-tag used for purification; the C-terminus (residues 548\u2013590) is intracellular per topology landmarks."
+    }
+  ]
 }

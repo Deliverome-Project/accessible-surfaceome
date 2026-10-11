@@ -1,0 +1,35 @@
+{
+  "has_data": false,
+  "gene_symbol": "PLPPR5",
+  "uniprot_acc": "Q32ZL2",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:38:32.768715+00:00",
+  "literature_notes": "All four ledger lines concern the intracellular N-terminus (residues 1\u201311) and intracellular C-terminus (residues 272\u2013321) of PLPPR5/PRG5. L1 reports mTurquoise/eYFP fused to either terminus of full-length PRG5 for FLIM-FRET; both termini are intracellular, so neither constitutes a surface tag site. L2 reports that N-terminal eGFP abolishes membrane localization and filopodia induction \u2014 this is an abrogates_function result for the intracellular N-terminus, placed in other_positions. L3 reports a spacer-rescued N-terminal eGFP construct that restores membrane insertion; the N-terminus remains intracellular (topology residues 1\u201311), so this is a tolerated intracellular tag, not a surface tag site. L4 reports C-terminal eGFP and FLAG constructs (PRG5-eGFP, PRG5-FLAG) that are expressed and co-immunoprecipitate in HEK293T cells; the C-terminus (residues 272\u2013321) is intracellular, so these are tolerated intracellular tags. No ledger line reports any insertion in the three extracellular loops (EC1: 31\u201365, EC2: 144\u2013195, EC3: 242\u2013250). Zero surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L2",
+      "note": "eGFP fused directly to the N-terminus of full-length PRG5 prevents membrane localization and filopodia induction; N-terminus is intracellular (residues 1\u201311)."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal eGFP with a GS-rich spacer restores membrane insertion and is tolerated, but the N-terminus (residues 1\u201311) is intracellular, not a surface site."
+    },
+    {
+      "residue": 321,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal eGFP and FLAG tags (PRG5-eGFP, PRG5-FLAG) are expressed and functional for co-IP in HEK293T cells, but the C-terminus (residues 272\u2013321) is intracellular."
+    }
+  ]
+}

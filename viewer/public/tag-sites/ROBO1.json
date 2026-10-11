@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ROBO1",
+  "uniprot_acc": "Q9Y6N7",
+  "sites": [
+    {
+      "site_id": "ROBO1-terminal_n-25-lit",
+      "gene_symbol": "ROBO1",
+      "uniprot_acc": "Q9Y6N7",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA staining (L4, PMC4991095). Slit binding at the cell surface confirmed for HA-tagged full-length Robo1 and variants (L5/L6, PMC5919748; L10, PMC4991095; L15, PMC5919748). HA-tagged Robo2 knock-in fully rescued midline repulsion, lateral pathway formation, and promotion of midline crossing (L14, PMC8446337), validating the N-terminal HA-tagging approach for the Robo receptor family.",
+      "confidence": "high",
+      "rationale": "Human ROBO1 is a type I single-pass transmembrane protein with signal peptide 1-25 and a single extracellular N-terminus beginning at Q26. The only extracellular terminus available for surface tagging is the mature N-terminus; the C-terminus is intracellular (919-1651). L1 documents full-length, membrane-anchored mouse Robo1 with an N-terminal HA tag placed after the mouse signal peptide (before P29), the direct ortholog of human ROBO1 Q26. The human junction is insert_after_residue=25 (A25|Q26), computed from the authoritative topology landmarks; the tag must go after the signal peptide cleavage site to avoid being cleaved off. The junction is 872 residues from the TM boundary, well clear of any steric constraint. L1 (PMC13440035): Mouse Robo1 (XP_006523028.1) was engineered as a full-length, membrane-anchored construct with an N-terminal HA tag followed by the mature protein sequence starting at P29 (after the mouse signal peptide). This is the closest ortholog of human ROBO1. Corroborated by L8 (PMC13440035), which reports that both Drosophila robo1 and mouse robo p10UASTattB constructs carry an identical N-terminal 3xHA tag with a heterologous signal sequence, and by L4 (PMC4991095), which confirms surface expression of HA-tagged Robo1 variants by anti-HA staining of transfected cells.",
+      "sources": [
+        {
+          "pmid": 40609949,
+          "citation": "PMID 40609949",
+          "claim": "Mouse robo constructs include the following amino acid residues after the N-terminal HA tag, relative to the indicated Genbank reference sequences: mRobo1 ( XP_006523028.1 , P29\u2013S1615); mRobo2 ( NP_780758.3 , P31\u2013E1508); mRobo3.1 ( NP_001158239.1 , P64\u2013R1402); mRobo3.2 ( EDL25431.1 , P42\u2013K1345)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:06:41.138768+00:00",
+  "literature_notes": "All 15 ledger lines describe N-terminal HA (or 3xHA/4xHA) tags on full-length, membrane-anchored Robo1 constructs (mouse in L1/L8, Drosophila in L2-L13/L15) or the closely related Robo2 (L14). No internal extracellular loop tags, no C-terminal extracellular tags, and no transposon/FP-fusion screens in the extracellular domain are reported in the ledger. Because human ROBO1 is a single-pass type I receptor with its C-terminus intracellular, the N-terminal position after signal peptide cleavage is the sole extracellular terminus and the only site the ledger supports. L1 (mouse Robo1) is the closest ortholog evidence; L3/L7/L8/L9 (Drosophila + mouse) and L4/L5/L6/L10/L15 (functional validation in Drosophila) further corroborate the approach. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "P2RY1-terminal_n-0-lit",
+      "gene_symbol": "P2RY1",
+      "uniprot_acc": "P47900",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "double Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface expression confirmed by anti-Myc primary antibody staining (L2); no functional assay result (e.g., calcium flux, ligand binding) is reported in the cited clips \u2014 NOT MEASURED for function.",
+      "confidence": "high",
+      "rationale": "P2RY1 is a GPCR with no annotated signal peptide; residues 1\u201355 form the extracellular N-terminal domain and TM1 begins at residue 56, placing the prepend site 55 residues from any TM boundary. The paper (L1/L2) explicitly states the double Myc tag is at the 'N-terminus extracellular region' of the full-length, membrane-anchored receptor, and surface display was confirmed by antibody staining (L2). Because no residue number is given and exactly one extracellular terminus exists, the position is topology-derived as a prepend (insert_after_residue=0). No signal peptide is present, so there is no cleavage risk. Full-length human P2Y1-R fused to a double Myc epitope tag at the N-terminus extracellular region, expressed in HEK293T cells (PMC9890698). The paper names no specific residue number; P2RY1 has no signal peptide (UniProt P47900), so the N-terminus (residue 1, Met) is directly extracellular and is the sole extracellular terminus of the receptor. The tag is therefore prepended before residue 1.",
+      "sources": [
+        {
+          "pmid": 36721118,
+          "citation": "PMID 36721118",
+          "claim": "Human P2Y 1 -R (NCBI Reference Sequence: NM_002563.2 ) and P2Y 12 -R (NCBI Reference Sequence: NM_022788.3 ) were fused to double Myc epitope and rat AT1-R (NCBI Reference Sequence: NM_030985.4 ) to HA tag in N-terminus extracellular region."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:07:05.335498+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1, L2), both from the same publication (PMC9890698) and both describing the same construct: a double-Myc-tagged full-length P2Y1-R at the N-terminal extracellular region. No residue number is stated, but P2RY1 lacks a signal peptide, leaving exactly one extracellular terminus (the N-terminus, residue 1). The position is therefore topology-derived as a prepend. No ledger evidence supports any internal loop insertion (ECL1 110\u2013126, ECL2 190\u2013218, ECL3 280\u2013305) or any C-terminal tag; those sites are not proposed. The paper notes that surface expression of P2Y1-R and AT1-R cannot be directly compared because they carry different tags (Myc vs. HA), but this does not undermine the surface-display result for P2Y1-R itself.",
+  "literature_rejected": []
 }

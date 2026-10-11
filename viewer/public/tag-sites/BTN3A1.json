@@ -1,0 +1,73 @@
+{
+  "has_data": true,
+  "gene_symbol": "BTN3A1",
+  "uniprot_acc": "O00481",
+  "sites": [
+    {
+      "site_id": "BTN3A1-internal-None-lit",
+      "gene_symbol": "BTN3A1",
+      "uniprot_acc": "O00481",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "IgV domain",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression of FLAG confirmed by live-cell staining; BTN3A expression level matched by sorting with V-domain-specific mAb on parental constructs. Functional activity of the V-domain-deleted FLAG construct was NOT MEASURED independently.",
+      "confidence": "medium",
+      "rationale": "L1 reports a full-length BTN3A1 construct in which the IgV domain (the N-terminal extracellular Ig-like domain, spanning approximately residues 30\u2013130 of the ectodomain) was replaced by a FLAG tag, and live-cell staining confirmed FLAG is accessible on the extracellular surface. No specific junction residue is named in the paper, so insert_after_residue is left null and the site is recorded at region level. The IgV domain lies entirely within the extracellular span (residues 30\u2013250), well over 100 residues from the TM boundary at residue 251. Python verification confirms residues 30\u2013250 are all annotated 'O' (extracellular) in the topology string. Full-length BTN3A1 construct in which the IgV domain was deleted and replaced by a FLAG sequence; transduced into cells and stained for surface FLAG on live (non-permeabilized) cells, confirming extracellular display of the tag.",
+      "sources": [
+        {
+          "pmid": 36824912,
+          "citation": "PMID 36824912",
+          "claim": "The transductants were sorted for similar BTN3A expression with the V-specific 103.2 mAb (Supplementary Fig. 1d and e) and stained for total expression (intracellular + surface expression of permeabilized and fixed cells) and surface expression (live cells) of the FLAG tag ( Fig. 1e and g )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:50:23.391668+00:00",
+  "literature_notes": "L2 (mCherry), L3 (HaloTag/NanoLuciferase), and L4 (twin-strep II) all place tags at the intracellular C-terminus (after residue 513, which lies in the cytoplasmic domain 272\u2013513). These are valid tolerated insertions but face the cytoplasm, not the extracellular surface, so they are recorded in other_positions rather than sites. BTN3A1 has a single-pass type I topology with one extracellular span (residues 30\u2013250) and no extracellular loops beyond the ectodomain; the only ledger evidence for an extracellular tag is L1 (FLAG in the IgV domain). No ledger line names a specific junction residue within the extracellular span, so no 'validated' exact-residue site can be reported. The mature N-terminus (after signal peptide cleavage at residue 29/30) is extracellular, but no ledger line supports a tag there.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 513,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal mCherry fusion (3A1mC) expressed in 293T cells; C-terminus lies in the intracellular domain (residues 272\u2013513) and is not surface-accessible."
+    },
+    {
+      "residue": 513,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal HaloTag and NanoLuciferase fusions expressed in CHO-K1 cells; C-terminus is intracellular and tags are not on the extracellular face."
+    },
+    {
+      "residue": 513,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Twin-strep II tag added to C-terminus of BTN3A1 for protein purification; C-terminus is intracellular."
+    }
+  ]
+}

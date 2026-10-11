@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR17-terminal_n-0-lit",
+      "gene_symbol": "GPR17",
+      "uniprot_acc": "Q13304",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "BRET-based functional assays (hGPR17-Rluc BRET with GFP2-tagged partners) and cell-surface ELISA/immunofluorescence: N-terminal 3xHA tagging was without effect on receptor functionality (L4). Surface display confirmed by immunostaining of non-permeabilised cells (L10).",
+      "confidence": "high",
+      "rationale": "GPR17 is a GPCR with no endogenous signal peptide; the computed topology places residues 1\u201361 extracellular (O) with TM1 beginning at residue 62, leaving 61 residues of clearance from the tag to the first TM helix. Because no residue number is named in any ledger line, the position is topology-derived: with only one extracellular terminus and the tag described as 'at the N-terminus', insert_after_residue=0 is the unique solution. Python confirms residue_after = M (seq[0]). L4 explicitly validates that this tagging arrangement is functionally silent, qualifying the site as surface_and_function. L3 (PMC4114018): a triple HA tag (3xHA; 3xYPYDVPDYA) was introduced by PCR at the N-terminus of full-length hGPR17 and inserted into pcDNA3.1(+)Zeo for ELISA and immunofluorescence experiments in HEK293 cells. GPR17 carries no natural signal peptide (raw topology begins O at residue 1), so the tag is prepended before M1 on the extracellular face. L4 (same paper) explicitly reports that N-terminal 3xHA tagging of hGPR17 and hGPR17-Rluc was without effect on receptor functionality. Corroborated by L2 (HA-tagged short isoform, functional in HEK293), L8/L9/L10 (N-terminal HA-tagged hGPR17L variants, surface-displayed and western-blot confirmed in HEK293), and L11 (dual N-terminal HA + C-terminal GFP mouse Gpr17 used to quantify surface vs. cytoplasmic localization). L1 additionally reports a full-length membrane-anchored GPR17 construct with an artificial HA signal sequence followed by a FLAG epitope for structural studies, yielding an N-terminal FLAG on the extracellular face after signal cleavage.",
+      "sources": [
+        {
+          "pmid": 24150254,
+          "citation": "PMID 24150254",
+          "claim": "For ELISA and immunofluorescence experiments, a triple HA tag (3xHA; 3xYPYDVPDYA) was introduced by PCR at the N terminus of hGPR17, and the resulting construct was inserted via 5\u2032\u2013Nhe I and 3\u2032\u2013Xho I into the pcDNA3.1(+)Zeo expression vector."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:30:37.796590+00:00",
+  "literature_notes": "All eleven ledger lines describe either N-terminal tags (L1\u2013L4, L8\u2013L11) or C-terminal fusions (L5\u2013L7, L11) on full-length GPR17; none reports an insertion in any extracellular loop (ECL1 118\u2013134, ECL2 199\u2013221, ECL3 289\u2013305). The C-terminal fusions (Rluc, GFP2, His) are placed after residue 367, which falls in the intracellular C-tail (topology 329\u2013367 = I); they are recorded in other_positions. L1 uses an artificial HA signal sequence upstream of a FLAG epitope to drive insect-cell expression; after signal cleavage the FLAG is extracellular, consistent with insert_after_residue=0, but the construct was used for structural/purification purposes rather than a dedicated surface-tag validation study, so L3+L4 are the primary grounding clips. No ledger line names a specific residue number for the N-terminal junction, so position_evidence is topology_derived throughout.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 367,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal Rluc fusion (L5) and C-terminal GFP2 fusion with 19-aa linker (L6, L7) are appended after the last residue (L367) of GPR17, which lies in the intracellular C-tail (topology 329\u2013367 = I); L7 confirms GFP2 fusion did not affect receptor functionality, but the tag faces the cytoplasm and is not a surface site."
+    }
+  ]
 }

@@ -4,6 +4,43 @@
   "uniprot_acc": "P41586",
   "sites": [
     {
+      "site_id": "ADCYAP1R1-internal-24-lit",
+      "gene_symbol": "ADCYAP1R1",
+      "uniprot_acc": "P41586",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 24,
+      "residue_before": "D",
+      "residue_after": "C",
+      "residue_label": "D24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "HA-tagged PAC1 receptors exhibit similar cAMP accumulation behaviour to untagged counterparts (L2); surface expression confirmed by anti-HA antibody staining (L3). Both surface display and cAMP signalling function are preserved.",
+      "confidence": "high",
+      "rationale": "L1 names Cys25 as the insertion point. Python confirms residue 25 = C, consistent with the paper. 'At Cys25' is interpreted as insert_after_residue=24 (tag placed between D24 and C25), preserving Cys25 intact downstream of the tag; this is the standard molecular biology reading of 'at residue X' for an insertion. The site is deep within the extracellular domain (21\u2013148), well clear of all TM boundaries, and L2/L3 confirm both function and surface display. Full-length human PAC1n and PAC1s receptors with a single HA tag (YPYDVPDYA) inserted 'at Cys 25' by site-directed mutagenesis using NEBaseChanger primers, expressed in mammalian cells. Cys25 is confirmed as residue 25 (C) in the canonical sequence, lying within the large extracellular domain (residues 21\u2013148), 124 residues from TM1.",
+      "sources": [
+        {
+          "pmid": 36430275,
+          "citation": "PMID 36430275",
+          "claim": "A complementary set of primers were designed using NEBaseChanger to insert a single HA-tag (YPYDVPDYA) at Cys 25 of the human PAC 1n and PAC 1s receptors."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "ADCYAP1R1-nterm-tedman",
       "gene_symbol": "ADCYAP1R1",
       "uniprot_acc": "P41586",
@@ -37,6 +74,44 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ADCYAP1R1-terminal_n-20-lit",
+      "gene_symbol": "ADCYAP1R1",
+      "uniprot_acc": "P41586",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "M",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Luciferase insertion did not alter PAC1R pharmacology (L10); Nluc-PAC1nR pharmacology confirmed unchanged and AF568-PACAP27 could bind and activate the receptor (L13); Nluc-PAC1sR shares similar pharmacology to FLAG-PAC1sR (L14). Surface display confirmed by NanoBRET signal.",
+      "confidence": "high",
+      "rationale": "L9 explicitly states the FLAG epitope was incorporated 'immediately after the signal peptide' of the full-length membrane-anchored PAC1R. The signal peptide spans residues 1\u201320 (authoritative landmark), so insert_after_residue=20 places the tag at the mature N-terminus (residue 21 = M). This is confirmed by L11 and L15 (FLAG N-terminal in structural constructs) and by L12/L13/L14 (Nluc N-terminal fusions with retained pharmacology). The position is 128 residues from TM1 and fully extracellular. Full-length membrane-anchored human PAC1R construct with native signal peptide (residues 1\u201320) replaced by HA signal peptide and a FLAG epitope inserted immediately after the signal peptide cleavage site (i.e., before the mature N-terminus at residue 21), expressed in mammalian and insect cells for cryo-EM and pharmacological studies (PMC9668914, PMC7196072). Separately, N-terminal Nluc-tagged PAC1nR and PAC1sR constructs were used in whole-cell NanoBRET binding assays (PMC12663942).",
+      "sources": [
+        {
+          "pmid": 36385145,
+          "citation": "PMID 36385145",
+          "claim": "An HA signal peptide was inserted in place of the native signal peptide of the receptors and a FLAG epitope was incorporated into the receptor N-terminus immediately after the signal peptide."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 20,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -63,6 +138,33 @@
       "canonical_residue": null,
       "left_pct": 4.697986577181208,
       "note": "Isoform surface expr 6414 (-0% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:06:16.855472+00:00",
+  "literature_notes": "L4/L5/L6/L8 report cpGFP insertion into ICL3 (Q336\u2013G342) of PAC1R; this loop is intracellular (topology landmark: INTRACELLULAR 330\u2013350) and is placed in other_positions. L7 reports T468 mutation improving surface expression of the cpGFP sensor; T468 is the C-terminal residue and is intracellular (INTRACELLULAR 404\u2013468), placed in other_positions. L10 reports a luciferase insertion that does not alter PAC1R pharmacology but names no specific residue or junction; it cannot be independently pinned and is subsumed by L9 (same paper, same N-terminal position). L11 and L15 describe FLAG at the N-terminus and 8\u00d7His/10\u00d7His at the C-terminus for structural constructs; the N-terminal FLAG is covered by Site 1 (L9), and the C-terminal His-tag is intracellular and excluded. L14 and L15 describe FLAG-PAC1sR as a pharmacological reference; the FLAG position is the same N-terminal junction already reported. No ledger line supports any extracellular loop (ECL1\u2013ECL4) insertion for this protein beyond the two sites reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 336,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "cpGFP module from dLight1.3b was inserted replacing ICL3 residues Q336\u2013G342 of full-length PAC1R; this loop is intracellular (topology landmark: INTRACELLULAR 330\u2013350), so it is not a surface tag site."
+    },
+    {
+      "residue": 342,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "G342 is the C-terminal boundary of the ICL3 cpGFP insertion (Q336\u2013G342) in full-length PAC1R; intracellular by topology (INTRACELLULAR 330\u2013350)."
+    },
+    {
+      "residue": 468,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "T468 is the last residue of the intracellular C-terminus (INTRACELLULAR 404\u2013468); mutation to alanine improved surface expression of the PAC1R-cpGFP sensor but the position itself is cytoplasmic and not a surface tag site."
     }
   ]
 }

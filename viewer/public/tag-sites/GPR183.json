@@ -37,7 +37,71 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR183-terminal_n-0-lit",
+      "gene_symbol": "GPR183",
+      "uniprot_acc": "P32249",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (M1)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "\u03b2-arrestin2 recruitment BRET assay (L1/L2): receptor was expressed and functional at the cell surface. Gi activation ebBRET assay (L6): HiBiT-GPR183 used to screen compounds for constitutive activity inhibition, confirming functional surface expression.",
+      "confidence": "high",
+      "rationale": "GPR183 is a GPCR with no endogenous signal peptide; residues 1\u201331 are extracellular per topology landmarks, making the N-terminus the only extracellular terminus. The paper (L2) explicitly describes a full-length construct with an exogenous cleavable signal sequence followed by a FLAG tag, placing the tag at the mature N-terminus (before residue 1, i.e., insert_after_residue=0). L1 confirms functional use in \u03b2-arrestin2 BRET assays, and L6 independently confirms N-terminal HiBiT tagging with Gi functional readout. Position 0 is \u22653 residues from TM1 (which begins at residue 32). Full-length human GPR183 expressed in HEK293 cells with an exogenous cleavable signal sequence (MKTIIALSYIFCLVFA) followed by an N-terminal FLAG (M1) tag immediately before GPR183 residue 1; GPR183 has no endogenous signal peptide (topology begins extracellular at residue 1), so the FLAG tag is presented at the mature N-terminus after signal-peptide cleavage. The same construct architecture is independently confirmed by HiBiT-GPR183 (L6), which also places a small tag at the N-terminus.",
+      "sources": [
+        {
+          "pmid": 42392303,
+          "citation": "PMID 42392303",
+          "claim": "Human or mouse GPR183 cDNAs were inserted into the pcDNA3.1 + vector with an upstream hemagglutinin cleavable signal sequence MKTIIALSYIFCLVFA and an N-terminal FLAG tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:31:53.872750+00:00",
+  "literature_notes": "L3, L4, and L5 report mNeonGreen insertions after residues named P231, T233, and K235 in the paper (PMC13392048). Searching the canonical sequence for the P\u2026T\u2026K pattern with 2-residue spacing in the ICL3 region identifies these as canonical P232, T234, and K236 (paper numbering is offset by +1 relative to UniProt canonical). All three positions fall within ICL3 (topology landmarks 218\u2013244, INTRACELLULAR). They are therefore not extracellular surface tag sites and are recorded in other_positions. L6 describes a HiBiT-GPR183 construct used in a Gi BRET assay; the HiBiT tag is at the N-terminus (consistent with L1/L2) and does not constitute a separate site. No ledger line supports any insertion in ECL1 (90\u2013101), ECL2 (169\u2013192), or ECL3 (267\u2013289).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 232,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "mNeonGreen insertion screened after P232 (paper calls P231, offset +1 from canonical) in ICL3 (topology 218\u2013244, intracellular); not a surface tag site."
+    },
+    {
+      "residue": 234,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "mNeonGreen insertion after T234 (paper calls T233, offset +1 from canonical) in ICL3 selected as the preferred biosensor junction; Z-factor 0.28\u00b10.13 in stable HEK293 cells (L5); intracellular, not a surface tag site."
+    },
+    {
+      "residue": 236,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "mNeonGreen insertion screened after K236 (paper calls K235, offset +1 from canonical) in ICL3 (topology 218\u2013244, intracellular); not a surface tag site."
+    }
+  ]
 }

@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "ADIPOR2",
+  "uniprot_acc": "Q86V24",
+  "sites": [
+    {
+      "site_id": "ADIPOR2-terminal_c-386-lit",
+      "gene_symbol": "ADIPOR2",
+      "uniprot_acc": "Q86V24",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 386,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L386",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence microscopy confirmed expression of tagged full-length protein in stably transduced HEK-293T cells (L4); fluorescent protein fusions (Clover, ~240 aa; Ruby2, ~240 aa) were also tolerated at this junction (L2), demonstrating that large C-terminal inserts do not prevent folding or membrane insertion. Adiponectin-receptor function was NOT MEASURED in the cited clips.",
+      "confidence": "high",
+      "rationale": "ADIPOR2 has an inverted topology: the N-terminus (1\u2013145) is intracellular and the C-terminus (370\u2013386) is extracellular. A C-terminal HA tag therefore lands on the extracellular face. Python confirmed residue 386 = L, 17 residues from the last TM helix (349\u2013369), well above the \u22653-residue minimum. L2 further shows that even a ~240 aa fluorescent protein is tolerated at this exact junction, making a short ALFA-tag insert highly plausible. L1 is the primary citation; L2, L3, and L4 corroborate the same position. Full-length ADIPOR2-HA construct cloned into a lentiviral expression vector (pHRSIN-PSFFV) and stably expressed in HEK-293T cells; the HA tag is encoded by primers at the C-terminus of the coding sequence. The same C-terminal junction also carries an S-epitope tag (ADIPOR2-S, L3) and fluorescent protein fusions (ADIPOR2-HA-Clover, ADIPOR2-HA-Ruby2, L2), all confirmed by immunofluorescence microscopy (L4). The C-terminus (residues 370\u2013386) is extracellular per the authoritative topology landmarks, 17 residues from the last TM boundary (349\u2013369).",
+      "sources": [
+        {
+          "pmid": 35993436,
+          "citation": "PMID 35993436",
+          "claim": "The coding sequences of ADIPOR2 and SCD1 were amplified from cDNA isolated from HEK\u2010293T cells using primers encoding a C\u2010terminal HA tag and cloned into pHRSIN\u2010P SFFV \u2010GFP\u2010P PGK \u2010Hygromycin R (Demaison et al , 2002 ), replacing GFP with the transgene."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 386,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:14:10.054542+00:00",
+  "literature_notes": "L2 (ADIPOR2-HA-Clover / ADIPOR2-HA-Ruby2) and L3 (ADIPOR2-S) and L4 (immunofluorescence confirmation) all converge on the same C-terminal junction as L1 and do not define an independent site; they are cited as corroborating evidence for the single site. L5 describes an N-terminal HA tag (HA::AdipoR2); the N-terminus of ADIPOR2 is intracellular (residues 1\u2013145 per topology landmarks), so this tag is cytoplasmic and is recorded in other_positions. No ledger line supports an insertion in any of the four short extracellular loops (169\u2013181, 235\u2013245, 295\u2013310).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "HA::AdipoR2 carries an N-terminal HA tag, but the ADIPOR2 N-terminus (residues 1\u2013145) is intracellular per the authoritative topology landmarks; this tag faces the cytoplasm, not the extracellular space."
+    }
+  ]
+}

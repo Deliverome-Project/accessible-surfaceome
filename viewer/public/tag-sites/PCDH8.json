@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "PCDH8",
+  "uniprot_acc": "O95206",
+  "sites": [
+    {
+      "site_id": "PCDH8-terminal_n-29-lit",
+      "gene_symbol": "PCDH8",
+      "uniprot_acc": "O95206",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 29,
+      "residue_before": "S",
+      "residue_after": "K",
+      "residue_label": "S29",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Extracellular surface display confirmed by anti-FLAG mAb M2 detection of the N-terminal cleavage fragment; ADAM13-mediated ectodomain shedding was observed, indicating the tagged full-length protein is correctly trafficked and membrane-anchored. Cadherin-specific adhesion function of pcdh8l was NOT MEASURED in this assay.",
+      "confidence": "medium",
+      "rationale": "pcdh8l is a PCDH8 paralog sharing the same single-pass type-I topology with a cleavable signal peptide followed by six extracellular cadherin repeats; the FLAG tag placed 'just before EC1' maps to the mature N-terminus, which for PCDH8 falls after signal peptide cleavage at residue 29 (S), making insert_after_residue=29 the only extracellular N-terminal junction. Python confirmed residue 29 = S and residue 30 = K, consistent with the topology landmarks. The site is 721 residues from the TM boundary (751), well beyond the \u22653-residue minimum. Position is topology_derived because the paper names a domain boundary ('before EC1') rather than a specific residue number in PCDH8 canonical numbering. Full-length FLAG-tagged pcdh8l (a PCDH8 paralog/related protein) co-transfected with ADAM13 in HEK293T cells; FLAG inserted 'just before the first cadherin repeat (EC1)', i.e. at the extracellular N-terminus of the membrane-anchored protein; extracellular accessibility confirmed by mAb M2 detection of the shed ectodomain fragment.",
+      "sources": [
+        {
+          "pmid": 28829038,
+          "citation": "PMID 28829038",
+          "claim": "A Flag tag (DYKDDDDK) was introduced just before the first cadherin repeat (EC1)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:16:59.431559+00:00",
+  "literature_notes": "All three ledger clips (L1, L2, L3) derive from the same paper (PMC5601995) and describe a single experimental construct: N-terminal FLAG-tagged pcdh8l. L2 is the most position-informative ('just before EC1') and was chosen as the primary supporting clip; L1 and L3 corroborate surface expression and extracellular accessibility. The evidence is indirect because pcdh8l is a Xenopus paralog, not human PCDH8 itself, so position_evidence is topology_derived rather than validated. No ledger line supports any internal loop insertion or C-terminal tag for PCDH8 or a close ortholog; no other sites are proposed.",
+  "literature_rejected": []
+}

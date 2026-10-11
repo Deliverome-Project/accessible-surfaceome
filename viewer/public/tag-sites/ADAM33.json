@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "ADAM33",
+  "uniprot_acc": "Q9BZ11",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:00:52.924606+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 and L2 (PMC4968941) describe the construct 'pTRES-hADAM33-SS-PRO-MP-3Flag', whose name explicitly encodes only the Signal Sequence + Prodomain + Metalloprotease domains with a C-terminal 3\u00d7Flag. The paper's own terminology ('sADAM33' = soluble ADAM33) and the domain abbreviations confirm this is a secreted ectodomain truncation, not a full-length membrane-anchored protein. It is excluded by the rule against 'a soluble ectodomain or single-domain construct secreted as a separate protein'. L3 (PMC10284970) describes 'ADAM33-N-HA', a C-terminal HA tag on the ADAM33-n isoform used for co-immunoprecipitation in thyroid cancer cells. ADAM33-n is a nuclear/cytoplasmic isoform of ADAM33 that lacks the transmembrane domain; its C-terminal HA tag is therefore intracellular (nuclear), not on the extracellular surface of a membrane-anchored protein. No ledger line reports a tag insertion tolerated at an extracellular position of full-length, membrane-anchored ADAM33. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 813,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "ADAM33-n isoform (nuclear/cytoplasmic, lacks TM domain) carries a C-terminal HA tag used for co-IP; the canonical C-terminus (residue 813) is intracellular, and the ADAM33-n isoform C-terminus is likewise intracellular/nuclear \u2014 not an extracellular surface position."
+    }
+  ]
+}

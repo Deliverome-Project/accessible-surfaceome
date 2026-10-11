@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "CD34",
+  "uniprot_acc": "P28906",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:15:03.699542+00:00",
+  "literature_notes": "All four ledger clips (L1\u2013L4) derive from a single study (PMID 10933966) that engineers CD34 itself as a transgenic surface-selection marker \u2014 it does not insert any epitope tag, fluorescent protein, transposon, or foreign domain into CD34. The three variants described (flCD34, tCD34, dCD34) differ only in the length of their cytoplasmic (intracellular) domain; the extracellular ectodomain (residues 32\u2013290) is untouched in all three. None of the four qualifying modalities (epitope-tag knock-in, FP fusion, transposon/domain-insertion screen, antibody-epitope insertion) is present. The clips therefore provide zero evidence for any extracellular tag-insertion site, and zero sites are reported.",
+  "literature_rejected": []
+}

@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR19-terminal_n-0-lit",
+      "gene_symbol": "GPR19",
+      "uniprot_acc": "Q15760",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Western blot confirmed expression of the HA-tagged GPR19 protein; no functional assay (e.g., signalling, ligand binding) was reported.",
+      "confidence": "high",
+      "rationale": "L1/L2/L3 (all PMC10218176) describe a full-length, membrane-anchored human GPR19 construct explicitly described as 'N-terminally tagged'. The topology landmarks place the N-terminus in an extracellular region (residues 1\u201367) with no signal peptide, so the tag prepends before M1 (insert_after_residue=0). This is the only extracellular terminus of GPR19, making the junction unambiguous by topology derivation. Python confirmed residue 1 = M and sequence length = 415. Full-length human GPR19 with an N-terminal triple-HA (3xHA) tag was transiently transfected into HEK293 cells; the construct was obtained from OriGene and expression was confirmed by Western blot 24 h post-transfection.",
+      "sources": [
+        {
+          "pmid": 37239845,
+          "citation": "PMID 37239845",
+          "claim": "The cDNAs for a hemagglutinin (3xHA)-N terminally tagged human GPR19 receptor (obtained from OriGene, Rockwille, MD, USA) and an empty plasmid (pcDNA3.1+: Invitrogen-Life Technologies) were transfected into the cells with Lipofectamine \u00ae 3000, using the manufacturers\u2019 instructions."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:31:32.040820+00:00",
+  "literature_notes": "L1, L2, and L3 all originate from PMC10218176 and describe the same construct; L1 is cited as the primary supporting line. L4 (PMC4775022) describes a C-terminal FLAG tag on mouse GPR19 cloned into c-Flag pcDNA3; the topology landmarks place the C-terminus (residues 331\u2013415) entirely intracellular, so this is recorded in other_positions only. No ledger line supports an insertion in any of the short extracellular loops (ECL1 123\u2013139, ECL2 202\u2013223, ECL3 298\u2013309) of GPR19, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 415,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Mouse GPR19 C-terminal FLAG tag (c-Flag pcDNA3 vector); the C-terminus of GPR19 is intracellular (topology: IC4 331\u2013415), so this tag faces the cytoplasm and is not a surface-accessible site."
+    }
+  ]
 }

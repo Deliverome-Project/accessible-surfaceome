@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "DSC2",
+  "uniprot_acc": "Q02487",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:20:17.799555+00:00",
+  "literature_notes": "All five ledger lines concern C-terminal fluorescent-protein fusions (pEGFP-N1, pCDNA3.1-eGFP, pCDNA3.1-mCherry; L1\u2013L4) or domain-deletion constructs (L5). DSC2 is a type I single-pass transmembrane protein: extracellular 28\u2013696, TM 697\u2013715, intracellular 716\u2013901. A C-terminal fusion therefore places the tag on the intracellular face (after residue 901), not on the extracellular surface. L5 reports deletions of EC1\u2013EC5 and the intracellular domain, which are not tag insertions and cannot ground a surface-tag site. L2 references Addgene plasmid #32233 ('Desmocollin 2-myc'), but the myc-tag position is unstated in the ledger \u2014 the rule explicitly excludes commercial plasmids with no stated position. No ledger line reports a tolerated epitope-tag or fluorescent-protein insertion on the extracellular face of full-length, membrane-anchored DSC2. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 901,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal EGFP fusion of full-length mDsc2b (pEGFP-N1) expressed in neonatal cardiomyocytes and localised to cell\u2013cell contacts; tag is on the intracellular face."
+    },
+    {
+      "residue": 901,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal eGFP and mCherry fusions of full-length human DSC2 (pCDNA3.1-eGFP/mCherry) confirmed functional; tag is on the intracellular face."
+    }
+  ]
+}

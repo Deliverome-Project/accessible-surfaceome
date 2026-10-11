@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PTCH2",
+  "uniprot_acc": "Q9Y6C5",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:48:24.174961+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe the same construct: full-length mouse Ptch2 with eGFP appended at the C-terminus (Ptch2GFP), used for ciliary localization studies. The topology landmarks place the C-terminus (residues 1112\u20131203) entirely within the intracellular compartment. PTCH2 also has no extracellular N-terminus: residues 1\u201357 are intracellular and the first TM helix begins at residue 58. No ledger line reports any insertion in an extracellular loop or at an extracellular face. Because the sole published tagged construct places the tag on the cytoplasmic side, zero extracellular surface tag sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1203,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "eGFP fused at the C-terminus of full-length mouse Ptch2; the C-terminus (residues 1112\u20131203) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

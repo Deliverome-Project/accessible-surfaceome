@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "ORAI1",
+  "uniprot_acc": "Q96D31",
+  "sites": [
+    {
+      "site_id": "ORAI1-internal-None-lit",
+      "gene_symbol": "ORAI1",
+      "uniprot_acc": "Q96D31",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular loop (ECL1 106-119 or ECL2 197-233)",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by quantum-dot labeling of fixed cells (L2/L3) and by anti-HA antibody labeling of live non-permeabilized cells (L4); channel function NOT MEASURED in these reports.",
+      "confidence": "medium",
+      "rationale": "L2 explicitly states the HA tag is located in the extracellular part of each ORAI1 subunit in the hexameric channel, and L3 confirms surface display by quantum-dot labeling of the full-length membrane-anchored protein. L4 independently corroborates an HA tag on the extracellular face of full-length Orai1 via antibody labeling of non-permeabilized cells. ORAI1 has two extracellular loops (ECL1: 106\u2013119, ECL2: 197\u2013233) and no extracellular terminus; neither the L2/L3 nor the L4 clip names a specific residue or loop, so the junction cannot be pinned and insert_after_residue is left null. The site is reported at region level only. Full-length membrane-anchored ORAI1 with an HA tag inserted into the extracellular portion of the protein, expressed in cells and labeled with quantum dots (PMC7831003, L2/L3) and independently confirmed by anti-HA antibody labeling of non-permeabilized cells expressing YFP-HA-Orai1 (PMC10501913, L4).",
+      "sources": [
+        {
+          "pmid": 33466866,
+          "citation": "PMID 33466866",
+          "claim": "The HA-tag is located in the extracellular part of each of the six ORAI1 proteins constituting the hexameric ORAI1 channel."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:03:38.079418+00:00",
+  "literature_notes": "L1 (PMC13554433) describes Myc-tagged ORAI1 constructs carrying K204A and I229A point mutations, but the Myc tag insertion position is never stated in the clip; this fails the 'tag position unstated' disqualification rule and was not promoted to a site. L5 (PMC8657799) describes V5-Orai1 whose topology was characterised by antibody labelling; the 'V5-Orai1' naming convention places V5 at the protein N-terminus, which falls in the intracellular span (residues 1\u201391 per the authoritative topology landmarks), so this is recorded in other_positions as an intracellular tag. ORAI1 has no extracellular terminus (both N- and C-termini are intracellular), so topology_derived position assignment is not applicable. The single qualifying site (HA in the extracellular loop) cannot be resolved to a specific residue or even to a specific loop (ECL1 vs ECL2) from the ledger evidence alone.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "V5-Orai1 places the V5 epitope at the protein N-terminus (residue 1), which lies in the intracellular span (residues 1\u201391); topology was confirmed by antibody labelling in the cited study, making this a validated intracellular tag position, not a surface site."
+    }
+  ]
+}

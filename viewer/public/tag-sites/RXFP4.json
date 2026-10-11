@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "RXFP4-terminal_n-0-lit",
+      "gene_symbol": "RXFP4",
+      "uniprot_acc": "Q8TDU9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by N-terminal FLAG detection assay in both WT and mutant RXFP4 constructs; functional impact of the FLAG tag itself not separately reported.",
+      "confidence": "high",
+      "rationale": "RXFP4 is a class A GPCR with no signal peptide; the N-terminus (residues 1\u201339) is extracellular per the authoritative topology landmarks, and the C-terminus (residues 312\u2013374) is intracellular, making the N-terminal prepend the sole extracellular terminus. The FLAG tag is placed before Met1 (insert_after_residue=0), giving residue_after='M'. The 39-residue extracellular N-terminal domain provides ample distance (\u226539 aa) from TM1 (starting at residue 40), well exceeding the \u22653-residue minimum. Two independent papers (PMC9886975 and PMC12102237) report this exact construct for surface expression measurement, and the same position tolerates the much larger BRIL fusion in structural studies, providing strong corroboration. Full-length human RXFP4 (membrane-anchored) was engineered with an N-terminal FLAG tag in both wild-type and mutant backgrounds specifically to measure surface expression by flow cytometry or ELISA. RXFP4 has no signal peptide; the extracellular N-terminus (residues 1\u201339) is the only extracellular terminus, so the FLAG tag prepends before Met1. The same construct strategy was independently reproduced in a second paper (L6/PMC12102237). L1/L3/L4/L5 further corroborate that the same N-terminal position tolerates even large insertions (BRIL, ~106 aa) in full-length membrane-anchored RXFP4.",
+      "sources": [
+        {
+          "pmid": 36717591,
+          "citation": "PMID 36717591",
+          "claim": "N-terminal Flag tag was added to both WT and mutant receptors for surface expression measurement."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:06:12.299204+00:00",
+  "literature_notes": "All six ledger lines converge on the extracellular N-terminus of full-length membrane-anchored RXFP4. L2 and L6 (two independent papers) report a short FLAG epitope tag at the N-terminal prepend position used explicitly for surface expression measurement \u2014 this is the primary surface tag site. L1, L3, L4, and L5 report BRIL (~106 aa) inserted at the same N-terminal position in structural constructs, corroborating that the position tolerates insertions; BRIL is not a short epitope tag per the prompt criteria but validates the same junction. The C-terminal NanoBiT/LgBiT fusions (L3, L5) are at the intracellular C-terminus (residues 312\u2013374) and are recorded in other_positions. No ledger line supports any internal extracellular loop insertion for RXFP4. ECL1 (100\u2013116), ECL2 (182\u2013208), and ECL3 (272\u2013289) are not addressed by any ledger line and are therefore not proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 374,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "NanoBiT (and LgBiT per L5) fused at the C-terminus of full-length RXFP4 via a 15-aa linker; the C-terminus lies in the intracellular domain (residues 312\u2013374) and is not a surface tag site."
+    }
+  ]
 }

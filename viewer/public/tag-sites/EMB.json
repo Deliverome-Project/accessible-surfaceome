@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "EMB",
+  "uniprot_acc": "Q6PCB8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:26:52.252689+00:00",
+  "literature_notes": "Three ledger lines were evaluated (L1, L2, L3), all from the same PMC source (PMC12894981). L1 describes a GFP-tagged MCT2-embigin fusion construct: this is a chimeric protein of two proteins, and the clip does not state on which protein's terminus the GFP sits, nor any residue number \u2014 the tag position on embigin specifically is indeterminate. L2 describes 'RFP tagged embigin' with no specification of N-terminal vs C-terminal placement; embigin is a type I single-pass protein with an extracellular N-terminus (mature residue 33, after SP cleavage at 32) and an intracellular C-terminus (residue 327), so both termini exist and neither is ruled out by the clip alone. The topology_derived rule requires that the clip establish a tag at a terminus AND that exactly one terminus is extracellular \u2014 the first condition is not met because the clip is silent on which terminus carries the RFP. Applying topology_derived here would require structural inference (that researchers would naturally tag the extracellular face), which is explicitly forbidden. L3 describes a confocal microscopy assay for expression and localization of MCT1-embigin fusion and embigin constructs but names no tag, no residue, and no terminus. No clip names a residue, a terminus, or an extracellular face for any tag on embigin; therefore zero sites qualify.",
+  "literature_rejected": []
+}

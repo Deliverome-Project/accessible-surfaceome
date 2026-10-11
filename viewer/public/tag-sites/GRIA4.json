@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRIA4",
+  "uniprot_acc": "P48058",
+  "sites": [
+    {
+      "site_id": "GRIA4-terminal_n-20-lit",
+      "gene_symbol": "GRIA4",
+      "uniprot_acc": "P48058",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "M",
+      "residue_after": "G",
+      "residue_label": "M20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA flow cytometry on non-permeabilized cells (GluA1/GluA2, L3) and by extracellular HA epitope labeling in X. laevis oocytes (GluA1, L4). Electrophysiological function of the HA-tagged construct is NOT MEASURED in the ledger.",
+      "confidence": "medium",
+      "rationale": "All four ledger lines converge on the same insertion site \u2014 immediately after the signal-peptide cleavage site, before the large extracellular ATD \u2014 in GluA1 and GluA2, which are the closest paralogues of GluA4 (GRIA4). Python confirms that GRIA4 residue 20 (M) is the last residue of the signal peptide and residue 21 (G) is the first residue of the mature extracellular ATD, placing the tag 526 residues from TM1 and well clear of any TM boundary. The junction is topology-derived from the landmarks (not chosen among alternatives), making this the only extracellular N-terminal position the ledger supports. L1/L2/L3 (PMC12152890) report full-length GluA1 and GluA2 constructs with an HA tag inserted between the signal peptide and the amino-terminal domain, expressed in HEK293-F cells; L4 (PMC12965324) confirms the same design for GluA1 in X. laevis oocytes. GluA1/GluA2/GluA4 are AMPA-receptor paralogues sharing identical topology; the signal-peptide/ATD junction is structurally conserved. For GRIA4 the signal peptide spans residues 1\u201320 (landmarks), placing the junction at residue 20|21.",
+      "sources": [
+        {
+          "pmid": 40316023,
+          "citation": "PMID 40316023",
+          "claim": "An amino-terminal hemagglutinin (HA) tag between the signal peptide and the amino-terminal domain served as the extracellular epitope."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:45:31.013274+00:00",
+  "literature_notes": "All four ledger lines describe GluA1 and/or GluA2 (GRIA1/GRIA2), not GluA4 (GRIA4) directly; the site is therefore classified as inferred/indirect. No ledger line names a specific residue number for the GluA1/GluA2 junction, so cited_tag_residue is null. No ledger line supports any internal extracellular loop site or C-terminal extracellular site for GRIA4 or its paralogues. The second extracellular loop (residues 647\u2013813, between TM2 and TM3) is not addressed by any ledger line and is therefore not proposed.",
+  "literature_rejected": []
+}

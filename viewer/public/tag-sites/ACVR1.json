@@ -1,0 +1,68 @@
+{
+  "has_data": true,
+  "gene_symbol": "ACVR1",
+  "uniprot_acc": "Q04771",
+  "sites": [
+    {
+      "site_id": "ACVR1-terminal_n-20-lit",
+      "gene_symbol": "ACVR1",
+      "uniprot_acc": "Q04771",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "S",
+      "residue_after": "M",
+      "residue_label": "S20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Halo / SNAP (5xGly linker)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface localisation confirmed by impermeable fluorescent-ligand staining (CA-Alexa488 / BG-Alexa488; L7). Halo-ACVR1.R206H-HiBiT (same N-terminal Halo junction) displayed expected neoresponsiveness to Activin A and hyperresponsiveness to BMP7 in Acvr1-/- mESCs, demonstrating preserved receptor function (L9).",
+      "confidence": "high",
+      "rationale": "L5 and L6 explicitly state that hALK2 (ACVR1) Halo/SNAP fusions are placed 'downstream the signal peptide sequence', which by the authoritative landmarks means after residue 20 (the last signal-peptide residue, S) and before residue 21 (M, the mature N-terminus). Python confirms seq[19]='S' and seq[20]='M'. The extracellular span (21\u2013125, 105 residues) is ample for a ~20 aa tag plus linkers, and the junction is 105 residues from the TM boundary (126), well beyond the \u22653-residue minimum. L9 independently validates surface display and full BMP/Activin signalling function of a construct carrying the identical N-terminal Halo junction. Full-length hALK2 (ACVR1) and hALK2-R206H were N-terminally fused with Halo- or SNAP-tags separated by a 5x glycine linker explicitly placed downstream of the signal peptide sequence (residues 1\u201320) in pcDNA3.1 expression vectors and transfected into mammalian cells. Surface display was confirmed by impermeable CA-Alexa488 / BG-Alexa488 staining (L7). An independent construct (Halo-ACVR1-HiBiT, L8) places the same Halo tag N-terminally and was validated for surface localisation and preserved signalling (L9). ED-epitope-tagged ALK2 (myc or HA, L3/L11) in COS7 cells is consistent with the same junction: ACVR1 is a single-pass type I receptor whose only extracellular region is residues 21\u2013125, so an extracellular-domain tag can only sit at this terminus.",
+      "sources": [
+        {
+          "pmid": 36635368,
+          "citation": "PMID 36635368",
+          "claim": "For the generation of the N-terminally Halo- and SNAP-tagged BMP/TGF\u03b2 receptor library, hALK1-hALK6, rALK7,hALK2-R206H as well as mAlk1 and zAlk1 were subcloned into pcDNA3.1 mUnc5b-SNAP/Halo and hACVR2A, hACVR2B, hTGFBR2 were subcloned into pcDNA3.1 hBMPR2-LF-SNAP/Halo in between EcoRI and NotI thereby replacing the respective receptor ORF."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 20,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:55:28.793351+00:00",
+  "literature_notes": "L3 and L11 describe ALK2/ACVR1 carrying an 'ED epitope tag (myc or HA)' in COS7 cells but name no specific residue or junction. Because ACVR1 is a single-pass type I receptor with exactly one extracellular region (residues 21\u2013125) and no extracellular C-terminus, topology_derived reasoning places any extracellular-domain tag at the same insert_after_residue=20 junction already validated by L5/L6. These lines therefore corroborate the single site rather than defining a second one. L8 (Halo-ACVR1-HiBiT) names both an N-terminal Halo and a C-terminal HiBiT; the N-terminal Halo maps to the same surface site (insert_after_residue=20), while the C-terminal HiBiT is intracellular and is recorded in other_positions. L10 (zebrafish acvr1l-HA, C-terminal) is an ortholog with an intracellular C-terminal tag and is also recorded in other_positions. No ledger line supports an internal extracellular-loop insertion for ACVR1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 509,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag inserted at the 3\u2032 end of the full-length hACVR1 coding sequence; the C-terminus (residue 509, C) lies within the intracellular kinase domain (residues 147\u2013509) and is not accessible on the extracellular face."
+    },
+    {
+      "residue": 509,
+      "kind": "intracellular",
+      "supporting_clip_id": "L8",
+      "note": "C-terminal HiBiT tag on Halo-ACVR1-HiBiT; same intracellular C-terminus (residue 509, C); not a surface-accessible site."
+    }
+  ]
+}

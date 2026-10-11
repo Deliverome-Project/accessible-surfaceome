@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "DRD3-terminal_n-0-lit",
+      "gene_symbol": "DRD3",
+      "uniprot_acc": "P35462",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface FLAG immunoreactivity confirmed in non-permeabilized HEK293T cells; no functional (signaling/binding) assay reported in this clip.",
+      "confidence": "high",
+      "rationale": "DRD3 has no signal peptide in the canonical sequence; the N-terminus (residues 1\u201331) is the sole extracellular terminus, so any N-terminal tag must be prepended before M1 (insert_after_residue=0). No paper in the ledger names a specific junction residue, but the topology leaves exactly one extracellular terminus, making the position topology-derived rather than inferred. L5 provides the clearest surface-confirmation evidence (non-permeabilized cell immunofluorescence), and the same N-terminal tagging strategy is independently corroborated by L1 (HA), L3/L4 (VSV-SNAP, htrFRET surface confirmation), L7 (SNAP), and L8 (FLAG in neurons). Full-length human D3R with N-terminal cleavable HA signal peptide followed by FLAG (DYKDDDDK) expressed in HEK293T cells; Gly-9 and Ser-9 polymorphic variants both tested. Surface FLAG immunoreactivity detected on non-permeabilized cells, confirming extracellular display of the tag.",
+      "sources": [
+        {
+          "pmid": 40290808,
+          "citation": "PMID 40290808",
+          "claim": "D) Surface FLAG immunoreactivity on HEK293T cells expressing the FLAG-tagged Gly-9 or Ser-9 D 3 R\u2013NP constructs."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:19:55.530833+00:00",
+  "literature_notes": "All eight ledger lines (L1\u2013L8) support N-terminal tagging of full-length, membrane-anchored DRD3; none names a specific residue number for the junction. Because DRD3 has no endogenous signal peptide and the N-terminus (1\u201331) is the sole extracellular terminus, the position is unambiguously topology-derived at insert_after_residue=0. Several constructs (L3, L5/L6) prepend an exogenous signal peptide upstream of the tag to boost surface trafficking; the tag itself is still placed before native M1. No ledger line reports a tag insertion in ECL1 (89\u2013103), ECL2 (171\u2013187), or ECL3 (352\u2013365), so no internal sites are proposed. The C-terminal Venus (L2) and NP tag (L6) land in the intracellular C-terminus (residues 387\u2013400) and are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 400,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal Venus fluorescent protein fused to full-length D3R; the C-terminus (residues 387\u2013400) is intracellular per topology, so this tag faces the cytoplasm and is not a surface-display site."
+    },
+    {
+      "residue": 400,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "C-terminal NP tag (GVTGWRLCERILA) with linker fused to full-length D3R-NP construct; C-terminus is intracellular, so this tag is cytoplasmic and not suitable for extracellular surface labelling."
+    }
+  ]
 }

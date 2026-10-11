@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EFNA1",
+  "uniprot_acc": "P20827",
+  "sites": [
+    {
+      "site_id": "EFNA1-terminal_n-18-lit",
+      "gene_symbol": "EFNA1",
+      "uniprot_acc": "P20827",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "YFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "NOT MEASURED \u2014 the clip states the construct was made and used in experiments but reports no specific surface-expression or functional assay result for the tagged protein.",
+      "confidence": "medium",
+      "rationale": "EFNA1 is GPI-anchored (topology: all-O from residue 19 to 205, no M or I residues), so the C-terminus is covalently attached to the GPI lipid anchor and is not accessible for surface tagging. The mature N-terminus after signal-peptide cleavage (junction 18|19, A|D) is therefore the sole extracellular terminus and the only position consistent with a full-length membrane-anchored tagged construct. The YFP fusion reported in L2 must reside here by elimination; insert_after_residue=18 is computed from the signal-peptide landmark (residues 1\u201318), not chosen arbitrarily. Full-length human YFP-tagged ephrin-A1 was engineered and used in cell-based experiments (PMC7957476). EFNA1 is a GPI-anchored protein with no transmembrane or intracellular domain; the mature N-terminus (residue 19, after signal-peptide cleavage at residue 18) is the only free extracellular terminus available for tagging.",
+      "sources": [
+        {
+          "pmid": 33804570,
+          "citation": "PMID 33804570",
+          "claim": "Human YFP-tagged ephrin-A1 was constructed as previously described [ 19 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "detected_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:23:15.784672+00:00",
+  "literature_notes": "L1 (PMC7957476) was evaluated and rejected: the pcDNA3.1 construct covers residues 19\u2013174, which omits the GPI-anchor signal sequence (approximately residues 175\u2013205). A construct lacking the GPI signal is secreted as a soluble ectodomain rather than membrane-anchored, disqualifying it under the rule excluding soluble ectodomain constructs. The GST-fusion arm of L1 (19\u2013205 in pGEX6P-1) is a prokaryotic soluble fusion and likewise excluded. L2 names no residue; because EFNA1 has no TM helix and no intracellular domain, exactly one extracellular terminus exists (the mature N-terminus at residue 19), making the position topology-derived rather than inferred. YFP (~239 aa) is larger than the target short epitope tag, but the fusion precedent supports the junction as tolerant of an N-terminal appendage; a short ALFA or similar tag at the same position is the intended application.",
+  "literature_rejected": []
+}

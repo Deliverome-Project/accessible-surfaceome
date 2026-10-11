@@ -218,9 +218,9 @@
       "tag_length_aa": null,
       "linker": null,
       "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "Surface labeling confirmed by N-terminal myc staining (L6). SNAP-GIPR constructs (L9/L10/L12/L13) show agonist-stimulated receptor trafficking (internalization following GIP(1-42) stimulation) in INS-1 832/3 beta cells, confirming surface expression and preserved receptor function. SNAPf-GIPR (L16/L17) confirmed at plasma membrane by cell-impermeant SNAP probe in AD293 cells.",
+      "functional_impact_measured": "Surface labeling confirmed by multiple assays. Receptor internalization assays performed with N-terminally tagged constructs (L8, L9, L10), confirming functional trafficking. Cell-impermeant SNAP probe confirms plasma membrane surface display (L14). GIP-stimulated signaling and trafficking preserved.",
       "confidence": "high",
-      "rationale": "The signal peptide spans residues 1\u201321 (Q is residue 21, the last SP residue); the mature N-terminus begins at R22. L6 explicitly states the myc-tag was inserted 'immediately downstream of the predicted signal peptide', which by the topology landmarks is insert_after_residue=21. Python confirms seq[20]='Q' and seq[21]='R'. The tag sits in the large extracellular N-terminal domain (ECD 22\u2013136), >115 residues from TM1 (137), and is sterically unconstrained. Six independent ledger lines (L6, L8, L9/L10, L16, L18) all place distinct tags at this same extracellular N-terminal junction with confirmed surface expression and, in the SNAP-GIPR studies, preserved agonist-stimulated trafficking. L6 (PMC4156404): full-length human GIPR expressed in HEK-293 cells with a myc-tag inserted immediately downstream of the predicted signal peptide (residues 1\u201321), placing the tag at the extracellular mature N-terminus (residue 22 onward). The same junction is independently confirmed by L8 (3\u00d7HA at N-terminus, internalization studies), L9/L10/L12/L13 (N-terminal SNAP-GIPR from Cisbio, stably expressed in HEK-293 and INS-1 832/3 cells), L16/L17 (N-terminal SNAPf replacing endogenous SP, AD293 cells), and L18 (FLAG+mNeonGreen at N-terminus, pcDNA constructs). [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 21; entailment_verified: True]",
+      "rationale": "The signal peptide spans residues 1-21 (Q at position 21 is the last SP residue); the mature N-terminus begins at R22. L6 explicitly states the myc tag was placed 'immediately downstream of the predicted signal peptide', which by topology uniquely resolves to insert_after_residue=21 (between Q21 and R22). This is the only extracellular N-terminal position available on GIPR, confirmed by at least six independent tagged constructs across multiple labs (L6, L8, L9, L13, L15, L17). The 115-residue extracellular domain (22-136) provides ample space for a short epitope tag, and internalization assays confirm functional receptor trafficking is preserved. Full-length human GIPR with myc tag introduced immediately downstream of the predicted signal peptide (SP residues 1-21), expressed in HEK cells for surface labeling. Multiple independent studies (L8: 3X-HA+EGFP for internalization; L9/L17: N-terminal SNAP for real-time internalization; L10: SNAP-GIPR in INS-1 beta cells for trafficking; L13: SNAPf replacing SP for surface expression; L15: FLAG+mNG at N-terminus) all place tags at this same extracellular N-terminal position.",
       "sources": [
         {
           "pmid": 25191754,
@@ -230,7 +230,12 @@
       ],
       "plddt": null,
       "conservation_rank": null,
-      "median_conservation": null
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -568,10 +573,18 @@
     }
   ],
   "schema_version": "1.0.0",
-  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
-  "prompt_version": "1.3.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-10T21:06:13.228759+00:00",
-  "literature_notes": "C-terminal tags (V5: L1/L2; eYFP: L3/L5/L7; SYFP2: L4; EGFP: L8; Flag: L14/L15) all reside in the intracellular C-tail (IC4: 396\u2013466) and are excluded as non-extracellular. L19 (HiBiT extracellular detection) does not state the insertion position and cannot be pinned to a residue. L20 (Flag/HA by site-directed mutagenesis) likewise names no residue or loop. No ledger line grounds an internal extracellular loop (ECL1 192\u2013218, ECL2 281\u2013293, ECL3 362\u2013368) insertion for GIPR. The single qualifying site is the extracellular N-terminus after signal peptide cleavage (insert_after_residue=21), supported by six independent papers using myc, 3\u00d7HA, SNAP, SNAPf, FLAG, and mNeonGreen tags.",
-  "literature_rejected": []
+  "generated_at": "2026-10-11T09:12:02.780594+00:00",
+  "literature_notes": "C-terminal tags (V5: L1/L2; eYFP: L3/L5/L7; SYFP2: L4; FLAG: L11/L12; EGFP component of L8; SmBiT: L13) are all placed at position 466, which falls within the intracellular C-terminal tail (ICL4: 396-466). These are tolerated and functionally silent (L12 shows EC50=2nM for GIP-stimulated cAMP), but they are cytoplasmic and therefore not extracellular surface tag sites; they are recorded in other_positions. L16 (HiBiT extracellular detection) implies an N-terminal extracellular tag but names no residue and no new position beyond what L6 already pins; it is not a separate site. L18 (Flag/HA by site-directed mutagenesis) names no residue or loop; the position cannot be pinned and the clip is dropped. No internal extracellular loop insertions are reported in the ledger for GIPR.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 466,
+      "kind": "intracellular",
+      "supporting_clip_id": "L12",
+      "note": "C-terminal FLAG tag on full-length GIPR in HEK293 cells is tolerated with preserved GIP-stimulated cAMP signaling (EC50=2nM), but position 466 lies within the intracellular C-terminal tail (ICL4: 396-466) and is not an extracellular surface site."
+    }
+  ]
 }

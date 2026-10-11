@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "NRP2",
+  "uniprot_acc": "O60462",
+  "sites": [
+    {
+      "site_id": "NRP2-terminal_n-20-lit",
+      "gene_symbol": "NRP2",
+      "uniprot_acc": "O60462",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "V",
+      "residue_after": "R",
+      "residue_label": "V20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface localization confirmed by non-permeabilized anti-FLAG staining in COS-7 cells; no functional assay reported in this clip.",
+      "confidence": "high",
+      "rationale": "Non-permeabilized surface staining with an anti-FLAG antibody proves the FLAG epitope is extracellular. NRP2 topology provides exactly one extracellular terminus \u2014 the mature N-terminus beginning at residue 21 after cleavage of the 20-residue signal peptide \u2014 so the tag must be inserted after residue 20 (V20 | R21). Python verification confirms seq_dict[20]='V' and seq_dict[21]='R'. The tag is 844 residues from the TM boundary, well clear of any steric constraint. Flag-tagged full-length Nrp2 expressed in COS-7 cells; surface staining with anti-FLAG antibody on non-permeabilized cells confirmed the FLAG epitope is displayed on the plasma membrane. No residue number is stated in the clip, but NRP2 is a type I transmembrane protein: the only extracellular terminus is the mature N-terminus (residue 21 onward after signal-peptide cleavage at residue 20). A C-terminal FLAG would be cytoplasmic and invisible to non-permeabilized surface staining, so the tag must sit after the signal-peptide cleavage site, i.e., insert_after_residue = 20.",
+      "sources": [
+        {
+          "pmid": 37010951,
+          "citation": "PMID 37010951",
+          "claim": "COS-7 cells transfected with flag-tagged wild-type Nrp2 or Nrp1 expression plasmids were subjected to surface staining with a flag antibody to visualize Nrp localization on the plasma membrane."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:17:41.510163+00:00",
+  "literature_notes": "L1 and L2 are from the same paper and report the same FLAG-tagged NRP2 construct; L1 is used as the primary clip. The position is topology_derived because neither clip names a residue number \u2014 the junction is uniquely determined by the signal-peptide cleavage site (residue 20/21) and the fact that non-permeabilized surface staining proves the FLAG is extracellular, ruling out a C-terminal placement. L3 (NRP2-HA) uses the standard '-HA' C-terminal naming convention; NRP2's C-terminus (residues 889\u2013931) is intracellular, so this is an intracellular tag and is recorded in other_positions. L4 explicitly states 'C-terminal FLAG epitope tag', which is likewise intracellular and recorded in other_positions. L5 reports Flag-tagged full-length NRP2 in HEK293 cells used in infection assays but names no tag position (N- or C-terminal unspecified); it cannot independently pin a new surface site and does not add a second site. No ledger line supports an internal extracellular loop insertion for NRP2.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 931,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "L4 explicitly states the NRP2 ORF carries a C-terminal FLAG tag; residue 931 (A) is the last residue of the intracellular tail (889\u2013931), so this tag faces the cytoplasm and is not a surface site."
+    },
+    {
+      "residue": 931,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "L3 names an 'NRP2-HA' construct; the '-HA' suffix denotes a C-terminal HA tag appended after residue 931 (A), which lies in the intracellular domain (889\u2013931) and is not accessible on the cell surface."
+    }
+  ]
+}

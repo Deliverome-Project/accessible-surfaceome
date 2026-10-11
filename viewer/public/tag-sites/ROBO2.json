@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ROBO2",
+  "uniprot_acc": "Q9HCK4",
+  "sites": [
+    {
+      "site_id": "ROBO2-terminal_n-21-lit",
+      "gene_symbol": "ROBO2",
+      "uniprot_acc": "Q9HCK4",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G21",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xHA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Axon localization assay: tagged mRobo2 properly localized to axons in the embryonic ventral nerve cord at levels comparable to Drosophila Robo1. Functional assay: mRobo2 induced high levels of ectopic midline repulsion when misexpressed with elav-GAL4, demonstrating preserved Slit-binding and signalling function.",
+      "confidence": "high",
+      "rationale": "ROBO2 is a single-pass type I receptor with a large extracellular domain (residues 22-859) and a single intracellular C-terminus; the only extracellular terminus is the mature N-terminus beginning at S22. Multiple ledger lines (L1-L4, L12) document N-terminal HA tags on full-length membrane-anchored mouse Robo2, and L5-L8, L11 document the same on Drosophila Robo2; L9-L10 document a pHluorin tag on the extracellular domain of Robo2 confirming surface display. The human ROBO2 signal peptide ends at G21 (computed from landmarks); insert_after_residue=21 places the tag at the mature N-terminus, 838 residues from the TM boundary, well clear of any structural constraint. L4 is chosen as the primary clip because it provides both surface localization and functional (midline repulsion) validation for the closest ortholog (mouse). Full-length mouse Robo2 (mRobo2, NP_780758.3) bearing an N-terminal 3xHA tag (tag placed before P31, the first mature residue after the mouse signal peptide) was expressed as a UAS transgene in Drosophila neurons via elav-GAL4. The construct is full-length and membrane-anchored. Human ROBO2 signal peptide spans residues 1-21 (mature N-terminus = S22); the analogous junction in human ROBO2 is after residue 21 (G), before S22, derived from topology since no human residue number is cited in the ledger.",
+      "sources": [
+        {
+          "pmid": 40609949,
+          "citation": "PMID 40609949",
+          "claim": "We found that transgenic mRobo1, mRobo2, mRobo3.1, and mRobo3.2 proteins were expressed at similar levels to transgenic Drosophila Robo1 when misexpressed with elav-GAL4 , and all of the mouse Robo proteins were properly localized to axons in the embryonic ventral nerve cord ( Figure 1G \u2013 K ). mRobo1 and mRobo2 were able to induce high levels of ectopic midline repulsion ( Figure 1C , D ), but mRobo3.1 and mRobo3.2 exhibited no detectable phenotypic effect under equivalent misexpression conditions ( Figure 1E , F )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T14:03:28.079797+00:00",
+  "literature_notes": "All twelve ledger lines converge on a single site: the extracellular N-terminus of full-length Robo2 after signal-peptide cleavage. L1-L4 and L12 document N-terminal HA tags on mouse Robo2 (closest ortholog); L5-L8 and L11 document the same on Drosophila Robo2 (more distant ortholog); L9-L10 document a pHluorin tag on the extracellular domain of Robo2 (species not specified in clip, likely mouse per Pignata et al. 2019), which for a type I single-pass receptor is the same N-terminal position. No ledger line names a specific human ROBO2 residue, so position_evidence is topology_derived: the signal peptide ends at G21 (landmarks), the mature N-terminus is S22, and insert_after_residue=21 is the unique extracellular terminus. No internal extracellular loop insertions are reported in the ledger. L8 mentions 'Robo2 \u0394C myc' (C-terminal myc on a cytoplasmic-domain-truncated construct) but this is a truncated non-standard construct and the myc tag position relative to the TM domain is not specified; it was not promoted to a site or other_position. No function-abrogating or intracellular insertions are named in the ledger for ROBO2.",
+  "literature_rejected": []
+}

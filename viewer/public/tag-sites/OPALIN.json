@@ -1,0 +1,67 @@
+{
+  "has_data": true,
+  "gene_symbol": "OPALIN",
+  "uniprot_acc": "Q96PE5",
+  "sites": [
+    {
+      "site_id": "OPALIN-terminal_n-0-lit",
+      "gene_symbol": "OPALIN",
+      "uniprot_acc": "Q96PE5",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ECFP / GFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface staining (anti-GFP, non-permeabilized, 4\u00b0C) detected only the N-terminal ECFP fusion, confirming the N-terminus is extracellular and the tag is surface-accessible. The C-terminal EYFP fusion was detected only after permeabilization, confirming the C-terminus is intracellular. GFP-TMEM10 showed plasma membrane localization and process accumulation. No myelin-formation or other functional assay was reported for the tagged constructs.",
+      "confidence": "high",
+      "rationale": "The topology has no signal peptide (raw topology begins with O at residue 1), so the N-terminus is the sole extracellular terminus and the only surface-accessible junction. L5 definitively establishes this by showing that ECFP-Tmem10 (N-terminal fusion) is detected by anti-GFP antibody on non-permeabilized living cells, while Tmem10-EYFP (C-terminal fusion) is not, placing the N-terminal junction unambiguously on the extracellular face. L7/L8 corroborate with GFP-TMEM10 plasma membrane signal. insert_after_residue=0 (prepend) is the only valid extracellular junction; residue_after is M (residue 1, verified from sequence). PMC2396630 generated ECFP-Tmem10 (N-terminal ECFP fusion) and Tmem10-EYFP (C-terminal EYFP fusion) of full-length human Tmem10 (OPALIN) expressed in Oli-neu cells; live-cell anti-GFP surface staining at 4\u00b0C was used to determine membrane orientation. PMC6400977 independently expressed GFP-TMEM10 in Oli-neu cells and detected GFP signal on the plasma membrane and along leading edges of extending processes.",
+      "sources": [
+        {
+          "pmid": 18439243,
+          "citation": "PMID 18439243",
+          "claim": "We found that only the N-terminal ECFP-fusion protein was detectable by surface staining, whereas premeabilization of the cells uncovered both fusion proteins (Fig. 3B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:24:05.012554+00:00",
+  "literature_notes": "L6 (pcDNA3.1myc, C-terminal Myc) and L9-L11 (OPALIN-HA) both place tags at the C-terminus (residue 141), which is intracellular per L5; these are recorded in other_positions. L9-L11 use the naming convention 'OPALIN-HA' (suffix = C-terminal), and the 'surface display' language in L9 refers to the protein being membrane-localised, not that the HA epitope is extracellularly accessible \u2014 consistent with the intracellular C-terminus established by L5. No ledger line supports an internal extracellular loop insertion: the extracellular domain (residues 1\u201335) is a single uninterrupted stretch with no loop sub-structure, and no paper reports a tag inserted within it at a specific internal residue. The N-terminal prepend is therefore the only qualifying surface site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 141,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "pcDNA3.1myc places a Myc tag at the C-terminus (residue 141 E); L5 shows the C-terminus is intracellular (Tmem10-EYFP detected only after permeabilization)."
+    },
+    {
+      "residue": 141,
+      "kind": "intracellular",
+      "supporting_clip_id": "L9",
+      "note": "OPALIN-HA (C-terminal HA by naming convention) expressed in HEK293T cells; 'surface display' refers to membrane localisation of the protein, not extracellular accessibility of the HA tag, which is at the intracellular C-terminus."
+    }
+  ]
+}

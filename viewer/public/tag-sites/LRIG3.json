@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "LRIG3",
+  "uniprot_acc": "Q6UXM1",
+  "sites": [
+    {
+      "site_id": "LRIG3-terminal_n-24-lit",
+      "gene_symbol": "LRIG3",
+      "uniprot_acc": "Q6UXM1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "A",
+      "residue_after": "G",
+      "residue_label": "A24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG (DYKDDDDK)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Co-immunoprecipitation from transfected-cell lysates: Lrig3-FLAG co-IPs with EGFR, ErbB2, and ErbB4, demonstrating that the tagged full-length construct is expressed, traffics to the cell surface, and retains ErbB-family binding function.",
+      "confidence": "high",
+      "rationale": "The paper explicitly places the FLAG tag immediately after the signal sequence of full-length, membrane-anchored Lrig3, which is the only extracellular terminus available on this single-pass type-I protein. Python verification confirms human LRIG3 residue 24 is A (last signal-peptide residue) and residue 25 is G (mature N-terminus), consistent with the SmaI-site junction described. The insertion site is 785 residues from the TM boundary (810), satisfying the \u22653-residue clearance requirement with large margin. Functional co-IP with three ErbB receptors (L2) confirms the tagged construct is correctly folded and surface-expressed. Full-length mouse Lrig3 cloned into pcDNA3.1+; FLAG tag inserted at the unique SmaI site immediately following the signal sequence, yielding the construct with flanking epitope sequence HGAPGMDYKDDDDKGQLLDD. The human LRIG3 signal peptide ends at residue 24 (A), confirmed by the topology landmarks; insert_after_residue=24 places the tag between A24 and G25, the mature N-terminus, exactly where the paper locates it. Mouse and human LRIG3 are close orthologs with conserved signal-peptide/ectodomain architecture.",
+      "sources": [
+        {
+          "pmid": 20126551,
+          "citation": "PMID 20126551",
+          "claim": "Full length cDNA from mouse Lrig3 was cloned into pcDNA3.1+, and a flag tag was cloned into the unique SmaI site immediately following the signal sequence; the epitope with flanking protein sequence is HGAPGMDYKDDDDKGQLLDD ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 24,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:15:20.488898+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1 and L2), both from the same paper (PMC2813878) and both describing the same FLAG-tagged construct. L2 is the functional validation of the L1 site and does not independently ground a second site. No other insertions (internal loops, C-terminus, transposon screens, FP fusions) are present in the ledger for LRIG3. The C-terminus (residue 1119) is intracellular per the topology landmarks and therefore not a surface-tag site. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

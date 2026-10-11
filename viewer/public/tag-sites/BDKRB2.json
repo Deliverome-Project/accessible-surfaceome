@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "BDKRB2-terminal_n-0-lit",
+      "gene_symbol": "BDKRB2",
+      "uniprot_acc": "P30411",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Flag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "ONE-GO Gq BRET assay performed; receptor is functional in Gq signaling with the N-terminal Flag tag present.",
+      "confidence": "medium",
+      "rationale": "B2R is a GPCR with its N-terminus extracellular (topology landmarks: EXTRACELLULAR 1\u201361, TM1 begins at residue 62). The canonical sequence carries no endogenous signal peptide (raw topology is all-O from residue 1). The construct uses an exogenous HA signal peptide to drive membrane insertion; after SP cleavage the Flag tag sits at the extracellular N-terminus, before Met1 of B2R (insert_after_residue = 0, residue_after = M). No specific junction residue is named in the paper, but exactly one extracellular terminus exists, so the position is topology_derived. The 61-residue extracellular N-terminal domain provides ample steric room for a short epitope tag. Full-length human B2R (residues 1\u2013391) cloned into pcDNA3.1(+) with an N-terminal Flag tag placed after an exogenous HA signal peptide; construct used in ONE-GO Gq BRET assay in transfected cells.",
+      "sources": [
+        {
+          "pmid": 42185275,
+          "citation": "PMID 42185275",
+          "claim": "For both the wild-type B1R and B2R constructs used in ONE-GO Gq BRET assay, a full-length human receptor gene (residues 1\u2013353 for B1R or residues 1\u2013391 for B2R) was cloned into a pcDNA3.1(+) vector with an N-terminal Flag tag after an HA signal peptide."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "function_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:44:14.272152+00:00",
+  "literature_notes": "L1 (AltB2R-HA): The HA tag is on AltB2R, an alternative protein encoded within the B2R locus but distinct from B2R itself; it does not constitute a tag on B2R's extracellular face and was excluded. L2 (B2R-Flag) and L5/L6 (B2R-CFP): both tags are at the intracellular C-terminus (residue 391, topology INTRACELLULAR 336\u2013391) and are recorded in other_positions. L3 confirms surface display of B2R-Flag but does not change the intracellular nature of that tag. No ledger line reports a tag inserted into any of the four extracellular loops (ECL1 116\u2013132, ECL2 198\u2013221, ECL3 293\u2013311) of B2R, so no internal loop sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 391,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "B2R C-terminal Flag tag (B2R-Flag / B2R(HA)Flag); residue 391 (Q) lies within the intracellular C-terminal tail (topology 336\u2013391)."
+    },
+    {
+      "residue": 391,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "B2R-CFP fusion at C-terminus; receptor traffics to plasma membrane (confirmed by Lyn-GFP colocalization in L6) but the CFP tag itself is intracellular."
+    }
+  ]
 }

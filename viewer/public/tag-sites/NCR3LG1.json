@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "NCR3LG1",
+  "uniprot_acc": "Q68D85",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:58:41.656353+00:00",
+  "literature_notes": "All three ledger lines were examined carefully. L1 (PMC10684670) reports a C-terminal FLAG tag on full-length, membrane-anchored B7-H6 in 293T and U87 cells, with confirmed surface trafficking. However, NCR3LG1/B7-H6 is a type I single-pass transmembrane protein (signal peptide 1-24, extracellular 25-264, TM 265-282, intracellular 283-454); its C-terminus (residue 454) is intracellular. The tag is tolerated but faces the cytoplasm \u2014 it is recorded in other_positions. L2 (PMC13282662) describes a chimeric construct named FLAG-OX40L-B7H6-EGFP. OX40L is a type II TM protein; the FLAG tag sits at the N-terminus of OX40L in this multi-component fusion, and no residue of B7-H6 is named as the tag insertion point. The tag position on B7-H6 is entirely unstated, disqualifying this line under the rule against plasmids with unstated tag position. L3 (PMC13282662) is flow cytometry confirming surface expression of the L2 construct; it names no insertion residue and is antibody detection of the protein, not an epitope-tag insertion site. No ledger line supports an extracellular surface tag site with a pinnable position on NCR3LG1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 454,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG (and 2\u00d7Strep-3\u00d7FLAG) tag on full-length B7-H6 is tolerated and the protein traffics to the cell surface, but residue 454 (Q) is the intracellular C-terminus of this type I TM protein \u2014 the tag faces the cytoplasm, not the extracellular space."
+    }
+  ]
+}

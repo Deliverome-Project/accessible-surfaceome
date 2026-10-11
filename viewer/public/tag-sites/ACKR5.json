@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "ACKR5",
+  "uniprot_acc": "O15218",
+  "sites": [
+    {
+      "site_id": "ACKR5-terminal_n-0-lit",
+      "gene_symbol": "ACKR5",
+      "uniprot_acc": "O15218",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "NanoLuciferase (NLuc)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface binding assay in 384-well plates confirmed surface display of the NLuc-GPR182 fusion; ligand binding (the defining function of this atypical scavenging receptor) was measured and supported receptor activity.",
+      "confidence": "high",
+      "rationale": "The paper (DOI:10.1101/2024.06.01.596940) reports a full-length, membrane-anchored NLuc\u2013ACKR5 fusion that is surface-displayed and ligand-binding-competent in HEK293T cells. The topology has no signal peptide (O from residue 1), so 'N-terminally fused' maps unambiguously to a prepend before Met-1 (insert_after_residue = 0, residue_after = M). The extracellular N-terminal span (residues 1\u201353) is 53 residues long, providing ample room for a short epitope tag (~13\u201323 aa) well clear of the first TM helix boundary at residue 54. Full-length human ACKR5/GPR182 was N-terminally fused to Nanoluciferase and stably expressed in HEK293T cells (pIRES-puromycin vector); L2 confirms surface display via 384-well plate binding assays. No signal peptide is present in the topology (extracellular from residue 1), so exactly one extracellular N-terminus exists and the fusion necessarily precedes residue 1.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2024.06.01.596940",
+          "claim": "HEK293T cells stably expressing untagged human or mouse GPR182 (hGPR182 or mGPR182) or hCXCR4, hACKR3 or hGPR182 N-terminally fused to Nanoluciferase were established using pIRES-puromycin vectors and were grown in DMEM medium supplemented with 10% fetal bovine serum (Sigma) and penicillin/streptomycin (100 Units per ml and 100 \u03bc g per ml) and puromycin (5 \u03bc g per ml).",
+          "source_id": "DOI:10.1101/2024.06.01.596940"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:54:43.561112+00:00",
+  "literature_notes": "Only two ledger lines are provided (L1, L2); both describe the same NLuc N-terminal fusion construct of ACKR5/GPR182 and together constitute a single site. No ledger evidence supports any internal extracellular loop insertion (ECL1 111\u2013123, ECL2 191\u2013214, ECL3 282\u2013296) or a C-terminal tag. The C-terminus (residues 324\u2013404) is intracellular per the topology landmarks and is therefore not a surface-tag candidate. No residue number is named in either clip, so position_evidence is topology_derived rather than validated.",
+  "literature_rejected": []
+}

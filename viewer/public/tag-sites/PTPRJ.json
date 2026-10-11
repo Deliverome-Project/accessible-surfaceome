@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "PTPRJ",
+  "uniprot_acc": "Q12913",
+  "sites": [
+    {
+      "site_id": "PTPRJ-terminal_n-35-lit",
+      "gene_symbol": "PTPRJ",
+      "uniprot_acc": "Q12913",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "C",
+      "residue_after": "A",
+      "residue_label": "C35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by confocal imaging at cell-cell junctions (VE-cadherin co-labelling) in HUVEC; no phosphatase activity or signalling assay reported for the N-terminally tagged construct.",
+      "confidence": "high",
+      "rationale": "PTPRJ is a type-I transmembrane receptor with signal peptide 1-35 (mature N-terminus at residue 36) and a single extracellular face spanning residues 36-971; the only extracellular terminus is the mature N-terminus, placing the tag uniquely at insert_after_residue=35. Python lookup confirms residue 35 = C (last SP residue) and residue 36 = A (first mature residue), 936 residues from the TM boundary. L7 and L8 directly demonstrate surface display of human DEP1-HA in HUVEC; L1 provides indirect murine corroboration (FLAG between Ala38/Ala39 'after the signal sequence' of murine CD148). Human DEP1 (PTPRJ) carrying an N-terminal HA-tag (DEP1-HA) was expressed in confluent HUVEC cells and detected at cell-cell junctions by confocal imaging. No residue number is stated; PTPRJ is a type-I single-pass receptor with signal peptide 1-35 and a single extracellular N-terminus beginning at residue 36, so the junction is uniquely determined by topology. A second clip (L8) confirms the same construct co-expressed with SDC2-SNAP in HUVEC. An indirect murine precedent (L1) places a FLAG tag between Ala38 and Ala39 of murine CD148 'after the signal sequence', consistent with an N-terminal extracellular position.",
+      "sources": [
+        {
+          "pmid": 36212522,
+          "citation": "PMID 36212522",
+          "claim": "Statistical analysis was performed by one-way ANOVA with Sidak\u2019s multiple comparison test (panels c, d), and by unpaired t-student test (panel f), (N.S. not significant, * P<0.05, ** P <0.01, *** P<0.001).\n\na , confocal image of confluent HUVEC cells in basal conditions showing human DEP1 carrying N-terminal HA-tag (DEP1-HA, red) expression at cell-cell junctions labeled with VE-cadherin (cyan), white arrows, lower panels."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:56:28.832612+00:00",
+  "literature_notes": "L2, L3, L4, L5, and L6 all describe a C-terminally HA-tagged full-length CD148 construct. L5 explicitly confirms that permeabilization was required for anti-HA staining, proving the HA tag is intracellular (cytoplasmic C-terminus). L4 shows the tagged protein reaches the cell membrane and L3 shows CD148 retains EGFR-inhibitory function, but because the tag is intracellular these clips do not qualify a surface tag site and the position is recorded in other_positions instead. L1 (murine FLAG at Ala38/Ala39) is an indirect ortholog citation; the human equivalent junction is insert_after_residue=35 by topology, already captured by the direct human evidence in L7/L8, so no separate site is added for L1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1337,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "C-terminal HA tag on full-length CD148; permeabilization required for anti-HA immunostaining, confirming the tag is on the cytoplasmic tail and is not accessible from the extracellular face."
+    }
+  ]
+}

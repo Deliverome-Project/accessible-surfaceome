@@ -175,5 +175,20 @@
       "canonical_residue": 170,
       "left_pct": 57.23905723905723
     }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:49:56.883111+00:00",
+  "literature_notes": "CD20 (MS4A1) has two extracellular spans: ECL1 (residues 79\u201384, only 6 aa) and ECL2 (residues 142\u2013188, 47 aa). Both termini are intracellular (N-term 1\u201356, C-term 210\u2013297). L1 reports a C-terminal DYKDHDID (FLAG-like) tag on bovine and feline CD20 full-length constructs, confirmed at the cell surface by flow cytometry; however, the CD20 C-terminus is intracellular (residues 210\u2013297 per the authoritative topology landmarks), so this tag faces the cytoplasm and cannot serve as an extracellular surface tag \u2014 it is recorded in other_positions. L2 describes flow-cytometric analysis of canine CD20 mutants M1\u2013M5 using anti-CD20 antibody 4E1-7-B_f; this is an antibody-binding/epitope-mapping study on substitution mutants, not a tag-insertion experiment, and no residue number for a tag junction is given. It therefore does not qualify under the evidence rules. No ledger line grounds an extracellular tag insertion for MS4A1.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 297,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal DYKDHDID (FLAG-like) tag appended after the last residue of bovine and feline full-length CD20; the CD20 C-terminus (residues 210\u2013297) is intracellular, so this tag faces the cytoplasm, not the extracellular surface."
+    }
   ]
 }

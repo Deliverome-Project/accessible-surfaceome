@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "HAVCR1",
+  "uniprot_acc": "Q96D42",
+  "sites": [
+    {
+      "site_id": "HAVCR1-terminal_n-20-lit",
+      "gene_symbol": "HAVCR1",
+      "uniprot_acc": "Q96D42",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Pseudovirus entry assay (MLV pseudoviruses and WNV VLPs carrying GFP reporter): Myc-tagged hTIM1-expressing 293T cells showed increased viral entry compared to hACE2-expressing controls, demonstrating that the N-terminally Myc-tagged construct is functionally active on the cell surface (L2). Cell surface expression of the tagged construct was confirmed in stable HEK293T lines (L3).",
+      "confidence": "high",
+      "rationale": "HAVCR1/TIM-1 is a type-I single-pass transmembrane protein with signal peptide at residues 1\u201320 and a single extracellular domain spanning residues 21\u2013295; the only extracellular terminus is the mature N-terminus beginning at S21. The published construct replaces the endogenous SP with a heterologous SP followed immediately by the Myc tag and then the mature TIM-1 sequence, placing the tag at insert_after_residue=20 in canonical numbering (residue_before=G, residue_after=S). Python verification confirms seq[19]='G' and seq[20]='S', and the insert site is 275 residues from the TM boundary (296), well clear of the \u22653-residue minimum. Three independent ledger lines (L1, L2, L3) all describe this same construct, with L2 providing functional validation via pseudovirus entry and L3 confirming stable cell-surface expression. L1/L3: Full-length hTIM1 (without its own signal peptide) was cloned into a retroviral vector downstream of a heterologous signal peptide (mouse ACE2 SP) and an N-terminal Myc tag, producing a membrane-anchored construct. Stable HEK293T cell lines expressing hTIM1, rhTIM1, and mTIM1 with the Myc tag at their N-terminus were generated and confirmed to be expressed on the cell surface (L3). The tag is placed at the mature N-terminus of the protein; in canonical UniProt numbering this corresponds to insert_after_residue=20 (after the endogenous signal peptide cleavage site, residues 1\u201320), with the mature chain beginning at S21. This is the only extracellular terminus of the type-I single-pass topology, so the position is uniquely determined.",
+      "sources": [
+        {
+          "pmid": 39475278,
+          "citation": "PMID 39475278",
+          "claim": "HEK293T cells stably expressing hTIM1, rhTIM1, or mTIM1 (hTIM1-293T, rhTIM1-293T, and mTIM1-293T, respectively) with the MYC tag at their N-terminus, were generated."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:54:19.513138+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) converge on a single site: the extracellular mature N-terminus of HAVCR1 (after SP cleavage at residue 20). No ledger line describes an internal loop insertion or a C-terminal (intracellular) tag. The C-terminus of HAVCR1 is intracellular (residues 317\u2013364) and is therefore not a surface-tag site. No transposon, FP-fusion, or domain-insertion screen data are present in the ledger for internal extracellular loop sites. The position is classified topology_derived because none of the three clips explicitly names a residue number at the junction; the mature N-terminus is the unique extracellular terminus and the position follows deterministically from the landmarks.",
+  "literature_rejected": []
+}

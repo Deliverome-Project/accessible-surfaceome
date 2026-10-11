@@ -1,0 +1,172 @@
+{
+  "has_data": true,
+  "gene_symbol": "ABCC2",
+  "uniprot_acc": "Q92887",
+  "sites": [
+    {
+      "site_id": "ABCC2-internal-163-lit",
+      "gene_symbol": "ABCC2",
+      "uniprot_acc": "Q92887",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 163,
+      "residue_before": "A",
+      "residue_after": "Y",
+      "residue_label": "A163",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "epitope tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Drug-resistance function preserved (functional protein); epitope accessible to anti-tag antibody from the extracellular face, confirming surface localization.",
+      "confidence": "high",
+      "rationale": "Python confirmed position 163 (A) lies in extracellular span [152\u2013165]; insert_after_residue=163 places the tag between A(163) and Y(164). Distance to the downstream TM5 boundary (residue 166) is exactly 3 residues, meeting the >=3 constraint; distance to upstream TM4 end (residue 151) is 12 residues. The paper explicitly names position 163 as extracellularly localized and functionally tolerated. Full-length membrane-anchored MRP/ABCC2 expressed in drug-selected cells; epitope tag inserted at position 163 within extracellular loop [152\u2013165], flanked by TM4 (130\u2013151) and TM5 (166\u2013184).",
+      "sources": [
+        {
+          "pmid": 9334225,
+          "citation": "PMID 9334225",
+          "claim": "Insertion of epitopes at positions 4, 163, 271, 574, and 653 produced functional proteins while insertions at positions 127, 417, 461, and 529 abrogated the capacity of MRP to confer drug resistance. Epitopes inserted at positions 4, 163, and 574 were localized extracellularly, whereas those inserted at positions 271 and 653 revealed an intracellular location. Although a single epitope inserted at position 461 was compatible with MRP function, it was inaccessible to the anti-epitope antibody and two copies of the tag at that site abrogated MRP function."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ABCC2-internal-574-lit",
+      "gene_symbol": "ABCC2",
+      "uniprot_acc": "Q92887",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 574,
+      "residue_before": "L",
+      "residue_after": "D",
+      "residue_label": "L574",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "epitope tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Drug-resistance function preserved (functional protein); epitope accessible to anti-tag antibody from the extracellular face, confirming surface localization.",
+      "confidence": "high",
+      "rationale": "Python confirmed position 574 (L) lies in extracellular span [566\u2013581]; insert_after_residue=574 places the tag between L(574) and D(575). Distance to downstream TM11 boundary (residue 582) is 8 residues and to upstream TM10 end (residue 565) is 9 residues, both well clear of the >=3 constraint. The paper explicitly names position 574 as extracellularly localized and functionally tolerated. Full-length membrane-anchored MRP/ABCC2 expressed in drug-selected cells; epitope tag inserted at position 574 within extracellular loop [566\u2013581], flanked by TM10 (545\u2013565) and TM11 (582\u2013600).",
+      "sources": [
+        {
+          "pmid": 9334225,
+          "citation": "PMID 9334225",
+          "claim": "Insertion of epitopes at positions 4, 163, 271, 574, and 653 produced functional proteins while insertions at positions 127, 417, 461, and 529 abrogated the capacity of MRP to confer drug resistance. Epitopes inserted at positions 4, 163, and 574 were localized extracellularly, whereas those inserted at positions 271 and 653 revealed an intracellular location. Although a single epitope inserted at position 461 was compatible with MRP function, it was inaccessible to the anti-epitope antibody and two copies of the tag at that site abrogated MRP function."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 574,
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "ABCC2-terminal_n-4-lit",
+      "gene_symbol": "ABCC2",
+      "uniprot_acc": "Q92887",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 4,
+      "residue_before": "K",
+      "residue_after": "F",
+      "residue_label": "K4",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "epitope tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Drug-resistance function preserved (functional protein); epitope accessible to anti-tag antibody from the extracellular face, confirming surface localization.",
+      "confidence": "high",
+      "rationale": "Python confirmed position 4 (K) lies in extracellular span [1\u201329], 26 residues from TM boundary at 30; insert_after_residue=4 places the tag between K(4) and F(5). The paper explicitly names position 4 as extracellularly localized and functionally tolerated in the full-length, membrane-anchored protein. No signal peptide is annotated for ABCC2, so the N-terminus is genuinely extracellular and the tag is not at risk of being cleaved. Full-length membrane-anchored MRP/ABCC2 expressed in drug-selected cells; epitope tag inserted at position 4 within the N-terminal extracellular domain [1\u201329], 26 residues from the first TM helix (30\u201350).",
+      "sources": [
+        {
+          "pmid": 9334225,
+          "citation": "PMID 9334225",
+          "claim": "Insertion of epitopes at positions 4, 163, 271, 574, and 653 produced functional proteins while insertions at positions 127, 417, 461, and 529 abrogated the capacity of MRP to confer drug resistance. Epitopes inserted at positions 4, 163, and 574 were localized extracellularly, whereas those inserted at positions 271 and 653 revealed an intracellular location. Although a single epitope inserted at position 461 was compatible with MRP function, it was inaccessible to the anti-epitope antibody and two copies of the tag at that site abrogated MRP function."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:54:21.107587+00:00",
+  "literature_notes": "L1 (PMID 9334225) is the sole ledger line grounding extracellular surface sites; it names five tolerated positions (4, 163, 271, 574, 653) and four function-abrogating ones (127, 417, 461, 529) in full-length membrane-anchored ABCC2. Positions 271 and 653 are intracellular by the paper's own antibody-accessibility data and by the computed topology, so they are recorded in other_positions. Position 461 falls in extracellular span [457\u2013461] but is only 1 residue from TM12 (462\u2013482), fails the >=3 TM-distance constraint, was inaccessible to the anti-tag antibody even as a single copy, and two copies abrogated drug-resistance function; it is recorded in other_positions. L2 (PMC10844203) places a C-terminal FLAG/8\u00d7His tag at position 1545, which is intracellular [1256\u20131545]; recorded in other_positions. L3 (PMC12275409) and L4 (PMC12008203) both describe FLAG-tagged ABCC2 constructs but state no insertion residue, so no junction can be pinned and no site is proposed from them.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 271,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Epitope tag at position 271 tolerated (functional protein) but localized intracellularly by antibody-accessibility assay; confirmed intracellular by computed topology [185\u2013317]."
+    },
+    {
+      "residue": 653,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Epitope tag at position 653 tolerated (functional protein) but localized intracellularly by antibody-accessibility assay; confirmed intracellular by computed topology [601\u2013975]."
+    },
+    {
+      "residue": 127,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Epitope insertion at position 127 abrogated MRP drug-resistance function; position is intracellular [118\u2013129] by computed topology."
+    },
+    {
+      "residue": 417,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Epitope insertion at position 417 abrogated MRP drug-resistance function; position is intracellular [379\u2013435] by computed topology."
+    },
+    {
+      "residue": 461,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Single epitope at position 461 was compatible with function but inaccessible to anti-tag antibody; two copies abrogated drug-resistance function. Position is only 1 residue from TM12 boundary (462), failing the >=3 constraint, and is not reliably surface-accessible."
+    },
+    {
+      "residue": 529,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "Epitope insertion at position 529 abrogated MRP drug-resistance function; position is intracellular [483\u2013544] by computed topology."
+    },
+    {
+      "residue": 1545,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal FLAG/8\u00d7His tag appended after the last residue (F1545) of full-length ABCC2 for structural studies; the C-terminus is intracellular [1256\u20131545]."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "IGDCC4",
+  "uniprot_acc": "Q8TDY8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:10:41.865908+00:00",
+  "literature_notes": "The sole ledger entry (L1) reports full-length IGDCC4 cloned with a Myc tag at the C-terminus. Computed topology places the C-terminus (residue 1250) firmly in the intracellular domain (residues 977\u20131250), so this tag faces the cytoplasm, not the extracellular space. L1 also mentions two truncated constructs \u2014 IGDCC4-extracellular and IGDCC4-cytoplasmic domain \u2014 each with a C-terminal Myc tag; the ectodomain construct is a soluble secreted fragment (not a full-length membrane-anchored protein) and is therefore disqualified under the ledger rules, and the cytoplasmic construct is intracellular. No ledger line reports any insertion on the extracellular face of IGDCC4. The mature N-terminus (residue 25, extracellular) and the large extracellular domain (residues 25\u2013955) are topologically available, but no published tolerated insertion grounds a site there. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1250,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "Full-length IGDCC4 carries a C-terminal Myc tag at residue 1250, which lies in the intracellular domain (residues 977\u20131250); tolerated in the full-length construct but not on the extracellular face."
+    }
+  ]
+}

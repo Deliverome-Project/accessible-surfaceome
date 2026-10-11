@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR65-terminal_n-0-lit",
+      "gene_symbol": "GPR65",
+      "uniprot_acc": "Q8IYL9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by live-cell immunolabeling and confocal microscopy (non-permeabilized cells). Proton-dependent cAMP concentration-response (pH 6.0\u20138.0) measured by GloSensor in stable HEK293 cells \u2014 function fully preserved.",
+      "confidence": "high",
+      "rationale": "GPR65 has no endogenous signal peptide; its N-terminus (residues 1\u201314) is extracellular per the topology landmarks. The published construct interposes an artificial signal sequence and a FLAG tag immediately upstream of M1, placing the tag at the extracellular N-terminus (insert_after_residue=0, residue_after=M). Python verification confirms seq[0]='M'. The same junction tolerates a SNAP tag (L2), and stable FLAG-GPR65 cells show wild-type proton-dependent cAMP signaling (L8), making this the highest-confidence site in the ledger. Full-length human GPR65 expressed in HEK293 cells with an artificial signal sequence followed by a FLAG tag followed by the GPR65 sequence (M1 onward) in pcDNA3.1. The same junction also carries a SNAP tag in a parallel construct (L2). Stable clonal HEK293 lines were established (L9). Live (non-permeabilized) immunolabeling confirmed surface display (L7). Proton-dependent cAMP responses measured by GloSensor assay (n=3 biological replicates) confirmed receptor function (L8).",
+      "sources": [
+        {
+          "pmid": 36993269,
+          "citation": "PMID 36993269",
+          "claim": "FLAG-GPR65 construct consists of an N-terminal signal sequence followed by a FLAG tag followed by the human GPR65 sequence in a pcDNA3.1 vector backbone."
+        },
+        {
+          "pmid": 36993269,
+          "citation": "PMID 36993269",
+          "claim": "To create SNAP-GPR65, the receptor sequence was amplified from the FLAG-GPR65 construct by PCR with compatible cut sites (BamHI and XbaI) and ligated into a pcDNA3.1 vector containing an N-terminal sequence, followed by a SNAP tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 0,
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:39:27.328069+00:00",
+  "literature_notes": "All nine ledger lines (L1\u2013L9) converge on a single extracellular junction: the N-terminal prepend (insert_after_residue=0) of full-length GPR65. L1 and L2 are reported as two separate sites because they carry chemically distinct tags (FLAG vs. SNAP), even though the junction is identical; this follows the instruction to report every tag the ledger supports. No ledger line grounds any insertion in ECL1 (72\u201384), ECL2 (152\u2013178), or ECL3 (252\u2013270). The H10,14,243F triple mutant (L3\u2013L5) mutates proton-sensing histidines (H10 and H14 in the extracellular N-terminus; H243 in TM6) to phenylalanine to study pH sensing \u2014 these are point substitutions, not tag insertions, and do not constitute insertion sites. R112A (L3\u2013L6) is a DRY-motif mutant used as a loss-of-function control; R112 is in ICL2 (intracellular, residues 111\u2013129) and is recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 112,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L3",
+      "note": "R112A is a DRY-motif mutant (ICL2, intracellular residues 111\u2013129) used as a loss-of-function control; the paper reports it abolishes proton-dependent signaling, and the position is cytoplasmic and therefore not a surface-tag site."
+    }
+  ]
 }

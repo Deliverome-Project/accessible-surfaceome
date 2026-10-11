@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "MDGA2",
+  "uniprot_acc": "Q7Z553",
+  "sites": [
+    {
+      "site_id": "MDGA2-terminal_n-25-lit",
+      "gene_symbol": "MDGA2",
+      "uniprot_acc": "Q7Z553",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 25,
+      "residue_before": "A",
+      "residue_after": "P",
+      "residue_label": "A25",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "L2 (PMC3563690): soluble neuroligin-2\u2013Fc fusion protein bound to COS7 cells expressing HA-MDGA2 on the cell surface, demonstrating preserved ligand-binding function. L5 (PMC9084894): anti-HA antibody labels HA-MDGA2 on the bottom membrane of neurons, confirming surface trafficking. L10 (PMC10503827): Myc-MDGA2 knock-in mice show widespread dendritic and axonal localization consistent with untagged MDGA2; authors explicitly validated that the tag does not alter protein folding, trafficking, or function.",
+      "confidence": "high",
+      "rationale": "L1 unambiguously pins the junction: the mature coding region begins at aa 26, so the HA tag is inserted after residue 25 (the last signal-peptide residue, A) and before residue 26 (P), confirmed by Python lookup of the canonical sequence. MDGA2 is GPI-anchored with no transmembrane domain; the entire 26\u2013956 span is extracellular, so this N-terminal position is fully surface-exposed and remote from any membrane anchor. L2 demonstrates neuroligin-2 binding is preserved (surface_and_function), and L10 provides explicit author validation that the tag does not perturb folding, trafficking, or function in the endogenous knock-in context. L1 (PMC3563690) explicitly states that HA-MDGA2 was made by subcloning the mature coding region of mouse MDGA2 (aa 26\u2013956) into the spHA-C1 vector, placing the HA tag immediately after the signal peptide cleavage site (after residue 25, before residue 26) in a full-length, membrane-anchored construct expressed in COS7 cells. The same N-terminal junction is independently confirmed by L4 (AP tag replacing V5 at the same position), L7\u2013L10 (Myc-MDGA2 CRISPR knock-in at the endogenous locus, same N-terminal position), and L12 (HA-MDGA2 rescue construct). L10 explicitly states that tags were inserted at the same positions as commonly used overexpression constructs and that steps were taken to ensure they do not alter protein folding, trafficking, or function.",
+      "sources": [
+        {
+          "pmid": 23358245,
+          "citation": "PMID 23358245",
+          "claim": "The plasmids for extracellular HA-tagged rat MDGA1 (HA-MDGA1) and HA-tagged mouse MDGA2 (HA-MDGA2) were made by subcloning the mature coding regions of MDGA1 (amino acids [aa] 19\u2013956) and MDGA2 (aa 26\u2013956) into the spHA-C1 vector, a modified EYFP-C1 that expresses HA instead of YFP with an N-terminal signal sequence derived from TrkC cDNA ( Takahashi et al., 2011 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:39:40.638785+00:00",
+  "literature_notes": "All twelve ledger lines (L1\u2013L12) converge on the single N-terminal junction after residue 25 (the signal-peptide cleavage site), before residue 26 (the mature N-terminus). Multiple tag types have been placed here: HA (L1, L2, L3, L5, L12), V5 (L3, L6), AP (L4), Myc (L7\u2013L11), and mApple-V5 (L6). Because all report the same junction, they constitute one site with multiple independent validations rather than separate sites. No ledger line reports any internal loop insertion, C-terminal tag, or intracellular tag for MDGA2. MDGA2 is GPI-anchored; the topology landmarks show the entire 26\u2013956 region as extracellular with no TM segment, so there are no TM-boundary distance constraints to check. The mApple-V5-MDGA2 construct (L6) involves a fluorescent protein fusion at the same N-terminal position; this further corroborates tolerance of a large insert at this junction. L1 was selected as the primary supporting clip because it most explicitly states the residue boundary (aa 26\u2013956 subcloned into spHA-C1), and L2 provides the functional readout (neuroligin-2 binding preserved).",
+  "literature_rejected": []
+}

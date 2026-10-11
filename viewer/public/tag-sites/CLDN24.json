@@ -31,6 +31,43 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "CLDN24-internal-None-lit",
+      "gene_symbol": "CLDN24",
+      "uniprot_acc": "A6NM45",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "extracellular loop",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface imaging in neurons confirmed the Myc-tagged construct reaches the cell surface and co-localizes with AMPA receptor subunits GluA1 and GluA4; barrier/channel function of Cldn24 itself was NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "L1 and L2 both report the same construct, Cldn24(Myc-ex), a full-length membrane-anchored claudin-24 with a Myc tag inserted into 'the extracellular loop'; the construct name suffix '-ex' explicitly denotes extracellular placement, and its use in live-cell surface imaging confirms the tag is accessible on the extracellular face. CLDN24 has two extracellular loops (ECL1: residues 31-81, 51 aa; ECL2: residues 139-163, 25 aa); the paper names neither specifically, so no residue can be pinned and insert_after_residue is left null with region set to 'extracellular loop' as stated. The V5-tagged construct (L3/L4) has no stated position and was used only for co-IP, so it does not qualify as a surface site. Full-length Cldn24(Myc-ex) construct expressed in primary hippocampal neurons by co-transfection with GluA1(HA-ex)/GluA4(HA-ex) and Homer-1c-EGFP; the '-ex' suffix denotes extracellular tag placement; used for co-localization imaging at the neuronal surface.",
+      "sources": [
+        {
+          "pmid": 41790882,
+          "citation": "PMID 41790882",
+          "claim": "After 5 days in vitro, neurons were cotransfected with the following plasmids: GluA1(HA-ex)/pMH4, Cldn24(Myc-ex)/pMH4, and Homer-1c-EGFP/pcDNA3.1 using Lipofectamine 2000 (Thermo Fisher Scientific)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "CLDN24-snorkel-c",
       "gene_symbol": "CLDN24",
       "uniprot_acc": "A6NM45",
@@ -136,5 +173,12 @@
       "canonical_residue": 151,
       "left_pct": 68.63636363636364
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:43:28.157243+00:00",
+  "literature_notes": "L1 and L2 are treated as a single site because they describe the same construct (Cldn24(Myc-ex)) from the same paper. The paper states the Myc tag is in 'the extracellular loop' but does not specify ECL1 (31-81) or ECL2 (139-163), nor any residue; accordingly insert_after_residue is null and region is set to 'extracellular loop' as stated. The V5-tagged Cldn24 (L3/L4) has a completely unstated tag position and was used only for co-immunoprecipitation, not surface detection; it cannot be classified as a surface site and is excluded from sites. Both termini of CLDN24 are intracellular (N-terminus IC1: 1-11; C-terminus IC3: 185-220), so no terminal extracellular site exists. ECL1 contains two conserved cysteines (C54, C64) that likely form a disulfide bond critical to claudin fold; any internal site within ECL1 would need to avoid these. ECL2 (25 aa) is shorter and also functionally important in claudin family members.",
+  "literature_rejected": []
 }

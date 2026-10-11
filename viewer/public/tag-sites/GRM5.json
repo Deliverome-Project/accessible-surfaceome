@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "GRM5",
+  "uniprot_acc": "P41594",
+  "sites": [
+    {
+      "site_id": "GRM5-terminal_n-20-lit",
+      "gene_symbol": "GRM5",
+      "uniprot_acc": "P41594",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "A",
+      "residue_after": "Q",
+      "residue_label": "A20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP / CLIP / HA / FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed (pRK5 vector, described as surface-displayed tagged receptors); functional assays not reported in this clip. L3 additionally confirms surface localization in hippocampal neurons via cell-impermeable nanobody labeling. L4 confirms endogenous surface expression in neurons under non-permeabilized conditions.",
+      "confidence": "high",
+      "rationale": "All four ledger lines (L1\u2013L4) independently place a tag at the extracellular N-terminus of mGluR5, after the signal peptide cleavage site. Python-verified: signal peptide ends at residue 20 (A), mature protein begins at residue 21 (Q); insert_after_residue=20 places the tag on the extracellular face, well upstream of TM1 (residues 580\u2013604), satisfying the \u22653-residue TM-distance constraint. L2 is chosen as primary because it uses full-length receptor, explicitly states surface display, and covers multiple tag chemistries (HA, SNAP, FLAG, CLIP). The position is validated (not merely topology-derived) because both L1 and L2 explicitly state 'after the signal peptide', uniquely pinning the junction to residue 20/21. Full-length human mGluR5 expressed in pRK5 with an N-terminal signal peptide followed immediately by HA, SNAP, FLAG, or CLIP tags; constructs described as surface-displayed tagged receptors. Signal peptide spans residues 1\u201320 (landmark-verified), so the tag is inserted after residue 20 (A) and before residue 21 (Q). Additionally supported by L1 (Twin Strep-Tag II after signal peptide in a 1\u2013839 truncated construct), L3 (extracellular SEP tag on full-length mGluR5 in hippocampal neurons, surface-detected by cell-impermeable GFP nanobody), and L4 (ORANGE GFP endogenous knock-in at the N-terminus, surface-detected by anti-GFP under non-permeabilized conditions).",
+      "sources": [
+        {
+          "pmid": 42722688,
+          "citation": "PMID 42722688",
+          "claim": "All SNAP- or CLIP-tagged mGluR2 (rat), mGluR3 (rat), mGluR5 (human), mGluR7 (rat), mGluR8 (human), V2R (human), \u03b22AR (human) were generated with an N-terminal signal peptide from rat mGluR5 followed by variable combinations of HA-, SNAP-, FLAG-, or CLIP in the pRK5 vector as previously described 54 ."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 20,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:50:59.864483+00:00",
+  "literature_notes": "All four ledger lines (L1, L2, L3, L4) converge on the same N-terminal junction (insert_after_residue=20, after signal peptide cleavage). No ledger line provides evidence for any internal extracellular loop site (ECL1 638\u2013641, ECL2 715\u2013737, ECL3 794\u2013798) or for the C-terminal intracellular tail. L1 uses a truncated construct (residues 1\u2013839) but the N-terminal tag position is unaffected by C-terminal truncation. L3 (SEP, a ~240 aa GFP-like protein) and L4 (GFP KI) demonstrate the N-terminal extracellular position tolerates even large insertions, further supporting tolerance of a short ALFA-tag (~15\u201323 aa). Because all four lines pin the identical junction, this is reported as one site with L2 as the primary clip. No ledger line supports any other extracellular surface site.",
+  "literature_rejected": []
+}

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "RELL2",
+  "uniprot_acc": "Q8NC24",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:56:42.481663+00:00",
+  "literature_notes": "RELL2 is a single-pass Type II transmembrane protein: extracellular N-terminus spans residues 1\u201314, TM helix 15\u201335, and the entire C-terminal domain (36\u2013303) is intracellular. All three ledger lines (L1, L2, L3) describe the same two constructs: (1) a C-terminal HA-tagged RELL2 made with pCMV-HA-C, whose tag lands at intracellular residue 303, and (2) a Flag-tagged RELL2 whose tag position is never stated in the ledger. Neither qualifies as an extracellular surface tag site. The short extracellular N-terminal span (residues 1\u201314, only 3 residues from the TM boundary at residue 15) has zero ledger support for any tag insertion. No site is proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 303,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal HA tag (pCMV-HA-C) on full-length RELL2; the C-terminus (residue 303) lies in the intracellular domain (topology residues 36\u2013303), so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

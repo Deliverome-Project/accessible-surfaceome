@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR4A16-terminal_n-0-lit",
+      "gene_symbol": "OR4A16",
+      "uniprot_acc": "Q8NH70",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG + bovine rhodopsin 20 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface expression assessed in heterologous cells (the purpose of the tagged construct); odorant-evoked functional assay not described in the cited clip.",
+      "confidence": "medium",
+      "rationale": "OR4A16 is a 7-TM olfactory receptor with no signal peptide; the topology landmarks place residues 1\u201324 extracellular and residues 288\u2013328 intracellular, leaving the N-terminus as the sole extracellular terminus. L1 explicitly reports N-terminal FLAG and rhodopsin epitope tags on the full-length receptor, so the tag prepends before M1 (insert_after_residue = 0). No residue number is named in the clip, so the position is topology-derived rather than validated. Python confirmed residue 1 = M, consistent with residue_after = 'M'. Full-length OR4A16 cloned into pME18S with N-terminal FLAG epitope tag and 20 N-terminal amino acids of bovine rhodopsin fused upstream of the receptor, expressed heterologously. The construct is full-length and membrane-anchored.",
+      "sources": [
+        {
+          "pmid": 35446888,
+          "citation": "PMID 35446888",
+          "claim": "Each of the amplified receptor genes was inserted into the pME18S vector to generate OR proteins fused with N-terminal epitope tags of FLAG and 20 N-terminal amino acids of bovine rhodopsin."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:44:38.964177+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It supports a single N-terminal prepend site derived from topology (the N-terminus is the only extracellular terminus of this 7-TM receptor). No residue number is named in the clip, so position_evidence is topology_derived and cited_tag_residue is null. No internal loop insertions are grounded by the ledger. The C-terminus (288\u2013328) is intracellular and therefore not a surface-tag site. ECL1 (78\u201395), ECL2 (163\u2013191), and ECL3 (258\u2013267) are extracellular but no ledger line grounds any insertion in them.",
+  "literature_rejected": []
 }

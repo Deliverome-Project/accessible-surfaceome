@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "LIFR",
+  "uniprot_acc": "P42702",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:07:19.343303+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe synthetic chimeric constructs (C_VHH LIFR\u03941\u20138, C_VHH LIFR\u03941\u20134, C_VHH LIFR\u03941\u20133, C_VHH EpoR\u0394D1-LIFR) in which the native extracellular domains of LIFR are deleted and replaced by VHH nanobodies; a Myc tag is present somewhere on these chimeras and is used for flow-cytometric surface detection. These constructs fail on two independent grounds: (1) they are not tag insertions into native, full-length, membrane-anchored LIFR \u2014 the entire extracellular portion of the canonical protein is absent \u2014 so they cannot ground a site in the canonical sequence; and (2) the position of the Myc tag within the chimeric construct is never stated in either clip, making it impossible to pin insert_after_residue. The 'topology_derived' escape applies only when exactly one extracellular terminus exists in the tagged construct of the target protein; here the extracellular portion is a foreign VHH domain, not LIFR sequence, so no LIFR junction can be derived. No other modality (fluorescent-protein fusion, transposon screen, bungarotoxin-binding site, AviTag, etc.) appears in the ledger. The correct answer is zero qualifying sites.",
+  "literature_rejected": []
+}

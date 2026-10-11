@@ -1,0 +1,98 @@
+{
+  "has_data": true,
+  "gene_symbol": "PTPRA",
+  "uniprot_acc": "P18433",
+  "sites": [
+    {
+      "site_id": "PTPRA-terminal_n-19-lit",
+      "gene_symbol": "PTPRA",
+      "uniprot_acc": "P18433",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "A",
+      "residue_after": "N",
+      "residue_label": "A19",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-FLAG immunofluorescence in transfected HEK293T cells; phosphatase activity or trafficking efficiency NOT MEASURED relative to untagged control.",
+      "confidence": "medium",
+      "rationale": "PTPRA is a type I single-pass transmembrane protein with exactly one extracellular terminus: the mature N-terminus beginning at residue 20 (after signal-peptide cleavage at residue 19). Anti-FLAG surface staining (L3) confirms the FLAG tag is extracellular; topology forces it to this sole extracellular terminus, giving insert_after_residue=19 by the topology_derived rule. Python confirms residue 19 is A and residue 20 is N, 132 residues from the TM boundary. The constructs were custom-generated (not a commercial plasmid with unstated position), so topology derivation is valid. Custom V5/FLAG-tagged full-length RPTP\u03b1 WT and R223W constructs were generated and expressed in HEK293T cells; anti-FLAG immunofluorescence confirmed plasma membrane surface display of the FLAG tag (L3). No residue is stated for the tag junction.",
+      "sources": [
+        {
+          "pmid": 35900966,
+          "citation": "PMID 35900966",
+          "claim": "(C) Immunofluorescent image of transfected HEK293T cells stained with anti-FLAG antibody."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    },
+    {
+      "site_id": "PTPRA-terminal_n-None-lit",
+      "gene_symbol": "PTPRA",
+      "uniprot_acc": "P18433",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ectodomain",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Bivalent anti-HA antibody activated HARPTPalpha-EGFR chimeras (dimerisation-dependent EGFR kinase activation confirmed), demonstrating surface accessibility of the HA tag; endogenous RPTPalpha phosphatase activity in the chimera context NOT MEASURED.",
+      "confidence": "low",
+      "rationale": "The chimera is a membrane-anchored full-length transmembrane protein (RPTPalpha ectodomain + EGFR TM/ICD), not a secreted ectodomain, so it qualifies under the ledger rules. The HA tag is placed somewhere within the ectodomain (residues 20\u2013151); because no residue is named and the tag could be at the N-terminus or internal, the site is reported at region level with insert_after_residue null. The chimera system functionally validated surface display via antibody-induced dimerisation. Ranked second because the junction is unresolved and the construct is a chimera rather than full-length RPTPalpha. HA-epitope-tagged RPTPalpha ectodomain (residues 20\u2013151) was fused to the EGFR transmembrane and intracellular domain to create a membrane-anchored chimera (HARPTPalpha-EGFR); bivalent anti-HA antibody activated the chimera, demonstrating surface exposure of the HA tag in the ectodomain. No specific residue junction is named in the paper.",
+      "sources": [
+        {
+          "pmid": 11078885,
+          "citation": "PMID 11078885",
+          "claim": "We developed a system to study the function of the ectodomain of RPTPalpha, a transmembrane protein-tyrosine phosphatase, by fusing the HA-epitope tagged ectodomain of RPTPalpha to the transmembrane and intracellular domain of the epidermal growth factor receptor, EGFR, a receptor protein-tyrosine kinase that is activated by dimerization. Although the use of chemical crosslinkers shows that preformed HARPTPalpha-EGFR dimers exist, bivalent anti-HA-tag antibody activated HARPTPalpha-EGFR chimeras, suggesting this system may be used to study regulation of dimerization."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:56:03.806321+00:00",
+  "literature_notes": "L2 (V5/FLAG constructs generated for stability/trafficking study) and L3 (anti-FLAG surface immunofluorescence) are treated as a single evidence pair grounded in L3, the more informative clip. L4 (C-terminal twin-strep-tag and YFP fusions on full-length PTPRA) is placed in other_positions because the C-terminus (residue 802) lies within the intracellular domain (173\u2013802). The ectodomain site from L1 cannot be pinned to a residue because the paper names only 'ectodomain' without a junction residue, and the tag could be at the N-terminus or at an internal loop; it is therefore reported as a region-level site. No ledger line names a specific residue for any extracellular insertion in PTPRA, so no 'validated' site exists.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 802,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "Full-length PTPRA was fused to a twin-strep-tag or YFP at the C-terminus (residue 802); the C-terminus lies within the intracellular domain (173\u2013802) and is not surface-accessible."
+    }
+  ]
+}

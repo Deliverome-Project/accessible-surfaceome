@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "GJD4",
+  "uniprot_acc": "Q96KN9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:15:47.697676+00:00",
+  "literature_notes": "All six ledger lines (L1\u2013L6) describe a single published insertion: a V5 epitope tag introduced by CRISPR into the 'C-terminal tail' of zebrafish gjd4/Cx46.8 (GJD4). The authoritative topology landmarks place the C-terminal tail (residues 218\u2013370) entirely in the intracellular compartment. Connexins universally have an intracellular C-terminus, consistent with the computed topology. No ledger line names a specific residue for the insertion, and no ledger line reports any tag on an extracellular face (ECL1: 45\u201376; ECL2: 168\u2013195) or at either extracellular-accessible terminus. Because the sole published insertion is intracellular, zero extracellular surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 218,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "V5 epitope tag introduced by CRISPR into the C-terminal tail (intracellular, residues 218\u2013370) of GJD4/Cx46.8 in zebrafish; protein expressed and localized in muscle cells in vivo, but the tag faces the cytoplasm, not the extracellular surface. No specific residue within the tail is named in any ledger line; residue 218 (C, first of the C-tail) is used as the representative position."
+    }
+  ]
+}

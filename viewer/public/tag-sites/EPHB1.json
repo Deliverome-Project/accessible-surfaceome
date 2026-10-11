@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "EPHB1",
+  "uniprot_acc": "P54762",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:34:24.016942+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe a single construct: AAV-pGFAP-EphB1-HA, in which an HA tag is fused to the C-terminus (after residue 984) of full-length mouse EphB1. The topology landmarks place residues 563\u2013984 in the intracellular domain; residue 984 (A) is the last intracellular residue. A C-terminal tag therefore faces the cytoplasm, not the extracellular surface, and does not qualify as an extracellular surface tag site. No ledger line reports any insertion at the extracellular N-terminus (residue 18, after signal-peptide cleavage at 1\u201317), in any extracellular loop, or anywhere else in the extracellular domain (18\u2013540). Because the ledger contains no evidence of a tolerated extracellular insertion for EPHB1, zero sites are reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 984,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag fused to the C-terminus of full-length EphB1 (after residue 984, A); residue 984 lies in the intracellular domain (563\u2013984), so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

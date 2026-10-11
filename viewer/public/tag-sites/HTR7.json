@@ -37,6 +37,43 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR7-terminal_n-0-lit",
+      "gene_symbol": "HTR7",
+      "uniprot_acc": "P34969",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAPf",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by single-molecule imaging at the cell surface (L1) and by anti-Flag surface staining (L3/L4); no functional (signalling) assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "HTR7 has no signal peptide; the topology landmarks place residues 1\u201381 extracellular and TM1 begins at residue 82, making the N-terminus the sole extracellular terminus. L1 explicitly states the SNAPf tag was placed 'at its N-terminus' on the full-length receptor and confirmed surface localisation by single-molecule imaging, so insert_after_residue=0 (prepend before M1) is the only position consistent with the stated terminus. No residue number is named in any ledger line, so position_evidence is topology_derived. L2/L3/L4 (Flag surface staining) and L5 (HA-Flag N-terminal) independently corroborate the same junction. Full-length human 5-HT7R with SNAPf fused at the N-terminus (SNAPf-5-HT7R) overexpressed in CHO-K1 cells; single-molecule imaging confirmed receptor at the cell surface. Additionally, Flag-HTR7 (L2/L3/L4) was surface-stained with anti-Flag antibody in RPE1 cells, and HA-Flag-5-HT7R-mScarlet (L5) was constructed with N-terminal HA-Flag tags, all consistent with N-terminal extracellular tagging.",
+      "sources": [
+        {
+          "pmid": 37342875,
+          "citation": "PMID 37342875",
+          "claim": "The 5-HT 7 receptor was labeled with the SNAPf-tag ( Keppler et al. , 2003 ) at its N-terminus (SNAPf-5-HT 7 R) and overexpressed in CHO-K1 cells."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
   "isoform_pins": [
@@ -63,6 +100,27 @@
       "canonical_residue": null,
       "left_pct": 0.23148148148148145,
       "note": "Isoform surface expr 806 (+38% vs canonical)"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:06:51.887653+00:00",
+  "literature_notes": "Only one extracellular surface site is supported by the ledger. The N-terminal extracellular domain (residues 1\u201381) is the sole extracellular terminus of HTR7; no signal peptide is present. L1 (SNAPf), L2/L3/L4 (Flag), and L5 (HA-Flag) all converge on the N-terminal prepend position. The C-terminal tags in L5 (mScarlet) and L6/L7/L8 (3xFLAG on rat ortholog) are intracellular and are recorded in other_positions. No ledger line reports a tag in any of the short extracellular loops (ECL1: 141\u2013155, ECL2: 220\u2013238, ECL3: 350\u2013366), so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 479,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "Rat 5-HT7R C-terminal 3xFLAG tag (pcDNA3.1-3xFLAG) detected by immunocytochemistry in HEK293AD cells; the C-terminus of HTR7 falls in the intracellular region (residues 388\u2013479) and is not a surface site."
+    },
+    {
+      "residue": 479,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "mScarlet fused to the C-terminus of human 5-HT7R in pcDNA5-HA-Flag-5-HT7R-mScarlet; C-terminus is intracellular (388\u2013479) and not accessible at the cell surface."
     }
   ]
 }

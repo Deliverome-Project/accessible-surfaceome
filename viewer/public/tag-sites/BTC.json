@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "BTC",
+  "uniprot_acc": "P35070",
+  "sites": [
+    {
+      "site_id": "BTC-terminal_n-31-lit",
+      "gene_symbol": "BTC",
+      "uniprot_acc": "P35070",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 31,
+      "residue_before": "A",
+      "residue_after": "D",
+      "residue_label": "A31",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "AP (alkaline phosphatase)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Ectodomain shedding assay: AP-tagged BTC was shed from the cell surface, demonstrating surface expression and preserved shedding function.",
+      "confidence": "high",
+      "rationale": "BTC is a type I single-pass transmembrane protein with exactly one extracellular terminus \u2014 the mature N-terminus beginning at residue 32 (D). The AP tag is placed N-terminal to the BTC ectodomain in a membrane-anchored construct, which after cleavage of the heterologous HB-EGF signal peptide leaves AP fused immediately before residue 32. No specific junction residue is named in the paper, but topology leaves only one extracellular terminus, so insert_after_residue=31 is computed from the landmarks (signal peptide ends at 31, mature ectodomain begins at 32). The tag position is 87 residues from the TM boundary (TM starts at 119), well clear of all constraints. Python confirmed residue 31 = A and residue 32 = D. PMC2172154 (L1): A full-length, membrane-anchored AP-tagged BTC transmembrane precursor was constructed by fusing the AP cDNA (preceded by an HB-EGF signal sequence) to a partial BTC cDNA encoding the ectodomain, TM, and intracellular regions. The construct was expressed in cells and used to quantify ectodomain shedding from the cell surface.",
+      "sources": [
+        {
+          "pmid": 14993236,
+          "citation": "PMID 14993236",
+          "claim": "Plasmids encoding AP-tagged EGFR ligands were constructed by inserting partial cDNAs for human TGF\u03b1, amphiregulin, epiregulin, EGF, betacellulin, and HB-EGF into the 3\u2032 end of human placental AP cDNA on a pRc/CMV-based expression vector pAlPh. pAlPh contains an NH 2 -terminally located HB-EGF signal sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:47:44.906801+00:00",
+  "literature_notes": "Only one ledger line (L1) is provided. It reports a full-length, membrane-anchored AP-tagged BTC construct used to measure ectodomain shedding, which qualifies as a published tag insertion in a membrane-anchored context. No specific junction residue is named; the position is topology-derived from the single extracellular terminus (mature N-terminus at residue 32). The BTC ectodomain contains eight cysteines (positions 46, 53, 69, 77, 82, 93, 95, 104) forming the EGF-domain disulfide pattern; the N-terminal tag at the 31/32 junction is remote from all of them. No internal loop insertions are supported by the ledger. No intracellular or function-abrogating positions are reported in L1.",
+  "literature_rejected": []
+}

@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "CRHR1-terminal_n-23-lit",
+      "gene_symbol": "CRHR1",
+      "uniprot_acc": "P34998",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "cMyc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface display confirmed by colocalization imaging; receptor internalized into early and recycling endosomes, demonstrating intact trafficking. No explicit ligand-binding or cAMP assay result reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "CRHR1 is a class B GPCR whose C-terminus is intracellular (residues 368\u2013415 per landmarks); the mature N-terminus (residue 24, 94 residues from TM1) is the sole extracellular terminus and the only position consistent with a surface-displayed N-terminal cMyc tag. The signal peptide spans residues 1\u201323 (last SP residue = A23), so the tag must be inserted after residue 23 to avoid co-translational cleavage. Python verification confirms residue_before = A (position 23) and residue_after = S (position 24), matching the canonical sequence exactly. Full-length, membrane-anchored cMyc-CRHR1 expressed in cells; the tagged receptor was detected on the cell surface and tracked through endosomal compartments (Rab5, Rab11, EEA1, APPL1 colocalization) by fluorescence microscopy.",
+      "sources": [
+        {
+          "citation": "DOI 10.1101/2022.08.04.502800",
+          "claim": "M1 refers to the fraction of 747 red channel signal (cMyc-CRHR1) overlapping green channel signal (Rab5, Rab11, EEA1 or APPL1) and M2 748 corresponds to the reciprocal fraction.",
+          "source_id": "DOI:10.1101/2022.08.04.502800"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:02:12.469275+00:00",
+  "literature_notes": "Only one ledger line (L1) was provided. It reports a cMyc-CRHR1 construct that is full-length and membrane-anchored, with confirmed cell-surface display and endosomal trafficking. No residue number is stated in the paper, but for a GPCR with a signal peptide the N-terminal tag position is unambiguously topology-derived: the tag must follow the SP cleavage site (after residue 23) to appear on the extracellular face. The three short extracellular loops (ECL1 175\u2013189, ECL2 254\u2013269, ECL3 332\u2013338) are not supported by any ledger evidence and are therefore not proposed as sites. The intracellular C-terminus is excluded as a surface site.",
+  "literature_rejected": []
 }

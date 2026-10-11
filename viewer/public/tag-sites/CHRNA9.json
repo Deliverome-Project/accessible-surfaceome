@@ -1,0 +1,59 @@
+{
+  "has_data": true,
+  "gene_symbol": "CHRNA9",
+  "uniprot_acc": "Q9UGM1",
+  "sites": [
+    {
+      "site_id": "CHRNA9-terminal_c-479-lit",
+      "gene_symbol": "CHRNA9",
+      "uniprot_acc": "Q9UGM1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 479,
+      "residue_before": "D",
+      "residue_after": "",
+      "residue_label": "D479",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "V5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface trafficking confirmed by immunofluorescent staining of non-permeabilized HEK293T cells (L10); function of \u03b19\u03b110 nAChR stated to be unaffected by C-terminal tagging (L9).",
+      "confidence": "high",
+      "rationale": "The V5 tag (GKPIPNPLLGLDST) is fused directly to the carboxy terminus of the \u03b19 subunit, placing it after residue 479 (D), the last residue of the protein. Python confirms residue 479 = D and that TM4 ends at residue 476, so the tag is appended to the 3-residue post-TM4 extracellular tail (477-RAD-479), satisfying the \u22653-residue distance from the TM boundary. The C-terminal extracellular location is confirmed by surface staining of intact (non-permeabilized) cells, and function of the \u03b19\u03b110 receptor is explicitly stated to be preserved. Human \u03b19 nAChR stably expressed in HEK293T cells with a C-terminal V5 tag (GKPIPNPLLGLDST); non-permeabilized immunofluorescence confirmed surface trafficking; function of the \u03b19\u03b110 receptor was explicitly stated to be unaffected by C-terminal tagging.",
+      "sources": [
+        {
+          "pmid": 39396195,
+          "citation": "PMID 39396195",
+          "claim": "These constructs were fused at their C-termini with the following epitope tags: C-terminal TMIE-HA (YPYDVPDYA); C-terminal \u03b19-V5 (GKPIPNPLLGLDST); C-terminal \u03b110-FLAG (DYKDDDDK)."
+        },
+        {
+          "pmid": 33311584,
+          "citation": "PMID 33311584",
+          "claim": "The C-terminal extracellular domain of \u03b19 and \u03b110 nAChRs exhibits several extracellular amino acids, where a spacer and a nine amino acid hemagglutinin peptide (HA) were introduced immediately after the fourth transmembrane region (TMR4) (Fig. 1 a,a1,a2)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 479,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:38:08.626833+00:00",
+  "literature_notes": "All ten ledger lines (L1\u2013L10) converge on a single extracellular position: the C-terminus of CHRNA9 after residue 479, which lies in the short 3-residue post-TM4 extracellular tail (477-RAD-479). Two independent papers (PMC7733449 using HA knock-in mice; PMC12135114 using V5-tagged HEK293T stable lines) validate this same junction with different tags, different expression systems, and complementary assays. No ledger evidence supports any insertion in the large N-terminal extracellular domain (23\u2013238) or the short ECL1 (288\u2013301), so no sites are proposed there. The post-TM4 position insert_after_residue=476 was considered but rejected: it sits at the TM4/extracellular boundary (0 residues into extracellular from TM4 end) and the ledger language ('last amino acid of C-terminus', L5) unambiguously places the tag after residue 479, not between 476 and 477. No intracellular or function-abrogating positions are named in the ledger.",
+  "literature_rejected": []
+}

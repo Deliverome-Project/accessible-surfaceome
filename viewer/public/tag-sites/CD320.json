@@ -1,0 +1,63 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD320",
+  "uniprot_acc": "Q9NPF0",
+  "sites": [
+    {
+      "site_id": "CD320-terminal_n-35-lit",
+      "gene_symbol": "CD320",
+      "uniprot_acc": "Q9NPF0",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 35,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A35",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface biotinylation assay confirmed FLAG-tagged CD320 is present on the cell surface (PMC13382787, L6). N-glycosylation mutants of the FLAG-tagged construct retained surface trafficking, confirming the tag does not disrupt membrane targeting (L4).",
+      "confidence": "high",
+      "rationale": "CD320 is a type I single-pass transmembrane protein with a signal peptide spanning residues 1-35; the mature N-terminus begins at residue 36 (S). An N-terminal tag on a protein with a signal peptide must be placed after the SP cleavage site (after residue 35) to avoid being cleaved off with the signal peptide. No clip names a specific junction residue, but exactly one extracellular N-terminus exists, so the position is topology-derived. The tag is 196 residues from the TM boundary, well clear of any constraint. Surface display was confirmed by biotinylation. Full-length human CD320 expressed with an N-terminal FLAG tag in HEK293 cells (PMC11667166). Surface display confirmed by cell-surface biotinylation and NeutrAvidin pull-down with anti-FLAG western blot (PMC13382787). Multiple independent studies used this construct.",
+      "sources": [
+        {
+          "pmid": 39551142,
+          "citation": "PMID 39551142",
+          "claim": "We expressed human CD320 with an N-terminal FLAG tag ( Fig. 1 A ) in human embryonic kidney 293 (HEK293) cells."
+        },
+        {
+          "pmid": 39551142,
+          "citation": "PMID 39551142",
+          "claim": "To examine CD320 complex formation, we made another plasmid expressing CD320 with an N-terminal V5 tag."
+        },
+        {
+          "citation": "DOI 10.1101/2021.08.16.456495",
+          "claim": "HEK293 cells transfected with the CD320 cDNA fused to a green fluorescent protein (GFP) in the protein-expression plasmid pEGFP(19).",
+          "source_id": "DOI:10.1101/2021.08.16.456495"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:17:36.586782+00:00",
+  "literature_notes": "All three ledger-supported sites map to the same physical junction (insert_after_residue=35, between the signal peptide cleavage site and the mature N-terminus of CD320). They are reported as separate entries because they use distinct tags (FLAG, V5, GFP) from independent publications. No clip names a specific junction residue for any construct, so all positions are topology-derived: CD320 is a type I single-pass TM protein with SP (1-35), extracellular domain (36-230), TM (231-250), and intracellular tail (251-282); the only extracellular terminus is after residue 35. The C-terminal tail (251-282) is intracellular and no clip reports a tag there. Ledger lines L4, L6, L7, L8 corroborate surface display of FLAG-tagged constructs but do not add new junction positions. L7 mentions disease variants E88del and S162A in the extracellular domain, but these are amino-acid substitutions/deletions, not tag insertions, so they do not qualify as sites. N-glycosylation sites Asn126, Asn195, Asn213 (L4) are noted as constraints within the extracellular domain but no tag insertion was reported at those positions.",
+  "literature_rejected": []
+}

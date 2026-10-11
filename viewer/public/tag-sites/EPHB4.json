@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPHB4",
+  "uniprot_acc": "P54760",
+  "sites": [
+    {
+      "site_id": "EPHB4-terminal_n-15-lit",
+      "gene_symbol": "EPHB4",
+      "uniprot_acc": "P54760",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 15,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A15",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface localization confirmed by use in surface expression studies (L1); construct used for cell-surface co-expression and signalling assays (L4). Kinase activity of the tagged receptor was NOT MEASURED explicitly in either paper.",
+      "confidence": "high",
+      "rationale": "Both L1 and L4 report N-terminal epitope tags on full-length, membrane-anchored EphB4 used for surface-expression studies, establishing that the extracellular N-terminus tolerates a short tag. The signal peptide spans residues 1\u201315 (landmark-authoritative); any N-terminal tag must be placed after cleavage, i.e., after residue 15 (A) and before residue 16 (L), the mature N-terminus. Python confirms seq[14]='A' and seq[15]='L'. No residue is named in either paper, so position_evidence is topology_derived: with a single-pass type-I topology and a 525-residue extracellular domain, the post-signal-peptide N-terminus is the only extracellular N-terminal junction available. L1 (PMC9795039): HA epitope tag engineered at the NH2-terminus of full-length EphB4 in a lentiviral expression construct for surface expression studies; the construct is full-length and membrane-anchored. Corroborated by L4 (PMC10168364), which places an N-terminal HA leader + c-myc tag + GSPGGA linker on full-length EphB4 in pCEP4 for surface expression studies. Neither paper names a specific residue; the signal peptide (residues 1\u201315) is cleaved, so the only extracellular N-terminal junction is after residue 15 (A) and before residue 16 (L), the mature N-terminus.",
+      "sources": [
+        {
+          "pmid": 36574991,
+          "citation": "PMID 36574991",
+          "claim": "HA and flag epitopes were tagged at the NH2-terminus of EphB4 and ephrinB2, respectively, and GFP was fused to the NH2-terminus of ephrinB2."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:35:40.234741+00:00",
+  "literature_notes": "L1 and L4 both ground the same N-terminal junction (after residue 15) on full-length EphB4; they are treated as one site with L1 as the primary clip and L4 as corroboration. L2 and L3 (PMC13270174) report a C-terminal eGFP fusion confirmed at the plasma membrane by immunofluorescence, but the C-terminus (residue 987) falls within the intracellular domain (topology landmarks: intracellular 562\u2013987); this tag is therefore placed in other_positions as intracellular. No ledger line reports any insertion in an internal extracellular loop of EphB4, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 987,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal eGFP fusion (EphB4-eGFP) confirmed at the plasma membrane by immunofluorescence in 22Rv1 cells, but residue 987 lies within the intracellular kinase domain (topology 562\u2013987); the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

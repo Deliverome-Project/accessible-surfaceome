@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR10H1-terminal_n-0-lit",
+      "gene_symbol": "OR10H1",
+      "uniprot_acc": "Q9Y4A9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Rho (rhodopsin epitope)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Rho-tagged OR10H1 was expressed in HEK293 cells and used in a deorphanization screen; surface expression was confirmed via the rho tag and functional ligand-response assays were performed to identify cognate odorants.",
+      "confidence": "high",
+      "rationale": "OR10H1 is a class A GPCR (olfactory receptor) with no cleavable signal peptide; TM1 spans residues 25\u201349 and the N-terminus (residues 1\u201324) is extracellular. An 'N-terminal' tag on this protein can only land before residue 1 (insert_after_residue = 0), the sole extracellular terminus, giving residue_after = M (seq[0]). The junction is 24 residues from TM1, well above the \u22653-residue minimum. The position is topology_derived because the paper names no residue but exactly one extracellular terminus exists. L2 (same paper, same construct) corroborates L1. PMC5964926 reports full-length OR10H1 expressed as a fusion protein with an N-terminal rhodopsin (rho) tag in a pCI mammalian expression vector, constructed by standard PCR. The construct is membrane-anchored (full-length GPCR). No specific residue number is named for the junction.",
+      "sources": [
+        {
+          "pmid": 29867524,
+          "citation": "PMID 29867524",
+          "claim": "This plasmid expressed OR10H1 as a fusion protein with an N-terminal rhodopsin tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:29:28.066448+00:00",
+  "literature_notes": "Both ledger lines (L1 and L2) derive from the same publication (PMC5964926) and describe the identical rho-tagged OR10H1 construct; L1 is used as the primary clip. No residue number is stated in either clip, so the position is topology_derived from the single extracellular N-terminus. No internal loop insertions are reported in the ledger for OR10H1 or any close ortholog, so no internal sites are proposed. The C-terminus (residues 292\u2013318) is intracellular and therefore not eligible for a surface tag.",
+  "literature_rejected": []
 }

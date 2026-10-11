@@ -1,0 +1,15 @@
+{
+  "has_data": false,
+  "gene_symbol": "FLT3LG",
+  "uniprot_acc": "P49771",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:52:01.544650+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same experiment from PMC9512362: tagged recombinant X. laevis Flt3lg.S and Flt3lg.L extracellular-domain proteins produced in an insect-cell secretion vector (pMIB/V5 His A). This disqualifies them on three independent grounds. (1) Construct type: pMIB/V5 His A is an insect-cell secretion vector; the constructs are explicitly described as secreted recombinant proteins used as ligand/probe reagents to detect Flt3 on cell surfaces \u2014 they are soluble ectodomain constructs, not full-length membrane-anchored proteins, which is the disqualifying category stated in the rules. (2) Tag position: the V5/His tag is appended by the vector at the C-terminus of the ectodomain insert; no residue number in human FLT3LG is named, so insert_after_residue cannot be pinned. (3) Species: the tagged proteins are Xenopus laevis paralogs (Flt3lg.S and Flt3lg.L), not human FLT3LG; even if the construct type were acceptable, the ortholog evidence would be indirect and still fails on grounds (1) and (2). No other ledger line exists. Zero sites qualify.",
+  "literature_rejected": []
+}

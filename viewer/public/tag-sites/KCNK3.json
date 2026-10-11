@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "KCNK3",
+  "uniprot_acc": "O14649",
+  "sites": [
+    {
+      "site_id": "KCNK3-internal-50-lit",
+      "gene_symbol": "KCNK3",
+      "uniprot_acc": "O14649",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 50,
+      "residue_before": "A",
+      "residue_after": "R",
+      "residue_label": "A50",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface display confirmed by anti-HA immunostaining on intact blocked/fixed cells (L2). Channel electrophysiological function not explicitly reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 names the junction explicitly as between position 50 (Ala) and position 51 (Arg); Python lookup confirms seq[49]='A' and seq[50]='R', both matching the paper's residue identities exactly. The site sits 21 residues from the TM1 C-boundary (residue 29) and 58 residues from the TM2 N-boundary (residue 108), satisfying the \u22653-residue clearance rule on both sides. It is 46 residues upstream of the GYG selectivity-filter motif (residues 95\u201397), placing it well away from the pore-forming region. L2 independently confirms that the HA tag is accessible on the extracellular surface of intact cells. Full-length human TASK-1 (KCNK3) construct with an HA epitope tag inserted between A50 and R51 in the first extracellular loop (ECL1, residues 30\u2013107), expressed in mammalian cells. L2 confirms surface display: intact cells were blocked, fixed, and incubated with anti-HA antibody, detecting the tag on the extracellular face.",
+      "sources": [
+        {
+          "pmid": 41856078,
+          "citation": "PMID 41856078",
+          "claim": "An HA epitope was added to the extracellular loop of TASK-1 between positions 50 (Ala) and 51 (Arg) for the extracellularly tagged TASK-1."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:49:12.493761+00:00",
+  "literature_notes": "L3 and L4 describe a rat TASK-1\u2013GFP construct cloned into pEGFP-C1, which appends GFP to the N-terminus of the insert. The KCNK3 N-terminus (residues 1\u20138) is intracellular per the topology landmarks; therefore the GFP moiety faces the cytoplasm and this is not an extracellular surface tag. It is recorded in other_positions. No ledger line supports a tag in ECL2 (residues 180\u2013222) or at any other extracellular position.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Rat TASK-1 cloned into pEGFP-C1 places GFP at the N-terminus; KCNK3 residues 1\u20138 are intracellular, so GFP faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "CDHR2",
+  "uniprot_acc": "Q9BYE9",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:31:11.408888+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe C-terminal fusions to CDHR2 (EGFP and HaloTag respectively). Per the authoritative topology landmarks, the CDHR2 C-terminus (residues 1176\u20131310) lies entirely in the intracellular domain; the transmembrane segment ends at residue 1175 and the cytoplasmic tail runs from 1176 to 1310. A tag appended after residue 1310 is therefore cytoplasmic, not extracellular. Neither line describes a tag on the extracellular domain (residues 21\u20131154) or at the mature N-terminus (after residue 20). No ledger line supports any extracellular surface tag site for CDHR2; zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1310,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "CDHR2-EGFP C-terminal knock-in mouse (CRISPR/Cas9); tag appended after the last residue (L1310) which lies in the intracellular domain (residues 1176\u20131310), not on the extracellular face."
+    },
+    {
+      "residue": 1310,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "Full-length CDHR2-HALO construct with HaloTag at the C-terminus; same intracellular junction after L1310; confirmed to be derived from the same CDHR2-EGFP backbone, reinforcing the intracellular placement."
+    }
+  ]
+}

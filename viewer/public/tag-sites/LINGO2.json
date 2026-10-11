@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "LINGO2",
+  "uniprot_acc": "Q7L985",
+  "sites": [
+    {
+      "site_id": "LINGO2-terminal_n-27-lit",
+      "gene_symbol": "LINGO2",
+      "uniprot_acc": "Q7L985",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "G",
+      "residue_after": "C",
+      "residue_label": "G27",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA (YPYDVPDYA)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by immunostaining/detection of the HA epitope on the extracellular face; functional impact on LINGO2 signalling reported as preserved in the cited studies.",
+      "confidence": "high",
+      "rationale": "L2 explicitly places the HA tag 'between residues 27 and 28' and provides the flanking sequence STIG-YPYDVPDYA-CPAR; Python lookup confirms G at position 27 and C at position 28, matching residue_before and residue_after exactly. L1 independently corroborates the same junction ('at amino acid position 28, downstream of the signaling sequence'). Position 27 is the last residue of the signal peptide per the topology landmarks, so the tag lands at the mature N-terminus after SP cleavage \u2014 514 residues from the TM boundary, fully extracellular, and consistent with the standard LINGO-family N-terminal tagging strategy. Full-length LINGO2 in pcDNA3 expressed in mammalian cells; HA tag (YPYDVPDYA) inserted between residues 27 and 28 by PCR, confirmed by flanking sequence STIG-[HA]-CPAR. A second paper (L1) independently reports the same construct as 'at amino acid position 28, downstream of the signaling sequence'.",
+      "sources": [
+        {
+          "pmid": 36738787,
+          "citation": "PMID 36738787",
+          "claim": "A PCR strategy was used to incorporate the coding sequence of the HA epitope YPYDVPDYA into full-length LINGO2 between residues 27 and 28 with the HA sequence shown in bold - STIG YPYDVPDYA CPAR."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:11:57.244646+00:00",
+  "literature_notes": "Two ledger lines (L1 and L2) both describe HA-tag insertion at the same junction (after residue 27, the last signal-peptide residue) in full-length membrane-anchored LINGO2. L2 is the primary evidence with explicit residue numbers and flanking sequence; L1 is an independent corroboration. No other insertion sites are reported in the ledger for LINGO2. The extracellular domain spans residues 28\u2013540 (513 aa), but no internal loop insertions are evidenced in the ledger. The intracellular tail (566\u2013606) and TM (541\u2013565) are not relevant for surface tagging.",
+  "literature_rejected": []
+}

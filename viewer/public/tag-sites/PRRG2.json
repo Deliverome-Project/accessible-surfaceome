@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PRRG2",
+  "uniprot_acc": "O14669",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:43:35.616709+00:00",
+  "literature_notes": "Two ledger lines were evaluated. L1 (PMC1885577) reports enzymatic biotinylation of a full-length PRRG2 construct and flow-cytometric confirmation that the Gla domain is extracellular. Enzymatic biotinylation is a surface-labeling biochemical technique, not an epitope-tag knock-in, fluorescent-protein fusion, transposon/domain-insertion screen, or antibody-epitope insertion; it therefore does not qualify as evidence for a tolerated tag insertion under the ledger rules. L2 (PMC5578492) reports a C-terminal myc-tagged PRRG2 construct expressed in mammalian cells. PRRG2 is a single-pass type-I membrane protein (N-out, C-in): the C-terminus falls in the intracellular domain (residues 131\u2013202 per the authoritative topology landmarks). A C-terminal myc tag is therefore cytoplasmic, not extracellular, and cannot be promoted to a surface-tag site. No ledger line reports a tag insertion at any extracellular position of PRRG2 (residues 24\u2013109) or at the mature N-terminus (after residue 23). Zero surface sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 202,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal myc tag appended after the last residue (H202) of PRRG2; the C-terminus lies in the intracellular domain (residues 131\u2013202), so this tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

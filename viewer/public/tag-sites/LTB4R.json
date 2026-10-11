@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LTB4R-terminal_n-0-lit",
+      "gene_symbol": "LTB4R",
+      "uniprot_acc": "Q15722",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "L3: surface FLAG detection in Expi293F cells confirmed receptor trafficking to the plasma membrane (surface_only). L1: construct used for crystallography of the full-length receptor, implying stable membrane insertion, but no explicit surface or functional assay is described in the clip.",
+      "confidence": "high",
+      "rationale": "LTB4R has no signal peptide in its canonical topology; EC1 (residues 1\u201319) is extracellular and TM1 begins at residue 20, leaving 19 residues of extracellular space N-terminal to the first TM helix. A prepend tag (insert_after_residue=0) sits entirely on the extracellular face, well beyond the >=3-residue TM-boundary requirement. L3 explicitly names LTB4R in a GPCR library with N-terminal FLAG confirmed at the cell surface; L1 corroborates with a full-length membrane-anchored FLAG-tagged hBLT1 construct. No residue number is stated in either clip, and the N-terminus is the sole extracellular terminus of this seven-TM receptor, so the junction is uniquely determined by topology. L3 (PMC10156119): A GPCR library including LTB4R (BLT1) was expressed in Expi293F cells with an N-terminal FLAG tag and C-terminal 1D4 tag on each construct; surface FLAG signal was used to confirm receptor trafficking. L1 (PMC8137929) independently reports a full-length membrane-anchored hBLT1 crystallization construct carrying a FLAG tag at the N-terminus (after an exogenous HA signal sequence and AscI site). No specific residue number is named in either clip; the N-terminus is the only extracellular terminus of this GPCR, so the junction is topology-derived as a prepend before residue 1 (M).",
+      "sources": [
+        {
+          "pmid": 37134173,
+          "citation": "PMID 37134173",
+          "claim": "Each GPCR construct includes an N-terminal FLAG tag and a C-terminal 1D4 tag, except for four GPCRs belonging to the Frizzed (FZD) subfamily, which have an N-terminal HA (hemagglutinin) epitope tag and a C-terminal 1D4 epitope tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:27:29.778809+00:00",
+  "literature_notes": "Three ledger lines were evaluated. L1 and L3 both support an N-terminal FLAG tag on the extracellular face of LTB4R; L3 is used as the primary clip because it explicitly confirms surface detection in mammalian cells. L2 reports an LgBiT fusion to the C-terminus of BLT1R; the C-terminus falls in IC4 (residues 290\u2013352, intracellular) and is therefore not a surface tag site \u2014 it is recorded in other_positions. The C-terminal 1D4 tag in L3 is similarly intracellular. No ledger line supports any internal extracellular loop insertion for LTB4R, so no internal sites are proposed.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "LgBiT fused to the C-terminus of BLT1R (L2); the C-terminus is residue 352 within IC4 (290\u2013352), which is intracellular \u2014 not a surface tag site."
+    },
+    {
+      "residue": 352,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal 1D4 tag on LTB4R in the GPCR library (L3); same intracellular C-terminus (IC4, 290\u2013352) \u2014 not a surface tag site."
+    }
+  ]
 }

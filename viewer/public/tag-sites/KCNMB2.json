@@ -4,6 +4,44 @@
   "uniprot_acc": "Q9Y691",
   "sites": [
     {
+      "site_id": "KCNMB2-internal-137-lit",
+      "gene_symbol": "KCNMB2",
+      "uniprot_acc": "Q9Y691",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 137,
+      "residue_before": "K",
+      "residue_after": "I",
+      "residue_label": "K137",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "TEV site (ENLYFQG)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by extracellular TEV protease cleavage assay; the construct successfully reported \u03b22 surface levels, indicating the insertion is tolerated and the protein traffics to the plasma membrane.",
+      "confidence": "high",
+      "rationale": "The paper explicitly states the TEV site was inserted after the 137th amino acid of KCNMB2, placing it within the single extracellular domain (landmarks: 71\u2013199). Python verification confirms residue 137 is K and residue 138 is I, both within the extracellular span. The insertion sits 67 aa from the first TM boundary and 63 aa from the second, well clear of both. The construct was used as a functional surface reporter, directly demonstrating extracellular accessibility and membrane trafficking. Full-length membrane-anchored KCNMB2 (\u03b22) co-expressed with BK channel \u03b1-subunit in a heterologous system; a TEV protease recognition site (ENLYFQG, 7 aa) was inserted after residue 137 to create the '137TEV \u03b22' construct, used as a surface-expression reporter by applying extracellular TEV protease and quantifying cleavage of surface-displayed \u03b22.",
+      "sources": [
+        {
+          "pmid": 30477399,
+          "citation": "PMID 30477399",
+          "claim": "For protease digestion experiments, a TEV ( tobacco etch virus ) protease recognition site (ENLYFQG) was inserted after the 137 th amino acid of \u03b22 (137TEV \u03b22), this residue could be precisely recognized and was used to quantify the surface expression of \u03b22 subunits [ 27 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "validated",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "position_repaired": true,
+      "quote_probative": true
+    },
+    {
       "site_id": "KCNMB2-snorkel-c",
       "gene_symbol": "KCNMB2",
       "uniprot_acc": "Q9Y691",
@@ -65,6 +103,21 @@
       "isoform_residue": 227,
       "canonical_residue": 194,
       "left_pct": 84.70149253731343
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:51:01.488834+00:00",
+  "literature_notes": "L2 reports a C-terminal HA tag on full-length membrane-anchored KCNMB2. The topology landmarks place residues 221\u2013235 in the intracellular compartment; the C-terminus (residue 235, R) is definitively cytoplasmic. This tag is therefore not an extracellular surface site and is recorded in other_positions. No other ledger lines are present, so only one surface site is reported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 235,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "HA tag appended to the C-terminus of full-length KCNMB2 for Western blot detection; topology landmarks place residues 221\u2013235 in the intracellular compartment, so this tag faces the cytoplasm and is not a surface-display site."
     }
   ]
 }

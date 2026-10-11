@@ -1,0 +1,54 @@
+{
+  "has_data": true,
+  "gene_symbol": "PLXDC2",
+  "uniprot_acc": "Q6UX71",
+  "sites": [
+    {
+      "site_id": "PLXDC2-terminal_n-30-lit",
+      "gene_symbol": "PLXDC2",
+      "uniprot_acc": "Q6UX71",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 30,
+      "residue_before": "G",
+      "residue_after": "K",
+      "residue_label": "G30",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "epitope tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Live-cell staining of transfected HEK293 cells with an antibody against the extracellular epitope confirmed surface expression of full-length PLXDC2 (L2, L3). No functional assay result for the tagged construct is reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the epitope tag is placed after the secretion signal at the N-terminus of full-length PLXDC2, which by the authoritative landmarks corresponds to insert_after_residue=30 (last residue of the signal peptide, G) and residue_after=31 (K, first residue of the mature ectodomain). Python lookup confirmed aa(30)=G and aa(31)=K. The junction is 425 residues from the TM boundary (456), well clear of any steric constraint. L2 and L3 independently confirm the tag is surface-accessible by live-cell staining in the same system. Full-length, membrane-anchored PLXDC2 expressed in HEK293 cells with an epitope tag engineered immediately after the secretion signal (residues 1\u201330), placing it at the extracellular N-terminus of the mature protein. L2 and L3 (same paper) confirm the tag is accessible on the cell surface by live-cell staining.",
+      "sources": [
+        {
+          "pmid": 25535841,
+          "citation": "PMID 25535841",
+          "claim": "All constructs have the epitope tag engineered after the secretion signal at the N-terminus."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 30,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:38:47.642815+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) derive from the same paper (PMC4303762) and collectively describe a single site: an epitope tag placed immediately after the signal peptide cleavage site at the extracellular N-terminus of full-length, membrane-anchored PLXDC2. No internal loop insertions, C-terminal tags, or any other positions are mentioned in the ledger. The tag type is described only as 'epitope tag' in the available clips; the specific tag identity (e.g., FLAG, HA) is not resolvable from the ledger alone. L3 also notes that the same N-terminal tag strategy was applied to PLXDC2-dC (intracellular domain-deleted) and ECD-deleted constructs, but those truncations do not constitute additional surface-tag sites for full-length PLXDC2.",
+  "literature_rejected": []
+}

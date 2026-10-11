@@ -39,5 +39,20 @@
       "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:55:10.970181+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same construct: full-length human FPR3 with a C-terminal rho1D4 epitope tag (TETSQVAPA) preceded by a GG linker, expressed in HEK293S stable cell lines and detected by Western blot. The C-terminus of FPR3 is residue 353 (M), which falls within the intracellular span 307\u2013353 per the authoritative topology landmarks. This is a tolerated insertion on the cytoplasmic face, not the extracellular face, and therefore does not qualify as a surface tag site. No ledger line supports any tag insertion at an extracellular position (N-terminus residues 1\u201327, ECL1 84\u2013100, ECL2 163\u2013205, or ECL3 267\u2013286). Zero extracellular sites are supported by the ledger.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 353,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal rho1D4 tag (TETSQVAPA + GG linker) appended after residue 353 (M) of full-length FPR3; topology landmarks place residues 307\u2013353 in the intracellular compartment; tag is tolerated (detected by Western blot in stable HEK293S clones) but faces the cytoplasm, not the extracellular surface."
+    }
+  ]
 }

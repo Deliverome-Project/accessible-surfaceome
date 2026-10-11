@@ -37,7 +37,77 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GABBR2-terminal_n-41-lit",
+      "gene_symbol": "GABBR2",
+      "uniprot_acc": "O75899",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 41,
+      "residue_before": "G",
+      "residue_after": "W",
+      "residue_label": "G41",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell surface GB2 expression confirmed by anti-Myc immunofluorescence in living (non-permeabilized) cells; GABA_B receptor signaling function assessed in co-expression with GB1. Wild-type Myc-GB2 showed normal surface expression and served as the functional reference.",
+      "confidence": "high",
+      "rationale": "The mGluR5 signal peptide drives the Myc-tagged GB2 to the cell surface; after SP cleavage the Myc tag is the first extracellular sequence preceding the mature GB2 N-terminus. In canonical GABBR2 numbering the native SP spans residues 1\u201341 (last residue G41), so the tag is placed after residue 41 and before the mature N-terminal W42. Python confirmed G at position 41 and W at position 42. The extracellular domain runs 42\u2013478 (437 residues), placing the tag >437 residues from TM1 and well clear of any TM boundary. L2 (PMC7429364) independently corroborates this junction with an HA-HA tag on GABBR2(41\u2013941) used in signaling assays. mGluR5 signal peptide + Myc-tag introduced into full-length human GB2 and disease variants (GB2-S695I, GB2-A567T, GB2-I705N), co-expressed with GB1 in HEK293T cells; surface expression assessed by anti-Myc staining of non-permeabilized (living) cells and total expression after permeabilization using anti-Myc and anti-GB2 antibodies.",
+      "sources": [
+        {
+          "pmid": 40994051,
+          "citation": "PMID 40994051",
+          "claim": "The A567T variant in TM3 is situated in a region regulating constitutive receptor activity, whereas the S695I and I705N variants in TM6 are located in a region controlling receptor activation and allosteric modulation. 48 We co-expressed Myc-tagged GB2 variants along with GB1 in HEK293T cells and assessed GB2 cell surface and total expression levels before and after cell permeabilization, respectively, using anti-Myc and anti-GB2 antibodies ( Fig. 1B )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T09:03:13.133013+00:00",
+  "literature_notes": "L1 (PMC11788220) reports a flag-tagged rat GABBR2 in pRK5 but states no residue position for the flag tag; the clip cannot be used to pin insert_after_residue and was not promoted to a site. L6 (PMC13168656) reports a flag-tagged full-length human GB2 in pCDNA3.1 but likewise states no tag position; not promoted. L2 (PMC7429364) corroborates the N-terminal site (HA-HA tag on GABBR2 41\u2013941 used in signaling assays) but L4 provides the stronger surface-expression validation and was chosen as the primary clip. No internal extracellular loop sites are supported by the ledger: no clip reports a tolerated tag insertion in any of the short extracellular loops (ECL1 537\u2013550, ECL2 618\u2013652, ECL3 714\u2013717) of GABBR2.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 567,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L4",
+      "note": "A567T variant in TM3 (551\u2013576) disrupts constitutive receptor activity; intramembrane position, not a surface tag site."
+    },
+    {
+      "residue": 693,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "G693W (rat G692W equivalent) in TM6 (691\u2013713) disrupts receptor function; intramembrane position, not a surface tag site."
+    },
+    {
+      "residue": 695,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "S695I (rat S694I equivalent) in TM6 (691\u2013713) disrupts receptor activation and allosteric modulation; intramembrane position, not a surface tag site."
+    },
+    {
+      "residue": 705,
+      "kind": "abrogates_function",
+      "supporting_clip_id": "L1",
+      "note": "I705N (rat I704N equivalent) in TM6 (691\u2013713) disrupts receptor activation and allosteric modulation; intramembrane position, not a surface tag site."
+    }
+  ]
 }

@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "PERP",
+  "uniprot_acc": "Q96FX8",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T13:31:09.341974+00:00",
+  "literature_notes": "Both ledger lines (L1, L2) describe a HaloTag fused to the N-terminus of full-length PERP expressed in Mel202 cells, confirming plasma-membrane trafficking of the tagged construct. However, the authoritative topology landmarks place the PERP N-terminus (residues 1\u201312) in the INTRACELLULAR compartment. A tag prepended before Met1 therefore faces the cytoplasm, not the extracellular surface, and does not qualify as a surface tag site. No ledger line supports any insertion in ECL1 (residues 33\u201378) or ECL2 (residues 129\u2013152), the only two extracellular loops. With no ledger evidence for an extracellular tag insertion, sites is empty.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HaloTag fused to the N-terminus of full-length PERP localizes to the plasma membrane, but the N-terminus (residues 1\u201312) is intracellular per the authoritative topology; the tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

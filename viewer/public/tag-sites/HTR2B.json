@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "HTR2B-terminal_n-0-lit",
+      "gene_symbol": "HTR2B",
+      "uniprot_acc": "P41595",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA / smV5",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Immunofluorescence localization in Drosophila brain: tagged alleles recapitulate published receptor enrichment patterns in specific brain regions, indicating trafficking and surface localization are preserved. No ligand-binding or signaling assay reported.",
+      "confidence": "medium",
+      "rationale": "HTR2B is a GPCR with an extracellular N-terminus (residues 1\u201356, confirmed by topology landmarks) and an intracellular C-terminus (residues 383\u2013481); it therefore has exactly ONE extracellular terminus, making the N-terminal prepend the topology_derived position. No signal peptide is annotated for human HTR2B (UniProt P41595), so M1 is the first extracellular residue and the prepend (insert_after_residue=0) places the tag immediately before M1, 56 residues from the TM1 boundary\u2014well above the \u22653-residue minimum. The Drosophila ortholog evidence is indirect but the GPCR topology is conserved, and L3/L4 confirm the insertion does not disrupt receptor trafficking. ALFA and smV5 epitope tags were inserted at endogenous loci into Drosophila 5-HT2B (close ortholog of human HTR2B) using evolutionary conservation to guide site selection, generating constitutive and conditional tagged alleles used for cellular and subcellular localization. The tagged alleles largely recapitulate published data on receptor enrichment in specific brain regions (L3/L4), confirming that the insertion does not disrupt trafficking or localization.",
+      "sources": [
+        {
+          "pmid": 38234787,
+          "citation": "PMID 38234787",
+          "claim": "Leveraging evolutionary conservation to identify sites more likely to permit insertion of a tag, we generated constitutive and conditional tagged alleles for <i>Drosophila</i> 5-HT1A, 5-HT2A, 5-HT2B, Oct\u03b21R, Oct\u03b22R, two isoforms of OAMB, and mGluR."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:08:01.628028+00:00",
+  "literature_notes": "All five ledger lines derive from the same study (PMID 38234787 / PMC11326870 / PMC11550141) reporting epitope-tagged Drosophila 5-HT2B, an ortholog of human HTR2B. No residue number and no loop name is given in any line, so no validated or inferred internal site can be proposed. L5 ('5-HT2B-7\u00d7GFP11-HA') uses a naming convention (tag appended after protein name) consistent with a C-terminal fusion, which is intracellular for a GPCR; it does not support an extracellular surface site and provides no residue number for other_positions. The single site proposed rests on topology_derived reasoning: a GPCR has exactly one extracellular terminus (N-terminus), so the ALFA/smV5 tags reported in L1\u2013L4 must reside there if they are extracellular. Confidence is medium because the evidence is indirect (Drosophila ortholog) and the exact junction within the N-terminal domain is not stated.",
+  "literature_rejected": []
 }

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NEGR1",
+  "uniprot_acc": "Q7Z3B1",
+  "sites": [
+    {
+      "site_id": "NEGR1-terminal_n-37-lit",
+      "gene_symbol": "NEGR1",
+      "uniprot_acc": "Q7Z3B1",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 37,
+      "residue_before": "S",
+      "residue_after": "V",
+      "residue_label": "S37",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "3xFLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by immunostaining without cell permeabilization (L4). Glycosylation status examined by transfection in HEK293 cells, confirming expression of full-length tagged construct (L2). No ligand-binding or adhesion functional assay reported in these clips.",
+      "confidence": "high",
+      "rationale": "NEGR1 is a GPI-anchored IgLON-family protein with no transmembrane domain; the entire mature protein (residues 38\u2013354) is extracellular. The topology landmark explicitly states that an N-terminal tag goes after residue 37 (the computed signal peptide cleavage site). L1 reports 3\u00d7FLAG insertion at the C-terminus of the signal sequence (paper's positions 1\u201339, i.e., after residue 39), which is 2 residues into the mature protein per topology; both positions are extracellular and the topology-authoritative junction (37) is used. Python check: seq[36]='S' (pos 37), seq[37]='V' (pos 38), confirmed. Surface display was validated by non-permeabilized immunostaining (L4), confirming the tag is accessible on the extracellular face. Full-length NEGR1 with 3\u00d7FLAG inserted at the C-terminus of the signal sequence (paper's positions 1\u201339) expressed in HEK293 cells (L1/L2, PMC8997467) and in CRT-MG astrocytoma cells stably expressing FLAG-NEGR1 (L4, PMC4107236); EGFP-NEGR1 fusion with EGFP between signal peptide and mature protein also generated (L3/L5, PMC4107236). The paper places the tag after residue 39 (its signal peptide boundary); the topology landmark places the cleavage site after residue 37, making 37 the authoritative N-terminal junction.",
+      "sources": [
+        {
+          "pmid": 35406805,
+          "citation": "PMID 35406805",
+          "claim": "Then, overlapping PCR reactions were conducted to insert the 3\u00d7 FLAG sequence of the pcDNA3-3FLAG vector [ 17 ] into the C-terminus of the signal sequence (positions 1\u201339) of the NEGR1 gene."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:04:07.580410+00:00",
+  "literature_notes": "All five ledger lines (L1\u2013L5) converge on a single site: the N-terminus of the mature NEGR1 protein, immediately after the signal peptide cleavage site. L1 and L2 (PMC8997467) use 3\u00d7FLAG; L3, L4, and L5 (PMC4107236) use FLAG or EGFP. None of the ledger lines name a different position or an internal loop insertion. NEGR1 is GPI-anchored with no cytoplasmic domain, so there are no intracellular sites to consider. The paper's signal peptide boundary (residue 39) differs by 2 residues from the topology-authoritative boundary (residue 37); the topology landmark is used for the reported junction. No ledger line supports any internal loop insertion site.",
+  "literature_rejected": []
+}

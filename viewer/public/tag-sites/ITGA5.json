@@ -1,0 +1,62 @@
+{
+  "has_data": true,
+  "gene_symbol": "ITGA5",
+  "uniprot_acc": "P08648",
+  "sites": [
+    {
+      "site_id": "ITGA5-terminal_n-41-lit",
+      "gene_symbol": "ITGA5",
+      "uniprot_acc": "P08648",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 41,
+      "residue_before": "G",
+      "residue_after": "F",
+      "residue_label": "G41",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SBP-EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Fibronectin binding and \u03b15\u03b21 heterodimerization both confirmed preserved by functional assay (Fig. 1 of source paper).",
+      "confidence": "high",
+      "rationale": "L1 explicitly states the SBP-EGFP tag was inserted 'between the signal peptide and the mature polypeptide' of full-length membrane-anchored ITGA5. The signal peptide spans residues 1\u201341 (last residue G41) and the mature N-terminus begins at F42; therefore insert_after_residue = 41, with residue_before = G and residue_after = F, both read directly from the numbered sequence. The tag is on the extracellular face (the mature N-terminus is extracellular, >950 residues from the TM boundary at 1000). L2 confirms functional surface display: FN binding and \u03b21 heterodimerization are unaffected. Full-length, membrane-anchored human ITGA5 expressed in mammalian cells with an SBP-EGFP tag inserted between the signal peptide (residues 1\u201341) and the mature ectodomain (residue 42 onward), generating the RUSH-\u03b15 construct used for live-cell trafficking studies. L2 confirms that the tagged construct binds fibronectin and heterodimerizes with \u03b21 normally.",
+      "sources": [
+        {
+          "pmid": 41329164,
+          "citation": "PMID 41329164",
+          "claim": "Given that the N-terminus of the \u03b15 polypeptide is localized between the two integrin subunits, away from the FN ligand binding site, we inserted the IL-2 signal peptide, the streptavidin-binding peptide (SBP) and enhanced green fluorescent protein (EGFP) in this region to generate an SBP-EGFP-integrin \u03b15 construct (henceforth referred to as RUSH-\u03b15) ( Fig. 1 A , Fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": 41,
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T10:28:34.915221+00:00",
+  "literature_notes": "L3 and L4 (PMC12860946) report GFP- and FLAG-tagged zebrafish Itg\u03b15 mutants but name no residue, junction, or terminus for the tag insertion; the position cannot be pinned and no site can be derived from these clips alone. L5, L6, and L7 (PMC8227800) report \u03b15-RFP in zebrafish with L7 explicitly stating 'All fluorophores were tagged at the Integrin C-terminus'; the C-terminus of ITGA5 (residue 1049) falls in the intracellular domain (residues 1021\u20131049) and therefore does not qualify as an extracellular surface tag site \u2014 it is recorded in other_positions instead.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1049,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "RFP fused to the C-terminus of full-length integrin \u03b15 (zebrafish); L7 states all fluorophores were tagged at the integrin C-terminus, but residue 1049 lies within the intracellular tail (topology landmarks: intracellular 1021\u20131049), making this an intracellular label, not an extracellular surface tag."
+    }
+  ]
+}

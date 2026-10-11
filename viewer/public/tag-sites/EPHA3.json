@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "EPHA3",
+  "uniprot_acc": "P29320",
+  "sites": [
+    {
+      "site_id": "EPHA3-terminal_n-20-lit",
+      "gene_symbol": "EPHA3",
+      "uniprot_acc": "P29320",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 20,
+      "residue_before": "G",
+      "residue_after": "E",
+      "residue_label": "G20",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "PA16 / MAP16 (16 aa epitope tags)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Flow cytometry with anti-EphA3 mAb IIIA4 confirmed cell-surface display of tagged EphA3 in CHO-K1 cells (L3). No EphA3 kinase signalling or ligand-binding assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "The paper explicitly constructs full-length EphA3 with an N-terminal epitope tag placed after the signal sequence is excluded. For a type-I single-pass receptor whose signal peptide spans residues 1\u201320 (mature N-terminus at E21), this description uniquely pins the insertion to the junction between residue 20 (G, last of signal peptide) and residue 21 (E, first of mature ectodomain); no other extracellular N-terminus exists. Python verification confirms residue 20 = G and residue 21 = E, and that residue 21 is 521 residues from the TM boundary (542), well within the extracellular domain. Both PA16 and MAP16 are 16 aa, within the 13\u201323 aa target range. Full-length human EphA3 was subcloned into pCAG-Ble with an N-terminal PA16 (GLEGGVAMPGAEDDVV, 16 aa) or MAP16 (PGTGDGMVPPGIEDKI, 16 aa) epitope tag placed after exclusion of the signal sequence; stable CHO-K1 and LN229 cell lines were generated (pCAG-PA16-EphA3 / pCAG-MAP16-EphA3). Surface display of the tagged construct was confirmed by flow cytometry with an anti-EphA3 mAb (IIIA4).",
+      "sources": [
+        {
+          "pmid": 40688499,
+          "citation": "PMID 40688499",
+          "claim": "The open reading frames, excluding the signal sequences, were subcloned into the pCAG-Ble vector (FUJIFILM Wako Pure Chemical Corporation, Osaka, Japan) with an N-terminal PA16 tag (GLEGGVAMPGAEDDVV) [ 35 ] or a MAP16 tag (PGTGDGMVPPGIEDKI) [ 36 ], using the In-Fusion HD Cloning Kit (Takara Bio, Inc., Shiga, Japan)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:32:03.712038+00:00",
+  "literature_notes": "Three ledger lines (L1, L2, L3) all derive from the same publication (PMC12272597) and describe the same construct. L1 provides the mechanistic detail (tag identity, signal-sequence exclusion, cloning strategy); L2 names the vectors; L3 confirms surface display. No ledger line reports an internal-loop insertion, a C-terminal extracellular tag, or any intracellular tag for EphA3. No other sites are supported by the ledger.",
+  "literature_rejected": []
+}

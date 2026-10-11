@@ -37,7 +37,65 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "LPAR6-terminal_n-0-lit",
+      "gene_symbol": "LPAR6",
+      "uniprot_acc": "P43657",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "AP-TGF\u03b1 shedding assay in HEK293FT cells; FLAG-tagged zebrafish LPA6 was expressed at the cell surface and activated the AP-TGF\u03b1 shedding pathway, demonstrating surface expression and receptor function were preserved.",
+      "confidence": "high",
+      "rationale": "The topology landmarks place LPAR6 residues 1\u201318 as extracellular with no signal peptide, making the N-terminus the only extracellular terminus available for a surface tag. L6 reports a FLAG epitope (a short ~8 aa tag) placed between an HA signal sequence and the start of zebrafish LPA6 (residues 1\u2013312); after signal-peptide cleavage the FLAG is extracellular and the receptor is functional in a GPCR activation assay. Because no specific residue of the zebrafish or human sequence is named as the junction, the position is topology-derived: insert_after_residue = 0 (prepend before M1), residue_after = M. L2 independently confirms that full-length human LPAR6 tolerates a large N-terminal domain insertion (BRIL) at the same position, strengthening confidence in this site. Full-length zebrafish LPA6 (residues 1\u2013312, ortholog of human LPAR6) was expressed in HEK293FT cells with an N-terminal haemagglutinin signal sequence followed by a FLAG epitope tag; after HA-SP cleavage the FLAG is presented at the extracellular face. Human LPAR6 has no annotated signal peptide and its N-terminus (residues 1\u201318) is extracellular, so the equivalent junction is a prepend before M1 (insert_after_residue = 0). L2 independently corroborates: full-length human LPAR6 in pFastBac carries an HA signal peptide and a BRIL domain at its N-terminus, confirming the extracellular N-terminus tolerates a large domain insertion in the same protein.",
+      "sources": [
+        {
+          "pmid": 35113924,
+          "citation": "PMID 35113924",
+          "claim": "A modified pEGFPC1 vector (Clontech) encoding the wild-type or a mutant LPA 6 , consisting of a haemagglutinin signal sequence, FLAG epitope tag and zebrafish LPA 6 (residues 1\u2013312) [ 5 ], was transfected together with a pCAGGS plasmid encoding alkaline phosphatase (AP)-tagged TGF\u03b1 (AP-TGF\u03b1; human codon-optimized) into HEK293FT cells (seeded 1-day before the transfection in 4 ml per 6-cm culture dish at a cell concentration of 2 x 10 5 cells/ml) by using a polyethylenimine (PEI) transfection reagent (400 ng LPA 6 plasmid, 1 \u03bcg AP-TGF\u03b1 plasmid"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T11:16:05.488573+00:00",
+  "literature_notes": "Six ledger lines were evaluated. L6 (zebrafish LPA6 ortholog, FLAG, functional assay) and L2 (human LPAR6, BRIL domain, structural construct) both pin the extracellular N-terminal prepend position (insert_after_residue = 0); because they converge on the same junction, one site is reported, grounded in L6 (better functional validation and short-epitope tag). L2 is noted as corroborating evidence in the rationale. L1 and L4 describe GFP fused to the C-terminus of full-length human LPAR6; the C-terminus falls in the intracellular region (295\u2013344) and is therefore not a surface-tag site. L3 and L5 describe LgBiT replacing C-terminal residues F325\u2013A344, also within the intracellular region (295\u2013344). No ledger line supports an insertion in any of the three short extracellular loops (ECL1: 76\u201386, ECL2: 155\u2013179, ECL3: 253\u2013271).",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 344,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "GFP fused to the C-terminus of full-length human LPAR6 (pcDNA3-LPAR6-TEV-GFP-H8); the C-terminus lies in the intracellular region (295\u2013344), so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 325,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "C-terminal residues F325\u2013A344 of LPAR6 were replaced with LgBiT for NanoBiT-based G-protein complex assembly; residue 325 is within the intracellular C-terminal region (295\u2013344), making this an intracellular modification."
+    }
+  ]
 }

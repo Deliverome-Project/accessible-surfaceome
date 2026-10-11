@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NLGN3",
+  "uniprot_acc": "Q9NZ94",
+  "sites": [
+    {
+      "site_id": "NLGN3-terminal_n-37-lit",
+      "gene_symbol": "NLGN3",
+      "uniprot_acc": "Q9NZ94",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 37,
+      "residue_before": "T",
+      "residue_after": "Q",
+      "residue_label": "T37",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface binding assay: PTP\u03b4-Fc ectodomain binds FLAG-NLGN3-expressing HEK293T cells (L2). Cell aggregation assay: NLGN3-expressing cells aggregate with PTP\u03b4-expressing cells (L1/L2), demonstrating preserved trans-synaptic adhesion function.",
+      "confidence": "high",
+      "rationale": "pFLAG-CMV-1 places the FLAG tag at the N-terminus of the cloned insert; for a type I membrane protein with its own signal peptide (SP residues 1\u201337), the FLAG tag is inserted between the SP and the mature ectodomain, landing after SP cleavage at residue 37. Python lookup confirms residue 37 = T (last SP residue) and residue 38 = Q (mature N-terminus, start of the 672-residue extracellular domain). The tag is \u2265670 residues from the TM boundary (710), satisfying the \u22653-residue constraint. L2 independently confirms extracellular surface display of this exact construct, and the cell aggregation assay confirms functional trans-synaptic adhesion is preserved. Mouse NLGN3 coding sequence cloned into pFLAG-CMV-1 to yield a full-length, membrane-anchored, N-terminally FLAG-tagged construct expressed in HEK293T cells. L2 confirms the FLAG tag is displayed on the cell surface: extracellular PTP\u03b4-Fc fusion protein binds to FLAG-NLGN3-expressing cells, and the construct supports cell aggregation with PTP\u03b4-expressing cells.",
+      "sources": [
+        {
+          "pmid": 33758193,
+          "citation": "PMID 33758193",
+          "claim": "The coding sequences of mouse NLGN2, NLGN3, and NLGN4 were amplified by RT-PCR using total RNA prepared from the forebrains of mice at postnatal day (P) 11 with primer sets, Nlgn2-Cla-S/ Nlgn2-Sal-A, Nlgn3-ERI-S2/Nlgn3-Sal-A, and Nlgn4-ERI-S/Nlgn4-RV-A, respectively, and cloned into pFLAG-CMV-1 (Sigma) to yield N-terminally FLAG-tagged expression vectors."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:05:32.615749+00:00",
+  "literature_notes": "L3 and L4 (NL3-HA from Hangzhou Guannan Biology commercial plasmid) were disqualified because the tag position is not stated in the text \u2014 the rules explicitly exclude commercial plasmids with unstated tag positions. L4 additionally describes 'intracellular and ER distribution' of NL3, raising the possibility the HA tag is on the intracellular C-terminus, but the position remains unresolvable. L5, L6, and L7 report CRISPR/Cas9 knock-in of an HA tag on endogenous mouse Nlgn3 for immunofluorescence localization in neurons; no residue or terminus is named. The topology_derived rule requires that the paper's description leaves exactly one extracellular terminus \u2014 NLGN3 does have only one (N-terminus after SP) \u2014 but the rule also requires that the paper's construct description points to that terminus. L5\u2013L7 do not state whether the HA tag is N-terminal or C-terminal; CRISPR knock-in is equally used for C-terminal (intracellular) tagging of neuroligins, and immunofluorescence with permeabilization can detect intracellular tags. Because the face cannot be determined from the text, L5\u2013L7 cannot be promoted to a surface site. They are noted here as additional evidence that HA tagging of endogenous Nlgn3 is tolerated and does not disrupt synaptic trafficking, consistent with the L1/L2 site.",
+  "literature_rejected": []
+}

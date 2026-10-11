@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "COLEC12",
+  "uniprot_acc": "Q5KU26",
+  "sites": [
+    {
+      "site_id": "COLEC12-terminal_c-742-lit",
+      "gene_symbol": "COLEC12",
+      "uniprot_acc": "Q5KU26",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 742,
+      "residue_before": "L",
+      "residue_after": "",
+      "residue_label": "L742",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "Myc-His",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface display confirmed by anti-Myc MIF on non-permeabilized CHO cells (PMID 11564734, PMID 25199873); full-length Myc-tagged CL-P1 served as positive control in ligand-binding assay, confirming retained binding function (PMID 25199873).",
+      "confidence": "high",
+      "rationale": "COLEC12 is a type II transmembrane protein with its N-terminus intracellular (1\u201337), TM at 38\u201358, and the entire C-terminal ectodomain (59\u2013742) extracellular. The pcDNA3.1/myc-HisA vector appends Myc-His immediately after the last coding residue; L5 and L1 both state explicitly that the tag is at the C-terminus. Python confirms position 742 is 'L' (last residue of the sequence, 684 residues from the TM boundary), unambiguously extracellular. No residue number is cited in the papers, so the junction is topology-derived from the single extracellular C-terminus. The Myc-tagged construct retained ligand-binding activity (used as positive control in L4), supporting functional silence of the tag at this position. Full-length human CL-P1 (COLEC12) cloned into pcDNA3.1/myc-HisA, which appends a Myc-His tag after the last coding residue. Expressed in CHO cells; surface display confirmed by anti-Myc staining of non-permeabilized cells (MIF). The full-length Myc-tagged construct was used as the positive control in a ligand-binding assay (PMID 25199873).",
+      "sources": [
+        {
+          "pmid": 25199873,
+          "citation": "PMID 25199873",
+          "claim": "All proteins expressed in the transfected cells were tagged with Myc-epitope so that they could be demonstrated by staining with anti-Myc monoclonal antibody."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:01:16.779563+00:00",
+  "literature_notes": "All seven ledger lines (L1\u2013L7) converge on a single site: a C-terminal Myc (or Myc-His) tag on full-length CL-P1/COLEC12 expressed in CHO cells. L1, L5, and L6 explicitly state the tag is at the C-terminus; L6 identifies the vector (pcDNA3.1/myc-HisA), which by design appends Myc-His after the last coding residue. The C-terminus of COLEC12 (position 742, residue L) is extracellular by topology (type II orientation confirmed in L1). No ledger line names any internal loop insertion or N-terminal tag. No ledger line reports a tolerated intracellular insertion or a function-abrogating insertion for this protein.",
+  "literature_rejected": []
+}

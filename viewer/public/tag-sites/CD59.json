@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "CD59",
+  "uniprot_acc": "P13987",
+  "sites": [
+    {
+      "site_id": "CD59-terminal_c-128-lit",
+      "gene_symbol": "CD59",
+      "uniprot_acc": "P13987",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 128,
+      "residue_before": "P",
+      "residue_after": "",
+      "residue_label": "P128",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface FLAG signal detected by flow cytometry on non-permeabilized HUVEC, confirming GPI-anchored surface display. Complement-inhibitory function of CD59 NOT MEASURED in this clip.",
+      "confidence": "high",
+      "rationale": "CD59 is a GPI-anchored protein with no TM domain; the entire mature sequence (residues 26\u2013128) is extracellular. The paper describes a 'C-terminus of full-length CD59' FLAG tag with confirmed surface display, and the only extracellular C-terminus in the canonical sequence is after residue 128 (P). No specific residue is named in the clip, so the junction is topology-derived from the single available C-terminal landmark. The TM-distance constraint does not apply as there is no TM helix. Full-length CD59-FLAG construct expressed in HUVEC; non-permeabilized staining with anti-FLAG(M1)-DL488 by flow cytometry confirmed surface display of the GPI-anchored tagged protein.",
+      "sources": [
+        {
+          "pmid": 38359017,
+          "citation": "PMID 38359017",
+          "claim": "B) HUVEC were co\u2010transfected with either mCerulean\u2010C1 empty vector (control), mCerulean\u2010GDPD5 or mCerulean\u2010GDPD5\u2010H233A and the respective FLAG\u2010tagged GPI\u2010AP target (CD59\u2010FLAG, NT5E\u2010FLAG or TFPI\u2010FLAG). 24 h post transfection, cells were detached, fixed and stained for the surface FLAG signal using anti\u2010FLAG(M1)\u2010DL488 antibodies."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T07:20:33.085977+00:00",
+  "literature_notes": "CD59 (P13987) is a GPI-anchored complement regulatory protein. The sole ledger line (L1) reports a C-terminal FLAG tag on full-length CD59 with surface display confirmed by non-permeabilized flow cytometry. No residue number is stated, so the position is topology-derived as insert_after_residue=128 (the last residue P of the canonical 128-aa sequence). The GPI signal peptide (approximately residues 78\u2013128 in full-length numbering) is normally cleaved and replaced by the GPI anchor; the confirmed surface display of the FLAG tag indicates the GPI-anchoring machinery remained functional in this construct, consistent with published strategies that append short tags C-terminal to the mature domain or within the GPI signal. No N-terminal internal or other loop insertions are supported by the ledger. No intracellular or function-abrogating positions were reported.",
+  "literature_rejected": []
+}

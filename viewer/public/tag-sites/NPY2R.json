@@ -37,7 +37,51 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "NPY2R-terminal_n-0-lit",
+      "gene_symbol": "NPY2R",
+      "uniprot_acc": "P49146",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED \u2014 the ledger clips describe the construct's design and use in vivo but report no explicit surface-expression assay, ligand-binding assay, or signaling readout for the tagged receptor.",
+      "confidence": "low",
+      "rationale": "NPY2R has no signal peptide (UniProt P49146); its N-terminus (residues 1\u201351) is extracellular and its C-terminus (residues 326\u2013381) is intracellular per the authoritative landmarks. Because the paper names no residue or loop for the FLAG tag, and exactly one extracellular terminus exists, the position is topology-derived as a prepend before residue 1 (M). Computed: insert_after_residue=0, residue_after=M; the 51-residue extracellular N-terminal domain provides ample clearance from TM1 (which begins at residue 52). A potential N-glycosylation sequon at N11 (NQT) is downstream of the prepend site and is not disrupted by the tag. Full-length human NPY2R (Y2R) FLAG-tagged in a lentiviral expression vector (pCCL-mCamKIIa(0.4)-Y2R(flag)-T2A-NPY-IRES-EGFP, LV_Y2-NPY) used for in vivo neuronal expression in rodents. The construct is membrane-anchored and full-length; no residue or loop is named for the FLAG insertion.",
+      "sources": [
+        {
+          "pmid": 39251828,
+          "citation": "PMID 39251828",
+          "claim": "In LV_Y2-NPY, the Y2R gene was flag-tagged and separated from the NPY gene by the T2A self-cleaving peptide sequence."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "not_measured",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:10:27.948182+00:00",
+  "literature_notes": "L1, L2, and L3 are three clips from the same paper (PMC11467199) describing the same single construct; they are treated as one piece of evidence grounded in L1. The FLAG tag position is never stated \u2014 no residue number, no loop name, no primer sequence. The topology-derived N-terminal prepend is the only defensible assignment because (a) NPY2R has no signal peptide so the N-terminus is the mature extracellular face, and (b) the C-terminus is intracellular and therefore cannot carry a surface tag. No internal ECL site is proposed because the ledger names no loop. Confidence is low because the position is inferred from topology alone, not from any stated junction in the paper.",
+  "literature_rejected": []
 }

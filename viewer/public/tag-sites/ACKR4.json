@@ -37,7 +37,59 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "ACKR4-terminal_n-0-lit",
+      "gene_symbol": "ACKR4",
+      "uniprot_acc": "Q9NPB9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 0,
+      "residue_before": "",
+      "residue_after": "M",
+      "residue_label": "Nterm",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "SNAP tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "TR-FRET binding assay confirmed CCL25 binding to SNAP-ACKR4 at the cell surface (L5). Separately, N-terminal and C-terminal tagged ACKR4 constructs significantly augmented CCL19 internalization relative to untagged receptor (L4), demonstrating surface expression and ligand-scavenging function are preserved.",
+      "confidence": "high",
+      "rationale": "ACKR4 has no signal peptide; EC1 spans residues 1\u201341 (41 residues), placing the N-terminus fully extracellular and 41 residues from TM1 (residue 42). A prepend tag (insert_after_residue=0) is the only extracellular terminus available on this GPCR topology, and three independent ledger lines (L2, L3, L5) all report N-terminal fusions to full-length, membrane-anchored ACKR4. L5 is the strongest single line: SNAP-ACKR4 was used in a TR-FRET cell-surface binding assay confirming CCL25 engagement. The position is topology_derived because no specific residue number is named in any ledger line\u2014the tag goes before Met1 by necessity. Full-length ACKR4 with SNAP tag fused to the N-terminus expressed in cells; TR-FRET binding assay used to measure CCL25 binding at the cell surface. ACKR4 has no signal peptide (UniProt Q9NPB9); the N-terminus (Met1) is extracellular (EC1, residues 1\u201341), so the tag prepends before Met1. The same N-terminal position is independently validated by L2 (S6-peptide for surface labelling) and L3 (HA/FLAG N-terminal fusion), with functional readout in L4 (CCL19 internalization augmented by tagging).",
+      "sources": [
+        {
+          "citation": "DOI 10.64898/2026.01.23.701245",
+          "claim": "Binding of CCL25 to CCR9 or ACKR4 was determined by Time-Resolved Fluorescence Resonance Energy Transfer (TR-FRET) between a lanthanide donor attached to a snap tag fused to the receptor N-terminus and a fluorophore on the C-terminus of CCL25 preprint (which was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in (AZ647) ( Fig. 3A ).",
+          "source_id": "DOI:10.64898/2026.01.23.701245"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T05:54:44.761239+00:00",
+  "literature_notes": "All five ledger lines concern the same protein (ACKR4) and the same two termini. L2 (S6-peptide, N-terminal), L3 (HA/FLAG, N-terminal), and L5 (SNAP tag, N-terminal) all pin the identical junction (prepend before Met1); they converge on one site, not three. L4 provides the functional readout for the constructs described in L1\u2013L3. L1 and the C-terminal arm of L3 describe EGFP and HA/FLAG fused to the C-terminus; the C-terminus falls in IC4 (residues 307\u2013350, intracellular) and is therefore not a surface-tag site\u2014recorded in other_positions. No internal extracellular loop insertions are reported in the ledger for ACKR4; none are proposed. The 'augmented' CCL19 internalization in L4 is interpreted as function preserved/enhanced (not perturbed), because for this atypical decoy receptor ligand internalization is the canonical function, and the tagged receptor performs it more robustly than untagged\u2014consistent with improved surface trafficking conferred by the tag.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 350,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "EGFP fused to the C-terminus of full-length ACKR4 (L1); HA/FLAG also fused to C-terminus (L3); the C-terminus lies in IC4 (residues 307\u2013350, intracellular), so these are cytoplasmic tags, not surface tags."
+    }
+  ]
 }

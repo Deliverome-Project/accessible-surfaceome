@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "FGFR2",
+  "uniprot_acc": "P21802",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:48:43.877100+00:00",
+  "literature_notes": "All three ledger lines were evaluated carefully. [L1] describes the OptoR2 construct, which uses only the intracellular domain (ICD) of FGFR2 tethered to the membrane via an exogenous myristoylation domain; the HA tag is at the C-terminus of that ICD fragment and therefore faces the cytoplasm \u2014 this is not a full-length membrane-anchored FGFR2 with an extracellular tag. [L2] reports FLAG-tagged full-length FGFR2 mutants expressed via lentivirus, but the clip states no tag position (N-terminal, C-terminal, or internal); per the rules, a tag whose position is unstated cannot be pinned to insert_after_residue and therefore does not qualify. [L3] reports full-length FGFR2 C-terminally fused to NanoBiT subunits; the C-terminus of FGFR2 (residue 821) lies within the intracellular domain (residues 399\u2013821 per the authoritative landmarks), so this tag is cytoplasmic, not extracellular. No ledger line supports an insertion on the extracellular face of full-length, membrane-anchored FGFR2. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 821,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Full-length FGFR2 C-terminally fused to NanoLuc Small BiT or Large BiT for NanoBiT dimerization assays; residue 821 is within the intracellular domain (residues 399\u2013821), so the tag is cytoplasmic."
+    },
+    {
+      "residue": 821,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "HA tag at the C-terminus of the FGFR2 intracellular domain in the OptoR2 construct (ICD only, membrane-anchored via exogenous myristoylation signal); the tag is cytoplasmic and the construct lacks the extracellular and TM domains of full-length FGFR2."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "has_data": true,
+  "gene_symbol": "NTNG2",
+  "uniprot_acc": "Q96CW9",
+  "sites": [
+    {
+      "site_id": "NTNG2-terminal_n-17-lit",
+      "gene_symbol": "NTNG2",
+      "uniprot_acc": "Q96CW9",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 17,
+      "residue_before": "G",
+      "residue_after": "D",
+      "residue_label": "G17",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface immunostaining (non-permeabilized) confirmed surface display of the FLAG-tagged protein; no functional assay reported in the cited clip.",
+      "confidence": "high",
+      "rationale": "L1 and L2 both report an N-terminal FLAG tag on full-length membrane-anchored NTNG2 confirmed at the cell surface. No residue is named, but the signal peptide (residues 1\u201317, landmarks) is the only upstream feature; the mature N-terminus begins at residue 18 (D). Python confirmed residue 17 = G and residue 18 = D, placing insert_after_residue = 17 as the unique topology-derived junction. NTNG2 is GPI-anchored with no TM or intracellular domain (topology string is all O from 18\u2013530), so this N-terminal position is the sole extracellular terminus available for a surface tag. Full-length NTNG2 expressed in HeLa cells with an N-terminal FLAG tag; surface display confirmed by non-permeabilized cell-surface immunostaining (PMC6849109). No residue number is stated; the paper says only 'N-terminal'. NTNG2 has a signal peptide spanning residues 1\u201317 (landmarks), so the only extracellular N-terminus is the mature protein beginning at residue 18. The tag must sit after residue 17 (the last signal-peptide residue, G) and before residue 18 (D, the mature N-terminus); anything upstream would be co-translationally cleaved with the signal peptide.",
+      "sources": [
+        {
+          "pmid": 31668703,
+          "citation": "PMID 31668703",
+          "claim": "(E) Netrin-G2 constructs were expressed in HeLa cells with an N-terminal flag tag."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T12:19:08.571050+00:00",
+  "literature_notes": "L1 and L2 are from the same paper (PMC6849109) and describe the same experiment; L1 is used as the primary supporting clip. Both clips confirm surface display of N-terminal FLAG-tagged NTNG2 but name no specific residue, so position_evidence is topology_derived. NTNG2 is a GPI-anchored protein (topology: signal 1\u201317, extracellular 18\u2013530, no TM); the C-terminus (GPI attachment signal) is processed and not available as a free extracellular terminus, leaving the mature N-terminus (after residue 17) as the only ledger-supported site. No internal loop insertions are supported by the ledger.",
+  "literature_rejected": []
+}

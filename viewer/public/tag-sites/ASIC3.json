@@ -1,0 +1,29 @@
+{
+  "has_data": false,
+  "gene_symbol": "ASIC3",
+  "uniprot_acc": "Q9UHC3",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T06:35:14.063285+00:00",
+  "literature_notes": "ASIC3 is a two-pass (type I topology) ion channel: N-terminus residues 1\u201342 are intracellular, TM1 spans 43\u201360, the large ectodomain spans 61\u2013437, TM2 spans 438\u2013457, and the C-terminus residues 458\u2013531 are intracellular. There is no extracellular terminus. All five ledger lines (L1\u2013L5) describe tags inserted 'after the first ATG' or 'downstream of ATG start codon in exon 1', which places the tag after M1 (position 1) \u2014 firmly within the intracellular N-terminal domain (1\u201342). L2 confirms the 2xHA tag did not alter ASIC3-mediated current, and L4/L5 confirm a CRISPR 3xMyc knock-in, but both are intracellular positions. No ledger line reports any insertion in the extracellular domain (61\u2013437) or at any extracellular junction. Because the ledger provides zero evidence for an extracellular tag insertion, zero sites are proposed. The two intracellular tag positions are recorded in other_positions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "2xHA tag inserted after M1 (after first ATG) in the intracellular N-terminal domain (residues 1\u201342); functionally tolerated (did not alter ASIC3-mediated current) but faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "3xMyc tag inserted downstream of ATG start codon in exon 1 (after M1) by CRISPR/Cas9 knock-in; intracellular N-terminal domain (residues 1\u201342), not an extracellular surface site."
+    }
+  ]
+}

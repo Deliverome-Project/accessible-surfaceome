@@ -1,0 +1,23 @@
+{
+  "has_data": false,
+  "gene_symbol": "DLL3",
+  "uniprot_acc": "Q9NYJ7",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:15:56.163892+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe a single C-terminal FLAG-tagged DLL3 construct expressed in mammalian cells (SCLC lines, CHO). DLL3 is a type I single-pass transmembrane protein: the extracellular domain spans residues 27\u2013491, the TM helix 492\u2013513, and the cytoplasmic tail 514\u2013618. L1 explicitly states 'C-terminal FLAG tag'; L4 confirms this with a domain schematic ordered Signal \u2192 DSL \u2192 EGF1\u20136 \u2192 TM \u2192 F, placing the FLAG after the TM domain and therefore in the intracellular tail. L2 and L3 validate the same construct functionally (cis-inhibition of Notch; co-IP with LFNG) but add no new positional information. No ledger line reports a tag insertion on the extracellular face of full-length, membrane-anchored DLL3. Zero surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 618,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag appended after the last residue (K618); the DLL3 C-terminus lies in the intracellular tail (residues 514\u2013618), so this tag faces the cytoplasm, not the extracellular space. Functional: construct suppresses Notch signaling in cis (L2) and co-IPs with LFNG (L3)."
+    }
+  ]
+}

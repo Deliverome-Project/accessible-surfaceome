@@ -1,0 +1,61 @@
+{
+  "has_data": true,
+  "gene_symbol": "CSF3R",
+  "uniprot_acc": "Q99062",
+  "sites": [
+    {
+      "site_id": "CSF3R-terminal_n-24-lit",
+      "gene_symbol": "CSF3R",
+      "uniprot_acc": "Q99062",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "E",
+      "residue_after": "E",
+      "residue_label": "E24",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell surface display confirmed by selective labeling with anti-ALFA-tag nanobodies (site-specifically labeled with maleimide chemistry). No explicit receptor signaling or ligand-binding functional assay reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "The paper replaces the native signal peptide with the Ig\u03ba signal sequence and places the ALFA-tag N-terminally to the mature receptor; in canonical UniProt numbering this junction falls between residue 24 (last residue of the native signal peptide, E) and residue 25 (first residue of the mature ectodomain, E). No residue number is stated in the clip, but CSF3R has exactly one extracellular terminus (the mature N-terminus at residue 25), so the position is unambiguously topology-derived. The tag is 603 residues from the TM boundary (628), well clear of any TM constraint. L2 from the same paper independently confirms surface display of this tagged construct. Full-length, membrane-anchored G-CSFR lacking its native signal sequence was N-terminally fused to the ALFA-tag and expressed via the Ig\u03ba signal sequence in a pSems-leader vector in mammalian cells. The construct is full-length and membrane-anchored. L2 (same paper) confirms selective cell surface labeling was achieved using anti-ALFA-tag nanobodies.",
+      "sources": [
+        {
+          "pmid": 39591631,
+          "citation": "PMID 39591631",
+          "claim": "For cell surface labeling, G-CSFR lacking the signal sequence was N-terminally fused to the ALFA-tag (ALFAtag-G-CSFR) [ 36 ] and cloned into a pSems vector that included the signal sequence of Ig\u03ba (pSems-leader) [ 37 ]."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null,
+      "validation_level": "surface_only",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "entailment_verified": true,
+      "quote_probative": true
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T08:06:00.537257+00:00",
+  "literature_notes": "L2 (PMC11596305) is from the same paper as L1 and reports the same ALFA-tag-G-CSFR construct; it is treated as confirmatory validation evidence for L1, not a separate site. L3 (PMC10407154) describes an Origene commercial plasmid (PCMV6-hCSF3R-Myc-DDK, CAT# RC208790) used for transfection; the clip does not state the tag position, disqualifying it under the rule that a commercial plasmid with unstated tag position cannot be pinned. Additionally, the Origene PCMV6 vector places Myc-DDK at the C-terminus (residue 836), which falls in the intracellular domain (649\u2013836), so even if the position were inferred it would not be an extracellular surface site.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 836,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "Origene PCMV6-hCSF3R-Myc-DDK places the Myc-DDK tag at the C-terminus (residue 836), which is intracellular (topology 649\u2013836); not a surface tag site."
+    }
+  ]
+}
