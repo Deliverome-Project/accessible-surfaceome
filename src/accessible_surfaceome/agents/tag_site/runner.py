@@ -722,7 +722,13 @@ def run_tag_site_agent(
             ],
             "synthesis_meta": synth_meta,
             "notes": result.notes,
+            "n_sites": len(result.sites),
             "rejected": [x.model_dump() for x in result.rejected],
+            # Published positions that are NOT surface sites: tolerated
+            # intracellular insertions, and positions a paper reports as
+            # function-abrogating. Both were visible only as numbers inside a
+            # ledger sentence before this.
+            "other_positions": [x.model_dump() for x in result.other_positions],
         })
 
     result.prompt_sha = prompt_sha()

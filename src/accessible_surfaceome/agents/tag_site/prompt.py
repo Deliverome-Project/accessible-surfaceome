@@ -11,7 +11,7 @@ import hashlib
 import logging
 
 from .normalize import topology_runs
-from .schema import SOURCE_TIERS, TagSiteProposal, TagSiteResult
+from .schema import SOURCE_TIERS, OtherPosition, TagSiteProposal, TagSiteResult
 
 _log = logging.getLogger(__name__)
 
@@ -73,6 +73,15 @@ A TAGGED CONSTRUCT WITH NO RESIDUE IS STILL A SITE. Two cases, both real finding
 - a tag in a NAMED LOOP with no residue — set `region` ("ECL4") and leave insert_after_residue
   null. Inventing a junction for it is not reporting it.
 Choosing a position INSIDE a loop remains forbidden: a loop offers many, a sole terminus one.
+
+ALSO RECORD WHAT IS NOT A SURFACE SITE. A scanning paper names positions that do not belong in
+`sites`, and they are worth keeping. Put them in `other_positions`:
+- an insertion that is TOLERATED but faces the cytoplasm -> kind="intracellular". It is the
+  right site for a snorkel or an intracellular label, just not for a surface tag.
+- a position where the paper says insertion ABROGATED, abolished or disrupted function ->
+  kind="abrogates_function". A known-bad site is evidence too.
+Give each the residue, the [Ln] it came from, and one clause. Do NOT promote any of them into
+`sites`.
 
 A clip that NAMES a residue outranks one that names only a loop — do not call a loop unpinnable
 because a different line about it is vague.
@@ -233,6 +242,28 @@ _HINTS = {
     "rationale": "why THIS position + what you computed; 2-4 sentences, no quote restated",
 }
 
+#: Hints for the TOP-level keys the model fills, keyed the same way.
+_TOP_HINTS_EXTRA = {
+    "other_positions": (
+        "published positions that are NOT surface tag sites — tolerated but "
+        "cytoplasmic, or function-abrogating; [] if none"
+    ),
+}
+
+
+
+def _literal_values(annotation: object) -> str:
+    """`Literal["a", "b"]` -> '"a" | "b"', else "".
+
+    Read off the annotation rather than the description, so a closed vocabulary
+    cannot reach the model undocumented: adding a value to the Literal updates
+    the contract, and the prompt_sha with it."""
+    import typing
+
+    args = typing.get_args(annotation)
+    if args and all(isinstance(a, str) for a in args):
+        return " | ".join(f'"{a}"' for a in args)
+    return ""
 
 
 def _enumerated(description: str | None) -> str:
@@ -241,6 +272,14 @@ def _enumerated(description: str | None) -> str:
         return ""
     text = description.strip()
     return text if "|" in text and len(text) <= 80 else ""
+
+
+def _describe(f: object) -> str:
+    """A short gloss for a field with no hand-written hint.
+
+    One line only — the contract is a shape, not a manual."""
+    text = " ".join((getattr(f, "description", "") or "").split())
+    return text if len(text) <= 90 else ""
 
 
 def _type_token(annotation: object) -> str:
@@ -255,26 +294,53 @@ def _type_token(annotation: object) -> str:
     return "list" if text.startswith("list") else "str"
 
 
+def _default_token(f: object) -> str:
+    """What a field defaults to, as the model should read it.
+
+    A `default_factory` field carries PydanticUndefined as its `default`, which
+    rendered literally as "default PydanticUndefined" — noise in the one place
+    the model is being told the exact shape to emit."""
+    factory = getattr(f, "default_factory", None)
+    if factory is not None:
+        return repr(factory())
+    return repr(getattr(f, "default", None))
+
+
 def format_output_contract() -> str:
-    """The exact JSON shape, rendered from `TagSiteResult` + `TagSiteProposal`."""
-    top = TagSiteResult.model_fields
+    """The exact JSON shape, rendered from the models themselves.
+
+    Every list-valued key the model fills gets a per-entry field table, so
+    adding a field to one of those models documents it here without anyone
+    remembering to describe it in prose."""
     lines = ["OUTPUT — ONE JSON object with exactly these keys:", ""]
-    lines.append(f"  {'sites':<10} {'list':<6} required — [] when nothing qualifies, which is a valid answer")
-    for name, f in top.items():
+    lines.append(f"  {'sites':<16} {'list':<6} required — [] when nothing qualifies, which is a valid answer")
+    for name, f in TagSiteResult.model_fields.items():
         if name == "sites" or name in _CODE_SET or name in _PIPELINE_SET:
             continue
-        req = "required" if f.is_required() else f"optional, default {f.default!r}"
-        hint = _TOP_HINTS.get(name, "")
-        lines.append(f"  {name:<10} {_type_token(f.annotation):<6} {req}{' — ' + hint if hint else ''}")
-    lines += ["", "Each entry of `sites`:", ""]
-    for name, f in TagSiteProposal.model_fields.items():
-        if name in _PIPELINE_SET or name in _CODE_SET:
-            continue
-        req = "required" if f.is_required() else f"default {f.default!r}"
-        # Fall back to the schema's own description when it already enumerates the
-        # allowed values ('"a" | "b"'), so a new closed-value field documents itself.
-        hint = _HINTS.get(name) or _enumerated(f.description)
-        lines.append(f"  {name:<42} {_type_token(f.annotation):<9} {req}{' — ' + hint if hint else ''}")
+        req = "required" if f.is_required() else f"optional, default {_default_token(f)}"
+        hint = _TOP_HINTS.get(name) or _TOP_HINTS_EXTRA.get(name, "")
+        lines.append(f"  {name:<16} {_type_token(f.annotation):<6} {req}{' — ' + hint if hint else ''}")
+
+    for label, model, width in (
+        ("sites", TagSiteProposal, 42),
+        ("other_positions", OtherPosition, 20),
+    ):
+        lines += ["", f"Each entry of `{label}`:", ""]
+        for name, f in model.model_fields.items():
+            if name in _PIPELINE_SET or name in _CODE_SET:
+                continue
+            req = "required" if f.is_required() else f"default {_default_token(f)}"
+            # Fall back to the schema's own description when it already enumerates
+            # the allowed values ('"a" | "b"'), so a new closed-value field
+            # documents itself.
+            hint = (
+                _HINTS.get(name)
+                or _enumerated(f.description)
+                or _literal_values(f.annotation)
+                or _describe(f)
+            )
+            lines.append(f"  {name:<{width}} {_type_token(f.annotation):<9} {req}{' — ' + hint if hint else ''}")
+
     lines += [
         "",
         f"Emit nothing else. {', '.join(_CODE_SET)} and "
@@ -288,7 +354,7 @@ SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 #: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
 #: `prompt_sha` fingerprints the text automatically; this is the human-readable
 #: half, so a reviewer can tell a deliberate revision from an incidental one.
-TAG_SITE_PROMPT_VERSION = "1.3.0"
+TAG_SITE_PROMPT_VERSION = "1.4.0"
 
 
 def prompt_sha() -> str:

@@ -246,6 +246,34 @@ class RejectedSite(BaseModel):
     supporting_quote: str | None = None
 
 
+class OtherPosition(BaseModel):
+    """A published insertion position this protein has that is NOT a surface tag site.
+
+    Two kinds, and both were being thrown away:
+
+    * INTRACELLULAR — a real, tolerated insertion facing the cytoplasm. ABCC1's
+      epitope scan names five functional positions and three are extracellular;
+      the other two (271, 653) are just as published and just as tolerated, and
+      are the right answer for a snorkel or an intracellular label. The model
+      never proposed them because the prompt asks for surface sites, so they
+      left no record at all — only numbers inside a sentence.
+    * ABROGATING — a position where the paper reports insertion DESTROYED
+      function. The same ABCC1 sentence names four (127, 417, 461, 529). That is
+      negative evidence about known-bad sites, which is worth more per character
+      than most of what we do keep, and nothing captured it."""
+
+    residue: int = Field(description="The position, in UniProt canonical numbering.")
+    kind: Literal["intracellular", "abrogates_function", "other"] = Field(
+        description=(
+            '"intracellular" — a tolerated insertion on the cytoplasmic face. '
+            '"abrogates_function" — the paper reports this insertion broke the '
+            'protein. "other" — published but neither of those.'
+        )
+    )
+    supporting_clip_id: str = Field(default="", description="The [Ln] line reporting it.")
+    note: str = Field(default="", description="One clause: what the paper says about it.")
+
+
 class TagSiteResult(BaseModel):
     # Stamped by the runner from what the caller already holds — never asked of
     # the model, which would only be echoing back its own input and failing
@@ -258,6 +286,8 @@ class TagSiteResult(BaseModel):
     sites: list[TagSiteProposal] = Field(default_factory=list)
     notes: str = ""
     rejected: list[RejectedSite] = Field(default_factory=list)
+    #: Published positions that are not surface tag sites — see OtherPosition.
+    other_positions: list[OtherPosition] = Field(default_factory=list)
 
     # Prompt provenance. Mandatory for any pipeline whose LLM output is
     # persisted (CLAUDE.md), and absent here until now: four prompt edits in one
