@@ -30,6 +30,7 @@ usage sink the other agents use.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import UTC, datetime
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
@@ -146,6 +147,44 @@ CODE_EXECUTION_TOOL: list[dict[str, Any]] = [
 log = logging.getLogger(__name__)
 
 
+#: Literal epitope-tag peptides. A sentence quoting one is handing over the
+#: insertion's sequence context, which is how LRRC8E's ECL1 site was pinned
+#: ("CLPNHE YPYDVPDYA LQENLS") without any residue number being stated.
+_TAG_PEPTIDE = re.compile(
+    r"(YPYDVPDYA|DYKDDDDK|EQKLISEEDL|GKPIPNPLLGLDST|WSHPQFEK|HHHHHH|"
+    r"CCPGCC|VSHPQFEK|SRLEEELRRRLTE|GVQVETISPGDGRTFPKRGQTCVVHYTGMLEDGKK)",
+    re.I,
+)
+#: A plasmid or construct name: methods prose defining what was BUILT.
+_CONSTRUCT_NAME = re.compile(
+    r"(p[A-Z0-9]*(?:FLAG|HA|Myc|EGFP|GFP|mCherry|Display|cDNA3|CMV)[A-Za-z0-9._-]*"
+    r"|pcDNA[0-9.]*[A-Za-z0-9/_-]*|pDisplay|pEGFP-[NC][0-9]|p3xFLAG)",
+)
+#: A position named WITHOUT a residue number. 60% of real sites are
+#: topology_derived and this is the language that makes them derivable.
+_POSITION_ANCHOR = re.compile(
+    r"(after the signal peptide|signal[- ]peptide cleavage|mature N[- ]terminus"
+    r"|N[- ]terminus of|C[- ]terminus of|N[- ]terminal(?:ly)?|C[- ]terminal(?:ly)?"
+    r"|extracellular loop|ECL[0-9]|EL[0-9]|juxtamembrane|between .{0,40} domains)",
+    re.I,
+)
+#: The assay that proves a tag faces OUT. LSAMP's evidence was exactly this,
+#: and it lived in a figure legend — the section the pool starves.
+_SURFACE_ASSAY = re.compile(
+    # "in the ABSENCE of permeabilization" is the phrasing LSAMP's evidence
+    # used, and an earlier draft of this pattern missed it by only covering
+    # "without"/"non-"/"un-". Match the permeabilization claim however it is
+    # negated, and match "surface <anything> expression/staining" rather than
+    # requiring the word "cell" in front of it.
+    r"(absence of permeabili[sz]|without permeabili[sz]|non-?permeabili[sz]"
+    r"|unpermeabili[sz]|not permeabili[sz]|intact (?:cells|cell)"
+    r"|surface biotinylation|surface immunostain"
+    r"|\bsurface\b[^.]{0,40}\b(?:expression|staining|labell?ing|detect\w*)"
+    r"|live[- ]cell (?:staining|labell?ing))",
+    re.I,
+)
+
+
 def tag_site_relevance(sequence: str) -> Callable[[str], float]:
     """A per-sentence relevance term for draft extraction, scoring what a
     tag-site clip has to contain to be worth anything.
@@ -166,13 +205,45 @@ def tag_site_relevance(sequence: str) -> Callable[[str], float]:
 
     A sentence with both outranks one with either, and both outrank the 1..2
     band positional scoring occupies — so a finding can displace preamble, which
-    is the whole point."""
+    is the whole point.
+
+    Those two signals are not enough on their own, because they are nearly
+    binary. An audit of 40 zero-site genes found seven real published sites the
+    pipeline had missed, and every decisive sentence scored exactly 3.0 — tied
+    with every other on-topic sentence in its paper, so the per-section and
+    per-paper caps then cut by POSITION among the ties and the construct
+    definition lost to narrative. The sentences that actually pin a tag look
+    different from the ones that merely mention it, in ways worth scoring:
+
+    * a literal tag PEPTIDE ("YPYDVPDYA", "DYKDDDDK") — the paper is giving the
+      insertion's sequence context, which is as close to a junction as a
+      residue number (LRRC8E's site was recoverable from one such sentence);
+    * a plasmid or construct NAME ("pFLAG-…", "pEGFP-C1", "pDisplay") — methods
+      prose that defines what was built, which is where IL1RAP's site lived;
+    * a positional ANCHOR with no residue ("after the signal peptide",
+      "N-terminus of", "extracellular loop") — exactly what makes a
+      topology-derived site derivable, and 60% of real sites are that class;
+    * SURFACE-assay language ("without permeabilization", "surface
+      biotinylation") — the experiment that proves a tag is exofacial, and the
+      form LSAMP's evidence took, in a figure legend.
+
+    Scores are additive and deliberately smaller than the two primary signals:
+    they break ties among probative sentences rather than promoting
+    non-probative ones."""
     def score(text: str) -> float:
         value = 0.0
         if quote_is_probative(text):
             value += 3.0
         if residue_mentions(text, sequence=sequence):
             value += 3.0
+        if _TAG_PEPTIDE.search(text):
+            value += 2.0
+        if _CONSTRUCT_NAME.search(text):
+            value += 2.0
+        if _POSITION_ANCHOR.search(text):
+            value += 1.5
+        if _SURFACE_ASSAY.search(text):
+            value += 1.5
         return value
 
     return score
