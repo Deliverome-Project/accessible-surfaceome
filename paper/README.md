@@ -107,23 +107,36 @@ Only the reference list is staggered — it is the one place with a
 column of near-identical siblings. Figures here are single composite
 renders, so there is nothing to stagger inside one.
 
-### The lightbox always fits the screen
+### The lightbox fits the screen, legend and all
 
-Opening a figure full-screen is for seeing the whole figure, so nothing
-in the lightbox scrolls: the overlay is `overflow: hidden` and the
-panel is a flex column whose image shrinks to whatever space the
-caption leaves. Two lines carry that:
+Opening a figure full-screen is for seeing the whole figure *and* its
+legend, so nothing in the lightbox scrolls. The overlay is
+`overflow: hidden` and the panel is a flex column:
 
-* `min-height: 0` on the image. A flex item defaults to
-  `min-height: auto`, which refuses to shrink below its intrinsic
-  size — the usual reason a `max-height` on a flexbox image appears to
-  do nothing at all.
-* `object-fit: contain`, so the shrinking is done by the layout without
-  distorting the figure.
+* The **legend is laid out first** and keeps its natural height, at the
+  full panel width. An earlier version capped it and let it scroll,
+  which meant opening a figure full-screen and still not being able to
+  read its legend. Full width is also what makes it fit — a wider
+  measure wraps the same text into fewer lines.
+* The **image takes whatever is left**. `min-height: 0` is the
+  load-bearing line: a flex item defaults to `min-height: auto` and
+  refuses to shrink below its intrinsic size, which is the usual reason
+  a `max-height` on a flexbox image appears to do nothing.
+  `object-fit: contain` keeps it from distorting as it shrinks.
 
-Captions in this paper run to a full paragraph, so the caption is
-capped and scrolls within itself. The figure always fits; the text is
-still all reachable.
+Fitting a figure above a long legend necessarily costs the figure half
+the screen, so **clicking the figure zooms it**: the legend is hidden
+and the image takes the whole viewport (~3.4x the area on the
+longest-legend figure in this manuscript). Clicking again returns;
+Escape steps out of zoom before it closes the lightbox; opening another
+figure always starts fitted.
+
+The zoom is sized to the **viewport**, not to the image's natural
+pixels. Most figures here are SVG whose intrinsic size is a viewBox a
+few hundred units wide, so "natural size" would zoom most of them *out*.
+
+Note that the overlay's dismiss-on-click would otherwise swallow the
+zoom gesture — the image click is intercepted before that fallthrough.
 
 ### Figures reserve their box before they load
 

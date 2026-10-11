@@ -168,6 +168,15 @@
   document.body.appendChild(overlay);
 
   var imgEl = overlay.querySelector("img");
+  imgEl.setAttribute("tabindex", "0");
+  imgEl.setAttribute("role", "button");
+  imgEl.setAttribute("aria-label", "Zoom figure");
+  imgEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      overlay.classList.toggle("is-zoomed");
+    }
+  });
   var capEl = overlay.querySelector("figcaption");
   var closeBtn = overlay.querySelector(".figure-lightbox__close");
   var prevBtn = overlay.querySelector(".figure-lightbox__prev");
@@ -211,12 +220,16 @@
      * layer swallowing every click. */
     void overlay.offsetWidth;
     overlay.classList.add("is-open");
+    /* A new figure always starts fitted, never inheriting the previous
+     * one's zoom — stepping through figures should be comparable. */
+    overlay.classList.remove("is-zoomed");
     document.body.style.overflow = "hidden";
     closeBtn.focus();
   }
 
   function close() {
     overlay.classList.remove("is-open");
+    overlay.classList.remove("is-zoomed");
     overlay.hidden = true;
     document.body.style.overflow = "";
     imgEl.removeAttribute("src");
@@ -304,6 +317,14 @@
    * caption is excluded so its text stays selectable. */
   overlay.addEventListener("click", function (e) {
     if (e.target.closest(".figure-lightbox__nav")) return;
+    /* The figure itself toggles zoom rather than dismissing. Fitting a
+     * figure above its legend costs it half the screen; this gives that
+     * space back for a look at the detail, then returns. Everything
+     * else in the overlay keeps dismissing as before. */
+    if (e.target === imgEl) {
+      overlay.classList.toggle("is-zoomed");
+      return;
+    }
     /* An in-page caption link (e.g. "Methods", href="#…") has to take the
      * reader to that section — but the overlay is a fixed layer sitting on
      * top, so the jump is invisible while it's open. Close first, then let
@@ -319,7 +340,15 @@
 
   document.addEventListener("keydown", function (e) {
     if (overlay.hidden) return;
-    if (e.key === "Escape") close();
+    if (e.key === "Escape") {
+      /* Step back out of zoom first: Escape should undo the last thing
+       * the reader did, not two things at once. */
+      if (overlay.classList.contains("is-zoomed")) {
+        overlay.classList.remove("is-zoomed");
+      } else {
+        close();
+      }
+    }
     else if (e.key === "ArrowRight") step(1);
     else if (e.key === "ArrowLeft") step(-1);
   });

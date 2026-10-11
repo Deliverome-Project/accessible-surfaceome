@@ -518,3 +518,42 @@ def test_lightbox_image_can_actually_shrink() -> None:
     body = img.group(1)
     assert re.search(r"min-height:\s*0", body), "image cannot shrink to fit"
     assert "object-fit: contain" in body, "image would distort when shrunk"
+
+
+def test_lightbox_shows_the_whole_legend() -> None:
+    """Opening a figure full-screen and still not being able to read its
+    legend is the worst of both. The caption keeps its natural height and
+    the full panel width; the image takes what is left."""
+    css = _strip_comments(WEB_CSS.read_text())
+    cap = re.search(r"\.figure-lightbox__inner figcaption\s*\{([^}]*)\}", css)
+    assert cap, "no lightbox caption rule"
+    body = cap.group(1)
+    assert not re.search(r"overflow(-y)?:\s*(auto|scroll)", body), (
+        "the legend scrolls instead of being shown whole"
+    )
+    assert not re.search(r"max-height", body), "the legend is height-capped"
+    assert not re.search(r"max-width", body), (
+        "the legend is narrower than the lightbox, which wraps it into "
+        "more lines and makes it harder to fit"
+    )
+
+
+def test_clicking_the_figure_zooms_rather_than_dismissing() -> None:
+    """The figure shares the screen with its legend, so it needs a way to
+    reclaim the whole screen — and the overlay's dismiss-on-click would
+    otherwise swallow that gesture."""
+    js = WEB_JS.read_text()
+    assert "is-zoomed" in js
+    assert "e.target === imgEl" in js, "the image click is not intercepted"
+    css = _strip_comments(WEB_CSS.read_text())
+    assert ".figure-lightbox.is-zoomed figcaption" in css, (
+        "zooming does not hide the legend, so it reclaims no space"
+    )
+
+
+def test_zoom_resets_between_figures() -> None:
+    """Stepping through figures should show them comparably, not inherit
+    the previous one's zoom."""
+    js = WEB_JS.read_text()
+    opened = js[js.index('overlay.classList.add("is-open")'):][:400]
+    assert 'remove("is-zoomed")' in opened
