@@ -655,3 +655,47 @@ def test_there_is_a_visible_way_to_reset_the_zoom() -> None:
     assert "pointer-events: none" in hidden.group(1), (
         "the control is clickable while invisible"
     )
+
+
+# ── 6. Typography the reader navigates by ───────────────────────────
+
+def _font_px(css: str, selector: str) -> float:
+    """rem/px font-size declared for a top-level element selector.
+
+    Anchored at line start so `h2` doesn't match inside, say,
+    `.figure-lightbox h2`.
+    """
+    m = re.search(
+        r"^" + re.escape(selector) + r"\s*\{[^}]*?font-size:\s*([0-9.]+)(rem|px)",
+        css,
+        re.M | re.S,
+    )
+    assert m, f"no font-size for {selector}"
+    return float(m.group(1)) * (16 if m.group(2) == "rem" else 1)
+
+
+def test_section_headings_outrank_their_subsections() -> None:
+    """h2 was set as a small tracked label at 0.82rem, leaving every
+    major section heading SMALLER than the subsections beneath it — 13px
+    against h3's 20px — so the hierarchy read backwards and crossing
+    into a new section registered as nothing at all."""
+    css = _strip_comments(WEB_CSS.read_text())
+    sizes = [_font_px(css, s) for s in ("h2", "h3", "h4", "h6")]
+    assert sizes == sorted(sizes, reverse=True), (
+        f"heading sizes are not monotonic by level: {sizes}"
+    )
+    body = _font_px(css, ".paper-root")
+    assert sizes[0] > body * 1.2, "section headings barely outweigh body text"
+
+
+def test_figure_legend_shares_the_body_text_column() -> None:
+    """The legend is prose. It sits inside .figure-block, which is
+    deliberately wider than the measure so figures can be wide — without
+    its own width it inherits that and every caption hangs a couple of
+    dozen pixels outside the text column, which reads as a mistake."""
+    css = _strip_comments(WEB_CSS.read_text())
+    rule = re.search(r"\.paper-root > \.figure-block h5\s*\{([^}]*)\}", css)
+    assert rule, "the figure legend has no width of its own"
+    body = rule.group(1)
+    assert "var(--measure)" in body, "legend width is not tied to the text column"
+    assert "margin-inline: auto" in body, "legend is not centred on the column"

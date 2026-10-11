@@ -227,16 +227,31 @@ h2, h3, h4, h6 {
   scroll-margin-top: 7rem;
 }
 
+/* Section headings — Results, Discussion, Methods.
+ *
+ * These were set as a small tracked label at 0.82rem, which left every
+ * major section heading SMALLER than the subsection headings beneath
+ * it: 13px against h3's 20px. The hierarchy read backwards, and a
+ * reader scrolling past "Discussion" got no sense of having crossed
+ * into a new section at all.
+ *
+ * The uppercase maroon treatment stays — it mirrors the print edition
+ * and is the brand's section marker — but at a size that leads.
+ * Tracking comes DOWN as the size goes up: 0.14em is set for a
+ * caption-sized label and turns into a gappy banner at 1.3rem. */
 h2 {
-  font-size: 0.82rem;
-  letter-spacing: 0.14em;
+  font-size: 1.3rem;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   font-weight: 700;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--rule);
+  margin-block: 3rem 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1.5px solid rgba(146, 32, 56, 0.3);
 }
 
-h3 { font-size: 1.22rem; font-weight: 600; color: var(--ink); }
+/* Each step is a clear drop from the one above, so a heading's level is
+ * legible from its size alone: 20.8 / 18 / 16.3 / 14.4 px. */
+h3 { font-size: 1.125rem; font-weight: 700; color: var(--ink); }
 h4 { font-size: 1.02rem; font-weight: 600; color: var(--ink-soft); }
 h6 { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
 
@@ -278,6 +293,21 @@ strong { font-weight: 600; }
   max-width: min(66rem, 100%);
   margin: 2.4rem auto;
   scroll-margin-top: 7rem;
+}
+
+/* The legend is prose and belongs in the same column as the body text,
+ * even though the figure above it is allowed to be wider. Without this
+ * it inherits the figure block's extra width and every caption sits a
+ * couple of dozen pixels outside the text column — close enough to look
+ * like a mistake rather than a choice, and obvious while scrolling.
+ *
+ * `--measure` less the body's 1.5rem gutters is the TEXT column, so the
+ * caption's rail lands exactly on the body text's left edge. The
+ * `100% - 3rem` arm keeps the same gutter once the viewport is narrower
+ * than the measure. */
+.paper-root > .figure-block h5 {
+  width: min(calc(var(--measure) - 3rem), calc(100% - 3rem));
+  margin-inline: auto;
 }
 
 .figure-block p,
