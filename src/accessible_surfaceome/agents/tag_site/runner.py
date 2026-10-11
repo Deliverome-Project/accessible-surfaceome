@@ -850,25 +850,27 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
             "evidence_type": s.evidence_type,
             "functional_impact_measured": s.functional_or_expression_impact_measured,
             "confidence": s.confidence,
+            # Prose only. These used to be concatenated into the rationale as
+            # "[validation: ...; position: ...; entailment_verified: True]",
+            # which put raw field names and Python True in front of a reader and
+            # left the viewer unable to render any of it as structure. They are
+            # fields now; the rationale is the argument, and nothing else.
             "rationale": (
                 f"{s.rationale} "
-                # evidence_detail is where the prompt sends the assay, the result
-                # and any confound, and cited_tag_residue is what makes an
-                # "inferred" position honest by naming where the real tag sits.
-                # Both were collected every run and read by nothing.
-                + (f"{s.evidence_detail} " if s.evidence_detail else "")
-                + f"[validation: {s.validation_level}; "
-                f"position: {s.position_evidence}; source: {s.source_tier}; "
-                + (f"cited_tag_residue: {s.cited_tag_residue}; "
-                   if s.position_evidence == "inferred" and s.cited_tag_residue is not None
-                   else "")
-                + f"entailment_verified: {s.entailment_verified}"
-                # Only stated when true, so an untouched record reads exactly
-                # as it did before this gate existed.
-                + ("; position_repaired: true" if s.position_repaired else "")
-                + ("" if s.quote_probative else "; quote_describes_no_insertion: true")
-                + "]"
+                # evidence_detail is where the prompt sends the assay, the
+                # result and any confound.
+                + (f"{s.evidence_detail}" if s.evidence_detail else "")
+            ).strip(),
+            "validation_level": s.validation_level,
+            "position_evidence": s.position_evidence,
+            "source_tier": s.source_tier,
+            # What makes an "inferred" position honest: where the real tag sits.
+            "cited_tag_residue": (
+                s.cited_tag_residue if s.position_evidence == "inferred" else None
             ),
+            "entailment_verified": bool(s.entailment_verified),
+            "position_repaired": bool(s.position_repaired),
+            "quote_probative": bool(s.quote_probative),
             "sources": sources,
             "plddt": None,
             "conservation_rank": None,

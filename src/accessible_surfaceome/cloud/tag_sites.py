@@ -50,6 +50,11 @@ DDL: tuple[str, ...] = (
       median_conservation        REAL,
       tag_sites_version          TEXT NOT NULL,
       synced_at                  TEXT NOT NULL,
+      validation_level           TEXT,
+      position_evidence          TEXT,
+      source_tier                TEXT,
+      cited_tag_residue          INTEGER,
+      entailment_verified        INTEGER,
       PRIMARY KEY (uniprot_acc, site_id)
     );
     """,
@@ -66,6 +71,11 @@ _COLS: tuple[str, ...] = (
     "tag_length_aa", "linker", "evidence_type", "functional_impact_measured",
     "confidence", "rationale", "sources_json", "plddt", "conservation_rank",
     "median_conservation", "tag_sites_version", "synced_at",
+    # Were concatenated into `rationale` as "[validation: ...; position: ...]",
+    # which is why raw field names and a Python True were reaching readers. As
+    # columns the viewer can render them as badges and filter on them.
+    "validation_level", "position_evidence", "source_tier", "cited_tag_residue",
+    "entailment_verified",
 )
 
 
@@ -109,6 +119,14 @@ def flat_row(
         "median_conservation": site.get("median_conservation"),
         "tag_sites_version": version,
         "synced_at": synced_at,
+        "validation_level": site.get("validation_level"),
+        "position_evidence": site.get("position_evidence"),
+        "source_tier": site.get("source_tier"),
+        "cited_tag_residue": site.get("cited_tag_residue"),
+        "entailment_verified": (
+            None if site.get("entailment_verified") is None
+            else (1 if site.get("entailment_verified") else 0)
+        ),
     }
 
 

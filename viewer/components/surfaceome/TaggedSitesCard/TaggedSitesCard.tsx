@@ -24,6 +24,21 @@ const KIND_LABEL: Record<TaggedSite["site_kind"], string> = {
 
 const CONF_RANK: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
+/** Sort strongest-evidence-first, which is the order a reader wants. */
+const VALIDATION_RANK: Record<string, number> = {
+  surface_and_function: 5,
+  surface_only: 4,
+  function_only: 3,
+  detected_only: 2,
+  expressed_only: 1,
+  not_measured: 0,
+};
+const POSITION_RANK: Record<string, number> = {
+  validated: 3,
+  topology_derived: 2,
+  inferred: 1,
+};
+
 /** Display token for the junction: prefer the canonical residue_label
  *  ("G101"), else derive a readable fallback from site_kind. */
 function residueDisplay(s: TaggedSite): string {
@@ -190,6 +205,84 @@ function Sources({ sources }: { sources: EvidenceSource[] }) {
 /** Expandable evidence drawer for one literature site — mirrors the main
  *  sections' ReasoningDrawer. Shows the exact entailment-checked quote(s)
  *  (from sources[].claim), the agent rationale, and the linked sources. */
+/** How far the cited study went. The agent's six levels collapse to four
+ *  readable ones, because "did they show it on the surface" and "did they show
+ *  it still works" are the two questions a reader is actually asking. */
+const VALIDATION_LABEL: Record<string, { text: string; cls: string; title: string }> = {
+  surface_and_function: {
+    text: "Surface + function",
+    cls: "badgeBoth",
+    title: "The paper showed the tag on the cell surface AND that the tagged protein still works.",
+  },
+  surface_only: {
+    text: "Surface",
+    cls: "badgeSurface",
+    title: "The paper showed the tag on the cell surface; function was not measured.",
+  },
+  function_only: {
+    text: "Function",
+    cls: "badgeWeak",
+    title: "The paper showed the tagged protein still works; surface display was not measured.",
+  },
+  detected_only: {
+    text: "Detected",
+    cls: "badgeWeak",
+    title: "The tagged protein was detected (e.g. by blot or pull-down), but neither surface display nor function was measured.",
+  },
+  expressed_only: {
+    text: "Expressed",
+    cls: "badgeWeak",
+    title: "The construct was expressed; neither surface display nor function was measured.",
+  },
+  not_measured: {
+    text: "Not measured",
+    cls: "badgeNone",
+    title: "The paper reports the construct but measures neither surface display nor function.",
+  },
+};
+
+/** Where the junction number came from — the difference between a position the
+ *  paper states and one we derived, which a reader has to be able to see. */
+const POSITION_LABEL: Record<string, { text: string; cls: string; title: string }> = {
+  validated: {
+    text: "Stated",
+    cls: "badgeBoth",
+    title: "The paper names this exact insertion position.",
+  },
+  topology_derived: {
+    text: "Topology",
+    cls: "badgeSurface",
+    title: "The paper tags a terminus without naming a residue, and this protein has exactly one extracellular terminus — so the junction follows from the topology.",
+  },
+  inferred: {
+    text: "Inferred",
+    cls: "badgeWeak",
+    title: "Reasoned from a tag the paper places nearby rather than stated outright.",
+  },
+};
+
+function Badge({
+  map,
+  value,
+  extra,
+}: {
+  map: Record<string, { text: string; cls: string; title: string }>;
+  value: string | null | undefined;
+  extra?: string;
+}) {
+  if (!value) return <span className={styles.muted}>—</span>;
+  const spec = map[value];
+  if (!spec) return <span className={styles.muted}>{value.replace(/_/g, " ")}</span>;
+  return (
+    <span
+      className={`${styles.badge} ${styles[spec.cls]}`}
+      title={extra ? `${spec.title} ${extra}` : spec.title}
+    >
+      {spec.text}
+    </span>
+  );
+}
+
 function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
   const quotes = site.sources
     .map((src) => src.claim)
@@ -336,6 +429,30 @@ const LIT_COLUMNS: Column[] = [
     ),
     cellClass: styles.evidence,
   },
+  {
+    key: "validation",
+    label: "Validation",
+    sortVal: (s) => VALIDATION_RANK[s.validation_level ?? ""] ?? 0,
+    render: (s) => <Badge map={VALIDATION_LABEL} value={s.validation_level} />,
+  },
+  {
+    key: "position",
+    label: "Position",
+    sortVal: (s) => POSITION_RANK[s.position_evidence ?? ""] ?? 0,
+    render: (s) => (
+      <Badge
+        map={POSITION_LABEL}
+        value={s.position_evidence}
+        // An inferred junction is only checkable if the reader can see which
+        // real tag it was reasoned from.
+        extra={
+          s.position_evidence === "inferred" && s.cited_tag_residue != null
+            ? `Reasoned from a cited tag at residue ${s.cited_tag_residue}.`
+            : undefined
+        }
+      />
+    ),
+  },
   { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
   { key: "sources", label: "Sources", sortVal: (s) => s.sources.length, render: (s) => <Sources sources={s.sources} /> },
   { key: "details", label: "Details", render: (s) => <SiteEvidenceDrawer site={s} /> },
@@ -435,13 +552,27 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   const isoformCtrl = (taggedSites?.isoform_pins ?? []).filter(
     (p) => p.classification === "control",
   );
+  // The agent stamps prompt_sha on every result INCLUDING an empty one, so its
+  // presence is the claim "this gene was searched" — which is what makes a zero
+  // reportable instead of invisible.
+  const searched = Boolean(taggedSites?.prompt_sha);
+  const searchedOn = taggedSites?.generated_at
+    ? new Date(taggedSites.generated_at).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+
   const legendCategories = Array.from(
     new Set([...lit, ...det, ...screenSites].map((s) => tagSiteCategory(s))),
   );
 
+  // `has_data` is false for a searched gene with no sites, and bailing on it
+  // threw away the one thing that gene has to say.
   if (
-    !taggedSites?.has_data ||
-    lit.length + det.length + screenSites.length + isoformCtrl.length === 0
+    lit.length + det.length + screenSites.length + isoformCtrl.length === 0 &&
+    !searched
   ) {
     return (
       <SectionCard n={n} title="Tag sites">
@@ -469,6 +600,30 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
         ))}
       </p>
 
+      {/* Literature first: a published, validated tag site is the strongest
+          thing on this card, and it was sitting below the screen controls. */}
+      {lit.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>Literature-validated ({lit.length})</h3>
+          <SortableTable sites={lit} columns={LIT_COLUMNS} />
+        </>
+      ) : searched ? (
+        /* A searched gene with no published site is a FINDING, and it used to
+           render as nothing at all — identical to a gene nobody had looked at.
+           Saying "0" and when we looked is the whole difference. */
+        <>
+          <h3 className={styles.subhead}>Literature-validated (0)</h3>
+          <p className={styles.zeroState}>
+            <strong>No published tag-insertion site found for this protein.</strong>{" "}
+            The literature agent searched and found no paper that pins a tag to a
+            specific extracellular position
+            {searchedOn ? ` (last searched ${searchedOn})` : null}. This is a
+            result, not a gap — the computed candidates below are the starting
+            point.
+          </p>
+        </>
+      ) : null}
+
       {screenSites.length > 0 ? (
         <>
           <h3 className={styles.subhead}>Screen-validated ({screenSites.length})</h3>
@@ -482,13 +637,6 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
             Isoform control sites ({isoformCtrl.length})
           </h3>
           <IsoformControlTable pins={isoformCtrl} />
-        </>
-      ) : null}
-
-      {lit.length > 0 ? (
-        <>
-          <h3 className={styles.subhead}>Literature-validated ({lit.length})</h3>
-          <SortableTable sites={lit} columns={LIT_COLUMNS} />
         </>
       ) : null}
 

@@ -204,7 +204,11 @@ def test_to_viewer_sites_shape():
     assert s["provenance"] == "literature_retrieved"
     assert s["site_id"].endswith("-lit") and s["det_path"] is None
     assert s["topology_state"] == "O" and s["extracellular"] is True
-    assert "validation: surface_and_function" in s["rationale"]
+    # Fields, not a bracket concatenated onto the prose: the old shape put raw
+    # field names and a Python True in front of the reader and left the viewer
+    # nothing to sort or filter on.
+    assert s["validation_level"] == "surface_and_function"
+    assert "[validation:" not in (s["rationale"] or "")
     assert s["sources"] == [{"pmid": 123, "citation": "PMID 123", "claim": None}]
     # supporting_quote rides in the source's claim (drives the drawer quote)
     q = _site(1, val="surface_and_function")
@@ -329,14 +333,15 @@ def test_run_passes_an_authoritative_sp_end_into_the_prompt(monkeypatch):
     assert "MATURE N-TERMINUS: 18" in cap["p"]
 
 
-def test_viewer_rationale_records_that_a_position_was_repaired():
+def test_viewer_record_says_that_a_position_was_repaired():
     """A moved junction must be visible in the shipped record, not silent."""
     s = _site(1)
-    assert "position_repaired" not in R.to_viewer_sites(
-        _result([s]), uniprot_acc="Q0")[0]["rationale"]
+    assert R.to_viewer_sites(_result([s]), uniprot_acc="Q0")[0]["position_repaired"] is False
     s.position_repaired = True
     out = R.to_viewer_sites(_result([s]), uniprot_acc="Q0")[0]
-    assert "position_repaired: true" in out["rationale"]
+    assert out["position_repaired"] is True
+    # and it no longer leaks into the prose a reader sees
+    assert "position_repaired" not in (out["rationale"] or "")
 
 
 # --- citation quality --------------------------------------------------------
@@ -466,7 +471,7 @@ def test_the_better_validated_proposal_supplies_the_merged_fields():
     b.site_type, b.residue_before, b.supporting_pmid = "terminal_n", "A", 222
     out = R.to_viewer_sites(R.rank_sites(_result([a, b])), uniprot_acc="Q0")
     assert len(out) == 1
-    assert "validation: surface_and_function" in out[0]["rationale"]
+    assert out[0]["validation_level"] == "surface_and_function"
 
 
 def test_distinct_junctions_are_not_merged():
