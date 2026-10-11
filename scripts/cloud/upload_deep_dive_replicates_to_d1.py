@@ -1,7 +1,7 @@
 """Load the deep-dive reproducibility replicates into public D1 ``deep_dive_replicate``.
 
 Source is the frozen bundle ``data/processed/deep_dive_concordance_v1/`` — the
-same bytes Supplementary Figure 15 is built from and the Zenodo data record
+same bytes Supplementary Figure 16 is built from and the Zenodo data record
 deposits — so the API, the figure and the deposit cannot disagree. Three record
 sets per gene (50 genes): the published snapshot the study compared against, the
 full re-run, and the fixed-evidence replay.

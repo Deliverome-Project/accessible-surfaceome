@@ -889,7 +889,7 @@ def build_positive_control_db_coverage_bars(src: dict[str, pd.DataFrame]) -> pd.
 def build_surfaceome_deterministic_features(
     src: dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
-    """Per-gene deterministic features for Supp Fig 13, faceted by the REAL
+    """Per-gene deterministic features for Supp Fig 15, faceted by the REAL
     deep-dive tier — sourced from the deep-dive RECORDS so every deep-dived
     gene has full coverage.
 

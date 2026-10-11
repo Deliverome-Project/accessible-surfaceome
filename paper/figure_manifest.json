@@ -106,17 +106,22 @@
       "description": "Raster on purpose: the vector conversion is 4.1 MB (a dense per-paper scatter), against a 600-DPI PNG 6,997 px wide."
     },
     "13": {
+      "slug": "surface_evidence_assay_types",
+      "format": "svg",
+      "description": "Vector, converted from surface_evidence_assay_types.pdf."
+    },
+    "14": {
       "slug": "triage_vs_deep_dive_reason",
       "format": "png",
       "min_dpi": 600,
       "description": "Raster on purpose: triage_vs_deep_dive_reason.pdf converts to an SVG that only wraps a raster panel, so the 600-DPI PNG is the sharper asset."
     },
-    "14": {
+    "15": {
       "slug": "surfaceome_deterministic_features",
       "format": "svg",
       "description": "Vector, converted from surfaceome_deterministic_features.pdf."
     },
-    "15": {
+    "16": {
       "slug": "deep_dive_replicate_kappa",
       "format": "svg",
       "description": "Vector, converted from deep_dive_replicate_kappa.pdf."
