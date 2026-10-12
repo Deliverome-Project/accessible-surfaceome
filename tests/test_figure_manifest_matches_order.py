@@ -31,7 +31,7 @@ def _figure_order() -> list[tuple[str, str]]:
     spec = importlib.util.spec_from_file_location("_bfi", ORDER_SCRIPT)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)  # ty: ignore
+    spec.loader.exec_module(mod)
     return list(mod.FIGURE_ORDER)
 
 

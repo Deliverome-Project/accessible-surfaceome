@@ -128,7 +128,8 @@ Schemas: [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
 **The live viewer reads D1, not the committed JSON.** The Worker serves
 each gene from public D1's `surface_annotation.annotation_json`; the
 `viewer/public/data/surfaceome/*.json` snapshots are only the in-tree
-source of truth + on-error SSG fallback. A record change that lands only
+test fixtures (ABCB9, C3, CD63); the viewer has no on-disk fallback and
+requires the live Worker. A record change that lands only
 in the JSON silently drifts the live site (it keeps rendering D1's stale
 row — e.g. the `protein_family` → `llm_family` rename that blanked the
 Family chip). So: don't hand-edit a snapshot and stop. Land the change
@@ -177,6 +178,9 @@ table changes (the Worker never overwrites a baked block): after any change
 to `topology_public`, `compara_*`, `surface_bind_*` or `schweke_homomer_public`,
 run `scripts/audit/audit_record_deterministic_consistency.py` and republish its
 `stale_genes.json` with `scripts/cloud/refresh_deterministic_features_d1.py`.
+Republishing does not refresh the R2 markdown briefs (`/v1/genes/{SYMBOL}.md`):
+re-export them with `viewer/scripts/build-markdown-exports.mjs` (`MD_TARGET=r2`),
+then `scripts/cloud/purge_gene_cache.py --surfaces md --execute`, then sweep.
 Compara is pinned to release 115 (`ensembl_compara_115`). Anything
 that writes `surface_annotation` directly, or bulk-updates a deterministic
 table the Worker joins at serve time, must be followed by

@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 6.** No single surface database recovers more than a fraction of the genome-wide accessible surfaceome the triage agent identifies. Because no hand-curated truth exists at genome scale, agreement is measured across all 19,324 protein-coding genes against the triage agent's own surface call as the reference — the production two-tier verdict (a first pass over each gene's literature followed by a targeted second-pass rescue of ambiguous negatives), rating genes definitively surface ("yes"), conditionally surface ("contextual"), or non-surface ("no"). Soft credit applies on the positive side: a database "surface" call counts as agreement against either a definite or conditional agent call, and a database "non-surface" call only against an agent "no." The databases fall hardest on conditionally surface proteins, reflecting the absence of any explicit cell-state-dependent category in the source databases.
+> **Supplementary Figure 6.** No single surface database recovers more than a fraction of the genome-wide accessible surfaceome the triage agent identifies. Because no hand-curated truth exists at genome scale, agreement is measured across all 19,324 protein-coding genes against the production two-stage triage verdict (yes, contextual, or no) as the reference. A database surface call agrees with an agent yes or contextual; a non-surface call agrees only with no. The databases fall hardest on conditionally surface proteins, for which none has an explicit category.
 <!-- END manuscript-legend -->
 
 Whole-genome analog of the 147-gene bench plot
