@@ -187,6 +187,7 @@ _DET_EXPRS: list[tuple[str, str]] = [
      " WHERE tp.gene_symbol = surface_annotation.gene_symbol "
      "   AND tp.species = 'human' AND tp.cohort = 'human_canonical' "
      "   AND tp.is_canonical IN ('1', 1) "
+     "   AND tp.topology_version = (SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_canonical') ORDER BY r.loaded_at DESC LIMIT 1) "
      " ORDER BY tp.protein_length DESC LIMIT 1))"),
     ("ecd_length_residues",
      f"CAST(json_extract(annotation_json,'{_CT}.ecd_length_residues') AS INT)"),
