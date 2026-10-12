@@ -93,6 +93,8 @@ Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.pu
 
 The same `publish_record` helper backs `scripts/cloud/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
 
+**Deterministic blocks go stale when their source tables change — audit after every such change.** Records bake `deterministic_features` in at annotate time, and the Worker only back-fills a block that is missing or empty-and-unchecked, so a later change to a source table (a Compara relabel, a Schweke payload append, a late ortholog pull, a topology fill) never reaches records that already carry the block. After any change to `topology_public`, `compara_*`, `surface_bind_*` or `schweke_homomer_public`, run `uv run python scripts/audit/audit_record_deterministic_consistency.py` — it compares all seven features in every record against the served source versions in small paced chunks (never a cohort-wide join: one tripped public D1's CPU limit and reset it) and writes `stale_genes.json` — then republish exactly those with `uv run python scripts/cloud/refresh_deterministic_features_d1.py --genes-file data/analysis/deterministic_consistency/stale_genes.json --execute`, which rebuilds only the deterministic block plus the six filters derived from it (never the LLM fields; never the full `_derive_filters`, which would reset `n_papers_found`). Ensembl Compara is pinned to release 115 (`ensembl_compara_115`) for every gene; new ortholog proteins get DeepTMHMM 1.0.24 topology from `modal/deeptmhmm_v1_app.py` (the licence-gated package lives on the `deeptmhmm-v1` Modal volume).
+
 **Paper-count signals on Filters (schema 2.14.1+).** `Filters.n_papers_selected` and `Filters.n_papers_found` carry the per-record paper counts that power the viewer's "understudied genes" filter — both `int | None` (None on legacy pre-2.14.0 records is "unknown", distinct from a real-zero measurement).
 
 - `n_papers_selected = len({source.source_id for ev in evidence for span in ev.spans})` — unique papers the agent selected for full-text reading; computable from existing records via [`scripts/build/backfill_n_papers_selected.py`](scripts/build/backfill_n_papers_selected.py) (free, no LLM).
@@ -869,15 +871,52 @@ Keep `CLAUDE.md` and `AGENTS.md` aligned when guidance changes.
 ## Shared API compatibility across main and dev
 
 The `surfaceome-api` Worker at `api.deliverome.org/surfaceome` serves both
-production and dev viewers. A main deployment must preserve endpoints and
-response fields consumed by dev, even when the related UI has not merged
-to main. In particular, keep `/v1/internalization/{symbol}` and the catalog
-fields `intern`, `intern_lit`, and `intern_lit_grade`. Do not deploy an older
-branch's Worker wholesale over the shared service; reconcile both branches'
-API changes first.
+the production viewer (built from `main`) and the dev viewer (built from
+`dev`). There is one Worker script, and `wrangler deploy` replaces it whole:
+the deploy is last-writer-wins over the entire API, with no merge. **Every
+Worker deploy must therefore be inclusive of both `main` and `dev`.** It
+ships `main`'s current Worker plus every endpoint, response field, D1 table
+read, and serve-time overlay that `dev` relies on, even when the dev UI that
+consumes them has not merged to `main` yet. A deploy that drops either
+branch's API surface breaks that branch's viewer.
+
+The standing dev-only contract today is `/v1/internalization/{symbol}` and
+the catalog fields `intern`, `intern_lit`, and `intern_lit_grade`. Never
+deploy an older branch's Worker, or a branch that has fallen behind
+`origin/main`, over the shared service. Reconcile both branches' API
+changes first.
+
+Run this check immediately before every `wrangler deploy`, from a branch
+based on a freshly fetched `origin/main`:
+
+1. `git fetch origin && git diff origin/main --stat -- cloudflare/workers/surfaceome_api/`.
+   Anything there that isn't your own change means rebase first. Other
+   sessions merge Worker PRs minutes apart.
+2. Compare *sets* against `origin/dev`, not a raw diff. Dev lags main, so a
+   line diff mostly shows main's refactors in reverse. Compare:
+   - routes (`path.match(...)` / `path === "..."`);
+   - top-level function names;
+   - the paths documented in the `/v1` index;
+   - `FROM|JOIN` table names.
+
+   Anything that exists only on dev must be empty. If it isn't, port it into
+   your branch (or land it on `main` first) before deploying.
+3. Compare the live `/v1` index against your source. Its routes and
+   `row_schema` must be a subset of what you are about to ship. This catches
+   a previous deploy made from some other branch.
+4. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
+5. Re-verify after the deploy, because a merge can land during it. If a
+   deploy changed a response's shape, purge the cache with
+   `scripts/cloud/purge_gene_cache.py`.
+
+Worktrees have no `wrangler.toml`: it is gitignored and only
+`wrangler.toml.example` is committed. Copy it from the canonical checkout,
+and diff its binding names against the example first.
 
 CI runs `tests/test_worker_internalization.py` as an explicit shared-API
 compatibility check with Node from `.nvmrc`; a missing Node runtime fails
-that check instead of silently skipping it. Update the contract tests when
-adding another dev-only consumer of the shared API. This protects code
-review and CI; manual deployments must run the same check before deployment.
+that check instead of silently skipping it. When you add another dev-only
+consumer of the shared API, extend these contract tests in the same change.
+That way CI enforces "inclusive of dev" instead of relying on whoever
+deploys next to remember it. CI protects code review only; a manual deploy
+must run the checklist above.

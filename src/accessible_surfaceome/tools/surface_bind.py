@@ -50,7 +50,10 @@ logger = logging.getLogger(__name__)
 # the summary is repo-data not package-data.
 SUMMARY_PATH = (
     Path(__file__).resolve().parents[3]
-    / "data" / "external" / "surface_bind" / "surface_bind_summary.json"
+    / "data"
+    / "external"
+    / "surface_bind"
+    / "surface_bind_summary.json"
 )
 
 _CACHE: dict[str, dict[str, Any]] | None = None
@@ -122,15 +125,13 @@ def _decode_pdbs(raw: Any) -> list[str]:
 
 # DeepTMHMM per-residue topology alphabet (see the ``per_residue_topology``
 # column comment in cloudflare/d1_public_schema.sql: "O/M/I/S/B chars").
-AnchorTopology = Literal[
-    "extracellular", "intracellular", "membrane", "signal_peptide"
-]
+AnchorTopology = Literal["extracellular", "intracellular", "membrane", "signal_peptide"]
 
 _TOPOLOGY_CHARS: dict[str, AnchorTopology] = {
     "O": "extracellular",
     "I": "intracellular",
     "M": "membrane",
-    "B": "membrane",       # beta-barrel strand — still in the bilayer
+    "B": "membrane",  # beta-barrel strand — still in the bilayer
     "S": "signal_peptide",
 }
 
@@ -204,10 +205,21 @@ def _lookup_d1(uniprot_acc: str) -> SurfaceBindFeatures | None:
             # whole surface_bind block (which the outer handler would do by
             # returning None and handing the JSON fallback the answer).
             try:
+                # Pin the served topology version (the newest *registered*
+                # release with canonical rows — the rule d1_deterministic's
+                # loader applies): topology_public also holds unregistered
+                # runs from other predictors (a full DeepTMHMM2 sweep since
+                # 2026-09-27), and an unpinned LIMIT 1 could return any of them.
                 topo_rows = d1.query(
                     "SELECT per_residue_topology FROM topology_public "
                     "WHERE uniprot_acc = ? AND species = 'human' "
                     "AND is_canonical IN ('1', 1) AND cohort = 'human_canonical' "
+                    "AND topology_version = ("
+                    "  SELECT r.topology_version FROM topology_release r "
+                    "  WHERE EXISTS (SELECT 1 FROM topology_public t "
+                    "    WHERE t.topology_version = r.topology_version "
+                    "    AND t.cohort = 'human_canonical') "
+                    "  ORDER BY r.loaded_at DESC LIMIT 1) "
                     "LIMIT 1;",
                     [uniprot_acc],
                 )

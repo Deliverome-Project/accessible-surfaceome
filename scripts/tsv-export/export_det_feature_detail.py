@@ -54,7 +54,8 @@ def main() -> int:
         topo = pd.DataFrame(d1.query(
             "SELECT gene_symbol, uniprot_acc, per_residue_topology FROM topology_public "
             "WHERE species='human' AND is_canonical IN ('1', 1) "
-            "AND cohort='human_canonical'", []))
+            "AND cohort='human_canonical' AND topology_version = "
+            "(SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_canonical') ORDER BY r.loaded_at DESC LIMIT 1)", []))
         # 1:1 ortholog % identity (best per species).
         # Same two-table union as the sonnet-universe export: compara_ortholog
         # alone misses genes later Compara pulls added (NPM1 among them), and
