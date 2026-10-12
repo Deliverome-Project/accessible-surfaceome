@@ -18,7 +18,8 @@ those genes goes through.
   [`scripts/figures/pipeline_funnel.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/figures/pipeline_funnel.py),
   which reads the numbers on the canvas from committed tables
   (`data/processed/figures/zero_db_rescues_by_triage.tsv`,
-  `data/processed/figures/deep_dive_final_categories.tsv` and
+  `data/processed/figures/deep_dive_final_categories.tsv`,
+  `data/processed/candidate_universe/candidate_universe_v3.tsv` and
   `data/processed/candidate_universe/candidate_universe_v3_dropped.tsv`).
 - **Panel b** is an author-drawn diagram of the per-gene pipeline. Stage 1
   retrieves evidence: deterministic database and literature search, then a

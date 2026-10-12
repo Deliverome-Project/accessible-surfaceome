@@ -9,7 +9,7 @@
   "db_overlap_upset": "swh:1:rev:4e3f3540a05bdd2a0b7dd62b8e4d07db961339cb",
   "db_vs_sonnet_whole_proteome": "swh:1:rev:91f888908f52770eab885e611478bb4105d63d55",
   "deep_dive_final_categories": "swh:1:rev:038926747cb9ff46a97dc87b9385a4fc78a21738",
-  "deep_dive_flow": "swh:1:rev:446e54c9b2d161605c969b09260b5df008e2a076",
+  "deep_dive_flow": "swh:1:rev:487f1aca9e01e732622fc22d5e380a7b0fd29ac9",
   "deep_dive_record_richness": "swh:1:rev:5365b27990aa7bf59323f108f2973307dfcaf0fb",
   "deep_dive_replicate_kappa": "swh:1:rev:d7a7c42323fba9fec7ac97e645b19e6100c1190c",
   "deep_dive_vs_sonnet_benchmark": "swh:1:rev:9815eacb2c0ae2e80d5414137a5cc655c87b5200",
@@ -20,7 +20,7 @@
   "surface_evidence_assay_types": "swh:1:rev:e145d3c1bee94e6e3939ed2ed40a7356e8ddf616",
   "surfaceome_deterministic_features": "swh:1:rev:83728c40186be2a11516c15918397dcef5bb17f4",
   "topology_coverage_by_source": "swh:1:rev:c7c45ed527ccd0977064e4e21511598b3818d623",
-  "triage_vs_deep_dive_reason": "swh:1:rev:8ae92bc13318bcdfd190444f6e1961f45387ae6b",
+  "triage_vs_deep_dive_reason": "swh:1:rev:cef1e7ef92eb18c753800f674cafb31f551f9b2e",
   "web_preview": "swh:1:rev:80b6e70e7e3c0829b8d0d0ca4519505ec9bc77c0",
   "zero_db_rescues_by_triage": "swh:1:rev:fbe5fb4f0c74d85e93880f2aad54413e068049e5"
 }

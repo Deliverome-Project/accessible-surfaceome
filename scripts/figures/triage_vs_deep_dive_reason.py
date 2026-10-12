@@ -14,7 +14,9 @@ below, with its bucket legend underneath.
 surface (tier ``canonical`` / ``likely`` / ``low``), the fraction ALSO flagged
 surface by each source: the 5 catalog databases (UniProt, GO, SURFY, CSPA, HPA)
 plus Sonnet triage (verdict ``yes`` / ``contextual``), broken down by
-deep-dive tier. Every source flags a larger share of canonical genes than
+deep-dive tier. HPA is scored only over the genes it
+imaged (``hpa_in_atlas``), because a gene missing from HPA lacks an antibody
+rather than being called non-surface; the benchmark treats HPA the same way. Every source flags a larger share of canonical genes than
 likely, and more likely than low. Sonnet triage is the most concordant source
 at every tier (99 / 95 / 91%), and its lead over the best database (UniProt,
 94 / 79 / 54%) widens as the deep dive's confidence drops.
@@ -39,7 +41,8 @@ colored by bucket so a cross-bucket flip is visible at a glance.
 **Real data.** Built from the per-figure TSV
 ``data/processed/figures/triage_vs_deep_dive_reason.tsv`` — one row per gene
 with both a triage and a deep-dive record (n=5,332), carrying the triage
-verdict/reason, the deep-dive reason/tier, and the 5 per-DB surface flags. The
+verdict/reason, the deep-dive reason/tier, and the 5 per-DB surface flags,
+plus ``hpa_in_atlas``. The
 same TSV backs the gist mirror
 (``data/analysis/figures/make_triage_vs_deep_dive_reason.py``).
 
@@ -122,7 +125,7 @@ DB_SOURCES = [
     ("GO",      "go_surface_flag",    "#3D6B60"),  # teal-mid
     ("SURFY",   "surfy_surface_flag", "#8878C8"),  # lavender-bright
     ("CSPA",    "cspa_optimized",     "#6E1428"),  # maroon-dark
-    ("HPA",     "hpa_surface_flag",   "#F4AA28"),  # amber-bright
+    ("HPA (imaged)", "hpa_surface_flag", "#F4AA28"),  # amber-bright
 ]
 SONNET_LABEL = "Sonnet triage"
 SONNET_COLOR = "#d87851"  # Claude-orange — distinct from the 5 DB bars
@@ -219,6 +222,10 @@ def _concordance_by_tier(df: pd.DataFrame) -> list[tuple[str, dict[str, float]]]
         by_tier = {}
         for tier in DD_SURFACE_TIERS:
             sub = df[df["deep_dive_tier"] == tier]
+            if col == "hpa_surface_flag":
+                # HPA abstains where it has no antibody data, so it is scored
+                # over the genes it imaged — the benchmark's rule too.
+                sub = sub[sub["hpa_in_atlas"] == 1]
             d = len(sub)
             by_tier[tier] = 100.0 * int((sub[col] == 1).sum()) / d if d else 0.0
         out.append((label, by_tier))

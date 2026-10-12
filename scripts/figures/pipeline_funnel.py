@@ -14,15 +14,18 @@ Left to right:
   thresholds the accuracy figures use, not Figure 1's native flags).
   That provenance is NOT on the canvas and has to be in the caption:
   under Figure 1's native flags the same union is 5,546, so a reader
-  who meets 5,626 with no note will think the two figures disagree.
+  who meets 5,625 with no note will think the two figures disagree.
+  The count is taken over the cohort build's base set, so a gene the
+  build drops for not resolving to any stable identifier (a withdrawn
+  HGNC entry, e.g. RSC1A1) is not counted here either.
 * **Accessibility Triage agent, both passes** — stage 1 reads NCBI gene
   and protein records for every gene. Stage 2 re-reads, with a
-  literature pass, the non-surface calls whose stated
-  reason placed the protein one compartment off the surface
-  (endomembrane-resident, secreted, inner-leaflet-anchored, pMHC,
-  nuclear envelope); the cytoplasmic, nuclear and mitochondrial calls
-  were excluded as unlikely to flip. The rescue slice (agent-positive,
-  flagged by no database) is called out inside the card.
+  literature pass, every non-surface call the universe gate could drop:
+  all zero-database calls (the ambiguous-reason tail, the confidently
+  intracellular buckets, and the optimized-cutoff orphans) plus the
+  single-database calls the trim would otherwise remove. See
+  ``STAGE2_RUN_IDS``. The rescue slice (agent-positive, flagged by no
+  database) is called out inside the card.
 * **The trim** — the union of the two lanes is not the deep-dive cohort.
   Genes carrying exactly one database flag and a non-surface call the
   agent made at high confidence are dropped. The canvas says what that
@@ -36,17 +39,15 @@ Left to right:
 * **Deep dive** — the cohort that went on to a per-gene record.
 
 **Why the arithmetic is not shown on the canvas.** The per-gene union of
-the database and triage calls is 6,736; minus the 1,401-gene trim that is
-5,335, while the completed sweep is 5,332. The three-gene gap is cohort
-vintage, not a counting error — the sweep ran against a marginally
-earlier universe. Printing 6,736 and 5,332 side by side would look like
-an off-by-three, so the union total stays in the caption. (The 5,626
-database figure on the canvas is per-accession; the per-gene count is
-5,546, which is why the union does not equal 5,626 + 4,628 - overlap.)
+the database and triage calls is 6,733 (5,625 database-flagged plus
+1,108 flagged by triage alone); minus the 1,401-gene trim that is the
+5,332-gene deep dive. The union total stays in the caption so the canvas
+reads as stages rather than a sum.
 
 Data sources:
   data/processed/figures/zero_db_rescues_by_triage.tsv        whole proteome
   data/processed/figures/deep_dive_final_categories.tsv       deep-dive cohort
+  data/processed/candidate_universe/candidate_universe_v3.tsv          the kept universe
   data/processed/candidate_universe/candidate_universe_v3_dropped.tsv  the trim
 
 One number has no committed TSV — how many genes the second triage pass
@@ -81,6 +82,9 @@ DEEP_DIVE_TSV = REPO_ROOT / "data/processed/figures/deep_dive_final_categories.t
 # The 1-of-5 trim: one row per gene dropped from the union because the
 # agent called it "no" at high confidence and exactly one database
 # flagged it. See scripts/build_candidate_universe_v3.py:is_trim.
+# The kept half of the cohort build's base set; with TRIMMED_TSV it is
+# the set the database union is counted over.
+UNIVERSE_TSV = REPO_ROOT / "data/processed/candidate_universe/candidate_universe_v3.tsv"
 TRIMMED_TSV = REPO_ROOT / "data/processed/candidate_universe/candidate_universe_v3_dropped.tsv"
 
 # The one number on the canvas that no committed TSV carries: how many
@@ -173,6 +177,13 @@ def _load() -> Counts:
     with TRIMMED_TSV.open(newline="", encoding="utf-8") as handle:
         trimmed = list(csv.DictReader(handle, delimiter="\t"))
 
+    # The cohort build's base set (kept + trimmed). Counting the database
+    # union inside it applies the build's stable-ID guard, which drops a
+    # withdrawn HGNC entry the proteome table still carries.
+    with UNIVERSE_TSV.open(newline="", encoding="utf-8") as handle:
+        base_ids = {row["hgnc_id"] for row in csv.DictReader(handle, delimiter="\t")}
+    base_ids |= {row["hgnc_id"] for row in trimmed}
+
     deep_dive_ids = {row["hgnc_id"] for row in deep_dive}
     positives = [r for r in proteome if r["sonnet_verdict"] in POSITIVE_VERDICTS]
     # ``verdict_source`` names the pass that produced the FINAL verdict, so
@@ -181,7 +192,7 @@ def _load() -> Counts:
 
     return Counts(
         proteome=len(proteome),
-        db_union=sum(1 for r in proteome if n_db(r) >= 1),
+        db_union=sum(1 for r in proteome if n_db(r) >= 1 and r["hgnc_id"] in base_ids),
         triage_positive=len(positives),
         triage_yes=sum(1 for r in positives if r["sonnet_verdict"] == "yes"),
         triage_contextual=sum(
