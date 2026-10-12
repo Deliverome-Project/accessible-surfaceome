@@ -109,7 +109,10 @@ def _load_sources() -> dict[str, pd.DataFrame]:
     if SURFACE_METHODS_TSV.is_file():
         src["surface_methods"] = pd.read_csv(SURFACE_METHODS_TSV, sep="\t")
     if HPA_RAW_TSV.is_file():
-        src["hpa_raw"] = pd.read_csv(HPA_RAW_TSV, sep="\t", usecols=["Gene name"])
+        # No usecols: on a checkout without `git lfs pull` this is a pointer
+        # stub, which must load as a 1-column frame so the reproducibility
+        # test can recognise it and skip rather than error.
+        src["hpa_raw"] = pd.read_csv(HPA_RAW_TSV, sep="\t")
     return src
 
 
@@ -738,7 +741,7 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
     # HPA flags surface is covered by definition, whatever its symbol says.
     hpa_raw = src.get("hpa_raw")
     imaged = (set(hpa_raw["Gene name"].dropna().astype(str).str.strip().str.upper())
-              if hpa_raw is not None else set())
+              if hpa_raw is not None and "Gene name" in hpa_raw.columns else set())
     out["hpa_in_atlas"] = (
         out["gene_symbol"].str.upper().isin(imaged) | (out["hpa_surface_flag"] == 1)
     ).astype("Int64")
