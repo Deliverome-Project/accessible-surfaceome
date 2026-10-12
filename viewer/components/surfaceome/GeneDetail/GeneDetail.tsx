@@ -246,17 +246,27 @@ export function GeneDetail({
       label: "Internalization",
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
-    // Tag sites — its OWN tab (distinct from Internalization). Shown only
-    // when the gene has at least one RENDERED tag site (literature_retrieved,
-    // deterministic_computed, or screen_validated); validated_literature is
-    // validation-only and never rendered, matching `renderableTagSites`.
-    ...(taggedSites?.has_data &&
-    taggedSites.sites.some(
+    // Tag sites — its OWN tab (distinct from Internalization). Shown when the
+    // gene has a RENDERED tag site (literature_retrieved,
+    // deterministic_computed or screen_validated; validated_literature is
+    // validation-only and never rendered, matching `renderableTagSites`) OR
+    // when the literature agent searched the gene and found nothing.
+    //
+    // That second case is the whole point of the "Literature-validated (0)"
+    // state, and gating the tab on sites alone made it unreachable: the tab
+    // vanished precisely when the card had the "we looked and found nothing"
+    // message to show, so 1,415 searched-and-empty genes were indistinguishable
+    // from genes nobody has got to. `prompt_sha` is the claim that a search
+    // ran — it is stamped on every result including an empty one — so it, not
+    // the site count, is what decides whether there is something to say.
+    ...(taggedSites &&
+    (taggedSites.sites.some(
       (s) =>
         s.provenance === "literature_retrieved" ||
         s.provenance === "deterministic_computed" ||
         s.provenance === "screen_validated",
-    )
+    ) ||
+      Boolean(taggedSites.prompt_sha))
       ? [
           {
             kind: "tag-sites",
