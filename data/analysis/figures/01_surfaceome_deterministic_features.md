@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 15.** The precomputed deterministic features distribute as expected for candidate surface proteins across both the deep-dive confidence tiers and the full two-stage Sonnet triage set. Twelve topology and structural features — TM-helix count, protein length and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular surface-bind site — compared across the canonical, likely, low, and uncertain/non-surface tiers and the genome-wide Sonnet-positive pool.
+> **Supplementary Figure 15.** Precomputed deterministic features distribute as expected for surface proteins across deep-dive tiers and the triage-positive pool. Twelve topology and structural features (TM-helix count, protein length and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular surface-bind site) compared across the canonical, likely, low, and uncertain/non-surface tiers and the triage-positive pool: all 4,628 proteins the two-stage Sonnet 4.6 triage called yes or contextual (all have a canonical DeepTMHMM topology), deep-dived or not, with features taken from the genome-wide tables.
 <!-- END manuscript-legend -->
 
 Distribution of **twelve deterministic per-gene features** across the
@@ -25,11 +25,11 @@ fraction bars.
 | Facet | Definition | Feature source |
 |---|---|---|
 | `canonical` / `likely` / `low` / `uncertain·no` | Deep-dive tier (`_dd_assign_bucket`), pooling the two weakest tiers | Deep-dive **records** (full coverage per deep-dived gene) |
-| `Sonnet dual triage` | Every gene the two-stage Sonnet triage called `yes`/`contextual` — `genome_full_sonnet_ncbi_v2` plus the four PubMed rescue lanes (4,612 with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
+| `Sonnet dual triage` | Every gene the two-stage Sonnet triage called `yes`/`contextual` — `genome_full_sonnet_ncbi_v2` plus the four PubMed rescue lanes (all 4,628, each with topology) | Genome-wide **D1 tables** (`topology_public`, `compara_*`, `schweke_homomer_public`, `surface_bind_*`) |
 
 The Sonnet facet is a broader, *different* category from the tiers — its det
 features come from the genome-wide tables (the same DeepTMHMM / Compara /
-Schweke computation, ~100% topology coverage) because most of those genes
+Schweke computation, 100% topology coverage, joined on UniProt so genes that share one protein all count) because most of those genes
 aren't deep-dived. It lets the reader compare the curated deep-dive tiers
 against everything the triage flags surface. Boolean-feature absence in a table
 is a real negative (no 1:1 ortholog / not a homomer / no concerning paralog / no
@@ -37,7 +37,7 @@ extracellular surface-bind site), matching how the records encode it. `pending`
 (not-yet-deep-dived) genes are excluded from the deep-dive tiers.
 
 The deep-dive tiers cover the full deep-dive cohort (5,332 genes); the Sonnet
-pool is the complete triage-flagged set (4,612 with topology).
+pool is the complete triage-flagged set (4,628 genes, all with topology).
 
 ## Run
 

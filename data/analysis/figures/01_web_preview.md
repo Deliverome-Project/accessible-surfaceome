@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 7.** A fully open-source surfaceome viewer. a) The viewer homepage, showing a table of all proteins with reference database membership, triage LLM calls, and deep-dive LLM calls. b) For proteins with a deep-dive record, a detailed page is available including both LLM information and deterministic results.
+> **Figure 7.** A fully open-source surfaceome viewer. a) The viewer homepage, showing a table of all proteins with reference database membership, triage LLM calls, and deep-dive LLM calls. b) For proteins with a deep-dive record, a detailed page is available with both LLM-derived and deterministic results.
 <!-- END manuscript-legend -->
 
 Two screenshots of the live surfaceome viewer at
