@@ -15,8 +15,10 @@ and a published deep-dive record:
 
 - **a)** For the genes the deep dive places in the canonical, likely
   and low tiers, the share of each tier that each database (UniProt,
-  SURFY, GO, CSPA, HPA) and Sonnet triage (verdict yes or contextual)
-  also flag as surface. Every source flags more canonical genes than
+  SURFY, HPA, GO, CSPA) and Sonnet triage (verdict yes or contextual)
+  also flag as surface. HPA is scored only over the genes it imaged,
+  since a gene missing from HPA has no antibody data rather than a
+  negative call (the benchmark treats it the same way). Every source flags more canonical genes than
   likely, and more likely than low. Sonnet triage is the most
   concordant source at every tier (99 / 95 / 91%); the nearest
   database, UniProt, falls from 94% on canonical to 54% on low.

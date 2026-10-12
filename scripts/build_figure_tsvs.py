@@ -80,6 +80,11 @@ SONNET_DET_TSV = ROOT / "data/processed/deep_dive/sonnet_universe_det_features.t
 # scripts/export_det_feature_detail.py; LEFT-joined into both S14 facets by
 # gene_symbol so a reader can see the magnitude, not just the yes/no flag.
 DET_DETAIL_TSV = ROOT / "data/processed/deep_dive/det_feature_detail.tsv"
+# Raw HPA subcellular-location table (one row per imaged gene). Read only for
+# WHICH genes HPA imaged: HPA abstains on genes it has no antibody data for,
+# so S14 scores HPA over the imaged genes, as the benchmark does
+# (scripts/figures/triage_bench_db_barplot.py:_has_hpa_raw).
+HPA_RAW_TSV = ROOT / "data/external/hpa_subcellular_location/subcellular_location.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
@@ -103,6 +108,8 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         src["features_full"] = pd.read_csv(FEATURES_FULL_TSV, sep="\t")
     if SURFACE_METHODS_TSV.is_file():
         src["surface_methods"] = pd.read_csv(SURFACE_METHODS_TSV, sep="\t")
+    if HPA_RAW_TSV.is_file():
+        src["hpa_raw"] = pd.read_csv(HPA_RAW_TSV, sep="\t", usecols=["Gene name"])
     return src
 
 
@@ -668,7 +675,10 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
     optimized membership from ``opt``. Columns: ``gene_symbol, uniprot_acc,
     triage_verdict, triage_reason, deep_dive_reason, deep_dive_tier,
     go_surface_flag, surfy_surface_flag, hpa_surface_flag, uniprot_optimized,
-    cspa_optimized``.
+    cspa_optimized, hpa_in_atlas``. ``hpa_in_atlas`` is 1 when HPA imaged the
+    gene (it has a row in the raw subcellular-location table, matched by
+    symbol); panel a scores HPA over those genes only, because HPA's absence
+    is a missing antibody rather than a negative call.
 
     Real data over the completed deep-dive sweep (5,332 genes).
     """
@@ -724,7 +734,15 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
         out[col] = acc.isin(accs).astype("Int64")
     # Keep only genes we could match a triage call for.
     out = out.dropna(subset=["triage_verdict", "triage_reason"])
-    out = out[cols + db_flags]
+    # HPA coverage: same symbol match as the benchmark's _has_hpa_raw. A gene
+    # HPA flags surface is covered by definition, whatever its symbol says.
+    hpa_raw = src.get("hpa_raw")
+    imaged = (set(hpa_raw["Gene name"].dropna().astype(str).str.strip().str.upper())
+              if hpa_raw is not None else set())
+    out["hpa_in_atlas"] = (
+        out["gene_symbol"].str.upper().isin(imaged) | (out["hpa_surface_flag"] == 1)
+    ).astype("Int64")
+    out = out[cols + db_flags + ["hpa_in_atlas"]]
     return out.sort_values("gene_symbol", kind="stable").reset_index(drop=True)
 
 
