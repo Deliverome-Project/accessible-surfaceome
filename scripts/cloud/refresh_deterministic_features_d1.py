@@ -34,11 +34,15 @@ Each gene costs a dozen-odd public-D1 queries, so the loop is paced
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import logging
 import time
 from pathlib import Path
 
+from accessible_surfaceome.agents.surfaceome_v1 import (
+    d1_deterministic as _d1_deterministic,
+)
 from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
     fetch_deterministic_features,
 )
@@ -83,6 +87,25 @@ def deterministic_filters(det, risks) -> dict:
         "n_term_extracellular": canon.n_terminal_orientation == "extracellular",
         "c_term_extracellular": canon.c_terminal_orientation == "extracellular",
     }
+
+
+def _cache_version_pickers() -> None:
+    """Resolve each served-version lookup once per run, not once per gene.
+
+    ``fetch_deterministic_features`` re-asks D1 which topology, paralog and
+    ortholog-ECD versions are current on every call: 10 of its 19 queries, and
+    the heaviest ones (whole-table DISTINCT / COUNT scans). The answers cannot
+    change during a run, so caching them roughly halves the per-gene D1 cost.
+    """
+    for name in (
+        "_latest_topology_version",
+        "_latest_topology_version_for_cohort",
+        "_latest_paralog_version",
+        "_latest_ortholog_ecd_version",
+    ):
+        setattr(
+            _d1_deterministic, name, functools.cache(getattr(_d1_deterministic, name))
+        )
 
 
 def _without_timestamps(obj):
@@ -135,6 +158,7 @@ def main() -> int:
     ap.add_argument("--log", type=Path, help="append one JSON line per gene")
     args = ap.parse_args()
     load_env()
+    _cache_version_pickers()
     logging.basicConfig(level=logging.WARNING)
 
     genes: set[str] = set(args.genes.split(",")) if args.genes else set()
