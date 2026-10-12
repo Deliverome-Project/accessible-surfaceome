@@ -187,13 +187,20 @@ function enrichBinary(
  * (a = 0), which are depleted (fold 0) and just as informative as
  * enriched ones. Sorted by fold desc then count desc (so the default
  * view leads with enrichment and trails into depletion).
+ *
+ * `valueOf` may return a list for a multi-valued facet (e.g. the surface
+ * methods behind a call): the gene then counts once toward EACH of its
+ * values. Each value's row stays a valid one-vs-rest 2×2 (gene has the
+ * value or not), so the per-row fold and hypergeometric P are unchanged in
+ * meaning; the rows just aren't mutually exclusive, so they needn't sum to
+ * the population.
  */
 function enrichCategory(
   key: string,
   label: string,
   allRows: CatalogRow[],
   matchedRows: CatalogRow[],
-  valueOf: (r: CatalogRow) => string | null,
+  valueOf: (r: CatalogRow) => string | readonly string[] | null,
   inPop: (r: CatalogRow) => boolean,
   lf: Float64Array,
   labelOf: (v: string) => string = (v) => v,
@@ -203,16 +210,20 @@ function enrichCategory(
   const listPop = matchedRows.filter(inPop);
   const n = pop.length;
   const k = listPop.length;
-  const Kmap = new Map<string, number>();
-  for (const r of pop) {
-    const v = valueOf(r);
-    if (v != null) Kmap.set(v, (Kmap.get(v) ?? 0) + 1);
-  }
-  const amap = new Map<string, number>();
-  for (const r of listPop) {
-    const v = valueOf(r);
-    if (v != null) amap.set(v, (amap.get(v) ?? 0) + 1);
-  }
+  const tally = (rows: CatalogRow[]) => {
+    const m = new Map<string, number>();
+    for (const r of rows) {
+      const v = valueOf(r);
+      if (v == null) continue;
+      // A list counts each distinct value once for this gene.
+      for (const x of typeof v === "string" ? [v] : new Set(v)) {
+        m.set(x, (m.get(x) ?? 0) + 1);
+      }
+    }
+    return m;
+  };
+  const Kmap = tally(pop);
+  const amap = tally(listPop);
   // Universe of rows: the declared taxonomy (`allValues`) unioned with any
   // value seen in the data, so EVERY category shows — including ones absent
   // from both the list and the baseline (a = 0, K = 0, rendered "—"). When
@@ -335,17 +346,15 @@ export function computeCompareStats(
   let deepDiveVerdict: EnrichGroup | null = null;
   const deepDiveEnumGroups: EnrichGroup[] = [];
   for (const f of DD_ENUM_FIELDS) {
-    // enrichCategory assumes one value per gene; a multi-valued facet
-    // (surface methods) would need per-value binary rows instead, so it is
-    // left out of the enrichment tables rather than shown with wrong counts.
-    if (f.multi) continue;
     const isVerdict = f.key === DEEP_DIVE_VERDICT_KEY;
     const g = enrichCategory(
       f.key,
       isVerdict ? "Deep-dive verdict" : f.label,
       allRows,
       matchedRows,
-      (r) => (r.deep_dive_filters?.[f.key] as string | undefined) ?? null,
+      (r) =>
+        (r.deep_dive_filters?.[f.key] as string | readonly string[] | undefined) ??
+        null,
       hasDdf,
       lf,
       (v) => f.valueLabels?.[v] ?? prettyCase(v),
