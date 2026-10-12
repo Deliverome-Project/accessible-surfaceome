@@ -8,7 +8,7 @@
   "db_cutoff_tradeoff": "swh:1:rev:f746dc7ee26925c28f4192a453cb6f45bd43e181",
   "db_overlap_upset": "swh:1:rev:dfbd03690d8af65463f0b19082a3861e585cfcd4",
   "db_vs_sonnet_whole_proteome": "swh:1:rev:5b465120a31cf2b82bacb8b6ddc769afdaf8c06f",
-  "deep_dive_final_categories": "swh:1:rev:4210aebdc527da4919884f2377daef1461ca44a4",
+  "deep_dive_final_categories": "swh:1:rev:2e1ddb6dc8496184be5fdcb67e370c507de1bf1e",
   "deep_dive_flow": "swh:1:rev:e554d89d7ffcde47de88637188676e5f41f80c37",
   "deep_dive_record_richness": "swh:1:rev:17524a6bac06e205b92b99832020c418dd59ec06",
   "deep_dive_replicate_kappa": "swh:1:rev:ae4029fd6925493dd0d7338a975159f959e2701a",
