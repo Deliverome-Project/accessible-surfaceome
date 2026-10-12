@@ -177,6 +177,9 @@ table changes (the Worker never overwrites a baked block): after any change
 to `topology_public`, `compara_*`, `surface_bind_*` or `schweke_homomer_public`,
 run `scripts/audit/audit_record_deterministic_consistency.py` and republish its
 `stale_genes.json` with `scripts/cloud/refresh_deterministic_features_d1.py`.
+Republishing does not refresh the R2 markdown briefs (`/v1/genes/{SYMBOL}.md`):
+re-export them with `viewer/scripts/build-markdown-exports.mjs` (`MD_TARGET=r2`),
+then `scripts/cloud/purge_gene_cache.py --surfaces md --execute`, then sweep.
 Compara is pinned to release 115 (`ensembl_compara_115`). Anything
 that writes `surface_annotation` directly, or bulk-updates a deterministic
 table the Worker joins at serve time, must be followed by

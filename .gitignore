@@ -165,3 +165,6 @@ paper/*.xml
 # Editor / build cruft
 .zed/
 .pages-rebuild-marker
+
+# audit_record_deterministic_consistency.py report + stale-gene list (regenerated per run)
+data/analysis/deterministic_consistency/

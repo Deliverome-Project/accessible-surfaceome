@@ -18,7 +18,11 @@ changed, so ``--surfaces`` selects:
     serve-time ``papers`` citation join)
   * ``record``   — ``/v1/genes/{SYMBOL}`` (the record + every serve-time
     ``deterministic_features`` enrichment ``handleGene`` computes)
-  * ``both``     — the default
+  * ``md``       — ``/v1/genes/{SYMBOL}.md`` (the markdown brief, served
+    from R2). Neither ``publish_record`` nor ``both`` purges it, so run
+    this after re-exporting the briefs with ``build-markdown-exports.mjs``
+    (``MD_TARGET=r2``), or the old brief stays cached for up to a day.
+  * ``both``     — the default (record + evidence)
 
 Caching is per-POP, so a half-purged state doesn't look broken so much as
 *inconsistent*: the same gene answers differently depending on which
@@ -89,6 +93,11 @@ def _wanted_suffixes(sym: str, surfaces: str) -> tuple[str, ...]:
     return (record, evidence)
 
 
+def _md_keys(keys: list[str]) -> list[str]:
+    """The ``.md`` brief's cache key is the record's key plus ``.md``."""
+    return [k + ".md" for k in keys]
+
+
 def _gene_urls(symbols: list[str], surfaces: str) -> list[str]:
     """The ``caches.default`` keys for the selected per-gene surfaces.
 
@@ -100,6 +109,9 @@ def _gene_urls(symbols: list[str], surfaces: str) -> list[str]:
     """
     out = []
     for sym in symbols:
+        if surfaces == "md":
+            out += _md_keys([u for u in _purge_urls_for(sym) if u.endswith(f"/v1/genes/{sym}")])
+            continue
         wanted = _wanted_suffixes(sym, surfaces)
         for url in _purge_urls_for(sym):
             if url.endswith(wanted):
@@ -110,6 +122,9 @@ def _gene_urls(symbols: list[str], surfaces: str) -> list[str]:
 def _gene_kv_keys(symbols: list[str], surfaces: str) -> list[str]:
     out = []
     for sym in symbols:
+        if surfaces == "md":
+            out += _md_keys([k for k in _kv_keys_for(sym) if k.endswith(f"/v1/genes/{sym}")])
+            continue
         wanted = _wanted_suffixes(sym, surfaces)
         for key in _kv_keys_for(sym):
             if key.endswith(wanted):
@@ -179,7 +194,7 @@ def main() -> int:
     )
     ap.add_argument("--execute", action="store_true",
                     help="Actually purge. Without this, reports what would be purged.")
-    ap.add_argument("--surfaces", choices=("evidence", "record", "both"),
+    ap.add_argument("--surfaces", choices=("evidence", "record", "md", "both"),
                     default="both",
                     help="Which per-gene surface to purge (default: both).")
     ap.add_argument("--genes", default=None,

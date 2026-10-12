@@ -60,6 +60,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -136,11 +137,14 @@ def _draw_panel(ax: plt.Axes, data: pd.DataFrame, key: str,
         line.set_alpha(0.9)
         line.set_linewidth(1.4)
 
-    # Faint real-value point strip on top so the actual per-tier n is visible.
+    # Real-value point strip on top so the actual per-tier n is visible. The
+    # jitter is seeded so a re-render places every point where the last did.
+    np.random.seed(0)
     sns.stripplot(
         data=sub, x="tier", y=key, order=tiers, hue="tier",
         hue_order=tiers, palette=palette, legend=False,
-        size=2.2, alpha=0.28, jitter=0.18, ax=ax,
+        size=3.2, alpha=0.8, linewidth=0.35, edgecolor="white",
+        jitter=0.18, zorder=3, ax=ax,
     )
 
     ax.set_xlabel("")
