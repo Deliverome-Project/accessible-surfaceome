@@ -45,6 +45,7 @@ from pathlib import Path
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
+from matplotlib.colors import to_rgb
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -196,11 +197,13 @@ def _draw_panel(ax: plt.Axes, data: pd.DataFrame, key: str,
     # Real-value point strip on top so the actual per-tier n is visible. The
     # jitter is seeded so a re-render places every point where the last did.
     np.random.seed(0)
+    # A darker shade of each tier's color so points stay legible over their own
+    # violin without outweighing it.
+    point_palette = {t: tuple(0.6 * v for v in to_rgb(c)) for t, c in palette.items()}
     sns.stripplot(
         data=sub, x="tier", y=key, order=tiers, hue="tier",
-        hue_order=tiers, palette=palette, legend=False,
-        size=3.2, alpha=0.8, linewidth=0.35, edgecolor="white",
-        jitter=0.18, zorder=3, ax=ax,
+        hue_order=tiers, palette=point_palette, legend=False,
+        size=2.0, alpha=0.35, linewidth=0, jitter=0.18, zorder=3, ax=ax,
     )
 
     ax.set_xlabel("")
