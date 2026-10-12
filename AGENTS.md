@@ -45,10 +45,10 @@ Concise contributor guide for `accessible-surfaceome`.
 
 > **Historical note.** An earlier design proposed registering these as Anthropic Managed Agents with sha-checked auto-sync (`.runs/agents-registry.json`, `sync_agent_and_environment`, `ANNOTATE_NO_AUTO_SYNC`). **That machinery was never wired into the shipped code.** Any reference to managed-agent sync / auto-sync / `ANNOTATE_NO_AUTO_SYNC` is stale.
 
-**Cost note:** a full v2 deep-dive is ~$1.3 on Sonnet 4.6 per gene (median; $1.44 mean across the 5,130-gene cohort run; synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
+**Cost note:** a full v2 deep-dive is ~$1.3 on Sonnet 4.6 per gene (median; $1.44 mean across the 5,332-gene deep-dive cohort; synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
 
 ## Triage body-fetch: Unpaywall + PDF fallback
-`plan_trim_select` abstract-triage fetches a `worth_fetching` paper's body via a 3-step fall-through: **PMC JATS** (`pmc_id` or PMID→PMCID eLink) → **Unpaywall OA PDF**. The Unpaywall step tries **all** OA PDF locations best-quality-first (so a bot-blocked publisher copy can fall through to a repository copy), parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber; gutter-based 2-column split + font-aware run-in/bold heading detection → the JATS `SectionName` enum). Any failure → abstract fallback, never crashes the batch.
+`plan_trim_select` abstract-triage fetches a `worth_fetching` paper's body via a 3-step fall-through: **PMC JATS** (`pmc_id` or PMID→PMCID eLink) → **Unpaywall OA PDF**. The Unpaywall step tries up to 4 OA PDF locations (`_MAX_PDF_LOCATIONS`) best-quality-first (so a bot-blocked publisher copy can fall through to a repository copy), parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber; gutter-based 2-column split + font-aware run-in/bold heading detection → the JATS `SectionName` enum). Any failure → abstract fallback, never crashes the batch.
 - **Dep**: `pdfplumber` (MIT); `pypdfium2` pinned `<5.9.0` via `[tool.uv] constraint-dependencies` (supply-chain cooldown — relax after it ages past 7 days).
 - **Binary cache**: `CachedHTTP.get_bytes` → `data/external/blob_cache/` (gitignored — copyrighted PDFs, never commit); streamed size+page caps; per-host courtesy interval.
 - **Config**: `UNPAYWALL_EMAIL` (optional). Keep the polite, identifiable User-Agent — no browser impersonation; ASH/Wiley 403 us regardless and fall back to abstract.
@@ -285,11 +285,13 @@ statement:
 
 ### `run_id` conventions
 
-- `genome_full_sonnet_ncbi_v1` — canonical 2026-05-12 Sonnet sweep.
-- `*__resolver_v3_fix` suffix — corrected re-runs that supersede a
-  parent run for affected cells (originals preserved). Analytics
-  that should reflect the fix must COALESCE-prefer the fix run
-  over its parent; see CLAUDE.md for the canonical query.
+- `genome_full_sonnet_ncbi_v2` — canonical genome-wide Sonnet triage
+  sweep (`CANONICAL_TRIAGE_RUN_ID` in `scripts/triage_runner.py`); the
+  only genome-wide run in public D1.
+- `genome_full_sonnet_ncbi_v1` (+ its `__resolver_v3_fix` re-runs) — the
+  legacy 2026-05-12 sweep, removed from public D1 on 2026-06-01. Only
+  analyses that deliberately read the old v1 rows need the COALESCE
+  query in CLAUDE.md.
 - **Four `pubmed_ncbi` rescue lanes**, disjoint by construction, together
   giving every Sonnet-`no` gene that the universe gate can drop a
   literature-augmented second look: `genome_full_sonnet_pubmed_ncbi_v1`

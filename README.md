@@ -62,12 +62,12 @@ Two agents, in sequence.
 
 **Triage** classifies each of 19,324 protein-coding genes as surface, contextually surface, or non-surface, with a structured reason for every call. It is pure inference with no tools, cheap enough to run across the whole genome. On SurfaceBench, a 147-protein benchmark enriched for disagreement between the five reference databases, it classifies surface status more accurately than any of them individually or in combination, and it recovered 960 candidate surface proteins that appear in none of them.
 
-**Deep dive** then reads the retrieved literature for the 5,130 candidates that survive triage or carry a database surface call. It runs in three stages: deterministic literature retrieval, concurrent block builders, and a synthesizer that assembles the record. Every claim is anchored to verbatim quotes.
+**Deep dive** then reads the retrieved literature for the 5,332 candidates that survive triage or carry a database surface call. It runs in three stages: deterministic literature retrieval, concurrent block builders, and a synthesizer that assembles the record. Every claim is anchored to verbatim quotes.
 
 The result is 1,782 high-confidence surface proteins and 1,243 with weaker or context-dependent evidence. On held-out sets of clinical and viral-entry targets, the pipeline recovered 98–100% of established surface antigens.
 
 ```
-19,324 genes ──▶ triage agent ──▶ 5,130 candidates ──▶ deep-dive pipeline ──▶ records
+19,324 genes ──▶ triage agent ──▶ 5,332 candidates ──▶ deep-dive pipeline ──▶ records
                  yes/contextual/no                     retrieval → builders → synthesis
                                                                                  │
                                                         viewer + public API ◀────┘
