@@ -54,7 +54,7 @@ NEW_FILES = [
     TMP_DIR / "triage-benchmark-with-reasoning.tsv",
 ]
 README_PATH = TMP_DIR / "README.md"
-# Reproducibility replicates (Supplementary Figure 15): the frozen bundle, tarred
+# Reproducibility replicates (Supplementary Figure 16): the frozen bundle, tarred
 # deterministically so an unchanged bundle re-syncs as "unchanged".
 REPLICATES_BUNDLE = Path(__file__).resolve().parents[2] / "data/processed/deep_dive_concordance_v1"
 REPLICATES_TARBALL = TMP_DIR / "deep-dive-reproducibility-replicates-v1.tar.gz"  # built by _build_replicates_tarball
@@ -299,7 +299,7 @@ _DESCRIPTION_HTML = (
     "sampled deep-dive genes, the published record as served when the "
     "study ran, a full from-scratch re-run with the same prompts, and a "
     "fixed-evidence replay (builders + synthesizer only). Source data for "
-    "Supplementary Figure 15; also queryable at /v1/replicates.<br><br>"
+    "Supplementary Figure 16; also queryable at /v1/replicates.<br><br>"
     "The manuscript will be added to this record in a later draft update "
     "against the same reserved DOI (10.5281/zenodo.20805384). All data "
     "files are reproducible from the public read-only API at "

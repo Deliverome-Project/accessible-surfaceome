@@ -56,7 +56,7 @@ FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_featu
 # while the network pulls live in the export. Supersedes the M1-limited FEATURES_TSV
 # for S9 (which under-covered the zero-DB Sonnet rescues and lacked their topology).
 FEATURES_FULL_TSV = ROOT / "data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv"
-EVIDENCE_TYPES_TSV = ROOT / "data/processed/deep_dive/surface_evidence_types.tsv"
+SURFACE_METHODS_TSV = ROOT / "data/processed/deep_dive/surface_evidence_methods.tsv"
 POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
 # Per-gene deep-dive record facets, exported from public D1 by
 # scripts/export_deep_dive_figure_source.py. Re-run that after a sweep batch to
@@ -101,8 +101,8 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         src["det_detail"] = pd.read_csv(DET_DETAIL_TSV, sep="\t")
     if FEATURES_FULL_TSV.is_file():
         src["features_full"] = pd.read_csv(FEATURES_FULL_TSV, sep="\t")
-    if EVIDENCE_TYPES_TSV.is_file():
-        src["evidence_types"] = pd.read_csv(EVIDENCE_TYPES_TSV, sep="\t")
+    if SURFACE_METHODS_TSV.is_file():
+        src["surface_methods"] = pd.read_csv(SURFACE_METHODS_TSV, sep="\t")
     return src
 
 
@@ -485,7 +485,7 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
 
     Columns: gene_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id,
     category, subcategory, surface_call_reason, induction_trigger,
-    low_endogenous_expression, state_dependence.
+    low_endogenous_expression, state_dependence, confidence.
 
     ``low_endogenous_expression`` + ``state_dependence`` drive Panel b's
     cross-cutting cell-state view: state-dependence is a FACET (the "when is it
@@ -497,7 +497,7 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "category", "subcategory", "facet",
             "surface_call_reason", "induction_trigger",
-            "low_endogenous_expression", "state_dependence"]
+            "low_endogenous_expression", "state_dependence", "confidence"]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:
         return _empty_deep_dive_frame(cols)
@@ -519,6 +519,9 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
         "low_endogenous_expression": pd.to_numeric(
             dd["low_endogenous_expression"], errors="coerce").astype("Int64"),
         "state_dependence": dd["state_dependence"].astype(str),
+        # Certainty in the surface call, in either direction — panel a's
+        # confidence strip. Distinct from the tier: a `no` call carries it too.
+        "confidence": dd["confidence"].astype(str),
     })
     # Stable IDs from the catalog (candidate_universe), keyed by symbol.
     cat = src.get("catalog")
@@ -889,7 +892,7 @@ def build_positive_control_db_coverage_bars(src: dict[str, pd.DataFrame]) -> pd.
 def build_surfaceome_deterministic_features(
     src: dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
-    """Per-gene deterministic features for Supp Fig 13, faceted by the REAL
+    """Per-gene deterministic features for Supp Fig 15, faceted by the REAL
     deep-dive tier — sourced from the deep-dive RECORDS so every deep-dived
     gene has full coverage.
 
@@ -968,79 +971,121 @@ def build_surfaceome_deterministic_features(
 
 
 
+# Method categories for the surface-evidence figure and the catalog's
+# surface-method filter. The record's ``method_family`` and
+# ``method_subclass`` overlap (a cell-surface-capture experiment is filed
+# under the biotinylation, glycoproteomics or mass-spec family depending on
+# the paper's wording), so the rules are tried in order and the first match
+# wins: the subclass decides where it does and the family breaks ties.
+# Proximity labeling comes first — it uses biotin chemistry too, but is a
+# distinct method readers look for by name. Anything unmatched is "other".
+#
+# The same ordered table is copied verbatim into the Worker
+# (cloudflare/workers/surfaceome_api/src/index.js) and the viewer
+# (viewer/lib/deep-dive-fields.ts); tests/test_surface_method_rules_sync.py
+# fails if the three copies drift.
+SURFACE_METHOD_RULES: list[tuple[str, str, str]] = [
+    ("family", "proximity_labeling", "proximity_labeling"),
+    ("subclass", "surface_biotinylation", "surface_biotin_pulldown"),
+    ("subclass", "cell_surface_capture", "cell_surface_capture_ms"),
+    ("subclass", "N_glycoproteomics", "cell_surface_capture_ms"),
+    ("family", "glycoproteomics", "cell_surface_capture_ms"),
+    ("subclass", "live_cell_flow", "flow_cytometry"),
+    ("subclass", "fixed_cell_flow", "flow_cytometry"),
+    ("family", "flow_cytometry", "flow_cytometry"),
+    ("subclass", "nonpermeabilized_IF", "immunofluorescence"),
+    ("subclass", "permeabilized_IF", "immunofluorescence"),
+    ("family", "immunofluorescence", "immunofluorescence"),
+    ("subclass", "IHC", "immunohistochemistry"),
+    ("subclass", "IHC_membranous", "immunohistochemistry"),
+    ("family", "immunohistochemistry", "immunohistochemistry"),
+    ("family", "functional_surface_assay", "functional_surface_assay"),
+]
+
+_SURFACE_METHOD_FAMILY = {
+    "functional_surface_assay": "functional",
+    "flow_cytometry": "imaging_cytometry",
+    "immunofluorescence": "imaging_cytometry",
+    "immunohistochemistry": "imaging_cytometry",
+    "surface_biotin_pulldown": "labeling_capture",
+    "proximity_labeling": "labeling_capture",
+    "cell_surface_capture_ms": "labeling_capture",
+    "other": "other",
+}
+
+
+def _surface_method(family: str, subclass: str) -> str:
+    for field, value, method in SURFACE_METHOD_RULES:
+        if (family if field == "family" else subclass) == value:
+            return method
+    return "other"
+
+
 def build_surface_evidence_assay_types(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """Per-assay-type prevalence, and how often each assay stood alone.
+    """Per-method surface evidence, split into direct and supporting.
 
-    One row per ``evidence_type`` seen on a SUPPORTING surface-expression
-    claim, restricted to genes the deep dive placed in a surface-positive
-    tier (canonical / likely / low). Three counts per assay:
+    Source is the record's ``surface_evidence.methods`` block: one row per
+    experiment, each judged by the methods builder as
+    ``direct_surface_accessibility`` (an antibody or probe reached the
+    protein from outside an intact cell) or ``supports_surface_localization``
+    (places it at the plasma membrane without showing the outside is
+    reachable). Rows judged membrane-association, expression-only or weak
+    are left out. The evidence grade is graded from the same block, so a gene
+    counted as direct here almost always carries a ``direct_*`` grade.
 
-    * ``genes_used``  — genes with at least one supporting row of this assay.
-    * ``genes_sole``  — genes where it is the ONLY assay supporting the
-      surface call. This is the "only evidence" measure.
-    * ``genes_sole_primary`` — the same restricted to primary-tier rows: the
-      assay is the only one carrying *direct* support, so removing it leaves
-      the call with no primary evidence. This is the "decisive" measure, and
-      it is deliberately separate from ``genes_sole`` because an assay can be
-      the lone primary source while secondary rows corroborate it.
+    Restricted to genes in the canonical or likely deep-dive tier — the
+    surface calls the catalog presets return. ``low`` is left out: it is
+    low or moderate accessibility on weak evidence, i.e. unlikely surface,
+    so counting it would mix maybe-surface genes into "what established the
+    surface calls". One row per method category:
 
-    Scoping matters here. ``claim_type='surface_expression'`` is applied
-    upstream in the exporter — tissue-expression and topology rows reuse the
-    same assay vocabulary but say nothing about surface accessibility, so
-    counting them would inflate every assay uniformly. ``direction='supports'``
-    excludes refuting and ambiguous rows, since an assay that argues *against*
-    surface localization is not evidence the call rests on. The tier filter
-    keeps the denominator to genes that actually have a surface call to be
-    decisive about.
+    * ``genes_direct`` — genes with at least one direct row of this method.
+    * ``genes_supporting_only`` — genes with a supporting row of this method
+      and no direct one.
+    * ``genes_sole_direct`` — genes where this is the ONLY method with a
+      direct row: remove it and the gene has no direct surface evidence left.
+    * ``pct_sole_direct`` — ``genes_sole_direct / genes_direct``.
 
-    Columns: ``evidence_type, genes_used, genes_sole, genes_sole_primary,
-    pct_sole, pct_sole_primary, n_rows``.
+    Columns: ``method, family, genes_direct, genes_supporting_only,
+    genes_sole_direct, pct_sole_direct, n_surface_genes,
+    n_genes_any_direct``.
     """
-    cols = ["evidence_type", "genes_used", "genes_sole", "genes_sole_primary",
-            "pct_sole", "pct_sole_primary", "n_rows"]
-    ev = src.get("evidence_types")
+    cols = ["method", "family", "genes_direct", "genes_supporting_only",
+            "genes_sole_direct", "pct_sole_direct", "n_surface_genes",
+            "n_genes_any_direct"]
+    m = src.get("surface_methods")
     dd = src.get("deep_dive")
-    if ev is None or ev.empty or dd is None or dd.empty:
+    if m is None or m.empty or dd is None or dd.empty:
         return pd.DataFrame(columns=cols)
 
-    tier_of = {str(r["gene_symbol"]): _dd_tier(r) for _, r in dd.iterrows()}
-    SURFACE_TIERS = {"canonical", "likely", "low"}
+    surface = {str(r["gene_symbol"]) for _, r in dd.iterrows()
+               if _dd_tier(r) in {"canonical", "likely"}}
+    direct_rel, supports_rel = "direct_surface_accessibility", "supports_surface_localization"
+    m = m[m["gene_symbol"].astype(str).isin(surface)
+          & m["accessibility_relevance"].isin([direct_rel, supports_rel])].copy()
+    m["method"] = [_surface_method(f, s) for f, s in
+                   zip(m["method_family"], m["method_subclass"], strict=True)]
+    m["is_direct"] = m["accessibility_relevance"] == direct_rel
 
-    ev = ev.copy()
-    ev["tier"] = ev["gene_symbol"].astype(str).map(tier_of)
-    sup = ev[(ev["direction"] == "supports") & ev["tier"].isin(SURFACE_TIERS)]
-    if sup.empty:
-        return pd.DataFrame(columns=cols)
+    per_gene = m.groupby(["gene_symbol", "method"])["is_direct"].any().reset_index()
+    direct_sets = per_gene[per_gene["is_direct"]].groupby("gene_symbol")["method"].apply(set)
+    sole = Counter(next(iter(s)) for s in direct_sets if len(s) == 1)
 
-    by_gene = sup.groupby("gene_symbol")["evidence_type"].apply(set)
-    prim = sup[sup["evidence_tier"] == "primary"]
-    by_gene_primary = prim.groupby("gene_symbol")["evidence_type"].apply(set)
-
-    used: Counter = Counter()
-    sole: Counter = Counter()
-    for types in by_gene:
-        used.update(types)
-        if len(types) == 1:
-            sole[next(iter(types))] += 1
-    sole_primary: Counter = Counter()
-    for types in by_gene_primary:
-        if len(types) == 1:
-            sole_primary[next(iter(types))] += 1
-
-    n_rows = sup.groupby("evidence_type")["n_rows"].sum().to_dict()
-    out = pd.DataFrame([
-        {
-            "evidence_type": t,
-            "genes_used": used[t],
-            "genes_sole": sole.get(t, 0),
-            "genes_sole_primary": sole_primary.get(t, 0),
-            "pct_sole": round(100.0 * sole.get(t, 0) / used[t], 2),
-            "pct_sole_primary": round(100.0 * sole_primary.get(t, 0) / used[t], 2),
-            "n_rows": int(n_rows.get(t, 0)),
-        }
-        for t in used
-    ])
-    return out.sort_values("genes_used", ascending=False).reset_index(drop=True)
+    rows = []
+    for method, grp in per_gene.groupby("method"):
+        n_direct = int(grp["is_direct"].sum())
+        rows.append({
+            "method": method,
+            "family": _SURFACE_METHOD_FAMILY[method],
+            "genes_direct": n_direct,
+            "genes_supporting_only": int((~grp["is_direct"]).sum()),
+            "genes_sole_direct": sole.get(method, 0),
+            "pct_sole_direct": round(100.0 * sole.get(method, 0) / n_direct, 2) if n_direct else 0.0,
+            "n_surface_genes": len(surface),
+            "n_genes_any_direct": len(direct_sets),
+        })
+    out = pd.DataFrame(rows, columns=cols)
+    return out.sort_values("genes_direct", ascending=False).reset_index(drop=True)
 
 
 BUILDERS: dict[str, callable] = {

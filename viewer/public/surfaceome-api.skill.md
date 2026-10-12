@@ -76,7 +76,7 @@ Release **1.0.0** (the 2026-08-15 Zenodo deposit, DOI `10.5281/zenodo.20805384`)
 
 ### Reproducibility replicates
 
-**Not published records** — never use these in place of `/v1/genes/{SYMBOL}`. For the run-to-run reproducibility analysis (Supplementary Figure 15), 50 deep-dive genes drawn at random were re-analysed, and each is held three ways: `published_snapshot` (the published record as served when the study ran), `full_rerun` (the whole pipeline from scratch, same prompts) and `fixed_evidence_replay` (section builders + synthesizer re-run on the published evidence). Every response carries `reproducibility_replicate: true`.
+**Not published records** — never use these in place of `/v1/genes/{SYMBOL}`. For the run-to-run reproducibility analysis (Supplementary Figure 16), 50 deep-dive genes drawn at random were re-analysed, and each is held three ways: `published_snapshot` (the published record as served when the study ran), `full_rerun` (the whole pipeline from scratch, same prompts) and `fixed_evidence_replay` (section builders + synthesizer re-run on the published evidence). Every response carries `reproducibility_replicate: true`.
 
 | Method | Path | Returns | TTL |
 |---|---|---|---|

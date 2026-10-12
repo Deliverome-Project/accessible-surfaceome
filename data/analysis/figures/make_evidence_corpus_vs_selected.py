@@ -184,7 +184,7 @@ def _fetch_tsv(url: str) -> pd.DataFrame:
 # the clearest signal is `low` collapsing from ~60% to ~11% across strata —
 # sparse literature produces weak calls, not negative ones.
 #
-# Tier colours MUST match Figure 5a and Supp S13; a tier name carrying a
+# Tier colours MUST match Figure 5a and Supp S14; a tier name carrying a
 # different colour across figures is exactly the inconsistency a reviewer
 # caught on S11.
 _STRATA_EDGES = [0, 75, 100, 150, 200, 10**9]

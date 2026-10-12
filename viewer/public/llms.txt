@@ -40,7 +40,7 @@ Every distinct state the API served for a gene (record, evidence ledger, Markdow
 
 ## Reproducibility replicates
 
-Not published records. 50 deep-dive genes drawn at random were re-analysed for the run-to-run reproducibility analysis (Supplementary Figure 15): the published record as served when the study ran, a full from-scratch re-run with the same prompts, and a fixed-evidence replay. Every response carries `reproducibility_replicate: true`; the published record stays at `/v1/genes/{SYMBOL}`.
+Not published records. 50 deep-dive genes drawn at random were re-analysed for the run-to-run reproducibility analysis (Supplementary Figure 16): the published record as served when the study ran, a full from-scratch re-run with the same prompts, and a fixed-evidence replay. Every response carries `reproducibility_replicate: true`; the published record stays at `/v1/genes/{SYMBOL}`.
 
 - [Replicate studies](https://api.deliverome.org/surfaceome/v1/replicates): every study with its replicate kinds and genes.
 - [A gene's replicates](https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates): the replicates held for one gene, with a link to each (404 if the gene was not sampled).

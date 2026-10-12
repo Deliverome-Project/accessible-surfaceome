@@ -1,34 +1,35 @@
-"""How common each experimental assay is in the surface-evidence ledger,
-and how often it was the only thing holding a surface call up.
+"""Which methods established the surface calls, and how often each one
+stood alone as the only direct evidence.
 
-Two questions a reader of the catalog has but cannot currently answer:
-which experiments actually established these surface calls, and which calls
-rest on a single kind of experiment. The catalog exposes ``evidence_grade``
-(how direct / how many methods) but never names the assay, so "direct,
-single method" hides whether that method was flow cytometry or a surfaceome
-mass-spec hit.
+Two questions a reader of the catalog has but cannot answer from the
+evidence grade alone: which experiments showed the protein is on the
+surface, and which calls rest on a single kind of experiment. The grade
+says how many direct methods a gene has; this figure names them.
 
-Panel a is prevalence — genes with at least one supporting surface-expression
-claim from each assay. Panel b is the share of those genes for which the
-assay was the ONLY primary-tier assay supporting the call: pull it and the
-call has no direct experimental support left. That second number is the
-interesting one, because prevalence mostly tracks how common a technique is
-in the literature, while standing alone tracks how much weight the catalog
-is putting on it.
+Source is the record's ``surface_evidence.methods`` block (one row per
+experiment), not the evidence ledger's ``evidence_type``. The ledger names
+the technique in a quote, so it counts permeabilized immunofluorescence and
+whole-cell proteomics as surface assays; the methods block judges each
+experiment as
 
-Scope, all applied upstream or here and worth stating because each one
-changes the answer:
+* **direct** — an antibody or probe reached the protein from outside an
+  intact cell (live or non-permeabilized staining of an extracellular
+  epitope or tag, membrane-impermeable labeling, a functional readout that
+  needs surface access), or
+* **supporting** — places the protein at the plasma membrane without
+  showing the outside is reachable (membrane-rim staining, fluorescent
+  fusions, membranous IHC; sectioning exposes intracellular epitopes, so
+  IHC is never direct).
 
-* ``claim_type = 'surface_expression'`` only. Tissue-expression and topology
-  rows reuse the same assay vocabulary but say nothing about whether the
-  protein reaches the surface; counting them inflates every assay uniformly.
-* ``direction = 'supports'`` only. An assay arguing *against* surface
-  localization is not evidence the call rests on.
-* Genes in a surface-positive tier (canonical / likely / low), so "decisive"
-  means decisive for an actual surface call.
-* Assays under ``MIN_GENES`` genes are dropped — a 12% sole rate over 26
-  genes is noise, and plotting it next to a rate over 2,796 invites a
-  comparison the data cannot support.
+Panel a counts genes with direct evidence from each method (solid) and
+genes where that method only reached the supporting level (light). Panel b
+is the share of direct-evidence genes for which the method was the ONLY
+direct method: remove it and the gene has no direct surface evidence left.
+
+Color is assay family: imaging and cytometry; surface labeling or capture;
+functional surface assays; other. Genes are restricted to the canonical and
+likely deep-dive tiers; ``low`` (weak evidence, unlikely surface) is left out. The category rules live in
+``scripts/build_figure_tsvs.py:build_surface_evidence_assay_types``.
 
 # Reproduction: https://gist.github.com/beccajcarlson/141184baa53bc889d2c08692b931982b
 """
@@ -41,6 +42,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.colors import to_rgb
+from matplotlib.legend_handler import HandlerTuple
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
@@ -54,116 +57,136 @@ from accessible_surfaceome.audit._plotting_config import (  # noqa: E402
 SLUG = "surface_evidence_assay_types"
 DATA_TSV = ROOT / "data/processed/figures/surface_evidence_assay_types.tsv"
 OUT_DIR = ROOT / "data/analysis/figures"
+GIST_URL = "https://gist.github.com/beccajcarlson/141184baa53bc889d2c08692b931982b"
 
-# Below this the percentage in panel b is dominated by its denominator.
-MIN_GENES = 50
-
-# Assays that put a probe on an intact cell and therefore speak directly to
-# surface accessibility, vs everything else (reviews, functional readouts,
-# structures, transcript measurements). The split is the point of the figure:
-# a call resting on a direct assay is a different object from one resting on
-# a review assertion, even at the same evidence_grade.
-DIRECT_SURFACE_ASSAYS = {
-    "flow_cytometry",
-    "surface_biotinylation",
-    "mass_spec_surfaceome",
-    "immunofluorescence",
-    "immunohistochemistry",
-}
+# Below this many direct genes the panel-b share is dominated by its
+# denominator (immunohistochemistry has 2), so it is printed as a count.
+MIN_DIRECT_GENES = 25
 
 LABEL = {
-    "functional_assay": "Functional assay",
-    "immunofluorescence": "Immunofluorescence",
-    "review_assertion": "Review assertion",
+    "functional_surface_assay": "Functional surface assay",
     "flow_cytometry": "Flow cytometry",
+    "immunofluorescence": "Immunofluorescence",
     "immunohistochemistry": "Immunohistochemistry",
-    "western_blot": "Western blot",
-    "mass_spec_surfaceome": "Surfaceome mass spec",
-    "loss_of_function_phenotype": "Loss-of-function",
-    "surface_biotinylation": "Surface biotinylation",
-    "cryo_em": "Cryo-EM",
-    "computational_prediction": "Computational prediction",
-    "crystal_structure": "Crystal structure",
-    "orthology": "Orthology",
-    "db_annotation": "Database annotation",
+    "surface_biotin_pulldown": "Surface biotin pulldown",
+    "proximity_labeling": "Proximity labeling",
+    "cell_surface_capture_ms": "Cell-surface capture MS",
+    "other": "Other",
+}
+# Short gloss printed under the two catch-all labels.
+DESC = {
+    "functional_surface_assay": "toxin, antibody, ADC or CAR-T acting on\nlive cells; radioligand binding; shedding",
+    "other": "cell-surface ELISA, CITE-seq tags,\nimmuno-EM, impermeable crosslinkers",
+}
+FAMILY_LABEL = {
+    "imaging_cytometry": "Imaging and cytometry",
+    "labeling_capture": "Surface labeling or capture",
+    "functional": "Functional surface assay",
+    "other": "Other",
+}
+FAMILY_COLOR = {
+    "imaging_cytometry": COLORS["secondary"],   # teal
+    "labeling_capture": COLORS["primary"],      # maroon
+    "functional": COLORS["accent"],             # amber
+    "other": COLORS["quaternary"],              # lavender
 }
 
-COLOR_DIRECT = COLORS["secondary"]    # teal — direct surface assay
-COLOR_INDIRECT = "#C7BDB6"            # warm grey — everything else
+
+def tint(color: str, f: float = 0.6) -> tuple[float, float, float]:
+    """Lighter shade of ``color`` for the supporting-only segment."""
+    r, g, b = to_rgb(color)
+    return (r + (1 - r) * f, g + (1 - g) * f, b + (1 - b) * f)
 
 
 def load() -> pd.DataFrame:
     df = pd.read_csv(DATA_TSV, sep="\t")
-    df = df[df["genes_used"] >= MIN_GENES].copy()
-    df["label"] = df["evidence_type"].map(lambda t: LABEL.get(t, t.replace("_", " ").capitalize()))
-    df["is_direct"] = df["evidence_type"].isin(DIRECT_SURFACE_ASSAYS)
-    return df.sort_values("genes_used", ascending=True).reset_index(drop=True)
+    df["label"] = df["method"].map(LABEL)
+    df["color"] = df["family"].map(FAMILY_COLOR)
+    df["pct_plot"] = df["pct_sole_direct"].where(df["genes_direct"] >= MIN_DIRECT_GENES, 0.0)
+    # Rows follow panel b, highest at the top; barh draws index 0 at the
+    # bottom, hence ascending. Direct count breaks ties.
+    return df.sort_values(["pct_plot", "genes_direct"]).reset_index(drop=True)
 
 
 def _panel_label(ax, letter: str) -> None:
-    ax.text(-0.02, 1.04, letter, transform=ax.transAxes, fontsize=24,
+    ax.text(-0.02, 1.02, letter, transform=ax.transAxes, fontsize=24,
             fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
 def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 15, "axes.labelsize": 17.5, "axes.titlesize": 0,
-        "xtick.labelsize": 15.5, "ytick.labelsize": 15.5, "legend.fontsize": 15.5,
+        "font.size": 14, "axes.labelsize": 15.5, "axes.titlesize": 0,
+        "xtick.labelsize": 14, "ytick.labelsize": 15, "legend.fontsize": 13.5,
     })
     df = load()
-    colors = [COLOR_DIRECT if d else COLOR_INDIRECT for d in df["is_direct"]]
-
     fig, (ax_a, ax_b) = plt.subplots(
-        1, 2, figsize=(14, 6.8), sharey=True,
-        gridspec_kw={"width_ratios": [1.35, 1.0], "wspace": 0.08},
+        1, 2, figsize=(15, 6.2), sharey=True,
+        gridspec_kw={"width_ratios": [1.45, 1.0], "wspace": 0.06},
     )
+    height = 0.58
+    total = df["genes_direct"] + df["genes_supporting_only"]
+    # Row positions. A glossed label is a three-line block centered on its
+    # bar, so it gets extra room on both sides.
+    gap = [0.55 if m in DESC else 0.0 for m in df["method"]]
+    ys = [0.0]
+    for i in range(1, len(df)):
+        ys.append(ys[-1] + 1.0 + gap[i - 1] + gap[i])
+    df["y"] = ys
 
-    ax_a.barh(df["label"], df["genes_used"], color=colors, edgecolor="none")
-    for y, (n, rows) in enumerate(zip(df["genes_used"], df["n_rows"], strict=True)):
-        ax_a.text(n + 40, y, f"{n:,}", va="center", ha="left",
-                  fontsize=14, color=COLORS["neutral"])
-    ax_a.set_xlabel("Genes with supporting\nsurface evidence")
-    ax_a.set_xlim(0, df["genes_used"].max() * 1.16)
+    ax_a.barh(df["y"], df["genes_direct"], height=height, color=df["color"])
+    ax_a.barh(df["y"], df["genes_supporting_only"], left=df["genes_direct"],
+              height=height, color=[tint(c) for c in df["color"]])
+    for _, r in df.iterrows():
+        ax_a.text(r.genes_direct + r.genes_supporting_only + 30, r.y,
+                  f"{r.genes_direct:,} + {r.genes_supporting_only:,}",
+                  va="center", ha="left", fontsize=13, color=COLORS["neutral"])
+    ax_a.set_xlim(0, total.max() * 1.3)
+    ax_a.set_xlabel("Genes called canonical or likely\n(direct + supporting only)")
 
-    ax_b.barh(df["label"], df["pct_sole_primary"], color=colors, edgecolor="none")
-    for y, p in enumerate(df["pct_sole_primary"]):
-        ax_b.text(p + 0.12, y, f"{p:.1f}%", va="center", ha="left",
-                  fontsize=14, color=COLORS["neutral"])
-    ax_b.set_xlabel("Share of those genes where it was\nthe only assay supporting the call")
-    ax_b.set_xlim(0, max(df["pct_sole_primary"].max() * 1.22, 1))
+    ax_b.barh(df["y"], df["pct_plot"], height=height, color=df["color"])
+    for _, r in df.iterrows():
+        text = (f"{r.pct_sole_direct:.1f}%" if r.genes_direct >= MIN_DIRECT_GENES
+                else f"{r.genes_direct} direct genes")
+        ax_b.text(r.pct_plot + 0.5, r.y, text, va="center", ha="left",
+                  fontsize=13, color=COLORS["neutral"])
+    ax_b.set_xlim(0, df["pct_plot"].max() * 1.3)
+    ax_b.set_xlabel("Share of direct-evidence genes where\nit was the only direct method")
 
+    # Two-line tick labels for the catch-all categories: the name, then a
+    # muted gloss underneath, both right-aligned against the axis.
+    ax_a.set_yticks(df["y"],
+                    [lbl + "\n\n" if m in DESC else lbl for m, lbl in zip(df["method"], df["label"], strict=True)])
+    for m, y in zip(df["method"], df["y"], strict=True):
+        if m in DESC:
+            ax_a.annotate(DESC[m], xy=(0, y), xycoords=("axes fraction", "data"),
+                          xytext=(-12, -3), textcoords="offset points", ha="right", va="top",
+                          fontsize=13, color=COLORS["neutral"], linespacing=1.15)
+
+    ax_a.set_ylim(-0.6 - gap[0], df["y"].max() + 0.6 + gap[-1])
     for ax in (ax_a, ax_b):
         sns.despine(ax=ax, top=True, right=True)
         ax.grid(axis="y", visible=False)
-
-    handles = [
-        plt.Rectangle((0, 0), 1, 1, color=COLOR_DIRECT),
-        plt.Rectangle((0, 0), 1, 1, color=COLOR_INDIRECT),
-    ]
-    ax_a.legend(handles, ["Probes an intact cell", "Indirect / not cell-surface specific"],
-                loc="lower right", frameon=False, fontsize=15.5,
-                bbox_to_anchor=(1.0, 0.02))
-
     _panel_label(ax_a, "a")
     _panel_label(ax_b, "b")
 
-    fig.tight_layout()
-    # Footnote sits just below the lower of the two x-axis labels.
-    renderer = fig.canvas.get_renderer()
-    label_y0 = min(ax.xaxis.label.get_window_extent(renderer).y0 for ax in (ax_a, ax_b))
-    fig.text(
-        0.5, label_y0 / fig.bbox.height - 0.008,
-        f"Supporting surface-expression claims only, over genes in a surface-positive tier;\n"
-        f"assays under {MIN_GENES} genes omitted. \"Only assay\" counts primary-tier support.",
-        ha="center", va="top", fontsize=13.5, style="italic", color=COLORS["neutral"],
+    handles = [(plt.Rectangle((0, 0), 1, 1, color=FAMILY_COLOR[f]),
+                plt.Rectangle((0, 0), 1, 1, color=tint(FAMILY_COLOR[f]))) for f in FAMILY_LABEL]
+    legend = fig.legend(
+        handles, list(FAMILY_LABEL.values()),
+        handler_map={tuple: HandlerTuple(ndivide=None, pad=0)},
+        title="Solid = direct (reached from outside an intact cell)    "
+              "Light = supporting only (at the membrane, outside not shown)",
+        loc="lower center", bbox_to_anchor=(0.55, 0.96), ncol=4, frameon=False,
+        fontsize=13.5, title_fontsize=13.5, handlelength=2.4, columnspacing=1.6,
     )
+    legend.get_title().set_color(COLORS["neutral"])
     return fig, (ax_a, ax_b)
 
 
 def main() -> None:
     fig, _ = make_plot()
-    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"), gist_url=GIST_URL)
 
 
 if __name__ == "__main__":

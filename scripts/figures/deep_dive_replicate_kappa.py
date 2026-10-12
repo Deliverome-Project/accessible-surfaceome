@@ -1,4 +1,4 @@
-"""Supplementary Figure 15 — deep-dive run-to-run reliability as Cohen's kappa.
+"""Supplementary Figure 16 — deep-dive run-to-run reliability as Cohen's kappa.
 
 Fifty genes drawn at random from the deep-dive cohort were re-analysed two ways
 — a full re-run (solid) and a fixed-evidence replay (dotted) — and each of the

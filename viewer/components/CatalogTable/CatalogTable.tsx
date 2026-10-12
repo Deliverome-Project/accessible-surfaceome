@@ -924,6 +924,14 @@ export function CatalogTable({
         for (const f of DD_ENUM_FIELDS) {
           const sel = ddEnumFilters[f.key];
           if (sel.size === 0) continue;
+          if (f.multi) {
+            // Multi-valued facet (e.g. surface methods): pass when ANY of
+            // the gene's values is selected. A pre-v10 payload without the
+            // key can't be evaluated, so it drops out like a missing enum.
+            const vs = ddf[f.key] as string[] | undefined;
+            if (!Array.isArray(vs) || !vs.some((v) => sel.has(v))) return false;
+            continue;
+          }
           const v = ddf[f.key] as string | undefined;
           if (v == null || !sel.has(v)) return false;
         }

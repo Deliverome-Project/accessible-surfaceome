@@ -8,7 +8,7 @@
 # ]
 # ///
 """Reproduce ``triage_vs_deep_dive_reason.{pdf,png}`` — the three-panel
-triage → deep-dive comparison (Supplementary Figure 13) on the 5,332 genes
+triage → deep-dive comparison (Supplementary Figure 14) on the 5,332 genes
 with both a triage and a deep-dive record.
 
 **Layout.** Panels a and b sit side by side on top, sharing one five-tier

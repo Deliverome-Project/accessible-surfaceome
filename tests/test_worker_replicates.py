@@ -1,6 +1,6 @@
 """Exercise the Worker's reproducibility-replicate routes offline.
 
-The replicates (Supplementary Figure 15) live in public D1 ``deep_dive_replicate``
+The replicates (Supplementary Figure 16) live in public D1 ``deep_dive_replicate``
 and are served API-only. What this pins: every response is labelled as a
 replicate, the per-record route attaches the shared deep-dive tier and returns
 the stored record untouched, input is validated before D1 is read, and the
