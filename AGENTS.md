@@ -172,7 +172,12 @@ refuses to run; [`scripts/cloud/drop_seed_revisions.py`](scripts/cloud/drop_seed
 (dry-run by default, `--execute`) removes any `seed:zenodo-1.0.0` rows an
 earlier run left and renumbers the affected genes' later revisions down
 by one. `publish_record` archives after every publish (needs
-`ARCHIVE_BYPASS_TOKEN`; a miss warns, never fails the publish). Anything
+`ARCHIVE_BYPASS_TOKEN`; a miss warns, never fails the publish). Records' deterministic blocks go stale when a source
+table changes (the Worker never overwrites a baked block): after any change
+to `topology_public`, `compara_*`, `surface_bind_*` or `schweke_homomer_public`,
+run `scripts/audit/audit_record_deterministic_consistency.py` and republish its
+`stale_genes.json` with `scripts/cloud/refresh_deterministic_features_d1.py`.
+Compara is pinned to release 115 (`ensembl_compara_115`). Anything
 that writes `surface_annotation` directly, or bulk-updates a deterministic
 table the Worker joins at serve time, must be followed by
 `uv run python scripts/cloud/sweep_record_history.py --execute` or those
