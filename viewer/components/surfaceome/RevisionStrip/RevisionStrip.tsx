@@ -53,7 +53,7 @@ export function RevisionStrip({ revisions }: { revisions: Revisions }) {
         rel="noopener noreferrer"
         data-hint="Permanent link to exactly this version of the record. It never changes, even after the record is updated."
       >
-        Cite this version
+        Permanent link
       </a>
       {release?.zenodo_version_doi ? (
         <>
