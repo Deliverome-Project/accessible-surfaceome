@@ -199,8 +199,11 @@ def main() -> int:
     ap.add_argument(
         "--half",
         default="train",
-        choices=("train", "test"),
-        help="Which side of the by-gene split to load. The run_id records it.",
+        help="Which cohort file to load: reads sequences_{half}.json. "
+        "'train'/'test' are the frozen by-gene split; any other name is an "
+        "extension cohort (e.g. 'new' for genes a later sweep discovered). "
+        "An extension NEVER joins the test half — growing a holdout after it "
+        "has been read makes it no longer held out.",
     )
     ap.add_argument("--run-id", default="")
     ap.add_argument("--execute", action="store_true", help="Without this, dry-run.")
