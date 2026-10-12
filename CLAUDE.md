@@ -84,7 +84,7 @@ If you need a concrete example to communicate a pattern, use "gene X" / "gene Y"
 After a v2 annotate run validates, `scripts/annotate_gene.py` writes the record to **three** surfaces:
 
 1. `data/annotations/{symbol}.json` — the agent's canonical disk artifact (was previously gated behind `--persist`; now default-on, opt out with `--no-persist`).
-2. `viewer/public/data/surfaceome/{symbol}.json` — the viewer's offline / Worker-down fallback.
+2. `viewer/public/data/surfaceome/{symbol}.json` — an in-tree copy (only the three committed test fixtures are tracked; the viewer never serves from it).
 3. Public Cloudflare D1 `surface_annotation.annotation_json` — what the `api.deliverome.org/surfaceome/v1/genes/:symbol` Worker serves.
 
 Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.publish_record`](src/accessible_surfaceome/cloud/surface_annotation.py), default-on with `--no-publish` to skip. The D1 push is **auto-skipped** with a warning (not an error) when the `CLOUDFLARE_*` env vars aren't set, so CI without secrets still works.
@@ -682,16 +682,19 @@ Every gene is SSG'd through `generateStaticParams`; the loader at
 `viewer/lib/surfaceome.ts` fetches the public Worker at
 `api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` (source in
 `cloudflare/workers/surfaceome_api/`, bound to the `surfaceome_public`
-D1 mirror) **first** and falls back to the committed `fs` snapshot only
-on error — same record shape. Set `SURFACEOME_API_BASE=local` (or
-empty) to force fs-only.
+D1 mirror). There is **no on-disk fallback**: gene pages hard-require the
+live Worker, and `SURFACEOME_API_BASE=local` renders no gene pages at all
+(the offline CI smoke build). The three committed snapshots (ABCB9, C3,
+CD63) are test fixtures and the markdown exporter's offline input, kept
+equal to the live records; refresh them from public D1 when the record
+schema changes.
 
 ### Records source of truth — never edit a JSON snapshot without syncing D1
 
 **The live site reads D1, not the committed JSON.** The Worker serves
 each gene from public D1's `surface_annotation.annotation_json`; the
 `viewer/public/data/surfaceome/*.json` snapshots are only the in-tree
-source of truth + the on-error SSG fallback. So **a record change that
+fixtures. So **a record change that
 lands only in the JSON silently drifts the live site** — the page keeps
 rendering D1's stale row. This is exactly what blanked the Family chip:
 the `protein_family` → `llm_family` rename updated the JSON + viewer
@@ -735,9 +738,9 @@ the default `public` target (writes `{SYMBOL}.json` + `.md` under
 `.md`-only populate job (see below). It has two record sources, selected
 by `SURFACEOME_MD_SOURCE`:
 
-- **`snapshots`** (default) — renders `.md` next to each committed
-  `viewer/public/data/surfaceome/*.json`. Offline-safe; used by CI, local
-  dev, and the small curated fallback set.
+- **`snapshots`** — renders `.md` next to each committed
+  `viewer/public/data/surfaceome/*.json`. Offline-safe; used by CI and local
+  dev against the three test fixtures.
 - **`api`** — the D1-served model for the full cohort. Fetches the entire
   published set from the public Worker (`/v1/genes` list → `/v1/genes/{sym}`
   per record) and **materializes `{SYMBOL}.json` + `{SYMBOL}.md` at build
@@ -747,9 +750,8 @@ by `SURFACEOME_MD_SOURCE`:
 
 **Run `build:exports` with `SURFACEOME_MD_SOURCE=api`** (the default) so a
 large deep-dive sweep that publishes only to D1 still ships a `.md` (+ a
-materialized fs fallback) for every gene, without committing thousands of
-snapshots. Commit only a small curated snapshot set as the Worker-down
-offline fallback. Because this ops job is NOT part of the Pages build, a
+materialized JSON copy) for every gene, without committing thousands of
+snapshots. Commit only the three test-fixture snapshots. Because this ops job is NOT part of the Pages build, a
 newly-published gene's `.md` download only exists after someone runs this
 job — that's expected, not a bug to fix by wiring it into `npm run build`
 (the whole point of pulling it out was to keep the Pages 20k-file cap and
