@@ -1576,16 +1576,22 @@ async function handleGene(env, symbol) {
         // sites). Served as its own scalar pull rather than a JOIN so a
         // missing topology row degrades to nulls instead of dropping the
         // whole surface_bind block.
-        const sbTopoRow = await soft(
-          env.DB.prepare(
-            `SELECT per_residue_topology
-               FROM topology_public
-              WHERE uniprot_acc = ? AND species = 'human'
-                AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
-              LIMIT 1`
-          ).bind(uniprot).first(),
-          "topology_public_surface_bind",
-        );
+        // Pinned to the served canonical release: topology_public also holds
+        // unregistered runs from other predictors (a full DeepTMHMM2 sweep
+        // since 2026-09-27), and an unpinned LIMIT 1 could return any of them.
+        const sbTopoRow = canonicalTopoVersion
+          ? await soft(
+              env.DB.prepare(
+                `SELECT per_residue_topology
+                   FROM topology_public
+                  WHERE uniprot_acc = ? AND species = 'human'
+                    AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
+                    AND topology_version = ?
+                  LIMIT 1`
+              ).bind(uniprot, canonicalTopoVersion).first(),
+              "topology_public_surface_bind",
+            )
+          : null;
         const prt = sbTopoRow?.per_residue_topology ?? null;
         // DeepTMHMM alphabet, per the per_residue_topology column comment
         // in cloudflare/d1_public_schema.sql ("O/M/I/S/B chars").

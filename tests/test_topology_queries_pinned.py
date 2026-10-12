@@ -19,6 +19,7 @@ SCANNED = [
     *sorted((ROOT / "scripts/tsv-export").glob("*.py")),
     ROOT / "src/accessible_surfaceome/tools/surface_bind.py",
 ]
+WORKER = ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
 
 
 def _unpinned_queries(path: Path) -> list[int]:
@@ -29,6 +30,19 @@ def _unpinned_queries(path: Path) -> list[int]:
             if "FROM topology_public" in sql and "topology_version" not in sql:
                 bad.append(node.lineno)
     return bad
+
+
+def test_worker_topology_public_queries_pin_a_version() -> None:
+    """Same rule for the Worker's serve-time enrichment (template-literal SQL)."""
+    import re
+
+    src = WORKER.read_text(encoding="utf-8")
+    unpinned = [
+        src[: m.start()].count("\n") + 1
+        for m in re.finditer(r"`([^`]*FROM\s+topology_public[^`]*)`", src)
+        if "topology_version" not in m.group(1)
+    ]
+    assert not unpinned, f"unpinned topology_public queries in the Worker at lines {unpinned}"
 
 
 def test_topology_public_queries_pin_a_version() -> None:
