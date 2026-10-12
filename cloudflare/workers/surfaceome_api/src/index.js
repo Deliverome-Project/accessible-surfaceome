@@ -2017,6 +2017,24 @@ const SURFACE_METHOD_RULES = [
 // constructs can force surface localization the native protein never shows.
 const NATIVE_EXPRESSION_SYSTEMS = new Set(["endogenous", "mixed", "knock_in_tag"]);
 
+// Surface labeling / capture chemistries only work on intact cells with
+// membrane-impermeable reagents, so they count as live-cell unless a row is
+// explicitly permeabilized (the methods builder often labels them
+// "nonpermeabilized"). Flow and IF need an explicit live_cell label: their
+// "nonpermeabilized" rows are usually fixed cells. Functional assays never
+// count — find those under the method facet.
+const LIVE_BY_CHEMISTRY = new Set([
+  "surface_biotin_pulldown",
+  "cell_surface_capture_ms",
+  "proximity_labeling",
+]);
+
+function isLiveCellRow(method, permeabilization) {
+  if (method === "functional_surface_assay") return false;
+  if (permeabilization === "live_cell") return true;
+  return LIVE_BY_CHEMISTRY.has(method) && permeabilization !== "permeabilized";
+}
+
 function surfaceMethodCategory(family, subclass) {
   for (const [field, value, method] of SURFACE_METHOD_RULES) {
     if ((field === "family" ? family : subclass) === value) return method;
@@ -2025,21 +2043,31 @@ function surfaceMethodCategory(family, subclass) {
 }
 
 // `packed` is the catalog query's `ddf_surface_methods` column: one
-// "family|subclass|relevance|expression_system" token per distinct methods
-// row, comma-joined (only direct + supporting rows are selected). Returns
-// sorted, de-duplicated method lists; a method that has a direct row is
-// never also listed as supporting.
+// "family|subclass|relevance|expression_system|permeabilization" token per
+// distinct methods row, comma-joined (only direct + supporting rows are
+// selected). Returns sorted, de-duplicated method lists (a method that has a
+// direct row is never also listed as supporting) plus two flags:
+//   * has_native_direct_surface_evidence — any direct row in a native
+//     expression system.
+//   * has_live_cell_surface_evidence — a direct row on live cells in a
+//     native expression system, excluding functional assays (see
+//     isLiveCellRow). Overrides the record's baked flag, which keyed on
+//     method family and so missed capture MS and counted fixed-cell flow.
 function projectSurfaceMethods(packed) {
   const direct = new Set();
   const supporting = new Set();
   let native = false;
+  let liveCell = false;
   for (const tok of (packed || "").split(",")) {
     if (!tok) continue;
-    const [family, subclass, relevance, system] = tok.split("|");
+    const [family, subclass, relevance, system, permeabilization] = tok.split("|");
     const method = surfaceMethodCategory(family, subclass);
     if (relevance === "direct_surface_accessibility") {
       direct.add(method);
-      if (NATIVE_EXPRESSION_SYSTEMS.has(system)) native = true;
+      if (NATIVE_EXPRESSION_SYSTEMS.has(system)) {
+        native = true;
+        if (isLiveCellRow(method, permeabilization)) liveCell = true;
+      }
     } else if (relevance === "supports_surface_localization") {
       supporting.add(method);
     }
@@ -2049,6 +2077,7 @@ function projectSurfaceMethods(packed) {
     surface_method_direct: [...direct].sort(),
     surface_method_supporting: [...supporting].sort(),
     has_native_direct_surface_evidence: native,
+    has_live_cell_surface_evidence: liveCell,
   };
 }
 
@@ -2061,7 +2090,8 @@ const surfaceMethodsSql = (alias) => `(SELECT group_concat(DISTINCT
       COALESCE(json_extract(m.value, '$.method_family'), '') || '|' ||
       COALESCE(json_extract(m.value, '$.method_subclass'), '') || '|' ||
       COALESCE(json_extract(m.value, '$.accessibility_relevance'), '') || '|' ||
-      COALESCE(json_extract(m.value, '$.expression_system'), ''))
+      COALESCE(json_extract(m.value, '$.expression_system'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.permeabilization'), ''))
     FROM json_each(${alias}.annotation_json, '$.surface_evidence.methods') m
    WHERE json_extract(m.value, '$.accessibility_relevance')
          IN ('direct_surface_accessibility', 'supports_surface_localization'))`;
@@ -2803,7 +2833,10 @@ async function handleCatalog(env, request) {
       //        (sorted method-category lists from surface_evidence.methods;
       //        a method with a direct row is not repeated as supporting) and
       //        `ddf.has_native_direct_surface_evidence` (a direct row in an
-      //        endogenous / mixed / knock-in system). See projectSurfaceMethods.
+      //        endogenous / mixed / knock-in system), and re-derives
+      //        `ddf.has_live_cell_surface_evidence` from the methods rows
+      //        (live cells, native expression, not a functional assay).
+      //        See projectSurfaceMethods.
       row_schema: 10,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).

@@ -885,10 +885,13 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_live_cell_evidence: (
     <>
-      At least one method shows DIRECT surface accessibility on live/intact
-      cells in an endogenous context &mdash; live-cell flow cytometry,
-      surface biotinylation, or proximity labeling (not permeabilizable
-      IF/IHC). Filters by evidence modality, not just the rolled-up grade.
+      At least one direct experiment reached the protein on <strong>living</strong>{" "}
+      cells at its own expression level (not overexpressed): live-cell flow
+      cytometry, live-cell immunofluorescence, surface biotinylation,
+      cell-surface capture mass spec, or proximity labeling. Fixed-cell
+      staining and functional assays don&apos;t count here &mdash; find
+      those under Direct surface method. The closest experimental analogue
+      to what an antibody meets on a target cell.
     </>
   ),
 

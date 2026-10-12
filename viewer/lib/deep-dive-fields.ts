@@ -773,6 +773,23 @@ export const SURFACE_METHOD_RULES: readonly (readonly [string, string, string])[
 
 const NATIVE_EXPRESSION_SYSTEMS = new Set(["endogenous", "mixed", "knock_in_tag"]);
 
+/** Labeling / capture chemistries only work on intact cells with
+ *  membrane-impermeable reagents, so they count as live-cell unless a row is
+ *  explicitly permeabilized. Flow and IF need an explicit live_cell label
+ *  (their "nonpermeabilized" rows are usually fixed cells). Functional
+ *  assays never count. MUST match the Worker's isLiveCellRow. */
+const LIVE_BY_CHEMISTRY = new Set([
+  "surface_biotin_pulldown",
+  "cell_surface_capture_ms",
+  "proximity_labeling",
+]);
+
+function isLiveCellRow(method: string, permeabilization: unknown): boolean {
+  if (method === "functional_surface_assay") return false;
+  if (permeabilization === "live_cell") return true;
+  return LIVE_BY_CHEMISTRY.has(method) && permeabilization !== "permeabilized";
+}
+
 function surfaceMethodCategory(family: unknown, subclass: unknown): string {
   for (const [field, value, method] of SURFACE_METHOD_RULES) {
     if ((field === "family" ? family : subclass) === value) return method;
@@ -788,16 +805,24 @@ export function projectSurfaceMethods(methods: unknown): {
   surface_method_direct: string[];
   surface_method_supporting: string[];
   has_native_direct_surface_evidence: boolean;
+  has_live_cell_surface_evidence: boolean;
 } {
   const direct = new Set<string>();
   const supporting = new Set<string>();
   let native = false;
+  // Live-cell: a direct row on live cells at native expression, excluding
+  // functional assays (see isLiveCellRow). Overrides the record's baked
+  // flag, which keyed on method family.
+  let liveCell = false;
   for (const m of Array.isArray(methods) ? methods : []) {
     const row = m as Record<string, unknown>;
     const method = surfaceMethodCategory(row.method_family, row.method_subclass);
     if (row.accessibility_relevance === "direct_surface_accessibility") {
       direct.add(method);
-      if (NATIVE_EXPRESSION_SYSTEMS.has(row.expression_system as string)) native = true;
+      if (NATIVE_EXPRESSION_SYSTEMS.has(row.expression_system as string)) {
+        native = true;
+        if (isLiveCellRow(method, row.permeabilization)) liveCell = true;
+      }
     } else if (row.accessibility_relevance === "supports_surface_localization") {
       supporting.add(method);
     }
@@ -807,6 +832,7 @@ export function projectSurfaceMethods(methods: unknown): {
     surface_method_direct: [...direct].sort(),
     surface_method_supporting: [...supporting].sort(),
     has_native_direct_surface_evidence: native,
+    has_live_cell_surface_evidence: liveCell,
   };
 }
 
@@ -960,7 +986,11 @@ export function pickDeepDiveFilters(
     out.tm_count_band = tmc === 0 ? "none" : tmc === 1 ? "single" : "multi";
   }
   // Surface-evidence method facets — sourced from surface_evidence.methods.
-  // MUST stay in sync with the Worker's projectSurfaceMethods.
+  // MUST stay in sync with the Worker's projectSurfaceMethods. Also
+  // re-derives has_live_cell_surface_evidence, overriding the copy taken
+  // from the record's filters block above (the baked flag keyed on method
+  // family; it was itself derived from this block, so a record without
+  // methods has it false either way).
   Object.assign(out, projectSurfaceMethods(surfaceEvidence?.methods));
   return Object.keys(out).length > 0 ? out : undefined;
 }

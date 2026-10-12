@@ -76,35 +76,56 @@ def test_worker_projection(tmp_path: Path) -> None:
     (tmp_path / "worker.mjs").write_text(source)
 
     rows = [
-        ("glycoproteomics", "cell_surface_capture", "direct_surface_accessibility", "overexpression"),
-        ("flow_cytometry", "live_cell_flow", "direct_surface_accessibility", "overexpression"),
-        ("flow_cytometry", "live_cell_flow", "supports_surface_localization", "endogenous"),
-        ("immunohistochemistry", "IHC_membranous", "supports_surface_localization", "endogenous"),
-        ("immunofluorescence", "permeabilized_IF", "expression_only", "endogenous"),
-        ("other", "whole_cell_proteomics", "supports_surface_localization", "unknown"),
+        ("glycoproteomics", "cell_surface_capture", "direct_surface_accessibility", "overexpression", "live_cell"),
+        ("flow_cytometry", "live_cell_flow", "direct_surface_accessibility", "overexpression", "live_cell"),
+        ("flow_cytometry", "live_cell_flow", "supports_surface_localization", "endogenous", "live_cell"),
+        ("immunohistochemistry", "IHC_membranous", "supports_surface_localization", "endogenous", "unknown"),
+        ("immunofluorescence", "permeabilized_IF", "expression_only", "endogenous", "permeabilized"),
+        ("other", "whole_cell_proteomics", "supports_surface_localization", "unknown", "unknown"),
     ]
     packed = ",".join("|".join(r) for r in rows)
     (tmp_path / "test.mjs").write_text(
         'import { projectSurfaceMethods } from "./worker.mjs";\n'
         f"console.log(JSON.stringify(projectSurfaceMethods({json.dumps(packed)})));\n"
         "console.log(JSON.stringify(projectSurfaceMethods(null)));\n"
-        'console.log(JSON.stringify(projectSurfaceMethods("proximity_labeling|surface_biotinylation|direct_surface_accessibility|knock_in_tag")));\n'
+        'console.log(JSON.stringify(projectSurfaceMethods("proximity_labeling|surface_biotinylation|direct_surface_accessibility|knock_in_tag|live_cell")));\n'
+        # Native + live but a functional assay: native yes, live-cell no.
+        'console.log(JSON.stringify(projectSurfaceMethods("functional_surface_assay|functional_surface_assay|direct_surface_accessibility|endogenous|live_cell")));\n'
+        # Native + direct IF, but fixed rather than live: live-cell no.
+        'console.log(JSON.stringify(projectSurfaceMethods("immunofluorescence|nonpermeabilized_IF|direct_surface_accessibility|endogenous|nonpermeabilized")));\n'
+        # Surface biotinylation labeled "nonpermeabilized": still live-cell
+        # (the chemistry needs intact cells); explicitly permeabilized: not.
+        'console.log(JSON.stringify(projectSurfaceMethods("biotinylation|surface_biotinylation|direct_surface_accessibility|endogenous|nonpermeabilized")));\n'
+        'console.log(JSON.stringify(projectSurfaceMethods("biotinylation|surface_biotinylation|direct_surface_accessibility|endogenous|permeabilized")));\n'
     )
     out = subprocess.run(
         [node, str(tmp_path / "test.mjs")], capture_output=True, text=True, check=True
     ).stdout.splitlines()
-    got, empty, native = (json.loads(line) for line in out)
+    got, empty, native, functional, fixed_if, biotin, biotin_perm = (
+        json.loads(line) for line in out
+    )
 
-    direct = sorted({_surface_method(f, s) for f, s, rel, _ in rows
+    direct = sorted({_surface_method(f, s) for f, s, rel, _sys, _perm in rows
                      if rel == "direct_surface_accessibility"})
     assert got["surface_method_direct"] == direct == ["cell_surface_capture_ms", "flow_cytometry"]
     # Flow has a direct row, so its supporting row is not repeated; the
     # expression-only permeabilized IF row is not surface evidence at all.
     assert got["surface_method_supporting"] == ["immunohistochemistry", "other"]
-    assert got["has_native_direct_surface_evidence"] is False  # direct rows are all OE
+    # Direct rows are all overexpression: neither native nor live-cell.
+    assert got["has_native_direct_surface_evidence"] is False
+    assert got["has_live_cell_surface_evidence"] is False
     assert empty == {"surface_method_direct": [], "surface_method_supporting": [],
-                     "has_native_direct_surface_evidence": False}
-    # Proximity labeling is matched on family before the biotin subclass.
+                     "has_native_direct_surface_evidence": False,
+                     "has_live_cell_surface_evidence": False}
+    # Proximity labeling is matched on family before the biotin subclass; a
+    # knock-in tag counts as native expression.
     assert native == {"surface_method_direct": ["proximity_labeling"],
                       "surface_method_supporting": [],
-                      "has_native_direct_surface_evidence": True}
+                      "has_native_direct_surface_evidence": True,
+                      "has_live_cell_surface_evidence": True}
+    assert functional["has_native_direct_surface_evidence"] is True
+    assert functional["has_live_cell_surface_evidence"] is False
+    assert fixed_if["has_native_direct_surface_evidence"] is True
+    assert fixed_if["has_live_cell_surface_evidence"] is False
+    assert biotin["has_live_cell_surface_evidence"] is True
+    assert biotin_perm["has_live_cell_surface_evidence"] is False
