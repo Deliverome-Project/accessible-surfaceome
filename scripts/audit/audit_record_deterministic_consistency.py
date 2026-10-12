@@ -19,6 +19,16 @@ surface_bind       surface_bind.has_data                                surface_
 homomer            homo_oligomerization.is_homo_oligomer                schweke_homomer_public
 =================  ===================================================  =========================================
 
+It also checks the source tables against each other (``source_integrity``),
+because a record can match its sources while the sources themselves are
+incomplete — e.g. ortholog ECD rows that point at an ortholog protein with no
+topology row (649 pairs were missing this way until 2026-10-12):
+
+* every served ortholog-ECD row's ortholog protein has served ortholog topology;
+* every served ortholog-ECD row joins its Compara release (full-length %id);
+* every served paralog protein has served canonical topology;
+* no ortholog pair is missing an ECD identity when both proteins have an ECD.
+
 It reads public D1 in small chunks (90 genes per query, paced) — never a
 cohort-wide join, which exceeds D1's CPU limit and resets the live database.
 Mismatched genes are written for ``refresh_deterministic_features_d1.py``.
@@ -52,6 +62,78 @@ def _chunks(seq: list, n: int = CHUNK):
 
 def _marks(xs: list) -> str:
     return ",".join("?" * len(xs))
+
+
+def source_integrity(
+    d1: D1Client, topo_v: str, par_v: str, ecd_v: str
+) -> dict[str, list]:
+    """Cross-table completeness of the served deterministic sources.
+
+    Fetches key lists only and compares them locally: a correlated join over
+    these tables is heavy enough to time out public D1.
+    """
+    q = d1.query
+    ecd = q(
+        "SELECT human_gene_symbol g, species s, ortholog_uniprot_acc u, human_uniprot_acc hu, "
+        "human_ensembl_gene he, ortholog_ensembl_gene oe, compara_release c, ecd_pct_identity e "
+        "FROM compara_ortholog_ecd WHERE ortholog_ecd_version = ?;",
+        [ecd_v],
+    )
+    ortho_topo = {
+        (r["c"], r["u"]): r["e"]
+        for r in q(
+            "SELECT cohort c, uniprot_acc u, ecd_length_residues e FROM topology_public "
+            "WHERE topology_version = ? AND cohort IN ('mouse_ortholog','cyno_ortholog');",
+            [topo_v],
+        )
+    }
+    human_topo = {
+        r["u"]: r["e"]
+        for r in q(
+            "SELECT uniprot_acc u, ecd_length_residues e FROM topology_public "
+            "WHERE topology_version = ? AND cohort = 'human_canonical';",
+            [topo_v],
+        )
+    }
+    compara = {
+        (r["c"], r["he"], r["s"], r["oe"])
+        for r in q(
+            "SELECT release_version c, human_ensembl_gene he, species s, ortholog_ensembl_gene oe "
+            "FROM compara_ortholog WHERE release_version IN "
+            "(SELECT DISTINCT compara_release FROM compara_ortholog_ecd WHERE ortholog_ecd_version = ?);",
+            [ecd_v],
+        )
+    }
+    paralog_accs = {
+        r["u"]
+        for r in q(
+            "SELECT DISTINCT paralog_uniprot_acc u FROM compara_paralog "
+            "WHERE paralog_version = ? AND paralog_uniprot_acc IS NOT NULL;",
+            [par_v],
+        )
+    }
+    cohort = {"mouse": "mouse_ortholog", "cynomolgus": "cyno_ortholog"}
+    out: dict[str, list] = {
+        "ortholog_without_topology": [],
+        "ortholog_without_compara_row": [],
+        "ortholog_ecd_identity_missing": [],
+        "paralog_without_topology": sorted(
+            a for a in paralog_accs if a not in human_topo
+        ),
+    }
+    for r in ecd:
+        key = (cohort.get(r["s"], r["s"]), r["u"])
+        if key not in ortho_topo:
+            out["ortholog_without_topology"].append([r["g"], r["s"], r["u"]])
+        if (r["c"], r["he"], r["s"], r["oe"]) not in compara:
+            out["ortholog_without_compara_row"].append([r["g"], r["s"], r["oe"]])
+        if (
+            r["e"] is None
+            and (human_topo.get(r["hu"]) or 0) > 0
+            and (ortho_topo.get(key) or 0) > 0
+        ):
+            out["ortholog_ecd_identity_missing"].append([r["g"], r["s"], r["u"]])
+    return out
 
 
 def main() -> int:
@@ -92,6 +174,10 @@ def main() -> int:
                 "  WHERE json_extract(m.value,'$.full_length_pct_identity_to_human_canonical') IS NULL) "
                 f"+ (SELECT COUNT(*) FROM json_each(annotation_json,'{_DF}.orthologs.cynomolgus') c "
                 "  WHERE json_extract(c.value,'$.full_length_pct_identity_to_human_canonical') IS NULL) fl_null, "
+                f"(SELECT COUNT(*) FROM json_each(annotation_json,'{_DF}.orthologs.mouse') m "
+                "  WHERE json_extract(m.value,'$.per_residue_topology') IS NULL) "
+                f"+ (SELECT COUNT(*) FROM json_each(annotation_json,'{_DF}.orthologs.cynomolgus') c "
+                "  WHERE json_extract(c.value,'$.per_residue_topology') IS NULL) topo_null, "
                 f"json_extract(annotation_json,'{_DF}.structure.source') struct, "
                 f"json_extract(annotation_json,'{_DF}.surface_bind.has_data') sb, "
                 f"json_extract(annotation_json,'{_DF}.homo_oligomerization.is_homo_oligomer') homo "
@@ -143,6 +229,7 @@ def main() -> int:
             [],
             "sb",
         )
+        integrity = source_integrity(d1, topo_v, par_v, ecd_v)
         count(
             "SELECT uniprot_acc u, 1 n FROM schweke_homomer_public WHERE uniprot_acc IN ({m});",
             [],
@@ -160,6 +247,9 @@ def main() -> int:
             "orthologs_mouse": (r["om"] or 0) == s["om"],
             "orthologs_cyno": (r["oc"] or 0) == s["oc"],
             "ortholog_full_length_identity": (r["fl_null"] or 0) == 0,
+            # Every served ortholog protein has topology (source_integrity), so
+            # an entry without per-residue topology predates it.
+            "ortholog_topology": (r["topo_null"] or 0) == 0,
             "surface_bind": (r["sb"] in truthy) == bool(s["sb"]),
             "homomer": (r["homo"] in truthy) == bool(s["homo"]),
         }
@@ -181,6 +271,7 @@ def main() -> int:
         },
         "mismatches": {k: sorted(v) for k, v in sorted(problems.items())},
         "structure_placeholder_no_afdb_model": no_afdb,
+        "source_integrity": integrity,
     }
     (args.out / "report.json").write_text(json.dumps(report, indent=2) + "\n")
     stale = sorted({g for v in problems.values() for g in v})
@@ -193,14 +284,19 @@ def main() -> int:
         "orthologs_mouse",
         "orthologs_cyno",
         "ortholog_full_length_identity",
+        "ortholog_topology",
         "surface_bind",
         "homomer",
     ):
         v = problems.get(k, [])
         print(f"  {k:31s} mismatched: {len(v):4d}  {sorted(v)[:8]}")
     print(f"  structure (no AlphaFold model): {len(no_afdb)}")
+    print("source integrity:")
+    for k, v in integrity.items():
+        print(f"  {k:31s} {len(v):4d}  {v[:5]}")
     print(f"stale genes to refresh: {len(stale)} -> {args.out / 'stale_genes.json'}")
-    return 0
+    failed = bool(stale) or any(integrity.values())
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
