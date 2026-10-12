@@ -335,6 +335,10 @@ export function computeCompareStats(
   let deepDiveVerdict: EnrichGroup | null = null;
   const deepDiveEnumGroups: EnrichGroup[] = [];
   for (const f of DD_ENUM_FIELDS) {
+    // enrichCategory assumes one value per gene; a multi-valued facet
+    // (surface methods) would need per-value binary rows instead, so it is
+    // left out of the enrichment tables rather than shown with wrong counts.
+    if (f.multi) continue;
     const isVerdict = f.key === DEEP_DIVE_VERDICT_KEY;
     const g = enrichCategory(
       f.key,

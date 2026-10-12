@@ -968,13 +968,37 @@ def build_surfaceome_deterministic_features(
 
 
 
-# Method categories for the surface-evidence figure, in the order the rules
-# are tried. The record's ``method_family`` and ``method_subclass`` overlap
-# (a cell-surface-capture experiment is filed under the biotinylation,
-# glycoproteomics or mass-spec family depending on the paper's wording), so
-# the subclass decides where it does and the family only breaks ties.
-# Proximity labeling is checked first: it uses biotin chemistry too, but is a
-# distinct method readers look for by name.
+# Method categories for the surface-evidence figure and the catalog's
+# surface-method filter. The record's ``method_family`` and
+# ``method_subclass`` overlap (a cell-surface-capture experiment is filed
+# under the biotinylation, glycoproteomics or mass-spec family depending on
+# the paper's wording), so the rules are tried in order and the first match
+# wins: the subclass decides where it does and the family breaks ties.
+# Proximity labeling comes first — it uses biotin chemistry too, but is a
+# distinct method readers look for by name. Anything unmatched is "other".
+#
+# The same ordered table is copied verbatim into the Worker
+# (cloudflare/workers/surfaceome_api/src/index.js) and the viewer
+# (viewer/lib/deep-dive-fields.ts); tests/test_surface_method_rules_sync.py
+# fails if the three copies drift.
+SURFACE_METHOD_RULES: list[tuple[str, str, str]] = [
+    ("family", "proximity_labeling", "proximity_labeling"),
+    ("subclass", "surface_biotinylation", "surface_biotin_pulldown"),
+    ("subclass", "cell_surface_capture", "cell_surface_capture_ms"),
+    ("subclass", "N_glycoproteomics", "cell_surface_capture_ms"),
+    ("family", "glycoproteomics", "cell_surface_capture_ms"),
+    ("subclass", "live_cell_flow", "flow_cytometry"),
+    ("subclass", "fixed_cell_flow", "flow_cytometry"),
+    ("family", "flow_cytometry", "flow_cytometry"),
+    ("subclass", "nonpermeabilized_IF", "immunofluorescence"),
+    ("subclass", "permeabilized_IF", "immunofluorescence"),
+    ("family", "immunofluorescence", "immunofluorescence"),
+    ("subclass", "IHC", "immunohistochemistry"),
+    ("subclass", "IHC_membranous", "immunohistochemistry"),
+    ("family", "immunohistochemistry", "immunohistochemistry"),
+    ("family", "functional_surface_assay", "functional_surface_assay"),
+]
+
 _SURFACE_METHOD_FAMILY = {
     "functional_surface_assay": "functional",
     "flow_cytometry": "imaging_cytometry",
@@ -988,20 +1012,9 @@ _SURFACE_METHOD_FAMILY = {
 
 
 def _surface_method(family: str, subclass: str) -> str:
-    if family == "proximity_labeling":
-        return "proximity_labeling"
-    if subclass == "surface_biotinylation":
-        return "surface_biotin_pulldown"
-    if subclass in ("cell_surface_capture", "N_glycoproteomics") or family == "glycoproteomics":
-        return "cell_surface_capture_ms"
-    if subclass in ("live_cell_flow", "fixed_cell_flow") or family == "flow_cytometry":
-        return "flow_cytometry"
-    if subclass in ("nonpermeabilized_IF", "permeabilized_IF") or family == "immunofluorescence":
-        return "immunofluorescence"
-    if subclass in ("IHC", "IHC_membranous") or family == "immunohistochemistry":
-        return "immunohistochemistry"
-    if family == "functional_surface_assay":
-        return "functional_surface_assay"
+    for field, value, method in SURFACE_METHOD_RULES:
+        if (family if field == "family" else subclass) == value:
+            return method
     return "other"
 
 

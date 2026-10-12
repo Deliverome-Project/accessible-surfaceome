@@ -46,7 +46,11 @@ export type DdEnumKey =
   | "max_paralog_ecd"
   | "induction_trigger"
   // Deterministic transmembrane-topology band (DeepTMHMM canonical_topology).
-  | "tm_count_band";
+  | "tm_count_band"
+  // Surface-evidence method facets (multi-valued: a gene carries every
+  // method category it has a methods row for). See projectSurfaceMethods.
+  | "surface_method_direct"
+  | "surface_method_supporting";
 
 export type DdBoolKey =
   | "has_known_ligand"
@@ -62,7 +66,9 @@ export type DdBoolKey =
   | "has_live_cell_surface_evidence"
   | "is_homo_oligomer"
   // Deterministic transmembrane presence (DeepTMHMM canonical_topology).
-  | "has_tm";
+  | "has_tm"
+  // Any direct surface method in an endogenous / mixed / knock-in system.
+  | "has_native_direct_surface_evidence";
 
 /**
  * Provenance bucket used by the catalog filter panel to partition
@@ -118,6 +124,10 @@ export interface DdEnumSpec {
    *  "Pmhc Only Intracellular" — so the reader sees a human-facing
    *  label instead of a mangled token. */
   valueLabels?: Readonly<Record<string, string>>;
+  /** Multi-valued facet: the row carries a string[] and passes when ANY of
+   *  its values is selected (OR within the field, AND across fields, same
+   *  as single-valued facets). */
+  multi?: boolean;
 }
 
 export interface DdBoolSpec {
@@ -129,6 +139,29 @@ export interface DdBoolSpec {
   /** Accessibility-risk topical tag (see `DdEnumSpec.isRisk`). */
   isRisk?: boolean;
 }
+
+/** Surface-method facet values, in the Supp Fig 13 order. */
+const SURFACE_METHOD_VALUES = [
+  "functional_surface_assay",
+  "flow_cytometry",
+  "immunofluorescence",
+  "surface_biotin_pulldown",
+  "cell_surface_capture_ms",
+  "proximity_labeling",
+  "immunohistochemistry",
+  "other",
+] as const;
+
+const SURFACE_METHOD_LABELS: Readonly<Record<string, string>> = {
+  functional_surface_assay: "Functional surface assay",
+  flow_cytometry: "Flow cytometry",
+  immunofluorescence: "Immunofluorescence",
+  surface_biotin_pulldown: "Surface biotin pulldown",
+  cell_surface_capture_ms: "Cell-surface capture MS",
+  proximity_labeling: "Proximity labeling",
+  immunohistochemistry: "Immunohistochemistry",
+  other: "Other",
+};
 
 export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
   {
@@ -396,6 +429,31 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
   },
   {
+    // Which kinds of experiment showed the protein is reachable from outside
+    // an intact cell — the "which" behind evidence_grade's "how many". From
+    // the record's surface_evidence.methods block; categories match Supp
+    // Fig 13. Multi-valued: a gene lists every direct method it has.
+    key: "surface_method_direct",
+    label: "Direct surface method",
+    values: SURFACE_METHOD_VALUES,
+    valueLabels: SURFACE_METHOD_LABELS,
+    tooltipKey: "catalog_surface_method_direct",
+    provenance: "llm",
+    multi: true,
+  },
+  {
+    // Methods that place the protein at the plasma membrane without showing
+    // its outside is reachable (membrane-rim staining, fluorescent fusions,
+    // membranous IHC). Lists only methods with no direct row for the gene.
+    key: "surface_method_supporting",
+    label: "Supporting method",
+    values: SURFACE_METHOD_VALUES,
+    valueLabels: SURFACE_METHOD_LABELS,
+    tooltipKey: "catalog_surface_method_supporting",
+    provenance: "llm",
+    multi: true,
+  },
+  {
     // `deterministic` provenance (sub-case 2: mechanical record count):
     // the filter exposes a bucketed count of evidence rows (≥30 / ≥10 /
     // else) — a pure function of the persisted record, with no LLM
@@ -642,6 +700,15 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     provenance: "llm",
   },
   {
+    // A direct surface method run where the protein is at its own
+    // expression level (endogenous, mixed, knock-in tag) — not only in
+    // overexpressing constructs, which can force surface localization.
+    key: "has_native_direct_surface_evidence",
+    label: "Direct evidence, native expression",
+    tooltipKey: "catalog_native_direct_surface_evidence",
+    provenance: "llm",
+  },
+  {
     // Schweke 2024 AF2 homo-oligomer prediction (PMID 38325366) —
     // sourced from `deterministic_features.homo_oligomerization.is_homo_oligomer`.
     // Schweke's atlas is POSITIVES-ONLY: a `false` (or absent) value
@@ -680,6 +747,69 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
  * enrichment (so their groups simply don't render). Returns `undefined`
  * when nothing maps, so the caller can skip attaching an empty object.
  */
+/** Surface-evidence method categories, tried in order (first match wins;
+ *  unmatched -> "other"). The record's method_family and method_subclass
+ *  overlap, so the subclass decides where it does and the family breaks
+ *  ties. MUST match SURFACE_METHOD_RULES in the Worker and in
+ *  scripts/build_figure_tsvs.py (Supp Fig 13) —
+ *  tests/test_surface_method_rules_sync.py fails on drift. */
+export const SURFACE_METHOD_RULES: readonly (readonly [string, string, string])[] = [
+  ["family", "proximity_labeling", "proximity_labeling"],
+  ["subclass", "surface_biotinylation", "surface_biotin_pulldown"],
+  ["subclass", "cell_surface_capture", "cell_surface_capture_ms"],
+  ["subclass", "N_glycoproteomics", "cell_surface_capture_ms"],
+  ["family", "glycoproteomics", "cell_surface_capture_ms"],
+  ["subclass", "live_cell_flow", "flow_cytometry"],
+  ["subclass", "fixed_cell_flow", "flow_cytometry"],
+  ["family", "flow_cytometry", "flow_cytometry"],
+  ["subclass", "nonpermeabilized_IF", "immunofluorescence"],
+  ["subclass", "permeabilized_IF", "immunofluorescence"],
+  ["family", "immunofluorescence", "immunofluorescence"],
+  ["subclass", "IHC", "immunohistochemistry"],
+  ["subclass", "IHC_membranous", "immunohistochemistry"],
+  ["family", "immunohistochemistry", "immunohistochemistry"],
+  ["family", "functional_surface_assay", "functional_surface_assay"],
+];
+
+const NATIVE_EXPRESSION_SYSTEMS = new Set(["endogenous", "mixed", "knock_in_tag"]);
+
+function surfaceMethodCategory(family: unknown, subclass: unknown): string {
+  for (const [field, value, method] of SURFACE_METHOD_RULES) {
+    if ((field === "family" ? family : subclass) === value) return method;
+  }
+  return "other";
+}
+
+/** Project surface_evidence.methods onto the three catalog facets. MUST
+ *  match the Worker's projectSurfaceMethods (which reads the same fields,
+ *  packed server-side). A method with a direct row is not repeated as
+ *  supporting; rows at other relevance levels are not surface evidence. */
+export function projectSurfaceMethods(methods: unknown): {
+  surface_method_direct: string[];
+  surface_method_supporting: string[];
+  has_native_direct_surface_evidence: boolean;
+} {
+  const direct = new Set<string>();
+  const supporting = new Set<string>();
+  let native = false;
+  for (const m of Array.isArray(methods) ? methods : []) {
+    const row = m as Record<string, unknown>;
+    const method = surfaceMethodCategory(row.method_family, row.method_subclass);
+    if (row.accessibility_relevance === "direct_surface_accessibility") {
+      direct.add(method);
+      if (NATIVE_EXPRESSION_SYSTEMS.has(row.expression_system as string)) native = true;
+    } else if (row.accessibility_relevance === "supports_surface_localization") {
+      supporting.add(method);
+    }
+  }
+  for (const m of direct) supporting.delete(m);
+  return {
+    surface_method_direct: [...direct].sort(),
+    surface_method_supporting: [...supporting].sort(),
+    has_native_direct_surface_evidence: native,
+  };
+}
+
 /** Bin an ECD %-identity into a coarse band. `null` (no ortholog / paralog
  *  in Compara) → "none". MUST stay in sync with the Worker's
  *  `projectDeepDiveFilters` (cloudflare/workers/surfaceome_api/src/index.js). */
@@ -727,6 +857,7 @@ export function pickDeepDiveFilters(
   biologicalContext?: Record<string, unknown> | null,
   accessibilityRisks?: Record<string, unknown> | null,
   deterministicFeatures?: Record<string, unknown> | null,
+  surfaceEvidence?: Record<string, unknown> | null,
 ): Record<string, unknown> | undefined {
   if (!filters) return undefined;
   const out: Record<string, unknown> = {};
@@ -828,5 +959,8 @@ export function pickDeepDiveFilters(
     out.has_tm = tmc > 0;
     out.tm_count_band = tmc === 0 ? "none" : tmc === 1 ? "single" : "multi";
   }
+  // Surface-evidence method facets — sourced from surface_evidence.methods.
+  // MUST stay in sync with the Worker's projectSurfaceMethods.
+  Object.assign(out, projectSurfaceMethods(surfaceEvidence?.methods));
   return Object.keys(out).length > 0 ? out : undefined;
 }

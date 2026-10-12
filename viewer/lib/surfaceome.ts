@@ -275,6 +275,14 @@ export interface DeepDiveFilters {
    *  `TmCountBand`. Derived from the same `tm_helix_count` scalar as
    *  `has_tm`; the band is the finer axis the filter UI keys off. */
   tm_count_band?: TmCountBand;
+  /** Method categories with a DIRECT surface-evidence row in
+   *  `surface_evidence.methods` (catalog row_schema 10+). Sorted. */
+  surface_method_direct?: string[];
+  /** Method categories with only SUPPORTING rows (a method with a direct row
+   *  is not repeated here). Sorted. */
+  surface_method_supporting?: string[];
+  /** A direct surface method in an endogenous / mixed / knock-in system. */
+  has_native_direct_surface_evidence?: boolean;
 }
 
 export interface CatalogRow {
@@ -1342,6 +1350,7 @@ export async function withDeepDiveFilters(
         rec?.biological_context as Record<string, unknown> | undefined,
         rec?.accessibility_risks as Record<string, unknown> | undefined,
         rec?.deterministic_features as Record<string, unknown> | undefined,
+        rec?.surface_evidence as Record<string, unknown> | undefined,
       );
       // Partial DeepDiveFilters (older records omit newer fields); every
       // reader accesses fields optionally, so route the cast via unknown.

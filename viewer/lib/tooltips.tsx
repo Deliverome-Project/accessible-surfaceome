@@ -892,6 +892,42 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  catalog_surface_method_direct: (
+    <>
+      Which kinds of experiment showed the protein is reachable from
+      outside an intact cell: live or non-permeabilized staining of an
+      extracellular epitope or tag, membrane-impermeable labeling, or a
+      functional readout that needs surface access. A gene matches if
+      any of its direct methods is selected. <strong>Functional surface
+      assay</strong> = a toxin, blocking or therapeutic antibody, ADC or
+      CAR-T acting on live target-positive cells, radioligand binding,
+      ectodomain shedding, or transport of an extracellular substrate.
+      <strong> Other</strong> = e.g. cell-surface ELISA, CITE-seq antibody
+      tags, immuno-EM on intact cells. Same categories as Supplementary
+      Figure 13; the evidence grade counts how many of these a gene has.
+    </>
+  ),
+
+  catalog_surface_method_supporting: (
+    <>
+      Methods that place the protein at the plasma membrane without
+      showing its outside is reachable: membrane-rim staining,
+      fluorescent-protein fusions, membranous immunohistochemistry
+      (tissue sectioning exposes intracellular epitopes, so IHC is never
+      direct). Lists only methods with no direct experiment for that
+      gene.
+    </>
+  ),
+
+  catalog_native_direct_surface_evidence: (
+    <>
+      At least one direct surface method was run with the protein at its
+      own expression level (endogenous, or a knock-in tag), not only in
+      overexpressing cells. Overexpression can push a protein to the
+      surface that the native protein never reaches.
+    </>
+  ),
+
   catalog_n_term_extracellular: (
     <>
       Does the canonical isoform&apos;s N-terminus face the extracellular
