@@ -485,7 +485,7 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
 
     Columns: gene_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id,
     category, subcategory, surface_call_reason, induction_trigger,
-    low_endogenous_expression, state_dependence.
+    low_endogenous_expression, state_dependence, confidence.
 
     ``low_endogenous_expression`` + ``state_dependence`` drive Panel b's
     cross-cutting cell-state view: state-dependence is a FACET (the "when is it
@@ -497,7 +497,7 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "category", "subcategory", "facet",
             "surface_call_reason", "induction_trigger",
-            "low_endogenous_expression", "state_dependence"]
+            "low_endogenous_expression", "state_dependence", "confidence"]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:
         return _empty_deep_dive_frame(cols)
@@ -519,6 +519,9 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
         "low_endogenous_expression": pd.to_numeric(
             dd["low_endogenous_expression"], errors="coerce").astype("Int64"),
         "state_dependence": dd["state_dependence"].astype(str),
+        # Certainty in the surface call, in either direction — panel a's
+        # confidence strip. Distinct from the tier: a `no` call carries it too.
+        "confidence": dd["confidence"].astype(str),
     })
     # Stable IDs from the catalog (candidate_universe), keyed by symbol.
     cat = src.get("catalog")

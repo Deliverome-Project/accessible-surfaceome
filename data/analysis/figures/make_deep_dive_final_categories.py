@@ -14,7 +14,9 @@ Two panels:
 passes-likely surface), then the below-likely genes split by the
 deep-dive's tentative surface call: ``low`` (low/moderate accessibility but
 weak evidence — maybe surface), ``uncertain``, and ``no`` (leaned
-not-surface).
+not-surface). A slim strip under each bar splits the tier by the call's
+confidence (high / moderate / low), which applies to the call in either
+direction — the ``no`` tier carries it too.
 
 **b.** The two cross-cutting surface facets — cell-type restricted and
 cell-state induced (split oncogenic vs. other) — counted by the deep dive's
@@ -39,7 +41,7 @@ from pathlib import Path
 import matplotlib.font_manager as fm
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-from matplotlib.transforms import blended_transform_factory
+from matplotlib.transforms import ScaledTranslation, blended_transform_factory
 import pandas as pd
 import seaborn as sns
 
@@ -157,6 +159,16 @@ _COLOR_LOW = "#C99A5B"         # amber-tan — low/moderate access, weak evidenc
 _COLOR_UNCERTAIN = "#C7BDB6"   # light warm grey — ambiguous
 _COLOR_NO = "#9C8C88"          # lifted neutral — leaned not-surface
 
+# Panel a's confidence strip: the share of each tier's calls made at high /
+# moderate / low confidence. Confidence is certainty in the call in EITHER
+# direction, so the `no` tier carries it too. Neutral greys, darker = more
+# confident, so the strip never competes with the tier colours above it.
+_CONFIDENCES: list[tuple[str, str]] = [
+    ("high", "#5B4E4B"),
+    ("moderate", "#A3958F"),
+    ("low", "#DDD3CD"),
+]
+
 # Panel-b: the cross-cutting surface facets counted by surface-call REASON
 # (not the evidence-gated facet), so weak-evidence surface calls in the `low`
 # tier are retained. One horizontal stacked bar per tier (canonical / likely /
@@ -208,6 +220,16 @@ def _read_tier_categories(data: pd.DataFrame) -> dict[str, dict[str, int]]:
     return out
 
 
+def _read_confidence(data: pd.DataFrame) -> dict[str, dict[str, int]]:
+    """Panel a strip: {tier: {confidence: n_genes}} from the per-gene TSV."""
+    out: dict[str, dict[str, int]] = {}
+    for _, row in data.iterrows():
+        conf = out.setdefault(str(row["category"]), {})
+        key = str(row["confidence"])
+        conf[key] = conf.get(key, 0) + 1
+    return out
+
+
 def _panel_label(ax, letter: str) -> None:
     ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=27,
             fontweight=800, va="bottom", ha="right", color=BRAND_INK)
@@ -230,21 +252,28 @@ _TIER_GROUPS = [
 def _tier_group_brackets(ax) -> None:
     """Draw grouping brackets under panel a's tick labels.
 
-    Blended transform: x in data coords (so the bracket tracks the bars),
-    y in axes coords (so it sits a fixed distance below the axis regardless
-    of the y-scale). Drawn with clip_on=False because it lives outside the
-    axes box.
+    x in data coords (so the bracket tracks the bars); y a fixed number of
+    points below the bottom of ``ax`` (the confidence strip, which carries the
+    tick labels), so the brackets clear the labels whatever the strip's
+    height. Drawn with clip_on=False because they live outside the axes box.
     """
-    trans = blended_transform_factory(ax.transData, ax.transAxes)
-    y_bar, y_txt = -0.15, -0.205
+    def below(points: float):
+        return blended_transform_factory(ax.transData, ax.transAxes) + ScaledTranslation(
+            0, -points / 72, ax.figure.dpi_scale_trans)
+
+    def segment(xa, pa, xb, pb):
+        ax.annotate("", xy=(xb, 0), xycoords=below(pb), xytext=(xa, 0),
+                    textcoords=below(pa), annotation_clip=False,
+                    arrowprops=dict(arrowstyle="-", color=BRAND_NEUTRAL, lw=1.4,
+                                    shrinkA=0, shrinkB=0))
+
+    y_bar, y_txt, tick = 45, 53, 6
     for (i0, i1), label in _TIER_GROUPS:
         x0, x1 = i0 - 0.37, i1 + 0.37
-        ax.plot([x0, x1], [y_bar, y_bar], transform=trans, color=BRAND_NEUTRAL,
-                lw=1.4, clip_on=False, solid_capstyle="butt")
+        segment(x0, y_bar, x1, y_bar)
         for x in (x0, x1):
-            ax.plot([x, x], [y_bar, y_bar + 0.022], transform=trans,
-                    color=BRAND_NEUTRAL, lw=1.4, clip_on=False)
-        ax.text((x0 + x1) / 2, y_txt, label, transform=trans, ha="center",
+            segment(x, y_bar, x, y_bar - tick)
+        ax.text((x0 + x1) / 2, 0, label, transform=below(y_txt), ha="center",
                 va="top", fontsize=16, color=BRAND_NEUTRAL)
 
 
@@ -264,10 +293,14 @@ def main() -> None:
     no_total = sum(data.get("no", {}).values())
     cohort_n = canon + likely_total + low_total + unc_total + no_total
 
-    fig, (axA, axB) = plt.subplots(
-        1, 2, figsize=(18, 7),
-        gridspec_kw={"width_ratios": [1.45, 1.35], "wspace": 0.18},
-    )
+    fig = plt.figure(figsize=(18, 6.6))
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.45, 1.35], wspace=0.18)
+    # Panel a = the tier bars over a slim confidence strip that carries the
+    # tick labels; panel b spans the full height.
+    gsA = gs[0, 0].subgridspec(2, 1, height_ratios=[1, 0.13], hspace=0.06)
+    axA = fig.add_subplot(gsA[0])
+    axS = fig.add_subplot(gsA[1], sharex=axA)
+    axB = fig.add_subplot(gs[0, 1])
 
     # ── Panel a: the five-tier confidence spectrum ──────────────────────────
     tiers = [
@@ -288,8 +321,6 @@ def main() -> None:
         axA.bar(i, n, width=0.74, color=color, edgecolor="none")
         axA.text(i, n + tier_max * 0.02, f"{n:,}", ha="center", va="bottom",
                  fontsize=16.5, color=BRAND_INK)
-    axA.set_xticks(range(len(tiers)))
-    axA.set_xticklabels([t[0] for t in tiers])
     axA.set_ylabel("Proteins in\ndeep-dive cohort")
     # Panel b labels its axis and panel a did not, which reads as an
     # oversight when the two sit side by side (reviewer note). "Surface
@@ -297,12 +328,42 @@ def main() -> None:
     # confidence in a surface call, but `no` and `uncertain` are the
     # absence of one, so calling the whole axis a confidence scale would
     # mislabel two of its five categories.
-    axA.set_xlabel("Deep-dive surface tier", labelpad=100)
-    _tier_group_brackets(axA)
     axA.set_ylim(0, tier_max * 1.16)
     axA.set_xlim(-0.6, len(tiers) - 0.4)
+    axA.tick_params(axis="x", labelbottom=False, length=0)
     sns.despine(ax=axA, top=True, right=True)
     _panel_label(axA, "a")
+
+    # Confidence strip: one 100% bar per tier, the same width as the bar
+    # above it, split high / moderate / low. No numbers in the segments: the
+    # `no` tier's high share (35%) is too narrow to hold one legibly, and the
+    # counts are in the legend text.
+    conf = _read_confidence(_df)
+    for i, (label, _n, _color) in enumerate(tiers):
+        counts = conf.get(label, {})
+        total = sum(counts.values()) or 1
+        left = i - 0.37
+        for name, shade in _CONFIDENCES:
+            w = 0.74 * counts.get(name, 0) / total
+            if w <= 0:
+                continue
+            axS.barh(0, w, left=left, height=0.86, color=shade,
+                     edgecolor="white", linewidth=1.0)
+            left += w
+    axS.set_ylim(-0.5, 0.5)
+    axS.set_yticks([0], ["call\nconfidence"], fontsize=14)
+    axS.set_xticks(range(len(tiers)), [t[0] for t in tiers])
+    axS.tick_params(axis="both", length=0)
+    axS.grid(False)
+    sns.despine(ax=axS, left=True, bottom=True)
+    axS.set_xlabel("Deep-dive surface tier", labelpad=84)
+    _tier_group_brackets(axS)
+    axA.legend(
+        handles=[mpatches.Patch(color=shade, label=name) for name, shade in _CONFIDENCES],
+        title="Call confidence (strip)", loc="upper right", frameon=False,
+        fontsize=15.5, title_fontsize=15.5, handlelength=1.1, labelspacing=0.3,
+    )
+
 
     # ── Panel b: surface facets by REASON, across the three populated tiers ──
     # One horizontal stacked bar per tier (canonical / likely / low), split by
