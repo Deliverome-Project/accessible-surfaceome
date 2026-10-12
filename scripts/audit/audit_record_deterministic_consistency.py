@@ -57,6 +57,12 @@ def _marks(xs: list) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument(
+        "--pause",
+        type=float,
+        default=PAUSE_S,
+        help="seconds between chunk queries (0 when nothing else is using D1)",
+    )
     args = ap.parse_args()
     load_env()
     topo_v = dd._latest_topology_version_for_cohort("human_canonical")
@@ -93,7 +99,7 @@ def main() -> int:
                 ch,
             ):
                 recs[r["g"]] = r
-            time.sleep(PAUSE_S)
+            time.sleep(args.pause)
 
         accs = sorted({r["u"] for r in recs.values() if r["u"]})
         src: dict[str, collections.Counter] = collections.defaultdict(
@@ -104,7 +110,7 @@ def main() -> int:
             for ch in _chunks(accs):
                 for r in d1.query(sql.format(m=_marks(ch)), [*params, *ch]):
                     src[r["u"]][key] = r[field]
-                time.sleep(PAUSE_S)
+                time.sleep(args.pause)
 
         count(
             "SELECT uniprot_acc u, COUNT(*) n FROM topology_public WHERE cohort='human_canonical' "
