@@ -16,6 +16,7 @@ paralogs           len(paralogs)                                        compara_
 orthologs          len(orthologs.mouse / .cynomolgus), no null %id      compara_ortholog_ecd rows joined to Compara
 structure          structure.source is not a placeholder                AlphaFold DB (reported, not a D1 table)
 surface_bind       surface_bind.has_data                                surface_bind_protein
+                   each site's anchor_topology                          side of the anchor in the served topology
 homomer            homo_oligomerization.is_homo_oligomer                schweke_homomer_public
 =================  ===================================================  =========================================
 
@@ -53,6 +54,50 @@ OUT = REPO_ROOT / "data/analysis/deterministic_consistency"
 CHUNK = 90
 PAUSE_S = 0.3
 _DF = "$.deterministic_features"
+
+
+def surface_bind_sides(
+    d1: D1Client, genes: list[str], topo_v: str, pause: float
+) -> set[str]:
+    """Genes whose stored SURFACE-Bind site sides disagree with the served topology.
+
+    A site without an ``anchor_topology`` key is fine: the Worker fills it at
+    serve time from the same pinned release. A stored value, including a stored
+    null, is served as is, so it must equal the side of the anchor residue in
+    the served canonical topology. 110 genes kept a null baked in before
+    their topology row existed, until 2026-10-12.
+    """
+    from accessible_surfaceome.tools.surface_bind import anchor_topology
+
+    sites: dict[str, list[tuple[str, int, object]]] = collections.defaultdict(list)
+    for ch in _chunks(genes):
+        for r in d1.query(
+            "SELECT s.gene_symbol g, json_extract(s.annotation_json,'$.gene.uniprot_acc') u, "
+            "json_extract(j.value,'$.anchor_residue') a, "
+            "json_type(j.value,'$.anchor_topology') t, json_extract(j.value,'$.anchor_topology') v "
+            f"FROM surface_annotation s, json_each(s.annotation_json,'{_DF}.surface_bind.sites') j "
+            f"WHERE s.gene_symbol IN ({_marks(ch)});",
+            ch,
+        ):
+            if r["t"] is not None:  # key present: served as stored
+                sites[r["u"]].append((r["g"], int(r["a"]), r["v"]))
+        time.sleep(pause)
+    topo: dict[str, str] = {}
+    for ch in _chunks(sorted(sites)):
+        for r in d1.query(
+            "SELECT uniprot_acc u, per_residue_topology t FROM topology_public "
+            "WHERE cohort='human_canonical' AND topology_version=? "
+            f"AND uniprot_acc IN ({_marks(ch)});",
+            [topo_v, *ch],
+        ):
+            topo[r["u"]] = r["t"]
+        time.sleep(pause)
+    return {
+        g
+        for u, rows in sites.items()
+        for g, a, v in rows
+        if anchor_topology(topo.get(u), a) != v
+    }
 
 
 def _chunks(seq: list, n: int = CHUNK):
@@ -229,6 +274,12 @@ def main() -> int:
             [],
             "sb",
         )
+        side_wrong = surface_bind_sides(
+            d1,
+            [g for g, r in recs.items() if r["sb"] in (1, True, "true")],
+            topo_v,
+            args.pause,
+        )
         integrity = source_integrity(d1, topo_v, par_v, ecd_v)
         count(
             "SELECT uniprot_acc u, 1 n FROM schweke_homomer_public WHERE uniprot_acc IN ({m});",
@@ -251,6 +302,7 @@ def main() -> int:
             # an entry without per-residue topology predates it.
             "ortholog_topology": (r["topo_null"] or 0) == 0,
             "surface_bind": (r["sb"] in truthy) == bool(s["sb"]),
+            "surface_bind_sides": g not in side_wrong,
             "homomer": (r["homo"] in truthy) == bool(s["homo"]),
         }
         for k, ok in checks.items():
@@ -286,6 +338,7 @@ def main() -> int:
         "ortholog_full_length_identity",
         "ortholog_topology",
         "surface_bind",
+        "surface_bind_sides",
         "homomer",
     ):
         v = problems.get(k, [])
