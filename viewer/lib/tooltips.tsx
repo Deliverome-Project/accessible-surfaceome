@@ -885,10 +885,49 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_live_cell_evidence: (
     <>
-      At least one method shows DIRECT surface accessibility on live/intact
-      cells in an endogenous context &mdash; live-cell flow cytometry,
-      surface biotinylation, or proximity labeling (not permeabilizable
-      IF/IHC). Filters by evidence modality, not just the rolled-up grade.
+      At least one direct experiment reached the protein on <strong>living</strong>{" "}
+      cells at its own expression level (not overexpressed): live-cell flow
+      cytometry, live-cell immunofluorescence, surface biotinylation,
+      cell-surface capture mass spec, or proximity labeling. Fixed-cell
+      staining and functional assays don&apos;t count here &mdash; find
+      those under Direct surface method. The closest experimental analogue
+      to what an antibody meets on a target cell.
+    </>
+  ),
+
+  catalog_surface_method_direct: (
+    <>
+      Which kinds of experiment showed the protein is reachable from
+      outside an intact cell: live or non-permeabilized staining of an
+      extracellular epitope or tag, membrane-impermeable labeling, or a
+      functional readout that needs surface access. A gene matches if
+      any of its direct methods is selected. <strong>Functional surface
+      assay</strong> = a toxin, blocking or therapeutic antibody, ADC or
+      CAR-T acting on live target-positive cells, radioligand binding,
+      ectodomain shedding, or transport of an extracellular substrate.
+      <strong> Other</strong> = e.g. cell-surface ELISA, CITE-seq antibody
+      tags, immuno-EM on intact cells. Same categories as Supplementary
+      Figure 13; the evidence grade counts how many of these a gene has.
+    </>
+  ),
+
+  catalog_surface_method_supporting: (
+    <>
+      Methods that place the protein at the plasma membrane without
+      showing its outside is reachable: membrane-rim staining,
+      fluorescent-protein fusions, membranous immunohistochemistry
+      (tissue sectioning exposes intracellular epitopes, so IHC is never
+      direct). Lists only methods with no direct experiment for that
+      gene.
+    </>
+  ),
+
+  catalog_native_direct_surface_evidence: (
+    <>
+      At least one direct surface method was run with the protein at its
+      own expression level (endogenous, or a knock-in tag), not only in
+      overexpressing cells. Overexpression can push a protein to the
+      surface that the native protein never reaches.
     </>
   ),
 
