@@ -30,8 +30,8 @@ judgment of what the experiment shows:
   access.
 - **Supporting only** (light bars): places the protein at the plasma membrane
   without showing the outside is reachable. Membrane-rim staining, fluorescent-
-  protein fusions, membranous IHC. IHC is never direct, because sectioning
-  exposes intracellular epitopes.
+  protein fusions, membranous IHC. IHC is almost never direct (2 genes),
+  because sectioning exposes intracellular epitopes.
 
 Rows judged membrane association only (fractionation), expression only or weak
 are left out. The evidence grade is graded from this same block, so nearly every

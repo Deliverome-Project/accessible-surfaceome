@@ -58,8 +58,9 @@ TSVs. Produced by `build_triage_vs_deep_dive_reason` in
 in the project repo, which joins the published deep-dive records
 (`data/processed/deep_dive/deep_dive_records.tsv`, exported from public
 D1) to the Sonnet triage verdicts
-(`data/processed/deep_dive/triage_verdicts.tsv`, run
-`genome_full_sonnet_ncbi_v2`), then adds GO / SURFY / HPA surface flags
+(`data/processed/deep_dive/triage_verdicts.tsv`: run
+`genome_full_sonnet_ncbi_v2` with the PubMed rescue lanes applied, i.e. the
+two-stage verdict), then adds GO / SURFY / HPA surface flags
 from the catalog and UniProt / CSPA optimized-cutoff membership from
 `db_optimized_cutoffs.tsv`.
 
