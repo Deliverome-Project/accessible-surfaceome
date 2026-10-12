@@ -1,0 +1,101 @@
+{
+  "has_data": true,
+  "gene_symbol": "STEAP3",
+  "uniprot_acc": "Q658P3",
+  "sites": [
+    {
+      "site_id": "STEAP3-snorkel-c",
+      "gene_symbol": "STEAP3",
+      "uniprot_acc": "Q658P3",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 488,
+      "residue_before": "V",
+      "residue_after": null,
+      "residue_label": "V488",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 52.5,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "STEAP3-surface_loop-349",
+      "gene_symbol": "STEAP3",
+      "uniprot_acc": "Q658P3",
+      "provenance": "deterministic_computed",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "insert_after_residue": 349,
+      "residue_before": "W",
+      "residue_after": "V",
+      "residue_label": "W349",
+      "residue_range": "A343-V350",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA, DogTag",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (surface_loop path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "ordered surface loop (8 aa): pLDDT>=70, DSSP loop/turn, exposed junction residue (max RSA), indel-tolerant, 3D-clear of features",
+      "sources": [],
+      "plddt": 90.4,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "STEAP3-surface_loop-346::iso::Q8CI59",
+      "isoform_id": "Q8CI59",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 346,
+      "canonical_residue": 346,
+      "left_pct": 70.90163934426229
+    },
+    {
+      "site_id": "STEAP3-surface_loop-356::iso::A0A2K5W641",
+      "isoform_id": "A0A2K5W641",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 356,
+      "canonical_residue": 346,
+      "left_pct": 71.4859437751004
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T23:54:40.967389+00:00",
+  "literature_notes": "All three ledger lines (L1, L2, L3) describe the same FLAG-tagged full-length murine STEAP3 construct cloned into pCMV-Tag3 and used for co-immunoprecipitation in HEK293T cells. Three disqualifying factors prevent any extracellular surface site from being proposed. First, no residue or junction is named for the FLAG tag in any of the three clips \u2014 the tag position is entirely unstated, which disqualifies the construct under the 'commercial plasmid whose tag position is unstated' rule. Second, STEAP3 has zero extracellular termini: the N-terminus (residues 1\u2013213) is intracellular and the C-terminus (residues 452\u2013488) is intracellular, so the topology_derived rule (which requires exactly one extracellular terminus) cannot be applied to derive a surface position. Third, no ledger line reports any insertion into an extracellular loop. The Y288H variant mentioned in L3 is a disease-associated point mutation in the intracellular loop (residues 280\u2013304), not a tag insertion, and does not constitute evidence for a surface site. The three extracellular loops (ECL1: 233\u2013258, ECL2: 326\u2013356, ECL3: 415\u2013430) are topologically accessible but are not grounded by any qualifying ledger line. Zero sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "FLAG tag on full-length STEAP3 via pCMV-Tag3 (N-terminal tag vector); the N-terminus (residues 1\u2013213) is intracellular, so the tag faces the cytoplasm, not the cell surface."
+    }
+  ]
+}

@@ -63,6 +63,12 @@ BLASTDBCMD = BIN / "ncbi-blast-2.17.0+/bin/blastdbcmd"
 MUSCLE = BIN / "muscle-osx-arm64"
 DB = Path.home() / ".local/opt/epictope-db/all7"
 
+#: blastp against a 7-proteome, 416k-sequence database is the wall clock of
+#: this script — single-threaded it is roughly 20 s/gene. The search is
+#: embarrassingly parallel over database chunks, so threading it is a straight
+#: win with no effect on the hits returned.
+BLAST_THREADS = 8
+
 # muscle 5.3's macOS builds link gcc@11's libgomp, which is not installed.
 # libgomp is ABI-stable, so the installed gcc 15 copy resolves it without
 # patching the binary or installing a second compiler.
@@ -302,8 +308,17 @@ def msa_entropy(query_seq: str, others: list[str]) -> list[float]:
     return out[: len(query_seq)]
 
 
+#: Courtesy interval between IUPred2A calls. Their REST API is a small
+#: academic service; a cohort sweep is hundreds of requests and should not
+#: arrive as fast as we can issue them.
+IUPRED_COURTESY_S = 0.5
+
+
 def anchor2(acc: str) -> list[float] | None:
     """IUPred2A ANCHOR2 per residue — the same REST call R/iupredAnchor.R makes."""
+    import time
+
+    time.sleep(IUPRED_COURTESY_S)
     url = f"https://iupred2a.elte.hu/iupred2a/anchor/{acc}.json"
     try:
         with urllib.request.urlopen(url, timeout=60) as r:
@@ -369,7 +384,17 @@ def main() -> int:
         rows = rows[: args.limit]
     log.info("scoring %d gene(s)", len(rows))
 
+    # Resume rather than redo: this is a long run and restarting it (to raise
+    # thread count, after a network blip) should not re-pay for finished genes.
     out: list[dict[str, Any]] = []
+    if args.out.exists():
+        try:
+            out = json.loads(args.out.read_text())
+            done = {r["gene_symbol"] for r in out}
+            rows = [r for r in rows if r[0] not in done]
+            log.info("resuming: %d already scored, %d to go", len(out), len(rows))
+        except Exception:  # noqa: BLE001
+            out = []
     for n, (symbol, acc) in enumerate(rows, 1):
         sig_path = args.signals_dir / f"{symbol}.json.gz"
         if not sig_path.exists():
@@ -382,7 +407,15 @@ def main() -> int:
             log.warning("%s: no sequence in signals, skipped", symbol)
             continue
         ss = _per_residue(sig.get("ss"))
-        rsa = {k: float(v) for k, v in _per_residue(sig.get("rsa")).items()}
+        # Residues unmodelled in the AlphaFold file carry None, not 0. Coercing
+        # them would crash; keeping them out of the dict lets score_protein
+        # treat them as "no exposure evidence", which ranks them last rather
+        # than asserting they are buried.
+        rsa = {
+            k: float(v)
+            for k, v in _per_residue(sig.get("rsa")).items()
+            if v is not None
+        }
 
         hits = best_hit_per_species(seq, acc).get("_hits", [])
         chosen = pick_one_per_species(hits)
@@ -408,7 +441,12 @@ def main() -> int:
             }
         )
         if n % 10 == 0 or n == len(rows):
-            log.info("  %d/%d (%d scored)", n, len(rows), len(out))
+            # Checkpoint, not just progress. A run over the cohort is ~50
+            # minutes; writing only at the end means any interruption throws
+            # all of it away AND leaves the resume above with nothing to read,
+            # which is how the first attempt lost its work.
+            args.out.write_text(json.dumps(out))
+            log.info("  %d/%d (%d scored, checkpointed)", n, len(rows), len(out))
 
     args.out.write_text(json.dumps(out))
     log.info("wrote %d record(s) -> %s", len(out), args.out)

@@ -1,23 +1,90 @@
 {
-  "has_data": false,
+  "has_data": true,
   "gene_symbol": "GJD4",
   "uniprot_acc": "Q96KN9",
-  "sites": [],
+  "sites": [
+    {
+      "site_id": "GJD4-snorkel-c",
+      "gene_symbol": "GJD4",
+      "uniprot_acc": "Q96KN9",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 370,
+      "residue_before": "V",
+      "residue_after": null,
+      "residue_label": "V370",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 51.3,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "GJD4-surface_loop-181",
+      "gene_symbol": "GJD4",
+      "uniprot_acc": "Q96KN9",
+      "provenance": "deterministic_computed",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "insert_after_residue": 181,
+      "residue_before": "T",
+      "residue_after": "G",
+      "residue_label": "T181",
+      "residue_range": "T176-V183",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA, DogTag",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (surface_loop path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "ordered surface loop (8 aa): pLDDT>=70, DSSP loop/turn, exposed junction residue (max RSA), indel-tolerant, 3D-clear of features",
+      "sources": [],
+      "plddt": 91.6,
+      "conservation_rank": null,
+      "median_conservation": 0.5
+    }
+  ],
   "isoform_pins": [],
-  "ortholog_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "GJD4-surface_loop-156::iso::Q8BSD4",
+      "isoform_id": "Q8BSD4",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 156,
+      "canonical_residue": 178,
+      "left_pct": 42.857142857142854
+    }
+  ],
   "schema_version": "1.0.0",
   "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
   "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-11T09:15:47.697676+00:00",
-  "literature_notes": "All six ledger lines (L1\u2013L6) describe a single published insertion: a V5 epitope tag introduced by CRISPR into the 'C-terminal tail' of zebrafish gjd4/Cx46.8 (GJD4). The authoritative topology landmarks place the C-terminal tail (residues 218\u2013370) entirely in the intracellular compartment. Connexins universally have an intracellular C-terminus, consistent with the computed topology. No ledger line names a specific residue for the insertion, and no ledger line reports any tag on an extracellular face (ECL1: 45\u201376; ECL2: 168\u2013195) or at either extracellular-accessible terminus. Because the sole published insertion is intracellular, zero extracellular surface tag sites qualify.",
+  "generated_at": "2026-10-11T23:47:54.899480+00:00",
+  "literature_notes": "All eight ledger lines (L1\u2013L8) describe a single published experiment: a V5 epitope tag introduced by CRISPR into the C-terminal tail of gjd4/Cx46.8 (GJD4) in zebrafish. The topology landmarks place the entire C-terminal tail (residues 218\u2013370) in the intracellular compartment. The tag is therefore cytoplasmic, not extracellular, and does not qualify as a surface tag site. No ledger line reports any insertion in either extracellular loop (EL1: 45\u201376; EL2: 168\u2013195) or at any extracellular terminus. Because the ledger contains no evidence of a tolerated extracellular tag insertion for GJD4, zero sites are proposed.",
   "literature_rejected": [],
   "literature_other_positions": [
     {
       "residue": 218,
       "kind": "intracellular",
-      "supporting_clip_id": "L1",
-      "note": "V5 epitope tag introduced by CRISPR into the C-terminal tail (intracellular, residues 218\u2013370) of GJD4/Cx46.8 in zebrafish; protein expressed and localized in muscle cells in vivo, but the tag faces the cytoplasm, not the extracellular surface. No specific residue within the tail is named in any ledger line; residue 218 (C, first of the C-tail) is used as the representative position."
+      "supporting_clip_id": "L7",
+      "note": "V5 epitope tag inserted by CRISPR into a non-conserved region of the intracellular C-terminal tail (residues 218\u2013370); protein is expressed and localises correctly in vivo, but the tag faces the cytoplasm, not the extracellular surface."
     }
   ]
 }

@@ -1,0 +1,90 @@
+{
+  "has_data": true,
+  "gene_symbol": "XKR4",
+  "uniprot_acc": "Q5GH76",
+  "sites": [
+    {
+      "site_id": "XKR4-disorder-452",
+      "gene_symbol": "XKR4",
+      "uniprot_acc": "Q5GH76",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 452,
+      "residue_before": "R",
+      "residue_after": "T",
+      "residue_label": "R452",
+      "residue_range": "K449-R452",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 64.2,
+      "conservation_rank": null,
+      "median_conservation": 0.0
+    },
+    {
+      "site_id": "XKR4-snorkel-c",
+      "gene_symbol": "XKR4",
+      "uniprot_acc": "Q5GH76",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 650,
+      "residue_before": "L",
+      "residue_after": null,
+      "residue_label": "L650",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 38.7,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-12T01:27:25.198566+00:00",
+  "literature_notes": "XKR4 is a 10-TM scramblase with both its N-terminus (residues 1-112) and C-terminus (residues 510-650) on the intracellular face. All five extracellular loops are very short (5-11 aa: ECL1 135-142, ECL2 327-333, ECL3 394-398, ECL4 449-456, ECL5 478-488) and none of the three ledger lines reports a tag insertion in any of them. L1 describes full-length mouse Xkr4 and human XKR4 constructs carrying N-terminal V5 and/or C-terminal FLAG tags \u2014 both termini are intracellular, so these are intracellular tags only. L2 describes a C-terminal TEV-FLAG-6xHis purification construct, again intracellular. L3 describes GFP-tagged XKR family members used for FSEC screening; the context ('C-terminal caspase cleavage site distal from the membrane') implies a C-terminal GFP, which is also intracellular. No ledger line reports any tag insertion at an extracellular position for XKR4 or a close ortholog. Zero surface tag sites qualify.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "N-terminal V5 tag on full-length human and mouse XKR4; the N-terminus (residues 1-112) is intracellular per topology landmarks, so this tag faces the cytoplasm, not the cell surface."
+    },
+    {
+      "residue": 650,
+      "kind": "intracellular",
+      "supporting_clip_id": "L1",
+      "note": "C-terminal FLAG tag on mouse Xkr4 (and C-terminal FLAG-6xHis in L2); the C-terminus (residues 510-650) is intracellular per topology landmarks, so these tags face the cytoplasm."
+    },
+    {
+      "residue": 650,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "GFP-tagged hXkr4 used for FSEC; context implies C-terminal fusion, which is intracellular; construct confirmed functional for apoptotic scrambling but the tag is not on the extracellular face."
+    }
+  ]
+}

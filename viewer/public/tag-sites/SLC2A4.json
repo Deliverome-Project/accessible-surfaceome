@@ -4,6 +4,50 @@
   "uniprot_acc": "P14672",
   "sites": [
     {
+      "site_id": "SLC2A4-internal-None-lit",
+      "gene_symbol": "SLC2A4",
+      "uniprot_acc": "P14672",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL1",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "HiBiT (11 aa)",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Surface translocation assay: insulin-stimulated GLUT4 translocation to the plasma membrane was detected and quantified by luminescence complementation, confirming the tagged protein traffics normally and reaches the cell surface in response to insulin.",
+      "confidence": "high",
+      "rationale": "L1 and L2 both explicitly state that HiBiT was inserted into the 'first extracellular loop' of endogenous GLUT4 via CRISPR/Cas9 knock-in. The topology landmarks place ECL1 at residues 46\u201381 (36 aa), flanked by TM1 (24\u201345) and TM2 (82\u2013103). No specific junction residue is named in either clip, so the site is region-level. The endogenous knock-in context and successful insulin-stimulated surface translocation assay establish surface_and_function validation. L3\u2013L5 (same PMC12309902 group) independently confirm surface-accessible HiBiT-GLUT4 with ~120-fold insulin response, corroborating ECL1 as the tag location. CRISPR/Cas9 knock-in of the HiBiT coding sequence into the endogenous GLUT4 locus in mice, placing HiBiT within the first extracellular loop (ECL1, residues 46\u201381). Primary brown adipocytes from these mice were used to study GLUT4 surface translocation by luminescence complementation.",
+      "validation_level": "surface_and_function",
+      "position_evidence": "topology_derived",
+      "source_tier": "paper",
+      "cited_tag_residue": null,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 41926710,
+          "citation": "PMID 41926710",
+          "claim": "We utilized primary brown adipocytes (PBAs) isolated from mice which have a HiBiT-tag inserted into the first extracellular loop of endogenous GLUT4 ( 24 )."
+        },
+        {
+          "pmid": 37511290,
+          "citation": "PMID 37511290",
+          "claim": "Only the GLUT4 reporter that was translocated to the plasma membrane was recognized by an anti-Myc tag antibody and was visualized by immunofluorescent microscopy (red color)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "SLC2A4-snorkel-c",
       "gene_symbol": "SLC2A4",
       "uniprot_acc": "P14672",
@@ -252,6 +296,21 @@
       "isoform_residue": 73,
       "canonical_residue": 73,
       "left_pct": 14.341846758349705
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T23:01:31.794659+00:00",
+  "literature_notes": "All seven ledger lines converge on ECL1 (residues 46\u201381) as the sole validated extracellular insertion site for GLUT4. The other five extracellular spans are too short or lack any ledger support: ECL2 (133\u2013135, 3 aa), ECL3 (193\u2013201, 9 aa), ECL4 (309\u2013322, 14 aa), ECL5 (375\u2013379, 5 aa), and ECL6 (443\u2013446, 4 aa) are all unsupported by any ledger line. The N-terminus (1\u201323) and C-terminus (467\u2013509) are both intracellular, ruling out terminal extracellular tags. L3/L4/L5 (PMC12309902) describe HiBiT-GLUT4 constructs with confirmed surface luminescence (~1000-fold over control, ~120-fold insulin response) but do not independently name ECL1; they are treated as corroborating evidence for the L1-grounded ECL1 site rather than a separate site. The two sites reported differ in tag type (HiBiT vs. Myc) and primary publication, justifying separate entries per the instructions.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 509,
+      "kind": "intracellular",
+      "supporting_clip_id": "L6",
+      "note": "The mCherry tag in the Myc-GLUT4-mCherry construct is C-terminal; the GLUT4 C-terminus (residues 467\u2013509) is intracellular per topology landmarks, making this an intracellular fluorescent label, not a surface tag."
     }
   ]
 }

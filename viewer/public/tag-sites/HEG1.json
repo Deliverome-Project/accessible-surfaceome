@@ -9,15 +9,15 @@
   "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
   "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-11T09:58:27.105265+00:00",
-  "literature_notes": "Two ledger lines were evaluated. L2 (HEG1-YFP, PMC2665266) names a C-terminal YFP fusion; HEG1's C-terminus (residue 1381) is intracellular (topology 1271\u20131381), so this is not a surface tag site and is recorded in other_positions. L1 (FLAG-tagged murine HEG1, PMC4733052) reports a full-length FLAG-tagged construct but does not state whether the FLAG is at the N-terminus (extracellular, after SP cleavage at residue 29) or C-terminus (intracellular); the topology_derived rule requires knowing which terminus carries the tag, not merely that one terminus is extracellular. The experimental context (studying intracellular KRIT1 interaction; deletion mutant spanning human residues 1327\u20131335, which are intracellular) is consistent with a C-terminal FLAG but does not prove it. Because the position is genuinely ambiguous, no surface site can be proposed from L1. No ledger line supports an insertion on the extracellular face of HEG1 at a pinnable or topology-derivable position.",
+  "generated_at": "2026-10-11T23:59:10.119084+00:00",
+  "literature_notes": "Two ledger lines were examined. L1 (PMC4733052) reports a FLAG-tagged full-length murine HEG1 lentiviral construct expressed in endothelial cells, but neither the quote nor the surrounding text names a terminus or residue for the FLAG insertion. HEG1 is a type I single-pass transmembrane protein with one extracellular N-terminus (after SP cleavage at residue 29/30) and one intracellular C-terminus (residues 1271\u20131381); FLAG tags are used at both termini in the literature, so the topology alone cannot resolve which face carries the tag without knowing it is extracellular. The topology-derived rule requires that the tag be known to be on the surface before the single extracellular terminus can be inferred as the position; that prerequisite is not met here. The site was therefore dropped. L2 (PMC11001532) reports a pCMV6-HEG1-MycDDK (Origene RC212168) construct with an explicitly C-terminal Myc-DDK tag transfected into HAECs. The C-terminus of HEG1 is intracellular (residues 1271\u20131381), so this tag faces the cytoplasm and does not qualify as an extracellular surface site; it is recorded in other_positions.",
   "literature_rejected": [],
   "literature_other_positions": [
     {
       "residue": 1381,
       "kind": "intracellular",
       "supporting_clip_id": "L2",
-      "note": "HEG1-YFP is a C-terminal YFP fusion; the C-terminus (residue 1381) lies in the intracellular domain (topology 1271\u20131381) and is not accessible on the extracellular face."
+      "note": "C-terminal Myc-DDK tag (Origene pCMV6-HEG1-MycDDK RC212168) appended after the last residue F1381, which lies in the intracellular tail (residues 1271\u20131381); not a surface tag."
     }
   ]
 }

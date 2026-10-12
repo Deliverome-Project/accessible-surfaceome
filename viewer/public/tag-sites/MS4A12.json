@@ -1,29 +1,129 @@
 {
-  "has_data": false,
+  "has_data": true,
   "gene_symbol": "MS4A12",
   "uniprot_acc": "Q9NXJ0",
-  "sites": [],
+  "sites": [
+    {
+      "site_id": "MS4A12-disorder-118",
+      "gene_symbol": "MS4A12",
+      "uniprot_acc": "Q9NXJ0",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 118,
+      "residue_before": "E",
+      "residue_after": "V",
+      "residue_label": "E118",
+      "residue_range": "S115-V119",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 63.0,
+      "conservation_rank": null,
+      "median_conservation": 0.0
+    },
+    {
+      "site_id": "MS4A12-snorkel-c",
+      "gene_symbol": "MS4A12",
+      "uniprot_acc": "Q9NXJ0",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 267,
+      "residue_before": "K",
+      "residue_after": null,
+      "residue_label": "K267",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 49.5,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
   "isoform_pins": [],
-  "ortholog_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "MS4A12-disorder-113::iso::A0A087WSB9",
+      "isoform_id": "A0A087WSB9",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 113,
+      "canonical_residue": 118,
+      "left_pct": 42.96577946768061
+    },
+    {
+      "site_id": "MS4A12-disorder-119::iso::A0A2K5X174",
+      "isoform_id": "A0A2K5X174",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 119,
+      "canonical_residue": 118,
+      "left_pct": 44.237918215613384
+    },
+    {
+      "site_id": "MS4A12-disorder-191::iso::A0A2K5X174",
+      "isoform_id": "A0A2K5X174",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 191,
+      "canonical_residue": 190,
+      "left_pct": 71.00371747211895
+    },
+    {
+      "site_id": "MS4A12-surface_loop-125::iso::A0A2K5X174",
+      "isoform_id": "A0A2K5X174",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 125,
+      "canonical_residue": 124,
+      "left_pct": 46.468401486988846
+    }
+  ],
   "schema_version": "1.0.0",
   "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
   "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-11T11:51:08.745750+00:00",
-  "literature_notes": "MS4A12 is a four-transmembrane (MS4A-family) protein with an intracellular N-terminus (residues 1\u201392) and an intracellular C-terminus (residues 222\u2013267). Its only extracellular-facing regions are ECL1 (residues 114\u2013127, 14 aa) and ECL2 (residues 184\u2013200, 17 aa). The entire ledger (L1\u2013L4) derives from a single paper (PMC8112172) that describes two tagged constructs: (1) GCaMP6s-MS4A12, where the cloning order (BamHI/SpeI for GCaMP6s, SpeI/XhoI for MS4A12 in pLenti6.3) places GCaMP6s N-terminal to MS4A12, i.e., on the intracellular face; and (2) 3X FLAG-MS4A12, named in the standard [tag]-[protein] convention, also placing FLAG at the intracellular N-terminus. The paper confirms that the full-length protein traffics to the plasma membrane (surface display of the protein), but neither tag is on the extracellular face. No ledger clip documents an insertion in ECL1, ECL2, or any other extracellular position. Because no qualifying extracellular insertion is grounded in the ledger, zero sites are reported.",
+  "generated_at": "2026-10-12T00:29:48.708516+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe the same study (PMC8112172) using two constructs: GCaMP6s-MS4A12 (GCaMP6s fused N-terminally to full-length MS4A12) and 3\u00d7FLAG-MS4A12 (FLAG tag N-terminal). MS4A12 is a 4-pass TM protein whose N-terminus (residues 1\u201392) and C-terminus (residues 222\u2013267) are both intracellular. The GCaMP6s fusion is therefore on the cytoplasmic face. The 3\u00d7FLAG tag is also N-terminal (naming convention 'FLAG-MS4A12') and likewise intracellular; no residue number is given. The two extracellular loops (ECL1: 114\u2013127, 14 aa; ECL2: 184\u2013200, 17 aa) are not mentioned in any ledger line as sites of tag insertion. No ledger line supports an extracellular tag insertion at any position in MS4A12. Zero sites qualify.",
   "literature_rejected": [],
   "literature_other_positions": [
     {
       "residue": 1,
       "kind": "intracellular",
       "supporting_clip_id": "L3",
-      "note": "GCaMP6s fused N-terminally to MS4A12 (cloning order: GCaMP6s BamHI/SpeI then MS4A12 SpeI/XhoI), placing the tag on the intracellular N-terminus (residues 1\u201392 are intracellular); protein reaches the plasma membrane but the tag faces the cytoplasm."
+      "note": "GCaMP6s fused N-terminally to full-length MS4A12 (pLenti6.3-GCaMP6s-MS4A12); the N-terminus of MS4A12 is intracellular (residues 1\u201392), so the tag faces the cytoplasm, not the extracellular surface."
     },
     {
       "residue": 1,
       "kind": "intracellular",
       "supporting_clip_id": "L3",
-      "note": "3X FLAG-MS4A12 sub-cloned into pCMV5; the '3X flag-MS4A12' naming convention places FLAG at the N-terminus, which is intracellular (residues 1\u201392); no residue number or extracellular position is stated."
+      "note": "3\u00d7FLAG-MS4A12 sub-cloned into pCMV5; naming convention places FLAG at the N-terminus, which is intracellular (residues 1\u201392); no residue number is stated in the paper."
     }
   ]
 }

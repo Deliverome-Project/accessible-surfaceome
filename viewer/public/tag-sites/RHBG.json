@@ -1,29 +1,107 @@
 {
-  "has_data": false,
+  "has_data": true,
   "gene_symbol": "RHBG",
   "uniprot_acc": "Q9H310",
-  "sites": [],
+  "sites": [
+    {
+      "site_id": "RHBG-snorkel-c",
+      "gene_symbol": "RHBG",
+      "uniprot_acc": "Q9H310",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 458,
+      "residue_before": "A",
+      "residue_after": null,
+      "residue_label": "A458",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 42.7,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "RHBG-surface_loop-173",
+      "gene_symbol": "RHBG",
+      "uniprot_acc": "Q9H310",
+      "provenance": "deterministic_computed",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "insert_after_residue": 173,
+      "residue_before": "L",
+      "residue_after": "L",
+      "residue_label": "L173",
+      "residue_range": "H172-G181",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA, DogTag",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (surface_loop path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "ordered surface loop (10 aa): pLDDT>=70, DSSP loop/turn, exposed junction residue (max RSA), indel-tolerant, 3D-clear of features",
+      "sources": [],
+      "plddt": 97.0,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    }
+  ],
   "isoform_pins": [],
-  "ortholog_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "RHBG-surface_loop-170::iso::Q8BUX5",
+      "isoform_id": "Q8BUX5",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 170,
+      "canonical_residue": 173,
+      "left_pct": 37.362637362637365
+    },
+    {
+      "site_id": "RHBG-surface_loop-173::iso::A0A2K5WZK7",
+      "isoform_id": "A0A2K5WZK7",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 173,
+      "canonical_residue": 173,
+      "left_pct": 37.77292576419214
+    }
+  ],
   "schema_version": "1.0.0",
   "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
   "prompt_version": "1.4.0",
   "model": "claude-sonnet-4-6",
-  "generated_at": "2026-10-11T13:59:11.380795+00:00",
-  "literature_notes": "All six ledger lines (L1\u2013L6) describe GFP fusions to full-length human RhBG expressed in MDCKI cells or C2C12 myotubes. L1/L2/L3/L5/L6 describe GFP-RhBG (pEGFP-C1, N-terminal GFP); L4/L5 describe RhBG-GFP (pEGFP-N3, C-terminal GFP). The authoritative topology landmarks place the N-terminus (residues 1\u201314) in the intracellular compartment and the C-terminus (residues 416\u2013458) also intracellular. Neither terminus is extracellular, so both GFP fusions reside on the cytoplasmic face. The papers confirm plasma-membrane trafficking of the protein itself, but that does not make the tag extracellular. No ledger line describes any insertion in an extracellular loop or domain of RhBG. Because the rules forbid proposing sites not grounded in the ledger, and because no ledger line supports an extracellular tag position, zero sites are reported. The six extracellular loops (EC1 35\u201361, EC2 108\u2013124, EC3 173\u2013179, EC4 241\u2013251, EC5 304\u2013306, EC6 365\u2013394) are topologically available but entirely unsupported by the ledger.",
+  "generated_at": "2026-10-12T01:00:54.122232+00:00",
+  "literature_notes": "All seven ledger lines (L1\u2013L7) describe the same two constructs: GFP-RhBG (GFP fused to the N-terminus) and RhBG-GFP (GFP fused to the C-terminus) of full-length human RhBG expressed in MDCKI cells or C2C12 myotubes. The authoritative topology landmarks place the N-terminus (residues 1\u201314) in the INTRACELLULAR compartment and the C-terminus (residues 416\u2013458) also in the INTRACELLULAR compartment. Therefore both GFP fusions face the cytoplasm; neither constitutes an extracellular surface tag. The papers confirm that the tagged protein traffics correctly to the plasma membrane, but the GFP moiety is not on the extracellular face in either construct. No ledger line reports a tag insertion in any extracellular loop or at an extracellular terminus of RhBG or a close ortholog. The six extracellular loops (ECL1 35\u201361, ECL2 108\u2013124, ECL3 173\u2013179, ECL4 241\u2013251, ECL5 304\u2013306, ECL6 365\u2013394) are topologically accessible but are not supported by any ledger-grounded insertion. Zero extracellular tag sites qualify.",
   "literature_rejected": [],
   "literature_other_positions": [
     {
       "residue": 1,
       "kind": "intracellular",
       "supporting_clip_id": "L5",
-      "note": "N-terminal GFP fusion (pEGFP-C1, GFP-RhBG): topology places residues 1\u201314 in the intracellular compartment, so the GFP tag is on the cytoplasmic face, not the extracellular surface."
+      "note": "GFP-RhBG N-terminal GFP fusion: the N-terminus (residues 1\u201314) is intracellular per topology landmarks; tag faces the cytoplasm, not the extracellular surface, though the protein traffics correctly to the plasma membrane."
     },
     {
       "residue": 458,
       "kind": "intracellular",
       "supporting_clip_id": "L4",
-      "note": "C-terminal GFP fusion (pEGFP-N3, RhBG-GFP): topology places residues 416\u2013458 in the intracellular compartment, so the GFP tag is on the cytoplasmic face, not the extracellular surface."
+      "note": "RhBG-GFP C-terminal GFP fusion: the C-terminus (residues 416\u2013458) is intracellular per topology landmarks; tag faces the cytoplasm, not the extracellular surface, though apical and basolateral membrane localization is preserved."
     }
   ]
 }

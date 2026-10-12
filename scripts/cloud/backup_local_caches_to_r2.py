@@ -84,8 +84,37 @@ def _verify_parts(cfg: R2Config, parts: list[dict]) -> list[str]:
     return missing
 
 
+def _tar_dir(path: Path) -> Path:
+    """Pack a directory into a temp tar next to it, and return the tar.
+
+    A directory of ~100k small files cannot be streamed as one object, and
+    uploading each file separately would mean one HTTP request per PDF. Tar
+    first, then the existing part-cutting path handles it unchanged — the point
+    is to reuse the streaming code that already has verify-before-manifest,
+    not to grow a second upload path that lacks it.
+    """
+    import tarfile
+
+    out = path.parent / f"{path.name}.backup.tar"
+    if out.exists():
+        out.unlink()
+    log.info("%s: packing %s into a tar first", path.name, path.name)
+    with tarfile.open(out, "w") as tf:
+        tf.add(path, arcname=path.name)
+    log.info("  tar is %.2f GB", out.stat().st_size / 1e9)
+    return out
+
+
 def backup_file(path: Path, *, prefix: str, execute: bool,
                 part_bytes: int = PART_BYTES) -> dict:
+    tmp_tar: Path | None = None
+    if path.is_dir():
+        if not execute:
+            n = sum(1 for _ in path.rglob("*"))
+            log.info("%s: directory, %d entries (would tar then upload)", path.name, n)
+            return {"name": path.name, "dry_run": True, "entries": n}
+        tmp_tar = _tar_dir(path)
+        path = tmp_tar
     raw = path.stat().st_size
     log.info("%s: %.2f GB raw", path.name, raw / 1e9)
     if not execute:
@@ -142,6 +171,11 @@ def backup_file(path: Path, *, prefix: str, execute: bool,
     # reports success with a hole in it is worse than one that reports failure,
     # because nobody goes looking.
     missing = _verify_parts(cfg, parts)
+    if tmp_tar is not None and not missing:
+        # Only once every part has been READ BACK at the right size. Removing
+        # the tar on an incomplete upload would destroy the one assembled copy.
+        tmp_tar.unlink()
+        log.info("  removed the temporary tar (all parts verified)")
     if missing:
         log.warning("  %d part(s) not retrievable after upload: %s",
                     len(missing), ", ".join(missing))
@@ -182,7 +216,27 @@ def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
                         datefmt="%H:%M:%S")
 
-    targets = [(ROOT / "data/external/tool_cache.sqlite", "tool_cache")]
+    # Three stores, and the two directories are NOT optional extras.
+    #
+    #   tool_cache.sqlite    fetched article bodies; the substrate that makes a
+    #                        rescue analysis free
+    #   blob_cache/          downloaded PDFs. Several publishers (ASH/Blood,
+    #                        Wiley) 403 our user-agent, so a copy here is the
+    #                        only copy — re-fetching does not reliably work.
+    #   tag_site_discovery/  per-gene discovered corpus WITH abstracts, parsed
+    #                        sections, claim drafts and mention excerpts. D1's
+    #                        tag_site_paper_public carries title/journal/year
+    #                        and a triage verdict and nothing else, and covers
+    #                        1,838 of 2,369 genes — so this is not a cache of
+    #                        something D1 already holds.
+    #
+    # All PRIVATE: every one mixes publisher full text with open-access text
+    # and nothing in them separates the two.
+    targets = [
+        (ROOT / "data/external/tool_cache.sqlite", "tool_cache"),
+        (ROOT / "data/external/blob_cache", "blob_cache"),
+        (ROOT / "data/external/tag_site_discovery", "tag_site_discovery"),
+    ]
     for path, prefix in targets:
         if args.only and path.name != args.only:
             continue

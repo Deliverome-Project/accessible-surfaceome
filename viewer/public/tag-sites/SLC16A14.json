@@ -1,0 +1,57 @@
+{
+  "has_data": true,
+  "gene_symbol": "SLC16A14",
+  "uniprot_acc": "Q7RTX9",
+  "sites": [
+    {
+      "site_id": "SLC16A14-snorkel-c",
+      "gene_symbol": "SLC16A14",
+      "uniprot_acc": "Q7RTX9",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 510,
+      "residue_before": "V",
+      "residue_after": null,
+      "residue_label": "V510",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 48.7,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-11T22:33:21.888742+00:00",
+  "literature_notes": "All four ledger lines were examined. L1/L2 describe a commercial Genscript pcDNA3.1+DYK plasmid (Clone OMu04791) carrying a FLAG tag in full-length Slc16a14; the tag position is never stated in the paper, which is the explicit disqualifying condition for commercial plasmids. L3/L4 describe C- or N-terminal Strep-HA / HA-Twin-Strep tags on SLC16A14. The computed topology places the N-terminus (residues 1\u201330) in the intracellular compartment and the C-terminus (residues 495\u2013510) also intracellular; SLC16A14 is a 12-TM transporter with a cytoplasmic N-tail and cytoplasmic C-tail. Neither terminus is extracellular, so neither tag position qualifies as a surface tag site. No ledger line grounds an insertion in any extracellular loop. Zero sites is the correct answer.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal Strep-HA tag reported on SLC16A14; topology places residues 1\u201330 in the intracellular compartment, so this tag faces the cytoplasm, not the extracellular surface."
+    },
+    {
+      "residue": 510,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal HA-Twin-Strep tag reported on SLC16A14; topology places residues 495\u2013510 in the intracellular compartment, so this tag faces the cytoplasm, not the extracellular surface."
+    }
+  ]
+}

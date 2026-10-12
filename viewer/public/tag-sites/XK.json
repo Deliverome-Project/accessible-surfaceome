@@ -1,0 +1,141 @@
+{
+  "has_data": true,
+  "gene_symbol": "XK",
+  "uniprot_acc": "P51811",
+  "sites": [
+    {
+      "site_id": "XK-disorder-341",
+      "gene_symbol": "XK",
+      "uniprot_acc": "P51811",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 341,
+      "residue_before": "D",
+      "residue_after": "I",
+      "residue_label": "D341",
+      "residue_range": "D341-Y345",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 68.3,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    },
+    {
+      "site_id": "XK-internal-None-lit",
+      "gene_symbol": "XK",
+      "uniprot_acc": "P51811",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "ECL2",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "EGFP",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Subcellular distribution characterized alongside anti-XK antibodies; construct traffics correctly to the expected compartment (targeting signal preserved). Scramblase function NOT MEASURED.",
+      "confidence": "medium",
+      "rationale": "PMC9475296 (L1\u2013L4) reports EGFP insertion into the 'second extracellular loop' of full-length XK. Per the authoritative computed topology, the second extracellular loop is ECL2 (residues 59\u201367, HRDLSRDRP), flanked by TM3 ending at residue 58 and TM4 starting at residue 68. No specific junction residue is named in any of L1\u2013L4, so insert_after_residue is left null and the site is reported at region level. The XK-EGFP construct was used as a subcellular reporter and shown to traffic correctly, confirming the insertion is tolerated for localization; the loop is only 9 residues but EGFP (238 aa) was accommodated, establishing precedent for a shorter epitope tag. Full-length XK with EGFP inserted into the second extracellular loop (ECL2, residues 59-67 per computed topology, sequence HRDLSRDRP), expressed as the XK-EGFP reporter construct in mammalian cells to study subcellular distribution; the insertion was designed to minimize disruption of XK targeting signals.",
+      "validation_level": "surface_only",
+      "position_evidence": "inferred",
+      "source_tier": "paper",
+      "cited_tag_residue": null,
+      "entailment_verified": true,
+      "position_repaired": false,
+      "quote_probative": true,
+      "sources": [
+        {
+          "pmid": 36099524,
+          "citation": "PMID 36099524",
+          "claim": "The XK-EGFP reporter was designed by inserting an enhanced green fluorescent protein (EGFP) moiety into the second extracellular loop of XK."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "XK-snorkel-c",
+      "gene_symbol": "XK",
+      "uniprot_acc": "P51811",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 444,
+      "residue_before": "A",
+      "residue_after": null,
+      "residue_label": "A444",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 40.0,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "XK-disorder-345::iso::Q9QXY7",
+      "isoform_id": "Q9QXY7",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 345,
+      "canonical_residue": 345,
+      "left_pct": 77.3542600896861
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-12T01:31:49.809921+00:00",
+  "literature_notes": "L5/L6 (PMC8851519) and L7/L8 (PMC13178662) report FLAG, EGFP, and mEGFP tags at the C-terminus of mouse/human Xk; the C-terminus (residues 370\u2013444) is intracellular per computed topology, so these are recorded in other_positions. L9/L10 (DOI:10.1101/2022.03.30.486314) report a myc tag inserted at residues 94\u2013115 of XK, which the preprint labels as extracellular loop 'L2'; however, the authoritative computed topology places residues 89\u2013140 in the intracellular compartment, so this insertion is also recorded in other_positions as intracellular. The 'second extracellular loop' in PMC9475296 is interpreted as ECL2 (59\u201367) per standard extracellular loop counting using the authoritative computed topology; the alternative interpretation \u2014 that PMC9475296 uses the same non-standard topology as the preprint, making their 'second extracellular loop' = residues 93\u2013123 = intracellular per our topology \u2014 would yield zero surface sites from the ledger. ECL2 is only 9 residues long and sits 1 residue from each flanking TM helix; the \u22653-residue-from-TM-boundary constraint is not met at the loop termini, but the EGFP insertion demonstrates the loop mid-region is physically accessible.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 444,
+      "kind": "intracellular",
+      "supporting_clip_id": "L5",
+      "note": "FLAG and EGFP tags at the C-terminus of mouse Xk (L5/L6, PMC8851519); C-terminus (residues 370\u2013444) is intracellular per computed topology."
+    },
+    {
+      "residue": 444,
+      "kind": "intracellular",
+      "supporting_clip_id": "L7",
+      "note": "mEGFP tag at the C-terminus of human XK (L7/L8, PMC13178662); C-terminus (residues 370\u2013444) is intracellular per computed topology."
+    },
+    {
+      "residue": 107,
+      "kind": "intracellular",
+      "supporting_clip_id": "L10",
+      "note": "Myc tag replacing residues 94\u2013115 (midpoint ~107) in XK loop L2 (L9/L10, preprint); the preprint labels this region extracellular, but the authoritative computed topology places residues 89\u2013140 in the intracellular compartment."
+    }
+  ]
+}

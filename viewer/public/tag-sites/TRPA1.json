@@ -1,0 +1,107 @@
+{
+  "has_data": true,
+  "gene_symbol": "TRPA1",
+  "uniprot_acc": "O75762",
+  "sites": [
+    {
+      "site_id": "TRPA1-disorder-757",
+      "gene_symbol": "TRPA1",
+      "uniprot_acc": "O75762",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 757,
+      "residue_before": "D",
+      "residue_after": "H",
+      "residue_label": "D757",
+      "residue_range": "N753-L762",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 46.6,
+      "conservation_rank": null,
+      "median_conservation": 0.5
+    },
+    {
+      "site_id": "TRPA1-snorkel-c",
+      "gene_symbol": "TRPA1",
+      "uniprot_acc": "O75762",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 1119,
+      "residue_before": "P",
+      "residue_after": null,
+      "residue_label": "P1119",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 39.9,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "TRPA1-disorder-761::iso::Q8BLA8",
+      "isoform_id": "Q8BLA8",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 761,
+      "canonical_residue": 758,
+      "left_pct": 67.64444444444445
+    },
+    {
+      "site_id": "TRPA1-disorder-783::iso::A0A2K5VSJ1",
+      "isoform_id": "A0A2K5VSJ1",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 783,
+      "canonical_residue": 758,
+      "left_pct": 68.44405594405595
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-12T00:59:49.384725+00:00",
+  "literature_notes": "All four ledger lines (L1\u2013L4) describe C-terminal fusions to TRPA1 (eGFP, mTagBFP, mCherry, V5-His). The TRPA1 C-terminus (residue 1119) lies within the intracellular domain (topology 957\u20131119), so none of these constitute extracellular surface tag sites. The N-terminus (residue 1) is also intracellular (topology 1\u2013719). TRPA1 has three extracellular spans: EC1 (741\u2013764, 24 aa), EC2 (825\u2013829, 5 aa, too short), and EC3/pore loop (895\u2013934, 40 aa). No ledger line reports any insertion in any of these extracellular loops or at any extracellular-facing position. Zero extracellular surface tag sites are supported.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1119,
+      "kind": "intracellular",
+      "supporting_clip_id": "L2",
+      "note": "C-terminal eGFP fusion (via 3\u00d7GGGGS linker) after residue 1119 is functional and fluorescent in HEK293T cells, but the C-terminus is intracellular (topology 957\u20131119), so this is an intracellular tag, not a surface tag."
+    },
+    {
+      "residue": 1119,
+      "kind": "intracellular",
+      "supporting_clip_id": "L4",
+      "note": "C-terminal V5-His tag on full-length TRPA1; C-terminus is intracellular (topology 957\u20131119)."
+    }
+  ]
+}

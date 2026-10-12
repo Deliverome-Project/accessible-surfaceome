@@ -1,0 +1,74 @@
+{
+  "has_data": true,
+  "gene_symbol": "VANGL2",
+  "uniprot_acc": "Q9ULK5",
+  "sites": [
+    {
+      "site_id": "VANGL2-snorkel-c",
+      "gene_symbol": "VANGL2",
+      "uniprot_acc": "Q9ULK5",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 521,
+      "residue_before": "V",
+      "residue_after": null,
+      "residue_label": "V521",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 47.1,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "VANGL2-surface_loop-206::iso::A0A2K5TQ83",
+      "isoform_id": "A0A2K5TQ83",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 206,
+      "canonical_residue": 206,
+      "left_pct": 39.53934740882917
+    },
+    {
+      "site_id": "VANGL2-surface_loop-206::iso::Q91ZD4",
+      "isoform_id": "Q91ZD4",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 206,
+      "canonical_residue": 206,
+      "left_pct": 39.53934740882917
+    }
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+  "prompt_version": "1.4.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-12T01:21:24.718671+00:00",
+  "literature_notes": "Every ledger line (L1\u2013L8) describes a tag placed at the N-terminus of VANGL2. The authoritative computed topology assigns residues 1\u2013106 to the INTRACELLULAR compartment; TM1 begins at residue 107. An N-terminal prepend therefore places the tag on the cytoplasmic face, not the extracellular surface. No ledger line supports any insertion in ECL1 (residues 130\u2013147) or ECL2 (residues 203\u2013214), the only two extracellular spans. ECL1 additionally contains two cysteines (C141, C145) that likely form a disulfide bond, and ECL2 is only 12 residues long \u2014 but these structural observations are moot because no ledger evidence grounds either loop. The correct answer is zero extracellular surface tag sites.",
+  "literature_rejected": [],
+  "literature_other_positions": [
+    {
+      "residue": 1,
+      "kind": "intracellular",
+      "supporting_clip_id": "L3",
+      "note": "N-terminal sfGFP knock-in (and HA/FLAG/ALFA/YFP/GFP fusions per L1\u2013L8) is functionally tolerated (homozygous viable and fertile), but the N-terminus (residues 1\u2013106) is intracellular per the authoritative topology; these tags label the cytoplasmic face, not the extracellular surface."
+    }
+  ]
+}
