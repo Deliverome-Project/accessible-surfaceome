@@ -74,8 +74,14 @@ const ROW_OVERSCAN = 12;
 // State dep. The 4 deep-dive vital columns reuse the gene-page
 // traffic-light tones, are sortable, and each links to the gene's
 // deep-dive page.
+//
+// Fixed tracks are sized to their measured content (header label or
+// widest pill, plus cell padding), not rounded up: the minimum sums to
+// ~74.6rem (~1,194px) so the grid fits the 1,280px page width — and a
+// ~1,230px laptop viewport — without a horizontal scrollbar. The DB-dot
+// columns hold an 8px dot, so their header label sets the width.
 const GRID_TEMPLATE =
-  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(7.5rem, 1fr) minmax(7.5rem, 1fr) 6rem 6.5rem 5.6rem 6rem";
+  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 7rem minmax(7rem, 1fr) minmax(7rem, 1fr) 6rem 5.6rem 5.6rem 5.6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -1193,7 +1199,10 @@ export function CatalogTable({
                 Low-lit + UniProt
                 <span className={styles.presetCount}>{count.toLocaleString()}</span>
               </button>
-              <InfoTip label="About the Low-lit + UniProt list" wide>
+              {/* Last chip in the row, near the right edge: a centred popover
+                  * overhangs the page even while hidden and adds a
+                  * horizontal scrollbar on ~1,280px screens. */}
+              <InfoTip align="end" label="About the Low-lit + UniProt list" wide>
                 <p>
                   Non-canonical genes with a thin discovery corpus (&lt;{" "}
                   {LOW_LIT_PAPERS_MAX} papers found) that UniProt nonetheless
