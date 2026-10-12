@@ -24,6 +24,7 @@ def purge(monkeypatch: pytest.MonkeyPatch):
     spec = importlib.util.spec_from_file_location(
         "purge_gene_cache", ROOT / "scripts/cloud/purge_gene_cache.py"
     )
+    assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
