@@ -995,3 +995,47 @@ CREATE TABLE IF NOT EXISTS db_optimized_cutoff_public (
   uniprot_optimized  INTEGER NOT NULL DEFAULT 0,
   cspa_optimized     INTEGER NOT NULL DEFAULT 0
 );
+
+-- Per-residue insertion-tolerance scores from published third-party
+-- predictors, so our two deterministic tag-site lanes can be compared against
+-- an external baseline rather than only against themselves.
+--
+-- Loaded directly (scripts/cloud/load_tag_site_predictions.py), NOT via
+-- sync_public_d1.py: it is reference data copied from published sources, with
+-- no private-side columns to whitelist away. Served by the Worker at
+-- /v1/tag-site-predictions/{symbol}.
+--
+-- SCORES ARE ONE HEX BYTE PER RESIDUE over a per-predictor linear range, the
+-- same idiom disorder_public uses for pLDDT. The range is NOT implicit: it
+-- lives in model_config as "encoding=linear:lo=..:hi=..", because the three
+-- predictors do not share one. ProDomino is a probability on [0,1]; INDELi-E
+-- runs about [-0.2, 3.2]. Decoding an INDELi-E row as if it were [0,1] yields
+-- numbers that still look like probabilities, so the mistake is silent.
+--
+-- LICENCE IS A COLUMN because the three differ and one restricts use:
+-- ProDomino is CC-BY-NC-4.0, INDELi-E CC-BY-4.0, EpicTope GPL-3.0 (its code,
+-- not the data it emits). A consumer reads the terms off the row instead of
+-- having to know where each score came from.
+--
+-- run_id ends in _train or _test, recording which side of the by-gene split
+-- (data/analysis/prodomino/split.json) the protein fell on, so an analysis
+-- cannot mix held-out proteins into a training claim by accident.
+CREATE TABLE IF NOT EXISTS tag_site_prediction (
+    uniprot_acc       TEXT NOT NULL,
+    gene_symbol       TEXT,
+    predictor         TEXT NOT NULL,
+    predictor_version TEXT,
+    model_config      TEXT,
+    protein_length    INTEGER,
+    n_scores          INTEGER,
+    scores_hex        TEXT NOT NULL,
+    score_min         REAL,
+    score_max         REAL,
+    licence           TEXT NOT NULL,
+    citation          TEXT,
+    run_id            TEXT,
+    created_at        TEXT NOT NULL,
+    PRIMARY KEY (uniprot_acc, predictor)
+);
+CREATE INDEX IF NOT EXISTS idx_tsp_predictor ON tag_site_prediction (predictor);
+CREATE INDEX IF NOT EXISTS idx_tsp_gene ON tag_site_prediction (gene_symbol);

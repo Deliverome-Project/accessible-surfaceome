@@ -3035,6 +3035,7 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
+  { group: "Tag sites", method: "GET", path: "/v1/tag-site-predictions/{symbol}", summary: "Per-residue insertion-tolerance scores from published third-party predictors (ProDomino, INDELi-E, EpicTope), decoded to floats. Each row carries its own licence — ProDomino is CC-BY-NC-4.0 — and the train/test split half. Empty-but-200 when unscored." },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
   { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
 ];
@@ -4128,6 +4129,88 @@ async function handleTagSites(env, symbol) {
   });
 }
 
+// tag_site_prediction. Per-residue insertion-tolerance scores from published
+// third-party predictors (ProDomino / INDELi-E / EpicTope), so a reader can
+// check our deterministic lanes against an external baseline instead of taking
+// our word for it.
+//
+// Scores are stored as one hex BYTE per residue over a per-predictor linear
+// range (see cloud/tag_site_predictions.py). We decode here rather than making
+// every consumer reimplement it, and still return the `encoding` so the
+// quantisation is visible rather than implied.
+//
+// LICENCE TRAVELS WITH THE ROW. The three predictors differ and one of them
+// (ProDomino, CC-BY-NC-4.0) restricts commercial use, so a consumer must be
+// able to read the terms off the response without knowing our provenance
+// story. There is deliberately NO query-param filter for it: the zone's cache
+// rule ignores query strings, so a `?licence_free=1` variant would share a
+// cache entry with the unfiltered response and serve whichever landed first.
+// Callers filter on the per-row `licence` field instead.
+function decodeScoreHex(hex, lo, hi) {
+  const span = hi - lo;
+  const out = new Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) {
+    const b = parseInt(hex.substr(i * 2, 2), 16);
+    out[i] = Math.round((lo + (b / 255) * span) * 1e4) / 1e4;
+  }
+  return out;
+}
+
+// "encoding=linear:lo=-0.5:hi=3.5" -> {lo, hi}. Defaults to [0,1], which is
+// what a row written before the range was recorded means.
+function parseEncoding(modelConfig) {
+  const m = /encoding=linear:lo=(-?[\d.]+):hi=(-?[\d.]+)/.exec(modelConfig || "");
+  return m ? { lo: parseFloat(m[1]), hi: parseFloat(m[2]) } : { lo: 0, hi: 1 };
+}
+
+async function handleTagSitePredictions(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return notFound("gene_not_found");
+
+  let rows = [];
+  try {
+    const res = await env.DB.prepare(
+      `SELECT * FROM tag_site_prediction WHERE gene_symbol = ? COLLATE NOCASE
+        ORDER BY predictor`
+    )
+      .bind(sym)
+      .all();
+    rows = res?.results ?? [];
+  } catch {
+    // Table not provisioned yet (Worker deployed before the load): empty-but-200,
+    // same contract as handleTagSites. Absence is not an error.
+    rows = [];
+  }
+
+  const predictions = rows.map((r) => {
+    const enc = parseEncoding(r.model_config);
+    return {
+      predictor: r.predictor,
+      predictor_version: r.predictor_version ?? null,
+      model_config: r.model_config ?? null,
+      licence: r.licence,
+      citation: r.citation ?? null,
+      // Which half of the by-gene split this protein fell in. Carried so an
+      // analysis cannot silently mix held-out proteins into a training claim.
+      split: /_test$/.test(r.run_id || "") ? "test" : "train",
+      protein_length: r.protein_length ?? null,
+      n_scores: r.n_scores ?? null,
+      encoding: { kind: "linear", lo: enc.lo, hi: enc.hi, bits: 8 },
+      score_min: r.score_min ?? null,
+      score_max: r.score_max ?? null,
+      // Index 0 is residue 1.
+      scores: decodeScoreHex(r.scores_hex || "", enc.lo, enc.hi),
+    };
+  });
+
+  return json({
+    has_data: predictions.length > 0,
+    gene_symbol: rows[0]?.gene_symbol ?? sym,
+    uniprot_acc: rows[0]?.uniprot_acc ?? "",
+    predictions,
+  });
+}
+
 // Serve the pre-generated rich Markdown export for a gene from R2.
 // Unlike the JSON record (assembled live from D1), the .md bundles
 // reanalysis extras NOT in D1 — canonical/isoform/ortholog sequences,
@@ -4263,6 +4346,9 @@ export default {
     if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleCatalogOne(env, m[1]));
     if ((m = path.match(/^\/v1\/internalization\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleInternalization(env, m[1]));
     if ((m = path.match(/^\/v1\/tag-sites\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTagSites(env, m[1]));
+    // Must precede nothing in particular, but keep it beside tag-sites so the
+    // two tag surfaces stay adjacent when someone adds a third.
+    if ((m = path.match(/^\/v1\/tag-site-predictions\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTagSitePredictions(env, m[1]));
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
