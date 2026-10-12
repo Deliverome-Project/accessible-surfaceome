@@ -17,7 +17,7 @@ Do **not** add `Co-Authored-By: Claude <…>` (or any AI-attribution trailer) to
 human cell-surface proteins from seven public data sources.
 
 The pipeline is complete end to end: the candidate universe, the triage sweep
-over 19,324 genes, and the deep dive over 5,130 candidates have all run, and
+over 19,324 genes, and the deep dive over 5,332 candidates have all run, and
 the records are live on the public API.
 
 ## Repository Structure
@@ -61,7 +61,7 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 
 ### v2 is the production deep-dive path
 
-The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/annotate_gene.py](scripts/annotate_gene.py)). It runs entirely on **in-process Sonnet `messages.create` calls** — `plan_trim_select` (dual A1/A2), 9 block builders, and the synthesizer. **Every prompt is read locally from disk and takes effect on the next invocation — there is no remote agent registry to sync.** The synthesizer reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) directly via `messages.create` (`run_synthesizer_with_drafts`); any historical Managed-Agent registration of it is vestigial and off the v2 code path. The in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) are likewise edit-and-go. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) for the original v1/v2 trade-off table.
+The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/annotate_gene.py](scripts/annotate_gene.py)). It runs entirely on **in-process Sonnet `messages.create` calls** — `plan_trim_select` (dual A1/A2), 8 block-builder calls (six concurrent, then `evidence_grade`, then `risks`; the combined subcellular/anatomical builder fills two sections, so the record has nine builder-written sections), and the synthesizer. **Every prompt is read locally from disk and takes effect on the next invocation — there is no remote agent registry to sync.** The synthesizer reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) directly via `messages.create` (`run_synthesizer_with_drafts`); any historical Managed-Agent registration of it is vestigial and off the v2 code path. The in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) are likewise edit-and-go. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) for the original v1/v2 trade-off table.
 
 **Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, human-readable render of the live deep-dive prompts — each prompt's full text, the diff vs `main`, and a closed-enum reference (the structured-output options the model must choose from, e.g. `epitope_masking.mechanism` annotated with its homo / hetero / other axis). It is a **generated artifact**, so it goes stale the instant a prompt changes. Whenever you edit any in-process prompt under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/), [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/), or [surfaceome_synthesizer/prompts/](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/) — or change a closed enum the review renders (in [models.py](src/accessible_surfaceome/tools/_shared/models.py)) — regenerate it in the **same commit**:
 
@@ -115,7 +115,7 @@ The Worker's `/v1/catalog` endpoint (`row_schema 6+`) bakes `ddf.n_papers_select
 The abstract-triage stage of `plan_trim_select` ([abstract_triage.py](src/accessible_surfaceome/agents/plan_trim_select/abstract_triage.py)) fetches a `worth_fetching` paper's body through a 3-step chain, each falling through on miss/empty:
 
 1. **PMC JATS** via `paper.pmc_id`, or PMID→PMCID via NCBI eLink.
-2. **Unpaywall OA PDF** — DOI → OA locations → **all** PDF URLs tried best-quality-first (publisher publishedVersion > repository), so a bot-blocked publisher copy can still be recovered from a repository copy (OSTI, institutional repos). Each PDF is parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber: `extract_words` spacing, gutter-based 2-column split, font-aware run-in/bold heading detection → the JATS `SectionName` enum). Failure → abstract fallback (never crashes the batch).
+2. **Unpaywall OA PDF** — DOI → OA locations → up to 4 PDF URLs (`_MAX_PDF_LOCATIONS` in `abstract_triage.py`) tried best-quality-first (publisher publishedVersion > repository), so a bot-blocked publisher copy can still be recovered from a repository copy (OSTI, institutional repos). Each PDF is parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber: `extract_words` spacing, gutter-based 2-column split, font-aware run-in/bold heading detection → the JATS `SectionName` enum). Failure → abstract fallback (never crashes the batch).
 
 Operational notes:
 - **Dep**: `pdfplumber` (MIT). `pypdfium2` is pinned `<5.9.0` via `[tool.uv] constraint-dependencies` — a supply-chain cooldown (5.9.0 was <7 days old when added); safe to relax after it ages out.
@@ -301,13 +301,16 @@ script — no need to install wrangler just to peek at row counts.
 
 ### `run_id` conventions
 
-- `genome_full_sonnet_ncbi_v1` — the canonical 2026-05-12 Sonnet
-  triage sweep over the cohort.
-- `genome_full_sonnet_ncbi_v1__resolver_v3_fix` — corrected re-runs
-  of the 45 cells the v3 resolver audit flagged. **Originals are
-  preserved**; analytics that should incorporate the fix should
-  COALESCE-prefer the fix run over the original (see the
-  Postgres-flavored snippet below).
+- `genome_full_sonnet_ncbi_v2` — the **canonical** Sonnet triage sweep
+  over all 19,324 protein-coding genes (`CANONICAL_TRIAGE_RUN_ID` in
+  [scripts/triage_runner.py](scripts/triage_runner.py); the stage-one run
+  `build_candidate_universe_v3.py` reads). It superseded v1 and is the only
+  genome-wide run in public D1.
+- `genome_full_sonnet_ncbi_v1` and `genome_full_sonnet_ncbi_v1__resolver_v3_fix`
+  — the **legacy** 2026-05-12 sweep and its corrected re-runs of the 45
+  cells the v3 resolver audit flagged. Removed from public D1 on 2026-06-01;
+  only relevant to analyses that deliberately read the old v1 rows in
+  private D1 (see the COALESCE snippet below).
 - **The four `pubmed_ncbi` rescue lanes.** Each re-examines a slice of the
   Sonnet-`no` population with a literature-augmented pass. They are
   disjoint by construction, and together they cover **every gene the
@@ -341,14 +344,16 @@ script — no need to install wrangler just to peek at row counts.
   **Two rules a new lane has to follow.** (a) Scope it on the same DB-vote
   cutoffs the universe gate uses — the first two lanes were scoped on
   *initial* votes while the gate runs on *optimized* ones, which is
-  exactly how the 74 orphans appeared. (b) Add its run_id to `RUNS_PM`
+  exactly how the 74 orphans appeared. (b) Add its run_id to `RESCUE_RUNS`
   in [scripts/build_candidate_universe_v3.py](scripts/build_candidate_universe_v3.py)
   in the same change, and don't filter the lane on
   `prompt_variant='pubmed_ncbi'` — a few cells fall back to `naive` when
   the PubMed fetch fails, and they are still that gene's second look.
 
-Composite-source SELECT that gives "latest verdict per (gene_symbol,
-model, variant), preferring fix rows over originals":
+For analyses that read the **legacy v1** rows, this composite-source
+SELECT gives "latest verdict per (gene_symbol, model, variant), preferring
+fix rows over originals" (new work should read the canonical v2 run
+instead):
 
     SELECT * FROM triage_run t
     WHERE (t.run_id = 'genome_full_sonnet_ncbi_v1__resolver_v3_fix')
@@ -361,8 +366,8 @@ model, variant), preferring fix rows over originals":
                  AND f.prompt_variant = t.prompt_variant
            ));
 
-Anything else that reads `triage_run` should adopt this pattern
-until the fix run is mirrored back into the canonical run_id.
+Anything that still reads the v1 rows should adopt this pattern; the
+canonical v2 run needs no fix-run merge.
 
 ### Failure modes the HGNC-ID path is designed to avoid
 

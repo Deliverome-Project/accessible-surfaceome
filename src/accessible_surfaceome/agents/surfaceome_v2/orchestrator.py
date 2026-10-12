@@ -1311,7 +1311,7 @@ def _annotate(
     }
 
     # ---- steps 2+3: A1+A2 block builders (parallel dispatch) ---------------
-    # All 8 builders consume independent claim slices and emit independent
+    # The six fan-out builders consume independent claim slices and emit independent
     # blocks, so we fan them out concurrently. The Anthropic SDK client
     # is thread-safe; each builder writes only into its own ``usage_sink``;
     # the shared TimingRecorder uses CPython's atomic ``list.append``.
@@ -1808,7 +1808,7 @@ def _annotate(
 
         # Re-snapshot the per-builder usage summary now that ``risks_builder``
         # has run (the initial snapshot at the step 2+3 fan-out only saw the
-        # 8 parallel builders; ``risks_builder`` runs at step 4.6 after the
+        # 7 builders that ran before it; ``risks_builder`` runs at step 4.6 after the
         # deterministic-features fetch). Same shape so downstream queries
         # don't need a special case for "before/after risks".
         intermediates["builder_usage"] = {
