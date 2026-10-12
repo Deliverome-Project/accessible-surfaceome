@@ -30,6 +30,7 @@ from accessible_surfaceome.env import load_env
 
 load_env()
 
+from accessible_surfaceome.agents.tag_site.prompt import prompt_sha  # noqa: E402
 from accessible_surfaceome.cloud import tag_site_genes as G  # noqa: E402
 from accessible_surfaceome.cloud.d1_client import D1Client  # noqa: E402
 
@@ -42,21 +43,50 @@ log = logging.getLogger("publish_gene_rows")
 def archive_facts() -> dict[str, dict]:
     """Latest private-archive run per gene: other_positions + n_papers.
 
-    Latest wins, because a gene re-run under a newer prompt has a newer answer
-    and the older row is history, not a competing claim."""
+    Newest row under the CURRENT prompt_sha wins, and only that sha counts when
+    the gene has one.
+
+    Plain "latest wins" is wrong, and not hypothetically: EGFR and ERBB2 each
+    carry a later row from a one-off retry run at a DIFFERENT prompt text that
+    still calls itself 1.4.0. Taking the newest would publish those two genes
+    from a prompt that is not the canonical one, which is exactly the stale
+    record the prompt-provenance rule in CLAUDE.md exists to prevent — and it
+    would be invisible, because the published row looks like every other.
+
+    A gene with no row at the current sha falls back to its newest row, so a
+    prompt edit degrades to "slightly old answer" rather than "gene disappears".
+    """
+    current = prompt_sha()
     with D1Client() as d1:
         rows = d1.query(
-            "SELECT gene_symbol, other_positions_json, n_papers, created_at "
+            "SELECT gene_symbol, other_positions_json, n_papers, created_at, prompt_sha "
             "FROM tag_site_run WHERE gene_symbol <> '' ORDER BY created_at;",
             [],
         )
     out: dict[str, dict] = {}
-    for r in rows:  # ascending, so the last write per gene is the newest
+    for r in rows:  # ascending, so a later row overwrites an earlier one
+        gene = r["gene_symbol"]
+        on_sha = r.get("prompt_sha") == current
+        # Never let an off-sha row displace an on-sha one, whatever the dates.
+        if not on_sha and out.get(gene, {}).get("on_sha"):
+            continue
         try:
             others = json.loads(r.get("other_positions_json") or "[]")
         except Exception:  # noqa: BLE001
             others = []
-        out[r["gene_symbol"]] = {"others": others, "n_papers": r.get("n_papers")}
+        out[gene] = {
+            "others": others,
+            "n_papers": r.get("n_papers"),
+            "on_sha": on_sha,
+        }
+    stale = sorted(g for g, v in out.items() if not v["on_sha"])
+    if stale:
+        log.warning(
+            "%d gene(s) have no run at the current prompt_sha and fall back to "
+            "an older prompt: %s",
+            len(stale),
+            ", ".join(stale[:10]) + (" …" if len(stale) > 10 else ""),
+        )
     return out
 
 
