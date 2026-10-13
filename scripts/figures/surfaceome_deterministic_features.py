@@ -14,7 +14,7 @@ dual-triage surface pool — giving FIVE comparison facets:
   - ``uncertain / no`` — group ∈ {uncertain, no} (ambiguous-to-negative)
   - ``Sonnet dual triage`` — every gene the two-stage Sonnet triage
     (``genome_full_sonnet_ncbi_v2`` plus the four PubMed rescue lanes) called
-    yes/contextual (4,612 with topology). A DIFFERENT category from the tiers: broader, and its det
+    yes/contextual (all 4,628, each with topology). A DIFFERENT category from the tiers: broader, and its det
     features come from the genome-wide D1 tables (``topology_public``,
     ``compara_*``, ``schweke_homomer_public``, ``surface_bind_*``) rather than
     the deep-dive records, since most of these genes are not deep-dived. Same

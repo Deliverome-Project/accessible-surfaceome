@@ -88,7 +88,13 @@ def main() -> int:
             "(SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_canonical') ORDER BY r.loaded_at DESC LIMIT 1)",
             [],
         ))
-        topo = topo[topo["gene_symbol"].isin(syms)].drop_duplicates("gene_symbol")
+        # Joined on UniProt, not symbol: multi-copy genes (the CT47A family,
+        # OR4F16/OR4F29, DEFA1B, ...) share one protein whose topology row is
+        # filed under a single symbol, so a symbol join dropped 17 of them.
+        topo = son.merge(
+            topo.drop(columns="gene_symbol").drop_duplicates("uniprot_acc"),
+            on="uniprot_acc",
+        )
 
         # 3. Alt-isoform topology change — any human isoform whose TM-helix count
         #    differs from the canonical. Scalar cols only.
