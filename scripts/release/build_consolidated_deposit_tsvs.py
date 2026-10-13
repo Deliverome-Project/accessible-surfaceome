@@ -14,8 +14,7 @@ collapses them to:
 
   2. triage-benchmark-with-reasoning.tsv
      Per-replicate mainbench TSV with curated truth labels joined
-     in. 147 genes × (Haiku 4 variants + Sonnet 4 variants + Opus 2
-     variants) × 3 reps ≈ 4,400 rows. Each row keeps its ``replicate``
+     in. 147 genes × 18 (model × variant) cells × 3 reps = 7,938 rows. Each row keeps its ``replicate``
      index so a reader can see per-rep variability instead of a
      pre-aggregated majority view.
 
@@ -314,14 +313,14 @@ def main() -> int:
             if cells[sym_idx] == "KLK2":
                 klk2_bench.append(cells)
     print(f"  bench multi-rep:     KLK2 rows = {len(klk2_bench)} "
-          f"(expect ~30 — 10 cells × 3 reps)")
+          f"(expect 54 — 18 cells × 3 reps)")
     by_cell: dict[tuple[str, str], list[str]] = {}
     for cells in klk2_bench:
         key = (cells[header.index("model")], cells[header.index("prompt_variant")])
         by_cell.setdefault(key, []).append(cells[header.index("predicted_verdict")])
     print("  KLK2 per-cell verdict spread:")
     for (m, v), verdicts in sorted(by_cell.items()):
-        short_m = m.replace("claude-", "").replace("-4-", "4")
+        short_m = m.replace("claude-", "")
         print(f"    {short_m:10s}/{v:12s}  {'/'.join(verdicts)}")
 
     # Reference presets_path so static-analysis doesn't flag it unused.

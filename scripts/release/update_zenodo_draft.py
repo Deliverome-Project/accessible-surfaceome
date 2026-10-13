@@ -166,7 +166,7 @@ def reconciled_verdict(ncbi, pubmed):
 
 ## 2. `triage-benchmark-with-reasoning.tsv` — the 147-gene accuracy benchmark
 
-**4,851 rows.** The same triage call run over a 147-gene curated panel with
+**7,938 rows.** The same triage call run over a 147-gene curated panel with
 ground-truth labels, so per-model / per-variant accuracy can be measured
 directly.
 
@@ -175,10 +175,15 @@ every model is run under every variant:
 
 - **Haiku 4.5** and **Sonnet 4.6** — all four variants (`naive`, `ncbi`,
   `web_ncbi`, `pubmed_ncbi`)
-- **Opus 4.8** — `naive` + `ncbi`
-- **Sonnet 5** — `ncbi`
+- **Opus 4.8**, **Haiku 5.5** and **Sonnet 5.5** — `naive` + `ncbi`
+- **Sonnet 5** and **Opus 5** — `ncbi`
+- **Opus 5.5** — `ncbi` and `ncbi_effort_low` (the `ncbi` prompt run at low
+  reasoning effort)
 
-That is **11 (model × variant) cells × 3 replicates × 147 genes = 4,851 rows**.
+That is **18 (model × variant) cells × 3 replicates × 147 genes = 7,938 rows**.
+Opus 5.5 declined to answer some calls (a safety-classifier refusal): those
+rows have an empty `predicted_verdict` and `error` = `refusal`, and the
+benchmark figures leave them out of accuracy and report the refusal rate.
 Every replicate is kept (not a pre-aggregated majority) so per-replicate
 variability is visible. The curated truth label is joined onto every row:
 
@@ -282,10 +287,11 @@ _DESCRIPTION_HTML = (
     "read-side reconciliation rule (prefer PubMed when it is more "
     "inclusive than NCBI) is documented in the README and applied "
     "server-side by the live /v1/catalog endpoint.<br><br>"
-    "<b>triage-benchmark-with-reasoning.tsv</b> — 4,851-row long-format "
-    "multi-replicate TSV covering the 147-gene curated benchmark across 4 "
+    "<b>triage-benchmark-with-reasoning.tsv</b> — 7,938-row long-format "
+    "multi-replicate TSV covering the 147-gene curated benchmark across 8 "
     "models with uneven prompt-variant coverage (Haiku 4.5 + Sonnet 4.6: "
-    "all 4 variants; Opus 4.8: naive + ncbi; Sonnet 5: ncbi) — 11 "
+    "all 4 variants; Opus 4.8, Haiku 5.5, Sonnet 5.5: naive + ncbi; Sonnet 5, "
+    "Opus 5: ncbi; Opus 5.5: ncbi + ncbi at low reasoning effort) — 18 "
     "(model × variant) cells × 3 replicates × 147 genes — with curated "
     "truth verdict / signal / reason / class joined onto every row.<br><br>"
     "<b>deep_dives_all.tar.gz</b> — one JSON per published "

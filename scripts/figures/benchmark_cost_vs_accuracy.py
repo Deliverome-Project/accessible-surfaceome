@@ -114,7 +114,8 @@ CELL_LABEL = {
     ("claude-sonnet-5-5", "naive"):       "Sonnet 5.5 (naive)",
     ("claude-sonnet-5-5", "ncbi"):        "Sonnet 5.5 (+ IDs)",
     ("claude-opus-5-5",   "ncbi"):        "Opus 5.5 (+ IDs)",
-    ("claude-opus-5-5",   "ncbi_effort_low"): "Opus 5.5 (+ IDs, low effort)",
+    # Two lines: the label also carries the refusal rate.
+    ("claude-opus-5-5",   "ncbi_effort_low"): "Opus 5.5 (+ IDs,\nlow effort)",
 }
 CELL_COLOR = {
     ("claude-haiku-4-5",  "naive"):       "#f7d8c4",
@@ -163,10 +164,10 @@ CELL_LABEL_OFFSET = {
     # into the empty band along the top of the axes.
     ("claude-sonnet-4-6", "pubmed_ncbi"): (2,   40),
     ("claude-sonnet-4-6", "web_ncbi"):    (10,   9),
-    # Sonnet 5 (+ IDs) sits just below Sonnet 4.6 + IDs + PubMed: label
-    # down-right on a leader.
-    ("claude-sonnet-5",   "ncbi"):        (14, -18),
-    ("claude-opus-4-8",   "naive"):       (10,   0),
+    # Sonnet 5 (+ IDs) and Opus 4.8 (naive) labels go left, clearing the
+    # space right of the Opus points for the Opus 5.5 labels.
+    ("claude-sonnet-5",   "ncbi"):        (-12,  0),
+    ("claude-opus-4-8",   "naive"):       (-12,  7),
     ("claude-opus-4-8",   "ncbi"):        (10,   0),
     ("claude-opus-5",     "ncbi"):        (10,  10),
     ("claude-haiku-5-5",  "naive"):       (10,   0),
@@ -175,10 +176,10 @@ CELL_LABEL_OFFSET = {
     # the two Sonnet 4.6 labels, + IDs goes up-left on a leader.
     ("claude-sonnet-5-5", "naive"):       (-12,  0),
     ("claude-sonnet-5-5", "ncbi"):        (-16, 18),
-    # Opus 5.5 (+ IDs) is level with Opus 5: its longer label (it carries the
-    # refusal rate) goes down-right on a leader.
-    ("claude-opus-5-5",   "ncbi"):        (10, -16),
-    ("claude-opus-5-5",   "ncbi_effort_low"): (10,   0),
+    # The two Opus 5.5 labels carry refusal rates, so they are long: + IDs
+    # goes down-left on a leader, low effort down-right below Opus 5.
+    ("claude-opus-5-5",   "ncbi"):        (-14, -22),
+    ("claude-opus-5-5",   "ncbi_effort_low"): (80, -45),
 }
 
 
@@ -303,7 +304,10 @@ def main() -> None:
         # dot's rim so it never crosses the marker.
         arrowprops = (
             dict(arrowstyle="-", color=BRAND_NEUTRAL,
-                 linewidth=0.6, alpha=0.8, shrinkA=2, shrinkB=7.5)
+                 linewidth=0.6, alpha=0.8, shrinkA=2, shrinkB=7.5,
+                 # Attach to the label's near edge, not its center, so a
+                 # leader to a long label doesn't cut across other points.
+                 relpos=(0, 0.5) if dx >= 0 else (1, 0.5))
             if (dx * dx + dy * dy) ** 0.5 >= 18 else None
         )
         ax.annotate(
