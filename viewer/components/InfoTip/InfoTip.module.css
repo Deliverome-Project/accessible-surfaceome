@@ -190,10 +190,15 @@
  * effectively be ~34em at root. Anchoring to `rem` (root font size,
  * typically 16px) gives a predictable ~44rem ≈ 700px cap so the
  * prose actually reads as a wide row, not a slightly-wider column.
- * `90vw` still caps it on narrow viewports. */
+ * `90vw` still caps it on narrow viewports.
+ *
+ * The min-width is capped by the viewport too: a bare `28rem` (448px)
+ * floor outranks the max-width cap, so on a 390px phone every wide tip
+ * (the curated-list presets) ran ~60px off-screen and no shift from
+ * InfoTipAutoPlace could bring both edges back. */
 .popoverWide {
   max-width: min(44rem, 90vw);
-  min-width: 28rem;
+  min-width: min(28rem, 90vw);
 }
 
 /* Horizontal anchoring modifiers (set via the InfoTip `align` prop).

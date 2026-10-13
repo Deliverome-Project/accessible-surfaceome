@@ -67,8 +67,10 @@ FIGURE_ORDER: list[tuple[str, str]] = [
     ("Supp S10",  "paywall_bot_block_compare"),
     ("Supp S11",  "deep_dive_vs_sonnet_benchmark"),
     ("Supp S12",  "evidence_corpus_vs_selected"),
-    ("Supp S13",  "triage_vs_deep_dive_reason"),
-    ("Supp S14",  "surfaceome_deterministic_features"),
+    ("Supp S13",  "surface_evidence_assay_types"),
+    ("Supp S14",  "triage_vs_deep_dive_reason"),
+    ("Supp S15",  "surfaceome_deterministic_features"),
+    ("Supp S16",  "deep_dive_replicate_kappa"),
 ]
 
 

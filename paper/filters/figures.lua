@@ -110,6 +110,23 @@ local function collect_figure_ids(elem)
     figure_ids["supplementary figure " .. supp] = elem.identifier
     return
   end
+  -- Tables share this index and this machinery. They are captioned the
+  -- same way, cited the same way, and were the last reference shape in
+  -- the paper still rendering as plain text while every figure around
+  -- them linked.
+  local supp_table = text:match("^supplementary table (%d+)")
+  if supp_table and elem.identifier ~= "" then
+    -- Same split as the figures: captions read "Supplementary Table 1"
+    -- and the prose says "Table S1".
+    figure_ids["table s" .. supp_table] = elem.identifier
+    figure_ids["supplementary table " .. supp_table] = elem.identifier
+    return
+  end
+  local plain_table = text:match("^(table %d+)")
+  if plain_table and elem.identifier ~= "" then
+    figure_ids[plain_table] = elem.identifier
+    return
+  end
   local key = text:match("^(appendix figure %d+)")
     or text:match("^(figure %d+)")
   if key and elem.identifier ~= "" then
@@ -226,14 +243,45 @@ local function head_match(s)
   return nil
 end
 
+-- Same shape for the table label. Kept separate from head_match
+-- rather than folded into LABEL_WORDS: that list feeds the figure
+-- lookup keys, and a table must never resolve against a figure anchor.
+local function table_head_match(s)
+  return s:match("^([%(%[]?)([Tt]ables?)$")
+end
+
 -- Same shape but for "Appendix" prefix word.
 local function appendix_head_match(s)
   return s:match("^([%(%[]?)([Aa]ppendix)$")
 end
 
--- Tail like "2", "2)", "2.", "2;". Returns (num, suffix) or nil.
+-- Tail like "2", "2)", "2.", "2;", and panel-suffixed forms "4a",
+-- "5b)", "6a-c". Returns (num, suffix, panel) or nil.
+--
+-- The panel letters ride along in the link TEXT while the link still
+-- points at the figure, which is the only sensible target: there is no
+-- per-panel anchor to aim at. Before this, a bare %d+ tail was the only
+-- shape that matched, so "Figure 4" was a link and "Figure 4a" two
+-- words later was not — an inconsistency readers notice.
+--
+-- Letters are limited to a-h: panels run out long before that, and a
+-- tighter class keeps an identifier like "4S" from being read as a
+-- panel reference.
 local function tail_match(s)
-  return s:match("^(%d+)([^%a%d]*)$")
+  local num, suffix = s:match("^(%d+)([^%a%d]*)$")
+  if num then return num, suffix, "" end
+  -- A range: "6a-c", "6a\u{2013}c)". The separator is any run of
+  -- non-ASCII-alphanumerics, spelled out as [^a-zA-Z0-9] rather than
+  -- [^%a%d]: %a follows the C locale, which can classify the bytes of
+  -- a multi-byte en dash as letters, and then the class matches
+  -- nothing and the whole reference falls through unlinked. That is
+  -- exactly what "Figure 6a\u{2013}c" did.
+  local n, p1, mid, p2, suf =
+    s:match("^(%d+)([a-h])([^a-zA-Z0-9]+)([a-h])([^a-zA-Z0-9]*)$")
+  if n then return n, suf, p1 .. mid .. p2 end
+  local n2, p, suf2 = s:match("^(%d+)([a-h])([^a-zA-Z0-9]*)$")
+  if n2 then return n2, suf2, p end
+  return nil
 end
 
 -- Supplementary tail: "S3", "S10)", "S4,". Returns (label, suffix) or
@@ -304,15 +352,50 @@ local function linkify_figure_refs(inlines)
       local prefix, app_word = appendix_head_match(inlines[i].text)
       local _, fig_word = head_match(inlines[i + 2].text)
       if app_word and fig_word and inlines[i + 2].text:sub(1, 1) ~= "(" then
-        local num, suffix = tail_match(inlines[i + 4].text)
+        local num, suffix, panel = tail_match(inlines[i + 4].text)
         if num then
           local key = "appendix figure " .. num
           local id = figure_ids[key]
           if id then
-            emit_link_with_brackets(result, prefix, app_word .. " " .. fig_word .. " " .. num, suffix, id)
+            emit_link_with_brackets(result, prefix,
+              app_word .. " " .. fig_word .. " " .. num .. (panel or ""), suffix, id)
             i = i + 5
             matched = true
           end
+        end
+      end
+    end
+
+    -- "Table N" / "Table SN" (3 inlines). Deliberately simpler than the
+    -- figure branch above: the draft cites tables one at a time, so
+    -- there is no run-collector here. If a "Tables S1, S2" ever appears
+    -- the build guard will say so rather than it slipping through.
+    if not matched
+        and i + 2 <= #inlines
+        and inlines[i].t == "Str"
+        and inlines[i + 1].t == "Space"
+        and inlines[i + 2].t == "Str" then
+      local prefix, tbl_word = table_head_match(inlines[i].text)
+      if tbl_word then
+        local key, label, suffix
+        local snum, ssuf = supp_tail_match(inlines[i + 2].text)
+        if snum then
+          key = "table s" .. snum
+          label = tbl_word .. " S" .. snum
+          suffix = ssuf
+        else
+          local num, suf, panel = tail_match(inlines[i + 2].text)
+          if num then
+            key = "table " .. num
+            label = tbl_word .. " " .. num .. (panel or "")
+            suffix = suf
+          end
+        end
+        local id = key and figure_ids[key]
+        if id then
+          emit_link_with_brackets(result, prefix, label, suffix, id)
+          i = i + 3
+          matched = true
         end
       end
     end
@@ -333,6 +416,7 @@ local function linkify_figure_refs(inlines)
         -- Slash-joined pairs ("S13/S14") arrive as a single token and
         -- are handled by the same collector.
         local nums, seps, consumed, tail_suffix = {}, {}, 0, ""
+        local tail_glued = nil
         local j = i + 2
         while j <= #inlines and inlines[j].t == "Str" do
           -- Trailing punctuation may itself contain "," or ";" —
@@ -343,6 +427,21 @@ local function linkify_figure_refs(inlines)
           -- Lua's greedy body capture still claims a separator comma
           -- when one is genuinely mid-run ("S1, S2").
           local body, suf = inlines[j].text:match("^([Ss]%d+[/&,;]?[Ss]?[%d/&,;Ss]*)([^%a%d]*)$")
+          local glued
+          if not body then
+            -- "(Figure S4)Two of five changed" — a missing space after
+            -- the closing bracket glues the next sentence onto the
+            -- reference token, and the anchored pattern above rejects
+            -- the whole thing, silently dropping the link. The draft
+            -- does this once and would do it again.
+            --
+            -- Real punctuation is REQUIRED between the number and the
+            -- glued word, so "S4)Two" is a reference with a typo while
+            -- "S4Two" stays untouched — the latter is far more likely
+            -- to be an identifier than a cross-reference.
+            local b, s2, rest = inlines[j].text:match("^([Ss]%d+)([^%a%d]+)(%a.*)$")
+            if b then body, suf, glued = b, s2, rest end
+          end
           if not body then break end
           for n in body:gmatch("[Ss](%d+)") do
             if #nums > 0 then
@@ -352,6 +451,11 @@ local function linkify_figure_refs(inlines)
           end
           consumed = j - i + 1
           tail_suffix = suf or ""
+          if glued then
+            -- Nothing can follow a glued word, so the run ends here.
+            tail_glued = glued
+            break
+          end
           -- Continue only when this token ended with a separator and
           -- the next inline is " S<n>" — otherwise the run is done.
           local trailing = body:sub(-1)
@@ -381,18 +485,21 @@ local function linkify_figure_refs(inlines)
                 "#" .. figure_ids["figure s" .. n]))
             end
             if tail_suffix ~= "" then result:insert(pandoc.Str(tail_suffix)) end
+            -- The glued-on word goes back as plain text, outside the link.
+            if tail_glued then result:insert(pandoc.Str(tail_glued)) end
             i = i + consumed
             matched = true
           end
         end
 
         if not matched then
-          local num, suffix = tail_match(inlines[i + 2].text)
+          local num, suffix, panel = tail_match(inlines[i + 2].text)
           if num then
             local key = "figure " .. num
             local id = figure_ids[key]
             if id then
-              emit_link_with_brackets(result, prefix, fig_word .. " " .. num, suffix, id)
+              emit_link_with_brackets(result, prefix,
+                fig_word .. " " .. num .. (panel or ""), suffix, id)
               i = i + 3
               matched = true
             end

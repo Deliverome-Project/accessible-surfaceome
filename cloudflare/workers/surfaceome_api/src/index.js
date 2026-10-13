@@ -432,7 +432,7 @@ async function dataReleaseRow(env, whereSql, params) {
 
 // --- Reproducibility replicates (API-only) ---
 // Genes re-annotated for the run-to-run reproducibility analysis
-// (Supplementary Figure 15), served from public D1 `deep_dive_replicate`.
+// (Supplementary Figure 16), served from public D1 `deep_dive_replicate`.
 // These are NOT the published records: surface_annotation stays the only
 // source of /v1/genes/{SYMBOL}, nothing in the catalog or viewer reads this
 // table, and every response is labelled `reproducibility_replicate: true`
@@ -444,7 +444,7 @@ const REPLICATE_KINDS = ["published_snapshot", "full_rerun", "fixed_evidence_rep
 const REPLICATE_STUDY_OK = /^[a-z0-9_]{1,64}$/;
 const REPLICATE_NOTICE =
   "Reproducibility replicate, not the published record. Kept for the run-to-run " +
-  "reproducibility analysis (Supplementary Figure 15); the published record is " +
+  "reproducibility analysis (Supplementary Figure 16); the published record is " +
   "/v1/genes/{symbol}.";
 const REPLICATE_KIND_NOTES = {
   published_snapshot: "The published record exactly as served when the study ran (the comparator); the live record may since have been republished.",
@@ -1576,16 +1576,22 @@ async function handleGene(env, symbol) {
         // sites). Served as its own scalar pull rather than a JOIN so a
         // missing topology row degrades to nulls instead of dropping the
         // whole surface_bind block.
-        const sbTopoRow = await soft(
-          env.DB.prepare(
-            `SELECT per_residue_topology
-               FROM topology_public
-              WHERE uniprot_acc = ? AND species = 'human'
-                AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
-              LIMIT 1`
-          ).bind(uniprot).first(),
-          "topology_public_surface_bind",
-        );
+        // Pinned to the served canonical release: topology_public also holds
+        // unregistered runs from other predictors (a full DeepTMHMM2 sweep
+        // since 2026-09-27), and an unpinned LIMIT 1 could return any of them.
+        const sbTopoRow = canonicalTopoVersion
+          ? await soft(
+              env.DB.prepare(
+                `SELECT per_residue_topology
+                   FROM topology_public
+                  WHERE uniprot_acc = ? AND species = 'human'
+                    AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
+                    AND topology_version = ?
+                  LIMIT 1`
+              ).bind(uniprot, canonicalTopoVersion).first(),
+              "topology_public_surface_bind",
+            )
+          : null;
         const prt = sbTopoRow?.per_residue_topology ?? null;
         // DeepTMHMM alphabet, per the per_residue_topology column comment
         // in cloudflare/d1_public_schema.sql ("O/M/I/S/B chars").
@@ -1982,6 +1988,120 @@ const ECD_BAND_SOURCES = [
   ["max_paralog_ecd", "max_paralog_ecd_pct_identity", 70, 40],
 ];
 
+// Surface-evidence method categories (catalog "Direct surface method" /
+// "Supporting method" facets), derived from the record's
+// surface_evidence.methods block. Each methods row is one experiment the
+// methods builder judged `direct_surface_accessibility` (an antibody or probe
+// reached the protein from outside an intact cell) or
+// `supports_surface_localization` (at the membrane, outside not shown); other
+// relevance levels are not surface evidence and are dropped. The family and
+// subclass vocabularies overlap, so the rules are tried in order and the
+// first match wins; anything unmatched is "other". Copied verbatim from
+// scripts/build_figure_tsvs.py (Supp Fig 13) and mirrored in
+// viewer/lib/deep-dive-fields.ts — tests/test_surface_method_rules_sync.py
+// fails if the three drift.
+const SURFACE_METHOD_RULES = [
+  ["family", "proximity_labeling", "proximity_labeling"],
+  ["subclass", "surface_biotinylation", "surface_biotin_pulldown"],
+  ["subclass", "cell_surface_capture", "cell_surface_capture_ms"],
+  ["subclass", "N_glycoproteomics", "cell_surface_capture_ms"],
+  ["family", "glycoproteomics", "cell_surface_capture_ms"],
+  ["subclass", "live_cell_flow", "flow_cytometry"],
+  ["subclass", "fixed_cell_flow", "flow_cytometry"],
+  ["family", "flow_cytometry", "flow_cytometry"],
+  ["subclass", "nonpermeabilized_IF", "immunofluorescence"],
+  ["subclass", "permeabilized_IF", "immunofluorescence"],
+  ["family", "immunofluorescence", "immunofluorescence"],
+  ["subclass", "IHC", "immunohistochemistry"],
+  ["subclass", "IHC_membranous", "immunohistochemistry"],
+  ["family", "immunohistochemistry", "immunohistochemistry"],
+  ["family", "functional_surface_assay", "functional_surface_assay"],
+];
+
+// Expression systems that keep the protein at its own expression level, so
+// a direct readout there says the native protein is reachable. Overexpressed
+// constructs can force surface localization the native protein never shows.
+const NATIVE_EXPRESSION_SYSTEMS = new Set(["endogenous", "mixed", "knock_in_tag"]);
+
+// Surface labeling / capture chemistries only work on intact cells with
+// membrane-impermeable reagents, so they count as live-cell unless a row is
+// explicitly permeabilized (the methods builder often labels them
+// "nonpermeabilized"). Flow and IF need an explicit live_cell label: their
+// "nonpermeabilized" rows are usually fixed cells. Functional assays never
+// count — find those under the method facet.
+const LIVE_BY_CHEMISTRY = new Set([
+  "surface_biotin_pulldown",
+  "cell_surface_capture_ms",
+  "proximity_labeling",
+]);
+
+function isLiveCellRow(method, permeabilization) {
+  if (method === "functional_surface_assay") return false;
+  if (permeabilization === "live_cell") return true;
+  return LIVE_BY_CHEMISTRY.has(method) && permeabilization !== "permeabilized";
+}
+
+function surfaceMethodCategory(family, subclass) {
+  for (const [field, value, method] of SURFACE_METHOD_RULES) {
+    if ((field === "family" ? family : subclass) === value) return method;
+  }
+  return "other";
+}
+
+// `packed` is the catalog query's `ddf_surface_methods` column: one
+// "family|subclass|relevance|expression_system|permeabilization" token per
+// distinct methods row, comma-joined (only direct + supporting rows are
+// selected). Returns sorted, de-duplicated method lists (a method that has a
+// direct row is never also listed as supporting) plus two flags:
+//   * has_native_direct_surface_evidence — any direct row in a native
+//     expression system.
+//   * has_live_cell_surface_evidence — a direct row on live cells in a
+//     native expression system, excluding functional assays (see
+//     isLiveCellRow). Overrides the record's baked flag, which keyed on
+//     method family and so missed capture MS and counted fixed-cell flow.
+function projectSurfaceMethods(packed) {
+  const direct = new Set();
+  const supporting = new Set();
+  let native = false;
+  let liveCell = false;
+  for (const tok of (packed || "").split(",")) {
+    if (!tok) continue;
+    const [family, subclass, relevance, system, permeabilization] = tok.split("|");
+    const method = surfaceMethodCategory(family, subclass);
+    if (relevance === "direct_surface_accessibility") {
+      direct.add(method);
+      if (NATIVE_EXPRESSION_SYSTEMS.has(system)) {
+        native = true;
+        if (isLiveCellRow(method, permeabilization)) liveCell = true;
+      }
+    } else if (relevance === "supports_surface_localization") {
+      supporting.add(method);
+    }
+  }
+  for (const m of direct) supporting.delete(m);
+  return {
+    surface_method_direct: [...direct].sort(),
+    surface_method_supporting: [...supporting].sort(),
+    has_native_direct_surface_evidence: native,
+    has_live_cell_surface_evidence: liveCell,
+  };
+}
+
+// Correlated subquery packing a record's direct + supporting methods rows
+// into one short string (median ~80 chars) — never the methods objects
+// themselves, which carry antibody and expression-observation detail that
+// would bloat the catalog query toward D1's isolate-memory cap. `alias` is
+// the surface_annotation alias at the call site.
+const surfaceMethodsSql = (alias) => `(SELECT group_concat(DISTINCT
+      COALESCE(json_extract(m.value, '$.method_family'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.method_subclass'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.accessibility_relevance'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.expression_system'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.permeabilization'), ''))
+    FROM json_each(${alias}.annotation_json, '$.surface_evidence.methods') m
+   WHERE json_extract(m.value, '$.accessibility_relevance')
+         IN ('direct_surface_accessibility', 'supports_surface_localization'))`;
+
 // Try JSON.parse and return the result, or null on failure / falsy input.
 // Also passes through pre-parsed objects — SQLite `json_extract` on an
 // object path returns a JSON string, but D1's client-side handling can
@@ -2112,6 +2232,11 @@ function projectDeepDiveFiltersFromParts(parts) {
     out.tm_count_band = tmc === 0 ? "none" : tmc === 1 ? "single" : "multi";
     any = true;
   }
+  // Surface-evidence method facets — sourced from surface_evidence.methods
+  // (packed server-side; see projectSurfaceMethods). Emitted for every
+  // deep-dive row, empty lists included, so "no direct method" is filterable
+  // and distinguishable from a pre-v10 catalog that lacks the keys.
+  Object.assign(out, projectSurfaceMethods(parts.surface_methods));
   return any ? out : null;
 }
 
@@ -2146,6 +2271,10 @@ function ddfPartsFromRow(row, prefix) {
     topo_signal_peptide_length:
       typeof row[`${prefix}topo_signal_peptide_length`] === "number"
         ? row[`${prefix}topo_signal_peptide_length`]
+        : null,
+    surface_methods:
+      typeof row[`${prefix}surface_methods`] === "string"
+        ? row[`${prefix}surface_methods`]
         : null,
   };
 }
@@ -2265,6 +2394,7 @@ async function handleCatalog(env, request) {
             sa.ddf_homo_oligomerization AS sa_ddf_homo_oligomerization,
             sa.ddf_topo_tm_helix_count AS sa_ddf_topo_tm_helix_count,
             sa.ddf_topo_signal_peptide_length AS sa_ddf_topo_signal_peptide_length,
+            sa.ddf_surface_methods AS sa_ddf_surface_methods,
             si.intern_grade AS intern_grade,
             si.intern_has_lit AS intern_has_lit,
             si.intern_lit_grade AS intern_lit_grade,
@@ -2315,7 +2445,8 @@ async function handleCatalog(env, request) {
                 -- a ~protein-length string that would blow D1's per-query
                 -- isolate memory across ~1.2k catalog rows).
                 json_extract(annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
-                json_extract(annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length
+                json_extract(annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
+                ${surfaceMethodsSql("sa1")} AS ddf_surface_methods
            FROM surface_annotation sa1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_annotation sa2
@@ -2575,6 +2706,7 @@ async function handleCatalog(env, request) {
             -- Canonical-topology SCALARS only (see main catalog query).
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
+            ${surfaceMethodsSql("sa1")} AS ddf_surface_methods,
             gi.uniprot_acc AS uniprot_acc,
             si.seq_canonical_grade AS intern_grade,
             si.has_literature AS intern_has_lit,
@@ -2703,7 +2835,15 @@ async function handleCatalog(env, request) {
       //        internalization-literature column + filter. Present only once a
       //        gene has a literature run; `intern_lit`=1 stays as the has-lit
       //        flag for back-compat. Older viewers ignore the new field.
-      row_schema: 9,
+      //   v10 = adds `ddf.surface_method_direct` / `ddf.surface_method_supporting`
+      //        (sorted method-category lists from surface_evidence.methods;
+      //        a method with a direct row is not repeated as supporting) and
+      //        `ddf.has_native_direct_surface_evidence` (a direct row in an
+      //        endogenous / mixed / knock-in system), and re-derives
+      //        `ddf.has_live_cell_surface_evidence` from the methods rows
+      //        (live cells, native expression, not a functional assay).
+      //        See projectSurfaceMethods.
+      row_schema: 10,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
@@ -3029,7 +3169,7 @@ const V1_ENDPOINTS = [
   { group: "History", method: "GET", path: "/v1/releases", summary: "Numbered data releases with their GitHub tag and Zenodo version DOI" },
   { group: "History", method: "GET", path: "/v1/releases/{version}", summary: "One release: metadata + the revision of every gene in it" },
   { group: "History", method: "GET", path: "/v1/releases/{version}/genes/{symbol}", summary: "A gene as it was in that release; also /evidence and .md" },
-  { group: "Reproducibility", method: "GET", path: "/v1/replicates", summary: "Reproducibility replicates (NOT published records): each study with its replicate kinds and genes — e.g. deep_dive_concordance_v1, the 50-gene run-to-run study behind Supplementary Figure 15" },
+  { group: "Reproducibility", method: "GET", path: "/v1/replicates", summary: "Reproducibility replicates (NOT published records): each study with its replicate kinds and genes — e.g. deep_dive_concordance_v1, the 50-gene run-to-run study behind Supplementary Figure 16" },
   { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates", summary: "The reproducibility replicates held for one gene (404 if none), with links to each" },
   { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates/{study}/{kind}", summary: "One replicate SurfaceomeRecord in full (evidence included), wrapped with reproducibility_replicate: true; kind ∈ published_snapshot · full_rerun · fixed_evidence_replay" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },

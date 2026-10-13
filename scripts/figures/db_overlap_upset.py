@@ -123,12 +123,12 @@ def make_plot(out_dir: Path) -> None:
     # exact block after its inline brand style, whose defaults are tuned
     # for much larger figures than this 12.5x7.4 panel.
     plt.rcParams.update({
-        "font.size": 11,
+        "font.size": 11.5,
         "axes.labelsize": 13,
         "axes.titlesize": 0,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
-        "legend.fontsize": 11,
+        "xtick.labelsize": 11.5,
+        "ytick.labelsize": 11.5,
+        "legend.fontsize": 11.5,
     })
 
     fig = plt.figure(figsize=(12.5, 7.4))
@@ -154,7 +154,7 @@ def make_plot(out_dir: Path) -> None:
         full = len(c["members"]) == len(ORDER)
         ax_bar.text(
             xi, c["n"] + 22, f"{c['n']:,}", ha="center", va="bottom",
-            fontsize=10.5, fontweight="bold", color=HILITE if full else INK,
+            fontsize=10.5, color=HILITE if full else INK,
         )
     ax_bar.set_ylabel("Proteins found in\nonly these databases")
     ax_bar.set_ylim(0, max(heights) * 1.16)
@@ -174,7 +174,7 @@ def make_plot(out_dir: Path) -> None:
             ax_mat.plot(j, i, "o", ms=13, zorder=3,
                         color=COLOR[name] if i in mem else OFF)
     ax_mat.set_yticks(range(len(ORDER)))
-    ax_mat.set_yticklabels(ORDER, fontsize=12.5, fontweight="bold")
+    ax_mat.set_yticklabels(ORDER, fontsize=11.5)
     for tick, name in zip(ax_mat.get_yticklabels(), ORDER):
         tick.set_color(COLOR[name])
     ax_mat.tick_params(axis="y", length=0, pad=8)
@@ -187,20 +187,21 @@ def make_plot(out_dir: Path) -> None:
         "Grouped by how many of the five databases list the protein\n"
         "(each column counts proteins found in that database or combination of\n"
         "databases, and no others)",
-        labelpad=12, fontsize=12,
+        labelpad=12, fontsize=13,
     )
 
     ax_set.barh(range(len(ORDER)), [sizes[n] for n in ORDER],
                 color=[COLOR[n] for n in ORDER], height=0.6)
     for i, name in enumerate(ORDER):
-        ax_set.text(sizes[name] - 70, i, f"{sizes[name]:,}", va="center",
-                    ha="left", fontsize=10, color="white", fontweight="bold")
+        # Count sits at the bar's zero end so the mean rule never crosses it.
+        ax_set.text(70, i, f"{sizes[name]:,}", va="center",
+                    ha="right", fontsize=10.5, color="white")
     mean_size = float(np.mean([sizes[n] for n in ORDER]))
     # Rule stops below its own label rather than striking through it.
     ax_set.axvline(mean_size, color=INK, lw=1.6, ls=(0, (4, 3)), zorder=5,
                    ymin=0.0, ymax=0.90)
     ax_set.text(mean_size, -1.02, f"average database size\n{mean_size:,.0f}",
-                ha="center", va="bottom", fontsize=9.5, color=INK,
+                ha="center", va="bottom", fontsize=10, color=INK,
                 style="italic", zorder=6)
     ax_set.invert_xaxis()
     ax_set.set_xlabel("Set size")

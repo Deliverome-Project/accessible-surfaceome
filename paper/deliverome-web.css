@@ -15,9 +15,24 @@
  * single edit.
  */
 
-/* MUST be the first statement in the file: a CSS @import placed after
- * any rule is discarded, which silently cost us both web fonts. */
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap");
+/* The web fonts are NOT loaded from here. They used to be, as an
+ * @import at the top of this file, which is the slowest path a font can
+ * take: the browser must fetch this stylesheet, parse it, discover the
+ * @import, fetch Google's stylesheet, parse that, and only then fetch
+ * the woff2 — three serial round trips before one character renders in
+ * the brand face, visible as a full-page reflow on every cold load.
+ *
+ * The <link> now goes in <head>, behind two preconnects, where the
+ * preload scanner finds it while the HTML is still parsing. It is
+ * emitted by paper/web_assets.py:FONT_HEAD_LINKS — if you add a weight
+ * or a face, change it THERE, not here.
+ *
+ * Consequence for anyone embedding this sheet in another site: the
+ * fonts no longer travel with the stylesheet. The rules below all name
+ * the family with a fallback (``var(--font-sans, "Manrope"), sans-serif``),
+ * so an embed that already loads its own faces is unaffected, and one
+ * that loads none degrades to the system stack rather than breaking.
+ */
 
 :root {
   /* Paper-local fallbacks. When this stylesheet is loaded INSIDE the
@@ -33,13 +48,39 @@
   --paper-muted: #6f5d5a;
   --paper-rule: rgba(31, 23, 24, 0.12);
 
-  /* Wider than the 44rem first draft: at 17px this lands around 90
-   * characters, which suits a technical paper with long compound
-   * terms and inline citations better than a literary measure. Wide
-   * for prose on purpose — this is a reference document people scan
-   * and cross-link through, not an essay read start to finish. */
+  /* Wide for prose on purpose — this is a reference document people
+   * scan and cross-link through, not an essay read start to finish,
+   * and the long compound terms and inline citations want the room.
+   *
+   * This is the settled width, paired with the 16px body size set
+   * below. It was briefly narrowed to 42rem, which read as cramped for
+   * this material; it was changed back deliberately. Don't narrow it
+   * again without asking the author.
+   *
+   * Figures and tables are NOT clamped to this — they set their own
+   * wider limits below — so the prose column does not size them. */
   --measure: 58rem;
   --toc-width: 16rem;
+
+  /* Motion. Deliberately quicker than the 600ms/16px that long-form
+   * research pages often use: this is a dense reference document people
+   * scan and cross-link through, and at scroll speed a languid reveal
+   * means reading text that is still arriving. The ease is a sharp
+   * ease-out, so the travel is front-loaded and the 420ms reads closer
+   * to 300ms while still settling softly instead of stopping dead.
+   *
+   * Tune the feel with these two: --reveal-distance is how far a block
+   * travels, --reveal-duration how long it takes.
+   *
+   * --reveal-ease resolves to the site's own token when this sheet is
+   * loaded inside the Deliverome site (same trick as the colours
+   * above), and to the duplicated value when served standalone. It
+   * cannot be named --ease-out here: a custom property that references
+   * itself is invalid, not a fallback. */
+  --reveal-ease: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  --reveal-distance: 18px;
+  --reveal-duration: 620ms;
+  --reveal-step: 70ms;
 }
 
 .paper-root {
@@ -70,10 +111,12 @@ html { -webkit-text-size-adjust: 100%; }
   background: var(--bg, #ffffff);
   color: var(--ink, #1f1718);
   font-family: var(--font-sans, "Manrope"), system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* 1.0625rem ≈ 17px: the print edition runs 9.5pt because column
-   * width forces density, but on screen a single wide column wants a
-   * larger face and a looser leading. */
-  font-size: 1.0625rem;
+  /* 1rem ≈ 16px, with 1.65 leading. The print edition runs 9.5pt
+   * because two columns force density; on screen the face can be
+   * bigger and the leading looser, but only up to a point: at 17px
+   * against the wide measure below, the page read as sprawling. 16px
+   * tightens it without touching the column width. */
+  font-size: 1rem;
   line-height: 1.65;
 }
 
@@ -120,7 +163,11 @@ html { -webkit-text-size-adjust: 100%; }
  * exclusion it inherited max-width:--measure + margin/padding and the
  * dark backdrop rendered as a centred box instead of covering the
  * viewport. */
-.paper-root > *:not(.paper-header):not(#TOC):not(.figure-lightbox) {
+/* :where() keeps this default at class-level specificity. As a plain
+ * :not(#TOC) chain it carried an id's weight and silently beat the
+ * wider .figure-block and table limits below, so figures were held to
+ * the prose measure too. */
+.paper-root > :where(:not(.paper-header, #TOC, .figure-lightbox)) {
   max-width: var(--measure);
   margin-inline: auto;
   padding-inline: 1.5rem;
@@ -179,16 +226,31 @@ h2, h3, h4, h6 {
   scroll-margin-top: 7rem;
 }
 
+/* Section headings — Results, Discussion, Methods.
+ *
+ * These were set as a small tracked label at 0.82rem, which left every
+ * major section heading SMALLER than the subsection headings beneath
+ * it: 13px against h3's 20px. The hierarchy read backwards, and a
+ * reader scrolling past "Discussion" got no sense of having crossed
+ * into a new section at all.
+ *
+ * The uppercase maroon treatment stays — it mirrors the print edition
+ * and is the brand's section marker — but at a size that leads.
+ * Tracking comes DOWN as the size goes up: 0.14em is set for a
+ * caption-sized label and turns into a gappy banner at 1.3rem. */
 h2 {
-  font-size: 0.82rem;
-  letter-spacing: 0.14em;
+  font-size: 1.3rem;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   font-weight: 700;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--rule);
+  margin-block: 3rem 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1.5px solid rgba(146, 32, 56, 0.3);
 }
 
-h3 { font-size: 1.22rem; font-weight: 600; color: var(--ink); }
+/* Each step is a clear drop from the one above, so a heading's level is
+ * legible from its size alone: 20.8 / 18 / 16.3 / 14.4 px. */
+h3 { font-size: 1.125rem; font-weight: 700; color: var(--ink); }
 h4 { font-size: 1.02rem; font-weight: 600; color: var(--ink-soft); }
 h6 { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
 
@@ -225,11 +287,40 @@ strong { font-weight: 600; }
 }
 
 .paper-root > .figure-block {
-  /* Figures earn more width than the prose measure: a five-panel
-   * violin at 44rem is unreadable. */
-  max-width: min(66rem, 100%);
+  /* Figures sit in the same column as the prose.
+   *
+   * They used to be allowed 66rem against a 44rem measure, because a
+   * five-panel violin at 44rem is unreadable. The measure has since
+   * widened to 58rem, which leaves the figure column no longer short of
+   * room and the extra width only breaking the page's left and right
+   * edges — a figure that starts before the text it belongs to reads as
+   * a layout fault rather than emphasis.
+   *
+   * Clamped to the same box as a paragraph — `--measure`, not the text
+   * column inside it. The block also inherits the body's 1.5rem
+   * `padding-inline`, so its CONTENTS land on the text column and a
+   * figure begins and ends exactly where the prose does. Subtracting
+   * the gutters here as well would inset the figure by them twice. */
+  max-width: min(var(--measure), 100%);
   margin: 2.4rem auto;
   scroll-margin-top: 7rem;
+}
+
+/* The legend is prose and belongs in the same column as the body text,
+ * even though the figure above it is allowed to be wider. Without this
+ * it inherits the figure block's extra width and every caption sits a
+ * couple of dozen pixels outside the text column — close enough to look
+ * like a mistake rather than a choice, and obvious while scrolling.
+ *
+ * `--measure` less the body's 1.5rem gutters is the TEXT column, so the
+ * caption's rail lands exactly on the body text's left edge. The
+ * `100% - 3rem` arm keeps the same gutter once the viewport is narrower
+ * than the measure. */
+.paper-root > .figure-block h5 {
+  /* The block's content box IS the text column (see above), so the
+   * legend simply fills it. */
+  width: 100%;
+  margin-inline: auto;
 }
 
 .figure-block p,
@@ -246,9 +337,9 @@ h5 {
   /* Rail only — the filled caption card belongs to the print edition,
    * where it separates figures from two-column body text. On a white
    * single-column page it just adds noise. */
-  border-left: 3px solid var(--maroon-mid);
+  border-left: 1.5px solid rgba(146, 32, 56, 0.45);
   margin-block: 0.7rem 0;
-  padding: 0.85rem 1.1rem;
+  padding: 0.3rem 0 0.3rem 1rem;
   font-family: var(--font-sans, "Manrope"), sans-serif;
   font-weight: 400;
   font-size: 0.88rem;
@@ -263,7 +354,17 @@ h5 {
  * the .docx's own bolding of the same words, kept so a caption the
  * filter could not resolve still reads right here. */
 h5 .caption-lead,
-h5 strong { color: var(--maroon-dark); font-weight: 700; }
+h5 strong { color: var(--maroon-dark); font-weight: 600; }
+
+/* Panel markers inside a legend. A multi-panel legend otherwise reads
+ * as one undifferentiated paragraph, so finding the sentence that
+ * explains panel b means reading the whole thing. Same maroon as the
+ * caption's run-in, a step heavier than the prose around it. */
+h5 .panel-label,
+.figure-lightbox__inner figcaption .panel-label {
+  font-weight: 700;
+  color: var(--maroon-dark);
+}
 
 /* Landing highlight: clicking a cross-reference should make it
  * obvious WHICH block you just jumped to. */
@@ -340,6 +441,13 @@ span[id^="ref-"]:target {
   border-radius: 2px;
 }
 
+/* Long bare URLs (the Data / Code availability links run to 100+
+ * characters) can't wrap at any normal break point and pushed the page
+ * sideways on a phone. */
+.paper-root a {
+  overflow-wrap: anywhere;
+}
+
 /* ============================================================
  * Tables
  * ============================================================ */
@@ -359,6 +467,18 @@ th, td {
   vertical-align: top;
 }
 th { color: var(--maroon-dark); font-weight: 600; }
+
+/* Tables can use more width than the prose measure: Supplementary
+ * Table 1 is three columns of codes plus descriptions. */
+.paper-root > table,
+.paper-root > h5.table-caption {
+  max-width: min(58rem, 100%);
+}
+
+/* build.py demotes all but the first <thead> row into <tbody>; each
+ * body cell holds a reason code over its description. */
+td p { margin: 0 0 0.25em; }
+td p:first-child strong { color: var(--maroon-dark); }
 
 /* ============================================================
  * Print from the browser: fall back to something sane rather than
@@ -434,44 +554,211 @@ th { color: var(--maroon-dark); font-weight: 600; }
   background: rgba(31, 23, 24, 0.82);
   opacity: 0;
   transition: opacity 140ms ease;
-  overflow-y: auto;
+  /* Nothing here scrolls. The point of opening a figure full-screen is
+   * to see the whole figure; a lightbox you have to scroll has given
+   * back the thing it was for. The flex chain below shrinks the image
+   * to whatever space the caption leaves instead. */
+  overflow: hidden;
 }
 
 .figure-lightbox.is-open { opacity: 1; }
 
 .figure-lightbox__inner {
-  margin: auto;
   max-width: 76rem;
+  /* Bounded by the overlay's padded content box, so the figure and its
+   * caption together can never exceed the screen. The overlay centres
+   * this with its own align/justify, so no `margin: auto` — that would
+   * fight the max-height. */
+  max-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   background: var(--bg);
-  border-radius: 4px;
-  padding: clamp(0.75rem, 2vw, 1.25rem);
+  border-radius: 14px;
+  padding: clamp(0.9rem, 2vw, 1.4rem);
 }
 
-.figure-lightbox__inner img {
-  display: block;
-  max-width: 100%;
-  /* Leave room for the caption beneath rather than letting a tall
-   * figure push it off-screen. */
-  max-height: 72vh;
-  width: auto;
-  margin-inline: auto;
+/* The figure's area in the panel. Fixed by the flex layout — the panel
+ * never changes shape — and the image is scaled and panned INSIDE it.
+ * `overflow: hidden` is what makes it a window rather than a picture.
+ *
+ * `touch-action: none` stops the browser claiming pinch and drag for
+ * page zoom and scrolling before the handlers see them. */
+.figure-lightbox__viewport {
+  /* The window the figure is scaled and panned inside. Its SHAPE comes
+   * from an `aspect-ratio` that paper.js sets from the image's natural
+   * dimensions when the figure opens.
+   *
+   * That indirection is doing real work. The image cannot size this box
+   * itself: left in flow it gives the box its own height, the box then
+   * shrinks to make room for the legend, and the image — whose
+   * `max-height: 100%` resolves against a height that was derived from
+   * it — keeps its original size and overflows, so the figure is
+   * clipped top and bottom. Giving the box a definite shape of its own
+   * breaks that circularity: the box shrinks, and the absolutely
+   * positioned image inside simply fills whatever is left. */
+  flex: 0 1 auto;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  touch-action: none;
+}
+
+.figure-lightbox__viewport img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Pan/zoom maths is in the image's own box, measured from its
+   * top-left — see the controller in deliverome-web.js. */
+  transform-origin: 0 0;
+  /* A drag on an image is a native image-drag unless both of these say
+   * otherwise, and the pan silently never starts. */
+  -webkit-user-drag: none;
+  user-select: none;
+  cursor: zoom-in;
+}
+
+.figure-lightbox__viewport.is-zoomed img {
+  cursor: grab;
+}
+
+.figure-lightbox__viewport.is-panning img {
+  cursor: grabbing;
+}
+
+/* A hint, shown until the reader zooms for the first time. */
+/* ── Tall figures: legend beside, not beneath ────────────────────
+ *
+ * The panel is wider than it is tall, so a portrait figure that shares
+ * that height with its legend ends up a sliver — the one shape that
+ * most needs the room gets the least. Turned on its side, the figure
+ * takes the full panel height and the legend sits in a column beside
+ * it. paper.js adds `is-portrait` when the figure is at least as tall
+ * as it is wide.
+ *
+ * Only above 48rem: in a phone-width panel a side-by-side split leaves
+ * neither the figure nor the legend enough width to be worth reading. */
+@media (min-width: 48rem) {
+  .figure-lightbox__inner.is-portrait {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1.2rem;
+    /* Fill the overlay, so the point of the exercise — height for the
+     * figure — is actually there to take. */
+    height: 100%;
+  }
+
+  /* `order`, not `row-reverse`: reversing would also throw the figure
+   * counter to the far left, away from the figure it counts. */
+  .figure-lightbox__inner.is-portrait figcaption {
+    order: -1;
+    flex: 0 0 auto;
+    width: clamp(15rem, 30%, 24rem);
+    align-self: center;
+    margin-top: 0;
+    /* A legend long enough to outrun the full panel height in a column
+     * this narrow is rare, and scrolling it beats clipping it. It does
+     * not engage at the lengths this manuscript actually uses. */
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .figure-lightbox__inner.is-portrait .figure-lightbox__viewport {
+    /* Height leads and the aspect-ratio derives the width — the
+     * reverse of the stacked layout. */
+    flex: 1 1 auto;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+  }
+
+  .figure-lightbox__inner.is-portrait .figure-lightbox__counter {
+    align-self: flex-end;
+  }
+}
+
+.figure-lightbox__hint {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  margin: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(31, 23, 24, 0.55);
+  color: #fff;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.figure-lightbox__viewport.is-zoomed .figure-lightbox__hint {
+  opacity: 0;
+}
+
+/* Swaps in where the hint was, once the hint's advice has been taken.
+ * Double-click and Escape do the same thing, but neither is visible,
+ * so neither is a way out for a reader who doesn't already know. */
+.figure-lightbox__reset {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.25rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(31, 23, 24, 0.72);
+  color: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, background-color 150ms ease;
+}
+
+.figure-lightbox__viewport.is-zoomed .figure-lightbox__reset {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.figure-lightbox__reset:hover {
+  background: rgba(31, 23, 24, 0.9);
+}
+
+.figure-lightbox__reset:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .figure-lightbox__inner figcaption {
+  /* The WHOLE legend, always. It is laid out first and keeps its
+   * natural height; the image above takes whatever is left. An earlier
+   * version capped the caption and let it scroll, which meant opening
+   * a figure full-screen and still not being able to read its legend.
+   *
+   * Full panel width too (no narrower max-width): a wider measure wraps
+   * the same text into fewer lines, so making it full width is also
+   * what makes it fit. */
+  flex: 0 0 auto;
+  width: 100%;
   margin-top: 0.9rem;
-  padding-left: 0.9rem;
-  border-left: 4px solid var(--maroon-mid);
+  padding: 0.3rem 0 0.3rem 1rem;
+  /* Matches the lighter in-flow caption rail (see `h5` above). */
+  border-left: 1.5px solid rgba(146, 32, 56, 0.45);
   font-size: 0.85rem;
   line-height: 1.5;
   color: var(--ink-soft);
-  max-width: 60rem;
 }
-/* Match the in-flow caption card: the run-in "Figure N. Title." is a
- * <strong>, and the caption ends with a "Figure data and script." gist
- * link — both carried in verbatim, so give them the same maroon here. */
 .figure-lightbox__inner figcaption strong {
   color: var(--maroon-dark);
-  font-weight: 700;
+  font-weight: 600;
 }
 .figure-lightbox__inner figcaption a { color: var(--maroon-mid); }
 
@@ -514,6 +801,7 @@ th { color: var(--maroon-dark); font-weight: 600; }
 
 /* Lightbox navigation */
 .figure-lightbox__nav {
+  border-radius: 50%;
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
@@ -716,3 +1004,225 @@ img.resource-biorxiv-logo {
 }
 .paper-comments__submit:hover:not(:disabled) { background: var(--maroon-dark); }
 .paper-comments__submit:disabled { opacity: 0.55; cursor: default; }
+
+/* ============================================================
+ * Motion
+ * ------------------------------------------------------------
+ * Scroll-reveal, anchor-jump behaviour and the easing on the
+ * interactive bits. Driven by deliverome-web.js; every rule here is
+ * inert until that script runs.
+ *
+ * The governing constraint: NOTHING below may be the only thing
+ * standing between a reader and the text. The reveal's hidden state is
+ * therefore gated on `.js-reveal`, a class only paper.js sets, so a
+ * reader whose script 404s, errors, or is blocked gets an ordinary
+ * fully-visible paper rather than a blank one. Crawlers, Reader Mode
+ * and "view source" readers land in the same safe state for free.
+ * tests/test_paper_web_motion.py fails the build if a rule escapes
+ * that gate.
+ * ============================================================ */
+
+/* Arming is a SEPARATE class from the gate, applied one frame later,
+ * and it is what switches the transition on. That ordering is the whole
+ * mechanism for "the top of the page doesn't animate": paper.js marks
+ * everything already on screen as visible BEFORE arming, so the title
+ * and abstract simply exist at first paint. The reader came for the
+ * title; making them watch it arrive is a cost with no benefit. */
+.js-reveal .paper-root .reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance));
+}
+
+.js-reveal.reveal-armed .paper-root .reveal {
+  transition:
+    opacity var(--reveal-duration) var(--reveal-ease),
+    transform var(--reveal-duration) var(--reveal-ease);
+}
+
+.js-reveal .paper-root .reveal.is-visible {
+  opacity: 1;
+  /* `none`, not `translateY(0)`: an identity transform still creates a
+   * stacking context, which would trap the citation panel and the
+   * lightbox beneath any section revealed later in DOM order. Both are
+   * appended to <body> rather than nested in a section, so this is
+   * belt-and-braces here — but the viewer hit exactly this bug with
+   * its InfoTip popovers, and the cost of the stricter value is zero. */
+  transform: none;
+}
+
+/* Big objects need more travel and more time to read as motion at all.
+ * A figure that moves 18px over 620ms has barely shifted relative to
+ * its own height — it just appears, which is what "the figure comes in
+ * too quickly" is describing. Scaling the distance and duration with
+ * the size of the thing being moved makes a figure arrive rather than
+ * materialise, while prose keeps the lighter touch that suits a line
+ * of text. */
+.paper-root .figure-block.reveal,
+.paper-root table.reveal {
+  --reveal-distance: 34px;
+  --reveal-duration: 900ms;
+}
+
+/* Staggered children, used on multi-panel figure groups and the
+ * reference list — places where the eye reads a SET and the offset
+ * helps it resolve the set into items. Not used on prose: staggering
+ * body paragraphs at reading speed looks fidgety rather than composed.
+ * --reveal-i is set per child by paper.js. */
+.js-reveal .paper-root .reveal[data-reveal-stagger] > * {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance));
+}
+
+.js-reveal.reveal-armed .paper-root .reveal[data-reveal-stagger] > * {
+  transition:
+    opacity var(--reveal-duration) var(--reveal-ease),
+    transform var(--reveal-duration) var(--reveal-ease);
+  transition-delay: calc(var(--reveal-i, 0) * var(--reveal-step));
+}
+
+.js-reveal .paper-root .reveal[data-reveal-stagger].is-visible > * {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Anchor jumps ─────────────────────────────────────────────── */
+
+/* A TOC click or a cross-reference should glide, so the reader keeps
+ * their bearings instead of being teleported. Paired with scroll-margin
+ * below, which stops the destination heading landing flush against the
+ * top edge where it reads as cut off. Figure anchors and captions
+ * already carry their own scroll-margin further up this file. */
+html {
+  scroll-behavior: smooth;
+}
+
+.paper-root h2,
+.paper-root h3,
+.paper-root h4 {
+  scroll-margin-top: 2.5rem;
+}
+
+/* Post-jump highlight on the destination. After a smooth scroll the eye
+ * arrives a beat after the page settles, and in a wall of references
+ * "which line did I just land on?" is a real question. Background only,
+ * never a transform — a transform would move the target under the
+ * reader mid-animation and undo the scroll they just made. */
+@keyframes paper-jump-flash {
+  from { background-color: var(--maroon-soft); }
+  to   { background-color: transparent; }
+}
+
+.paper-root .is-jump-flash {
+  animation: paper-jump-flash 1.2s var(--reveal-ease);
+  border-radius: 3px;
+}
+
+/* ── Easing on the interactive bits ───────────────────────────── */
+
+/* Colour changes that previously snapped. Short on purpose: a hover
+ * response slower than ~150ms stops feeling like a response. */
+.paper-root a {
+  transition: color 150ms var(--reveal-ease);
+}
+
+#TOC a {
+  transition: color 150ms var(--reveal-ease);
+}
+
+.figure-block img.is-zoomable {
+  transition: filter 150ms var(--reveal-ease);
+}
+
+.figure-block img.is-zoomable:hover {
+  filter: brightness(0.96);
+}
+
+/* The lightbox faded in flat. A hair of scale alongside the fade reads
+ * as the figure coming toward the reader rather than materialising;
+ * 0.98 is small enough that it never looks like a zoom effect. The
+ * backdrop keeps its own plain opacity fade. */
+.figure-lightbox__inner {
+  transform: scale(0.98);
+  transition: transform 180ms var(--reveal-ease);
+}
+
+.figure-lightbox.is-open .figure-lightbox__inner {
+  transform: none;
+}
+
+/* Zooming happens INSIDE the figure's window (see
+ * .figure-lightbox__viewport above), so the panel itself never changes
+ * shape and the legend stays put and readable. An earlier version
+ * popped the figure out to fill the whole viewport and hid the legend,
+ * which is a different gesture than zooming into the figure. */
+/* ── Contents rail ────────────────────────────────────────────── */
+
+/* The rail is fixed-position, so on load it sits beside the title band
+ * — a navigation aid for a page the reader hasn't started. Fade it in
+ * once they're past the header and it's actually useful. `visibility`
+ * alongside opacity so it can't be tabbed into while invisible. */
+@media (min-width: 78rem) {
+  #TOC {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 320ms var(--reveal-ease),
+      visibility 0s linear 320ms;
+  }
+
+  .js-reveal #TOC.is-docked,
+  html:not(.js-reveal) #TOC {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+}
+
+/* ── Escapes ──────────────────────────────────────────────────── */
+
+/* Both escapes must force the VISIBLE state, not merely switch the
+ * transition off. Disabling the transition alone leaves opacity at 0
+ * and hides the paper outright — the exact failure this whole section
+ * is built to avoid. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .js-reveal .paper-root .reveal,
+  .js-reveal .paper-root .reveal[data-reveal-stagger] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .paper-root .is-jump-flash {
+    animation: none !important;
+  }
+
+  .figure-lightbox__inner,
+  .paper-root a,
+  #TOC a,
+  .figure-block img.is-zoomable {
+    transition: none !important;
+  }
+
+  #TOC {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transition: none !important;
+  }
+}
+
+@media print {
+  .js-reveal .paper-root .reveal,
+  .js-reveal .paper-root .reveal[data-reveal-stagger] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .paper-root .is-jump-flash {
+    animation: none !important;
+  }
+}

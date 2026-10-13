@@ -8,9 +8,12 @@
 # ///
 """Reproduce ``benchmark_cost_vs_accuracy.{pdf,png}`` from the public repo.
 
-Fetches the canonical main-bench export (D1 → flat TSV) +
-benchmark-truth TSV via ``raw.githubusercontent.com``, then renders the
-8-cell cost/accuracy frontier in the Claude-orange palette.
+Reads the bundled ``benchmark_cost_vs_accuracy.tsv`` (the sibling file in
+the gist; falls back to the in-repo copy under ``data/processed/figures/``),
+then renders the 11-cell cost/accuracy frontier in the Claude-orange
+palette: Haiku 4.5 and Sonnet 4.6 each × {naive, + IDs, + IDs + PubMed,
++ IDs + web}, Sonnet 5 × {+ IDs}, Opus 4.8 × {naive, + IDs}. Accuracy is
+the mean over 3 replicates on the 147-gene bench.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
@@ -28,12 +31,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-# Final-figure data sources — pinned to the public repo at raw.githubusercontent.com
-# for citation stability. The predictions TSV is refreshed from public D1
-# by `scripts/export_mainbench_to_tsv.py`; truth labels come from the
-# curated benchmark TSV in `data/eval/`. (Live consumers wanting the same
-# shape can hit `api.deliverome.org/surfaceome/v1/{triage,benchmark}/
-# export.tsv` instead — see the API page on the viewer.)
+# Data source. BASE is used only to name the TSV and to map it to its
+# in-repo path; the script never downloads it (see _fetch_tsv). Upstream,
+# per-replicate predictions are exported from public D1 by
+# `scripts/tsv-export/export_mainbench_to_tsv.py` into
+# `data/processed/triage_bench/mainbench_replicates_v2.tsv`, which
+# `scripts/build_figure_tsvs.py` turns into the per-figure TSV below.
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
@@ -90,7 +93,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -99,12 +102,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 14,
-        "axes.labelsize": 14,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 10.5,
+        "axes.labelsize": 12,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -119,40 +122,51 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 13,
-        "ytick.labelsize": 13,
+        "xtick.labelsize": 10.5,
+        "ytick.labelsize": 10.5,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 13,
+        "legend.fontsize": 10.5,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
 
 
-# Anthropic published prices ($/M tokens, 2026-05).
+# Per-million-token prices used for the figure: in = input, out = output,
+# cr = cache read, cw = cache write. Verified 2026-10-11 against
+# https://platform.claude.com/docs/en/about-claude/pricing.
+#
+# Two corrections landed here together, for different reasons:
+#  * Opus 4.8 was carrying 15/75/1.50/18.75 — an exact four-way match for the
+#    retired Opus 4.1 row. It was copied forward from a claude-opus-4-7 entry
+#    that had the same problem. No Opus since 4.5 has been priced above 5/25.
+#  * Sonnet 5 was deliberately entered at Sonnet 4.6's rate, because that was
+#    the increase Anthropic had scheduled for 2026-09-01. The increase was
+#    cancelled and the 2/10 launch price became the standard price, so the
+#    legend sentence that explained the choice is gone too.
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-sonnet-5":   {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-opus-4-8":   {"in": 15.0, "out": 75.0,  "cr": 1.50, "cw": 18.75},
+    "claude-sonnet-5":   {"in": 2.00, "out": 10.00, "cr": 0.20, "cw": 2.50},
+    "claude-opus-4-8":   {"in": 5.00, "out": 25.00, "cr": 0.50, "cw": 6.25},
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01
 WHOLE_GENOME_N = 19_324  # protein-coding human genes with a valid HGNC + UniProt mapping
 
 # Per-cell label + Claude-orange sequential walk (light → dark = more-context cells).
 CELL_LABEL = {
-    ("claude-haiku-4-5",  "naive"):       "Haiku (naive)",
-    ("claude-haiku-4-5",  "ncbi"):        "Haiku (+ IDs)",
-    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku (+ IDs + PubMed)",
-    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku (+ IDs + web)",
+    ("claude-haiku-4-5",  "naive"):       "Haiku 4.5 (naive)",
+    ("claude-haiku-4-5",  "ncbi"):        "Haiku 4.5 (+ IDs)",
+    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku 4.5 (+ IDs + PubMed)",
+    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku 4.5 (+ IDs + web)",
     ("claude-sonnet-4-6", "naive"):       "Sonnet 4.6 (naive)",
     ("claude-sonnet-4-6", "ncbi"):        "Sonnet 4.6 (+ IDs)",
     ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet 4.6 (+ IDs + PubMed)",
     ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet 4.6 (+ IDs + web)",
     ("claude-sonnet-5",   "ncbi"):        "Sonnet 5 (+ IDs)",
-    ("claude-opus-4-8",   "naive"):       "Opus (naive)",
-    ("claude-opus-4-8",   "ncbi"):        "Opus (+ IDs)",
+    ("claude-opus-4-8",   "naive"):       "Opus 4.8 (naive)",
+    ("claude-opus-4-8",   "ncbi"):        "Opus 4.8 (+ IDs)",
 }
 CELL_COLOR = {
     ("claude-haiku-4-5",  "naive"):       "#f7d8c4",
@@ -168,32 +182,32 @@ CELL_COLOR = {
     ("claude-opus-4-8",   "ncbi"):        "#a85b3f",
 }
 
-# Per-cell label offsets (pixels) to deconflict dense clusters — mirrors
-# scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot. Without
-# these, Opus(naive) and Sonnet(+NCBI+web) land at similar (cost, acc.) and
-# their labels stack. When abs(dy) >= 16 a short leader line is drawn so
-# the label → point mapping stays unambiguous. Re-tune if cells move.
+# Per-cell label offsets (points) — mirrors
+# scripts/figures/benchmark_cost_vs_accuracy.py. Labels are vertically
+# centred on the anchor; dx < 0 right-aligns them to the left of the point.
+# Offsets >= 18 pt get a leader line. Checked so no label touches a dot,
+# another label or a leader line — re-tune if cells move.
 CELL_LABEL_OFFSET = {
-    ("claude-haiku-4-5",  "naive"):       (7,   6),
-    ("claude-haiku-4-5",  "ncbi"):        (7,  10),
-    ("claude-haiku-4-5",  "pubmed_ncbi"): (7, -18),
-    ("claude-haiku-4-5",  "web_ncbi"):    (7,   6),
-    # Sonnet 4.6 (naive) sits just above Sonnet 5 (+ IDs) at a near-identical
-    # cost — send its label LEFT (into the empty gap toward Haiku) so it
-    # doesn't collide with the Sonnet 5 point/label below it.
-    ("claude-sonnet-4-6", "naive"):       (-128,  2),
-    ("claude-sonnet-4-6", "ncbi"):        (7,   12),
-    # + IDs + web and + IDs + PubMed nearly overlap (same cost, 0.5pp apart):
-    # push PubMed's label HIGH (clear above the +IDs row) with a leader, and
-    # keep web's label just up-right on its point — so neither lands on the
-    # other's point or on Opus (naive) to their right.
-    ("claude-sonnet-4-6", "pubmed_ncbi"): (7,  34),
-    ("claude-sonnet-4-6", "web_ncbi"):    (7,   6),
-    # Sonnet 5 (+ IDs) sits ~1pp below Sonnet 4.6 (naive) at a very similar
-    # cost; push its label well down with a leader line.
-    ("claude-sonnet-5",   "ncbi"):        (16, -44),
-    ("claude-opus-4-8",   "naive"):       (7, -18),
-    ("claude-opus-4-8",   "ncbi"):        (7,  10),
+    ("claude-haiku-4-5",  "naive"):       (10,   0),
+    # Below-right: the + IDs + PubMed point sits level with it to the right.
+    ("claude-haiku-4-5",  "ncbi"):        (10, -13),
+    ("claude-haiku-4-5",  "pubmed_ncbi"): (10,   0),
+    ("claude-haiku-4-5",  "web_ncbi"):    (-10,  0),
+    # Sonnet 4.6 naive / + IDs sit close together: both labels go LEFT into
+    # the empty gap toward Haiku.
+    ("claude-sonnet-4-6", "naive"):       (-10,  0),
+    ("claude-sonnet-4-6", "ncbi"):        (-10,  3),
+    # + IDs + PubMed is boxed in by + IDs, Sonnet 5 and + IDs + web: lift its
+    # label up on a leader. It goes up-LEFT, not up-right: correcting the Opus
+    # price pulled Opus 4.8 (+ IDs) in from the right edge to ~$195, straight
+    # into the gap this label used to occupy.
+    ("claude-sonnet-4-6", "pubmed_ncbi"): (-14, 18),
+    ("claude-sonnet-4-6", "web_ncbi"):    (10,   9),
+    # Sonnet 5 (+ IDs) sits just below Sonnet 4.6 + IDs + PubMed: label
+    # down-right on a leader.
+    ("claude-sonnet-5",   "ncbi"):        (14, -18),
+    ("claude-opus-4-8",   "naive"):       (10,   0),
+    ("claude-opus-4-8",   "ncbi"):        (10,   0),
 }
 
 
@@ -222,7 +236,11 @@ def _whole_genome_cost(group: pd.DataFrame) -> float:
     so token columns already carry per-replicate counts. Cost is per single
     triage pass — average the per-rep counts across the cell's
     (gene, replicate) rows. ``n`` here is gene-count (rows ÷ reps per gene
-    ≈ unique genes), used only in the system-prompt amortization."""
+    ≈ unique genes), used only in the system-prompt amortization: the
+    shared system prompt is charged once at the cache-write rate and
+    reused ``n - 1`` times at the cache-read rate. Cells with no recorded
+    cache tokens treat the first 2,000 prompt tokens as that system
+    prompt. Each web search adds WEB_SEARCH_USD_PER_QUERY."""
     model = group["model"].iloc[0]
     pricing = _PRICE[model]
     n = group["gene_symbol"].nunique()
@@ -283,16 +301,20 @@ def main() -> None:
             x, y,
             s=180, c=row["color"], edgecolor=BRAND_INK, linewidth=0.8, zorder=3,
         )
-        dx, dy = CELL_LABEL_OFFSET.get((row["model"], row["variant"]), (8, -3))
+        dx, dy = CELL_LABEL_OFFSET.get((row["model"], row["variant"]), (9, 0))
+        # Labels are vertically centred on their anchor and grow away from
+        # the point (left-anchored when dx > 0); the leader starts at the
+        # dot's rim so it never crosses the marker.
         arrowprops = (
             dict(arrowstyle="-", color=BRAND_NEUTRAL,
-                 linewidth=0.6, alpha=0.7, shrinkA=0, shrinkB=4)
-            if abs(dy) >= 16 else None
+                 linewidth=0.6, alpha=0.8, shrinkA=2, shrinkB=7.5)
+            if (dx * dx + dy * dy) ** 0.5 >= 18 else None
         )
         ax.annotate(
             row["label"], (x, y),
             xytext=(dx, dy), textcoords="offset points",
-            fontsize=14, color=BRAND_INK,
+            ha="left" if dx >= 0 else "right", va="center",
+            fontsize=9.75, color=BRAND_INK,
             arrowprops=arrowprops,
         )
     ax.set_xscale("log")

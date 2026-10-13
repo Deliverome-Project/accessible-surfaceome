@@ -86,12 +86,41 @@ visibly instead of white-screening behind the shell.
 ### Build gotcha: `build:snapshot` load-sensitivity
 
 `npm run build` runs `scripts/build-data-snapshot.mjs` first, which
-pre-fetches all ~5k per-gene records from the live Worker and **fails the
-build if >2% (`RECORD_MAX_FAIL_FRAC`) hit rate-limit/transient errors**. A
-clean run sits near ~1% — so avoid deploying while another job is hammering
-the same Worker/D1 (e.g. an R2 `.md` populate), which can push failures over
-the guard and fail the Pages build. If a deploy fails there, just retry it
-once the Worker is idle.
+pre-fetches all ~5k per-gene records from the live Worker, paced through a
+shared concurrency- and rate-limited scheduler
+(`scripts/lib/build-fetch.mjs`) — default 8 concurrent requests, 8
+requests/second, overridable via `SURFACEOME_BUILD_FETCH_CONCURRENCY` /
+`SURFACEOME_BUILD_FETCH_RPS`. At the defaults the ~5,300-gene record
+pre-fetch takes roughly 11 minutes (the 8 req/s rate cap is the binding
+constraint, not the concurrency cap). This exists because an earlier,
+unpaced version of the build drove 27k-62k Worker requests per 15 min
+(baseline 6-16k) during a Pages build, which pushed cache-miss traffic
+onto the shared public D1 hard enough to 500 real users
+(2026-09-28 incident).
+
+The SAME `build-fetch.mjs` scheduler also paces
+`scripts/build-markdown-exports.mjs`'s record + evidence-ledger fetch —
+but that script is a **standalone ops job** (`npm run build:exports`),
+run manually after a deep-dive sweep changes the published set, **not
+part of `npm run build`**. At the defaults its ~5,300-gene × 2-requests-
+per-gene run takes roughly 22 minutes.
+
+Every fetch also retries 429/5xx/network errors **and** a 200 response
+carrying `X-Surfaceome-Degraded` (the Worker's serve-time enrichment
+failed) with exponential backoff, honouring `Retry-After` when the
+Worker sends one — a degraded record is retried, never baked into the
+static build. A gene whose record or evidence-ledger fetch is still
+failing/degraded after retries is **skipped** (no file written, no R2
+object touched) and logged. Both scripts also **abort early**, mid-run,
+the moment the running failure count exceeds
+`floor(SURFACEOME_BUILD_MAX_FAILED_FRAC × total genes)` (default 1%,
+`build-data-snapshot.mjs` keeps its pre-existing 2% default) — a real
+Worker/D1 outage is caught within a few genes instead of only after every
+one of ~5,300 has individually exhausted its retry budget, and (for the
+ops job) strictly before any R2 upload happens. One bad gene doesn't
+break a deploy, but a real outage exits non-zero fast. So avoid deploying
+while another job is hammering the same Worker/D1 (e.g. an R2 `.md`
+populate); if the threshold trips, just retry once the Worker is healthy.
 
 ## Layout
 

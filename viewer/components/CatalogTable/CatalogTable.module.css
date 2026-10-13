@@ -693,6 +693,11 @@
   font-size: 0.88rem;
   border-bottom: 1px solid var(--line-soft);
   min-height: 2.8rem;
+  /* Never narrower than the sum of the column minimums. Without this a
+   * row is only as wide as the scroll container, so when the grid
+   * overflows the sticky header's background stops short and the
+   * rightmost cells' pills show through past its edge. */
+  min-width: min-content;
 }
 
 .rowExpanded {

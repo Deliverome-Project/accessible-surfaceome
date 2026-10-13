@@ -84,16 +84,25 @@ def main() -> int:
             "ecd_length_residues, signal_peptide_length, n_terminal_orientation, "
             "c_terminal_orientation, per_residue_topology FROM topology_public "
             "WHERE species = 'human' AND is_canonical IN ('1', 1) "
-            "AND cohort = 'human_canonical'",
+            "AND cohort = 'human_canonical' AND topology_version = "
+            "(SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_canonical') ORDER BY r.loaded_at DESC LIMIT 1)",
             [],
         ))
-        topo = topo[topo["gene_symbol"].isin(syms)].drop_duplicates("gene_symbol")
+        # Joined on UniProt, not symbol: multi-copy genes (the CT47A family,
+        # OR4F16/OR4F29, DEFA1B, ...) share one protein whose topology row is
+        # filed under a single symbol, so a symbol join dropped 17 of them.
+        topo = son.merge(
+            topo.drop(columns="gene_symbol").drop_duplicates("uniprot_acc"),
+            on="uniprot_acc",
+        )
 
         # 3. Alt-isoform topology change — any human isoform whose TM-helix count
         #    differs from the canonical. Scalar cols only.
         iso = pd.DataFrame(d1.query(
             "SELECT gene_symbol, is_canonical, tm_helix_count FROM topology_public "
-            "WHERE species = 'human'",
+            "WHERE species = 'human' AND ("
+            "(cohort = 'human_canonical' AND topology_version = (SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_canonical') ORDER BY r.loaded_at DESC LIMIT 1)) OR "
+            "(cohort = 'human_isoforms' AND topology_version = (SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_isoforms') ORDER BY r.loaded_at DESC LIMIT 1)))",
             [],
         ))
         iso = iso[iso["gene_symbol"].isin(syms)].copy()

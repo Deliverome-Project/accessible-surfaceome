@@ -201,6 +201,8 @@ def reconstruct_dual_from_blob(blob: dict[str, Any]) -> DualPlanTrimSelectResult
             n_claims=len(claims),
             n_anchored=side_blob.get("n_anchored") or len(claims),
             n_papers_total=side_blob.get("n_papers_total") or 0,
+            # Feeds Filters.n_papers_found; dropping it published None.
+            n_papers_discovered=side_blob.get("n_papers_discovered") or 0,
             n_drafts_total=side_blob.get("n_drafts_total") or 0,
             n_kept_after_trim=side_blob.get("n_kept_after_trim") or 0,
             n_iterations_run=side_blob.get("n_iterations_run") or 0,

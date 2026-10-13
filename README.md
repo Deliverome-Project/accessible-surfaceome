@@ -50,7 +50,7 @@ Roughly $1.30 per gene and about nine minutes.
 
 UniProt, GO Cellular Component, the Human Protein Atlas, the Cell Surface Protein Atlas, and SURFY were each built with a different approach and for a different purpose, so each defines "surface" differently. HPA's antibody-based localization spans both leaflets of the plasma membrane; CSPA's cell-surface-capture chemistry enriches glycosylated proteins on the outer face. Because each definition suits its own aims, the calls diverge: only 188 proteins are shared across all five, fewer than 10% of the average database's size.
 
-![Five-way overlap of surface databases](data/analysis/figures/db_overlap_venn.png)
+![Five-way overlap of surface databases](data/analysis/figures/db_overlap_upset.png)
 
 A useful definition for therapeutic purposes is narrower — the proteins accessible on the extracellular side of the membrane, where antibodies and other large molecules that cannot cross it can bind. Many proteins are also on the surface only transiently, or in particular cell types or cell states, which a binary call cannot express.
 
@@ -62,12 +62,12 @@ Two agents, in sequence.
 
 **Triage** classifies each of 19,324 protein-coding genes as surface, contextually surface, or non-surface, with a structured reason for every call. It is pure inference with no tools, cheap enough to run across the whole genome. On SurfaceBench, a 147-protein benchmark enriched for disagreement between the five reference databases, it classifies surface status more accurately than any of them individually or in combination, and it recovered 960 candidate surface proteins that appear in none of them.
 
-**Deep dive** then reads the retrieved literature for the 5,130 candidates that survive triage or carry a database surface call. It runs in three stages: deterministic literature retrieval, concurrent block builders, and a synthesizer that assembles the record. Every claim is anchored to verbatim quotes.
+**Deep dive** then reads the retrieved literature for the 5,332 candidates that survive triage or carry a database surface call. It runs in three stages: deterministic literature retrieval, concurrent block builders, and a synthesizer that assembles the record. Every claim is anchored to verbatim quotes.
 
 The result is 1,782 high-confidence surface proteins and 1,243 with weaker or context-dependent evidence. On held-out sets of clinical and viral-entry targets, the pipeline recovered 98–100% of established surface antigens.
 
 ```
-19,324 genes ──▶ triage agent ──▶ 5,130 candidates ──▶ deep-dive pipeline ──▶ records
+19,324 genes ──▶ triage agent ──▶ 5,332 candidates ──▶ deep-dive pipeline ──▶ records
                  yes/contextual/no                     retrieval → builders → synthesis
                                                                                  │
                                                         viewer + public API ◀────┘

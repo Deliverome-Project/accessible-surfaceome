@@ -26,8 +26,8 @@ more canonical TSV URLs (``BASE/data/...``). For each:
      it's saved. Best-effort: SWH throttles anonymous saves, so a 429 is
      logged (re-run to finish), not fatal.
 
-``deep_dive_final_categories`` is skipped — it's a MOCK figure with
-hardcoded counts and no TSV to bundle.
+A slug with no TSV_BUNDLE entry still gets its mirror pushed and its SWHID
+captured; only the data-bundle step is skipped.
 
 Usage:
     uv run python scripts/figures/sync_figure_gists_bundle_data.py [--dry-run]
@@ -81,8 +81,7 @@ def _swh_archive(gist_id: str) -> None:
 
 # Per-gist TSV bundle. Hand-curated to be robust against multi-line
 # URL constants my AST-less extractor couldn't catch. Keep in sync
-# when a mirror starts fetching a new TSV. ``deep_dive_final_categories``
-# is MOCK and not in this map.
+# when a mirror starts fetching a new TSV.
 TSV_BUNDLE: dict[str, list[str]] = {
     # Single-TSV-per-gist invariant: each gist bundles exactly ONE TSV
     # that carries everything its mirror script needs. The 6 figures
@@ -122,8 +121,14 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "deep_dive_record_richness": [
         "data/processed/figures/deep_dive_record_richness.tsv",
     ],
+    "deep_dive_replicate_kappa": [
+        # Supp Fig S16 — published vs full re-run and published vs
+        # fixed-evidence replay, one row per gene per comparison. Built by
+        # scripts/build/build_deep_dive_concordance_tsvs.py.
+        "data/processed/figures/deep_dive_replicate_kappa.tsv",
+    ],
     "deep_dive_vs_sonnet_benchmark": [
-        # Supp Fig S12 — one row per deep-dived SurfaceBench gene with
+        # Supp Fig S11 — one row per deep-dived SurfaceBench gene with
         # both predictors' soft-credit correctness + the deep-dive tier +
         # the three Sonnet replicate flags. Built by build_figure_tsvs.py.
         "data/processed/figures/deep_dive_vs_sonnet_benchmark.tsv",
@@ -143,8 +148,11 @@ TSV_BUNDLE: dict[str, list[str]] = {
         # so the slug matches the bundled basename per the invariant.
         "data/processed/figures/positive_control_db_coverage_bars.tsv",
     ],
+    "surface_evidence_assay_types": [
+        "data/processed/figures/surface_evidence_assay_types.tsv",
+    ],
     "surfaceome_deterministic_features": [
-        # MOCK-grouped per-gene deterministic features (Supp Fig 13).
+        # Per-gene deterministic features (Supp Fig 15).
         # Single pre-joined TSV built by build_figure_tsvs.py.
         "data/processed/figures/surfaceome_deterministic_features.tsv",
     ],
@@ -251,7 +259,7 @@ def main() -> int:
         tsv_paths = TSV_BUNDLE.get(slug, [])
         print(f"\n=== {slug}  →  gist {gist_id}")
         if not tsv_paths:
-            print("  (no TSV fetches — MOCK figure, skip data bundle)")
+            print("  (no bundled TSV for this slug — skip data bundle)")
             # Still push the script + capture SWHID
             _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
                  args.dry_run, tolerate_409=True)

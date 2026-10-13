@@ -61,6 +61,14 @@ _TRIAGE_RESCUE_RUN_IDS = (
 # bar shows one dot per replicate + SEM across them, matching the other accuracy
 # figures. One row per (bench gene x replicate).
 BENCH_SONNET_OUT = ROOT / "data/processed/deep_dive/benchmark_sonnet_replicates.tsv"
+# Per-(gene x method family x subclass x accessibility relevance x
+# permeabilization x expression system) counts over the record's
+# ``surface_evidence.methods`` block — one row per experiment the methods
+# builder extracted, with its direct-vs-supporting judgment. Grouped so the
+# figure can ask "how many genes have direct evidence from this method" and
+# "for how many was it the only direct method" without pulling 120 KB
+# annotation blobs per gene.
+SURFACE_METHODS_OUT = ROOT / "data/processed/deep_dive/surface_evidence_methods.tsv"
 _MAINBENCH_RUN = "mainbench_canonical_v2"
 _MAINBENCH_MODEL = "claude-sonnet-4-6"
 _MAINBENCH_VARIANT = "ncbi"
@@ -179,6 +187,7 @@ _DET_EXPRS: list[tuple[str, str]] = [
      " WHERE tp.gene_symbol = surface_annotation.gene_symbol "
      "   AND tp.species = 'human' AND tp.cohort = 'human_canonical' "
      "   AND tp.is_canonical IN ('1', 1) "
+     "   AND tp.topology_version = (SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_canonical') ORDER BY r.loaded_at DESC LIMIT 1) "
      " ORDER BY tp.protein_length DESC LIMIT 1))"),
     ("ecd_length_residues",
      f"CAST(json_extract(annotation_json,'{_CT}.ecd_length_residues') AS INT)"),
@@ -316,6 +325,32 @@ def _bench_sonnet_sql() -> str:
     )
 
 
+def _surface_methods_sql() -> str:
+    """Per-gene tally of the ``surface_evidence.methods`` rows.
+
+    The methods block, not the evidence ledger, is the source because it is
+    where each experiment gets a judgment of whether it shows the protein is
+    reachable from outside an intact cell (``accessibility_relevance``) and
+    how it was done (live vs permeabilized, endogenous vs overexpressed).
+    The ledger's ``evidence_type`` only names the technique in a quote, so it
+    counts permeabilized IF and whole-cell proteomics as surface assays. The
+    evidence-grade builder grades from this same block, so the figure and the
+    catalog's evidence grade read one source.
+    """
+    return (
+        "SELECT sa.gene_symbol AS gene_symbol, "
+        "       json_extract(m.value,'$.method_family')           AS method_family, "
+        "       json_extract(m.value,'$.method_subclass')         AS method_subclass, "
+        "       json_extract(m.value,'$.accessibility_relevance') AS accessibility_relevance, "
+        "       json_extract(m.value,'$.permeabilization')        AS permeabilization, "
+        "       json_extract(m.value,'$.expression_system')       AS expression_system, "
+        "       COUNT(*) AS n_rows "
+        "FROM surface_annotation sa, json_each(sa.annotation_json,'$.surface_evidence.methods') m "
+        "GROUP BY gene_symbol, method_family, method_subclass, accessibility_relevance, "
+        "         permeabilization, expression_system;"
+    )
+
+
 def main() -> int:
     load_env()
     with D1Client(D1Config.from_env_public()) as d1:
@@ -326,6 +361,7 @@ def main() -> int:
             _bench_sonnet_sql(),
             [_MAINBENCH_RUN, _MAINBENCH_MODEL, _MAINBENCH_VARIANT],
         )
+        surface_method_rows = d1.query(_surface_methods_sql(), [])
     df = pd.DataFrame(rows)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT, sep="\t", index=False)
@@ -341,6 +377,12 @@ def main() -> int:
     bench_sonnet.to_csv(BENCH_SONNET_OUT, sep="\t", index=False)
     print(f"wrote {BENCH_SONNET_OUT.relative_to(ROOT)}: {len(bench_sonnet)} bench "
           f"Sonnet replicate cells ({_MAINBENCH_RUN}/{_MAINBENCH_MODEL}/{_MAINBENCH_VARIANT})")
+
+    methods = pd.DataFrame(surface_method_rows)
+    methods.to_csv(SURFACE_METHODS_OUT, sep="\t", index=False)
+    n_genes = methods["gene_symbol"].nunique() if not methods.empty else 0
+    print(f"wrote {SURFACE_METHODS_OUT.relative_to(ROOT)}: {len(methods)} "
+          f"(gene x method x relevance) rows over {n_genes} genes")
     return 0
 
 
