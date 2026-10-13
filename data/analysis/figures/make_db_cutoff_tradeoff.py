@@ -6,7 +6,7 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``db_cutoff_tradeoff.{pdf,png}`` (Supplementary Figure 4).
+"""Reproduce ``db_cutoff_tradeoff.{pdf,png}`` (Supplementary Figure 1).
 
 Five per-source subplots showing the universe-size / accuracy
 trade-off across cutoff variants for each surface DB. Reads a tiny

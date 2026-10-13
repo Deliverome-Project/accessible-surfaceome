@@ -1,4 +1,4 @@
-"""Guard: Supp S4's precomputed points are scored against the current bench.
+"""Guard: Supp S1's precomputed points are scored against the current bench.
 
 ``data/processed/triage_bench/db_cutoff_tradeoff_points.tsv`` is a frozen,
 committed artifact — ``scripts/figures/db_cutoff_tradeoff.py`` reads it and is
@@ -8,7 +8,7 @@ curated benchmark it also let the file outlive its own truth.
 
 It did. The file encoded a **98 surface / 49 non-surface** split — the state
 before 2026-06-07, when HMGB1 was corrected from ``no`` to ``contextual``
-(commit a98afa880 took the bench to 99/48). Every recall in Supp S4 was
+(commit a98afa880 took the bench to 99/48). Every recall in Supp S1 was
 therefore divided by 98 against a curated 99, and one gene was scored on the
 wrong side. All 17 plotted points were off by roughly a percentage point on
 each axis. No conclusion changed, but no test noticed for four months.
