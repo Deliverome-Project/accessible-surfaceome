@@ -131,6 +131,9 @@ RESCUE_FILL = "#FBEFF0"
 # The trim gate is a removal, not a stage — neutral grey keeps it from
 # reading as a fourth engine card.
 TRIM_EDGE = "#8A8A8A"
+# The card's text sits a step darker than its dashed border: at #8A8A8A the
+# eyebrow, count and criteria were hard to read on white (reviewer feedback).
+TRIM_INK = MUTED
 
 # Canvas in Figure 4's coordinate space (viewBox 0 0 1260 460).
 CANVAS_W, CANVAS_H = 1650.0, 572.0
@@ -429,11 +432,11 @@ def build(counts: Counts):
 
     _card(ax, 936, 182, 330, 196, edge=TRIM_EDGE, fill="white", lw=1.8,
           ls=(0, (5, 3)))
-    _eyebrow(ax, 960, 208, "TRIMMED FROM THE UNION", color=TRIM_EDGE)
+    _eyebrow(ax, 960, 208, "TRIMMED FROM THE UNION", color=TRIM_INK)
     ax.text(
         960, 248, f"\u2212{counts.trimmed:,}",
         ha="left", va="center", fontsize=30, fontweight="bold",
-        color=TRIM_EDGE, zorder=5,
+        color=TRIM_INK, zorder=5,
     )
     # "High confidence" is the agent's own self-reported level, not a
     # claim about what evidence it had — so the card names the level and
@@ -450,7 +453,7 @@ def build(counts: Counts):
     ):
         ax.text(
             960, 280 + 18 * i, line,
-            ha="left", va="center", fontsize=11.5, color=TRIM_EDGE, zorder=5,
+            ha="left", va="center", fontsize=11.5, color=TRIM_INK, zorder=5,
         )
     _arrow(ax, (1270, 280), (1312, 280))
 
