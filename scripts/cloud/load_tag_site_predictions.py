@@ -78,7 +78,12 @@ PREDICTORS: dict[str, dict[str, Any]] = {
         "licence": "GPL-3.0",
         "citation": "EpicTope (conservation + DSSP RSA + secondary structure + disorder)",
         "predictor_version": "1.0",
-        "model_config": "least-worst over a 7-residue window; min-max normalised per protein",
+        # Fallback only: run_epictope.py now stamps the real invocation on
+        # each record (see model_config_note). This string described the
+        # PAPER, and the runs it labelled were unsmoothed and unnormalised
+        # -- the hazard of reusing an ingested-predictor template for the
+        # one predictor we compute ourselves.
+        "model_config": "least-worst per residue (unsmoothed; repo calculate_scores); raw score, not normalised; ss+rsa from AlphaFold+freesasa, NOT DSSP",
         "lo": 0.0,
         "hi": 1.0,
     },
@@ -114,6 +119,11 @@ def adapt_prodomino(source: Path, cohort: dict[str, Any]) -> list[dict[str, Any]
                 "gene_symbol": cohort[acc].get("gene"),
                 "length": len(cohort[acc]["sequence"]),
                 "scores": list(rec["scores"]),
+                # Carried through when the harness stamped it (EpicTope does).
+                # Ingested predictors have no such key and fall back to the
+                # PREDICTORS table, which is correct for them: for a predictor
+                # we did not run, the published model description IS the config.
+                "model_config": rec.get("model_config"),
             }
         )
     return out
@@ -242,7 +252,7 @@ def main() -> int:
             licence=spec["licence"],
             citation=spec["citation"],
             predictor_version=spec["predictor_version"],
-            model_config=spec["model_config"],
+            model_config=r.get("model_config") or spec["model_config"],
             run_id=run_id,
             lo=spec["lo"],
             hi=spec["hi"],

@@ -330,6 +330,27 @@ def anchor2(acc: str) -> list[float] | None:
         return None
 
 
+def model_config_note(window: int) -> str:
+    """Describe THIS invocation, not the paper.
+
+    ``window=0`` is the repository's ``calculate_scores`` -- an unsmoothed
+    per-residue minimum. ``--window 7`` reproduces the smoothing the paper
+    applies for its figures, which averages each feature over the window
+    BEFORE the minimum and so removes most of the exact zeros. The two rank
+    candidates differently, so the record has to say which one ran.
+    """
+    how = (
+        "least-worst per residue (unsmoothed; repo calculate_scores)"
+        if not window or window <= 1
+        else f"least-worst over a {window}-residue window (the paper smoothing: mean per feature, then min)"
+    )
+    return (
+        f"{how}; raw score, not normalised; entropy from blastp+muscle over "
+        "the 7 Ensembl proteomes EpicTope names; anchor2 from IUPred2A REST; "
+        "ss+rsa from AlphaFold+freesasa, NOT DSSP"
+    )
+
+
 def score_protein(
     seq: str,
     entropy: list[float],
@@ -438,6 +459,14 @@ def main() -> int:
                 "n_scores": len(scores),
                 "scores": scores,
                 "n_species_aligned": len(others),
+                # Self-describing, because the loader must not have to guess.
+                # EpicTope is the one predictor we RUN rather than ingest, so a
+                # paper-level description of the model is the wrong provenance:
+                # what matters is the invocation. A hardcoded loader string
+                # claimed a 7-residue window and per-protein min-max
+                # normalisation for runs that had neither.
+                "window": args.window,
+                "model_config": model_config_note(args.window),
             }
         )
         if n % 10 == 0 or n == len(rows):
