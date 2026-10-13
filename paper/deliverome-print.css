@@ -56,10 +56,19 @@
   size: letter;
   margin: 0.85in 0.75in 0.95in 0.75in;
 
-  /* Footer carries the page number only — the brand-mark slot was
-   * dropped per review. Centered so it reads neutrally rather than
-   * left-anchored. */
-  @bottom-center {
+  /* Footer: the Deliverome Bio name lower left, page number lower
+   * right. The name is set smaller and in dark gray so it reads as a
+   * quiet imprint, not a second heading. */
+  @bottom-left {
+    content: "DELIVEROME BIO";
+    font-family: "Manrope", sans-serif;
+    font-size: 6.5pt;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #4d4d4d;
+    padding-top: 0.3in;
+  }
+  @bottom-right {
     /* `decimal-leading-zero` mirrors the "01 / 02 / 03" preprint
      * convention; switch to `decimal` for plain "1 / 2 / 3". */
     content: counter(page, decimal-leading-zero);
@@ -736,15 +745,15 @@ a.footnote-back {
   font-size: 7.5pt;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--maroon-dark, #6e1428);
+  color: #4d4d4d;
 }
 
 img.resource-brand-mark {
-  width: 1.5em;
-  height: 1.5em;
+  width: 1.9em;
+  height: 1.9em;
   display: inline;
-  margin: 0 0.35em 0 0;
-  vertical-align: -0.42em;
+  margin: 0 0.4em 0 0;
+  vertical-align: -0.58em;
 }
 
 a.resource-link {
