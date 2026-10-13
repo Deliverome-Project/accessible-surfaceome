@@ -52,6 +52,9 @@ TMP_DIR = Path("/tmp/zenodo_deposit_consolidated")
 NEW_FILES = [
     TMP_DIR / "triage-runs-genome-with-reasoning.tsv",
     TMP_DIR / "triage-benchmark-with-reasoning.tsv",
+    # Built by build_consolidated_deposit_tsvs.py alongside the two TSVs but
+    # never uploaded until now.
+    TMP_DIR / "deep-dive-preset-membership.tsv",
 ]
 README_PATH = TMP_DIR / "README.md"
 # Reproducibility replicates (Supplementary Figure 16): the frozen bundle, tarred
@@ -215,7 +218,19 @@ to each record as served, so the classification here matches that catalog.
 
 ---
 
-## 4. `deep-dive-reproducibility-replicates-v1.tar.gz` — run-to-run reproducibility
+## 4. `deep-dive-preset-membership.tsv` — catalog preset membership per deep-dive gene
+
+One row per gene with a deep-dive record. The `in_*` columns (1/0) say whether
+the gene falls in each of the public catalog's presets (`canonical`, `likely`,
+`induced`, `cell_type_restricted`), computed with the same predicates the
+catalog uses (`accessible_surfaceome.release.catalog_presets`). The
+`induction_*` columns split `induced` by trigger, and the remaining columns are
+the record fields those predicates read, so any preset can be re-derived
+locally.
+
+---
+
+## 5. `deep-dive-reproducibility-replicates-v1.tar.gz` — run-to-run reproducibility
 
 **Not published records.** 50 deep-dive genes drawn at random (two disjoint
 batches of 25) and re-analysed to measure reproducibility (Supplementary
@@ -372,10 +387,16 @@ def main(argv: list[str] | None = None) -> int:
                     help="sync ONLY the reproducibility-replicate tarball + the "
                          "README / description that document it; leave the TSVs "
                          "and the deep-dive tarball untouched")
+    ap.add_argument("--deposit-id", default=DEPOSIT_ID,
+                    help="Zenodo deposition to sync (default: %(default)s). Pass the "
+                         "draft id that cut_data_release.py prints when it opens a new "
+                         "version: that draft starts with the previous version's files, "
+                         "and this script refreshes the ones it manages.")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the sync plan; issue no PUT / DELETE / metadata "
                          "write (skips the ~110 MB tarball build)")
     args = ap.parse_args(argv)
+    deposit_id = args.deposit_id
 
     token = os.environ.get("ZENODO_TOKEN")
     if not token:
@@ -424,7 +445,7 @@ def main(argv: list[str] | None = None) -> int:
 
     with httpx.Client(timeout=900.0, headers=auth) as client:
         # 1. Fetch deposit state + bucket URL.
-        r = client.get(f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}")
+        r = client.get(f"{ZENODO_BASE}/deposit/depositions/{deposit_id}")
         r.raise_for_status()
         dep = r.json()
         state = dep.get("state")
@@ -437,11 +458,11 @@ def main(argv: list[str] | None = None) -> int:
             print("⚠ no bucket URL on deposit — older deposit API form?",
                   file=sys.stderr)
             return 1
-        print(f"→ deposit {DEPOSIT_ID} state=draft bucket={bucket}"
+        print(f"→ deposit {deposit_id} state=draft bucket={bucket}"
               + ("  [DRY RUN]" if args.dry_run else ""))
 
         # 2. Non-destructive, checksum-aware file sync.
-        r = client.get(f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files")
+        r = client.get(f"{ZENODO_BASE}/deposit/depositions/{deposit_id}/files")
         r.raise_for_status()
         existing = {f["filename"]: f for f in r.json()}
         managed_names = {p.name for p in managed}
@@ -459,7 +480,7 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"  [dry-run] would retire {name}")
                     continue
                 dr = client.delete(
-                    f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files/{f['id']}"
+                    f"{ZENODO_BASE}/deposit/depositions/{deposit_id}/files/{f['id']}"
                 )
                 if dr.status_code not in (204, 200):
                     print(f"  ⚠ retire failed {name}: {dr.status_code} {dr.text[:200]}",
@@ -508,7 +529,7 @@ def main(argv: list[str] | None = None) -> int:
                 metadata["title"] = "The accessible human surfaceome"
                 metadata["description"] = _DESCRIPTION_HTML
                 mr = client.put(
-                    f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}",
+                    f"{ZENODO_BASE}/deposit/depositions/{deposit_id}",
                     json={"metadata": metadata},
                     headers={**auth, "Content-Type": "application/json"},
                 )
@@ -518,8 +539,8 @@ def main(argv: list[str] | None = None) -> int:
                     return 1
                 print("→ description + title updated")
 
-    print(f"\n✓ Draft {DEPOSIT_ID} {'plan (dry-run)' if args.dry_run else 'updated'}.")
-    print(f"  https://zenodo.org/deposit/{DEPOSIT_ID}")
+    print(f"\n✓ Draft {deposit_id} {'plan (dry-run)' if args.dry_run else 'updated'}.")
+    print(f"  https://zenodo.org/deposit/{deposit_id}")
     return 0
 
 
