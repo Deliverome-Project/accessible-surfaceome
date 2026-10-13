@@ -60,7 +60,11 @@
    * right. The name is set smaller and in dark gray so it reads as a
    * quiet imprint, not a second heading. */
   @bottom-left {
-    content: "DELIVEROME BIO";
+    /* deliverome-footer.svg is the mark with an 11px intrinsic size: a
+     * margin box draws an image at its natural size and offers no way
+     * to scale it. */
+    content: url("assets/deliverome-footer.svg") "  DELIVEROME BIO";
+    white-space: pre;
     font-family: "Manrope", sans-serif;
     font-size: 6.5pt;
     font-weight: 700;
@@ -80,8 +84,14 @@
   }
 }
 
-/* Page 1 also carries the page number (01) per review. The earlier
- * "strip footer on first page" override is intentionally gone. */
+/* Page 1 keeps its page number but not the footer imprint: the mark
+ * already closes the title block there, and it should never appear
+ * twice on one page. */
+@page :first {
+  @bottom-left {
+    content: none;
+  }
+}
 
 /* ============================================================
  * Body — two-column layout with serif display headings
