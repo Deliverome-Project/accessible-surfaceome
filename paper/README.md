@@ -18,11 +18,26 @@ Outputs under `<docx-dir>/build/`:
 | File | What it is |
 |---|---|
 | `<stem>.pdf` | Deliverome-branded PDF — feed to the manuscript bundle's `pdf_path` |
-| `<stem>.xml` | JATS XML — feed to the manuscript bundle's `jats_filename` |
+| `jats/<stem>.xml` | Structured JATS XML, with the figure files it references beside it — upload the whole `jats/` folder with the PDF |
 | `<stem>.html` | Intermediate (for debugging the print layout in a browser) |
 
 Both outputs come from the same `.docx`, so your Word + Zotero
 workflow stays untouched.
+
+The JATS is not pandoc's raw conversion. It runs through the same
+filters as the PDF and `jats_polish.py` then builds real structure:
+title, authors, affiliations and abstract in the front matter, a `<fig>`
+per figure pointing at the canonical asset, a `<ref-list>` with DOI
+identifiers, and typed `<xref>`s. `jats_build.py` is the one step both
+this build and `scripts/release/publish-archive.py` call. Validate a new
+manuscript before depositing:
+
+```bash
+xmllint --noout --dtdvalid JATS-archivearticle1-mathml3.dtd build/jats/<stem>.xml
+```
+
+(the DTD is in the JATS 1.2 Archiving package from
+<https://ftp.ncbi.nih.gov/pub/jats/archiving/1.2/>).
 
 Every build checks citations against the reference list in both
 directions and reports the result on stderr: an in-text citation with

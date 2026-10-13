@@ -193,7 +193,10 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
 
     html_path = out_dir / f"{stem}.html"
     pdf_path = out_dir / f"{stem}.pdf"
-    xml_path = out_dir / f"{stem}.xml"
+    # The JATS and the figure files it names live together in their own
+    # folder, with the figures referenced by bare filename: a Zenodo
+    # record has a flat file list, so this folder can be uploaded as is.
+    xml_path = out_dir / "jats" / f"{stem}.xml"
 
     # 1. pandoc → standalone HTML5 with the deliverome stylesheet linked.
     #    --extract-media pulls embedded .docx images out to disk so
@@ -321,37 +324,17 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     #    structure: no title, authors or abstract, no figures, no reference
     #    list, and every citation a link to zotero.org.
     print(f"→ pandoc {src.name} → {xml_path.name}")
-    pypandoc.convert_file(
-        str(src),
-        to="jats",
-        format="docx",
-        outputfile=str(xml_path),
-        extra_args=[
-            "--standalone",
-            LANG_ARG,
-            f"--lua-filter={REFS_DOIS_FILTER}",
-            f"--lua-filter={FIGURES_FILTER}",
-            f"--lua-filter={SECTIONS_FILTER}",
-            f"--lua-filter={CITATIONS_FILTER}",
-        ],
+    from jats_build import build_jats  # ty: ignore[unresolved-import]
+
+    # Shared with scripts/release/publish-archive.py, so the XML that is
+    # deposited is the XML built here. Each figure's canonical asset is
+    # copied beside it and named in the XML.
+    jats_report, _ = build_jats(
+        src, xml_path,
+        pandoc=pypandoc.get_pandoc_path(),
+        figures_out=xml_path.parent,
+        href_prefix="",
     )
-    from figure_swap import resolve_asset  # ty: ignore[unresolved-import]
-    from jats_polish import polish_jats  # ty: ignore[unresolved-import]
-
-    # The XML names each figure's canonical asset, copied alongside it so
-    # the pair can be deposited together.
-    jats_figures = out_dir / "figures"
-
-    def _graphic_for(key: str) -> str | None:
-        spec = manifest.get(key)
-        asset = resolve_asset(spec, FIGURE_SEARCH_PATH) if spec else None
-        if asset is None:
-            return None
-        jats_figures.mkdir(exist_ok=True)
-        shutil.copyfile(asset, jats_figures / asset.name)
-        return f"{jats_figures.name}/{asset.name}"
-
-    jats_report = polish_jats(xml_path, _graphic_for)
     print(jats_report.summary())
 
     return {"html": html_path, "pdf": pdf_path, "xml": xml_path, "figure_alert": figure_alert}
