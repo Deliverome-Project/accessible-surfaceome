@@ -38,6 +38,7 @@ import seaborn as sns
 from matplotlib.patches import Patch
 
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
+from accessible_surfaceome.audit.paired_tests import exact_mcnemar
 
 REPO = Path(__file__).resolve().parents[2]
 DATA_TSV = REPO / "data/processed/figures/db_correctness_overall.tsv"
@@ -106,6 +107,54 @@ def _refusal_pct(reps_df: pd.DataFrame) -> dict[tuple[str, str], float]:
     return (refused.groupby([reps_df["model"], reps_df["prompt_variant"]]).mean() * 100).to_dict()
 
 
+# Paired comparisons the Results describe as not significantly different:
+# added context (web search, pre-fetched PubMed abstracts) against identifiers
+# alone, and Sonnet 5 against the production Sonnet 4.6, both with identifiers.
+MCNEMAR_PAIRS = [
+    (("claude-sonnet-4-6", "ncbi"), ("claude-sonnet-4-6", "web_ncbi")),
+    (("claude-sonnet-4-6", "ncbi"), ("claude-sonnet-4-6", "pubmed_ncbi")),
+    (("claude-haiku-4-5", "ncbi"), ("claude-haiku-4-5", "web_ncbi")),
+    (("claude-haiku-4-5", "ncbi"), ("claude-haiku-4-5", "pubmed_ncbi")),
+    (("claude-sonnet-4-6", "ncbi"), ("claude-sonnet-5", "ncbi")),
+]
+
+
+def mcnemar_rows(reps_df):
+    """Exact McNemar test on paired per-protein correctness for each pair in
+    ``MCNEMAR_PAIRS``.
+
+    A protein counts as correct for a (model, context) when most of its
+    answered replicates were; a protein is dropped from a pair if either side
+    has no answered replicate.
+    """
+    df = reps_df.copy()
+    df["is_match"] = df["is_match"].astype(int)
+    if "refused" in df:
+        df = df[df["refused"].fillna(0).astype(int) == 0]
+    majority = (
+        df.groupby(["model", "prompt_variant", "gene_symbol"])["is_match"].mean() > 0.5
+    )
+    out = []
+    for a, b in MCNEMAR_PAIRS:
+        a_ok, b_ok = majority.loc[a], majority.loc[b]
+        genes = sorted(set(a_ok.index) & set(b_ok.index))
+        only_a, only_b, p = exact_mcnemar(
+            [bool(a_ok[g]) for g in genes], [bool(b_ok[g]) for g in genes]
+        )
+        out.append({
+            "a": "/".join(a), "b": "/".join(b), "n": len(genes),
+            "only_a_correct": only_a, "only_b_correct": only_b, "p": p,
+        })
+    return out
+
+
+def _print_mcnemar(reps_df) -> None:
+    print("Exact McNemar test (paired per-protein correctness, majority of replicates):")
+    for r in mcnemar_rows(reps_df):
+        print(f"  {r['a']} vs {r['b']}: n={r['n']}  only first correct={r['only_a_correct']}"
+              f"  only second correct={r['only_b_correct']}  p={r['p']:.3f}")
+
+
 def main() -> None:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     # Match the gist mirror's layout fingerprint (tests/test_figure_canonical_mirror_sync).
@@ -115,6 +164,7 @@ def main() -> None:
     })
     reps_df = pd.read_csv(DATA_TSV, sep="\t")
     rep_acc = _per_rep_accuracy(reps_df)
+    _print_mcnemar(reps_df)
     refusal_pct = _refusal_pct(reps_df)
 
     fig, ax = plt.subplots(figsize=(18, 5.5))
