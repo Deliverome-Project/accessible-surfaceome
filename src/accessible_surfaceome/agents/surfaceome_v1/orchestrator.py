@@ -256,7 +256,7 @@ def _load_triage_record_from_d1(symbol: str) -> TriageRecord | None:
                     WHERE gene_symbol = ?
                       AND run_id = ?
                       AND prompt_variant = ?
-                      AND model LIKE '%sonnet%'
+                      AND model = 'claude-sonnet-4-6'  -- production triage model; the bench run also holds other Sonnets
                       AND predicted_verdict IS NOT NULL
                     ORDER BY replicate ASC, created_at DESC
                     LIMIT 1;

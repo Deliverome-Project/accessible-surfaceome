@@ -952,7 +952,7 @@ async function fetchTriagePrior(env, sym) {
         WHERE gene_symbol = ? COLLATE NOCASE
           AND run_id = ?
           AND prompt_variant = ?
-          AND model LIKE '%sonnet%'
+          AND model = 'claude-sonnet-4-6'
           AND predicted_verdict IS NOT NULL
         ORDER BY replicate ASC, created_at DESC
         LIMIT 1`
@@ -2873,8 +2873,15 @@ const BENCH_MATRIX_MODELS = [
   "claude-opus-4-8",
   "claude-sonnet-4-6",
   "claude-haiku-4-5",
+  "claude-sonnet-5",
+  "claude-opus-5",
+  "claude-haiku-5-5",
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
 ];
-const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"];
+// ncbi_effort_low = the ncbi prompt at output_config.effort="low" (Opus 5.5
+// only, whose thinking cannot be disabled).
+const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi", "ncbi_effort_low"];
 const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
 // Five gating DBs — same five the homepage CatalogTable renders. The
 // matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
@@ -2988,9 +2995,11 @@ async function handleBenchmarkMatrix(env) {
               t.correct, t.latency_s, t.n_web_searches, t.created_at, t.error,
               t.cost_usd, t.prompt_tokens, t.completion_tokens,
               t.cache_creation_tokens, t.cache_read_tokens,
+              -- A replicate with a verdict wins over a newer refused or
+              -- errored one, so a refusal never hides a valid call.
               ROW_NUMBER() OVER (
                 PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY t.created_at DESC
+                ORDER BY (t.predicted_verdict IS NULL), t.created_at DESC
               ) AS rn
          FROM triage_run_public t
          INNER JOIN bench_genes b ON t.gene_symbol = b.gene_symbol
@@ -3508,9 +3517,11 @@ async function handleBenchmarkExport(env) {
               t.prompt_tokens, t.completion_tokens,
               t.cache_creation_tokens, t.cache_read_tokens,
               t.n_web_searches, t.cost_usd, t.latency_s,
+              -- A replicate with a verdict wins over a newer refused or
+              -- errored one, so a refusal never hides a valid call.
               ROW_NUMBER() OVER (
                 PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY t.created_at DESC
+                ORDER BY (t.predicted_verdict IS NULL), t.created_at DESC
               ) AS rn
          FROM triage_run_public t
          INNER JOIN benchmark_version bv ON bv.gene_symbol = t.gene_symbol
@@ -4406,8 +4417,8 @@ export default {
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
-    // /v1/triage/:symbol route). model = claude-<name>-<n>-<n>; variant
-    // = naive|ncbi|web_ncbi|pubmed_ncbi.
+    // /v1/triage/:symbol route). model = claude-<name>-<n>[-<n>]; variant
+    // = naive|ncbi|web_ncbi|pubmed_ncbi|ncbi_effort_low.
     if ((m = path.match(/^\/v1\/triage\/([^/]+)\/([A-Za-z0-9._-]+)\/([a-z_]+)$/))) {
       return withEdgeCache(request, env, ctx, () => handleTriageCell(env, m[1], m[2], m[3]));
     }

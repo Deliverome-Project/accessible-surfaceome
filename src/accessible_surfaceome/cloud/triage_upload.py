@@ -73,6 +73,9 @@ VARIANT_TO_PROMPT = {
     # so they share the prompt_sha row in prompt_version.
     "web_ncbi_reduced":  "system_web.md",
     "pubmed_ncbi":       "system_pubmed.md",
+    # Same prompt as ncbi at output_config.effort="low" (see
+    # scripts/triage_runner.py VARIANTS).
+    "ncbi_effort_low":   "system.md",
 }
 
 

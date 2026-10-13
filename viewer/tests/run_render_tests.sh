@@ -21,6 +21,7 @@ tests=(
   surface_evidence_card_chip_jump.test.tsx
   evidence_drawer_sources.test.tsx
   evidence_ledger_citation.test.tsx
+  benchmark_table_models.test.tsx
 )
 
 fails=0

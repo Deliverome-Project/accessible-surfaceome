@@ -17,7 +17,7 @@ Opus 4.8 × {naive, + IDs}. "+ IDs" means the prompt carries the gene's
 resolved identifiers; "+ PubMed" and "+ web" add a PubMed or web-search
 tool on top.
 
-- **y-axis:** verdict accuracy on the 147-gene labelled bench, as the
+- **y-axis:** verdict accuracy on the 147-gene labeled bench, as the
   mean over the 3 replicates of each cell. A prediction counts as a
   match under the soft-credit rule used by the bench figures: `yes` or
   `contextual` matches a truth of `yes` or `contextual`; `no` matches

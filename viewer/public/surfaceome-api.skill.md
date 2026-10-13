@@ -17,7 +17,7 @@ Invoke before answering whenever the user:
 
 2. **References SurfaceBench or the 147-gene triage benchmark.** Fetch `/v1/benchmark/matrix` — the canonical view that joins ground truth + 5 per-DB flags + per-model LLM verdicts in one payload.
 
-3. **Compares LLM triage variants** (naive vs ncbi vs web vs pubmed prompts; opus vs sonnet vs haiku) on a specific gene. Fetch `/v1/triage/{SYMBOL}` for every run on record.
+3. **Compares LLM triage variants** (naive vs ncbi vs ncbi at low reasoning effort vs web vs pubmed prompts; eight Claude models across the Haiku, Sonnet and Opus families) on a specific gene. Fetch `/v1/triage/{SYMBOL}` for every run on record.
 
 4. **Asks for orthology data** (mouse, cynomolgus) on a human gene. Fetch `/v1/orthologs/{SYMBOL}`.
 
@@ -36,7 +36,7 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 | `GET` | `/v1/benchmark` | 147 ground-truth labels (JSON) for the current bench_version | 1d |
 | `GET` | `/v1/benchmark/export.tsv` | Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) with truth labels + DB votes joined in (24 cols). Flat version of `/v1/benchmark/matrix`. | 1d |
 | `GET` | `/v1/benchmark/{SYMBOL}` | Single gene's truth label | 1d |
-| `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 5 per-DB flags + `verdicts[model][variant]` LLM cells (3 models × 4 variants, with reasoning + cost) | 1d |
+| `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 5 per-DB flags + `verdicts[model][variant]` LLM cells (8 models × up to 5 variants — not every model ran every variant — with reasoning + cost) | 1d |
 
 ### Genome-wide (~19k human protein-coding genes)
 
@@ -130,8 +130,12 @@ Older records may lack newer fields — use optional-chaining / `?? null` when r
   "universe_version": "cu_2026_05_12",
   "generated_at": "<iso8601>",
   "sources": ["uniprot", "go", "surfy", "cspa", "hpa"],
-  "models": ["claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5"],
-  "variants": ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"],
+  "models": [
+    "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5",
+    "claude-sonnet-5", "claude-opus-5",
+    "claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"
+  ],
+  "variants": ["naive", "ncbi", "web_ncbi", "pubmed_ncbi", "ncbi_effort_low"],
   "headline_variant": "ncbi",
   "n_genes": 147,
   "rows": [
@@ -160,7 +164,16 @@ Older records may lack newer fields — use optional-chaining / `?? null` when r
           },
           "naive": { ... }, "web_ncbi": { ... }, "pubmed_ncbi": { ... }
         },
-        "claude-sonnet-4-6": { ... }, "claude-haiku-4-5": { ... }
+        "claude-sonnet-4-6": { ... }, "claude-haiku-4-5": { ... },
+        // A model that didn't run a variant has null for that cell
+        // (e.g. claude-sonnet-5 ran ncbi only).
+        "claude-sonnet-5": { "ncbi": { ... }, "naive": null, ... },
+        // A cell whose replicates were all declined by the model's
+        // safety classifier: no verdict, error "refusal".
+        "claude-opus-5-5": {
+          "ncbi": { "verdict": null, "reason": null, "error": "refusal", ... },
+          "ncbi_effort_low": { ... }
+        }
       }
     }
   ]
@@ -168,6 +181,10 @@ Older records may lack newer fields — use optional-chaining / `?? null` when r
 ```
 
 `correct` is 1/0 with `yes ≡ contextual` collapsed (matching D1's `correct` semantics).
+
+Models and variants per model: Haiku 4.5 and Sonnet 4.6 ran `naive`, `ncbi`, `web_ncbi` and `pubmed_ncbi`; Opus 4.8, Haiku 5.5 and Sonnet 5.5 ran `naive` and `ncbi`; Sonnet 5 and Opus 5 ran `ncbi` only; Opus 5.5 ran `ncbi` and `ncbi_effort_low` (the `ncbi` prompt — HGNC + UniProt + NCBI summary — at low reasoning effort). Sonnet 4.6 on `ncbi` is the production triage configuration. Read the `models` / `variants` arrays rather than hard-coding them, since new models are added over time.
+
+A refused call (`verdict: null`, `error: "refusal"`) is not a wrong answer and not a missing run — score it separately, or exclude it, rather than counting it as `no`.
 
 ## Conventions
 
