@@ -628,6 +628,21 @@ local function build_resource_row(doc)
     ))
   end
 
+  if not WEB_EXTRAS and ASSETS_DIR then
+    -- PDF only: the Deliverome mark and name, set at the right-hand end
+    -- of the row to close the title block. The web edition carries the
+    -- brand in its own page chrome, so it is not repeated there.
+    row:insert(pandoc.Space())
+    row:insert(pandoc.Span({
+      pandoc.Image(
+        {pandoc.Str("Deliverome")}, ASSETS_DIR .. "/deliverome.svg", "",
+        pandoc.Attr("", {"resource-brand-mark"})
+      ),
+      pandoc.Space(),
+      pandoc.Str("Deliverome"), pandoc.Space(), pandoc.Str("Bio"),
+    }, pandoc.Attr("", {"resource-brand"})))
+  end
+
   local row_div = pandoc.Div(
     {pandoc.Para(row)}, pandoc.Attr("", {"resource-row"})
   )

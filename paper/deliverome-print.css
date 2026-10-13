@@ -726,6 +726,27 @@ a.footnote-back {
   line-height: 1.9;
 }
 
+/* Deliverome mark + name, right-aligned on the resource row. PDF only:
+ * filters/citations.lua does not emit it for the web edition. */
+.resource-brand {
+  float: right;
+  white-space: nowrap;
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 7.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--maroon-dark, #6e1428);
+}
+
+img.resource-brand-mark {
+  width: 1.5em;
+  height: 1.5em;
+  display: inline;
+  margin: 0 0.35em 0 0;
+  vertical-align: -0.42em;
+}
+
 a.resource-link {
   white-space: nowrap;
   margin-right: 0.85em;
