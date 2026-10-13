@@ -795,6 +795,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--strict-citations",
+        action="store_true",
+        help=(
+            "Fail the build if any in-text citation has no reference "
+            "entry, or any reference entry is never cited. Default: "
+            "report both on stderr and continue."
+        ),
+    )
+    parser.add_argument(
         "--biorxiv-url",
         default=None,
         help=(
@@ -836,6 +845,11 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    # Read by filters/citations.lua, which has no other way to take a flag.
+    if args.strict_citations:
+        os.environ["PAPER_STRICT_CITATIONS"] = "1"
+    else:
+        os.environ.pop("PAPER_STRICT_CITATIONS", None)
 
     if args.web is not None:
         try:

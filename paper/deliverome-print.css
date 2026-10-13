@@ -286,6 +286,16 @@ a {
    * The cursor effect happens automatically in PDF readers. */
 }
 
+/* A URL printed as its own link text has no break opportunity inside a
+ * long hash (a Software Heritage "swh:1:rev:<40 hex>" path), so it ran
+ * out of its column and printed over the next one. Break anywhere, but
+ * only as a last resort and only in running prose: a break opportunity
+ * inside a table cell makes WeasyPrint drop the pages after the table
+ * (see filters/breakable_identifiers.lua). */
+p > a[href^="http"] {
+  overflow-wrap: anywhere;
+}
+
 strong { font-weight: 600; }
 em { font-style: italic; }
 
@@ -460,6 +470,35 @@ h2#references ~ p a {
 h2#references ~ p a.doi {
   color: var(--maroon-mid, #922038);
   text-decoration: none;
+}
+
+/* The reference list itself is an <ol> (Zotero writes the
+ * bibliography as a list), which the <p> rules above never reach, so
+ * it printed at full body size. Covers Supplementary References too. */
+h2#references ~ ol {
+  font-size: 8pt;
+  line-height: 1.4;
+}
+
+/* The reference styling above is scoped with `~`, which has no "until
+ * the next heading": it kept matching every paragraph AFTER the list
+ * too. Acknowledgments, Funding, Author Contributions and the
+ * Supplementary Notes all printed small, grey and hanging-indented as
+ * if they were reference entries, and their citations lost link
+ * colour. Any heading after References starts ordinary prose again. */
+h2#references ~ h1 ~ p,
+h2#references ~ h2 ~ p {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  margin: 0 0 0.5em 0;
+  padding-left: 0;
+  text-indent: 0;
+}
+
+h2#references ~ h1 ~ p a,
+h2#references ~ h2 ~ p a {
+  color: var(--maroon-mid, #922038);
 }
 
 /* Re-apply the h2 section-heading look to the References heading

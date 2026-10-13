@@ -29,7 +29,13 @@ from typing import Any
 # full stop that ends the clause is inside the span and so invisible
 # here — without it, the first panel of a legend was the one panel that
 # did not get bolded.
-PANEL = re.compile(r"(?:(?<=[.;:,]\s)|(?<=^)|(?<=^\s))([a-h]\))(?=\s)")
+#
+# The ", and " arm is the last item of an inline list of panels
+# ("… d) filters, and e) features"), which the punctuation arm alone
+# left as the one unbolded marker in the legend.
+PANEL = re.compile(
+    r"(?:(?<=[.;:,]\s)|(?<=[,;]\sand\s)|(?<=^)|(?<=^\s))([a-h]\))(?=\s)"
+)
 
 # Never touch the run-in "Figure N. Title." (already bold) or the
 # trailing "Figure data and script." link.

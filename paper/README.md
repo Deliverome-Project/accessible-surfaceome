@@ -24,6 +24,14 @@ Outputs under `<docx-dir>/build/`:
 Both outputs come from the same `.docx`, so your Word + Zotero
 workflow stays untouched.
 
+Every build checks citations against the reference list in both
+directions and reports the result on stderr: an in-text citation with
+no reference entry, and a reference entry nothing cites. Pass
+`--strict-citations` to make either one fail the build. A paper listed
+in both References and Supplementary References but cited only in the
+supplement is left out of the main list (the build names it when it
+does this).
+
 ## How the brand stays consistent
 
 `paper/deliverome-print.css` imports the project-wide design tokens

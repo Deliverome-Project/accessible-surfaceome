@@ -49,8 +49,9 @@
     },
     "2": {
       "slug": "db_correctness_overall",
-      "format": "svg",
-      "description": "Vector, converted from db_correctness_overall.pdf."
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Deliberately raster, NOT vector: the bars are distinguished by hatch, and WeasyPrint paints the pdftocairo SVG's hatch <pattern> fills as solid black, so every hatched bar printed as a black block. The 600-DPI PNG is 10,628 px wide."
     },
     "3": {
       "slug": "benchmark_cost_vs_accuracy",

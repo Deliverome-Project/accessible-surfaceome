@@ -58,6 +58,15 @@
 
 -- key "surname|year" → anchor id
 local ref_ids = {}
+-- key → every entry under it, in bibliography order: {id=, initials=}
+local ref_entries = {}
+-- Every indexed reference, and the ids some citation resolved to —
+-- together they give the reverse check (a reference nobody cites).
+local all_refs = {}
+local cited_ids = {}
+-- Which list the entry being indexed belongs to: "main" for References,
+-- "supp" for Supplementary References.
+local current_list = "main"
 -- Diagnostics.
 local unmatched = {}
 local matched_count = 0
@@ -78,8 +87,16 @@ end
 -- decorations that differ between a reference entry and an in-text
 -- citation ("et al.", "[WWW Document]", curly quotes, stray commas),
 -- collapse whitespace.
+-- ASCII-only lowercase. string.lower() is byte-wise and locale-aware:
+-- under a Latin-1-ish locale it "lowercases" the lead byte of a UTF-8
+-- letter (the 0xC3 of "ü"), leaving an invalid sequence in the key and
+-- in anything printed from it.
+local function ascii_lower(s)
+  return (s:gsub("[A-Z]", function(c) return string.char(c:byte() + 32) end))
+end
+
 local function norm_author(s)
-  s = s:lower()
+  s = ascii_lower(s)
   s = s:gsub("%[www document%]", "")
   s = s:gsub("et%s+al%.?", "")
   -- Curly and straight quotes, and the comma Zotero leaves inside
@@ -110,6 +127,10 @@ end
 
 -- Slugify for use in an HTML id.
 local function slug(s)
+  -- Non-ASCII bytes go first: byte-wise lower() can turn half of a
+  -- UTF-8 letter ("ü" in Müller) into an invalid sequence, which then
+  -- lands in the id as U+FFFD.
+  s = s:gsub("[\128-\255]+", "-")
   s = s:lower():gsub("[^%w]+", "-"):gsub("^%-+", ""):gsub("%-+$", "")
   return s
 end
@@ -122,12 +143,17 @@ end
 -- a bare %d%d%d%d would happily match a volume or page number
 -- later in the citation ("Nucleic Acids Res. 54, D1779–D1792").
 local function parse_reference(text)
-  local year = text:match(",%s*(%d%d%d%d)%.")
+  local year, letter = text:match(",%s*(%d%d%d%d)(%l?)%.")
   if not year and text:match(",%s*n%.d%.") then year = "n.d." end
   if not year then return nil end
   local author = text:match("^(.-),")
   if not author then return nil end
-  return norm_author(author), year
+  -- First author's initials ("Carlson, R.J., Smallegan…" → "rj"), kept
+  -- so two same-surname same-year entries can be told apart when the
+  -- citation carries initials ("R. J. Carlson and Smallegan, 2026").
+  local initials = ascii_lower(text:match("^.-,%s*([A-Z%.%-%s]-),") or "")
+    :gsub("[^a-z]", "")
+  return norm_author(author), year, initials, letter or ""
 end
 
 -- Pull the citations out of one in-text group (already stripped of
@@ -141,12 +167,12 @@ local function parse_citation_part(part)
   local years, first_at = {}, nil
   -- n.d. is a year for our purposes.
   local nd_at = part:find("n%.d%.")
-  for y_start, y in part:gmatch("()(%d%d%d%d)") do
-    years[#years + 1] = {year = y, pos = y_start}
+  for y_start, y, letter in part:gmatch("()(%d%d%d%d)(%l?)") do
+    years[#years + 1] = {year = y, pos = y_start, letter = letter}
     if not first_at then first_at = y_start end
   end
   if nd_at and #years == 0 then
-    years[1] = {year = "n.d.", pos = nd_at}
+    years[1] = {year = "n.d.", pos = nd_at, letter = ""}
     first_at = nd_at
   end
   if #years == 0 then return nil end
@@ -163,14 +189,27 @@ end
 -- doesn't parse as a reference.
 local function anchor_reference_block(b)
   if b.t ~= "Para" and b.t ~= "Plain" then return b end
-  local author, year = parse_reference(pandoc.utils.stringify(b))
+  local author, year, initials, letter = parse_reference(pandoc.utils.stringify(b))
   if not (author and year) then return b end
   local key = author .. "|" .. year
-  -- First entry wins; a duplicate key means two references that
-  -- genuinely collide, which the author has to disambiguate.
-  if ref_ids[key] then return b end
+  -- Same surname and year twice (George 2026a/b; R. vs R.J. Carlson
+  -- 2026): every entry still gets its own anchor, and the citation
+  -- side picks between them by year letter or initials. Entries are
+  -- kept in bibliography order, which is the order the citation style
+  -- assigns the letters in.
+  ref_entries[key] = ref_entries[key] or {}
+  local n = #ref_entries[key] + 1
   local id = "ref-" .. slug(author) .. "-" .. slug(year)
-  ref_ids[key] = id
+  if letter ~= "" then
+    id = id .. letter
+  elseif n > 1 then
+    id = id .. "-" .. string.char(96 + n)
+  end
+  ref_entries[key][n] = {id = id, initials = initials, letter = letter,
+                         label = author .. " " .. year .. letter,
+                         list = current_list}
+  all_refs[#all_refs + 1] = ref_entries[key][n]
+  if not ref_ids[key] then ref_ids[key] = id end
   local inlines = pandoc.List({pandoc.Span({}, pandoc.Attr(id))})
   for _, inl in ipairs(b.content) do inlines:insert(inl) end
   return (b.t == "Para") and pandoc.Para(inlines) or pandoc.Plain(inlines)
@@ -207,6 +246,8 @@ local function index_references(doc)
     if b.t == "Header" then
       if is_refs_heading(b) then
         in_refs, refs_level = true, b.level
+        current_list = pandoc.utils.stringify(b):lower()
+          :match("^%s*supplement") and "supp" or "main"
       elseif in_refs and b.level <= (refs_level or 1) then
         in_refs = false
       end
@@ -220,8 +261,62 @@ end
 
 -- ── Phase 2: rewrite the in-text citation links ──────────────────
 
-local function lookup(author, year)
-  return ref_ids[author .. "|" .. year]
+-- Citation-side author shapes the reference key never has:
+--   "rodriguez-walker and daniotti"  two authors → first surname
+--   "r. j. carlson and smallegan"    initials added to disambiguate
+-- Returns the bare first surname plus any leading initials ("rj").
+local function first_surname(author)
+  local a = author:gsub("%s+and%s+.*$", ""):gsub("%s*&%s*.*$", "")
+  local initials = ""
+  while true do
+    local ini, rest = a:match("^(%a)%.%s*(.+)$")
+    if not ini then break end
+    initials, a = initials .. ini, rest
+  end
+  return a, initials
+end
+
+local function lookup(author, year, letter)
+  local key = author .. "|" .. year
+  local initials = ""
+  if not ref_entries[key] then
+    -- Exact match first, so a corporate author containing "and" is
+    -- never truncated when it already matches.
+    local bare
+    bare, initials = first_surname(author)
+    key = bare .. "|" .. year
+  end
+  local entries = ref_entries[key]
+  if not entries then return nil end
+  local hit
+  if letter and letter ~= "" then
+    -- The letter printed in the reference list wins; a list without
+    -- letters falls back to bibliography order (a = first).
+    for _, e in ipairs(entries) do
+      if e.letter == letter then hit = e end
+    end
+    if not hit then
+      local any_lettered = false
+      for _, e in ipairs(entries) do
+        if e.letter ~= "" then any_lettered = true end
+      end
+      if not any_lettered then hit = entries[letter:byte() - 96] end
+    end
+  elseif #entries == 1 then
+    hit = entries[1]
+  else
+    if initials ~= "" then
+      for _, e in ipairs(entries) do
+        if e.initials == initials then hit = e end
+      end
+    end
+    -- Same paper listed in both References and Supplementary
+    -- References: nothing distinguishes them, so point at the first.
+    if not hit and initials == "" then hit = entries[1] end
+  end
+  if not hit then return nil end
+  cited_ids[hit.id] = true
+  return hit.id
 end
 
 -- Build the inlines for one citation part, linking what we can.
@@ -230,9 +325,9 @@ local function render_part(p)
   if not p then return out end
 
   local first = p.years[1]
-  local head_end = first.pos + #first.year - 1
+  local head_end = first.pos + #first.year + #first.letter - 1
   local head_text = p.text:sub(1, head_end)
-  local id = lookup(p.author, first.year)
+  local id = lookup(p.author, first.year, first.letter)
   if id then
     out:insert(pandoc.Link({pandoc.Str(head_text)}, "#" .. id))
     matched_count = matched_count + 1
@@ -247,15 +342,15 @@ local function render_part(p)
     local y = p.years[i]
     local between = p.text:sub(cursor, y.pos - 1)
     if #between > 0 then out:insert(pandoc.Str(between)) end
-    local yid = lookup(p.author, y.year)
+    local yid = lookup(p.author, y.year, y.letter)
     if yid then
-      out:insert(pandoc.Link({pandoc.Str(y.year)}, "#" .. yid))
+      out:insert(pandoc.Link({pandoc.Str(y.year .. y.letter)}, "#" .. yid))
       matched_count = matched_count + 1
     else
-      out:insert(pandoc.Str(y.year))
+      out:insert(pandoc.Str(y.year .. y.letter))
       unmatched[#unmatched + 1] = p.author .. " " .. y.year
     end
-    cursor = y.pos + #y.year
+    cursor = y.pos + #y.year + #y.letter
   end
   local tail = p.text:sub(cursor)
   if #tail > 0 then out:insert(pandoc.Str(tail)) end
@@ -304,6 +399,97 @@ local function rewrite_citation(link)
 
   if close ~= "" then out:insert(pandoc.Str(close)) end
   return out
+end
+
+-- ── Phase 2b: keep supplement-only references out of the main list ─
+--
+-- Zotero builds ONE bibliography from every citation in the document,
+-- so a paper cited only in a Supplementary Note is listed in the main
+-- References as well as in the hand-kept Supplementary References. A
+-- reader of the main text then meets a reference nothing there cites.
+--
+-- For any paper present in both lists:
+--   * a citation inside the supplement points at the supplementary copy;
+--   * the main-list copy is dropped when no main-text citation uses it.
+-- A paper cited in both places keeps both entries.
+local function split_supplement_references(doc)
+  local by_id, supp_copy = {}, {}
+  for _, e in ipairs(all_refs) do
+    by_id[e.id] = e
+    if e.list == "supp" then supp_copy[e.label] = e end
+  end
+  if next(supp_copy) == nil then return doc end
+
+  local in_supp, main_cited = false, {}
+  for i, b in ipairs(doc.blocks) do
+    if b.t == "Header"
+        and pandoc.utils.stringify(b):lower():match("^%s*supplement") then
+      in_supp = true
+    end
+    doc.blocks[i] = pandoc.walk_block(b, {
+      Link = function(l)
+        local id = l.target:match("^#(ref%-.+)$")
+        local e = id and by_id[id]
+        if not e then return nil end
+        if not in_supp then
+          main_cited[e.id] = true
+          return nil
+        end
+        local s = supp_copy[e.label]
+        if s and s.id ~= e.id then
+          l.target = "#" .. s.id
+          cited_ids[s.id] = true
+          return l
+        end
+        return nil
+      end,
+    })
+  end
+
+  local drop, dropped = {}, {}
+  for _, e in ipairs(all_refs) do
+    if e.list == "main" and supp_copy[e.label] and not main_cited[e.id] then
+      drop[e.id] = true
+      e.removed = true
+      dropped[#dropped + 1] = e.label
+    end
+  end
+  if #dropped == 0 then return doc end
+
+  local function holds_dropped(block)
+    local hit = false
+    pandoc.walk_block(block, {
+      Span = function(sp)
+        if drop[sp.identifier] then hit = true end
+      end,
+    })
+    return hit
+  end
+
+  local out = pandoc.List({})
+  for _, b in ipairs(doc.blocks) do
+    if b.t == "OrderedList" or b.t == "BulletList" then
+      local items = {}
+      for _, item in ipairs(b.content) do
+        local gone = false
+        for _, sub in ipairs(item) do
+          if holds_dropped(sub) then gone = true end
+        end
+        if not gone then items[#items + 1] = item end
+      end
+      b.content = items
+      out:insert(b)
+    elseif (b.t == "Para" or b.t == "Plain") and holds_dropped(b) then
+      -- dropped
+    else
+      out:insert(b)
+    end
+  end
+  doc.blocks = out
+  io.stderr:write(("citations.lua: left %d supplement-only reference(s) out of "):format(#dropped)
+    .. "the main References (kept in Supplementary References): "
+    .. table.concat(dropped, "; ") .. "\n")
+  return doc
 end
 
 -- ── Phase 3: front-matter resource row ───────────────────────────
@@ -460,20 +646,47 @@ end
 return {
   {Pandoc = index_references},
   {Link = rewrite_citation},
+  {Pandoc = split_supplement_references},
   {Pandoc = build_resource_row},
   {
     Pandoc = function(doc)
       io.stderr:write(("citations.lua: linked %d citation(s) to %d reference(s).\n")
         :format(matched_count, (function()
-          local n = 0; for _ in pairs(ref_ids) do n = n + 1 end; return n
+          local n = 0
+          for _, e in ipairs(all_refs) do if not e.removed then n = n + 1 end end
+          return n
         end)()))
-      if #unmatched > 0 then
-        local seen, uniq = {}, {}
-        for _, u in ipairs(unmatched) do
-          if not seen[u] then seen[u] = true; uniq[#uniq + 1] = u end
+      -- The check runs BOTH ways: a citation with no reference entry,
+      -- and a reference entry nothing in the text cites. Either one
+      -- means the reference list and the prose have drifted apart.
+      local seen, uniq = {}, {}
+      for _, u in ipairs(unmatched) do
+        if not seen[u] then seen[u] = true; uniq[#uniq + 1] = u end
+      end
+      -- A paper listed in both References and Supplementary References
+      -- counts as cited when either copy is.
+      local cited_labels = {}
+      for _, e in ipairs(all_refs) do
+        if cited_ids[e.id] then cited_labels[e.label] = true end
+      end
+      local uncited = {}
+      for _, e in ipairs(all_refs) do
+        if not e.removed and not cited_labels[e.label] then
+          uncited[#uncited + 1] = e.label
         end
-        io.stderr:write(("citations.lua: %d citation(s) matched NO reference and were "):format(#uniq)
+      end
+      if #uniq > 0 then
+        io.stderr:write(("citations.lua: ⚠ %d citation(s) matched NO reference and were "):format(#uniq)
           .. "left as plain text: " .. table.concat(uniq, "; ") .. "\n")
+      end
+      if #uncited > 0 then
+        io.stderr:write(("citations.lua: ⚠ %d reference(s) are never cited in the text: "):format(#uncited)
+          .. table.concat(uncited, "; ") .. "\n")
+      end
+      if #uniq == 0 and #uncited == 0 then
+        io.stderr:write("citations.lua: ✓ every citation has a reference and every reference is cited.\n")
+      elseif os.getenv("PAPER_STRICT_CITATIONS") == "1" then
+        error("citations.lua: citations and references do not match (see above)")
       end
       return doc
     end,

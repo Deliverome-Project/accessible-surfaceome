@@ -26,11 +26,32 @@
 
 local in_refs = false
 local refs_header_level = nil
-local doi_pattern = "https?://doi%.org/[^%s%)%]]+"
+-- A DOI may itself contain brackets ("10.1016/s0022-1759(03)00265-5"),
+-- so the URL is everything up to whitespace and trim_url() then takes
+-- back only what cannot belong to it. Excluding ")" from the pattern
+-- cut that link off at "(03" and left the rest as dead text.
+local doi_pattern = "https?://doi%.org/%S+"
 -- Some references cite a plain web resource rather than a DOI (the
 -- HPA "Plasma membrane [WWW Document]" entry). Those URLs were left as
 -- dead text while every DOI beside them was clickable.
-local url_pattern = "https?://[^%s%)%]]+"
+local url_pattern = "https?://%S+"
+
+-- Drop trailing sentence punctuation and any UNBALANCED closing
+-- bracket (the ")" of a parenthesis the URL merely sits inside).
+local function trim_url(u)
+  while true do
+    local last = u:sub(-1)
+    if last == "." or last == "," or last == ";" then
+      u = u:sub(1, -2)
+    elseif last == ")" and select(2, u:gsub("%)", "")) > select(2, u:gsub("%(", "")) then
+      u = u:sub(1, -2)
+    elseif last == "]" and select(2, u:gsub("%]", "")) > select(2, u:gsub("%[", "")) then
+      u = u:sub(1, -2)
+    else
+      return u
+    end
+  end
+end
 
 -- Match the heading text against the section names we treat as
 -- "References". Lower-cased + stripped of surrounding whitespace.
@@ -64,6 +85,7 @@ local function rewrite_refs_inlines(inlines)
         doi_start, doi_end = inner_text:find(url_pattern)
       end
       if doi_start then
+        doi_end = doi_start + #trim_url(inner_text:sub(doi_start, doi_end)) - 1
         local pre = inner_text:sub(1, doi_start - 1)
         local doi = inner_text:sub(doi_start, doi_end)
         local post = inner_text:sub(doi_end + 1)
@@ -109,4 +131,13 @@ function Para(elem)
     return elem
   end
   return pandoc.Para(rewrite_refs_inlines(elem.content))
+end
+
+-- A tight list keeps its items as Plain rather than Para; the entries
+-- are references all the same.
+function Plain(elem)
+  if not in_refs then
+    return elem
+  end
+  return pandoc.Plain(rewrite_refs_inlines(elem.content))
 end
