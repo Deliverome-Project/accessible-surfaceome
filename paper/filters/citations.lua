@@ -664,6 +664,8 @@ local function build_resource_row(doc)
         {pandoc.Str("Deliverome")}, ASSETS_DIR .. "/deliverome.svg", "",
         pandoc.Attr("", {"page-brand-mark"})
       ),
+      -- The same word space the title block has between mark and name.
+      pandoc.Space(),
       pandoc.Span(
         {pandoc.Str("Deliverome"), pandoc.Space(), pandoc.Str("Bio")},
         pandoc.Attr("", {"page-brand-name"})
