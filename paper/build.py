@@ -313,16 +313,46 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         stylesheets=[CSS(filename=str(CSS_PATH))],
     )
 
-    # 4. pandoc → JATS XML. Same source, different writer; machine-
-    #    readable references + figure metadata for the Zenodo deposit.
+    # 4. pandoc → JATS XML, through the same filters as the HTML so the
+    #    citations resolve to reference entries and each figure is wrapped
+    #    with its legend, then jats_polish moves what they found into the
+    #    elements JATS has for it (front matter, <fig>, <ref-list>, <xref>).
+    #    Converted without them the file is well-formed and empty of
+    #    structure: no title, authors or abstract, no figures, no reference
+    #    list, and every citation a link to zotero.org.
     print(f"→ pandoc {src.name} → {xml_path.name}")
     pypandoc.convert_file(
         str(src),
         to="jats",
         format="docx",
         outputfile=str(xml_path),
-        extra_args=["--standalone", LANG_ARG],
+        extra_args=[
+            "--standalone",
+            LANG_ARG,
+            f"--lua-filter={REFS_DOIS_FILTER}",
+            f"--lua-filter={FIGURES_FILTER}",
+            f"--lua-filter={SECTIONS_FILTER}",
+            f"--lua-filter={CITATIONS_FILTER}",
+        ],
     )
+    from figure_swap import resolve_asset  # ty: ignore[unresolved-import]
+    from jats_polish import polish_jats  # ty: ignore[unresolved-import]
+
+    # The XML names each figure's canonical asset, copied alongside it so
+    # the pair can be deposited together.
+    jats_figures = out_dir / "figures"
+
+    def _graphic_for(key: str) -> str | None:
+        spec = manifest.get(key)
+        asset = resolve_asset(spec, FIGURE_SEARCH_PATH) if spec else None
+        if asset is None:
+            return None
+        jats_figures.mkdir(exist_ok=True)
+        shutil.copyfile(asset, jats_figures / asset.name)
+        return f"{jats_figures.name}/{asset.name}"
+
+    jats_report = polish_jats(xml_path, _graphic_for)
+    print(jats_report.summary())
 
     return {"html": html_path, "pdf": pdf_path, "xml": xml_path, "figure_alert": figure_alert}
 
