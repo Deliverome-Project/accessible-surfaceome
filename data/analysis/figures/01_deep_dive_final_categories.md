@@ -34,12 +34,17 @@ The two cross-cutting surface facets — cell-type restricted and cell-state
 induced — counted by the deep dive's `surface_call_reason` and broken out
 across the three surface-bearing tiers (canonical / likely / low). Counting by
 reason rather than the evidence-gated facet keeps the weak-evidence surface
-calls that land in `low`. Each tier bar stacks three categories:
+calls that land in `low`. Each tier bar stacks four categories, drawn on
+panel a's tier order, y scale and plot frame (tier labels coloured to
+match panel a's bars), so every bar totals its panel-a tier
+(1,783 / 1,252 / 1,014):
 
 - **Cell-type restricted** — `surface_call_reason == 'tissue_restricted_surface'`
 - **Induced — oncogenic** — `surface_call_reason ∈ {cell_state_induced,
   lysosomal_exocytosis}` with `induction_trigger == 'oncogenic'`
 - **Induced — other** — the same induced reasons with any other trigger
+- **Other surface reason** — every remaining surface-call reason (classical
+  receptor, multipass with exposed loops, GPI anchor, dual localization, …)
 
 Totals across the three tiers: **1,323 cell-type restricted** and **632
 cell-state induced** (434 oncogenic, 198 other). Canonical carries no cell-type

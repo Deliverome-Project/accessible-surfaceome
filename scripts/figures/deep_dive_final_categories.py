@@ -83,23 +83,35 @@ _CONFIDENCES: list[tuple[str, str]] = [
 # by reason keeps weak-evidence surface calls that land in the `low` tier,
 # which the evidence-gated facet would drop.
 _PANELB_TIERS = ["canonical", "likely", "low"]
+_TIER_LABEL_COLORS = {
+    "canonical": _COLOR_CANONICAL,
+    "likely": _COLOR_LIKELY,
+    "low": _COLOR_LOW,
+}
 _INDUCED_REASONS = {"cell_state_induced", "lysosomal_exocytosis"}
 _PANELB_CATS: list[tuple[str, str]] = [
-    ("Cell-type restricted", "#3D6B60"),  # teal
-    ("Induced — oncogenic", "#B5522E"),   # rust
-    ("Induced — other", "#D08A3E"),       # amber
+    ("Cell-type restricted", "#5848A8"),    # lavender-mid
+    ("Induced — oncogenic", "#BC3C4C"),     # maroon-light
+    ("Induced — other", "#F4AA28"),         # amber-bright
+    ("Other surface reason", "#E6DAD4"),    # warm neutral
 ]
+# Hues panel a does not use (its tiers are green / teal / tan / greys), so the
+# two panels' colours never read as the same category. Segment counts are
+# printed in white on the dark hues and in ink on the light ones.
+_PANELB_LIGHT = {"Induced — other", "Other surface reason"}
 
 
-def _panelb_category(reason: str, trigger: str) -> str | None:
-    """Map a (surface_call_reason, induction_trigger) pair to one of the three
-    Panel-b categories, or ``None`` if the reason carries no cross-cutting
-    facet."""
+def _panelb_category(reason: str, trigger: str) -> str:
+    """Map a (surface_call_reason, induction_trigger) pair to its Panel-b
+    category: one of the three cross-cutting facets, or the neutral remainder
+    for every other surface-call reason."""
     if reason == "tissue_restricted_surface":
         return "Cell-type restricted"
     if reason in _INDUCED_REASONS:
         return "Induced — oncogenic" if trigger == "oncogenic" else "Induced — other"
-    return None
+    # Any other surface-call reason (classical receptor, multipass, GPI,
+    # dual localization, ...) — so each bar totals to its panel-a tier.
+    return "Other surface reason"
 
 
 def _read() -> dict[str, dict[str, int]]:
@@ -263,6 +275,11 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     axS.set_ylim(-0.5, 0.5)
     axS.set_yticks([0], ["call\nconfidence"], fontsize=14)
     axS.set_xticks(range(len(tiers)), [t[0] for t in tiers])
+    # The three surface tiers take their bar colour, here and in panel b, so
+    # the reader can match the two panels' bars by label colour alone.
+    for tick, (name, _n, color) in zip(axS.get_xticklabels(), tiers):
+        if name in _TIER_LABEL_COLORS:
+            tick.set_color(color)
     axS.tick_params(axis="both", length=0)
     axS.grid(False)
     sns.despine(ax=axS, left=True, bottom=True)
@@ -277,43 +294,57 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     # ── Panel b: surface facets by REASON, across the three populated tiers ──
     # Cell-type restricted and cell-state induced (split oncogenic vs. other)
     # counted by surface-call reason (option B), so weak-evidence surface calls
-    # in the `low` tier are retained. One horizontal stacked bar per tier
+    # in the `low` tier are retained. One vertical stacked bar per tier
     # (canonical / likely / low), matching panel a's confidence spectrum.
     tier_cats = _read_tier_categories()
-    y_pos = list(range(len(_PANELB_TIERS)))[::-1]  # canonical at top
-    row_totals = [sum(tier_cats[t].values()) for t in _PANELB_TIERS]
-    bar_max = max(row_totals)
-    for t, y in zip(_PANELB_TIERS, y_pos):
-        left = 0.0
+    # Vertical, tiers left to right in panel a's order and on panel a's y
+    # scale, so each stacked bar sits beside the panel-a bar it decomposes.
+    x_pos = list(range(len(_PANELB_TIERS)))
+    col_totals = [sum(tier_cats[t].values()) for t in _PANELB_TIERS]
+    bar_max = max(col_totals)
+    for t, x in zip(_PANELB_TIERS, x_pos):
+        bottom = 0.0
         for label, color in _PANELB_CATS:
             n = tier_cats[t][label]
             if n <= 0:
                 continue
-            axB.barh(y, n, left=left, height=0.62, color=color,
-                     edgecolor="white", linewidth=1.0)
+            axB.bar(x, n, bottom=bottom, width=0.62, color=color,
+                    edgecolor="white", linewidth=1.0)
             if n >= bar_max * 0.06:
-                axB.text(left + n / 2, y, f"{n:,}", va="center", ha="center",
-                         fontsize=15.5, color="white")
-            left += n
-        axB.text(left + bar_max * 0.02, y, f"{left:,.0f}", va="center",
-                 ha="left", fontsize=16.5, color=COLORS["dark"])
-
-    axB.set_yticks(y_pos)
-    axB.set_yticklabels(_PANELB_TIERS)
-    axB.set_xlabel("Proteins (by surface-call reason)")
-    axB.set_xlim(0, bar_max * 1.15)
-    axB.set_ylim(-0.7, len(_PANELB_TIERS) - 0.3)
+                axB.text(x, bottom + n / 2, f"{n:,}", va="center", ha="center",
+                         fontsize=15.5,
+                         color=COLORS["dark"] if label in _PANELB_LIGHT else "white")
+            bottom += n
+        axB.text(x, bottom + bar_max * 0.015, f"{bottom:,.0f}", va="bottom",
+                 ha="center", fontsize=16.5, color=COLORS["dark"])
+    axB.set_xticks(x_pos)
+    axB.set_xticklabels(_PANELB_TIERS)
+    for tick, name in zip(axB.get_xticklabels(), _PANELB_TIERS):
+        tick.set_color(_TIER_LABEL_COLORS[name])
+    axB.set_ylabel("Proteins (by surface-call reason)")
+    axB.set_xlabel("Deep-dive surface tier")
+    axB.set_ylim(axA.get_ylim())
+    axB.set_yticks([t for t in axA.get_yticks() if t <= axA.get_ylim()[1]])
+    axB.set_xlim(-0.6, len(_PANELB_TIERS) - 0.4)
     sns.despine(ax=axB, top=True, right=True)
 
+    # Listed top-down in the order the segments stack (top of bar first).
     handles = [mpatches.Patch(color=color, label=label)
-               for label, color in _PANELB_CATS]
-    axB.legend(handles=handles, title="Surface facet (by reason)",
-               loc="upper right", bbox_to_anchor=(1.0, 1.0), frameon=False,
-               title_fontsize=20, handlelength=1.1,
-               handletextpad=0.5, labelspacing=0.35)
+               for label, color in reversed(_PANELB_CATS)]
+    # Above the plot area, clear of the bars and their totals (>= 13 pt floor).
+    axB.legend(handles=handles, title="Surface-call reason",
+               loc="lower right", bbox_to_anchor=(1.0, 1.0), frameon=False,
+               fontsize=15.5, title_fontsize=16.5, handlelength=1.0,
+               handletextpad=0.4, labelspacing=0.22)
     _panel_label(axB, "b")
 
     fig.tight_layout()
+
+    # Panel b shares panel a's plot frame (same top and bottom, same y range)
+    # so the bars compare directly; its tier labels and axis title stay close
+    # under its own bars.
+    pa, pb = axA.get_position(), axB.get_position()
+    axB.set_position([pb.x0, pa.y0, pb.width, pa.height])
     return fig, (axA, axB)
 
 
