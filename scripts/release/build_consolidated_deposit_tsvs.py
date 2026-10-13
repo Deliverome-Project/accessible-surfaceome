@@ -45,6 +45,10 @@ API_BASE = "https://api.deliverome.org/surfaceome/v1"
 # so the branded domain now differentiates run_ids correctly. The collision
 # guard in build_genome_consolidated stays as defense-in-depth.
 EXPORT_BASE = API_BASE
+# Every triage export is fetched with with_reasoning=1, which appends
+# predicted_key_uncertainty + verdict_reasoning (the agent's free-text
+# rationale). The deposit files are named "...-with-reasoning" but shipped
+# without these columns through release 1.0.0.
 
 GENOME_NCBI_RUN_ID = "genome_full_sonnet_ncbi_v2"
 # The four PubMed-context rescue lanes. Each re-triages a slice of the genes
@@ -64,7 +68,7 @@ BENCH_RUN_ID = "mainbench_canonical_v2"
 
 def _fetch_tsv(url: str) -> tuple[list[str], list[list[str]]]:
     print(f"  fetching {url} …")
-    r = httpx.get(url, timeout=60.0)
+    r = httpx.get(url, timeout=300.0)
     r.raise_for_status()
     lines = r.text.rstrip("\n").split("\n")
     header = lines[0].split("\t")
@@ -76,7 +80,7 @@ def _fetch_tsv(url: str) -> tuple[list[str], list[list[str]]]:
 def build_genome_consolidated() -> Path:
     print("→ Building consolidated genome-wide TSV")
     ncbi_header, ncbi_rows = _fetch_tsv(
-        f"{EXPORT_BASE}/triage/export.tsv?run_id={GENOME_NCBI_RUN_ID}"
+        f"{EXPORT_BASE}/triage/export.tsv?run_id={GENOME_NCBI_RUN_ID}&with_reasoning=1"
     )
     variant_idx = ncbi_header.index("prompt_variant")
     gene_idx = ncbi_header.index("gene_symbol")
@@ -86,7 +90,7 @@ def build_genome_consolidated() -> Path:
     pubmed_rows: list[list[str]] = []
     seen_genes: dict[str, str] = {}
     for run_id in GENOME_PUBMED_RUN_IDS:
-        header, rows = _fetch_tsv(f"{EXPORT_BASE}/triage/export.tsv?run_id={run_id}")
+        header, rows = _fetch_tsv(f"{EXPORT_BASE}/triage/export.tsv?run_id={run_id}&with_reasoning=1")
         if header != ncbi_header:
             raise SystemExit(f"genome NCBI vs {run_id} TSV headers differ — "
                              "endpoint shape changed; re-check before deposit")
@@ -142,7 +146,7 @@ def build_genome_consolidated() -> Path:
 def build_bench_multirep() -> Path:
     print("→ Building multi-rep benchmark TSV")
     triage_header, triage_rows = _fetch_tsv(
-        f"{EXPORT_BASE}/triage/export.tsv?run_id={BENCH_RUN_ID}"
+        f"{EXPORT_BASE}/triage/export.tsv?run_id={BENCH_RUN_ID}&with_reasoning=1"
     )
     # The triage export carries per-rep predictions; join curated truth
     # per gene from /v1/benchmark (one row per gene with truth_verdict/

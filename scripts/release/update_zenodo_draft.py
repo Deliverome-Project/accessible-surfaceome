@@ -128,8 +128,8 @@ read-only API (recipes at the end).
 
 **33,728 rows**, one per (gene × run). The triage agent is a single LLM call per
 gene that reads a context block and returns a surface-accessibility verdict
-(`yes` / `contextual` / `no`), a controlled-vocabulary reason, and a confidence,
-with per-call token / cost / latency accounting.
+(`yes` / `contextual` / `no`), a controlled-vocabulary reason, a confidence and
+its free-text reasoning, with per-call token / cost / latency accounting.
 
 Five runs, tagged by the `run_id` column:
 
@@ -163,6 +163,8 @@ Five runs, tagged by the `run_id` column:
 | `predicted_reason` | short controlled-vocabulary reason tag |
 | `predicted_confidence` | `low` / `medium` / `high` |
 | token / cost / latency columns | `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens`, `n_web_searches`, `cost_usd`, `latency_s` |
+| `predicted_key_uncertainty` | the agent's one-line statement of what would change its call |
+| `verdict_reasoning` | the agent's free-text rationale for the verdict |
 | `error` | why a row has no verdict: `refusal` (the model's safety classifier declined) or a runner error; empty for a normal call |
 
 **Reconciling the NCBI and PubMed rows.** When a gene has both an NCBI and a PubMed row,
@@ -308,12 +310,13 @@ update.
 
 _DESCRIPTION_HTML = (
     "Benchmark, triage, and deep-dive data outputs for the "
-    "accessible-surfaceome project. This draft ships five data files "
+    "accessible-surfaceome project. This version ships five data files "
     "plus an in-deposit README documenting every column and the "
     "source-join recipe.<br><br>"
     "<b>triage-runs-genome-with-reasoning.tsv</b> — 33,728-row "
-    "long-format TSV consolidating the genome-wide Sonnet+NCBI sweep "
-    "(19,324 genes × 1 rep) AND the four disjoint PubMed-context rescue "
+    "long-format TSV, with each call's verdict, reason, confidence and "
+    "free-text reasoning, consolidating the genome-wide Sonnet+NCBI sweep "
+    "(19,324 genes × 1 rep) AND the four PubMed-context rescue "
     "lanes that re-triage the genes it called no with at most one "
     "supporting database. A `run_id` column tags every row so the lanes "
     "can be split or merged at read time; each re-run gene has an NCBI row "
@@ -326,11 +329,14 @@ _DESCRIPTION_HTML = (
     "models with uneven prompt-variant coverage (Haiku 4.5 + Sonnet 4.6: "
     "all 4 variants; Opus 4.8, Haiku 5.5, Sonnet 5.5: naive + ncbi; Sonnet 5, "
     "Opus 5: ncbi; Opus 5.5: ncbi + ncbi at low reasoning effort) — 18 "
-    "(model × variant) cells × 3 replicates × 147 genes — with curated "
-    "truth verdict / signal / reason / class joined onto every row.<br><br>"
+    "(model × variant) cells × 3 replicates × 147 genes — with each "
+    "call's free-text reasoning and the curated truth verdict / signal / "
+    "reason / class joined onto every row.<br><br>"
     "<b>deep_dives_all.tar.gz</b> — one JSON per published "
     "SurfaceomeRecord (5,332 records), each carrying its full evidence "
-    "chain, per-claim verbatim quotes, and the deep-dive classification "
+    "chain, per-claim verbatim quotes, every structured attribute (the "
+    "filters block and the deterministic features), and the deep-dive "
+    "classification "
     "(`deep_dive_tier` + `deep_dive_facet`) computed by the same "
     "predicate the viewer ships and attached server-side on "
     "/v1/genes/{symbol}.<br><br>"
