@@ -21,6 +21,7 @@ UNIVERSE = ROOT / "scripts/build_candidate_universe_v3.py"
 
 def _load(path: Path):
     spec = importlib.util.spec_from_file_location(path.stem, path)
+    assert spec is not None and spec.loader is not None, path
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
