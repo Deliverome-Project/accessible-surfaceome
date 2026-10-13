@@ -149,6 +149,7 @@ Two runs, tagged by the `run_id` column:
 | `predicted_reason` | short controlled-vocabulary reason tag |
 | `predicted_confidence` | `low` / `medium` / `high` |
 | token / cost / latency columns | `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens`, `n_web_searches`, `cost_usd`, `latency_s` |
+| `error` | why a row has no verdict: `refusal` (the model's safety classifier declined) or a runner error; empty for a normal call |
 
 **Reconciling the two runs.** When a gene has both an NCBI and a PubMed row,
 prefer the PubMed verdict only when it is *more* inclusive (PubMed

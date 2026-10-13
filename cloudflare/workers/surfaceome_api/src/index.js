@@ -3131,6 +3131,10 @@ const EXPORT_COLUMNS = [
   "n_web_searches",
   "cost_usd",
   "latency_s",
+  // Why a row has no verdict: "refusal" (the model's safety classifier
+  // declined) or a runner error. Empty for a normal call. Last so existing
+  // column positions are unchanged.
+  "error",
 ];
 const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v2";
 // The genome-wide Sonnet/NCBI triage sweep over the full protein-coding

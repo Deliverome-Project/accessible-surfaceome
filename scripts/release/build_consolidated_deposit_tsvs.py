@@ -178,7 +178,7 @@ def build_bench_multirep() -> Path:
     return out_path
 
 
-def build_deep_dive_presets() -> Path:
+def build_deep_dive_presets(genome_path: Path) -> Path:
     """Materialize per-gene preset membership for every deep-dive record.
 
     One row per gene with a ``surface_annotation`` record. Columns:
@@ -208,13 +208,36 @@ def build_deep_dive_presets() -> Path:
     r = httpx.get(f"{API_BASE}/genes", timeout=60.0)
     r.raise_for_status()
     payload = r.json()
-    # The catalog endpoint returns rich per-gene metadata including the
-    # ``filters`` block needed by the predicates. Endpoint shape:
-    # {"entries": [{"gene_symbol": ..., "deep_dive_filters": {...}, ...}]}
+    # /v1/genes lists every published record with light metadata
+    # (gene_symbol, uniprot_acc, schema_version) but no longer carries the
+    # filters the predicates read. Those live on /v1/catalog as each row's
+    # ``ddf`` block, keyed by ``symbol``. Reading filters from /v1/genes is
+    # what made this file come out empty: every entry was skipped as "no
+    # deep-dive record".
     entries = payload.get("entries") or payload.get("genes") or []
     if not entries:
         raise SystemExit("/v1/genes returned no entries — endpoint shape "
                          "changed; cannot build preset membership")
+    print(f"  fetching {API_BASE}/catalog …")
+    rc = httpx.get(f"{API_BASE}/catalog", timeout=120.0)
+    rc.raise_for_status()
+    ddf_by_symbol = {
+        row["symbol"]: row["ddf"]
+        for row in rc.json().get("rows", [])
+        if row.get("deep_dive") and row.get("ddf")
+    }
+    if not ddf_by_symbol:
+        raise SystemExit("/v1/catalog returned no deep-dive ``ddf`` blocks — "
+                         "endpoint shape changed; cannot build preset membership")
+    # hgnc_id is on neither endpoint; take it from the genome triage TSV
+    # this script has already written.
+    hgnc_by_symbol: dict[str, str] = {}
+    with genome_path.open() as fh:
+        header_g = fh.readline().rstrip("\n").split("\t")
+        sym_i, hgnc_i = header_g.index("gene_symbol"), header_g.index("hgnc_id")
+        for line in fh:
+            cells = line.rstrip("\n").split("\t")
+            hgnc_by_symbol.setdefault(cells[sym_i], cells[hgnc_i])
 
     # Fields surfaced for auditability — same ones the predicates read.
     AUDIT_FIELDS = (
@@ -250,7 +273,7 @@ def build_deep_dive_presets() -> Path:
         sym = entry.get("gene_symbol")
         if not sym:
             continue
-        ddf = entry.get("deep_dive_filters")
+        ddf = ddf_by_symbol.get(sym)
         if not ddf:
             # No deep-dive record (the bulk of the genome). The
             # deposit only carries genes with a deep-dive — skip.
@@ -264,7 +287,7 @@ def build_deep_dive_presets() -> Path:
         out_rows.append([
             sym,
             str(entry.get("uniprot_acc") or ""),
-            str(entry.get("hgnc_id") or ""),
+            str(hgnc_by_symbol.get(sym) or ""),
             str(entry.get("schema_version") or ""),
             *preset_flags,
             *induction_flags,
@@ -292,7 +315,7 @@ def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     genome_path = build_genome_consolidated()
     bench_path = build_bench_multirep()
-    presets_path = build_deep_dive_presets()
+    presets_path = build_deep_dive_presets(genome_path)
 
     # Sanity checks.
     print("\n→ Sanity-checking KLK2 in both files")
