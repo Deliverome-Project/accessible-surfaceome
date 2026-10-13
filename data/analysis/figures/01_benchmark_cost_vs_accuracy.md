@@ -7,18 +7,30 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 2.** Across model tiers and amounts of supplied context, triage accuracy saturates near 98% well before cost does, so the cheapest configuration reaching that plateau is the economical production choice. Each point is one model–context combination, as in Supplementary Figure 1. The horizontal axis is the projected cost of triaging all 19,324 protein-coding genes once (log scale); the vertical axis is mean soft-credit accuracy on SurfaceBench. Cost is built from average tokens sent and returned per call at Anthropic’s October 2026 list prices, with shared instructions charged once at the first-use rate and reused cheaply, and each web search billed at one cent. Moving from Sonnet 4.6 to Opus costs roughly 1.8 times as much for 0.7 percentage points, and adding a search tool costs more than moving to Opus — the two web-search configurations are the two most expensive points on the chart. Production uses Sonnet 4.6 with identifiers.
+> **Supplementary Figure 2.** Across model tiers and amounts of supplied context, triage accuracy saturates near 98% well before cost does, so the cheapest configuration reaching that plateau is the economical production choice. Each point is one model–context combination, as in Supplementary Figure 1. The horizontal axis is the projected cost of triaging all 19,324 protein-coding genes once (log scale); the vertical axis is mean soft-credit accuracy on SurfaceBench. Cost is built from average tokens sent and returned per call at Anthropic’s October 2026 list prices, with shared instructions charged once at the first-use rate and reused cheaply, and each web search billed at one cent. Moving from Sonnet 4.6 to Opus 4.8 costs roughly 1.8 times as much for 0.7 percentage points, and adding a search tool costs more than moving to Opus — the two web-search configurations are among the three most expensive points on the chart. Production uses Sonnet 4.6 with identifiers, which matched Opus 4.8 accuracy at the lowest cost among the models available when the pipeline was built; of the later Claude 5.5 models, Haiku 5.5 came within a point of it at about a fourteenth of the cost, and Sonnet 5.5 was the most accurate configuration tested. Refused calls are excluded from accuracy and the refusal rate is labeled (about 5% for Opus 5.5 at its default reasoning effort and 4% at low effort; no other model refused). Color indicates model generation, and lavender marks the two configurations the production pipeline uses.
 <!-- END manuscript-legend -->
 
 Each point is one (model, prompt-variant) cell of the triage agent
-benchmark. There are 11 cells: Haiku 4.5 and Sonnet 4.6 each ×
-{naive, + IDs, + IDs + PubMed, + IDs + web}, Sonnet 5 × {+ IDs}, and
-Opus 4.8 × {naive, + IDs}. "+ IDs" means the prompt carries the gene's
-resolved identifiers; "+ PubMed" and "+ web" add a PubMed or web-search
-tool on top.
+benchmark. There are 18 cells: Haiku 4.5 and Sonnet 4.6 each ×
+{naive, + IDs, + IDs + PubMed, + IDs + web}, Sonnet 5 × {+ IDs},
+Opus 4.8 × {naive, + IDs}, Opus 5 × {+ IDs}, Haiku 5.5 and Sonnet 5.5
+each × {naive, + IDs}, and Opus 5.5 × {+ IDs, + IDs at low reasoning
+effort}. "+ IDs" means the prompt carries the gene's resolved
+identifiers; "+ PubMed" and "+ web" add a PubMed or web-search tool on
+top.
 
-- **y-axis:** verdict accuracy on the 147-gene labelled bench, as the
-  mean over the 3 replicates of each cell. A prediction counts as a
+Color encodes model generation (orange Claude 4.x, blue Claude 5, teal
+Claude 5.5; darker = larger model or more context), and the two
+configurations the production pipeline uses (Sonnet 4.6 + IDs and
++ IDs + PubMed) are lavender. Each label is drawn in a darker shade of
+its point's color.
+
+Refused calls — a safety classifier declining to answer, which only Opus
+5.5 does on this bench — are excluded from both accuracy and cost, and
+the refusal rate is printed in the cell's label.
+
+- **y-axis:** verdict accuracy on the 147-gene labeled bench, as the
+  mean over the 3 replicates of each cell, over answered calls. A prediction counts as a
   match under the soft-credit rule used by the bench figures: `yes` or
   `contextual` matches a truth of `yes` or `contextual`; `no` matches
   `no` only.

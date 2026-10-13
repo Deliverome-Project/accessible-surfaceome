@@ -301,7 +301,9 @@ statement:
   legacy 2026-05-12 sweep, removed from public D1 on 2026-06-01. Only
   analyses that deliberately read the old v1 rows need the COALESCE
   query in CLAUDE.md.
-- **Four `pubmed_ncbi` rescue lanes**, disjoint by construction, together
+- **Four `pubmed_ncbi` rescue lanes**, disjoint except for 9 genes the
+  74-gene optcut lane re-ran (the deposit builder's lane list is pinned to
+  `RESCUE_RUNS` by `tests/test_deposit_release_guards.py`), together
   giving every Sonnet-`no` gene that the universe gate can drop a
   literature-augmented second look: `genome_full_sonnet_pubmed_ncbi_v1`
   (2,626-cell zero-DB ambiguous tail, 177 rescues),
