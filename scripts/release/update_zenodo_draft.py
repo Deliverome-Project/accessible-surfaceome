@@ -204,7 +204,7 @@ plus every column from file 1.
 
 ## 3. `deep_dives_all.tar.gz` — evidence-cited per-gene records
 
-**5,130 JSON records**, one per gene (`<SYMBOL>.json`; `tar tzf` lists them).
+**5,332 JSON records**, one per gene (`<SYMBOL>.json`; `tar tzf` lists them).
 Each is a deep-dive agent output: the full evidence chain with verbatim source
 quotes, the structured surface call, and a classification —
 
@@ -311,7 +311,7 @@ _DESCRIPTION_HTML = (
     "(model × variant) cells × 3 replicates × 147 genes — with curated "
     "truth verdict / signal / reason / class joined onto every row.<br><br>"
     "<b>deep_dives_all.tar.gz</b> — one JSON per published "
-    "SurfaceomeRecord (5,130 records), each carrying its full evidence "
+    "SurfaceomeRecord (5,332 records), each carrying its full evidence "
     "chain, per-claim verbatim quotes, and the deep-dive classification "
     "(`deep_dive_tier` + `deep_dive_facet`) computed by the same "
     "predicate the viewer ships and attached server-side on "
