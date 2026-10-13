@@ -193,7 +193,10 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
 
     html_path = out_dir / f"{stem}.html"
     pdf_path = out_dir / f"{stem}.pdf"
-    xml_path = out_dir / f"{stem}.xml"
+    # The JATS and the figure files it names live together in their own
+    # folder, with the figures referenced by bare filename: a Zenodo
+    # record has a flat file list, so this folder can be uploaded as is.
+    xml_path = out_dir / "jats" / f"{stem}.xml"
 
     # 1. pandoc → standalone HTML5 with the deliverome stylesheet linked.
     #    --extract-media pulls embedded .docx images out to disk so
@@ -313,16 +316,26 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         stylesheets=[CSS(filename=str(CSS_PATH))],
     )
 
-    # 4. pandoc → JATS XML. Same source, different writer; machine-
-    #    readable references + figure metadata for the Zenodo deposit.
+    # 4. pandoc → JATS XML, through the same filters as the HTML so the
+    #    citations resolve to reference entries and each figure is wrapped
+    #    with its legend, then jats_polish moves what they found into the
+    #    elements JATS has for it (front matter, <fig>, <ref-list>, <xref>).
+    #    Converted without them the file is well-formed and empty of
+    #    structure: no title, authors or abstract, no figures, no reference
+    #    list, and every citation a link to zotero.org.
     print(f"→ pandoc {src.name} → {xml_path.name}")
-    pypandoc.convert_file(
-        str(src),
-        to="jats",
-        format="docx",
-        outputfile=str(xml_path),
-        extra_args=["--standalone", LANG_ARG],
+    from jats_build import build_jats  # ty: ignore[unresolved-import]
+
+    # Shared with scripts/release/publish-archive.py, so the XML that is
+    # deposited is the XML built here. Each figure's canonical asset is
+    # copied beside it and named in the XML.
+    jats_report, _ = build_jats(
+        src, xml_path,
+        pandoc=pypandoc.get_pandoc_path(),
+        figures_out=xml_path.parent,
+        href_prefix="",
     )
+    print(jats_report.summary())
 
     return {"html": html_path, "pdf": pdf_path, "xml": xml_path, "figure_alert": figure_alert}
 
@@ -795,6 +808,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--strict-citations",
+        action="store_true",
+        help=(
+            "Fail the build if any in-text citation has no reference "
+            "entry, or any reference entry is never cited. Default: "
+            "report both on stderr and continue."
+        ),
+    )
+    parser.add_argument(
         "--biorxiv-url",
         default=None,
         help=(
@@ -836,6 +858,11 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    # Read by filters/citations.lua, which has no other way to take a flag.
+    if args.strict_citations:
+        os.environ["PAPER_STRICT_CITATIONS"] = "1"
+    else:
+        os.environ.pop("PAPER_STRICT_CITATIONS", None)
 
     if args.web is not None:
         try:
