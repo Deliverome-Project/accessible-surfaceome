@@ -1,7 +1,7 @@
 """Pin the replicate-collapse rule to the MODE of the reason, not row order.
 
 Two places collapse a benchmark cell's 2–3 replicates into one representative
-reason: ``curator_vs_agent_reason._representative_reason`` (Supp. Fig. S3) and
+reason: ``curator_vs_agent_reason._representative_reason`` (Supp. Fig. S4) and
 ``export_mainbench_to_tsv._collapse_to_majority`` (the published
 ``mainbench_canonical_v2.tsv``). Both used to settle the verdict by majority
 and then take the *first* replicate carrying that verdict, using its reason.

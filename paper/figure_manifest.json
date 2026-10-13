@@ -43,25 +43,25 @@
   "appendix_figures": {},
   "supplementary_figures": {
     "1": {
+      "slug": "db_cutoff_tradeoff",
+      "format": "svg",
+      "description": "Vector, converted from db_cutoff_tradeoff.pdf."
+    },
+    "2": {
       "slug": "db_correctness_overall",
       "format": "svg",
       "description": "Vector, converted from db_correctness_overall.pdf."
     },
-    "2": {
+    "3": {
       "slug": "benchmark_cost_vs_accuracy",
       "format": "svg",
       "description": "Vector, converted from benchmark_cost_vs_accuracy.pdf."
     },
-    "3": {
+    "4": {
       "slug": "curator_vs_agent_reason",
       "format": "png",
       "min_dpi": 600,
       "description": "Raster on purpose: curator_vs_agent_reason.pdf converts to an SVG that only wraps a raster panel, so the 600-DPI PNG is the sharper asset."
-    },
-    "4": {
-      "slug": "db_cutoff_tradeoff",
-      "format": "svg",
-      "description": "Vector, converted from db_cutoff_tradeoff.pdf."
     },
     "5": {
       "slug": "ensemble_vs_best_db_vs_sonnet",

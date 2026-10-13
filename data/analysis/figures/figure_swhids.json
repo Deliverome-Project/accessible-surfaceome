@@ -43,27 +43,27 @@
   },
   {
     "figure": "Supplementary Figure 1",
+    "slug": "db_cutoff_tradeoff",
+    "swhid": "swh:1:rev:b41c39c932caa257f5613c1e9d79c996e32cae74",
+    "gist": "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
+  },
+  {
+    "figure": "Supplementary Figure 2",
     "slug": "db_correctness_overall",
     "swhid": "swh:1:rev:4c4fed174b612b37b0d32c3100ba28a8bb8c6658",
     "gist": "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d"
   },
   {
-    "figure": "Supplementary Figure 2",
+    "figure": "Supplementary Figure 3",
     "slug": "benchmark_cost_vs_accuracy",
     "swhid": "swh:1:rev:34f0ffd72b6a7015239b44425f282f3906c44a34",
     "gist": "https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41"
   },
   {
-    "figure": "Supplementary Figure 3",
+    "figure": "Supplementary Figure 4",
     "slug": "curator_vs_agent_reason",
     "swhid": "swh:1:rev:8ce78859a9794525155ac5623ce83e91f70287eb",
     "gist": "https://gist.github.com/beccajcarlson/c98fe6646ba8b967767d072657da31b7"
-  },
-  {
-    "figure": "Supplementary Figure 4",
-    "slug": "db_cutoff_tradeoff",
-    "swhid": "swh:1:rev:b41c39c932caa257f5613c1e9d79c996e32cae74",
-    "gist": "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
   },
   {
     "figure": "Supplementary Figure 5",

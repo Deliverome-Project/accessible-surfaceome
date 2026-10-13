@@ -1,4 +1,4 @@
-"""Supp Fig 1 — LLM-only overall accuracy on the 147-gene benchmark.
+"""Supp Fig 2 — LLM-only overall accuracy on the 147-gene benchmark.
 
 Grouped bars by model (Haiku 4.5 / Haiku 5.5 / Sonnet 4.6 / Sonnet 5 /
 Sonnet 5.5 / Opus 4.8 / Opus 5 / Opus 5.5) with hatched bars for the

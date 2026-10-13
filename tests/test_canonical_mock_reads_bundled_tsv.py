@@ -57,7 +57,7 @@ READS_BUNDLED_TSV = [
     "topology_coverage_by_source",
     # Migrated off the triage_bench_db_barplot monolith (2026-06-30): its own
     # canonical now reads the figure TSV, so the model list comes from the data
-    # — fixes the opus-4-7 hardcode that shipped empty bars on Supp Fig 1.
+    # — fixes the opus-4-7 hardcode that shipped empty bars on Supp Fig 2.
     "db_correctness_overall",
     # Migrated 2026-06-30: canonical reads the union TSV (in_universe + is_bench
     # flags); bench cohort is the benchmark's ground-truth yes/contextual genes.
