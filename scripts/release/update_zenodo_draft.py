@@ -40,6 +40,7 @@ Environment:
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import subprocess
 import sys
@@ -57,6 +58,9 @@ NEW_FILES = [
     TMP_DIR / "deep-dive-preset-membership.tsv",
 ]
 README_PATH = TMP_DIR / "README.md"
+# Row counts of the built files, written by build_consolidated_deposit_tsvs.py.
+MANIFEST_PATH = TMP_DIR / "deposit_manifest.json"
+PYPROJECT = Path(__file__).resolve().parents[2] / "pyproject.toml"
 # Reproducibility replicates (Supplementary Figure 16): the frozen bundle, tarred
 # deterministically so an unchanged bundle re-syncs as "unchanged".
 REPLICATES_BUNDLE = Path(__file__).resolve().parents[2] / "data/processed/deep_dive_concordance_v1"
@@ -367,6 +371,48 @@ _DEEP_DIVES_ENTRY = {
 }
 
 
+def check_docs_against_manifest(readme: str, description: str,
+                                manifest: dict) -> list[str]:
+    """Problems with the README / description given the files actually built.
+
+    The README and description state row counts in prose, and those went
+    stale before (a deposit described 2,626 PubMed rows long after there were
+    14,404, and 5,130 records after the cohort grew). Every count the
+    manifest records has to appear in both, and every built file has to be
+    one this script uploads.
+    """
+    problems = []
+    shipped = {p.name for p in NEW_FILES}
+    for name in manifest["files"]:
+        if name not in shipped:
+            problems.append(f"{name} is built but not in NEW_FILES, so it would not be uploaded")
+    totals = {
+        "genome rows": manifest["genome_rows"],
+        "benchmark rows": manifest["benchmark_rows"],
+        "deep-dive records": manifest["deep_dive_records"],
+    }
+    for doc_name, text in (("README", readme), ("description", description)):
+        for label, n in totals.items():
+            if f"{n:,}" not in text:
+                problems.append(f"{doc_name} does not state the {label} ({n:,})")
+    # Per-run counts are listed in the README only.
+    for run, n in manifest["genome_runs"].items():
+        if f"{n:,}" not in readme:
+            problems.append(f"README does not state {run}'s {n:,} rows")
+    cells = f"{manifest['benchmark_cells']} (model × variant) cells"
+    for doc_name, text in (("README", readme), ("description", description)):
+        if cells not in text:
+            problems.append(f"{doc_name} does not say '{cells}'")
+    return problems
+
+
+def _pyproject_version() -> str:
+    for line in PYPROJECT.read_text().splitlines():
+        if line.startswith("version"):
+            return line.split("=", 1)[1].strip().strip('"')
+    raise SystemExit(f"no version in {PYPROJECT}")
+
+
 def _build_replicates_tarball() -> Path:
     """Shared deterministic builder (record_history.zenodo) — one implementation."""
     from accessible_surfaceome.cloud.record_history.zenodo import build_replicates_tarball
@@ -457,6 +503,18 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
         README_PATH.write_text(_build_readme())
         print(f"→ wrote {README_PATH}")
+        if not MANIFEST_PATH.exists():
+            print(f"missing: {MANIFEST_PATH} — re-run "
+                  "scripts/release/build_consolidated_deposit_tsvs.py", file=sys.stderr)
+            return 1
+        problems = check_docs_against_manifest(
+            README_PATH.read_text(), _DESCRIPTION_HTML,
+            json.loads(MANIFEST_PATH.read_text()),
+        )
+        if problems:
+            print("README / description disagree with the built files — fix the "
+                  "text before syncing:\n  - " + "\n  - ".join(problems), file=sys.stderr)
+            return 1
         managed.extend([*NEW_FILES, README_PATH])
 
     if include_deep_dives and not args.dry_run:
@@ -478,6 +536,15 @@ def main(argv: list[str] | None = None) -> int:
         if state != "unsubmitted":
             print(f"⚠ deposit state is '{state}', not 'unsubmitted' — refusing "
                   f"to modify a published / submitted deposit", file=sys.stderr)
+            return 1
+        # The draft cut_data_release.py opens carries the release version;
+        # syncing files for one release into a draft for another is the
+        # mistake this catches (1.0.0 itself went out with no version set).
+        draft_version = dep["metadata"].get("version")
+        if draft_version != _pyproject_version():
+            print(f"⚠ draft version is {draft_version!r} but pyproject.toml says "
+                  f"{_pyproject_version()!r} — refusing; cut the release with "
+                  "cut_data_release.py first", file=sys.stderr)
             return 1
         bucket = dep["links"].get("bucket")
         if not bucket:

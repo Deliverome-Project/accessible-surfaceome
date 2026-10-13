@@ -24,7 +24,9 @@ private credentials needed.
 from __future__ import annotations
 
 import csv
+import json
 import sys
+from collections import Counter
 from pathlib import Path
 
 import httpx
@@ -325,6 +327,16 @@ def build_deep_dive_presets(genome_path: Path) -> Path:
         ])
     out_rows.sort(key=lambda r: r[0])
 
+    # Every published record must have filters on the catalog. A partial
+    # match means the two endpoints disagree on the cohort; zero matches is
+    # how this file once shipped empty without anyone noticing.
+    if n_with_filters != len(entries):
+        raise SystemExit(
+            f"only {n_with_filters} of {len(entries)} published records have a "
+            "deep-dive filter block on /v1/catalog — refusing to write a partial "
+            "preset file"
+        )
+
     out_path = OUT_DIR / "deep-dive-preset-membership.tsv"
     with out_path.open("w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")
@@ -341,11 +353,85 @@ def build_deep_dive_presets(genome_path: Path) -> Path:
     return out_path
 
 
+# Columns every triage file must carry. verdict_reasoning is why the files
+# are called "...-with-reasoning"; error is how a refusal is told apart from
+# a malformed call.
+REQUIRED_TRIAGE_COLUMNS = ("predicted_key_uncertainty", "verdict_reasoning", "error")
+# Written next to the TSVs. update_zenodo_draft.py reads it and refuses to sync
+# a README or description whose counts disagree with the files.
+MANIFEST_NAME = "deposit_manifest.json"
+
+
+def _read_tsv(path: Path) -> list[dict[str, str]]:
+    with path.open() as fh:
+        return list(csv.DictReader(fh, delimiter="\t"))
+
+
+def validate_and_write_manifest(genome_path: Path, bench_path: Path,
+                                presets_path: Path) -> Path:
+    """Check the built files against what the deposit promises; fail loudly.
+
+    Each check guards a mistake that shipped once: a deposit with only one of
+    the PubMed rescue lanes, triage files named "with-reasoning" that had no
+    reasoning, an empty preset file, and refusals that looked like errors.
+    """
+    problems: list[str] = []
+    genome = _read_tsv(genome_path)
+    bench = _read_tsv(bench_path)
+    presets = _read_tsv(presets_path)
+
+    for name, rows in (("genome", genome), ("benchmark", bench)):
+        missing = [c for c in REQUIRED_TRIAGE_COLUMNS if c not in rows[0]]
+        if missing:
+            problems.append(f"{name} file lacks columns {missing}")
+            continue
+        answered = [r for r in rows if r["predicted_verdict"]]
+        with_reasoning = sum(1 for r in answered if r["verdict_reasoning"])
+        if with_reasoning < 0.99 * len(answered):
+            problems.append(f"{name} file: only {with_reasoning} of {len(answered)} "
+                            "answered calls carry verdict_reasoning")
+
+    lanes = Counter(r["run_id"] for r in genome)
+    expected_lanes = {GENOME_NCBI_RUN_ID, *GENOME_PUBMED_RUN_IDS}
+    if set(lanes) != expected_lanes:
+        problems.append(f"genome file runs {sorted(lanes)} != expected {sorted(expected_lanes)}")
+
+    cells = Counter((r["model"], r["prompt_variant"]) for r in bench)
+    n_genes = len({r["gene_symbol"] for r in bench})
+    reps = max(int(r["replicate"]) for r in bench)
+    short = {f"{m}/{v}": n for (m, v), n in cells.items() if n != n_genes * reps}
+    if short:
+        problems.append(f"benchmark cells without {n_genes} genes × {reps} reps: {short}")
+
+    if not presets:
+        problems.append("preset file is empty")
+
+    if problems:
+        raise SystemExit("deposit validation failed:\n  - " + "\n  - ".join(problems))
+
+    manifest = {
+        "files": [genome_path.name, bench_path.name, presets_path.name],
+        "genome_rows": len(genome),
+        "genome_runs": dict(sorted(lanes.items())),
+        "benchmark_rows": len(bench),
+        "benchmark_cells": len(cells),
+        "benchmark_genes": n_genes,
+        "benchmark_replicates": reps,
+        "benchmark_refusals": sum(1 for r in bench if r["error"] == "refusal"),
+        "deep_dive_records": len(presets),
+    }
+    out = OUT_DIR / MANIFEST_NAME
+    out.write_text(json.dumps(manifest, indent=2) + "\n")
+    print(f"\n✓ deposit validated; wrote {out.name}: {json.dumps(manifest)}")
+    return out
+
+
 def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     genome_path = build_genome_consolidated()
     bench_path = build_bench_multirep()
     presets_path = build_deep_dive_presets(genome_path)
+    validate_and_write_manifest(genome_path, bench_path, presets_path)
 
     # Sanity checks.
     print("\n→ Sanity-checking KLK2 in both files")

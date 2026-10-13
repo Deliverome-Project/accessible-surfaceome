@@ -315,9 +315,14 @@ script — no need to install wrangler just to peek at row counts.
   private D1 (see the COALESCE snippet below).
 - **The four `pubmed_ncbi` rescue lanes.** Each re-examines a slice of the
   Sonnet-`no` population with a literature-augmented pass. They are
-  disjoint by construction, and together they cover **every gene the
-  universe gate is capable of dropping** — which is the invariant to
-  preserve when adding a lane:
+  disjoint except for 9 genes the 74-gene optcut lane re-ran after an
+  earlier lane (JMJD6, MTX2, NBL1, NDST1, PARVA, RGN, SERP2, ST3GAL3,
+  VTA1), and together they cover **every gene the universe gate is
+  capable of dropping** — which is the invariant to preserve when adding
+  a lane. Adding a lane to `RESCUE_RUNS` also adds it to the Zenodo
+  deposit's genome file: `GENOME_PUBMED_RUN_IDS` in
+  `scripts/release/build_consolidated_deposit_tsvs.py` must match, and
+  `tests/test_deposit_release_guards.py` fails until it does:
   - `genome_full_sonnet_pubmed_ncbi_v1` — the 2,626-cell zero-DB
     *ambiguous tail* (`endomembrane_resident`, `secreted_only`,
     `inner_leaflet_anchored`, `pmhc_only_intracellular`,
