@@ -126,19 +126,30 @@ read-only API (recipes at the end).
 
 ## 1. `triage-runs-genome-with-reasoning.tsv` — genome-wide first-pass triage
 
-**21,950 rows**, one per (gene × run). The triage agent is a single LLM call per
+**33,728 rows**, one per (gene × run). The triage agent is a single LLM call per
 gene that reads a context block and returns a surface-accessibility verdict
 (`yes` / `contextual` / `no`), a controlled-vocabulary reason, and a confidence,
 with per-call token / cost / latency accounting.
 
-Two runs, tagged by the `run_id` column:
+Five runs, tagged by the `run_id` column:
 
 - **`genome_full_sonnet_ncbi_v2`** — the primary sweep with NCBI gene-summary
   context: **19,324 genes**, one row each.
-- **`genome_full_sonnet_pubmed_ncbi_v1`** — a **targeted PubMed-context re-run**
-  of a **2,626-row subset** (the ambiguous, low-database-evidence `no` calls
-  worth a second look with literature context). Those genes carry two rows (one
-  per run); the rest carry one.
+- Four **PubMed-context rescue lanes**, which re-triage the **14,404 genes** the
+  primary sweep called `no` and at most one surface database supports, with
+  PubMed abstracts in the prompt:
+  - **`genome_full_sonnet_pubmed_ncbi_v1`** — 2,626 genes in no database whose
+    `no` reason was ambiguous (endomembrane, secreted, inner leaflet, …)
+  - **`genome_intracellular_pubmed_ncbi_v1`** — 10,287 genes in no database
+    called cytoplasmic, nuclear or mitochondrial
+  - **`genome_1db_trim_pubmed_ncbi_v1`** — 1,417 genes in exactly one database
+  - **`genome_optcut_zerodb_pubmed_ncbi_v1`** — 74 genes that moved from one
+    database to none under the optimized CSPA cutoff
+
+  A re-triaged gene carries an NCBI row plus its PubMed row; every other gene
+  carries one row. The lanes are disjoint except for 9 genes the 74-gene lane
+  re-ran after an earlier lane, which carry a row from each. A few lane rows have `prompt_variant` = `naive`: the PubMed fetch failed
+  for that gene and the call ran on the gene symbol alone.
 
 | Column | Meaning |
 |---|---|
@@ -154,7 +165,7 @@ Two runs, tagged by the `run_id` column:
 | token / cost / latency columns | `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens`, `n_web_searches`, `cost_usd`, `latency_s` |
 | `error` | why a row has no verdict: `refusal` (the model's safety classifier declined) or a runner error; empty for a normal call |
 
-**Reconciling the two runs.** When a gene has both an NCBI and a PubMed row,
+**Reconciling the NCBI and PubMed rows.** When a gene has both an NCBI and a PubMed row,
 prefer the PubMed verdict only when it is *more* inclusive (PubMed
 `yes`/`contextual` over NCBI `no`); a PubMed `no` never overrides an NCBI
 `yes`/`contextual`, since absence of literature is not evidence of absence:
@@ -233,8 +244,8 @@ locally.
 ## 5. `deep-dive-reproducibility-replicates-v1.tar.gz` — run-to-run reproducibility
 
 **Not published records.** 50 deep-dive genes drawn at random (two disjoint
-batches of 25) and re-analysed to measure reproducibility (Supplementary
-Figure 15 of the manuscript). Three record sets, one line per gene in each
+batches of 25) and re-analyzed to measure reproducibility (Supplementary
+Figure 16 of the manuscript). Three record sets, one line per gene in each
 (`{"hgnc_symbol", "sample_batch", "record"}`, `record` a full SurfaceomeRecord
 with its evidence ledger):
 
@@ -256,9 +267,12 @@ Every file is rebuildable from the read-only API at
 `https://api.deliverome.org/surfaceome/v1/` (no credentials):
 
 ```
-# File 1 — the two genome runs (tag each with its run_id, then concatenate)
+# File 1 — the five genome runs (tag each with its run_id, then concatenate)
 curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2'
 curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_pubmed_ncbi_v1'
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_intracellular_pubmed_ncbi_v1'
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_1db_trim_pubmed_ncbi_v1'
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_optcut_zerodb_pubmed_ncbi_v1'
 
 # File 2 — benchmark predictions + curated truth (join on gene_symbol)
 curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v2'
@@ -268,7 +282,11 @@ curl 'https://api.deliverome.org/surfaceome/v1/benchmark'
 curl 'https://api.deliverome.org/surfaceome/v1/genes'          # gene index
 curl 'https://api.deliverome.org/surfaceome/v1/genes/EGFR'     # one record
 
-# File 4 — the reproducibility replicates (NOT published records)
+# File 4 — preset membership: each deep-dive gene's `ddf` block on the catalog,
+# run through accessible_surfaceome.release.catalog_presets
+curl 'https://api.deliverome.org/surfaceome/v1/catalog'
+
+# File 5 — the reproducibility replicates (NOT published records)
 curl 'https://api.deliverome.org/surfaceome/v1/replicates'                 # study + gene index
 curl 'https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates'      # one gene's replicates
 curl 'https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates/deep_dive_concordance_v1/full_rerun'
@@ -290,16 +308,16 @@ update.
 
 _DESCRIPTION_HTML = (
     "Benchmark, triage, and deep-dive data outputs for the "
-    "accessible-surfaceome project. This draft ships four data files "
+    "accessible-surfaceome project. This draft ships five data files "
     "plus an in-deposit README documenting every column and the "
     "source-join recipe.<br><br>"
-    "<b>triage-runs-genome-with-reasoning.tsv</b> — 21,950-row "
+    "<b>triage-runs-genome-with-reasoning.tsv</b> — 33,728-row "
     "long-format TSV consolidating the genome-wide Sonnet+NCBI sweep "
-    "(19,324 genes × 1 rep, the ~19k-gene M1 candidate universe) AND a "
-    "targeted PubMed-context re-run of a 2,626-row subset (the "
-    "ambiguous-reason zero-DB Sonnet-no slice). A `run_id` column tags "
-    "every row so the lanes can be split or merged at read time; for the "
-    "~2,621 re-run genes that's two rows (one NCBI, one PubMed). The "
+    "(19,324 genes × 1 rep) AND the four disjoint PubMed-context rescue "
+    "lanes that re-triage the genes it called no with at most one "
+    "supporting database. A `run_id` column tags every row so the lanes "
+    "can be split or merged at read time; each re-run gene has an NCBI row "
+    "plus its PubMed row(s). The "
     "read-side reconciliation rule (prefer PubMed when it is more "
     "inclusive than NCBI) is documented in the README and applied "
     "server-side by the live /v1/catalog endpoint.<br><br>"
@@ -316,15 +334,17 @@ _DESCRIPTION_HTML = (
     "(`deep_dive_tier` + `deep_dive_facet`) computed by the same "
     "predicate the viewer ships and attached server-side on "
     "/v1/genes/{symbol}.<br><br>"
+    "<b>deep-dive-preset-membership.tsv</b> — one row per deep-dive gene "
+    "with 1/0 membership in each public-catalog preset (canonical, likely, "
+    "induced, cell-type restricted) and the record fields the presets "
+    "read.<br><br>"
     "<b>deep-dive-reproducibility-replicates-v1.tar.gz</b> — run-to-run "
     "reproducibility replicates, NOT published records: for 50 randomly "
     "sampled deep-dive genes, the published record as served when the "
     "study ran, a full from-scratch re-run with the same prompts, and a "
     "fixed-evidence replay (builders + synthesizer only). Source data for "
     "Supplementary Figure 16; also queryable at /v1/replicates.<br><br>"
-    "The manuscript will be added to this record in a later draft update "
-    "against the same reserved DOI (10.5281/zenodo.20805384). All data "
-    "files are reproducible from the public read-only API at "
+    "All data files are reproducible from the public read-only API at "
     "https://api.deliverome.org/surfaceome/v1/ (no credentials)."
 )
 

@@ -6,11 +6,10 @@ collapses them to:
 
   1. triage-runs-genome-with-reasoning.tsv
      Single TSV with every (gene × prompt_variant × replicate) row
-     from BOTH the canonical Sonnet+NCBI sweep (~19,324 cells, 1 rep
-     each) and the Sonnet+PubMed rescue lane (~2,626 cells, 1 rep
-     each), tagged with ``run_id`` so the reader can split by lane.
-     For the 2,624 genes in the rescue slice that's 2 rows per gene
-     (one NCBI, one PubMed); for the remaining ~16,700 it's 1 row.
+     from the canonical Sonnet+NCBI sweep (19,324 cells, 1 rep each)
+     and the four Sonnet+PubMed rescue lanes (14,404 cells), tagged
+     with ``run_id`` so the reader can split by lane. A re-triaged gene
+     has an NCBI row plus its PubMed row; every other gene has 1 row.
 
   2. triage-benchmark-with-reasoning.tsv
      Per-replicate mainbench TSV with curated truth labels joined
@@ -48,7 +47,18 @@ API_BASE = "https://api.deliverome.org/surfaceome/v1"
 EXPORT_BASE = API_BASE
 
 GENOME_NCBI_RUN_ID = "genome_full_sonnet_ncbi_v2"
-GENOME_PUBMED_RUN_ID = "genome_full_sonnet_pubmed_ncbi_v1"
+# The four PubMed-context rescue lanes. Each re-triages a slice of the genes
+# the NCBI sweep called `no`; together they cover the genes the
+# candidate-universe gate could otherwise drop (CLAUDE.md "run_id
+# conventions"). The deposit used to carry only the first lane. The slices
+# are nearly disjoint: the 74-gene optimized-cutoff lane re-ran 9 genes an
+# earlier lane already held. Every row is kept, tagged by its run_id.
+GENOME_PUBMED_RUN_IDS = (
+    "genome_full_sonnet_pubmed_ncbi_v1",     # zero-DB ambiguous tail
+    "genome_intracellular_pubmed_ncbi_v1",   # zero-DB confidently intracellular
+    "genome_1db_trim_pubmed_ncbi_v1",        # 1-of-5-DB trim set
+    "genome_optcut_zerodb_pubmed_ncbi_v1",   # orphans of the optimized CSPA cutoff
+)
 BENCH_RUN_ID = "mainbench_canonical_v2"
 
 
@@ -68,34 +78,50 @@ def build_genome_consolidated() -> Path:
     ncbi_header, ncbi_rows = _fetch_tsv(
         f"{EXPORT_BASE}/triage/export.tsv?run_id={GENOME_NCBI_RUN_ID}"
     )
-    pubmed_header, pubmed_rows = _fetch_tsv(
-        f"{EXPORT_BASE}/triage/export.tsv?run_id={GENOME_PUBMED_RUN_ID}"
-    )
-    if ncbi_header != pubmed_header:
-        raise SystemExit("genome NCBI vs PubMed TSV headers differ — "
-                         "endpoint shape changed; re-check before deposit")
-    # Collision guard: if the run_id query-string cache ever collides again,
-    # the two fetches return the SAME run. Fail loudly rather than deposit a
-    # silent duplicate. The pubmed run is a targeted subset re-run and MUST
-    # carry pubmed_ncbi rows; the two runs must not have identical size.
     variant_idx = ncbi_header.index("prompt_variant")
-    pubmed_variants = {r[variant_idx] for r in pubmed_rows}
-    if "pubmed_ncbi" not in pubmed_variants:
-        raise SystemExit(
-            f"pubmed run carries no pubmed_ncbi rows (variants={pubmed_variants}) — "
-            "run_id cache collision? source the export from a query-aware origin"
-        )
-    if len(pubmed_rows) == len(ncbi_rows):
-        raise SystemExit(
-            f"ncbi and pubmed runs have identical row counts ({len(ncbi_rows)}) — "
-            "almost certainly a cache collision; aborting to avoid a duplicate deposit"
-        )
-
+    gene_idx = ncbi_header.index("gene_symbol")
     out_header = ["run_id", *ncbi_header]
     for r in ncbi_rows:
         r.insert(0, GENOME_NCBI_RUN_ID)
-    for r in pubmed_rows:
-        r.insert(0, GENOME_PUBMED_RUN_ID)
+    pubmed_rows: list[list[str]] = []
+    seen_genes: dict[str, str] = {}
+    for run_id in GENOME_PUBMED_RUN_IDS:
+        header, rows = _fetch_tsv(f"{EXPORT_BASE}/triage/export.tsv?run_id={run_id}")
+        if header != ncbi_header:
+            raise SystemExit(f"genome NCBI vs {run_id} TSV headers differ — "
+                             "endpoint shape changed; re-check before deposit")
+        # Collision guard: if the run_id query-string cache ever collides
+        # again, a fetch returns some OTHER run. Each lane is a PubMed re-run
+        # (a few cells fall back to `naive` when the PubMed fetch failed), it
+        # is never the size of the full sweep, and it barely overlaps the
+        # other lanes.
+        variants = {r[variant_idx] for r in rows}
+        if "pubmed_ncbi" not in variants:
+            raise SystemExit(
+                f"{run_id} carries no pubmed_ncbi rows (variants={variants}) — "
+                "run_id cache collision? source the export from a query-aware origin"
+            )
+        if len(rows) == len(ncbi_rows):
+            raise SystemExit(
+                f"{run_id} has the full sweep's row count ({len(ncbi_rows)}) — "
+                "almost certainly a cache collision; aborting to avoid a duplicate deposit"
+            )
+        overlap = sorted(
+            g for g in {r[gene_idx] for r in rows}
+            if seen_genes.get(g, run_id) != run_id
+        )
+        if len(overlap) > 0.5 * len(rows):
+            raise SystemExit(
+                f"{run_id} shares {len(overlap)} of {len(rows)} genes with an earlier "
+                "lane — a cache collision returning another lane? aborting"
+            )
+        if overlap:
+            print(f"    {len(overlap)} genes also in an earlier lane (kept, tagged "
+                  f"by run_id): {', '.join(overlap)}")
+        for r in rows:
+            seen_genes.setdefault(r[gene_idx], run_id)
+            r.insert(0, run_id)
+        pubmed_rows.extend(rows)
     # Sort by gene_symbol (col 1 after run_id insertion), then prompt_variant
     # so paired ncbi/pubmed rows for the same gene sit adjacent.
     gene_col = out_header.index("gene_symbol")
