@@ -30,13 +30,13 @@ e. **Deterministic features (derived, 0–7)** — how many of the seven derived
    deterministic structural/topology features are present. Tiers: canonical,
    likely, low.
 
-The ``uncertain`` tier (n=9) is dropped everywhere as too small to show a
+The ``uncertain`` tier (n=55) is dropped everywhere as too small to show a
 distribution.
 
 Why per-panel violins?
 ----------------------
 Each axis has a very different scale (papers in the hundreds vs feature counts
-0–6) so a shared Y axis would compress the small axes into the baseline. Five
+0–7) so a shared Y axis would compress the small axes into the baseline. Five
 small per-panel violins (one Y axis each) let each real distribution speak for
 itself.
 
@@ -46,7 +46,7 @@ Reads the bundled per-figure TSV at
 ``data/processed/figures/deep_dive_record_richness.tsv`` (one row per deep-dived
 gene: the five real per-gene axes + the deep-dive ``tier``).
 
-Computed over the completed deep-dive sweep (5,130 genes).
+Computed over the completed deep-dive sweep (5,332 genes).
 
 Run::
 
@@ -59,6 +59,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.transforms import offset_copy
+from matplotlib.colors import to_rgb
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -80,7 +83,7 @@ DATA_TSV = ROOT / "data/processed/figures/deep_dive_record_richness.tsv"
 GIST_URL = "https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01"
 
 # Tier colors — MUST match Fig 5. canonical=green, likely=teal, low=amber,
-# no=muted warm-grey. `uncertain` is dropped everywhere (n=9, too small).
+# no=muted warm-grey. `uncertain` is dropped everywhere (n=55, too small).
 TIER_COLORS = {
     "canonical": "#2E7A55",
     "likely":    "#3D6B60",
@@ -94,14 +97,16 @@ TIER_COLORS = {
 _FOUR = ["canonical", "likely", "low", "no"]
 _THREE = ["canonical", "likely", "low"]
 PANELS = [
-    ("papers_found",       "Papers found (discovery corpus)",          _FOUR),
-    ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
-    ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
-    ("n_filters_evidence", "LLM filters with a positive finding",      _THREE),
-    ("n_det_features",     "Deterministic features (derived, 0-7)",    _THREE),
+    ("papers_found",       "Papers found (discovery corpus)",       _FOUR,  "Papers per protein"),
+    ("papers_selected",    "Papers selected (into evidence list)",  _FOUR,  "Papers per protein"),
+    ("papers_with_ec",     "Papers with extracellular evidence",    _THREE, "Papers per protein"),
+    ("n_filters_evidence", "LLM filters with a positive finding",   _THREE, "Filters per protein"),
+    ("n_det_features",     "Deterministic features (derived, 0-7)", _THREE, "Features per protein"),
 ]
 
-FIGSIZE = (25, 6.5)
+# Two rows (the 4-tier panels a/b on top, the 3-tier panels c-e below) so the
+# figure prints at a legible scale; a single 5-wide row needed a ~25 in canvas.
+FIGSIZE = (16, 10)
 
 
 def _load_real_values() -> pd.DataFrame:
@@ -133,11 +138,16 @@ def _draw_panel(ax: plt.Axes, data: pd.DataFrame, key: str,
         line.set_alpha(0.9)
         line.set_linewidth(1.4)
 
-    # Faint real-value point strip on top so the actual per-tier n is visible.
+    # Real-value point strip on top so the actual per-tier n is visible. The
+    # jitter is seeded so a re-render places every point where the last did.
+    np.random.seed(0)
+    # A darker shade of each tier's color so points stay legible over their own
+    # violin without outweighing it.
+    point_palette = {t: tuple(0.6 * v for v in to_rgb(c)) for t, c in palette.items()}
     sns.stripplot(
         data=sub, x="tier", y=key, order=tiers, hue="tier",
-        hue_order=tiers, palette=palette, legend=False,
-        size=2.2, alpha=0.28, jitter=0.18, ax=ax,
+        hue_order=tiers, palette=point_palette, legend=False,
+        size=2.0, alpha=0.35, linewidth=0, jitter=0.18, zorder=3, ax=ax,
     )
 
     ax.set_xlabel("")
@@ -153,18 +163,23 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         # occupy the x-tick labels.
         "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 16,
         "axes.titleweight": "semibold", "axes.titlepad": 12,
-        "xtick.labelsize": 14, "ytick.labelsize": 18, "legend.fontsize": 14,
+        "xtick.labelsize": 18, "ytick.labelsize": 18, "legend.fontsize": 18,
     })
 
     data = _load_real_values()
 
-    fig, axes = plt.subplots(1, 5, figsize=FIGSIZE)
+    fig = plt.figure(figsize=FIGSIZE)
+    gs = fig.add_gridspec(2, 6)
+    axes = [fig.add_subplot(gs[0, 0:3]), fig.add_subplot(gs[0, 3:6]),
+            fig.add_subplot(gs[1, 0:2]), fig.add_subplot(gs[1, 2:4]),
+            fig.add_subplot(gs[1, 4:6])]
     panel_letters = ["a", "b", "c", "d", "e"]
 
-    for idx, (ax, (key, subtitle, tiers)) in enumerate(
+    for idx, (ax, (key, subtitle, tiers, ylabel)) in enumerate(
         zip(axes, PANELS, strict=True)
     ):
         _draw_panel(ax, data, key, tiers)
+        ax.set_ylabel(ylabel)
 
         # ``setup_plotting_style`` monkey-patches ``Axes.set_title`` (and
         # ``Figure.suptitle``) to NO-OPS, so a ``set_title`` subtitle silently
@@ -172,28 +187,25 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         # each panel instead so the reader can see what each panel shows.
         ax.text(
             0.5, 1.03, subtitle, transform=ax.transAxes,
-            ha="center", va="bottom", fontsize=15, fontweight="semibold",
+            ha="center", va="bottom", fontsize=17.5, fontweight="semibold",
             color=COLORS["dark"],
         )
 
         # Subpanel letter (lowercase, ExtraBold) at the panel's upper-left,
         # baseline-aligned with the subtitle — figure_subpanel_labels memory.
         ax.text(
-            -0.14, 1.03, panel_letters[idx],
-            transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=22, fontweight=800, color=COLORS["dark"],
+            0.0, 1.03, panel_letters[idx],
+            # Fixed inch offset so the letter sits the same distance left of
+            # every panel regardless of its width.
+            transform=offset_copy(ax.transAxes, fig=fig, x=-0.95, units="inches"),
+            ha="left", va="bottom",
+            fontsize=27, fontweight=800, color=COLORS["dark"],
         )
 
         sns.despine(ax=ax, top=True, right=True)
 
-    # suptitle is monkey-patched to a no-op; use fig.text for the figure title.
-    fig.text(
-        0.5, 0.995, "Deep-dive record richness scales with confidence tier",
-        ha="center", va="top", fontsize=18, fontweight="semibold",
-        color=COLORS["dark"],
-    )
 
-    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    fig.tight_layout(rect=(0, 0, 1, 0.99))
     return fig, list(axes)
 
 

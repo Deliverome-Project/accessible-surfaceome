@@ -52,11 +52,21 @@ def _tsv_bundle() -> dict[str, list[str]]:
     raise RuntimeError("TSV_BUNDLE assignment not found")
 
 
+# Mirrors whose figure has no data file at all, so the single-TSV
+# invariant does not apply. `web_preview` (Figure 7) composites two
+# screenshots of the live viewer — its inputs are two web pages, not a
+# table, and bundling a placeholder TSV would ship readers a file the
+# script never opens. Keep this set tiny: a figure plotted from numbers
+# belongs under the invariant, MOCK layout or not.
+DATALESS_MIRRORS = {"web_preview"}
+
+
 def _mirror_slugs() -> list[str]:
-    """Every gist mirror that exists on disk."""
+    """Every gist mirror that exists on disk and is driven by a TSV."""
     return sorted(
-        p.stem.removeprefix("make_")
+        slug
         for p in FIGURES_DIR.glob("make_*.py")
+        if (slug := p.stem.removeprefix("make_")) not in DATALESS_MIRRORS
     )
 
 

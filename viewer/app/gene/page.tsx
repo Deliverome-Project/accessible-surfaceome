@@ -6,6 +6,7 @@ import { Shell } from "../../components/Shell/Shell";
 import { NotFoundNotice } from "../../components/NotFoundNotice/NotFoundNotice";
 import { GeneDetail } from "../../components/surfaceome/GeneDetail/GeneDetail";
 import { renumberEvidenceIds } from "../../lib/evidenceRenumber";
+import { parseRevisions, type Revisions } from "../../lib/revisions";
 import {
   loadSchwekeHomomer,
   structureViewerDataFromRecord,
@@ -192,6 +193,11 @@ interface ReadyData {
   /** Tedman GPCR canonical surface expression (PME); null for non-GPCRs.
    *  Threaded to <GeneHeader> for the "Low surface" chip. */
   tedmanPme: number | null;
+  /** Latest archived revision (record history), from
+   *  `/v1/genes/{sym}/revisions`. Null until fetched or on a miss (network
+   *  error, 404, or a gene the archiver hasn't seen yet) — the strip is
+   *  then omitted. */
+  revisions: Revisions | null;
 }
 
 type State =
@@ -252,6 +258,7 @@ export default function GeneShellPage() {
         fgLibraryJson,
         taggedSitesResult,
         tedmanSurfaceJson,
+        revisionsJson,
       ] = await Promise.all([
         fetchJson(`${API_BASE}/v1/triage/${symbol}`),
         fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
@@ -266,11 +273,19 @@ export default function GeneShellPage() {
         // library nav, and the isoform/ortholog in-library pills. A miss →
         // null → no badge / nav / pills (graceful).
         fetchJson("/data/fg-library.json"),
-        // Static tag-sites asset (Worker-first fetch happens client-side; static fallback + pins).
-        fetchTaggedSites(symbol),
+        // Tag sites from the D1-backed Worker, falling back to the static asset.
+        // API_BASE was not being passed, so the Worker branch never ran and the
+        // card depended entirely on /tag-sites/{SYM}.json — which is not in the
+        // deployment, so the section never rendered. `tag_site_public` is synced
+        // now, which is the condition fetchTaggedSites documents for taking the
+        // Worker path.
+        fetchTaggedSites(symbol, API_BASE),
         // Tedman GPCR surface-expression overlay (site origin). Drives the
         // "Low surface" chip on library GPCRs (PME ≤ 1000). Miss → no chip.
         fetchJson("/data/tedman-surface.json"),
+        // Record-history strip. Null-tolerant: 404 when the archiver has not
+        // seen this gene yet — the strip is then simply omitted.
+        fetchJson(`${API_BASE}/v1/genes/${symbol}/revisions`),
       ]);
       if (cancelled) return;
 
@@ -354,6 +369,7 @@ export default function GeneShellPage() {
           oversized: symbolIsOversized(fgLibrary, symbol),
           oversizedOrfKb: symbolOversizedOrfKb(fgLibrary, symbol),
           tedmanPme: tedmanSurfacePme,
+          revisions: parseRevisions(revisionsJson),
         },
       });
 

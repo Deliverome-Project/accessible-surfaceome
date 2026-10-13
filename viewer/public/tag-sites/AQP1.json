@@ -4,6 +4,70 @@
   "uniprot_acc": "P29972",
   "sites": [
     {
+      "site_id": "AQP1-internal-120-lit",
+      "gene_symbol": "AQP1",
+      "uniprot_acc": "P29972",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 120,
+      "residue_before": "T",
+      "residue_after": "G",
+      "residue_label": "T120",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "coronavirus E1 epitope",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Protease sensitivity on intact oocytes confirmed extracellular surface exposure. Water-channel function of the epitope-tagged construct was NOT MEASURED in this study.",
+      "confidence": "high",
+      "rationale": "Python confirms seq[119]='T' and seq[120]='G', consistent with 'Thr-120' in the paper; insert_after_residue=120 places the tag between T120 and G121 within EC loop C (residues 116\u2013135). Minimum distance from TM boundaries is 5 residues (TM3 ends at 115). The paper explicitly demonstrates exofacial topology by protease digestion of intact oocytes, providing direct experimental confirmation. No N-glycosylation sequon is disrupted at this position. Coronavirus E1 glycoprotein epitope inserted at Thr-120 of full-length CHIP/AQP1 expressed in Xenopus oocytes. Topology confirmed exofacial by alpha-chymotrypsin digestion of intact oocytes (protease-sensitive), placing the epitope on the extracellular face of loop C (EC span 116\u2013135). [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 7507481,
+          "citation": "PMID 7507481",
+          "claim": "An epitope from the coronavirus E1 glycoprotein was inserted into CHIP and localized to the outer or inner leaflet of the membrane by alpha-chymotrypsin digestion of intact oocytes or inside-out membrane vesicles. The E1 epitope at Thr-120 was protease-sensitive in intact oocytes, indicating that loop C is exofacial. The E1 epitope at Lys-6, Arg-162, or Lys-267 was protease-sensitive in inside-out membrane vesicles, confirming the cytoplasmic location of the NH2 and COOH termini and loop D."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "AQP1-internal-43-lit",
+      "gene_symbol": "AQP1",
+      "uniprot_acc": "P29972",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 43,
+      "residue_before": "Q",
+      "residue_after": "T",
+      "residue_label": "Q43",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Anti-FLAG immunostaining of intact (non-permeabilized) cells confirmed surface exposure of the tag; water-transport function of the FLAG-tagged construct was NOT MEASURED in these studies.",
+      "confidence": "high",
+      "rationale": "Python confirms seq[42]='Q' and seq[43]='T', placing the junction squarely within EC loop A (residues 34\u201349). Minimum distance from TM boundaries is 7 residues (TM2 starts at 50). Four independent publications (L1\u2013L4) all name this exact Gln43\u2013Thr44 junction, making it the best-evidenced site in the ledger. A potential N-glycosylation sequon N42-Q43-T44 is disrupted by the insertion, but all four papers demonstrate successful surface trafficking of the tagged protein, so this is not a blocking concern. FLAG epitope inserted between Gln43 and Thr44 in extracellular loop A (EC span 34\u201349) of full-length AQP1 expressed in mammalian cells. Reported independently in four ledger lines (L1\u2013L4), covering LSAqp1, hAQP1, and an Aqp1-FKBP12-DD fusion. Surface detection performed with anti-FLAG antibodies on non-permeabilized cells. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 41533785,
+          "citation": "PMID 41533785",
+          "claim": "A FLAG tag was added to an extracellular loop in hAQP1 (immediately after Q43) to facilitate the detection of surface-express hAqp1 using \u03b1-FLAG antibodies."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "AQP1-snorkel-c",
       "gene_symbol": "AQP1",
       "uniprot_acc": "P29972",
@@ -395,5 +459,12 @@
       "canonical_residue": 46,
       "left_pct": 17.100371747211895
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:13:09.115603+00:00",
+  "literature_notes": "Five ledger lines were evaluated. L1, L2, L3, and L4 all independently pin the identical Gln43\u2013Thr44 junction in EC loop A; L2 was chosen as the primary supporting clip for Site 1 (hAQP1, most direct), but all four corroborate it. L5 pins a second distinct site at Thr-120 in EC loop C. The cytoplasmic sites from L5 (Lys-6, Arg-162, Lys-267) were excluded because they are intracellular and the paper itself confirms this by protease sensitivity on inside-out vesicles only. EC loop 3 (residues 187\u2013210) contains no ledger-supported insertion and was not proposed. No terminal sites were proposed because both termini of AQP1 are intracellular (confirmed by topology landmarks and by the papers themselves, which explicitly state this as the reason for inserting into an extracellular loop).",
+  "literature_rejected": []
 }

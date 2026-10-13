@@ -1,17 +1,20 @@
 """Supp Fig 1 — LLM-only overall accuracy on the 147-gene benchmark.
 
-Grouped bars by model (Haiku 4.5 / Sonnet 4.6 / Opus 4.8) with hatched bars
-for the within-model prompt variants (naive / + IDs / + IDs + web /
-+ IDs + PubMed); bar height = mean of per-replicate accuracies, with each
-replicate's accuracy overlaid as a point and a run-to-run SEM error bar.
+Grouped bars by model (Haiku 4.5 / Sonnet 4.6 / Sonnet 5 / Opus 4.8) with
+hatched bars for the within-model prompt variants (naive / + IDs / + IDs + web /
++ IDs + PubMed). Haiku 4.5 and Sonnet 4.6 have all four variants, Opus 4.8
+naive and + IDs, Sonnet 5 + IDs only. Bar height = mean of the three
+per-replicate accuracies, with each replicate's accuracy overlaid as a point
+and a run-to-run SEM error bar.
 
 DATA SOURCE — reads ``data/processed/figures/db_correctness_overall.tsv``
 (built by ``scripts/build_figure_tsvs.py``), the SAME single source of truth the
-gist mirror ``data/analysis/figures/make_db_correctness_overall.py`` reads. The
-model list comes from the data, never a hardcode — this is the canonical
-generator that replaced the ``triage_bench_db_barplot.py`` ``make_overall_plot``
-path, whose hardcoded ``opus-4-7`` model list shipped empty bars when the data
-moved to Opus 4.8.
+gist mirror ``data/analysis/figures/make_db_correctness_overall.py`` reads. This
+is the canonical generator that replaced the ``triage_bench_db_barplot.py``
+``make_overall_plot`` path, whose hardcoded ``opus-4-7`` model ID shipped empty
+bars when the data moved to Opus 4.8. ``MODEL_ORDER`` below is still a fixed
+list (it sets display order, labels and colors), so a new model ID in the TSV
+must be added there or it is silently skipped.
 
 Run: ``uv run python scripts/figures/db_correctness_overall.py``
 # Reproduction: https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d
@@ -71,20 +74,20 @@ def main() -> None:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     # Match the gist mirror's layout fingerprint (tests/test_figure_canonical_mirror_sync).
     plt.rcParams.update({
-        "axes.labelsize": 20, "xtick.labelsize": 20, "ytick.labelsize": 20,
-        "legend.fontsize": 20, "axes.titlesize": 0, "font.size": 20,
+        "axes.labelsize": 18, "xtick.labelsize": 16, "ytick.labelsize": 16,
+        "legend.fontsize": 16, "axes.titlesize": 0, "font.size": 16,
     })
     rep_acc = _per_rep_accuracy(pd.read_csv(DATA_TSV, sep="\t"))
 
-    fig, ax = plt.subplots(figsize=(16, 5.5))
+    fig, ax = plt.subplots(figsize=(14, 5.5))
     n_models, n_variants = len(MODEL_ORDER), len(VARIANT_ORDER)
-    bar_w = 0.78 / n_variants
+    bar_w = 0.88 / n_variants
 
     for mi, (model, _, color) in enumerate(MODEL_ORDER):
         for vi, (variant, _, hatch) in enumerate(VARIANT_ORDER):
             reps = rep_acc.get((model, variant), [])
             if not reps:
-                continue  # e.g. opus-4-8 was only run on naive + ncbi
+                continue  # e.g. opus-4-8 was only run on naive + ncbi; sonnet-5 on ncbi only
             mean_rep = sum(reps) / len(reps)
             x = mi + (vi - (n_variants - 1) / 2) * bar_w
             ax.bar(x, mean_rep, width=bar_w, color=color, hatch=hatch,
@@ -98,20 +101,27 @@ def main() -> None:
                 jitter = (j - (len(reps) - 1) / 2) * (bar_w * 0.18)
                 ax.scatter(x + jitter, rv, s=20, color=INK, edgecolor="white",
                            linewidth=0.5, zorder=5, alpha=0.85)
-            ax.text(x, mean_rep + 2.6, f"{mean_rep:.1f}%", ha="center",
-                    va="bottom", fontsize=14, color=INK)
+            # Clear the highest replicate dot / SEM cap, not just the bar.
+            top = max([*reps, mean_rep + (sem if len(reps) >= 2 else 0.0)])
+            ax.annotate(f"{mean_rep:.1f}%", xy=(x, top), xytext=(0, 5),
+                        textcoords="offset points", ha="center", va="bottom",
+                        fontsize=13.5, color=INK)
 
     ax.set_xticks(range(n_models))
-    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=19)
-    ax.set_ylabel("Overall accuracy on\n147-gene benchmark", fontsize=17)
-    ax.set_ylim(0, 105)
+    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER])
+    ax.set_ylabel("Overall accuracy on\n147-gene benchmark")
+    ax.set_ylim(0, 106)
+    ax.set_xlim(-0.5, n_models - 0.5)
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=INK,
                       hatch=hatch, linewidth=0.8, label=variant_label)
         for _, variant_label, hatch in VARIANT_ORDER
     ]
-    ax.legend(handles=legend_handles, title="Variant (hatch)", loc="center left",
-              bbox_to_anchor=(1.01, 0.5), frameon=False, fontsize=16, title_fontsize=19)
+    # Legend above the axes (one row) so the bars get the full width and
+    # each bar-top label fits inside its own bar.
+    ax.legend(handles=legend_handles, title="Variant (hatch)", loc="lower center",
+              bbox_to_anchor=(0.5, 1.04), ncol=len(VARIANT_ORDER), frameon=False,
+              title_fontsize=18, columnspacing=1.6, handlelength=2.2)
     sns.despine(ax=ax, top=True, right=True)
 
     fig.tight_layout()

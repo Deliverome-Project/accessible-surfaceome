@@ -995,3 +995,107 @@ CREATE TABLE IF NOT EXISTS db_optimized_cutoff_public (
   uniprot_optimized  INTEGER NOT NULL DEFAULT 0,
   cspa_optimized     INTEGER NOT NULL DEFAULT 0
 );
+
+-- ---------------------------------------------------------------------------
+-- Record history (2026-09-27; spec docs/superpowers/specs/2026-09-27-record-history-design.md)
+-- One row per ACTUAL change to what the API served for a gene: record,
+-- evidence ledger, Markdown export. Bytes live write-once in R2 bucket
+-- surfaceome-record-history at records/sha256/{hash}.{json|md}. Written
+-- only by accessible_surfaceome.cloud.record_history; the Worker reads.
+-- DDL of record: record_history/store.py::DDL (applied by
+-- scripts/cloud/apply_record_history_ddl.py). Keep the two identical.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS record_revision (
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,  -- two casings of one gene share a sequence
+    hgnc_id               TEXT,
+    revision              INTEGER NOT NULL,   -- 1, 2, 3 … per gene
+    json_hash             TEXT NOT NULL,      -- sha256 of the served record
+    evidence_hash         TEXT,               -- NULL: evidence inline (seed) or absent
+    md_hash                TEXT,               -- NULL: no .md existed
+    published_at          TEXT NOT NULL,      -- ISO-8601 UTC, when archived
+    source                TEXT NOT NULL,      -- seed:zenodo-1.0.0 | publish | sweep
+    schema_version        TEXT,
+    prompt_corpus_version TEXT,
+    PRIMARY KEY (gene_symbol, revision)
+);
+CREATE INDEX IF NOT EXISTS idx_record_revision_hgnc ON record_revision (hgnc_id);
+
+-- A numbered data release: a fixed pointer per gene to one revision.
+CREATE TABLE IF NOT EXISTS data_release (
+    version            TEXT PRIMARY KEY,   -- '1.3.0'
+    cut_at             TEXT NOT NULL,
+    github_tag         TEXT,               -- 'v1.3.0'; NULL for 1.0.0
+    zenodo_version_doi TEXT,               -- set once the Zenodo version is published
+    n_genes            INTEGER NOT NULL,
+    notes              TEXT,
+    -- 'zenodo_only' for release 1.0.0 (the 2026-08-15 Zenodo deposit): it
+    -- predates per-gene record history, so it has NO data_release_member
+    -- rows — its records live only in the Zenodo deposit tarball, not in
+    -- record_revision/R2. NULL (read as 'api' by convention) for every
+    -- release cut under this system, which does have member rows. A
+    -- pre-existing `data_release` table (created before this column
+    -- existed) needs `ALTER TABLE data_release ADD COLUMN archive_scope
+    -- TEXT` applied once — see scripts/cloud/drop_seed_revisions.py, which
+    -- does this idempotently before setting 1.0.0's value.
+    archive_scope      TEXT
+);
+
+CREATE TABLE IF NOT EXISTS data_release_member (
+    version     TEXT NOT NULL,
+    gene_symbol TEXT NOT NULL COLLATE NOCASE,
+    revision    INTEGER NOT NULL,
+    PRIMARY KEY (version, gene_symbol)
+);
+
+-- ---------------------------------------------------------------------------
+-- Query-cost indexes (2026-09-28). Applied live to public D1 the same day.
+-- * surface_annotation lookups use `gene_symbol = ? COLLATE NOCASE` (the
+--   mixed-case Cxorf class), which the BINARY PK cannot serve: every record
+--   and evidence fetch scanned all rows (~5.3k, ~1 GB of JSON). Rows read per
+--   lookup: 5,332 → 3.
+-- * The Worker's topology release lookups filter topology_public by cohort
+--   first; the existing (topology_version, cohort, …) index cannot serve that.
+-- ---------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_symbol_nocase
+    ON surface_annotation (gene_symbol COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS idx_topology_public_cohort_version
+    ON topology_public (cohort, topology_version);
+
+-- ---------------------------------------------------------------------------
+-- deep_dive_replicate — reproducibility replicates (public D1 only).
+-- Re-annotations of a random sample of deep-dive genes, kept for the
+-- run-to-run reproducibility analysis (Supplementary Figure 16). These are
+-- NOT the published records: surface_annotation stays the only source of
+-- /v1/genes/{SYMBOL}, and nothing in the catalog or viewer reads this table.
+-- The Worker serves it API-only under /v1/replicates and
+-- /v1/genes/{SYMBOL}/replicates, every response labelled as a replicate.
+--
+-- One row per (study, kind, gene). replicate_kind:
+--   'published_snapshot'     — the published record exactly as served when the
+--                              study ran (the comparator; the live record may
+--                              since have been republished)
+--   'full_rerun'             — the whole pipeline re-run from scratch
+--   'fixed_evidence_replay'  — builders + synthesizer re-run on the published
+--                              record's own evidence ledger
+-- Loaded from the frozen bundle data/processed/deep_dive_concordance_v1/ by
+-- scripts/cloud/upload_deep_dive_replicates_to_d1.py (also deposited on Zenodo).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS deep_dive_replicate (
+    study_id              TEXT NOT NULL,   -- 'deep_dive_concordance_v1'
+    replicate_kind        TEXT NOT NULL,   -- see above
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,
+    hgnc_id               TEXT,
+    uniprot_acc           TEXT,
+    sample_batch          INTEGER,         -- 1 or 2 (two disjoint random batches of 25)
+    run_id                TEXT NOT NULL,   -- run that produced this record
+    compared_against_run_id TEXT NOT NULL, -- the published run it is compared with
+    schema_version        TEXT,
+    prompt_corpus_version TEXT,
+    record_generated_at   TEXT,
+    annotation_json       TEXT NOT NULL,   -- full SurfaceomeRecord, evidence included
+    loaded_at             TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (study_id, replicate_kind, gene_symbol)
+);
+
+CREATE INDEX IF NOT EXISTS idx_deep_dive_replicate_symbol
+    ON deep_dive_replicate (gene_symbol COLLATE NOCASE);

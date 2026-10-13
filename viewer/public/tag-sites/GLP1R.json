@@ -172,6 +172,38 @@
       "plddt": 30.4,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GLP1R-terminal_n-23-lit",
+      "gene_symbol": "GLP1R",
+      "uniprot_acc": "P43220",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 23,
+      "residue_before": "P",
+      "residue_after": "R",
+      "residue_label": "P23",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "myc",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "cAMP-responsive luciferase assay in cells expressing mycGLP-1R: GLP-1 potency not significantly affected relative to untagged GLP-1R.",
+      "confidence": "high",
+      "rationale": "L1 and L2 explicitly state the myc-tag was placed 'directly downstream of the putative signal peptide', which by the topology landmarks corresponds to insert_after_residue=23 (the last SP residue, P23), placing the tag before R24 (first mature extracellular residue). Python confirmed P at position 23 and R at position 24. The site is 120 residues from TM1, fully extracellular, and the cAMP assay in L2 demonstrates preserved GLP-1 potency, satisfying surface_and_function. Convergent evidence from SNAP-tag CRISPR knock-in (L12), SNAP-tag stable lines (L10, L11), and GFP fusion (L4, L5) all at the same junction further corroborates high confidence. mycGLP-1R: full-length, membrane-anchored human GLP-1R with a myc-tag inserted immediately downstream of the signal peptide (after residue 23, the last SP residue), expressed in HEK293 cells. The mature extracellular N-terminus begins at R24, 120 residues from TM1 (144). Multiple independent groups also placed SNAP-tags (L10, L11, L12) and GFP (L4, L5) at the same junction, all confirming surface display. [validation: surface_and_function; position: inferred; source: paper; cited_tag_residue: 23; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 28035964,
+          "citation": "PMID 28035964",
+          "claim": "Introduction of a myc-tag to the N-terminus of GLP-1R immediately downstream of the putative signal peptide did not significantly affect the potency of GLP-1 at this receptor when assessed using a cAMP-responsive luciferase assay ( Figure 1 )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [],
@@ -374,5 +406,12 @@
       "canonical_residue": 57,
       "left_pct": 12.311015118790497
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:16:30.521742+00:00",
+  "literature_notes": "C-terminal tags (L3: YFP; L6/L7/L8: FLAG): the GLP-1R C-terminus falls within the intracellular span 406-463 and does not qualify as an extracellular site. ECL3 amber-codon/UAA sites (L9, H374/R376/G377/T378): H374 is the last residue of TM6 (349-374) and is not extracellular. R376, G377, and T378 lie in ECL3 (375-378), but ECL3 is only 4 residues long; Python confirmed that no position in this loop satisfies the >=3-residue buffer from both TM6 (ends 374) and TM7 (starts 379) simultaneously, and the modification reported (single unnatural amino acid incorporation via amber suppression for click-chemistry labeling) is a single-residue substitution rather than a 13-23 aa epitope-tag insertion \u2014 the loop could not accommodate such an insert. ICL3 cpGFP insertion (L13, between K336 and T343): the ICL3 span 326-348 is intracellular; excluded. L14 (FLAG at N-terminus of GLP1R ORF): the construct adds an HA secretion motif plus FLAG to the N-terminus of the full ORF; the position of the FLAG relative to the SP cleavage site is ambiguous and cannot be pinned \u2014 L1/L2 provide unambiguous evidence for the same mature N-terminal junction and are used instead.",
+  "literature_rejected": []
 }

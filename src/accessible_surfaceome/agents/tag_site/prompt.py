@@ -7,122 +7,157 @@ name exact residue junctions and have them verified against the real sequence
 """
 from __future__ import annotations
 
-SYSTEM_PROMPT = """You are a protein-engineering research agent. Identify sites on ONE human
-cell-surface protein that could accommodate a SHORT epitope tag (~13-23 aa, e.g. ALFA
-`PSRLEEELRRRLTEP`, GS linkers) displayed on the EXTRACELLULAR face, without preventing the
-protein from folding, trafficking, or functioning.
+import hashlib
+import logging
 
-Two kinds of site are in scope; label each:
-1. terminal_n / terminal_c — a tag at an extracellular N- or C-terminus. For an N-terminal
-   tag on a protein WITH a signal peptide, the tag MUST go AFTER the cleavage site (placing
-   it upstream is a silent failure — the SP is cleaved and takes the tag with it).
-2. internal — inserted into an extracellular loop or inter-domain linker.
+from .normalize import topology_runs
+from .schema import SOURCE_TIERS, OtherPosition, TagSiteProposal, TagSiteResult
 
-Hard requirements: extracellular (not TM / cytoplasmic / inside a cleaved signal or
-propeptide); >=3 residues from any TM boundary; functionally silent (avoid ligand/antibody
-surfaces, dimer interfaces, active sites, disulfide cysteines, N-/O-glycosylation sites,
-proteolytic sites, and residues with mutagenesis evidence of misfolding/ER-retention);
-sterically plausible for a ~15-23 aa insert.
+_log = logging.getLogger(__name__)
 
-Numbering (strict): UniProt canonical isoform; `insert_after_residue = N` puts the tag
-between residue N and N+1; report residue_before (= residue N) and residue_after (= N+1).
-When a computed sequence is provided, COPY residue_before/after from it exactly — a mismatch
+SYSTEM_PROMPT = """You are a protein-engineering research agent. For ONE human cell-surface protein, find sites
+that can carry a SHORT epitope tag (~13-23 aa, e.g. ALFA `PSRLEEELRRRLTEP` + GS linkers) on the
+EXTRACELLULAR face without breaking folding, trafficking, or function.
+
+Work in this order: find the evidence, pin the position, check the constraints, classify.
+
+1. EVIDENCE — PUBLISHED INSERTIONS ONLY
+
+The LEDGER — span-verified clips from real papers and preprints — is your only source of
+citations. Ground EVERY site in ONE ledger line; cite nothing outside it, propose nothing it
+does not support.
+
+A line qualifies only if it reports an insertion actually TOLERATED — epitope-tag knock-in,
+fluorescent-protein fusion, transposon/domain-insertion screen, or antibody-epitope insertion —
+at the site itself, or in the SAME loop/domain of THIS protein (a close ortholog counts,
+labelled 'indirect').
+
+These do NOT qualify, however precisely they name residues:
+- a soluble ECTODOMAIN or single-domain construct secreted as a separate protein for structure,
+  binding or crystallography. The construct must be full-length and membrane-anchored.
+- an Fc-fusion or decoy-receptor reagent.
+- ANTIBODY EPITOPE MAPPING — where an antibody binds is not where a tag was inserted.
+- a commercial plasmid whose tag POSITION is unstated; you cannot pin insert_after_residue.
+- a tag on an INTRACELLULAR terminus or loop, unless it is an explicit validated snorkel.
+
+Never justify a site by domain boundaries, topology, solvent exposure, conservation, or any
+structural inference — that is the deterministic pipeline's job, done with computed RSA/DSSP.
+
+Doubt the evidence -> drop the site. No qualifying insertion -> ZERO sites, which is the right
+answer, not a failure. (Doubt about a single RESIDUE is a different thing — see 2.)
+
+REPORT EVERY SITE THE LEDGER SUPPORTS, not only the best-evidenced one. Two papers pinning two
+different junctions in the same loop are TWO sites, and the weaker-validated one is still a site
+— rank it lower, do not drop it. A well-evidenced site is no reason to stop reading, and neither
+is a terminal one when the ledger also grounds an internal.
+
+Read every ledger line before you conclude a site is not there: the modalities it spans rarely
+say "tag" in the abstract — FLAG / HA / Myc / ALFA / V5, fluorescent-protein fusion, HaloTag /
+SNAP-tag / CLIP-tag, bungarotoxin-binding site, AviTag, tetracysteine, transposon and
+domain-insertion screens.
+
+Per site: `supporting_clip_id` is the [Ln] id of the ONE ledger line it rests on. The quote and
+the citation are filled in from that id. `source_tier` — 'paper' > 'patent' > 'vendor'.
+
+2. POSITION
+
+UniProt canonical numbering. `insert_after_residue = N` puts the tag between N and N+1; report
+residue_before (= N) and residue_after (= N+1) COPIED from the sequence given. A mismatch
 invalidates the site.
 
-EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when the LITERATURE shows a
-PUBLISHED example of a tag or other insertion actually TOLERATED there: an epitope-tag
-knock-in, a fluorescent-protein fusion, a transposon/domain insertion screen, or an
-antibody-epitope insertion — AT that exact site, OR in the SAME loop/domain of THIS protein
-(a close ortholog is allowed if labelled 'indirect'). Do NOT propose sites justified only by
-domain boundaries, topology, solvent exposure, conservation, or any general structural
-inference — that is the deterministic pipeline's job, not yours, and it does it with computed
-RSA/DSSP. Every site MUST cite the specific study. Report what was MEASURED (assay + result),
-or 'NOT MEASURED' — never infer an impact.
+A TAGGED CONSTRUCT WITH NO RESIDUE IS STILL A SITE. Two cases, both real findings:
+- the landmarks leave exactly ONE extracellular terminus ("TfR1-v5", "Myc-tagged hA1R") — the
+  tag is there, because nowhere else is on the surface. `position_evidence`="topology_derived",
+  junction from the landmarks (prepend = 0, the mature N-terminus after a signal peptide, or
+  after the LAST residue for a C-terminal tag). The position is computed, not chosen.
+- a tag in a NAMED LOOP with no residue — set `region` ("ECL4") and leave insert_after_residue
+  null. Inventing a junction for it is not reporting it.
+Choosing a position INSIDE a loop remains forbidden: a loop offers many, a sole terminus one.
 
-OUT OF SCOPE — NOT tag-insertion sites; do NOT report these even when a paper names the
-residues (they are the exact false positives to avoid):
-  - Recombinant / soluble ECTODOMAIN or single-domain constructs: the ectodomain (or one
-    domain) expressed as a SEPARATE secreted/soluble protein for structure, binding, or
-    crystallography (e.g. "CD22 d1-d7, residues 20-687, cloned into pHLsec"). The construct
-    you cite must be the FULL-LENGTH, membrane-anchored protein DISPLAYED ON THE CELL SURFACE
-    — not its isolated ectodomain.
-  - Fc-fusion / decoy-receptor constructs: the ectodomain fused to an Fc or other soluble
-    carrier as a reagent (e.g. AXL "reformatted as an Fc fusion decoy receptor"). Not a surface tag.
-  - ANTIBODY EPITOPE MAPPING: where an antibody was found to BIND a region (e.g. EGFR "epitope
-    between residues 375 and 380"). An epitope is where an antibody binds, NOT an inserted tag.
-  - A commercial / generic expression plasmid whose tag POSITION is not stated (e.g.
-    "pGENE-HA purchased from <vendor>") — you cannot pin insert_after_residue, so drop it.
-  - A tag on an INTRACELLULAR terminus/loop (cytoplasmic C-terminal fusion) UNLESS it is an
-    explicit validated snorkel that presents the tag on the extracellular surface.
-When in doubt, DROP the site. A gene with no qualifying PUBLISHED insertion must return ZERO
-literature sites — that is the correct, expected answer, never a failure to pad.
+ALSO RECORD WHAT IS NOT A SURFACE SITE. A scanning paper names positions that do not belong in
+`sites`, and they are worth keeping. Put them in `other_positions`:
+- an insertion that is TOLERATED but faces the cytoplasm -> kind="intracellular". It is the
+  right site for a snorkel or an intracellular label, just not for a surface tag.
+- a position where the paper says insertion ABROGATED, abolished or disrupted function ->
+  kind="abrogates_function". A known-bad site is evidence too.
+Give each the residue, the [Ln] it came from, and one clause. Do NOT promote any of them into
+`sites`.
 
-EVIDENCE LEDGER — your ONLY source of citations. You are given a ledger of span-verified
-clips: short passages already retrieved from real papers/preprints (curated EuropePMC +
-PubTator + a web-discovery pass, retraction-filtered) and located VERBATIM in their source
-text upstream. Each ledger line carries a source label ([PMID n], or [PMC ...]/[DOI ...] for a
-preprint) and a QUOTE. Every site you propose MUST be grounded in ONE ledger line. Do NOT cite
-a paper that is not in the ledger, and do NOT invent sites beyond what the ledger supports. Set
-`supporting_pmid` = n for a [PMID n] line, or `supporting_pmid`=null (cite the DOI/PMC in the
-rationale) for a preprint line. Set `source_tier` by where the claim is grounded: 'paper'
-(journal/PMC/preprint) > 'patent' > 'vendor'; papers are STRONGLY preferred and a vendor page
-never outranks a paper for the same site.
+A clip that NAMES a residue outranks one that names only a loop — do not call a loop unpinnable
+because a different line about it is vague.
 
-QUOTE YOUR EVIDENCE (checked automatically). For every site, set `supporting_quote` to the
-VERBATIM quote of the ledger line you relied on — copy it exactly, do NOT paraphrase,
-translate, or reconstruct it. The pipeline re-checks this string against the ledger; if it is
-not found the site is flagged `entailment_verified=false` and down-ranked. Never author a quote
-that is not in the ledger — a fabricated quote is worse than none.
+`insert_after_residue = 0` is the N-TERMINAL PREPEND: the tag goes before residue 1, so
+residue_before is "" and residue_after is residue 1. Use it for a tag on an extracellular
+N-terminus with no signal peptide — on a GPCR it is often the only extracellular terminus
+there is.
 
-RANK BY VALIDATION STRENGTH (`validation_level`). The best sites are those where the tag was
-shown to DISPLAY on the surface (non-permeabilized staining/labeling) AND preserve
-function/expression vs untagged — set 'surface_and_function' and rank these first. Then
-'surface_only', 'function_only', 'detected_only', 'function_perturbed', and last 'not_measured'.
-Order the `sites` list so higher-validation, paper-grounded sites come first (lower `rank` =
-better). Never upgrade a validation_level beyond what the paper actually measured.
+Papers state a position three ways, all valid:
+- spelled out in prose — "the tag follows the signal peptide (Alanine 34)", "at the codon for
+  glycine 101";
+- three-letter or spaced — "Thr436", "Ala 102";
+- a bare code in a PRIMER / HDR-TEMPLATE table amid nucleotide sequence — often the authoritative
+  label where the prose is vague, so never dismiss a clip for looking like raw DNA.
 
-'surface_and_function' MEANS FUNCTION PRESERVED, NOT MERELY FUNCTION MEASURED. If a paper
-measures function but it comes out REDUCED, or the measurement is CONFOUNDED (not cleanly
-isolated from the endogenous protein), do NOT claim 'surface_and_function' — use
-'function_perturbed' and state the reduction/confound in evidence_detail. Two real examples of
-what does NOT qualify as validated function:
-  - SLC6A4 (hSERT), HA in EL2: the tagged transporter's Vmax is only ~55% of WT — function is
-    measurably PERTURBED. -> 'function_perturbed', NOT 'surface_and_function'.
-  - ANO1 (TMEM16A), 3xHA in ECL1: surface display is clean, but the Cl- current was recorded
-    with endogenous TMEM16A co-expressed, so the tagged channel's function is inferred, not
-    isolated — CONFOUNDED. -> 'function_perturbed' (or 'surface_only'), NOT 'surface_and_function'.
+Papers also differ, sometimes internally, on whether the named residue sits BEFORE or AFTER the
+junction. Resolve it: if the named letter matches the sequence at n, the paper means residue n;
+the surrounding text says whether the tag goes after n (insert_after_residue = n) or before it
+(n - 1). If the flanking residues are identical both readings fit — take the one putting the tag
+in the extracellular span, say so in the rationale, and report the site. A one-residue
+uncertainty never justifies withholding one.
 
-allowed evidence_type values (use ONLY these — never 'structural inference' or 'topology
-inference only'):
-- "published tag insertion at this exact site"
-- "published tag insertion in the same loop or domain"
-- "published tolerance of a different insertion (transposon, FP fusion)"
+RUN PYTHON rather than reasoning over the sequence in your head, which is unreliable for anything
+positional. Paste the sequence in as a string. Use it to:
+- recover an offset when the paper's NUMBERING FRAME may not be the canonical isoform
+  (mature-protein numbering = stated position + signal-peptide length; another isoform; an
+  ortholog) — search for the residue or peptide it names instead of assuming the number carries;
+- check whether a named letter matches at n or n-1;
+- locate a quoted peptide;
+- measure the distance to a TM boundary.
+Report what you computed; if it contradicts the printed number, say so and give the computed one.
 
-MINE THE LEDGER THOROUGHLY FOR INTERNAL SITES. If the protein has ANY extracellular loop (an
-`O` stretch between TM helices, or a large ectodomain), make a real attempt to ground at least
-one INTERNAL insertion in the ledger — do not settle for terminal sites alone. The ledger
-already spans the tagging modalities that surface-labeling papers use even when the abstract
-never says "tag": FLAG / HA / Myc / ALFA / V5 epitope insertion; GFP / fluorescent-protein
-fusion insertion; HaloTag / SNAP-tag / CLIP-tag; bungarotoxin-binding site (BBS);
-biotin-acceptor / AviTag; tetracysteine (FlAsH); transposon / domain-insertion screens. Read
-EVERY ledger line before concluding no internal site exists; a terminal site does not excuse
-skipping an internal clip that pins a loop insertion.
+3. CONSTRAINTS
 
-POSITION HONESTY (required). For EVERY site set `position_evidence`:
-- "validated" — a tag was published AT this exact residue/junction (or +/-1). Only then may
-  evidence_type be "published tag insertion at this exact site". Set `cited_tag_residue` =
-  insert_after_residue.
-- "inferred" — the loop/domain has tagging precedent ELSEWHERE and you chose this specific
-  position by structural reasoning. Set `cited_tag_residue` to the residue that actually
-  carries the published tag (e.g. cite a tag at 89 but propose 120 -> cited_tag_residue=89,
-  position_evidence="inferred"). Do NOT dress an inferred position as an exact-site validation.
-Do not move a validated position to a "nicer" nearby residue and call it validated — if you
-relocate it, it is inferred.
+Label each site:
+- terminal_n / terminal_c — at an extracellular terminus. With a signal peptide an N-terminal tag
+  MUST go AFTER the cleavage site: upstream is a silent failure, cleaved off with the SP.
+- internal — in an extracellular loop or inter-domain linker.
 
-If you cannot find a validated tagging example, return FEWER sites — or an EMPTY sites list
-with a rationale. A well-argued empty result is CORRECT and beats a structural-inference guess.
+Every site must be:
+- extracellular — not TM, cytoplasmic, or inside a cleaved signal or propeptide;
+- >=3 residues from any TM boundary;
+- sterically plausible for a ~15-23 aa insert;
+- functionally silent — clear of ligand/antibody surfaces, dimer interfaces, active sites,
+  disulfide cysteines, N-/O-glycosylation sites, proteolytic sites, and residues with mutagenesis
+  evidence of misfolding or ER retention.
 
-Return JSON only, matching the provided schema."""
+4. CLASSIFY
+
+`position_evidence`
+- "validated" — a tag was published AT this residue/junction (+/-1) AND your quote names that
+  position. Only then may `evidence_type` be "published tag insertion at this exact site"; set
+  `cited_tag_residue` = insert_after_residue.
+- "topology_derived" — the paper reports a tagged construct of this protein but names no
+  residue, and exactly ONE terminus is extracellular, so the position comes from the landmarks.
+  Use the terminal junction; `evidence_type` is "published tag insertion in the same loop or
+  domain", never the exact-site value.
+- "inferred" — precedent is ELSEWHERE in the loop/domain and you picked this position yourself;
+  `cited_tag_residue` = the residue that actually carries the published tag (tag cited at 89,
+  site proposed at 120 -> cited_tag_residue=89). Never dress an inferred position as an
+  exact-site validation, and never move a validated position to a nicer nearby residue and keep
+  calling it validated.
+
+`evidence_type` — only: "published tag insertion at this exact site" | "published tag insertion
+in the same loop or domain" | "published tolerance of a different insertion (transposon, FP
+fusion)".
+
+`validation_level`, best first: surface_and_function, surface_only, function_only, detected_only,
+function_perturbed, not_measured. Order `sites` so higher-validation, paper-grounded ones come
+first (lower `rank` = better). Never claim more than the paper measured: give the assay and
+result, or 'NOT MEASURED' — never infer an impact. 'surface_and_function' means function
+PRESERVED, not merely measured — REDUCED function, or function CONFOUNDED by the untagged protein
+being present, is 'function_perturbed', with the reduction or confound in evidence_detail.
+
+Return JSON only, in exactly the shape below."""
 
 # evidence_type values that represent an actual validated tagging example (not inference).
 VALIDATED_EVIDENCE_TYPES = frozenset(
@@ -135,6 +170,215 @@ VALIDATED_EVIDENCE_TYPES = frozenset(
 )
 
 
+
+# ---------------------------------------------------------------------------
+# Output contract — GENERATED from the Pydantic models, never hand-maintained.
+#
+# `call_builder` validates the reply against `TagSiteResult` but never sends the
+# schema to the API: the `messages.create` call passes system/messages/tools and
+# nothing else. So every field the model must emit has to be stated in the
+# prompt itself. Hand-listing them is what failed before — `uniprot_accession`
+# and `sequence_length` were required and named nowhere, so EVERY run burned its
+# repair budget rediscovering them, and `functional_or_expression_impact_measured`
+# came back as a bool because the name reads boolean. Deriving the list from the
+# model means adding a field updates the prompt in the same commit, by construction.
+# ---------------------------------------------------------------------------
+
+#: Fields the PIPELINE sets after the model replies. Asking the model for these
+#: invites it to assert its own quote was verified, which is the one thing the
+#: entailment gate exists to decide.
+_PIPELINE_SET = (
+    "entailment_verified", "quote_probative", "position_repaired", "rank",
+    # The gates' own record of what they removed. Asking the model for it got
+    # exactly what you would expect: it invented a gate name ("no_ledger_support")
+    # and filled the field with editorial notes about loops it chose not to
+    # propose, which is what `notes` is for. A gate record the model can write is
+    # not a record of the gates.
+    "rejected",
+)
+
+#: Top-level identity the RUNNER stamps from its own arguments. Asking the model
+#: to echo these back cost a repair round on every run and bought nothing.
+#: Pipeline-only fields the model has NEVER been shown. They are skipped from
+#: the contract like `_CODE_SET`, but NOT named in its closing sentence — that
+#: sentence exists to stop the model re-emitting fields it was once asked for,
+#: and a field it has never seen cannot be re-emitted.
+#:
+#: The distinction is not cosmetic. The closing sentence is prompt TEXT, so
+#: adding a name to it changes `prompt_sha`, and a changed sha means every
+#: record written under the old one is stale and must be re-run. Listing a field
+#: the model cannot emit would have invalidated 1,835 genes — about $1,000 of
+#: re-runs — to tell the model something it has no use for.
+_PIPELINE_INTERNAL = (
+    "supporting_source_id",
+)
+
+_CODE_SET = (
+    "gene_symbol", "uniprot_accession", "sequence_length", "topology_state",
+    "supporting_pmid",
+    # Prompt provenance, stamped by the runner on the way out. The model cannot
+    # know the sha of the prompt it is reading, and asking produced six entries
+    # in the contract that all carried the same copy-pasted hint.
+    "schema_version", "prompt_sha", "prompt_version", "model", "generated_at",
+    # Resolved from supporting_clip_id. Asking for the text was paying output
+    # rates to echo our own input, and every quote failure today was a
+    # transcription artifact that cannot occur when nothing is retyped.
+    "supporting_quote",
+)
+
+#: Per-field hints for the top-level keys the model does supply.
+_TOP_HINTS = {"notes": "what you considered and did not propose, and why"}
+
+#: Short type tokens; the long semantics stay in the prose above rather than
+#: being duplicated here.
+_HINTS = {
+    "rank": "1 = best",
+    "insert_after_residue": "the junction; 0 prepends; null for a region-level site",
+    "residue_before": '1-letter, AT insert_after_residue; "" for a prepend (0)',
+    "residue_after": "1-letter, AT insert_after_residue+1",
+    # An "e.g." and nothing else got values ranging from "ALFA" to 112 characters
+    # of argument, and two different meanings: the tag the paper used, and the tag
+    # we propose. The viewer renders this as a chip.
+    "tag_type": 'the CITED study\'s tag, as a short label ("ALFA", "3xFLAG", "BBS 13 aa") '
+                "— not a justification",
+    "evidence_type": "one of the three in 4",
+    "position_evidence": '"validated" | "topology_derived" | "inferred"',
+    "cited_tag_residue": "null unless the cited tag is a point tag",
+    "evidence_detail": "the construct and the system; the RESULT goes in the next field",
+    "functional_or_expression_impact_measured": (
+        'assay + result, or "NOT MEASURED" -- a STRING, never true/false'
+    ),
+    "validation_level": "one of the six in 4",
+    "source_tier": " | ".join(f'"{t}"' for t in SOURCE_TIERS),
+    "supporting_pmid": "null for a preprint",
+    "supporting_quote": "the VERBATIM ledger line",
+    "region": 'the loop, when no residue is named (e.g. "ECL4"); else ""',
+    "rationale": "why THIS position + what you computed; 2-4 sentences, no quote restated",
+}
+
+#: Hints for the TOP-level keys the model fills, keyed the same way.
+_TOP_HINTS_EXTRA = {
+    "other_positions": (
+        "published positions that are NOT surface tag sites — tolerated but "
+        "cytoplasmic, or function-abrogating; [] if none"
+    ),
+}
+
+
+
+def _literal_values(annotation: object) -> str:
+    """`Literal["a", "b"]` -> '"a" | "b"', else "".
+
+    Read off the annotation rather than the description, so a closed vocabulary
+    cannot reach the model undocumented: adding a value to the Literal updates
+    the contract, and the prompt_sha with it."""
+    import typing
+
+    args = typing.get_args(annotation)
+    if args and all(isinstance(a, str) for a in args):
+        return " | ".join(f'"{a}"' for a in args)
+    return ""
+
+
+def _enumerated(description: str | None) -> str:
+    """The description itself when it is a short list of allowed values, else ""."""
+    if not description:
+        return ""
+    text = description.strip()
+    return text if "|" in text and len(text) <= 80 else ""
+
+
+def _describe(f: object) -> str:
+    """A short gloss for a field with no hand-written hint.
+
+    One line only — the contract is a shape, not a manual."""
+    text = " ".join((getattr(f, "description", "") or "").split())
+    return text if len(text) <= 90 else ""
+
+
+def _type_token(annotation: object) -> str:
+    """`int | None` -> "int|null"; `str` -> "str"; `list[...]` -> "list"."""
+    name = getattr(annotation, "__name__", None)
+    if name in {"int", "str", "bool", "float"}:
+        return name
+    text = str(annotation)
+    if "None" in text:
+        inner = next((t for t in ("int", "str", "bool", "float") if t in text), "str")
+        return f"{inner}|null"
+    return "list" if text.startswith("list") else "str"
+
+
+def _default_token(f: object) -> str:
+    """What a field defaults to, as the model should read it.
+
+    A `default_factory` field carries PydanticUndefined as its `default`, which
+    rendered literally as "default PydanticUndefined" — noise in the one place
+    the model is being told the exact shape to emit."""
+    factory = getattr(f, "default_factory", None)
+    if factory is not None:
+        return repr(factory())
+    return repr(getattr(f, "default", None))
+
+
+def format_output_contract() -> str:
+    """The exact JSON shape, rendered from the models themselves.
+
+    Every list-valued key the model fills gets a per-entry field table, so
+    adding a field to one of those models documents it here without anyone
+    remembering to describe it in prose."""
+    lines = ["OUTPUT — ONE JSON object with exactly these keys:", ""]
+    lines.append(f"  {'sites':<16} {'list':<6} required — [] when nothing qualifies, which is a valid answer")
+    for name, f in TagSiteResult.model_fields.items():
+        if name == "sites" or name in _CODE_SET or name in _PIPELINE_SET:
+            continue
+        if name in _PIPELINE_INTERNAL:
+            continue
+        req = "required" if f.is_required() else f"optional, default {_default_token(f)}"
+        hint = _TOP_HINTS.get(name) or _TOP_HINTS_EXTRA.get(name, "")
+        lines.append(f"  {name:<16} {_type_token(f.annotation):<6} {req}{' — ' + hint if hint else ''}")
+
+    for label, model, width in (
+        ("sites", TagSiteProposal, 42),
+        ("other_positions", OtherPosition, 20),
+    ):
+        lines += ["", f"Each entry of `{label}`:", ""]
+        for name, f in model.model_fields.items():
+            if name in _PIPELINE_SET or name in _CODE_SET:
+                continue
+            if name in _PIPELINE_INTERNAL:
+                continue
+            req = "required" if f.is_required() else f"default {_default_token(f)}"
+            # Fall back to the schema's own description when it already enumerates
+            # the allowed values ('"a" | "b"'), so a new closed-value field
+            # documents itself.
+            hint = (
+                _HINTS.get(name)
+                or _enumerated(f.description)
+                or _literal_values(f.annotation)
+                or _describe(f)
+            )
+            lines.append(f"  {name:<{width}} {_type_token(f.annotation):<9} {req}{' — ' + hint if hint else ''}")
+
+    lines += [
+        "",
+        f"Emit nothing else. {', '.join(_CODE_SET)} and "
+        f"{', '.join(_PIPELINE_SET)} are set by the pipeline from what it already knows.",
+    ]
+    return "\n".join(lines)
+
+
+SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
+
+#: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
+#: `prompt_sha` fingerprints the text automatically; this is the human-readable
+#: half, so a reviewer can tell a deliberate revision from an incidental one.
+TAG_SITE_PROMPT_VERSION = "1.4.0"
+
+
+def prompt_sha() -> str:
+    """sha256 of the exact system prompt that produced a record."""
+    return hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest()
+
 def keep_validated_sites(result):
     """Drop any proposed site whose evidence is structural/topology inference rather
     than a validated tagging example (defence-in-depth behind the prompt constraint).
@@ -146,8 +390,71 @@ def keep_validated_sites(result):
         # tolerant match: an actual insertion is described, not mere inference
         return "insertion" in e and "inference" not in e and "topology" not in e
 
+    dropped = [s for s in result.sites if not _is_validated(s.evidence_type)]
+    for s in dropped:
+        _log.info("  dropped %s — evidence_type %r is not a validated tagging example",
+                  getattr(s, "residue_label", "?"), s.evidence_type)
     result.sites = [s for s in result.sites if _is_validated(s.evidence_type)]
     return result
+
+
+_LANDMARK_NAME = {
+    "S": "SIGNAL PEPTIDE",
+    "O": "EXTRACELLULAR",
+    "M": "TRANSMEMBRANE",
+    "I": "INTRACELLULAR",
+}
+
+
+def format_topology_landmarks(topology: str, *, sp_end: int | None = None) -> str:
+    """Render the topology as NAMED SPANS WITH EXPLICIT BOUNDS.
+
+    Replaces "here is a 1200-character run-length string, work out the
+    boundaries" — a task the model demonstrably fails (a 26-residue signal
+    peptide read as 18, shifting every coordinate downstream by 8).
+
+    ``sp_end`` is AUTHORITATIVE when given (UniProt's curated ``Signal`` feature
+    beats DeepTMHMM's prediction, and they disagree by 1-3 residues often enough
+    to matter). It overrides the predicted run in both directions: a predicted
+    peptide is clipped or extended to it, and one the prediction MISSED entirely
+    is still stated. Since an N-terminal tag placed before the true cleavage site
+    is carried off with the peptide, the mature N-terminus is spelled out rather
+    than left for the model to derive."""
+    lines = [
+        "TOPOLOGY LANDMARKS (computed in code — authoritative; do NOT re-count "
+        "the topology string):"
+    ]
+    runs = topology_runs(topology)
+    if sp_end is not None and sp_end > 0:
+        lines.append(f"  SIGNAL PEPTIDE: 1-{sp_end}")
+        clipped = []
+        for ch, start, end in runs:
+            if ch == "S" or end <= sp_end:
+                continue
+            clipped.append((ch, max(start, sp_end + 1), end))
+        # A curated peptide SHORTER than the predicted one leaves residues that
+        # were called 'S' but are really mature — hand them to the span that
+        # follows rather than leaving a hole in the coordinates.
+        if clipped and clipped[0][1] > sp_end + 1:
+            ch, _, end = clipped[0]
+            clipped[0] = (ch, sp_end + 1, end)
+        runs = clipped
+    for ch, start, end in runs:
+        lines.append(f"  {_LANDMARK_NAME.get(ch, ch)}: {start}-{end}")
+    if sp_end:
+        lines.append(
+            f"  MATURE N-TERMINUS: {sp_end + 1}  (an N-terminal tag goes AFTER "
+            f"residue {sp_end}; earlier is cleaved off with the signal peptide)"
+        )
+    return "\n".join(lines)
+
+
+def numbered_sequence(sequence: str, *, width: int = 60) -> str:
+    """The sequence in position-labelled blocks, so a residue index can be READ
+    rather than counted."""
+    return "\n".join(
+        f"{i + 1:>4}  {sequence[i:i + width]}" for i in range(0, len(sequence), width)
+    )
 
 
 def build_user_prompt(
@@ -157,6 +464,7 @@ def build_user_prompt(
     mode: str = "production",
     sequence: str | None = None,
     topology: str | None = None,
+    sp_end: int | None = None,
 ) -> str:
     """Assemble the user turn. ``production`` injects the computed sequence +
     topology; ``benchmark`` withholds them (gene + name only)."""
@@ -171,16 +479,26 @@ def build_user_prompt(
             raise ValueError("production mode requires sequence and topology")
         lines += [
             "",
-            "You are given the COMPUTED canonical sequence and per-residue DeepTMHMM topology "
-            "(1 char/residue: O=extracellular, I=intracellular, M=TM, S=signal). Use them to "
-            "pin exact residue junctions and COPY residue_before/after from the sequence.",
+            "You are given the COMPUTED canonical sequence and its topology, both already "
+            "reduced to explicit coordinates. Use the LANDMARKS for every boundary decision "
+            "and READ residue identities off the NUMBERED SEQUENCE — do not count characters, "
+            "and do not re-derive spans you were handed. COPY residue_before/after from the "
+            "numbered sequence exactly; a mismatch is checked in code and drops the site.",
             f"SEQUENCE_LENGTH: {len(sequence)}",
-            "COMPUTED SEQUENCE:",
-            sequence,
-            "COMPUTED TOPOLOGY:",
+            "",
+            format_topology_landmarks(topology, sp_end=sp_end),
+            "",
+            "NUMBERED SEQUENCE (the number is the position of the FIRST residue on the line):",
+            numbered_sequence(sequence),
+            "",
+            "RAW PER-RESIDUE TOPOLOGY (O=extracellular, I=intracellular, M=TM, S=signal) — "
+            "reference only; the LANDMARKS above are authoritative:",
             topology,
         ]
     else:
         lines += ["", "(benchmark mode: resolve the accession, sequence, and topology yourself.)"]
-    lines += ["", "Propose 3-5 ranked sites (terminal + internal where topology allows)."]
+    lines += ["", "There is no target number: zero is a valid answer, and so is five. Report "
+              "every site the ledger supports — terminal and internal where the topology "
+              "allows, and several in the same loop when separate papers pin separate "
+              "junctions."]
     return "\n".join(lines)

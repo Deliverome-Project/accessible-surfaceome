@@ -12,9 +12,9 @@ dual-triage surface pool — giving FIVE comparison facets:
   - ``likely``         — group == 'likely'
   - ``low``            — group == 'low' (low/moderate accessibility, weak evidence)
   - ``uncertain / no`` — group ∈ {uncertain, no} (ambiguous-to-negative)
-  - ``Sonnet dual triage`` — every gene the genome-wide Sonnet triage
-    (``genome_full_sonnet_ncbi_v2``) called yes/contextual (~4,236 with
-    topology). A DIFFERENT category from the tiers: broader, and its det
+  - ``Sonnet dual triage`` — every gene the two-stage Sonnet triage
+    (``genome_full_sonnet_ncbi_v2`` plus the four PubMed rescue lanes) called
+    yes/contextual (all 4,628, each with topology). A DIFFERENT category from the tiers: broader, and its det
     features come from the genome-wide D1 tables (``topology_public``,
     ``compara_*``, ``schweke_homomer_public``, ``surface_bind_*``) rather than
     the deep-dive records, since most of these genes are not deep-dived. Same
@@ -34,17 +34,20 @@ as per-facet fraction bars (% of genes carrying the feature) — a violin of a
 Features:
 
   - Topology (from the deep-dive record): TM-helix count, protein length,
-    signal peptide, N/C-term extracellular, alt-isoform topology change
+    ECD length, signal peptide, N/C-term extracellular, alt-isoform
+    topology change
   - Schweke 2024           : homo-oligomer state
-  - Ensembl Compara        : mouse + cyno 1:1 ortholog presence
+  - Ensembl Compara        : mouse + cyno 1:1 ortholog presence, concerning
+    paralog (ECD 40%+ identity)
+  - Surface-bind sites     : 1+ extracellular surface-bind site
 
 Topology + every deterministic feature here is sourced from the deep-dive
 RECORDS (full coverage per deep-dived gene), which fixes the prior
 DeepTMHMM-M1-only coverage bias where the low / uncertain / no tiers were
 70-94% missing.
 
-Computed over the completed deep-dive sweep of 5,130 candidate genes; treat the
-per-tier rates as provisional until the sweep completes.
+Computed over the completed deep-dive sweep of 5,332 genes (pending
+excluded).
 """
 from __future__ import annotations
 
@@ -125,9 +128,11 @@ DATA_TSV = REPO_ROOT / "data/processed/figures/surfaceome_deterministic_features
 def load_data() -> pd.DataFrame:
     """Load the pre-joined single TSV the figure renders from.
 
-    The join (deep-dive tier × record-sourced topology [TM count, length,
-    signal peptide, N/C-term extracellular, alt-isoform topology] × Schweke
-    homo-oligomer × Ensembl-Compara mouse/cyno 1:1 ortholog flags) is
+    The join (deep-dive tier × record-sourced topology [TM count, protein
+    length, ECD length, signal peptide, N/C-term extracellular, alt-isoform
+    topology] × Schweke homo-oligomer × Ensembl-Compara mouse/cyno 1:1
+    ortholog + concerning-paralog flags × extracellular surface-bind site,
+    unioned with the Sonnet-pool rows) is
     materialised once by
     ``scripts/build_figure_tsvs.py::build_surfaceome_deterministic_features``
     into ``data/processed/figures/surfaceome_deterministic_features.tsv``.
@@ -148,27 +153,33 @@ def load_data() -> pd.DataFrame:
     return feats
 
 
-def _panel_label(ax: plt.Axes, letter: str) -> None:
-    """Lowercase small-multiple panel label, Manrope ExtraBold (weight 800)."""
-    ax.text(-0.02, 1.08, letter, transform=ax.transAxes, fontsize=15,
-            fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
+def _panel_label(ax: plt.Axes, letter: str, title: str) -> None:
+    """Panel letter (Manrope ExtraBold, weight 800) + the panel's metric as a
+    title above the axes — frees the y-label column so value labels fit."""
+    n_extra = title.count("\n")
+    ax.annotate(title, xy=(0, 1), xycoords="axes fraction", xytext=(0, 8),
+                textcoords="offset points", fontsize=18, va="bottom", ha="left",
+                color=COLORS["dark"])
+    ax.annotate(letter, xy=(0, 1), xycoords="axes fraction",
+                xytext=(-10, 8 + 21.5 * n_extra), textcoords="offset points",
+                fontsize=25, fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
 def render(feats: pd.DataFrame) -> Path:
     setup_plotting_style(font_scale=1.0)
     plt.rcParams.update({
-        "font.size":       13,
-        "axes.labelsize":  13,
+        "font.size":       15,
+        "axes.labelsize":  18,
         "axes.titlesize":  0,
-        "xtick.labelsize": 13,
-        "ytick.labelsize": 13,
-        "legend.fontsize": 13,
+        "xtick.labelsize": 16.5,
+        "ytick.labelsize": 16.5,
+        "legend.fontsize": 16.5,
     })
 
     facet_labels = [GROUP_LABEL[g] for g in GROUPS]
     facet_colors = [GROUP_COLOR[g] for g in GROUPS]
 
-    fig, axes = plt.subplots(4, 3, figsize=(21, 18))
+    fig, axes = plt.subplots(4, 3, figsize=(15, 14.5))
     axes = axes.flatten()
 
     # --- Panel definitions ---
@@ -179,16 +190,16 @@ def render(feats: pd.DataFrame) -> Path:
     # (a: TM-helix count 0–30, b: protein length 0–7k, c: ECD length 0–5k) and
     # every boolean fraction panel (d–l) is pinned to a true 0–100%.
     panels = [
-        ("tm_helix_count",      "violin",    "Number of\nTM helices", (0, 30)),
-        ("protein_length",      "violin",    "Protein length\n(residues)", (0, 7000)),
-        ("ecd_length_residues", "violin",    "ECD length\n(residues)", (0, 5000)),
+        ("tm_helix_count",      "violin",    "Number of TM helices", (0, 30)),
+        ("protein_length",      "violin",    "Protein length (residues)", (0, 7000)),
+        ("ecd_length_residues", "violin",    "ECD length (residues)", (0, 5000)),
         ("has_signal_peptide",  "frac_bool", "% with signal peptide", (0, 100)),
         ("n_term_extracellular", "frac_bool", "% N-terminus extracellular", (0, 100)),
         ("c_term_extracellular", "frac_bool", "% C-terminus extracellular", (0, 100)),
         ("mouse_has_one2one",   "frac_bool", "% with mouse 1:1 ortholog", (0, 100)),
         ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog", (0, 100)),
         ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)", (0, 100)),
-        ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology", (0, 100)),
+        ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of\ndifferent topology", (0, 100)),
         ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)", (0, 100)),
         ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site", (0, 100)),
     ]
@@ -213,8 +224,7 @@ def render(feats: pd.DataFrame) -> Path:
                 parts["cmedians"].set_color("white")
                 parts["cmedians"].set_linewidth(1.6)
             ax.set_xticks(positions)
-            ax.set_xticklabels(facet_labels, rotation=20, ha="right")
-            ax.set_ylabel(label, fontsize=13)
+            ax.set_xticklabels(facet_labels, rotation=35, ha="right", rotation_mode="anchor")
             ax.set_xlim(-0.6, len(GROUPS) - 0.4)
             ax.set_ylim(*ylim)
         elif kind == "frac_bool":
@@ -228,43 +238,46 @@ def render(feats: pd.DataFrame) -> Path:
                 ys.append(100 * positive / n if n else 0)
                 ns.append(n)
             ax.bar(range(len(GROUPS)), ys, color=facet_colors, edgecolor="none")
-            # True 0–100 axis: keep the value+n label inside the plot — above the
-            # bar for short bars, tucked inside the top (white) for tall ones so
-            # nothing clips against the hard 100 ceiling.
+            # True 0–100 axis (spine + ticks stop at 100); headroom above it so
+            # every value+n label sits above its bar without clipping.
             for i, (y, n_) in enumerate(zip(ys, ns)):
-                if y > 84:
-                    ax.text(i, y - 2, f"{y:.0f}%\nn={n_}", ha="center", va="top",
-                            fontsize=12, color="white", weight="semibold")
-                else:
-                    ax.text(i, y + 1.5, f"{y:.0f}%\nn={n_}", ha="center", va="bottom",
-                            fontsize=12, color=facet_colors[i], weight="semibold")
-            ax.set_ylim(*ylim)
+                ax.text(i, y + 1.5, f"{y:.0f}%\nn={n_}", ha="center", va="bottom",
+                        fontsize=13.5, color=facet_colors[i])
+            ax.set_ylim(ylim[0], ylim[1] * 1.15)
+            ax.set_yticks(range(0, 101, 25))
+            ax.spines["left"].set_bounds(*ylim)
+            ax.set_xlim(-0.5, len(GROUPS) - 0.5)
             ax.set_xticks(range(len(GROUPS)))
-            ax.set_xticklabels(facet_labels, rotation=20, ha="right")
-            ax.set_ylabel(label, fontsize=13)
+            ax.set_xticklabels(facet_labels, rotation=35, ha="right", rotation_mode="anchor")
 
-        ax.tick_params(axis="x", labelsize=13)
+        ax.tick_params(axis="x", labelsize=16.5)
         for tl in ax.get_xticklabels():
             tl.set_horizontalalignment("right")
         sns.despine(ax=ax, top=True, right=True)
-        _panel_label(ax, letter)
+        # Tier names only under the bottom row; the legend keys the colours.
+        if letter not in letters[-3:]:
+            ax.tick_params(axis="x", labelbottom=False)
+        _panel_label(ax, letter, label)
 
-    # Hide the unused grid cell (11 panels in a 4×3 / 12-slot grid).
+    # 12 panels fill the 4×3 grid; hide any spare cell if a panel is dropped.
     for extra in axes[len(panels):]:
         extra.set_visible(False)
 
-    # Single legend at top — the five deep-dive tiers + the Sonnet dual-triage pool.
+    plt.tight_layout(rect=(0, 0, 1, 0.96), w_pad=0.4)
+
+    # Single legend at top — the four deep-dive tier facets + the Sonnet dual-triage pool.
+    # Drawn after tight_layout and anchored just under the rect top (0.96)
+    # so it sits just above row 1 rather than floating over a gap.
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, color=GROUP_COLOR[g],
                       label=GROUP_LABEL[g].replace("\n", " "))
         for g in GROUPS
     ]
     fig.legend(
-        handles=legend_handles, loc="upper center", ncol=5, frameon=False,
-        bbox_to_anchor=(0.5, 1.02), fontsize=13,
+        handles=legend_handles, loc="lower center", ncol=5, frameon=False,
+        bbox_to_anchor=(0.5, 0.945), fontsize=16.5,
+        title="Deep-dive tier / Sonnet dual-triage pool", title_fontsize=18,
     )
-
-    plt.tight_layout(rect=(0, 0, 1, 0.96))
     save_figure(fig, "surfaceome_deterministic_features", OUT_DIR,
                 formats=("pdf", "png"), gist_url="https://gist.github.com/beccajcarlson/57cf3cc3db903ab39bc0ba315ce5e4d5")
     plt.close(fig)

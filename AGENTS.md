@@ -31,7 +31,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run tests: `uv run pytest -q`
 - Run hooks: `uv run pre-commit run --all-files --config .pre-commit-config.yaml`
 - Run viewer dev server: `cd viewer && npm install && npm run dev` (http://localhost:3000)
-- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export)
+- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export). Its per-gene record pre-fetch, AND the standalone `build:exports` ops job (`build-markdown-exports.mjs`, NOT part of `npm run build` — run separately after a deep-dive sweep), are both paced (concurrency + rate capped, `viewer/scripts/lib/build-fetch.mjs`) and never publish a degraded record (a 200 carrying `X-Surfaceome-Degraded` is retried, then skipped if it never clears) — see `viewer/README.md`'s "Build gotcha" section.
 - Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
 
 ## Deep-dive agents run in-process with local prompts (no managed-agent sync)
@@ -45,15 +45,15 @@ Concise contributor guide for `accessible-surfaceome`.
 
 > **Historical note.** An earlier design proposed registering these as Anthropic Managed Agents with sha-checked auto-sync (`.runs/agents-registry.json`, `sync_agent_and_environment`, `ANNOTATE_NO_AUTO_SYNC`). **That machinery was never wired into the shipped code.** Any reference to managed-agent sync / auto-sync / `ANNOTATE_NO_AUTO_SYNC` is stale.
 
-**Cost note:** a full v2 deep-dive is ~$1.3 on Sonnet 4.6 per gene (median; $1.44 mean across the 5,130-gene cohort run; synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
+**Cost note:** a full v2 deep-dive is ~$1.3 on Sonnet 4.6 per gene (median; $1.44 mean across the 5,332-gene deep-dive cohort; synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
 
 ## Prompt provenance is mandatory for every agentic pipeline
 **Any pipeline that runs an LLM prompt to produce a persisted record MUST stamp, per record, the exact prompt that produced it** — three fields, always: (1) the **model string** (`claude-opus-5`, not "opus"); (2) **`prompt_sha`** = `hashlib.sha256(system_prompt.encode()).hexdigest()` of the exact prompt text (content fingerprint — any edit changes it); (3) **`prompt_version`** = a human-bumpable module constant bumped in the same commit as any prompt edit. And the **resume/skip logic MUST treat a changed `prompt_sha` as stale** — a record written under a different prompt_sha is re-run, never skipped on `schema_version` alone (that lets a prompt edit ship without re-running affected rows — the "stale record that believes it's current" bug). Persist all three (+ `schema_version`, `generated_at`) on the record and project `prompt_sha`/`prompt_version` into the D1 flat columns so a stale row is queryable without unpacking `record_json`.
 
-Reference implementations: `triage_run` (`prompt_sha`/`prompt_filename`/`prompt_variant`, the canonical precedent); the **internalization sequence pass** — `ModelPriorTrack.{prompt_sha,prompt_version}` in `grade_isoforms_with_model`, `MODEL_PRIOR_PROMPT_VERSION` in `agents/internalization/models.py`, D1 cols `seq_prompt_sha`/`seq_prompt_version`, and the sha-aware skip in `scripts/internalization_seq_sweep.py`. The deep-dive `surfaceome_v2` also carries a global `prompt_corpus` fingerprint (`_version_guard.py`, `PROMPT_CORPUS_VERSION`); a standalone pass with its own versioning (internalization) is excluded from that corpus and carries its own per-record `prompt_sha`/`prompt_version` instead — but still MUST carry them.
+Reference implementations: `triage_run` (`prompt_sha`/`prompt_filename`/`prompt_variant`, the canonical precedent); the **internalization sequence pass** — `ModelPriorTrack.{prompt_sha,prompt_version}` in `grade_isoforms_with_model`, `MODEL_PRIOR_PROMPT_VERSION` in `agents/internalization/models.py`, D1 cols `seq_prompt_sha`/`seq_prompt_version`, and the sha-aware skip in `scripts/internalization_seq_sweep.py`; its **literature track** (`LiteratureTrack.{prompt_sha,prompt_version,model}`); and the **tag-site agent** (`TagSiteResult.{schema_version,prompt_sha,prompt_version,model,generated_at}`, constant `TAG_SITE_PROMPT_VERSION`). The deep-dive `surfaceome_v2` also carries a global `prompt_corpus` fingerprint (`_version_guard.py`, `PROMPT_CORPUS_VERSION`); a standalone pass with its own versioning (internalization) is excluded from that corpus and carries its own per-record `prompt_sha`/`prompt_version` instead — but still MUST carry them.
 
 ## Triage body-fetch: Unpaywall + PDF fallback
-`plan_trim_select` abstract-triage fetches a `worth_fetching` paper's body via a 3-step fall-through: **PMC JATS** (`pmc_id` or PMID→PMCID eLink) → **Unpaywall OA PDF**. The Unpaywall step tries **all** OA PDF locations best-quality-first (so a bot-blocked publisher copy can fall through to a repository copy), parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber; gutter-based 2-column split + font-aware run-in/bold heading detection → the JATS `SectionName` enum). Any failure → abstract fallback, never crashes the batch.
+`plan_trim_select` abstract-triage fetches a `worth_fetching` paper's body via a 3-step fall-through: **PMC JATS** (`pmc_id` or PMID→PMCID eLink) → **Unpaywall OA PDF**. The Unpaywall step tries up to 4 OA PDF locations (`_MAX_PDF_LOCATIONS`) best-quality-first (so a bot-blocked publisher copy can fall through to a repository copy), parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber; gutter-based 2-column split + font-aware run-in/bold heading detection → the JATS `SectionName` enum). Any failure → abstract fallback, never crashes the batch.
 - **Dep**: `pdfplumber` (MIT); `pypdfium2` pinned `<5.9.0` via `[tool.uv] constraint-dependencies` (supply-chain cooldown — relax after it ages past 7 days).
 - **Binary cache**: `CachedHTTP.get_bytes` → `data/external/blob_cache/` (gitignored — copyrighted PDFs, never commit); streamed size+page caps; per-host courtesy interval.
 - **Config**: `UNPAYWALL_EMAIL` (optional). Keep the polite, identifiable User-Agent — no browser impersonation; ASH/Wiley 403 us regardless and fall back to abstract.
@@ -133,7 +133,8 @@ Schemas: [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
 **The live viewer reads D1, not the committed JSON.** The Worker serves
 each gene from public D1's `surface_annotation.annotation_json`; the
 `viewer/public/data/surfaceome/*.json` snapshots are only the in-tree
-source of truth + on-error SSG fallback. A record change that lands only
+test fixtures (ABCB9, C3, CD63); the viewer has no on-disk fallback and
+requires the live Worker. A record change that lands only
 in the JSON silently drifts the live site (it keeps rendering D1's stale
 row — e.g. the `protein_family` → `llm_family` rename that blanked the
 Family chip). So: don't hand-edit a snapshot and stop. Land the change
@@ -148,8 +149,90 @@ After the D1 write, `publish_record` purges the Worker's edge cache for
 `/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes` (targeted by-URL, never
 `purge_everything` — shared `deliverome.org` zone) so the record goes live
 immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
-Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
-either soft-skips with a warning.
+Publish also archives the record to record history (below), which purges
+`/v1/genes/{SYMBOL}/revisions` and `/v1/releases` so the revision list is
+never served stale either. Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache
+Purge token scope; missing either soft-skips with a warning.
+
+**Record history + numbered data releases.** Every distinct state the API
+served for a gene (record, `/evidence` ledger, `.md` export) is archived
+write-once to R2 bucket `surfaceome-record-history`
+(`records/sha256/{hash}.{json|md}`), with one `record_revision` row per
+actual change in public D1
+([`cloud/record_history/`](src/accessible_surfaceome/cloud/record_history/)).
+**History holds only states the API actually served** — numbering starts
+at **1** (a gene's first archived version); there is no revision 0.
+`GET /v1/genes/{sym}/revisions` labels each entry's `changed`:
+`["first_archived"]` for a gene's first revision, otherwise whichever of
+`record`/`evidence`/`markdown` differ from the previous revision. Release
+**1.0.0** (the 2026-08-15 Zenodo deposit) predates per-gene record history
+and stays **Zenodo-only** — its `data_release` row has
+`archive_scope = 'zenodo_only'` and no `data_release_member` rows,
+`GET /v1/releases` reports it with `api_members: false`,
+`GET /v1/releases/1.0.0` returns `members: []` + an `api_note` naming the
+Zenodo DOI, and `GET /v1/releases/1.0.0/genes/{sym}` 404s
+`release_not_in_api_history` (DOI in the body) instead of falling back to
+a live lookup. `scripts/cloud/seed_record_history.py` (which originally
+wrote that deposit into `record_revision` as revision 1) is retired and
+refuses to run; [`scripts/cloud/drop_seed_revisions.py`](scripts/cloud/drop_seed_revisions.py)
+(dry-run by default, `--execute`) removes any `seed:zenodo-1.0.0` rows an
+earlier run left and renumbers the affected genes' later revisions down
+by one. `publish_record` archives after every publish (needs
+`ARCHIVE_BYPASS_TOKEN`; a miss warns, never fails the publish). Records' deterministic blocks go stale when a source
+table changes (the Worker never overwrites a baked block): after any change
+to `topology_public`, `compara_*`, `surface_bind_*` or `schweke_homomer_public`,
+run `scripts/audit/audit_record_deterministic_consistency.py` and republish its
+`stale_genes.json` with `scripts/cloud/refresh_deterministic_features_d1.py`.
+Republishing does not refresh the R2 markdown briefs (`/v1/genes/{SYMBOL}.md`):
+re-export them with `viewer/scripts/build-markdown-exports.mjs` (`MD_TARGET=r2`),
+then `scripts/cloud/purge_gene_cache.py --surfaces md --execute`, then sweep.
+Compara is pinned to release 115 (`ensembl_compara_115`). Anything
+that writes `surface_annotation` directly, or bulk-updates a deterministic
+table the Worker joins at serve time, must be followed by
+`uv run python scripts/cloud/sweep_record_history.py --execute` or those
+states never enter history — including
+[`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py):
+`handleGene` overlays live `triage_run_public` (and other synced tables)
+onto the served record, so a sync that changes those rows changes what's
+served without touching `surface_annotation`. `sweep_record_history.py
+--check-stability [--sample N]` (default 50, seeded random sample,
+`--genes` honoured) is a read-only mode — fetches each gene twice and
+diffs the three content hashes, never touches the store/R2/D1 — for
+catching a serve-time field the hasher doesn't yet ignore before it reads
+as content drift on every sweep. A response whose serve-time enrichment
+hit a real (non-"no such table") D1 error carries `X-Surfaceome-Degraded`
++ `Cache-Control: no-store`; `withEdgeCache` never caches it, and
+`archive.py`'s `fetch_served`/`archive_gene` refuse to archive it
+(`--check-stability` reports it as an error) so a transient D1 hiccup
+never lands in history permanently. Numbered releases
+(`data_release`/`data_release_member`) are cut with
+`scripts/release/cut_data_release.py --version X.Y.Z` (after bumping
+`pyproject.toml`); it drafts, never publishes, the Zenodo data-record
+version. History endpoints are path-based only (the zone cache rule
+ignores query strings): `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`,
+`/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]`. Cohort-scale I/O (the
+seed, the sweep) is kept off the shared Cloudflare account API budget
+(1,200 requests / 5 min across every `api.cloudflare.com` call, R2 REST
+ops and D1 queries alike): R2 writes go through the S3-compatible API
+([`cloud/r2_s3.py`](src/accessible_surfaceome/cloud/r2_s3.py)) using
+credentials derived from `CLOUDFLARE_API_TOKEN`, and D1 calls made
+through `CloudRevisionStore` are throttled via `RECORD_HISTORY_D1_QPS`
+(default 2.5 qps, `0` disables). Separately, the sweep paces Worker fetches
+(`--max-genes-per-second`, default 2) because each bypassed record fetch
+costs ~17 queries on the shared public D1; never raise it during business
+hours.
+
+**Reproducibility replicates are not published records.** Public D1
+`deep_dive_replicate` holds the Supplementary Figure 16 study
+(`deep_dive_concordance_v1`: 50 random deep-dive genes × `published_snapshot`
+/ `full_rerun` / `fixed_evidence_replay`), loaded once from the frozen bundle
+`data/processed/deep_dive_concordance_v1/` by
+`scripts/cloud/upload_deep_dive_replicates_to_d1.py`. The Worker serves it
+API-only (`/v1/replicates`, `/v1/genes/{sym}/replicates[/{study}/{kind}]`,
+every response labelled `reproducibility_replicate: true`); nothing in the
+catalog, viewer, record history or `surface_annotation` reads it. Never
+publish a replicate through `publish_record`. `cut_data_release.py` attaches
+the same bundle to each Zenodo release draft.
 
 `scripts/cloud/sync_public_d1.py` is the OTHER writer into public D1 — it
 rewrites whole tables that back cohort endpoints — and it purges those
@@ -162,7 +245,10 @@ published `?run_id=` variants — it is the one route wrapped with
 deliberately excluded. `stale-while-revalidate=86400` sits on top of every
 TTL, so an unpurged 1-day surface can answer stale for a second day.
 `tests/test_cohort_cache_purge.py` pins the map against both the sync
-script's table groups and the Worker's `CACHE_TTL_LONG` routes.
+script's table groups and the Worker's `CACHE_TTL_LONG` routes. The shared
+`purge_paths` helper purges the Worker's synthetic edge cache keys, not the
+public URLs — a purge that targeted the public URL used to silently evict
+nothing.
 
 The zone **cache rule** (ignore query
 strings) is applied by `scripts/cloud/apply_cf_edge_rules.py` (dry-run by
@@ -213,11 +299,13 @@ statement:
 
 ### `run_id` conventions
 
-- `genome_full_sonnet_ncbi_v1` — canonical 2026-05-12 Sonnet sweep.
-- `*__resolver_v3_fix` suffix — corrected re-runs that supersede a
-  parent run for affected cells (originals preserved). Analytics
-  that should reflect the fix must COALESCE-prefer the fix run
-  over its parent; see CLAUDE.md for the canonical query.
+- `genome_full_sonnet_ncbi_v2` — canonical genome-wide Sonnet triage
+  sweep (`CANONICAL_TRIAGE_RUN_ID` in `scripts/triage_runner.py`); the
+  only genome-wide run in public D1.
+- `genome_full_sonnet_ncbi_v1` (+ its `__resolver_v3_fix` re-runs) — the
+  legacy 2026-05-12 sweep, removed from public D1 on 2026-06-01. Only
+  analyses that deliberately read the old v1 rows need the COALESCE
+  query in CLAUDE.md.
 - **Four `pubmed_ncbi` rescue lanes**, disjoint by construction, together
   giving every Sonnet-`no` gene that the universe gate can drop a
   literature-augmented second look: `genome_full_sonnet_pubmed_ncbi_v1`
@@ -460,21 +548,83 @@ fails the check and blocks merge.
   invent a new one.
 - Match the commit-message subject style: terse, imperative, no trailing period.
 
+## Tag-site literature agent
+
+`agents/tag_site/` finds PUBLISHED epitope-tag insertion sites; scored against
+`data/tag_sites/positive_controls.tsv` by `scripts/score_tag_sites_vs_controls.py`, which
+refuses to run on a dirty tag-sites tree. ~$0.8-1.0/gene, dominated by one Haiku triage call
+per discovered paper.
+
+- **Read the run artifact before re-running.** `data/external/tag_site_runs/{SYMBOL}.json`
+  (gitignored) holds the clip pool, the boosted clips, the full ledger, the synthesis
+  metadata, the agent's `notes`, and every site a gate removed with the failing quote. The
+  pool is not otherwise persisted, so a question about a dropped site used to cost a fresh run.
+- **Quote entailment runs through `normalize_for_quote_matching`, which is SHARED** with the
+  deep dive and internalization. It folds typographic punctuation as well as NFKC/HTML/Greek/
+  whitespace/case — NFKC does not fold U+2019 to U+0027, and a 448-character quote was failing
+  on one curly apostrophe.
+- **`publish_tag_sites` is a scoped UPSERT, never replace-all.** One tag-sites JSON is written
+  by two independent pipelines, so deleting all of a gene's rows before inserting lets a
+  literature-only file erase the deterministic sites. `sync_tag_sites_to_d1.py` refuses a sync
+  that would shrink any gene unless `--allow-deletes`; re-derive with
+  `scripts/regenerate_tag_sites.py` (it preserves literature sites) instead of overriding.
+- **The viewer reads the Worker**: `fetchTaggedSites(symbol, API_BASE)`. Without the apiBase
+  only the static `/tag-sites/{SYMBOL}.json` is tried, and that asset is not in the Pages
+  export.
+
+
 ## Doc Sync Rule
 - Keep `AGENTS.md` and `CLAUDE.md` aligned when workflow guidance changes.
 
 ## Shared API compatibility across main and dev
 
 The `surfaceome-api` Worker at `api.deliverome.org/surfaceome` serves both
-production and dev viewers. A main deployment must preserve endpoints and
-response fields consumed by dev, even when the related UI has not merged
-to main. In particular, keep `/v1/internalization/{symbol}` and the catalog
-fields `intern`, `intern_lit`, and `intern_lit_grade`. Do not deploy an older
-branch's Worker wholesale over the shared service; reconcile both branches'
-API changes first.
+the production viewer (built from `main`) and the dev viewer (built from
+`dev`). There is one Worker script, and `wrangler deploy` replaces it whole:
+the deploy is last-writer-wins over the entire API, with no merge. **Every
+Worker deploy must therefore be inclusive of both `main` and `dev`.** It
+ships `main`'s current Worker plus every endpoint, response field, D1 table
+read, and serve-time overlay that `dev` relies on, even when the dev UI that
+consumes them has not merged to `main` yet. A deploy that drops either
+branch's API surface breaks that branch's viewer.
+
+The standing dev-only contract today is `/v1/internalization/{symbol}` and
+the catalog fields `intern`, `intern_lit`, and `intern_lit_grade`. Never
+deploy an older branch's Worker, or a branch that has fallen behind
+`origin/main`, over the shared service. Reconcile both branches' API
+changes first.
+
+Run this check immediately before every `wrangler deploy`, from a branch
+based on a freshly fetched `origin/main`:
+
+1. `git fetch origin && git diff origin/main --stat -- cloudflare/workers/surfaceome_api/`.
+   Anything there that isn't your own change means rebase first. Other
+   sessions merge Worker PRs minutes apart.
+2. Compare *sets* against `origin/dev`, not a raw diff. Dev lags main, so a
+   line diff mostly shows main's refactors in reverse. Compare:
+   - routes (`path.match(...)` / `path === "..."`);
+   - top-level function names;
+   - the paths documented in the `/v1` index;
+   - `FROM|JOIN` table names.
+
+   Anything that exists only on dev must be empty. If it isn't, port it into
+   your branch (or land it on `main` first) before deploying.
+3. Compare the live `/v1` index against your source. Its routes and
+   `row_schema` must be a subset of what you are about to ship. This catches
+   a previous deploy made from some other branch.
+4. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
+5. Re-verify after the deploy, because a merge can land during it. If a
+   deploy changed a response's shape, purge the cache with
+   `scripts/cloud/purge_gene_cache.py`.
+
+Worktrees have no `wrangler.toml`: it is gitignored and only
+`wrangler.toml.example` is committed. Copy it from the canonical checkout,
+and diff its binding names against the example first.
 
 CI runs `tests/test_worker_internalization.py` as an explicit shared-API
 compatibility check with Node from `.nvmrc`; a missing Node runtime fails
-that check instead of silently skipping it. Update the contract tests when
-adding another dev-only consumer of the shared API. This protects code
-review and CI; manual deployments must run the same check before deployment.
+that check instead of silently skipping it. When you add another dev-only
+consumer of the shared API, extend these contract tests in the same change.
+That way CI enforces "inclusive of dev" instead of relying on whoever
+deploys next to remember it. CI protects code review only; a manual deploy
+must run the checklist above.

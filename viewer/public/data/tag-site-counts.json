@@ -1,9 +1,520 @@
 {
+  "ABCA1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 10,
+    "disorder": 20,
+    "lit_ec": 0
+  },
+  "ABCA12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 12,
+    "disorder": 20,
+    "lit_ec": 0
+  },
+  "ABCA13": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 19,
+    "disorder": 20,
+    "lit_ec": 0
+  },
+  "ABCA2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 13,
+    "disorder": 20,
+    "lit_ec": 0
+  },
+  "ABCA3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 7,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "ABCA4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 13,
+    "disorder": 20,
+    "lit_ec": 0
+  },
+  "ABCA5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 16,
+    "lit_ec": 0
+  },
+  "ABCA6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 15,
+    "lit_ec": 0
+  },
+  "ABCA7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 13,
+    "disorder": 20,
+    "lit_ec": 0
+  },
+  "ABCA8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 18,
+    "lit_ec": 0
+  },
+  "ABCA9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 19,
+    "lit_ec": 0
+  },
+  "ABCB1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ABCB11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ABCB4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ABCB5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ABCB9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ABCC11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ABCC12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ABCC4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ABCG4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "ABCG5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ADCY2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ADCY3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "ADCY5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ADCY6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "ADCY7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "ADCY9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 10,
+    "lit_ec": 0
+  },
+  "ADGRG7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 9,
+    "disorder": 10,
+    "lit_ec": 0
+  },
+  "ADORA1": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 0,
+    "lit_ec": 1
+  },
+  "ADRB2": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 1
+  },
+  "ANO1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "ANO2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ANO3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ANO5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ANO6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ANO7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ANO9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "AQP1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 2
+  },
+  "AQP10": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "AQP2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "AQP4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "AQP5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "AQP9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "ASIC1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 8,
+    "disorder": 2,
+    "lit_ec": 2
+  },
+  "ASIC4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ATG9A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ATP13A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "ATP13A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "ATP13A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ATP13A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ATP1A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "ATP1A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "ATP1A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "ATP2B2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ATP2B3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "ATP2B4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "ATP6V0A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "ATRN": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 12,
+    "disorder": 14,
+    "lit_ec": 0
+  },
   "AXL": {
     "nterm_ec": 1,
     "cterm_ec": 0,
     "internal": 7,
     "disorder": 8,
+    "lit_ec": 1
+  },
+  "BEST2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "BEST4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "CACNA1C": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 8,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "CACNA1G": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 12,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "CACNA1I": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 10,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "CACNG1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "CACNG2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "CACNG3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "CACNG4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "CACNG5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "CACNG6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "CACNG7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "CACNG8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "CALHM2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CD151": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
     "lit_ec": 0
   },
   "CD19": {
@@ -20,12 +531,299 @@
     "disorder": 1,
     "lit_ec": 0
   },
+  "CD36": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "CD37": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "CD53": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "CD63": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CD82": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "CD9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "CDC50A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "CFTR": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 2
+  },
+  "CHPT1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "CLCNKB": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN10": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "CLDN11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "CLDN12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "CLDN15": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN16": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "CLDN18": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "CLDN19": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN20": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN22": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN24": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "CLDN8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "CLDN9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "CLDND1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "CLRN1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "CYBB": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "DAGLB": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "DCSTAMP": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "DISP1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 15,
+    "disorder": 11,
+    "lit_ec": 0
+  },
+  "DISP2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 11,
+    "disorder": 10,
+    "lit_ec": 0
+  },
   "EGFR": {
     "nterm_ec": 1,
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 1,
     "lit_ec": 1
+  },
+  "EMP1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "EMP2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "EMP3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "ENTPD1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "ENTPD3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ENTREP3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 4,
+    "lit_ec": 0
   },
   "ERBB2": {
     "nterm_ec": 1,
@@ -41,6 +839,265 @@
     "disorder": 2,
     "lit_ec": 0
   },
+  "FZD1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 6,
+    "disorder": 12,
+    "lit_ec": 0
+  },
+  "GDPD2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "GDPD5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GIPR": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 1
+  },
+  "GJA1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJA3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJA4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJB1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJB2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJB3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJB4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJB5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJB6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJB7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJC2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJC3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GJD2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GLP1R": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 1
+  },
+  "GPM6A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "GPM6B": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "GSG1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "GSG1L": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "ITGB1": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 4,
+    "lit_ec": 1
+  },
+  "ITGB5": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "KCNA3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "KCNG4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "KCNH2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 4,
+    "lit_ec": 2
+  },
+  "KCNJ12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "KCNJ3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "KCNJ4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "KCNK5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "KCNMB1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "KCNMB3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "KCNMB4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "KCNQ1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 2
+  },
+  "KCNS1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "KCNV2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
   "LDLR": {
     "nterm_ec": 1,
     "cterm_ec": 0,
@@ -48,11 +1105,137 @@
     "disorder": 9,
     "lit_ec": 1
   },
+  "LHFPL4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "LHFPL5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "LHFPL7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "MCOLN1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 4,
+    "lit_ec": 0
+  },
   "MET": {
     "nterm_ec": 1,
     "cterm_ec": 0,
     "internal": 8,
     "disorder": 6,
+    "lit_ec": 0
+  },
+  "MFSD11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "MFSD12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "MFSD2B": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "MFSD6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 10,
+    "lit_ec": 0
+  },
+  "MFSD6L": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 15,
+    "lit_ec": 0
+  },
+  "MFSD8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "MIP": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "MOSMO": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "MS4A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "MS4A15": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "MS4A6A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "MYADM": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "MYADML2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "NALCN": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 13,
+    "disorder": 0,
     "lit_ec": 0
   },
   "NECTIN4": {
@@ -62,6 +1245,1525 @@
     "disorder": 2,
     "lit_ec": 0
   },
+  "NKAIN1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "NKAIN2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "NKAIN3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "NOX4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "NRG2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "OTOP1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "OTOP2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "P2RX1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "P2RX2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "P2RX3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "P2RX4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "P2RX6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "P2RX7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "PANX1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "PANX2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "PCNX1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "PCNX2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "PGAP1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 11,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "PIEZO1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 13,
+    "disorder": 15,
+    "lit_ec": 0
+  },
+  "PIEZO2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "PIGO": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 12,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "PKD2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "PKD2L1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "PLP1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "PLPP1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "PLPP2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "PLPP3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "PMP22": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 1
+  },
+  "PRPH2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "PTCH1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 8,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "PTCHD1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "PTCHD3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "PTCHD4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "RHAG": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "RHCG": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "RNFT1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SCAP": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 8,
+    "disorder": 19,
+    "lit_ec": 0
+  },
+  "SCARB1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SCARB2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SCN11A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SCN1A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SCN2A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SCN3A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 6,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SCN4A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SCN5A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SCN7A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SCN8A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 6,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SCN9A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SCNN1A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 9,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SCNN1B": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 7,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SCNN1D": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 10,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SCNN1G": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 7,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "SDK1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 20,
+    "disorder": 20,
+    "lit_ec": 0
+  },
+  "SELE": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 6,
+    "disorder": 1,
+    "lit_ec": 1
+  },
+  "SERINC1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SERINC2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SERINC3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "SERINC4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC11A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC11A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC12A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC12A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC12A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC12A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC12A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC12A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC12A7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC12A8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC12A9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC14A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC14A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC15A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC15A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC15A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC15A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SLC17A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC17A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC17A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC18A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "SLC18A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "SLC18A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC19A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 2
+  },
+  "SLC19A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC19A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC1A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "SLC1A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SLC1A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC1A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC1A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC1A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "SLC1A7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC22A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC22A11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC22A12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC22A13": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC22A14": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC22A15": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC22A16": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC22A17": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 12,
+    "lit_ec": 0
+  },
+  "SLC22A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC22A23": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "SLC22A25": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC22A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC22A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC22A7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC22A8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC22A9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC23A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC23A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC26A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 1
+  },
+  "SLC26A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC26A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC26A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC26A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC26A8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "SLC26A9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A10": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "SLC2A11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLC2A13": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A14": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SLC2A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC2A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SLC2A8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC2A9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC30A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC33A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC34A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC34A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC34A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLC35A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "SLC35F4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC37A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC37A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC37A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC40A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC43A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC43A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC43A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC44A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC44A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLC44A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLC44A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 7,
+    "disorder": 10,
+    "lit_ec": 0
+  },
+  "SLC44A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 10,
+    "lit_ec": 0
+  },
+  "SLC45A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC45A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC46A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC46A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC46A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC49A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC49A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC4A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 1,
+    "lit_ec": 2
+  },
+  "SLC4A10": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC4A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "SLC4A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC4A7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC4A8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC5A6": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 6,
+    "lit_ec": 1
+  },
+  "SLC60A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLC60A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC6A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC6A11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC6A12": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC6A13": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC6A14": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC6A15": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC6A16": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC6A17": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC6A18": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC6A19": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 6,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC6A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC6A20": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC6A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 7
+  },
+  "SLC6A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC6A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC6A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC6A7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC6A8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC6A9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SLC71A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "SLC7A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SLC7A10": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC7A14": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC7A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC7A3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "SLC7A4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC7A5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC7A6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC7A9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SLC9A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "SLC9A6": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 6,
+    "lit_ec": 1
+  },
+  "SLCO1A2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SLCO1B1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLCO1B3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLCO1C1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "SLCO2A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 6,
+    "lit_ec": 0
+  },
+  "SLCO2B1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLCO3A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "SLCO4A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SLCO4C1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLCO5A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 7,
+    "lit_ec": 0
+  },
+  "SLCO6A1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "SPNS2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SPNS3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SSPN": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "STEAP4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SV2A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SV2B": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "SV2C": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "SVOPL": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "SYP": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "SYPL1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "TCIRG1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 1,
+    "lit_ec": 0
+  },
   "TFRC": {
     "nterm_ec": 0,
     "cterm_ec": 1,
@@ -69,18 +2771,396 @@
     "disorder": 4,
     "lit_ec": 2
   },
+  "TM4SF18": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TM4SF20": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "TM4SF4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TM4SF5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TMC7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "TMEM114": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "TMEM116": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 3,
+    "lit_ec": 0
+  },
   "TMEM123": {
     "nterm_ec": 1,
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 9,
-    "lit_ec": 2
+    "lit_ec": 1
+  },
+  "TMEM150A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TMEM171": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "TMEM178A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "TMEM178B": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "TMEM182": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TMEM204": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "TMEM217": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "TMEM219": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 11,
+    "lit_ec": 0
+  },
+  "TMEM225": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TMEM231": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "TMEM235": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "TMEM245": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "TMEM255A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 9,
+    "lit_ec": 0
+  },
+  "TMEM255B": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "TMEM26": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "TMEM37": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
   },
   "TNFRSF17": {
     "nterm_ec": 1,
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 0,
+    "lit_ec": 0
+  },
+  "TPCN1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "TRPC5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 1
+  },
+  "TRPV2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "TRPV4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 4,
+    "lit_ec": 0
+  },
+  "TRPV5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "TRPV6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 4,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "TSPAN1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "TSPAN11": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "TSPAN13": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "TSPAN14": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TSPAN15": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TSPAN17": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TSPAN18": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "TSPAN2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TSPAN3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TSPAN31": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TSPAN33": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TSPAN4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TSPAN5": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TSPAN6": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "TSPAN7": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "TSPAN8": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TSPAN9": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "UBAC2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "UNC93A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "UNC93B1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "UPK1A": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "UPK1B": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 3,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "VANGL1": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 0,
+    "lit_ec": 0
+  },
+  "XKR3": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 2,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "ZNRF4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 5,
+    "disorder": 2,
     "lit_ec": 0
   }
 }

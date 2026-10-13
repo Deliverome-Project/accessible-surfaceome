@@ -1,6 +1,6 @@
 """Deep-dive vs Sonnet+NCBI accuracy on SurfaceBench (deep-dived genes).
 
-New Supp figure: for all SurfaceBench genes deep-dived so far (the intersection,
+Supplementary Figure 11: for all SurfaceBench genes deep-dived so far (the intersection,
 n=113 of 147), how the evidence-anchored deep dive scores against the curated
 ground truth, next to the Sonnet+NCBI triage on the SAME genes. Soft-credit
 accuracy — a contextually-surface protein counts correct when called surface.
@@ -10,8 +10,9 @@ No records are excluded (holistic-`conflicting` genes are scored too).
 **b.** Accuracy per ground-truth bucket (yes / contextual / no).
 
 Reads the bundled per-figure TSV (one row per deep-dived bench gene with both
-predictors' soft-credit correctness); the figure aggregates. Deep dive 97% vs
-Sonnet 97% (near-identical; single collapsed-verdict basis: 97.3% vs 95.6%).
+predictors' soft-credit correctness); the figure aggregates. Deep dive 97.3% vs
+Sonnet 96.8% (three-replicate mean; near-identical; single collapsed-verdict
+basis: 97.3% vs 95.6%).
 
 Run::
 
@@ -52,8 +53,15 @@ _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
 # read as one palette.
 _TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
-    "canonical": "#3D6B60",  # deep teal — strict tier (swapped w/ likely for contrast)
-    "likely":    "#2E7A55",  # brighter green — broader tier
+    # MUST match deep_dive_final_categories (Fig 5a) and
+    # triage_vs_deep_dive_reason (Supp S14), which both use
+    # canonical=green / likely=teal. This figure had them swapped
+    # "for contrast" — a local call that made the same tier name carry
+    # different colours across three figures in one paper, which a
+    # reviewer caught. Contrast is unaffected (the two are adjacent in
+    # the stack either way), so consistency wins.
+    "canonical": "#2E7A55",  # success green — strict tier
+    "likely":    "#3D6B60",  # teal-mid — broader tier
     "low":       "#C99A5B",  # amber-tan — low/moderate, weak evidence
     "uncertain": "#C7BDB6",  # light warm-grey — ambiguous
     "no":        "#9C8C88",  # lifted neutral — leaned not-surface
@@ -83,7 +91,7 @@ def _stats(rows: list[dict], key: str) -> tuple[float, float, list[float]]:
 
 
 def _panel_label(ax, letter: str) -> None:
-    ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=26,
+    ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=24,
             fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
@@ -112,13 +120,15 @@ def _draw_sonnet(ax, rows: list[dict], x: float, width: float) -> None:
     jx = _RNG.uniform(-width * 0.20, width * 0.20, size=len(accs))
     ax.scatter(x + jx, accs, s=26, color=COLORS["dark"], alpha=0.75,
                edgecolor="white", linewidth=0.5, zorder=5)
-    ax.text(x, mean + sem + 2, f"{mean:.1f}", ha="center", va="bottom",
-            fontsize=14, color=_SONNET_COLOR, fontweight="bold")
+    # Label above the error bar AND the highest replicate dot, so no dot sits on it.
+    top = max(mean + sem, max(accs))
+    ax.text(x, top + 2, f"{mean:.1f}", ha="center", va="bottom",
+            fontsize=15, color=_SONNET_COLOR)
 
 
 def _draw_deep_dive(ax, rows: list[dict], x: float, width: float) -> None:
     """Deep-dive accuracy bar, STACKED by the tier of the correctly-classified
-    genes (canonical/likely/low green shades + grey for uncertain/no), so the
+    genes (canonical green / likely teal / low amber + grey for uncertain/no), so the
     confidence breakdown of the calls is visible. Stack height == accuracy."""
     from collections import Counter
     n = len(rows)
@@ -132,15 +142,15 @@ def _draw_deep_dive(ax, rows: list[dict], x: float, width: float) -> None:
             continue
         ax.bar(x, h, bottom=bottom, width=width, color=_TIER_COLOR[t], zorder=2)
         bottom += h
-    ax.text(x, dd + 2, f"{dd:.1f}", ha="center", va="bottom", fontsize=14,
-            color=COLORS["dark"], fontweight="bold")
+    ax.text(x, dd + 2, f"{dd:.1f}", ha="center", va="bottom", fontsize=15,
+            color=COLORS["dark"])
 
 
 def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
         "font.size": 18, "axes.labelsize": 18, "axes.titlesize": 0,
-        "xtick.labelsize": 15, "ytick.labelsize": 15, "legend.fontsize": 15,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     rows = _load()
 
@@ -159,7 +169,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     axA.set_ylim(0, 112)
     axA.set_xlim(-0.7, 0.7)
     axA.text(0.5, 1.02, f"n = {len(rows)} genes", transform=axA.transAxes,
-             ha="center", va="bottom", fontsize=13, color=COLORS["neutral"])
+             ha="center", va="bottom", fontsize=14, color=COLORS["neutral"])
     sns.despine(ax=axA, top=True, right=True)
     _panel_label(axA, "a")
 
@@ -185,8 +195,8 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     handles.append(mpatches.Patch(color=_SONNET_COLOR, label="Sonnet+NCBI"))
     # Just outside the top-right so it clears the tall bars + Sonnet dots.
     axB.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.01, 1.0),
-               frameon=False, fontsize=11, title="deep-dive tier / Sonnet",
-               title_fontsize=11, labelspacing=0.35, handlelength=1.2)
+               frameon=False, title="deep-dive tier / Sonnet",
+               title_fontsize=18, labelspacing=0.35, handlelength=1.2)
     sns.despine(ax=axB, top=True, right=True)
     _panel_label(axB, "b")
 

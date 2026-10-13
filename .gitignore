@@ -48,6 +48,8 @@ data/external/doi_ra_cache.json
 # Per-DOI body-fetch outcome cache populated by scripts/paywall_bot_block_compare.py's
 # ``upgrade_datacite_pdf_bucket`` step. Idempotent; safe to delete.
 data/external/probe_body_fetch_outcomes.json
+# Zenodo tarballs, large, reproducible from the deposit
+data/external/zenodo/
 
 # PubTator3 FTP dumps and derived local indexes. Reproducible from
 # ftp.ncbi.nlm.nih.gov/pub/lu/PubTator3/; keep out of git to avoid committing
@@ -206,3 +208,11 @@ data/parsed/
 
 # Per-residue tag-site signals: ~90 KB/gene, durable home is S3/R2, not git
 data/processed/tag_site_signals/
+
+# Accumulated per-gene tag-site discovery (regenerable; grows every run).
+data/external/tag_site_discovery/
+data/external/tag_site_runs/
+data/external/tag_site_triage/
+
+# audit_record_deterministic_consistency.py report + stale-gene list (regenerated per run)
+data/analysis/deterministic_consistency/

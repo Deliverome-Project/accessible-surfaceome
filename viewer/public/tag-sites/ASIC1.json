@@ -58,6 +58,70 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "ASIC1-internal-147-lit",
+      "gene_symbol": "ASIC1",
+      "uniprot_acc": "P78348",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 147,
+      "residue_before": "F",
+      "residue_after": "K",
+      "residue_label": "F147",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / FLAG",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface expression confirmed by anti-HA immunolabeling under non-permeabilized conditions (L1: channels 'exposed on the cell surface' detected). Two-HA version improved epitope exposure vs. single-HA version (L7), indicating the channel traffics to the surface. No explicit proton-sensitivity electrophysiology reported in the ledger for this specific construct.",
+      "confidence": "high",
+      "rationale": "Python lookup confirms Phe at position 147 and Lys at position 148 in the canonical sequence, both within the extracellular domain (63\u2013437), 85 aa from TM1 and 290 aa from TM2. Three independent ledger lines (L1, L3, L4) from two separate publications pin the exact junction F147/K148 in full-length membrane-anchored ASIC1a. Surface expression is confirmed by non-permeabilized antibody labeling; no proton-gating assay for this construct is cited in the ledger, so validation is surface_only rather than surface_and_function. rASIC1a-147HA148 and hASIC1a-147HA148 (one or two copies of HA) and FLAG-tagged ASIC1a full-length constructs with insertion between Phe147 and Lys148 in the extracellular loop, expressed in heterologous cells and neurons (PMC7870742, PMC8654947). Site chosen based on high-resolution crystal structure as a disordered, exposed region. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 32996060,
+          "citation": "PMID 32996060",
+          "claim": "To selectively label the channels exposed on the cell surface, an HA epitope was genetically inserted into the extracellular loop of rat ASIC1a (rASIC1a) or hASIC1a between residues Phe 147 and Lys 148 (ASIC1a- 147 HA 148 , see Fig. 1 A, upper panel)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "ASIC1-internal-298-lit",
+      "gene_symbol": "ASIC1",
+      "uniprot_acc": "P78348",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 298,
+      "residue_before": "D",
+      "residue_after": "L",
+      "residue_label": "D298",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA / pHluorin",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Proton sensitivity (pH-response) and subcellular distribution both unchanged relative to untagged ASIC1a (L8: 'the HA-tag between residues 298 and 299 does not change proton sensitivity nor subcellular distribution of ASIC1a'); surface pool detected by anti-HA under non-permeabilized conditions confirming correct trafficking.",
+      "confidence": "high",
+      "rationale": "Python lookup confirms Asp at position 298 and Leu at position 299 in the canonical 528-aa sequence, both deep within the extracellular domain (63\u2013437), 236 aa from TM1 and 139 aa from TM2. Multiple independent papers (PMC7870742, PMC13155533) inserted HA or pHluorin at this exact junction in full-length, membrane-anchored hASIC1a. L8 provides the strongest validation, explicitly reporting preserved proton sensitivity and subcellular distribution, qualifying this as surface_and_function. hASIC1a-298HA299 and hASIC1a-298pHluorin299 full-length constructs expressed in heterologous cells; HA epitope (YPYDVPDYA) or pH-sensitive GFP (pHluorin) inserted between Asp298 and Leu299 in the extracellular domain. Construct used in multiple independent studies (PMC7870742, PMC13155533). [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 40712023,
+          "citation": "PMID 40712023",
+          "claim": "We detected the surface pool of ASIC1a using an influenza HA epitope in the ECD and the total pool using a C-terminal fusion to green fluorescent protein (GFP) (ASIC1a 298HA -GFP); the HA-tag between residues 298 and 299 does not change proton sensitivity nor subcellular distribution of ASIC1a ( 8 ) and did not affect the potentiation of ASIC1a currents by PCYOX1L (fig."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "ASIC1-snorkel-c",
       "gene_symbol": "ASIC1",
       "uniprot_acc": "P78348",
@@ -898,5 +962,12 @@
       "canonical_residue": 333,
       "left_pct": 58.01393728222997
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:05:43.961841+00:00",
+  "literature_notes": "L9 and L10 describe N-terminal and C-terminal HA/Flag-tagged ASIC1a constructs. ASIC1a topology places the N-terminus (residues 1\u201343) and C-terminus (residues 455\u2013528) both on the INTRACELLULAR face; these tags are therefore cytoplasmic and do not qualify as extracellular surface sites. L11 uses the same N-terminal HA construct as L9 for intracellular immunofluorescence and is excluded for the same reason. L12 describes a C-terminal mCitrine fusion, also intracellular (455\u2013528), excluded. Two extracellular sites are supported: Asp298/Leu299 (rank 1, surface_and_function) and Phe147/Lys148 (rank 2, surface_only).",
+  "literature_rejected": []
 }

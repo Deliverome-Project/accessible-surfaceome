@@ -716,5 +716,12 @@
       "canonical_residue": 671,
       "left_pct": 83.97997496871089
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:22:04.824982+00:00",
+  "literature_notes": "The ledger contains only two clips (L1, L2), both from PMC10567576, both describing 'ITG\u03b25-GFP' \u2014 a GFP-tagged integrin beta-5. The naming convention 'ITG\u03b25-GFP' (protein name first, tag second) denotes a C-terminal fusion. ITGB5 is a type I single-pass transmembrane protein whose C-terminus (residues 749\u2013799) is intracellular. A C-terminal GFP therefore sits on the cytoplasmic face, not the extracellular face. The 'surface display' language in both clips refers to the integrin itself trafficking to the plasma membrane (confirmed by co-expression with the membrane marker RFP-CaaX and accumulation at nanobar ends), not to the GFP being extracellular. Neither clip names a residue, a loop, nor any extracellular domain as the insertion point. The topology_derived rule requires that the named tag be at the one extracellular terminus; here the naming convention places the tag at the intracellular C-terminus, so topology_derived cannot rescue it. No other ledger evidence exists. Zero extracellular tag sites are supported.",
+  "literature_rejected": []
 }

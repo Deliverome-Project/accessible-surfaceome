@@ -57,7 +57,24 @@ export interface TaggedSite {
   evidence_type: string | null;
   functional_impact_measured: string | null;
   confidence: Confidence | null;
+  /** The argument for this position, as prose. The agent metadata below used
+   *  to be concatenated onto the end of this string as
+   *  "[validation: ...; position: ...; entailment_verified: True]", which put
+   *  raw field names in front of the reader and left nothing renderable. */
   rationale: string | null;
+  /** How far the cited study went: did it show the tag on the surface, that
+   *  the protein still works, both, or neither. Literature sites only. */
+  validation_level?: string | null;
+  /** Whether the junction is stated by the paper ("validated"), derived from
+   *  topology because the protein has exactly one extracellular terminus
+   *  ("topology_derived"), or reasoned from a nearby tag ("inferred"). */
+  position_evidence?: string | null;
+  source_tier?: string | null;
+  /** Where the real tag sits when position_evidence is "inferred" — what makes
+   *  an inferred junction checkable rather than asserted. */
+  cited_tag_residue?: number | null;
+  /** Pipeline gate: the quote was found verbatim in the cited source. */
+  entailment_verified?: boolean | null;
   sources: EvidenceSource[];
   // deterministic-only (null for literature_retrieved / validated_literature):
   plddt: number | null;
@@ -65,11 +82,29 @@ export interface TaggedSite {
   median_conservation: number | null;
 }
 
+/** A published insertion position that is not a surface tag site. */
+export interface OtherPosition {
+  residue: number;
+  kind: "intracellular" | "abrogates_function" | "other";
+  supporting_clip_id?: string;
+  note?: string;
+}
+
 export interface TaggedSitesFile {
   has_data: boolean;
   gene_symbol: string;
   uniprot_acc: string;
   sites: TaggedSite[];
+  /** Stamped by the literature agent on every result INCLUDING an empty one,
+   *  so its presence is the claim "this gene was searched". That is what lets
+   *  the card say "Literature-validated (0)" — a searched gene that found
+   *  nothing is a finding, and distinct from one nobody has looked at. */
+  prompt_sha?: string | null;
+  prompt_version?: string | null;
+  generated_at?: string | null;
+  /** Published insertion positions that are NOT surface tag sites: tolerated
+   *  but facing the cytoplasm, or reported to abrogate function. */
+  literature_other_positions?: OtherPosition[];
   /** Per-isoform deterministic tag pins (computed on each isoform's OWN AFDB
    *  model), classified vs the canonical prediction. Optional — absent until the
    *  pipeline regeneration populates it. Consumed by the IsoformsCard topology

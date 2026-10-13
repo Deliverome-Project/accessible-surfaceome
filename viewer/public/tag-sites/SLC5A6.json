@@ -166,6 +166,38 @@
       "median_conservation": 0.5
     },
     {
+      "site_id": "SLC5A6-internal-483-lit",
+      "gene_symbol": "SLC5A6",
+      "uniprot_acc": "Q9Y289",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 483,
+      "residue_before": "M",
+      "residue_after": "P",
+      "residue_label": "M483",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Normal expression confirmed by Western blot; surface display confirmed by NbALFA nanobody binding to the extracellular face. Transport function not reported in the cited clips.",
+      "confidence": "high",
+      "rationale": "L1/L2/L3 explicitly name residues 484\u2013516 as the replaced segment, placing the ALFA tag after residue 483 (M) and before residue 517 (T) in the canonical 635-aa sequence. Python confirms seq[482]='M' and seq[516]='T'. The insertion site sits 7 residues from the TM12 C-terminal boundary (476) and 11 residues from the TM13 N-terminal boundary (528), well beyond the \u22653-residue minimum. No cysteines are present in EL7 (477\u2013527). The replacement is validated at the exact residue level by the paper's own numbering. Full-length human SMVT (SLC5A6) construct SMVT_EM in which EL3 residues 484\u2013516 (the extracellular loop between TM12 and TM13, here EL7 in the 13-TM topology) were replaced with the ALFA tag (PSRLEEELRRRLTEP). The construct was expressed in a membrane context and probed with the NbALFA nanobody to confirm extracellular surface display. Used for cryo-EM structural determination. [validation: surface_only; position: validated; source: paper; entailment_verified: True; position_repaired: true]",
+      "sources": [
+        {
+          "pmid": 42364996,
+          "citation": "PMID 42364996",
+          "claim": "Specifically, we replaced the extracellular loop EL3 (residues 484-516) between TM11 and TM12 with a stable, short \u03b1-helix known as the ALFA tag (Fig. 1a )."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "SLC5A6-surface_loop-239",
       "gene_symbol": "SLC5A6",
       "uniprot_acc": "Q9Y289",
@@ -545,5 +577,12 @@
       "canonical_residue": 517,
       "left_pct": 81.28930817610063
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:22:01.575175+00:00",
+  "literature_notes": "L4/L5/L6 describe hSMVT-GFP constructs in which GFP is fused to the C-terminus. Per the authoritative topology, the C-terminus (residues 549\u2013635) is intracellular; the GFP tag therefore sits on the cytoplasmic face and does not qualify as an extracellular site. These three clips were considered and excluded on that basis. Only one extracellular site is supported by the ledger: the ALFA-tag replacement of EL7 residues 484\u2013516 (insert_after_residue 483). The paper's loop label 'EL3' refers to the third extracellular loop in their 12-TM counting scheme; in the 13-TM topology provided here this corresponds to EL7 (477\u2013527), the loop between TM12 (456\u2013476) and TM13 (528\u2013548).",
+  "literature_rejected": []
 }

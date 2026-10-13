@@ -25,7 +25,7 @@ jobs:
     # issue_comment fires on plain issues too; only PR threads matter here.
     if: github.event_name == 'pull_request' || github.event.issue.pull_request
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Scan the PR body and comments
         env:
           BODY: ${{ github.event.pull_request.body || github.event.comment.body }}

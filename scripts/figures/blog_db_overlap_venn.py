@@ -33,6 +33,7 @@ room. See ``LABEL_SCALE`` below.
 
 Outputs:
   data/analysis/blog/blog_db_overlap_venn.{pdf,png}
+  (symlinked into data/analysis/figures/ for the co-location rule)
 """
 
 from __future__ import annotations
@@ -59,8 +60,11 @@ BRANCH = "main"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
-# No gist: d655abfc now serves the UpSet (Figure 1). A blog figure is
-# reproduced from this in-repo script.
+# d655abfc serves the UpSet (Figure 1); when the Venn was demoted to a blog
+# figure it got its own gist, registered in gist_map.json. The comment that
+# used to sit here said "No gist", so the canonical never embedded one and the
+# committed PNG shipped with an empty Source field.
+GIST_URL = "https://gist.github.com/beccajcarlson/1a06ed9a3ef017ffb91f5f6922d271f3"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
@@ -119,7 +123,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -466,6 +470,10 @@ def main() -> None:
         fontsize=21,
     )
 
+    # The renders live here; data/analysis/figures/ carries symlinks to them,
+    # which is how this figure satisfies CLAUDE.md's co-location rule. Don't
+    # "fix" this to write into figures/ — that writes back through the symlink
+    # to exactly this path, and only makes the code lie about where it lands.
     out_dir = Path(__file__).resolve().parents[2] / "data/analysis/blog"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_pdf = out_dir / "blog_db_overlap_venn.pdf"
@@ -474,12 +482,14 @@ def main() -> None:
         out_pdf,
         bbox_inches="tight",
         pad_inches=0.3,
+        metadata={"Subject": GIST_URL},
     )
     fig.savefig(
         out_png,
         bbox_inches="tight",
         pad_inches=0.3,
         dpi=600,
+        metadata={"Source": GIST_URL},
     )
     print(
         f"Wrote {out_pdf} + {out_png}  ({sum(len(s) for s in sets.values()):,} "

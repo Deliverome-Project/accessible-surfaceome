@@ -58,6 +58,261 @@
       "median_conservation": 0.0
     },
     {
+      "site_id": "SLC6A3-internal-173-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 173,
+      "residue_before": "T",
+      "residue_after": "E",
+      "residue_label": "T173",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "pHluorin",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Poor expression of the transgene in the initial screen; site was not selected for further validation.",
+      "confidence": "low",
+      "rationale": "L1 names T173/E174 as a pHluorin insertion site in full-length DAT EL2; Python confirms r(173)=T and r(174)=E. The site is 9 residues from TM3 end (164), within EL2. However, L1 explicitly states this site resulted in 'poor expression of the transgene,' indicating a trafficking or folding defect. Ranked last among EL2 sites. Full-length human DAT; pHluorin inserted at T173/E174 in EL2 as part of a multi-site screen. This site was explicitly noted to result in poor expression of the transgene in the initial screen. [validation: function_perturbed; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 36594015,
+          "citation": "PMID 36594015",
+          "claim": "Flexible linkers were inserted on both ends of pHluorin to introduce additional flexibility for the proper folding of the reporter. pHluorin was inserted at multiple sites, T173/E174, P194/G195, G199/S201, G209/T210, R219/G220 outside the known functional sites of DAT. 45 , 46 , 47 , 48 Although some insertion sites (T173/E174, G209/T210) resulted in poor expression of the transgene in the initial screen, little difference was observed for the remaining versions of DAT-pHluorin (DAT-pH) in their overall expression patterns (data not shown)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC6A3-internal-194-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 194,
+      "residue_before": "P",
+      "residue_after": "G",
+      "residue_label": "P194",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "pHluorin / HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Surface staining of non-permeabilized cells confirmed plasma-membrane display of DAT-pHluorin; cocaine (10 \u00b5M, 5 min) caused loss of surface DAT-pH signal, demonstrating the tagged transporter responds to a pharmacological stimulus. Dopamine uptake not explicitly quantified in the ledger clips.",
+      "confidence": "high",
+      "rationale": "L3 explicitly states 'pHluorin was inserted between the 194 Proline and 195 Glycine of the second exofacial loop of human DAT'; Python confirms r(194)=P and r(195)=G in the canonical sequence. L2 corroborates that an HA epitope was previously inserted at this same P194/G195 junction. L4 confirms surface display by non-permeabilized staining. This is the best-validated EL2 site. Full-length human DAT expressed in neurons/HEK cells; pHluorin inserted between P194 and G195 in EL2 with flexible GS linkers on both ends; HA epitope had previously been inserted at the same P194/G195 junction in earlier studies (cited as refs 49,50 in the paper). [validation: surface_only; position: validated; source: paper; entailment_verified: True; position_repaired: true]",
+      "sources": [
+        {
+          "pmid": 36594015,
+          "citation": "PMID 36594015",
+          "claim": "The pH sensitive GFP variant, pHluorin, was inserted between the 194 Proline and 195 Glycine of the second exofacial loop of human DAT."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC6A3-internal-199-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 199,
+      "residue_before": "G",
+      "residue_after": "D",
+      "residue_label": "G199",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "pHluorin",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Initial screen showed 'little difference in overall expression patterns' (not in the poor-expression group of T173/E174 and G209/T210). No explicit surface staining or uptake assay reported for this junction.",
+      "confidence": "medium",
+      "rationale": "L1 names G199 as the first residue of this junction; Python confirms r(199)=G. The paper's notation 'G199/S201' skips D200 in the canonical sequence, a one-residue uncertainty resolved by taking insert_after=199 (G is the named anchor). The site is 35 residues from TM3 end and 36 residues from TM4 start, well within EL2. Full-length human DAT; pHluorin inserted at 'G199/S201' in EL2 as part of a multi-site screen. The paper's notation skips position 200; canonical sequence has r(199)=G, r(200)=D, r(201)=S. G199 is the named anchor residue. [validation: detected_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 36594015,
+          "citation": "PMID 36594015",
+          "claim": "Flexible linkers were inserted on both ends of pHluorin to introduce additional flexibility for the proper folding of the reporter. pHluorin was inserted at multiple sites, T173/E174, P194/G195, G199/S201, G209/T210, R219/G220 outside the known functional sites of DAT. 45 , 46 , 47 , 48 Although some insertion sites (T173/E174, G209/T210) resulted in poor expression of the transgene in the initial screen, little difference was observed for the remaining versions of DAT-pHluorin (DAT-pH) in their overall expression patterns (data not shown)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC6A3-internal-209-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 209,
+      "residue_before": "G",
+      "residue_after": "T",
+      "residue_label": "G209",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "pHluorin",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Poor expression of the transgene in the initial screen; site was not selected for further validation.",
+      "confidence": "low",
+      "rationale": "L1 names G209/T210 as a pHluorin insertion site in full-length DAT EL2; Python confirms r(209)=G and r(210)=T. The site is 45 residues from TM3 end (164) and 26 residues from TM4 start (236), well within EL2. However, L1 explicitly states this site resulted in 'poor expression of the transgene,' indicating a trafficking or folding defect. Full-length human DAT; pHluorin inserted at G209/T210 in EL2 as part of a multi-site screen. This site was explicitly noted to result in poor expression of the transgene in the initial screen. [validation: function_perturbed; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 36594015,
+          "citation": "PMID 36594015",
+          "claim": "Flexible linkers were inserted on both ends of pHluorin to introduce additional flexibility for the proper folding of the reporter. pHluorin was inserted at multiple sites, T173/E174, P194/G195, G199/S201, G209/T210, R219/G220 outside the known functional sites of DAT. 45 , 46 , 47 , 48 Although some insertion sites (T173/E174, G209/T210) resulted in poor expression of the transgene in the initial screen, little difference was observed for the remaining versions of DAT-pHluorin (DAT-pH) in their overall expression patterns (data not shown)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC6A3-internal-219-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 219,
+      "residue_before": "R",
+      "residue_after": "G",
+      "residue_label": "R219",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "pHluorin",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Initial screen showed 'little difference in overall expression patterns' compared to other sites (excluding T173/E174 and G209/T210 which showed poor expression). No explicit surface staining or uptake assay reported for this specific junction in the ledger.",
+      "confidence": "medium",
+      "rationale": "L1 names R219/G220 as one of the pHluorin insertion sites in full-length DAT EL2; Python confirms r(219)=R and r(220)=G. The site is 55 residues from TM3 end (164) and 16 residues from TM4 start (236), well within EL2. It was not flagged for poor expression in the initial screen. Full-length human DAT; pHluorin inserted at R219/G220 in EL2 (165-235) as part of a multi-site screen; flexible GS linkers flanked the insert. This site was not in the 'poor expression' group. [validation: detected_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 36594015,
+          "citation": "PMID 36594015",
+          "claim": "Flexible linkers were inserted on both ends of pHluorin to introduce additional flexibility for the proper folding of the reporter. pHluorin was inserted at multiple sites, T173/E174, P194/G195, G199/S201, G209/T210, R219/G220 outside the known functional sites of DAT. 45 , 46 , 47 , 48 Although some insertion sites (T173/E174, G209/T210) resulted in poor expression of the transgene in the initial screen, little difference was observed for the remaining versions of DAT-pHluorin (DAT-pH) in their overall expression patterns (data not shown)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC6A3-internal-287-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 287,
+      "residue_before": "L",
+      "residue_after": "P",
+      "residue_label": "L287",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "tetraCys CCPGCC",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Constructs were generated and characterized as potential biarsenic dye labeling sites on the cell surface; the ledger does not detail specific uptake or surface-staining results for EL3-CCPGCC beyond construct generation.",
+      "confidence": "low",
+      "rationale": "L5 names 'position 288' as the Pro-Gly anchor in EL3; Python confirms r(288)=P and r(289)=G, and r(287)=L (last residue before the CCPGCC). EL3 spans 286-309; the CCPGCC substitution spans 286-291, placing the upstream cysteines only 1-2 residues from TM5 end (285). The tag body (PG) is at 288-289, 3 residues from TM5 end. Confidence is lower due to proximity to TM boundary. Full-length human DAT (DAT EL3-CCPGCC); the 2 upstream and 2 downstream residues flanking the native P288-G289 dipeptide in EL3 (286-309) were mutated to cysteines, creating a CCPGCC biarsenic dye-labeling motif. EL3 is only 24 residues; the upstream cysteines (at 286-287) are 1-2 residues from TM5 end (285). [validation: detected_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 20161733,
+          "citation": "PMID 20161733",
+          "claim": "In the current study, we engineered tetraCys motifs flanking existing extracellular Pro-Gly dipeptide residues encoded in human DAT (hDAT) at amino acid positions 194, 288 and 387, to use as potential biarsenic dye labeling sites."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC6A3-internal-386-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 386,
+      "residue_before": "G",
+      "residue_after": "P",
+      "residue_label": "G386",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "tetraCys CCPGCC",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Constructs were generated and characterized as potential biarsenic dye labeling sites on the cell surface; the ledger does not detail specific uptake or surface-staining results for EL4-CCPGCC beyond construct generation.",
+      "confidence": "medium",
+      "rationale": "L5 names 'position 387' as the Pro-Gly anchor in EL4; Python confirms r(387)=P and r(388)=G, and r(386)=G (last unmodified residue before the CCPGCC). EL4 spans 373-399, with TM7 ending at 372 (15 residues clearance) and TM8 starting at 400 (12 residues clearance). The CCPGCC substitution is centered at P387-G388. Full-length human DAT (DAT EL4-CCPGCC); the 2 upstream and 2 downstream residues flanking the native P387-G388 dipeptide in EL4 (373-399) were mutated to cysteines, creating a CCPGCC biarsenic dye-labeling motif. Construct generated and characterized for surface labeling. [validation: detected_only; position: inferred; source: paper; cited_tag_residue: 386; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 20161733,
+          "citation": "PMID 20161733",
+          "claim": "In the current study, we engineered tetraCys motifs flanking existing extracellular Pro-Gly dipeptide residues encoded in human DAT (hDAT) at amino acid positions 194, 288 and 387, to use as potential biarsenic dye labeling sites."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "SLC6A3-internal-None-lit",
+      "gene_symbol": "SLC6A3",
+      "uniprot_acc": "Q01959",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": null,
+      "residue_before": "",
+      "residue_after": "",
+      "residue_label": "EL2",
+      "topology_state": null,
+      "extracellular": false,
+      "compartment": "unknown",
+      "tag_type": "BBS 13 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "NOT MEASURED in the ledger clip; the clip describes construct generation only.",
+      "confidence": "low",
+      "rationale": "L7 reports BBS insertion into EL2 of full-length hDAT from a separate study (DOI:10.1101/712448), providing independent evidence that EL2 tolerates extracellular tag insertion. No residue is named, so the position cannot be pinned; region='EL2' is reported. This is a distinct site from P194/G195 because it is a different paper, different tag, and no junction is specified. Full-length human DAT and DAT chimera constructs; a bungarotoxin-binding site (BBS) tag (GSSGSSGWRYYESSLEPYPDGSSGSSG, 13-aa core WRYYESSLEPYPD) was inserted into extracellular loop 2 using an extracellular tagging strategy. No specific residue position named. [validation: not_measured; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "citation": "preprint",
+          "claim": "Bungarotoxin binding site (BBS)-tagged hDAT and DAT chimera constructs were generated using the extracellular tagging strategy as previously described (49) with the following amino acid sequence inserted into extracellular loop 2 of hDAT and DAT chimera constructs: GSSGSSGWRYYESSLEPYPDGSSGSSG."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "SLC6A3-snorkel-c",
       "gene_symbol": "SLC6A3",
       "uniprot_acc": "Q01959",
@@ -202,5 +457,12 @@
       "canonical_residue": 187,
       "left_pct": 30.161290322580648
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:33:34.907758+00:00",
+  "literature_notes": "L12 and L13 describe C-terminal tags (Twin-Strep/HA and FLAG) on full-length DAT. The authoritative topology places residues 579-620 as INTRACELLULAR; these sites are therefore disqualified as they are not on the extracellular face. L8/L9/L10/L11 describe HA and HA-\u03b2lactamase in EL2 of YFP-HA-DAT; L2 identifies the HA position as P194/G195 (the same junction as L3), so these clips add validation weight to site 1 but do not introduce a new site. The G199/S201 notation in L1 skips D200 in the canonical sequence (r(200)=D, r(201)=S); insert_after=199 is taken with G199 as the named anchor, acknowledging a one-residue uncertainty. The EL3 tetraCys (L5) places upstream cysteines at positions 286-287, only 1-2 residues from TM5 end (285); the tag body (PG) is at 288-289 (3 residues from TM5 end). This site is reported but ranked low due to TM proximity of the flanking cysteines.",
+  "literature_rejected": []
 }

@@ -4,10 +4,17 @@ Three-panel bar chart: per-database coverage of the three positive-control
 target lists (ADC / TCE / ViralZone). One bar per source (Sonnet + 5 DBs),
 canonical performance-ranked axis order and project palette.
 
-The per-DB flags are read directly from ``candidate_universe_v3``, whose
-``*_flag`` columns already carry the SurfaceBench-optimized cutoffs (the
-optimization is applied upstream in the v3 build). They are baked into the
-bundled TSV by ``scripts/build_positive_control_lists.py``.
+The per-DB flags come from ``candidate_universe_v3``, whose ``*_flag``
+columns already carry the catalog-vote cutoffs (SurfaceBench-optimized for
+UniProt and CSPA, native for GO CC, SURFY and HPA). The Sonnet flag is
+positive (verdict yes or contextual) in any of the NCBI v1, NCBI v2 or
+PubMed-rescue (``genome_full_sonnet_pubmed_ncbi_v1``) triage passes.
+``scripts/build_positive_control_lists.py`` writes both into
+``positive_control_long.tsv``; ``scripts/build_figure_tsvs.py`` copies that
+file to the bundled ``data/processed/figures/positive_control_db_coverage_bars.tsv``.
+
+In panel a each bar is split by ADC source (TheraSAbDab > Open Targets >
+ADCdb); the gene(s) Sonnet misses are written inside its bar.
 
 # Reproduction: https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c
 
@@ -142,13 +149,13 @@ def render(df_tidy: pd.DataFrame) -> None:
     # (data/analysis/figures/make_positive_control_db_coverage_bars.py) so
     # tests/test_figure_canonical_mirror_sync.py doesn't flag drift.
     plt.rcParams.update({
-        "font.size":       14,
-        "axes.labelsize":  14,
-        "xtick.labelsize": 14,
-        "ytick.labelsize": 14,
-        "legend.fontsize": 14,
+        "font.size":       16,
+        "axes.labelsize":  18,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
+        "legend.fontsize": 15,
     })
-    fig, axes = plt.subplots(1, 3, figsize=(17, 6), sharey=False)
+    fig, axes = plt.subplots(1, 3, figsize=(14, 6.2), sharey=False)
 
     # Single-file source — also read for the ADC source-stacking + miss list.
     long = pd.read_csv(DATA_TSV, sep="\t")
@@ -188,17 +195,16 @@ def render(df_tidy: pd.DataFrame) -> None:
                 order=DB_ORDER, hue="db", palette=bar_colors,
                 legend=False, ax=ax, edgecolor="none",
             )
-        # Three-row stacked text above each bar: spelled-out DB title (bold,
-        # in the bar's color) → count (semibold) → percentage (regular).
-        # Keeps each column identifiable when the figure is shrunk.
+        # Count + percentage above each bar (the DB name is the x tick label;
+        # at print width a third line would overrun the narrow columns).
         for i, db in enumerate(DB_ORDER):
             n = int(sub[sub["db"] == db]["n"].iloc[0])
             pct = n / n_total * 100
-            label = f"{DB_TITLE[db]}\n{n}\n({pct:.0f}%)"
+            label = f"{n}\n{pct:.0f}%"
             ax.text(
                 i, n + n_total * 0.025, label,
-                ha="center", va="bottom", fontsize=10,
-                color=DB_COLOR[db], weight="semibold", linespacing=1.25,
+                ha="center", va="bottom", fontsize=14,
+                color=DB_COLOR[db], linespacing=1.15,
             )
 
         # Annotate the Sonnet bar with the gene name(s) Sonnet missed. Placed
@@ -214,59 +220,68 @@ def render(df_tidy: pd.DataFrame) -> None:
                 f"missed: {', '.join(missed)}",
                 ha="center", va="top",
                 rotation=90,
-                fontsize=10, style="italic",
-                color="white", weight="semibold",
+                fontsize=14, style="italic",
+                color="white",
             )
 
         # Panel title rendered via fig.text after the loop — set_title was
         # being clipped by save_figure's bbox-tight cropping. Store the
         # string on the axes for the post-loop label step to pick up.
         ax._panel_title_text = f"{panel_title}\n(n = {n_total} targets)"
-        ax.set_ylabel("Targets\nrepresented", fontsize=13, weight="medium")
+        ax.set_ylabel("Targets\nrepresented" if slug == "ADC" else "", fontsize=18)
         ax.set_xlabel("")
-        # Modest headroom (1.18×) over n_total to fit the per-bar text block
+        # Modest headroom (1.25×) over n_total to fit the per-bar text block
         # (DB title + count + percentage) without crowding the panel ceiling.
-        ax.set_ylim(0, n_total * 1.18)
+        ax.set_ylim(0, n_total * 1.25)
         # Cap y-ticks at n_total so no displayed value exceeds the universe size.
         ax.set_yticks(_smart_yticks(n_total))
         sns.despine(ax=ax, top=True, right=True)
-        # X-ticks now redundant with the spelled-out titles — hide them.
-        ax.set_xticks([])
+        ax.set_xticks(range(len(DB_ORDER)))
+        ax.set_xticklabels([DB_TITLE[db] for db in DB_ORDER], rotation=40,
+                           ha="right", rotation_mode="anchor")
+        for tick, db in zip(ax.get_xticklabels(), DB_ORDER, strict=True):
+            tick.set_color(DB_COLOR[db])
+        ax.tick_params(axis="x", length=0, pad=4)
 
     # Finalize the layout BEFORE reading axes positions for the fig.text titles
     # + letters. subplots_adjust moves/resizes the axes, so doing it AFTER the
     # label placement left the titles + a/b/c letters off-center (the bug this
     # fixes). Explicit margins (not tight_layout) because tight_layout clipped
     # the panel titles when bar text filled the top ~18% of a panel.
-    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
+    plt.subplots_adjust(top=0.80, bottom=0.22, left=0.07, right=0.99, wspace=0.22)
     # Panel titles + subpanel labels via fig.text in the reserved top margin,
     # rather than ax.set_title (which save_figure's bbox-tight cropping clipped).
     fig.canvas.draw()  # resolve the FINAL axes positions before reading them
     for ax, letter in zip(axes, "abc"):
         bbox = ax.get_position()
         # Panel title — centered above the axes, bold
-        fig.text(
+        title = fig.text(
             (bbox.x0 + bbox.x1) / 2, bbox.y1 + 0.04,
             getattr(ax, "_panel_title_text", ""),
-            fontsize=13, weight="bold",
+            fontsize=16,
             ha="center", va="bottom",
         )
-        # Subpanel letter — top-left of the panel, in figure margin
+        # Subpanel letter level with the title's first (shortest) line, so
+        # it clears the wider lines below.
+        title_top = fig.transFigure.inverted().transform(
+            (0, title.get_window_extent(fig.canvas.get_renderer()).y1))[1]
         fig.text(
-            bbox.x0 - 0.015, bbox.y1 + 0.04,
-            letter, fontsize=22, fontweight=800, family="Manrope",
-            ha="right", va="bottom",
+            bbox.x0 - 0.03, title_top,
+            letter, fontsize=24, fontweight=800, family="Manrope",
+            ha="right", va="top",
         )
 
-    # ADC panel legend — explain the 3-source teal stacking
+    # ADC panel legend — explain the 3-source teal stacking; below the panel,
+    # since inside it collides with the per-bar labels
     adc_ax = axes[0]
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, color=ADC_SOURCE_COLOR[src], label=src)
         for src in ADC_SOURCE_ORDER
     ]
     adc_ax.legend(
-        handles=legend_handles, loc="upper right", frameon=False,
-        fontsize=10, title="ADC source", title_fontsize=10,
+        handles=legend_handles, loc="upper center", bbox_to_anchor=(0.5, -0.24),
+        ncols=3, frameon=False, handlelength=1.2, columnspacing=1.2,
+        fontsize=15, title="ADC source", title_fontsize=15,
     )
 
     save_figure(

@@ -89,9 +89,14 @@ const CACHE_SWR       = 86400;     // serve-stale window (revalidate / on-error)
 // purge-on-publish (cloud/surface_annotation.publish_record), so the long
 // TTL + serve-stale window costs nothing in staleness. ttl === 0 (e.g. a 400
 // on bad input) opts out — a non-cacheable error must not be served stale.
-function cacheControl(ttl) {
+// `immutable` is an opt-in for content that's genuinely permanent (e.g. a
+// data release once its Zenodo DOI is set) — it replaces the
+// stale-while-revalidate/stale-if-error pair (which imply the content MAY
+// still change) with the `immutable` directive instead.
+function cacheControl(ttl, { immutable = false } = {}) {
   const base = `public, max-age=${ttl}, s-maxage=${ttl}`;
   if (ttl <= 0) return base;
+  if (immutable) return `${base}, immutable`;
   return `${base}, stale-while-revalidate=${CACHE_SWR}, stale-if-error=${CACHE_SWR}`;
 }
 
@@ -99,17 +104,31 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+  // Let cross-origin clients read the record-history / degraded headers the
+  // API docs tell them to act on (browsers hide non-safelisted headers).
+  "Access-Control-Expose-Headers": "ETag, X-Surfaceome-Degraded, X-Surfaceome-Revision, X-Surfaceome-Content-Hash",
 };
 
-function json(data, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": cacheControl(ttl),
-      ...CORS_HEADERS,
-    },
-  });
+// The header a serve-time-enrichment failure sets on an otherwise-200
+// response (see the `soft`/`degraded` machinery around handleGene /
+// handleGeneEvidence below). `json()` centralizes it so every caller that
+// passes `degraded` gets the same two behaviors for free: the header itself,
+// and forcing `Cache-Control: no-store` so `withEdgeCache` never persists
+// the degraded bytes (edge or KV) even though it still returns them to this
+// one caller. Mirrored as DEGRADED_HEADER in
+// src/accessible_surfaceome/cloud/record_history/archive.py; a test pins the
+// two literals together so the archiver's check can't drift.
+const DEGRADED_HEADER = "X-Surfaceome-Degraded";
+
+function json(data, { status = 200, ttl = CACHE_TTL_SHORT, immutable = false, degraded = null } = {}) {
+  const isDegraded = Array.isArray(degraded) && degraded.length > 0;
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": isDegraded ? "no-store" : cacheControl(ttl, { immutable }),
+    ...CORS_HEADERS,
+  };
+  if (isDegraded) headers[DEGRADED_HEADER] = degraded.join(",");
+  return new Response(JSON.stringify(data, null, 2), { status, headers });
 }
 
 function notFound(msg = "not_found") {
@@ -118,6 +137,30 @@ function notFound(msg = "not_found") {
 
 function badRequest(msg) {
   return json({ error: msg }, { status: 400, ttl: 0 });
+}
+
+// A D1 error whose message names a missing table is a PERSISTENT,
+// intentional condition (the table hasn't been provisioned by this point in
+// a rollout — e.g. deploying the Worker before a new table's sync has run
+// once), not a transient hiccup. It reads the same on every request until
+// the table exists, so treating it as "degraded" would permanently poison
+// the cache for that route (every request forced to no-store) instead of
+// just degrading gracefully to nulls, same as today. Real transient errors
+// (timeout, isolate reset, temporary D1 unavailability) do NOT match this
+// and fall through to the degraded path. Mirrors the existing tolerance in
+// handleTagSites ("Resilient to deploy order: if tag_site_public isn't
+// provisioned yet...") and fetchPaperMetadata's comment ("or when the table
+// hasn't been created yet") — same intentional case, now applied uniformly
+// via `soft()` instead of ad hoc per callsite.
+// Schema-rollout errors (a table or column the Worker reads before its
+// migration/sync has landed) are persistent, not transient: flagging them as
+// degraded would force no-store on every gene and disable caching
+// cohort-wide. Treat them as "absent" like before, but log loudly.
+function isMissingTable(e) {
+  const msg = String(e?.message ?? e ?? "");
+  if (!/no such (table|column)/i.test(msg)) return false;
+  if (/no such column/i.test(msg)) console.error("schema_rollout_missing_column", msg);
+  return true;
 }
 
 // TSV response — same cache/CORS posture as `json` but text/tsv.
@@ -141,6 +184,11 @@ function tsvCell(v) {
   return String(v).replace(/[\t\r\n]+/g, " ");
 }
 
+// D1 cost note (2026-09-28): the topology release lookups below use EXISTS
+// probes on idx_topology_public_cohort_version instead of
+// `IN (SELECT DISTINCT topology_version FROM topology_public WHERE cohort=…)`,
+// which read every row of the cohort (6k–23k rows, 3× per record) and made
+// public D1 fragile under load. Same result, ~7 rows read.
 // Light gene-symbol validation: alnum + dash + dot, ≤30 chars.
 const SYMBOL_OK = /^[A-Za-z0-9][A-Za-z0-9._-]{0,29}$/;
 
@@ -153,6 +201,473 @@ function checkSymbol(sym) {
   // misses them and the record endpoint 404s while `/v1/genes` still
   // lists them. Keep new per-symbol WHERE clauses `COLLATE NOCASE`.
   return sym.toUpperCase();
+}
+
+// --- Record history (spec docs/superpowers/specs/2026-09-27-record-history-design.md) ---
+// Archived bodies live write-once in the RECORD_HISTORY R2 bucket, named by
+// content hash, so they are cacheable forever. They are read straight from
+// R2 rather than through withEdgeCache, which would rebuild the response
+// with only Content-Type + Cache-Control and drop ETag / X-Surfaceome-*.
+const CACHE_TTL_IMMUTABLE = 31536000;  // 1 year
+const RELEASE_VERSION_OK = /^v?(\d+\.\d+\.\d+)$/;
+const REVISION_OK = /^[1-9]\d{0,5}$/;
+const HISTORY_BASE = "https://api.deliverome.org/surfaceome/v1";
+const REVISION_PARTS = {
+  record:   { col: "json_hash",     ext: "json", ct: "application/json; charset=utf-8" },
+  evidence: { col: "evidence_hash", ext: "json", ct: "application/json; charset=utf-8", missing: "evidence_not_archived" },
+  md:       { col: "md_hash",       ext: "md",   ct: "text/markdown; charset=utf-8",   missing: "markdown_not_archived" },
+};
+
+// Constant-time byte comparison for the fallback path below (equal-length
+// arrays only — callers check .length first).
+function timingSafeEqualFallback(a, b) {
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+// The archiver (accessible_surfaceome.cloud.record_history) must see the
+// current D1 state, not a cached copy, and sweeps ~5k genes from one IP.
+// A request carrying the ARCHIVE_BYPASS_TOKEN secret skips both cache tiers
+// and the rate limiter. Without the exact secret nothing changes.
+//
+// The comparison is timing-safe: a naive `===` leaks the token length and
+// the position of the first mismatched byte through response-time
+// variance, which over enough requests is a practical side channel for
+// guessing a long-lived secret. `crypto.subtle.timingSafeEqual` is a
+// Cloudflare Workers-runtime-specific (non-standard) addition to
+// SubtleCrypto; Node's webcrypto (used by the offline test harness below)
+// doesn't implement it, so we fall back to a manual constant-time compare.
+async function isArchiveBypass(request, env) {
+  const token = env?.ARCHIVE_BYPASS_TOKEN;
+  if (!token) return false;
+  const given = request.headers.get("X-Archive-Bypass");
+  if (!given) return false;
+  const enc = new TextEncoder();
+  const tokenBytes = enc.encode(token);
+  const givenBytes = enc.encode(given);
+  if (tokenBytes.length !== givenBytes.length) return false;
+  const subtle = globalThis.crypto && globalThis.crypto.subtle;
+  if (subtle && typeof subtle.timingSafeEqual === "function") {
+    return await subtle.timingSafeEqual(tokenBytes, givenBytes);
+  }
+  return timingSafeEqualFallback(tokenBytes, givenBytes);
+}
+
+function normalizeVersion(v) {
+  const m = RELEASE_VERSION_OK.exec(v || "");
+  return m ? m[1] : null;
+}
+
+// `/v1/releases/v1.0.0...` and `/v1/releases/1.0.0...` must resolve to ONE
+// cache key (the bare form) so cut_data_release's purge — which only ever
+// targets the bare path — always invalidates the live entry. A v-prefixed
+// request redirects (301, no-store) to the canonical bare path rather than
+// ever being handled or cached under its own key. Returns null (no
+// redirect needed) for an already-bare version or a not-quite-version
+// string (the handler's own badRequest("invalid_version") covers that).
+function bareVersionRedirect(rawVer, suffix = "") {
+  if (!/^v/i.test(rawVer || "")) return null;
+  const bare = rawVer.slice(1);
+  if (!RELEASE_VERSION_OK.test(bare)) return null;
+  return new Response(null, {
+    status: 301,
+    headers: {
+      Location: `${HISTORY_BASE}/releases/${bare}${suffix}`,
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+async function archivedPart(env, row, part) {
+  const p = REVISION_PARTS[part];
+  const hash = row[p.col];
+  if (!hash) return notFound(p.missing);
+  if (!env.RECORD_HISTORY) return json({ error: "history_unavailable" }, { status: 503, ttl: 0 });
+  const obj = await env.RECORD_HISTORY.get(`records/sha256/${hash}.${p.ext}`);
+  if (!obj) return json({ error: "archive_body_missing" }, { status: 500, ttl: 0 });
+  return new Response(obj.body, {
+    status: 200,
+    headers: {
+      "Content-Type": p.ct,
+      "Cache-Control": `public, max-age=${CACHE_TTL_IMMUTABLE}, s-maxage=${CACHE_TTL_IMMUTABLE}, immutable`,
+      "ETag": `"${hash}"`,
+      "X-Surfaceome-Revision": String(row.revision),
+      "X-Surfaceome-Content-Hash": hash,
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+async function handleRevisionList(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const { results } = await env.DB.prepare(
+    `SELECT r.gene_symbol, r.hgnc_id, r.revision, r.published_at, r.source,
+            r.json_hash, r.evidence_hash, r.md_hash, r.schema_version, r.prompt_corpus_version,
+            (SELECT json_group_array(json_object('version', v, 'zenodo_version_doi', doi))
+               FROM (
+                 SELECT m.version AS v, d.zenodo_version_doi AS doi
+                   FROM data_release_member m JOIN data_release d ON d.version = m.version
+                  WHERE m.gene_symbol = r.gene_symbol COLLATE NOCASE AND m.revision = r.revision
+                  ORDER BY d.cut_at
+               )) AS releases
+       FROM record_revision r
+      WHERE r.gene_symbol = ? COLLATE NOCASE
+      ORDER BY r.revision DESC`
+  ).bind(sym).all();
+  if (!results.length) return notFound("gene_not_annotated");
+  const g = results[0];
+  const base = `${HISTORY_BASE}/genes/${g.gene_symbol}/revisions`;
+  // `results` is ordered newest-first (revision DESC); `changed` is computed
+  // by walking oldest-first and diffing each row against the previous
+  // (numerically lower) revision of the SAME gene — no extra query, since
+  // every row for this gene is already in hand. Revision 1 (a gene's first
+  // ARCHIVED version — history no longer contains a seeded/deposited
+  // revision 0) is always `["first_archived"]`, since there is no prior
+  // revision to diff against and a part-by-part comparison against nothing
+  // would be meaningless. It's "first_archived" and not "first_served"
+  // deliberately: for a gene that was seeded and then had that seed row
+  // renumbered away (drop_seed_revisions.py), its new revision 1 is
+  // whatever was first captured into record_revision AFTER that migration
+  // — the API had already been serving that gene's record for a while
+  // before history (or this migration) existed. Every later revision
+  // lists whichever of record/evidence/markdown differ from the previous
+  // revision — a NULL-to-value or value-to-NULL transition counts as a
+  // change via plain `!==` (NULL !== "somehash").
+  const ascending = [...results].sort((a, b) => a.revision - b.revision);
+  const changedByRevision = new Map();
+  let prev = null;
+  for (const r of ascending) {
+    let changed;
+    if (prev === null) {
+      changed = ["first_archived"];
+    } else {
+      changed = [];
+      if (r.json_hash !== prev.json_hash) changed.push("record");
+      if (r.evidence_hash !== prev.evidence_hash) changed.push("evidence");
+      if (r.md_hash !== prev.md_hash) changed.push("markdown");
+    }
+    changedByRevision.set(r.revision, changed);
+    prev = r;
+  }
+  return json({
+    gene_symbol: g.gene_symbol,
+    hgnc_id: g.hgnc_id,
+    current_revision: g.revision,
+    revisions: results.map((r) => ({
+      revision: r.revision,
+      published_at: r.published_at,
+      source: r.source,
+      json_hash: r.json_hash,
+      evidence_hash: r.evidence_hash,
+      md_hash: r.md_hash,
+      schema_version: r.schema_version,
+      prompt_corpus_version: r.prompt_corpus_version,
+      changed: changedByRevision.get(r.revision),
+      releases: r.releases ? JSON.parse(r.releases) : [],
+      url: `${base}/${r.revision}`,
+      evidence_url: r.evidence_hash ? `${base}/${r.revision}/evidence` : null,
+      md_url: r.md_hash ? `${base}/${r.revision}.md` : null,
+    })),
+  });
+}
+
+async function handleRevisionBody(env, symbol, n, part) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  if (!REVISION_OK.test(n)) return badRequest("invalid_revision");
+  const row = await env.DB.prepare(
+    `SELECT revision, json_hash, evidence_hash, md_hash FROM record_revision
+      WHERE gene_symbol = ? COLLATE NOCASE AND revision = ?`
+  ).bind(sym, Number(n)).first();
+  if (!row) return notFound("revision_not_found");
+  return archivedPart(env, row, part);
+}
+
+// A release whose `archive_scope` is 'zenodo_only' predates this system
+// (only release 1.0.0, the 2026-08-15 Zenodo deposit, today) — its records
+// were never individually archived into `record_revision`/R2, only bundled
+// into the Zenodo deposit tarball. NULL/'api' (every release cut under this
+// system) has real `data_release_member` rows behind it. See
+// docs/superpowers/specs/2026-09-27-record-history-design.md.
+function isZenodoOnly(rel) {
+  return rel.archive_scope === "zenodo_only";
+}
+
+const DATA_RELEASE_COLS =
+  "version, cut_at, github_tag, zenodo_version_doi, n_genes, notes";
+
+// `data_release.archive_scope` is added by `drop_seed_revisions.py`'s
+// idempotent `ALTER TABLE` (or a fresh `apply_record_history_ddl.py`
+// apply) — a Worker deploy that reads it can land BEFORE that migration
+// has run against public D1, in which case the column doesn't exist yet
+// and every `SELECT ... archive_scope ...` below would otherwise 500 on
+// every /v1/releases* route. `isMissingTable` already recognizes "no such
+// column" as the persistent, deploy-order-dependent case (not a flaky
+// one), so on that specific failure this re-queries WITHOUT the column
+// and reports every release as `archive_scope: null` (never zenodo-only)
+// until the column exists — the same "degrade to absent" posture used
+// everywhere else in this file for a not-yet-provisioned table/column.
+async function dataReleaseRows(env, whereSql, params) {
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT ${DATA_RELEASE_COLS}, archive_scope FROM data_release ${whereSql}`
+    ).bind(...params).all();
+    return results;
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+    const { results } = await env.DB.prepare(
+      `SELECT ${DATA_RELEASE_COLS} FROM data_release ${whereSql}`
+    ).bind(...params).all();
+    return results.map((r) => ({ ...r, archive_scope: null }));
+  }
+}
+
+async function dataReleaseRow(env, whereSql, params) {
+  const rows = await dataReleaseRows(env, whereSql, params);
+  return rows[0] ?? null;
+}
+
+// --- Reproducibility replicates (API-only) ---
+// Genes re-annotated for the run-to-run reproducibility analysis
+// (Supplementary Figure 16), served from public D1 `deep_dive_replicate`.
+// These are NOT the published records: surface_annotation stays the only
+// source of /v1/genes/{SYMBOL}, nothing in the catalog or viewer reads this
+// table, and every response is labelled `reproducibility_replicate: true`
+// with a pointer back to the published record. Rows are loaded once from a
+// frozen bundle and never rewritten, so the per-gene routes' 1-day TTL needs
+// no purge path; the cohort-level index stays on the 1-minute TTL (tiny
+// metadata query) so it never needs a purge-map entry.
+const REPLICATE_KINDS = ["published_snapshot", "full_rerun", "fixed_evidence_replay"];
+const REPLICATE_STUDY_OK = /^[a-z0-9_]{1,64}$/;
+const REPLICATE_NOTICE =
+  "Reproducibility replicate, not the published record. Kept for the run-to-run " +
+  "reproducibility analysis (Supplementary Figure 16); the published record is " +
+  "/v1/genes/{symbol}.";
+const REPLICATE_KIND_NOTES = {
+  published_snapshot: "The published record exactly as served when the study ran (the comparator); the live record may since have been republished.",
+  full_rerun: "The whole pipeline re-run from scratch with the same prompts: literature discovery, abstract triage, paper selection, section builders and synthesizer.",
+  fixed_evidence_replay: "Section builders and synthesizer re-run on the published record's own evidence ledger; discovery and selection held fixed.",
+};
+
+function replicateUrl(sym, study, kind) {
+  return `${HISTORY_BASE}/genes/${sym}/replicates/${study}/${kind}`;
+}
+
+// GET /v1/replicates — every study, its kinds and genes (metadata only; never
+// reads annotation_json).
+async function handleReplicateIndex(env) {
+  let results;
+  try {
+    ({ results } = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, sample_batch,
+              run_id, compared_against_run_id
+         FROM deep_dive_replicate
+        ORDER BY study_id, gene_symbol, replicate_kind`
+    ).all());
+  } catch (e) {
+    if (isMissingTable(e)) return json({ notice: REPLICATE_NOTICE, studies: [] });
+    throw e;
+  }
+  const studies = new Map();
+  for (const r of results) {
+    let st = studies.get(r.study_id);
+    if (!st) {
+      st = { study_id: r.study_id, compared_against_run_id: r.compared_against_run_id,
+             kinds: {}, genes: new Map() };
+      studies.set(r.study_id, st);
+    }
+    st.kinds[r.replicate_kind] ??= { n: 0, run_id: r.run_id, description: REPLICATE_KIND_NOTES[r.replicate_kind] ?? null };
+    st.kinds[r.replicate_kind].n++;
+    if (!st.genes.has(r.gene_symbol)) {
+      st.genes.set(r.gene_symbol, { gene_symbol: r.gene_symbol, hgnc_id: r.hgnc_id,
+        sample_batch: r.sample_batch, url: `${HISTORY_BASE}/genes/${r.gene_symbol}/replicates` });
+    }
+  }
+  return json({
+    notice: REPLICATE_NOTICE,
+    studies: [...studies.values()].map((st) => ({
+      study_id: st.study_id,
+      compared_against_run_id: st.compared_against_run_id,
+      n_genes: st.genes.size,
+      kinds: st.kinds,
+      genes: [...st.genes.values()],
+    })),
+  }, { ttl: CACHE_TTL_SHORT });
+}
+
+// GET /v1/genes/{SYMBOL}/replicates — the replicates held for one gene.
+async function handleGeneReplicates(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  let results = [];
+  try {
+    ({ results } = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, uniprot_acc, sample_batch,
+              run_id, compared_against_run_id, schema_version, prompt_corpus_version,
+              record_generated_at
+         FROM deep_dive_replicate
+        WHERE gene_symbol = ? COLLATE NOCASE
+        ORDER BY study_id, replicate_kind`
+    ).bind(sym).all());
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+  }
+  if (!results.length) return notFound("no_replicates");
+  const g = results[0];
+  return json({
+    reproducibility_replicate: true,
+    notice: REPLICATE_NOTICE,
+    gene_symbol: g.gene_symbol,
+    hgnc_id: g.hgnc_id,
+    uniprot_acc: g.uniprot_acc,
+    published_record_url: `${HISTORY_BASE}/genes/${g.gene_symbol}`,
+    replicates: results.map((r) => ({
+      study_id: r.study_id,
+      replicate_kind: r.replicate_kind,
+      description: REPLICATE_KIND_NOTES[r.replicate_kind] ?? null,
+      sample_batch: r.sample_batch,
+      run_id: r.run_id,
+      compared_against_run_id: r.compared_against_run_id,
+      schema_version: r.schema_version,
+      prompt_corpus_version: r.prompt_corpus_version,
+      record_generated_at: r.record_generated_at,
+      url: replicateUrl(r.gene_symbol, r.study_id, r.replicate_kind),
+    })),
+  }, { ttl: CACHE_TTL_LONG });
+}
+
+// GET /v1/genes/{SYMBOL}/replicates/{study}/{kind} — one replicate record, in
+// full (evidence included), wrapped so it cannot be mistaken for the published
+// record. The deep-dive tier is attached with the same shared predicate
+// handleGene uses, so a replicate's tier is directly comparable.
+async function handleGeneReplicate(env, symbol, study, kind) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  if (!REPLICATE_STUDY_OK.test(study)) return badRequest("invalid_study");
+  if (!REPLICATE_KINDS.includes(kind)) return badRequest("invalid_replicate_kind");
+  let row = null;
+  try {
+    row = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, uniprot_acc, sample_batch,
+              run_id, compared_against_run_id, schema_version, prompt_corpus_version,
+              record_generated_at, annotation_json
+         FROM deep_dive_replicate
+        WHERE gene_symbol = ? COLLATE NOCASE AND study_id = ? AND replicate_kind = ?`
+    ).bind(sym, study, kind).first();
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+  }
+  if (!row) return notFound("replicate_not_found");
+  let record;
+  try {
+    record = JSON.parse(row.annotation_json);
+  } catch (e) {
+    return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
+  }
+  const out = {
+    reproducibility_replicate: true,
+    notice: REPLICATE_NOTICE,
+    study_id: row.study_id,
+    replicate_kind: row.replicate_kind,
+    description: REPLICATE_KIND_NOTES[row.replicate_kind] ?? null,
+    gene_symbol: row.gene_symbol,
+    hgnc_id: row.hgnc_id,
+    uniprot_acc: row.uniprot_acc,
+    sample_batch: row.sample_batch,
+    run_id: row.run_id,
+    compared_against_run_id: row.compared_against_run_id,
+    published_record_url: `${HISTORY_BASE}/genes/${row.gene_symbol}`,
+  };
+  if (record?.filters) {
+    attachDeepDiveClassification(out, {
+      ...record.filters,
+      evidence_grade_summary: record?.executive_summary?.evidence_grade_summary ?? null,
+    });
+  }
+  out.record = record;
+  return json(out, { ttl: CACHE_TTL_LONG });
+}
+
+async function handleReleaseList(env) {
+  const results = await dataReleaseRows(env, "ORDER BY cut_at DESC", []);
+  return json({
+    releases: results.map((r) => ({
+      version: r.version,
+      cut_at: r.cut_at,
+      github_tag: r.github_tag,
+      zenodo_version_doi: r.zenodo_version_doi,
+      n_genes: r.n_genes,
+      notes: r.notes,
+      api_members: !isZenodoOnly(r),
+    })),
+  });
+}
+
+async function handleRelease(env, ver) {
+  const v = normalizeVersion(ver);
+  if (!v) return badRequest("invalid_version");
+  const rel = await dataReleaseRow(env, "WHERE version = ?", [v]);
+  if (!rel) return notFound("release_not_found");
+  // Immutable once its Zenodo version is published; until then a short TTL
+  // so --set-doi shows up promptly.
+  const hasDoi = Boolean(rel.zenodo_version_doi);
+  const ttl = hasDoi ? CACHE_TTL_IMMUTABLE : CACHE_TTL_SHORT;
+  const base = {
+    version: rel.version,
+    cut_at: rel.cut_at,
+    github_tag: rel.github_tag,
+    zenodo_version_doi: rel.zenodo_version_doi,
+    n_genes: rel.n_genes,
+    notes: rel.notes,
+  };
+  if (isZenodoOnly(rel)) {
+    return json(
+      {
+        ...base,
+        api_members: false,
+        members: [],
+        api_note:
+          `Release ${rel.version} predates the API's per-gene record history ` +
+          "and is archived only in its Zenodo deposit" +
+          (rel.zenodo_version_doi ? ` (${rel.zenodo_version_doi})` : "") +
+          "; its records are not individually served through these history routes.",
+      },
+      { ttl, immutable: hasDoi },
+    );
+  }
+  const { results } = await env.DB.prepare(
+    `SELECT r.gene_symbol, r.hgnc_id, m.revision, r.json_hash, r.evidence_hash, r.md_hash
+       FROM data_release_member m
+       JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
+      WHERE m.version = ? ORDER BY r.gene_symbol`
+  ).bind(v).all();
+  return json({ ...base, api_members: true, members: results }, { ttl, immutable: hasDoi });
+}
+
+async function handleReleaseGene(env, ver, symbol, part) {
+  const v = normalizeVersion(ver);
+  if (!v) return badRequest("invalid_version");
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const rel = await dataReleaseRow(env, "WHERE version = ?", [v]);
+  if (!rel) return notFound("release_not_found");
+  if (isZenodoOnly(rel)) {
+    return json(
+      { error: "release_not_in_api_history", zenodo_version_doi: rel.zenodo_version_doi },
+      { status: 404, ttl: 60 },
+    );
+  }
+  const row = await env.DB.prepare(
+    `SELECT r.revision, r.json_hash, r.evidence_hash, r.md_hash
+       FROM data_release_member m
+       JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
+      WHERE m.version = ? AND m.gene_symbol = ? COLLATE NOCASE`
+  ).bind(v, sym).first();
+  if (!row) return notFound("gene_not_in_release");
+  return archivedPart(env, row, part);
 }
 
 // Per-IP rate limiting via the native Workers Rate Limiting binding
@@ -180,7 +695,10 @@ async function checkRate(env, request, path) {
   // secret, so it stays rate-limited.
   const bypass = env.BUILD_BYPASS_TOKEN;
   if (bypass && request.headers.get("X-Build-Bypass") === bypass) return null;
-  const heavy = path === "/v1/catalog" || path.endsWith(".tsv");
+  // Archive bypass (see isArchiveBypass) also skips the rate limiter — the
+  // archiver sweeps ~5k genes from one IP just like the build does above.
+  if (await isArchiveBypass(request, env)) return null;
+  const heavy = path === "/v1/catalog" || path.endsWith(".tsv") || /^\/v1\/releases\/[^/]+$/.test(path);
   const limiter = heavy ? env.RATE_LIMITER_HEAVY : env.RATE_LIMITER;
   if (!limiter) return null;
   const ip = request.headers.get("CF-Connecting-IP") || "anon";
@@ -263,6 +781,17 @@ function cacheEpoch(env) {
 
 
 async function withEdgeCache(request, env, ctx, handler, { includeQuery = false } = {}) {
+  // Archiver reads the live state: no cache read, no cache write. The echo
+  // header lets the archiver refuse to archive if the bypass was NOT honoured
+  // (wrong token / old Worker) instead of silently archiving cached bytes.
+  if (await isArchiveBypass(request, env)) {
+    const fresh = await handler();
+    const headers = new Headers(fresh.headers);
+    headers.set("X-Archive-Bypass-Honored", "1");
+    headers.set("Cache-Control", "no-store");
+    return new Response(fresh.body, { status: fresh.status, headers });
+  }
+
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
@@ -303,7 +832,18 @@ async function withEdgeCache(request, env, ctx, handler, { includeQuery = false 
 
   // (3) full miss — run the handler (D1) and populate both tiers.
   const response = await handler();
-  if (response.status === 200 || response.status === 404) {
+  // A response whose serve-time enrichment hit a real (non-missing-table)
+  // D1 error carries DEGRADED_HEADER and Cache-Control: no-store (see
+  // `json()`'s `degraded` param). Never persist those bytes to either cache
+  // tier — the whole point of the header is that this response reflects a
+  // transient failure, not the record's actual content, and caching it
+  // would serve the degraded shape to every other reader for up to a day
+  // (S100A7A revision 3's null topology fields were exactly this). The
+  // response is still returned to THIS caller below, degraded header and
+  // all — same posture as the archive-bypass path above, which also never
+  // caches.
+  const isDegraded = response.headers.has(DEGRADED_HEADER);
+  if (!isDegraded && (response.status === 200 || response.status === 404)) {
     if (kv) {
       const ttl = maxAgeFromCacheControl(response.headers.get("Cache-Control"));
       const meta = {
@@ -457,6 +997,27 @@ async function handleGene(env, symbol) {
   } catch (e) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
+  // Every enrichment query below used to swallow its own errors with a bare
+  // `.catch(() => null)` — including a genuine D1 hiccup, not just "this
+  // gene has no row here". That meant a transient failure silently served
+  // (and, via withEdgeCache, PERMANENTLY cached for up to a day) a record
+  // with those fields null even though D1 actually had the data — exactly
+  // what happened to S100A7A's revision 3 (canonical_topology.protein_length
+  // etc. archived null despite the topology_public row existing). `soft()`
+  // still degrades a failed query to null (never breaks the endpoint), but
+  // now records WHICH query failed in `degraded`, unless the failure is a
+  // "no such table" error — that's a persistent, intentional condition (see
+  // `isMissingTable`), not a transient one, and stays silent. `degraded` is
+  // read at the end of this handler to set DEGRADED_HEADER + force
+  // Cache-Control: no-store, so withEdgeCache never caches the response.
+  const degraded = [];
+  const soft = (p, label) =>
+    p.catch((e) => {
+      if (isMissingTable(e)) return null;
+      degraded.push(label);
+      console.warn("enrichment_failed", label, e?.message);
+      return null;
+    });
   // Enrich with Schweke 2024 homo-oligomer prediction at serve time.
   // The annotator already bakes ``deterministic_features.homo_oligomerization``
   // into newly-annotated records (consistent with how the other deterministic
@@ -474,15 +1035,18 @@ async function handleGene(env, symbol) {
     const existing = record?.deterministic_features?.homo_oligomerization;
     const needsEnrichment = !existing || existing.is_homo_oligomer === false;
     if (needsEnrichment) {
-      const schwekeRow = await env.DB.prepare(
-        `SELECT stoichiometry, af_model_num, is_ecd_only,
-                has_higher_order_complex, dimer_pdb_filename,
-                complex_pdb_filename
-           FROM schweke_homomer_public
-          WHERE uniprot_acc = ?
-          ORDER BY universe_version DESC
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
+      const schwekeRow = await soft(
+        env.DB.prepare(
+          `SELECT stoichiometry, af_model_num, is_ecd_only,
+                  has_higher_order_complex, dimer_pdb_filename,
+                  complex_pdb_filename
+             FROM schweke_homomer_public
+            WHERE uniprot_acc = ?
+            ORDER BY universe_version DESC
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "schweke_homomer_public",
+      );
       if (schwekeRow) {
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.homo_oligomerization = {
@@ -578,28 +1142,42 @@ async function handleGene(env, symbol) {
     // null on a missing release row or D1 hiccup; the per-feature blocks
     // below skip enrichment when their version is absent.
     const [topoCanonRow, topoIsoRow, paralogRelRow, orthoEcdRelRow] = await Promise.all([
-      env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_canonical'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_isoforms'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT paralog_version FROM compara_paralog_release
-            ORDER BY fetched_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
-            ORDER BY computed_at DESC LIMIT 1`
-      ).first().catch(() => null),
+      soft(
+        env.DB.prepare(
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'human_canonical' AND p.topology_version = r.topology_version
+              )
+              ORDER BY r.loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_canonical",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'human_isoforms' AND p.topology_version = r.topology_version
+              )
+              ORDER BY r.loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_isoform",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT paralog_version FROM compara_paralog_release
+              ORDER BY fetched_at DESC LIMIT 1`
+        ).first(),
+        "compara_paralog_release",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
+              ORDER BY computed_at DESC LIMIT 1`
+        ).first(),
+        "compara_ortholog_ecd_release",
+      ),
     ]);
     const canonicalTopoVersion = topoCanonRow?.topology_version ?? null;
     const isoformTopoVersion = topoIsoRow?.topology_version ?? null;
@@ -623,18 +1201,21 @@ async function handleGene(env, symbol) {
     const canonTopoNeedsEnrich =
       !existingCanonTopo || canonTopoIsPlaceholder || canonTopoLacksCall;
     if (canonTopoNeedsEnrich && canonicalTopoVersion) {
-      const tr = await env.DB.prepare(
-        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
-                n_terminal_orientation, c_terminal_orientation,
-                signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at,
-                predicted_surface_membrane, predicted_secreted,
-                beta_strand_count, protein_length
-           FROM topology_public
-          WHERE uniprot_acc = ? AND cohort = 'human_canonical'
-            AND topology_version = ?
-          LIMIT 1`
-      ).bind(uniprot, canonicalTopoVersion).first().catch(() => null);
+      const tr = await soft(
+        env.DB.prepare(
+          `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                  n_terminal_orientation, c_terminal_orientation,
+                  signal_peptide_length, ecd_length_residues, icd_length_residues,
+                  per_residue_topology, sequence, tool_version, retrieved_at,
+                  predicted_surface_membrane, predicted_secreted,
+                  beta_strand_count, protein_length
+             FROM topology_public
+            WHERE uniprot_acc = ? AND cohort = 'human_canonical'
+              AND topology_version = ?
+            LIMIT 1`
+        ).bind(uniprot, canonicalTopoVersion).first(),
+        "topology_public_canonical",
+      );
       if (tr) {
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.canonical_topology = {
@@ -671,12 +1252,15 @@ async function handleGene(env, symbol) {
     // references a specific protein isoform". Enrich rather than require a
     // re-annotation, and only when absent so a baked value always wins.
     if (record?.gene && record.gene.ensembl_canonical_protein == null) {
-      const giRow = await env.DB.prepare(
-        `SELECT ensembl_canonical_protein
-           FROM gene_identifier_public
-          WHERE uniprot_acc = ?
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
+      const giRow = await soft(
+        env.DB.prepare(
+          `SELECT ensembl_canonical_protein
+             FROM gene_identifier_public
+            WHERE uniprot_acc = ?
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "gene_identifier_public",
+      );
       if (giRow?.ensembl_canonical_protein) {
         record.gene.ensembl_canonical_protein = giRow.ensembl_canonical_protein;
       }
@@ -696,16 +1280,19 @@ async function handleGene(env, symbol) {
     const isoTopoNeedsEnrich = !Array.isArray(existingIsoTopo)
       || (existingIsoTopo.length === 0 && !isoTopoChecked);
     if (isoTopoNeedsEnrich && isoformTopoVersion) {
-      const isoRows = await env.DB.prepare(
-        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
-                n_terminal_orientation, c_terminal_orientation,
-                signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at
-           FROM topology_public
-          WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
-            AND topology_version = ?
-          ORDER BY uniprot_acc_full ASC`
-      ).bind(uniprot, isoformTopoVersion).all().catch(() => null);
+      const isoRows = await soft(
+        env.DB.prepare(
+          `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                  n_terminal_orientation, c_terminal_orientation,
+                  signal_peptide_length, ecd_length_residues, icd_length_residues,
+                  per_residue_topology, sequence, tool_version, retrieved_at
+             FROM topology_public
+            WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
+              AND topology_version = ?
+            ORDER BY uniprot_acc_full ASC`
+        ).bind(uniprot, isoformTopoVersion).all(),
+        "topology_public_isoform",
+      );
       // Belt-and-suspenders dedup: even though the query filters by
       // topology_version, a stale topology_release row would let multiple
       // versions slip through and produce duplicate isoform rows (one per
@@ -753,23 +1340,26 @@ async function handleGene(env, symbol) {
     const paralogsNeedEnrich = !Array.isArray(existingParalogs)
       || (existingParalogs.length === 0 && !paralogsChecked);
     if (paralogsNeedEnrich && paralogVersion) {
-      const paralogRows = await env.DB.prepare(
-        `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
-                cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
-                cp.compara_version, cp.rank_by_ecd_identity,
-                tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
-                tp.ecd_length_residues, tp.icd_length_residues,
-                tp.n_terminal_orientation, tp.c_terminal_orientation,
-                tp.signal_peptide_length, tp.sequence
-           FROM compara_paralog cp
-           LEFT JOIN topology_public tp
-             ON tp.uniprot_acc = cp.paralog_uniprot_acc
-            AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
-          WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
-            AND cp.paralog_gene_symbol IS NOT NULL
-            AND cp.paralog_uniprot_acc IS NOT NULL
-          ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
-      ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all().catch(() => null);
+      const paralogRows = await soft(
+        env.DB.prepare(
+          `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
+                  cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
+                  cp.compara_version, cp.rank_by_ecd_identity,
+                  tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
+                  tp.ecd_length_residues, tp.icd_length_residues,
+                  tp.n_terminal_orientation, tp.c_terminal_orientation,
+                  tp.signal_peptide_length, tp.sequence
+             FROM compara_paralog cp
+             LEFT JOIN topology_public tp
+               ON tp.uniprot_acc = cp.paralog_uniprot_acc
+              AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
+            WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
+              AND cp.paralog_gene_symbol IS NOT NULL
+              AND cp.paralog_uniprot_acc IS NOT NULL
+            ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
+        ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all(),
+        "compara_paralog",
+      );
       // Belt-and-suspenders dedup: the LEFT JOIN against topology_public
       // is keyed on (uniprot_acc, cohort, topology_version); a stale
       // topology_release would let multiple cohort/version rows survive
@@ -832,39 +1422,46 @@ async function handleGene(env, symbol) {
       // annotator resolves mouse_topo_version specifically; in practice
       // mouse_ortholog + cyno_ortholog share a version. Default to the
       // canonical topology_version if no mouse-cohort row exists.
-      const mouseTopoRow = await env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'mouse_ortholog'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null);
+      const mouseTopoRow = await soft(
+        env.DB.prepare(
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'mouse_ortholog' AND p.topology_version = r.topology_version
+              )
+              ORDER BY r.loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_ortholog",
+      );
       const orthoTopoVersion = mouseTopoRow?.topology_version ?? canonicalTopoVersion ?? "";
-      const orthologRows = await env.DB.prepare(
-        `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
-                eo.ortholog_gene_symbol, eo.ecd_pct_identity,
-                co.percent_identity AS full_length_pct_identity,
-                tp.tm_helix_count, tp.ecd_length_residues,
-                tp.per_residue_topology, tp.deeptmhmm_label,
-                tp.sequence AS ortholog_sequence,
-                eo.compara_release
-           FROM compara_ortholog_ecd eo
-           LEFT JOIN topology_public tp
-             ON tp.uniprot_acc = eo.ortholog_uniprot_acc
-            AND tp.topology_version = ?
-            AND (
-              (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
-              (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
-            )
-           LEFT JOIN compara_ortholog co
-             ON co.release_version = eo.compara_release
-            AND co.human_ensembl_gene = eo.human_ensembl_gene
-            AND co.species = eo.species
-            AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
-          WHERE eo.human_uniprot_acc = ?
-            AND eo.ortholog_ecd_version = ?
-          ORDER BY eo.species ASC`
-      ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all().catch(() => null);
+      const orthologRows = await soft(
+        env.DB.prepare(
+          `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
+                  eo.ortholog_gene_symbol, eo.ecd_pct_identity,
+                  co.percent_identity AS full_length_pct_identity,
+                  tp.tm_helix_count, tp.ecd_length_residues,
+                  tp.per_residue_topology, tp.deeptmhmm_label,
+                  tp.sequence AS ortholog_sequence,
+                  eo.compara_release
+             FROM compara_ortholog_ecd eo
+             LEFT JOIN topology_public tp
+               ON tp.uniprot_acc = eo.ortholog_uniprot_acc
+              AND tp.topology_version = ?
+              AND (
+                (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
+                (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
+              )
+             LEFT JOIN compara_ortholog co
+               ON co.release_version = eo.compara_release
+              AND co.human_ensembl_gene = eo.human_ensembl_gene
+              AND co.species = eo.species
+              AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
+            WHERE eo.human_uniprot_acc = ?
+              AND eo.ortholog_ecd_version = ?
+            ORDER BY eo.species ASC`
+        ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all(),
+        "compara_ortholog_ecd",
+      );
       // Belt-and-suspenders dedup: the LEFT JOIN against topology_public is
       // gated on topology_version; a stale topology_release lets multiple
       // versions slip through and produce two rows per (species, ortholog).
@@ -949,22 +1546,28 @@ async function handleGene(env, symbol) {
       || existingSurfaceBind.has_data === false
       || sbSitesLackTopology;
     if (sbNeedsEnrichment) {
-      const sbProteinRow = await env.DB.prepare(
-        `SELECT chain, main_class, sub_class, protein_name, n_sites,
-                n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
-           FROM surface_bind_protein
-          WHERE uniprot_acc = ?
-          ORDER BY surfacebind_version DESC
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
-      if (sbProteinRow) {
-        const sbSiteRows = await env.DB.prepare(
-          `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
-                  n_seeds_beta, hydrophobicity
-             FROM surface_bind_site
+      const sbProteinRow = await soft(
+        env.DB.prepare(
+          `SELECT chain, main_class, sub_class, protein_name, n_sites,
+                  n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
+             FROM surface_bind_protein
             WHERE uniprot_acc = ?
-            ORDER BY site_id`
-        ).bind(uniprot).all().catch(() => null);
+            ORDER BY surfacebind_version DESC
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "surface_bind_protein",
+      );
+      if (sbProteinRow) {
+        const sbSiteRows = await soft(
+          env.DB.prepare(
+            `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
+                    n_seeds_beta, hydrophobicity
+               FROM surface_bind_site
+              WHERE uniprot_acc = ?
+              ORDER BY site_id`
+          ).bind(uniprot).all(),
+          "surface_bind_site",
+        );
         // Which side of the membrane each anchor residue sits on.
         // SURFACE-Bind scores the whole solved structure, so a scored
         // patch is not necessarily reachable from outside the cell:
@@ -973,13 +1576,22 @@ async function handleGene(env, symbol) {
         // sites). Served as its own scalar pull rather than a JOIN so a
         // missing topology row degrades to nulls instead of dropping the
         // whole surface_bind block.
-        const sbTopoRow = await env.DB.prepare(
-          `SELECT per_residue_topology
-             FROM topology_public
-            WHERE uniprot_acc = ? AND species = 'human'
-              AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
-            LIMIT 1`
-        ).bind(uniprot).first().catch(() => null);
+        // Pinned to the served canonical release: topology_public also holds
+        // unregistered runs from other predictors (a full DeepTMHMM2 sweep
+        // since 2026-09-27), and an unpinned LIMIT 1 could return any of them.
+        const sbTopoRow = canonicalTopoVersion
+          ? await soft(
+              env.DB.prepare(
+                `SELECT per_residue_topology
+                   FROM topology_public
+                  WHERE uniprot_acc = ? AND species = 'human'
+                    AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
+                    AND topology_version = ?
+                  LIMIT 1`
+              ).bind(uniprot, canonicalTopoVersion).first(),
+              "topology_public_surface_bind",
+            )
+          : null;
         const prt = sbTopoRow?.per_residue_topology ?? null;
         // DeepTMHMM alphabet, per the per_residue_topology column comment
         // in cloudflare/d1_public_schema.sql ("O/M/I/S/B chars").
@@ -1066,7 +1678,12 @@ async function handleGene(env, symbol) {
   // Posture matches the other enrich steps: fail-open on a D1 hiccup
   // (don't break the per-gene endpoint), and don't overwrite a
   // populated record with null (a brand-new gene the triage sweep
-  // hasn't covered yet leaves the annotator's call intact).
+  // hasn't covered yet leaves the annotator's call intact). A real
+  // (non-missing-table) failure here now also marks the response
+  // degraded, same as the `soft()`-wrapped queries above — this is a
+  // plain try/catch rather than a promise chain because
+  // `fetchTriagePrior` walks a priority list of queries internally,
+  // not a single one `soft()` could wrap directly.
   try {
     const triagePrior = await fetchTriagePrior(env, sym);
     if (triagePrior) {
@@ -1077,7 +1694,10 @@ async function handleGene(env, symbol) {
       }
     }
   } catch (e) {
-    // Best-effort — never break the endpoint over a triage miss.
+    if (!isMissingTable(e)) {
+      degraded.push("triage_run_public");
+      console.warn("enrichment_failed", "triage_run_public", e?.message);
+    }
   }
   // Store the shared deep-dive classification on the record so the gene page
   // AND the Zenodo deposit tarball (raw /v1/genes responses) carry the same
@@ -1097,7 +1717,7 @@ async function handleGene(env, symbol) {
   // GET /v1/genes/{SYMBOL}/evidence (handleGeneEvidence) so the gene
   // page's initial record load isn't dominated by the evidence array.
   if (record && "evidence" in record) delete record.evidence;
-  return json(record, { ttl: CACHE_TTL_LONG });
+  return json(record, { ttl: CACHE_TTL_LONG, degraded });
 }
 
 // Max distinct papers we'll look up citation metadata for in one request.
@@ -1138,7 +1758,14 @@ function collectSourceIds(evidence) {
 // Returns {} on any failure or when the table hasn't been created yet: the
 // drawer degrades to the bare accession it showed before, which is a worse
 // reading experience but never a broken page.
-async function fetchPaperMetadata(env, sourceIds) {
+//
+// `onError`, when given, is called with the caught error for a REAL failure
+// (i.e. one `isMissingTable` doesn't recognize as the persistent/intentional
+// "table not provisioned yet" case) — handleGeneEvidence uses it to fold
+// this query into its own `degraded` list. Callers that don't need that
+// (handleInternalization) simply omit it and keep today's silent-degrade
+// behavior unchanged.
+async function fetchPaperMetadata(env, sourceIds, { onError } = {}) {
   if (!sourceIds.length) return {};
   const statements = [];
   for (let i = 0; i < sourceIds.length; i += PAPER_METADATA_CHUNK) {
@@ -1157,6 +1784,7 @@ async function fetchPaperMetadata(env, sourceIds) {
   try {
     batches = await env.DB.batch(statements);
   } catch (e) {
+    if (onError && !isMissingTable(e)) onError(e);
     return {};
   }
   const papers = {};
@@ -1216,8 +1844,14 @@ async function handleGeneEvidence(env, symbol) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
   const evidence = Array.isArray(record?.evidence) ? record.evidence : [];
-  const papers = await fetchPaperMetadata(env, collectSourceIds(evidence));
-  return json({ gene: sym, evidence, papers }, { ttl: CACHE_TTL_LONG });
+  const degraded = [];
+  const papers = await fetchPaperMetadata(env, collectSourceIds(evidence), {
+    onError: (e) => {
+      degraded.push("paper_metadata");
+      console.warn("enrichment_failed", "paper_metadata", e?.message);
+    },
+  });
+  return json({ gene: sym, evidence, papers }, { ttl: CACHE_TTL_LONG, degraded });
 }
 
 async function handleOrthologs(env, symbol) {
@@ -1354,6 +1988,120 @@ const ECD_BAND_SOURCES = [
   ["max_paralog_ecd", "max_paralog_ecd_pct_identity", 70, 40],
 ];
 
+// Surface-evidence method categories (catalog "Direct surface method" /
+// "Supporting method" facets), derived from the record's
+// surface_evidence.methods block. Each methods row is one experiment the
+// methods builder judged `direct_surface_accessibility` (an antibody or probe
+// reached the protein from outside an intact cell) or
+// `supports_surface_localization` (at the membrane, outside not shown); other
+// relevance levels are not surface evidence and are dropped. The family and
+// subclass vocabularies overlap, so the rules are tried in order and the
+// first match wins; anything unmatched is "other". Copied verbatim from
+// scripts/build_figure_tsvs.py (Supp Fig 13) and mirrored in
+// viewer/lib/deep-dive-fields.ts — tests/test_surface_method_rules_sync.py
+// fails if the three drift.
+const SURFACE_METHOD_RULES = [
+  ["family", "proximity_labeling", "proximity_labeling"],
+  ["subclass", "surface_biotinylation", "surface_biotin_pulldown"],
+  ["subclass", "cell_surface_capture", "cell_surface_capture_ms"],
+  ["subclass", "N_glycoproteomics", "cell_surface_capture_ms"],
+  ["family", "glycoproteomics", "cell_surface_capture_ms"],
+  ["subclass", "live_cell_flow", "flow_cytometry"],
+  ["subclass", "fixed_cell_flow", "flow_cytometry"],
+  ["family", "flow_cytometry", "flow_cytometry"],
+  ["subclass", "nonpermeabilized_IF", "immunofluorescence"],
+  ["subclass", "permeabilized_IF", "immunofluorescence"],
+  ["family", "immunofluorescence", "immunofluorescence"],
+  ["subclass", "IHC", "immunohistochemistry"],
+  ["subclass", "IHC_membranous", "immunohistochemistry"],
+  ["family", "immunohistochemistry", "immunohistochemistry"],
+  ["family", "functional_surface_assay", "functional_surface_assay"],
+];
+
+// Expression systems that keep the protein at its own expression level, so
+// a direct readout there says the native protein is reachable. Overexpressed
+// constructs can force surface localization the native protein never shows.
+const NATIVE_EXPRESSION_SYSTEMS = new Set(["endogenous", "mixed", "knock_in_tag"]);
+
+// Surface labeling / capture chemistries only work on intact cells with
+// membrane-impermeable reagents, so they count as live-cell unless a row is
+// explicitly permeabilized (the methods builder often labels them
+// "nonpermeabilized"). Flow and IF need an explicit live_cell label: their
+// "nonpermeabilized" rows are usually fixed cells. Functional assays never
+// count — find those under the method facet.
+const LIVE_BY_CHEMISTRY = new Set([
+  "surface_biotin_pulldown",
+  "cell_surface_capture_ms",
+  "proximity_labeling",
+]);
+
+function isLiveCellRow(method, permeabilization) {
+  if (method === "functional_surface_assay") return false;
+  if (permeabilization === "live_cell") return true;
+  return LIVE_BY_CHEMISTRY.has(method) && permeabilization !== "permeabilized";
+}
+
+function surfaceMethodCategory(family, subclass) {
+  for (const [field, value, method] of SURFACE_METHOD_RULES) {
+    if ((field === "family" ? family : subclass) === value) return method;
+  }
+  return "other";
+}
+
+// `packed` is the catalog query's `ddf_surface_methods` column: one
+// "family|subclass|relevance|expression_system|permeabilization" token per
+// distinct methods row, comma-joined (only direct + supporting rows are
+// selected). Returns sorted, de-duplicated method lists (a method that has a
+// direct row is never also listed as supporting) plus two flags:
+//   * has_native_direct_surface_evidence — any direct row in a native
+//     expression system.
+//   * has_live_cell_surface_evidence — a direct row on live cells in a
+//     native expression system, excluding functional assays (see
+//     isLiveCellRow). Overrides the record's baked flag, which keyed on
+//     method family and so missed capture MS and counted fixed-cell flow.
+function projectSurfaceMethods(packed) {
+  const direct = new Set();
+  const supporting = new Set();
+  let native = false;
+  let liveCell = false;
+  for (const tok of (packed || "").split(",")) {
+    if (!tok) continue;
+    const [family, subclass, relevance, system, permeabilization] = tok.split("|");
+    const method = surfaceMethodCategory(family, subclass);
+    if (relevance === "direct_surface_accessibility") {
+      direct.add(method);
+      if (NATIVE_EXPRESSION_SYSTEMS.has(system)) {
+        native = true;
+        if (isLiveCellRow(method, permeabilization)) liveCell = true;
+      }
+    } else if (relevance === "supports_surface_localization") {
+      supporting.add(method);
+    }
+  }
+  for (const m of direct) supporting.delete(m);
+  return {
+    surface_method_direct: [...direct].sort(),
+    surface_method_supporting: [...supporting].sort(),
+    has_native_direct_surface_evidence: native,
+    has_live_cell_surface_evidence: liveCell,
+  };
+}
+
+// Correlated subquery packing a record's direct + supporting methods rows
+// into one short string (median ~80 chars) — never the methods objects
+// themselves, which carry antibody and expression-observation detail that
+// would bloat the catalog query toward D1's isolate-memory cap. `alias` is
+// the surface_annotation alias at the call site.
+const surfaceMethodsSql = (alias) => `(SELECT group_concat(DISTINCT
+      COALESCE(json_extract(m.value, '$.method_family'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.method_subclass'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.accessibility_relevance'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.expression_system'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.permeabilization'), ''))
+    FROM json_each(${alias}.annotation_json, '$.surface_evidence.methods') m
+   WHERE json_extract(m.value, '$.accessibility_relevance')
+         IN ('direct_surface_accessibility', 'supports_surface_localization'))`;
+
 // Try JSON.parse and return the result, or null on failure / falsy input.
 // Also passes through pre-parsed objects — SQLite `json_extract` on an
 // object path returns a JSON string, but D1's client-side handling can
@@ -1484,6 +2232,11 @@ function projectDeepDiveFiltersFromParts(parts) {
     out.tm_count_band = tmc === 0 ? "none" : tmc === 1 ? "single" : "multi";
     any = true;
   }
+  // Surface-evidence method facets — sourced from surface_evidence.methods
+  // (packed server-side; see projectSurfaceMethods). Emitted for every
+  // deep-dive row, empty lists included, so "no direct method" is filterable
+  // and distinguishable from a pre-v10 catalog that lacks the keys.
+  Object.assign(out, projectSurfaceMethods(parts.surface_methods));
   return any ? out : null;
 }
 
@@ -1518,6 +2271,10 @@ function ddfPartsFromRow(row, prefix) {
     topo_signal_peptide_length:
       typeof row[`${prefix}topo_signal_peptide_length`] === "number"
         ? row[`${prefix}topo_signal_peptide_length`]
+        : null,
+    surface_methods:
+      typeof row[`${prefix}surface_methods`] === "string"
+        ? row[`${prefix}surface_methods`]
         : null,
   };
 }
@@ -1637,6 +2394,7 @@ async function handleCatalog(env, request) {
             sa.ddf_homo_oligomerization AS sa_ddf_homo_oligomerization,
             sa.ddf_topo_tm_helix_count AS sa_ddf_topo_tm_helix_count,
             sa.ddf_topo_signal_peptide_length AS sa_ddf_topo_signal_peptide_length,
+            sa.ddf_surface_methods AS sa_ddf_surface_methods,
             si.intern_grade AS intern_grade,
             si.intern_has_lit AS intern_has_lit,
             si.intern_lit_grade AS intern_lit_grade,
@@ -1687,7 +2445,8 @@ async function handleCatalog(env, request) {
                 -- a ~protein-length string that would blow D1's per-query
                 -- isolate memory across ~1.2k catalog rows).
                 json_extract(annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
-                json_extract(annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length
+                json_extract(annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
+                ${surfaceMethodsSql("sa1")} AS ddf_surface_methods
            FROM surface_annotation sa1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_annotation sa2
@@ -1947,6 +2706,7 @@ async function handleCatalog(env, request) {
             -- Canonical-topology SCALARS only (see main catalog query).
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
+            ${surfaceMethodsSql("sa1")} AS ddf_surface_methods,
             gi.uniprot_acc AS uniprot_acc,
             si.seq_canonical_grade AS intern_grade,
             si.has_literature AS intern_has_lit,
@@ -2075,7 +2835,15 @@ async function handleCatalog(env, request) {
       //        internalization-literature column + filter. Present only once a
       //        gene has a literature run; `intern_lit`=1 stays as the has-lit
       //        flag for back-compat. Older viewers ignore the new field.
-      row_schema: 9,
+      //   v10 = adds `ddf.surface_method_direct` / `ddf.surface_method_supporting`
+      //        (sorted method-category lists from surface_evidence.methods;
+      //        a method with a direct row is not repeated as supporting) and
+      //        `ddf.has_native_direct_surface_evidence` (a direct row in an
+      //        endogenous / mixed / knock-in system), and re-derives
+      //        `ddf.has_live_cell_surface_evidence` from the methods rows
+      //        (live cells, native expression, not a functional assay).
+      //        See projectSurfaceMethods.
+      row_schema: 10,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
@@ -2396,6 +3164,14 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON (WITHOUT `evidence` — fetch that from /v1/genes/{symbol}/evidence)" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/evidence", summary: "The gene's evidence ledger (quote+span items) split out of the record: { gene, evidence[], papers{} } — papers carries NCBI citation metadata (title, byline, journal, year) keyed by source_id" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
+  { group: "History", method: "GET", path: "/v1/genes/{symbol}/revisions", summary: "Every archived revision of this gene's served record (newest first), with the releases each belongs to" },
+  { group: "History", method: "GET", path: "/v1/genes/{symbol}/revisions/{n}", summary: "Revision n of the record, byte-for-byte as served; also /evidence and .md" },
+  { group: "History", method: "GET", path: "/v1/releases", summary: "Numbered data releases with their GitHub tag and Zenodo version DOI" },
+  { group: "History", method: "GET", path: "/v1/releases/{version}", summary: "One release: metadata + the revision of every gene in it" },
+  { group: "History", method: "GET", path: "/v1/releases/{version}/genes/{symbol}", summary: "A gene as it was in that release; also /evidence and .md" },
+  { group: "Reproducibility", method: "GET", path: "/v1/replicates", summary: "Reproducibility replicates (NOT published records): each study with its replicate kinds and genes — e.g. deep_dive_concordance_v1, the 50-gene run-to-run study behind Supplementary Figure 16" },
+  { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates", summary: "The reproducibility replicates held for one gene (404 if none), with links to each" },
+  { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates/{study}/{kind}", summary: "One replicate SurfaceomeRecord in full (evidence included), wrapped with reproducibility_replicate: true; kind ∈ published_snapshot · full_rerun · fixed_evidence_replay" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
@@ -3435,12 +4211,60 @@ async function handleTagSites(env, symbol) {
     plddt: r.plddt ?? null,
     conservation_rank: r.conservation_rank ?? null,
     median_conservation: r.median_conservation ?? null,
+    // Additive: the agent metadata that used to be concatenated into
+    // `rationale` as "[validation: ...; position: ...]". An older viewer
+    // ignores unknown fields; a newer one renders them as badges.
+    validation_level: r.validation_level ?? null,
+    position_evidence: r.position_evidence ?? null,
+    source_tier: r.source_tier ?? null,
+    cited_tag_residue: r.cited_tag_residue ?? null,
+    entailment_verified:
+      r.entailment_verified == null ? null : r.entailment_verified === 1,
   }));
+
+  // Per-GENE facts, which the per-SITE table cannot carry. Without these a gene
+  // the agent searched and found nothing in is indistinguishable from one
+  // nobody looked at — it has no site rows either way — and the published
+  // intracellular / function-abrogating positions have nowhere to live.
+  // LEFT JOIN semantics: absent row => never searched, which is the claim.
+  let gene = null;
+  try {
+    gene = await env.DB.prepare(
+      `SELECT prompt_sha, prompt_version, searched_at, n_papers,
+              other_positions_json, notes
+         FROM tag_site_gene_public WHERE gene_symbol = ? COLLATE NOCASE`
+    )
+      .bind(sym)
+      .first();
+  } catch {
+    // Table not provisioned yet (Worker deployed before the sync): degrade to
+    // the previous shape rather than 500, exactly as the site query does.
+    gene = null;
+  }
+
+  let otherPositions = [];
+  if (gene?.other_positions_json) {
+    try {
+      otherPositions = JSON.parse(gene.other_positions_json) || [];
+    } catch {
+      otherPositions = [];
+    }
+  }
+
   return json({
+    // Unchanged meaning for existing consumers: "are there sites to draw".
     has_data: sites.length > 0,
     gene_symbol: rows[0]?.gene_symbol ?? sym,
     uniprot_acc: rows[0]?.uniprot_acc ?? "",
     sites,
+    // Presence of prompt_sha is the claim "this gene was searched", which is
+    // what lets the viewer say "Literature-validated (0)" instead of nothing.
+    prompt_sha: gene?.prompt_sha ?? null,
+    prompt_version: gene?.prompt_version ?? null,
+    generated_at: gene?.searched_at ?? null,
+    n_papers_searched: gene?.n_papers ?? null,
+    literature_other_positions: otherPositions,
+    literature_notes: gene?.notes ?? null,
   });
 }
 
@@ -3534,11 +4358,37 @@ export default {
     // params are cache-busting noise the zone Cache Rule already strips).
     if (path === "/v1/triage/export.tsv") return withEdgeCache(request, env, ctx, () => handleTriageExport(env, url), { includeQuery: true });
     if (path === "/v1/meta/sizes") return withEdgeCache(request, env, ctx, () => handleMetaSizes(env));
+    if (path === "/v1/releases") return withEdgeCache(request, env, ctx, () => handleReleaseList(env));
+    if (path === "/v1/replicates") return withEdgeCache(request, env, ctx, () => handleReplicateIndex(env));
     // Feedback endpoints are user-specific / write-adjacent — never cache.
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
+    // Reproducibility replicates (API-only) — more specific than /v1/genes/{sym}.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/replicates$/))) return withEdgeCache(request, env, ctx, () => handleGeneReplicates(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/replicates\/([^/]+)\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleGeneReplicate(env, m[1], m[2], m[3]));
+    // Record history — more specific than every /v1/genes/{sym}… route below.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions$/))) return withEdgeCache(request, env, ctx, () => handleRevisionList(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\.md$/))) return handleRevisionBody(env, m[1], m[2], "md");
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\/evidence$/))) return handleRevisionBody(env, m[1], m[2], "evidence");
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)$/))) return handleRevisionBody(env, m[1], m[2], "record");
+    // Each /v1/releases/{version}... match checks bareVersionRedirect first
+    // (301 to the bare form on a `v`-prefixed version) before dispatching —
+    // see bareVersionRedirect's comment for why that has to happen BEFORE
+    // withEdgeCache/handler, not inside the handler.
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\.md$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}.md`) || handleReleaseGene(env, m[1], m[2], "md");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\/evidence$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}/evidence`) || handleReleaseGene(env, m[1], m[2], "evidence");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}`) || handleReleaseGene(env, m[1], m[2], "record");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)$/))) {
+      return bareVersionRedirect(m[1]) || withEdgeCache(request, env, ctx, () => handleRelease(env, m[1]));
+    }
     // `.md` must be tested before the bare record route: `([^/]+)` would
     // otherwise swallow the `.md` suffix and route to handleGene.
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, env, ctx, () => handleGeneMarkdown(env, m[1]));

@@ -1,0 +1,21 @@
+/* Cite-this-version strip — a single compact line directly below the
+ * page-actions crumbs (JSON / Markdown / Feedback), same register as
+ * `GeneDetail.module.css`'s `.crumbs` row. Record history is a secondary,
+ * archival affordance, so it stays quiet: muted text, underlined links,
+ * no chrome. */
+.strip {
+  margin: 0 0 var(--space-3) 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.link {
+  color: var(--muted);
+  border-bottom: 1px dotted var(--line);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--accent);
+}

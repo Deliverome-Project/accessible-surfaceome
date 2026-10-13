@@ -57,6 +57,20 @@ _GREEK_TO_ASCII: dict[str, str] = {
 _WHITESPACE_RE = re.compile(r"\s+")
 
 
+#: Typographic characters that survive NFKC but that a model routinely
+#: transcribes as their ASCII equivalent. Folding is idempotent: every target is
+#: ASCII and maps to itself on a second pass.
+_TYPOGRAPHIC_FOLD = str.maketrans({
+    "\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'",  # single quotes
+    "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u201f": '"',  # double quotes
+    "\u2032": "'", "\u2033": '"',                                # primes
+    "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-",  # hyphens / dashes
+    "\u2014": "-", "\u2015": "-", "\u2212": "-",                 # em dash, minus
+    "\u2026": "...",                                             # ellipsis
+    "\u00a0": " ", "\u202f": " ", "\u2009": " ",                  # non-breaking spaces
+})
+
+
 def normalize_for_quote_matching(text: str) -> str:
     """Normalize text for substring-based quote validation.
 
@@ -75,6 +89,13 @@ def normalize_for_quote_matching(text: str) -> str:
     # 1. Unicode NFKC — collapses width / compatibility forms (e.g. full-width
     #    digits → ASCII, ligatures → component letters).
     out = unicodedata.normalize("NFKC", text)
+    # 1b. Typographic punctuation → ASCII. NFKC does NOT fold these: U+2019
+    #     RIGHT SINGLE QUOTATION MARK and U+0027 APOSTROPHE stay distinct. A
+    #     model transcribing a publisher's "manufacturer’s" as "manufacturer's"
+    #     is being faithful, and a 448-character quote was failing entailment on
+    #     that one character — the site was proposed, ranked first, and silently
+    #     dropped. Every pipeline that span-verifies a quote shares this path.
+    out = out.translate(_TYPOGRAPHIC_FOLD)
     # 2. HTML entity decode — Europe PMC abstracts retain &amp;, &lt;, etc.
     out = html.unescape(out)
     # 3. Lowercase — chemistry names sometimes lose info (PD-L1 vs pd-l1) but

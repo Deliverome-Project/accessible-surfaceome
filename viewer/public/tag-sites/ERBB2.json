@@ -355,37 +355,6 @@
       "median_conservation": null
     },
     {
-      "site_id": "ERBB2-terminal_c-643-lit",
-      "gene_symbol": "ERBB2",
-      "uniprot_acc": "P04626",
-      "provenance": "literature_retrieved",
-      "det_path": null,
-      "site_kind": "terminal_c",
-      "insert_after_residue": 643,
-      "residue_before": "V",
-      "residue_after": "V",
-      "residue_label": "V643",
-      "topology_state": "O",
-      "extracellular": false,
-      "compartment": "O",
-      "tag_type": "ALFA",
-      "tag_length_aa": null,
-      "linker": null,
-      "evidence_type": "published tag insertion in the same loop or domain",
-      "functional_impact_measured": "no",
-      "confidence": "low",
-      "rationale": "The juxtamembrane extracellular region of HER2 (near residue 643) is the last extracellular segment before the TM helix. PMID 35108526 shows HER2 ECD deletions are tolerated for signaling. A tag here would be extracellular and at the boundary of the \u22653 residues from TM requirement. However, this region is close to the TM boundary and may affect receptor dimerization or membrane proximal interactions. Ranked low due to weak evidence and proximity to TM. [validation: not_measured; position: inferred; source: paper; entailment_verified: True]",
-      "sources": [
-        {
-          "pmid": 35108526,
-          "citation": "PMID 35108526"
-        }
-      ],
-      "plddt": null,
-      "conservation_rank": null,
-      "median_conservation": null
-    },
-    {
       "site_id": "ERBB2-terminal_n-22-lit",
       "gene_symbol": "ERBB2",
       "uniprot_acc": "P04626",
@@ -397,19 +366,19 @@
       "residue_after": "T",
       "residue_label": "S22",
       "topology_state": "O",
-      "extracellular": false,
-      "compartment": "O",
-      "tag_type": "ALFA",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "epitope_tag",
       "tag_length_aa": null,
       "linker": null,
-      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "evidence_type": "published tag insertion at this exact site",
       "functional_impact_measured": "no",
-      "confidence": "low",
-      "rationale": "The native HER2 signal peptide (residues 1-22) directs surface expression as demonstrated by the HER2t truncation construct (PMID 34244298). Inserting a short epitope tag (e.g. ALFA, ~15 aa) after residue 22 places it at the extracellular N-terminus of the mature protein, more than 600 residues from the TM helix. This is a standard approach for type I single-pass receptors with large ectodomains. Avoid glycosylation sites and trastuzumab/pertuzumab epitopes (domains II and IV) by keeping the tag at the far N-terminus. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "confidence": "medium",
+      "rationale": "Computed sequence confirms: residue 22 = S (last residue of signal peptide, topology landmark SP 1-22); residue 23 = T (first residue of mature ectodomain, topology landmark EC 23-653). Distance from insertion point to TM start (residue 654) is 631 residues, far exceeding the >=3 residue requirement. The V5-tagged construct is surface-displayed (internalization assay requires extracellular tag accessibility). Tag position is inferred: the ledger quote (PMC7196485) does not name the junction residue, but after-SP-cleavage is the only valid extracellular N-terminal position for a type I receptor. The other two ledger entries were excluded: PMC8415133 describes HER2t, a truncated construct lacking domain I and the cytoplasmic tail (not full-length surface HER2, out of scope); PMC3759426 describes a general snorkel method with no HER2-specific position (cannot pin insert_after_residue). No internal loop insertion sites are supported by the ledger; returning one site is the correct result. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
       "sources": [
         {
-          "pmid": 34244298,
-          "citation": "PMID 34244298"
+          "citation": "preprint",
+          "claim": "To test whether the presence of an activating mutation influences HER2 internalization rate, affecting in turn the internalization rate of ADC-HER2 complexes, we established isogenic models using a breast non-transformed cell line (MCF10A) and a lung cancer cell line (NCI-H2030) expressing either V5-tagged WT or mutant (S310F or L755S) HER2 or empty vector as control (EV)."
         }
       ],
       "plddt": null,

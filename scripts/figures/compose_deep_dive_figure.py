@@ -1,6 +1,6 @@
 """Stack the cohort funnel over the deep-dive pipeline as one two-panel figure.
 
-Main-paper Figure 4 becomes (a) how the 5,130-gene cohort is nominated
+Main-paper Figure 4 becomes (a) how the 5,332-gene cohort is nominated
 and trimmed, then (b) what the pipeline does to each of those genes.
 Panel a is generated (``scripts/figures/pipeline_funnel.py``); panel b is
 the author-drawn Illustrator export, used unmodified.
@@ -22,9 +22,9 @@ an earlier 0.80 here made panel a visibly the smaller of the two.
 
 Outputs:
   paper/figures/deep_dive_flow.svg                       print asset (manifest)
-  data/analysis/figures/figure4_cohort_and_pipeline.svg  reader-facing copy
-  data/analysis/figures/figure4_cohort_and_pipeline.pdf  vector, for placing
-  data/analysis/figures/figure4_cohort_and_pipeline.png  300 dpi, for pasting
+  data/analysis/figures/deep_dive_flow.svg               reader-facing copy
+  data/analysis/figures/deep_dive_flow.pdf               vector, for placing
+  data/analysis/figures/deep_dive_flow.png               300 dpi, for pasting
 
 The paste-ready raster exists because neither Google Docs nor Word will
 take this SVG: it has to be dropped into the manuscript as a bitmap even
@@ -49,9 +49,9 @@ from pathlib import Path
 from accessible_surfaceome.paths import REPO_ROOT
 
 PANEL_A_PDF = REPO_ROOT / "data/analysis/figures/pipeline_funnel.pdf"
-PANEL_B_SVG = REPO_ROOT / "data/analysis/figures/deep_dive_flow.svg"
+PANEL_B_SVG = REPO_ROOT / "data/analysis/figures/deep_dive_flow_panel_b.svg"
 OUT_SVG = REPO_ROOT / "paper/figures/deep_dive_flow.svg"
-EXPORT_STEM = REPO_ROOT / "data/analysis/figures/figure4_cohort_and_pipeline"
+EXPORT_STEM = REPO_ROOT / "data/analysis/figures/deep_dive_flow"
 EXPORT_DPI = 300
 
 # Panel a's width as a fraction of panel b's. 1.0 = equal width; see the

@@ -48,6 +48,232 @@ The visual reference points the CSS mirrors from the Pioneer paper:
 | Block quotes | Maroon-blush background with maroon side rule |
 | Footer | "Deliverome" left, page number right, both maroon |
 
+## The web edition's motion layer
+
+`build.py --web` adds a scroll-reveal pass on top of the same pandoc
+output the PDF uses. Three files share the work, and the split is
+load-bearing rather than cosmetic:
+
+| File | Owns |
+|---|---|
+| `web_assets.py` | Stamps `class="reveal"` onto structural blocks at build time, plus the `<head>` fragments (fonts, the reveal gate). Imports no pandoc, so CI tests it on every run. |
+| `deliverome-web.css` | The motion itself — hidden state, transition, escapes. |
+| `deliverome-web.js` | The parts needing a viewport: what is already on screen, arming, the observers. |
+
+**The safety property.** The hidden state (`opacity: 0`) applies only
+under `html.js-reveal`, and that class is set by one inline `<head>`
+script which first checks for `IntersectionObserver`. A reader whose JS
+fails, a crawler, or Reader Mode therefore gets an ordinary fully
+visible paper — the `reveal` classes in the markup do nothing on their
+own. `tests/test_paper_web_motion.py` fails the build if any rule
+hides content outside that gate. **Don't "simplify" the gate away.**
+
+Two orderings also matter, and both have already bitten once:
+
+* The gate must be set **inline in `<head>`**, not from the deferred
+  `paper.js`. Set later, the page paints visible and then blanks out.
+* Arming the transition is a **separate class**, applied after whatever
+  is already on screen has been marked visible. That is what keeps the
+  opening screen from animating. It is applied synchronously after a
+  forced style flush, not in a `requestAnimationFrame` — rAF is paused
+  in a background tab, and it races the observer's first batch.
+
+Tuning lives in the `:root` block of `deliverome-web.css`
+(`--reveal-duration`, `--reveal-distance`, `--reveal-step`,
+`--reveal-ease`).
+
+**Prose reveals too, and that is the whole effect.** An earlier version
+animated only structure — headings, figures, tables — reasoning that
+`opacity: 0` text is still matched by find-in-page. The reasoning was
+sound and the result was wrong: it left 97 of 184 top-level blocks
+static, and since prose is what a reader spends almost all of their
+scrolling inside, the page read as though nothing was happening.
+Find-in-page is handled where the problem actually is instead — the
+`beforematch` / Cmd+F handler in `deliverome-web.js` drops the entire
+reveal the moment anyone starts searching. Don't "fix" find-in-page by
+taking prose back out.
+
+**Large blocks move further and slower.** A figure that travels the
+same 18px over the same 620ms as a line of text has barely shifted
+relative to its own height, so it reads as simply appearing rather than
+arriving. `.figure-block` and `table` override both tokens.
+
+**The trigger is held** (`rootMargin: 0px 0px -18% 0px`) rather than
+firing as a block clips the viewport edge. Fired at the edge, the
+animation completes below where anyone is looking and the page just
+seems to have been that way already.
+
+Only the reference list is staggered — it is the one place with a
+column of near-identical siblings. Figures here are single composite
+renders, so there is nothing to stagger inside one.
+
+### The lightbox fits the screen, legend and all
+
+Opening a figure full-screen is for seeing the whole figure *and* its
+legend, so nothing in the lightbox scrolls. The overlay is
+`overflow: hidden` and the panel is a flex column:
+
+* The **legend is laid out first** and keeps its natural height, at the
+  full panel width. An earlier version capped it and let it scroll,
+  which meant opening a figure full-screen and still not being able to
+  read its legend. Full width is also what makes it fit — a wider
+  measure wraps the same text into fewer lines.
+* The **image takes whatever is left**. `min-height: 0` is the
+  load-bearing line: a flex item defaults to `min-height: auto` and
+  refuses to shrink below its intrinsic size, which is the usual reason
+  a `max-height` on a flexbox image appears to do nothing.
+  `object-fit: contain` keeps it from distorting as it shrinks.
+
+**The figure zooms inside its own window.** Pinch (or scroll) over the
+figure to magnify it up to 8x within the frame it already occupies —
+the panel keeps its shape and the legend stays exactly where it is.
+Once zoomed, drag or two-finger scroll to pan. A **Reset zoom** button
+appears in the window while zoomed; double-click and Escape do the same
+thing but neither is visible, so neither is a way out for a reader who
+doesn't already know. Opening another figure always starts fitted.
+
+Two things about panning are easy to get wrong and fail silently:
+
+* A plain wheel has to **pan** once zoomed in, not zoom. Mapping it to
+  zoom leaves the reader magnified with no way to reach the rest of the
+  figure — a two-finger scroll is how anyone expects to move around a
+  magnified image.
+* A drag on an `<img>` is the browser's **native image drag** unless
+  both `draggable="false"` and `preventDefault()` on `pointerdown` say
+  otherwise. The pointer stream stops, a ghost thumbnail follows the
+  cursor, and the pan never starts. Synthetic PointerEvents in a test
+  do not reproduce this — it only shows up under a real drag.
+
+**The legend moves beside the figure when that shows it larger.** The
+panel is wider than it is tall, so a figure sharing that height with a
+legend beneath it can end up a sliver. `paper.js` lays each figure out
+both ways while the overlay is still invisible and keeps whichever
+renders the bigger picture.
+
+It is measured rather than thresholded because the answer depends on
+the figure's shape AND on how much height its legend eats AND on the
+window, and the three do not line up. In this manuscript a near-square
+figure with a long legend is 71% larger beside, while a slightly
+flatter one with a short legend is 6% *smaller* — an aspect-ratio cutoff
+mis-sorts both. Measuring costs two reflows on a hidden overlay.
+
+Measure the **picture**, not the `<img>` box: `object-fit: contain`
+letterboxes the picture inside the box, and comparing boxes made an
+earlier pass of this come out backwards. Below the stylesheet's 48rem
+breakpoint the side-by-side rules do not apply, so both measurements
+come back equal and stacked wins by default.
+
+The window takes its `aspect-ratio` from the image's own dimensions,
+set by `paper.js` when the figure opens. That indirection is load
+bearing: left to size the window itself, the image gives the window its
+height, the window then shrinks to make room for the legend, and the
+image — whose `max-height: 100%` resolves against a height derived from
+it — keeps its original size and is clipped top and bottom. A window
+with a shape of its own breaks the circularity.
+
+Zoom is about the pointer, not the centre: zooming about the centre
+drifts whatever you were looking at off screen, which is what makes a
+zoom feel broken. Panning is clamped so the image always covers the
+window.
+
+Note that the overlay's dismiss-on-click would otherwise swallow the
+zoom gesture — the image click is intercepted before that fallthrough.
+
+### Dead cross-references fail the build
+
+`filters/figures.lua` turns "Figure 3" / "Figure S4" in the prose into
+links, and warns about references it could not match — but pandoc
+warnings scroll past in a long build and the exit status stays 0, so a
+dead cross-reference ships silently. One did: the draft reads
+`(Figure S4)Two of five changed` with no space after the bracket, the
+tokeniser saw `S4)Two`, and that reference was plain text in both the
+PDF and the web edition for several builds.
+
+Tables go through the same index and the same machinery — they are
+captioned the same way and cited the same way, and "Table S1" was the
+last reference shape in the paper still rendering as plain text while
+every figure around it linked. Panel-suffixed references ("Figure 4a")
+link to their figure, which is the only sensible target since there is
+no per-panel anchor.
+
+`paper/figure_links.py` now checks the rendered HTML — covering both
+outputs, and needing nothing but lxml, so it is tested in CI where the
+`paper` extra is not installed. A reference the filter should have
+linked and did not **fails the build**.
+
+When it fires, the reference is usually malformed in the `.docx` — a
+missing space after a bracket will do it — rather than a gap in the
+filter.
+
+### Figures carry alt text from their own legend
+
+Pandoc carries no alt text out of the `.docx`, so 22 of 27 images had
+no `alt` attribute at all — not empty, absent — and a screen reader
+announced nothing for almost every figure in either edition.
+`paper/figure_alt.py` sets it from the legend's lead sentence: already
+written, already copy-edited, and it cannot drift from the caption. An
+image that already has alt text keeps it, which is what leaves the
+title band's brand marks alone.
+
+### Panel markers in legends are bold
+
+`paper/caption_panels.py` emboldens the "a)", "b)", "c)" that introduce
+each panel's sentence. Without it a multi-panel legend reads as one
+undifferentiated paragraph and finding the sentence for panel b means
+reading the whole caption.
+
+Applied to the rendered HTML, so the PDF and the web edition get the
+identical treatment from one implementation. What counts as a marker is
+deliberately narrow — it must open a clause — because this manuscript's
+captions contain `("yes", panel a)`, which a looser rule would bold
+mid-sentence. The start-of-run case is the subtle one: the first
+panel's marker sits at the start of the caption-lead span's *tail*,
+where the full stop that ends the clause is inside the span and
+invisible to the matcher, so it was the one marker per legend that got
+missed.
+
+### Figures reserve their box before they load
+
+`apply_image_hints` stamps intrinsic `width`/`height` on every `<img>`,
+which is what stops a figure shoving the prose below it down the page
+as it decodes. Two things make that non-obvious:
+
+* **It has to run late.** `figure_swap.swap_figures` strips
+  `width`/`height` off every `<img>` it rewrites, and the title band
+  isn't grouped into `<header>` until near the end — and that grouping
+  is how an above-the-fold image is recognised, so it can be exempted
+  from `loading="lazy"` (lazy-loading what the reader is already
+  looking at costs LCP for nothing).
+* **Most figures are SVG**, which Pillow cannot read. `_svg_size`
+  parses `width`/`height` or falls back to the `viewBox`, rejecting
+  percentage lengths — `width="100%"` is not an intrinsic size, and
+  reserving a box 100 units wide is worse than reserving none.
+
+### Appending to `<head>` or `<body>`
+
+Use `_append_fragment`, not `lxml.html.fromstring`. On a head-only
+element — `<link>`, `<meta>`, `<script>` — `fromstring` returns an
+entire `<html><head>…</head></html>` document, so appending its result
+nests a stray document inside the page. Browsers untangle it and the
+paper shipped that way for a while, but the reveal bootstrap depends on
+running before first paint, which should not rest on parser error
+recovery.
+
+### Web fonts load from `<head>`, not from the stylesheet
+
+`deliverome-web.css` used to `@import` a Google Fonts URL. That is the
+slowest path a font can take — our CSS, then Google's CSS, then the
+woff2, three serial round trips before a character renders in the brand
+face, visible as a full-page reflow on every cold load. The `<link>`
+now lives in `<head>` behind two preconnects, emitted from
+`web_assets.FONT_HEAD_LINKS`.
+
+**Adding a weight or a face means editing `FONT_HEAD_LINKS`, not the
+stylesheet.** Note the consequence for embedding: the fonts no longer
+travel with the sheet, so a site that copies `paper.css` alone gets the
+system stack unless it loads the faces itself. Every rule names a
+fallback, so that degrades rather than breaks.
+
 ## Iterating on the print look
 
 WeasyPrint reads exactly what Chrome's print emulation shows. To
@@ -168,6 +394,27 @@ You can also run the validator standalone, without a `.docx`:
 uv run python paper/figure_swap.py            # report issues
 uv run python paper/figure_swap.py --strict   # exit 1 on any issue
 ```
+
+### Alert: figures that changed since the .docx
+
+Swapping in the canonical render means the PDF can carry a figure the
+manuscript never showed you. So before each swap the build compares the
+figure the .docx embedded with the render replacing it, and flags any that
+visibly differ:
+
+- the swap log prints `compared with the .docx: N changed, M unchanged, K not
+  compared`, and the build **ends** with a `⚠⚠ N FIGURE(S) DIFFER FROM THE
+  VERSION IN THE .DOCX` block listing each one, so it can't scroll past;
+- each changed figure gets an old | new | difference image (differing pixels
+  marked red) in `<docx-dir>/build/figure-changes/`.
+
+The comparison is built to ignore what the .docx round-trip does to a pasted
+image (downscaling, JPEG re-compression, a flattened transparent background):
+an unchanged figure scores 0 differing pixels, while a single edited number
+still scores hundreds. Vector (SVG) entries are compared through the sibling
+`<slug>.png` every published figure ships; a figure with no PNG is reported
+as "not compared" rather than silently passed. The alert never fails the
+build; review the listed figures before publishing.
 
 ## Cross-reference links
 

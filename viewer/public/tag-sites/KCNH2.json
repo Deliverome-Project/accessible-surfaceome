@@ -112,6 +112,69 @@
       "median_conservation": 1.0
     },
     {
+      "site_id": "KCNH2-internal-436-lit",
+      "gene_symbol": "KCNH2",
+      "uniprot_acc": "Q12809",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 436,
+      "residue_before": "T",
+      "residue_after": "E",
+      "residue_label": "T436",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "BBS 13 aa",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Confocal microscopy and flow cytometry confirmed robust surface expression of BBS-hERG-YFP in HEK293 cells, with BTX647 surface signals up to 100-fold above threshold; channel processing and surface trafficking were preserved. Explicit electrophysiology of the BBS-tagged construct was not reported in the cited paper.",
+      "confidence": "high",
+      "rationale": "L1 (PMC5917007) and L8 (PMC10568093) independently name the identical junction T436/E437 in the S1\u2013S2 extracellular loop (topology 430\u2013453) of full-length membrane-anchored hERG. Python verification confirms aa(436)=T and aa(437)=E in the canonical sequence. The junction sits 7 residues from TM1 end (429) and 17 residues from TM2 start (454), both well above the 3-residue minimum. Disulfide cysteines C445 and C449 lie 9 and 13 residues downstream of the junction and were not disrupted in the published construct. Full-length hERG1a (KCNH2) expressed in HEK293 cells; a 13-residue bungarotoxin-binding site (BBS) was inserted between residues Thr436 and Glu437 in the extracellular S1\u2013S2 loop by site-directed mutagenesis, combined with a C-terminal YFP fusion (BBS-hERG1a-YFP). Surface channels were labeled with Alexa Fluor 647-conjugated bungarotoxin in non-permeabilized cells and quantified by confocal microscopy and flow cytometry. [validation: surface_only; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 29725305,
+          "citation": "PMID 29725305",
+          "claim": "A 13-residue bungarotoxin-binding site (BBS; TGGCGGTACTACGAGAGCAGCCTGGAGCCCTACCCCGAC) ( Sekine-Aizawa and Huganir, 2004 ; Yang et al., 2010 ) was then introduced between residues T436/E437 in the extracellular S1\u2013S2 loop of hERG using the Quik-Change Lightning Site-Directed Mutagenesis Kit (Stratagene) according to the manufacturer\u2019s instructions. 16 LQT2 mutations were introduced in the PAS domain of BBS-hERG-YFP via site-directed mutagenesis."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "KCNH2-internal-443-lit",
+      "gene_symbol": "KCNH2",
+      "uniprot_acc": "Q12809",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 443,
+      "residue_before": "T",
+      "residue_after": "E",
+      "residue_label": "T443",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA 9 aa + 4 aa linkers",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Flow cytometry and confocal microscopy confirmed surface expression of HA-KCNH2 in HEK293T cells (L9). Multiple independent studies using HA tags in the same S1\u2013S2 loop explicitly state the tag 'does not interfere with channel processing or function' (L11, L14). Explicit electrophysiology of the T443/E444 junction construct specifically was not reported in L7.",
+      "confidence": "high",
+      "rationale": "L7 (DOI:10.1101/2020.02.17.952606) explicitly names the junction T443/E444 in full-length KCNH2, a distinct position from the T436/E437 BBS site. Python verification confirms aa(443)=T and aa(444)=E. The junction is 14 residues from TM1 end (429) and 10 residues from TM2 start (454). Although C445 is only 1 residue downstream of E444, the published insertion was tolerated and the channel trafficked to the surface; L11 and L14 from independent groups confirm HA tags in this same loop do not perturb processing or function. Full-length KV11.1 (KCNH2) expressed in HEK293T cells; a 9-amino-acid HA tag with flanking 4-amino-acid linkers (NSEHYPYDVPDYAVTFE, 17 aa total) was inserted between residues T443 and E444 in the extracellular S1\u2013S2 loop by inverse PCR. Surface expression of HA-KCNH2 was validated by flow cytometry and confocal microscopy; multiple control variants were generated in the same backbone. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "citation": "preprint",
+          "claim": "A previously published 34 9 amino acid HA tag with surrounding 4 amino acid linkers (NSEHYPYDVPDYAVTFE) was inserted between amino acids T443 and E444 (in the extracellular region between the S1 and S2 helices) by inverse PCR 35 (Table S1)."
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "KCNH2-snorkel-c",
       "gene_symbol": "KCNH2",
       "uniprot_acc": "Q12809",
@@ -398,5 +461,12 @@
       "canonical_residue": 633,
       "left_pct": 54.64716006884681
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "prompt_sha": "0209a8f14c0c740650a9c1d97b8205e8795976175c0182839cc2e2c050559913",
+  "prompt_version": "1.3.0",
+  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-10-10T21:07:01.611420+00:00",
+  "literature_notes": "Two extracellular sites in the S1\u2013S2 loop (topology 430\u2013453) are supported by the ledger with exact residue-level evidence. Site 1 (T436/E437, BBS) is grounded by two independent papers (L1/PMC5917007 and L8/PMC10568093) naming the identical junction. Site 2 (T443/E444, HA) is grounded by L7 and corroborated by L9, L11, and L14. The C-terminal YFP fusion described in L2 is intracellular (topology 657\u20131159) and does not qualify as an extracellular tag site. The S3\u2013S4 extracellular span is a single residue (501, topology-derived) and no ledger line reports an insertion there. The S5\u2013S6 turret loop (571\u2013638) is the longest extracellular span but no ledger line reports a tag insertion there for KCNH2 or a close ortholog. Lines L3\u2013L6, L9\u2013L16 were reviewed; they corroborate the two named junctions but do not pin additional distinct positions. The validation_level for Site 2 is elevated to surface_and_function because L11 and L14 explicitly state the HA tag in the S1\u2013S2 loop does not interfere with processing or function, and L7/L9 confirm surface display at this exact junction.",
+  "literature_rejected": []
 }
