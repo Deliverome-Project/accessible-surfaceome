@@ -137,3 +137,64 @@ def test_run_orders_snorkel_last_when_no_ecto_terminus():
     assert sites[-1]["det_path"] == "snorkel"                    # snorkel last
     assert any(s["det_path"] == "surface_loop" for s in sites)  # internal preserved
     assert not any(s["site_kind"] == "terminal_n" for s in sites)  # no ecto N-term
+
+
+# --- junction projection across numbering frames -------------------------------- #
+
+from accessible_surfaceome.tag_sites.tedman import project_junction  # noqa: E402
+
+
+def test_same_sequence_projects_unchanged():
+    s = "MDLGKPMKSVLVVALLVIFQ"
+    p = project_junction(s, s, 10)
+    assert p.junction == 10 and p.offset == 0 and p.exact
+
+
+def test_an_n_terminal_truncation_shifts_the_frame():
+    # the real CCR7 case: the construct transcript lacks the canonical first 6 residues,
+    # so its junction 23 is canonical residue 29. Comparing the raw integers made this
+    # look like a signal-peptide disagreement.
+    canonical = "MDLGKP" + "MKSVLVVALLVIFQVCLCQDEVTDDYIGDNTTVDYTLFESLCSKKD"
+    construct = "MKSVLVVALLVIFQVCLCQDEVTDDYIGDNTTVDYTLFESLCSKKD"
+    p = project_junction(construct, canonical, 23)
+    assert p.junction == 29 and p.offset == 6 and not p.exact
+    assert "offset +6" in p.note
+
+
+def test_an_internal_insertion_shifts_only_downstream_positions():
+    head = "ACDEFGHIKLMNPQRSTVWY"      # 20 aa, long enough to anchor
+    tail = "WVTSRQPNMLKIHGFEDCAY"
+    source = head + tail
+    target = head + "CCCCCCCC" + tail   # 8 residues inserted between them
+    assert project_junction(source, target, 10).junction == 10   # upstream: unchanged
+    assert project_junction(source, target, 30).junction == 38   # downstream: +8
+
+
+def test_a_junction_with_no_counterpart_is_not_guessed():
+    p = project_junction("AAAAXXXX", "AAAA", 7)
+    assert p.junction is None
+    assert "do not share" in p.note
+
+
+def test_identity_is_reported_so_a_bad_match_is_visible():
+    p = project_junction("AAAACCCC", "AAAATTTT", 2)
+    assert p.identity == 0.5
+
+
+def test_a_short_coincidental_match_does_not_carry_a_coordinate():
+    # the GABBR1 failure: the junction residue matches by chance while the surrounding
+    # sequence does not, and a two-residue block mapped it 122 residues away.
+    source = "QQQQQQQQQQHZZZZZZZZZZ"
+    target = "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWHYYYYYYYYYY"
+    p = project_junction(source, target, 11)
+    assert p.junction is None
+
+
+def test_a_long_block_with_mismatched_flanks_is_refused():
+    shared = "ACDEFGHIKLMNPQRSTVWY" * 2       # 40 identical residues
+    source = "AAAA" + shared
+    target = "BBBBBBBB" + shared
+    # inside the block the flanks agree, so this one projects
+    assert project_junction(source, target, 20).junction == 24
+    # a junction in the non-shared head does not
+    assert project_junction(source, target, 2).junction is None

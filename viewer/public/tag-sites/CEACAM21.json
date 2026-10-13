@@ -1,0 +1,125 @@
+{
+  "has_data": true,
+  "gene_symbol": "CEACAM21",
+  "uniprot_acc": "Q3KPI0",
+  "sites": [
+    {
+      "site_id": "CEACAM21-terminal-n",
+      "gene_symbol": "CEACAM21",
+      "uniprot_acc": "Q3KPI0",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 34,
+      "residue_before": "A",
+      "residue_after": "W",
+      "residue_label": "A34",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-34, 'O' at residue 35) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 77.4,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "CEACAM21-disorder-144::iso::Q3KPI0-3",
+      "isoform_id": "Q3KPI0-3",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 144,
+      "canonical_residue": 144,
+      "left_pct": 75.39267015706807
+    },
+    {
+      "site_id": "CEACAM21-disorder-153::iso::Q3KPI0-3",
+      "isoform_id": "Q3KPI0-3",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 153,
+      "canonical_residue": 207,
+      "left_pct": 80.10471204188482
+    },
+    {
+      "site_id": "CEACAM21-disorder-166::iso::Q3KPI0-3",
+      "isoform_id": "Q3KPI0-3",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 166,
+      "canonical_residue": 217,
+      "left_pct": 86.91099476439791
+    },
+    {
+      "site_id": "CEACAM21-disorder-176::iso::Q3KPI0-3",
+      "isoform_id": "Q3KPI0-3",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 176,
+      "canonical_residue": 227,
+      "left_pct": 92.14659685863874
+    },
+    {
+      "site_id": "CEACAM21-disorder-191::iso::Q3KPI0-3",
+      "isoform_id": "Q3KPI0-3",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 191,
+      "canonical_residue": 293,
+      "left_pct": 100.0
+    },
+    {
+      "site_id": "CEACAM21-surface_loop-143::iso::Q3KPI0-3",
+      "isoform_id": "Q3KPI0-3",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 143,
+      "canonical_residue": 143,
+      "left_pct": 74.86910994764398
+    },
+    {
+      "site_id": "CEACAM21-surface_loop-35::iso::Q3KPI0-2",
+      "isoform_id": "Q3KPI0-2",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 35,
+      "canonical_residue": 35,
+      "left_pct": 11.986301369863012
+    },
+    {
+      "site_id": "CEACAM21-surface_loop-35::iso::Q3KPI0-3",
+      "isoform_id": "Q3KPI0-3",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 35,
+      "canonical_residue": 35,
+      "left_pct": 18.32460732984293
+    }
+  ],
+  "ortholog_pins": []
+}
