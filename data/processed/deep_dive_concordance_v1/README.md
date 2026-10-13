@@ -1,4 +1,4 @@
-# Deep-dive run-to-run concordance (Supplementary Figure 15)
+# Deep-dive run-to-run concordance (Supplementary Figure 16)
 
 Frozen record sets for a reproducibility check of the deep-dive pipeline: 50
 genes drawn at random from the deep-dive cohort, each annotated three ways.

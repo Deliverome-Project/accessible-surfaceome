@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 15.** Precomputed deterministic features distribute as expected for surface proteins across deep-dive tiers and the triage-positive pool. Twelve topology and structural features (TM-helix count, protein length and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular surface-bind site) compared across the canonical, likely, low, and uncertain/non-surface tiers and the triage-positive pool: all 4,628 proteins the two-stage Sonnet 4.6 triage called yes or contextual (all have a canonical DeepTMHMM topology), deep-dived or not, with features taken from the genome-wide tables.
+> **Supplementary Figure 15.** Precomputed deterministic features distribute as expected for surface proteins across deep-dive tiers and the triage-positive pool. Twelve topology and structural features (TM-helix count, protein length and ECD length, signal peptide, N- and C-terminal orientation, mouse and cynomolgus 1:1 orthology, homo-oligomerization, alt-isoform topology change, concerning paralog, and extracellular SURFACE-Bind site) compared across the canonical, likely, low, and uncertain/non-surface tiers and the triage-positive pool: all 4,628 proteins the two-stage Sonnet 4.6 triage called yes or contextual (all have a canonical DeepTMHMM topology), deep-dived or not, with features taken from the genome-wide tables.
 <!-- END manuscript-legend -->
 
 Distribution of **twelve deterministic per-gene features** across the
