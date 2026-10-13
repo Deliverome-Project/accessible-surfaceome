@@ -108,7 +108,19 @@ def _collapse_to_majority(raw_rows):
         win_side = ranked[0][0]
         win_reps = [r for r in valid if _surface_vote(r["predicted_verdict"]) == win_side]
         rep_verdict = Counter(r["predicted_verdict"] for r in win_reps).most_common(1)[0][0]
-        representative = next(r for r in win_reps if r["predicted_verdict"] == rep_verdict)
+        # Take the MODE of reason/confidence among the reps carrying the
+        # winning verdict — not the first such rep. Row order is meaningless
+        # once the verdict is settled, so picking reps[0] scored a cell on a
+        # minority reason whenever every rep agreed on the verdict and split
+        # on the reason. On the bench that mislabeled three genes (JAK2, FN1,
+        # LAMP3). Mode is taken within the winning verdict so the emitted
+        # reason stays inside that verdict's bucket, which
+        # TriageRecord._check_reason_matches_verdict requires.
+        same_verdict = [r for r in win_reps if r["predicted_verdict"] == rep_verdict]
+
+        def _modal(col, _reps=same_verdict):
+            vals = [r.get(col) for r in _reps if r.get(col)]
+            return Counter(vals).most_common(1)[0][0] if vals else None
 
         def _sum(col, _reps=reps):
             total = sum(float(r.get(col) or 0) for r in _reps)
@@ -117,8 +129,8 @@ def _collapse_to_majority(raw_rows):
         out.append({
             "gene_symbol": gene, "model": model, "prompt_variant": variant,
             "predicted_verdict": rep_verdict,
-            "predicted_reason": representative.get("predicted_reason"),
-            "predicted_confidence": representative.get("predicted_confidence"),
+            "predicted_reason": _modal("predicted_reason"),
+            "predicted_confidence": _modal("predicted_confidence"),
             "n_reps": len(valid),
             "majority_agreement": round(len(win_reps) / len(valid), 3),
             "prompt_tokens": _sum("prompt_tokens"),

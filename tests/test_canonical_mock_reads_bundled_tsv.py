@@ -46,8 +46,10 @@ SCRIPTS = REPO_ROOT / "scripts" / "figures"
 #     optimized-cutoff TSV (their old initial-flag reads from the raw
 #     catalog / per-protein-features were the drift hazard).
 READS_BUNDLED_TSV = [
+    "surface_evidence_assay_types",
     "deep_dive_final_categories",
     "deep_dive_record_richness",
+    "deep_dive_replicate_kappa",
     "deep_dive_vs_sonnet_benchmark",
     "evidence_corpus_vs_selected",
     "triage_vs_deep_dive_reason",
@@ -73,10 +75,9 @@ READS_BUNDLED_TSV = [
     # mirror-sync only and intentionally absent from this list.
     "db_overlap_upset",
     "blog_db_overlap_venn",
-    "db_overlap_venn",
     "db_correctness_by_class",
     "benchmark_cost_vs_accuracy",
-    # Supp S13 — deterministic-features 3×3 (MOCK: buckets are Sonnet verdicts
+    # Supp S15 — deterministic-features 3×3 (MOCK: buckets are Sonnet verdicts
     # standing in for deep-dive confidence tiers). The bundled TSV is the sole
     # source of truth. Supp S7 — positive-control DB coverage: its upstream is
     # a D1-built long TSV (Sonnet dual-pass verdicts), not offline-reproducible,

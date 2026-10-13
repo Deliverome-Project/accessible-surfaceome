@@ -53,15 +53,15 @@
       "description": "Vector, converted from benchmark_cost_vs_accuracy.pdf."
     },
     "3": {
-      "slug": "db_cutoff_tradeoff",
-      "format": "svg",
-      "description": "Vector, converted from db_cutoff_tradeoff.pdf."
-    },
-    "4": {
       "slug": "curator_vs_agent_reason",
       "format": "png",
       "min_dpi": 600,
       "description": "Raster on purpose: curator_vs_agent_reason.pdf converts to an SVG that only wraps a raster panel, so the 600-DPI PNG is the sharper asset."
+    },
+    "4": {
+      "slug": "db_cutoff_tradeoff",
+      "format": "svg",
+      "description": "Vector, converted from db_cutoff_tradeoff.pdf."
     },
     "5": {
       "slug": "ensemble_vs_best_db_vs_sonnet",
@@ -95,26 +95,36 @@
       "description": "Vector, converted from paywall_bot_block_compare.pdf."
     },
     "11": {
+      "slug": "deep_dive_vs_sonnet_benchmark",
+      "format": "svg",
+      "description": "Vector, converted from deep_dive_vs_sonnet_benchmark.pdf."
+    },
+    "12": {
       "slug": "evidence_corpus_vs_selected",
       "format": "png",
       "min_dpi": 600,
       "description": "Raster on purpose: the vector conversion is 4.1 MB (a dense per-paper scatter), against a 600-DPI PNG 6,997 px wide."
     },
-    "12": {
-      "slug": "deep_dive_vs_sonnet_benchmark",
-      "format": "svg",
-      "description": "Vector, converted from deep_dive_vs_sonnet_benchmark.pdf."
-    },
     "13": {
+      "slug": "surface_evidence_assay_types",
+      "format": "svg",
+      "description": "Vector, converted from surface_evidence_assay_types.pdf."
+    },
+    "14": {
       "slug": "triage_vs_deep_dive_reason",
       "format": "png",
       "min_dpi": 600,
       "description": "Raster on purpose: triage_vs_deep_dive_reason.pdf converts to an SVG that only wraps a raster panel, so the 600-DPI PNG is the sharper asset."
     },
-    "14": {
+    "15": {
       "slug": "surfaceome_deterministic_features",
       "format": "svg",
       "description": "Vector, converted from surfaceome_deterministic_features.pdf."
+    },
+    "16": {
+      "slug": "deep_dive_replicate_kappa",
+      "format": "svg",
+      "description": "Vector, converted from deep_dive_replicate_kappa.pdf."
     }
   },
   "_supplementary_note": "Supplementary figures were shipping as the .docx's 2048px Google-Docs exports while 600-DPI / vector canonical renders existed for all 14 — the visible resolution gap against the main figures. Slugs resolved from each caption's gist id via data/analysis/figures/gist_map.json, so the mapping is the manuscript's own, not inferred from titles."

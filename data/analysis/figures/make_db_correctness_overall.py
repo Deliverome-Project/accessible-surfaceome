@@ -6,13 +6,16 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``db_correctness_overall.{pdf,png}`` from the public repo.
+"""Reproduce ``db_correctness_overall.{pdf,png}`` from the bundled TSV.
 
 LLM-only overall accuracy on the 147-gene bench, grouped by model
-(Haiku 4.5 / Sonnet 4.6 / Opus 4.8) with hatched bars for the
-within-model prompt variants (naive / + IDs / + IDs + web /
-+ IDs + PubMed). Color encodes the model (Claude-orange walk);
-hatch encodes the prompt variant.
+(Haiku 4.5 / Sonnet 4.6 / Sonnet 5 / Opus 4.8) with hatched bars for
+the within-model prompt variants (naive / + IDs / + IDs + web /
++ IDs + PubMed). Haiku 4.5 and Sonnet 4.6 have all four variants,
+Opus 4.8 naive and + IDs, Sonnet 5 + IDs only. Color encodes the model
+(Claude-orange walk); hatch encodes the prompt variant. Bar height is
+the mean of the three per-replicate accuracies; points are the
+replicates and error bars are the SEM across replicates.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
@@ -85,7 +88,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -94,12 +97,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 20,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 16,
+        "axes.labelsize": 18,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -114,19 +117,19 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 20,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
 
 
 # Model display order + Claude-orange palette (light → dark = larger model).
-# Sonnet 5 added 2026-06-30 — only ncbi variant sampled.
+# Sonnet 5 added 2026-06-30 — only the ncbi (+ IDs) variant sampled.
 MODEL_ORDER = [
     ("claude-haiku-4-5",  "Haiku 4.5",  "#f1c4ab"),
     ("claude-sonnet-4-6", "Sonnet 4.6", BRAND_CLAUDE_ORANGE),
@@ -189,19 +192,18 @@ def main() -> None:
     # everything the script needs.
     rep_acc = _per_rep_accuracy(_fetch_tsv(DATA_TSV))
 
-    # Wider figure (was 12) so the 4-bar Haiku / Sonnet / Opus clusters'
-    # bar-top "9X.X%" labels (one per prompt variant) sit with breathing
-    # room instead of touching neighbours.
-    fig, ax = plt.subplots(figsize=(16, 5.5))
+    # Legend sits above the axes so the bars span the full width and each
+    # bar-top "9X.X%" label fits inside its own bar without touching neighbours.
+    fig, ax = plt.subplots(figsize=(14, 5.5))
     n_models = len(MODEL_ORDER)
     n_variants = len(VARIANT_ORDER)
-    bar_w = 0.78 / n_variants
+    bar_w = 0.88 / n_variants
 
     for mi, (model, _, color) in enumerate(MODEL_ORDER):
         for vi, (variant, _, hatch) in enumerate(VARIANT_ORDER):
             reps = rep_acc.get((model, variant), [])
             if not reps:
-                continue  # e.g. opus-4-8 was only run on naive + ncbi
+                continue  # e.g. opus-4-8 was only run on naive + ncbi; sonnet-5 on ncbi only
             # Bar height = MEAN of per-replicate accuracies (not the majority-
             # vote accuracy) so the bar, the overlaid points, and the SEM error
             # bar all share one center. This is the average single-run accuracy
@@ -228,24 +230,31 @@ def main() -> None:
                     x + jitter, rv, s=20, color=BRAND_INK,
                     edgecolor="white", linewidth=0.5, zorder=5, alpha=0.85,
                 )
-            ax.text(
-                x, mean_rep + 2.6, f"{mean_rep:.1f}%",
-                ha="center", va="bottom", fontsize=14, color=BRAND_INK,
+            # Clear the highest replicate dot / SEM cap, not just the bar.
+            top = max([*reps, mean_rep + (sem if len(reps) >= 2 else 0.0)])
+            ax.annotate(
+                f"{mean_rep:.1f}%", xy=(x, top), xytext=(0, 5),
+                textcoords="offset points", ha="center", va="bottom",
+                fontsize=13.5, color=BRAND_INK,
             )
 
     ax.set_xticks(range(n_models))
-    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=19)
-    ax.set_ylabel("Overall accuracy on\n147-gene benchmark", fontsize=17)
-    ax.set_ylim(0, 105)
+    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER])
+    ax.set_ylabel("Overall accuracy on\n147-gene benchmark")
+    ax.set_ylim(0, 106)
+    ax.set_xlim(-0.5, n_models - 0.5)
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=BRAND_INK,
                       hatch=hatch, linewidth=0.8, label=variant_label)
         for _, variant_label, hatch in VARIANT_ORDER
     ]
+    # Legend above the axes (one row) so the bars get the full width and
+    # each bar-top label fits inside its own bar.
     ax.legend(
         handles=legend_handles, title="Variant (hatch)",
-        loc="center left", bbox_to_anchor=(1.01, 0.5),
-        frameon=False, fontsize=16, title_fontsize=19,
+        loc="lower center", bbox_to_anchor=(0.5, 1.04),
+        ncol=len(VARIANT_ORDER), frameon=False,
+        title_fontsize=18, columnspacing=1.6, handlelength=2.2,
     )
     sns.despine(ax=ax, top=True, right=True)
 

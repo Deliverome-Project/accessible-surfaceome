@@ -8,7 +8,7 @@
 # ///
 """Reproduce ``deep_dive_vs_sonnet_benchmark.{pdf,png}``.
 
-**Supplementary Fig 12.** Deep-dive vs Sonnet+NCBI accuracy on all 113
+**Supplementary Fig 11.** Deep-dive vs Sonnet+NCBI accuracy on all 113
 SurfaceBench genes deep-dived so far (the intersection with the 147-gene
 benchmark; no records excluded — the one holistic-`conflicting` gene,
 RPN1, is scored too, so both predictors see the full common set).
@@ -21,13 +21,13 @@ counts correct when called surface.
   * **b.** Accuracy split by ground-truth bucket (yes / contextual / no).
 
 The deep-dive bar is STACKED by the tier it assigned to the
-correctly-classified genes — canonical / likely / low (green shades)
-and uncertain / no (grey), the same five-tier palette as Figure 5a — so
-its confidence composition is visible. Sonnet+NCBI accuracy is the mean
+correctly-classified genes — canonical / likely (green and teal) and low
+(amber), with uncertain / no (grey), the same five-tier palette as Figure
+5a — so its confidence composition is visible. Sonnet+NCBI accuracy is the mean
 of three mainbench replicates (one dot per replicate; the error bar is
 the SEM across replicates); the deep dive runs once per gene, so its bar
 carries no replicate spread. Deep dive and Sonnet are near-identical
-overall (97% vs 97%, Sonnet as the replicate mean); the deep dive is
+overall (97.3% vs 96.8%, Sonnet as the replicate mean); the deep dive is
 perfect on the 68 ground-truth-yes genes and makes three errors — one FN
 in the contextual bucket (PMEL) and two FPs in the 'no' bucket (ATG9A,
 RPN1). The deep-dive verdict counts as surface
@@ -76,8 +76,15 @@ _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
 # read as one palette.
 _TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
-    "canonical": "#3D6B60",  # deep teal — strict tier (swapped w/ likely for contrast)
-    "likely":    "#2E7A55",  # brighter green — broader tier
+    # MUST match deep_dive_final_categories (Fig 5a) and
+    # triage_vs_deep_dive_reason (Supp S14), which both use
+    # canonical=green / likely=teal. This figure had them swapped
+    # "for contrast" — a local call that made the same tier name carry
+    # different colours across three figures in one paper, which a
+    # reviewer caught. Contrast is unaffected (the two are adjacent in
+    # the stack either way), so consistency wins.
+    "canonical": "#2E7A55",  # success green — strict tier
+    "likely":    "#3D6B60",  # teal-mid — broader tier
     "low":       "#C99A5B",  # amber-tan — low/moderate, weak evidence
     "uncertain": "#C7BDB6",  # light warm-grey — ambiguous
     "no":        "#9C8C88",  # lifted neutral — leaned not-surface
@@ -127,12 +134,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
+        "font.weight": "semibold",
         "font.size": 13,
         "axes.labelsize": 13,
-        "axes.labelweight": "medium",
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -197,7 +204,7 @@ def _sonnet_replicate_accs(rows: list[dict]) -> list[float]:
 
 
 def _panel_label(ax: plt.Axes, letter: str) -> None:
-    ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=26,
+    ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=24,
             fontweight=800, va="bottom", ha="right", color=BRAND_INK)
 
 
@@ -215,8 +222,10 @@ def _draw_sonnet(ax: plt.Axes, rows: list[dict], x: float, width: float) -> None
     jx = _RNG.uniform(-width * 0.20, width * 0.20, size=len(accs))
     ax.scatter(x + jx, accs, s=26, color=BRAND_INK, alpha=0.75,
                edgecolor="white", linewidth=0.5, zorder=5)
-    ax.text(x, mean + sem + 2, f"{mean:.1f}", ha="center", va="bottom",
-            fontsize=14, color=_SONNET_COLOR, fontweight="bold")
+    # Label above the error bar AND the highest replicate dot, so no dot sits on it.
+    top = max(mean + sem, max(accs))
+    ax.text(x, top + 2, f"{mean:.1f}", ha="center", va="bottom",
+            fontsize=15, color=_SONNET_COLOR)
 
 
 def _draw_deep_dive(ax: plt.Axes, rows: list[dict], x: float, width: float) -> None:
@@ -233,8 +242,8 @@ def _draw_deep_dive(ax: plt.Axes, rows: list[dict], x: float, width: float) -> N
             continue
         ax.bar(x, h, bottom=bottom, width=width, color=_TIER_COLOR[t], zorder=2)
         bottom += h
-    ax.text(x, dd + 2, f"{dd:.1f}", ha="center", va="bottom", fontsize=14,
-            color=BRAND_INK, fontweight="bold")
+    ax.text(x, dd + 2, f"{dd:.1f}", ha="center", va="bottom", fontsize=15,
+            color=BRAND_INK)
 
 
 def _embed_source_in_metadata(out_path: Path, url: str) -> None:
@@ -258,7 +267,7 @@ def make_plot() -> plt.Figure:
     _apply_brand_style()
     plt.rcParams.update({
         "font.size": 18, "axes.labelsize": 18, "axes.titlesize": 0,
-        "xtick.labelsize": 15, "ytick.labelsize": 15, "legend.fontsize": 15,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     rows = _load()
 
@@ -277,7 +286,7 @@ def make_plot() -> plt.Figure:
     axA.set_ylim(0, 112)
     axA.set_xlim(-0.7, 0.7)
     axA.text(0.5, 1.02, f"n = {len(rows)} genes", transform=axA.transAxes,
-             ha="center", va="bottom", fontsize=13, color=BRAND_NEUTRAL)
+             ha="center", va="bottom", fontsize=14, color=BRAND_NEUTRAL)
     sns.despine(ax=axA, top=True, right=True)
     _panel_label(axA, "a")
 
@@ -299,8 +308,8 @@ def make_plot() -> plt.Figure:
                for t in _TIER_ORDER]
     handles.append(mpatches.Patch(color=_SONNET_COLOR, label="Sonnet+NCBI"))
     axB.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.01, 1.0),
-               frameon=False, fontsize=11, title="deep-dive tier / Sonnet",
-               title_fontsize=11, labelspacing=0.35, handlelength=1.2)
+               frameon=False, title="deep-dive tier / Sonnet",
+               title_fontsize=18, labelspacing=0.35, handlelength=1.2)
     sns.despine(ax=axB, top=True, right=True)
     _panel_label(axB, "b")
 

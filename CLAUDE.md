@@ -17,7 +17,7 @@ Do **not** add `Co-Authored-By: Claude <…>` (or any AI-attribution trailer) to
 human cell-surface proteins from seven public data sources.
 
 The pipeline is complete end to end: the candidate universe, the triage sweep
-over 19,324 genes, and the deep dive over 5,130 candidates have all run, and
+over 19,324 genes, and the deep dive over 5,332 candidates have all run, and
 the records are live on the public API.
 
 ## Repository Structure
@@ -61,7 +61,7 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 
 ### v2 is the production deep-dive path
 
-The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/annotate_gene.py](scripts/annotate_gene.py)). It runs entirely on **in-process Sonnet `messages.create` calls** — `plan_trim_select` (dual A1/A2), 9 block builders, and the synthesizer. **Every prompt is read locally from disk and takes effect on the next invocation — there is no remote agent registry to sync.** The synthesizer reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) directly via `messages.create` (`run_synthesizer_with_drafts`); any historical Managed-Agent registration of it is vestigial and off the v2 code path. The in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) are likewise edit-and-go. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) for the original v1/v2 trade-off table.
+The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/annotate_gene.py](scripts/annotate_gene.py)). It runs entirely on **in-process Sonnet `messages.create` calls** — `plan_trim_select` (dual A1/A2), 8 block-builder calls (six concurrent, then `evidence_grade`, then `risks`; the combined subcellular/anatomical builder fills two sections, so the record has nine builder-written sections), and the synthesizer. **Every prompt is read locally from disk and takes effect on the next invocation — there is no remote agent registry to sync.** The synthesizer reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) directly via `messages.create` (`run_synthesizer_with_drafts`); any historical Managed-Agent registration of it is vestigial and off the v2 code path. The in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) are likewise edit-and-go. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) for the original v1/v2 trade-off table.
 
 **Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, human-readable render of the live deep-dive prompts — each prompt's full text, the diff vs `main`, and a closed-enum reference (the structured-output options the model must choose from, e.g. `epitope_masking.mechanism` annotated with its homo / hetero / other axis). It is a **generated artifact**, so it goes stale the instant a prompt changes. Whenever you edit any in-process prompt under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/), [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/), or [surfaceome_synthesizer/prompts/](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/) — or change a closed enum the review renders (in [models.py](src/accessible_surfaceome/tools/_shared/models.py)) — regenerate it in the **same commit**:
 
@@ -84,7 +84,7 @@ If you need a concrete example to communicate a pattern, use "gene X" / "gene Y"
 After a v2 annotate run validates, `scripts/annotate_gene.py` writes the record to **three** surfaces:
 
 1. `data/annotations/{symbol}.json` — the agent's canonical disk artifact (was previously gated behind `--persist`; now default-on, opt out with `--no-persist`).
-2. `viewer/public/data/surfaceome/{symbol}.json` — the viewer's offline / Worker-down fallback.
+2. `viewer/public/data/surfaceome/{symbol}.json` — an in-tree copy (only the three committed test fixtures are tracked; the viewer never serves from it).
 3. Public Cloudflare D1 `surface_annotation.annotation_json` — what the `api.deliverome.org/surfaceome/v1/genes/:symbol` Worker serves.
 
 Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.publish_record`](src/accessible_surfaceome/cloud/surface_annotation.py), default-on with `--no-publish` to skip. The D1 push is **auto-skipped** with a warning (not an error) when the `CLOUDFLARE_*` env vars aren't set, so CI without secrets still works.
@@ -93,6 +93,8 @@ Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.pu
 
 The same `publish_record` helper backs `scripts/cloud/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
 
+**Deterministic blocks go stale when their source tables change — audit after every such change.** Records bake `deterministic_features` in at annotate time, and the Worker only back-fills a block that is missing or empty-and-unchecked, so a later change to a source table (a Compara relabel, a Schweke payload append, a late ortholog pull, a topology fill) never reaches records that already carry the block. After any change to `topology_public`, `compara_*`, `surface_bind_*` or `schweke_homomer_public`, run `uv run python scripts/audit/audit_record_deterministic_consistency.py` — it compares all seven features in every record against the served source versions in small paced chunks (never a cohort-wide join: one tripped public D1's CPU limit and reset it) and writes `stale_genes.json` — then republish exactly those with `uv run python scripts/cloud/refresh_deterministic_features_d1.py --genes-file data/analysis/deterministic_consistency/stale_genes.json --execute`, which rebuilds only the deterministic block plus the six filters derived from it (never the LLM fields; never the full `_derive_filters`, which would reset `n_papers_found`). Ensembl Compara is pinned to release 115 (`ensembl_compara_115`) for every gene; new ortholog proteins get DeepTMHMM 1.0.24 topology from `modal/deeptmhmm_v1_app.py` (the licence-gated package lives on the `deeptmhmm-v1` Modal volume). **Republishing does not refresh the markdown briefs.** `/v1/genes/{SYMBOL}.md` is served from R2, and `publish_record` neither regenerates it nor purges its cache, so after any refresh: re-export the briefs (`cd viewer && MD_TARGET=r2 SURFACEOME_MD_SOURCE=api node scripts/build-markdown-exports.mjs`, `SURFACEOME_MD_GENES=A,B` to scope it), purge them (`uv run python scripts/cloud/purge_gene_cache.py --surfaces md --execute`), then run the record-history sweep, which archives the `.md` too. On 2026-10-12 every brief still showed the pre-115 Compara label and stale orthologs after the records themselves were fixed.
+
 **Paper-count signals on Filters (schema 2.14.1+).** `Filters.n_papers_selected` and `Filters.n_papers_found` carry the per-record paper counts that power the viewer's "understudied genes" filter — both `int | None` (None on legacy pre-2.14.0 records is "unknown", distinct from a real-zero measurement).
 
 - `n_papers_selected = len({source.source_id for ev in evidence for span in ev.spans})` — unique papers the agent selected for full-text reading; computable from existing records via [`scripts/build/backfill_n_papers_selected.py`](scripts/build/backfill_n_papers_selected.py) (free, no LLM).
@@ -100,11 +102,15 @@ The same `publish_record` helper backs `scripts/cloud/upload_viewer_snapshots_to
 
 The Worker's `/v1/catalog` endpoint (`row_schema 6+`) bakes `ddf.n_papers_selected_band ∈ {low (≤p10), moderate (p10–p90), high (≥p90)}` per row using cohort percentiles, and surfaces the cutoffs as top-level `n_papers_selected_cutoffs: {p10, p90, n}` so the viewer's filter tooltip can show concrete thresholds. Pre-existing `Filters.evidence_density` (citation-row count, 3-bucket) stays for back-compat as the "evidence depth / quality gate" axis — semantically distinct from n_papers_selected; keep both filters in the UI.
 
-**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges.
+**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). Publish also archives the record to record history (below), which purges `/v1/genes/{SYMBOL}/revisions` and `/v1/releases` so the new revision's list view is never served stale either. The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges.
+
+**Record history + numbered data releases.** Every distinct state the API served for a gene — record, `/evidence` ledger, `.md` export — is archived write-once to R2 bucket `surfaceome-record-history` (`records/sha256/{hash}.{json|md}`) with one `record_revision` row per actual change in public D1 ([`cloud/record_history/`](src/accessible_surfaceome/cloud/record_history/)). **History holds only states the API actually served** — revision numbering starts at **1** (a gene's first archived version); there is no revision 0. `GET /v1/genes/{sym}/revisions` labels each entry's `changed`: `["first_archived"]` for a gene's first revision (nothing to diff against), otherwise whichever of `record`/`evidence`/`markdown` differ in hash from the previous (numerically lower) revision, computed in the Worker from the already-fetched rows (no extra query). Release **1.0.0** (the 2026-08-15 Zenodo deposit, `10.5281/zenodo.20805384`) predates per-gene record history and stays **Zenodo-only**: its `data_release` row carries `archive_scope = 'zenodo_only'` and has **no** `data_release_member` rows, so no revision ever lists it under `releases`, `GET /v1/releases` reports it with `api_members: false`, `GET /v1/releases/1.0.0` returns `members: []` plus an `api_note` pointing at the Zenodo DOI, and `GET /v1/releases/1.0.0/genes/{sym}` 404s `release_not_in_api_history` (DOI in the body) for every gene rather than falling back to a live lookup — those records live only in the Zenodo deposit tarball. `scripts/cloud/seed_record_history.py`, which originally wrote that deposit into `record_revision` as revision 1, is retired (`main()` refuses immediately); any `seed:zenodo-1.0.0` rows an earlier run already wrote are removed, and the affected genes' later revisions renumbered down by one, by [`scripts/cloud/drop_seed_revisions.py`](scripts/cloud/drop_seed_revisions.py) (dry-run by default, `--execute`; resumable with no external state — see its module docstring). `publish_record` archives after every publish (needs `ARCHIVE_BYPASS_TOKEN`; a miss is a warning, never a failed publish). **Anything that writes `surface_annotation` directly, or bulk-updates a deterministic table the Worker joins at serve time, must be followed by** `uv run python scripts/cloud/sweep_record_history.py --execute`, or those states never enter history — this includes [`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py): `handleGene` overlays live `triage_run_public` (and other synced tables) onto the served record at serve time, so a sync that changes those rows changes what's served without changing `surface_annotation` itself. `sweep_record_history.py --check-stability [--sample N]` (default 50, seeded random sample, `--genes` honoured) is a read-only mode that fetches each gene twice and diffs the three content hashes — never touches the store/R2/D1 — to catch a serve-time field the hasher hasn't learned to ignore yet before it's mistaken for real content drift on every sweep; run it after any Worker change that touches serve-time enrichment. A response whose serve-time enrichment hit a real (non-"no such table") D1 error carries `X-Surfaceome-Degraded` + `Cache-Control: no-store` (`handleGene`/`handleGeneEvidence`'s `soft()` helper in `index.js`); `withEdgeCache` never persists it to either cache tier, and `fetch_served`/`archive_gene` in `cloud/record_history/archive.py` refuse to archive it (raising `ArchiveError`, which `--check-stability` reports as an error) so a transient D1 hiccup never gets written into history as if it were the record's real content. Releases (`data_release` / `data_release_member`) are cut with `scripts/release/cut_data_release.py --version X.Y.Z` after bumping `pyproject.toml` (which is also what the viewer badge shows); it drafts — never publishes — the Zenodo data-record version. History endpoints: `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`, `/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]` — path-based only, because the zone cache rule ignores query strings. **Cohort-scale I/O (the seed, the sweep) is deliberately kept off the shared Cloudflare account API budget** (1,200 requests / 5 min across every `api.cloudflare.com` call, R2 REST ops and D1 queries alike): R2 writes go through the S3-compatible API ([`cloud/r2_s3.py`](src/accessible_surfaceome/cloud/r2_s3.py)) using credentials derived from `CLOUDFLARE_API_TOKEN` (a separate API surface, so it doesn't touch that budget at all), and D1 calls made through `CloudRevisionStore` are throttled via `RECORD_HISTORY_D1_QPS` (default 2.5 qps, `0` disables). Separately, the sweep paces Worker fetches (`--max-genes-per-second`, default 2) because each bypassed record fetch costs ~17 queries on the shared public D1; never raise it during business hours.
+
+**Reproducibility replicates are not published records.** Public D1 `deep_dive_replicate` holds the Supplementary Figure 16 study (`deep_dive_concordance_v1`: 50 random deep-dive genes × `published_snapshot` / `full_rerun` / `fixed_evidence_replay`), loaded once from the frozen bundle [`data/processed/deep_dive_concordance_v1/`](data/processed/deep_dive_concordance_v1/) by [`scripts/cloud/upload_deep_dive_replicates_to_d1.py`](scripts/cloud/upload_deep_dive_replicates_to_d1.py). The Worker serves it API-only — `/v1/replicates`, `/v1/genes/{sym}/replicates[/{study}/{kind}]`, every response labelled `reproducibility_replicate: true` — and nothing in the catalog, viewer, record history or `surface_annotation` reads it. Never publish a replicate through `publish_record` (that would overwrite the live record). `cut_data_release.py` attaches the same bundle (`deep-dive-reproducibility-replicates-v1.tar.gz`, built deterministically) to each Zenodo release draft.
 
 **A Worker deploy that changes a response's SHAPE needs a manual purge.** `publish_record`'s purge only fires when a *record* is republished, so a deploy that adds a field to an endpoint leaves every already-cached gene serving the old shape for up to a day — on an arbitrary subset of genes, which reads as a bug rather than a cache. [`scripts/cloud/purge_gene_cache.py`](scripts/cloud/purge_gene_cache.py) purges the per-gene surfaces (edge + KV) across the whole cohort for exactly this case — `--surfaces record` for `/v1/genes/{SYMBOL}`, `evidence` for its ledger, `both` by default. It reuses `_purge_urls_for` / `_kv_keys_for` so the synthetic cache-key hosts can't drift from the publish path. Dry-run by default, `--execute` to purge, `--genes A,B` to scope it. Caching is per-POP, so a skipped purge shows up as the same gene answering differently depending on which datacenter served it — purge the surface the deploy touched, not just the gene you spot-checked. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/cloud/apply_cf_edge_rules.py`](scripts/cloud/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
 
-**A public-D1 sync purges the cohort surfaces it staled.** `publish_record` covers what ONE gene's record changes; [`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py) is the other writer into public D1 and rewrites whole tables (`triage_run_public`, `benchmark_version`) that back cohort-level endpoints. It now calls `accessible_surfaceome.cloud.surface_annotation.purge_cohort_surfaces` after a successful sync (`--no-purge` to skip; a dry-run prints what it would purge). Only the **1-day** surfaces are in the map — `/v1/triage/export.tsv` (plus its published `?run_id=` variants, since it is the one route wrapped with `includeQuery: true` and so keys per query string), `/v1/benchmark`, `/v1/benchmark/matrix`, `/v1/benchmark/export.tsv`. The 60-second surfaces (`/v1/catalog`, `/v1/genes`, `/v1/triage/{SYMBOL}`) are deliberately excluded: they self-heal in a minute, and enumerating 19k per-gene triage URLs would burn purge quota on a shared zone for nothing. Note that `stale-while-revalidate=86400` sits on top of every TTL, so an unpurged 1-day surface can keep answering with the previous bytes for a second day. [tests/test_cohort_cache_purge.py](tests/test_cohort_cache_purge.py) pins the map to both things it drifts from — a new `--only` group must be classified, and every `CACHE_TTL_LONG` cohort route in the Worker must be covered (it caught `/v1/benchmark` missing on the first run).
+**A public-D1 sync purges the cohort surfaces it staled.** `publish_record` covers what ONE gene's record changes; [`scripts/cloud/sync_public_d1.py`](scripts/cloud/sync_public_d1.py) is the other writer into public D1 and rewrites whole tables (`triage_run_public`, `benchmark_version`) that back cohort-level endpoints. It now calls `accessible_surfaceome.cloud.surface_annotation.purge_cohort_surfaces` after a successful sync (`--no-purge` to skip; a dry-run prints what it would purge). Only the **1-day** surfaces are in the map — `/v1/triage/export.tsv` (plus its published `?run_id=` variants, since it is the one route wrapped with `includeQuery: true` and so keys per query string), `/v1/benchmark`, `/v1/benchmark/matrix`, `/v1/benchmark/export.tsv`. The 60-second surfaces (`/v1/catalog`, `/v1/genes`, `/v1/triage/{SYMBOL}`) are deliberately excluded: they self-heal in a minute, and enumerating 19k per-gene triage URLs would burn purge quota on a shared zone for nothing. Note that `stale-while-revalidate=86400` sits on top of every TTL, so an unpurged 1-day surface can keep answering with the previous bytes for a second day. [tests/test_cohort_cache_purge.py](tests/test_cohort_cache_purge.py) pins the map to both things it drifts from — a new `--only` group must be classified, and every `CACHE_TTL_LONG` cohort route in the Worker must be covered (it caught `/v1/benchmark` missing on the first run). `purge_paths` (the shared helper both `purge_cohort_surfaces` and record-history archiving call) purges the Worker's *synthetic* `caches.default`/KV cache keys, not the public URLs — an earlier version targeted the public URL and silently evicted nothing.
 
 ## Prompt provenance is mandatory for every agentic pipeline
 
@@ -130,7 +136,7 @@ The deep-dive in-process pipeline (`surfaceome_v2`) additionally carries a globa
 The abstract-triage stage of `plan_trim_select` ([abstract_triage.py](src/accessible_surfaceome/agents/plan_trim_select/abstract_triage.py)) fetches a `worth_fetching` paper's body through a 3-step chain, each falling through on miss/empty:
 
 1. **PMC JATS** via `paper.pmc_id`, or PMID→PMCID via NCBI eLink.
-2. **Unpaywall OA PDF** — DOI → OA locations → **all** PDF URLs tried best-quality-first (publisher publishedVersion > repository), so a bot-blocked publisher copy can still be recovered from a repository copy (OSTI, institutional repos). Each PDF is parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber: `extract_words` spacing, gutter-based 2-column split, font-aware run-in/bold heading detection → the JATS `SectionName` enum). Failure → abstract fallback (never crashes the batch).
+2. **Unpaywall OA PDF** — DOI → OA locations → up to 4 PDF URLs (`_MAX_PDF_LOCATIONS` in `abstract_triage.py`) tried best-quality-first (publisher publishedVersion > repository), so a bot-blocked publisher copy can still be recovered from a repository copy (OSTI, institutional repos). Each PDF is parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber: `extract_words` spacing, gutter-based 2-column split, font-aware run-in/bold heading detection → the JATS `SectionName` enum). Failure → abstract fallback (never crashes the batch).
 
 Operational notes:
 - **Dep**: `pdfplumber` (MIT). `pypdfium2` is pinned `<5.9.0` via `[tool.uv] constraint-dependencies` — a supply-chain cooldown (5.9.0 was <7 days old when added); safe to relax after it ages out.
@@ -316,13 +322,16 @@ script — no need to install wrangler just to peek at row counts.
 
 ### `run_id` conventions
 
-- `genome_full_sonnet_ncbi_v1` — the canonical 2026-05-12 Sonnet
-  triage sweep over the cohort.
-- `genome_full_sonnet_ncbi_v1__resolver_v3_fix` — corrected re-runs
-  of the 45 cells the v3 resolver audit flagged. **Originals are
-  preserved**; analytics that should incorporate the fix should
-  COALESCE-prefer the fix run over the original (see the
-  Postgres-flavored snippet below).
+- `genome_full_sonnet_ncbi_v2` — the **canonical** Sonnet triage sweep
+  over all 19,324 protein-coding genes (`CANONICAL_TRIAGE_RUN_ID` in
+  [scripts/triage_runner.py](scripts/triage_runner.py); the stage-one run
+  `build_candidate_universe_v3.py` reads). It superseded v1 and is the only
+  genome-wide run in public D1.
+- `genome_full_sonnet_ncbi_v1` and `genome_full_sonnet_ncbi_v1__resolver_v3_fix`
+  — the **legacy** 2026-05-12 sweep and its corrected re-runs of the 45
+  cells the v3 resolver audit flagged. Removed from public D1 on 2026-06-01;
+  only relevant to analyses that deliberately read the old v1 rows in
+  private D1 (see the COALESCE snippet below).
 - **The four `pubmed_ncbi` rescue lanes.** Each re-examines a slice of the
   Sonnet-`no` population with a literature-augmented pass. They are
   disjoint by construction, and together they cover **every gene the
@@ -356,14 +365,16 @@ script — no need to install wrangler just to peek at row counts.
   **Two rules a new lane has to follow.** (a) Scope it on the same DB-vote
   cutoffs the universe gate uses — the first two lanes were scoped on
   *initial* votes while the gate runs on *optimized* ones, which is
-  exactly how the 74 orphans appeared. (b) Add its run_id to `RUNS_PM`
+  exactly how the 74 orphans appeared. (b) Add its run_id to `RESCUE_RUNS`
   in [scripts/build_candidate_universe_v3.py](scripts/build_candidate_universe_v3.py)
   in the same change, and don't filter the lane on
   `prompt_variant='pubmed_ncbi'` — a few cells fall back to `naive` when
   the PubMed fetch fails, and they are still that gene's second look.
 
-Composite-source SELECT that gives "latest verdict per (gene_symbol,
-model, variant), preferring fix rows over originals":
+For analyses that read the **legacy v1** rows, this composite-source
+SELECT gives "latest verdict per (gene_symbol, model, variant), preferring
+fix rows over originals" (new work should read the canonical v2 run
+instead):
 
     SELECT * FROM triage_run t
     WHERE (t.run_id = 'genome_full_sonnet_ncbi_v1__resolver_v3_fix')
@@ -376,8 +387,8 @@ model, variant), preferring fix rows over originals":
                  AND f.prompt_variant = t.prompt_variant
            ));
 
-Anything else that reads `triage_run` should adopt this pattern
-until the fix run is mirrored back into the canonical run_id.
+Anything that still reads the v1 rows should adopt this pattern; the
+canonical v2 run needs no fix-run merge.
 
 ### Failure modes the HGNC-ID path is designed to avoid
 
@@ -690,16 +701,19 @@ Every gene is SSG'd through `generateStaticParams`; the loader at
 `viewer/lib/surfaceome.ts` fetches the public Worker at
 `api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` (source in
 `cloudflare/workers/surfaceome_api/`, bound to the `surfaceome_public`
-D1 mirror) **first** and falls back to the committed `fs` snapshot only
-on error — same record shape. Set `SURFACEOME_API_BASE=local` (or
-empty) to force fs-only.
+D1 mirror). There is **no on-disk fallback**: gene pages hard-require the
+live Worker, and `SURFACEOME_API_BASE=local` renders no gene pages at all
+(the offline CI smoke build). The three committed snapshots (ABCB9, C3,
+CD63) are test fixtures and the markdown exporter's offline input, kept
+equal to the live records; refresh them from public D1 when the record
+schema changes.
 
 ### Records source of truth — never edit a JSON snapshot without syncing D1
 
 **The live site reads D1, not the committed JSON.** The Worker serves
 each gene from public D1's `surface_annotation.annotation_json`; the
 `viewer/public/data/surfaceome/*.json` snapshots are only the in-tree
-source of truth + the on-error SSG fallback. So **a record change that
+fixtures. So **a record change that
 lands only in the JSON silently drifts the live site** — the page keeps
 rendering D1's stale row. This is exactly what blanked the Family chip:
 the `protein_family` → `llm_family` rename updated the JSON + viewer
@@ -769,12 +783,21 @@ pulls `node:fs`).
 ### Per-gene markdown exports — D1-sourced at build time
 
 The downloadable `{SYMBOL}.md` briefs are rendered by
-`viewer/scripts/build-markdown-exports.mjs` (wired into `npm run build` via
-`build:exports`). It has two record sources, selected by `SURFACEOME_MD_SOURCE`:
+`viewer/scripts/build-markdown-exports.mjs`, run via the `build:exports`
+npm script. **`build:exports` is a standalone ops job, not part of
+`npm run build`** — `viewer/package.json`'s `build` script is
+`build:snapshot && next build --webpack && node scripts/prune-export.mjs`,
+which never invokes `build:exports`. Run it manually (or from a separate
+scheduled job) after a deep-dive sweep changes the published set:
+`SURFACEOME_MD_SOURCE=api node scripts/build-markdown-exports.mjs` for
+the default `public` target (writes `{SYMBOL}.json` + `.md` under
+`viewer/public/data/surfaceome/`), or with `MD_TARGET=r2` for the R2
+`.md`-only populate job (see below). It has two record sources, selected
+by `SURFACEOME_MD_SOURCE`:
 
-- **`snapshots`** (default) — renders `.md` next to each committed
-  `viewer/public/data/surfaceome/*.json`. Offline-safe; used by CI, local
-  dev, and the small curated fallback set.
+- **`snapshots`** — renders `.md` next to each committed
+  `viewer/public/data/surfaceome/*.json`. Offline-safe; used by CI and local
+  dev against the three test fixtures.
 - **`api`** — the D1-served model for the full cohort. Fetches the entire
   published set from the public Worker (`/v1/genes` list → `/v1/genes/{sym}`
   per record) and **materializes `{SYMBOL}.json` + `{SYMBOL}.md` at build
@@ -782,11 +805,15 @@ The downloadable `{SYMBOL}.md` briefs are rendered by
   caps the count (testing / incremental builds); `SURFACEOME_API_BASE`
   overrides the Worker base.
 
-**Set `SURFACEOME_MD_SOURCE=api` on the Cloudflare Pages `build:exports`
-step** so a large deep-dive sweep that publishes only to D1 still ships a
-`.md` (+ a materialized fs fallback) for every gene, without committing
-thousands of snapshots. Commit only a small curated snapshot set as the
-Worker-down offline fallback.
+**Run `build:exports` with `SURFACEOME_MD_SOURCE=api`** (the default) so a
+large deep-dive sweep that publishes only to D1 still ships a `.md` (+ a
+materialized JSON copy) for every gene, without committing thousands of
+snapshots. Commit only the three test-fixture snapshots. Because this ops job is NOT part of the Pages build, a
+newly-published gene's `.md` download only exists after someone runs this
+job — that's expected, not a bug to fix by wiring it into `npm run build`
+(the whole point of pulling it out was to keep the Pages 20k-file cap and
+build time under control; see the script's own header comment for the
+history).
 
 Consequently the old "every D1-published gene needs a committed in-tree
 snapshot" rule is **retired** — a published gene with no committed snapshot
@@ -794,6 +821,28 @@ is expected, not drift. `tests/test_d1_records_schema_drift.py` now guards
 the exporter's api-source *wiring* (static
 `test_markdown_exporter_supports_d1_source`) instead of requiring a
 per-gene snapshot.
+
+Both this exporter's record + evidence-ledger fetches and
+`build-data-snapshot.mjs`'s per-gene record pre-fetch are paced through a
+shared concurrency/rate limiter (`viewer/scripts/lib/build-fetch.mjs`,
+default 8 concurrent / 8 req/s, `SURFACEOME_BUILD_FETCH_CONCURRENCY` /
+`_RPS` — the rate cap is the binding constraint, not concurrency) and
+never publish a record still carrying `X-Surfaceome-Degraded` after
+retries — a persistently degraded/failing gene is skipped (existing
+R2/`.md` artifact left untouched) and logged rather than baked into the
+build. Both scripts also abort the whole run early (before any R2 upload
+for this exporter), mid-fetch, once the running failure count exceeds
+`floor(SURFACEOME_BUILD_MAX_FAILED_FRAC × total genes)` — an outage is
+caught within a handful of genes, not only after every one of ~5,300 has
+individually exhausted retries — and separately exits non-zero if more
+than
+`SURFACEOME_BUILD_MAX_FAILED_FRAC` (default 1%) of genes failed. When run
+with `MD_TARGET=r2` or `SURFACEOME_MD_GENES` set (a targeted re-export of
+specific genes, comma-separated), this exporter always fetches live from
+the Worker and never reads the local `viewer/build-cache/records` snapshot
+— that cache can be stale (e.g. left over in another worktree from before
+this pacing fix), and both of those modes are ops jobs republishing to a
+live surface, so they must never risk shipping stale bytes.
 
 ## Cloudflare D1 + R2 backups for agent runs
 
@@ -935,15 +984,52 @@ Keep `CLAUDE.md` and `AGENTS.md` aligned when guidance changes.
 ## Shared API compatibility across main and dev
 
 The `surfaceome-api` Worker at `api.deliverome.org/surfaceome` serves both
-production and dev viewers. A main deployment must preserve endpoints and
-response fields consumed by dev, even when the related UI has not merged
-to main. In particular, keep `/v1/internalization/{symbol}` and the catalog
-fields `intern`, `intern_lit`, and `intern_lit_grade`. Do not deploy an older
-branch's Worker wholesale over the shared service; reconcile both branches'
-API changes first.
+the production viewer (built from `main`) and the dev viewer (built from
+`dev`). There is one Worker script, and `wrangler deploy` replaces it whole:
+the deploy is last-writer-wins over the entire API, with no merge. **Every
+Worker deploy must therefore be inclusive of both `main` and `dev`.** It
+ships `main`'s current Worker plus every endpoint, response field, D1 table
+read, and serve-time overlay that `dev` relies on, even when the dev UI that
+consumes them has not merged to `main` yet. A deploy that drops either
+branch's API surface breaks that branch's viewer.
+
+The standing dev-only contract today is `/v1/internalization/{symbol}` and
+the catalog fields `intern`, `intern_lit`, and `intern_lit_grade`. Never
+deploy an older branch's Worker, or a branch that has fallen behind
+`origin/main`, over the shared service. Reconcile both branches' API
+changes first.
+
+Run this check immediately before every `wrangler deploy`, from a branch
+based on a freshly fetched `origin/main`:
+
+1. `git fetch origin && git diff origin/main --stat -- cloudflare/workers/surfaceome_api/`.
+   Anything there that isn't your own change means rebase first. Other
+   sessions merge Worker PRs minutes apart.
+2. Compare *sets* against `origin/dev`, not a raw diff. Dev lags main, so a
+   line diff mostly shows main's refactors in reverse. Compare:
+   - routes (`path.match(...)` / `path === "..."`);
+   - top-level function names;
+   - the paths documented in the `/v1` index;
+   - `FROM|JOIN` table names.
+
+   Anything that exists only on dev must be empty. If it isn't, port it into
+   your branch (or land it on `main` first) before deploying.
+3. Compare the live `/v1` index against your source. Its routes and
+   `row_schema` must be a subset of what you are about to ship. This catches
+   a previous deploy made from some other branch.
+4. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
+5. Re-verify after the deploy, because a merge can land during it. If a
+   deploy changed a response's shape, purge the cache with
+   `scripts/cloud/purge_gene_cache.py`.
+
+Worktrees have no `wrangler.toml`: it is gitignored and only
+`wrangler.toml.example` is committed. Copy it from the canonical checkout,
+and diff its binding names against the example first.
 
 CI runs `tests/test_worker_internalization.py` as an explicit shared-API
 compatibility check with Node from `.nvmrc`; a missing Node runtime fails
-that check instead of silently skipping it. Update the contract tests when
-adding another dev-only consumer of the shared API. This protects code
-review and CI; manual deployments must run the same check before deployment.
+that check instead of silently skipping it. When you add another dev-only
+consumer of the shared API, extend these contract tests in the same change.
+That way CI enforces "inclusive of dev" instead of relying on whoever
+deploys next to remember it. CI protects code review only; a manual deploy
+must run the checklist above.

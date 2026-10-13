@@ -41,6 +41,7 @@ class CachedHTTP:
         *,
         max_retries: int = 3,
         blob_dir: Path | None = None,
+        fresh_sources: frozenset[str] = frozenset(),
     ):
         self._client = httpx.Client(
             timeout=DEFAULT_TIMEOUT,
@@ -50,6 +51,11 @@ class CachedHTTP:
         self._cache = cache
         self._limiter = limiter
         self._max_retries = max_retries
+        # Cache sources whose reads are skipped (responses are still written).
+        # A literature refresh sets this to the search endpoints so it sees
+        # papers published since the cached listing, while full-text fetches
+        # (separate source labels, 365-day TTL) keep hitting the cache.
+        self._fresh_sources = fresh_sources
         # On-disk cache for binary bodies (PDFs). Resolved lazily so tests can
         # inject a tmp dir and non-PDF callers never touch the filesystem.
         self._blob_dir_path = blob_dir
@@ -317,9 +323,10 @@ class CachedHTTP:
     ) -> str:
         canonical_url = self._canonical_url_for_cache(url, params)
         key = cache_key(method, canonical_url, body_for_key)
-        cached = self._cache.get(source, key, ttl_days=ttl_days)
-        if cached is not None:
-            return cached
+        if source not in self._fresh_sources:
+            cached = self._cache.get(source, key, ttl_days=ttl_days)
+            if cached is not None:
+                return cached
 
         resp = self._send_with_retries(
             method, url, params=params, json_body=json_body, headers=headers

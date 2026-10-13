@@ -173,7 +173,8 @@ def main() -> int:
     with D1Client(D1Config.from_env_public()) as d1:
         topo = pd.DataFrame(d1.query(
             "SELECT uniprot_acc AS uniprot_accession, deeptmhmm_label FROM topology_public "
-            "WHERE species='human' AND is_canonical IN ('1',1) AND cohort='human_canonical'", []))
+            "WHERE species='human' AND is_canonical IN ('1',1) AND cohort='human_canonical' "
+            "AND topology_version = (SELECT r.topology_version FROM topology_release r WHERE EXISTS (SELECT 1 FROM topology_public t WHERE t.topology_version = r.topology_version AND t.cohort = 'human_canonical') ORDER BY r.loaded_at DESC LIMIT 1)", []))
     topo = topo.drop_duplicates("uniprot_accession")
     df = df.merge(topo, on="uniprot_accession", how="left")
     df["deeptm_TM_NO_SP"] = (df["deeptmhmm_label"] == "TM").astype("float")

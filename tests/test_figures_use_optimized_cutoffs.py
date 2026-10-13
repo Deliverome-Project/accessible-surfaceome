@@ -1,6 +1,7 @@
 """Guard: published figures must score/gate the two RECALIBRATED databases
-(UniProt, CSPA) on their OPTIMIZED cutoffs — EXCEPT Figure 1 (db_overlap_venn),
-which deliberately shows the NATIVE, pre-recalibration per-source membership.
+(UniProt, CSPA) on their OPTIMIZED cutoffs — EXCEPT the two DB-overlap figures
+(Figure 1's UpSet and the blog Venn), which deliberately show the NATIVE,
+pre-recalibration per-source membership.
 
 Why this guard exists
 ---------------------
@@ -43,9 +44,10 @@ FIGURES_DIR = Path(__file__).resolve().parents[1] / "data/analysis/figures"
 RECALIBRATED_INITIAL_FLAGS = ("uniprot_surface_flag", "cspa_surface_flag")
 RECALIBRATED_OPTIMIZED_FLAGS = ("uniprot_optimized", "cspa_optimized")
 
-# The ONLY published figure permitted to use the native recalibrated-DB flags:
-# Figure 1 (the five-DB overlap Venn), which by design shows each source's
-# native, pre-recalibration membership (see its caption + 01_db_overlap_venn.md).
+# The ONLY published figures permitted to use the native recalibrated-DB flags:
+# the two five-DB overlap views, which by design show each source's native,
+# pre-recalibration membership (see their captions + 01_db_overlap_upset.md /
+# 01_blog_db_overlap_venn.md).
 ALLOWED_INITIAL_CUTOFF_FIGURES = {
     "db_overlap_upset",
     # Same five native DB flags, shown as a Venn for blog/talk use.
@@ -83,8 +85,8 @@ def test_recalibrated_db_initial_flags_only_in_figure_1():
     assert not offenders, (
         "Published figure(s) reference a recalibrated-DB INITIAL flag and so "
         f"score UniProt/CSPA on the wrong (native) cutoff: {offenders}. "
-        "Use uniprot_optimized / cspa_optimized instead. Only Figure 1 "
-        "(db_overlap_venn) may use the native pre-recalibration flags; if a new "
+        "Use uniprot_optimized / cspa_optimized instead. Only the two DB-overlap "
+        "views may use the native pre-recalibration flags; if a new "
         "figure legitimately needs them, add its slug to "
         "ALLOWED_INITIAL_CUTOFF_FIGURES with a comment explaining why."
     )

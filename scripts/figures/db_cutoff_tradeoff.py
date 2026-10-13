@@ -1,14 +1,20 @@
-"""Supp Fig 3 — DB cutoff recalibration tradeoff.
+"""Supplementary Figure 4 — DB cutoff recalibration tradeoff.
 
 Five per-source subplots showing the universe-size / accuracy trade-off
 across cutoff variants for each surface DB. The figure legitimately plots
-BOTH initial (canonical ◆) and optimized (recommended ★) cutoff points —
-this IS the recalibration tradeoff visualization.
+BOTH the original pre-audit rule (◆, "Original rule") and the rule adopted
+after the benchmark audit (★, "Adopted after benchmark audit"; UniProt and
+CSPA only; the candidate-universe vote now uses these) — this IS the
+recalibration tradeoff visualization. Circles are other cutoffs evaluated
+and not adopted.
 
 DATA SOURCE — reads ``data/processed/triage_bench/db_cutoff_tradeoff_points.tsv``
 (precomputed points; do NOT recompute here — the TSV is the single source of
 truth shared with the gist mirror
-``data/analysis/figures/make_db_cutoff_tradeoff.py``).
+``data/analysis/figures/make_db_cutoff_tradeoff.py``). The TSV is a committed
+artifact; regenerate it deliberately with ``_dump_db_cutoff_tradeoff_points``
+in ``scripts/figures/triage_bench_db_barplot.py``. HPA abstains on benchmark
+proteins it has no data for, so its panel is scored on the 98 it covers.
 
 Run: ``uv run python scripts/figures/db_cutoff_tradeoff.py``
 # Reproduction: https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed
@@ -22,6 +28,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+from matplotlib.transforms import offset_copy
 
 from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
 
@@ -41,7 +48,7 @@ BRAND_SEQUENTIAL = {
 }
 
 GROUP_ORDER = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
-# Per-DB sequential ramps, light → dark = strict → permissive.
+# Per-DB sequential ramps, dark → light = strict → permissive.
 GROUP_RAMP = {
     "UniProt": [BRAND_SEQUENTIAL["maroon"][i]   for i in (1, 2, 3, 4)],
     "GO":      [BRAND_SEQUENTIAL["teal"][i]     for i in (1, 2, 4)],
@@ -54,21 +61,21 @@ CANONICAL_EDGE = BRAND_INK
 
 SHORT_LABEL = {
     "UniProt strict-only\n(4 subcell terms)":              "strict-4",
-    "UniProt baseline":                                    "canonical",
+    "UniProt baseline":                                    "original",
     "UniProt TM-or-signal-or-surface\n(topology proxy)":   "TM+signal",
     "UniProt permissive\n(incl. plain Cell membrane)":     "permissive",
     "GO experimental+curated":                             "exp+curated",
-    "GO baseline":                                         "canonical",
+    "GO baseline":                                         "original",
     "GO permissive\n(incl. IEA-only)":                     "+ IEA",
     "HPA Enhanced-only\n(strictest tier)":                 "Enhanced",
-    "HPA baseline":                                        "canonical",
+    "HPA baseline":                                        "original",
     "HPA + Uncertain tier":                                "+ Uncertain",
     "SURFY score>0.9":                                     ">0.9",
     "SURFY score>0.7":                                     ">0.7",
     "SURFY score>0.5":                                     ">0.5",
-    "SURFY baseline":                                      "canonical",
+    "SURFY baseline":                                      "original",
     "CSPA high-conf only":                                 "HC-only",
-    "CSPA baseline":                                       "canonical",
+    "CSPA baseline":                                       "original",
     "CSPA + unspecific":                                   "+ unspecific",
 }
 
@@ -121,22 +128,32 @@ def main() -> None:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     # Match the gist mirror's layout fingerprint (tests/test_figure_canonical_mirror_sync).
     plt.rcParams.update({
-        "axes.labelsize": 20,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
-        "legend.fontsize": 20,
+        "axes.labelsize": 18,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
+        "legend.fontsize": 16,
         "axes.titlesize": 0,
-        "font.size": 20,
+        "font.size": 16,
     })
 
     df = pd.read_csv(DATA_TSV, sep="\t")
 
-    # Wider + taller than v2's (13, 11): v2's panels were noticeably taller
-    # than wide (≈4.3"w × 5.5"h each). (19, 13) gives ≈6.3"w × 6.5"h —
-    # near-square. Extra height also makes room for the per-panel caption
-    # block to breathe under v2's larger caption fontsize.
-    fig, axes = plt.subplots(2, 3, figsize=(19, 13))
+    # Sized for print at ~7 in wide (fonts here are ~2x their printed size).
+    fig, axes = plt.subplots(2, 3, figsize=(14, 11))
     axes_flat = axes.flatten()
+
+    # Per-panel key under each axes: one row per cutoff variant, its marker
+    # drawn in the point's own colour. Columns: short label, universe size,
+    # +% surface proteins recovered / -% non-surface proteins correctly
+    # excluded. Placed in points from the axes' bottom-left corner, with
+    # fixed columns so the numbers align.
+    key_fs = 14
+    key_line_pt = key_fs * 1.5
+    # Clears the x tick labels AND the per-panel x axis title beneath
+    # them; the title was added when the figure-level supxlabel was
+    # dropped, and at -48 the key's first row landed on top of it.
+    key_top_pt = -80
+    key_x_pt = {"marker": 6, "label": 18, "n": 192, "acc": 202}
 
     for gi, group in enumerate(GROUP_ORDER):
         ax = axes_flat[gi]
@@ -153,18 +170,14 @@ def main() -> None:
             zorder=2,
         )
 
-        caption_lines = []
         for idx, p in enumerate(pts):
             color = ramp[min(idx, len(ramp) - 1)]
             if p.get("recommended"):
-                marker, msize, edge = "*", 480, RECOMMENDED_EDGE
-                marker_char = "★"
+                marker, msize, edge = "*", 380, RECOMMENDED_EDGE
             elif p.get("canonical"):
-                marker, msize, edge = "D", 200, CANONICAL_EDGE
-                marker_char = "◆"
+                marker, msize, edge = "D", 160, CANONICAL_EDGE
             else:
-                marker, msize, edge = "o", 130, "white"
-                marker_char = "●"
+                marker, msize, edge = "o", 100, "white"
             ax.scatter(
                 p["size"],
                 p["acc"] * 100,
@@ -172,24 +185,40 @@ def main() -> None:
                 s=msize,
                 color=color,
                 edgecolor=edge,
-                linewidth=1.6,
+                linewidth=1.4,
                 zorder=4,
             )
-            short = SHORT_LABEL.get(p["label"], p["label"]).replace("\n", " ")
-            caption_lines.append(
-                f"{marker_char}  {short:<14}  n={int(p['size']):>5,}   +{p['pos'] * 100:.0f}/-{p['neg'] * 100:.0f}"
+
+            y_pt = key_top_pt - idx * key_line_pt
+
+            def _at(x_pt: float, y_pt: float = y_pt, ax=ax):
+                return offset_copy(ax.transAxes, fig=fig, x=x_pt, y=y_pt, units="points")
+
+            ax.scatter(
+                [0], [0], marker=marker, s=max(msize * 0.35, 60), color=color,
+                edgecolor=edge, linewidth=1.0, transform=_at(key_x_pt["marker"]),
+                clip_on=False, zorder=5,
             )
+            short = SHORT_LABEL.get(p["label"], p["label"]).replace("\n", " ")
+            for col, text, ha in (
+                ("label", short, "left"),
+                ("n", f"n={int(p['size']):,}", "right"),
+                ("acc", f"+{p['pos'] * 100:.0f}/-{p['neg'] * 100:.0f}", "left"),
+            ):
+                ax.text(
+                    0, 0, text, transform=_at(key_x_pt[col]),
+                    ha=ha, va="center", fontsize=key_fs, color=BRAND_INK,
+                )
 
         ax.set_xscale("log")
         ax.text(
-            0.02,
+            0.03,
             0.97,
             group,
             transform=ax.transAxes,
             ha="left",
             va="top",
-            fontsize=20,
-            fontweight="bold",
+            fontsize=18,
             color=ramp[0],
         )
         ax.set_ylim(25, 102)
@@ -206,23 +235,7 @@ def main() -> None:
         ax.xaxis.set_minor_locator(NullLocator())
         sns.despine(ax=ax, top=True, right=True)
 
-        # Per-panel caption block — one line per cutoff variant, marker
-        # char doubles as the visual key for matching to on-plot points.
-        # Monospace so columns align; tiny enough that even DejaVu Sans
-        # Mono fallback reads cleanly on systems without a brand mono.
-        ax.text(
-            0.0,
-            -0.30,
-            "\n".join(caption_lines),
-            transform=ax.transAxes,
-            ha="left",
-            va="top",
-            fontsize=15,
-            color=BRAND_INK,
-            family="monospace",
-        )
-
-    # 6th cell: marker-shape key + missing-rule footnote.
+    # 6th cell: marker-shape key.
     legend_ax = axes_flat[5]
     legend_ax.axis("off")
     handles = [
@@ -232,7 +245,7 @@ def main() -> None:
             marker="o",
             linestyle="",
             color=BRAND_NEUTRAL,
-            markersize=11,
+            markersize=10,
             markeredgecolor="white",
             markeredgewidth=1.4,
             label="Alternative cutoff (not used)",
@@ -243,10 +256,10 @@ def main() -> None:
             marker="D",
             linestyle="",
             color=BRAND_NEUTRAL,
-            markersize=12,
+            markersize=10,
             markeredgecolor=CANONICAL_EDGE,
             markeredgewidth=1.4,
-            label="Canonical (current merge rule)",
+            label="Original rule",
         ),
         plt.Line2D(
             [],
@@ -254,49 +267,40 @@ def main() -> None:
             marker="*",
             linestyle="",
             color=BRAND_NEUTRAL,
-            markersize=20,
+            markersize=17,
             markeredgecolor=RECOMMENDED_EDGE,
             markeredgewidth=1.4,
-            label="Recommended after trade-off audit",
+            label="Adopted after\nbenchmark audit",
         ),
     ]
     legend_ax.legend(
         handles=handles,
-        loc="upper center",
-        fontsize=20,
+        loc="upper left",
+        fontsize=16,
         frameon=False,
         title="Marker shape",
-        title_fontsize=20,
+        title_fontsize=18,
+        alignment="left",
+        labelspacing=0.9,
     )
 
-    fig.supxlabel(
-        "Universe size — proteins this filter would admit "
-        "(log scale; lower = stricter)",
-        fontsize=20,
-        y=0.02,
-        color=BRAND_INK,
-    )
-    # supylabel y defaults to 0.5 (figure midline) which is what reads as
-    # "centered" against the supxlabel's default x=0.5. Earlier overrides
-    # to 0.54 (axes-content midpoint) and the dynamic equivalent were
-    # technically correct but visually off — keep the matplotlib default.
-    # x=0.02 just keeps the rotated label off the canvas-left edge under
-    # brand-style-v3's larger axes.labelsize.
-    fig.supylabel(
-        "Accuracy on\n147-gene benchmark (%)",
-        fontsize=20,
-        x=0.02,
-        color=BRAND_INK,
-    )
-    plt.tight_layout(rect=[0.04, 0.03, 1, 0.985])
-    # Vertical gap between row-1 panels (with caption blocks BELOW them at
-    # axes-y=-0.30, extending further for the longest panel — 6 variants
-    # × ~22pt line height) and row-2 panels. Without this, row-1 captions
-    # crash into row-2 axes / row-2 captions extend into the supxlabel.
-    # Bumped 0.95 → 1.40 to give room for the now-larger (19, 13) figure +
-    # the recommended-cutoff line (★) below the canonical line (◆) in
-    # each panel.
-    plt.subplots_adjust(hspace=1.40)
+    # Per-panel axis titles rather than fig.supxlabel/supylabel. Each
+    # subplot carries its own key block underneath, so the panels are not a
+    # contiguous grid: supylabel centres on the FIGURE, which put the y title
+    # in the gap between the two rows instead of beside the axes, and
+    # supxlabel sat below the second row's key — nowhere near the top row's
+    # x axis, leaving those three panels effectively untitled. Short titles
+    # keep the repetition quiet; the caption carries the full definition.
+    # No fontsize/fontweight/color here on purpose: axes.labelsize (18),
+    # axes.labelweight (semibold) and axes.labelcolor (#1F1718, identical to
+    # BRAND_INK) all come from the shared type scale, so these titles track it
+    # if it moves again. Hardcoding 16 here would quietly undercut the scale.
+    for ax in axes_flat[:len(GROUP_ORDER)]:
+        ax.set_xlabel("Universe size (proteins)", labelpad=6)
+        ax.set_ylabel("Accuracy (%)", labelpad=6)
+    # tight_layout counts the per-panel key text, so the row gap and
+    # bottom margin make room for it.
+    plt.tight_layout(rect=[0.03, 0.025, 1, 1], h_pad=1.5)
 
     save_figure(fig, "db_cutoff_tradeoff", OUT_DIR, gist_url=GIST_URL)
     print(

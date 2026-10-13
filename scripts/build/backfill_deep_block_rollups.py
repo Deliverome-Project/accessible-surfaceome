@@ -28,6 +28,7 @@ from typing import Any
 import httpx
 
 from accessible_surfaceome.cloud.surface_annotation import (
+    _maybe_archive,
     _post,
     _public_config_from_env,
 )
@@ -162,6 +163,9 @@ def backfill_d1(*, execute: bool) -> int:
                     [json.dumps(rec, separators=(",", ":")), r["gene_symbol"], r["schema_version"]],
                     client=client,
                 )
+                # Record history: this path writes D1 directly, so it must
+                # archive for itself (publish_record would have).
+                _maybe_archive(r["gene_symbol"], client=client)
     return touched
 
 

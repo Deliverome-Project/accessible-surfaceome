@@ -22,6 +22,7 @@ import { FEATURE_TAB_LABEL } from "../FeatureChips/FeatureChips";
 import { FiltersCard } from "../FiltersCard/FiltersCard";
 import { GeneHeader } from "../GeneHeader/GeneHeader";
 import { GeneJump } from "../GeneJump/GeneJump";
+import { RevisionStrip } from "../RevisionStrip/RevisionStrip";
 // IsoformsCard now subsumes the old standalone OrthologsCard +
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
@@ -45,6 +46,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
 import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
+import type { Revisions } from "../../../lib/revisions";
 import styles from "./GeneDetail.module.css";
 
 interface GeneDetailProps {
@@ -104,7 +106,9 @@ interface GeneDetailProps {
   /** Tedman GPCR canonical surface expression (PME); null for non-GPCRs.
    *  Forwarded to <GeneHeader> for the "Low surface" chip. */
   tedmanPme: number | null;
-}
+  /** Latest archived revision (record history); null until fetched or on a
+   *  miss — the strip is then omitted. */
+  revisions: Revisions | null;}
 
 /**
  * GeneDetail — the per-gene deep-dive page composition, extracted from the
@@ -130,6 +134,7 @@ export function GeneDetail({
   oversized,
   oversizedOrfKb,
   tedmanPme,
+  revisions,
 }: GeneDetailProps) {
   const router = useRouter();
 
@@ -404,6 +409,8 @@ export function GeneDetail({
             </a>
           </span>
         </nav>
+
+        {revisions ? <RevisionStrip revisions={revisions} /> : null}
 
         <Reveal>
           <GeneHeader

@@ -85,13 +85,14 @@ const ROW_OVERSCAN = 12;
 // SEPARATE facet (the opus-5 sequence prior + the literature grade),
 // independent of deep-dive coverage.
 //
-// NOTE: dev carried 15 columns against a 14-entry template, so `Intern ·
-// lit` fell to an implicit auto track. Merging the reason split in made
-// that 16 vs 15, so every track is now explicit — which is what the
-// shared-template contract at the top of this file exists to guarantee.
-// If 7.5rem is the wrong width for `Intern · lit`, change it here.
+// Fixed tracks carry main's measured widths (it re-sized the shared 14 to sum
+// to ~74.6rem / ~1,194px so the grid fits a 1,280px page without a horizontal
+// scrollbar). dev's two Internalization tracks are kept and sized like their
+// neighbours, which puts the minimum at ~85.8rem (~1,373px) — i.e. OVER that
+// budget. Narrowing further, dropping a column, or accepting the scrollbar is
+// a design call, not a merge call; flagged rather than silently decided.
 const GRID_TEMPLATE =
-  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(7.5rem, 1fr) minmax(7.5rem, 1fr) 6rem 6.5rem 5.6rem 6rem 7.5rem 7.5rem";
+  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 7rem minmax(7rem, 1fr) minmax(7rem, 1fr) 6rem 5.6rem 5.6rem 5.6rem 5.6rem 5.6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -1057,6 +1058,14 @@ export function CatalogTable({
         for (const f of DD_ENUM_FIELDS) {
           const sel = ddEnumFilters[f.key];
           if (sel.size === 0) continue;
+          if (f.multi) {
+            // Multi-valued facet (e.g. surface methods): pass when ANY of
+            // the gene's values is selected. A pre-v10 payload without the
+            // key can't be evaluated, so it drops out like a missing enum.
+            const vs = ddf[f.key] as string[] | undefined;
+            if (!Array.isArray(vs) || !vs.some((v) => sel.has(v))) return false;
+            continue;
+          }
           const v = ddf[f.key] as string | undefined;
           if (v == null || !sel.has(v)) return false;
         }
@@ -1321,7 +1330,10 @@ export function CatalogTable({
                 Low-lit + UniProt
                 <span className={styles.presetCount}>{count.toLocaleString()}</span>
               </button>
-              <InfoTip label="About the Low-lit + UniProt list" wide>
+              {/* Last chip in the row, near the right edge: a centred popover
+                  * overhangs the page even while hidden and adds a
+                  * horizontal scrollbar on ~1,280px screens. */}
+              <InfoTip align="end" label="About the Low-lit + UniProt list" wide>
                 <p>
                   Non-canonical genes with a thin discovery corpus (&lt;{" "}
                   {LOW_LIT_PAPERS_MAX} papers found) that UniProt nonetheless

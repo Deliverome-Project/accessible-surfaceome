@@ -35,8 +35,10 @@ BRANCH = "main"
 # Dedicated per-figure TSV: the five databases' INITIAL (pre-recalibration)
 # surface flags, union members only, with stable IDs — NOT the
 # whole-proteome catalog. Figure 1 is a databases-overlap figure, so it
-# ships its own minimal input (built by scripts/build_figure_tsvs.py),
-# free of the catalog's triage/optimized/universe_version columns.
+# ships its own minimal input, free of the catalog's
+# triage/optimized/universe_version columns. Its content matches
+# db_overlap_venn.tsv, which scripts/build_figure_tsvs.py writes.
+# Read from the sibling file or the in-repo copy only; never downloaded.
 CAND_URL = (
     f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
     f"/data/processed/figures/db_overlap_upset.tsv"
@@ -89,7 +91,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -98,12 +100,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
+        "font.weight": "semibold",
         "font.size": 21,
         "axes.labelsize": 25,
-        "axes.labelweight": "medium",
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -204,16 +206,14 @@ def main() -> None:
     # each file. The brand defaults above are tuned for much larger
     # figures than this 12.5x7.4 panel.
     plt.rcParams.update({
-        "font.size": 11,
+        "font.size": 11.5,
         "axes.labelsize": 13,
         "axes.titlesize": 0,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
-        "legend.fontsize": 11,
+        "xtick.labelsize": 11.5,
+        "ytick.labelsize": 11.5,
+        "legend.fontsize": 11.5,
     })
     flags = load_flags(_fetch_csv_text(CAND_URL))
-    sel, sizes = build_columns(flags)
-
     sel, sizes = build_columns(flags)
 
     # Declared as a dict literal, and LAST, so the canonical<->mirror
@@ -222,12 +222,12 @@ def main() -> None:
     # exact block after its inline brand style, whose defaults are tuned
     # for much larger figures than this 12.5x7.4 panel.
     plt.rcParams.update({
-        "font.size": 11,
+        "font.size": 11.5,
         "axes.labelsize": 13,
         "axes.titlesize": 0,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
-        "legend.fontsize": 11,
+        "xtick.labelsize": 11.5,
+        "ytick.labelsize": 11.5,
+        "legend.fontsize": 11.5,
     })
 
     fig = plt.figure(figsize=(12.5, 7.4))
@@ -253,7 +253,7 @@ def main() -> None:
         full = len(c["members"]) == len(ORDER)
         ax_bar.text(
             xi, c["n"] + 22, f"{c['n']:,}", ha="center", va="bottom",
-            fontsize=10.5, fontweight="bold", color=HILITE if full else INK,
+            fontsize=10.5, color=HILITE if full else INK,
         )
     ax_bar.set_ylabel("Proteins found in\nonly these databases")
     ax_bar.set_ylim(0, max(heights) * 1.16)
@@ -273,7 +273,7 @@ def main() -> None:
             ax_mat.plot(j, i, "o", ms=13, zorder=3,
                         color=COLOR[name] if i in mem else OFF)
     ax_mat.set_yticks(range(len(ORDER)))
-    ax_mat.set_yticklabels(ORDER, fontsize=12.5, fontweight="bold")
+    ax_mat.set_yticklabels(ORDER, fontsize=11.5)
     for tick, name in zip(ax_mat.get_yticklabels(), ORDER):
         tick.set_color(COLOR[name])
     ax_mat.tick_params(axis="y", length=0, pad=8)
@@ -286,20 +286,21 @@ def main() -> None:
         "Grouped by how many of the five databases list the protein\n"
         "(each column counts proteins found in that database or combination of\n"
         "databases, and no others)",
-        labelpad=12, fontsize=12,
+        labelpad=12, fontsize=13,
     )
 
     ax_set.barh(range(len(ORDER)), [sizes[n] for n in ORDER],
                 color=[COLOR[n] for n in ORDER], height=0.6)
     for i, name in enumerate(ORDER):
-        ax_set.text(sizes[name] - 70, i, f"{sizes[name]:,}", va="center",
-                    ha="left", fontsize=10, color="white", fontweight="bold")
+        # Count sits at the bar's zero end so the mean rule never crosses it.
+        ax_set.text(70, i, f"{sizes[name]:,}", va="center",
+                    ha="right", fontsize=10.5, color="white")
     mean_size = float(np.mean([sizes[n] for n in ORDER]))
     # Rule stops below its own label rather than striking through it.
     ax_set.axvline(mean_size, color=INK, lw=1.6, ls=(0, (4, 3)), zorder=5,
                    ymin=0.0, ymax=0.90)
     ax_set.text(mean_size, -1.02, f"average database size\n{mean_size:,.0f}",
-                ha="center", va="bottom", fontsize=9.5, color=INK,
+                ha="center", va="bottom", fontsize=10, color=INK,
                 style="italic", zorder=6)
     ax_set.invert_xaxis()
     ax_set.set_xlabel("Set size")

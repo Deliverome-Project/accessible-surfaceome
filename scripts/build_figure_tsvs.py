@@ -19,12 +19,12 @@ Outputs (one per non-compliant figure today, written to
   • ``db_correctness_overall.tsv``
   • ``db_vs_sonnet_whole_proteome.tsv``
   • ``ensemble_vs_best_db_vs_sonnet.tsv``
-  • ``deep_dive_final_categories.tsv`` — MOCK placeholder
+  • ``deep_dive_final_categories.tsv``
 
-The remaining 4 gists already use a single canonical TSV as-is
-(``db_cutoff_tradeoff``, ``db_overlap_venn``, ``paywall_bot_block_compare``,
-``topology_coverage_by_source``, ``zero_db_rescues_by_triage``) — those
-keep their existing TSV; no per-figure copy is written for them.
+The full set of per-figure TSVs this script writes is the ``BUILDERS`` map
+at the bottom; a few gists (``db_cutoff_tradeoff``,
+``paywall_bot_block_compare``) bundle a canonical TSV that lives elsewhere
+and is not rebuilt here.
 
 Run::
 
@@ -34,6 +34,8 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+
+from collections import Counter
 
 import pandas as pd
 
@@ -48,12 +50,13 @@ REPS_TSV        = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.ts
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 CATALOG_TSV     = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
 FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
-# S9's FULL any-yes-vote universe (960 sonnet_only) with genome-wide topology,
-# built by scripts/export_s9_full_universe_features.py (UniProt + D1 pulls). The
+# S9's FULL any-yes-vote universe (1,108 sonnet_only) with genome-wide topology,
+# built by scripts/tsv-export/export_s9_full_universe_features.py (UniProt + D1 pulls). The
 # S9 builder reads THIS offline so the figure TSV stays reproducible-from-builder
 # while the network pulls live in the export. Supersedes the M1-limited FEATURES_TSV
-# for S9 (which under-covered the zero-DB Sonnet rescues 794 vs 960 + lacked their topology).
+# for S9 (which under-covered the zero-DB Sonnet rescues and lacked their topology).
 FEATURES_FULL_TSV = ROOT / "data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv"
+SURFACE_METHODS_TSV = ROOT / "data/processed/deep_dive/surface_evidence_methods.tsv"
 POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
 # Per-gene deep-dive record facets, exported from public D1 by
 # scripts/export_deep_dive_figure_source.py. Re-run that after a sweep batch to
@@ -62,7 +65,7 @@ POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long
 DEEP_DIVE_TSV   = ROOT / "data/processed/deep_dive/deep_dive_records.tsv"
 # Companion triage-verdict source (one row per gene: triage_verdict +
 # triage_reason from the genome-wide Sonnet triage run), also exported by
-# scripts/export_deep_dive_figure_source.py. The S12 figure joins it against
+# scripts/export_deep_dive_figure_source.py. The S13 figure joins it against
 # the deep-dive export; kept separate so the deep-dive export stays purely
 # deep-dive-side.
 TRIAGE_VERDICTS_TSV = ROOT / "data/processed/deep_dive/triage_verdicts.tsv"
@@ -77,6 +80,11 @@ SONNET_DET_TSV = ROOT / "data/processed/deep_dive/sonnet_universe_det_features.t
 # scripts/export_det_feature_detail.py; LEFT-joined into both S14 facets by
 # gene_symbol so a reader can see the magnitude, not just the yes/no flag.
 DET_DETAIL_TSV = ROOT / "data/processed/deep_dive/det_feature_detail.tsv"
+# Raw HPA subcellular-location table (one row per imaged gene). Read only for
+# WHICH genes HPA imaged: HPA abstains on genes it has no antibody data for,
+# so S14 scores HPA over the imaged genes, as the benchmark does
+# (scripts/figures/triage_bench_db_barplot.py:_has_hpa_raw).
+HPA_RAW_TSV = ROOT / "data/external/hpa_subcellular_location/subcellular_location.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
@@ -98,6 +106,13 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         src["det_detail"] = pd.read_csv(DET_DETAIL_TSV, sep="\t")
     if FEATURES_FULL_TSV.is_file():
         src["features_full"] = pd.read_csv(FEATURES_FULL_TSV, sep="\t")
+    if SURFACE_METHODS_TSV.is_file():
+        src["surface_methods"] = pd.read_csv(SURFACE_METHODS_TSV, sep="\t")
+    if HPA_RAW_TSV.is_file():
+        # No usecols: on a checkout without `git lfs pull` this is a pointer
+        # stub, which must load as a 1-column frame so the reproducibility
+        # test can recognise it and skip rather than error.
+        src["hpa_raw"] = pd.read_csv(HPA_RAW_TSV, sep="\t")
     return src
 
 
@@ -245,16 +260,22 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
     membership so the figure renders UniProt and CSPA at their
     recalibrated cutoffs (GO/HPA/SURFY/Sonnet unchanged). Also carries
     ``n_sources_optimized`` so the Sonnet-only (zero-DB) subset is
-    defined against the optimized DB vote, matching Figure 3."""
-    # Prefer the FULL any-yes-vote universe (960 sonnet_only, genome-wide
-    # topology) from scripts/export_s9_full_universe_features.py — it already
+    defined against the optimized DB vote, matching Figure 3.
+
+    Also carries ``verdict_source`` (``ncbi`` = the first-pass triage on the
+    NCBI gene summary, no literature; ``pubmed_rescue`` = called yes /
+    contextual only by a PubMed rescue lane) and ``rescue_run`` (which lane),
+    joined from the catalog on ``hgnc_id``, so S9 can split the Sonnet-only
+    row into its no-literature and PubMed-rescue halves the way Figure 3 does."""
+    # Prefer the FULL any-yes-vote universe (1,108 sonnet_only, genome-wide
+    # topology) from scripts/tsv-export/export_s9_full_universe_features.py — it already
     # carries the src_* flags, optimized cutoffs, n_sources_optimized, and the
     # 9 topology features on full coverage (fixing the M1-limited undercount
-    # 794 vs 960 + the topology-missing empty Sonnet-only row). Fall back to the
+    # and the topology-missing empty Sonnet-only row). Fall back to the
     # legacy per_protein_features path only if the full export isn't present.
     full = src.get("features_full")
     if full is not None and not full.empty:
-        return full
+        return _with_verdict_source(full, src["catalog"])
     feat = _optimized_membership(src["features"], src["opt"], "uniprot_accession")
     # GO/HPA/SURFY keep their initial src flags (not recalibrated).
     feat["n_sources_optimized"] = (
@@ -264,7 +285,19 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
         + feat["src_hpa"].fillna(0).astype(int)
         + feat["src_surfy"].fillna(0).astype(int)
     )
-    return feat
+    return _with_verdict_source(feat, src["catalog"])
+
+
+def _with_verdict_source(df: pd.DataFrame, catalog: pd.DataFrame) -> pd.DataFrame:
+    """Join the catalog's ``verdict_source`` / ``rescue_run`` onto ``df`` by
+    ``hgnc_id``. The catalog's only repeated keys are the blank-HGNC
+    mitochondrial genes, dropped here so a NaN key can never match."""
+    tag = (catalog[["hgnc_id", "verdict_source", "rescue_run"]]
+           .dropna(subset=["hgnc_id"]).drop_duplicates("hgnc_id"))
+    out = df.drop(columns=["verdict_source", "rescue_run"], errors="ignore").merge(
+        tag, on="hgnc_id", how="left", validate="many_to_one")
+    assert len(out) == len(df), "verdict_source join changed the row count"
+    return out
 
 
 def build_bench_topology_vs_universe(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -462,7 +495,7 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
 
     Columns: gene_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id,
     category, subcategory, surface_call_reason, induction_trigger,
-    low_endogenous_expression, state_dependence.
+    low_endogenous_expression, state_dependence, confidence.
 
     ``low_endogenous_expression`` + ``state_dependence`` drive Panel b's
     cross-cutting cell-state view: state-dependence is a FACET (the "when is it
@@ -474,7 +507,7 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "category", "subcategory", "facet",
             "surface_call_reason", "induction_trigger",
-            "low_endogenous_expression", "state_dependence"]
+            "low_endogenous_expression", "state_dependence", "confidence"]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:
         return _empty_deep_dive_frame(cols)
@@ -496,6 +529,9 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
         "low_endogenous_expression": pd.to_numeric(
             dd["low_endogenous_expression"], errors="coerce").astype("Int64"),
         "state_dependence": dd["state_dependence"].astype(str),
+        # Certainty in the surface call, in either direction — panel a's
+        # confidence strip. Distinct from the tier: a `no` call carries it too.
+        "confidence": dd["confidence"].astype(str),
     })
     # Stable IDs from the catalog (candidate_universe), keyed by symbol.
     cat = src.get("catalog")
@@ -529,13 +565,13 @@ def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFr
 
     One row per published deep-dive record with real gene symbols and real
     counts (was a MOCK lognormal draw before the sweep produced records).
-    ``n_papers_found`` landed in schema 2.14.0 so a handful of legacy records
-    carry a null there — those rows are dropped from the funnel (both axes must
-    be present to plot a point). Columns:
+    Any record with a null ``n_papers_found`` (unknown discovery corpus) is
+    dropped from the funnel, since both axes must be present to plot a point;
+    none do today. Columns:
     ``gene_symbol, uniprot_acc, papers_found, papers_selected, evidence_grade,
     tier``.
 
-    Computed over the completed deep-dive sweep (5,130 genes).
+    Computed over the completed deep-dive sweep (5,332 genes).
     """
     cols = ["gene_symbol", "uniprot_acc", "papers_found", "papers_selected",
             "evidence_grade", "tier"]
@@ -550,8 +586,7 @@ def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFr
         "evidence_grade": dd["evidence_grade"].astype(str),
         "tier": [_dd_tier(r) for _, r in dd.iterrows()],
     })
-    # A point needs both axes; drop records missing either count (legacy
-    # pre-2.14.0 records have no n_papers_found).
+    # A point needs both axes; drop any record missing either count.
     out = out.dropna(subset=["papers_found", "papers_selected"])
     out["papers_found"] = out["papers_found"].astype(int)
     out["papers_selected"] = out["papers_selected"].astype(int)
@@ -583,7 +618,7 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
     back-compat; ``tier`` (the finer 5-tier call) is what the figure now facets
     every panel by (a/b: canonical/likely/low/no; c/d/e: canonical/likely/low).
 
-    Computed over the completed deep-dive sweep (5,130 genes).
+    Computed over the completed deep-dive sweep (5,332 genes).
     """
     cols = ["gene_symbol", "tier", "surface_verdict_bucket", "papers_found",
             "papers_selected", "papers_with_ec", "n_filters_evidence",
@@ -619,15 +654,15 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
 
 def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Per-gene comparison of the TRIAGE-stage call against the DEEP-DIVE call,
-    for every gene with both. Two figure panels read this one TSV:
+    for every gene with both. All three figure panels read this one TSV:
 
-      • Panel a (verdict flow): ``triage_verdict`` (yes/contextual/no from the
+      • Panel b (verdict flow): ``triage_verdict`` (yes/contextual/no from the
         genome-wide Sonnet triage run) → ``deep_dive_tier`` (the 5-tier
         ``_dd_assign_bucket`` call).
-      • Panel b (reason confusion): ``triage_reason`` × ``deep_dive_reason``
+      • Panel c (reason confusion): ``triage_reason`` × ``deep_dive_reason``
         (``surface_call_reason``), both drawn from the shared ``TriageReason``
         enum.
-      • Panel c (DB concordance): per-DB surface membership (UniProt / GO /
+      • Panel a (DB concordance): per-DB surface membership (UniProt / GO /
         SURFY / CSPA / HPA), so the figure shows what fraction of
         deep-dive-surface genes each database — and the Sonnet triage stage —
         also calls surface. The two RECALIBRATED DBs (UniProt, CSPA) use their
@@ -643,9 +678,12 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
     optimized membership from ``opt``. Columns: ``gene_symbol, uniprot_acc,
     triage_verdict, triage_reason, deep_dive_reason, deep_dive_tier,
     go_surface_flag, surfy_surface_flag, hpa_surface_flag, uniprot_optimized,
-    cspa_optimized``.
+    cspa_optimized, hpa_in_atlas``. ``hpa_in_atlas`` is 1 when HPA imaged the
+    gene (it has a row in the raw subcellular-location table, matched by
+    symbol); panel a scores HPA over those genes only, because HPA's absence
+    is a missing antibody rather than a negative call.
 
-    Real data over the completed deep-dive sweep (5,130 genes).
+    Real data over the completed deep-dive sweep (5,332 genes).
     """
     cols = ["gene_symbol", "uniprot_acc", "triage_verdict", "triage_reason",
             "deep_dive_reason", "deep_dive_tier"]
@@ -699,7 +737,15 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
         out[col] = acc.isin(accs).astype("Int64")
     # Keep only genes we could match a triage call for.
     out = out.dropna(subset=["triage_verdict", "triage_reason"])
-    out = out[cols + db_flags]
+    # HPA coverage: same symbol match as the benchmark's _has_hpa_raw. A gene
+    # HPA flags surface is covered by definition, whatever its symbol says.
+    hpa_raw = src.get("hpa_raw")
+    imaged = (set(hpa_raw["Gene name"].dropna().astype(str).str.strip().str.upper())
+              if hpa_raw is not None and "Gene name" in hpa_raw.columns else set())
+    out["hpa_in_atlas"] = (
+        out["gene_symbol"].str.upper().isin(imaged) | (out["hpa_surface_flag"] == 1)
+    ).astype("Int64")
+    out = out[cols + db_flags + ["hpa_in_atlas"]]
     return out.sort_values("gene_symbol", kind="stable").reset_index(drop=True)
 
 
@@ -867,7 +913,7 @@ def build_positive_control_db_coverage_bars(src: dict[str, pd.DataFrame]) -> pd.
 def build_surfaceome_deterministic_features(
     src: dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
-    """Per-gene deterministic features for Supp Fig 13, faceted by the REAL
+    """Per-gene deterministic features for Supp Fig 15, faceted by the REAL
     deep-dive tier — sourced from the deep-dive RECORDS so every deep-dived
     gene has full coverage.
 
@@ -896,7 +942,7 @@ def build_surfaceome_deterministic_features(
     Mirrors ``scripts/surfaceome_deterministic_features.py``
     ``load_data()`` — it reads this bundled single TSV.
 
-    Computed over the completed deep-dive sweep (5,130 genes).
+    Computed over the completed deep-dive sweep (5,332 genes).
     """
     feature_cols = ["tm_helix_count", "protein_length", "ecd_length_residues",
                     "has_signal_peptide",
@@ -915,7 +961,8 @@ def build_surfaceome_deterministic_features(
     frames = [out[cols]]
 
     # Fifth facet: the FULL Sonnet dual-triage surface pool (every gene the
-    # genome-wide Sonnet triage called yes/contextual, ~4,236 with topology).
+    # two-stage Sonnet triage, incl. the four PubMed rescue lanes, called
+    # yes/contextual: 4,612 with topology).
     # Its det features come from the genome-wide D1 tables, not the records
     # (those genes are mostly not deep-dived) — same DeepTMHMM/Compara/Schweke
     # computation, ~100% topology coverage. group='sonnet_dual_triage'.
@@ -944,8 +991,132 @@ def build_surfaceome_deterministic_features(
         ["group", "gene_symbol"], kind="stable").reset_index(drop=True)
 
 
+
+# Method categories for the surface-evidence figure and the catalog's
+# surface-method filter. The record's ``method_family`` and
+# ``method_subclass`` overlap (a cell-surface-capture experiment is filed
+# under the biotinylation, glycoproteomics or mass-spec family depending on
+# the paper's wording), so the rules are tried in order and the first match
+# wins: the subclass decides where it does and the family breaks ties.
+# Proximity labeling comes first — it uses biotin chemistry too, but is a
+# distinct method readers look for by name. Anything unmatched is "other".
+#
+# The same ordered table is copied verbatim into the Worker
+# (cloudflare/workers/surfaceome_api/src/index.js) and the viewer
+# (viewer/lib/deep-dive-fields.ts); tests/test_surface_method_rules_sync.py
+# fails if the three copies drift.
+SURFACE_METHOD_RULES: list[tuple[str, str, str]] = [
+    ("family", "proximity_labeling", "proximity_labeling"),
+    ("subclass", "surface_biotinylation", "surface_biotin_pulldown"),
+    ("subclass", "cell_surface_capture", "cell_surface_capture_ms"),
+    ("subclass", "N_glycoproteomics", "cell_surface_capture_ms"),
+    ("family", "glycoproteomics", "cell_surface_capture_ms"),
+    ("subclass", "live_cell_flow", "flow_cytometry"),
+    ("subclass", "fixed_cell_flow", "flow_cytometry"),
+    ("family", "flow_cytometry", "flow_cytometry"),
+    ("subclass", "nonpermeabilized_IF", "immunofluorescence"),
+    ("subclass", "permeabilized_IF", "immunofluorescence"),
+    ("family", "immunofluorescence", "immunofluorescence"),
+    ("subclass", "IHC", "immunohistochemistry"),
+    ("subclass", "IHC_membranous", "immunohistochemistry"),
+    ("family", "immunohistochemistry", "immunohistochemistry"),
+    ("family", "functional_surface_assay", "functional_surface_assay"),
+]
+
+_SURFACE_METHOD_FAMILY = {
+    "functional_surface_assay": "functional",
+    "flow_cytometry": "imaging_cytometry",
+    "immunofluorescence": "imaging_cytometry",
+    "immunohistochemistry": "imaging_cytometry",
+    "surface_biotin_pulldown": "labeling_capture",
+    "proximity_labeling": "labeling_capture",
+    "cell_surface_capture_ms": "labeling_capture",
+    "other": "other",
+}
+
+
+def _surface_method(family: str, subclass: str) -> str:
+    for field, value, method in SURFACE_METHOD_RULES:
+        if (family if field == "family" else subclass) == value:
+            return method
+    return "other"
+
+
+def build_surface_evidence_assay_types(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Per-method surface evidence, split into direct and supporting.
+
+    Source is the record's ``surface_evidence.methods`` block: one row per
+    experiment, each judged by the methods builder as
+    ``direct_surface_accessibility`` (an antibody or probe reached the
+    protein from outside an intact cell) or ``supports_surface_localization``
+    (places it at the plasma membrane without showing the outside is
+    reachable). Rows judged membrane-association, expression-only or weak
+    are left out. The evidence grade is graded from the same block, so a gene
+    counted as direct here almost always carries a ``direct_*`` grade.
+
+    Restricted to genes in the canonical or likely deep-dive tier — the
+    surface calls the catalog presets return. ``low`` is left out: it is
+    low or moderate accessibility on weak evidence, i.e. unlikely surface,
+    so counting it would mix maybe-surface genes into "what established the
+    surface calls". One row per method category:
+
+    * ``genes_direct`` — genes with at least one direct row of this method.
+    * ``genes_supporting_only`` — genes with a supporting row of this method
+      and no direct one.
+    * ``genes_sole_direct`` — genes where this is the ONLY method with a
+      direct row: remove it and the gene has no direct surface evidence left.
+    * ``pct_sole_direct`` — ``genes_sole_direct / genes_direct``.
+
+    Columns: ``method, family, genes_direct, genes_supporting_only,
+    genes_sole_direct, pct_sole_direct, n_surface_genes,
+    n_genes_any_direct``.
+    """
+    cols = ["method", "family", "genes_direct", "genes_supporting_only",
+            "genes_sole_direct", "pct_sole_direct", "n_surface_genes",
+            "n_genes_any_direct"]
+    m = src.get("surface_methods")
+    dd = src.get("deep_dive")
+    if m is None or m.empty or dd is None or dd.empty:
+        return pd.DataFrame(columns=cols)
+
+    surface = {str(r["gene_symbol"]) for _, r in dd.iterrows()
+               if _dd_tier(r) in {"canonical", "likely"}}
+    direct_rel, supports_rel = "direct_surface_accessibility", "supports_surface_localization"
+    m = m[m["gene_symbol"].astype(str).isin(surface)
+          & m["accessibility_relevance"].isin([direct_rel, supports_rel])].copy()
+    m["method"] = [_surface_method(f, s) for f, s in
+                   zip(m["method_family"], m["method_subclass"], strict=True)]
+    m["is_direct"] = m["accessibility_relevance"] == direct_rel
+
+    per_gene = m.groupby(["gene_symbol", "method"])["is_direct"].any().reset_index()
+    direct_sets = per_gene[per_gene["is_direct"]].groupby("gene_symbol")["method"].apply(set)
+    sole = Counter(next(iter(s)) for s in direct_sets if len(s) == 1)
+
+    rows = []
+    for method, grp in per_gene.groupby("method"):
+        n_direct = int(grp["is_direct"].sum())
+        rows.append({
+            "method": method,
+            "family": _SURFACE_METHOD_FAMILY[method],
+            "genes_direct": n_direct,
+            "genes_supporting_only": int((~grp["is_direct"]).sum()),
+            "genes_sole_direct": sole.get(method, 0),
+            "pct_sole_direct": round(100.0 * sole.get(method, 0) / n_direct, 2) if n_direct else 0.0,
+            "n_surface_genes": len(surface),
+            "n_genes_any_direct": len(direct_sets),
+        })
+    out = pd.DataFrame(rows, columns=cols)
+    return out.sort_values("genes_direct", ascending=False).reset_index(drop=True)
+
+
 BUILDERS: dict[str, callable] = {
-    "db_overlap_venn":               build_db_overlap_venn,
+    # One builder, two live consumers: Figure 1 is an UpSet over the five
+    # native flags, and the Venn of the same five was demoted to a blog
+    # figure. The standalone ``db_overlap_venn`` slug was retired along with
+    # its generator — it emitted a third byte-identical copy of this table
+    # that nothing read.
+    "db_overlap_upset":              build_db_overlap_venn,
+    "blog_db_overlap_venn":          build_db_overlap_venn,
     "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
     "db_correctness_by_class":       build_db_correctness_by_class,
     "db_correctness_overall":        build_db_correctness_overall,
@@ -963,6 +1134,7 @@ BUILDERS: dict[str, callable] = {
     "positive_control_db_coverage_bars":  build_positive_control_db_coverage_bars,
     "surfaceome_deterministic_features":
         build_surfaceome_deterministic_features,
+    "surface_evidence_assay_types": build_surface_evidence_assay_types,
 }
 
 

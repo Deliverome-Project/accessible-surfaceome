@@ -14,30 +14,37 @@ strategies applied to the same 100 random genes × 10 random papers each:
   (EuropePMC search + PubTator NER + NCBI gene2pubmed + topic_search +
   6 standing axes — byte-identical to ``build_a1_kickoff()`` in
   ``src/accessible_surfaceome/agents/plan_trim_select/kickoff_templates.py``).
-* **OpenAlex**: a broader retrieval surface — 10 axes via OpenAlex's
-  REST API (one broad gene-name search + 9 method-keyword
-  conjunctions). Catches preprints (bioRxiv/medRxiv) + non-PubMed
-  journals + grey literature that EuropePMC doesn't index.
+* **OpenAlex**: a broader retrieval surface — 21 axes via OpenAlex's
+  REST API, one per production axis (2 broad gene-name queries, one of
+  them date-sorted; 10 method-keyword, 3 topic-keyword and 6
+  standing-axis keyword conjunctions). Catches preprints
+  (bioRxiv/medRxiv) + non-PubMed journals + grey literature that
+  EuropePMC doesn't index.
 
-Each paper is classified into one of four reachability buckets by
-running the **production fetch chain** (``_fetch_body_drafts`` →
-PMC JATS → Unpaywall PDF → fallback abstract). When the prod fetch
-fails, the secondary Unpaywall lookup distinguishes bot-blocked
-(only OA path is a 403'ing host like Wiley/bioRxiv/Elsevier/MDPI/
-ASH/OUP/Cell) from no-OA (Unpaywall says is_oa=false or no record).
+Each paper is classified into one of six buckets by running the
+**production fetch chain** (``_fetch_body_drafts`` → PMC JATS →
+Unpaywall PDF → DataCite landing PDF → fallback abstract): three
+reachable (full body via PMC, Unpaywall or DataCite) and three not
+(bot-blocked publisher, OA repository with a DataCite DOI the fetch
+still misses, no open access). When the prod fetch fails, the
+secondary Unpaywall lookup distinguishes bot-blocked (only OA path is
+a 403'ing host like Wiley/bioRxiv/Elsevier/MDPI/ASH/OUP/Cell) from
+no-OA (Unpaywall says is_oa=false or no record).
 
 Headline result: production's 21-axis search has high precision
-(~88% reachable) on a tighter corpus; OpenAlex finds 2.4× more papers
-per gene but only 43% are reachable — the additional pool is mostly
-paywalled non-PMC literature and bot-blocked preprint servers.
+(~89% reachable) on a tighter corpus; OpenAlex finds 3.6× more papers
+per gene before sampling (829 vs 228) but only 49% are reachable — the
+additional pool is mostly paywalled non-PMC literature and bot-blocked
+preprint servers.
 
-Standalone — ``uv run make_paywall_bot_block_compare.py``.
+Standalone — run ``uv run make_paywall_bot_block_compare.py`` in a
+clone of the gist, with the bundled ``paywall_bot_block_compare.tsv``
+next to this script.
 """
 from __future__ import annotations
 
 import csv
 import io
-import json
 from collections import Counter
 from pathlib import Path
 
@@ -86,26 +93,26 @@ def _apply_brand_style() -> None:
     plt.rcParams.update({
         "savefig.dpi": 600, "savefig.bbox": "tight",
         "figure.facecolor": "none", "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         # Match _plotting_config: no light defaults. Manrope at weight 400
         # reads as light against the variable range (300-800); default to
         # 500 so figures don't render with thin defaults.
-        "font.weight": "medium",
+        "font.weight": "semibold",
         # Sized to be visually consistent with the v3-baseline cohort
         # figures (font.size=21) while accounting for this script's
         # smaller (10, 6) figsize — picked to ride slightly below them
         # so the figure doesn't read as oversized at its native scale.
-        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0, "axes.titlepad": 0,
-        "axes.labelweight": "medium", "axes.titleweight": "semibold",
+        "font.size": 11, "axes.labelsize": 12.5, "axes.titlesize": 0, "axes.titlepad": 0,
+        "axes.labelweight": "semibold", "axes.titleweight": "semibold",
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.grid": True, "axes.axisbelow": True,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none", "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7, "grid.color": BRAND_GRID,
-        "xtick.labelsize": 15, "ytick.labelsize": 14,
+        "xtick.labelsize": 11, "ytick.labelsize": 11,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 13,
+        "legend.frameon": False, "legend.fontsize": 11,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
@@ -143,10 +150,10 @@ SOURCE_LABEL = {
 
 
 def fetch_tsv() -> list[dict]:
-    """Sibling-first → repo dev-mode → URL fetch. Sibling case wins
-    when this script runs from a published gist with the TSV bundled
-    next to it (SWHID-of-the-gist then captures data + script
-    atomically)."""
+    """Sibling-first → repo dev-mode; no network fetch. Sibling case
+    wins when this script runs from a published gist with the TSV
+    bundled next to it (SWHID-of-the-gist then captures data + script
+    atomically). ``TSV_URL`` only supplies the file name."""
     sibling = Path(__file__).parent / Path(TSV_URL).name
     if sibling.is_file():
         text = sibling.read_text()
@@ -199,19 +206,19 @@ def main() -> None:
             if pct >= 6:
                 ax.text(cum + pct / 2, ypos, f"{pct:.0f}%",
                         ha="center", va="center",
-                        color="white", fontweight="bold", fontsize=14)
+                        color="white", fontsize=10.5)
             cum += pct
         ax.text(
             104, ypos,
             f"{total} papers /\n{len(genes)} genes",
-            ha="left", va="center", fontsize=12, fontweight="medium",
+            ha="left", va="center", fontsize=10,
             color=BRAND_INK,
         )
 
     ax.set_xlim(0, 100)
     ax.set_ylim(-0.7, len(sources) - 0.3)
     ax.set_yticks(y_positions)
-    ax.set_yticklabels([SOURCE_LABEL[s] for s in sources], fontweight="medium")
+    ax.set_yticklabels([SOURCE_LABEL[s] for s in sources])
     ax.set_xlabel("% of sampled papers")
     # No baked-in title — figure gets captioned in the gist README.
     handles = [
