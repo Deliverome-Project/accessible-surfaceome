@@ -322,7 +322,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     for tick, name in zip(axB.get_xticklabels(), _PANELB_TIERS):
         tick.set_color(_TIER_LABEL_COLORS[name])
     axB.set_ylabel("Proteins (by surface-call reason)")
-    axB.set_xlabel("Deep-dive surface tier")
+    axB.set_xlabel("Deep-dive surface tier", labelpad=14)
     axB.set_ylim(axA.get_ylim())
     axB.set_yticks([t for t in axA.get_yticks() if t <= axA.get_ylim()[1]])
     axB.set_xlim(-0.6, len(_PANELB_TIERS) - 0.4)
@@ -331,9 +331,11 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     # Listed top-down in the order the segments stack (top of bar first).
     handles = [mpatches.Patch(color=color, label=label)
                for label, color in reversed(_PANELB_CATS)]
-    # Above the plot area, clear of the bars and their totals (>= 13 pt floor).
+    # In the empty upper right, over the shorter likely / low bars, with its
+    # top level with the panel letter so it adds no height above the axes
+    # (>= 13 pt floor).
     axB.legend(handles=handles, title="Surface-call reason",
-               loc="lower right", bbox_to_anchor=(1.0, 1.0), frameon=False,
+               loc="upper right", bbox_to_anchor=(1.0, 1.17), frameon=False,
                fontsize=15.5, title_fontsize=16.5, handlelength=1.0,
                handletextpad=0.4, labelspacing=0.22)
     _panel_label(axB, "b")
