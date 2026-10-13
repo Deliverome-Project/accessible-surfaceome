@@ -85,14 +85,18 @@ const ROW_OVERSCAN = 12;
 // SEPARATE facet (the opus-5 sequence prior + the literature grade),
 // independent of deep-dive coverage.
 //
-// Fixed tracks carry main's measured widths (it re-sized the shared 14 to sum
-// to ~74.6rem / ~1,194px so the grid fits a 1,280px page without a horizontal
-// scrollbar). dev's two Internalization tracks are kept and sized like their
-// neighbours, which puts the minimum at ~85.8rem (~1,373px) — i.e. OVER that
-// budget. Narrowing further, dropping a column, or accepting the scrollbar is
-// a design call, not a merge call; flagged rather than silently decided.
+// Fixed tracks are sized to fit the page, not rounded up: main re-measured its
+// 14 to sum to ~74.6rem (~1,194px) so the grid fits the 1,280px page width —
+// and a ~1,230px laptop viewport — without a horizontal scrollbar. dev's two
+// Internalization tracks are kept, and every track is narrowed to stay inside
+// that same budget (Becca, 2026-10-12): 16 tracks, ~74.8rem (~1,197px).
+//
+// NOTE these widths are apportioned to hit the budget, not measured against
+// rendered content the way main's 14 were. The DB-dot columns hold an 8px dot
+// so their header label sets the width; the grade pills are the ones at risk
+// of clipping. Worth a visual pass at 1,280px and 1,230px.
 const GRID_TEMPLATE =
-  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 7rem minmax(7rem, 1fr) minmax(7rem, 1fr) 6rem 5.6rem 5.6rem 5.6rem 5.6rem 5.6rem";
+  "9.2rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 6.2rem minmax(5.6rem, 1fr) minmax(5.6rem, 1fr) 5.4rem 4.4rem 4.4rem 4.4rem 4.4rem 4.4rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
