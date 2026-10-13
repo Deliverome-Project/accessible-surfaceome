@@ -1,4 +1,4 @@
-"""Build the Supp Fig 15 deep-dive concordance TSV from the frozen record bundle.
+"""Build the Supp Fig 16 deep-dive concordance TSV from the frozen record bundle.
 
 The bundle (``data/processed/deep_dive_concordance_v1/``) freezes three record
 sets for the same 50 randomly sampled deep-dive genes (two disjoint batches of
