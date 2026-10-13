@@ -204,7 +204,7 @@ def main() -> int:
     load_env()
 
     if args.genes:
-        symbols = [g.strip().upper() for g in args.genes.split(",") if g.strip()]
+        symbols = [g.strip() for g in args.genes.split(",") if g.strip()]  # HGNC case kept: C1orf56, not C1ORF56
     else:
         with D1Client.public() as d1:
             symbols = _published_genes(d1)
