@@ -57,7 +57,7 @@ RAW = f"""<article xmlns:xlink="{XLINK}" dtd-version="1.2" article-type="other">
     <p>Anthropic (United States) <ext-link ext-link-type="uri" xlink:href="https://ror.org/056y0v115"><underline>https://ror.org/056y0v115</underline></ext-link></p>
     <p>Renaissance Philanthropy.</p>
   </sec>
-  <sec id="author-contributions"><title>Author Contributions</title><p><bold>R.J.C.:</bold> everything.</p></sec>
+  <sec id="author-contributions"><title>Author Contributions</title><p><bold>R.J.C.:</bold> everything.<break/><bold>M.J.S.:</bold> software.</p></sec>
 </sec>
 <sec id="supplementary-information"><title>Supplementary information</title>
   <table-wrap><table><thead>
@@ -239,3 +239,12 @@ def test_a_manuscript_missing_its_parts_is_reported_not_crashed() -> None:
     assert any("author" in p for p in report.problems)
     assert any("Abstract" in p for p in report.problems)
     assert any("References" in p for p in report.problems)
+
+
+def test_a_line_break_inside_a_paragraph_becomes_a_space() -> None:
+    # <break/> is valid in titles and table cells, not in <p>; it was the
+    # one DTD validity error in the first real build.
+    root, _ = _polished()
+    assert not list(root.iter("break"))
+    con = next(fn for fn in root.iter("fn") if fn.get("fn-type") == "con")
+    assert _t(con) == "R.J.C.: everything. M.J.S.: software."

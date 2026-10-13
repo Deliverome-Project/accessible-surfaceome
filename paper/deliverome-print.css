@@ -60,16 +60,9 @@
    * right. The name is set smaller and in dark gray so it reads as a
    * quiet imprint, not a second heading. */
   @bottom-left {
-    /* deliverome-footer.svg is the mark with an 11px intrinsic size: a
-     * margin box draws an image at its natural size and offers no way
-     * to scale it. */
-    content: url("assets/deliverome-footer.svg") "  DELIVEROME BIO";
-    white-space: pre;
-    font-family: "Manrope", sans-serif;
-    font-size: 6.5pt;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    color: #4d4d4d;
+    /* The imprint is a running element (.page-brand, below) so the mark
+     * can be sized and centred on the name with ordinary CSS. */
+    content: element(pageBrand);
     padding-top: 0.3in;
   }
   @bottom-right {
@@ -87,6 +80,29 @@
 /* Page 1 keeps its page number but not the footer imprint: the mark
  * already closes the title block there, and it should never appear
  * twice on one page. */
+.page-brand {
+  position: running(pageBrand);
+  font-family: "Manrope", sans-serif;
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4d4d4d;
+  line-height: 1.9em;
+  white-space: nowrap;
+}
+
+/* Same mark-to-text ratio as the title block's .resource-brand (1.9em). */
+img.page-brand-mark {
+  width: 1.9em;
+  height: 1.9em;
+  /* Images are block-level by default in this stylesheet; left that way
+   * the name wrapped onto a second line under the mark. */
+  display: inline;
+  margin: 0 0.4em 0 0;
+  vertical-align: -0.58em;
+}
+
 @page :first {
   @bottom-left {
     content: none;

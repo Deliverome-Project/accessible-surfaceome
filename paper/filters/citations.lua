@@ -654,6 +654,22 @@ local function build_resource_row(doc)
     if i == anchor_at then out:insert(row_div) end
   end
   if anchor_at == nil then out:insert(row_div) end
+  -- PDF only: the footer imprint, as a running element the stylesheet
+  -- lifts into the bottom-left margin box of every page after the
+  -- first. A real element (rather than margin-box `content: url(…)`)
+  -- is what lets CSS size the mark and centre it on the name.
+  if not WEB_EXTRAS and ASSETS_DIR and FORMAT:match("html") then
+    out:insert(1, pandoc.Div({pandoc.Plain({
+      pandoc.Image(
+        {pandoc.Str("Deliverome")}, ASSETS_DIR .. "/deliverome.svg", "",
+        pandoc.Attr("", {"page-brand-mark"})
+      ),
+      pandoc.Span(
+        {pandoc.Str("Deliverome"), pandoc.Space(), pandoc.Str("Bio")},
+        pandoc.Attr("", {"page-brand-name"})
+      ),
+    })}, pandoc.Attr("", {"page-brand"})))
+  end
   doc.blocks = out
   return doc
 end

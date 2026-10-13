@@ -59,6 +59,10 @@ BACK_SECTIONS = {
     "funding": "funding",
 }
 
+# The only elements whose content model includes <break/>.
+BREAK_PARENTS = {"td", "th", "title", "article-title", "subtitle", "alt-title",
+                 "trans-title", "sig", "sig-block", "disp-formula", "label"}
+
 #: ``graphic_for("3")`` / ``graphic_for("supplementary-12")`` → the href
 #: to write for that figure's canonical asset, or None to keep the image
 #: the ``.docx`` embedded.
@@ -734,6 +738,13 @@ def _fix_ids_and_xrefs(root: Any, id_map: dict[str, str], report: PolishReport) 
 
 
 def _tidy(root: Any) -> None:
+    # A soft line break in the .docx becomes <break/>, which JATS allows
+    # in titles and table cells but not in a paragraph.
+    for br in list(root.iter("break")):
+        parent = br.getparent()
+        if parent is not None and parent.tag not in BREAK_PARENTS:
+            br.tail = " " + (br.tail or "").lstrip()
+            _drop(br)
     # Anchors the filters planted for HTML have done their job.
     for anchor in list(root.iter("styled-content")):
         if not _text(anchor) and not len(anchor):
