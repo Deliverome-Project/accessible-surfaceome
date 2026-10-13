@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 5.** Every deep-dived protein resolves to a surface tier, and the borderline calls carry their own reason for falling short. a) The full deep-dive cohort placed on a five-tier surface scale: canonical (strict surface) and likely (broader), then the below-likely proteins split by the deep dive's tentative call — low (low or moderate accessibility on weak evidence), uncertain, and no (leaned not-surface). The strip under each bar shows the share of that tier's calls made at high, moderate, or low confidence. b) Positive calls broken down by cell-type-restricted and cell-state (induction-dependent) reasons. Canonical proteins were required not to be cell-type restricted but could be highly state-dependent, provided their baseline expression was not reported to be low (see Methods). Counts are over the full deep-dived cohort (n = 5,332).
+> **Figure 5.** Every deep-dived protein resolves to a surface tier, and the borderline calls carry their own reason for falling short. a) The full deep-dive cohort placed on a five-tier surface scale: canonical (strict surface) and likely (broader), then the below-likely proteins split by the deep dive's tentative call — low (low or moderate accessibility on weak evidence), uncertain, and no (leaned not-surface). The strip under each bar shows the share of that tier's calls made at high, moderate, or low confidence. b) Surface-tier proteins from (a) broken down by the deep dive’s surface-call reason: cell-type restricted, cell-state induced (oncogenic or other trigger), or another surface reason (e.g., classical receptor, multipass with exposed loops, GPI-anchored, dual localization). Each bar totals the corresponding tier in (a). Canonical proteins were required not to be cell-type restricted but could be highly state-dependent, provided their baseline expression was not reported to be low (see Methods). Counts are over the full deep-dived cohort (n = 5,332).
 <!-- END manuscript-legend -->
 
 Two-panel summary of how the deep-dive agent sorts the surface cohort, and
@@ -34,12 +34,17 @@ The two cross-cutting surface facets — cell-type restricted and cell-state
 induced — counted by the deep dive's `surface_call_reason` and broken out
 across the three surface-bearing tiers (canonical / likely / low). Counting by
 reason rather than the evidence-gated facet keeps the weak-evidence surface
-calls that land in `low`. Each tier bar stacks three categories:
+calls that land in `low`. Each tier bar stacks four categories, drawn on
+panel a's tier order, y scale and plot frame (tier labels coloured to
+match panel a's bars), so every bar totals its panel-a tier
+(1,783 / 1,252 / 1,014):
 
 - **Cell-type restricted** — `surface_call_reason == 'tissue_restricted_surface'`
 - **Induced — oncogenic** — `surface_call_reason ∈ {cell_state_induced,
   lysosomal_exocytosis}` with `induction_trigger == 'oncogenic'`
 - **Induced — other** — the same induced reasons with any other trigger
+- **Other surface reason** — every remaining surface-call reason (classical
+  receptor, multipass with exposed loops, GPI anchor, dual localization, …)
 
 Totals across the three tiers: **1,323 cell-type restricted** and **632
 cell-state induced** (434 oncogenic, 198 other). Canonical carries no cell-type
