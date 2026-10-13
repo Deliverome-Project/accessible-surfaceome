@@ -1538,9 +1538,16 @@ export function StructureViewer({
         ? (activeVariant as StructureVariantExperimental)
         : null;
       if (schwekeVariant) {
-        const resp = await fetch(schwekeVariant.pdb_url, {
+        let resp = await fetch(schwekeVariant.pdb_url, {
           cache: "force-cache",
         });
+        // R2 sends its 404 with no Cache-Control, and ``force-cache``
+        // reuses any stored response however old. A browser that opened
+        // the page before a PDB was ingested would replay that 404 forever,
+        // so retry a failure once past the cache before calling it missing.
+        if (!resp.ok) {
+          resp = await fetch(schwekeVariant.pdb_url, { cache: "reload" });
+        }
         if (!resp.ok) {
           // 404 = the record annotates this protein as a Schweke
           // positive but its coordinate PDB hasn't been ingested into
