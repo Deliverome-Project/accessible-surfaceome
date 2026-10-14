@@ -634,6 +634,24 @@ Cloudflare Pages project at **`surfaceome.deliverome.org`**. It is *not*
 a sub-route of `deliverome.org`'s main site — separate build, separate
 deploy target, separate domain.
 
+### 3D structure loading — weekly cohort audit
+
+Gene pages pick their experimental structure at view time from PDBe
+`best_structures`, so a newly deposited PDB entry changes what a page loads
+with no commit or rebuild. That is how SLC6A8's 9V8W shipped a 404: RCSB
+publishes no `.pdb` for entries the legacy format can't hold (5-character
+ligand codes, multi-character chains, >99,999 atoms), and 168 genes were
+in that state. The viewer now falls back to mmCIF (`viewer/lib/mmcif-to-pdb.ts`),
+and [`.github/workflows/structure-audit.yml`](.github/workflows/structure-audit.yml)
+runs `viewer/scripts/audit-structures.ts` every Wednesday after the wwPDB
+release: for all published genes it runs the viewer's own pick + load code
+against PDBe, RCSB and the AlphaFold prediction API, fails on any gene that
+wouldn't render, and lists genes that gained or switched structure since
+the previous run. **Keep structure selection and loading in
+`viewer/lib/experimental-structure.ts`**, not in `StructureViewer.tsx` —
+the audit only tests what lives there. Run it locally with
+`cd viewer && npx --yes tsx scripts/audit-structures.ts --genes A,B`.
+
 ### Tooltip / InfoTip citation rule
 
 Any tooltip (InfoTip body text, StatusPill `title=`, etc.) that

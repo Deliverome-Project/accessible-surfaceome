@@ -456,6 +456,14 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   D1 database to the R2 bucket `deliverome-d1-backups` on every push
   to `main` that touches the D1 schema, the eval data, or the
   uploader code. See **Cloudflare D1 + R2** below.
+- `.github/workflows/structure-audit.yml` runs weekly (Wednesday, after
+  the wwPDB release) and checks that every published gene's 3D structure
+  loads. Gene pages pick their experimental structure live from PDBe, so a
+  newly deposited entry can break a page without any commit. The audit
+  (`viewer/scripts/audit-structures.ts`) runs the viewer's own code in
+  `viewer/lib/experimental-structure.ts`; keep structure selection and
+  loading logic there, not in the component, so the audit keeps testing
+  what the viewer runs.
 
 ## Cloudflare D1 + R2 backups for agent runs
 - The `surfaceome_agents` D1 database stores every `surface_triage`
