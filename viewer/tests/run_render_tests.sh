@@ -22,6 +22,7 @@ tests=(
   evidence_drawer_sources.test.tsx
   evidence_ledger_citation.test.tsx
   benchmark_table_models.test.tsx
+  mmcif_to_pdb.test.ts
 )
 
 fails=0

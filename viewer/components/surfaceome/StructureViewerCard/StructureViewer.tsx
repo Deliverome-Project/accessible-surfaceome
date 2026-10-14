@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { CITATIONS, pubmedUrl } from "../../../lib/citations";
+import { mmcifToPdb } from "../../../lib/mmcif-to-pdb";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
@@ -276,6 +277,37 @@ interface SiftsRawSegment {
   seqresLo: number;
   authorLo: number | null;
   authorHi: number | null;
+}
+
+/** Above this many deposited atoms an mmCIF-only experimental entry is
+ *  loaded as its mapped chain alone (RCSB ModelServer) rather than the
+ *  whole assembly. 99,999 is also the legacy PDB format's serial limit,
+ *  so this only ever trims entries RCSB couldn't serve as .pdb anyway;
+ *  past it the full mmCIF runs from ~8 MB to hundreds of MB. */
+const EXP_FULL_ASSEMBLY_MAX_ATOMS = 99_999;
+
+/** Title + deposited atom count from the RCSB entry API. ``null`` on any
+ *  failure, in which case the caller loads the full mmCIF. */
+async function _fetchRcsbEntrySummary(
+  pdbId: string,
+): Promise<{ title: string | null; atomCount: number | null } | null> {
+  try {
+    const r = await fetch(
+      `https://data.rcsb.org/rest/v1/core/entry/${pdbId.toUpperCase()}`,
+      { cache: "force-cache" },
+    );
+    if (!r.ok) return null;
+    const j = (await r.json()) as {
+      struct?: { title?: string };
+      rcsb_entry_info?: { deposited_atom_count?: number };
+    };
+    return {
+      title: j.struct?.title ?? null,
+      atomCount: j.rcsb_entry_info?.deposited_atom_count ?? null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /** Fetch SIFTS per-segment UniProt↔PDB mappings (``/api/mappings/{pdb}``)
@@ -595,10 +627,11 @@ function _renderCaption(args: {
   canonicalUniprot: string;
   afdbMetaByAcc: Record<string, AfdbVariantMeta | "loading" | "error">;
   pdbTitles: Record<string, string>;
+  chainOnlyAtomCounts: Record<string, number>;
 }) {
   const {
     activeVariant, canonicalStruct, proteinName, canonicalUniprot,
-    afdbMetaByAcc, pdbTitles,
+    afdbMetaByAcc, pdbTitles, chainOnlyAtomCounts,
   } = args;
 
   // ---- Schweke homo-oligomer branch ----
@@ -717,6 +750,13 @@ function _renderCaption(args: {
             {tooltips.experimental_best_structure}
           </InfoTip>
         </p>
+        {v.pdb_id in chainOnlyAtomCounts ? (
+          <p className={styles.captionCaveat}>
+            This entry is too large to load whole (
+            {chainOnlyAtomCounts[v.pdb_id].toLocaleString()} atoms), so only
+            chain {v.chain_id} is shown; the rest of the assembly is on RCSB.
+          </p>
+        ) : null}
         {v.mappingMode === "approx" ? (
           <p className={styles.captionCaveat}>
             This chain maps to {proteinName ?? canonicalUniprot} in multiple
@@ -1103,6 +1143,11 @@ export function StructureViewer({
   // experimental PDB. Keyed on pdb_id so switching between two
   // experimental structures correctly updates the caption.
   const [pdbTitles, setPdbTitles] = useState<Record<string, string>>({});
+  // Experimental entries too large to load whole, rendered as the mapped
+  // chain alone: pdb_id → deposited atom count, for the caption note.
+  const [chainOnlyAtomCounts, setChainOnlyAtomCounts] = useState<
+    Record<string, number>
+  >({});
   // AFDB metadata (pLDDT, disordered fraction, latestVersion) per
   // UniProt acc — populated lazily when the user clicks a
   // non-canonical AFDB variant. Canonical uses `canonicalStruct`
@@ -1531,6 +1576,10 @@ export function StructureViewer({
       //     restricted) PDB residue numbering.
       //   - AFDB (default)  → fetch by UniProt acc through AFDB DB.
       let rawPdb: string;
+      // PDBe chain id → the chain id the fetched file actually uses.
+      // Identity except when an mmCIF-only entry's multi-character
+      // chain ids had to be remapped to fit the PDB column.
+      let expChainId = "";
       const schwekeVariant = isSchwekeActive
         ? (activeVariant as StructureVariantSchwekeHomomer)
         : null;
@@ -1574,14 +1623,49 @@ export function StructureViewer({
       } else if (expVariant) {
         // RCSB returns the PDB file directly. Aggressive caching is
         // fine — PDB entries are immutable per release.
-        const rcsbUrl = `https://files.rcsb.org/download/${expVariant.pdb_id}.pdb`;
-        const resp = await fetch(rcsbUrl, { cache: "force-cache" });
-        if (!resp.ok) {
-          throw new Error(
-            `RCSB returned ${resp.status} for ${expVariant.pdb_id}`,
-          );
+        expChainId = expVariant.chain_id;
+        const rcsbBase = `https://files.rcsb.org/download/${expVariant.pdb_id}`;
+        const resp = await fetch(`${rcsbBase}.pdb`, { cache: "force-cache" });
+        if (resp.ok) {
+          rawPdb = await resp.text();
+        } else {
+          // Entries that don't fit the legacy format (a 5-character
+          // ligand code, multi-character chain ids, >99,999 atoms) have
+          // no .pdb at all — 9V8W 404s on its A1D9S ligand. The mmCIF
+          // always exists; convert it to the PDB text the rest of this
+          // pipeline reads. A whole-assembly mmCIF can run to hundreds
+          // of MB (8J07, a microtubule doublet, is 353 MB), so above
+          // EXP_FULL_ASSEMBLY_MAX_ATOMS fetch only the mapped chain from
+          // the RCSB ModelServer instead.
+          const entry = await _fetchRcsbEntrySummary(expVariant.pdb_id);
+          const chainOnly =
+            entry?.atomCount != null &&
+            entry.atomCount > EXP_FULL_ASSEMBLY_MAX_ATOMS;
+          const cifUrl = chainOnly
+            ? `https://models.rcsb.org/v1/${expVariant.pdb_id}/atoms?` +
+              `auth_asym_id=${encodeURIComponent(expVariant.chain_id)}` +
+              "&model_nums=1&encoding=cif"
+            : `${rcsbBase}.cif`;
+          const cifResp = await fetch(cifUrl, { cache: "force-cache" });
+          if (!cifResp.ok) {
+            throw new Error(
+              `RCSB returned ${cifResp.status} for ${expVariant.pdb_id}`,
+            );
+          }
+          const converted = mmcifToPdb(await cifResp.text(), {
+            preferredChainId: expVariant.chain_id,
+            title: entry?.title,
+          });
+          rawPdb = converted.pdb;
+          expChainId = converted.chainMap[expVariant.chain_id] ?? expChainId;
+          if (chainOnly) {
+            const id = expVariant.pdb_id;
+            const n = entry.atomCount as number;
+            setChainOnlyAtomCounts((prev) =>
+              id in prev ? prev : { ...prev, [id]: n },
+            );
+          }
         }
-        rawPdb = await resp.text();
         // Parse the TITLE record once per PDB and cache so re-renders
         // (mode toggle, etc.) don't re-parse.
         if (!(expVariant.pdb_id in pdbTitles)) {
@@ -1697,7 +1781,7 @@ export function StructureViewer({
       // so the orientation + topology coloring don't silently no-op
       // for entries with mismatched chain ids (GPR75 was the trigger).
       const effectiveChainId = expVariant
-        ? _pickPdbChain(rawPdb, expVariant.chain_id) ?? expVariant.chain_id
+        ? _pickPdbChain(rawPdb, expChainId) ?? expChainId
         : null;
 
       // Build the UniProt→PDB-author projection for an experimental
@@ -1709,7 +1793,7 @@ export function StructureViewer({
       // residues ACTUALLY present in the fetched file and keep the best.
       let projSegments: ProjSegment[] = [];
       if (expVariant) {
-        const chain = effectiveChainId ?? expVariant.chain_id;
+        const chain = effectiveChainId ?? expChainId;
         const observed = _observedResSeq(rawPdb, chain);
         const seqresOffset = expVariant.pdb_start - expVariant.unp_start;
         if (expVariant.mappingMode === "approx") {
@@ -1764,7 +1848,7 @@ export function StructureViewer({
           ? { pdbText: rawPdb, membrane: null }
           : expVariant
             ? orientPdbForTopology(rawPdb, activeTopology, {
-                chainId: effectiveChainId ?? expVariant.chain_id,
+                chainId: effectiveChainId ?? expChainId,
                 resiToTopo: _makeResiToTopo(projSegments),
               })
             : orientPdbForTopology(rawPdb, activeTopology);
@@ -2410,6 +2494,7 @@ export function StructureViewer({
         canonicalUniprot: data.uniprot_acc,
         afdbMetaByAcc,
         pdbTitles,
+        chainOnlyAtomCounts,
       })}
 
       {/* Legend — switches with viewMode. Topology mode shows the
