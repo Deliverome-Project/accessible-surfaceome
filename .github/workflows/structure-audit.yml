@@ -18,16 +18,17 @@ name: structure audit
 # bot protection 403s GitHub-runner IPs on api.deliverome.org (see
 # ttfb-check.yml).
 
+# Scheduled and on-demand only. It used to run on every PR touching the
+# structure code, which meant a cohort-wide sweep of PDBe, RCSB and AFDB
+# — thousands of requests and up to 90 minutes — for a one-line change,
+# and it told us nothing a PR could act on: the failures it catches come
+# from new wwPDB releases, not from the diff. The weekly run is the point
+# of it. Run it against a branch by hand with `workflow_dispatch` when a
+# change really does alter structure selection or loading.
 on:
   workflow_dispatch: {}
   schedule:
     - cron: "0 12 * * 3"
-  pull_request:
-    paths:
-      - "viewer/lib/experimental-structure.ts"
-      - "viewer/lib/mmcif-to-pdb.ts"
-      - "viewer/scripts/audit-structures.ts"
-      - ".github/workflows/structure-audit.yml"
 
 permissions:
   contents: read
