@@ -352,7 +352,24 @@ export function GeneHeader({
     taggedSites?.has_data && structureData
       ? renderableTagSites(taggedSites.sites, structureData.topology.length)
       : [];
-  const stripTagSites = activeTopology?.canonicalNumbering === false ? [] : tagSiteRows;
+  // Tag sites are canonical-keyed, so they only belong on a canonical-numbered
+  // tab, and only on the residues that tab's structure contains.
+  const covered = activeTopology?.coveredRange ?? null;
+  const stripTagSites =
+    activeTopology?.canonicalNumbering === false
+      ? []
+      : covered
+        ? tagSiteRows.filter((r) => r.residue >= covered.start && r.residue <= covered.end)
+        : tagSiteRows;
+  // Canonical-frame string for a partial structure: residues outside the
+  // covered range become TopologyBar's "-" gap, drawn as blank space that
+  // keeps its width, so the covered stretch stays at its canonical position.
+  const stripTopology = activeTopology?.topology ?? structureData?.topology ?? "";
+  const stripCoverageFrame = covered
+    ? Array.from(stripTopology, (ch, i) =>
+        i + 1 >= covered.start && i + 1 <= covered.end ? ch : "-",
+      ).join("")
+    : null;
   // The fetcher signals what kind of pLDDT the number is via the
   // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
   //   * "placeholder" — fetcher hasn't run, the 0.0 isn't a measurement.
@@ -992,8 +1009,9 @@ export function GeneHeader({
                 site under the click) in the 3D view, and the viewer's
                 highlighted residue shows here as a pink line. */}
             <TopologyBar
-              topology={activeTopology?.topology ?? structureData.topology}
-              ariaLabel={`${g.hgnc_symbol} ${(activeTopology?.label ?? "Canonical").toLowerCase()} topology${stripTagSites.length > 0 ? " with tag-insertion sites" : ""}; click to highlight a residue in the 3D view`}
+              topology={stripTopology}
+              canonicalFrame={stripCoverageFrame}
+              ariaLabel={`${g.hgnc_symbol} ${(activeTopology?.label ?? "Canonical").toLowerCase()} topology${covered ? ` (structure covers residues ${covered.start}–${covered.end})` : ""}${stripTagSites.length > 0 ? " with tag-insertion sites" : ""}; click to highlight a residue in the 3D view`}
               pins={stripTagSites.map((r) => ({
                 siteId: r.siteId,
                 leftPct: r.leftPct,

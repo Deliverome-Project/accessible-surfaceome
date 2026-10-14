@@ -238,6 +238,11 @@ export interface ActiveTopology {
   topology: string;
   label: string;
   canonicalNumbering: boolean;
+  /** The canonical residue range the active structure actually contains,
+   *  when that is narrower than the whole sequence: an experimental chain
+   *  (PDBe's mapped UniProt range) or a trimmed homo-oligomer model (the
+   *  residues parsed from its PDB). Null when the whole sequence is drawn. */
+  coveredRange: { start: number; end: number } | null;
 }
 
 interface StructureViewerProps {
@@ -1287,13 +1292,31 @@ export function StructureViewer({
   const activeOnOwnSequence =
     activeVariant?.source === "afdb" &&
     (activeVariant.id.startsWith("iso-") || activeVariant.id.startsWith("ortholog-"));
+  // An experimental chain or a trimmed homo-oligomer model covers only part
+  // of the canonical sequence; the strip blanks the rest.
+  const coveredStart =
+    activeVariant?.source === "experimental"
+      ? activeVariant.unp_start
+      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
+        ? activeRenderedResidueRange.min
+        : null;
+  const coveredEnd =
+    activeVariant?.source === "experimental"
+      ? activeVariant.unp_end
+      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
+        ? activeRenderedResidueRange.max
+        : null;
   useEffect(() => {
     onActiveTopologyChangeRef.current?.({
       topology: activeTopology,
       label: activeLabel,
       canonicalNumbering: !activeOnOwnSequence,
+      coveredRange:
+        coveredStart != null && coveredEnd != null
+          ? { start: coveredStart, end: coveredEnd }
+          : null,
     });
-  }, [activeTopology, activeLabel, activeOnOwnSequence]);
+  }, [activeTopology, activeLabel, activeOnOwnSequence, coveredStart, coveredEnd]);
   const activeDeepTMHMMType =
     activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
 
@@ -1308,17 +1331,13 @@ export function StructureViewer({
   // pin the legend to that window so it doesn't advertise a "Signal
   // peptide" swatch for a model that doesn't actually contain any S
   // residues. The window comes from ``activeRenderedResidueRange``,
-  // which the schweke render branch populates after parsing the PDB.
+  // which the schweke render branch populates after parsing the PDB. An
+  // experimental chain is windowed the same way, by PDBe's mapped UniProt
+  // range — the same window the strip under the viewer draws.
   const legendPresentStates = (() => {
-    if (
-      isSchwekeActive &&
-      activeRenderedResidueRange &&
-      activeRenderedResidueRange.variantId === activeVariant?.id &&
-      activeTopology
-    ) {
-      const { min, max } = activeRenderedResidueRange;
-      const lo = Math.max(0, min - 1);
-      const hi = Math.min(activeTopology.length, max);
+    if (coveredStart != null && coveredEnd != null && activeTopology) {
+      const lo = Math.max(0, coveredStart - 1);
+      const hi = Math.min(activeTopology.length, coveredEnd);
       return _presentTopologyStates(activeTopology.slice(lo, hi));
     }
     return _presentTopologyStates(activeTopology);
