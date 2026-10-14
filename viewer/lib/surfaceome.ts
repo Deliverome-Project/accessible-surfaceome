@@ -374,13 +374,16 @@ export interface CatalogRow {
    *  surface-protein library (`public/data/fg-library.json`). Baked at
    *  build time by an overlay step (`enrichRowsWithFgLibrary`) modeled on
    *  `enrichRowsWithNames`; a TOP-LEVEL catalog facet, independent of
-   *  deep-dive coverage. Always present (defaults to `false`). The public
-   *  Worker does NOT serve this flag — it's a viewer-side overlay. */
-  in_fg_library: boolean;
+   *  deep-dive coverage. Present (`true`) only on members — absent means
+   *  not in the library, so the 17k non-member rows don't each ship a
+   *  `false` in the homepage payload. The public Worker does NOT serve this
+   *  flag — it's a viewer-side overlay. */
+  in_fg_library?: boolean;
   /** Per-gene tag-site category counts (deterministic lanes + termini +
    *  literature), overlaid at build time from public/data/tag-site-counts.json
-   *  (enrichRowsWithTagSiteCounts). Null when the gene has no tag sites. */
-  tag_site_counts: TagSiteCounts | null;
+   *  (enrichRowsWithTagSiteCounts). Absent (or null) when the gene has no
+   *  tag sites. */
+  tag_site_counts?: TagSiteCounts | null;
   /** Worker-computed low-literature badge. Authoritative: the Worker
    *  evaluates it against the SurfaceBench-OPTIMIZED UniProt cutoff,
    *  which `db.uniprot` (the native 5-DB strip flag) cannot express.
@@ -600,9 +603,8 @@ function loadFgLibrarySymbols(): Set<string> {
 
 /** Set the top-level `in_fg_library` flag on every row from the committed
  *  membership snapshot. Modeled on `enrichRowsWithNames` — a build-time
- *  overlay step keyed by symbol. Every row already carries `in_fg_library`
- *  from `inflateCatalogRow` (default false); this flips it to true for
- *  library members. */
+ *  overlay step keyed by symbol. Rows arrive without the key (absent =
+ *  not a member); this sets it to true for library members. */
 function enrichRowsWithFgLibrary(
   rows: CatalogRow[],
   symbols: Set<string>,
@@ -629,7 +631,7 @@ function loadTagSiteCounts(): TagSiteCountsMap {
 
 /** Overlay per-gene tag-site category counts onto rows, keyed by symbol. Build-
  *  time step modeled on enrichRowsWithFgLibrary; rows for genes with no tag
- *  sites keep the inflate default (null). */
+ *  sites stay without the key. */
 function enrichRowsWithTagSiteCounts(
   rows: CatalogRow[],
   counts: TagSiteCountsMap,
@@ -695,7 +697,7 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   const internLit = (r.intern_lit_grade ?? r.internalization_lit) as
     | InternalizationLitGrade
     | undefined;
-  return {
+  const row: CatalogRow = {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
     name: r.name as string | undefined,
@@ -710,15 +712,28 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
       Boolean(r.intern_lit ?? r.internalization_has_lit) || undefined,
     internalization_lit: internLit,
     deep_dive_filters: ddf,
-    // Default false — the build-time `enrichRowsWithFgLibrary` overlay flips
-    // it true for library members (the Worker doesn't ship this facet). A
+    // Absent unless true — the build-time `enrichRowsWithFgLibrary` overlay
+    // sets it for library members (the Worker doesn't ship this facet). A
     // snapshot fallback carrying `in_fg_library` is honored if present.
-    in_fg_library: Boolean(r.in_fg_library),
-    // Default null — the build-time enrichRowsWithTagSiteCounts overlay fills it.
-    tag_site_counts: null,
+    in_fg_library: r.in_fg_library ? true : undefined,
+    // tag_site_counts is left absent; enrichRowsWithTagSiteCounts fills it.
     low_lit_uniprot:
       typeof r.low_lit_uniprot === "boolean" ? r.low_lit_uniprot : undefined,
   };
+  return omitUndefined(row);
+}
+
+/** Drop keys whose value is `undefined`. The home page hands all ~19k rows
+ *  to a client component, and React's flight serializer writes an
+ *  undefined-valued key as the literal `"$undefined"` rather than omitting
+ *  it — on the internalization fields alone that was ~2 MB of the home
+ *  page's HTML. Every reader treats an absent key and an undefined one the
+ *  same, so omitting them changes nothing but the payload size. */
+function omitUndefined<T extends object>(obj: T): T {
+  for (const k of Object.keys(obj) as (keyof T)[]) {
+    if (obj[k] === undefined) delete obj[k];
+  }
+  return obj;
 }
 
 /** Look up the descriptive gene name for a symbol. Used by the gene
