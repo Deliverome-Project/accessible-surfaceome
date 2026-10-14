@@ -6,6 +6,12 @@ import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import { mmcifToPdb } from "../../../lib/mmcif-to-pdb";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
+  bestLinearOffset,
+  observedResSeq,
+  residueOneLetterByResSeq,
+} from "../../../lib/structure-projection";
+import type { SequenceCheck } from "../../../lib/structure-projection";
+import {
   MEMBRANE_COLOR,
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
@@ -188,66 +194,38 @@ interface ProjSegment {
   offset: number;
 }
 
-/** Author resSeq values present (ATOM + HETATM) on a chain in the
- *  fetched PDB file — i.e. the residues 3Dmol can actually select.
- *  Used to score candidate projection offsets: the correct offset lands
- *  the most UniProt-mapped residues on real atoms. We can't trust
- *  `best_structures.start` (a SEQRES index) or even PDBe author numbers
- *  (which can diverge from the legacy `.pdb` file RCSB serves, e.g.
- *  EGFR 7syd), so the file itself is the only ground truth. */
-function _observedResSeq(pdbText: string, chainId: string): Set<number> {
-  const out = new Set<number>();
-  for (const line of pdbText.split(/\r?\n/)) {
-    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
-    if (line.length < 26) continue;
-    if (line.slice(21, 22) !== chainId) continue;
-    const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
-    if (Number.isInteger(resi)) out.add(resi);
-  }
-  return out;
-}
+/** Canonical UniProt sequence for one accession, from the AFDB
+ *  prediction API's ``uniprotSequence`` — the endpoint the caption
+ *  already calls, so this is usually a warm cache hit.
+ *
+ *  It exists to settle which UniProt→author offset is real. Counting how
+ *  many residues an offset lands on real atoms cannot do it whenever the
+ *  mapped window is wider than the modelled stretch, which is the common
+ *  case: MS4A1 8VGN maps chain G to 41-297 and models 46-219, so the
+ *  legacy SEQRES offset and the correct 0 scored identically and the tie
+ *  went to the legacy one — every compartment on that chain was painted
+ *  37 residues out of register. Comparing amino acids settles it.
+ *
+ *  Best-effort and memoised per accession; ``null`` simply leaves the
+ *  residue-counting rule in charge. */
+const _canonicalSeqCache = new Map<string, string | null>();
 
-/** Count residues of UniProt window ``[unpLo, unpHi]`` that, shifted by
- *  ``offset``, land on an observed author resSeq. */
-function _overlapCount(
-  unpLo: number,
-  unpHi: number,
-  offset: number,
-  observed: Set<number>,
-): number {
-  let n = 0;
-  for (let u = unpLo; u <= unpHi; u += 1) {
-    if (observed.has(u + offset)) n += 1;
-  }
-  return n;
-}
-
-/** Pick the UniProt→author offset that lands the most of
- *  ``[unpLo, unpHi]`` on real atoms. ``candidates`` are principled
- *  guesses: ``0`` (file numbered by UniProt residue — the modern norm,
- *  true for GPR75 9xqc), the SEQRES-based legacy offset, and (for
- *  fusions) the SIFTS author offset. Ties keep ``fallback`` so a
- *  structure that already rendered with the legacy offset can never
- *  regress — a different offset is only adopted when it strictly covers
- *  more residues, which means it genuinely aligns better to the file. */
-function _bestLinearOffset(
-  unpLo: number,
-  unpHi: number,
-  candidates: number[],
-  observed: Set<number>,
-  fallback: number,
-): number {
-  let best = fallback;
-  let bestScore = _overlapCount(unpLo, unpHi, fallback, observed);
-  for (const c of candidates) {
-    if (c === fallback) continue;
-    const score = _overlapCount(unpLo, unpHi, c, observed);
-    if (score > bestScore) {
-      best = c;
-      bestScore = score;
+async function _fetchCanonicalSequence(acc: string): Promise<string | null> {
+  const hit = _canonicalSeqCache.get(acc);
+  if (hit !== undefined) return hit;
+  let seq: string | null = null;
+  try {
+    const r = await fetch(alphafoldPredictionApiUrl(acc), { cache: "force-cache" });
+    if (r.ok) {
+      const j = (await r.json()) as AlphafoldPredictionEntry[];
+      const entry = j.find((e) => e.uniprotAccession === acc) ?? j[0];
+      seq = entry?.uniprotSequence ?? null;
     }
+  } catch {
+    seq = null;
   }
-  return best;
+  _canonicalSeqCache.set(acc, seq);
+  return seq;
 }
 
 /** Build the PDB-author-resSeq → topology(UniProt)-index lookup the
@@ -365,6 +343,7 @@ async function _fetchSiftsSegments(
 function _projSegmentsForDirty(
   raw: SiftsRawSegment[],
   observed: Set<number>,
+  check: SequenceCheck | null,
 ): ProjSegment[] {
   const out: ProjSegment[] = [];
   for (const s of raw) {
@@ -375,8 +354,8 @@ function _projSegmentsForDirty(
     else if (s.authorHi != null) authorOffset = s.authorHi - s.unpHi;
     if (authorOffset != null) candidates.push(authorOffset);
     candidates.push(seqresOffset);
-    const offset = _bestLinearOffset(
-      s.unpLo, s.unpHi, candidates, observed, authorOffset ?? seqresOffset,
+    const offset = bestLinearOffset(
+      s.unpLo, s.unpHi, candidates, observed, authorOffset ?? seqresOffset, check,
     );
     out.push({ unpLo: s.unpLo, unpHi: s.unpHi, offset });
   }
@@ -1794,7 +1773,14 @@ export function StructureViewer({
       let projSegments: ProjSegment[] = [];
       if (expVariant) {
         const chain = effectiveChainId ?? expChainId;
-        const observed = _observedResSeq(rawPdb, chain);
+        const observed = observedResSeq(rawPdb, chain);
+        // Amino-acid identities for the chain, against the canonical
+        // sequence: the only signal that separates candidate offsets
+        // when the mapped window is wider than the modelled stretch.
+        const canonicalSeq = await _fetchCanonicalSequence(data.uniprot_acc);
+        const check: SequenceCheck | null = canonicalSeq
+          ? { seq: canonicalSeq, resNames: residueOneLetterByResSeq(rawPdb, chain) }
+          : null;
         const seqresOffset = expVariant.pdb_start - expVariant.unp_start;
         if (expVariant.mappingMode === "approx") {
           // Approach C — discontinuous fusion mapping. Fetch SIFTS
@@ -1804,19 +1790,24 @@ export function StructureViewer({
           const raw = await _fetchSiftsSegments(
             expVariant.pdb_id, data.uniprot_acc, expVariant.chain_id,
           );
-          if (raw.length > 0) projSegments = _projSegmentsForDirty(raw, observed);
+          if (raw.length > 0) projSegments = _projSegmentsForDirty(raw, observed, check);
         }
         if (projSegments.length === 0) {
           // Clean single contiguous segment (or dirty w/o usable SIFTS).
           // Candidate offsets: 0 (file numbered by UniProt residue — the
           // modern norm, true for GPR75 9xqc where author == UniProt) vs
-          // the legacy SEQRES offset. Ties keep the legacy offset so
-          // anything that already rendered can't regress (EGFR 7syd: both
-          // are 0, 614 residues). 9xqc: offset 0 covers 266 residues vs
-          // the legacy -34's 234, so the bug (off-by-34) is corrected.
-          const offset = _bestLinearOffset(
+          // the legacy SEQRES offset. `check` decides when the sequence
+          // is available — MS4A1 8VGN ties on residue counting (chain G
+          // models 46-219 inside a 41-297 mapping, so both offsets land
+          // the same 165 residues) and only the amino acids reveal that
+          // the legacy -37 is wrong. Without a sequence the old rule
+          // stands: more residues on real atoms wins, ties keep the
+          // legacy offset so anything that already rendered can't
+          // regress (EGFR 7syd: both are 0, 614 residues). 9xqc: offset
+          // 0 covers 266 residues vs the legacy -34's 234.
+          const offset = bestLinearOffset(
             expVariant.unp_start, expVariant.unp_end,
-            [0, seqresOffset], observed, seqresOffset,
+            [0, seqresOffset], observed, seqresOffset, check,
           );
           projSegments = [{
             unpLo: expVariant.unp_start,

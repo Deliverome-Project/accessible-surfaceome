@@ -107,6 +107,14 @@ export function alphafoldPredictionApiUrl(uniprotAcc: string): string {
  *  fields we don't depend on. */
 export interface AlphafoldPredictionEntry {
   pdbUrl: string;
+  /** Echo of the accession the entry is for. The endpoint accepts a base
+   *  acc and can answer with canonical PLUS each modelled isoform, so
+   *  callers match on this rather than taking ``[0]``. */
+  uniprotAccession?: string;
+  /** Full canonical sequence, 1-based against UniProt numbering. Read by
+   *  the experimental-structure projection to tell a right UniProt→author
+   *  offset from a wrong one (see ``lib/structure-projection.ts``). */
+  uniprotSequence?: string;
   cifUrl?: string;
   bcifUrl?: string;
   latestVersion?: number;
