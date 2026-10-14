@@ -233,6 +233,13 @@ export interface CanonicalStructStats {
   source: string;
 }
 
+/** The active tab's topology, as reported to the strip under the viewer. */
+export interface ActiveTopology {
+  topology: string;
+  label: string;
+  canonicalNumbering: boolean;
+}
+
 interface StructureViewerProps {
   data: StructureViewerData;
   geneSymbol: string;
@@ -243,6 +250,12 @@ interface StructureViewerProps {
   /** Reports the highlighted residue (or null when cleared) so the strip
    *  can mark it. */
   onHighlightChange?: (resi: number | null) => void;
+  /** Reports the active tab's topology so the strip under the viewer draws
+   *  the sequence actually on screen. ``canonicalNumbering`` is true for the
+   *  tabs that number residues on the canonical sequence (canonical,
+   *  experimental, homo-oligomer) and false for isoform / ortholog tabs,
+   *  which use their own sequence's numbering. */
+  onActiveTopologyChange?: (active: ActiveTopology) => void;
   /** Canonical AFDB stats from
    *  ``rec.deterministic_features.structure``. Drives the caption
    *  on the Canonical variant tab; non-canonical AFDB variants
@@ -913,6 +926,7 @@ export function StructureViewer({
   schwekeHomomer = null,
   residueRequest = null,
   onHighlightChange,
+  onActiveTopologyChange,
 }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
@@ -1263,6 +1277,23 @@ export function StructureViewer({
       ? activeVariant.uniprot_acc
       : data.uniprot_acc;
   const activeTopology = activeVariant?.topology ?? data.topology;
+  // Active tab → strip. Isoform / ortholog tabs carry their own sequence's
+  // topology and numbering; every other tab is on the canonical sequence.
+  // Read through a ref so a parent re-render with a fresh closure doesn't
+  // re-fire it.
+  const onActiveTopologyChangeRef = useRef(onActiveTopologyChange);
+  onActiveTopologyChangeRef.current = onActiveTopologyChange;
+  const activeLabel = activeVariant?.label ?? "Canonical";
+  const activeOnOwnSequence =
+    activeVariant?.source === "afdb" &&
+    (activeVariant.id.startsWith("iso-") || activeVariant.id.startsWith("ortholog-"));
+  useEffect(() => {
+    onActiveTopologyChangeRef.current?.({
+      topology: activeTopology,
+      label: activeLabel,
+      canonicalNumbering: !activeOnOwnSequence,
+    });
+  }, [activeTopology, activeLabel, activeOnOwnSequence]);
   const activeDeepTMHMMType =
     activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
 
