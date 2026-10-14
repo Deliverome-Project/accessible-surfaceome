@@ -23,6 +23,7 @@ tests=(
   evidence_ledger_citation.test.tsx
   benchmark_table_models.test.tsx
   mmcif_to_pdb.test.ts
+  experimental_structure.test.ts
 )
 
 fails=0

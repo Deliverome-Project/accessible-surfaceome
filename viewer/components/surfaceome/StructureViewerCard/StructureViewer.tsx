@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { CITATIONS, pubmedUrl } from "../../../lib/citations";
-import { mmcifToPdb } from "../../../lib/mmcif-to-pdb";
+import {
+  bestLinearOffset,
+  fetchExperimentalPdb,
+  isCleanStructure,
+  observedResSeq,
+  pickBestStructure,
+  pickPdbChain,
+  type PDBeBestStructure,
+} from "../../../lib/experimental-structure";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
@@ -128,7 +136,7 @@ export interface StructureVariantExperimental extends StructureVariantBase {
    *  residue numbers. 3Dmol selects on author resSeq, so they can't be
    *  used as a projection offset directly; the render pipeline derives
    *  the real UniProt→author offset by overlap against the fetched PDB
-   *  (see `_bestLinearOffset`). Retained for the clean/dirty span check
+   *  (see `bestLinearOffset`). Retained for the clean/dirty span check
    *  and as one offset candidate. */
   pdb_start: number;
   pdb_end: number;
@@ -162,22 +170,6 @@ interface AfdbVariantMeta {
   fractionPlddtVeryLow: number;
 }
 
-/** PDBe `best_structures` API response shape (one entry — the
- *  endpoint returns an object keyed by UniProt acc with an array of
- *  these). We only use a subset of fields; documented for grep-ability. */
-interface PDBeBestStructure {
-  pdb_id: string;
-  chain_id: string;
-  unp_start: number;
-  unp_end: number;
-  start: number;
-  end: number;
-  experimental_method: string;
-  resolution: number | null;
-  coverage: number;
-  tax_id?: number;
-}
-
 /** A contiguous UniProt→PDB-author projection segment. A topology
  *  (UniProt-coord) residue ``u`` in ``[unpLo, unpHi]`` maps to PDB
  *  author resSeq ``u + offset``. Clean structures have a single
@@ -186,68 +178,6 @@ interface ProjSegment {
   unpLo: number;
   unpHi: number;
   offset: number;
-}
-
-/** Author resSeq values present (ATOM + HETATM) on a chain in the
- *  fetched PDB file — i.e. the residues 3Dmol can actually select.
- *  Used to score candidate projection offsets: the correct offset lands
- *  the most UniProt-mapped residues on real atoms. We can't trust
- *  `best_structures.start` (a SEQRES index) or even PDBe author numbers
- *  (which can diverge from the legacy `.pdb` file RCSB serves, e.g.
- *  EGFR 7syd), so the file itself is the only ground truth. */
-function _observedResSeq(pdbText: string, chainId: string): Set<number> {
-  const out = new Set<number>();
-  for (const line of pdbText.split(/\r?\n/)) {
-    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
-    if (line.length < 26) continue;
-    if (line.slice(21, 22) !== chainId) continue;
-    const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
-    if (Number.isInteger(resi)) out.add(resi);
-  }
-  return out;
-}
-
-/** Count residues of UniProt window ``[unpLo, unpHi]`` that, shifted by
- *  ``offset``, land on an observed author resSeq. */
-function _overlapCount(
-  unpLo: number,
-  unpHi: number,
-  offset: number,
-  observed: Set<number>,
-): number {
-  let n = 0;
-  for (let u = unpLo; u <= unpHi; u += 1) {
-    if (observed.has(u + offset)) n += 1;
-  }
-  return n;
-}
-
-/** Pick the UniProt→author offset that lands the most of
- *  ``[unpLo, unpHi]`` on real atoms. ``candidates`` are principled
- *  guesses: ``0`` (file numbered by UniProt residue — the modern norm,
- *  true for GPR75 9xqc), the SEQRES-based legacy offset, and (for
- *  fusions) the SIFTS author offset. Ties keep ``fallback`` so a
- *  structure that already rendered with the legacy offset can never
- *  regress — a different offset is only adopted when it strictly covers
- *  more residues, which means it genuinely aligns better to the file. */
-function _bestLinearOffset(
-  unpLo: number,
-  unpHi: number,
-  candidates: number[],
-  observed: Set<number>,
-  fallback: number,
-): number {
-  let best = fallback;
-  let bestScore = _overlapCount(unpLo, unpHi, fallback, observed);
-  for (const c of candidates) {
-    if (c === fallback) continue;
-    const score = _overlapCount(unpLo, unpHi, c, observed);
-    if (score > bestScore) {
-      best = c;
-      bestScore = score;
-    }
-  }
-  return best;
 }
 
 /** Build the PDB-author-resSeq → topology(UniProt)-index lookup the
@@ -277,37 +207,6 @@ interface SiftsRawSegment {
   seqresLo: number;
   authorLo: number | null;
   authorHi: number | null;
-}
-
-/** Above this many deposited atoms an mmCIF-only experimental entry is
- *  loaded as its mapped chain alone (RCSB ModelServer) rather than the
- *  whole assembly. 99,999 is also the legacy PDB format's serial limit,
- *  so this only ever trims entries RCSB couldn't serve as .pdb anyway;
- *  past it the full mmCIF runs from ~8 MB to hundreds of MB. */
-const EXP_FULL_ASSEMBLY_MAX_ATOMS = 99_999;
-
-/** Title + deposited atom count from the RCSB entry API. ``null`` on any
- *  failure, in which case the caller loads the full mmCIF. */
-async function _fetchRcsbEntrySummary(
-  pdbId: string,
-): Promise<{ title: string | null; atomCount: number | null } | null> {
-  try {
-    const r = await fetch(
-      `https://data.rcsb.org/rest/v1/core/entry/${pdbId.toUpperCase()}`,
-      { cache: "force-cache" },
-    );
-    if (!r.ok) return null;
-    const j = (await r.json()) as {
-      struct?: { title?: string };
-      rcsb_entry_info?: { deposited_atom_count?: number };
-    };
-    return {
-      title: j.struct?.title ?? null,
-      atomCount: j.rcsb_entry_info?.deposited_atom_count ?? null,
-    };
-  } catch {
-    return null;
-  }
 }
 
 /** Fetch SIFTS per-segment UniProt↔PDB mappings (``/api/mappings/{pdb}``)
@@ -375,7 +274,7 @@ function _projSegmentsForDirty(
     else if (s.authorHi != null) authorOffset = s.authorHi - s.unpHi;
     if (authorOffset != null) candidates.push(authorOffset);
     candidates.push(seqresOffset);
-    const offset = _bestLinearOffset(
+    const offset = bestLinearOffset(
       s.unpLo, s.unpHi, candidates, observed, authorOffset ?? seqresOffset,
     );
     out.push({ unpLo: s.unpLo, unpHi: s.unpHi, offset });
@@ -493,77 +392,6 @@ const COMPARTMENT_LEGEND_LABEL: Record<AnchorCompartment, string> = {
   signal: "Signal peptide",
   unknown: "Unknown",
 };
-
-/**
- * Pick the effective chain ID to use for an experimental PDB. PDBe's
- * `best_structures` endpoint returns a chain ID that should match the
- * deposited PDB's auth_asym_id, but in practice the two disagree
- * occasionally:
- *
- *   - Case mismatch (PDBe "A" vs PDB "a") — uncommon but happens for
- *     a few recently-deposited entries.
- *   - PDBe gives the label_asym_id while the RCSB PDB file uses
- *     auth_asym_id — different conventions for the same chain.
- *   - GPR75 (UniProt O95800) was the trigger case: the PDBe metadata's
- *     chain didn't appear in the served PDB file, so every chain-
- *     restricted `setStyle` call below silently no-op'd and the model
- *     rendered in 3Dmol's default gray with no topology coloring.
- *
- * Strategy: extract the set of chains actually present in the PDB
- * (one entry per ATOM/HETATM `column 22` letter), then:
- *
- *   1. Exact match → use as-is.
- *   2. Case-insensitive match → use the PDB's actual casing.
- *   3. Otherwise → use the chain with the most atoms (the canonical
- *      protein chain in the overwhelming majority of cases). This is
- *      defensive and not strictly correct for hetero-complexes where
- *      the canonical chain isn't the biggest, but it beats the silent
- *      no-op the previous code path produced.
- *
- * Returns `null` when the PDB has no ATOM/HETATM lines at all
- * (corrupt download); the caller should treat that as a render-skip
- * failure.
- */
-function _pickPdbChain(
-  pdbText: string,
-  preferredChainId: string,
-): string | null {
-  const counts = new Map<string, number>();
-  for (const line of pdbText.split(/\r?\n/)) {
-    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
-    if (line.length < 22) continue;
-    const c = line.slice(21, 22);
-    if (!c.trim()) continue;
-    counts.set(c, (counts.get(c) ?? 0) + 1);
-  }
-  if (counts.size === 0) return null;
-  if (counts.has(preferredChainId)) return preferredChainId;
-  // Case-insensitive fallback — PDBe occasionally lowercases what
-  // the PDB file capitalizes (or vice versa).
-  const target = preferredChainId.toLowerCase();
-  for (const c of counts.keys()) {
-    if (c.toLowerCase() === target) return c;
-  }
-  // Last resort: heaviest chain. Logged as a console.warn so the
-  // mismatch surfaces in dev tools — readers shouldn't see anything
-  // unusual since the topology coloring still works.
-  let best: string | null = null;
-  let bestCount = -1;
-  for (const [c, n] of counts) {
-    if (n > bestCount) {
-      best = c;
-      bestCount = n;
-    }
-  }
-  if (typeof console !== "undefined" && best) {
-    console.warn(
-      `[StructureViewer] PDBe chain "${preferredChainId}" not found in ` +
-        `PDB file (chains present: ${[...counts.keys()].join(", ")}); ` +
-        `falling back to heaviest chain "${best}".`,
-    );
-  }
-  return best;
-}
 
 /** Parse the TITLE block out of a PDB file. PDB TITLE records have a
  *  fixed-width header (cols 1-6 = "TITLE ", col 9-10 = continuation
@@ -1197,47 +1025,7 @@ export function StructureViewer({
         }
         const j = (await r.json()) as Record<string, PDBeBestStructure[]>;
         const candidates = j[data.uniprot_acc] ?? [];
-        if (candidates.length === 0) {
-          if (!cancelled) setPdbeCandidate(null);
-          return;
-        }
-        // PDBe already ranks by coverage → resolution. Prefer the human
-        // (same-species) rows when any exist; otherwise rank over
-        // everything (some rows lack tax_id).
-        const human = candidates.filter((c) => c.tax_id === 9606);
-        const ranked = human.length > 0 ? human : candidates;
-        const top = ranked[0];
-        // "clean" = the chain maps to UniProt as a single contiguous
-        // segment (SEQRES span == UniProt span), so the topology
-        // projects through one linear offset. A "dirty" top is usually
-        // a fusion construct (e.g. GPR75 9xqn packs BRIL + the receptor
-        // into one chain across 7 discontinuous segments), which
-        // mis-colors under a single offset.
-        const isClean = (c: PDBeBestStructure) =>
-          c.end - c.start === c.unp_end - c.unp_start;
-        let chosen = top;
-        if (!isClean(top)) {
-          // Skip down to a comparable clean structure when one exists:
-          // similar coverage (within tolerance — don't trade away much
-          // of the resolved sequence) and not much worse resolution
-          // (better resolution is never penalized). GPR75 is the
-          // trigger: top 9xqn is a dirty fusion (cov 0.685, 3.91 Å);
-          // 9xqc is clean (cov 0.663, 3.0 Å) — a 0.02 coverage cost for
-          // a clean, higher-resolution map. When no comparable clean
-          // structure exists we keep the dirty top and project it
-          // piecewise (approach C) with a caption caveat.
-          const COVERAGE_TOL = 0.1;
-          const RES_TOL = 2.0;
-          const cleanAlt = ranked.find(
-            (c) =>
-              isClean(c) &&
-              c.coverage >= top.coverage - COVERAGE_TOL &&
-              (c.resolution == null ||
-                top.resolution == null ||
-                c.resolution <= top.resolution + RES_TOL),
-          );
-          if (cleanAlt) chosen = cleanAlt;
-        }
+        const chosen = pickBestStructure(candidates);
         if (!cancelled) setPdbeCandidate(chosen);
       } catch {
         if (!cancelled) setPdbeCandidate(null);
@@ -1342,11 +1130,7 @@ export function StructureViewer({
         // projection. The selection cascade already prefers a clean
         // structure when one is comparable, so ``approx`` only sticks
         // when the gene's *only* structure is a fusion construct.
-        mappingMode:
-          pdbeCandidate.end - pdbeCandidate.start ===
-          pdbeCandidate.unp_end - pdbeCandidate.unp_start
-            ? "clean"
-            : "approx",
+        mappingMode: isCleanStructure(pdbeCandidate) ? "clean" : "approx",
         experimental_method: pdbeCandidate.experimental_method,
         resolution: pdbeCandidate.resolution,
         coverage: pdbeCandidate.coverage,
@@ -1621,50 +1405,18 @@ export function StructureViewer({
         }
         rawPdb = await resp.text();
       } else if (expVariant) {
-        // RCSB returns the PDB file directly. Aggressive caching is
-        // fine — PDB entries are immutable per release.
-        expChainId = expVariant.chain_id;
-        const rcsbBase = `https://files.rcsb.org/download/${expVariant.pdb_id}`;
-        const resp = await fetch(`${rcsbBase}.pdb`, { cache: "force-cache" });
-        if (resp.ok) {
-          rawPdb = await resp.text();
-        } else {
-          // Entries that don't fit the legacy format (a 5-character
-          // ligand code, multi-character chain ids, >99,999 atoms) have
-          // no .pdb at all — 9V8W 404s on its A1D9S ligand. The mmCIF
-          // always exists; convert it to the PDB text the rest of this
-          // pipeline reads. A whole-assembly mmCIF can run to hundreds
-          // of MB (8J07, a microtubule doublet, is 353 MB), so above
-          // EXP_FULL_ASSEMBLY_MAX_ATOMS fetch only the mapped chain from
-          // the RCSB ModelServer instead.
-          const entry = await _fetchRcsbEntrySummary(expVariant.pdb_id);
-          const chainOnly =
-            entry?.atomCount != null &&
-            entry.atomCount > EXP_FULL_ASSEMBLY_MAX_ATOMS;
-          const cifUrl = chainOnly
-            ? `https://models.rcsb.org/v1/${expVariant.pdb_id}/atoms?` +
-              `auth_asym_id=${encodeURIComponent(expVariant.chain_id)}` +
-              "&model_nums=1&encoding=cif"
-            : `${rcsbBase}.cif`;
-          const cifResp = await fetch(cifUrl, { cache: "force-cache" });
-          if (!cifResp.ok) {
-            throw new Error(
-              `RCSB returned ${cifResp.status} for ${expVariant.pdb_id}`,
-            );
-          }
-          const converted = mmcifToPdb(await cifResp.text(), {
-            preferredChainId: expVariant.chain_id,
-            title: entry?.title,
-          });
-          rawPdb = converted.pdb;
-          expChainId = converted.chainMap[expVariant.chain_id] ?? expChainId;
-          if (chainOnly) {
-            const id = expVariant.pdb_id;
-            const n = entry.atomCount as number;
-            setChainOnlyAtomCounts((prev) =>
-              id in prev ? prev : { ...prev, [id]: n },
-            );
-          }
+        const exp = await fetchExperimentalPdb(
+          expVariant.pdb_id,
+          expVariant.chain_id,
+        );
+        rawPdb = exp.rawPdb;
+        expChainId = exp.chainId;
+        if (exp.chainOnlyAtomCount != null) {
+          const id = expVariant.pdb_id;
+          const n = exp.chainOnlyAtomCount;
+          setChainOnlyAtomCounts((prev) =>
+            id in prev ? prev : { ...prev, [id]: n },
+          );
         }
         // Parse the TITLE record once per PDB and cache so re-renders
         // (mode toggle, etc.) don't re-parse.
@@ -1776,12 +1528,12 @@ export function StructureViewer({
 
       // Resolve the chain id we'll actually use downstream — PDBe's
       // metadata occasionally disagrees with the deposited PDB
-      // (case mismatch, label vs auth asym id). _pickPdbChain falls
+      // (case mismatch, label vs auth asym id). pickPdbChain falls
       // back to a case-insensitive match, then to the heaviest chain,
       // so the orientation + topology coloring don't silently no-op
       // for entries with mismatched chain ids (GPR75 was the trigger).
       const effectiveChainId = expVariant
-        ? _pickPdbChain(rawPdb, expChainId) ?? expChainId
+        ? pickPdbChain(rawPdb, expChainId) ?? expChainId
         : null;
 
       // Build the UniProt→PDB-author projection for an experimental
@@ -1794,7 +1546,7 @@ export function StructureViewer({
       let projSegments: ProjSegment[] = [];
       if (expVariant) {
         const chain = effectiveChainId ?? expChainId;
-        const observed = _observedResSeq(rawPdb, chain);
+        const observed = observedResSeq(rawPdb, chain);
         const seqresOffset = expVariant.pdb_start - expVariant.unp_start;
         if (expVariant.mappingMode === "approx") {
           // Approach C — discontinuous fusion mapping. Fetch SIFTS
@@ -1814,7 +1566,7 @@ export function StructureViewer({
           // anything that already rendered can't regress (EGFR 7syd: both
           // are 0, 614 residues). 9xqc: offset 0 covers 266 residues vs
           // the legacy -34's 234, so the bug (off-by-34) is corrected.
-          const offset = _bestLinearOffset(
+          const offset = bestLinearOffset(
             expVariant.unp_start, expVariant.unp_end,
             [0, seqresOffset], observed, seqresOffset,
           );
