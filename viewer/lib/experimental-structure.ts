@@ -275,6 +275,105 @@ export function overlapCount(
   return n;
 }
 
+/** Author resSeq → one-letter residue code for one chain. Only standard
+ *  amino acids (plus selenomethionine, which the UniProt sequence spells
+ *  as a methionine) are recorded, so ligands and waters sharing the chain
+ *  id cannot be mistaken for sequence. */
+export function residueOneLetterByResSeq(
+  pdbText: string,
+  chainId: string,
+): Map<number, string> {
+  const out = new Map<number, string>();
+  for (const line of pdbText.split(/\r?\n/)) {
+    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+    if (line.length < 26) continue;
+    if (line.slice(21, 22) !== chainId) continue;
+    const one = THREE_TO_ONE[line.slice(17, 20).trim().toUpperCase()];
+    if (!one) continue;
+    const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
+    if (!Number.isInteger(resi) || out.has(resi)) continue;
+    out.set(resi, one);
+  }
+  return out;
+}
+
+const THREE_TO_ONE: Record<string, string> = {
+  ALA: "A", ARG: "R", ASN: "N", ASP: "D", CYS: "C", GLN: "Q", GLU: "E",
+  GLY: "G", HIS: "H", ILE: "I", LEU: "L", LYS: "K", MET: "M", PHE: "F",
+  PRO: "P", SER: "S", THR: "T", TRP: "W", TYR: "Y", VAL: "V", MSE: "M",
+};
+
+/** Canonical sequence plus the residue identities the fetched file
+ *  carries — enough to tell a right projection from a wrong one. */
+export interface SequenceCheck {
+  /** Canonical UniProt sequence; residue ``u`` is ``seq[u - 1]``. */
+  seq: string;
+  /** Author resSeq → one-letter residue code, read from the file. */
+  resNames: Map<number, string>;
+}
+
+/** A projection only wins on sequence when the chain at that numbering
+ *  really is this protein. Engineered constructs, ortholog chains and
+ *  modified residues cost a few percent; a wrong offset scores near the
+ *  ~5-8% expected by chance. Below this we fall back to counting. */
+export const MIN_IDENTITY = 0.7;
+
+/** How much of a projection lands on a residue of the right identity.
+ *  ``tested`` counts only positions that landed on an amino acid, so the
+ *  fraction reads "of the residues this projection claims, how many are
+ *  the right ones" rather than being diluted by unmodelled stretches. */
+export function projectedIdentity(
+  segments: ProjSegment[],
+  check: SequenceCheck,
+): { matches: number; tested: number } {
+  let matches = 0;
+  let tested = 0;
+  for (const s of segments) {
+    const hi = Math.min(s.unpHi, check.seq.length);
+    for (let u = Math.max(s.unpLo, 1); u <= hi; u += 1) {
+      const got = check.resNames.get(u + s.offset);
+      if (got === undefined) continue;
+      tested += 1;
+      if (got === check.seq[u - 1]) matches += 1;
+    }
+  }
+  return { matches, tested };
+}
+
+/** Canonical UniProt sequence for one accession, from AFDB's prediction
+ *  API (``uniprotSequence``). Memoised; best-effort — ``null`` leaves the
+ *  residue-counting rule in charge. */
+const _seqCache = new Map<string, string | null>();
+
+export async function fetchCanonicalSequence(
+  uniprotAcc: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<string | null> {
+  const hit = _seqCache.get(uniprotAcc);
+  if (hit !== undefined) return hit;
+  let seq: string | null = null;
+  try {
+    const r = await fetchImpl(
+      `https://alphafold.ebi.ac.uk/api/prediction/${uniprotAcc}`,
+      { cache: "force-cache" },
+    );
+    if (r.ok) {
+      const j = (await r.json()) as Array<{
+        uniprotAccession?: string;
+        uniprotSequence?: string;
+      }>;
+      const entry = j.find((e) => e.uniprotAccession === uniprotAcc) ?? j[0];
+      seq = entry?.uniprotSequence ?? null;
+    }
+  } catch {
+    seq = null;
+  }
+  // Only a real answer is memoised. Caching a failure would disable the
+  // check for the rest of the session after one unreachable fetch.
+  if (seq) _seqCache.set(uniprotAcc, seq);
+  return seq;
+}
+
 /** Pick the UniProt→author offset that lands the most of
  *  ``[unpLo, unpHi]`` on real atoms. ``candidates`` are principled
  *  guesses: ``0`` (file numbered by UniProt residue — the modern norm,
@@ -441,6 +540,89 @@ export async function projectExperimentalChain(
     fetchSiftsSegments(hit.pdbId, hit.uniprotAcc, hit.chainId, fetchImpl).then(
       (raw) => projSegmentsFromSifts(raw, observed),
     );
+  const seqresOffset = hit.pdbStart - hit.unpStart;
+  const single = [
+    {
+      unpLo: hit.unpStart,
+      unpHi: hit.unpEnd,
+      offset: bestLinearOffset(
+        hit.unpStart, hit.unpEnd, [0, seqresOffset], observed, seqresOffset,
+      ),
+    },
+  ];
+  // The file's own DBREF records state author ↔ UniProt numbering
+  // outright, for the very file 3Dmol renders. Converted mmCIF carries
+  // none, so this is empty for mmCIF-only entries.
+  const dbref = dbrefSegments(pdbText, fileChainId, hit.uniprotAcc);
+
+  // Residue counting cannot separate candidates that all keep the chain
+  // inside the mapped window, and that is the usual case because the
+  // window is wider than the modelled stretch. Both genes the old
+  // ordering was tuned around were being drawn wrong because of it:
+  //
+  //   MS4A1 8VGN  chain G maps to 41-297 and models 46-219, so the
+  //               SEQRES-derived -37 and the correct 0 both cover 165
+  //               residues; the tie kept -37 and every compartment
+  //               colour, the slab and the highlight moved with it.
+  //   EGFR 7syd   PDBe maps 1-1210 with seqres start 1, so both
+  //               candidates are 0 — and the file numbers chain A 1-614
+  //               for UniProt 25-638, past a 24-residue signal peptide.
+  //               Offset 0 scores 8% sequence identity; -24 scores 99.8%.
+  //
+  // DBREF first, then: the depositor states author ↔ UniProt numbering in
+  // the very file 3Dmol renders, so when it covers the chain there is
+  // nothing to infer and nothing to fetch. It answers both of the above.
+  // Converted mmCIF carries no DBREF, so those entries fall through to
+  // the sequence check below.
+  if (projectedCoverage(dbref, observed) > 0) return dbref;
+
+  // Counting is decisive whenever one candidate strictly beats the
+  // others, and that is the common case — so the sequence is fetched
+  // only when it is needed to break a tie. A file that is already
+  // unambiguous costs no extra lookup.
+  const byCount = new Map<number, number>();
+  for (const offset of [0, seqresOffset]) {
+    byCount.set(offset, overlapCount(hit.unpStart, hit.unpEnd, offset, observed));
+  }
+  const counts = [...byCount.values()];
+  const ambiguous =
+    Math.max(...counts) === 0 || new Set(counts).size < counts.length;
+
+  if (ambiguous) {
+    const canonicalSeq = await fetchCanonicalSequence(hit.uniprotAcc, fetchImpl);
+    if (canonicalSeq) {
+      const check: SequenceCheck = {
+        seq: canonicalSeq,
+        resNames: residueOneLetterByResSeq(pdbText, fileChainId),
+      };
+      // Every candidate separately, not the one residue counting already
+      // settled on — otherwise the sequence can only ratify that choice.
+      const options: ProjSegment[][] = [];
+      for (const offset of byCount.keys()) {
+        options.push([{ unpLo: hit.unpStart, unpHi: hit.unpEnd, offset }]);
+      }
+      if (hit.approx) options.push(await sifts());
+      let best: ProjSegment[] | null = null;
+      let bestFrac = 0;
+      let bestMatches = 0;
+      for (const segs of options) {
+        if (segs.length === 0) continue;
+        const { matches, tested } = projectedIdentity(segs, check);
+        if (tested === 0) continue;
+        const frac = matches / tested;
+        if (frac > bestFrac || (frac === bestFrac && matches > bestMatches)) {
+          best = segs;
+          bestFrac = frac;
+          bestMatches = matches;
+        }
+      }
+      // A chain the canonical sequence does not describe — an ortholog,
+      // a heavily engineered construct — scores low on every option.
+      // Trust nothing from a weak signal and fall through to counting.
+      if (best && bestFrac >= MIN_IDENTITY) return best;
+    }
+  }
+
   if (hit.approx) {
     // Approach C — discontinuous fusion mapping. Project piecewise from
     // SIFTS per-segment author numbers, each segment's offset file-
@@ -449,30 +631,13 @@ export async function projectExperimentalChain(
     const segs = await sifts();
     if (segs.length > 0) return segs;
   }
-  // Clean single contiguous segment (or dirty w/o usable SIFTS).
-  // Candidate offsets: 0 (file numbered by UniProt residue — the
-  // modern norm, true for GPR75 9xqc where author == UniProt) vs
-  // the legacy SEQRES offset. Ties keep the legacy offset so
-  // anything that already rendered can't regress (EGFR 7syd: both
-  // are 0, 614 residues). 9xqc: offset 0 covers 266 residues vs
-  // the legacy -34's 234, so the bug (off-by-34) is corrected.
-  const seqresOffset = hit.pdbStart - hit.unpStart;
-  const offset = bestLinearOffset(
-    hit.unpStart, hit.unpEnd, [0, seqresOffset], observed, seqresOffset,
-  );
-  const single = [{ unpLo: hit.unpStart, unpHi: hit.unpEnd, offset }];
   if (hit.approx || projectedCoverage(single, observed) > 0) return single;
   // Neither guess lands a single residue: the file numbers the chain by
   // neither UniProt nor SEQRES (CHMP2B 2jqk chain B is a 19-residue
   // peptide numbered 111-129 for UniProt 195-213). SIFTS carries the
   // author numbers, so take its projection when it does better.
   const segs = await sifts();
-  if (projectedCoverage(segs, observed) > 0) return segs;
-  // SIFTS has no author numbers either (KCNMB4 6v22 chain E is numbered
-  // from 2001, M6PR 1juq chain E's 13-residue peptide from 301). The
-  // file's own DBREF records state author ↔ UniProt numbering directly.
-  const dbref = dbrefSegments(pdbText, fileChainId, hit.uniprotAcc);
-  return projectedCoverage(dbref, observed) > 0 ? dbref : single;
+  return projectedCoverage(segs, observed) > 0 ? segs : single;
 }
 
 /** Projection segments from a PDB file's DBREF records for one chain

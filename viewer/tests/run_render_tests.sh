@@ -24,7 +24,15 @@ tests=(
   benchmark_table_models.test.tsx
   mmcif_to_pdb.test.ts
   experimental_structure.test.ts
+  structure_projection.test.ts
+  canonical_frame.test.ts
 )
+
+# NOTE: this list is hand-maintained, so a new test file is only run once
+# someone remembers to add it here — the same silent-skip the *.test.tsx
+# glob was introduced to avoid. Worth globbing ``tests/*.test.ts`` too,
+# minus the two that take a scenario on argv (list_surfaceome_genes,
+# surfaceome_record_degraded), which have their own runners.
 
 fails=0
 for t in "${tests[@]}"; do
