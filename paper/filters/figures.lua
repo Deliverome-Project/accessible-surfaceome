@@ -466,6 +466,13 @@ local function linkify_figure_refs(inlines)
             seps[#nums] = ", "
             j = j + 2
           else
+            -- The body pattern claims a trailing "," / ";" as a run
+            -- separator. When no further "S<n>" follows, it was ordinary
+            -- punctuation ("Figure S10; Supplementary Note 1") and has
+            -- to go back, or the build silently deletes it.
+            if trailing == "," or trailing == ";" then
+              tail_suffix = trailing .. tail_suffix
+            end
             break
           end
         end
@@ -703,6 +710,10 @@ local function mark_caption_lead(elem)
   if not CAPTION_LEVELS[elem.level] then return nil end
   local inlines = elem.content
   if #inlines == 0 then return nil end
+  -- An image-only Heading 5 (the figure itself, styled like its
+  -- caption in the .docx) has no sentence to mark. Reporting it as an
+  -- unmarked caption printed a warning with nothing after the colon.
+  if pandoc.utils.stringify(elem):match("^%s*$") then return nil end
   -- Idempotent: a caption already carrying the span is left alone.
   if inlines[1].t == "Span" and inlines[1].classes
       and inlines[1].classes:includes(LEAD_CLASS) then

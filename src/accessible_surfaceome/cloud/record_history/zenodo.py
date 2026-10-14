@@ -125,8 +125,10 @@ def create_draft_version(
     d = draft.json()
 
     # The new version inherits the previous version's files; replace only
-    # the deep-dive tarball. Triage TSVs + README carry over (refresh them
-    # by hand in the draft if they changed).
+    # the deep-dive tarball. The triage TSVs, preset-membership TSV and README
+    # carry over from the previous version: refresh them with
+    # `scripts/release/update_zenodo_draft.py --deposit-id <this draft's id>`
+    # after build_consolidated_deposit_tsvs.py.
     extra_names = {p.name for p in extra_files}
     for f in d.get("files", []):
         if f["filename"].startswith("deep_dives") or f["filename"] in extra_names:

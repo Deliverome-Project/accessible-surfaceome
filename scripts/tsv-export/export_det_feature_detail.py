@@ -29,6 +29,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from accessible_surfaceome.agents.surfaceome_v1 import d1_deterministic as dd
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
 
@@ -83,12 +84,15 @@ def main() -> int:
             "SELECT gene_symbol, MAX(CAST(stoichiometry AS INT)) AS homomer_stoichiometry "
             "FROM schweke_homomer_public WHERE stoichiometry IS NOT NULL "
             "GROUP BY gene_symbol", []))
-        # Closest paralog by ECD identity (rank 1 = highest ECD % id per gene).
+        # Closest paralog by ECD identity (rank 1 = highest ECD % id per gene),
+        # from the served paralog version only: the table also holds test and
+        # rescue versions with their own rank-1 rows.
         par = pd.DataFrame(d1.query(
             "SELECT human_gene_symbol AS gene_symbol, "
             "paralog_gene_symbol AS top_paralog_symbol, "
             "CAST(ecd_pct_identity AS REAL) AS top_paralog_ecd_pct "
-            "FROM compara_paralog WHERE rank_by_ecd_identity=1", []))
+            "FROM compara_paralog WHERE rank_by_ecd_identity=1 AND paralog_version=?",
+            [dd._latest_paralog_version()]))
         # Surface-bind sites (paired with per_residue below to keep only the
         # ones anchored in an extracellular 'O' region).
         sites = pd.DataFrame(d1.query(

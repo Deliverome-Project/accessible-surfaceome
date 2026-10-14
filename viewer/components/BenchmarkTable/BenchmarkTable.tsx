@@ -13,19 +13,29 @@ import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { prettyEnum } from "../../lib/enums";
 import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import { RationaleDrawer, type SelectedCell } from "./RationaleDrawer";
+import {
+  PRODUCTION_MODEL_ID,
+  PRODUCTION_VARIANT_ID,
+  cellStatus,
+  modelLabelsFor,
+  modelSlug,
+  variantLabelsFor,
+  type LabelDef,
+  type ModelLabelDef,
+} from "./benchmarkLabels";
 import styles from "./BenchmarkTable.module.css";
 
 // Sortable column key. Matches the keys we surface in the header row;
 // numeric sorts (per-DB / per-model) use n_db_surface and a verdict-rank
-// derived from the row. UniProt sort dropped with the column.
+// derived from the row. Model columns are data-driven, so their key
+// carries the model id: `model:claude-sonnet-4-6` sorts by that model's
+// headline-variant verdict. UniProt sort dropped with the column.
 type SortKey =
   | "gene_symbol"
   | "truth"
   | "reason"
   | "n_db_surface"
-  | "haiku_ncbi"
-  | "sonnet_ncbi"
-  | "opus_ncbi";
+  | `model:${string}`;
 
 type SortDir = "asc" | "desc";
 
@@ -44,16 +54,41 @@ function verdictRank(v: string | null | undefined): number {
 const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
 
-// Resting-grid template: symbol | truth | # DBs (nBubble) | 5 DB dots |
-// 3 model NCBI pills. Mirrors the CatalogTable layout exactly — the
-// nBubble count column sits before the per-DB dots, same widths +
-// styling as the homepage. .wrap max-width = grid sum + scrollbar.
-const GRID_TEMPLATE =
-  "12rem 8rem " +
-  "12rem " +                          // ground-truth reason (prettyEnum label)
-  "3.6rem " +                         // n_db_surface count bubble
-  "4.2rem 3rem 4rem 3.6rem 3rem " +   // 5 DB dot columns
-  "7.8rem 8.5rem 7.2rem";              // 3 model NCBI pills
+// Resting-grid template: symbol | truth | reason | # DBs (nBubble) |
+// 5 DB dots | one compact headline-variant pill per model. The DB block
+// mirrors the CatalogTable layout (nBubble count before the per-DB
+// dots). Model columns are data-driven — one per model in the payload —
+// so the template is built per render; .wrap's max-width tracks the sum
+// so rows end flush with the last model column.
+const FIXED_COLS: { width: number; note: string }[] = [
+  { width: 10.5, note: "symbol + gene name" },
+  { width: 6.6, note: "truth verdict pill" },
+  { width: 10, note: "ground-truth reason (prettyEnum label)" },
+  { width: 3.6, note: "n_db_surface count bubble" },
+  { width: 4.2, note: "UniProt dot" },
+  { width: 3, note: "GO dot" },
+  { width: 4, note: "SURFY dot" },
+  { width: 3.6, note: "CSPA dot" },
+  { width: 3, note: "HPA dot" },
+];
+/** Width (rem) of one compact per-model headline column. */
+const MODEL_COL_REM = 3.9;
+
+function gridTemplate(nModels: number): { template: string; widthRem: number } {
+  const fixed = FIXED_COLS.map((c) => `${c.width}rem`).join(" ");
+  const models = Array.from({ length: nModels }, () => `${MODEL_COL_REM}rem`).join(" ");
+  const widthRem =
+    FIXED_COLS.reduce((sum, c) => sum + c.width, 0) + nModels * MODEL_COL_REM;
+  return { template: `${fixed} ${models}`.trim(), widthRem };
+}
+
+/** Compact verdict text for the narrow headline pills. The full verdict
+ *  is always in the cell's tooltip and the drawer. */
+const VERDICT_SHORT: Record<string, string> = {
+  yes: "yes",
+  no: "no",
+  contextual: "ctx",
+};
 
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
@@ -61,20 +96,6 @@ const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "surfy", short: "S", long: "SURFY" },
   { key: "cspa", short: "C", long: "CSPA" },
   { key: "hpa", short: "H", long: "HPA" },
-];
-
-const MODEL_LABELS: { id: string; short: string; long: string }[] = [
-  { id: "claude-haiku-4-5",  short: "H", long: "Haiku 4.5" },
-  { id: "claude-sonnet-4-6", short: "S", long: "Sonnet 4.6" },
-  { id: "claude-opus-4-8",   short: "O", long: "Opus 4.8" },
-];
-
-// Display order for the expanded model × variant grid.
-const VARIANT_LABELS: { id: string; short: string; long: string }[] = [
-  { id: "naive",       short: "naive",       long: "no context"                  },
-  { id: "ncbi",        short: "NCBI",        long: "HGNC + UniProt + NCBI summary" },
-  { id: "web_ncbi",    short: "web + NCBI",  long: "NCBI + web search"           },
-  { id: "pubmed_ncbi", short: "PubMed + NCBI", long: "NCBI + PubMed evidence"    },
 ];
 
 type TruthFilter = "all" | "yes" | "contextual" | "no" | "disagreements";
@@ -98,13 +119,20 @@ function isCorrect(verdict: string | null, truth: string): boolean {
   return false;
 }
 
-function rowHasAnyDisagreement(r: BenchmarkRow, models: string[]): boolean {
+/** True when any rendered (model, variant) cell carries a verdict that
+ *  disagrees with truth. Refused / errored cells have no verdict, so they
+ *  never count as a disagreement. */
+function rowHasAnyDisagreement(
+  r: BenchmarkRow,
+  modelIds: string[],
+  variantIds: string[],
+): boolean {
   const verdicts = r.verdicts ?? {};
-  for (const m of models) {
+  for (const m of modelIds) {
     const byVariant = verdicts[m];
     if (!byVariant) continue;
-    for (const v of VARIANT_LABELS) {
-      const cell = byVariant[v.id];
+    for (const v of variantIds) {
+      const cell = byVariant[v];
       if (cell?.verdict && !isCorrect(cell.verdict, r.truth_verdict)) return true;
     }
   }
@@ -124,7 +152,20 @@ export function BenchmarkTable({
   geneNames,
   geneSynonyms,
 }: BenchmarkTableProps) {
-  const { rows, models } = matrix;
+  const { rows } = matrix;
+  // Rendered model / variant sets: whatever the payload carries, in the
+  // label tables' display order, unknown ids appended with derived labels.
+  const modelLabels = useMemo(() => modelLabelsFor(matrix), [matrix]);
+  const variantLabels = useMemo(() => variantLabelsFor(matrix), [matrix]);
+  const modelIds = useMemo(() => modelLabels.map((m) => m.id), [modelLabels]);
+  const variantIds = useMemo(() => variantLabels.map((v) => v.id), [variantLabels]);
+  const headlineVariant = matrix.headline_variant || PRODUCTION_VARIANT_ID;
+  const headlineLabel: LabelDef =
+    variantLabels.find((v) => v.id === headlineVariant) ?? {
+      id: headlineVariant,
+      short: headlineVariant,
+      long: headlineVariant,
+    };
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<TruthFilter>("all");
   // Row-level expand: a single gene's full model × variant grid is
@@ -151,11 +192,7 @@ export function BenchmarkTable({
       }
       // New column → reset to a sensible default (text ASC, numeric DESC).
       const isNumeric =
-        key === "n_db_surface" ||
-        key === "haiku_ncbi" ||
-        key === "sonnet_ncbi" ||
-        key === "opus_ncbi" ||
-        key === "truth";
+        key === "n_db_surface" || key === "truth" || key.startsWith("model:");
       setSortDir(isNumeric ? "desc" : "asc");
       return key;
     });
@@ -192,7 +229,7 @@ export function BenchmarkTable({
     // Download the current filtered + sorted view (matches the
     // CatalogTable pattern — what you see is what gets saved). Clear
     // the search / chips to download the whole 147 rows.
-    const tsv = buildBenchmarkTsv(matrix, filtered);
+    const tsv = buildBenchmarkTsv(matrix, modelIds, variantIds, filtered);
     const isFiltered = filtered.length !== rows.length;
     const suffix = isFiltered ? `-filtered-${filtered.length}` : "";
     downloadTextFile(`surfacebench${suffix}.tsv`, tsv);
@@ -204,10 +241,10 @@ export function BenchmarkTable({
       if (r.truth_verdict === "yes") yes++;
       else if (r.truth_verdict === "contextual") contextual++;
       else if (r.truth_verdict === "no") no++;
-      if (rowHasAnyDisagreement(r, models)) disagreements++;
+      if (rowHasAnyDisagreement(r, modelIds, variantIds)) disagreements++;
     }
     return { yes, contextual, no, disagreements };
-  }, [rows, models]);
+  }, [rows, modelIds, variantIds]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -221,7 +258,10 @@ export function BenchmarkTable({
       if (filter === "yes" && r.truth_verdict !== "yes") return false;
       if (filter === "contextual" && r.truth_verdict !== "contextual") return false;
       if (filter === "no" && r.truth_verdict !== "no") return false;
-      if (filter === "disagreements" && !rowHasAnyDisagreement(r, models)) {
+      if (
+        filter === "disagreements" &&
+        !rowHasAnyDisagreement(r, modelIds, variantIds)
+      ) {
         return false;
       }
       return true;
@@ -231,15 +271,25 @@ export function BenchmarkTable({
     // and then back, expecting alphabetical default).
     const dir = sortDir === "asc" ? 1 : -1;
     const sorted = [...passing].sort((a, b) => {
-      const av = sortValue(a, sortKey);
-      const bv = sortValue(b, sortKey);
+      const av = sortValue(a, sortKey, headlineVariant);
+      const bv = sortValue(b, sortKey, headlineVariant);
       if (typeof av === "string" && typeof bv === "string") {
         return av.localeCompare(bv) * dir;
       }
       return ((av as number) - (bv as number)) * dir;
     });
     return sorted;
-  }, [rows, query, filter, models, sortKey, sortDir, geneSynonyms]);
+  }, [
+    rows,
+    query,
+    filter,
+    modelIds,
+    variantIds,
+    sortKey,
+    sortDir,
+    headlineVariant,
+    geneSynonyms,
+  ]);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -282,18 +332,30 @@ export function BenchmarkTable({
     });
   }, [expandedRow, virtualizer]);
 
+  const grid = gridTemplate(modelLabels.length);
   const gridStyle: React.CSSProperties = {
-    ["--bench-cols" as string]: GRID_TEMPLATE,
+    ["--bench-cols" as string]: grid.template,
+    // + 1rem for the scroll container's vertical scrollbar.
+    ["--bench-width" as string]: `${(grid.widthRem + 1).toFixed(1)}rem`,
   };
 
   return (
     <div className={styles.wrap} style={gridStyle}>
       <p className={styles.meta}>
-        <span>Models: {MODEL_LABELS.map((m) => m.long).join(" · ")}</span>
+        <span>
+          {modelLabels.length} models · headline columns show the{" "}
+          <strong>{headlineLabel.short}</strong> ({headlineLabel.long}) variant
+        </span>
         <span className={styles.metaDot}>·</span>
         <span>
-          Click a gene to compare all 4 prompt variants; click a verdict
-          cell to read the agent&apos;s reasoning.
+          <span className={styles.metaLegend}>ctx</span> = contextual,{" "}
+          <span className={`${styles.metaLegend} ${styles.metaLegendRefused}`}>ref</span>{" "}
+          = refused (the model&apos;s safety classifier declined the call)
+        </span>
+        <span className={styles.metaDot}>·</span>
+        <span>
+          Click a gene to compare all {variantLabels.length} prompt
+          variants; click a verdict cell to read the agent&apos;s reasoning.
         </span>
       </p>
 
@@ -425,33 +487,38 @@ export function BenchmarkTable({
               {d.long}
             </div>
           ))}
-          <SortHeader
-            label={MODEL_LABELS[0].long}
-            sortKey="haiku_ncbi"
-            activeKey={sortKey}
-            dir={sortDir}
-            onClick={toggleSort}
-            extraClass={styles.headerModelCell}
-            title={`${MODEL_LABELS[0].long} · NCBI variant`}
-          />
-          <SortHeader
-            label={MODEL_LABELS[1].long}
-            sortKey="sonnet_ncbi"
-            activeKey={sortKey}
-            dir={sortDir}
-            onClick={toggleSort}
-            extraClass={styles.headerModelCell}
-            title={`${MODEL_LABELS[1].long} · NCBI variant`}
-          />
-          <SortHeader
-            label={MODEL_LABELS[2].long}
-            sortKey="opus_ncbi"
-            activeKey={sortKey}
-            dir={sortDir}
-            onClick={toggleSort}
-            extraClass={styles.headerModelCell}
-            title={`${MODEL_LABELS[2].long} · NCBI variant`}
-          />
+          {modelLabels.map((m) => {
+            const isProd = m.id === PRODUCTION_MODEL_ID;
+            return (
+              <SortHeader
+                key={`hdr-model-${m.id}`}
+                label={m.long}
+                labelNode={
+                  <span className={styles.modelHeaderStack}>
+                    <span>{m.family}</span>
+                    <span className={styles.modelHeaderVersion}>
+                      {m.version}
+                      {isProd ? (
+                        <span className={styles.prodMark} aria-hidden="true">
+                          ★
+                        </span>
+                      ) : null}
+                    </span>
+                  </span>
+                }
+                sortKey={`model:${m.id}`}
+                activeKey={sortKey}
+                dir={sortDir}
+                onClick={toggleSort}
+                extraClass={`${styles.headerModelCell} ${
+                  isProd ? styles.headerModelProd : ""
+                }`}
+                title={`${m.long} · ${headlineLabel.long}${
+                  isProd ? " · production configuration" : ""
+                } — click to sort`}
+              />
+            );
+          })}
         </div>
 
         <div
@@ -497,6 +564,9 @@ export function BenchmarkTable({
                       deepDiveGenes.has(r.gene_symbol),
                     )}
                     geneName={geneNames?.[r.gene_symbol]}
+                    modelLabels={modelLabels}
+                    variantLabels={variantLabels}
+                    headlineLabel={headlineLabel}
                   />
                 );
               })
@@ -521,8 +591,8 @@ export function BenchmarkTable({
       <RationaleDrawer
         selected={selectedCell}
         matrix={matrix}
-        modelLabels={MODEL_LABELS}
-        variantLabels={VARIANT_LABELS}
+        modelLabels={modelLabels}
+        variantLabels={variantLabels}
         deepDiveGenes={deepDiveGenes}
         geneNames={geneNames}
         onClose={() => setSelectedCell(null)}
@@ -537,6 +607,7 @@ export function BenchmarkTable({
  *  thin space when inactive) to avoid layout shift on toggle. */
 function SortHeader({
   label,
+  labelNode,
   sortKey,
   activeKey,
   dir,
@@ -545,6 +616,9 @@ function SortHeader({
   title,
 }: {
   label: string;
+  /** Optional rich label (e.g. a two-line model name); `label` stays the
+   *  plain-text name used for the default tooltip. */
+  labelNode?: React.ReactNode;
   sortKey: SortKey;
   activeKey: SortKey;
   dir: SortDir;
@@ -565,7 +639,7 @@ function SortHeader({
         className={`${styles.thBtn} ${active ? styles.thBtnActive : ""}`}
         title={title ?? `Sort by ${label}`}
       >
-        <span>{label}</span>
+        {labelNode ?? <span>{label}</span>}
         <span className={styles.sortIndicator} aria-hidden="true">
           {active ? (dir === "asc" ? "▲" : "▼") : " "}
         </span>
@@ -577,7 +651,11 @@ function SortHeader({
 /** Map a benchmark row + sort key onto a primitive that the sort
  *  function can compare. Strings get .localeCompare; numbers go
  *  straight to subtraction. */
-function sortValue(r: BenchmarkRow, key: SortKey): string | number {
+function sortValue(
+  r: BenchmarkRow,
+  key: SortKey,
+  headlineVariant: string,
+): string | number {
   switch (key) {
     case "gene_symbol":
       return r.gene_symbol.toUpperCase();
@@ -587,12 +665,10 @@ function sortValue(r: BenchmarkRow, key: SortKey): string | number {
       return prettyEnum(r.truth_reason).toUpperCase();
     case "n_db_surface":
       return r.n_db_surface ?? 0;
-    case "haiku_ncbi":
-      return verdictRank(r.verdicts?.["claude-haiku-4-5"]?.ncbi?.verdict);
-    case "sonnet_ncbi":
-      return verdictRank(r.verdicts?.["claude-sonnet-4-6"]?.ncbi?.verdict);
-    case "opus_ncbi":
-      return verdictRank(r.verdicts?.["claude-opus-4-8"]?.ncbi?.verdict);
+    default: {
+      const model = key.slice("model:".length);
+      return verdictRank(r.verdicts?.[model]?.[headlineVariant]?.verdict);
+    }
   }
 }
 
@@ -632,6 +708,9 @@ function BenchRowView({
   hasDeepDive,
   isQueuedDeepDive,
   geneName,
+  modelLabels,
+  variantLabels,
+  headlineLabel,
 }: {
   row: BenchmarkRow;
   measureRef?: (el: HTMLDivElement | null) => void;
@@ -644,6 +723,9 @@ function BenchRowView({
   hasDeepDive: boolean;
   isQueuedDeepDive: boolean;
   geneName?: string;
+  modelLabels: ModelLabelDef[];
+  variantLabels: LabelDef[];
+  headlineLabel: LabelDef;
 }) {
   const style: React.CSSProperties | undefined =
     virtualStart != null
@@ -738,53 +820,65 @@ function BenchRowView({
           </div>
         );
       })}
-      {MODEL_LABELS.map((m) => {
-        // Headline column: NCBI verdict for this model. Clickable —
-        // opens the rationale drawer for this (gene, model, ncbi)
-        // cell. Same drawer the expanded-row variant grid opens, so
-        // a reader doesn't have to expand the row to read the
-        // reasoning for the headline NCBI verdict.
+      {modelLabels.map((m) => {
+        // Headline column: this model's verdict on the headline prompt
+        // variant. Clickable — opens the rationale drawer for this
+        // (gene, model, headline variant) cell. Same drawer the
+        // expanded-row variant grid opens, so a reader doesn't have to
+        // expand the row to read the headline call's reasoning.
+        const variant = headlineLabel.id;
         const cell: BenchmarkVariantResult | null | undefined =
-          row.verdicts?.[m.id]?.ncbi;
+          row.verdicts?.[m.id]?.[variant];
+        const status = cellStatus(cell);
+        const isProd = m.id === PRODUCTION_MODEL_ID;
         const isSelected =
           selectedCell != null &&
           selectedCell.symbol === row.gene_symbol &&
           selectedCell.model === m.id &&
-          selectedCell.variant === "ncbi";
+          selectedCell.variant === variant;
+        const where = `${m.long} · ${headlineLabel.short}`;
         return (
           <div
-            key={`${m.id}-ncbi`}
-            className={`${styles.cell} ${styles.modelCell}`}
+            key={`${m.id}-${variant}`}
+            className={`${styles.cell} ${styles.modelCell} ${
+              isProd ? styles.modelCellProd : ""
+            }`}
             role="cell"
           >
-            {cell?.verdict ? (
+            {status === "missing" ? (
+              <span className={styles.dim} title={`${where}: no run on file`}>
+                —
+              </span>
+            ) : (
               <button
                 type="button"
-                onClick={() => onSelectCell(row.gene_symbol, m.id, "ncbi")}
+                onClick={() => onSelectCell(row.gene_symbol, m.id, variant)}
                 aria-pressed={isSelected}
                 className={`${styles.modelVerdictBtn} ${
                   isSelected ? styles.modelVerdictBtnSelected : ""
                 }`}
-                title={
-                  cell.reason
-                    ? `${m.long} · NCBI → ${cell.verdict} (${prettyEnum(cell.reason)}) — click for full reasoning`
-                    : `${m.long} · NCBI → ${cell.verdict} — click for full reasoning`
-                }
+                title={cellTitle(where, cell, status)}
               >
-                <span
-                  className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
-                    isCorrect(cell.verdict, row.truth_verdict)
-                      ? styles.verdictCorrect
-                      : styles.verdictWrong
-                  }`}
-                >
-                  {cell.verdict}
-                </span>
+                {status === "verdict" ? (
+                  <span
+                    className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell!.verdict)} ${
+                      isCorrect(cell!.verdict, row.truth_verdict)
+                        ? styles.verdictCorrect
+                        : styles.verdictWrong
+                    }`}
+                  >
+                    {VERDICT_SHORT[cell!.verdict!] ?? cell!.verdict}
+                  </span>
+                ) : (
+                  <span
+                    className={`${styles.verdictLabel} ${styles.verdictMini} ${
+                      status === "refused" ? styles.verdictRefused : styles.verdictErrored
+                    }`}
+                  >
+                    {status === "refused" ? "ref" : "err"}
+                  </span>
+                )}
               </button>
-            ) : (
-              <span className={styles.dim} title={`${m.long} · NCBI: no run on file`}>
-                —
-              </span>
             )}
           </div>
         );
@@ -800,6 +894,8 @@ function BenchRowView({
           ) : null}
           <VariantGrid
             row={row}
+            modelLabels={modelLabels}
+            variantLabels={variantLabels}
             selectedCell={selectedCell}
             onSelectCell={onSelectCell}
           />
@@ -809,38 +905,68 @@ function BenchRowView({
   );
 }
 
+/** Tooltip text for a verdict / refused / errored cell. */
+function cellTitle(
+  where: string,
+  cell: BenchmarkVariantResult | null | undefined,
+  status: ReturnType<typeof cellStatus>,
+): string {
+  if (status === "refused") {
+    return `${where}: refused — the model's safety classifier declined the call, so there is no verdict. Click for detail.`;
+  }
+  if (status === "errored") {
+    return `${where}: errored — the run returned no valid verdict. Click for detail.`;
+  }
+  if (status === "missing" || !cell?.verdict) return `${where}: no run on file`;
+  return cell.reason
+    ? `${where} → ${cell.verdict} (${prettyEnum(cell.reason)}) — click for full reasoning`
+    : `${where} → ${cell.verdict} — click for full reasoning`;
+}
+
 /** Expanded model × variant grid. Clicking any verdict cell opens
- *  the side-rationale drawer with that cell's reasoning. */
+ *  the side-rationale drawer with that cell's reasoning. Rows and
+ *  columns are data-driven; the column count reaches CSS through
+ *  `--variant-count`. */
 function VariantGrid({
   row,
+  modelLabels,
+  variantLabels,
   selectedCell,
   onSelectCell,
 }: {
   row: BenchmarkRow;
+  modelLabels: ModelLabelDef[];
+  variantLabels: LabelDef[];
   selectedCell: SelectedCell | null;
   onSelectCell: (symbol: string, model: string, variant: string) => void;
 }) {
+  const gridStyle: React.CSSProperties = {
+    ["--variant-count" as string]: String(Math.max(variantLabels.length, 1)),
+  };
   return (
-    <div className={styles.variantGrid}>
-      <div className={styles.variantHeader} />
-      {VARIANT_LABELS.map((v) => (
-        <div
-          key={`vh-${v.id}`}
-          className={styles.variantHeader}
-          title={v.long}
-        >
-          {v.long}
-        </div>
-      ))}
-      {MODEL_LABELS.map((m) => (
-        <ModelVariantRow
-          key={`vrow-${m.id}`}
-          row={row}
-          model={m}
-          selectedCell={selectedCell}
-          onSelectCell={onSelectCell}
-        />
-      ))}
+    <div className={styles.variantGridScroll}>
+      <div className={styles.variantGrid} style={gridStyle}>
+        <div className={styles.variantHeader} />
+        {variantLabels.map((v) => (
+          <div
+            key={`vh-${v.id}`}
+            className={styles.variantHeader}
+            title={v.long}
+          >
+            {v.long}
+          </div>
+        ))}
+        {modelLabels.map((m) => (
+          <ModelVariantRow
+            key={`vrow-${m.id}`}
+            row={row}
+            model={m}
+            variantLabels={variantLabels}
+            selectedCell={selectedCell}
+            onSelectCell={onSelectCell}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -848,52 +974,88 @@ function VariantGrid({
 function ModelVariantRow({
   row,
   model,
+  variantLabels,
   selectedCell,
   onSelectCell,
 }: {
   row: BenchmarkRow;
-  model: { id: string; short: string; long: string };
+  model: ModelLabelDef;
+  variantLabels: LabelDef[];
   selectedCell: SelectedCell | null;
   onSelectCell: (symbol: string, model: string, variant: string) => void;
 }) {
+  const isProd = model.id === PRODUCTION_MODEL_ID;
   return (
     <>
-      <div className={styles.variantRowLabel}>{model.long}</div>
-      {VARIANT_LABELS.map((v) => {
+      <div className={styles.variantRowLabel}>
+        {model.long}
+        {isProd ? (
+          <span
+            className={styles.prodTag}
+            title={`${model.long} on the ${PRODUCTION_VARIANT_ID} prompt is the production triage configuration`}
+          >
+            production
+          </span>
+        ) : null}
+      </div>
+      {variantLabels.map((v) => {
         const cell: BenchmarkVariantResult | null | undefined =
           row.verdicts?.[model.id]?.[v.id];
+        const status = cellStatus(cell);
         const isSelected =
           selectedCell != null &&
           selectedCell.symbol === row.gene_symbol &&
           selectedCell.model === model.id &&
           selectedCell.variant === v.id;
+        const where = `${model.long} · ${v.long}`;
         return (
           <div
             key={`vcell-${model.id}-${v.id}`}
             className={styles.variantCellWrap}
           >
-            {cell?.verdict ? (
+            {status === "missing" ? (
+              <span
+                className={styles.variantCellMissing}
+                title={`${where}: no run on file`}
+              >
+                —
+              </span>
+            ) : status === "verdict" ? (
               <button
                 type="button"
                 className={`${styles.variantCellBtn} ${
                   isSelected ? styles.variantCellSelected : ""
-                } ${verdictTone(cell.verdict)} ${
-                  isCorrect(cell.verdict, row.truth_verdict)
+                } ${verdictTone(cell!.verdict)} ${
+                  isCorrect(cell!.verdict, row.truth_verdict)
                     ? styles.verdictCorrect
                     : styles.verdictWrong
                 }`}
                 onClick={() => onSelectCell(row.gene_symbol, model.id, v.id)}
                 aria-pressed={isSelected}
-                title={`${model.long} · ${v.long} → ${cell.verdict}${
-                  cell.reason ? ` (${prettyEnum(cell.reason)})` : ""
-                } — click for full reasoning`}
+                title={cellTitle(where, cell, status)}
               >
-                <span className={`${styles.verdictLabel} ${verdictTone(cell.verdict)}`}>
-                  {cell.verdict}
+                <span className={`${styles.verdictLabel} ${verdictTone(cell!.verdict)}`}>
+                  {cell!.verdict}
                 </span>
               </button>
             ) : (
-              <span className={styles.variantCellMissing}>—</span>
+              <button
+                type="button"
+                className={`${styles.variantCellBtn} ${
+                  isSelected ? styles.variantCellSelected : ""
+                }`}
+                onClick={() => onSelectCell(row.gene_symbol, model.id, v.id)}
+                aria-pressed={isSelected}
+                title={cellTitle(where, cell, status)}
+              >
+                <span
+                  className={`${styles.verdictLabel} ${
+                    status === "refused" ? styles.verdictRefused : styles.verdictErrored
+                  }`}
+                >
+                  {status === "refused" ? "refused" : "errored"}
+                </span>
+              </button>
             )}
           </div>
         );
@@ -904,11 +1066,19 @@ function ModelVariantRow({
 
 /** Wide TSV download — one row per gene, columns for every cell
  *  (model × variant) in the matrix. */
-function buildBenchmarkTsv(matrix: BenchmarkMatrix, rows?: BenchmarkRow[]): string {
+function buildBenchmarkTsv(
+  matrix: BenchmarkMatrix,
+  modelIds: string[],
+  variantIds: string[],
+  rows?: BenchmarkRow[],
+): string {
   // Optional `rows` arg lets the caller download a filtered + sorted
   // subset (what they see in the table) instead of the full matrix.
-  // The header set + column order is always the same so a script
-  // pinning to this TSV's shape doesn't break.
+  // The header set + column order depends only on the payload's model /
+  // variant sets (in display order), never on the filter, so a script
+  // pinning to this TSV's shape doesn't break between filtered and full
+  // downloads. Each model's prefix is its full id minus "claude-"
+  // (sonnet_4_6, opus_5_5, ...) so models of one family never collide.
   const sourceRows = rows ?? matrix.rows;
   const headers: string[] = [
     "gene_symbol",
@@ -920,9 +1090,9 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix, rows?: BenchmarkRow[]): stri
     "n_db_surface",
   ];
   for (const src of matrix.sources) headers.push(`db_${src}`);
-  for (const model of matrix.models) {
+  for (const model of modelIds) {
     const slug = modelSlug(model);
-    for (const variant of matrix.variants) {
+    for (const variant of variantIds) {
       headers.push(
         `${slug}_${variant}_verdict`,
         `${slug}_${variant}_reason`,
@@ -930,6 +1100,7 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix, rows?: BenchmarkRow[]): stri
         `${slug}_${variant}_confidence`,
         `${slug}_${variant}_latency_s`,
         `${slug}_${variant}_cost_usd`,
+        `${slug}_${variant}_error`,
       );
     }
   }
@@ -947,9 +1118,9 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix, rows?: BenchmarkRow[]): stri
     for (const src of matrix.sources) {
       row.push(r.db ? r.db[src] : "");
     }
-    for (const model of matrix.models) {
+    for (const model of modelIds) {
       const byVariant = r.verdicts?.[model] ?? {};
-      for (const variant of matrix.variants) {
+      for (const variant of variantIds) {
         const c: BenchmarkVariantResult | null | undefined = byVariant[variant];
         row.push(
           c?.verdict ?? "",
@@ -958,15 +1129,11 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix, rows?: BenchmarkRow[]): stri
           c?.confidence ?? "",
           c?.latency_s ?? "",
           c?.cost_usd ?? "",
+          c?.error ?? "",
         );
       }
     }
     return row;
   });
   return buildTsv(headers, body);
-}
-
-function modelSlug(modelId: string): string {
-  const m = modelId.match(/(opus|sonnet|haiku)/i);
-  return m ? m[1].toLowerCase() : modelId.replace(/[^a-z0-9]+/gi, "_");
 }

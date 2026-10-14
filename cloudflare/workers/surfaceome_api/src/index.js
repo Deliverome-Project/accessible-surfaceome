@@ -952,7 +952,7 @@ async function fetchTriagePrior(env, sym) {
         WHERE gene_symbol = ? COLLATE NOCASE
           AND run_id = ?
           AND prompt_variant = ?
-          AND model LIKE '%sonnet%'
+          AND model = 'claude-sonnet-4-6'
           AND predicted_verdict IS NOT NULL
         ORDER BY replicate ASC, created_at DESC
         LIMIT 1`
@@ -2290,6 +2290,30 @@ function ddfPartsFromRow(row, prefix) {
 // TSV export endpoints do hgnc_id via a separate join), and wraps the
 // whole handler in caches.default so the cold-start CPU cost is paid
 // once per universe_version, not per request.
+// Majority verdict across a cell's replicates, then the most common reason
+// within the winning verdict. Both tiebreak on the most recent `created_at`,
+// so a single-replicate cell returns that replicate.
+function majorityVerdictAndReason(reps) {
+  const pick = (rows, field) => {
+    const tally = new Map();
+    const latest = new Map();
+    for (const r of rows) {
+      tally.set(r[field], (tally.get(r[field]) || 0) + 1);
+      const prev = latest.get(r[field]);
+      if (prev == null || r.created_at > prev) latest.set(r[field], r.created_at);
+    }
+    return [...tally.entries()].sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      const ma = latest.get(a[0]) || "";
+      const mb = latest.get(b[0]) || "";
+      return mb < ma ? -1 : (mb > ma ? 1 : 0);
+    })[0][0];
+  };
+  const verdict = pick(reps, "predicted_verdict");
+  const reason = pick(reps.filter((r) => r.predicted_verdict === verdict), "predicted_reason");
+  return { verdict, reason };
+}
+
 async function handleCatalog(env, request) {
   // Self-managed edge cache, keyed on the request URL. CF's HTTP cache
   // already does this via Cache-Control, but the in-Worker cache lets
@@ -2470,25 +2494,26 @@ async function handleCatalog(env, request) {
   // published figures use as headline.
   //
   // Aggregation: majority verdict across replicates per (gene, model),
-  // then most common reason within the winning verdict. Tiebreak on
-  // most recent `created_at` (matches the single-replicate behavior
-  // when there's only one row). For 1-rep cells the majority degenerates
-  // to that single verdict — backward-compatible with the pre-2/3-rep
-  // catalog. The matching per-cell majority logic for the benchmark
-  // drawer lives in `handleTriageCell` below; this is the catalog-tier
-  // mirror so the genome-wide summary surfaces consensus the same way.
+  // then most common reason within the winning verdict, both tiebroken
+  // on most recent `created_at` (see majorityVerdictAndReason).
   //
   // Coverage today:
-  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v2,
-  //                  with multi-rep on the ambiguous-no zero-DB slice
-  //                  to expose 2/3 consensus).
+  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v2)
   //   - Haiku/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
   //   - Opus/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
   // So most rows will show only the Sonnet column populated.
+  //
+  // The Sonnet slot is the paper's two-stage triage verdict, so its stage
+  // one is the GENOME run alone. The 147 SurfaceBench genes also carry
+  // three benchmark replicates of the same (model, variant); letting those
+  // vote turned a 2:2 tie into "contextual" for a gene the genome run
+  // called "no". Benchmark replicates are used only for a gene the genome
+  // run does not cover.
   const CATALOG_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-8"];
+  const SONNET = "claude-sonnet-4-6";
   const triageByGene = new Map();
   const triageRows = await env.DB.prepare(
-    `SELECT gene_symbol, model, predicted_verdict, predicted_reason, created_at
+    `SELECT gene_symbol, model, run_id, predicted_verdict, predicted_reason, created_at
        FROM triage_run_public
       WHERE prompt_variant = 'ncbi'
         AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-8')
@@ -2502,99 +2527,58 @@ async function handleCatalog(env, request) {
     if (!lst) { lst = []; triageReplicates.set(key, lst); }
     lst.push(r);
   }
-  // For each cell, take the most common verdict, then the most common
-  // reason within that verdict. Both tiebreak on max(created_at).
   for (const [key, reps] of triageReplicates) {
     const [gene_symbol, model] = key.split("\t");
-    const vTally = new Map();
-    const vMax = new Map();
-    for (const r of reps) {
-      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
-      const prev = vMax.get(r.predicted_verdict);
-      if (prev == null || r.created_at > prev) vMax.set(r.predicted_verdict, r.created_at);
+    let cell = reps;
+    if (model === SONNET) {
+      const genome = reps.filter((r) => r.run_id === GENOME_RUN_ID);
+      if (genome.length) cell = genome;
     }
-    const winVerdict = [...vTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = vMax.get(a[0]) || "";
-      const mb = vMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
-    const rTally = new Map();
-    const rMax = new Map();
-    for (const r of reps) {
-      if (r.predicted_verdict !== winVerdict) continue;
-      rTally.set(r.predicted_reason, (rTally.get(r.predicted_reason) || 0) + 1);
-      const prev = rMax.get(r.predicted_reason);
-      if (prev == null || r.created_at > prev) rMax.set(r.predicted_reason, r.created_at);
-    }
-    const winReason = [...rTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = rMax.get(a[0]) || "";
-      const mb = rMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
     let perModel = triageByGene.get(gene_symbol);
     if (!perModel) { perModel = {}; triageByGene.set(gene_symbol, perModel); }
-    perModel[model] = { verdict: winVerdict, reason: winReason };
+    perModel[model] = majorityVerdictAndReason(cell);
   }
 
-  // Pubmed_ncbi rescue lane: if Sonnet's pubmed_ncbi call is more
-  // inclusive than its ncbi call (pubmed says yes/contextual, ncbi
-  // says no), prefer pubmed for the catalog's Sonnet slot. Justified
-  // by mainbench: pubmed_ncbi catches the KLK2/SRC class of FNs that
-  // ncbi misses; never overrides ncbi-yes/contextual since pubmed-no
-  // doesn't add evidence-of-absence.
+  // Stage two (literature rescue): a gene the genome run called "no" takes
+  // the verdict of any rescue run that called it yes/contextual. A rescue
+  // "no" never overrides a positive call, since it adds no evidence of
+  // absence.
   //
-  // Pulls all pubmed_ncbi sonnet replicates, computes the same
-  // majority-verdict + within-verdict-majority-reason aggregate as
-  // the ncbi loop above, then applies the prefer-positive rule.
-  const pubmedRows = await env.DB.prepare(
-    `SELECT gene_symbol, predicted_verdict, predicted_reason, created_at
+  // Rows are selected by RUN ID, not by prompt_variant, to match
+  // scripts/build_candidate_universe_v3.py (RESCUE_RUNS), which builds the
+  // candidate universe and every count in the paper:
+  //   - A rescue cell falls back to the `naive` variant when its PubMed
+  //     fetch fails. It is still that gene's second look; filtering on
+  //     `pubmed_ncbi` dropped it and left a rescued gene showing "no".
+  //   - SurfaceBench genes carry `pubmed_ncbi` rows from the benchmark,
+  //     which are not a proteome-wide second look; treating them as one
+  //     rescued genes the paper's triage calls "no".
+  // A gene re-run in more than one lane is rescued if ANY lane is positive.
+  const rescueRows = await env.DB.prepare(
+    `SELECT gene_symbol, run_id, predicted_verdict, predicted_reason, created_at
        FROM triage_run_public
-      WHERE prompt_variant = 'pubmed_ncbi'
+      WHERE run_id IN (${RESCUE_RUN_IDS.map(() => "?").join(", ")})
         AND model = 'claude-sonnet-4-6'
         AND predicted_verdict IS NOT NULL`
-  ).all();
-  const pubmedReps = new Map();
-  for (const r of pubmedRows.results) {
-    let lst = pubmedReps.get(r.gene_symbol);
-    if (!lst) { lst = []; pubmedReps.set(r.gene_symbol, lst); }
+  ).bind(...RESCUE_RUN_IDS).all();
+  const rescueByGene = new Map();
+  for (const r of rescueRows.results) {
+    let byRun = rescueByGene.get(r.gene_symbol);
+    if (!byRun) { byRun = new Map(); rescueByGene.set(r.gene_symbol, byRun); }
+    let lst = byRun.get(r.run_id);
+    if (!lst) { lst = []; byRun.set(r.run_id, lst); }
     lst.push(r);
   }
-  for (const [gene_symbol, reps] of pubmedReps) {
-    const vTally = new Map();
-    const vMax = new Map();
-    for (const r of reps) {
-      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
-      const prev = vMax.get(r.predicted_verdict);
-      if (prev == null || r.created_at > prev) vMax.set(r.predicted_verdict, r.created_at);
-    }
-    const winVerdict = [...vTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = vMax.get(a[0]) || ""; const mb = vMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
-    const rTally = new Map();
-    const rMax = new Map();
-    for (const r of reps) {
-      if (r.predicted_verdict !== winVerdict) continue;
-      rTally.set(r.predicted_reason, (rTally.get(r.predicted_reason) || 0) + 1);
-      const prev = rMax.get(r.predicted_reason);
-      if (prev == null || r.created_at > prev) rMax.set(r.predicted_reason, r.created_at);
-    }
-    const winReason = [...rTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = rMax.get(a[0]) || ""; const mb = rMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
-    // Apply the rescue rule.
-    const perModel = triageByGene.get(gene_symbol);
-    if (!perModel) continue;
-    const ncbi = perModel["claude-sonnet-4-6"];
-    if (!ncbi) continue;
-    if (ncbi.verdict === "no" && (winVerdict === "yes" || winVerdict === "contextual")) {
-      perModel["claude-sonnet-4-6"] = { verdict: winVerdict, reason: winReason };
-    }
+  for (const [gene_symbol, byRun] of rescueByGene) {
+    const stageOne = triageByGene.get(gene_symbol)?.[SONNET];
+    if (!stageOne || stageOne.verdict !== "no") continue;
+    const positive = RESCUE_RUN_IDS
+      .filter((id) => byRun.has(id))
+      .map((id) => majorityVerdictAndReason(byRun.get(id)))
+      .filter((c) => c.verdict === "yes" || c.verdict === "contextual");
+    if (!positive.length) continue;
+    triageByGene.get(gene_symbol)[SONNET] =
+      positive.find((c) => c.verdict === "yes") || positive[0];
   }
 
   // Track which genes we've emitted so we can append deep-dive-only
@@ -2873,8 +2857,15 @@ const BENCH_MATRIX_MODELS = [
   "claude-opus-4-8",
   "claude-sonnet-4-6",
   "claude-haiku-4-5",
+  "claude-sonnet-5",
+  "claude-opus-5",
+  "claude-haiku-5-5",
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
 ];
-const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"];
+// ncbi_effort_low = the ncbi prompt at output_config.effort="low" (Opus 5.5
+// only, whose thinking cannot be disabled).
+const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi", "ncbi_effort_low"];
 const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
 // Five gating DBs — same five the homepage CatalogTable renders. The
 // matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
@@ -2988,9 +2979,11 @@ async function handleBenchmarkMatrix(env) {
               t.correct, t.latency_s, t.n_web_searches, t.created_at, t.error,
               t.cost_usd, t.prompt_tokens, t.completion_tokens,
               t.cache_creation_tokens, t.cache_read_tokens,
+              -- A replicate with a verdict wins over a newer refused or
+              -- errored one, so a refusal never hides a valid call.
               ROW_NUMBER() OVER (
                 PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY t.created_at DESC
+                ORDER BY (t.predicted_verdict IS NULL), t.created_at DESC
               ) AS rn
          FROM triage_run_public t
          INNER JOIN bench_genes b ON t.gene_symbol = b.gene_symbol
@@ -3122,12 +3115,28 @@ const EXPORT_COLUMNS = [
   "n_web_searches",
   "cost_usd",
   "latency_s",
+  // Why a row has no verdict: "refusal" (the model's safety classifier
+  // declined) or a runner error. Empty for a normal call. Last so existing
+  // column positions are unchanged.
+  "error",
 ];
 const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v2";
 // The genome-wide Sonnet/NCBI triage sweep over the full protein-coding
 // cohort (~19k genes). Used as the run_id for the genome-wide export and
 // referenced by the /v1/meta/sizes estimator.
 const GENOME_RUN_ID = "genome_full_sonnet_ncbi_v2";
+
+// The literature-rescue runs that make up stage two of the proteome-wide
+// triage. Must equal RESCUE_RUNS in scripts/build_candidate_universe_v3.py,
+// which builds the candidate universe the paper reports
+// (tests/test_worker_catalog_rescue.py pins the two together). Order is the
+// order a positive call is taken in when two lanes are both positive.
+const RESCUE_RUN_IDS = [
+  "genome_full_sonnet_pubmed_ncbi_v1",
+  "genome_intracellular_pubmed_ncbi_v1",
+  "genome_1db_trim_pubmed_ncbi_v1",
+  "genome_optcut_zerodb_pubmed_ncbi_v1",
+];
 // Reasoning columns appended to the triage export when `with_reasoning=1`.
 // Default-off keeps the figure-input exports prose-free (see CLAUDE.md
 // "Figure-input TSV conventions" — never ship full reasoning in those);
@@ -3508,9 +3517,11 @@ async function handleBenchmarkExport(env) {
               t.prompt_tokens, t.completion_tokens,
               t.cache_creation_tokens, t.cache_read_tokens,
               t.n_web_searches, t.cost_usd, t.latency_s,
+              -- A replicate with a verdict wins over a newer refused or
+              -- errored one, so a refusal never hides a valid call.
               ROW_NUMBER() OVER (
                 PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY t.created_at DESC
+                ORDER BY (t.predicted_verdict IS NULL), t.created_at DESC
               ) AS rn
          FROM triage_run_public t
          INNER JOIN benchmark_version bv ON bv.gene_symbol = t.gene_symbol
@@ -4406,8 +4417,8 @@ export default {
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
-    // /v1/triage/:symbol route). model = claude-<name>-<n>-<n>; variant
-    // = naive|ncbi|web_ncbi|pubmed_ncbi.
+    // /v1/triage/:symbol route). model = claude-<name>-<n>[-<n>]; variant
+    // = naive|ncbi|web_ncbi|pubmed_ncbi|ncbi_effort_low.
     if ((m = path.match(/^\/v1\/triage\/([^/]+)\/([A-Za-z0-9._-]+)\/([a-z_]+)$/))) {
       return withEdgeCache(request, env, ctx, () => handleTriageCell(env, m[1], m[2], m[3]));
     }

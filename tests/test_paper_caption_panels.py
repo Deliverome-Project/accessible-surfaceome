@@ -95,3 +95,11 @@ def test_a_marker_opening_the_run_after_the_lead_is_bolded() -> None:
     )
     assert n == 2, "the leading marker was missed"
     assert html.count('class="panel-label"') == 2
+
+
+def test_the_last_marker_of_an_inline_list_is_bolded() -> None:
+    # "…, and e) …" — the final panel of a comma-separated run was the
+    # one marker left unbolded.
+    n, html = _run("Five axes: a) papers found, b) papers selected, and c) features.")
+    assert n == 3
+    assert '<strong class="panel-label">c)</strong>' in html

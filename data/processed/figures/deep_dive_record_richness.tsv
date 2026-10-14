@@ -3322,7 +3322,7 @@ MYDGF	low	surface_yes	318	10	8	14	3	weak
 MYH9	likely	surface_yes	300	26	21	15	5	direct_multi_method
 MYMK	canonical	surface_yes	207	22	19	15	5	direct_multi_method
 MYMX	likely	surface_yes	257	12	9	16	3	weak
-MYO18A	likely	surface_yes	188	13	12	17	2	direct_single_method
+MYO18A	likely	surface_yes	188	13	12	17	3	direct_single_method
 MYOC	likely	surface_yes	276	22	16	16	5	direct_single_method
 MYOF	likely	surface_yes	205	25	22	16	6	direct_single_method
 NAALAD2	likely	surface_yes	175	9	4	15	6	supportive_but_indirect

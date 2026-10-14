@@ -928,9 +928,11 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
       universe_version: null,
       sources: ["uniprot", "go", "surfy", "cspa", "hpa"],
       models: [
-        "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5",
+        "claude-haiku-4-5", "claude-haiku-5-5",
+        "claude-sonnet-4-6", "claude-sonnet-5", "claude-sonnet-5-5",
+        "claude-opus-4-8", "claude-opus-5", "claude-opus-5-5",
       ],
-      variants: ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"],
+      variants: ["naive", "ncbi", "ncbi_effort_low", "web_ncbi", "pubmed_ncbi"],
       headline_variant: "ncbi",
       n_genes: 0,
       rows: [],

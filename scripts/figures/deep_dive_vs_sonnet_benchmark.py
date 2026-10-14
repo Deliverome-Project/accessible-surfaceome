@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
+from accessible_surfaceome.audit.paired_tests import exact_mcnemar
 from accessible_surfaceome.audit._plotting_config import (
     COLORS,
     save_figure,
@@ -88,6 +89,43 @@ def _stats(rows: list[dict], key: str) -> tuple[float, float, list[float]]:
     p = sum(vals) / n
     sem = 100.0 * ((p * (1 - p)) ** 0.5) / (n ** 0.5)
     return 100.0 * p, sem, [100.0 * v for v in vals]
+
+
+_REP_COLS = ("sonnet_correct_r1", "sonnet_correct_r2", "sonnet_correct_r3")
+
+
+def mcnemar_rows(rows: list[dict]) -> list[dict]:
+    """Deep dive versus triage: exact McNemar test on paired per-protein
+    correctness, overall and within each ground-truth class.
+
+    The deep dive ran once per protein; triage ran three replicates, so a
+    protein counts as triage-correct when most of its replicates were. These
+    are the p-values the figure legend reports.
+    """
+    out = []
+    subsets = [("overall", rows)] + [
+        (b, [r for r in rows if r["ground_truth_verdict"] == b]) for b in _BUCKET_ORDER
+    ]
+    for label, sub in subsets:
+        deep = [int(r["deep_dive_correct"]) == 1 for r in sub]
+        triage = []
+        for r in sub:
+            reps = [int(r[c]) for c in _REP_COLS if str(r.get(c, "")) != ""]
+            triage.append(2 * sum(reps) > len(reps))
+        only_deep, only_triage, p = exact_mcnemar(deep, triage)
+        out.append({
+            "subset": label, "n": len(sub),
+            "only_deep_dive_correct": only_deep,
+            "only_triage_correct": only_triage, "p": p,
+        })
+    return out
+
+
+def _print_mcnemar(rows: list[dict]) -> None:
+    print("Exact McNemar test, deep dive vs triage (paired per-protein correctness):")
+    for r in mcnemar_rows(rows):
+        print(f"  {r['subset']:<10} n={r['n']:<4} only deep dive correct={r['only_deep_dive_correct']}"
+              f"  only triage correct={r['only_triage_correct']}  p={r['p']:.3f}")
 
 
 def _panel_label(ax, letter: str) -> None:
@@ -205,6 +243,7 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
 
 
 def main() -> None:
+    _print_mcnemar(_load())
     fig, _ = make_plot()
     save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"),
                 gist_url=GIST_URL)

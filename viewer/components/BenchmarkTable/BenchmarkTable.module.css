@@ -9,19 +9,22 @@
  *   - Tighter row height (~32px) for scientific data density.
  *   - Smaller verdict pills, with a "correct vs wrong" outline so the
  *     reader can scan agreement against truth without reading text.
- *   - Per-row expand reveals a 3×3 sub-grid of model × alt-variant
- *     pills instead of a prose reasoning block.
+ *   - Per-row expand reveals a model × prompt-variant sub-grid of
+ *     verdict pills instead of a prose reasoning block.
+ *   - Model columns are data-driven (one per model in the payload); the
+ *     component sets --bench-cols / --bench-width / --variant-count.
  */
 
 .wrap {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  /* Width matches the grid template's intrinsic sum exactly
-   * (12 + 8 + 12 + 3.6 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 76.9rem)
-   * so rows end flush with the Opus column instead of trailing
-   * whitespace. Left-aligned (no margin-inline: auto). */
-  max-width: 78rem;
+  /* Width tracks the grid template's intrinsic sum (fixed columns +
+   * one compact column per model, + scrollbar), computed in the
+   * component as --bench-width, so rows end flush with the last model
+   * column instead of trailing whitespace. Left-aligned (no
+   * margin-inline: auto). */
+  max-width: var(--bench-width, 80rem);
   width: 100%;
 }
 
@@ -48,6 +51,27 @@
 
 .metaDot {
   color: var(--line);
+}
+
+/* Inline sample of a compact headline pill in the legend line. */
+.metaLegend {
+  display: inline-flex;
+  padding: 0.02rem 0.32rem;
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--amber-deepest);
+  background: var(--amber-tint);
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.metaLegendRefused {
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px dashed var(--muted);
 }
 
 /* ============================================================
@@ -347,6 +371,52 @@
 
 .headerModelCell {
   justify-content: center;
+  padding: 0.35rem 0.1rem;
+}
+
+/* Two-line compact model header: family on top, version below. */
+.modelHeaderStack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.modelHeaderVersion {
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+}
+
+/* Production configuration (Sonnet 4.6 on the headline prompt) —
+ * maroon header, a star after the version, and a faint column tint so
+ * the column stays identifiable among the other models. */
+.headerModelProd {
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.prodMark {
+  margin-left: 0.15rem;
+  font-size: 0.6rem;
+  color: var(--accent);
+}
+
+.modelCellProd {
+  background: var(--maroon-soft);
+}
+
+.prodTag {
+  display: inline-flex;
+  margin-left: 0.4rem;
+  padding: 0.02rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
 }
 
 /* Inline sort button — replaces the prior background-hover pattern with
@@ -607,13 +677,15 @@
   outline-offset: 1px;
 }
 
-/* Mini verdict pill — the three per-model NCBI cells on each row.
- * Compact so 3 pills + the row chrome fit comfortably. */
+/* Mini verdict pill — one per model on each row (headline variant).
+ * Compact (abbreviated text, fixed min-width) so one pill per model
+ * plus the row chrome fit at desktop width. */
 .verdictMini {
   font-size: 0.66rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.04em;
-  padding: 0.12rem 0.4rem;
+  padding: 0.12rem 0.3rem;
+  min-width: 2.6rem;
   justify-content: center;
 }
 
@@ -648,6 +720,22 @@
 .verdictUnknown {
   background: var(--bg-warm);
   color: var(--muted);
+}
+
+/* No-verdict states. Refused = the model's safety classifier declined
+ * the call (dashed ring, neutral ink); errored = a run that returned no
+ * valid verdict (muted fill). Both are distinct from "no run on file",
+ * which renders as a bare em dash. */
+.verdictRefused {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px dashed var(--muted);
+}
+
+.verdictErrored {
+  background: var(--bg-warm);
+  color: var(--muted);
+  border: 1px dotted var(--line);
 }
 
 /* Outline pill state for LLM verdicts only — communicates whether
@@ -704,7 +792,7 @@
 }
 
 /* ============================================================
- * Expanded — 3 models × 3 alt variants
+ * Expanded — models × prompt variants
  * ============================================================ */
 
 .expandedBlock {
@@ -717,14 +805,21 @@
   border-top: 1px dashed var(--line-soft);
 }
 
-/* Row-expand grid — 3 model rows × 5 columns (label + 4 variants).
- * Each cell is a verdict pill plus a `+` to expand inline reasoning. */
+/* Row-expand grid — one row per model × (label + one column per
+ * prompt variant). The variant count comes from the component via
+ * --variant-count. Scrolls sideways inside its own box rather than
+ * wrapping cells out of their columns when space runs short. */
+.variantGridScroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
 .variantGrid {
   display: grid;
-  grid-template-columns: 8rem repeat(4, minmax(0, 1fr));
+  grid-template-columns: 10rem repeat(var(--variant-count, 4), minmax(7rem, 1fr));
   gap: 0.4rem 0.6rem;
   align-items: start;
-  max-width: 64rem;
+  max-width: 72rem;
 }
 
 .variantHeader {
@@ -847,19 +942,6 @@
 
 .loadingRow {
   font-style: italic;
-}
-
-/* ============================================================
- * Responsive: collapse the reasoning grid from 3 columns to 1
- * on narrow viewports so the per-cell cards stay legible.
- * (The main matrix scrolls horizontally; we don't try to
- * restructure it.)
- * ============================================================ */
-
-@media (max-width: 900px) {
-  .variantGrid {
-    grid-template-columns: 6rem repeat(2, minmax(0, 1fr));
-  }
 }
 
 /* ============================================================
