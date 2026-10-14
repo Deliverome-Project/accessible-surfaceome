@@ -25,11 +25,14 @@
 import {
   bestLinearOffset,
   identityScore,
+  makeResiToTopo,
   observedResSeq,
   overlapCount,
+  projectRange,
   residueOneLetterByResSeq,
+  unpToAuthorResi,
 } from "../lib/structure-projection";
-import type { SequenceCheck } from "../lib/structure-projection";
+import type { ProjSegment, SequenceCheck } from "../lib/structure-projection";
 
 let failures = 0;
 function expect(label: string, got: unknown, want: unknown): void {
@@ -149,6 +152,65 @@ expect(
   "an unconvincing sequence defers to residue counting",
   bestLinearOffset(UNP_LO, UNP_HI, [0, SEQRES_OFFSET], observed, SEQRES_OFFSET, bogus),
   SEQRES_OFFSET,
+);
+
+// ---------------------------------------------------------------------
+// The offset paints the whole scene, not just the highlight sphere.
+// ---------------------------------------------------------------------
+// Cartoon colour and the membrane slab both run through the same
+// projection, so a wrong offset repaints every compartment. DeepTMHMM v1
+// puts MS4A1's fourth TM helix at 189-209 and the big extracellular loop
+// at 142-188.
+const EC_LOOP: [number, number] = [142, 188];
+const TM4: [number, number] = [189, 209];
+const fixed: ProjSegment[] = [{ unpLo: UNP_LO, unpHi: UNP_HI, offset: 0 }];
+const legacy: ProjSegment[] = [{ unpLo: UNP_LO, unpHi: UNP_HI, offset: SEQRES_OFFSET }];
+
+expect(
+  "the extracellular loop paints onto author 142-188",
+  projectRange(EC_LOOP[0], EC_LOOP[1], fixed),
+  [[142, 188]],
+);
+expect(
+  "TM4 paints onto author 189-209",
+  projectRange(TM4[0], TM4[1], fixed),
+  [[189, 209]],
+);
+expect(
+  "so author 161 reads back as an extracellular residue",
+  makeResiToTopo(fixed)(161),
+  161,
+);
+
+// What the site was drawing: TM4 painted over the loop, which is why
+// residue 161 looked like it sat in the membrane.
+expect(
+  "the legacy offset painted TM4 across author 152-172",
+  projectRange(TM4[0], TM4[1], legacy),
+  [[152, 172]],
+);
+expect(
+  "which swallows author 161",
+  projectRange(TM4[0], TM4[1], legacy).some(([a, b]) => a <= 161 && 161 <= b),
+  true,
+);
+expect(
+  "and pushed the extracellular loop down to author 105-151",
+  projectRange(EC_LOOP[0], EC_LOOP[1], legacy),
+  [[105, 151]],
+);
+
+// A band the construct does not reach paints nothing rather than
+// spilling onto whatever residue happens to share the number.
+expect(
+  "an uncovered band projects to nothing",
+  projectRange(1, 40, fixed),
+  [],
+);
+expect(
+  "and an uncovered residue has no author number",
+  unpToAuthorResi(10, fixed),
+  null,
 );
 
 // ---------------------------------------------------------------------

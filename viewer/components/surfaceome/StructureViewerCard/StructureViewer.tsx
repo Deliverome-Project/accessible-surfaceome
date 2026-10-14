@@ -7,10 +7,12 @@ import { mmcifToPdb } from "../../../lib/mmcif-to-pdb";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   bestLinearOffset,
+  makeResiToTopo,
   observedResSeq,
+  projectRange,
   residueOneLetterByResSeq,
 } from "../../../lib/structure-projection";
-import type { SequenceCheck } from "../../../lib/structure-projection";
+import type { ProjSegment, SequenceCheck } from "../../../lib/structure-projection";
 import {
   MEMBRANE_COLOR,
   TOPOLOGY_COLORS,
@@ -184,16 +186,6 @@ interface PDBeBestStructure {
   tax_id?: number;
 }
 
-/** A contiguous UniProt→PDB-author projection segment. A topology
- *  (UniProt-coord) residue ``u`` in ``[unpLo, unpHi]`` maps to PDB
- *  author resSeq ``u + offset``. Clean structures have a single
- *  segment; fusion constructs have several, each with its own offset. */
-interface ProjSegment {
-  unpLo: number;
-  unpHi: number;
-  offset: number;
-}
-
 /** Canonical UniProt sequence for one accession, from the AFDB
  *  prediction API's ``uniprotSequence`` — the endpoint the caption
  *  already calls, so this is usually a warm cache hit.
@@ -226,23 +218,6 @@ async function _fetchCanonicalSequence(acc: string): Promise<string | null> {
   }
   _canonicalSeqCache.set(acc, seq);
   return seq;
-}
-
-/** Build the PDB-author-resSeq → topology(UniProt)-index lookup the
- *  orientation math consumes, inverting the forward ``u → u + offset``
- *  projection used for cartoon coloring. Returns ``null`` for resSeq
- *  outside every segment (unmapped fusion partners, ligands, gaps). */
-function _makeResiToTopo(
-  segments: ProjSegment[],
-): (pdbResi: number) => number | null {
-  return (pdbResi: number) => {
-    for (const s of segments) {
-      const lo = s.unpLo + s.offset;
-      const hi = s.unpHi + s.offset;
-      if (pdbResi >= lo && pdbResi <= hi) return pdbResi - s.offset;
-    }
-    return null;
-  };
 }
 
 /** Raw SIFTS detailed-mapping segment for one chain. ``authorLo`` /
@@ -1840,7 +1815,7 @@ export function StructureViewer({
           : expVariant
             ? orientPdbForTopology(rawPdb, activeTopology, {
                 chainId: effectiveChainId ?? expChainId,
-                resiToTopo: _makeResiToTopo(projSegments),
+                resiToTopo: makeResiToTopo(projSegments),
               })
             : orientPdbForTopology(rawPdb, activeTopology);
 
@@ -2016,13 +1991,8 @@ export function StructureViewer({
               // the crystal, so they go uncolored. Resolve to the actual
               // PDB-file chain id (not PDBe's metadata) so a casing or
               // label/auth mismatch doesn't silently drop the range.
-              projSegments.forEach((seg) => {
-                const a = Math.max(start, seg.unpLo);
-                const b = Math.min(end, seg.unpHi);
-                if (b < a) return;
-                const sel: Record<string, unknown> = {
-                  resi: `${a + seg.offset}-${b + seg.offset}`,
-                };
+              projectRange(start, end, projSegments).forEach(([a, b]) => {
+                const sel: Record<string, unknown> = { resi: `${a}-${b}` };
                 if (effectiveChainId) sel.chain = effectiveChainId;
                 viewer.setStyle(
                   sel,
