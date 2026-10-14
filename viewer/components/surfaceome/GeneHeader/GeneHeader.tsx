@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ReactNode } from "react";
 import type { CatalogRow, DeepDiveFilters } from "../../../lib/surfaceome";
 import {
@@ -333,6 +334,14 @@ export function GeneHeader({
   // a residue + left-percent along the canonical topology). Shared by the 3D
   // spheres and the linear-bar pins so both overlays agree exactly. Empty when
   // no asset / no data / no structure to place them on.
+  // Residue selection shared by the 3D viewer's "Highlight residue" box
+  // and the topology strip under it: a strip click is sent to the viewer
+  // as a request, and the viewer reports back what it highlighted so the
+  // strip can draw the pink marker.
+  const [residueRequest, setResidueRequest] = useState<
+    { resi: number; nonce: number } | null
+  >(null);
+  const [highlightedResidue, setHighlightedResidue] = useState<number | null>(null);
   const tagSiteRows =
     taggedSites?.has_data && structureData
       ? renderableTagSites(taggedSites.sites, structureData.topology.length)
@@ -770,6 +779,8 @@ export function GeneHeader({
             <StructureViewer
               data={structureData}
               geneSymbol={g.hgnc_symbol}
+              residueRequest={residueRequest}
+              onHighlightChange={setHighlightedResidue}
               // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
               // model when this gene is in the manifest. Renders as a
               // "Homo-oligomer" tab right after Canonical and before
@@ -963,25 +974,28 @@ export function GeneHeader({
                 ),
               ]}
             />
-            {/* Linear tag-site overlay — the canonical topology bar with a
-                pin per rendered tag site, colored by provenance to match the
-                3D "Tag sites" spheres. GeneHeader renders no canonical
-                TopologyBar of its own, so this labelled full-width bar is
-                added beneath the viewer (fallback per the overlay plan). Only
-                shown when the gene actually has rendered tag sites. */}
-            {tagSiteRows.length > 0 ? (
-              <TopologyBar
-                topology={structureData.topology}
-                ariaLabel={`${g.hgnc_symbol} canonical topology with tag-insertion sites`}
-                pins={tagSiteRows.map((r) => ({
-                  siteId: r.siteId,
-                  leftPct: r.leftPct,
-                  provenance: r.provenance,
-                  category: r.category,
-                  tagType: r.tagType,
-                }))}
-              />
-            ) : null}
+            {/* Canonical topology strip under the viewer. Carries a pin per
+                rendered tag site (colored to match the 3D "Tag sites"
+                spheres) when the gene has any, and doubles as the residue
+                picker: a click highlights that residue (or the tag site
+                under the click) in the 3D view, and the viewer's
+                highlighted residue shows here as a pink line. */}
+            <TopologyBar
+              topology={structureData.topology}
+              ariaLabel={`${g.hgnc_symbol} canonical topology${tagSiteRows.length > 0 ? " with tag-insertion sites" : ""}; click to highlight a residue in the 3D view`}
+              pins={tagSiteRows.map((r) => ({
+                siteId: r.siteId,
+                leftPct: r.leftPct,
+                provenance: r.provenance,
+                category: r.category,
+                tagType: r.tagType,
+                residue: r.residue,
+              }))}
+              onResidueClick={(resi) =>
+                setResidueRequest((prev) => ({ resi, nonce: (prev?.nonce ?? 0) + 1 }))
+              }
+              markerResidue={highlightedResidue}
+            />
             {/* Legend moved INSIDE <StructureViewer> so it can
                 switch between the M/O/I/S/B topology key and the
                 EC/IC/TM sites key based on the viewer's internal

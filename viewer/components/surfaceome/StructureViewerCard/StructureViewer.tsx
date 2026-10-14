@@ -7,6 +7,7 @@ import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
+  RESIDUE_HIGHLIGHT_COLOR,
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
   alphafoldPredictionApiUrl,
@@ -399,6 +400,13 @@ export interface CanonicalStructStats {
 interface StructureViewerProps {
   data: StructureViewerData;
   geneSymbol: string;
+  /** Ask the viewer to highlight a residue from outside (the topology strip
+   *  under the viewer). ``nonce`` changes on every request so clicking the
+   *  same residue twice re-frames it. */
+  residueRequest?: { resi: number; nonce: number } | null;
+  /** Reports the highlighted residue (or null when cleared) so the strip
+   *  can mark it. */
+  onHighlightChange?: (resi: number | null) => void;
   /** Canonical AFDB stats from
    *  ``rec.deterministic_features.structure``. Drives the caption
    *  on the Canonical variant tab; non-canonical AFDB variants
@@ -1039,10 +1047,7 @@ function _frameResidue(viewer: ViewerInstance, sel: object): void {
   viewer.center?.(sel);
 }
 
-/** Highlight color for the type-a-residue lookup — hot magenta, which
- *  no topology / tag-site / contact palette uses (yellow would vanish
- *  into the TM helices). */
-const RESIDUE_HIGHLIGHT_COLOR = "#FF1F8F";
+
 
 /** Slab transparency. 0.34 is heavy enough to read as a clear
  *  membrane band from across the room without obscuring the helices
@@ -1133,6 +1138,8 @@ export function StructureViewer({
   orthologPins = [],
   variants = [],
   schwekeHomomer = null,
+  residueRequest = null,
+  onHighlightChange,
 }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
@@ -2632,25 +2639,14 @@ export function StructureViewer({
     const shapes: unknown[] = [];
     const labels: unknown[] = [];
     try {
-      // Ball style: every heavy atom of the residue as a solid ball,
-      // plus a translucent halo on CA so it reads from across the page.
-      const resAtoms = (viewer.selectedAtoms?.(sel) ?? []).filter(
-        (a) => typeof a.x === "number" && typeof a.y === "number" && typeof a.z === "number",
-      );
-      for (const a of resAtoms) {
-        shapes.push(viewer.addSphere?.({
-          center: { x: a.x, y: a.y, z: a.z },
-          radius: 1.5,
-          color: RESIDUE_HIGHLIGHT_COLOR,
-          opacity: 1,
-        }));
-      }
+      // One ball on the residue's α-carbon (one per chain on a
+      // homo-oligomer), matching the tag-site / SURFACE-Bind spheres.
       for (const a of atoms) {
         shapes.push(viewer.addSphere?.({
           center: { x: a.x, y: a.y, z: a.z },
-          radius: 6,
+          radius: 3.2,
           color: RESIDUE_HIGHLIGHT_COLOR,
-          opacity: 0.5,
+          opacity: 1,
         }));
       }
       const label = viewer.addLabel?.(`${resn}${highlightResi}`, {
@@ -2678,6 +2674,21 @@ export function StructureViewer({
     const chainNote = atoms.length > 1 ? ` on ${atoms.length} chains` : "";
     setResidueNote(`${resn}${highlightResi}${authorNote} highlighted${chainNote}.`);
   }, [highlightResi, highlightNonce, status]);
+
+  // Strip click → highlight that residue.
+  useEffect(() => {
+    if (!residueRequest) return;
+    setResidueInput(String(residueRequest.resi));
+    setHighlightResi(residueRequest.resi);
+    setHighlightNonce((k) => k + 1);
+  }, [residueRequest]);
+  // Highlight → strip marker. The callback is read through a ref so a
+  // parent re-render with a fresh closure doesn't re-fire it.
+  const onHighlightChangeRef = useRef(onHighlightChange);
+  onHighlightChangeRef.current = onHighlightChange;
+  useEffect(() => {
+    onHighlightChangeRef.current?.(highlightResi);
+  }, [highlightResi]);
 
   const submitResidue = (raw: string) => {
     const m = raw.match(/\d+/);
@@ -2955,8 +2966,9 @@ export function StructureViewer({
           </button>
         ) : null}
         <InfoTip label="Residue numbering">
-          Type a residue number and press Enter to mark it with a magenta ball
-          on the active structure. Canonical and experimental tabs use
+          Type a residue number and press Enter, or click the topology strip
+          below, to mark it with a pink ball on the active structure and a
+          pink line on the strip. Canonical and experimental tabs use
           canonical UniProt numbering (mapped onto the PDB&apos;s own author
           numbering for experimental structures). Isoform and ortholog tabs
           use that sequence&apos;s own numbering. Homo-oligomers highlight the
