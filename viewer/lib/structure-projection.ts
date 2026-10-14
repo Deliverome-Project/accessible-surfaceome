@@ -26,6 +26,71 @@
  * as the fallback for anything it cannot judge.
  */
 
+/** A contiguous UniProt→PDB-author projection segment. A topology
+ *  (UniProt-coord) residue ``u`` in ``[unpLo, unpHi]`` maps to PDB author
+ *  resSeq ``u + offset``. Clean structures have a single segment; fusion
+ *  constructs have several, each with its own offset. */
+export interface ProjSegment {
+  unpLo: number;
+  unpHi: number;
+  offset: number;
+}
+
+/** UniProt residue ``u`` → PDB author resSeq, or ``null`` when ``u``
+ *  falls outside every mapped segment (i.e. the construct doesn't cover
+ *  it). This is what the highlight box resolves through. */
+export function unpToAuthorResi(
+  u: number,
+  segments: ProjSegment[],
+): number | null {
+  for (const s of segments) {
+    if (u >= s.unpLo && u <= s.unpHi) return u + s.offset;
+  }
+  return null;
+}
+
+/** The inverse: PDB author resSeq → UniProt index, for the orientation
+ *  math. ``null`` for resSeq outside every segment (unmapped fusion
+ *  partners, ligands, gaps). */
+export function makeResiToTopo(
+  segments: ProjSegment[],
+): (pdbResi: number) => number | null {
+  return (pdbResi: number) => {
+    for (const s of segments) {
+      const lo = s.unpLo + s.offset;
+      const hi = s.unpHi + s.offset;
+      if (pdbResi >= lo && pdbResi <= hi) return pdbResi - s.offset;
+    }
+    return null;
+  };
+}
+
+/** A UniProt range (a topology band) as the author ranges to paint:
+ *  clipped to each segment's window, then shifted by its offset. Clean
+ *  structures give one range back; fusions give one per segment, and a
+ *  band the construct doesn't cover gives none.
+ *
+ *  The cartoon colouring and the membrane slab both run through this, so
+ *  a wrong offset does not merely misplace the highlight sphere — it
+ *  repaints every compartment and repositions the bilayer by the same
+ *  shift. On MS4A1 8VGN the legacy -37 painted author 152-172 as TM4,
+ *  which is where residue 161 lives, so the extracellular loop was drawn
+ *  as membrane and the site looked buried. */
+export function projectRange(
+  start: number,
+  end: number,
+  segments: ProjSegment[],
+): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  for (const seg of segments) {
+    const a = Math.max(start, seg.unpLo);
+    const b = Math.min(end, seg.unpHi);
+    if (b < a) continue;
+    out.push([a + seg.offset, b + seg.offset]);
+  }
+  return out;
+}
+
 /** Canonical sequence plus the residue identities the fetched file
  *  actually carries, enough to tell a right offset from a wrong one. */
 export interface SequenceCheck {
