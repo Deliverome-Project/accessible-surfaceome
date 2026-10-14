@@ -289,3 +289,9 @@ export function structureViewerDataFromRecord(
     latest_version: null,
   };
 }
+
+/** Highlight color for a reader-selected residue (the 3D viewer's
+ *  "Highlight residue" box and the topology strip's marker). Hot pink,
+ *  which no topology / tag-site / contact palette uses — yellow vanished
+ *  into the TM helices. */
+export const RESIDUE_HIGHLIGHT_COLOR = "#FF1F8F";
