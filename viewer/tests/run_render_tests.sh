@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Run the *.test.tsx render tests in one shot. These tests mount
+# Run the *.test.tsx render tests, plus the plain *.test.ts unit tests
+# written with node:test, in one shot. The render tests mount
 # components via ``react-dom/server.renderToStaticMarkup`` and assert on
 # the rendered HTML; they need the CSS-module loader registered via
 # tests/helpers/register.mjs so the ``.module.css`` imports resolve to
@@ -23,9 +24,17 @@ for f in tests/*.test.tsx; do
   [ -e "$f" ] || continue
   tests+=("$(basename "$f")")
 done
+# *.test.ts files are mixed: some are node:test suites, others are
+# one-scenario-per-process scripts that need an argument and have their own
+# runners (run_list_genes_tests.sh, run_surfaceome_record_degraded_tests.sh,
+# ...). Take only the node:test ones, by what they import.
+for f in tests/*.test.ts; do
+  [ -e "$f" ] || continue
+  grep -q 'from "node:test"' "$f" && tests+=("$(basename "$f")")
+done
 
 if [ "${#tests[@]}" -eq 0 ]; then
-  echo "no *.test.tsx found in tests/ — the glob is broken, not the suite"
+  echo "no tests found in tests/ — the glob is broken, not the suite"
   exit 1
 fi
 

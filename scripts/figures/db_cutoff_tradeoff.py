@@ -1,4 +1,4 @@
-"""Supplementary Figure 4 — DB cutoff recalibration tradeoff.
+"""Supplementary Figure 1 — DB cutoff recalibration tradeoff.
 
 Five per-source subplots showing the universe-size / accuracy trade-off
 across cutoff variants for each surface DB. The figure legitimately plots

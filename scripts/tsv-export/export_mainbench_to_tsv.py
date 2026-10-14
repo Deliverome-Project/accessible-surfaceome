@@ -78,6 +78,11 @@ _RAW_COLUMNS = [
     "prompt_tokens", "completion_tokens", "cache_creation_tokens",
     "cache_read_tokens", "n_web_searches", "cost_usd", "latency_s",
 ]
+# ``refused`` (0/1) is derived from triage_run_public.error so a declined
+# call is distinguishable from a malformed one: both carry a NULL verdict,
+# but the figures drop refusals from accuracy and report their rate instead.
+_REFUSED_SQL = "CASE WHEN error = 'refusal' THEN 1 ELSE 0 END AS refused"
+_PER_REP_COLUMNS = _RAW_COLUMNS + ["refused"]
 
 
 def _surface_vote(verdict):
@@ -211,14 +216,14 @@ def main() -> int:
 
     if args.replicate is not None:
         sql_base = (
-            f"SELECT {', '.join(_RAW_COLUMNS)} FROM triage_run_public "
+            f"SELECT {', '.join(_RAW_COLUMNS)}, {_REFUSED_SQL} FROM triage_run_public "
             "WHERE run_id = ? AND replicate = ? "
             "ORDER BY model, prompt_variant, gene_symbol;"
         )
         base_rows = _query_public(sql_base, [args.run_id, args.replicate])
     else:
         sql_base = (
-            f"SELECT {', '.join(_RAW_COLUMNS)} FROM triage_run_public "
+            f"SELECT {', '.join(_RAW_COLUMNS)}, {_REFUSED_SQL} FROM triage_run_public "
             "WHERE run_id = ? "
             "ORDER BY model, prompt_variant, gene_symbol, replicate;"
         )
@@ -276,7 +281,7 @@ def main() -> int:
         # Per-replicate shape: one row per (gene, model, variant, replicate),
         # no collapse. Fieldnames = the raw per-rep columns. Default output
         # is the replicates TSV unless --out was overridden.
-        out_cols = _RAW_COLUMNS
+        out_cols = _PER_REP_COLUMNS
         if args.out == str(DEFAULT_OUT):
             out_path = REPO_ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
         else:

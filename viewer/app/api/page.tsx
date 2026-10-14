@@ -148,9 +148,9 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         anchor: "benchmark-matrix",
         sizeKey: "/v1/benchmark/matrix",
         summary:
-          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. Drives the SurfaceBench page's side-drawer.",
+          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. `models` lists the eight benchmarked Claude models (Haiku 4.5 / 5.5, Sonnet 4.6 / 5 / 5.5, Opus 4.8 / 5 / 5.5) and `variants` the prompt variants (naive, ncbi, ncbi_effort_low — the ncbi prompt at low reasoning effort — web_ncbi, pubmed_ncbi); not every model ran every variant, and a missing (model, variant) is null. A cell whose replicates were all declined by the model's safety classifier has `verdict: null` and `error: \"refusal\"`. Drives the SurfaceBench page's side-drawer.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .headline_variant, .alt_variants'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .variants, .headline_variant'",
       },
     ],
   },
@@ -182,7 +182,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/triage/{SYMBOL}/{model}/{variant}",
         summary:
-          "Per-cell replicate detail for one (gene, model, prompt_variant) cell. Returns every replicate's verdict + verdict_reasoning + per-call token usage + latency, plus the agent's overall majority verdict computed across replicates.",
+          "Per-cell replicate detail for one (gene, model, prompt_variant) cell — any benchmarked model id (e.g. claude-opus-5-5) and variant (naive, ncbi, ncbi_effort_low, web_ncbi, pubmed_ncbi). Returns every replicate's verdict + verdict_reasoning + per-call token usage + latency, plus the agent's overall majority verdict computed across replicates. A replicate the model's safety classifier declined has a null verdict and `error: \"refusal\"`, and is excluded from the majority.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2/claude-sonnet-4-6/ncbi | jq '.majority_verdict, .replicates | length'",
       },

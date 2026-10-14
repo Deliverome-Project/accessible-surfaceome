@@ -11,8 +11,9 @@ import styles from "./page.module.css";
  * 147-gene triage benchmark page. Joins three D1 tables server-side
  * (benchmark_version + candidate_universe_public + triage_run_public)
  * via the public Worker's /v1/benchmark/matrix endpoint, then renders
- * one row per gene: ground-truth verdict, per-DB calls across seven
- * sources, and headline LLM verdicts for opus / sonnet / haiku.
+ * one row per gene: ground-truth verdict, per-DB calls across the five
+ * gating sources, and one headline LLM verdict per Claude model (the
+ * model columns are data-driven from the payload's `models` list).
  *
  * Typography intentionally steps down from the rest of the viewer
  * (.h-data / .h-data-eyebrow) so the table dominates the page.
@@ -20,7 +21,7 @@ import styles from "./page.module.css";
 export const metadata = {
   title: "SurfaceBench · 147-gene triage benchmark",
   description:
-    "SurfaceBench — per-gene comparison of five surface-membership databases against three LLM triage variants on a 147-gene benchmark.",
+    "SurfaceBench — per-gene comparison of five surface-membership databases against eight Claude models and five triage prompt variants on a 147-gene benchmark.",
 };
 
 export default async function BenchmarkPage() {
@@ -43,7 +44,7 @@ export default async function BenchmarkPage() {
       <section className={`${styles.page} page-width`}>
         <header className={styles.head}>
           <h1 className={`h-data ${styles.title}`}>
-            147 genes, five databases, three models.
+            147 genes, five databases, eight models.
           </h1>
           <p className={styles.lede}>
             <strong>SurfaceBench</strong> is a 147-protein benchmark
@@ -53,8 +54,10 @@ export default async function BenchmarkPage() {
             surface, or non-surface. Sonnet 4.6 and Opus 4.8 — with no
             external tools, working from training-time knowledge plus
             a short NCBI context block — outperform every gold-standard
-            database on this set. The table below shows every model ×
-            prompt-variant call so you can audit the reasoning per gene.
+            database on this set. Sonnet 4.6 on that NCBI prompt is the
+            production triage configuration (marked ★ in the table). The
+            table below shows every model × prompt-variant call so you can
+            audit the reasoning per gene.
           </p>
         </header>
 
@@ -83,18 +86,37 @@ export default async function BenchmarkPage() {
             empty ring = not on the surface in that source.
           </p>
           <p>
-            <span className="label-mono">LLM columns ·</span> Three
-            cells per row — one per model on the headline{" "}
-            <code>{matrix.headline_variant.toUpperCase()}</code> prompt variant
-            (Haiku / Sonnet / Opus). Each is a verdict pill coloured
-            by call; pills outlined in maroon disagree with truth
-            (collapsing <em>yes</em> ≡ <em>contextual</em> when scoring
-            correctness). Hover for the full
-            (model → verdict + reason) tooltip. Click <em>+</em> on
-            the row to expand the full <strong>3 model × 4 variant</strong>{" "}
-            grid (Opus has runs on 2 of 4 variants only); each cell in
-            that grid carries its own <em>+</em> to reveal the
-            agent&apos;s free-text reasoning for that specific call.
+            <span className="label-mono">LLM columns ·</span> One
+            compact cell per model on the headline{" "}
+            <code>{matrix.headline_variant.toUpperCase()}</code> prompt variant,
+            ordered Haiku 4.5 · Haiku 5.5 · Sonnet 4.6 · Sonnet 5 · Sonnet
+            5.5 · Opus 4.8 · Opus 5 · Opus 5.5. Each is a verdict pill colored
+            by call (<em>ctx</em> = contextual); pills outlined in maroon
+            disagree with truth (collapsing <em>yes</em> ≡{" "}
+            <em>contextual</em> when scoring correctness). The tinted
+            Sonnet 4.6 ★ column is the production configuration. Hover for
+            the full (model → verdict + reason) tooltip; click a pill to
+            read the agent&apos;s reasoning.
+          </p>
+          <p>
+            <span className="label-mono">Prompt variants ·</span> Click a
+            gene to expand the full model × variant grid. Not every model ran
+            every variant: Haiku 4.5 and Sonnet 4.6 ran all four of{" "}
+            <em>no context</em>, <em>NCBI</em>, <em>NCBI + web search</em>{" "}
+            and <em>NCBI + PubMed</em>; Opus 4.8, Haiku 5.5 and Sonnet 5.5 ran{" "}
+            <em>no context</em> and <em>NCBI</em>; Sonnet 5 and Opus 5 ran{" "}
+            <em>NCBI</em> only; and Opus 5.5 ran <em>NCBI</em> plus{" "}
+            <em>NCBI · low effort</em> — the same prompt at low reasoning
+            effort. Cells with no run on file show a dash.
+          </p>
+          <p>
+            <span className="label-mono">Refused ·</span> A small number
+            of calls were declined by the model&apos;s safety classifier and
+            returned no verdict. They show as <em>refused</em> (<em>ref</em>{" "}
+            in the headline columns, with a dashed outline) — distinct from a
+            dash (no run on file) and from <em>errored</em> (a run that
+            returned no valid verdict) — and are not counted as agreeing or
+            disagreeing with truth.
           </p>
         </footer>
       </section>

@@ -334,9 +334,14 @@ script — no need to install wrangler just to peek at row counts.
   private D1 (see the COALESCE snippet below).
 - **The four `pubmed_ncbi` rescue lanes.** Each re-examines a slice of the
   Sonnet-`no` population with a literature-augmented pass. They are
-  disjoint by construction, and together they cover **every gene the
-  universe gate is capable of dropping** — which is the invariant to
-  preserve when adding a lane:
+  disjoint except for 9 genes the 74-gene optcut lane re-ran after an
+  earlier lane (JMJD6, MTX2, NBL1, NDST1, PARVA, RGN, SERP2, ST3GAL3,
+  VTA1), and together they cover **every gene the universe gate is
+  capable of dropping** — which is the invariant to preserve when adding
+  a lane. Adding a lane to `RESCUE_RUNS` also adds it to the Zenodo
+  deposit's genome file: `GENOME_PUBMED_RUN_IDS` in
+  `scripts/release/build_consolidated_deposit_tsvs.py` must match, and
+  `tests/test_deposit_release_guards.py` fails until it does:
   - `genome_full_sonnet_pubmed_ncbi_v1` — the 2,626-cell zero-DB
     *ambiguous tail* (`endomembrane_resident`, `secreted_only`,
     `inner_leaflet_anchored`, `pmhc_only_intracellular`,
@@ -647,6 +652,24 @@ So this is *author-side metadata*: it persists through any PNG-aware tool but is
 Cloudflare Pages project at **`surfaceome.deliverome.org`**. It is *not*
 a sub-route of `deliverome.org`'s main site — separate build, separate
 deploy target, separate domain.
+
+### 3D structure loading — weekly cohort audit
+
+Gene pages pick their experimental structure at view time from PDBe
+`best_structures`, so a newly deposited PDB entry changes what a page loads
+with no commit or rebuild. That is how SLC6A8's 9V8W shipped a 404: RCSB
+publishes no `.pdb` for entries the legacy format can't hold (5-character
+ligand codes, multi-character chains, >99,999 atoms), and 168 genes were
+in that state. The viewer now falls back to mmCIF (`viewer/lib/mmcif-to-pdb.ts`),
+and [`.github/workflows/structure-audit.yml`](.github/workflows/structure-audit.yml)
+runs `viewer/scripts/audit-structures.ts` every Wednesday after the wwPDB
+release: for all published genes it runs the viewer's own pick + load code
+against PDBe, RCSB and the AlphaFold prediction API, fails on any gene that
+wouldn't render, and lists genes that gained or switched structure since
+the previous run. **Keep structure selection and loading in
+`viewer/lib/experimental-structure.ts`**, not in `StructureViewer.tsx` —
+the audit only tests what lives there. Run it locally with
+`cd viewer && npx --yes tsx scripts/audit-structures.ts --genes A,B`.
 
 ### Tooltip / InfoTip citation rule
 

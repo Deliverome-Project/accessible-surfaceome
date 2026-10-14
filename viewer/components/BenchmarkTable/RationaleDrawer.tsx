@@ -7,6 +7,12 @@ import type {
   BenchmarkVariantResult,
 } from "../../lib/surfaceome-types";
 import { prettyEnum } from "../../lib/enums";
+import {
+  cellStatus,
+  fallbackModelLabel,
+  fallbackVariantLabel,
+  type LabelDef,
+} from "./benchmarkLabels";
 import styles from "./BenchmarkTable.module.css";
 
 // Public Worker base (client-side fetch — same origin the SSG loader uses
@@ -19,7 +25,8 @@ export interface SelectedCell {
   variant: string;
 }
 
-/** One replicate from /v1/triage/:symbol/:model/:variant. */
+/** One replicate from /v1/triage/:symbol/:model/:variant. `error` is
+ *  "refusal" when the model's safety classifier declined the call. */
 interface RepRow {
   replicate: number;
   predicted_verdict: string | null;
@@ -65,12 +72,6 @@ function useCellReplicates(sel: SelectedCell | null): CellDetail | null {
   return detail;
 }
 
-interface LabelDef {
-  id: string;
-  short: string;
-  long: string;
-}
-
 interface RationaleDrawerProps {
   selected: SelectedCell | null;
   matrix: BenchmarkMatrix;
@@ -105,6 +106,9 @@ export function RationaleDrawer({
 }: RationaleDrawerProps) {
   const isOpen = selected != null;
   const data = selected ? lookup(selected, matrix, modelLabels, variantLabels) : null;
+  const status = cellStatus(data?.cell);
+  const noVerdictLabel =
+    status === "refused" ? "refused" : status === "errored" ? "errored" : "—";
   // Lazy-load all replicates for the open cell (per-rep reasons live in
   // a separate Worker call so the matrix payload stays single-rep + small).
   const detail = useCellReplicates(selected);
@@ -144,10 +148,20 @@ export function RationaleDrawer({
           </h2>
           <div className={styles.drawerVerdicts}>
             <span
-              className={`${styles.drawerVerdict} ${verdictToneClass(data.cell?.verdict)}`}
-              title={`Model verdict: ${data.cell?.verdict ?? "—"}`}
+              className={`${styles.drawerVerdict} ${
+                status === "refused"
+                  ? styles.verdictRefused
+                  : status === "errored"
+                    ? styles.verdictErrored
+                    : verdictToneClass(data.cell?.verdict)
+              }`}
+              title={
+                status === "refused"
+                  ? "Model verdict: none — the model's safety classifier declined the call"
+                  : `Model verdict: ${data.cell?.verdict ?? noVerdictLabel}`
+              }
             >
-              {data.cell?.verdict ?? "—"}
+              {data.cell?.verdict ?? noVerdictLabel}
               <span className={styles.drawerVerdictLabel}> · model</span>
             </span>
             <span
@@ -163,7 +177,11 @@ export function RationaleDrawer({
               }
             >
               {data.correct === null
-                ? "no verdict"
+                ? status === "refused"
+                  ? "refused · not scored"
+                  : status === "errored"
+                    ? "errored · not scored"
+                    : "no run on file"
                 : data.correct
                   ? "agrees with truth"
                   : "disagrees with truth"}
@@ -253,7 +271,13 @@ export function RationaleDrawer({
                     {prettyEnum(reason)}
                   </p>
                 ) : null}
-                {reasoning ? (
+                {status === "refused" && !maj ? (
+                  <p className={styles.drawerReasoningEmpty}>
+                    Refused — the model&apos;s safety classifier declined
+                    this call, so it returned no verdict or reasoning. Any
+                    replicates on file are listed below.
+                  </p>
+                ) : reasoning ? (
                   <p className={styles.drawerReasoning}>{reasoning}</p>
                 ) : (
                   <p className={styles.drawerReasoningEmpty}>
@@ -262,12 +286,13 @@ export function RationaleDrawer({
                 )}
                 {/* Other replicates — the per-rep spread minus the one
                     already shown as the majority. Scroll to reveal.
-                    Errored reps (null verdict — the model failed to emit a
-                    valid verdict/reason combo even after a retry) are shown
-                    as ERRORED and their stale pre-null reasoning is
-                    SUPPRESSED, so they don't masquerade as a real vote. The
-                    majority's "N/M reps agree" counts only valid reps, so
-                    this keeps the two consistent. */}
+                    Reps with a null verdict are shown as REFUSED (error
+                    "refusal": the safety classifier declined the call) or
+                    ERRORED (the model failed to emit a valid verdict/reason
+                    combo even after a retry), and their stale pre-null
+                    reasoning is SUPPRESSED, so they don't masquerade as a
+                    real vote. The majority's "N/M reps agree" counts only
+                    valid reps, so this keeps the two consistent. */}
                 {otherReps.length > 0 ? (
                   <details className={styles.drawerReps} open>
                     <summary className="label-mono">
@@ -277,18 +302,27 @@ export function RationaleDrawer({
                     </summary>
                     {otherReps.map((rep) => {
                       const errored = rep.predicted_verdict == null;
+                      const refused = errored && rep.error === "refusal";
                       return (
                         <div key={rep.replicate} className={styles.drawerRep}>
                           <p className={`label-mono ${styles.drawerRepHead}`}>
                             Rep {rep.replicate} ·{" "}
-                            {errored
-                              ? "errored (no valid verdict)"
-                              : rep.predicted_verdict!.replace(/_/g, " ")}
+                            {refused
+                              ? "refused (safety classifier declined)"
+                              : errored
+                                ? "errored (no valid verdict)"
+                                : rep.predicted_verdict!.replace(/_/g, " ")}
                             {!errored && rep.predicted_reason
                               ? ` · ${prettyEnum(rep.predicted_reason)}`
                               : ""}
                           </p>
-                          {errored ? (
+                          {refused ? (
+                            <p className={styles.drawerReasoningEmpty}>
+                              Excluded from the majority — the model&apos;s
+                              safety classifier declined this replicate, so it
+                              returned no verdict.
+                            </p>
+                          ) : errored ? (
                             <p className={styles.drawerReasoningEmpty}>
                               Excluded from the majority — the model didn&apos;t
                               return a schema-valid verdict on this replicate.
@@ -363,9 +397,12 @@ function lookup(
 ): LookupResult | null {
   const row = matrix.rows.find((r) => r.gene_symbol === sel.symbol);
   if (!row) return null;
-  const model = modelLabels.find((m) => m.id === sel.model);
-  const variant = variantLabels.find((v) => v.id === sel.variant);
-  if (!model || !variant) return null;
+  // Unknown ids still open the drawer under a label derived from the id.
+  const model =
+    modelLabels.find((m) => m.id === sel.model) ?? fallbackModelLabel(sel.model);
+  const variant =
+    variantLabels.find((v) => v.id === sel.variant) ??
+    fallbackVariantLabel(sel.variant);
   const cell = row.verdicts?.[sel.model]?.[sel.variant] ?? null;
   const correct =
     cell?.verdict == null

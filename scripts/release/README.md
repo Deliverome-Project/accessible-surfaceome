@@ -105,8 +105,8 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
    fetch), a path string relative to repo root (local file), or one
    of the special builder shapes: `{"deep_dives_bundle": True, ...}`
    (tarball), `{"deposit_readme": True, ...}` (in-deposit README),
-   `{"manuscript": True, ...}` (pre-built PDF + pandoc-generated
-   JATS XML for the paper — off by default; see below). Comment out
+   `{"manuscript": True, ...}` (pre-built PDF + structured JATS XML
+   and its figure files for the paper — off by default; see below). Comment out
    anything you don't want in this particular deposit.
 
 2. **Deploy the Worker** if you've changed `handleTriageExport` or
@@ -333,7 +333,8 @@ clean split:
 2. **Build the manuscript outputs** via `paper/build.py`:
    ```bash
    uv run python paper/build.py paper/manuscript.docx
-   # produces paper/build/manuscript.{pdf,xml,html}
+   # produces paper/build/manuscript.{pdf,html} and paper/build/jats/
+   # (manuscript.xml plus the figure files it references)
    ```
 3. **Create a new Zenodo deposit** at <https://zenodo.org/uploads/new>.
 4. On the **DOI** field, select **"Yes, I already have a DOI"** and
@@ -342,7 +343,10 @@ clean split:
    DOI and break the Unpaywall route described below.
 5. **Upload the files:**
    - `manuscript.pdf` — primary citable
-   - `manuscript.xml` — pandoc-generated JATS (PMC-compatible)
+   - everything in `paper/build/jats/` — `manuscript.xml` (structured
+     JATS: front matter, `<fig>`, `<ref-list>`, `<xref>`) and the
+     figure files it references by filename. Zenodo's file list is
+     flat, so they must be uploaded alongside it, not in a folder.
    - `manuscript.txt` (optional) — plain-text extracted version
      (some text-miners prefer it; harmless to add)
 6. **Set license** = CC-BY 4.0 (matches the rest of the project).

@@ -16,6 +16,7 @@ paralogs           len(paralogs)                                        compara_
                    which paralogs, and each one's ECD / full %id        the top 50 by rank, value for value
 orthologs          len(orthologs.mouse / .cynomolgus), no null %id      compara_ortholog_ecd rows joined to Compara
                    each ortholog's ECD %id                              the same row, value for value
+                   every entry's compara_version                        the served Compara release label
 structure          structure.source is not a placeholder                AlphaFold DB (reported, not a D1 table)
 surface_bind       surface_bind.has_data                                surface_bind_protein
                    each site's anchor_topology                          side of the anchor in the served topology
@@ -38,6 +39,11 @@ topology row (649 pairs were missing this way until 2026-10-12):
 Advisory, not a failure: release-115 one-to-one orthologs with no ECD row.
 Most are orthologs with no UniProt protein to compute topology from (four OR
 genes' mouse orthologs as of 2026-10-12); anything else there is a gap.
+
+Labels are checked too: until 2026-10-12, 3,858 records still said "Compara
+r112" or "ensembl_compara_2026_05_12" on entries whose values already matched
+the release-115 tables, because records only get republished when a value
+changes.
 
 Counts alone are not enough: until 2026-10-12 ADCY2 carried 17 paralog ECD
 identities from before a recompute, with every count still matching.
@@ -207,7 +213,8 @@ def paralog_rank_order(d1: D1Client, par_v: str, pause: float) -> list[str]:
                 continue
             es = [r["e"] for r in sorted(rows, key=lambda r: r["r"])]
             if any(
-                (a is None and b is not None) or (a is not None and b is not None and a < b - 1e-9)
+                (a is None and b is not None)
+                or (a is not None and b is not None and a < b - 1e-9)
                 for a, b in zip(es, es[1:])
             ):
                 out.append(u)
@@ -357,6 +364,22 @@ def main() -> int:
             r["g"]
             for r in d1.query("SELECT gene_symbol g FROM surface_annotation;", [])
         ]
+
+        def _one_label(sql: str, params: list) -> str:
+            labels = [r["v"] for r in d1.query(sql, params)]
+            assert len(labels) == 1, f"expected one served Compara label, got {labels}"
+            return labels[0]
+
+        par_label = _one_label(
+            "SELECT DISTINCT compara_version v FROM compara_paralog WHERE paralog_version = ?;",
+            [par_v],
+        )
+        orth_label = _one_label(
+            "SELECT DISTINCT compara_release v FROM compara_ortholog_ecd "
+            "WHERE ortholog_ecd_version = ?;",
+            [ecd_v],
+        )
+        print(f"served Compara labels: paralogs={par_label} orthologs={orth_label}")
         for ch in _chunks(syms):
             for r in d1.query(
                 "SELECT gene_symbol g, "
@@ -375,11 +398,17 @@ def main() -> int:
                 "  WHERE json_extract(m.value,'$.per_residue_topology') IS NULL) "
                 f"+ (SELECT COUNT(*) FROM json_each(annotation_json,'{_DF}.orthologs.cynomolgus') c "
                 "  WHERE json_extract(c.value,'$.per_residue_topology') IS NULL) topo_null, "
+                f"(SELECT COUNT(*) FROM json_each(annotation_json,'{_DF}.paralogs') p "
+                "  WHERE json_extract(p.value,'$.compara_version') IS NOT ? ) "
+                f"+ (SELECT COUNT(*) FROM json_each(annotation_json,'{_DF}.orthologs.mouse') m "
+                "  WHERE json_extract(m.value,'$.compara_version') IS NOT ?) "
+                f"+ (SELECT COUNT(*) FROM json_each(annotation_json,'{_DF}.orthologs.cynomolgus') c "
+                "  WHERE json_extract(c.value,'$.compara_version') IS NOT ?) label_bad, "
                 f"json_extract(annotation_json,'{_DF}.structure.source') struct, "
                 f"json_extract(annotation_json,'{_DF}.surface_bind.has_data') sb, "
                 f"json_extract(annotation_json,'{_DF}.homo_oligomerization.is_homo_oligomer') homo "
                 f"FROM surface_annotation WHERE gene_symbol IN ({_marks(ch)});",
-                ch,
+                [par_label, orth_label, orth_label, *ch],
             ):
                 recs[r["g"]] = r
             time.sleep(args.pause)
@@ -433,7 +462,9 @@ def main() -> int:
             args.pause,
         )
         integrity = source_integrity(d1, topo_v, par_v, ecd_v)
-        integrity["paralog_rank_out_of_order"] = paralog_rank_order(d1, par_v, args.pause)
+        integrity["paralog_rank_out_of_order"] = paralog_rank_order(
+            d1, par_v, args.pause
+        )
         values = identity_values(d1, recs, par_v, ecd_v, args.pause)
         advisory = {
             "compara_ortholog_without_ecd_row": compara_pairs_without_ecd_row(
@@ -460,6 +491,7 @@ def main() -> int:
             # Every served ortholog protein has topology (source_integrity), so
             # an entry without per-residue topology predates it.
             "ortholog_topology": (r["topo_null"] or 0) == 0,
+            "compara_label": (r["label_bad"] or 0) == 0,
             "surface_bind": (r["sb"] in truthy) == bool(s["sb"]),
             "paralog_set": g not in values["paralog_set"],
             "paralog_identity": g not in values["paralog_identity"],
@@ -500,6 +532,7 @@ def main() -> int:
         "orthologs_cyno",
         "ortholog_full_length_identity",
         "ortholog_topology",
+        "compara_label",
         "paralog_set",
         "paralog_identity",
         "ortholog_identity",

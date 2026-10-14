@@ -318,16 +318,11 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     # always passes `--standalone --to jats`; you only need extras for
     # specific transformations (e.g. `--metadata title="…"` override).
     #
-    # **Citations note** — if you're using Zotero in Word, leave
-    # `extra_pandoc_args` empty. Zotero already bakes the formatted
-    # citations + bibliography into the `.docx` as text, and pandoc
-    # carries that through into the JATS XML verbatim. References
-    # land as plain text (not structured `<ref>` elements), which is
-    # plenty for a Zenodo deposit. Switching to pandoc-managed
-    # citations would require exporting a `.bib` from Zotero AND
-    # toggling the Zotero Word plugin from "Word fields" mode to
-    # "BibTeX cite keys" mode in Document Preferences — only worth
-    # doing if you specifically need structured-reference JATS.
+    # **Citations note** — if you're using Zotero in Word / Google
+    # Docs, leave `extra_pandoc_args` empty. A `.docx` source goes
+    # through paper/jats_build.py (the step paper/build.py runs), which
+    # resolves Zotero's in-text citations to the reference list and
+    # emits structured `<ref>` / `<xref>` elements without a `.bib`.
     #
     # Tooling install:
     #   macOS:   brew install pandoc
@@ -842,10 +837,12 @@ def _build_manuscript_bundle(
         the deposit should match it byte-for-byte. Cleanup=False on this
         entry — the file lives in your repo, we don't touch it.
 
-      * **JATS XML**: pandoc-converted from ``entry["source"]`` (any
+      * **JATS XML**: converted from ``entry["source"]`` (any
         pandoc-readable manuscript: ``.md`` / ``.tex`` / ``.docx``).
         Written under ``_extra-download/`` and uploaded with
-        cleanup=True so it doesn't litter the working tree.
+        cleanup=True so it doesn't litter the working tree. For a
+        ``.docx`` the figure files the XML references are written and
+        uploaded beside it.
 
     Pandoc invocation is:
 
@@ -864,13 +861,17 @@ def _build_manuscript_bundle(
     fully automatic (it's plain XML, no engine needed) and require the
     PDF to be supplied as-is.
 
-    Validation note: the resulting JATS XML is ``--standalone``
-    pandoc output, which is well-formed but is NOT guaranteed to pass
-    the PMC JATS DTD's tighter constraints (e.g. ``article-meta``
-    structural requirements). Run it through JATS4R's validator
-    (https://www.jats4r.org/) or ``xmllint --dtdvalid …`` if you need
-    PMC-grade validation; for deposit-with-the-data purposes the
-    standalone XML is usually sufficient.
+    A ``.docx`` source goes through ``paper/jats_build.build_jats`` —
+    the same step ``paper/build.py`` runs — which yields structured JATS
+    (title, authors and abstract in the front matter, a ``<fig>`` per
+    figure, a ``<ref-list>``, typed ``<xref>``s). Its figure files are
+    yielded too, for upload beside the XML. That output validated
+    against the JATS 1.2 archiving DTD when the step was written; check
+    a new manuscript with ``xmllint --dtdvalid …`` before depositing.
+
+    Any other source (``.md`` / ``.tex``) gets pandoc's own
+    ``--standalone`` JATS, which is well-formed but carries little
+    structure and is not guaranteed to pass the DTD.
 
     Pre-conditions checked:
       - ``pandoc`` is installed and on ``PATH``. We shell out to it as
@@ -920,29 +921,61 @@ def _build_manuscript_bundle(
             # bare FileNotFoundError on subprocess invocation, since
             # the failure mode tells the operator exactly what to fix.
             from shutil import which
-            if which("pandoc") is None:
+            pandoc_bin = which("pandoc")
+            if pandoc_bin is None:
+                # The paper build's own pandoc (bundled in the
+                # pypandoc-binary wheel) is as good as a system one, and
+                # is what built the PDF: `uv run --extra paper …`.
+                try:
+                    import pypandoc  # ty: ignore[unresolved-import]
+
+                    pandoc_bin = pypandoc.get_pandoc_path()
+                except (ImportError, OSError):
+                    pandoc_bin = None
+            if pandoc_bin is None:
                 raise RuntimeError(
-                    "manuscript bundle needs `pandoc` on PATH but it "
-                    "isn't installed. Install with `brew install "
-                    "pandoc` (macOS) or `apt install pandoc` (Linux), "
-                    "or remove the manuscript entry from EXTRA_FILES."
+                    "manuscript bundle needs `pandoc` but none was found. "
+                    "Run with the paper extras (`uv run --extra paper …`), "
+                    "install it with `brew install pandoc` (macOS) or "
+                    "`apt install pandoc` (Linux), or remove the "
+                    "manuscript entry from EXTRA_FILES."
                 )
             tmp_root.mkdir(exist_ok=True)
-            cmd = [
-                "pandoc",
-                str(source),
-                "--standalone",
-                "--to", "jats",
-                "-o", str(out_path),
-                *extra_args,
-            ]
-            try:
-                subprocess.run(cmd, check=True, cwd=REPO_ROOT)
-            except subprocess.CalledProcessError as exc:
-                raise RuntimeError(
-                    f"pandoc JATS conversion failed (exit {exc.returncode}). "
-                    f"Command: {' '.join(cmd)}"
-                ) from exc
+            if source.suffix.lower() == ".docx":
+                # The same step paper/build.py runs, so the deposited XML
+                # is the structured one (front matter, <fig>, <ref-list>,
+                # <xref>) and not pandoc's raw conversion. A deposit has a
+                # flat file namespace, so the figures sit beside the XML
+                # and the XML names them without a directory.
+                sys.path.insert(0, str(REPO_ROOT / "paper"))
+                from jats_build import build_jats  # ty: ignore[unresolved-import]
+
+                report, figure_files = build_jats(
+                    source, out_path, pandoc=pandoc_bin,
+                    figures_out=tmp_root, href_prefix="", extra_args=extra_args,
+                )
+                print(report.summary())
+                for path in figure_files:
+                    outputs.append((path, True))
+                ok(f"{len(figure_files)} figure file(s) referenced by {out_path.name}")
+            else:
+                # Markdown / LaTeX sources are not shaped by the .docx
+                # filters; they get pandoc's own JATS.
+                cmd = [
+                    pandoc_bin,
+                    str(source),
+                    "--standalone",
+                    "--to", "jats",
+                    "-o", str(out_path),
+                    *extra_args,
+                ]
+                try:
+                    subprocess.run(cmd, check=True, cwd=REPO_ROOT)
+                except subprocess.CalledProcessError as exc:
+                    raise RuntimeError(
+                        f"pandoc JATS conversion failed (exit {exc.returncode}). "
+                        f"Command: {' '.join(cmd)}"
+                    ) from exc
             size_kb = out_path.stat().st_size / 1024
             ok(f"built {out_path.name} ({size_kb:.1f} KB) via pandoc")
             outputs.append((out_path, True))

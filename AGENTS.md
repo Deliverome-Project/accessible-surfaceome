@@ -306,7 +306,9 @@ statement:
   legacy 2026-05-12 sweep, removed from public D1 on 2026-06-01. Only
   analyses that deliberately read the old v1 rows need the COALESCE
   query in CLAUDE.md.
-- **Four `pubmed_ncbi` rescue lanes**, disjoint by construction, together
+- **Four `pubmed_ncbi` rescue lanes**, disjoint except for 9 genes the
+  74-gene optcut lane re-ran (the deposit builder's lane list is pinned to
+  `RESCUE_RUNS` by `tests/test_deposit_release_guards.py`), together
   giving every Sonnet-`no` gene that the universe gate can drop a
   literature-augmented second look: `genome_full_sonnet_pubmed_ncbi_v1`
   (2,626-cell zero-DB ambiguous tail, 177 rescues),
@@ -459,6 +461,14 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   D1 database to the R2 bucket `deliverome-d1-backups` on every push
   to `main` that touches the D1 schema, the eval data, or the
   uploader code. See **Cloudflare D1 + R2** below.
+- `.github/workflows/structure-audit.yml` runs weekly (Wednesday, after
+  the wwPDB release) and checks that every published gene's 3D structure
+  loads. Gene pages pick their experimental structure live from PDBe, so a
+  newly deposited entry can break a page without any commit. The audit
+  (`viewer/scripts/audit-structures.ts`) runs the viewer's own code in
+  `viewer/lib/experimental-structure.ts`; keep structure selection and
+  loading logic there, not in the component, so the audit keeps testing
+  what the viewer runs.
 
 ## Cloudflare D1 + R2 backups for agent runs
 - The `surfaceome_agents` D1 database stores every `surface_triage`

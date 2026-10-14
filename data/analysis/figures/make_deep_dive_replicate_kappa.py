@@ -8,7 +8,7 @@
 # ///
 """Reproduce ``deep_dive_replicate_kappa.{pdf,png}``.
 
-**Supplementary Fig 15.** Run-to-run reliability of the deep-dive pipeline.
+**Supplementary Fig 16.** Run-to-run reliability of the deep-dive pipeline.
 Fifty genes drawn at random from the deep-dive cohort were re-analysed two ways
 and each of the 24 LLM-derived filter fields (plus the derived surface call and
 confidence tier) compared with the published record as Cohen's κ:

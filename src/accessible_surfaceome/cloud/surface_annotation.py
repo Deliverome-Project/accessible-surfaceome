@@ -645,7 +645,7 @@ def _is_triage_signal_drift(
                 WHERE gene_symbol = ?
                   AND run_id = ?
                   AND prompt_variant = ?
-                  AND model LIKE '%sonnet%'
+                  AND model = 'claude-sonnet-4-6'  -- production triage model; the bench run also holds other Sonnets
                   AND predicted_verdict IS NOT NULL
                 LIMIT 1
                 """,
