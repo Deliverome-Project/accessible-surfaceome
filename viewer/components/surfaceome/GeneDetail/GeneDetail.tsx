@@ -89,8 +89,12 @@ interface GeneDetailProps {
    *  on a fetch miss — GeneHeader / TriageRow then fall back to
    *  `rec.triage_signal`. */
   triageHeadline: TriageHeadlinePayload | null;
-  /** Deep-dive genes for the toolbar's GeneJump typeahead. */
+  /** Deep-dive genes, used to order the FG-library prev/next nav. Empty until
+   *  the page shell fetches the index (library members only). */
   deepDiveGenes: readonly GeneEntry[];
+  /** Lazy loader for the toolbar's GeneJump typeahead universe. Deferred so
+   *  the ~1.7 MB gene index stays off the gene page's initial load. */
+  loadGenes: () => Promise<readonly GeneEntry[]>;
   /** Parsed FG-library membership overlay (fetched client-side), or null on a
    *  miss. Drives the prev/next library navigation and is forwarded to
    *  <IsoformsCard> for the per-variant in-library pills. */
@@ -129,6 +133,7 @@ export function GeneDetail({
   benchmarkRow,
   triageHeadline,
   deepDiveGenes,
+  loadGenes,
   fgLibrary,
   inFgLibrary,
   oversized,
@@ -339,7 +344,7 @@ export function GeneDetail({
           </Link>
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
-          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
+          <GeneJump loadGenes={loadGenes} current={rec.gene.hgnc_symbol} />
           {/* Prev/next across the FG library (alphabetical). Only rendered when
               this gene is itself in the library — otherwise it has no position
               in the ordered list. Arrow keys drive the same navigation (see the
