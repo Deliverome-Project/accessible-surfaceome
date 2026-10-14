@@ -613,3 +613,48 @@
 .contactSlider { grid-template-columns: 28px minmax(40px, 1fr) 28px; align-items: center; }
 .contactSlider > button { padding: 0; height: 26px; background: var(--surface-soft); border-color: transparent; font-size: .85rem; }
 .contactSelection > button { background: var(--surface-soft); }
+
+/* Type-a-residue highlight row, below the mode toggle. */
+.residueSearch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: 0.78rem;
+}
+
+.residueLabel {
+  color: var(--ink-soft, #555);
+}
+
+.residueInput {
+  width: 6.5rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: inherit;
+  background: var(--surface, white);
+  color: var(--ink, #222);
+}
+
+.residueButton {
+  appearance: none;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 6px;
+  background: var(--surface-soft, #f6f1ef);
+  color: var(--ink, #222);
+  font-family: var(--font-sans);
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.residueButton:hover {
+  background: var(--surface, white);
+}
+
+.residueNote {
+  color: var(--ink-soft, #555);
+}

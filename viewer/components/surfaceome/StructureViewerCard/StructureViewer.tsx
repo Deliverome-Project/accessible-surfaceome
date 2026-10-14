@@ -211,6 +211,16 @@ interface ProjSegment {
   offset: number;
 }
 
+/** Inverse of the projection: UniProt residue ``u`` → PDB author resSeq,
+ *  or ``null`` when ``u`` falls outside every mapped segment (i.e. the
+ *  construct doesn't cover it). */
+function _unpToAuthorResi(u: number, segments: ProjSegment[]): number | null {
+  for (const s of segments) {
+    if (u >= s.unpLo && u <= s.unpHi) return u + s.offset;
+  }
+  return null;
+}
+
 /** Author resSeq values present (ATOM + HETATM) on a chain in the
  *  fetched PDB file — i.e. the residues 3Dmol can actually select.
  *  Used to score candidate projection offsets: the correct offset lands
@@ -1002,6 +1012,7 @@ interface ViewerInstance {
   resize: () => void;
   render: () => void;
   zoomTo: (sel?: object) => void;
+  center?: (sel: object) => void;
   /** 3Dmol camera-pose snapshot: a number array encoding
    *  position + rotation + zoom. Used to seed `setView` on reset so
    *  the ↺ button returns to the initial pose, not just the initial
@@ -1012,7 +1023,26 @@ interface ViewerInstance {
   addStyle?: (sel: object, style: object) => void;
   addLabel?: (text: string, options: object) => unknown;
   removeAllLabels?: () => void;
+  addSphere?: (spec: object) => unknown;
+  removeShape?: (shape: unknown) => void;
+  removeLabel?: (label: unknown) => void;
+  selectedAtoms?: (sel: object) => Array<{
+    x?: number; y?: number; z?: number; resi?: number; resn?: string; chain?: string;
+  }>;
 }
+
+/** Frame a residue's ~20 Å neighborhood, then re-center exactly on the
+ *  residue (the neighborhood's bounding box is lopsided at a surface
+ *  residue). */
+function _frameResidue(viewer: ViewerInstance, sel: object): void {
+  viewer.zoomTo({ within: { distance: 20, sel } });
+  viewer.center?.(sel);
+}
+
+/** Highlight color for the type-a-residue lookup — hot magenta, which
+ *  no topology / tag-site / contact palette uses (yellow would vanish
+ *  into the TM helices). */
+const RESIDUE_HIGHLIGHT_COLOR = "#FF1F8F";
 
 /** Slab transparency. 0.34 is heavy enough to read as a clear
  *  membrane band from across the room without obscuring the helices
@@ -1140,6 +1170,8 @@ export function StructureViewer({
     setContactSource("");
     setContactQuery("");
     setContactStatus("loading");
+    setResidueInput("");
+    setHighlightResi(null);
   }, [data.uniprot_acc]);
   useEffect(() => {
     if (viewMode !== "contacts") return;
@@ -1195,6 +1227,22 @@ export function StructureViewer({
   // Stale-render guard counter (see renderViewer): bumped each invocation
   // so a superseded async render can't clobber the current one's status.
   const renderSeqRef = useRef(0);
+  // Type-a-residue highlight. Overlay is drawn as 3Dmol shapes + a label
+  // (not styles) so it can be removed without restyling the cartoon or
+  // reloading the model, and so it survives the contacts-mode restyle.
+  const [residueInput, setResidueInput] = useState("");
+  const [highlightResi, setHighlightResi] = useState<number | null>(null);
+  const [residueNote, setResidueNote] = useState("");
+  const [highlightNonce, setHighlightNonce] = useState(0);
+  /** 3Dmol selection of the highlighted residue, so a container resize
+   *  (which re-frames the whole protein) can re-frame it instead. */
+  const highlightSelRef = useRef<object | null>(null);
+  const highlightObjsRef = useRef<{ shapes: unknown[]; labels: unknown[] }>({
+    shapes: [], labels: [],
+  });
+  /** UniProt→author mapping for the active experimental structure;
+   *  ``null`` on AFDB / Schweke tabs, whose numbering is used as-is. */
+  const residueMapRef = useRef<{ segments: ProjSegment[]; chain: string } | null>(null);
   // PDBe `best_structures` lookup — fires on mount per gene. When a
   // top experimental candidate is available, an extra "Experimental"
   // variant is appended to the tabs at render time. Three states:
@@ -1923,6 +1971,10 @@ export function StructureViewer({
         }
       }
 
+      residueMapRef.current = expVariant
+        ? { segments: projSegments, chain: effectiveChainId ?? expVariant.chain_id }
+        : null;
+
       // Orient both AFDB models and experimental PDBs the same way
       // when possible: rotate so the membrane plane is horizontal and
       // extracellular is up. For experimental PDBs we pass the resolved
@@ -2474,6 +2526,12 @@ export function StructureViewer({
             } catch {
               // ignore (see initial-capture comment above)
             }
+            // The observer's first fire lands right after every render;
+            // keep a typed-residue highlight framed instead of losing it.
+            if (highlightSelRef.current && viewerRef.current === viewer) {
+              _frameResidue(viewer as ViewerInstance, highlightSelRef.current);
+              viewer.render();
+            }
           } catch {
             // 3Dmol throws on race against teardown; ignore.
           }
@@ -2530,6 +2588,104 @@ export function StructureViewer({
       viewerRef.current = null;
     };
   }, [renderViewer]);
+
+  // Draw (or clear) the typed-residue highlight on the live viewer.
+  // Re-runs whenever a render completes, so the highlight follows the
+  // reader across variant tabs and view modes.
+  const highlightOwnerRef = useRef<ViewerInstance | null>(null);
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    const objs = highlightObjsRef.current;
+    // Shapes from a previous viewer instance died with its clear().
+    if (viewer && highlightOwnerRef.current === viewer) {
+      try {
+        for (const sh of objs.shapes) viewer.removeShape?.(sh);
+        for (const lb of objs.labels) viewer.removeLabel?.(lb);
+        if (objs.shapes.length || objs.labels.length) viewer.render();
+      } catch {
+        // 3Dmol can throw against teardown; the next render settles.
+      }
+    }
+    highlightObjsRef.current = { shapes: [], labels: [] };
+    highlightOwnerRef.current = null;
+    highlightSelRef.current = null;
+    if (status !== "ready" || !viewer || highlightResi == null) {
+      setResidueNote("");
+      return;
+    }
+    const map = residueMapRef.current;
+    const resi = map ? _unpToAuthorResi(highlightResi, map.segments) : highlightResi;
+    if (resi == null) {
+      setResidueNote(`Residue ${highlightResi} isn't covered by this structure.`);
+      return;
+    }
+    const sel = map ? { resi, chain: map.chain } : { resi };
+    const atoms = (viewer.selectedAtoms?.({ ...sel, atom: "CA" }) ?? []).filter(
+      (a) => typeof a.x === "number" && typeof a.y === "number" && typeof a.z === "number",
+    );
+    if (atoms.length === 0) {
+      setResidueNote(`Residue ${highlightResi} isn't modelled in this structure.`);
+      return;
+    }
+    const first = atoms[0];
+    const resn = first.resn ? `${first.resn.charAt(0)}${first.resn.slice(1).toLowerCase()}` : "";
+    const shapes: unknown[] = [];
+    const labels: unknown[] = [];
+    try {
+      // Ball style: every heavy atom of the residue as a solid ball,
+      // plus a translucent halo on CA so it reads from across the page.
+      const resAtoms = (viewer.selectedAtoms?.(sel) ?? []).filter(
+        (a) => typeof a.x === "number" && typeof a.y === "number" && typeof a.z === "number",
+      );
+      for (const a of resAtoms) {
+        shapes.push(viewer.addSphere?.({
+          center: { x: a.x, y: a.y, z: a.z },
+          radius: 1.5,
+          color: RESIDUE_HIGHLIGHT_COLOR,
+          opacity: 1,
+        }));
+      }
+      for (const a of atoms) {
+        shapes.push(viewer.addSphere?.({
+          center: { x: a.x, y: a.y, z: a.z },
+          radius: 6,
+          color: RESIDUE_HIGHLIGHT_COLOR,
+          opacity: 0.5,
+        }));
+      }
+      const label = viewer.addLabel?.(`${resn}${highlightResi}`, {
+        position: { x: first.x, y: first.y, z: first.z },
+        backgroundColor: "#2a2a2a",
+        backgroundOpacity: 0.92,
+        fontColor: "white",
+        fontSize: 13,
+        borderThickness: 1.5,
+        borderColor: RESIDUE_HIGHLIGHT_COLOR,
+        inFront: true,
+        screenOffset: { x: 18, y: -18 },
+      });
+      if (label) labels.push(label);
+      // The ↺ button still restores the full-protein pose.
+      _frameResidue(viewer, sel);
+      viewer.render();
+    } catch {
+      // ignore — teardown race
+    }
+    highlightObjsRef.current = { shapes: shapes.filter(Boolean), labels };
+    highlightSelRef.current = sel;
+    highlightOwnerRef.current = viewer;
+    const authorNote = map && resi !== highlightResi ? ` (PDB author no. ${resi})` : "";
+    const chainNote = atoms.length > 1 ? ` on ${atoms.length} chains` : "";
+    setResidueNote(`${resn}${highlightResi}${authorNote} highlighted${chainNote}.`);
+  }, [highlightResi, highlightNonce, status]);
+
+  const submitResidue = (raw: string) => {
+    const m = raw.match(/\d+/);
+    const n = m ? Number(m[0]) : NaN;
+    setHighlightResi(Number.isFinite(n) && n > 0 ? n : null);
+    // Re-submitting the same number re-frames it (after a manual rotate).
+    setHighlightNonce((k) => k + 1);
+  };
 
   return (
     <div className={styles.viewerShell}>
@@ -2768,6 +2924,48 @@ export function StructureViewer({
               duplicate it next to the mode toggle. */}
         </div>
       ) : null}
+      <form
+        className={styles.residueSearch}
+        onSubmit={(e) => { e.preventDefault(); submitResidue(residueInput); }}
+      >
+        <label htmlFor={`residue-${geneSymbol}`} className={styles.residueLabel}>
+          Highlight residue
+        </label>
+        <input
+          id={`residue-${geneSymbol}`}
+          className={styles.residueInput}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="e.g. 245"
+          value={residueInput}
+          onChange={(e) => setResidueInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") { setResidueInput(""); setHighlightResi(null); }
+          }}
+        />
+        <button type="submit" className={styles.residueButton}>Show</button>
+        {highlightResi != null ? (
+          <button
+            type="button"
+            className={styles.residueButton}
+            onClick={() => { setResidueInput(""); setHighlightResi(null); }}
+          >
+            Clear
+          </button>
+        ) : null}
+        <InfoTip label="Residue numbering">
+          Type a residue number and press Enter to mark it with a magenta ball
+          on the active structure. Canonical and experimental tabs use
+          canonical UniProt numbering (mapped onto the PDB&apos;s own author
+          numbering for experimental structures). Isoform and ortholog tabs
+          use that sequence&apos;s own numbering. Homo-oligomers highlight the
+          residue on every chain. Esc clears.
+        </InfoTip>
+        {residueNote ? (
+          <span className={styles.residueNote} role="status">{residueNote}</span>
+        ) : null}
+      </form>
       {viewMode === "contacts" && isCanonicalActive ? <ContactSites
         onFocus={() => { const viewer = viewerRef.current; if (viewer && visibleContacts[0]) { viewer.zoomTo({ resi: [...new Set(visibleContacts.flatMap(site => site.positions))] }); viewer.render(); } }}
         onReset={() => { const viewer = viewerRef.current; if (viewer) { viewer.zoomTo({}); viewer.render(); } }}
