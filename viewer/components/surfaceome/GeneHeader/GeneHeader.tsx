@@ -27,7 +27,10 @@ import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceS
 import { linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
-import { StructureViewer } from "../StructureViewerCard/StructureViewer";
+import {
+  StructureViewer,
+  type ActiveTopology,
+} from "../StructureViewerCard/StructureViewer";
 import { TopologyBar } from "../IsoformsCard/TopologyBar";
 import styles from "./GeneHeader.module.css";
 
@@ -342,10 +345,14 @@ export function GeneHeader({
     { resi: number; nonce: number } | null
   >(null);
   const [highlightedResidue, setHighlightedResidue] = useState<number | null>(null);
+  // The viewer's active tab, so the strip under it draws that tab's sequence
+  // rather than always the canonical one. Null until the viewer reports in.
+  const [activeTopology, setActiveTopology] = useState<ActiveTopology | null>(null);
   const tagSiteRows =
     taggedSites?.has_data && structureData
       ? renderableTagSites(taggedSites.sites, structureData.topology.length)
       : [];
+  const stripTagSites = activeTopology?.canonicalNumbering === false ? [] : tagSiteRows;
   // The fetcher signals what kind of pLDDT the number is via the
   // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
   //   * "placeholder" — fetcher hasn't run, the 0.0 isn't a measurement.
@@ -781,6 +788,7 @@ export function GeneHeader({
               geneSymbol={g.hgnc_symbol}
               residueRequest={residueRequest}
               onHighlightChange={setHighlightedResidue}
+              onActiveTopologyChange={setActiveTopology}
               // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
               // model when this gene is in the manifest. Renders as a
               // "Homo-oligomer" tab right after Canonical and before
@@ -974,16 +982,19 @@ export function GeneHeader({
                 ),
               ]}
             />
-            {/* Canonical topology strip under the viewer. Carries a pin per
-                rendered tag site (colored to match the 3D "Tag sites"
-                spheres) when the gene has any, and doubles as the residue
-                picker: a click highlights that residue (or the tag site
-                under the click) in the 3D view, and the viewer's
+            {/* Topology strip under the viewer, for the sequence on the
+                active tab (canonical until the viewer reports otherwise).
+                Carries a pin per rendered tag site (colored to match the 3D
+                "Tag sites" spheres) on tabs numbered on the canonical
+                sequence — tag sites are canonical-keyed, so they'd land on
+                the wrong residues of an isoform or ortholog. Doubles as the
+                residue picker: a click highlights that residue (or the tag
+                site under the click) in the 3D view, and the viewer's
                 highlighted residue shows here as a pink line. */}
             <TopologyBar
-              topology={structureData.topology}
-              ariaLabel={`${g.hgnc_symbol} canonical topology${tagSiteRows.length > 0 ? " with tag-insertion sites" : ""}; click to highlight a residue in the 3D view`}
-              pins={tagSiteRows.map((r) => ({
+              topology={activeTopology?.topology ?? structureData.topology}
+              ariaLabel={`${g.hgnc_symbol} ${(activeTopology?.label ?? "Canonical").toLowerCase()} topology${stripTagSites.length > 0 ? " with tag-insertion sites" : ""}; click to highlight a residue in the 3D view`}
+              pins={stripTagSites.map((r) => ({
                 siteId: r.siteId,
                 leftPct: r.leftPct,
                 provenance: r.provenance,
