@@ -14,6 +14,7 @@ import {
   type ProjSegment,
 } from "../../../lib/experimental-structure";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
+import { projectCanonicalResidue } from "../../../lib/canonical-frame";
 import {
   MEMBRANE_COLOR,
   RESIDUE_HIGHLIGHT_COLOR,
@@ -101,6 +102,18 @@ export interface StructureVariantAfdb extends StructureVariantBase {
   uniprot_acc: string;
   /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
+  /** ``per_residue_topology_canonical_frame`` — this proteoform's
+   *  topology re-indexed onto the canonical axis, ``'-'`` where it does
+   *  not cover a canonical position. Present on isoforms and orthologs;
+   *  absent on pre-backfill records, where a typed residue number is
+   *  read against this proteoform's own numbering as before. */
+  canonical_frame?: string | null;
+  /** This proteoform's own sequence, for naming the mapped residue and
+   *  saying whether it is conserved. */
+  sequence?: string | null;
+  /** Percent identity to the canonical, shown as context. It does NOT
+   *  gate the mapping — coverage at the position does. */
+  pct_identity?: number | null;
 }
 
 /** Schweke et al. 2024 AF2 homo-dimer prediction (Cell 187:999, PMID
@@ -249,6 +262,11 @@ interface StructureViewerProps {
    *  lazy-fetch their own metadata from AFDB's prediction API
    *  client-side when the user clicks them. */
   canonicalStruct: CanonicalStructStats;
+  /** Canonical AA sequence, 1:1 with ``data.topology``. Used to say
+   *  whether a residue a reader asked for is conserved in the isoform or
+   *  ortholog being shown. Optional; without it the mapped residue is
+   *  still named, just not compared. */
+  canonicalSequence?: string | null;
   /** Display name for the gene (e.g. "Epidermal growth factor
    *  receptor"). Shown in the caption when the active variant is
    *  an AlphaFold model — the model has no per-entry title of its
@@ -904,6 +922,7 @@ export function StructureViewer({
   data,
   geneSymbol,
   canonicalStruct,
+  canonicalSequence = null,
   proteinName,
   surfaceBindAnchors = [],
   tagSites = [],
@@ -2351,7 +2370,41 @@ export function StructureViewer({
       return;
     }
     const map = residueMapRef.current;
-    const resi = map ? _unpToAuthorResi(highlightResi, map.segments) : highlightResi;
+    // A residue number means something only against the sequence it was
+    // read off. The reader types a CANONICAL number — it is what the tag
+    // sites, the topology strip and the rest of the page are keyed on —
+    // so on an isoform or ortholog tab it has to be mapped before it can
+    // select anything. Reading it raw would silently highlight that
+    // proteoform's own residue of the same number, which is a different
+    // residue: canonical MS4A1 161 is Tyr, mouse Ms4a1 161 is not the
+    // aligned position at all (154 is, and it is a proline).
+    const proteoform =
+      activeVariant?.source === "afdb" && activeVariant.canonical_frame
+        ? projectCanonicalResidue(
+            highlightResi,
+            activeVariant.canonical_frame,
+            activeVariant.sequence,
+            canonicalSequence,
+          )
+        : null;
+    if (proteoform && proteoform.residue == null) {
+      // Coverage is per position: a proteoform can be highly identical
+      // overall and still not carry this residue.
+      const identity =
+        activeVariant?.source === "afdb" ? activeVariant.pct_identity : null;
+      const pct =
+        typeof identity === "number"
+          ? ` (${Math.round(identity)}% identical overall)`
+          : "";
+      setResidueNote(
+        `Canonical residue ${highlightResi} isn't present in ${
+          activeVariant?.label ?? "this proteoform"
+        }${pct}.`,
+      );
+      return;
+    }
+    const localResi = proteoform?.residue ?? highlightResi;
+    const resi = map ? _unpToAuthorResi(localResi, map.segments) : localResi;
     if (resi == null) {
       setResidueNote(`Residue ${highlightResi} isn't covered by this structure.`);
       return;
@@ -2379,7 +2432,7 @@ export function StructureViewer({
           opacity: 1,
         }));
       }
-      const label = viewer.addLabel?.(`${resn}${highlightResi}`, {
+      const label = viewer.addLabel?.(`${resn}${localResi}`, {
         position: { x: first.x, y: first.y, z: first.z },
         backgroundColor: "#2a2a2a",
         backgroundOpacity: 0.92,
@@ -2400,10 +2453,29 @@ export function StructureViewer({
     highlightObjsRef.current = { shapes: shapes.filter(Boolean), labels };
     highlightSelRef.current = sel;
     highlightOwnerRef.current = viewer;
-    const authorNote = map && resi !== highlightResi ? ` (PDB author no. ${resi})` : "";
+    const authorNote = map && resi !== localResi ? ` (PDB author no. ${resi})` : "";
     const chainNote = atoms.length > 1 ? ` on ${atoms.length} chains` : "";
-    setResidueNote(`${resn}${highlightResi}${authorNote} highlighted${chainNote}.`);
-  }, [highlightResi, highlightNonce, status]);
+    if (proteoform) {
+      // Say what was asked for and what is being shown, because they are
+      // different numbers — and whether the residue itself survived the
+      // alignment, which identity alone would not tell you.
+      const conserved =
+        proteoform.conserved === null
+          ? ""
+          : proteoform.conserved
+            ? ", conserved"
+            : `, substituted (canonical ${canonicalSequence?.[highlightResi - 1] ?? "?"})`;
+      setResidueNote(
+        `Canonical ${highlightResi} → ${activeVariant?.label ?? "proteoform"} ` +
+          `${resn}${localResi}${conserved}${authorNote}, highlighted${chainNote}.`,
+      );
+    } else {
+      setResidueNote(`${resn}${localResi}${authorNote} highlighted${chainNote}.`);
+    }
+    // activeVariant is rebuilt by the parent on every render, so depend
+    // on its id rather than the object or this re-fires constantly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightResi, highlightNonce, status, activeVariant?.id, canonicalSequence]);
 
   // Strip click → highlight that residue.
   useEffect(() => {

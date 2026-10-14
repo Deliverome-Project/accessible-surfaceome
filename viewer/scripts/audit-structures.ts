@@ -55,13 +55,17 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  fetchCanonicalSequence,
   fetchExperimentalPdb,
   isCleanStructure,
+  MIN_IDENTITY,
   observedResSeq,
   pickBestStructure,
   pickPdbChain,
   projectedCoverage,
+  projectedIdentity,
   projectExperimentalChain,
+  residueOneLetterByResSeq,
   type PDBeBestStructure,
 } from "../lib/experimental-structure";
 import {
@@ -136,6 +140,10 @@ const auditFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   throw new ServiceError(`${String(input)}: ${last}`);
 }) as typeof fetch;
 
+/** Below this many comparable residues the identity figure is noise —
+ *  a short peptide chain can match by luck. Reported, never judged. */
+const MIN_TESTED = 20;
+
 interface Gene {
   gene_symbol: string;
   uniprot_acc: string;
@@ -148,8 +156,14 @@ interface Row {
   chain_id: string;
   /** pdb | cif | cif_chain_only — which RCSB path loaded it. */
   source: string;
-  /** ok | fail | no_structure | error */
+  /** ok | fail | misregistered | no_structure | error */
   exp_status: string;
+  /** Percent of the projected residues that are the right amino acid.
+   *  Blank when no canonical sequence was reachable. A structure can
+   *  load perfectly and still be numbered wrong, which is what this
+   *  catches: coverage says a projection lands on atoms, identity says
+   *  it lands on the RIGHT atoms. */
+  identity_pct: string;
   /** ok | fail | none | isoform_only | error */
   afdb_status: string;
   detail: string;
@@ -211,6 +225,30 @@ async function auditExperimental(g: Gene, row: Row): Promise<void> {
     row.detail = "no UniProt-mapped residue lands on an atom";
     return;
   }
+  // Loading is not the same as being numbered right. Compare the amino
+  // acids: the residue at author `u + offset` has to BE the UniProt
+  // residue at `u`. A wrong offset still covers every residue and still
+  // renders — it just renders the wrong ones, and it moves the
+  // compartment colours and the membrane slab with it.
+  const canonicalSeq = await fetchCanonicalSequence(g.uniprot_acc, auditFetch);
+  if (canonicalSeq) {
+    const { matches, tested } = projectedIdentity(segments, {
+      seq: canonicalSeq,
+      resNames: residueOneLetterByResSeq(exp.rawPdb, chain),
+    });
+    if (tested >= MIN_TESTED) {
+      const frac = matches / tested;
+      row.identity_pct = (frac * 100).toFixed(1);
+      if (frac < MIN_IDENTITY) {
+        row.exp_status = "misregistered";
+        row.detail = appendDetail(
+          row.detail,
+          `projection puts ${matches}/${tested} residues on the right amino acid`,
+        );
+        return;
+      }
+    }
+  }
   row.exp_status = "ok";
 }
 
@@ -257,6 +295,7 @@ async function auditGene(g: Gene): Promise<Row> {
     chain_id: "",
     source: "",
     exp_status: "",
+    identity_pct: "",
     afdb_status: "",
     detail: "",
   };
@@ -280,7 +319,7 @@ async function auditGene(g: Gene): Promise<Row> {
 
 const COLUMNS: (keyof Row)[] = [
   "gene_symbol", "uniprot_acc", "pdb_id", "chain_id", "source",
-  "exp_status", "afdb_status", "detail",
+  "exp_status", "identity_pct", "afdb_status", "detail",
 ];
 
 function toTsv(rows: Row[]): string {
@@ -329,6 +368,8 @@ async function main() {
 
   const count = (k: keyof Row, v: string) => rows.filter((r) => r[k] === v).length;
   const failures = rows.filter((r) => r.exp_status === "fail" || r.afdb_status === "fail");
+  const misregistered = rows.filter((r) => r.exp_status === "misregistered");
+  const scored = rows.filter((r) => r.identity_pct !== "");
   const errors = rows.filter((r) => r.exp_status === "error" || r.afdb_status === "error");
   const nothing = rows.filter(
     (r) => r.exp_status === "no_structure" && r.afdb_status !== "ok",
@@ -346,16 +387,26 @@ async function main() {
       `${count("afdb_status", "none")} no model, ` +
       `${count("afdb_status", "isoform_only")} isoform-only.`,
     "",
-    `**${failures.length} failing, ${errors.length} service errors.** ` +
+    `**${failures.length} failing, ${misregistered.length} misregistered, ` +
+      `${errors.length} service errors.** ` +
       `${nothing.length} genes show no 3D structure (no PDB entry and no AFDB canonical model).`,
+    "",
+    `Numbering was checked against the canonical sequence for ${scored.length} ` +
+      `of the ${withExp.length} genes with a PDB pick. "Misregistered" means the ` +
+      `structure loads and covers the mapping, but the residues it puts at those ` +
+      `numbers are not this protein's — so the highlighted residue, the ` +
+      `compartment colours and the membrane slab are all shifted.`,
   ];
   const list = (title: string, rs: Row[]) => {
     if (rs.length === 0) return;
-    md.push("", `## ${title}`, "", "| gene | PDB | chain | exp | afdb | detail |", "|---|---|---|---|---|---|");
+    md.push("", `## ${title}`, "",
+      "| gene | PDB | chain | exp | identity | afdb | detail |", "|---|---|---|---|---|---|---|");
     for (const r of rs) {
-      md.push(`| ${r.gene_symbol} | ${r.pdb_id} | ${r.chain_id} | ${r.exp_status} | ${r.afdb_status} | ${r.detail} |`);
+      md.push(`| ${r.gene_symbol} | ${r.pdb_id} | ${r.chain_id} | ${r.exp_status} | ` +
+        `${r.identity_pct ? `${r.identity_pct}%` : "—"} | ${r.afdb_status} | ${r.detail} |`);
     }
   };
+  list("Misregistered — loads, but numbered wrong", misregistered);
   list("Failures", failures);
   list("Service errors", errors);
 
@@ -381,7 +432,9 @@ async function main() {
   console.log(md.join("\n"));
 
   const errorBudget = Math.floor(rows.length * 0.01);
-  if (failures.length > 0 || errors.length > errorBudget) process.exit(1);
+  if (failures.length > 0 || misregistered.length > 0 || errors.length > errorBudget) {
+    process.exit(1);
+  }
 }
 
 main().catch((e) => {
