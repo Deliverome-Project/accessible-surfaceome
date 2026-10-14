@@ -73,6 +73,14 @@ jobs:
         # sortable-column regression (a7c2163e7) merge silently. Now gated.
         run: bash tests/run_render_tests.sh
 
+      - name: unit tests
+        # Runs viewer/tests/*.test.ts — the pure-function suites (UniProt→
+        # PDB-author projection, tag-site derivation, SURFACE-Bind EC
+        # sites, text scrubbing). Ungated until now, which is how the
+        # MS4A1 8VGN off-by-37 projection bug could have been caught by a
+        # test nobody ran.
+        run: bash tests/run_unit_tests.sh
+
       - name: build-fetch pacing/retry tests
         # scripts/lib/build-fetch.mjs (the shared limiter + retry/degraded/
         # backoff machinery every bulk per-gene build fetcher routes
