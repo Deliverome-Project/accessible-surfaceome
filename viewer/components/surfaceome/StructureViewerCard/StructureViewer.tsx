@@ -4,13 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import {
-  bestLinearOffset,
   fetchExperimentalPdb,
   isCleanStructure,
-  observedResSeq,
   pickBestStructure,
   pickPdbChain,
+  projectExperimentalChain,
   type PDBeBestStructure,
+  type ProjSegment,
 } from "../../../lib/experimental-structure";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
@@ -170,16 +170,6 @@ interface AfdbVariantMeta {
   fractionPlddtVeryLow: number;
 }
 
-/** A contiguous UniProt→PDB-author projection segment. A topology
- *  (UniProt-coord) residue ``u`` in ``[unpLo, unpHi]`` maps to PDB
- *  author resSeq ``u + offset``. Clean structures have a single
- *  segment; fusion constructs have several, each with its own offset. */
-interface ProjSegment {
-  unpLo: number;
-  unpHi: number;
-  offset: number;
-}
-
 /** Build the PDB-author-resSeq → topology(UniProt)-index lookup the
  *  orientation math consumes, inverting the forward ``u → u + offset``
  *  projection used for cartoon coloring. Returns ``null`` for resSeq
@@ -195,91 +185,6 @@ function _makeResiToTopo(
     }
     return null;
   };
-}
-
-/** Raw SIFTS detailed-mapping segment for one chain. ``authorLo`` /
- *  ``authorHi`` are nullable — PDBe omits author numbers for some
- *  entries (GPR75 9xqc returns ``None``/``None``); the offset is then
- *  derived from whichever boundary is present, or from the seqres span. */
-interface SiftsRawSegment {
-  unpLo: number;
-  unpHi: number;
-  seqresLo: number;
-  authorLo: number | null;
-  authorHi: number | null;
-}
-
-/** Fetch SIFTS per-segment UniProt↔PDB mappings (``/api/mappings/{pdb}``)
- *  for the chosen chain. Only used on the ``approx`` (fusion) path, where
- *  `best_structures` collapses the discontinuous mapping into one
- *  non-linear span. Returns ``[]`` on any failure so the caller can fall
- *  back to the single-offset projection. */
-async function _fetchSiftsSegments(
-  pdbId: string,
-  uniprotAcc: string,
-  chainId: string,
-): Promise<SiftsRawSegment[]> {
-  try {
-    const r = await fetch(
-      `https://www.ebi.ac.uk/pdbe/api/mappings/${pdbId.toLowerCase()}`,
-      { cache: "force-cache" },
-    );
-    if (!r.ok) return [];
-    const j = (await r.json()) as Record<
-      string,
-      { UniProt?: Record<string, { mappings?: Array<Record<string, unknown>> }> }
-    >;
-    const unpBlock = j[pdbId.toLowerCase()]?.UniProt ?? {};
-    const block = unpBlock[uniprotAcc] ?? Object.values(unpBlock)[0];
-    const mappings = block?.mappings ?? [];
-    const segs: SiftsRawSegment[] = [];
-    for (const m of mappings) {
-      if (m.chain_id !== chainId && m.struct_asym_id !== chainId) continue;
-      const unpLo = m.unp_start as number;
-      const unpHi = m.unp_end as number;
-      if (typeof unpLo !== "number" || typeof unpHi !== "number") continue;
-      const start = m.start as Record<string, number | null> | undefined;
-      const end = m.end as Record<string, number | null> | undefined;
-      segs.push({
-        unpLo,
-        unpHi,
-        seqresLo: (start?.residue_number as number) ?? unpLo,
-        authorLo: (start?.author_residue_number as number | null) ?? null,
-        authorHi: (end?.author_residue_number as number | null) ?? null,
-      });
-    }
-    return segs;
-  } catch {
-    return [];
-  }
-}
-
-/** Convert raw SIFTS segments into projection segments (approach C). For
- *  each segment, derive the UniProt→author offset from whichever author
- *  boundary PDBe provides (both give the same offset for a linear
- *  segment; if one is null use the other), then keep whichever of
- *  {author offset, seqres offset} lands more of the segment on real
- *  atoms. Self-correcting: validating against the file means a wrong
- *  author number simply loses to the seqres candidate. */
-function _projSegmentsForDirty(
-  raw: SiftsRawSegment[],
-  observed: Set<number>,
-): ProjSegment[] {
-  const out: ProjSegment[] = [];
-  for (const s of raw) {
-    const seqresOffset = s.seqresLo - s.unpLo;
-    const candidates: number[] = [];
-    let authorOffset: number | null = null;
-    if (s.authorLo != null) authorOffset = s.authorLo - s.unpLo;
-    else if (s.authorHi != null) authorOffset = s.authorHi - s.unpHi;
-    if (authorOffset != null) candidates.push(authorOffset);
-    candidates.push(seqresOffset);
-    const offset = bestLinearOffset(
-      s.unpLo, s.unpHi, candidates, observed, authorOffset ?? seqresOffset,
-    );
-    out.push({ unpLo: s.unpLo, unpHi: s.unpHi, offset });
-  }
-  return out;
 }
 
 /** Subset of the SurfaceomeRecord canonical AFDB struct block.
@@ -1545,37 +1450,19 @@ export function StructureViewer({
       // residues ACTUALLY present in the fetched file and keep the best.
       let projSegments: ProjSegment[] = [];
       if (expVariant) {
-        const chain = effectiveChainId ?? expChainId;
-        const observed = observedResSeq(rawPdb, chain);
-        const seqresOffset = expVariant.pdb_start - expVariant.unp_start;
-        if (expVariant.mappingMode === "approx") {
-          // Approach C — discontinuous fusion mapping. Fetch SIFTS
-          // per-segment author numbers and project piecewise, each
-          // segment's offset file-validated. Falls through to the
-          // single-offset path below if SIFTS is unavailable.
-          const raw = await _fetchSiftsSegments(
-            expVariant.pdb_id, data.uniprot_acc, expVariant.chain_id,
-          );
-          if (raw.length > 0) projSegments = _projSegmentsForDirty(raw, observed);
-        }
-        if (projSegments.length === 0) {
-          // Clean single contiguous segment (or dirty w/o usable SIFTS).
-          // Candidate offsets: 0 (file numbered by UniProt residue — the
-          // modern norm, true for GPR75 9xqc where author == UniProt) vs
-          // the legacy SEQRES offset. Ties keep the legacy offset so
-          // anything that already rendered can't regress (EGFR 7syd: both
-          // are 0, 614 residues). 9xqc: offset 0 covers 266 residues vs
-          // the legacy -34's 234, so the bug (off-by-34) is corrected.
-          const offset = bestLinearOffset(
-            expVariant.unp_start, expVariant.unp_end,
-            [0, seqresOffset], observed, seqresOffset,
-          );
-          projSegments = [{
-            unpLo: expVariant.unp_start,
-            unpHi: expVariant.unp_end,
-            offset,
-          }];
-        }
+        projSegments = await projectExperimentalChain(
+          {
+            pdbId: expVariant.pdb_id,
+            uniprotAcc: data.uniprot_acc,
+            chainId: expVariant.chain_id,
+            unpStart: expVariant.unp_start,
+            unpEnd: expVariant.unp_end,
+            pdbStart: expVariant.pdb_start,
+            approx: expVariant.mappingMode === "approx",
+          },
+          rawPdb,
+          effectiveChainId ?? expChainId,
+        );
       }
 
       // Orient both AFDB models and experimental PDBs the same way

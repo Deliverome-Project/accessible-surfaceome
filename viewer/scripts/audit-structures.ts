@@ -25,9 +25,8 @@
  *     null or falls back to a different chain — the topology colours the
  *     wrong chain);
  *   - none of the chain's UniProt-mapped residues land on atoms under the
- *     viewer's projection, so topology colouring comes out blank. Fusion
- *     constructs ("approx" mapping) are projected piecewise from SIFTS in
- *     the viewer, so for those this is reported as a warning only.
+ *     viewer's projection (`projectExperimentalChain`, SIFTS fallback
+ *     included), so topology colouring would come out blank.
  * Canonical AlphaFold tab:
  *   - AFDB's first prediction entry (the one the viewer renders) is an
  *     isoform while a canonical model exists.
@@ -56,13 +55,13 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  bestLinearOffset,
   fetchExperimentalPdb,
   isCleanStructure,
   observedResSeq,
-  overlapCount,
   pickBestStructure,
   pickPdbChain,
+  projectedCoverage,
+  projectExperimentalChain,
   type PDBeBestStructure,
 } from "../lib/experimental-structure";
 import {
@@ -149,7 +148,7 @@ interface Row {
   chain_id: string;
   /** pdb | cif | cif_chain_only — which RCSB path loaded it. */
   source: string;
-  /** ok | warn | fail | no_structure | error */
+  /** ok | fail | no_structure | error */
   exp_status: string;
   /** ok | fail | none | isoform_only | error */
   afdb_status: string;
@@ -191,15 +190,24 @@ async function auditExperimental(g: Gene, row: Row): Promise<void> {
       : "file has no atoms";
     return;
   }
-  // The viewer's single-offset projection (StructureViewer render path).
+  // The viewer's UniProt→author projection, SIFTS fallback included.
   const observed = observedResSeq(exp.rawPdb, chain);
-  const seqresOffset = pick.start - pick.unp_start;
-  const offset = bestLinearOffset(
-    pick.unp_start, pick.unp_end, [0, seqresOffset], observed, seqresOffset,
+  const segments = await projectExperimentalChain(
+    {
+      pdbId: pick.pdb_id,
+      uniprotAcc: g.uniprot_acc,
+      chainId: pick.chain_id,
+      unpStart: pick.unp_start,
+      unpEnd: pick.unp_end,
+      pdbStart: pick.start,
+      approx: !isCleanStructure(pick),
+    },
+    exp.rawPdb,
+    chain,
+    auditFetch,
   );
-  const covered = overlapCount(pick.unp_start, pick.unp_end, offset, observed);
-  if (covered === 0) {
-    row.exp_status = isCleanStructure(pick) ? "fail" : "warn";
+  if (projectedCoverage(segments, observed) === 0) {
+    row.exp_status = "fail";
     row.detail = "no UniProt-mapped residue lands on an atom";
     return;
   }
@@ -321,7 +329,6 @@ async function main() {
 
   const count = (k: keyof Row, v: string) => rows.filter((r) => r[k] === v).length;
   const failures = rows.filter((r) => r.exp_status === "fail" || r.afdb_status === "fail");
-  const warnings = rows.filter((r) => r.exp_status === "warn");
   const errors = rows.filter((r) => r.exp_status === "error" || r.afdb_status === "error");
   const nothing = rows.filter(
     (r) => r.exp_status === "no_structure" && r.afdb_status !== "ok",
@@ -339,7 +346,7 @@ async function main() {
       `${count("afdb_status", "none")} no model, ` +
       `${count("afdb_status", "isoform_only")} isoform-only.`,
     "",
-    `**${failures.length} failing, ${warnings.length} warnings, ${errors.length} service errors.** ` +
+    `**${failures.length} failing, ${errors.length} service errors.** ` +
       `${nothing.length} genes show no 3D structure (no PDB entry and no AFDB canonical model).`,
   ];
   const list = (title: string, rs: Row[]) => {
@@ -350,7 +357,6 @@ async function main() {
     }
   };
   list("Failures", failures);
-  list("Warnings", warnings);
   list("Service errors", errors);
 
   if (PREVIOUS) {

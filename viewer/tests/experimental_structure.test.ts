@@ -9,10 +9,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  dbrefSegments,
   EXP_FULL_ASSEMBLY_MAX_ATOMS,
   fetchExperimentalPdb,
+  observedResSeq,
   pickBestStructure,
   pickPdbChain,
+  projectedCoverage,
+  projectExperimentalChain,
   type PDBeBestStructure,
 } from "../lib/experimental-structure";
 
@@ -154,4 +158,87 @@ test("fetchExperimentalPdb: no loadable format throws the RCSB status", async ()
     fetchExperimentalPdb("0XXX", "A", impl),
     /RCSB returned 404 for 0XXX/,
   );
+});
+
+// ---- projectExperimentalChain: UniProt→author numbering ----------------
+
+/** PDB ATOM lines for chain ``ch``, one CA per author residue number. */
+function atomLines(ch: string, resis: number[]): string {
+  return resis
+    .map(
+      (r, i) =>
+        `ATOM  ${String(i + 1).padStart(5)}  CA  GLY ${ch}${String(r).padStart(4)}` +
+        "       0.000   0.000   0.000  1.00  0.00           C  ",
+    )
+    .join("\n");
+}
+const range = (lo: number, hi: number) =>
+  Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+
+const HIT = {
+  pdbId: "2JQK",
+  uniprotAcc: "Q9UQN3",
+  chainId: "B",
+  unpStart: 195,
+  unpEnd: 213,
+  pdbStart: 1,
+  approx: false,
+};
+
+test("projection: a file numbered by UniProt needs no lookups", async () => {
+  const { impl, calls } = stubFetch({});
+  const segs = await projectExperimentalChain(
+    HIT, atomLines("B", range(195, 213)), "B", impl,
+  );
+  assert.deepEqual(segs, [{ unpLo: 195, unpHi: 213, offset: 0 }]);
+  assert.deepEqual(calls, []);
+});
+
+test("projection: SIFTS author numbers rescue a chain numbered by neither UniProt nor SEQRES", async () => {
+  // CHMP2B 2jqk chain B: UniProt 195-213, SEQRES 1-19, author 111-129.
+  const { impl } = stubFetch({
+    "https://www.ebi.ac.uk/pdbe/api/mappings/2jqk": () =>
+      Response.json({
+        "2jqk": {
+          UniProt: {
+            Q9UQN3: {
+              mappings: [{
+                chain_id: "B",
+                unp_start: 195,
+                unp_end: 213,
+                start: { residue_number: 1, author_residue_number: 111 },
+                end: { residue_number: 19, author_residue_number: 129 },
+              }],
+            },
+          },
+        },
+      }),
+  });
+  const pdb = atomLines("B", range(116, 129));
+  const segs = await projectExperimentalChain(HIT, pdb, "B", impl);
+  assert.equal(segs[0].offset, -84);
+  assert.equal(projectedCoverage(segs, observedResSeq(pdb, "B")), 14);
+});
+
+test("projection: DBREF rescues a chain SIFTS has no author numbers for", async () => {
+  // KCNMB4 6v22 chain E: UniProt 1-210 numbered from 2001 in the file.
+  const hit = { ...HIT, pdbId: "6V22", uniprotAcc: "Q86W47", chainId: "E", unpStart: 1, unpEnd: 210 };
+  const { impl } = stubFetch({});
+  const pdb =
+    "DBREF  6V22 E 2001  2210  UNP    Q86W47   KCMB4_HUMAN      1    210             \n" +
+    atomLines("E", range(2007, 2205));
+  const segs = await projectExperimentalChain(hit, pdb, "E", impl);
+  assert.deepEqual(segs, [{ unpLo: 1, unpHi: 210, offset: 2000 }]);
+  assert.equal(projectedCoverage(segs, observedResSeq(pdb, "E")), 199);
+});
+
+test("dbrefSegments ignores other chains and other accessions", () => {
+  const pdb =
+    "DBREF  6V22 E 2001  2210  UNP    Q86W47   KCMB4_HUMAN      1    210             \n" +
+    "DBREF  6V22 A    1  1236  UNP    Q12791   KCMA1_HUMAN      1   1236             \n";
+  assert.deepEqual(dbrefSegments(pdb, "E", "Q86W47"), [
+    { unpLo: 1, unpHi: 210, offset: 2000 },
+  ]);
+  assert.deepEqual(dbrefSegments(pdb, "E", "Q12791"), []);
+  assert.deepEqual(dbrefSegments(pdb, "B", "Q86W47"), []);
 });
