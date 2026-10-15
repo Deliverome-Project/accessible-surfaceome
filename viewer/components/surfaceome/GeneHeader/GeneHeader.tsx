@@ -17,6 +17,7 @@ import type {
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import {
+  libraryMembersByAccession,
   libraryStructureVariants,
 } from "../../../lib/structure-viewer-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
@@ -809,6 +810,9 @@ export function GeneHeader({
               residueRequest={residueRequest}
               onHighlightChange={setHighlightedResidue}
               onActiveTopologyChange={setActiveTopology}
+              // Marks every tab whose sequence a library member orders, and
+              // says under the strip whether the open tab is one of them.
+              libraryMembers={libraryMembersByAccession(rec)}
               // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
               // model when this gene is in the manifest. Renders as a
               // "Homo-oligomer" tab right after Canonical and before
@@ -1012,7 +1016,7 @@ export function GeneHeader({
                 // structure IS one of those models does not get a second, identical tab.
                 // SLC6A8 is that case: its library construct is AFDB's AF-P48029-F1 and
                 // P48029 is the gene's canonical accession. The card marks the existing
-                // tab instead (libraryConstructByAccession), which also reads better --
+                // tab instead (libraryMembersByAccession), which also reads better --
                 // "Canonical is the library construct" rather than two tabs that are the
                 // same coordinates.
                 ...libraryStructureVariants(rec, [
