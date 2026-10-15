@@ -44,6 +44,16 @@ for i in range(0, n, 2000):
 np.save("/tmp/v.npy", verts.astype(np.float32))
 np.save("/tmp/s.npy", scores.astype(np.float32))
 np.save("/tmp/r.npy", rid[best].astype(np.int32))
+# Persist them. Clustering parameters are the one thing most likely to be
+# revisited -- SURFACE-Bind's published DBSCAN(eps=2.5, min_samples=2) versus
+# anything else -- and without the vertices that means re-running MaSIF
+# inference for every protein just to re-cluster. 56 KB each, ~131 MB for the
+# whole library, so no future clustering question costs inference again.
+import os
+os.makedirs("/vol/verts", exist_ok=True)
+np.save("/vol/verts/%s.v.npy" % name, verts.astype(np.float32))
+np.save("/vol/verts/%s.s.npy" % name, scores.astype(np.float32))
+np.save("/vol/verts/%s.r.npy" % name, rid[best].astype(np.int32))
 json.dump({"n_verts": int(n)}, open("/tmp/ext.json", "w"))
 """
 
@@ -133,12 +143,13 @@ def run_one(acc: str):
     rec["frac_above_0.7"] = round(float(keep.mean()), 3)
     sites = []
     if keep.sum() >= 5:
-        lab = DBSCAN(eps=3.0, min_samples=5).fit_predict(V[keep])
+        # SURFACE-Bind's own published parameters (their data.py:161).
+        lab = DBSCAN(eps=2.5, min_samples=2).fit_predict(V[keep])
         Vk, Rk, Sk = V[keep], R[keep], S_[keep]
         import collections as C
 
         for k, npts in C.Counter(lab[lab >= 0]).items():
-            if npts < 200:
+            if npts <= 200:  # theirs keeps `len(cluster) > 200`
                 continue
             m = lab == k
             cen = Vk[m].mean(0)
