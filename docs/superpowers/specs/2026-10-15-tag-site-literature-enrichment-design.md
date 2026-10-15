@@ -179,8 +179,31 @@ New `agents/tag_site/member_frames.py`:
    `library_topology_public.topology_acc`, **verifying `sha256(sequence)` against
    the row's `sequence_sha256`**;
 3. a member whose sha does not match, or has no row, is **skipped and reported** —
-   never silently given the canonical. (In a 60-member sample: 53 matched with
-   zero sha mismatches, 7 had no row for the accession.)
+   never silently given the canonical.
+
+**Implemented and validated on all 566: 566/566 resolve, zero sha mismatches**,
+and the longest inter-TM run derived from the resolved topology equals the
+independently-computed `longest_inter_tm_ecto_run_aa` for every member.
+
+The refusal-to-substitute earned its keep immediately. A first pass resolved
+only 495/566, and the 71 misses were exactly the 47 isoform + 24 designed-ORF
+members — the ones that need this most — with **zero sha mismatches among
+them**, which said the query was wrong rather than the data. `topology_acc`
+carries the suffixed accession (`P13637-3`) while `topology_public.uniprot_acc`
+holds the base; the suffix is in `uniprot_acc_full`. Matching both fixed it. A
+fallback-to-canonical would have hidden the bug and silently mis-numbered 71
+members.
+
+**Worked example — why this is not theoretical.** KCNN2's member is `l1-p1037`,
+a 791-aa designed ORF against canonical Q9H2S1's 579. Two papers place tags at
+canonical **A246** (TM3–TM4 loop) and **K162** (S1–S2 loop); the 20-gene spike
+published exactly those numbers. Mapped into the member's frame they are **458**
+and **374**, each landing on the *same residue identity* (A and K) inside a
+genuine inter-TM extracellular run (442–465, 368–376). Placed at the canonical
+numbers instead, a cassette in the real construct lands on **L246 and S162,
+both topology `I`** — the tag would be intracellular, on a construct that
+expresses and traffics normally and carries no detectable surface tag. Two of
+the spike's six headline sites were numbered in the wrong frame.
 
 `regenerate_tag_site_lit.py` takes the member sequence/topology instead of the
 API record's `canonical_topology`. Every emitted site carries
