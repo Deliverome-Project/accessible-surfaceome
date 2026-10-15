@@ -41,6 +41,11 @@ def main() -> None:
     ap.add_argument("--s4e9-dir", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--library", default="l1")
+    ap.add_argument(
+        "--allow-species-conflict",
+        action="store_true",
+        help="build even where the manifests disagree on a member's species",
+    )
     args = ap.parse_args()
     load_env()
 
@@ -59,9 +64,46 @@ def main() -> None:
         if r["library"] == args.library
     }
     members = [r for r in pay if r["candidate_id"] in idx]
+    pay_by_id = {r["candidate_id"]: r for r in members}
     print(f"{args.library} members with a chosen structure: {len(members)}")
     print("  structure source:", dict(C.Counter(r["source"] for r in members)))
     print("  proteoform:", dict(C.Counter(r["proteoform_match"] for r in members)))
+    # The two manifests disagree about what some members ARE. For 39
+    # candidate_set=library_reference members the index names a cyno or mouse
+    # topology row for what the payload calls a human protein -- the sequence
+    # match landed on an ortholog whose sequence is identical over the matched
+    # region, without constraining to the member's own species. All 196 genuine
+    # ortholog members agree, which is why the payload is treated as the
+    # ordering identity and the index only as a topology pointer.
+    #
+    # Pairing a human structure with cyno topology filters sites against the
+    # wrong organism's residue string, silently. So this is a hard stop rather
+    # than a warning: a conflict means the manifests need reconciling, not that
+    # this script should pick a side.
+    norm = {"cynomolgus": "cyno"}
+    conflict = [
+        r["candidate_id"]
+        for r in members
+        if norm.get(
+            idx[r["candidate_id"]]["species"], idx[r["candidate_id"]]["species"]
+        )
+        != norm.get(r["species"], r["species"])
+    ]
+    if conflict:
+        print(f"  species conflict between the manifests: {len(conflict)} members")
+        for c in sorted(conflict)[:5]:
+            print(
+                f"    {c}: payload={pay_by_id[c]['species']}/{pay_by_id[c]['uniprot_acc']} "
+                f"vs index={idx[c]['species']}/{idx[c]['topology_acc']}"
+            )
+        if not args.allow_species_conflict:
+            raise SystemExit(
+                "refusing to build: the structure payload and the topology index "
+                "disagree on species for the members above. Re-run with "
+                "--allow-species-conflict to build anyway (those members will be "
+                "scored against the other organism's topology)."
+            )
+
     tools = C.Counter(idx[r["candidate_id"]]["topology_tool"] for r in members)
     print("  topology tool:", dict(tools))
     if set(tools) != {"deeptmhmm_v1"}:
