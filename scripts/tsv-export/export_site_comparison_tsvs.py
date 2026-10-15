@@ -99,7 +99,7 @@ def main() -> None:
     p = out / "masif_site_predictions.tsv"
     n = 0
     with open(p, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=MASIF_COLS, delimiter="\t")
+        w = csv.DictWriter(fh, fieldnames=MASIF_COLS, delimiter="\t", lineterminator="\n")
         w.writeheader()
         for r in sorted(masif, key=lambda x: x["acc"]):
             if r.get("error"):
@@ -132,7 +132,7 @@ def main() -> None:
     p = out / "bindome_surface_bind_concordance.tsv"
     n = 0
     with open(p, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=BINDOME_COLS, delimiter="\t")
+        w = csv.DictWriter(fh, fieldnames=BINDOME_COLS, delimiter="\t", lineterminator="\n")
         w.writeheader()
         for r in sorted(bind, key=lambda x: x["acc"]):
             g = ids.get(r["acc"], {})
