@@ -105,6 +105,7 @@ def run_one(cid: str):
         "structure_source": info.get("source"),
         "topology_version": info.get("topology_version"),
         "topology_cohort": info.get("topology_cohort"),
+        "sequence_sha256": info.get("sequence_sha256"),
     }
     t0 = time.time()
     os.makedirs("/tmp/p", exist_ok=True)
@@ -187,12 +188,16 @@ def run_one(cid: str):
             # for the tail of a long site. Residues outside the ordered span
             # are not part of the construct and are dropped rather than guessed.
             off = int(info.get("residue_offset") or 0)
-            ordered = int(info.get("ordered_length_aa") or 0) or (len(prt) if prt else 0)
+            ordered = int(info.get("ordered_length_aa") or 0) or (
+                len(prt) if prt else 0
+            )
             res = [x for x in res if 1 <= x - off <= ordered]
             if not res:
                 continue
             tc = C.Counter(
-                TOPO.get(prt[x - off - 1]) for x in res if prt and 1 <= x - off <= len(prt)
+                TOPO.get(prt[x - off - 1])
+                for x in res
+                if prt and 1 <= x - off <= len(prt)
             )
             sites.append(
                 {

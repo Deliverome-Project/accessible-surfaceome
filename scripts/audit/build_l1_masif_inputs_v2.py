@@ -199,6 +199,13 @@ def main() -> None:
             "topology_version": t["topology_version"],
             "topology_cohort": t["topology_cohort"],
             "topology_acc": t["topology_acc"],
+            # The version and cohort say which run produced the string; the
+            # hash says which protein it was about. designed_proteins joins a
+            # committed manifest to an S3 CDS file with no version pinned
+            # between them, so an overwrite changes what a committed table
+            # means without touching any version field -- the hash is the only
+            # thing that notices.
+            "sequence_sha256": t.get("sequence_sha256") or None,
         }
     print(f"  built {len(out)} members ({miss} dropped: topology row not found)")
     json.dump({"members": out}, open(args.out, "w"))
