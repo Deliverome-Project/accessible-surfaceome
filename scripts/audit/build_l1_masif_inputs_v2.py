@@ -173,8 +173,22 @@ def main() -> None:
         if not p:
             miss += 1
             continue
+        # `contained` members are a subsequence of their model: MaSIF scores the
+        # whole model and emits model-numbered residues, while the topology
+        # string covers only the ordered protein. Without the offset the two are
+        # read against each other shifted by up to 134 residues, and the tail
+        # falls off the end of the string entirely. The payload used to ship a
+        # placeholder 0 on every contained row, so "no nonzero offsets" was a
+        # reading of the placeholder, not of the data.
+        try:
+            offset = int(r.get("residue_offset") or 0)
+        except ValueError:
+            offset = 0
         out[r["candidate_id"]] = {
             "acc": r["uniprot_acc"],
+            "residue_offset": offset,
+            "ordered_length_aa": int(r["ordered_length_aa"] or 0),
+            "proteoform_match": r["proteoform_match"],
             "sym": r["gene_symbol"],
             "species": r["species"],
             "source": r["source"],

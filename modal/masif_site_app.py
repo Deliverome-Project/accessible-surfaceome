@@ -85,7 +85,7 @@ def run_one(cid: str):
         "S": "signal_peptide",
         "B": "membrane",
     }
-    meta = json.load(open("/vol/l1_inputs_v2.json"))
+    meta = json.load(open("/vol/l1_inputs_v4.json"))
     info = meta["members"][cid]
     acc = info["acc"]
     UA = "accessible-surfaceome research bot (becca@deliverome.org)"
@@ -179,13 +179,29 @@ def run_one(cid: str):
             anchor = int(Rk[m][np.argmin(((Vk[m] - cen) ** 2).sum(1))])
             res = sorted(set(int(x) for x in Rk[m]))
             prt = info.get("prt")
+            # MaSIF numbers residues against the MODEL. For a `contained`
+            # member the ordered protein is a subsequence of that model, so the
+            # topology string starts `offset` residues in: model residue x is
+            # topology position x - offset. Reading them unshifted is wrong by
+            # up to 134 residues and walks off the end of the string entirely
+            # for the tail of a long site. Residues outside the ordered span
+            # are not part of the construct and are dropped rather than guessed.
+            off = int(info.get("residue_offset") or 0)
+            ordered = int(info.get("ordered_length_aa") or 0) or (len(prt) if prt else 0)
+            res = [x for x in res if 1 <= x - off <= ordered]
+            if not res:
+                continue
             tc = C.Counter(
-                TOPO.get(prt[x - 1]) for x in res if prt and 1 <= x <= len(prt)
+                TOPO.get(prt[x - off - 1]) for x in res if prt and 1 <= x - off <= len(prt)
             )
             sites.append(
                 {
                     "n_pts": int(npts),
                     "anchor": anchor,
+                    # positions in the ORDERED protein, so they line up with the
+                    # topology string and with anything keyed on the construct
+                    "anchor_ordered": anchor - off,
+                    "residue_offset": off,
                     "mean_score": round(float(Sk[m].mean()), 3),
                     "n_res": len(res),
                     "res_min": res[0],
@@ -210,7 +226,7 @@ def driver():
     import json
     import os
 
-    meta = json.load(open("/vol/l1_inputs_v2.json"))
+    meta = json.load(open("/vol/l1_inputs_v4.json"))
     done = (
         {f[:-5] for f in os.listdir("/vol/sites_v2")}
         if os.path.isdir("/vol/sites_v2")
