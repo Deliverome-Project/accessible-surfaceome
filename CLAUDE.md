@@ -291,6 +291,37 @@ the cheap way to extract from `annotation_json` without pulling ~120 KB
 blobs over the wire; `json_tree` with a path argument does **not** — it
 fails with `malformed JSON: SQLITE_ERROR` on D1's SQLite build.
 
+### Match `uniprot_acc` **OR** `uniprot_acc_full`, and never scope to one cohort
+
+`topology_public` keys a row by BOTH a base accession (`uniprot_acc`) and a
+possibly-suffixed one (`uniprot_acc_full`, e.g. `P13637-3`). Three independent
+sessions hit the same two bugs against it within a day, which is why this is
+here rather than in three pull requests:
+
+1. **Scoping to `cohort='human_canonical'`** silently excludes
+   `human_isoforms` — and excludes `library_designed_orf` entirely, whose
+   `topology_acc` is the **candidate id** (`l1-p1037`), not an accession,
+   because no UniProt record exists for a designed ORF. A lookup scoped this
+   way returns nothing for those members, and the natural reading of "no row"
+   is "no data" rather than "wrong query".
+2. **Matching only `uniprot_acc`** against an index that names suffixed
+   accessions drops every isoform-form member. One session lost 362 members
+   this way; another found 495 of 566 and only noticed because the 71 misses
+   were *exactly* the isoform + designed-ORF cohorts with **zero** hash
+   mismatches among them — which said the query was wrong, not the data.
+
+So: `WHERE uniprot_acc IN (...) OR uniprot_acc_full IN (...)`, with no cohort
+filter unless you mean one. Note that this doubles the bound parameters, so the
+chunk size has to be under 50 against D1's 100-parameter cap.
+
+The fix must be **ADDITIVE** — widen the match, never rewrite rows to a base
+accession — because 224 canonical topology rows are themselves stored under a
+suffixed full accession, so "normalising" them would break the rows that are
+already right. And where a position is involved, resolve by **sha256 of the
+sequence** rather than by any accession, and refuse to substitute when nothing
+matches: a plausible length and helix count is exactly what makes the wrong
+protein invisible downstream.
+
 ### Applying schema changes when wrangler isn't handy
 
 The deprecated wrangler v1 on common install paths can't speak D1.
@@ -1052,16 +1083,33 @@ based on a freshly fetched `origin/main`:
    That is not hypothetical. On 2026-10-15 three sessions deployed this Worker.
    A deploy at 03:01 UTC added `deterministic_features.bindome`; one at 19:04
    UTC replaced the script and removed it, with the full checklist run and
-   green. **The precise rule the incident teaches is narrower and more useful
-   than "deploys drop things": the only field lost was the only field that was
-   not yet merged.** A third deploy at 12:02 UTC carried `libtopo` and
-   `row_schema 11`, and those SURVIVED the 19:04 replacement — because PR #370
-   had merged to `dev` at 03:40 UTC, so the later dev-based branch contained
-   them. `bindome` alone was unmerged, and `bindome` alone died.
+   green. A third deploy at 12:02 UTC carried `libtopo` and `row_schema 11`,
+   and those SURVIVED — because PR #370 had merged to `dev` at 03:40 UTC, so
+   the later dev-based branch contained them.
+
+   **The rule has two halves, and getting the second one wrong is dangerous.**
+
+   *Merged* Worker surface is safe: it rides through any later deploy from a
+   branch that contains it, which is what happened to `libtopo`.
+
+   *Unmerged* Worker surface survives only **until the next deploy by someone
+   who does not know about it**. The mechanism is deploy ORDERING, not merge
+   status — `bindome` died because another deploy followed it, and
+   `position_frame` (this repo's tag-site frame field) is alive at the time of
+   writing only because its deploy happened to be last. Both were unmerged;
+   only one has been overwritten *so far*. An earlier version of this section
+   claimed `bindome` was the only unmerged field and therefore the only
+   casualty. That was wrong, and wrong in the direction that invites a reader to
+   deploy an unmerged field, watch it survive, and conclude the warning was
+   overblown.
 
    So: **land Worker surface on `dev` and deploy from `dev`.** That removes the
-   hazard instead of managing it. When you must deploy an unmerged branch, this
-   guard is what stands between you and someone else's work.
+   hazard instead of managing it. An unmerged field that is currently live is
+   not evidence that deploying unmerged is safe; it is a field waiting for the
+   next deploy. When you must deploy an unmerged branch anyway, this guard is
+   what stands between you and someone else's work — and note that a
+   reconciling deploy built from `main` + `dev` alone contains NEITHER of those
+   two fields, so it would drop both with every check green.
 
    Comparing source can never catch this class. The only reliable record of
    what the API promises is the live response, which is what this guard reads.
