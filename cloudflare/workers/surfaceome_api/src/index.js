@@ -1332,6 +1332,66 @@ async function handleGene(env, symbol) {
         }));
     }
 
+    // ----- deterministic_features.library_designed_structure -----
+    // Which structure a library member should render, and how to renumber it.
+    // The viewer's default -- AFDB's model for the gene's canonical accession -- is the
+    // wrong protein for 296 of 2,725 L1 members, and nothing on the page said so.
+    //
+    // `residue_offset` is NOT decoration. For a `contained` member the ordered protein is
+    // a subsequence of the model, so construct residue i is model residue i + offset
+    // (offsets here run to 134). A viewer that ignores it draws SLC3A2 101 residues out of
+    // frame while looking entirely plausible. `display_first_model_residue` /
+    // `display_last_model_residue` are the span the construct actually covers, so the
+    // renderer can clip to it rather than silently showing extra protein.
+    //
+    // Alternates (is_chosen = 0) travel too, with the note saying why they lost, so the
+    // page can show "AlphaFold DB models a different proteoform" instead of hiding it.
+    const libStruct = await soft(
+      env.DB.prepare(
+        `SELECT candidate_id, candidate_set, species, source, r2_key, model_url,
+                proteoform_match, residue_offset, ordered_length_aa, model_length_aa,
+                is_chosen, mean_plddt, note
+           FROM library_structure_public
+          WHERE gene_symbol = ?
+          ORDER BY is_chosen DESC, candidate_id ASC`
+      )
+        .bind(sym)
+        .all(),
+      "library_structure_public",
+    );
+    if (libStruct?.results?.length) {
+      if (!record.deterministic_features) record.deterministic_features = {};
+      record.deterministic_features.library_designed_structure =
+        libStruct.results.map((r) => {
+          const offset = Number(r.residue_offset || 0);
+          const orderedLen =
+            r.ordered_length_aa == null ? null : Number(r.ordered_length_aa);
+          return {
+            candidate_id: r.candidate_id,
+            candidate_set: r.candidate_set,
+            species: r.species,
+            // 'colabfold' = we folded the ordered sequence; 'alphafold_db' = AFDB's
+            // model is genuinely the ordered protein (or contains it).
+            source: r.source,
+            r2_key: r.r2_key || null,
+            model_url: r.model_url || null,
+            proteoform_match: r.proteoform_match,
+            residue_offset: offset,
+            ordered_length_aa: orderedLen,
+            model_length_aa:
+              r.model_length_aa == null ? null : Number(r.model_length_aa),
+            // The model residues the construct covers, 1-based and inclusive. Null when
+            // the ordered length is unknown, never guessed.
+            display_first_model_residue: orderedLen == null ? null : offset + 1,
+            display_last_model_residue:
+              orderedLen == null ? null : offset + orderedLen,
+            is_chosen: Boolean(Number(r.is_chosen)),
+            mean_plddt: r.mean_plddt == null ? null : Number(r.mean_plddt),
+            note: r.note || null,
+          };
+        });
+    }
+
     // ----- gene.ensembl_canonical_protein -----
     // The stable-ID cache carries the canonical ENSP, but the record's gene
     // block only ever shipped ensembl_gene — so the API was weaker than the
