@@ -58,6 +58,7 @@ from .enrichment import (
     covered_clip_ids,
     new_clip_ids,
 )
+from .frames import Frame, resolve
 from .geometry import apply_geometry_pass
 from .member_frames import run_at
 from .prior_ledger import PriorClip, seed_pool
@@ -272,7 +273,12 @@ def upgrade_quotes(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSit
 
 
 def enforce_position_claims(
-    result: TagSiteResult, *, sequence: str, client: Any | None = None
+    result: TagSiteResult,
+    *,
+    sequence: str,
+    client: Any | None = None,
+    frames: list[Frame] | None = None,
+    reference_label: str = "member",
 ) -> TagSiteResult:
     """Downgrade ``position_evidence`` to ``inferred`` on any site whose quote
     does not NAME its position.
@@ -311,7 +317,30 @@ def enforce_position_claims(
         named = residue_mentions(s.supporting_quote, sequence=sequence)
         if named & {n - 1, n, n + 1}:
             continue
-        # The matcher found nothing. Before downgrading, ask the blind verifier
+        # Nothing in THIS construct's numbering. Before anything else, ask
+        # whether the citation is numbering in another proteoform — a library
+        # member's ordered form is often an isoform or a designed ORF, and a
+        # paper will essentially never use the designed ORF's coordinates, so
+        # "the reference frame does not confirm it" is the expected state rather
+        # than a problem. This route is deterministic and auditable, so it goes
+        # ahead of the model-based verifier below.
+        if frames:
+            res = resolve(
+                s.supporting_quote,
+                frames=frames,
+                reference_label=reference_label,
+                target=n,
+            )
+            hit = res.validating_hit
+            if hit is not None and hit.frame_label != reference_label:
+                log.info(
+                    "  %s: %s position upheld in the %s frame (frame pos %d)",
+                    result.gene_symbol or "?", s.residue_label,
+                    hit.frame_label, hit.frame_position,
+                )
+                s.position_frame = hit.frame_label
+                continue
+        # Still nothing. Before downgrading, ask the blind verifier
         # — it handles the spellings no pattern list covers, and returns NONE
         # for the numbers that are durations, figures and catalogue ids.
         stated = verify_position_blind(
@@ -480,6 +509,8 @@ def run_tag_site_agent(
     seen_keys: set[str] | None = None,
     covered_junctions: set[int] | None = None,
     numbered_against: str | None = None,
+    alternate_frames: list[Frame] | None = None,
+    frame_label: str = "member",
     select_max_batches: int = 1,
     faceted_discovery: bool = False,
 ) -> TagSiteResult:
@@ -503,6 +534,12 @@ def run_tag_site_agent(
     * ``numbered_against`` — the sha256 of the sequence these positions are
       expressed in, stamped on the archive so a published position is never
       ambiguous about which proteoform it belongs to.
+    * ``alternate_frames`` — the proteoforms a citation might be numbering in
+      (canonical, mature, sibling isoforms). A paper will essentially never use
+      a designed ORF's coordinates, so for those members canonical is the
+      EXPECTED frame and "the construct's own numbering does not confirm it" is
+      the normal state rather than a failure. Each accepted site records which
+      frame proved it in ``position_frame``.
 
     ``sp_end`` is the AUTHORITATIVE signal-peptide end (UniProt's ``Signal``
     feature). Pass it whenever you have it: it beats the DeepTMHMM run encoded in
@@ -828,7 +865,10 @@ def run_tag_site_agent(
     upgrade_quotes(result, evidence=evidence)
     #   b2) a site may claim a VALIDATED position only if its quote names it;
     #       otherwise the position came from topology, not from the citation.
-    enforce_position_claims(result, sequence=sequence, client=client)
+    enforce_position_claims(
+        result, sequence=sequence, client=client,
+        frames=alternate_frames, reference_label=frame_label,
+    )
     enforce_evidence_type_coupling(result)
     if sequence and topology:
         kept, rejected = apply_geometry_pass(

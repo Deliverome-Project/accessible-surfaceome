@@ -201,6 +201,20 @@ class TagSiteProposal(BaseModel):
             "instead of silent."
         ),
     )
+    position_frame: str | None = Field(
+        default=None,
+        description=(
+            "Set by the pipeline (not the model): which PROTEOFORM frame the "
+            "citation was numbering in, when it was not this construct's own — "
+            '"canonical", "mature", "isoform:P54289-2". None means the paper '
+            "used this construct's own numbering, which is the ordinary case. "
+            "Load-bearing rather than descriptive: a library member's ordered "
+            "form is frequently an isoform or a designed ORF, so a paper citing "
+            "canonical residue 246 is naming member residue 458, and a reader "
+            "cannot tell a position the paper stated from one we mapped unless "
+            "the frame travels with it."
+        ),
+    )
     rationale: str = Field(
         description=(
             "Why THIS position, and what you COMPUTED to pin it — the sequence "
@@ -234,7 +248,9 @@ class TagSiteProposal(BaseModel):
 
 
 #: Bump with any change to the shape of a persisted tag-site record.
-TAG_SITE_SCHEMA_VERSION = "1.0.0"
+#: 1.1.0 adds TagSiteProposal.position_frame — the proteoform frame a
+#: citation was numbering in, when it was not the construct's own.
+TAG_SITE_SCHEMA_VERSION = "1.1.0"
 
 
 class RejectedSite(BaseModel):

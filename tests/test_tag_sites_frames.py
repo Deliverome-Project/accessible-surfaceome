@@ -494,3 +494,99 @@ def test_the_reference_frame_still_wins_over_an_expected_one() -> None:
                   reference_label="member", target=3)
     assert res.validating_hit is not None
     assert res.validating_hit.frame_label == "member"
+
+
+# --------------------------------------------------------------------------
+# producing position_frame: the resolver wired into the position gate
+# --------------------------------------------------------------------------
+
+
+def _proposal(junction: int, quote: str):
+    from accessible_surfaceome.agents.tag_site.schema import TagSiteProposal
+
+    return TagSiteProposal(
+        rank=1, site_type="internal", insert_after_residue=junction,
+        residue_before="A", residue_after="G", topology_state="extracellular",
+        tag_type="HA", rationale="in the loop", confidence="high",
+        evidence_type="published tag insertion at this exact site",
+        validation_level="surface_and_function", position_evidence="validated",
+        source_tier="paper", supporting_quote=quote,
+        evidence_detail="surface biotinylation",
+        functional_or_expression_impact_measured="retained",
+    )
+
+
+def _result(*sites):
+    from accessible_surfaceome.agents.tag_site.schema import TagSiteResult
+
+    return TagSiteResult(gene_symbol="GENEX", sites=list(sites))
+
+
+def test_a_position_proved_in_the_members_own_frame_records_no_frame() -> None:
+    """The ordinary case. A frame recorded on every site would make the field
+    noise; it means "this needed mapping", so it must be absent when none did."""
+    from accessible_surfaceome.agents.tag_site.runner import enforce_position_claims
+
+    seq = "MKTAYIAKQRQISFVKSHFSRQ"
+    r = _result(_proposal(3, "the tag was inserted after Thr-3"))
+    enforce_position_claims(r, sequence=seq)
+    assert r.sites[0].position_evidence == "validated"
+    assert r.sites[0].position_frame is None
+
+
+def test_a_position_proved_only_via_canonical_records_that_frame() -> None:
+    """The KCNN2 shape: the paper numbers in canonical, the construct is a
+    designed ORF, and the position is right once mapped. Keeping it
+    `validated` without saying so would hide the mapping; downgrading it to
+    `inferred` would understate a correct, citable position."""
+    from accessible_surfaceome.agents.tag_site.runner import enforce_position_claims
+
+    canonical = "HHRSACAYHTQPWPISCIVGCKDNIKYPGACAVRQGAYRSCEDHVCRVHSARVGWKIPFFELCCPTNIQYRRALHCWLFISRTPKIWGQAQYEPSVEHEPNNCCDWDAGWTGLNMEDFLWEWKLPYMWSCINMLIDFFYGPCGFTCFTQLNECWGGYRNFPQAPMECTCYYDPCKHTEPCHECDLSHEWVEKLFCFVSWI"  # non-self-repeating: a repeating fixture makes its own window ambiguous
+    member = ("D" * 60) + canonical
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=None, expected=True),
+    ]
+    r = _result(_proposal(160, "inserted between aa 100 and 101"))
+    enforce_position_claims(r, sequence=member, frames=frames,
+                            reference_label="member")
+    assert r.sites[0].position_evidence == "validated"
+    assert r.sites[0].position_frame == "canonical"
+
+
+def test_an_unprovable_position_is_still_downgraded() -> None:
+    """The resolver is an extra route to proof, not an amnesty. A quote naming
+    no position the sequence confirms, in any licensed frame, still loses its
+    claim."""
+    from accessible_surfaceome.agents.tag_site.runner import enforce_position_claims
+
+    canonical = "HHRSACAYHTQPWPISCIVGCKDNIKYPGACAVRQGAYRSCEDHVCRVHSARVGWKIPFFELCCPTNIQYRRALHCWLFISRTPKIWGQAQYEPSVEHEPNNCCDWDAGWTGLNMEDFLWEWKLPYMWSCINMLIDFFYGPCGFTCFTQLNECWGGYRNFPQAPMECTCYYDPCKHTEPCHECDLSHEWVEKLFCFVSWI"  # non-self-repeating: a repeating fixture makes its own window ambiguous
+    member = ("D" * 60) + canonical
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=None, expected=True),
+    ]
+    r = _result(_proposal(160, "surface expression was measured by flow cytometry"))
+    enforce_position_claims(r, sequence=member, frames=frames,
+                            reference_label="member")
+    assert r.sites[0].position_evidence == "inferred"
+    assert r.sites[0].position_frame is None
+
+
+def test_a_rat_framed_citation_is_not_laundered_into_a_frame() -> None:
+    """Guard 2 reaching the record: the paper says it numbers in rat, we hold no
+    rat sequence, so no frame may stand in for it and the position stays
+    inferred rather than acquiring a false provenance."""
+    from accessible_surfaceome.agents.tag_site.runner import enforce_position_claims
+
+    canonical = "HHRSACAYHTQPWPISCIVGCKDNIKYPGACAVRQGAYRSCEDHVCRVHSARVGWKIPFFELCCPTNIQYRRALHCWLFISRTPKIWGQAQYEPSVEHEPNNCCDWDAGWTGLNMEDFLWEWKLPYMWSCINMLIDFFYGPCGFTCFTQLNECWGGYRNFPQAPMECTCYYDPCKHTEPCHECDLSHEWVEKLFCFVSWI"  # non-self-repeating: a repeating fixture makes its own window ambiguous
+    member = ("D" * 60) + canonical
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=None, expected=True),
+    ]
+    r = _result(_proposal(160, "inserted between positions 100 and 101 of the rat protein"))
+    enforce_position_claims(r, sequence=member, frames=frames,
+                            reference_label="member")
+    assert r.sites[0].position_evidence == "inferred"
+    assert r.sites[0].position_frame is None
