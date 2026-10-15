@@ -39,6 +39,7 @@ def test_the_probe_set_is_heterogeneous(shape: dict[str, list[str]]) -> None:
     conclusion by checking CD63 — a non-member — for member-gated keys."""
     assert {"gene_library_member", "gene_non_member"} <= set(shape)
     assert {"tag_sites_frame_mapped", "tag_sites_det_only"} <= set(shape)
+    assert "gene_bindome_member" in shape
 
 
 def test_the_member_gated_keys_are_present_on_a_member(
@@ -59,6 +60,27 @@ def test_the_member_gated_keys_are_absent_on_a_non_member(
     tell "this field is gated" from "this field is gone"."""
     non_member = set(shape["gene_non_member"])
     assert "deterministic_features.library_designed_structure" not in non_member
+
+
+def test_bindome_is_promised_on_a_bearing_gene(
+    shape: dict[str, list[str]],
+) -> None:
+    """`deterministic_features.bindome` was deployed from an unmerged branch on
+    2026-10-15 (33c513e6) and silently dropped by the next deploy. It is gated
+    on the 1,391 proteins that have Bindome sites, and no other probe has any —
+    so the first run of this guard passed with "0 added" while the field it was
+    built to protect was invisible to it."""
+    bearing = set(shape["gene_bindome_member"])
+    assert "deterministic_features.bindome" in bearing
+    assert "deterministic_features.bindome.n_sites" in bearing
+
+
+def test_bindome_is_absent_on_a_non_bearing_gene(
+    shape: dict[str, list[str]],
+) -> None:
+    """Gated, not universal — the same presence/absence pair the library keys
+    need, for the same reason."""
+    assert "deterministic_features.bindome" not in set(shape["gene_non_member"])
 
 
 def test_position_frame_is_promised_on_a_frame_mapped_tag_site(
