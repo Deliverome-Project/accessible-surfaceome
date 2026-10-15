@@ -166,3 +166,69 @@ test("a gene with ONLY non-surface positions still renders the card", () => {
   );
   assert.ok(html.includes("Published, not surface sites (1)"));
 });
+
+test("a frame-mapped position says WHOSE numbering the paper used", () => {
+  // The "Stated" badge claims the paper names this exact position. For a
+  // frame-mapped site that is true only in another protein's coordinates — a
+  // member's ordered form is often an isoform or a designed ORF, so a paper
+  // citing canonical 246 is naming member 458. Without the frame on the page a
+  // reader cannot tell a stated position from a mapped one, and the mapping is
+  // the step most likely to be wrong.
+  const html = render({
+    has_data: true,
+    gene_symbol: "X",
+    uniprot_acc: "Q0",
+    sites: [
+      {
+        ...litSite,
+        site_id: "X-internal-39-lit",
+        position_evidence: "validated",
+        cited_tag_residue: null,
+        position_frame: "mature",
+      },
+    ],
+    isoform_pins: [],
+    ortholog_pins: [],
+  });
+  assert.match(html, /mature-protein numbering/);
+  assert.match(html, /signal-peptide cleavage site/);
+  assert.match(html, /mapped onto this construct/);
+});
+
+test("an isoform frame names the isoform, and no frame says nothing extra", () => {
+  const iso = render({
+    has_data: true,
+    gene_symbol: "X",
+    uniprot_acc: "Q0",
+    sites: [
+      {
+        ...litSite,
+        position_evidence: "validated",
+        cited_tag_residue: null,
+        position_frame: "isoform:P54289-2",
+      },
+    ],
+    isoform_pins: [],
+    ortholog_pins: [],
+  });
+  assert.match(iso, /isoform P54289-2/);
+
+  // The ordinary case: the paper used this protein's own numbering, so there
+  // is nothing to disclose and the badge must not invent a caveat.
+  const plain = render({
+    has_data: true,
+    gene_symbol: "X",
+    uniprot_acc: "Q0",
+    sites: [
+      {
+        ...litSite,
+        position_evidence: "validated",
+        cited_tag_residue: null,
+        position_frame: null,
+      },
+    ],
+    isoform_pins: [],
+    ortholog_pins: [],
+  });
+  assert.doesNotMatch(plain, /mapped onto this construct/);
+});

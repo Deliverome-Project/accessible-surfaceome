@@ -4482,6 +4482,12 @@ async function handleTagSites(env, symbol) {
     cited_tag_residue: r.cited_tag_residue ?? null,
     entailment_verified:
       r.entailment_verified == null ? null : r.entailment_verified === 1,
+    // Which proteoform frame the citation numbered in, when it was not the
+    // protein's own ("mature", "isoform:P54289-2"). Null is the ordinary case.
+    // Additive: an older viewer ignores it, a newer one renders it as a badge —
+    // and without it a position recovered from a foreign frame looks identical
+    // to one the paper stated directly.
+    position_frame: r.position_frame ?? null,
   }));
 
   // Per-GENE facts, which the per-SITE table cannot carry. Without these a gene

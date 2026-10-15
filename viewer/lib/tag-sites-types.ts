@@ -8,6 +8,12 @@ import type { Compartment } from "./surface-bind";
 
 export type TaggedSiteProvenance =
   | "literature_retrieved"
+  /** The enrichment pass: a second, deeper literature read published BESIDE
+   *  `literature_retrieved` rather than over it. Additive because the clip pool
+   *  is not monotonic across runs — a paper that degrades to abstract-only
+   *  contributes no methods clips, so a rerun legitimately finding less than
+   *  its predecessor is the normal case under transient upstream failure. */
+  | "literature_enriched"
   | "deterministic_computed"
   | "screen_validated"
   | "validated_literature"; // validation-only; never rendered
@@ -75,6 +81,28 @@ export interface TaggedSite {
   cited_tag_residue?: number | null;
   /** Pipeline gate: the quote was found verbatim in the cited source. */
   entailment_verified?: boolean | null;
+  /** The proteoform frame the citation was numbering in, when it was not this
+   *  protein's own: "mature" (the paper counts from the signal-peptide
+   *  cleavage site), "isoform:P54289-2". Null is the ordinary case — the
+   *  position was read in the protein's own frame, or never validated from a
+   *  citation. A recovered position is only auditable if the frame travels
+   *  with it, so this is what separates "the paper said residue 39" from "the
+   *  paper said mature residue 4 and we mapped it". */
+  position_frame?: string | null;
+  /** Which library MEMBER this site describes (`l1-p1037`), and the sha256 of
+   *  the sequence its position is expressed in. A gene is not a unit here: 45
+   *  of the 518 internal-site genes have more than one member and 7 of those
+   *  disagree about where the tag can go, and 71 of 566 members are not
+   *  numbered on the human canonical protein — so a position without its
+   *  construct and its sequence is ambiguous between real proteoforms. */
+  candidate_id?: string | null;
+  library?: string | null;
+  numbered_against?: string | null;
+  /** Where the junction's extracellular run sits: `inter_tm` is a genuine loop.
+   *  Derived from topology, never from `site_kind` — which does not
+   *  discriminate at low positions, where topologically identical sites are
+   *  labelled `internal` and `terminal_n` interchangeably. */
+  loop_run_position?: string | null;
   sources: EvidenceSource[];
   // deterministic-only (null for literature_retrieved / validated_literature):
   plddt: number | null;

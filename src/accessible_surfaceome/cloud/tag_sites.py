@@ -55,6 +55,11 @@ DDL: tuple[str, ...] = (
       source_tier                TEXT,
       cited_tag_residue          INTEGER,
       entailment_verified        INTEGER,
+      position_frame             TEXT,
+      candidate_id               TEXT,
+      library                    TEXT,
+      numbered_against           TEXT,
+      loop_run_position          TEXT,
       PRIMARY KEY (uniprot_acc, site_id)
     );
     """,
@@ -76,6 +81,28 @@ _COLS: tuple[str, ...] = (
     # columns the viewer can render them as badges and filter on them.
     "validation_level", "position_evidence", "source_tier", "cited_tag_residue",
     "entailment_verified",
+    # Which PROTEOFORM frame the citation was numbering in, when it was not the
+    # protein's own: "mature", "isoform:P54289-2". NULL means the position was
+    # read in the reference frame (the ordinary case) or was never validated
+    # from a citation at all. Without it, a position recovered from a foreign
+    # frame is indistinguishable from one the paper stated directly — and the
+    # frame is the only thing that makes the recovery auditable.
+    "position_frame",
+    # Which library MEMBER this site belongs to, and the sequence its position
+    # is expressed in. A gene is not a unit here: 45 of the 518 internal-site
+    # genes have more than one member and 7 of those disagree about where the
+    # tag can go, so a row without candidate_id cannot say which construct it
+    # describes. numbered_against is the sha256 of that construct's sequence —
+    # 71 of 566 members are not numbered on the human canonical protein, and a
+    # position without its sequence is ambiguous between them.
+    "candidate_id",
+    "library",
+    "numbered_against",
+    # Whether the junction's extracellular run has a membrane helix on BOTH
+    # sides, derived from topology rather than read off site_kind — which does
+    # not discriminate: the five published sites at positions 4-5 are
+    # topologically identical yet labelled internal twice and terminal_n thrice.
+    "loop_run_position",
 )
 
 
@@ -127,6 +154,11 @@ def flat_row(
             None if site.get("entailment_verified") is None
             else (1 if site.get("entailment_verified") else 0)
         ),
+        "position_frame": site.get("position_frame"),
+        "candidate_id": site.get("candidate_id"),
+        "library": site.get("library"),
+        "numbered_against": site.get("numbered_against"),
+        "loop_run_position": site.get("loop_run_position"),
     }
 
 
