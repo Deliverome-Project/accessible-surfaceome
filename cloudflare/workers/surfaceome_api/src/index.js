@@ -1812,6 +1812,67 @@ async function handleGene(env, symbol) {
         };
       }
     }
+
+    // ----- bindome -----
+    // Bindome (Wenckstern 2026, doi 10.64898/2026.07.30.741542) is a second
+    // answer to "where could a binder go", from 305,806 BindCraft designs.
+    // It publishes no target-side site list -- its own InterfaceResidues
+    // column is the *binder* chain and every design ran `no_hotspot` -- so
+    // `bindome_site_public` holds sites recovered from where the designs
+    // land (scripts/build/build_bindome_sites.py).
+    //
+    // Served as its own block rather than merged into surface_bind: the two
+    // are different methods with different per-site metrics (seed pools vs
+    // design counts), and collapsing them would make the viewer's source
+    // toggle a lie. `compartment` is computed from the same DeepTMHMM string
+    // that labels surface_bind anchors, so one EC filter spans both.
+    //
+    // Attached only when D1 has rows. Every other enrichment here leaves the
+    // body untouched when its query returns nothing, and
+    // test_healthy_request_has_no_degraded_header_and_stable_body pins that:
+    // an empty block on the ~4,800 genes with no Bindome data is noise.
+    const bindomeRows = await soft(
+      env.DB.prepare(
+        `SELECT site_id, anchor_residue, compartment, n_residues,
+                n_designs_supporting, n_designs_total, mean_design_fraction,
+                residues, bindome_release
+           FROM bindome_site_public
+          WHERE uniprot_acc = ?
+          ORDER BY site_id`
+      ).bind(uniprot).all(),
+      "bindome_site_public",
+    );
+    const bindomeSites = (bindomeRows?.results ?? []).map((s) => ({
+      site_id: Number(s.site_id),
+      anchor_residue: Number(s.anchor_residue),
+      // Same key as surface_bind's per-site field, so the viewer reads one
+      // property across both sources.
+      anchor_topology: s.compartment ?? null,
+      n_residues: Number(s.n_residues),
+      n_designs_supporting: Number(s.n_designs_supporting),
+      n_designs_total: Number(s.n_designs_total),
+      mean_design_fraction:
+        s.mean_design_fraction === null ? null : Number(s.mean_design_fraction),
+      residues: String(s.residues ?? "")
+        .split(",")
+        .map((x) => Number(x))
+        .filter(Number.isFinite),
+    }));
+    if (bindomeSites.length > 0) {
+      if (!record.deterministic_features) record.deterministic_features = {};
+      record.deterministic_features.bindome = {
+        has_data: true,
+        n_sites: bindomeSites.length,
+        n_sites_extracellular: bindomeSites.filter(
+          (s) => s.anchor_topology === "extracellular",
+        ).length,
+        sites: bindomeSites,
+        release: bindomeRows?.results?.[0]?.bindome_release ?? null,
+        source: "Bindome (Wenckstern 2026, BindCraft)",
+        attribution: "\u00a9 Wenckstern et al., Correia lab \u2014 EPFL",
+        citation: "10.64898/2026.07.30.741542",
+      };
+    }
   }
   // Triage-signal overlay — the load-bearing freshness fix for the
   // June-2026 silent-failure bug. The annotator bakes `triage_signal` +
