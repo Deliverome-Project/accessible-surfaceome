@@ -5,7 +5,7 @@ extracellular terminus to tag, so the site has to go in an extracellular loop
 (or, for the GPI pair below, the ectodomain).
 
 **566 rows · 518 distinct genes · sha256
-`c791e3cd032d296edc49024170d0945c9bf755f815b76823bc6f38ad9cc05c1e`**
+`c7359a2495925587125ff36bba4644c0a902f1f8fef3a8333da2f5cebe1d9999`**
 
 ## Where it came from
 
@@ -13,7 +13,7 @@ extracellular terminus to tag, so the site has to go in an extracellular loop
 |---|---|
 | source repo | `deliverome-analysis` |
 | path | `analysis/sprint4/s4e9-orf-design-fg-panel/l1_internal_members.tsv` |
-| branch / commit | `claude/p022-p038-plasmid-order-a20f79` @ `96b2ef1` |
+| branch / commit | `claude/p022-p038-plasmid-order-a20f79` @ `fa1e762` |
 | S3 | `processed://sprint4/s4e9-orf-design-fg-panel/l1_internal_members.tsv` |
 | generator | `export_internal_members.py`, same folder |
 | context | `TAG_PATHS.md`, same folder |
@@ -55,24 +55,54 @@ position in a different protein. Positions are therefore numbered in the
 member's own frame and stamped with the `sequence_sha256` they were numbered
 against — see `src/accessible_surfaceome/agents/tag_site/frames.py`.
 
-## Two columns that are easy to misread
+## Where the tag goes: branch on `longest_ecto_run_position`
 
-**`gpi_rerouted`** — 2 members (BST2, RGMB). These are single-pass,
-GPI-anchored proteins that reached `internal` placement because the ω-site
-removes their C-terminus, **not** because they are multipass. Their site lives
-somewhere in the ectodomain, not in an inter-TM loop. Key any
-"loop inventory" logic on this column rather than on a hardcoded symbol list,
-so an L2 pass picks up the equivalent members (GPC1, SPRN) automatically.
+Three columns describe the extracellular region, and they are not
+interchangeable:
 
-**`longest_inter_tm_ecto_run_aa`** — counts only extracellular runs with a TM
-helix on **both** sides. So:
+| column | meaning |
+|---|---|
+| `longest_inter_tm_ecto_run_aa` | longest extracellular run with a TM helix on **both** sides — a true inter-TM loop |
+| `longest_ecto_run_aa` / `_start` | longest extracellular run with **no** such restriction, and where it begins |
+| `longest_ecto_run_position` | which kind that longest run is: `n_terminal` / `inter_tm` / `c_terminal` / `no_tm` |
 
-* it returns 0 for any single-pass protein **by construction**, which is why it
-  is meaningless for the `gpi_rerouted` pair and must not be read there as "no
-  site available";
-* an N-terminal ectodomain is *not* an inter-TM loop. Reading it as one is the
-  recorded ADGRB1 error, where a 918-residue N-terminal segment was once taken
-  for a loop candidate.
+**`longest_ecto_run_position` is the one to branch on.** `inter_tm` means the
+site belongs in a loop and the loop inventory applies; anything else means the
+extracellular region is a terminus-adjacent span with no inter-TM loop to
+describe. That replaces "`gpi_rerouted` plus a hardcoded symbol list" with a
+property of the topology itself, so an L2 pass picks up its equivalents
+(GPC1 539 aa, SPRN 133 aa) with no code change.
+
+In this set the split is `inter_tm` 564 / `c_terminal` 2, and those 2 are
+exactly the members where the restricted and unrestricted measures disagree:
+
+| | tm | inter-TM run | longest ecto run | position |
+|---|---|---|---|---|
+| BST2 (`l1-p0188`) | 1 | 0 | **137** aa from 44 | `c_terminal` |
+| RGMB (`l1-p1731`) | 1 | 0 | **394** aa from 85 | `c_terminal` |
+
+Both are single-pass GPI-anchored proteins that reached `internal` placement
+because the ω-site removes their C-terminus, **not** because they are
+multipass. `longest_inter_tm_ecto_run_aa` returns 0 for any single-pass protein
+**by construction**, so that 0 must never be read as "no site available" — it
+is an artefact of the restriction, and these two have 137 and 394 residues of
+ectodomain to aim at. `gpi_rerouted` still flags them and agrees exactly; it is
+corroboration, not the branch point.
+
+Relatedly, an N-terminal ectodomain is *not* an inter-TM loop. Reading one as a
+loop candidate is the recorded ADGRB1 error, where a 918-residue N-terminal
+segment was once taken for a loop.
+
+**The unrestricted measure CONFIRMS the hard stratum rather than softening
+it.** For the five genuinely-multipass short-loop members the ectodomain run
+*equals* the inter-TM run — TMEM86A 7, TMEM86B 7, TMEM268 7, TMEM139 6,
+TMEM169 1 — because that short loop is their only extracellular region. Two
+independent measures therefore agree they are the hardest stratum, and
+BST2/RGMB never belonged in it.
+
+**Parse this file by column NAME.** The three run columns were inserted at
+positions 13–15, beside `longest_inter_tm_ecto_run_aa`, rather than appended at
+the end, so positional readers would silently shift.
 
 ## Loop availability
 
@@ -95,3 +125,16 @@ do not belong in a loop-length stratum at all.
 12 members carry a recorded `shed_risk` (1 high, 9 moderate, 2 low). Per
 `SHEDDING_AND_TAGS.md` upstream it is a **flag only** and reroutes nothing: no
 shedding-risk member has a usable inter-TM loop to move the site to.
+
+## Upstream churn that does NOT affect this file
+
+A MICA repoint landed on S3 (`candidate_cds.json` now 7,016 entries; `lib:MICA`
+is the 383-aa TM-bearing form; `iso:MICA:Q29983` removed as redundant). It took
+L2 from 3,188 to 3,187 classified, because `l2-p0939` no longer has a designed
+CDS and drops out of any run keyed on the manifest. **L1 is unaffected at 2,700
+and none of the 566 internal members changed.**
+
+Note for anyone who follows the trail upstream: the committed manifest there
+still names the old MICA transcript, so the manifest and `candidate_cds.json`
+currently disagree. That is recorded in `TAG_PATHS.md` upstream and belongs to
+the MICA work, not here.

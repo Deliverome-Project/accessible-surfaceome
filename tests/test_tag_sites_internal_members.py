@@ -25,7 +25,7 @@ TSV = REPO_ROOT / "data/tag_sites/l1_internal_members.tsv"
 PROVENANCE = REPO_ROOT / "data/tag_sites/l1_internal_members.PROVENANCE.md"
 
 #: The upstream export's hash, as reported by its generator.
-EXPECTED_SHA256 = "c791e3cd032d296edc49024170d0945c9bf755f815b76823bc6f38ad9cc05c1e"
+EXPECTED_SHA256 = "c7359a2495925587125ff36bba4644c0a902f1f8fef3a8333da2f5cebe1d9999"
 
 EXPECTED_COLUMNS = [
     "candidate_id",
@@ -40,6 +40,10 @@ EXPECTED_COLUMNS = [
     "ordered_length_aa",
     "tm_count",
     "longest_inter_tm_ecto_run_aa",
+    # Inserted here rather than appended, so parse this file by column NAME.
+    "longest_ecto_run_aa",
+    "longest_ecto_run_start",
+    "longest_ecto_run_position",
     "placement",
     "gpi_rerouted",
     "shed_risk",
@@ -84,15 +88,63 @@ def test_the_gpi_rerouted_pair_is_exactly_bst2_and_rgmb(
     assert gpi == {"BST2", "RGMB"}
 
 
-def test_loop_length_is_zero_for_the_gpi_pair_by_construction(
+def test_loop_length_is_zero_for_the_gpi_pair_but_the_ectodomain_is_not(
     rows: list[dict[str, str]],
 ) -> None:
     """``longest_inter_tm_ecto_run_aa`` counts runs with a TM on BOTH sides, so
-    a single-pass protein scores 0 no matter how large its ectodomain. The 0
-    must never be read as "no site available"."""
+    a single-pass protein scores 0 no matter how large its ectodomain — the 0
+    must never be read as "no site available".
+
+    ``longest_ecto_run_aa`` is the measure without that restriction, and for
+    these two it differs by 137 and 394 residues. Pinning both is what stops
+    the artefact being mistaken for a finding again."""
     for row in rows:
         if row["gpi_rerouted"] == "1":
             assert int(row["longest_inter_tm_ecto_run_aa"]) == 0
+            assert int(row["longest_ecto_run_aa"]) > 100
+    by_gene = {r["gene_symbol"]: r for r in rows if r["gpi_rerouted"] == "1"}
+    assert int(by_gene["BST2"]["longest_ecto_run_aa"]) == 137
+    assert int(by_gene["BST2"]["longest_ecto_run_start"]) == 44
+    assert int(by_gene["RGMB"]["longest_ecto_run_aa"]) == 394
+    assert int(by_gene["RGMB"]["longest_ecto_run_start"]) == 85
+
+
+def test_run_position_identifies_the_members_needing_an_ectodomain_site(
+    rows: list[dict[str, str]],
+) -> None:
+    """``longest_ecto_run_position`` is what synthesis context should branch on.
+
+    It replaces "gpi_rerouted plus a hardcoded gene list" with a property of
+    the topology: ``inter_tm`` means the site goes in a loop and the loop
+    inventory applies; anything else means the extracellular region is a
+    terminus-adjacent span and there is no inter-TM loop to describe. Exactly
+    the two single-pass GPI members differ, and they are the same two the
+    measures disagree on — so one column now carries what took two plus a
+    caveat."""
+    positions = {r["longest_ecto_run_position"] for r in rows}
+    assert positions == {"inter_tm", "c_terminal"}
+    not_loop = {r["gene_symbol"] for r in rows if r["longest_ecto_run_position"] != "inter_tm"}
+    assert not_loop == {"BST2", "RGMB"}
+    disagree = {
+        r["gene_symbol"]
+        for r in rows
+        if r["longest_ecto_run_aa"] != r["longest_inter_tm_ecto_run_aa"]
+    }
+    assert disagree == not_loop
+
+
+def test_the_hard_stratum_is_confirmed_by_the_unrestricted_measure(
+    rows: list[dict[str, str]],
+) -> None:
+    """For the five genuinely-multipass short-loop members the ectodomain run
+    EQUALS the inter-TM run, because that short loop is their only
+    extracellular region. A second, independent measure therefore confirms
+    they are the hardest stratum rather than softening it."""
+    hard = {"TMEM86A", "TMEM86B", "TMEM169", "TMEM139", "TMEM268"}
+    for row in rows:
+        if row["gene_symbol"] in hard:
+            assert row["longest_ecto_run_aa"] == row["longest_inter_tm_ecto_run_aa"]
+            assert row["longest_ecto_run_position"] == "inter_tm"
 
 
 def test_the_sub_eight_aa_multipass_stratum(rows: list[dict[str, str]]) -> None:

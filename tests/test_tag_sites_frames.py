@@ -215,6 +215,52 @@ def test_two_letter_confirmed_tokens_validate_an_unnamed_frame() -> None:
     assert res.validating_hit.letter_confirmed_tokens >= 2
 
 
+def test_receptor_nomenclature_does_not_license_a_frame() -> None:
+    """Two code-form tokens are NOT independent evidence of a frame.
+
+    Measured, not hypothesized: scoring a 495-clip ADCY2 pool, every clip that
+    only a non-reference frame "confirmed" was a dopamine-receptor sentence —
+    "D1-like ... D2 ... D3 ... D4" read as aspartate at positions 2/3/4, which
+    an isoform happens to carry. That is three letter-confirmed tokens in one
+    frame, so a bare >=2 rule licenses it.
+
+    ``residue_mentions`` already documents that the bare CODE form is the noisy
+    one ("A549 is a cell line, H3K79 a histone mark"), and the sequence check
+    is near-useless at low positions where any letter has a ~1/20 chance. So
+    the two-token rule additionally requires at least one SPELLED residue —
+    "Asn-549", "threonine 436" — which nomenclature does not produce.
+    """
+    frame_seq = "MDDDAYIAKQRQISFVKSHFSRQ"  # D at 2, 3 and 4
+    reference = "MKTAYIAKQRQISFVKSHFSRQ"
+    frames = [
+        Frame(label="member", sequence=reference, offset=0),
+        Frame(label="isoform:X-2", sequence=frame_seq, offset=0),
+    ]
+    res = resolve(
+        "D1-like receptors are distinguished from the D2, D3 and D4 subtypes",
+        frames=frames,
+        reference_label="member",
+        target=3,
+    )
+    assert res.validating_hit is None
+
+
+def test_a_spelled_residue_plus_a_code_still_licenses_a_frame() -> None:
+    """The alpha-2-delta-1 case must keep working: "Asn-549 and Asp-550" are
+    spelled, so the frame is licensed. The refinement must not cost us the
+    rescue it was built for."""
+    reference = "M" * 567 + "ND" + "GH"
+    isoform_seq = "M" * 548 + "ND" + "GH"
+    frames = [
+        Frame(label="member", sequence=reference, offset=0),
+        Frame(label="isoform:P54289-2", sequence=isoform_seq, offset=19),
+    ]
+    res = resolve(A2D1_QUOTE, frames=frames, reference_label="member", target=568)
+    assert res.validating_hit is not None
+    assert res.validating_hit.frame_label == "isoform:P54289-2"
+    assert res.validating_hit.spelled_tokens >= 1
+
+
 def test_a_named_but_unavailable_frame_blocks_every_other_frame() -> None:
     """The KCC2b case, and the whole point of the guard.
 

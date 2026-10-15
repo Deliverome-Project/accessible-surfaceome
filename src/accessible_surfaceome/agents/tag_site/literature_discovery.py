@@ -445,6 +445,19 @@ def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[in
 #: sequence agrees with is.
 LETTER_CONFIRMED_FORMS: frozenset[str] = frozenset({"code", "three", "full"})
 
+#: Of those, the forms that SPELL the residue — "Asn-549", "threonine 436".
+#: The bare ``code`` form is the noisy one, as residue_mentions documents
+#: ("A549 is a cell line, H3K79 a histone mark"), and its sequence check is
+#: near-useless at low positions where any letter has a ~1/20 chance of
+#: agreeing: "D1-like ... D2 ... D3 ... D4" reads as three confirmed aspartates
+#: in any frame that happens to carry D at 2, 3 and 4. Measured on a real
+#: 2,320-clip pool, EVERY clip that only a non-reference frame confirmed was
+#: nomenclature of that shape — APOE E3/E4 genotypes, ubiquitin E1/E2/E3
+#: enzymes, dopamine D1-D4 receptors — 13 of 13 noise. A spelled residue is not
+#: something nomenclature produces, so it is what the frame resolver requires
+#: before two tokens may license a frame.
+SPELLED_AA_FORMS: frozenset[str] = frozenset({"three", "full"})
+
 
 def residue_mentions_detailed(
     text: str | None, *, sequence: str | None = None

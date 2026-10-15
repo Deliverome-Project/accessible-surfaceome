@@ -55,6 +55,7 @@ from dataclasses import dataclass, field
 
 from .literature_discovery import (
     LETTER_CONFIRMED_FORMS,
+    SPELLED_AA_FORMS,
     residue_mentions_detailed,
 )
 
@@ -148,8 +149,12 @@ class FrameHit:
     frame_position: int
     reference_position: int
     #: Letter-bearing tokens anywhere in the text that this frame's sequence
-    #: agrees with. Two is independent evidence that the text is numbering here.
+    #: agrees with.
     letter_confirmed_tokens: int
+    #: Of those, how many SPELL the residue ("Asn-549") rather than using the
+    #: bare code form ("D2"). At least one is required before two tokens may
+    #: license a frame — nomenclature yields codes, never spellings.
+    spelled_tokens: int
     #: Whether the text NAMES this frame's family.
     frame_named: bool
     confers_validation: bool
@@ -265,9 +270,11 @@ def resolve(
         if not detail:
             continue
         cited |= set(detail)
-        n_letter = len(
-            {n for n, forms in detail.items() if forms & LETTER_CONFIRMED_FORMS}
-        )
+        letter_forms = {
+            n: forms for n, forms in detail.items() if forms & LETTER_CONFIRMED_FORMS
+        }
+        n_letter = len(letter_forms)
+        n_spelled = sum(1 for f in letter_forms.values() if f & SPELLED_AA_FORMS)
         is_reference = frame.label == reference_label
         frame_named = frame.family in named_alternates
         for position in sorted(detail):
@@ -296,8 +303,10 @@ def resolve(
                 licensed = frame_named
             else:
                 # Guard 1: no frame named, so the frame has to earn it with two
-                # independent letter-confirmed tokens.
-                licensed = n_letter >= 2
+                # letter-confirmed tokens, at least one of them SPELLING the
+                # residue. Two bare codes are not independent evidence — a
+                # receptor-nomenclature sentence produces three of them.
+                licensed = n_letter >= 2 and n_spelled >= 1
             hits.append(
                 FrameHit(
                     frame_label=frame.label,
@@ -305,6 +314,7 @@ def resolve(
                     frame_position=position,
                     reference_position=mapped,
                     letter_confirmed_tokens=n_letter,
+                    spelled_tokens=n_spelled,
                     frame_named=frame_named,
                     confers_validation=licensed,
                 )
