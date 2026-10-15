@@ -629,21 +629,32 @@ based on a freshly fetched `origin/main`:
    Steps 1-2 compare the Worker SOURCE across `origin/main` and `origin/dev`;
    step 3 compares routes and `row_schema`. A field nested in a response body,
    deployed from an unmerged branch, is in **no branch and is not a route**, so
-   every one of those steps passes while you delete it. That is not
-   hypothetical: on 2026-10-15 a deploy at 03:01 UTC added
-   `deterministic_features.bindome` and a deploy at 19:04 UTC removed it, with
-   the full checklist run and green. Two other sessions had Worker surface in
-   flight the same day, and a third deploy at 12:02 UTC is unattributable —
-   every version records `Author: becca@deliverome.org`, because all sessions
-   share the API token, so whatever it added from an unmerged branch is gone
-   and nobody knows what it was.
+   every one of those steps passes while you delete it.
+
+   That is not hypothetical. On 2026-10-15 three sessions deployed this Worker.
+   A deploy at 03:01 UTC added `deterministic_features.bindome`; one at 19:04
+   UTC replaced the script and removed it, with the full checklist run and
+   green. **The precise rule the incident teaches is narrower and more useful
+   than "deploys drop things": the only field lost was the only field that was
+   not yet merged.** A third deploy at 12:02 UTC carried `libtopo` and
+   `row_schema 11`, and those SURVIVED the 19:04 replacement — because PR #370
+   had merged to `dev` at 03:40 UTC, so the later dev-based branch contained
+   them. `bindome` alone was unmerged, and `bindome` alone died.
+
+   So: **land Worker surface on `dev` and deploy from `dev`.** That removes the
+   hazard instead of managing it. When you must deploy an unmerged branch, this
+   guard is what stands between you and someone else's work.
 
    Comparing source can never catch this class. The only reliable record of
    what the API promises is the live response, which is what this guard reads.
 5. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
 6. **Deploy with attribution**, so the next person investigating can tell whose
-   deploy a version was. `Tag` and `Message` were empty on every deploy today,
-   which is why 12:02 UTC cannot be traced:
+   deploy a version was. Cloudflare's metadata cannot: every version records
+   `Author: becca@deliverome.org`, because all sessions share one API token, and
+   `versions view` exposes no size, diff or source. `Tag` and `Message` were
+   empty on all three of 2026-10-15's deploys, so attributing the 12:02 one took
+   an evening of cross-session archaeology and ended in testimony rather than
+   evidence. Populating them costs nothing:
 
        npx --yes wrangler deploy --message "<branch>: <what changed>"
 
