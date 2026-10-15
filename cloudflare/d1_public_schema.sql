@@ -1099,3 +1099,94 @@ CREATE TABLE IF NOT EXISTS deep_dive_replicate (
 
 CREATE INDEX IF NOT EXISTS idx_deep_dive_replicate_symbol
     ON deep_dive_replicate (gene_symbol COLLATE NOCASE);
+
+-- ---------------------------------------------------------------------------
+-- library_structure_public
+--
+-- Which structure the viewer should render for each Deliverome library member,
+-- and which it should not. The viewer's default -- the AlphaFold DB model for a
+-- member's canonical accession -- is the wrong protein for 296 of 2,725 L1
+-- members: 70 have no AFDB model at all, 200 have a model of a different
+-- proteoform (measured residue-exact against the designed CDS), and 26 have one
+-- where the ordered protein is a subsequence and therefore numbered wrong
+-- without an offset.
+--
+-- One row per (member, structure). ``is_chosen = 1`` is the structure to render;
+-- the AFDB model it replaces is still carried with ``is_chosen = 0`` and a note,
+-- so an alternate stays visible and labelled rather than silently disappearing.
+--
+-- Coordinates are NOT here: D1 caps a row at 2 MB. Our predictions live in the
+-- public R2 bucket ``surfaceome-structures`` under ``library-colabfold/``, the
+-- same split ``schweke_homomer_public`` uses.
+CREATE TABLE IF NOT EXISTS library_structure_public (
+    release            TEXT NOT NULL,          -- e.g. 'colabfold-2026-10-14'
+    candidate_id       TEXT NOT NULL,          -- library candidate, e.g. 'l1-p0448'
+    uniprot_acc        TEXT,                   -- accession the member resolves to
+    gene_symbol        TEXT,                   -- denormalized; never a join key
+    species            TEXT,
+    candidate_set      TEXT,                   -- library_reference | isoform | ortholog | expression_rescue
+    source             TEXT NOT NULL,          -- 'colabfold' (ours) | 'alphafold_db'
+    r2_key             TEXT,                   -- object under surfaceome-structures; NULL for AFDB
+    model_url          TEXT,                   -- AFDB URL; NULL for ours
+    proteoform_match   TEXT NOT NULL,          -- identical | contained | different | unknown | no_model | ours_by_construction
+    residue_offset     INTEGER NOT NULL DEFAULT 0,  -- construct residue i == model residue i + offset
+    ordered_length_aa  INTEGER,
+    model_length_aa    INTEGER,
+    is_chosen          INTEGER NOT NULL,       -- 1 = render this one
+    mean_plddt         REAL,
+    note               TEXT,                   -- why an alternate is not chosen
+    synced_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (release, candidate_id, source)
+);
+
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_acc
+    ON library_structure_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_chosen
+    ON library_structure_public (is_chosen);
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_symbol
+    ON library_structure_public (gene_symbol);
+
+-- ---------------------------------------------------------------------------
+-- library_topology_public: which topology row describes the protein each
+-- library member actually encodes.
+--
+-- WHY A POINTER TABLE. The Worker's topology lookups are keyed by uniprot_acc
+-- within human_canonical / human_isoforms. A library member's protein is its
+-- designed CDS translated -- an Ensembl-transcript product, which for a
+-- substantial minority of members corresponds to a UniProt *isoform* record
+-- rather than the canonical one (816 of 5,896 resolved members, and 119 of the
+-- 121 whose AlphaFold model was the wrong protein). Resolving by accession
+-- returns a different protein's topology for those, with a plausible length and
+-- a plausible helix count -- wrong silently, never loudly.
+--
+-- Resolving by sequence is correct but needs a full scan of ~71k long TEXT rows
+-- (topology_public.sequence is not indexed), which is fine offline and wrong in
+-- a request. So the join is resolved offline by exact sequence and stored here
+-- as an explicit (cohort, topology_version, uniprot_acc_full) pointer. The
+-- Worker joins on it and never guesses.
+--
+-- Only members whose EXACT designed sequence has a v1 topology get a row. A
+-- member with no row needs a DeepTMHMM run; it must not be shown the canonical.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS library_topology_public (
+    release           TEXT NOT NULL,          -- e.g. 'topo-2026-10-14'
+    candidate_id      TEXT NOT NULL,          -- library candidate, e.g. 'l1-p0031'
+    library           TEXT NOT NULL,          -- 'l1' | 'l2' (tranche, NOT a tool version)
+    candidate_set     TEXT,                   -- library_reference | isoform | ortholog | ...
+    species           TEXT,
+    gene_symbol       TEXT,                   -- denormalized; the gene-page join key
+    topology_tool     TEXT NOT NULL,          -- 'deeptmhmm_v1' (the topology of record)
+    topology_cohort   TEXT NOT NULL,          -- topology_public.cohort of the matching row
+    topology_version  TEXT NOT NULL,          -- topology_public.topology_version
+    topology_acc      TEXT NOT NULL,          -- topology_public.uniprot_acc_full
+    ordered_length_aa INTEGER,
+    sequence_sha256   TEXT NOT NULL,          -- sha256 of the ordered protein; the real key
+    synced_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (release, candidate_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_gene
+    ON library_topology_public (gene_symbol);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_target
+    ON library_topology_public (topology_version, topology_cohort, topology_acc);

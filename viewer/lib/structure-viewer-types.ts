@@ -33,6 +33,27 @@ export interface StructureViewerData {
   pdb_url?: string | null;
   /** AFDB model version at the time `pdb_url` was baked. Informational. */
   latest_version?: number | null;
+
+  // -- Library-member fields. Present only when this card is showing the protein a
+  //    library member actually encodes, rather than the gene's canonical sequence.
+  /** The library candidate this structure + topology belongs to, e.g. ``l1-p0031``. */
+  library_candidate_id?: string | null;
+  /** Library tranche: ``l1`` / ``l2``. NOT a DeepTMHMM tool version. */
+  library_tranche?: string | null;
+  library_candidate_set?: string | null;
+  /** ``colabfold`` = we folded the ordered sequence; ``alphafold_db`` = AFDB's model is
+   *  the ordered protein, or contains it. */
+  library_model_source?: string | null;
+  /** identical | contained | ours_by_construction | … */
+  library_proteoform_match?: string | null;
+  /** construct residue i == model residue i + offset. MUST be applied when rendering:
+   *  offsets run to 134, and ignoring one draws a plausible-looking frame shift. */
+  library_residue_offset?: number;
+  /** Inclusive 1-based model residues the construct covers. The renderer clips to this
+   *  so a longer model does not silently show protein the construct does not contain. */
+  library_display_range?: [number, number] | null;
+  /** Why an alternate was not chosen, for the "not the ordered protein" label. */
+  library_note?: string | null;
 }
 
 /**
@@ -287,6 +308,100 @@ export function structureViewerDataFromRecord(
     source_tool: canonicalTopology?.tool_version ?? "deeptmhmm",
     pdb_url: null,
     latest_version: null,
+  };
+}
+
+/**
+ * Build viewer data for the protein a LIBRARY MEMBER encodes, rather than the gene's
+ * canonical sequence.
+ *
+ * Returns null unless both halves are present and agree, because a half-answer here is
+ * worse than none: colouring a library model with canonical topology offsets the overlay
+ * silently, and renumbering a model without its topology does the same in reverse. The
+ * caller falls back to {@link structureViewerDataFromRecord}, which is explicitly about
+ * the canonical protein.
+ *
+ * The topology string is the v1 (`per_residue_topology`) one — the alphabet
+ * {@link TOPOLOGY_COLORS} is keyed on. The v2 string uses a different alphabet and must
+ * never be substituted.
+ */
+export function structureViewerDataFromLibraryMember(
+  topology:
+    | {
+        candidate_id?: string | null;
+        library?: string | null;
+        candidate_set?: string | null;
+        per_residue_topology?: string | null;
+        tm_helix_count?: number;
+        signal_peptide_length?: number;
+        cohort?: string | null;
+        tool?: string | null;
+        topology_version?: string | null;
+        topology_acc?: string | null;
+      }
+    | null
+    | undefined,
+  structure:
+    | {
+        candidate_id?: string | null;
+        source?: string | null;
+        r2_key?: string | null;
+        model_url?: string | null;
+        proteoform_match?: string | null;
+        residue_offset?: number;
+        ordered_length_aa?: number | null;
+        display_first_model_residue?: number | null;
+        display_last_model_residue?: number | null;
+        is_chosen?: boolean;
+        note?: string | null;
+      }
+    | null
+    | undefined,
+): StructureViewerData | null {
+  const topo = topology?.per_residue_topology ?? "";
+  if (!topo || !structure?.is_chosen) return null;
+  // Both halves must describe the SAME member, or we would be colouring one member's
+  // model with another's topology — the precise failure this module exists to prevent.
+  if (
+    !topology?.candidate_id ||
+    !structure.candidate_id ||
+    topology.candidate_id !== structure.candidate_id
+  ) {
+    return null;
+  }
+  // The topology was computed on the ordered sequence, so its length IS the construct
+  // length. A disagreement means one of the two is about a different protein.
+  const orderedLen = structure.ordered_length_aa ?? null;
+  if (orderedLen != null && orderedLen !== topo.length) return null;
+
+  const url = structure.r2_key
+    ? `${STRUCTURES_BASE}/${structure.r2_key.replace(/^\/+/, "")}`
+    : (structure.model_url ?? null);
+  if (!url) return null;
+
+  const first = structure.display_first_model_residue ?? null;
+  const last = structure.display_last_model_residue ?? null;
+
+  return {
+    uniprot_acc: topology.topology_acc ?? topology.candidate_id,
+    deeptmhmm_type: deepTMHMMType(topo),
+    sequence_length: topo.length,
+    topology: topo,
+    topology_ranges: topologyRanges(topo),
+    tm_helix_count: topology.tm_helix_count ?? 0,
+    signal_peptide_length: topology.signal_peptide_length ?? 0,
+    source_cohort: topology.cohort ?? "library_designed_orf",
+    source_tool: topology.tool ?? "deeptmhmm_v1",
+    pdb_url: url,
+    latest_version: null,
+    library_candidate_id: topology.candidate_id,
+    library_tranche: topology.library ?? null,
+    library_candidate_set: topology.candidate_set ?? null,
+    library_model_source: structure.source ?? null,
+    library_proteoform_match: structure.proteoform_match ?? null,
+    library_residue_offset: structure.residue_offset ?? 0,
+    library_display_range: first != null && last != null ? [first, last] : null,
+    library_note: structure.note ?? null,
   };
 }
 
