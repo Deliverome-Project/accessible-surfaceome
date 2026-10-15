@@ -104,6 +104,30 @@ def main() -> None:
                 "scored against the other organism's topology)."
             )
 
+    # Length is the other way the two files can describe different proteins,
+    # and a species check cannot see it. MICA's library reference was
+    # repointed to a TM-bearing 383-aa form; the repoint reached the topology
+    # index but not the structure payload, which still carries the 332-aa
+    # ColabFold model. Pairing those filters sites 51 residues out of
+    # register, with both files saying "human" throughout.
+    len_conflict = []
+    for r in members:
+        a = (idx[r["candidate_id"]].get("ordered_length_aa") or "").strip()
+        b = (r.get("ordered_length_aa") or "").strip()
+        if a and b and a != b:
+            len_conflict.append((r["candidate_id"], r["gene_symbol"], b, a))
+    if len_conflict:
+        print(f"  ordered-length conflict between the manifests: {len(len_conflict)}")
+        for cid, sym, pl, il in sorted(len_conflict)[:6]:
+            print(f"    {cid} {sym}: payload={pl} vs index={il}")
+        if not args.allow_species_conflict:
+            raise SystemExit(
+                "refusing to build: the structure payload and the topology index "
+                "disagree on ordered length for the members above, so the "
+                "structure and the topology string describe different proteins. "
+                "Re-run with --allow-species-conflict to build anyway."
+            )
+
     tools = C.Counter(idx[r["candidate_id"]]["topology_tool"] for r in members)
     print("  topology tool:", dict(tools))
     if set(tools) != {"deeptmhmm_v1"}:
