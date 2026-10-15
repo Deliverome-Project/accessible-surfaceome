@@ -52,7 +52,14 @@ from accessible_surfaceome.tools._shared.models import Evidence, Paper, paper_so
 from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty_retraction
 from accessible_surfaceome.tools._shared.retraction_watch import from_http as _retraction_from_http
 
+from .enrichment import (
+    EnrichmentScope,
+    count_new,
+    covered_clip_ids,
+    new_clip_ids,
+)
 from .geometry import apply_geometry_pass
+from .prior_ledger import PriorClip, seed_pool
 from .literature_discovery import (
     DISCOVERY_CACHE_DIR,
     SOURCE_TIERS,
@@ -467,11 +474,34 @@ def run_tag_site_agent(
     sp_end: int | None = None,
     usage_sink: list[Any] | None = None,
     intermediates: dict[str, Any] | None = None,
+    loop_inventory: str | None = None,
+    prior_clips: list[PriorClip] | None = None,
+    seen_keys: set[str] | None = None,
+    covered_junctions: set[int] | None = None,
+    numbered_against: str | None = None,
+    select_max_batches: int = 1,
+    faceted_discovery: bool = False,
 ) -> TagSiteResult:
     """Discover papers (+ preprints, retraction-filtered), triage, pool + span-verify
     tag-insertion clips (shared clip pipeline), then synthesize a validated, ranked
     :class:`TagSiteResult` grounded in that evidence ledger. ``aliases`` should
     include the protein name(s).
+
+    The ENRICHMENT parameters are all inert by default, so the single-gene
+    control path behaves exactly as before:
+
+    * ``loop_inventory`` — prompt text naming this construct's extracellular
+      regions in its OWN numbering, and saying terminal sites are out of scope.
+    * ``prior_clips`` — clips an earlier run cited, seeded into the pool so a
+      paper that degraded to abstract-only today cannot take a known site with
+      it (179 papers degraded across one 20-gene sweep).
+    * ``seen_keys`` / ``covered_junctions`` — what an earlier run already
+      examined, and the junctions we already publish. Clips matching either are
+      not new evidence; if nothing new survives, the run returns BEFORE the
+      selector and the synthesizer.
+    * ``numbered_against`` — the sha256 of the sequence these positions are
+      expressed in, stamped on the archive so a published position is never
+      ambiguous about which proteoform it belongs to.
 
     ``sp_end`` is the AUTHORITATIVE signal-peptide end (UniProt's ``Signal``
     feature). Pass it whenever you have it: it beats the DeepTMHMM run encoded in
@@ -507,6 +537,12 @@ def run_tag_site_agent(
         "n_sites": 0,
         "rejected": [],
         "other_positions": [],
+        "n_new_clips": 0,
+        "n_carried": 0,
+        "n_dropped_covered": 0,
+        "numbered_against": numbered_against,
+        "outcome": "incomplete",
+        "sites": [],
     }
 
     def _stamp(**final: Any) -> None:
@@ -549,6 +585,7 @@ def run_tag_site_agent(
         aliases=aliases,
         retraction_index=ri,
         cached=load_discovery_cache(gene_symbol, cache_dir=DISCOVERY_CACHE_DIR),
+        faceted=faceted_discovery,
     )
     for wp in web_discover_papers(
         client,
@@ -621,11 +658,69 @@ def run_tag_site_agent(
                 log.info("      %s @%s: %s",
                          getattr(clip, "source_id", key), sorted(positions),
                          (getattr(clip, "quote", "") or "")[:110])
+    # Carry forward what an earlier run cited. The pool is not monotonic across
+    # runs — 179 papers degraded to abstract-only across one 20-gene sweep, and
+    # a degraded paper contributes no methods clips — so a clip good enough to
+    # cite once is put back in front of the model regardless of what the
+    # publisher's server is doing today.
+    carried = (
+        seed_pool(pool, prior_clips, store=store) if prior_clips else set()
+    )
+    if carried:
+        log.info("  %s: carried %d previously-cited clip(s) forward",
+                 gene_symbol, len(carried))
+
+    # Drop clips that only restate a junction we already publish. Menu budget
+    # is the scarce resource; corroboration does not need a slot. A clip naming
+    # one covered AND one uncovered residue is kept by `covered_clip_ids`.
+    dropped_covered = (
+        covered_clip_ids(pool, sequence=sequence, covered_junctions=covered_junctions)
+        if covered_junctions
+        else set()
+    )
+    for cid in dropped_covered:
+        pool.pop(cid, None)
+    if dropped_covered:
+        log.info("  %s: dropped %d clip(s) restating an already-published junction",
+                 gene_symbol, len(dropped_covered))
+
+    # Only an enrichment run has anything to subtract, and the bookkeeping reads
+    # each clip's source_id — so on the ordinary path it is skipped entirely
+    # rather than computed and discarded. "Inert by default" has to mean not
+    # running, not running to a no-op.
+    enriching = bool(seen_keys or carried or dropped_covered)
+    if enriching:
+        scope = EnrichmentScope(
+            carried=carried, seen_keys=set(seen_keys or ()), dropped_covered=set()
+        )
+        n_new = count_new(pool, scope)
+        fresh_ids = sorted(new_clip_ids(pool, scope))
+    else:
+        n_new, fresh_ids = len(pool), []
     _progress.update({
         "n_clips": len(pool),
         "n_boosted": len(boosted),
         "boosted": {k: sorted(v) for k, v in boosted.items()},
+        "n_new_clips": n_new,
+        "n_carried": len(carried),
+        "n_dropped_covered": len(dropped_covered),
+        "new_clip_ids": fresh_ids,
     })
+
+    # The pause gate. The selector and the synthesizer are the expensive half of
+    # a run, and a gene whose every clip an earlier run already examined has a
+    # known answer — re-deriving it would pay full price for the same sites.
+    # Inert on the ordinary path: with no seen_keys every fresh clip is new.
+    if enriching and n_new == 0:
+        log.info("  %s: no new evidence in %d clip(s) — stopping before synthesis",
+                 gene_symbol, len(pool))
+        # Set it on _progress, not via _stamp's overrides: _empty() stamps
+        # again on its way out, and `_stamp()` with no overrides re-applies
+        # _progress — so an outcome passed as an override would be wiped by the
+        # very call that records the empty result.
+        _progress["outcome"] = "no_new_evidence"
+        return _empty()
+
     selection = select_clips(
         client,
         pool=pool,
@@ -634,6 +729,7 @@ def run_tag_site_agent(
         system_prompt=load_tag_select_prompt(),
         menu_instruction=_TAG_SELECT_MENU_INSTRUCTION,
         usage_sink=usage_sink,
+        max_batches=select_max_batches,
     )
     evidence = [
         e
@@ -652,6 +748,12 @@ def run_tag_site_agent(
         gene_symbol, protein_name, mode=mode, sequence=sequence, topology=topology,
         sp_end=sp_end,
     )
+    if loop_inventory:
+        # Data, not prompt: this names the protein under study, so it belongs in
+        # the USER prompt. The system prompt stays gene-agnostic, which is what
+        # the prompt-leak tests enforce and why they exist — a worked example
+        # naming a real gene biases every other gene's call.
+        user_prompt = f"{user_prompt}\n\nCONSTRUCT GEOMETRY: {loop_inventory}"
     user_prompt = f"{user_prompt}\n\n{format_evidence_ledger(evidence)}"
 
     # n_repair_attempts + validation_error, as every v2 builder records. Without
@@ -765,6 +867,12 @@ def run_tag_site_agent(
         # function-abrogating. Both were visible only as numbers inside a ledger
         # sentence before this.
         other_positions=[x.model_dump() for x in result.other_positions],
+        # The emitted sites themselves. The depth spike kept only n_sites, so
+        # verifying its own junctions afterwards meant reconstructing them from
+        # log prose — and a sweep that cannot be checked afterwards cannot be
+        # trusted afterwards.
+        sites=[x.model_dump() for x in result.sites],
+        outcome="synthesized",
     )
 
     result.prompt_sha = prompt_sha()
