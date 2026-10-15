@@ -167,13 +167,27 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {written}/{len(rows)}", end="\r", flush=True)
     print(f"\nwrote {written} row(s) to {TABLE}")
 
+    # Post-check the invariant that actually matters here: every stored pointer aims at
+    # a v1 run. A dtm2 version among these would mean the resolver regressed to selecting
+    # on "has a per_residue_topology" -- which a dtm2 row also has, as the lossy back
+    # projection -- and the index would claim v1 while meaning v2.
     got = _query(
         account,
         db,
         token,
-        f"SELECT COUNT(*) AS n, SUM(is_chosen) AS chosen FROM {TABLE}",
+        f"SELECT COUNT(*) AS n, COUNT(DISTINCT topology_version) AS versions, "
+        f"SUM(CASE WHEN topology_version LIKE '%dtm2%' THEN 1 ELSE 0 END) AS dtm2_pointers, "
+        f"SUM(CASE WHEN topology_version LIKE '%test%' THEN 1 ELSE 0 END) AS test_pointers "
+        f"FROM {TABLE}",
     )
-    print("  in D1 now:", (got.get("result") or [{}])[0].get("results"))
+    stats = ((got.get("result") or [{}])[0].get("results") or [{}])[0]
+    print("  in D1 now:", stats)
+    if stats.get("dtm2_pointers") or stats.get("test_pointers"):
+        raise SystemExit(
+            f"refusing to leave the index in this state: "
+            f"{stats.get('dtm2_pointers')} pointers aim at a dtm2 version and "
+            f"{stats.get('test_pointers')} at a provisional one; v1 is the topology of record"
+        )
     return 0
 
 
