@@ -97,9 +97,12 @@ interface StructureVariantBase {
 
 export interface StructureVariantAfdb extends StructureVariantBase {
   source: "afdb";
-  /** UniProt accession to fetch from AFDB. Stripped of any isoform
-   *  suffix because AFDB models the canonical-acc structure for the
-   *  isoform fold too. */
+  /** UniProt accession to fetch from AFDB. For an isoform tab this is
+   *  the isoform's own suffixed accession (GeneHeader passes
+   *  ``isoform_topologies[].uniprot_acc``, e.g. "P08195-2"), so the tab
+   *  loads AFDB's model of that isoform (AF-P08195-2-F1), not the
+   *  canonical. AFDB models isoforms separately; an older version of this
+   *  comment said the suffix was stripped, which is not what happens. */
   uniprot_acc: string;
   /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
@@ -1584,10 +1587,15 @@ export function StructureViewer({
     };
     const hasL1 = (ms: LibraryMembership[]) =>
       ms.some((m) => (m.library ?? "").toLowerCase() === "l1");
-    let target = tabLibraryMembers.findIndex((ms, i) => hasL1(ms) && usable(i));
-    if (target < 0) {
-      target = tabLibraryMembers.findIndex((ms, i) => ms.length > 0 && usable(i));
-    }
+    // Among L1 tabs prefer the library tab itself: it is the construct's own
+    // model and caption, where an isoform tab is AFDB's model of the same
+    // sequence (MUC1 would otherwise open on Isoform 8 once it has a tab).
+    const isLibraryTab = (i: number) => effectiveVariants[i - 1]?.source === "library";
+    const firstTab = (ok: (ms: LibraryMembership[], i: number) => boolean) =>
+      tabLibraryMembers.findIndex((ms, i) => ok(ms, i) && usable(i));
+    let target = firstTab((ms, i) => hasL1(ms) && isLibraryTab(i));
+    if (target < 0) target = firstTab((ms) => hasL1(ms));
+    if (target < 0) target = firstTab((ms) => ms.length > 0);
     if (target <= 0) return; // no library tab, or Canonical is the construct
     userPickedRef.current = true;
     setVariantIdx(target);
