@@ -17,9 +17,12 @@ app = modal.App("masif-l1-sweep")
 vol = modal.Volume.from_name("masif-l1")
 
 EXTRACT = r"""
-import sys, json, glob
+import sys, json, glob, os
 import numpy as np
 name = sys.argv[1]
+# candidate_id, so the cached vertices are filed under the same key the
+# sweep writes its sites under.
+cid = sys.argv[2]
 ply = glob.glob("data_preparation/01-benchmark_surfaces/%s.ply" % name)
 pred = (glob.glob("output/all_feat_3l/pred_data/pred_%s.npy" % name)
         or glob.glob("output/**/pred_%s.npy" % name))
@@ -49,11 +52,10 @@ np.save("/tmp/r.npy", rid[best].astype(np.int32))
 # anything else -- and without the vertices that means re-running MaSIF
 # inference for every protein just to re-cluster. 56 KB each, ~131 MB for the
 # whole library, so no future clustering question costs inference again.
-import os
 os.makedirs("/vol/verts", exist_ok=True)
-np.save("/vol/verts/%s.v.npy" % name, verts.astype(np.float32))
-np.save("/vol/verts/%s.s.npy" % name, scores.astype(np.float32))
-np.save("/vol/verts/%s.r.npy" % name, rid[best].astype(np.int32))
+np.save("/vol/verts/%s.v.npy" % cid, verts.astype(np.float32))
+np.save("/vol/verts/%s.s.npy" % cid, scores.astype(np.float32))
+np.save("/vol/verts/%s.r.npy" % cid, rid[best].astype(np.int32))
 json.dump({"n_verts": int(n)}, open("/tmp/ext.json", "w"))
 """
 
@@ -67,7 +69,7 @@ json.dump({"n_verts": int(n)}, open("/tmp/ext.json", "w"))
     max_containers=int(os.environ.get("MASIF_MAX_CONTAINERS", "35")),
     retries=1,
 )
-def run_one(acc: str):
+def run_one(cid: str):
     import subprocess
     import os
     import urllib.request
@@ -83,31 +85,52 @@ def run_one(acc: str):
         "S": "signal_peptide",
         "B": "membrane",
     }
-    meta = json.load(open("/vol/l1_inputs.json"))
-    info = meta["topology"].get(acc) or {}
+    meta = json.load(open("/vol/l1_inputs_v2.json"))
+    info = meta["members"][cid]
+    acc = info["acc"]
     UA = "accessible-surfaceome research bot (becca@deliverome.org)"
     wd = "/masif/data/masif_site"
-    os.makedirs("/vol/sites", exist_ok=True)
+    os.makedirs("/vol/sites_v2", exist_ok=True)
 
     def _write(r):
-        with open(f"/vol/sites/{acc}.json", "w") as f:
+        with open(f"/vol/sites_v2/{cid}.json", "w") as f:
             json.dump(r, f)
         vol.commit()
 
-    rec = {"acc": acc, "sym": info.get("sym")}
+    rec = {
+        "candidate_id": cid,
+        "acc": acc,
+        "sym": info.get("sym"),
+        "species": info.get("species"),
+        "structure_source": info.get("source"),
+        "topology_version": info.get("topology_version"),
+        "topology_cohort": info.get("topology_cohort"),
+    }
     t0 = time.time()
     os.makedirs("/tmp/p", exist_ok=True)
     pdb = f"/tmp/p/{acc}.pdb"
-    try:
-        r = urllib.request.Request(
-            f"https://alphafold.ebi.ac.uk/files/AF-{acc}-F1-model_v6.pdb",
-            headers={"User-Agent": UA},
-        )
-        open(pdb, "wb").write(urllib.request.urlopen(r, timeout=180).read())
-    except Exception as e:
-        rec["error"] = f"no_alphafold: {e}"
-        _write(rec)
-        return rec
+    # The library decides which structure is the protein actually being
+    # ordered: an AlphaFold DB model when its proteoform matches the ORF, and
+    # otherwise a ColabFold model built from the designed CDS, staged on the
+    # volume. Never re-derive this from the accession -- that is what scored
+    # the wrong proteoform for 270 members.
+    if info.get("r2_key"):
+        src = f"/vol/colabfold/{cid}.pdb"
+        if not os.path.exists(src):
+            rec["error"] = f"missing_colabfold: {src}"
+            _write(rec)
+            return rec
+        import shutil
+
+        shutil.copyfile(src, pdb)
+    else:
+        try:
+            r = urllib.request.Request(info["model_url"], headers={"User-Agent": UA})
+            open(pdb, "wb").write(urllib.request.urlopen(r, timeout=180).read())
+        except Exception as e:
+            rec["error"] = f"no_alphafold: {e}"
+            _write(rec)
+            return rec
     env = dict(os.environ, PATH="/masifbin:" + os.environ["PATH"])
 
     def sh(c, t=4500):
@@ -127,7 +150,7 @@ def run_one(acc: str):
     rc1, l1 = sh(f"./data_prepare_one.sh --file {pdb} {name}")
     rc2, l2 = sh(f"./predict_site.sh {name}")
     open("/tmp/extract.py", "w").write(EXTRACT)
-    rc3, l3 = sh(f"python /tmp/extract.py {name}", t=2400)
+    rc3, l3 = sh(f"python /tmp/extract.py {name} {cid}", t=2400)
     rec["rc"] = [rc1, rc2, rc3]
     try:
         V = np.load("/tmp/v.npy")
@@ -187,18 +210,14 @@ def driver():
     import json
     import os
 
-    meta = json.load(open("/vol/l1_inputs.json"))
+    meta = json.load(open("/vol/l1_inputs_v2.json"))
     done = (
-        {f[:-5] for f in os.listdir("/vol/sites")}
-        if os.path.isdir("/vol/sites")
+        {f[:-5] for f in os.listdir("/vol/sites_v2")}
+        if os.path.isdir("/vol/sites_v2")
         else set()
     )
-    todo = [a for a in meta["order"] if a not in done]
-    print(
-        f"L1 sweep: {len(done)} done, {len(todo)} to go "
-        f"({meta['n_new']} new-first, {meta['n_validation']} validation)",
-        flush=True,
-    )
+    todo = [c for c in sorted(meta["members"]) if c not in done]
+    print(f"L1 sweep v2: {len(done)} done, {len(todo)} to go", flush=True)
     ok = err = 0
     for r in run_one.map(todo, order_outputs=False, return_exceptions=True):
         if isinstance(r, Exception) or (isinstance(r, dict) and r.get("error")):
