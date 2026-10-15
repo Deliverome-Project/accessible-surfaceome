@@ -107,3 +107,61 @@ def test_the_per_gene_search_facts_are_promised(shape: dict[str, list[str]]) -> 
     latter."""
     for probe in ("tag_sites_frame_mapped", "tag_sites_det_only"):
         assert "prompt_sha" in set(shape[probe]), probe
+
+
+def test_every_probe_is_represented_in_the_baseline() -> None:
+    """A probe added to PROBES but never `--capture`d is SILENTLY INERT.
+
+    `check()` iterates `baseline["shape"].items()`, so it only ever compares
+    probes the baseline already holds. Adding a probe without recapturing
+    therefore buys nothing, and the guard reports PASS while the surface the new
+    probe was meant to protect is unwatched — the same shape of failure as the
+    original incident, one level up.
+
+    The by-name assertions above are a forcing function only for fields someone
+    thought to name twice. This makes it structural: any probe, named or not,
+    must appear in the baseline.
+    """
+    import json
+
+    from accessible_surfaceome.paths import REPO_ROOT
+
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "worker_shape_guard",
+        REPO_ROOT / "scripts/cloud/worker_shape_guard.py",
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    captured = json.loads(BASELINE.read_text())["shape"]
+    missing = [name for name, _ in mod.PROBES if name not in captured]
+    assert not missing, (
+        f"probes present in PROBES but absent from the baseline: {missing}. "
+        "They contribute nothing until you run "
+        "`uv run python scripts/cloud/worker_shape_guard.py --capture`."
+    )
+
+
+def test_the_baseline_has_no_orphan_probes() -> None:
+    """And the reverse: a baseline entry whose probe was deleted is dead weight
+    that would fail `check()` forever with '<entire probe unavailable>'."""
+    import importlib.util
+    import json
+
+    from accessible_surfaceome.paths import REPO_ROOT
+
+    spec = importlib.util.spec_from_file_location(
+        "worker_shape_guard",
+        REPO_ROOT / "scripts/cloud/worker_shape_guard.py",
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    captured = json.loads(BASELINE.read_text())["shape"]
+    known = {name for name, _ in mod.PROBES}
+    orphans = sorted(set(captured) - known)
+    assert not orphans, f"baseline holds probes no longer in PROBES: {orphans}"
