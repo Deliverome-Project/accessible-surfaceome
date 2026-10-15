@@ -22,6 +22,7 @@ partner. Loop-ness has to be derived from topology, not read off a label.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 
 import pytest
@@ -39,28 +40,31 @@ def sha(seq: str) -> str:
     return hashlib.sha256(seq.encode()).hexdigest()
 
 
-def member(**over) -> Member:
-    base = dict(
-        candidate_id="l1-p0001",
-        library="l1",
-        candidate_set="library_reference",
-        species="human",
-        gene_symbol="GENEX",
-        topology_acc="P00001",
-        topology_cohort="human_canonical",
-        sequence_sha256=sha("MKTAYIAKQR"),
-        ordered_length_aa=10,
-        tm_count=2,
-        longest_inter_tm_ecto_run_aa=5,
-        longest_ecto_run_aa=5,
-        longest_ecto_run_start=3,
-        longest_ecto_run_position="inter_tm",
-        placement="internal",
-        gpi_rerouted=False,
-        shed_risk="",
-    )
-    base.update(over)
-    return Member(**base)
+_BASE = Member(
+    candidate_id="l1-p0001",
+    library="l1",
+    candidate_set="library_reference",
+    species="human",
+    gene_symbol="GENEX",
+    topology_acc="P00001",
+    topology_cohort="human_canonical",
+    sequence_sha256=sha("MKTAYIAKQR"),
+    ordered_length_aa=10,
+    tm_count=2,
+    longest_inter_tm_ecto_run_aa=5,
+    longest_ecto_run_aa=5,
+    longest_ecto_run_start=3,
+    longest_ecto_run_position="inter_tm",
+    placement="internal",
+    gpi_rerouted=False,
+    shed_risk="",
+)
+
+
+def member(**over: object) -> Member:
+    """A stand-in member row. ``replace`` keeps the field types checkable,
+    which a ``Member(**dict)`` of mixed str/int/bool values does not."""
+    return dataclasses.replace(_BASE, **over)  # type: ignore[arg-type]
 
 
 # --------------------------------------------------------------------------

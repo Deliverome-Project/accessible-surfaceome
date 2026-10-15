@@ -251,6 +251,11 @@ def test_the_registered_url_matches_the_accession_namespace() -> None:
         ],
         store=store,
     )
-    assert store.get("PMC:PMC9").url == "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9/"
-    assert store.get("PMID:12345").url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
-    assert store.get("DOI:10.1101/712448").url == "https://doi.org/10.1101/712448"
+    for source_id, expected in (
+        ("PMC:PMC9", "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9/"),
+        ("PMID:12345", "https://pubmed.ncbi.nlm.nih.gov/12345/"),
+        ("DOI:10.1101/712448", "https://doi.org/10.1101/712448"),
+    ):
+        registered = store.get(source_id)
+        assert registered is not None, source_id
+        assert registered.url == expected

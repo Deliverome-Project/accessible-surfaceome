@@ -58,7 +58,10 @@ _TAG_METHODS = (
     '"cell surface expression" OR "knock-in" OR pHluorin OR HiBiT OR HaloTag OR '
     'ALFA OR DogTag OR SpyTag OR bungarotoxin OR "extracellular loop"'
 )
-_MAX_PER_SOURCE = 30
+#: Results per EuropePMC / PubTator pass. Was 30, which with two EuropePMC
+#: passes plus PubTator put a ~90-paper ceiling over a measured median of 77
+#: discovered papers — so discovery was capped, not exhausted.
+_MAX_PER_SOURCE = 60
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +108,17 @@ _TAG_METHOD_FACETS = {
     "insertion": (
         '"extracellular loop" OR "domain insertion" OR "insertion screen" OR '
         'transposon OR bungarotoxin OR SpyTag OR DogTag'
+    ),
+    # Every gene in the L1 internal-site set is multipass with no extracellular
+    # terminus, so its tag can ONLY go in a loop — and the vocabulary above
+    # names loops only generically. Papers name the specific loop ("the second
+    # extracellular loop", "ECL2"), which no other facet matches.
+    "internal_loop": (
+        '"second extracellular loop" OR "third extracellular loop" OR '
+        '"first extracellular loop" OR ECL1 OR ECL2 OR ECL3 OR '
+        '"extracellular loop 1" OR "extracellular loop 2" OR '
+        '"extracellular loop 3" OR "loop insertion" OR "inserted into the loop" OR '
+        '"insertional mutagenesis" OR snorkel OR "re-entrant loop"'
     ),
 }
 
