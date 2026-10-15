@@ -160,3 +160,12 @@
   color: var(--text-muted, #666);
   cursor: pointer;
 }
+
+/* Scope caveat under the Bindome table — absence of a tab is "not designed
+   against", not "designed against and found nothing". */
+.scopeNote {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted, #666);
+}

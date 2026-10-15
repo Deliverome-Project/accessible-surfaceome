@@ -78,7 +78,17 @@ export function BindingSitesTabs({
       {source === "surface_bind" ? (
         <SurfaceBindTable sites={surfaceBindSites} topology={topology} />
       ) : (
-        <BindomeTable sites={bindomeSites} topology={topology} />
+        <>
+          <BindomeTable sites={bindomeSites} topology={topology} />
+          <p className={styles.scopeNote}>
+            <strong>Scope:</strong> Bindome designed against 8,289 human
+            targets; these sites cover the subset that intersects this
+            catalogue. A gene with no Bindome tab is one Bindome did not
+            design against &mdash; most often a multi-pass membrane protein,
+            which its domain-selection step excludes &mdash; not a gene where
+            Bindome looked and found nothing.
+          </p>
+        </>
       )}
     </>
   );
