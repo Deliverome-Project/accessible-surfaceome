@@ -1040,10 +1040,58 @@ based on a freshly fetched `origin/main`:
 3. Compare the live `/v1` index against your source. Its routes and
    `row_schema` must be a subset of what you are about to ship. This catches
    a previous deploy made from some other branch.
-4. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
-5. Re-verify after the deploy, because a merge can land during it. If a
-   deploy changed a response's shape, purge the cache with
-   `scripts/cloud/purge_gene_cache.py`.
+4. **Capture the live response SHAPE — steps 1-3 cannot see a dropped field.**
+
+       uv run python scripts/cloud/worker_shape_guard.py --capture
+
+   Steps 1-2 compare the Worker SOURCE across `origin/main` and `origin/dev`;
+   step 3 compares routes and `row_schema`. A field nested in a response body,
+   deployed from an unmerged branch, is in **no branch and is not a route**, so
+   every one of those steps passes while you delete it. That is not
+   hypothetical: on 2026-10-15 a deploy at 03:01 UTC added
+   `deterministic_features.bindome` and a deploy at 19:04 UTC removed it, with
+   the full checklist run and green. Two other sessions had Worker surface in
+   flight the same day, and a third deploy at 12:02 UTC is unattributable —
+   every version records `Author: becca@deliverome.org`, because all sessions
+   share the API token, so whatever it added from an unmerged branch is gone
+   and nobody knows what it was.
+
+   Comparing source can never catch this class. The only reliable record of
+   what the API promises is the live response, which is what this guard reads.
+5. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
+6. **Deploy with attribution**, so the next person investigating can tell whose
+   deploy a version was. `Tag` and `Message` were empty on every deploy today,
+   which is why 12:02 UTC cannot be traced:
+
+       npx --yes wrangler deploy --message "<branch>: <what changed>"
+
+   Prefer `wrangler versions upload --message ...` when you want to check the
+   shape of a new version BEFORE it takes traffic: it returns a preview URL, so
+   `worker_shape_guard.py --check --base <preview-url>` turns this from
+   detection into prevention. Promote with `wrangler versions deploy`.
+7. **Verify the shape survived**, and re-run step 1, because a merge can land
+   during a deploy:
+
+       uv run python scripts/cloud/worker_shape_guard.py --check
+
+   A dropped path here is almost always another session's live work. Find who
+   owns it and carry it; do NOT reconcile by merging `main` and `dev` alone,
+   because neither contains a field that was deployed from an unmerged branch
+   and the merge would drop it with every check green.
+8. If a deploy changed a response's shape, purge the cache with
+   `scripts/cloud/purge_gene_cache.py` — unless the shape change rides on a new
+   Worker version, in which case `cacheEpoch(env)` is
+   `CF_VERSION_METADATA.id`, the deploy mints a fresh epoch, and both cache
+   tiers are orphaned automatically.
+
+`cloudflare/workers/surfaceome_api/tests/live_shape_baseline.json` is the
+committed baseline: 10 deliberately heterogeneous probes, ~1,580 key paths.
+Heterogeneous because most of these fields are GATED and one gene proves
+nothing — `deterministic_features.library_designed_*` appear only for library
+members (present on KCNN2, absent on CD63, which is how the first look at this
+incident briefly reached the wrong conclusion), `position_frame` only on a
+frame-mapped tag site. Refresh it deliberately, in the commit that adds the
+field, so a review can see what the API started promising.
 
 Worktrees have no `wrangler.toml`: it is gitignored and only
 `wrangler.toml.example` is committed. Copy it from the canonical checkout,
