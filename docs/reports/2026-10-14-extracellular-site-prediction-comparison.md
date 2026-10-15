@@ -252,3 +252,62 @@ The designed-ORF run exists under both models -- `topo_2026_10_14_l1_designed`
 picking the right release, not of new compute. Hash matching is also stricter than
 keying on accession plus cohort, because it verifies the sequence rather than
 trusting the label. `scripts/audit/check_l1_topology_v1_coverage.py` runs the check.
+
+
+## Rebuild, 2026-10-15
+
+Three findings invalidated the first pass. All three came from being
+challenged on a result rather than from the code failing.
+
+### The novelty figure was not trustworthy
+
+The first measurement said 65% of our MaSIF extracellular sites were covered
+by neither SURFACE-Bind nor Bindome. Two confounds, either of which is enough
+to void it:
+
+* **The Bindome slice was 481 of 8,289 targets (6%).** It had been scoped to
+  the proteins overlapping SURFACE-Bind for the *concordance* question, then
+  reused for a *novelty* question. "Not in Bindome" mostly meant "Bindome was
+  never asked".
+* **The MaSIF sites came from clustering parameters that were not theirs.**
+  The sweep ran `DBSCAN(eps=3.0, min_samples=5)` with clusters kept at `>=200`
+  while SURFACE-Bind publishes `eps=2.5, min_samples=2` and `>200`. A commit
+  titled "use SURFACE-Bind's published cutoffs" had updated the comparison
+  scripts and this report but not the sweep. The 4-protein test cited as
+  evidence measured anchor *recovery*, not site *count*, so it never spoke to
+  the question.
+
+### Inputs were derived from an accession, which cannot name a proteoform
+
+The same mistake in three guises: canonical-only topology (so isoform
+constructs were filtered against the wrong sequence), AlphaFold-DB-only
+structures (so 270 members were scored as a different protein), and a
+human-canonical filter (so ~196 mouse and cyno members were silently dropped).
+
+The library already answers all three, keyed on `candidate_id`:
+`library_structure_payload.tsv` gives the structure that is actually being
+ordered, and `library_topology_index.tsv` gives the matching topology row,
+every one `deeptmhmm_v1`. `build_l1_masif_inputs_v2.py` reads both and refuses
+to run if any topology row is dtm2. Its own first build dropped 362 of 2,699
+members by matching `uniprot_acc` when the index names isoform-suffixed
+accessions and candidate ids, which live in `uniprot_acc_full`.
+
+### Re-clustering is now free
+
+The sweep persists per-vertex coordinates, scores and residue assignments
+(56 KB per protein, ~131 MB for the library). `recluster_masif_sites.py`
+replays any parameters over that cache: measured at 0.03 s for 4 proteins.
+The parameter question should never have cost inference, and now does not.
+
+### State at the time of writing
+
+| | |
+|---|---|
+| Bindome, expanded to every target intersecting the cohort | 1,503 (was 481) |
+| Bindome chain matching | against all known isoforms, not canonical only |
+| MaSIF sweep v2 | 2,699 members, corrected structures + v1 topology |
+| MaSIF clustering | SURFACE-Bind's published parameters |
+
+Both sweeps were running when this was written; the novelty figure should be
+recomputed with `site_source_overlap.py` once they finish, and the earlier
+65% treated as withdrawn rather than updated.
