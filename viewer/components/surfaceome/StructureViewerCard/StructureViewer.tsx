@@ -23,6 +23,7 @@ import {
 } from "../../../lib/structure-viewer-types";
 import type {
   AlphafoldPredictionEntry,
+  LibraryMembership,
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
@@ -78,7 +79,8 @@ export interface TagSiteSphere {
 export type StructureVariant =
   | StructureVariantAfdb
   | StructureVariantExperimental
-  | StructureVariantSchwekeHomomer;
+  | StructureVariantSchwekeHomomer
+  | StructureVariantLibrary;
 
 interface StructureVariantBase {
   /** Stable key for the React tab list. */
@@ -95,9 +97,12 @@ interface StructureVariantBase {
 
 export interface StructureVariantAfdb extends StructureVariantBase {
   source: "afdb";
-  /** UniProt accession to fetch from AFDB. Stripped of any isoform
-   *  suffix because AFDB models the canonical-acc structure for the
-   *  isoform fold too. */
+  /** UniProt accession to fetch from AFDB. For an isoform tab this is
+   *  the isoform's own suffixed accession (GeneHeader passes
+   *  ``isoform_topologies[].uniprot_acc``, e.g. "P08195-2"), so the tab
+   *  loads AFDB's model of that isoform (AF-P08195-2-F1), not the
+   *  canonical. AFDB models isoforms separately; an older version of this
+   *  comment said the suffix was stripped, which is not what happens. */
   uniprot_acc: string;
   /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
@@ -177,6 +182,34 @@ export interface StructureVariantExperimental extends StructureVariantBase {
   coverage: number;
 }
 
+export interface StructureVariantLibrary extends StructureVariantBase {
+  source: "library";
+  /** Coordinates for the protein the library member actually encodes: our ColabFold
+   *  model in the public R2 bucket, or AFDB's where its model IS the ordered protein. */
+  pdb_url: string;
+  candidate_id: string;
+  /** Library tranche, ``l1`` / ``l2``. NOT a DeepTMHMM tool version. */
+  tranche: string | null;
+  candidate_set: string | null;
+  /** ``colabfold`` (ours) | ``alphafold_db``. Display + caption. */
+  model_source: string | null;
+  /** identical | contained | ours_by_construction | … */
+  proteoform_match: string | null;
+  /** construct residue i == model residue i + residue_offset.
+   *
+   *  Load-bearing, not metadata. For a ``contained`` member the ordered protein is a
+   *  subsequence of the model and offsets run to 134, so a render that ignores this
+   *  paints the topology onto the wrong residues while looking entirely plausible. It
+   *  becomes the single {@link ProjSegment} the existing projection machinery consumes —
+   *  the same path experimental PDBs use for their author-numbering offset. */
+  residue_offset: number;
+  /** Inclusive model-residue span the construct covers. Residues outside it are hidden,
+   *  so a longer model cannot read as protein the construct contains. */
+  display_range: [number, number] | null;
+  /** Why this model is not the member's own proteoform, when it is an alternate. */
+  note: string | null;
+}
+
 /** Per-variant AFDB metadata fetched at runtime from
  *  ``alphafold.ebi.ac.uk/api/prediction/{UNIPROT}``. Matches the
  *  subset of fields ``tools/afdb_plddt.py`` reads for the canonical
@@ -238,6 +271,11 @@ export interface ActiveTopology {
   topology: string;
   label: string;
   canonicalNumbering: boolean;
+  /** The canonical residue range the active structure actually contains,
+   *  when that is narrower than the whole sequence: an experimental chain
+   *  (PDBe's mapped UniProt range) or a trimmed homo-oligomer model (the
+   *  residues parsed from its PDB). Null when the whole sequence is drawn. */
+  coveredRange: { start: number; end: number } | null;
 }
 
 interface StructureViewerProps {
@@ -304,6 +342,90 @@ interface StructureViewerProps {
    *  flow: the canonical fold first, then how two copies of it
    *  assemble, then alternate-isoform / cross-species comparisons. */
   schwekeHomomer?: StructureVariantSchwekeHomomer | null;
+  /** Library members by the accession whose sequence they order
+   *  ({@link libraryMembersByAccession}). A tab showing one of these
+   *  accessions is marked as in the library; an empty map means the gene
+   *  has no library construct and nothing is marked. */
+  libraryMembers?: Map<string, LibraryMembership[]>;
+}
+
+/** Library membership a tab shows, or ``[]``. Canonical and AFDB tabs are
+ *  matched on their full accession (an isoform suffix is a different
+ *  sequence). A library tab is its own member. Experimental and homomer
+ *  tabs are never marked: neither model is a library sequence. */
+function _tabLibraryMembers(
+  v: StructureVariant | null,
+  canonicalAcc: string,
+  members: Map<string, LibraryMembership[]>,
+): LibraryMembership[] {
+  if (v === null) return members.get(canonicalAcc.toUpperCase()) ?? [];
+  if (v.source === "afdb") {
+    const acc = v.uniprot_acc_full ?? v.uniprot_acc;
+    return members.get(acc.toUpperCase()) ?? [];
+  }
+  if (v.source === "library") {
+    return [{ candidate_id: v.candidate_id, library: v.tranche, candidate_set: v.candidate_set }];
+  }
+  return [];
+}
+
+/** ``L1`` / ``L1·L2`` for a tab's members, tranches de-duplicated. */
+function _libraryTag(ms: LibraryMembership[]): string {
+  const tranches = Array.from(
+    new Set(ms.map((m) => (m.library ?? "").toUpperCase()).filter(Boolean)),
+  ).sort();
+  return tranches.length ? tranches.join("·") : "Library";
+}
+
+/** Tooltip suffix saying whether a tab is a library construct. Empty for
+ *  genes with no library construct, so their tooltips are unchanged. */
+function _libraryTitle(ms: LibraryMembership[], geneHasLibrary: boolean): string {
+  if (!geneHasLibrary) return "";
+  if (ms.length === 0) return " Not in the library.";
+  return ` In the library as ${ms.map((m) => m.candidate_id).join(", ")}.`;
+}
+
+/** The marker drawn on a library tab's label. */
+function LibraryTabMark({ members }: { members: LibraryMembership[] }) {
+  if (members.length === 0) return null;
+  return (
+    <span className={styles.variantTabLib} aria-label={`In library ${_libraryTag(members)}`}>
+      {_libraryTag(members)}
+    </span>
+  );
+}
+
+/** The line under the tab strip: is the open tab a library construct, and
+ *  if not, which tabs are. Names every member, so one with no tab on this
+ *  card is still accounted for. */
+function _libraryNote(
+  active: LibraryMembership[],
+  tabs: { label: string; members: LibraryMembership[] }[],
+  allMembers: Map<string, LibraryMembership[]>,
+): string {
+  const describe = (m: LibraryMembership) =>
+    `${m.candidate_id} (${(m.library ?? "").toUpperCase() || "library"}${
+      m.candidate_set ? `, ${m.candidate_set.replace(/_/g, " ")}` : ""
+    })`;
+  if (active.length > 0) {
+    return `In the library: this tab is the protein ${active.map(describe).join(" and ")} encodes.`;
+  }
+  const marked = tabs.filter((t) => t.members.length > 0).map((t) => t.label);
+  const onTabs = new Set(tabs.flatMap((t) => t.members.map((m) => m.candidate_id)));
+  // Members with no tab on this card: a UniProt sequence the card shows no
+  // tab for (it lists a few isoforms, not all), or a construct with no
+  // structure. Named with the accession so the reader can still find them.
+  const unseen = Array.from(allMembers.entries()).flatMap(([acc, ms]) =>
+    ms
+      .filter((m) => !onTabs.has(m.candidate_id))
+      .map((m) => (acc === m.candidate_id.toUpperCase() ? m.candidate_id : `${m.candidate_id} (${acc})`)),
+  );
+  const parts: string[] = [];
+  if (marked.length) parts.push(`library constructs are on ${marked.join(", ")}`);
+  if (unseen.length) {
+    parts.push(`also in the library, with no tab here: ${unseen.join(", ")}`);
+  }
+  return `Not in the library${parts.length ? `: ${parts.join("; ")}` : ""}.`;
 }
 
 /** Renderer mode toggle. ``topology`` is the default — full topology
@@ -574,6 +696,49 @@ function _renderCaption(args: {
             discontinuous segments (a fusion or engineered construct), so the
             topology coloring is projected piecewise and is approximate near
             segment boundaries.
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  // ---- Library-construct branch ----
+  // Its own branch: falling through to the AFDB one below waited forever on
+  // AFDB metadata keyed by an accession a library tab doesn't carry, and
+  // linked to ``AF-undefined-F1``.
+  if (activeVariant?.source === "library") {
+    const v = activeVariant;
+    const ours = v.model_source === "colabfold";
+    const afEntry = /\/(AF-[A-Z0-9-]+?-F\d+)-model_v\d+\.pdb$/i.exec(v.pdb_url)?.[1];
+    const span =
+      v.proteoform_match === "contained" && v.display_range
+        ? `The ordered protein is residues ${v.display_range[0]}–${v.display_range[1]} of this model; only that span is drawn.`
+        : null;
+    return (
+      <div className={styles.caption} aria-label="Structure caption">
+        <p className={styles.captionStats}>
+          <span className={styles.captionStat}>
+            {ours ? "Our ColabFold model" : "AlphaFold DB model"}
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>
+            Library <strong>{v.candidate_id}</strong>
+            {v.tranche ? ` (${v.tranche.toUpperCase()})` : ""}
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <a
+            href={afEntry ? `https://alphafold.ebi.ac.uk/entry/${afEntry}` : v.pdb_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.captionLink}
+          >
+            {afEntry ? `AFDB ${afEntry} ↗` : "Model file ↗"}
+          </a>
+        </p>
+        {span ? <p className={styles.captionCaveat}>{span}</p> : null}
+        {v.note && !span ? (
+          <p className={styles.captionCaveat}>
+            {v.note.charAt(0).toUpperCase() + v.note.slice(1)}.
           </p>
         ) : null}
       </div>
@@ -924,6 +1089,7 @@ export function StructureViewer({
   orthologPins = [],
   variants = [],
   schwekeHomomer = null,
+  libraryMembers = new Map(),
   residueRequest = null,
   onHighlightChange,
   onActiveTopologyChange,
@@ -1225,6 +1391,17 @@ export function StructureViewer({
     : effectiveVariants[variantIdx - 1] ?? null;
   const isExperimentalActive = activeVariant?.source === "experimental";
   const isSchwekeActive = activeVariant?.source === "schweke-homomer";
+  // Library membership per tab (index 0 = Canonical), so the strip can mark
+  // library vs non-library and the note under it can say which is which.
+  const tabLibraryMembers: LibraryMembership[][] = [
+    _tabLibraryMembers(null, data.uniprot_acc, libraryMembers),
+    ...effectiveVariants.map((v) =>
+      _tabLibraryMembers(v, data.uniprot_acc, libraryMembers),
+    ),
+  ];
+  const geneHasLibrary =
+    libraryMembers.size > 0 || tabLibraryMembers.some((ms) => ms.length > 0);
+  const isLibraryActive = activeVariant?.source === "library";
   // Isoform variant active: its deterministic tag pins, placed on the
   // (canonical-fold) structure at each pin's canonical_residue. Pins in an
   // isoform-only inserted region (no canonical_residue) can't map to the
@@ -1287,13 +1464,31 @@ export function StructureViewer({
   const activeOnOwnSequence =
     activeVariant?.source === "afdb" &&
     (activeVariant.id.startsWith("iso-") || activeVariant.id.startsWith("ortholog-"));
+  // An experimental chain or a trimmed homo-oligomer model covers only part
+  // of the canonical sequence; the strip blanks the rest.
+  const coveredStart =
+    activeVariant?.source === "experimental"
+      ? activeVariant.unp_start
+      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
+        ? activeRenderedResidueRange.min
+        : null;
+  const coveredEnd =
+    activeVariant?.source === "experimental"
+      ? activeVariant.unp_end
+      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
+        ? activeRenderedResidueRange.max
+        : null;
   useEffect(() => {
     onActiveTopologyChangeRef.current?.({
       topology: activeTopology,
       label: activeLabel,
       canonicalNumbering: !activeOnOwnSequence,
+      coveredRange:
+        coveredStart != null && coveredEnd != null
+          ? { start: coveredStart, end: coveredEnd }
+          : null,
     });
-  }, [activeTopology, activeLabel, activeOnOwnSequence]);
+  }, [activeTopology, activeLabel, activeOnOwnSequence, coveredStart, coveredEnd]);
   const activeDeepTMHMMType =
     activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
 
@@ -1308,17 +1503,13 @@ export function StructureViewer({
   // pin the legend to that window so it doesn't advertise a "Signal
   // peptide" swatch for a model that doesn't actually contain any S
   // residues. The window comes from ``activeRenderedResidueRange``,
-  // which the schweke render branch populates after parsing the PDB.
+  // which the schweke render branch populates after parsing the PDB. An
+  // experimental chain is windowed the same way, by PDBe's mapped UniProt
+  // range — the same window the strip under the viewer draws.
   const legendPresentStates = (() => {
-    if (
-      isSchwekeActive &&
-      activeRenderedResidueRange &&
-      activeRenderedResidueRange.variantId === activeVariant?.id &&
-      activeTopology
-    ) {
-      const { min, max } = activeRenderedResidueRange;
-      const lo = Math.max(0, min - 1);
-      const hi = Math.min(activeTopology.length, max);
+    if (coveredStart != null && coveredEnd != null && activeTopology) {
+      const lo = Math.max(0, coveredStart - 1);
+      const hi = Math.min(activeTopology.length, coveredEnd);
       return _presentTopologyStates(activeTopology.slice(lo, hi));
     }
     return _presentTopologyStates(activeTopology);
@@ -1376,6 +1567,42 @@ export function StructureViewer({
 
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
+
+  // Open on the library construct. The library's L1 member is the reference
+  // construct, so the card opens on the tab that shows it (MUC1: Ordered, not
+  // the 1,255-aa canonical whose length is mostly low-confidence strand);
+  // failing an L1 tab, on any library tab. Nothing moves when Canonical
+  // already is that construct (SLC6A8), and a manual pick opts out. Runs
+  // ahead of the canonical-unavailable fallback below, which still applies
+  // when no library tab exists. Skips an AFDB tab known to have no model.
+  useEffect(() => {
+    if (userPickedRef.current) return;
+    const usable = (i: number) => {
+      if (i === 0) return afdbAvail[data.uniprot_acc] !== false;
+      const v = effectiveVariants[i - 1];
+      return !(
+        v?.source === "afdb" &&
+        afdbAvail[(v as StructureVariantAfdb).uniprot_acc] === false
+      );
+    };
+    const hasL1 = (ms: LibraryMembership[]) =>
+      ms.some((m) => (m.library ?? "").toLowerCase() === "l1");
+    // Among L1 tabs prefer the library tab itself: it is the construct's own
+    // model and caption, where an isoform tab is AFDB's model of the same
+    // sequence (MUC1 would otherwise open on Isoform 8 once it has a tab).
+    const isLibraryTab = (i: number) => effectiveVariants[i - 1]?.source === "library";
+    const firstTab = (ok: (ms: LibraryMembership[], i: number) => boolean) =>
+      tabLibraryMembers.findIndex((ms, i) => ok(ms, i) && usable(i));
+    let target = firstTab((ms, i) => hasL1(ms) && isLibraryTab(i));
+    if (target < 0) target = firstTab((ms) => hasL1(ms));
+    if (target < 0) target = firstTab((ms) => ms.length > 0);
+    if (target <= 0) return; // no library tab, or Canonical is the construct
+    userPickedRef.current = true;
+    setVariantIdx(target);
+    // tabLibraryMembers is derived each render from props that don't change
+    // for a gene; its length tracks effectiveVariants.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [afdbAvail, effectiveVariants, data.uniprot_acc]);
 
   // When AFDB has no model for the CANONICAL sequence (only an alternative
   // isoform is modelled — LRP1-class — or nothing at all), gray the
@@ -1549,7 +1776,31 @@ export function StructureViewer({
       const expVariant = isExperimentalActive
         ? (activeVariant as StructureVariantExperimental)
         : null;
-      if (schwekeVariant) {
+      const libVariant = isLibraryActive
+        ? (activeVariant as StructureVariantLibrary)
+        : null;
+      if (libVariant) {
+        // Same cache dance as the Schweke branch: R2 sends its 404 with no
+        // Cache-Control and ``force-cache`` replays any stored response however old,
+        // so a browser that loaded the page before a model was ingested would keep
+        // the 404 forever. Retry once past the cache before calling it missing.
+        let resp = await fetch(libVariant.pdb_url, { cache: "force-cache" });
+        if (!resp.ok) {
+          resp = await fetch(libVariant.pdb_url, { cache: "reload" });
+        }
+        if (!resp.ok) {
+          if (renderSeq !== renderSeqRef.current) return;
+          setStatus("unavailable");
+          setErrorMsg(
+            `The model for library member ${libVariant.candidate_id} ` +
+              `(${libVariant.pdb_url.split("/").pop()}) could not be loaded. ` +
+              "The member's topology and design are unaffected; only the 3D view " +
+              "is unavailable.",
+          );
+          return;
+        }
+        rawPdb = await resp.text();
+      } else if (schwekeVariant) {
         let resp = await fetch(schwekeVariant.pdb_url, {
           cache: "force-cache",
         });
@@ -1723,7 +1974,18 @@ export function StructureViewer({
       // PDBe author space). So we validate candidate offsets against the
       // residues ACTUALLY present in the fetched file and keep the best.
       let projSegments: ProjSegment[] = [];
-      if (expVariant) {
+      if (libVariant) {
+        // One linear segment is the whole story here, unlike an experimental chain:
+        // the model IS the ordered protein (ours) or contains it contiguously (AFDB's,
+        // verified residue-exact offline), so there are no gaps to map piecewise.
+        projSegments = [
+          {
+            unpLo: 1,
+            unpHi: libVariant.topology.length,
+            offset: libVariant.residue_offset,
+          },
+        ];
+      } else if (expVariant) {
         projSegments = await projectExperimentalChain(
           {
             pdbId: expVariant.pdb_id,
@@ -1739,9 +2001,14 @@ export function StructureViewer({
         );
       }
 
-      residueMapRef.current = expVariant
-        ? { segments: projSegments, chain: effectiveChainId ?? expVariant.chain_id }
-        : null;
+      // A library member needs the same residue map as an experimental chain: its
+      // topology is numbered on the ordered sequence, the file on the model's own
+      // numbering, and the two differ by residue_offset.
+      residueMapRef.current = libVariant
+        ? { segments: projSegments, chain: "" }
+        : expVariant
+          ? { segments: projSegments, chain: effectiveChainId ?? expVariant.chain_id }
+          : null;
 
       // Orient both AFDB models and experimental PDBs the same way
       // when possible: rotate so the membrane plane is horizontal and
@@ -1763,12 +2030,19 @@ export function StructureViewer({
       const { pdbText, membrane } =
         schwekeSkipOrient
           ? { pdbText: rawPdb, membrane: null }
-          : expVariant
-            ? orientPdbForTopology(rawPdb, activeTopology, {
-                chainId: effectiveChainId ?? expChainId,
+          : libVariant
+            ? // The topology is numbered on the ordered sequence; the file on the
+              // model's numbering. Without the map the membrane plane is fitted from
+              // the wrong residues and the whole model is oriented wrongly.
+              orientPdbForTopology(rawPdb, activeTopology, {
                 resiToTopo: _makeResiToTopo(projSegments),
               })
-            : orientPdbForTopology(rawPdb, activeTopology);
+            : expVariant
+              ? orientPdbForTopology(rawPdb, activeTopology, {
+                  chainId: effectiveChainId ?? expChainId,
+                  resiToTopo: _makeResiToTopo(projSegments),
+                })
+              : orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -1900,9 +2174,20 @@ export function StructureViewer({
         // stay in default gray. Uses `effectiveChainId` (resolved
         // against the actual PDB) rather than the raw PDBe metadata
         // so mismatches don't silently drop the cartoon entirely.
-        const baseSel = expVariant && effectiveChainId
-          ? { chain: effectiveChainId }
-          : {};
+        // TRUNCATE to the construct. For a `contained` member the model is longer than
+        // the ordered protein -- by up to 134 residues -- and drawing the whole thing
+        // shows protein the construct does not contain as though it did. Clearing every
+        // style first and then painting only the covered span is what makes the
+        // difference visible, instead of something a reader has to know to look for.
+        // 3Dmol's typed selection takes explicit ranges only, so scoping the base
+        // selection to the span is both the clip and the paint.
+        const libSpan = libVariant?.display_range ?? null;
+        if (libSpan) viewer.setStyle({}, {});
+        const baseSel = libSpan
+          ? ({ resi: `${libSpan[0]}-${libSpan[1]}` } as const)
+          : expVariant && effectiveChainId
+            ? { chain: effectiveChainId }
+            : {};
         // Base color for residues without an explicit topology range. A
         // GLOB protein whose topology came back empty (e.g. IZUMO4 —
         // outside the topology-sweep cohort, so NO ranges to overlay at
@@ -1933,7 +2218,12 @@ export function StructureViewer({
               ? TOPOLOGY_COLORS.M
               : TOPOLOGY_COLORS[state];
           (ranges[state] ?? []).forEach(([start, end]) => {
-            if (expVariant) {
+            // A library member needs the same projection as an experimental chain, and
+            // for the same reason: its topology is numbered on the ordered sequence
+            // while the file uses the model's numbering. Falling through to the raw
+            // branch below would paint every colour `residue_offset` residues off --
+            // up to 134 -- and the result still looks like a topology diagram.
+            if (expVariant || libVariant) {
               // Project each topology range through every projection
               // segment: clip the UniProt range to the segment's window,
               // then shift by the segment's author offset. Clean
@@ -2387,7 +2677,9 @@ export function StructureViewer({
       setResidueNote(`Residue ${highlightResi} isn't covered by this structure.`);
       return;
     }
-    const sel = map ? { resi, chain: map.chain } : { resi };
+    // A library model is one chain and its map carries no chain id; selecting
+    // on chain "" would match no atom at all (the models are chain A).
+    const sel = map?.chain ? { resi, chain: map.chain } : { resi };
     const atoms = (viewer.selectedAtoms?.({ ...sel, atom: "CA" }) ?? []).filter(
       (a) => typeof a.x === "number" && typeof a.y === "number" && typeof a.z === "number",
     );
@@ -2431,7 +2723,13 @@ export function StructureViewer({
     highlightObjsRef.current = { shapes: shapes.filter(Boolean), labels };
     highlightSelRef.current = sel;
     highlightOwnerRef.current = viewer;
-    const authorNote = map && resi !== highlightResi ? ` (PDB author no. ${resi})` : "";
+    // A library map has no chain: its file is a model, not a PDB entry.
+    const authorNote =
+      map && resi !== highlightResi
+        ? map.chain
+          ? ` (PDB author no. ${resi})`
+          : ` (model residue ${resi})`
+        : "";
     const chainNote = atoms.length > 1 ? ` on ${atoms.length} chains` : "";
     setResidueNote(`${resn}${highlightResi}${authorNote} highlighted${chainNote}.`);
   }, [highlightResi, highlightNonce, status]);
@@ -2486,14 +2784,17 @@ export function StructureViewer({
               userPickedRef.current = true;
               setVariantIdx(0);
             }}
-            title={
+            title={`${
               canonAfdbUnavail
                 ? `AlphaFold DB has no model for the canonical sequence of ${geneSymbol} (${data.uniprot_acc}) — showing an experimental structure where one exists.`
                 : `AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`
-            }
+            }${_libraryTitle(tabLibraryMembers[0], geneHasLibrary)}`}
             aria-selected={isCanonicalActive}
           >
-            <span className={styles.variantTabLabel}>Canonical [1]</span>
+            <span className={styles.variantTabLabel}>
+              Canonical [1]
+              <LibraryTabMark members={tabLibraryMembers[0]} />
+            </span>
             <span className={styles.variantTabSub}>{data.uniprot_acc}</span>
           </button>
           {effectiveVariants.map((v, i) => {
@@ -2512,7 +2813,7 @@ export function StructureViewer({
                   userPickedRef.current = true;
                   setVariantIdx(i + 1);
                 }}
-                title={
+                title={`${
                   vUnavail
                     ? `AlphaFold DB has no model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                     : v.source === "schweke-homomer"
@@ -2520,12 +2821,13 @@ export function StructureViewer({
                       : v.source === "experimental"
                         ? `Experimental structure ${(v as StructureVariantExperimental).pdb_id.toUpperCase()} (chain ${(v as StructureVariantExperimental).chain_id}) from the PDB.`
                         : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
-                }
+                }${_libraryTitle(tabLibraryMembers[i + 1], geneHasLibrary)}`}
                 aria-selected={isActive}
               >
                 <span className={styles.variantTabLabel}>
                   {v.label.replace(/ ortholog$/i, "")}
                   {i + 2 <= 9 ? ` [${i + 2}]` : ""}
+                  <LibraryTabMark members={tabLibraryMembers[i + 1]} />
                 </span>
                 {v.sublabel ? (
                   <span className={styles.variantTabSub}>{v.sublabel}</span>
@@ -2535,6 +2837,21 @@ export function StructureViewer({
           })}
         </div>
       )}
+      {geneHasLibrary ? (
+        <p className={styles.libraryNote} data-in-library={tabLibraryMembers[variantIdx]?.length > 0}>
+          {_libraryNote(
+            tabLibraryMembers[variantIdx] ?? [],
+            [
+              { label: "Canonical", members: tabLibraryMembers[0] },
+              ...effectiveVariants.map((v, i) => ({
+                label: v.label.replace(/ ortholog$/i, ""),
+                members: tabLibraryMembers[i + 1],
+              })),
+            ],
+            libraryMembers,
+          )}
+        </p>
+      ) : null}
       <div className={styles.contactCanvasFrame}>
       <div
         ref={containerRef}

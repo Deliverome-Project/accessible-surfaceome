@@ -1245,6 +1245,153 @@ async function handleGene(env, symbol) {
       }
     }
 
+    // ----- deterministic_features.library_designed_topology -----
+    // The topology of the protein each LIBRARY MEMBER actually encodes, as opposed
+    // to canonical_topology above, which is the topology of the gene's canonical
+    // UniProt sequence. Those are frequently different proteins: a member's ORF is
+    // its designed CDS, an Ensembl-transcript product, which for a substantial
+    // minority corresponds to a UniProt *isoform* record (816 of 5,896 resolved
+    // members; 119 of the 121 whose AlphaFold model turned out to be the wrong
+    // protein). Colouring a library member's structure with canonical_topology
+    // therefore offsets the overlay silently, with a plausible helix count.
+    //
+    // The matching row CANNOT be found here by accession. It is resolved offline by
+    // exact sequence and stored as a pointer in library_topology_public, which this
+    // joins straight through to topology_public. A member with no pointer row has
+    // had no v1 run on its exact sequence and gets NO entry — never the canonical
+    // as a stand-in. `tool` is always deeptmhmm_v1: the v1 string is what the
+    // structure viewer colours by, and the v2 back-projection is lossy.
+    //
+    // Additive: older viewers ignore the field. Keyed on gene_symbol because that
+    // is what identifies the gene page; the member's own accession travels in
+    // `topology_acc` so a caller can still see which record was matched.
+    const libTopo = await soft(
+      env.DB.prepare(
+        `SELECT lt.candidate_id, lt.library, lt.candidate_set, lt.species,
+                lt.topology_tool, lt.topology_cohort, lt.topology_version,
+                lt.topology_acc, lt.ordered_length_aa, lt.sequence_sha256,
+                tp.per_residue_topology, tp.tm_helix_count, tp.beta_strand_count,
+                tp.n_terminal_orientation, tp.c_terminal_orientation,
+                tp.signal_peptide_length, tp.ecd_length_residues,
+                tp.icd_length_residues, tp.predicted_surface_membrane,
+                tp.predicted_secreted, tp.tool_version
+           FROM library_topology_public lt
+           JOIN topology_public tp
+             ON tp.cohort = lt.topology_cohort
+            AND tp.topology_version = lt.topology_version
+            AND tp.uniprot_acc_full = lt.topology_acc
+          WHERE lt.gene_symbol = ?
+          ORDER BY lt.library ASC, lt.candidate_id ASC`
+      )
+        .bind(sym)
+        .all(),
+      "library_topology_public",
+    );
+    if (libTopo?.results?.length) {
+      if (!record.deterministic_features) record.deterministic_features = {};
+      record.deterministic_features.library_designed_topology =
+        libTopo.results.map((r) => ({
+          candidate_id: r.candidate_id,
+          // Library TRANCHE (l1/l2) — not a tool version.
+          library: r.library,
+          candidate_set: r.candidate_set,
+          species: r.species,
+          tool: r.topology_tool,
+          cohort: r.topology_cohort,
+          topology_version: r.topology_version,
+          // Which topology_public row this came from, so the match is auditable.
+          topology_acc: r.topology_acc,
+          // sha256 of the ordered protein — the key the match was made on.
+          sequence_sha256: r.sequence_sha256,
+          ordered_length_aa:
+            r.ordered_length_aa == null ? null : Number(r.ordered_length_aa),
+          per_residue_topology: r.per_residue_topology || "",
+          tm_helix_count: Number(r.tm_helix_count || 0),
+          beta_strand_count:
+            r.beta_strand_count == null ? null : Number(r.beta_strand_count),
+          n_terminal_orientation:
+            r.n_terminal_orientation === "extracellular"
+              ? "extracellular"
+              : "cytoplasmic",
+          c_terminal_orientation:
+            r.c_terminal_orientation === "extracellular"
+              ? "extracellular"
+              : "cytoplasmic",
+          signal_peptide_length: Number(r.signal_peptide_length || 0),
+          ecd_length_residues: Number(r.ecd_length_residues || 0),
+          icd_length_residues: Number(r.icd_length_residues || 0),
+          predicted_surface_membrane:
+            r.predicted_surface_membrane == null
+              ? null
+              : Boolean(Number(r.predicted_surface_membrane)),
+          predicted_secreted:
+            r.predicted_secreted == null
+              ? null
+              : Boolean(Number(r.predicted_secreted)),
+          tool_version: r.tool_version || "deeptmhmm-1.0.24",
+        }));
+    }
+
+    // ----- deterministic_features.library_designed_structure -----
+    // Which structure a library member should render, and how to renumber it.
+    // The viewer's default -- AFDB's model for the gene's canonical accession -- is the
+    // wrong protein for 296 of 2,725 L1 members, and nothing on the page said so.
+    //
+    // `residue_offset` is NOT decoration. For a `contained` member the ordered protein is
+    // a subsequence of the model, so construct residue i is model residue i + offset
+    // (offsets here run to 134). A viewer that ignores it draws SLC3A2 101 residues out of
+    // frame while looking entirely plausible. `display_first_model_residue` /
+    // `display_last_model_residue` are the span the construct actually covers, so the
+    // renderer can clip to it rather than silently showing extra protein.
+    //
+    // Alternates (is_chosen = 0) travel too, with the note saying why they lost, so the
+    // page can show "AlphaFold DB models a different proteoform" instead of hiding it.
+    const libStruct = await soft(
+      env.DB.prepare(
+        `SELECT candidate_id, candidate_set, species, source, r2_key, model_url,
+                proteoform_match, residue_offset, ordered_length_aa, model_length_aa,
+                is_chosen, mean_plddt, note
+           FROM library_structure_public
+          WHERE gene_symbol = ?
+          ORDER BY is_chosen DESC, candidate_id ASC`
+      )
+        .bind(sym)
+        .all(),
+      "library_structure_public",
+    );
+    if (libStruct?.results?.length) {
+      if (!record.deterministic_features) record.deterministic_features = {};
+      record.deterministic_features.library_designed_structure =
+        libStruct.results.map((r) => {
+          const offset = Number(r.residue_offset || 0);
+          const orderedLen =
+            r.ordered_length_aa == null ? null : Number(r.ordered_length_aa);
+          return {
+            candidate_id: r.candidate_id,
+            candidate_set: r.candidate_set,
+            species: r.species,
+            // 'colabfold' = we folded the ordered sequence; 'alphafold_db' = AFDB's
+            // model is genuinely the ordered protein (or contains it).
+            source: r.source,
+            r2_key: r.r2_key || null,
+            model_url: r.model_url || null,
+            proteoform_match: r.proteoform_match,
+            residue_offset: offset,
+            ordered_length_aa: orderedLen,
+            model_length_aa:
+              r.model_length_aa == null ? null : Number(r.model_length_aa),
+            // The model residues the construct covers, 1-based and inclusive. Null when
+            // the ordered length is unknown, never guessed.
+            display_first_model_residue: orderedLen == null ? null : offset + 1,
+            display_last_model_residue:
+              orderedLen == null ? null : offset + orderedLen,
+            is_chosen: Boolean(Number(r.is_chosen)),
+            mean_plddt: r.mean_plddt == null ? null : Number(r.mean_plddt),
+            note: r.note || null,
+          };
+        });
+    }
+
     // ----- gene.ensembl_canonical_protein -----
     // The stable-ID cache carries the canonical ENSP, but the record's gene
     // block only ever shipped ensembl_gene — so the API was weaker than the
@@ -2669,6 +2816,28 @@ async function handleCatalog(env, request) {
     });
     return out.some((x) => x) ? out : undefined;
   }
+  // How many library members (l1+l2) have a DeepTMHMM v1 topology for their EXACT
+  // designed sequence. One aggregate query for the whole cohort, not per row.
+  // Deliberately a count and not a boolean: a gene can contribute several members
+  // (library_reference plus isoform and ortholog arms), and "2 of this gene's
+  // members are covered" is the thing a reviewer needs to see. Genes with none are
+  // absent from the map and get no field — never a 0, which would be
+  // indistinguishable from "not a library gene" in the UI.
+  const libTopoByGene = new Map();
+  {
+    const r = await env.DB.prepare(
+      `SELECT gene_symbol, COUNT(*) AS n
+         FROM library_topology_public
+        WHERE gene_symbol IS NOT NULL
+        GROUP BY gene_symbol`
+    )
+      .all()
+      .catch(() => null);
+    for (const row of r?.results ?? []) {
+      libTopoByGene.set(row.gene_symbol, Number(row.n));
+    }
+  }
+
   const rows = enrichedRows.results.map((u) => {
     covered.add(u.gene_symbol);
     if (u.has_deep_dive) deepSet.add(u.gene_symbol);
@@ -2708,6 +2877,11 @@ async function handleCatalog(env, request) {
     // independent of deep-dive coverage (viewer filters it as its own category).
     if (u.intern_grade) row.intern = u.intern_grade;
     if (u.intern_has_lit) row.intern_lit = 1;
+    // Library members whose exact ordered sequence has a v1 topology (row_schema
+    // v11). Independent of `ddf` and of the canonical-topology facets, which
+    // describe a different protein for a substantial minority of members.
+    const nLibTopo = libTopoByGene.get(u.gene_symbol);
+    if (nLibTopo) row.libtopo = nLibTopo;
     // Literature-track overall grade (Grade: high|moderate|low|no|unknown) —
     // distinct from the seq prior above, so the catalog can render a SEPARATE
     // "Internalization (literature)" column + filter. Only present once a gene
@@ -2779,6 +2953,11 @@ async function handleCatalog(env, request) {
     if (r.intern_grade) row.intern = r.intern_grade;
     if (r.intern_has_lit) row.intern_lit = 1;
     if (r.intern_lit_grade) row.intern_lit_grade = r.intern_lit_grade;
+    // Same v11 field as the main catalog rows; an orphan deep-dive gene can still
+    // be a library member, and omitting it here would make `libtopo` depend on
+    // which of the two row builders a gene happened to come through.
+    const nOrphanLibTopo = libTopoByGene.get(sym);
+    if (nOrphanLibTopo) row.libtopo = nOrphanLibTopo;
     const t = packTriage(sym);
     if (t) row.tr = t;
     const dd = projectDeepDiveFiltersFromParts(ddfPartsFromRow(r, "ddf_"));
@@ -2888,7 +3067,18 @@ async function handleCatalog(env, request) {
       //        `ddf.has_live_cell_surface_evidence` from the methods rows
       //        (live cells, native expression, not a functional assay).
       //        See projectSurfaceMethods.
-      row_schema: 10,
+      //   v11 = adds optional top-level `libtopo` — the number of library
+      //        members (l1+l2) whose EXACT designed sequence has a DeepTMHMM v1
+      //        topology, from library_topology_public. Present only for genes
+      //        with at least one. Distinct from `ddf.has_tm` / `tm_count_band`,
+      //        which are derived from the gene's CANONICAL topology: a library
+      //        member's ORF is an Ensembl-transcript product and for a
+      //        substantial minority is a different protein from the canonical,
+      //        so the two can legitimately disagree. The per-member strings
+      //        travel on the gene record as
+      //        `deterministic_features.library_designed_topology`, not here.
+      //        Older viewers ignore the new field.
+      row_schema: 11,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with

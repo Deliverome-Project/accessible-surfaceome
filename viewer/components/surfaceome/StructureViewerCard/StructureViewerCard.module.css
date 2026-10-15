@@ -181,6 +181,41 @@
   max-width: 100%;
 }
 
+/* Library-construct marker on a tab label: this tab shows a protein the
+ * library orders. Teal on both tab states, so it never depends on the
+ * active tab's dark fill to read. */
+.variantTabLib {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  background: var(--teal-mid, #3d6b60);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  vertical-align: 0.08em;
+}
+
+.variantTab[data-active="true"] .variantTabLib {
+  background: var(--teal-lt-2, #9ec8c0);
+  color: var(--teal-deepest, #152e28);
+}
+
+/* Under the tab strip: is the open tab in the library, and if not, where. */
+.libraryNote {
+  margin: 0.35rem 0 0.45rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.libraryNote[data-in-library="true"] {
+  color: var(--teal-dark, #244840);
+}
+
 .variantTabSub {
   font-family: var(--font-mono);
   font-size: 0.6rem;

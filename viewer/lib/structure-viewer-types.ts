@@ -33,6 +33,27 @@ export interface StructureViewerData {
   pdb_url?: string | null;
   /** AFDB model version at the time `pdb_url` was baked. Informational. */
   latest_version?: number | null;
+
+  // -- Library-member fields. Present only when this card is showing the protein a
+  //    library member actually encodes, rather than the gene's canonical sequence.
+  /** The library candidate this structure + topology belongs to, e.g. ``l1-p0031``. */
+  library_candidate_id?: string | null;
+  /** Library tranche: ``l1`` / ``l2``. NOT a DeepTMHMM tool version. */
+  library_tranche?: string | null;
+  library_candidate_set?: string | null;
+  /** ``colabfold`` = we folded the ordered sequence; ``alphafold_db`` = AFDB's model is
+   *  the ordered protein, or contains it. */
+  library_model_source?: string | null;
+  /** identical | contained | ours_by_construction | … */
+  library_proteoform_match?: string | null;
+  /** construct residue i == model residue i + offset. MUST be applied when rendering:
+   *  offsets run to 134, and ignoring one draws a plausible-looking frame shift. */
+  library_residue_offset?: number;
+  /** Inclusive 1-based model residues the construct covers. The renderer clips to this
+   *  so a longer model does not silently show protein the construct does not contain. */
+  library_display_range?: [number, number] | null;
+  /** Why an alternate was not chosen, for the "not the ordered protein" label. */
+  library_note?: string | null;
 }
 
 /**
@@ -288,6 +309,313 @@ export function structureViewerDataFromRecord(
     pdb_url: null,
     latest_version: null,
   };
+}
+
+/**
+ * Build viewer data for the protein a LIBRARY MEMBER encodes, rather than the gene's
+ * canonical sequence.
+ *
+ * Returns null unless both halves are present and agree, because a half-answer here is
+ * worse than none: colouring a library model with canonical topology offsets the overlay
+ * silently, and renumbering a model without its topology does the same in reverse. The
+ * caller falls back to {@link structureViewerDataFromRecord}, which is explicitly about
+ * the canonical protein.
+ *
+ * The topology string is the v1 (`per_residue_topology`) one — the alphabet
+ * {@link TOPOLOGY_COLORS} is keyed on. The v2 string uses a different alphabet and must
+ * never be substituted.
+ */
+export function structureViewerDataFromLibraryMember(
+  topology:
+    | {
+        candidate_id?: string | null;
+        library?: string | null;
+        candidate_set?: string | null;
+        per_residue_topology?: string | null;
+        tm_helix_count?: number;
+        signal_peptide_length?: number;
+        cohort?: string | null;
+        tool?: string | null;
+        topology_version?: string | null;
+        topology_acc?: string | null;
+      }
+    | null
+    | undefined,
+  structure:
+    | {
+        candidate_id?: string | null;
+        source?: string | null;
+        r2_key?: string | null;
+        model_url?: string | null;
+        proteoform_match?: string | null;
+        residue_offset?: number;
+        ordered_length_aa?: number | null;
+        display_first_model_residue?: number | null;
+        display_last_model_residue?: number | null;
+        is_chosen?: boolean;
+        note?: string | null;
+      }
+    | null
+    | undefined,
+): StructureViewerData | null {
+  const topo = topology?.per_residue_topology ?? "";
+  if (!topo || !structure?.is_chosen) return null;
+  // Both halves must describe the SAME member, or we would be colouring one member's
+  // model with another's topology — the precise failure this module exists to prevent.
+  if (
+    !topology?.candidate_id ||
+    !structure.candidate_id ||
+    topology.candidate_id !== structure.candidate_id
+  ) {
+    return null;
+  }
+  // The topology was computed on the ordered sequence, so its length IS the construct
+  // length. A disagreement means one of the two is about a different protein.
+  const orderedLen = structure.ordered_length_aa ?? null;
+  if (orderedLen != null && orderedLen !== topo.length) return null;
+
+  const url = structure.r2_key
+    ? `${STRUCTURES_BASE}/${structure.r2_key.replace(/^\/+/, "")}`
+    : (structure.model_url ?? null);
+  if (!url) return null;
+
+  const first = structure.display_first_model_residue ?? null;
+  const last = structure.display_last_model_residue ?? null;
+
+  return {
+    uniprot_acc: topology.topology_acc ?? topology.candidate_id,
+    deeptmhmm_type: deepTMHMMType(topo),
+    sequence_length: topo.length,
+    topology: topo,
+    topology_ranges: topologyRanges(topo),
+    tm_helix_count: topology.tm_helix_count ?? 0,
+    signal_peptide_length: topology.signal_peptide_length ?? 0,
+    source_cohort: topology.cohort ?? "library_designed_orf",
+    source_tool: topology.tool ?? "deeptmhmm_v1",
+    pdb_url: url,
+    latest_version: null,
+    library_candidate_id: topology.candidate_id,
+    library_tranche: topology.library ?? null,
+    library_candidate_set: topology.candidate_set ?? null,
+    library_model_source: structure.source ?? null,
+    library_proteoform_match: structure.proteoform_match ?? null,
+    library_residue_offset: structure.residue_offset ?? 0,
+    library_display_range: first != null && last != null ? [first, last] : null,
+    library_note: structure.note ?? null,
+  };
+}
+
+/** The per-member rows the Worker serves, as this module needs them. Structural subset
+ *  of `deterministic_features.library_designed_topology` / `_structure` so the viewer
+ *  does not have to import the whole record type here. */
+export interface LibraryTopologyRow {
+  candidate_id?: string | null;
+  library?: string | null;
+  candidate_set?: string | null;
+  per_residue_topology?: string | null;
+  tm_helix_count?: number;
+  signal_peptide_length?: number;
+  cohort?: string | null;
+  tool?: string | null;
+  topology_version?: string | null;
+  topology_acc?: string | null;
+}
+
+export interface LibraryStructureRow {
+  candidate_id?: string | null;
+  candidate_set?: string | null;
+  source?: string | null;
+  r2_key?: string | null;
+  model_url?: string | null;
+  proteoform_match?: string | null;
+  residue_offset?: number;
+  ordered_length_aa?: number | null;
+  display_first_model_residue?: number | null;
+  display_last_model_residue?: number | null;
+  is_chosen?: boolean;
+  note?: string | null;
+}
+
+/**
+ * A tab label naming the PROTEOFORM a library member encodes, not the fact that we order
+ * it.
+ *
+ * It used to read "Ordered" / "Ordered isoform", which says what the row is *for* rather
+ * than which protein it is — and telling proteoforms apart is the tab strip's whole job.
+ * The L1/L2 badge (`LibraryTabMark`) already says the tab is a library construct, so the
+ * label is free to carry the identity instead, and reads the same way as the AFDB isoform
+ * tabs beside it.
+ *
+ * Derived from the topology **cohort**, which is the only field that says what the matched
+ * record is, and deliberately NOT from `candidate_set`. A `library_reference` member's
+ * ordered protein is frequently a UniProt *isoform* rather than the canonical — 131 of the
+ * 326 L1 members that survive the duplicate guard — so labelling by `candidate_set` calls
+ * those "Ordered" and hides the one distinction a reader needs.
+ *
+ * `library_designed_orf` is neither canonical nor an isoform, and that is not a gap in the
+ * mapping: those 158 proteoforms have no UniProt record at all, so both words would be
+ * false for them. They get named for what they are.
+ */
+function libraryVariantLabel(row: LibraryTopologyRow): string {
+  const cohort = (row.cohort ?? "").toLowerCase();
+  if (cohort.startsWith("human_isoform")) {
+    // Same "Isoform N" form the AFDB isoform tabs use, so a reader comparing them is
+    // comparing proteoform to proteoform and the badge is the only difference.
+    const m = /-(\d+)$/.exec(row.topology_acc ?? "");
+    return m ? `Isoform ${m[1]}` : "Isoform";
+  }
+  if (cohort === "human_canonical") return "Canonical";
+  if (cohort.startsWith("cyno")) return "Cyno ortholog";
+  if (cohort.startsWith("mouse")) return "Mouse ortholog";
+  if (cohort === "library_designed_orf") return "Designed ORF";
+  // An unrecognised cohort says so rather than guessing a proteoform class.
+  return row.candidate_set === "expression_rescue" ? "Rescue arm" : "Library form";
+}
+
+/**
+ * One viewer tab per library member that has BOTH a chosen structure and a v1 topology
+ * for its exact ordered sequence.
+ *
+ * Pairs the two halves by `candidate_id` and drops any member where they disagree,
+ * because the failure mode is silent: a model paired with another proteoform's topology
+ * renders as a perfectly plausible topology diagram. Members without a chosen structure
+ * -- 26 of L1, the never-comparable ones and TPO -- get no tab, rather than falling back
+ * to the gene's canonical model, which is a different protein.
+ */
+export function libraryStructureVariants(
+  record: {
+    deterministic_features?: {
+      library_designed_topology?: LibraryTopologyRow[] | null;
+      library_designed_structure?: LibraryStructureRow[] | null;
+    } | null;
+  },
+  /**
+   * Accessions already shown as their own tab (canonical, isoforms, orthologs). A member
+   * whose chosen structure IS one of those models gets no tab of its own: it would load
+   * byte-identical coordinates under a second name. SLC6A8 is the case — its library
+   * construct is `l1-p2010`, whose chosen structure is AFDB's `AF-P48029-F1`, and P48029
+   * is the gene's canonical accession. Use {@link libraryMembersByAccession} to mark
+   * the existing tab instead, which is also the more useful answer: "Canonical IS the
+   * library construct" says more than a duplicate tab does.
+   */
+  shownAccessions: Iterable<string> = [],
+): StructureVariantLibraryInput[] {
+  const shown = new Set(
+    Array.from(shownAccessions, (a) => String(a).toUpperCase()).filter(Boolean),
+  );
+  const topo = record?.deterministic_features?.library_designed_topology ?? [];
+  const struct = record?.deterministic_features?.library_designed_structure ?? [];
+  if (!topo.length || !struct.length) return [];
+
+  const chosenByCandidate = new Map<string, LibraryStructureRow>();
+  for (const srow of struct) {
+    if (!srow.is_chosen || !srow.candidate_id) continue;
+    chosenByCandidate.set(srow.candidate_id, srow);
+  }
+
+  const out: StructureVariantLibraryInput[] = [];
+  for (const trow of topo) {
+    const cid = trow.candidate_id;
+    if (!cid) continue;
+    const srow = chosenByCandidate.get(cid);
+    if (!srow) continue;
+    const built = structureViewerDataFromLibraryMember(trow, srow);
+    if (!built) continue; // the builder already refuses every mismatch
+    // Skip a member whose model is already on screen under another tab. Only AFDB-served
+    // members can collide: our own ColabFold models live at an R2 key nothing else loads.
+    if (!srow.r2_key && built.uniprot_acc && shown.has(built.uniprot_acc.toUpperCase())) {
+      continue;
+    }
+    out.push({
+      source: "library",
+      id: `library-${cid}`,
+      label: libraryVariantLabel(trow),
+      sublabel: cid,
+      topology: built.topology,
+      deeptmhmm_type: built.deeptmhmm_type,
+      pdb_url: built.pdb_url as string,
+      candidate_id: cid,
+      tranche: trow.library ?? null,
+      candidate_set: trow.candidate_set ?? null,
+      model_source: srow.source ?? null,
+      proteoform_match: srow.proteoform_match ?? null,
+      residue_offset: built.library_residue_offset ?? 0,
+      display_range: built.library_display_range ?? null,
+      note: srow.note ?? null,
+    });
+  }
+  return out;
+}
+
+/** One library member, as the card names it on a tab. */
+export interface LibraryMembership {
+  candidate_id: string;
+  /** Library tranche, ``l1`` / ``l2``. NOT a DeepTMHMM tool version. */
+  library: string | null;
+  /** library_reference | isoform | ortholog | expression_rescue | … */
+  candidate_set: string | null;
+}
+
+/**
+ * Accession -> the library members whose ordered protein IS that sequence.
+ *
+ * Keyed on each member's ``topology_acc``: the topology record matched to the ordered
+ * protein by ``sequence_sha256``, so a tab showing that accession shows exactly the
+ * protein the member encodes. That is what lets the card mark library vs non-library
+ * tabs without guessing, and it does not depend on which structure was chosen for the
+ * member — most members (every L2 isoform and ortholog) have none, and are still in
+ * the library:
+ *
+ * * SLC6A8: ``l1-p2010`` is P48029, so Canonical is the library construct.
+ * * MUC1: ``l1-p1264`` is P15941-8, so Isoform 8 is; the 1,255-aa canonical is not.
+ * * SLC3A2: isoforms 1, 2, 3 and 5 are all members (one L1, three L2).
+ * * CACHD1: ``l1-p0215`` is residues 135-1274 of the canonical, which matches no
+ *   UniProt sequence, so its ``topology_acc`` is the candidate id and no existing tab
+ *   is marked. The construct gets its own Ordered tab from
+ *   {@link libraryStructureVariants} instead, truncated to that span.
+ */
+export function libraryMembersByAccession(record: {
+  deterministic_features?: {
+    library_designed_topology?: LibraryTopologyRow[] | null;
+  } | null;
+}): Map<string, LibraryMembership[]> {
+  const out = new Map<string, LibraryMembership[]>();
+  for (const trow of record?.deterministic_features?.library_designed_topology ?? []) {
+    const cid = trow.candidate_id;
+    const acc = trow.topology_acc;
+    if (!cid || !acc) continue;
+    const key = acc.toUpperCase();
+    const list = out.get(key) ?? [];
+    if (!list.some((m) => m.candidate_id === cid)) {
+      list.push({
+        candidate_id: cid,
+        library: trow.library ?? null,
+        candidate_set: trow.candidate_set ?? null,
+      });
+    }
+    out.set(key, list);
+  }
+  return out;
+}
+
+/** The shape {@link libraryStructureVariants} emits — structurally the component's
+ *  `StructureVariantLibrary`, declared here to avoid a types/component import cycle. */
+export interface StructureVariantLibraryInput {
+  source: "library";
+  id: string;
+  label: string;
+  sublabel?: string;
+  topology: string;
+  deeptmhmm_type: StructureViewerData["deeptmhmm_type"];
+  pdb_url: string;
+  candidate_id: string;
+  tranche: string | null;
+  candidate_set: string | null;
+  model_source: string | null;
+  proteoform_match: string | null;
+  residue_offset: number;
+  display_range: [number, number] | null;
+  note: string | null;
 }
 
 /** Highlight color for a reader-selected residue (the 3D viewer's
