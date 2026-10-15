@@ -27,7 +27,7 @@ import { RevisionStrip } from "../RevisionStrip/RevisionStrip";
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
 import { IsoformsCard } from "../IsoformsCard/IsoformsCard";
-import { SurfaceBindCard } from "../SurfaceBindCard/SurfaceBindCard";
+import { BindingSitesCard } from "../BindingSitesCard/BindingSitesCard";
 import { SurfaceEvidenceCard } from "../SurfaceEvidenceCard/SurfaceEvidenceCard";
 import { TriageRow } from "../TriageRow/TriageRow";
 import type { CatalogRow, GeneEntry } from "../../../lib/surfaceome";
@@ -287,7 +287,7 @@ export function GeneDetail({
           {
             kind: "surface-bind",
             label: "SURFACE-Bind",
-            render: (n: number) => <SurfaceBindCard rec={rec} n={n} />,
+            render: (n: number) => <BindingSitesCard rec={rec} n={n} />,
           },
         ]
       : []),

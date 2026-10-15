@@ -6,7 +6,7 @@ import { type Compartment, compartmentAt } from "../../../lib/surface-bind";
 import type { SurfaceBindSite } from "../../../lib/surfaceome-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { StatusPill } from "../StatusPill/StatusPill";
-import styles from "./SurfaceBindCard.module.css";
+import styles from "./BindingSitesCard.module.css";
 
 // `compartmentAt` + the `Compartment` type are imported from
 // ``lib/surface-bind`` — the same helper the FiltersCard "EC sites"
