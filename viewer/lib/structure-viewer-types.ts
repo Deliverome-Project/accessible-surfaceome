@@ -455,12 +455,27 @@ function libraryVariantLabel(row: LibraryTopologyRow): string {
  * -- 26 of L1, the never-comparable ones and TPO -- get no tab, rather than falling back
  * to the gene's canonical model, which is a different protein.
  */
-export function libraryStructureVariants(record: {
-  deterministic_features?: {
-    library_designed_topology?: LibraryTopologyRow[] | null;
-    library_designed_structure?: LibraryStructureRow[] | null;
-  } | null;
-}): StructureVariantLibraryInput[] {
+export function libraryStructureVariants(
+  record: {
+    deterministic_features?: {
+      library_designed_topology?: LibraryTopologyRow[] | null;
+      library_designed_structure?: LibraryStructureRow[] | null;
+    } | null;
+  },
+  /**
+   * Accessions already shown as their own tab (canonical, isoforms, orthologs). A member
+   * whose chosen structure IS one of those models gets no tab of its own: it would load
+   * byte-identical coordinates under a second name. SLC6A8 is the case — its library
+   * construct is `l1-p2010`, whose chosen structure is AFDB's `AF-P48029-F1`, and P48029
+   * is the gene's canonical accession. Use {@link libraryConstructByAccession} to badge
+   * the existing tab instead, which is also the more useful answer: "Canonical IS the
+   * library construct" says more than a duplicate tab does.
+   */
+  shownAccessions: Iterable<string> = [],
+): StructureVariantLibraryInput[] {
+  const shown = new Set(
+    Array.from(shownAccessions, (a) => String(a).toUpperCase()).filter(Boolean),
+  );
   const topo = record?.deterministic_features?.library_designed_topology ?? [];
   const struct = record?.deterministic_features?.library_designed_structure ?? [];
   if (!topo.length || !struct.length) return [];
@@ -479,6 +494,11 @@ export function libraryStructureVariants(record: {
     if (!srow) continue;
     const built = structureViewerDataFromLibraryMember(trow, srow);
     if (!built) continue; // the builder already refuses every mismatch
+    // Skip a member whose model is already on screen under another tab. Only AFDB-served
+    // members can collide: our own ColabFold models live at an R2 key nothing else loads.
+    if (!srow.r2_key && built.uniprot_acc && shown.has(built.uniprot_acc.toUpperCase())) {
+      continue;
+    }
     out.push({
       source: "library",
       id: `library-${cid}`,
@@ -495,6 +515,53 @@ export function libraryStructureVariants(record: {
       residue_offset: built.library_residue_offset ?? 0,
       display_range: built.library_display_range ?? null,
       note: srow.note ?? null,
+    });
+  }
+  return out;
+}
+
+/**
+ * Accession -> the library member whose chosen structure is that exact model.
+ *
+ * Lets the card mark an existing tab as the library construct rather than duplicating it.
+ * Two genes make the point in opposite directions: SLC6A8's library construct IS its
+ * canonical (`l1-p2010` -> `AF-P48029-F1`), so Canonical should read as the library
+ * construct; MUC1's is a 273-aa form we folded ourselves, so its canonical — the 1,255-aa
+ * model whose length is mostly low-pLDDT strand — is explicitly NOT in the library, which
+ * is worth saying on a card where that model is what opens by default.
+ *
+ * Only members served from AlphaFold DB appear. Ours live at an R2 key no other tab loads,
+ * so they are never a duplicate and get their own tab from
+ * {@link libraryStructureVariants}.
+ */
+export function libraryConstructByAccession(record: {
+  deterministic_features?: {
+    library_designed_topology?: LibraryTopologyRow[] | null;
+    library_designed_structure?: LibraryStructureRow[] | null;
+  } | null;
+}): Map<string, { candidate_id: string; library: string | null; candidate_set: string | null }> {
+  const topo = record?.deterministic_features?.library_designed_topology ?? [];
+  const struct = record?.deterministic_features?.library_designed_structure ?? [];
+  const chosen = new Map<string, LibraryStructureRow>();
+  for (const srow of struct) {
+    if (srow.is_chosen && srow.candidate_id) chosen.set(srow.candidate_id, srow);
+  }
+  const out = new Map<
+    string,
+    { candidate_id: string; library: string | null; candidate_set: string | null }
+  >();
+  for (const trow of topo) {
+    const cid = trow.candidate_id;
+    if (!cid) continue;
+    const srow = chosen.get(cid);
+    // r2_key means it is our own model, which is never an existing tab.
+    if (!srow || srow.r2_key) continue;
+    const acc = trow.topology_acc;
+    if (!acc) continue;
+    out.set(acc.toUpperCase(), {
+      candidate_id: cid,
+      library: trow.library ?? null,
+      candidate_set: trow.candidate_set ?? null,
     });
   }
   return out;
