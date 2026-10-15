@@ -3,8 +3,8 @@
 import { CITATIONS } from "../../../lib/citations";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { SectionCard } from "../SectionCard/SectionCard";
-import { SurfaceBindTable } from "./SurfaceBindTable";
-import styles from "./SurfaceBindCard.module.css";
+import { BindingSitesTabs } from "./BindingSitesTabs";
+import styles from "./BindingSitesCard.module.css";
 
 interface Props {
   rec: SurfaceomeRecord;
@@ -24,14 +24,19 @@ interface Props {
  * table only the data it needs (the sites array + the topology
  * string) so the full record isn't serialized into the client bundle.
  */
-export function SurfaceBindCard({ rec, n }: Props) {
+export function BindingSitesCard({ rec, n }: Props) {
   const sb = rec.deterministic_features.surface_bind;
-  if (!sb.has_data) return null;
+  const bd = rec.deterministic_features.bindome;
+  const bindomeSites = bd?.sites ?? null;
+  const hasBindome = !!bindomeSites && bindomeSites.length > 0;
+  // Bindome alone is enough to render the card: a protein can be absent
+  // from SURFACE-Bind entirely and still have designs landing on it.
+  if (!sb.has_data && !hasBindome) return null;
   // SURFACE-Bind has the protein but with zero scored sites — render
   // a thin card explaining what that means rather than hiding it
   // (this case is itself informative — the protein went through
   // scoring but no patch cleared the threshold).
-  if (sb.sites.length === 0) {
+  if (sb.sites.length === 0 && !hasBindome) {
     return (
       <SectionCard
         n={n}
@@ -66,11 +71,17 @@ export function SurfaceBindCard({ rec, n }: Props) {
   return (
     <SectionCard
       n={n}
-      eyebrow="SURFACE-Bind"
-      title="Patch-based targetability"
-      meta={`Balbi 2026 (PMID ${CITATIONS.surfaceBind.pmid}) · ${sb.n_sites} site${
-        sb.n_sites === 1 ? "" : "s"
-      } · ${sb.n_seeds_total.toLocaleString()} total binder seeds`}
+      eyebrow="Binding sites"
+      title="Where a binder could go"
+      meta={[
+        sb.has_data
+          ? `SURFACE-Bind ${sb.n_sites} site${sb.n_sites === 1 ? "" : "s"}`
+          : null,
+        hasBindome ? `Bindome ${bindomeSites.length} site${bindomeSites.length === 1 ? "" : "s"}` : null,
+        `PMID ${CITATIONS.surfaceBind.pmid}`,
+      ]
+        .filter(Boolean)
+        .join(" · ")}
     >
       <p className={styles.preamble}>
         Each row is one MaSIF-scored surface patch. The numbered
@@ -106,8 +117,9 @@ export function SurfaceBindCard({ rec, n }: Props) {
         protein-binding surfaces but are not extracellularly
         antibody-accessible. For antibody design, filter to EC sites.
       </p>
-      <SurfaceBindTable
-        sites={sb.sites}
+      <BindingSitesTabs
+        surfaceBindSites={sb.sites}
+        bindomeSites={bindomeSites}
         topology={
           rec.deterministic_features.canonical_topology.per_residue_topology
         }

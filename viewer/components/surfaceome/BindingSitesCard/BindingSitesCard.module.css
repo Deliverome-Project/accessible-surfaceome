@@ -123,3 +123,49 @@
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+/* Source toggle over the two binding-site predictions. */
+.sourceTabs {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0 0 0.75rem;
+  border-bottom: 1px solid var(--border, rgba(0, 0, 0, 0.12));
+}
+
+.sourceTab,
+.sourceTabActive {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.4rem 0.75rem;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text-muted, #666);
+}
+
+.sourceTabActive {
+  border-bottom-color: var(--maroon, #7b2d3b);
+  color: var(--maroon, #7b2d3b);
+  font-weight: 600;
+}
+
+.tableControls {
+  margin: 0 0 0.5rem;
+}
+
+.ecToggle {
+  font-size: 0.85rem;
+  color: var(--text-muted, #666);
+  cursor: pointer;
+}
+
+/* Scope caveat under the Bindome table — absence of a tab is "not designed
+   against", not "designed against and found nothing". */
+.scopeNote {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted, #666);
+}

@@ -593,6 +593,40 @@ export interface RepresentativeStructure {
   source: string;
 }
 
+/** One Bindome binding site — a patch recovered from where BindCraft's
+ *  designs actually land on the target, since Bindome publishes no
+ *  target-side site list of its own (its `InterfaceResidues` column is
+ *  the binder chain, and every design ran `no_hotspot`). Built by
+ *  scripts/build/build_bindome_sites.py, served from `bindome_site_public`. */
+export interface BindomeSite {
+  site_id: number;
+  anchor_residue: number;
+  /** Same key name SurfaceBindSite uses, from the same DeepTMHMM string,
+   *  so one compartment filter spans both sources. */
+  anchor_topology: string | null;
+  n_residues: number;
+  /** Designs contacting the most-contacted residue of this site. */
+  n_designs_supporting: number;
+  /** Designs parsed for this protein, i.e. the denominator. */
+  n_designs_total: number;
+  mean_design_fraction: number | null;
+  residues: number[];
+}
+
+/** Bindome per-protein block. Absent entirely when the protein has no
+ *  Bindome sites — the Worker only attaches it when D1 returns rows, so
+ *  consumers must treat it as optional rather than checking `has_data`. */
+export interface BindomeFeatures {
+  has_data: boolean;
+  n_sites: number;
+  n_sites_extracellular: number;
+  sites: BindomeSite[];
+  release: string | null;
+  source: string;
+  attribution: string;
+  citation: string;
+}
+
 export interface SurfaceBindFeatures {
   has_data: boolean;
   n_sites: number;
@@ -681,6 +715,9 @@ export interface DeterministicFeatures {
   library_designed_structure?: LibraryDesignedStructure[];
   structure: StructureFeatures;
   surface_bind: SurfaceBindFeatures;
+  /** Optional: the Worker attaches this only when `bindome_site_public`
+   *  returns rows, so most genes legitimately have no key here. */
+  bindome?: BindomeFeatures;
   /** Schweke 2024 AF2 homo-oligomer prediction. Always present, with
    *  `is_homo_oligomer=false` as the explicit "not in the positive set"
    *  signal. Strong AF2-derived structural prior on the synthesizer's

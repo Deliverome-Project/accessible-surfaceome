@@ -589,6 +589,40 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
     ON surface_bind_site (n_seeds_beta);
 
 -- ---------------------------------------------------------------------------
+-- Bindome binding sites (public mirror)
+-- ---------------------------------------------------------------------------
+-- Bindome (Wenckstern et al. 2026, doi 10.64898/2026.07.30.741542) publishes
+-- 305,806 BindCraft designs but NO target-side site list: its
+-- `InterfaceResidues` column is the binder chain, and every design ran the
+-- `no_hotspot` protocol. A site is therefore recovered from where the designs
+-- land -- target residues contacted across a protein's designs, kept when
+-- >=20% of designs touch them, then single-linkage clustered at 8 A on CA.
+-- Built by scripts/build/build_bindome_sites.py from the concordance run.
+--
+-- `compartment` uses the same DeepTMHMM per-residue string that labels
+-- surface_bind_site anchors, so the viewer can put both sources on one axis.
+CREATE TABLE IF NOT EXISTS bindome_site_public (
+    uniprot_acc           TEXT NOT NULL,
+    gene_symbol           TEXT,                   -- denormalized; NEVER a join key
+    site_id               INTEGER NOT NULL,       -- 0-indexed, largest patch first
+    anchor_residue        INTEGER NOT NULL,       -- residue nearest the cluster centroid
+    compartment           TEXT,                   -- extracellular | intracellular | membrane | signal_peptide | unknown
+    n_residues            INTEGER NOT NULL,
+    n_designs_supporting  INTEGER NOT NULL,       -- designs contacting the most-contacted residue
+    n_designs_total       INTEGER NOT NULL,       -- designs parsed for this protein
+    mean_design_fraction  REAL,                   -- mean share of designs contacting a site residue
+    residues              TEXT NOT NULL,          -- comma-separated residue numbers
+    bindome_release       TEXT NOT NULL,          -- e.g. '2026-05-23'
+    synced_at             TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (uniprot_acc, site_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bindome_site_compartment
+    ON bindome_site_public (compartment);
+CREATE INDEX IF NOT EXISTS idx_bindome_site_designs
+    ON bindome_site_public (n_designs_supporting);
+
+-- ---------------------------------------------------------------------------
 -- Schweke 2024 homo-oligomer prediction (public mirror)
 -- ---------------------------------------------------------------------------
 -- Schweke et al. 2024 (Cell 187:999, PMID 38325366, DOI
