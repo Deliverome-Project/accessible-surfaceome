@@ -405,6 +405,121 @@ export function structureViewerDataFromLibraryMember(
   };
 }
 
+/** The per-member rows the Worker serves, as this module needs them. Structural subset
+ *  of `deterministic_features.library_designed_topology` / `_structure` so the viewer
+ *  does not have to import the whole record type here. */
+export interface LibraryTopologyRow {
+  candidate_id?: string | null;
+  library?: string | null;
+  candidate_set?: string | null;
+  per_residue_topology?: string | null;
+  tm_helix_count?: number;
+  signal_peptide_length?: number;
+  cohort?: string | null;
+  tool?: string | null;
+  topology_version?: string | null;
+  topology_acc?: string | null;
+}
+
+export interface LibraryStructureRow {
+  candidate_id?: string | null;
+  candidate_set?: string | null;
+  source?: string | null;
+  r2_key?: string | null;
+  model_url?: string | null;
+  proteoform_match?: string | null;
+  residue_offset?: number;
+  ordered_length_aa?: number | null;
+  display_first_model_residue?: number | null;
+  display_last_model_residue?: number | null;
+  is_chosen?: boolean;
+  note?: string | null;
+}
+
+/** A readable tab label for a library member, e.g. "Ordered (l1-p0031)". */
+function libraryVariantLabel(row: LibraryTopologyRow): string {
+  const set = row.candidate_set ?? "";
+  if (set === "isoform") return "Ordered isoform";
+  if (set === "ortholog") return "Ordered ortholog";
+  if (set === "expression_rescue") return "Ordered rescue arm";
+  return "Ordered";
+}
+
+/**
+ * One viewer tab per library member that has BOTH a chosen structure and a v1 topology
+ * for its exact ordered sequence.
+ *
+ * Pairs the two halves by `candidate_id` and drops any member where they disagree,
+ * because the failure mode is silent: a model paired with another proteoform's topology
+ * renders as a perfectly plausible topology diagram. Members without a chosen structure
+ * -- 26 of L1, the never-comparable ones and TPO -- get no tab, rather than falling back
+ * to the gene's canonical model, which is a different protein.
+ */
+export function libraryStructureVariants(record: {
+  deterministic_features?: {
+    library_designed_topology?: LibraryTopologyRow[] | null;
+    library_designed_structure?: LibraryStructureRow[] | null;
+  } | null;
+}): StructureVariantLibraryInput[] {
+  const topo = record?.deterministic_features?.library_designed_topology ?? [];
+  const struct = record?.deterministic_features?.library_designed_structure ?? [];
+  if (!topo.length || !struct.length) return [];
+
+  const chosenByCandidate = new Map<string, LibraryStructureRow>();
+  for (const srow of struct) {
+    if (!srow.is_chosen || !srow.candidate_id) continue;
+    chosenByCandidate.set(srow.candidate_id, srow);
+  }
+
+  const out: StructureVariantLibraryInput[] = [];
+  for (const trow of topo) {
+    const cid = trow.candidate_id;
+    if (!cid) continue;
+    const srow = chosenByCandidate.get(cid);
+    if (!srow) continue;
+    const built = structureViewerDataFromLibraryMember(trow, srow);
+    if (!built) continue; // the builder already refuses every mismatch
+    out.push({
+      source: "library",
+      id: `library-${cid}`,
+      label: libraryVariantLabel(trow),
+      sublabel: cid,
+      topology: built.topology,
+      deeptmhmm_type: built.deeptmhmm_type,
+      pdb_url: built.pdb_url as string,
+      candidate_id: cid,
+      tranche: trow.library ?? null,
+      candidate_set: trow.candidate_set ?? null,
+      model_source: srow.source ?? null,
+      proteoform_match: srow.proteoform_match ?? null,
+      residue_offset: built.library_residue_offset ?? 0,
+      display_range: built.library_display_range ?? null,
+      note: srow.note ?? null,
+    });
+  }
+  return out;
+}
+
+/** The shape {@link libraryStructureVariants} emits — structurally the component's
+ *  `StructureVariantLibrary`, declared here to avoid a types/component import cycle. */
+export interface StructureVariantLibraryInput {
+  source: "library";
+  id: string;
+  label: string;
+  sublabel?: string;
+  topology: string;
+  deeptmhmm_type: StructureViewerData["deeptmhmm_type"];
+  pdb_url: string;
+  candidate_id: string;
+  tranche: string | null;
+  candidate_set: string | null;
+  model_source: string | null;
+  proteoform_match: string | null;
+  residue_offset: number;
+  display_range: [number, number] | null;
+  note: string | null;
+}
+
 /** Highlight color for a reader-selected residue (the 3D viewer's
  *  "Highlight residue" box and the topology strip's marker). Hot pink,
  *  which no topology / tag-site / contact palette uses — yellow vanished

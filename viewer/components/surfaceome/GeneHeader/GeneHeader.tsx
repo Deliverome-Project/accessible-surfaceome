@@ -16,6 +16,9 @@ import type {
   TriageSignal,
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
+import {
+  libraryStructureVariants,
+} from "../../../lib/structure-viewer-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import { renderableTagSites } from "../../../lib/tag-sites-overlay";
@@ -997,6 +1000,15 @@ export function GeneHeader({
                       };
                     }),
                 ),
+                // Library members: the protein we are ACTUALLY ordering. A member's ORF
+                // is its designed CDS translated, and for a substantial minority that is
+                // not the gene's canonical sequence -- which is what every tab above is
+                // about. Each tab carries the member's own v1 topology and the structure
+                // chosen for it (ours from R2, or AFDB's where its model is genuinely the
+                // ordered protein), so the overlay and the coordinates describe one
+                // protein. Members with no chosen structure, or no topology for their
+                // exact sequence, get no tab rather than a canonical stand-in.
+                ...libraryStructureVariants(rec),
               ]}
             />
             {/* Topology strip under the viewer, for the sequence on the
