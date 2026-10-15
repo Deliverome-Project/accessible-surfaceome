@@ -172,3 +172,36 @@ call with "Exec format error" — the surface `.ply` is then never written and t
 failure only surfaces downstream in PyMesh.
 
 [PMID 41604262]: https://pubmed.ncbi.nlm.nih.gov/41604262/
+
+## Where the results live
+
+Both sweeps write to Modal volumes (`masif-l1`, `bindome-concordance`), which sit
+outside this project's provenance chain. The durable copies are committed TSVs:
+
+| File | Rows | Size |
+|---|---|---|
+| `data/processed/extracellular_site_comparison/masif_site_predictions.tsv` | one per MaSIF site | ~0.4 MB |
+| `data/processed/extracellular_site_comparison/bindome_surface_bind_concordance.tsv` | one per SURFACE-Bind anchor | ~0.15 MB |
+
+Both carry `hgnc_id` / `hgnc_symbol` / `uniprot_acc` / `ensembl_gene` / `ncbi_gene_id`
+per the figure-input conventions, and are LFS-exempt so `raw.githubusercontent.com`
+serves them as text. Stable IDs resolve for ~97% of accessions; the remainder are
+TrEMBL entries absent from `gene_identifier_public`.
+
+Regenerate with:
+
+```bash
+uv run python scripts/tsv-export/export_site_comparison_tsvs.py \
+  --masif-dir <masif-l1 sites/> --bindome <fullrun.jsonl> \
+  --out data/processed/extracellular_site_comparison
+```
+
+**Not published to D1 or R2, on purpose.** The sweep is incomplete, ~184 library
+members carry topology from the wrong isoform, and the MaSIF model variant is
+unsettled -- so the served tables would be carrying known-wrong rows. When the data
+is final the natural shape mirrors SURFACE-Bind's: `masif_site_protein` /
+`masif_site_site` in both `d1_schema.sql` and `d1_public_schema.sql`, a sync script
+beside `sync_surface_bind_to_d1.py`, a Worker serve-time join, and a
+`sweep_record_history.py --execute` afterwards. The Bindome concordance is an
+analysis result rather than a per-gene feature and belongs in `data/processed/`,
+not D1.

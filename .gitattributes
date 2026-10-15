@@ -202,3 +202,5 @@ data/processed/onedb_trim_rescue_v1/README.md -filter -merge text
 data/processed/onedb_trim_rescue_v1/deep_dive_cohort.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/deterministic_gaps.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/gene_list_optcut_zerodb.tsv -filter -merge text
+data/processed/extracellular_site_comparison/masif_site_predictions.tsv -filter -diff -merge text
+data/processed/extracellular_site_comparison/bindome_surface_bind_concordance.tsv -filter -diff -merge text
