@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  libraryStructureVariants,
   STRUCTURES_BASE,
   structureViewerDataFromLibraryMember,
 } from "../lib/structure-viewer-types";
@@ -113,4 +114,74 @@ test("library member: refuses when neither an R2 key nor a model URL is availabl
     model_url: null,
   });
   assert.equal(d, null);
+});
+
+// ---------------------------------------------------------------------------
+// libraryStructureVariants: pairing the two halves the Worker serves.
+// ---------------------------------------------------------------------------
+
+const rec = (
+  topo: unknown[],
+  struct: unknown[],
+): Parameters<typeof libraryStructureVariants>[0] =>
+  ({
+    deterministic_features: {
+      library_designed_topology: topo,
+      library_designed_structure: struct,
+    },
+  }) as Parameters<typeof libraryStructureVariants>[0];
+
+test("variants: one tab per member with both halves present and agreeing", () => {
+  const v = libraryStructureVariants(rec([topology], [structure]));
+  assert.equal(v.length, 1);
+  assert.equal(v[0].source, "library");
+  assert.equal(v[0].id, "library-l1-p0031");
+  assert.equal(v[0].sublabel, "l1-p0031");
+  assert.equal(v[0].label, "Ordered");
+  assert.equal(v[0].residue_offset, 0);
+});
+
+test("variants: labels an isoform and an ortholog member distinctly", () => {
+  const iso = libraryStructureVariants(
+    rec([{ ...topology, candidate_set: "isoform" }], [structure]),
+  );
+  const ortho = libraryStructureVariants(
+    rec([{ ...topology, candidate_set: "ortholog" }], [structure]),
+  );
+  assert.equal(iso[0].label, "Ordered isoform");
+  assert.equal(ortho[0].label, "Ordered ortholog");
+});
+
+test("variants: a member with no CHOSEN structure gets no tab", () => {
+  // 26 L1 members are in this state. A tab here would fall back to the gene's
+  // canonical model, which is a different protein.
+  const v = libraryStructureVariants(
+    rec([topology], [{ ...structure, is_chosen: false }]),
+  );
+  assert.equal(v.length, 0);
+});
+
+test("variants: never pairs one member's topology with another's structure", () => {
+  const v = libraryStructureVariants(
+    rec([topology], [{ ...structure, candidate_id: "l1-p9999" }]),
+  );
+  assert.equal(v.length, 0);
+});
+
+test("variants: skips the mismatched member but keeps the good one", () => {
+  const good = { ...topology, candidate_id: "l1-p0042" };
+  const goodStruct = { ...structure, candidate_id: "l1-p0042" };
+  const v = libraryStructureVariants(
+    rec(
+      [topology, good],
+      [{ ...structure, ordered_length_aa: TOPO.length + 9 }, goodStruct],
+    ),
+  );
+  assert.equal(v.length, 1);
+  assert.equal(v[0].candidate_id, "l1-p0042");
+});
+
+test("variants: empty when either half is missing", () => {
+  assert.deepEqual(libraryStructureVariants(rec([topology], [])), []);
+  assert.deepEqual(libraryStructureVariants(rec([], [structure])), []);
 });

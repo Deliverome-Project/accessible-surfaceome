@@ -78,7 +78,8 @@ export interface TagSiteSphere {
 export type StructureVariant =
   | StructureVariantAfdb
   | StructureVariantExperimental
-  | StructureVariantSchwekeHomomer;
+  | StructureVariantSchwekeHomomer
+  | StructureVariantLibrary;
 
 interface StructureVariantBase {
   /** Stable key for the React tab list. */
@@ -175,6 +176,34 @@ export interface StructureVariantExperimental extends StructureVariantBase {
   experimental_method: string;
   resolution: number | null;
   coverage: number;
+}
+
+export interface StructureVariantLibrary extends StructureVariantBase {
+  source: "library";
+  /** Coordinates for the protein the library member actually encodes: our ColabFold
+   *  model in the public R2 bucket, or AFDB's where its model IS the ordered protein. */
+  pdb_url: string;
+  candidate_id: string;
+  /** Library tranche, ``l1`` / ``l2``. NOT a DeepTMHMM tool version. */
+  tranche: string | null;
+  candidate_set: string | null;
+  /** ``colabfold`` (ours) | ``alphafold_db``. Display + caption. */
+  model_source: string | null;
+  /** identical | contained | ours_by_construction | … */
+  proteoform_match: string | null;
+  /** construct residue i == model residue i + residue_offset.
+   *
+   *  Load-bearing, not metadata. For a ``contained`` member the ordered protein is a
+   *  subsequence of the model and offsets run to 134, so a render that ignores this
+   *  paints the topology onto the wrong residues while looking entirely plausible. It
+   *  becomes the single {@link ProjSegment} the existing projection machinery consumes —
+   *  the same path experimental PDBs use for their author-numbering offset. */
+  residue_offset: number;
+  /** Inclusive model-residue span the construct covers. Residues outside it are hidden,
+   *  so a longer model cannot read as protein the construct contains. */
+  display_range: [number, number] | null;
+  /** Why this model is not the member's own proteoform, when it is an alternate. */
+  note: string | null;
 }
 
 /** Per-variant AFDB metadata fetched at runtime from
@@ -1230,6 +1259,7 @@ export function StructureViewer({
     : effectiveVariants[variantIdx - 1] ?? null;
   const isExperimentalActive = activeVariant?.source === "experimental";
   const isSchwekeActive = activeVariant?.source === "schweke-homomer";
+  const isLibraryActive = activeVariant?.source === "library";
   // Isoform variant active: its deterministic tag pins, placed on the
   // (canonical-fold) structure at each pin's canonical_residue. Pins in an
   // isoform-only inserted region (no canonical_residue) can't map to the
@@ -1568,7 +1598,31 @@ export function StructureViewer({
       const expVariant = isExperimentalActive
         ? (activeVariant as StructureVariantExperimental)
         : null;
-      if (schwekeVariant) {
+      const libVariant = isLibraryActive
+        ? (activeVariant as StructureVariantLibrary)
+        : null;
+      if (libVariant) {
+        // Same cache dance as the Schweke branch: R2 sends its 404 with no
+        // Cache-Control and ``force-cache`` replays any stored response however old,
+        // so a browser that loaded the page before a model was ingested would keep
+        // the 404 forever. Retry once past the cache before calling it missing.
+        let resp = await fetch(libVariant.pdb_url, { cache: "force-cache" });
+        if (!resp.ok) {
+          resp = await fetch(libVariant.pdb_url, { cache: "reload" });
+        }
+        if (!resp.ok) {
+          if (renderSeq !== renderSeqRef.current) return;
+          setStatus("unavailable");
+          setErrorMsg(
+            `The model for library member ${libVariant.candidate_id} ` +
+              `(${libVariant.pdb_url.split("/").pop()}) could not be loaded. ` +
+              "The member's topology and design are unaffected; only the 3D view " +
+              "is unavailable.",
+          );
+          return;
+        }
+        rawPdb = await resp.text();
+      } else if (schwekeVariant) {
         let resp = await fetch(schwekeVariant.pdb_url, {
           cache: "force-cache",
         });
@@ -1742,7 +1796,18 @@ export function StructureViewer({
       // PDBe author space). So we validate candidate offsets against the
       // residues ACTUALLY present in the fetched file and keep the best.
       let projSegments: ProjSegment[] = [];
-      if (expVariant) {
+      if (libVariant) {
+        // One linear segment is the whole story here, unlike an experimental chain:
+        // the model IS the ordered protein (ours) or contains it contiguously (AFDB's,
+        // verified residue-exact offline), so there are no gaps to map piecewise.
+        projSegments = [
+          {
+            unpLo: 1,
+            unpHi: libVariant.topology.length,
+            offset: libVariant.residue_offset,
+          },
+        ];
+      } else if (expVariant) {
         projSegments = await projectExperimentalChain(
           {
             pdbId: expVariant.pdb_id,
@@ -1758,9 +1823,14 @@ export function StructureViewer({
         );
       }
 
-      residueMapRef.current = expVariant
-        ? { segments: projSegments, chain: effectiveChainId ?? expVariant.chain_id }
-        : null;
+      // A library member needs the same residue map as an experimental chain: its
+      // topology is numbered on the ordered sequence, the file on the model's own
+      // numbering, and the two differ by residue_offset.
+      residueMapRef.current = libVariant
+        ? { segments: projSegments, chain: "" }
+        : expVariant
+          ? { segments: projSegments, chain: effectiveChainId ?? expVariant.chain_id }
+          : null;
 
       // Orient both AFDB models and experimental PDBs the same way
       // when possible: rotate so the membrane plane is horizontal and
@@ -1782,12 +1852,19 @@ export function StructureViewer({
       const { pdbText, membrane } =
         schwekeSkipOrient
           ? { pdbText: rawPdb, membrane: null }
-          : expVariant
-            ? orientPdbForTopology(rawPdb, activeTopology, {
-                chainId: effectiveChainId ?? expChainId,
+          : libVariant
+            ? // The topology is numbered on the ordered sequence; the file on the
+              // model's numbering. Without the map the membrane plane is fitted from
+              // the wrong residues and the whole model is oriented wrongly.
+              orientPdbForTopology(rawPdb, activeTopology, {
                 resiToTopo: _makeResiToTopo(projSegments),
               })
-            : orientPdbForTopology(rawPdb, activeTopology);
+            : expVariant
+              ? orientPdbForTopology(rawPdb, activeTopology, {
+                  chainId: effectiveChainId ?? expChainId,
+                  resiToTopo: _makeResiToTopo(projSegments),
+                })
+              : orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -1919,9 +1996,20 @@ export function StructureViewer({
         // stay in default gray. Uses `effectiveChainId` (resolved
         // against the actual PDB) rather than the raw PDBe metadata
         // so mismatches don't silently drop the cartoon entirely.
-        const baseSel = expVariant && effectiveChainId
-          ? { chain: effectiveChainId }
-          : {};
+        // TRUNCATE to the construct. For a `contained` member the model is longer than
+        // the ordered protein -- by up to 134 residues -- and drawing the whole thing
+        // shows protein the construct does not contain as though it did. Clearing every
+        // style first and then painting only the covered span is what makes the
+        // difference visible, instead of something a reader has to know to look for.
+        // 3Dmol's typed selection takes explicit ranges only, so scoping the base
+        // selection to the span is both the clip and the paint.
+        const libSpan = libVariant?.display_range ?? null;
+        if (libSpan) viewer.setStyle({}, {});
+        const baseSel = libSpan
+          ? ({ resi: `${libSpan[0]}-${libSpan[1]}` } as const)
+          : expVariant && effectiveChainId
+            ? { chain: effectiveChainId }
+            : {};
         // Base color for residues without an explicit topology range. A
         // GLOB protein whose topology came back empty (e.g. IZUMO4 —
         // outside the topology-sweep cohort, so NO ranges to overlay at
@@ -1952,7 +2040,12 @@ export function StructureViewer({
               ? TOPOLOGY_COLORS.M
               : TOPOLOGY_COLORS[state];
           (ranges[state] ?? []).forEach(([start, end]) => {
-            if (expVariant) {
+            // A library member needs the same projection as an experimental chain, and
+            // for the same reason: its topology is numbered on the ordered sequence
+            // while the file uses the model's numbering. Falling through to the raw
+            // branch below would paint every colour `residue_offset` residues off --
+            // up to 134 -- and the result still looks like a topology diagram.
+            if (expVariant || libVariant) {
               // Project each topology range through every projection
               // segment: clip the UniProt range to the segment's window,
               // then shift by the segment's author offset. Clean

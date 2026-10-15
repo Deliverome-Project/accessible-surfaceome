@@ -668,6 +668,17 @@ export interface DeterministicFeatures {
    *  back-compat with pre-sentinel snapshots. */
   paralogs_checked?: boolean;
   isoform_topologies_checked?: boolean;
+  /** The topology of the protein each LIBRARY MEMBER actually encodes, as opposed to
+   *  `canonical_topology`, which is the gene's canonical UniProt sequence. Those are
+   *  frequently different proteins: a member's ORF is its designed CDS, an
+   *  Ensembl-transcript product. Always DeepTMHMM **v1** -- the alphabet the viewer
+   *  colours by. Present only for genes with at least one library member whose exact
+   *  ordered sequence has a v1 run; absent is "no run", never "use the canonical".
+   *  Worker `row_schema` 11+. */
+  library_designed_topology?: LibraryDesignedTopology[];
+  /** Which structure each library member should render, and how to renumber it.
+   *  Worker `row_schema` 11+. */
+  library_designed_structure?: LibraryDesignedStructure[];
   structure: StructureFeatures;
   surface_bind: SurfaceBindFeatures;
   /** Schweke 2024 AF2 homo-oligomer prediction. Always present, with
@@ -675,6 +686,63 @@ export interface DeterministicFeatures {
    *  signal. Strong AF2-derived structural prior on the synthesizer's
    *  `epitope_masking.mechanism = "homo-oligomerization"` call. */
   homo_oligomerization: HomoOligomerizationFeatures;
+}
+
+/** One library member's own topology. Mirrors `library_topology_public` joined through
+ *  to `topology_public`; see the Worker's `library_designed_topology` block. */
+export interface LibraryDesignedTopology {
+  candidate_id: string;
+  /** Library tranche, `l1` / `l2`. NOT a DeepTMHMM tool version. */
+  library: string;
+  candidate_set: string | null;
+  species: string | null;
+  /** Always `deeptmhmm_v1`: the topology of record. */
+  tool: string;
+  cohort: string;
+  topology_version: string;
+  /** Which `topology_public` row this came from, so the match is auditable. */
+  topology_acc: string;
+  /** sha256 of the ordered protein — the key the match was made on, not the accession. */
+  sequence_sha256: string;
+  ordered_length_aa: number | null;
+  per_residue_topology: string;
+  tm_helix_count: number;
+  beta_strand_count: number | null;
+  n_terminal_orientation: "extracellular" | "cytoplasmic";
+  c_terminal_orientation: "extracellular" | "cytoplasmic";
+  signal_peptide_length: number;
+  ecd_length_residues: number;
+  icd_length_residues: number;
+  predicted_surface_membrane: boolean | null;
+  predicted_secreted: boolean | null;
+  tool_version: string;
+}
+
+/** One candidate structure for a library member. `is_chosen` is the one to render;
+ *  alternates travel with the `note` saying why they lost. */
+export interface LibraryDesignedStructure {
+  candidate_id: string;
+  candidate_set: string | null;
+  species: string | null;
+  /** `colabfold` = we folded the ordered sequence; `alphafold_db` = AFDB's model is the
+   *  ordered protein, or contains it contiguously. */
+  source: string;
+  /** Object key under the public `surfaceome-structures` bucket; null for AFDB. */
+  r2_key: string | null;
+  /** AFDB URL; null for ours. */
+  model_url: string | null;
+  proteoform_match: string;
+  /** construct residue i == model residue i + residue_offset. Must be applied when
+   *  rendering: offsets run to 134 and ignoring one draws a plausible frame shift. */
+  residue_offset: number;
+  ordered_length_aa: number | null;
+  model_length_aa: number | null;
+  /** Inclusive model residues the construct covers — the span to clip the render to. */
+  display_first_model_residue: number | null;
+  display_last_model_residue: number | null;
+  is_chosen: boolean;
+  mean_plddt: number | null;
+  note: string | null;
 }
 
 // ============================================================
