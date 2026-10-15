@@ -125,6 +125,24 @@ class Frame:
     label: str
     sequence: str
     offset: int | None = None
+    #: Whether a publication would be expected to number in THIS frame.
+    #:
+    #: Guard 1 asks "is this paper numbering somewhere unusual?", and that
+    #: question is only meaningful relative to where papers normally number:
+    #: canonical UniProt. When the reference frame is a construct WE designed —
+    #: a library member whose ordered form is an isoform or a designed ORF —
+    #: canonical is not a suspicious alternate, it is almost certainly the frame
+    #: the paper used, and the member frame is one no publication has seen. KCNN2
+    #: is the worked case: "between aa 246 and 247" names no frame and spells no
+    #: residue, so Guard 1 refuses canonical, yet canonical is exactly right and
+    #: maps uniquely into the 791-aa construct.
+    #:
+    #: An expected frame is licensed by the strength of its MAPPING instead —
+    #: a unique sequence window or an exact offset, agreeing on residue identity
+    #: where the citation gives one. That is structural evidence rather than the
+    #: near-chance letter-and-number coincidence the spelled-residue rule exists
+    #: to suppress.
+    expected: bool = False
 
     @property
     def family(self) -> str:
@@ -157,6 +175,8 @@ class FrameHit:
     spelled_tokens: int
     #: Whether the text NAMES this frame's family.
     frame_named: bool
+    #: Whether this is a frame a publication would be expected to use.
+    frame_expected: bool
     confers_validation: bool
 
 
@@ -299,8 +319,26 @@ def resolve(
                 licensed = False
             elif named_alternates:
                 # Guard 2: the text named an alternate family, so only that
-                # family may speak for it.
+                # family may speak for it. This outranks expectedness — if the
+                # paper says it numbers in rat, canonical being the usual frame
+                # is beside the point, because the paper has told us otherwise.
                 licensed = frame_named
+            elif frame.expected:
+                # The frame a publication would be expected to use. Licensed by
+                # the mapping, which has already succeeded to get here: either
+                # an exact offset or a sequence window found exactly once. The
+                # identity check below is redundant for a window mapping (the
+                # window contains the position, so the letters agree by
+                # construction) and is the real check for an offset one, where a
+                # caller could supply a wrong offset.
+                licensed = (
+                    position not in letter_forms
+                    or (
+                        1 <= mapped <= len(reference)
+                        and reference[mapped - 1].upper()
+                        == frame.sequence[position - 1].upper()
+                    )
+                )
             else:
                 # Guard 1: no frame named, so the frame has to earn it with two
                 # letter-confirmed tokens, at least one of them SPELLING the
@@ -316,6 +354,7 @@ def resolve(
                     letter_confirmed_tokens=n_letter,
                     spelled_tokens=n_spelled,
                     frame_named=frame_named,
+                    frame_expected=frame.expected,
                     confers_validation=licensed,
                 )
             )
@@ -324,9 +363,16 @@ def resolve(
     # Prefer the reference frame, then a frame the text actually named, then one
     # that earned it on tokens — so a record cites the strongest basis it has.
     def _rank(hit: FrameHit) -> tuple[int, int]:
+        """Reference first — a position in the construct's own numbering needs
+        no mapping. Then a frame the text NAMED, then the frame a publication
+        would be expected to use, then one that earned it on tokens."""
         if hit.frame_label == reference_label:
             return (0, 0)
-        return (1 if hit.frame_named else 2, -hit.letter_confirmed_tokens)
+        if hit.frame_named:
+            return (1, -hit.letter_confirmed_tokens)
+        if hit.frame_expected:
+            return (2, -hit.letter_confirmed_tokens)
+        return (3, -hit.letter_confirmed_tokens)
 
     validating = sorted(
         (h for h in hits if h.confers_validation), key=_rank

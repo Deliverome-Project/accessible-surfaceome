@@ -361,3 +361,136 @@ def test_resolution_records_every_hit_even_when_none_validates() -> None:
     res = resolve(KCC2B_QUOTE, frames=frames, reference_label="member", target=406)
     assert res.validating_hit is None
     assert res.cited_positions == {383, 384}
+
+
+# --------------------------------------------------------------------------
+# the EXPECTED publication frame
+#
+# Guard 1 asks "is this paper numbering somewhere unusual?" and that question
+# only makes sense relative to where papers normally number: canonical UniProt.
+# When the reference frame is the construct we designed — a library member whose
+# ordered form is an isoform or a designed ORF — canonical is not a suspicious
+# alternate, it is the frame a paper will almost certainly have used, and the
+# member frame is one no publication has ever seen.
+#
+# So a frame may be marked EXPECTED, and an expected frame is licensed by the
+# strength of its MAPPING rather than by frame keywords: a unique sequence
+# window (or an exact offset) that also agrees on residue identity where the
+# citation gives one. That is structural evidence, not the near-chance
+# letter-and-number coincidence the spelled-residue rule exists to suppress.
+# --------------------------------------------------------------------------
+
+
+def test_an_expected_frame_licenses_a_bare_positional_citation() -> None:
+    """The KCNN2 case. "between aa 246 and 247" names no frame and spells no
+    residue, so Guard 1 would refuse canonical — but canonical is exactly where
+    the paper is numbering, and the window maps uniquely into the construct."""
+    # A construct containing the canonical sequence once, behind a 60-residue
+    # N-terminal extension — the KCNN2 shape (791 aa against canonical 579).
+    # The canonical must not repeat internally or its own window is ambiguous,
+    # which is a property of the fixture rather than of the rule under test.
+    canonical = "HHRSACAYHTQPWPISCIVGCKDNIKYPGACAVRQGAYRSCEDHVCRVHSARVGWKIPFFELCCPTNIQYRRALHCWLFISRTPKIWGQAQYEPSVEHEPNNCCDWDAGWTGLNMEDFLWEWKLPYMWSCINMLIDFFYGPCGFTCFTQLNECWGGYRNFPQAPMECTCYYDPCKHTEPCHECDLSHEWVEKLFCFVSWI"
+    member = ("D" * 60) + canonical
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=None, expected=True),
+    ]
+    res = resolve(
+        "a triple Myc epitope was inserted between aa 100 and 101",
+        frames=frames,
+        reference_label="member",
+        target=160,
+    )
+    assert res.validating_hit is not None
+    assert res.validating_hit.frame_label == "canonical"
+    assert res.validating_hit.reference_position == 160
+
+
+def test_an_expected_frame_is_still_blocked_by_a_named_foreign_frame() -> None:
+    """Guard 2 outranks expectedness. If the paper says it is numbering in rat,
+    canonical being the usual frame is beside the point — the paper has told us
+    it is not using it."""
+    canonical = "HHRSACAYHTQPWPISCIVGCKDNIKYPGACAVRQGAYRSCEDHVCRVHSARVGWKIPFFELCCPTNIQYRRALHCWLFISRTPKIWGQAQYEPSVEHEPNNCCDWDAGWTGLNMEDFLWEWKLPYMWSCINMLIDFFYGPCGFTCFTQLNECWGGYRNFPQAPMECTCYYDPCKHTEPCHECDLSHEWVEKLFCFVSWI"
+    member = ("D" * 60) + canonical
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=None, expected=True),
+    ]
+    res = resolve(
+        "inserted between positions 100 and 101 of the rat orthologue",
+        frames=frames,
+        reference_label="member",
+        target=160,
+    )
+    assert res.blocked_by_unavailable_frame is True
+    assert res.validating_hit is None
+
+
+def test_an_unexpected_frame_still_needs_naming_or_spelled_residues() -> None:
+    """Marking canonical expected must not relax everything else. A second
+    isoform is still the coincidence risk the guards were measured against —
+    13 of 13 frame-only pool clips were nomenclature."""
+    reference = "MKTAYIAKQRQISFVKSHFSRQ"
+    decoy = "D" * 9 + "D" + "QISFVKSHFSRQ"  # carries D at 10
+    frames = [
+        Frame(label="member", sequence=reference, offset=0),
+        Frame(label="isoform:X-7", sequence=decoy, offset=0),
+    ]
+    res = resolve("the D10 variant was unaffected", frames=frames,
+                  reference_label="member", target=10)
+    assert res.validating_hit is None
+
+
+def test_an_expected_frame_needs_its_mapping_to_be_unambiguous() -> None:
+    """Expectedness licenses the frame, not a guess. A repeated neighbourhood
+    cannot say which coordinate the citation means, and a cassette placed on a
+    guess lands somewhere else entirely."""
+    repeat = "MKTAYIAKQR"
+    canonical = repeat * 4
+    member = repeat * 8
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=None, expected=True),
+    ]
+    res = resolve("inserted after residue 15", frames=frames,
+                  reference_label="member", target=15)
+    # The MEMBER legitimately names position 15 in its own numbering, so the
+    # resolution is not empty. What must not happen is canonical being
+    # promoted off an ambiguous window.
+    assert all(
+        not h.confers_validation
+        for h in res.hits
+        if h.frame_label == "canonical"
+    )
+
+
+def test_an_expected_frame_must_agree_on_residue_identity_when_given_one() -> None:
+    """When the citation spells the residue, the mapped position has to carry
+    it. Expectedness is a prior about which frame, never a licence to ignore
+    the one check the text actually affords."""
+    canonical = "HHRSACAYHTQPWPISCIVGCKDNIKYPGACAVRQGAYRSCEDHVCRVHSARVGWKIPFFELCCPTNIQYRRALHCWLFISRTPKIWGQAQYEPSVEHEPNNCCDWDAGWTGLNMEDFLWEWKLPYMWSCINMLIDFFYGPCGFTCFTQLNECWGGYRNFPQAPMECTCYYDPCKHTEPCHECDLSHEWVEKLFCFVSWI"
+    member = ("D" * 60) + canonical
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=None, expected=True),
+    ]
+    # Canonical position 100 is not a tryptophan, so this citation is not
+    # about position 100 in this protein at all.
+    res = resolve("inserted after Trp-100", frames=frames,
+                  reference_label="member", target=160)
+    assert res.validating_hit is None
+
+
+def test_the_reference_frame_still_wins_over_an_expected_one() -> None:
+    """If the quote names the residue in the construct's OWN numbering, that is
+    the strongest reading and needs no mapping at all."""
+    canonical = "MKTAYIAKQRQISFVKSHFSRQ"
+    member = canonical
+    frames = [
+        Frame(label="member", sequence=member, offset=0),
+        Frame(label="canonical", sequence=canonical, offset=0, expected=True),
+    ]
+    res = resolve("inserted after Thr-3", frames=frames,
+                  reference_label="member", target=3)
+    assert res.validating_hit is not None
+    assert res.validating_hit.frame_label == "member"
