@@ -205,3 +205,50 @@ beside `sync_surface_bind_to_d1.py`, a Worker serve-time join, and a
 `sweep_record_history.py --execute` afterwards. The Bindome concordance is an
 analysis result rather than a per-gene feature and belongs in `data/processed/`,
 not D1.
+
+
+## Library inputs: three defects, and the DeepTMHMM version trap
+
+The L1 sweep was built from an accession-keyed lookup, which is wrong in three
+ways that `library_structure_payload.tsv` and `l1_topology_have.tsv` (both from
+s4e9-orf-design-fg-panel) resolve:
+
+| defect | members |
+|---|---|
+| canonical-only topology, so isoform constructs got the wrong sequence | 95 |
+| AlphaFold-DB-only structures, so 232 got a different proteoform | 232 |
+| filtered to human canonical, so orthologs were never in scope | 196 |
+
+`library_structure_payload.tsv` carries one `is_chosen=1` row per member (2,674
+total: 2,404 AlphaFold DB by `model_url`, 270 ColabFold by `r2_key` under
+`library-colabfold/`), each proteoform-matched to the construct with a zero
+residue offset.
+
+**Scope of the fix is 523 members, not a rebuild.** 1,642 existing results are
+correct (AlphaFold DB + identical proteoform + canonical v1 topology + human) and
+509 more were in flight on correct inputs; only 327 are genuine redos, plus 196
+orthologs that are new work.
+
+### Use DeepTMHMM v1 for topology, and match by sequence hash
+
+`l1_topology_have.tsv` names `topo_2026_09_27_dtm2` / `topo_2026_09_28_dtm2_ortho`
+for 2,539 of its 2,543 rows. Those are **DeepTMHMM 2**
+(`deeptmhmm2_predictor-0.1.0+ckpt.710911459661`). Every other topology row this
+project serves is `deeptmhmm-1.0.24`, so following that file as written mixes two
+predictors inside one dataset with nothing downstream flagging it.
+
+Matching construct sequences by SHA-256 against **v1-only** releases instead:
+
+| | |
+|---|---|
+| matched to a v1 row | **2,642 / 2,674 (98.8%)** |
+| human_canonical / human_isoforms | 2,152 / 190 |
+| `library_designed_orf` (v1 run on the designed ORFs) | 143 |
+| mouse / cyno ortholog | 157 |
+| unmatched (21 cyno, 10 mouse, 1 human) | 32 |
+
+The designed-ORF run exists under both models -- `topo_2026_10_14_l1_designed`
+(v1) and `topo_2026_10_14_dtm2_l1_designed` (v2) -- so selecting v1 is a matter of
+picking the right release, not of new compute. Hash matching is also stricter than
+keying on accession plus cohort, because it verifies the sequence rather than
+trusting the label. `scripts/audit/check_l1_topology_v1_coverage.py` runs the check.
