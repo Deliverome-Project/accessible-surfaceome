@@ -905,6 +905,16 @@ CREATE TABLE IF NOT EXISTS tag_site_public (
   -- The proteoform frame a citation was numbering in when it was not the
   -- protein's own ("mature", "isoform:P54289-2"); NULL for the ordinary case.
   position_frame             TEXT,
+  -- Which library MEMBER this site describes, and the sequence its position is
+  -- expressed in. A gene is not a unit: 45 of the 518 internal-site genes have
+  -- more than one member, 7 of those disagree about where the tag can go, and
+  -- 71 of 566 members are not numbered on the human canonical protein.
+  candidate_id               TEXT,
+  library                    TEXT,
+  numbered_against           TEXT,
+  -- inter_tm / n_terminal / c_terminal / no_tm, derived from topology rather
+  -- than read off site_kind, which does not discriminate at low positions.
+  loop_run_position          TEXT,
   PRIMARY KEY (uniprot_acc, site_id)
 );
 CREATE INDEX IF NOT EXISTS idx_tag_site_symbol ON tag_site_public (gene_symbol);

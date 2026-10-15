@@ -59,6 +59,7 @@ from .enrichment import (
     new_clip_ids,
 )
 from .geometry import apply_geometry_pass
+from .member_frames import run_at
 from .prior_ledger import PriorClip, seed_pool
 from .literature_discovery import (
     DISCOVERY_CACHE_DIR,
@@ -882,6 +883,20 @@ def run_tag_site_agent(
     return rank_sites(result)
 
 
+def _run_position(topology: str, junction: int | None) -> str | None:
+    """Where the junction's extracellular run sits: ``inter_tm`` means a loop.
+
+    Derived rather than taken from ``site_kind``, which cannot tell a loop from
+    an N-terminal tail — the five published literature sites at positions 4-5 are
+    topologically identical and are labelled ``internal`` twice and
+    ``terminal_n`` three times, with both paralogue pairs disagreeing with their
+    own partner."""
+    if junction is None:
+        return None
+    run = run_at(topology, junction)
+    return run.position if run else None
+
+
 def _citation_label(source_id: str) -> str:
     """A human citation from an accession: "DOI 10.1101/x", "PMC PMC123".
 
@@ -893,7 +908,16 @@ def _citation_label(source_id: str) -> str:
     return f"{prefix} {rest}" if rest else source_id
 
 
-def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str, Any]]:
+def to_viewer_sites(
+    result: TagSiteResult,
+    *,
+    uniprot_acc: str,
+    provenance: str = "literature_retrieved",
+    candidate_id: str | None = None,
+    library: str | None = None,
+    numbered_against: str | None = None,
+    topology: str | None = None,
+) -> list[dict[str, Any]]:
     """Convert to the viewer's ``literature_retrieved`` TaggedSite shape
     (viewer/lib/tag-sites-types.ts). Agent-only fields (validation_level,
     position_evidence, source_tier, entailment) fold into ``rationale``/``sources``
@@ -929,7 +953,16 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
                 "claim": s.supporting_quote,
             })
 
-        site_id = f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit"
+        if provenance == "literature_enriched":
+            member = candidate_id or "nomember"
+            site_id = (
+                f"{result.gene_symbol}-{member}-{s.site_type}-"
+                f"{s.insert_after_residue}-enr"
+            )
+        else:
+            site_id = (
+                f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit"
+            )
         if site_id in by_id:
             kept = by_id[site_id]["sources"]
             seen = {(src.get("pmid"), src.get("claim")) for src in kept}
@@ -942,7 +975,7 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
             "site_id": site_id,
             "gene_symbol": result.gene_symbol,
             "uniprot_acc": uniprot_acc,
-            "provenance": "literature_retrieved",
+            "provenance": provenance,
             "det_path": None,
             "site_kind": s.site_type,
             "insert_after_residue": s.insert_after_residue,
@@ -983,6 +1016,17 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
             "plddt": None,
             "conservation_rank": None,
             "median_conservation": None,
+            # Which construct, and the sequence the position is expressed in.
+            "candidate_id": candidate_id,
+            "library": library,
+            "numbered_against": numbered_against,
+            # Loop-ness from topology, never from the site_kind label.
+            "loop_run_position": (
+                _run_position(topology, s.insert_after_residue) if topology else None
+            ),
+            # Set by the frame resolver when the citation numbered in another
+            # proteoform; None means the paper used this construct's own frame.
+            "position_frame": getattr(s, "position_frame", None),
         }
         by_id[site_id] = record
         out.append(record)
