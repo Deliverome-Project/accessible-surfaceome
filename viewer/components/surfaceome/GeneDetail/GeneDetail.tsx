@@ -275,18 +275,19 @@ export function GeneDetail({
           },
         ]
       : []),
-    // SURFACE-Bind section only when the protein has at least one
-    // scored patch. Two empty cases are filtered out so the AnchorNav
-    // strip never offers a tab that opens a sites-less section:
-    //   * not in SURFACE-Bind's table (`has_data=false`), and
-    //   * scored but no patch cleared the MaSIF threshold
-    //     (`n_sites=0`, e.g. CLDN18).
-    ...(rec.deterministic_features.surface_bind.has_data &&
-    rec.deterministic_features.surface_bind.n_sites > 0
+    // Binding-sites section when ANY source has a site. Gating on
+    // SURFACE-Bind alone would hide the card for a protein Bindome
+    // designed against but SURFACE-Bind never scored — which is 403
+    // proteins, and exactly the case the second source exists to cover.
+    // Still filtered when every source is empty, so the AnchorNav strip
+    // never offers a tab that opens a sites-less section.
+    ...((rec.deterministic_features.surface_bind.has_data &&
+      rec.deterministic_features.surface_bind.n_sites > 0) ||
+    (rec.deterministic_features.bindome?.n_sites ?? 0) > 0
       ? [
           {
-            kind: "surface-bind",
-            label: "SURFACE-Bind",
+            kind: "binding-sites",
+            label: "Binding sites",
             render: (n: number) => <BindingSitesCard rec={rec} n={n} />,
           },
         ]
