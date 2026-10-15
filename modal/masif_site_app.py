@@ -7,12 +7,12 @@ proteins with no SURFACE-Bind sites run first; the 1,218 that already have
 published sites follow and serve as the validation set.
 """
 
+import os
+
 import modal
 from pathlib import Path
 
-image = modal.Image.from_dockerfile(
-    str(Path(__file__).parent / "masif" / "Dockerfile")
-).pip_install("scikit-learn==1.5.2")
+image = modal.Image.from_dockerfile(str(Path(__file__).parent / "masif" / "Dockerfile"))
 app = modal.App("masif-l1-sweep")
 vol = modal.Volume.from_name("masif-l1")
 
@@ -54,7 +54,7 @@ json.dump({"n_verts": int(n)}, open("/tmp/ext.json", "w"))
     cpu=2.0,
     memory=8192,
     volumes={"/vol": vol},
-    max_containers=100,
+    max_containers=int(os.environ.get("MASIF_MAX_CONTAINERS", "35")),
     retries=1,
 )
 def run_one(acc: str):
@@ -77,6 +77,13 @@ def run_one(acc: str):
     info = meta["topology"].get(acc) or {}
     UA = "accessible-surfaceome research bot (becca@deliverome.org)"
     wd = "/masif/data/masif_site"
+    os.makedirs("/vol/sites", exist_ok=True)
+
+    def _write(r):
+        with open(f"/vol/sites/{acc}.json", "w") as f:
+            json.dump(r, f)
+        vol.commit()
+
     rec = {"acc": acc, "sym": info.get("sym")}
     t0 = time.time()
     os.makedirs("/tmp/p", exist_ok=True)
@@ -89,9 +96,7 @@ def run_one(acc: str):
         open(pdb, "wb").write(urllib.request.urlopen(r, timeout=180).read())
     except Exception as e:
         rec["error"] = f"no_alphafold: {e}"
-        with open("/vol/l1_sites.jsonl", "a") as f:
-            f.write(json.dumps(rec) + "\n")
-        vol.commit()
+        _write(rec)
         return rec
     env = dict(os.environ, PATH="/masifbin:" + os.environ["PATH"])
 
@@ -121,9 +126,7 @@ def run_one(acc: str):
     except Exception:
         rec["error"] = "extract_failed"
         rec["log"] = (l1 + l2 + l3)[-400:]
-        with open("/vol/l1_sites.jsonl", "a") as f:
-            f.write(json.dumps(rec) + "\n")
-        vol.commit()
+        _write(rec)
         return rec
     keep = S_ >= 0.7
     rec["n_verts"] = int(len(V))
@@ -164,9 +167,7 @@ def run_one(acc: str):
         1 for s in sites if s["topology"] == "extracellular"
     )
     rec["secs"] = round(time.time() - t0, 1)
-    with open("/vol/l1_sites.jsonl", "a") as f:
-        f.write(json.dumps(rec) + "\n")
-    vol.commit()
+    _write(rec)
     return {k: v for k, v in rec.items() if k != "sites"}
 
 
@@ -176,13 +177,11 @@ def driver():
     import os
 
     meta = json.load(open("/vol/l1_inputs.json"))
-    done = set()
-    if os.path.exists("/vol/l1_sites.jsonl"):
-        for ln in open("/vol/l1_sites.jsonl"):
-            try:
-                done.add(json.loads(ln)["acc"])
-            except Exception:
-                pass
+    done = (
+        {f[:-5] for f in os.listdir("/vol/sites")}
+        if os.path.isdir("/vol/sites")
+        else set()
+    )
     todo = [a for a in meta["order"] if a not in done]
     print(
         f"L1 sweep: {len(done)} done, {len(todo)} to go "

@@ -15,7 +15,7 @@ RUN (command -v curl >/dev/null || (apt-get update && apt-get install -y curl)) 
     curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-Linux-x86_64.sh -o /tmp/mc.sh \
  && bash /tmp/mc.sh -b -p /opt/conda \
  && rm -f /tmp/mc.sh \
- && /opt/conda/bin/conda install -y -q python=3.11 \
+ && /opt/conda/bin/conda install -y -q python=3.11 scikit-learn \
  && /opt/conda/bin/python -m pip install --no-cache-dir --upgrade pip
 
 # Modern Python becomes the default; MaSIF keeps 3.6 via /masifbin.

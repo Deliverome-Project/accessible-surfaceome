@@ -77,6 +77,61 @@ clustering parameters are not the cause. pLDDT does not explain SPINT2 either:
 its anchors sit at 97.7 and 97.6. The open candidates are the MaSIF model variant
 and weights, neither of which their methods name.
 
+## Reproducing SURFACE-Bind: how close, and why not closer
+
+Their published cutoffs are **in their repo**, not the paper — `data.py` and
+`analyze_dataset.py`:
+
+```python
+model = DBSCAN(eps=2.5, min_samples=2)          # data.py:161
+if len(cluster[0]) > NUM_POINTS_THRESHOLD:      # strictly >, 200 per the paper
+sparse_label[sparse_label >= self.bs_threshold] = 1   # 0.7
+```
+
+They also define what the paper omits: the **anchor** is the residue nearest the
+centroid of the cluster's *residue* coordinates; **area** is per-residue SASA summed
+over the cluster (PyRosetta `calc_per_res_hydrophobic_sasa`, 1.4 A probe);
+**hydrophobicity** is Kyte-Doolittle over residues with SASA > 20; and surface points
+map to the nearest *residue centroid*, not the nearest atom.
+
+Swapping our guessed parameters (eps 3.0, min_samples 5, `>=200`) for theirs changed
+**nothing** -- 3/5 recovery either way on the pilot, and every intermediate combination.
+
+Recovery against their published extracellular anchors, 434 validation proteins /
+957 anchors:
+
+| | |
+|---|---|
+| their anchor inside one of our extracellular sites | **429/957 = 44.8%** |
+| null (random extracellular residue in our sites) | 15.0% |
+| **enrichment** | **2.98x** (z = 25.8, p < 1e-10) |
+| proteins recovering >=1 anchor | 296/434 (68%) |
+
+Our sites cover a median **12.9%** of each protein's ECD, so this is a selective
+prediction rather than a blanket.
+
+**The residual gap is not closable.** Their inputs were AlphaFold DB v4; AFDB now
+serves only v6 (v2-v5 all 404), and AlphaFold has been re-run since. Combined with
+the MaSIF model variant they never name, that accounts for the miss, and no parameter
+matching recovers it. Notably Bindome -- a different method entirely -- agrees with
+SURFACE-Bind about as well as our rerun of SURFACE-Bind's own method does, which
+points at the input structures rather than the algorithm. (Not strictly comparable:
+Bindome's figure is a 5 A distance, ours strict residue containment.)
+
+**Implication.** Nobody can reproduce SURFACE-Bind now, including its authors. This
+output should be labelled as its own dataset -- same method and published cutoffs,
+current structures, independent calls -- and not as an extension of their table.
+
+## Known defect: isoform topology
+
+`build_l1_masif_inputs.py` originally queried topology with
+`cohort='human_canonical' AND is_canonical IN ('1',1)`, which excludes the
+`human_isoforms` cohort (8,835 rows). For any library member whose construct is a
+non-canonical isoform, that pulls topology for the wrong sequence -- the same defect
+`check_proteoform_match.py` exists to catch, one layer down. 184 L1 members are
+affected (~8%). 107 of 185 ColabFold-folded ORFs match an existing `human_isoforms`
+row by exact sequence, so most need no new DeepTMHMM; the remaining 78 do.
+
 ## Cost
 
 Measured on AlphaFold models (surface prep dominates; prediction is 12-22 s
