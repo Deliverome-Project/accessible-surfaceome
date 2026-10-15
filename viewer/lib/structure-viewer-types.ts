@@ -436,13 +436,40 @@ export interface LibraryStructureRow {
   note?: string | null;
 }
 
-/** A readable tab label for a library member, e.g. "Ordered (l1-p0031)". */
+/**
+ * A tab label naming the PROTEOFORM a library member encodes, not the fact that we order
+ * it.
+ *
+ * It used to read "Ordered" / "Ordered isoform", which says what the row is *for* rather
+ * than which protein it is — and telling proteoforms apart is the tab strip's whole job.
+ * The L1/L2 badge (`LibraryTabMark`) already says the tab is a library construct, so the
+ * label is free to carry the identity instead, and reads the same way as the AFDB isoform
+ * tabs beside it.
+ *
+ * Derived from the topology **cohort**, which is the only field that says what the matched
+ * record is, and deliberately NOT from `candidate_set`. A `library_reference` member's
+ * ordered protein is frequently a UniProt *isoform* rather than the canonical — 131 of the
+ * 326 L1 members that survive the duplicate guard — so labelling by `candidate_set` calls
+ * those "Ordered" and hides the one distinction a reader needs.
+ *
+ * `library_designed_orf` is neither canonical nor an isoform, and that is not a gap in the
+ * mapping: those 158 proteoforms have no UniProt record at all, so both words would be
+ * false for them. They get named for what they are.
+ */
 function libraryVariantLabel(row: LibraryTopologyRow): string {
-  const set = row.candidate_set ?? "";
-  if (set === "isoform") return "Ordered isoform";
-  if (set === "ortholog") return "Ordered ortholog";
-  if (set === "expression_rescue") return "Ordered rescue arm";
-  return "Ordered";
+  const cohort = (row.cohort ?? "").toLowerCase();
+  if (cohort.startsWith("human_isoform")) {
+    // Same "Isoform N" form the AFDB isoform tabs use, so a reader comparing them is
+    // comparing proteoform to proteoform and the badge is the only difference.
+    const m = /-(\d+)$/.exec(row.topology_acc ?? "");
+    return m ? `Isoform ${m[1]}` : "Isoform";
+  }
+  if (cohort === "human_canonical") return "Canonical";
+  if (cohort.startsWith("cyno")) return "Cyno ortholog";
+  if (cohort.startsWith("mouse")) return "Mouse ortholog";
+  if (cohort === "library_designed_orf") return "Designed ORF";
+  // An unrecognised cohort says so rather than guessing a proteoform class.
+  return row.candidate_set === "expression_rescue" ? "Rescue arm" : "Library form";
 }
 
 /**

@@ -958,6 +958,45 @@ export function GeneHeader({
               // ortholog isoforms aren't structurally interesting here),
               // and only when it actually carries a topology string.
               variants={[
+                // LIBRARY MEMBERS COME FIRST, before the isoform and ortholog tabs.
+                // These are the proteins we are actually ordering, so they are the ones a
+                // reader opening this card is deciding about; an isoform we are not building
+                // is context for them rather than the other way round. The canonical tab is
+                // rendered separately ahead of this list and is unchanged.
+                // A member's ORF is its designed CDS translated, and for a substantial
+                // minority that is not the gene's canonical sequence -- which is what the
+                // canonical tab and the isoform tabs below are about. The label names the
+                // proteoform (Canonical / Isoform N / Cyno / Mouse / Designed ORF) and the
+                // L1/L2 badge says it is a construct, rather than the label carrying
+                // "Ordered" and the identity going unsaid.
+                // Each tab carries the member's own v1 topology and the structure
+                // chosen for it (ours from R2, or AFDB's where its model is genuinely the
+                // ordered protein), so the overlay and the coordinates describe one
+                // protein. Members with no chosen structure, or no topology for their
+                // exact sequence, get no tab rather than a canonical stand-in.
+                // Pass the accessions already on screen so a member whose chosen
+                // structure IS one of those models does not get a second, identical tab.
+                // SLC6A8 is that case: its library construct is AFDB's AF-P48029-F1 and
+                // P48029 is the gene's canonical accession. The card marks the existing
+                // tab instead (libraryMembersByAccession), which also reads better --
+                // "Canonical is the library construct" rather than two tabs that are the
+                // same coordinates.
+                ...libraryStructureVariants(rec, [
+                  rec.gene.uniprot_acc,
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.uniprot_acc,
+                  ),
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.isoform_id,
+                  ),
+                  ...(
+                    ["mouse", "cynomolgus"] as const
+                  ).flatMap((sp) =>
+                    rec.deterministic_features.orthologs[sp].map(
+                      (o) => o.ortholog_uniprot_acc,
+                    ),
+                  ),
+                ]),
                 // Cap the 3D tab strip at the 3 LOWEST-NUMBERED isoforms —
                 // the major ones — sorting the suffix as a number rather
                 // than relying on the order the API returns. That order is
@@ -1029,37 +1068,6 @@ export function GeneHeader({
                       };
                     }),
                 ),
-                // Library members: the protein we are ACTUALLY ordering. A member's ORF
-                // is its designed CDS translated, and for a substantial minority that is
-                // not the gene's canonical sequence -- which is what every tab above is
-                // about. Each tab carries the member's own v1 topology and the structure
-                // chosen for it (ours from R2, or AFDB's where its model is genuinely the
-                // ordered protein), so the overlay and the coordinates describe one
-                // protein. Members with no chosen structure, or no topology for their
-                // exact sequence, get no tab rather than a canonical stand-in.
-                // Pass the accessions already on screen so a member whose chosen
-                // structure IS one of those models does not get a second, identical tab.
-                // SLC6A8 is that case: its library construct is AFDB's AF-P48029-F1 and
-                // P48029 is the gene's canonical accession. The card marks the existing
-                // tab instead (libraryMembersByAccession), which also reads better --
-                // "Canonical is the library construct" rather than two tabs that are the
-                // same coordinates.
-                ...libraryStructureVariants(rec, [
-                  rec.gene.uniprot_acc,
-                  ...rec.deterministic_features.isoform_topologies.map(
-                    (iso) => iso.uniprot_acc,
-                  ),
-                  ...rec.deterministic_features.isoform_topologies.map(
-                    (iso) => iso.isoform_id,
-                  ),
-                  ...(
-                    ["mouse", "cynomolgus"] as const
-                  ).flatMap((sp) =>
-                    rec.deterministic_features.orthologs[sp].map(
-                      (o) => o.ortholog_uniprot_acc,
-                    ),
-                  ),
-                ]),
               ]}
             />
             {/* Topology strip under the viewer, for the sequence on the
