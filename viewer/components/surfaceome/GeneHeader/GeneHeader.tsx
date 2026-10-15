@@ -17,6 +17,7 @@ import type {
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import {
+  libraryMembersByAccession,
   libraryStructureVariants,
 } from "../../../lib/structure-viewer-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
@@ -43,6 +44,22 @@ import styles from "./GeneHeader.module.css";
 function _isoformLabel(isoformId: string): string {
   const m = /-(\d+)$/.exec(isoformId);
   return m ? `Isoform ${m[1]}` : isoformId;
+}
+
+/**
+ * UniProt isoform number out of an accession, for ordering. Infinity when there is no
+ * suffix to parse, so an unparseable id sorts last rather than silently first.
+ *
+ * Needed because the suffix must be compared as a NUMBER. The API returns
+ * `isoform_topologies` ordered by `uniprot_acc_full ASC`, which is a text sort, so
+ * `P15941-10` sorts before `P15941-2`. For a gene with ten or more isoforms the 3D tab
+ * cap below therefore kept 10, 11, 12 rather than 2, 3, 4 — the opposite of the "major
+ * isoforms first" it claims. MUC1 is the case that surfaced it: its tabs showed isoforms
+ * 10-12 and not Isoform 8, which is the proteoform the library actually orders.
+ */
+export function isoformNumber(isoformId: string): number {
+  const m = /-(\d+)$/.exec(isoformId);
+  return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
 }
 
 /** Best-effort DeepTMHMM type inference from a per-residue topology
@@ -809,6 +826,9 @@ export function GeneHeader({
               residueRequest={residueRequest}
               onHighlightChange={setHighlightedResidue}
               onActiveTopologyChange={setActiveTopology}
+              // Marks every tab whose sequence a library member orders, and
+              // says under the strip whether the open tab is one of them.
+              libraryMembers={libraryMembersByAccession(rec)}
               // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
               // model when this gene is in the manifest. Renders as a
               // "Homo-oligomer" tab right after Canonical and before
@@ -938,11 +958,15 @@ export function GeneHeader({
               // ortholog isoforms aren't structurally interesting here),
               // and only when it actually carries a topology string.
               variants={[
-                // Cap the 3D tab strip at the first 3 isoforms.
-                // isoform_topologies is in UniProt isoform-number order
-                // (Isoform 2, 3, 4, …) — major isoforms first — so the
-                // slice keeps the MAJOR ones rather than picking by
-                // topology divergence. A gene with many isoforms would
+                // Cap the 3D tab strip at the 3 LOWEST-NUMBERED isoforms —
+                // the major ones — sorting the suffix as a number rather
+                // than relying on the order the API returns. That order is
+                // `uniprot_acc_full ASC`, a TEXT sort, so `-10` precedes
+                // `-2` and a gene with ten or more isoforms had the cap
+                // keep 10, 11, 12 instead (MUC1 showed isoforms 10-12 and
+                // not Isoform 8, the proteoform the library orders).
+                // Lowest-numbered first picks the MAJOR ones rather than
+                // picking by topology divergence. A gene with many isoforms would
                 // otherwise overflow the tab strip (and add dead 404 tabs
                 // for isoforms AFDB doesn't model). The §Isoforms table
                 // below still lists EVERY isoform; this cap is 3D-only.
@@ -955,6 +979,11 @@ export function GeneHeader({
                 // as in IsoformsCard; same fix.
                 ...rec.deterministic_features.isoform_topologies
                   .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      isoformNumber(a.isoform_id) - isoformNumber(b.isoform_id),
+                  )
                   .slice(0, 3)
                   .map((iso) => ({
                     source: "afdb" as const,
@@ -1012,7 +1041,7 @@ export function GeneHeader({
                 // structure IS one of those models does not get a second, identical tab.
                 // SLC6A8 is that case: its library construct is AFDB's AF-P48029-F1 and
                 // P48029 is the gene's canonical accession. The card marks the existing
-                // tab instead (libraryConstructByAccession), which also reads better --
+                // tab instead (libraryMembersByAccession), which also reads better --
                 // "Canonical is the library construct" rather than two tabs that are the
                 // same coordinates.
                 ...libraryStructureVariants(rec, [

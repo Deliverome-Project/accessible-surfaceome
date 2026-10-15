@@ -14,7 +14,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
-  libraryConstructByAccession,
+  libraryMembersByAccession,
   libraryStructureVariants,
   STRUCTURES_BASE,
   structureViewerDataFromLibraryMember,
@@ -222,22 +222,46 @@ test("variants: OUR model always gets a tab, even if the accession is shown", ()
   assert.equal(v[0].model_source, "colabfold");
 });
 
-test("libraryConstructByAccession: maps an AFDB-served member onto its accession", () => {
-  const m = libraryConstructByAccession(rec([afdbTopology], [afdbStructure]));
-  assert.equal(m.size, 1);
-  assert.equal(m.get("P48029")?.candidate_id, "l1-p0031");
-  assert.equal(m.get("P48029")?.library, "l1");
+// libraryMembersByAccession: which tab shows a protein the library orders. Keyed on the
+// sequence-matched topology accession, not on which structure was chosen, so a member
+// with no structure (every L2 isoform and ortholog) still marks its tab.
+
+test("members: the canonical is marked when the construct IS the canonical (SLC6A8)", () => {
+  const m = libraryMembersByAccession(rec([afdbTopology], [afdbStructure]));
+  assert.equal(m.get("P48029")?.[0].candidate_id, "l1-p0031");
+  assert.equal(m.get("P48029")?.[0].library, "l1");
 });
 
-test("libraryConstructByAccession: excludes our own models", () => {
-  // They are never an existing tab, so badging an accession for them would mark the
-  // canonical as the library construct when it is precisely not — the MUC1 trap.
-  assert.equal(libraryConstructByAccession(rec([topology], [structure])).size, 0);
+test("members: an isoform-sequence construct marks the isoform, not the canonical (MUC1)", () => {
+  // MUC1's l1-p1264 is P15941-8, folded by us. The 1,255-aa canonical is NOT in the
+  // library, and must not be marked just because the member's model is ours.
+  const muc1 = { ...topology, candidate_id: "l1-p1264", topology_acc: "P15941-8" };
+  const m = libraryMembersByAccession(rec([muc1], [{ ...structure, candidate_id: "l1-p1264" }]));
+  assert.ok(m.has("P15941-8"));
+  assert.ok(!m.has("P15941"));
 });
 
-test("libraryConstructByAccession: excludes members whose structure was not chosen", () => {
-  const m = libraryConstructByAccession(
-    rec([afdbTopology], [{ ...afdbStructure, is_chosen: false }]),
-  );
-  assert.equal(m.size, 0);
+test("members: no chosen structure is still membership (L2 isoforms and orthologs)", () => {
+  const l2 = { ...topology, candidate_id: "l2-p2461", library: "l2", candidate_set: "ortholog", topology_acc: "A0A2K5UMA1" };
+  const m = libraryMembersByAccession(rec([l2], []));
+  assert.equal(m.get("A0A2K5UMA1")?.[0].library, "l2");
+});
+
+test("members: a contained construct marks no existing tab (CACHD1)", () => {
+  // Residues 135-1274 of the canonical match no UniProt sequence, so topology_acc is
+  // the candidate id; the canonical stays unmarked and the construct gets its own tab.
+  const cachd1 = { ...topology, candidate_id: "l1-p0215", topology_acc: "l1-p0215" };
+  const m = libraryMembersByAccession(rec([cachd1], []));
+  assert.deepEqual([...m.keys()], ["L1-P0215"]);
+});
+
+test("members: several members on one gene each mark their own tab (SLC3A2)", () => {
+  const rows = [
+    ["l1-p1954", "l1", "P08195-2"],
+    ["l2-p1433", "l2", "P08195-1"],
+    ["l2-p1434", "l2", "P08195-3"],
+  ].map(([candidate_id, library, topology_acc]) => ({ ...topology, candidate_id, library, topology_acc }));
+  const m = libraryMembersByAccession(rec(rows, []));
+  assert.equal(m.size, 3);
+  assert.equal(m.get("P08195-1")?.[0].library, "l2");
 });
