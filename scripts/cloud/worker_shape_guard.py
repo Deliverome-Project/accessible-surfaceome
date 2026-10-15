@@ -14,10 +14,11 @@ checklist in CLAUDE.md and it PASSED, because:
 * step 4 runs the Worker contract tests, which assert the endpoints they know
   about rather than enumerating what production currently promises.
 
-So the class of regression is invisible to every step, and comparing source
-branches can never catch it: the field exists in no branch. **The only reliable
-record of what the API promises is the live response.** This guard therefore
-reads production, not git.
+So the class of regression is invisible to every step, and comparing `main` and
+`dev` can never catch it: the field is in neither. It is not uncommitted —
+``bindome`` was committed a day earlier and pushed with an open PR, which is
+precisely why it looked safe. **The only reliable record of what the API
+promises is the live response**, so this guard reads production, not git.
 
 Two modes:
 
@@ -202,9 +203,9 @@ def main() -> int:
             print(f"    - {p}")
     print(
         "\n  A dropped field is usually another session's work: it can be live "
-        "\n  and in NO branch, having been deployed from an unmerged branch, in "
-        "\n  which case no source comparison can see it. Find who owns it before "
-        "\n  redeploying, and carry it."
+        "\n  and in neither main nor dev, having been deployed from an unmerged "
+        "\n  branch, in which case no source comparison can see it. Find who owns "
+        "\n  it before redeploying, and carry it."
     )
     return 1
 

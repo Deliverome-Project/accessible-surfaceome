@@ -1077,8 +1077,10 @@ based on a freshly fetched `origin/main`:
 
    Steps 1-2 compare the Worker SOURCE across `origin/main` and `origin/dev`;
    step 3 compares routes and `row_schema`. A field nested in a response body,
-   deployed from an unmerged branch, is in **no branch and is not a route**, so
-   every one of those steps passes while you delete it.
+   deployed from an unmerged branch, is in **neither of those two branches and
+   is not a route**, so every one of those steps passes while you delete it.
+   (It is normally on a pushed branch with an open PR, which is exactly why it
+   reads as safe; "unmerged" is the word that matters, not "uncommitted".)
 
    That is not hypothetical. On 2026-10-15 three sessions deployed this Worker.
    A deploy at 03:01 UTC added `deterministic_features.bindome`; one at 19:04
@@ -1096,23 +1098,34 @@ based on a freshly fetched `origin/main`:
    who does not know about it**. The mechanism is deploy ORDERING, not merge
    status — `bindome` died because another deploy followed it, and
    `position_frame` (this repo's tag-site frame field) is alive at the time of
-   writing only because its deploy happened to be last. Both were unmerged;
-   only one has been overwritten *so far*. An earlier version of this section
-   claimed `bindome` was the only unmerged field and therefore the only
-   casualty. That was wrong, and wrong in the direction that invites a reader to
-   deploy an unmerged field, watch it survive, and conclude the warning was
-   overblown.
+   writing only because its deploy happened to be last. Both were unmerged at
+   the time; `bindome` has since merged to `dev` (PR #371, 2026-10-15T21:43Z),
+   so it is now safe surface and `position_frame` is the only unmerged live
+   field. Note what that history does NOT say: `bindome` was committed in
+   97b19aa4c a full day before the deploy that killed it, pushed, with an open
+   PR. Being committed and reviewed buys nothing here — only being merged into
+   the branch the next deployer builds from does.
 
    So: **land Worker surface on `dev` and deploy from `dev`.** That removes the
    hazard instead of managing it. An unmerged field that is currently live is
    not evidence that deploying unmerged is safe; it is a field waiting for the
    next deploy. When you must deploy an unmerged branch anyway, this guard is
-   what stands between you and someone else's work — and note that a
-   reconciling deploy built from `main` + `dev` alone contains NEITHER of those
-   two fields, so it would drop both with every check green.
+   what stands between you and someone else's work — and check what a
+   reconciling deploy actually carries before calling it reconciled: one built
+   from `main` + `dev` today contains `bindome` (merged) but NOT
+   `position_frame`, so it would drop that one with every check green.
 
    Comparing source can never catch this class. The only reliable record of
    what the API promises is the live response, which is what this guard reads.
+
+   **When you compare refs, prove the path resolves before you trust a zero.**
+   Both the search that produced the account above and the one that corrected it
+   first returned a clean `0` on every branch — one from grepping `index.js`
+   rather than `src/index.js`. A missing path counts to zero exactly like a true
+   absence, and a zero on every ref is the tidiest possible answer, so it does
+   not invite a second look:
+
+       git cat-file -e "$ref:$path" || { echo "PATH MISSING on $ref"; exit 1; }
 5. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
 6. **Deploy with attribution**, so the next person investigating can tell whose
    deploy a version was. Cloudflare's metadata cannot: every version records
