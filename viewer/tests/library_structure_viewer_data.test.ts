@@ -138,19 +138,60 @@ test("variants: one tab per member with both halves present and agreeing", () =>
   assert.equal(v[0].source, "library");
   assert.equal(v[0].id, "library-l1-p0031");
   assert.equal(v[0].sublabel, "l1-p0031");
-  assert.equal(v[0].label, "Ordered");
+  // The fixture's cohort is `library_designed_orf` -- a proteoform with no UniProt
+  // record, so neither "canonical" nor "isoform" is true of it.
+  assert.equal(v[0].label, "Designed ORF");
   assert.equal(v[0].residue_offset, 0);
 });
 
-test("variants: labels an isoform and an ortholog member distinctly", () => {
-  const iso = libraryStructureVariants(
-    rec([{ ...topology, candidate_set: "isoform" }], [structure]),
+test("variants: the label names the proteoform, from the COHORT", () => {
+  const labelFor = (over: Record<string, unknown>) =>
+    libraryStructureVariants(rec([{ ...topology, ...over }], [structure]))[0].label;
+
+  assert.equal(labelFor({ cohort: "human_canonical", topology_acc: "P11836" }), "Canonical");
+  assert.equal(labelFor({ cohort: "human_isoforms", topology_acc: "P11836-2" }), "Isoform 2");
+  // Reads the same way as the AFDB isoform tabs beside it, so a reader comparing the two
+  // is comparing proteoform to proteoform, with the L1/L2 badge as the only difference.
+  assert.equal(labelFor({ cohort: "human_isoforms", topology_acc: "P15941-10" }), "Isoform 10");
+  assert.equal(labelFor({ cohort: "cyno_ortholog", topology_acc: "M4ZHZ6" }), "Cyno ortholog");
+  assert.equal(labelFor({ cohort: "mouse_ortholog_repick", topology_acc: "P19437" }), "Mouse ortholog");
+  assert.equal(labelFor({ cohort: "library_designed_orf" }), "Designed ORF");
+});
+
+test("variants: the label does NOT come from candidate_set", () => {
+  // This is the whole reason the label moved off `candidate_set`. A
+  // `library_reference` member's ordered protein is frequently a UniProt ISOFORM rather
+  // than the canonical -- 131 of the 326 L1 tabs that survive the duplicate guard -- so
+  // a candidate_set-derived label called those "Ordered" and said nothing about which
+  // protein they are. Set the two fields against each other: the cohort must win.
+  const v = libraryStructureVariants(
+    rec(
+      [{ ...topology, candidate_set: "library_reference", cohort: "human_isoforms", topology_acc: "P21439-2" }],
+      [structure],
+    ),
   );
-  const ortho = libraryStructureVariants(
-    rec([{ ...topology, candidate_set: "ortholog" }], [structure]),
+  assert.equal(v[0].label, "Isoform 2");
+  assert.equal(v[0].candidate_set, "library_reference", "candidate_set is still carried");
+
+  // And the converse: an `isoform` candidate_set whose matched record is the canonical.
+  const c = libraryStructureVariants(
+    rec(
+      [{ ...topology, candidate_set: "isoform", cohort: "human_canonical", topology_acc: "Q9NQ90" }],
+      [structure],
+    ),
   );
-  assert.equal(iso[0].label, "Ordered isoform");
-  assert.equal(ortho[0].label, "Ordered ortholog");
+  assert.equal(c[0].label, "Canonical");
+});
+
+test("variants: an unknown cohort does not get guessed into a proteoform class", () => {
+  const v = libraryStructureVariants(
+    rec([{ ...topology, cohort: "something_new_2027" }], [structure]),
+  );
+  assert.equal(v[0].label, "Library form");
+  const r = libraryStructureVariants(
+    rec([{ ...topology, cohort: "", candidate_set: "expression_rescue" }], [structure]),
+  );
+  assert.equal(r[0].label, "Rescue arm");
 });
 
 test("variants: a member with no CHOSEN structure gets no tab", () => {
