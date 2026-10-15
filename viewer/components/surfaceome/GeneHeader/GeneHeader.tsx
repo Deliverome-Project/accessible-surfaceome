@@ -860,6 +860,9 @@ export function GeneHeader({
               // UniProt protein name (NCBI gene_info `name`) — shown
               // in italic above the AFDB stats for the canonical
               // tab, like the structure title shown for experimental.
+              canonicalSequence={
+                rec.deterministic_features.canonical_topology?.sequence ?? null
+              }
               proteinName={geneName?.name ?? null}
               // Pass SURFACE-Bind anchor residues so each scored
               // patch gets a sphere + label on the 3D structure.
@@ -964,6 +967,14 @@ export function GeneHeader({
                     uniprot_acc: iso.uniprot_acc,
                     uniprot_acc_full: iso.isoform_id,
                     topology: iso.per_residue_topology,
+                    // Lets a canonical residue number the reader types be
+                    // mapped onto this isoform's own numbering, or
+                    // reported as absent when it was spliced out.
+                    canonical_frame:
+                      iso.per_residue_topology_canonical_frame ?? null,
+                    sequence: iso.sequence ?? null,
+                    pct_identity:
+                      iso.full_length_pct_identity_to_canonical ?? null,
                     // IsoformTopology doesn't carry `deeptmhmm_type`
                     // (TM / SP+TM / etc.) — synthesize a best-effort
                     // value from the topology string so the GLOB
@@ -993,6 +1004,11 @@ export function GeneHeader({
                         uniprot_acc: o.ortholog_uniprot_acc,
                         uniprot_acc_full: o.ortholog_uniprot_acc,
                         topology: topo,
+                        canonical_frame:
+                          o.per_residue_topology_canonical_frame ?? null,
+                        sequence: o.sequence ?? null,
+                        pct_identity:
+                          o.full_length_pct_identity_to_human_canonical ?? null,
                         deeptmhmm_type: _coerceDeepTMHMMType(
                           o.deeptmhmm_label,
                           topo,
