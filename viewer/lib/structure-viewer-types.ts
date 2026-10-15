@@ -467,7 +467,7 @@ export function libraryStructureVariants(
    * whose chosen structure IS one of those models gets no tab of its own: it would load
    * byte-identical coordinates under a second name. SLC6A8 is the case — its library
    * construct is `l1-p2010`, whose chosen structure is AFDB's `AF-P48029-F1`, and P48029
-   * is the gene's canonical accession. Use {@link libraryConstructByAccession} to badge
+   * is the gene's canonical accession. Use {@link libraryMembersByAccession} to mark
    * the existing tab instead, which is also the more useful answer: "Canonical IS the
    * library construct" says more than a duplicate tab does.
    */
@@ -520,49 +520,53 @@ export function libraryStructureVariants(
   return out;
 }
 
+/** One library member, as the card names it on a tab. */
+export interface LibraryMembership {
+  candidate_id: string;
+  /** Library tranche, ``l1`` / ``l2``. NOT a DeepTMHMM tool version. */
+  library: string | null;
+  /** library_reference | isoform | ortholog | expression_rescue | … */
+  candidate_set: string | null;
+}
+
 /**
- * Accession -> the library member whose chosen structure is that exact model.
+ * Accession -> the library members whose ordered protein IS that sequence.
  *
- * Lets the card mark an existing tab as the library construct rather than duplicating it.
- * Two genes make the point in opposite directions: SLC6A8's library construct IS its
- * canonical (`l1-p2010` -> `AF-P48029-F1`), so Canonical should read as the library
- * construct; MUC1's is a 273-aa form we folded ourselves, so its canonical — the 1,255-aa
- * model whose length is mostly low-pLDDT strand — is explicitly NOT in the library, which
- * is worth saying on a card where that model is what opens by default.
+ * Keyed on each member's ``topology_acc``: the topology record matched to the ordered
+ * protein by ``sequence_sha256``, so a tab showing that accession shows exactly the
+ * protein the member encodes. That is what lets the card mark library vs non-library
+ * tabs without guessing, and it does not depend on which structure was chosen for the
+ * member — most members (every L2 isoform and ortholog) have none, and are still in
+ * the library:
  *
- * Only members served from AlphaFold DB appear. Ours live at an R2 key no other tab loads,
- * so they are never a duplicate and get their own tab from
- * {@link libraryStructureVariants}.
+ * * SLC6A8: ``l1-p2010`` is P48029, so Canonical is the library construct.
+ * * MUC1: ``l1-p1264`` is P15941-8, so Isoform 8 is; the 1,255-aa canonical is not.
+ * * SLC3A2: isoforms 1, 2, 3 and 5 are all members (one L1, three L2).
+ * * CACHD1: ``l1-p0215`` is residues 135-1274 of the canonical, which matches no
+ *   UniProt sequence, so its ``topology_acc`` is the candidate id and no existing tab
+ *   is marked. The construct gets its own Ordered tab from
+ *   {@link libraryStructureVariants} instead, truncated to that span.
  */
-export function libraryConstructByAccession(record: {
+export function libraryMembersByAccession(record: {
   deterministic_features?: {
     library_designed_topology?: LibraryTopologyRow[] | null;
-    library_designed_structure?: LibraryStructureRow[] | null;
   } | null;
-}): Map<string, { candidate_id: string; library: string | null; candidate_set: string | null }> {
-  const topo = record?.deterministic_features?.library_designed_topology ?? [];
-  const struct = record?.deterministic_features?.library_designed_structure ?? [];
-  const chosen = new Map<string, LibraryStructureRow>();
-  for (const srow of struct) {
-    if (srow.is_chosen && srow.candidate_id) chosen.set(srow.candidate_id, srow);
-  }
-  const out = new Map<
-    string,
-    { candidate_id: string; library: string | null; candidate_set: string | null }
-  >();
-  for (const trow of topo) {
+}): Map<string, LibraryMembership[]> {
+  const out = new Map<string, LibraryMembership[]>();
+  for (const trow of record?.deterministic_features?.library_designed_topology ?? []) {
     const cid = trow.candidate_id;
-    if (!cid) continue;
-    const srow = chosen.get(cid);
-    // r2_key means it is our own model, which is never an existing tab.
-    if (!srow || srow.r2_key) continue;
     const acc = trow.topology_acc;
-    if (!acc) continue;
-    out.set(acc.toUpperCase(), {
-      candidate_id: cid,
-      library: trow.library ?? null,
-      candidate_set: trow.candidate_set ?? null,
-    });
+    if (!cid || !acc) continue;
+    const key = acc.toUpperCase();
+    const list = out.get(key) ?? [];
+    if (!list.some((m) => m.candidate_id === cid)) {
+      list.push({
+        candidate_id: cid,
+        library: trow.library ?? null,
+        candidate_set: trow.candidate_set ?? null,
+      });
+    }
+    out.set(key, list);
   }
   return out;
 }
