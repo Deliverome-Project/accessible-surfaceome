@@ -1565,6 +1565,37 @@ export function StructureViewer({
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
 
+  // Open on the library construct. The library's L1 member is the reference
+  // construct, so the card opens on the tab that shows it (MUC1: Ordered, not
+  // the 1,255-aa canonical whose length is mostly low-confidence strand);
+  // failing an L1 tab, on any library tab. Nothing moves when Canonical
+  // already is that construct (SLC6A8), and a manual pick opts out. Runs
+  // ahead of the canonical-unavailable fallback below, which still applies
+  // when no library tab exists. Skips an AFDB tab known to have no model.
+  useEffect(() => {
+    if (userPickedRef.current) return;
+    const usable = (i: number) => {
+      if (i === 0) return afdbAvail[data.uniprot_acc] !== false;
+      const v = effectiveVariants[i - 1];
+      return !(
+        v?.source === "afdb" &&
+        afdbAvail[(v as StructureVariantAfdb).uniprot_acc] === false
+      );
+    };
+    const hasL1 = (ms: LibraryMembership[]) =>
+      ms.some((m) => (m.library ?? "").toLowerCase() === "l1");
+    let target = tabLibraryMembers.findIndex((ms, i) => hasL1(ms) && usable(i));
+    if (target < 0) {
+      target = tabLibraryMembers.findIndex((ms, i) => ms.length > 0 && usable(i));
+    }
+    if (target <= 0) return; // no library tab, or Canonical is the construct
+    userPickedRef.current = true;
+    setVariantIdx(target);
+    // tabLibraryMembers is derived each render from props that don't change
+    // for a gene; its length tracks effectiveVariants.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [afdbAvail, effectiveVariants, data.uniprot_acc]);
+
   // When AFDB has no model for the CANONICAL sequence (only an alternative
   // isoform is modelled — LRP1-class — or nothing at all), gray the
   // Canonical tab and open on the best available REAL structure instead of
