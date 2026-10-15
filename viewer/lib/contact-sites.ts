@@ -79,13 +79,18 @@ export function namedLigand(site: ContactSite): boolean {
     Boolean(site.partner_label && site.partner_label !== site.partner);
 }
 export function ligandOptions(sites: ContactSite[]): string[] {
-  const names = new Map<string, string>();
-  for (const site of sites.filter(namedLigand)) {
-    const name = ligandName(site);
-    if (!names.has(name.toLowerCase())) names.set(name.toLowerCase(), name);
-  }
-  return [...names.values()].sort((a,b) => a.localeCompare(b));
+  return browsingContacts(sites, true, "").map(ligandName);
 }
+
+/** Anchor site navigation along canonical numbering without letting a single
+ * distant contact dominate the location of a discontinuous footprint. */
+function contactSitePosition(site: ContactSite): number {
+  const positions = [...site.positions].sort((a, b) => a - b);
+  if (!positions.length) return Number.POSITIVE_INFINITY;
+  const middle = Math.floor(positions.length / 2);
+  return positions.length % 2 ? positions[middle] : (positions[middle - 1] + positions[middle]) / 2;
+}
+
 export function browsingContacts(sites: ContactSite[], _grouped: boolean, query: string): ContactGroup[] {
   const byLigand = new Map<string, ContactGroup>();
   for (const site of [...sites].filter(site => query.trim() || namedLigand(site)).sort((a,b) => b.positions.length-a.positions.length)) {
@@ -95,10 +100,30 @@ export function browsingContacts(sites: ContactSite[], _grouped: boolean, query:
     if (existing) existing.supportingSites.push(site);
     else byLigand.set(key, {...site, partner_label: name, supportingSites: site.supportingSites ?? [site]});
   }
-  const order = Object.keys(LIGAND_CATEGORIES);
-  return [...byLigand.values()].sort((a,b) =>
-    order.indexOf(a.category ?? "unclassified") - order.indexOf(b.category ?? "unclassified") ||
-    (a.partner_label ?? "").localeCompare(b.partner_label ?? ""));
+  // Within each category, visit the most overlapping footprint next. This is
+  // navigation only: no antibody identities or contact observations are merged.
+  const result: ContactGroup[] = [];
+  for (const category of Object.keys(LIGAND_CATEGORIES)) {
+    const remaining = [...byLigand.values()]
+      .filter(site => (site.category ?? "unclassified") === category)
+      .sort((a, b) => contactSitePosition(a) - contactSitePosition(b) || ligandName(a).localeCompare(ligandName(b)));
+    if (!remaining.length) continue;
+    result.push(remaining.shift()!);
+    while (remaining.length) {
+      const previous = result[result.length - 1];
+      const residues = new Set(previous.positions);
+      const overlap = (site: ContactSite) => {
+        const shared = site.positions.filter(position => residues.has(position)).length;
+        const union = residues.size + site.positions.length - shared;
+        return union ? shared / union : 0;
+      };
+      remaining.sort((a, b) => overlap(b) - overlap(a) ||
+        Math.abs(contactSitePosition(a) - contactSitePosition(previous)) - Math.abs(contactSitePosition(b) - contactSitePosition(previous)) ||
+        contactSitePosition(a) - contactSitePosition(b) || ligandName(a).localeCompare(ligandName(b)));
+      result.push(remaining.shift()!);
+    }
+  }
+  return result;
 }
 
 export interface ContactGroup extends ContactSite { supportingSites: ContactSite[] }
