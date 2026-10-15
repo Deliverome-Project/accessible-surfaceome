@@ -1008,7 +1008,29 @@ export function GeneHeader({
                 // ordered protein), so the overlay and the coordinates describe one
                 // protein. Members with no chosen structure, or no topology for their
                 // exact sequence, get no tab rather than a canonical stand-in.
-                ...libraryStructureVariants(rec),
+                // Pass the accessions already on screen so a member whose chosen
+                // structure IS one of those models does not get a second, identical tab.
+                // SLC6A8 is that case: its library construct is AFDB's AF-P48029-F1 and
+                // P48029 is the gene's canonical accession. The card marks the existing
+                // tab instead (libraryConstructByAccession), which also reads better --
+                // "Canonical is the library construct" rather than two tabs that are the
+                // same coordinates.
+                ...libraryStructureVariants(rec, [
+                  rec.gene.uniprot_acc,
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.uniprot_acc,
+                  ),
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.isoform_id,
+                  ),
+                  ...(
+                    ["mouse", "cynomolgus"] as const
+                  ).flatMap((sp) =>
+                    rec.deterministic_features.orthologs[sp].map(
+                      (o) => o.ortholog_uniprot_acc,
+                    ),
+                  ),
+                ]),
               ]}
             />
             {/* Topology strip under the viewer, for the sequence on the

@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  libraryConstructByAccession,
   libraryStructureVariants,
   STRUCTURES_BASE,
   structureViewerDataFromLibraryMember,
@@ -184,4 +185,59 @@ test("variants: skips the mismatched member but keeps the good one", () => {
 test("variants: empty when either half is missing", () => {
   assert.deepEqual(libraryStructureVariants(rec([topology], [])), []);
   assert.deepEqual(libraryStructureVariants(rec([], [structure])), []);
+});
+
+// ---------------------------------------------------------------------------
+// Duplicate tabs, and marking an existing tab as the library construct.
+//
+// SLC6A8's library construct IS its canonical: l1-p2010's chosen structure is AFDB's
+// AF-P48029-F1 and P48029 is the gene's canonical accession. Adding a tab for it loads
+// byte-identical coordinates under a second name — the same duplicate-tab class the
+// isoform list already guards against. The useful answer is to mark the existing tab.
+// ---------------------------------------------------------------------------
+
+const afdbTopology = { ...topology, topology_acc: "P48029" };
+const afdbStructure = {
+  ...structure,
+  source: "alphafold_db",
+  r2_key: null,
+  model_url: "https://alphafold.ebi.ac.uk/files/AF-P48029-F1-model_v6.pdb",
+  proteoform_match: "identical",
+};
+
+test("variants: no duplicate tab when the model is already shown under another tab", () => {
+  const r = rec([afdbTopology], [afdbStructure]);
+  assert.equal(libraryStructureVariants(r, ["P48029"]).length, 0);
+  assert.equal(libraryStructureVariants(r, ["p48029"]).length, 0, "case-insensitive");
+  // Without the hint it still produces a tab — the guard is the caller's accession list.
+  assert.equal(libraryStructureVariants(r).length, 1);
+});
+
+test("variants: OUR model always gets a tab, even if the accession is shown", () => {
+  // A ColabFold model lives at an R2 key no other tab loads, so it is never a duplicate.
+  // MUC1 is this case: canonical P15941 is on screen, the library construct is a 273-aa
+  // form we folded.
+  const v = libraryStructureVariants(rec([topology], [structure]), ["l1-p0031", "P48029"]);
+  assert.equal(v.length, 1);
+  assert.equal(v[0].model_source, "colabfold");
+});
+
+test("libraryConstructByAccession: maps an AFDB-served member onto its accession", () => {
+  const m = libraryConstructByAccession(rec([afdbTopology], [afdbStructure]));
+  assert.equal(m.size, 1);
+  assert.equal(m.get("P48029")?.candidate_id, "l1-p0031");
+  assert.equal(m.get("P48029")?.library, "l1");
+});
+
+test("libraryConstructByAccession: excludes our own models", () => {
+  // They are never an existing tab, so badging an accession for them would mark the
+  // canonical as the library construct when it is precisely not — the MUC1 trap.
+  assert.equal(libraryConstructByAccession(rec([topology], [structure])).size, 0);
+});
+
+test("libraryConstructByAccession: excludes members whose structure was not chosen", () => {
+  const m = libraryConstructByAccession(
+    rec([afdbTopology], [{ ...afdbStructure, is_chosen: false }]),
+  );
+  assert.equal(m.size, 0);
 });
