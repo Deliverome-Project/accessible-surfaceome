@@ -159,6 +159,22 @@ and it is what makes them tractable rather than special cases:
 * **Numbering is per member.** The same search feeds every member of that gene,
   and each resolves the cited position in its own frame. Two members of one gene
   can legitimately land on different junctions from the same paper.
+* **A gene is never a key.** 45 of the 518 genes have more than one
+  internal-placement member (42×2, 3×3 — the 48 rows by which 566 exceeds 518),
+  and **14 of those 45 have members that disagree on their longest inter-TM
+  loop** (ABCC4 43 aa vs 41, AQP10 34 vs 37, CD53 79 vs 76). A
+  `{gene_symbol: member}` mapping keeps whichever row it saw last, so it is
+  lossy rather than merely redundant. `load_members` returns a list, and
+  `tests/test_tag_sites_member_frames.py` pins all four counts so a future
+  convenience dict has to argue with them.
+* **`topology_acc` is not always a UniProt accession.** For the
+  `library_designed_orf` cohort it is the **candidate id** (`l1-p1037`), because
+  no UniProt record exists for that form — 158 of the 2,700 L1 rows upstream,
+  all in that cohort. The column name is deliberately not being changed upstream
+  (renaming breaks the join back to the snapshot); `topology_cohort` is what
+  says which kind of key it holds. Resolution therefore matches
+  `topology_public.uniprot_acc` **or** `uniprot_acc_full`, which covers base
+  accessions, isoform-suffixed ones and candidate ids alike.
 * **The 43 ortholog-cohort members** (31 cyno, 11 mouse, 1 cyno-repick) are
   searched on the human gene and numbered on the ortholog sequence. A paper
   citing a human position is then a cross-species claim, which the frame

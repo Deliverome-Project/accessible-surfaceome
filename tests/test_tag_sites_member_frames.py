@@ -228,6 +228,48 @@ def test_loop_inventory_gives_the_ectodomain_span_for_a_gpi_rerouted_member() ->
     assert "loop" not in text.lower()
 
 
+def test_the_member_table_has_genes_with_several_members() -> None:
+    """A gene is not a unit of work here, and keying on one loses data.
+
+    45 of the 518 genes have more than one internal-placement member (42 with
+    two, 3 with three), and 14 of those 45 have members that DISAGREE on their
+    longest inter-TM loop — ABCC4 43 aa against 41, AQP10 34 against 37, CD53 79
+    against 76. A `{gene_symbol: member}` mapping silently keeps whichever row
+    it saw last, which is how a site gets numbered against the wrong one of two
+    real proteoforms. `load_members` returns a LIST for this reason, and this
+    test exists so a future convenience dict has to argue with it.
+
+    KCNN2 is the cautionary case in the other direction: it has two L1 members
+    (a 791 aa 6-TM designed ORF and a 231 aa 1-TM isoform) but only the designed
+    ORF needs an internal site, so a per-gene lookup that happens to pick the
+    isoform would read a junction at 246 as out of range rather than as wrong.
+    """
+    from pathlib import Path
+
+    from accessible_surfaceome.agents.tag_site.member_frames import load_members
+    from accessible_surfaceome.paths import REPO_ROOT
+
+    members = load_members(
+        Path(REPO_ROOT) / "data/tag_sites/l1_internal_members.tsv"
+    )
+    assert len(members) == 566
+    by_gene: dict[str, list] = {}
+    for m in members:
+        by_gene.setdefault(m.gene_symbol, []).append(m)
+    assert len(by_gene) == 518
+    multi = {g: v for g, v in by_gene.items() if len(v) > 1}
+    assert len(multi) == 45
+    # Collapsing to one member per gene would drop 48 rows.
+    assert sum(len(v) - 1 for v in multi.values()) == 48
+    # And it would be lossy, not merely redundant.
+    disagree = [
+        g
+        for g, v in multi.items()
+        if len({m.longest_inter_tm_ecto_run_aa for m in v}) > 1
+    ]
+    assert len(disagree) == 14
+
+
 def test_loop_inventory_is_explicit_when_there_is_no_loop_at_all() -> None:
     """Silence would read as "no constraint" to the model. A member whose only
     extracellular region is unusable has to be told so."""
