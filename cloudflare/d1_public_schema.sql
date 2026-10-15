@@ -1145,3 +1145,48 @@ CREATE INDEX IF NOT EXISTS idx_library_structure_public_chosen
     ON library_structure_public (is_chosen);
 CREATE INDEX IF NOT EXISTS idx_library_structure_public_symbol
     ON library_structure_public (gene_symbol);
+
+-- ---------------------------------------------------------------------------
+-- library_topology_public: which topology row describes the protein each
+-- library member actually encodes.
+--
+-- WHY A POINTER TABLE. The Worker's topology lookups are keyed by uniprot_acc
+-- within human_canonical / human_isoforms. A library member's protein is its
+-- designed CDS translated -- an Ensembl-transcript product, which for a
+-- substantial minority of members corresponds to a UniProt *isoform* record
+-- rather than the canonical one (816 of 5,896 resolved members, and 119 of the
+-- 121 whose AlphaFold model was the wrong protein). Resolving by accession
+-- returns a different protein's topology for those, with a plausible length and
+-- a plausible helix count -- wrong silently, never loudly.
+--
+-- Resolving by sequence is correct but needs a full scan of ~71k long TEXT rows
+-- (topology_public.sequence is not indexed), which is fine offline and wrong in
+-- a request. So the join is resolved offline by exact sequence and stored here
+-- as an explicit (cohort, topology_version, uniprot_acc_full) pointer. The
+-- Worker joins on it and never guesses.
+--
+-- Only members whose EXACT designed sequence has a v1 topology get a row. A
+-- member with no row needs a DeepTMHMM run; it must not be shown the canonical.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS library_topology_public (
+    release           TEXT NOT NULL,          -- e.g. 'topo-2026-10-14'
+    candidate_id      TEXT NOT NULL,          -- library candidate, e.g. 'l1-p0031'
+    library           TEXT NOT NULL,          -- 'l1' | 'l2' (tranche, NOT a tool version)
+    candidate_set     TEXT,                   -- library_reference | isoform | ortholog | ...
+    species           TEXT,
+    gene_symbol       TEXT,                   -- denormalized; the gene-page join key
+    topology_tool     TEXT NOT NULL,          -- 'deeptmhmm_v1' (the topology of record)
+    topology_cohort   TEXT NOT NULL,          -- topology_public.cohort of the matching row
+    topology_version  TEXT NOT NULL,          -- topology_public.topology_version
+    topology_acc      TEXT NOT NULL,          -- topology_public.uniprot_acc_full
+    ordered_length_aa INTEGER,
+    sequence_sha256   TEXT NOT NULL,          -- sha256 of the ordered protein; the real key
+    synced_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (release, candidate_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_gene
+    ON library_topology_public (gene_symbol);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_target
+    ON library_topology_public (topology_version, topology_cohort, topology_acc);
