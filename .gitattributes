@@ -156,6 +156,7 @@ data/external/adcdb/adcdb_antigens.tsv -filter -diff -merge text
 # components, SNAREs, etc.) — all ADCdb-internal text, no external DBs.
 data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
 data/external/bindome/bindome_sites.tsv -filter -diff -merge text
+data/external/masif/masif_sites.tsv -filter -diff -merge text
 
 # Per-figure consolidated TSVs for the two positive-control / deterministic-
 # features figures, built by `scripts/build_figure_tsvs.py` — each is bundled
