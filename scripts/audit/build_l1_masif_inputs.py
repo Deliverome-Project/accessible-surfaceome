@@ -40,14 +40,6 @@ from accessible_surfaceome.cloud.d1_client import D1Client
 from accessible_surfaceome.env import load_env
 
 R2_BUCKET = "surfaceome-structures"
-# The manifest spells cynomolgus both ways: `species` uses "cyno" throughout
-# while `topology_species` carries "cynomolgus" for 92 members and "cyno" for
-# 7. A plain equality check reports 92 false cross-species conflicts.
-SPECIES_ALIASES = {"cynomolgus": "cyno", "macaca_fascicularis": "cyno"}
-
-
-def norm_species(s: str) -> str:
-    return SPECIES_ALIASES.get((s or "").strip().lower(), (s or "").strip().lower())
 
 
 def main() -> None:
@@ -79,8 +71,11 @@ def main() -> None:
     cross = [
         r["candidate_id"]
         for r in rows
-        if r["topology_species"]
-        and norm_species(r["species"]) != norm_species(r["topology_species"])
+        # Plain equality on purpose. The manifest used to spell cynomolgus two
+        # ways, so this needed normalising and reported 92 false conflicts;
+        # that is now folded at the source (323c0c2). Normalising here again
+        # would re-hide exactly the defect this column exists to expose.
+        if r["topology_species"] and r["species"] != r["topology_species"]
     ]
     if cross:
         print(f"  cross-species topology: {len(cross)} -> {cross[:5]}")
