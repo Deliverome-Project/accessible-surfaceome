@@ -55,6 +55,7 @@ DDL: tuple[str, ...] = (
       source_tier                TEXT,
       cited_tag_residue          INTEGER,
       entailment_verified        INTEGER,
+      position_frame             TEXT,
       PRIMARY KEY (uniprot_acc, site_id)
     );
     """,
@@ -76,6 +77,13 @@ _COLS: tuple[str, ...] = (
     # columns the viewer can render them as badges and filter on them.
     "validation_level", "position_evidence", "source_tier", "cited_tag_residue",
     "entailment_verified",
+    # Which PROTEOFORM frame the citation was numbering in, when it was not the
+    # protein's own: "mature", "isoform:P54289-2". NULL means the position was
+    # read in the reference frame (the ordinary case) or was never validated
+    # from a citation at all. Without it, a position recovered from a foreign
+    # frame is indistinguishable from one the paper stated directly — and the
+    # frame is the only thing that makes the recovery auditable.
+    "position_frame",
 )
 
 
@@ -127,6 +135,7 @@ def flat_row(
             None if site.get("entailment_verified") is None
             else (1 if site.get("entailment_verified") else 0)
         ),
+        "position_frame": site.get("position_frame"),
     }
 
 

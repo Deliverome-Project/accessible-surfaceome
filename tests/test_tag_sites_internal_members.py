@@ -1,0 +1,136 @@
+"""Pin the vendored L1 internal-site member table.
+
+``data/tag_sites/l1_internal_members.tsv`` is a byte-for-byte copy of an export
+from ``deliverome-analysis`` (see its sibling ``.PROVENANCE.md``). Pinning the
+sha256 is what makes it a *copy* rather than a fork: re-export upstream, diff
+the hash, and you know whether the two have diverged. Reformatting the file —
+sorting it, rewriting the line endings, adding a comment header — breaks that
+check, which is the point.
+
+The counts are pinned separately from the hash because they are the facts other
+code keys on, and a reader should be able to see them without a D1 round trip.
+"""
+
+from __future__ import annotations
+
+import csv
+import hashlib
+from collections import Counter
+
+import pytest
+
+from accessible_surfaceome.paths import REPO_ROOT
+
+TSV = REPO_ROOT / "data/tag_sites/l1_internal_members.tsv"
+PROVENANCE = REPO_ROOT / "data/tag_sites/l1_internal_members.PROVENANCE.md"
+
+#: The upstream export's hash, as reported by its generator.
+EXPECTED_SHA256 = "c791e3cd032d296edc49024170d0945c9bf755f815b76823bc6f38ad9cc05c1e"
+
+EXPECTED_COLUMNS = [
+    "candidate_id",
+    "library",
+    "candidate_set",
+    "species",
+    "gene_symbol",
+    "topology_acc",
+    "topology_cohort",
+    "topology_version",
+    "sequence_sha256",
+    "ordered_length_aa",
+    "tm_count",
+    "longest_inter_tm_ecto_run_aa",
+    "placement",
+    "gpi_rerouted",
+    "shed_risk",
+]
+
+
+@pytest.fixture(scope="module")
+def rows() -> list[dict[str, str]]:
+    with TSV.open(newline="") as fh:
+        return list(csv.DictReader(fh, delimiter="\t"))
+
+
+def test_file_is_byte_identical_to_the_upstream_export() -> None:
+    assert hashlib.sha256(TSV.read_bytes()).hexdigest() == EXPECTED_SHA256
+
+
+def test_columns_are_exactly_the_agreed_set() -> None:
+    with TSV.open(newline="") as fh:
+        header = next(csv.reader(fh, delimiter="\t"))
+    assert header == EXPECTED_COLUMNS
+
+
+def test_row_and_gene_counts(rows: list[dict[str, str]]) -> None:
+    assert len(rows) == 566
+    assert len({r["gene_symbol"] for r in rows}) == 518
+
+
+def test_every_row_is_an_internal_placement(rows: list[dict[str, str]]) -> None:
+    """The file is the filtered view. A non-internal row means the upstream
+    filter changed and every consumer's scope changed with it."""
+    assert {r["placement"] for r in rows} == {"internal"}
+
+
+def test_the_gpi_rerouted_pair_is_exactly_bst2_and_rgmb(
+    rows: list[dict[str, str]],
+) -> None:
+    """These two are single-pass GPI-anchored proteins, internal only because
+    the omega site removes the C-terminus. Their site is in the ectodomain, not
+    an inter-TM loop, so anything that builds a loop inventory has to branch on
+    this column. If the pair changes, that branch needs re-reading."""
+    gpi = {r["gene_symbol"] for r in rows if r["gpi_rerouted"] == "1"}
+    assert gpi == {"BST2", "RGMB"}
+
+
+def test_loop_length_is_zero_for_the_gpi_pair_by_construction(
+    rows: list[dict[str, str]],
+) -> None:
+    """``longest_inter_tm_ecto_run_aa`` counts runs with a TM on BOTH sides, so
+    a single-pass protein scores 0 no matter how large its ectodomain. The 0
+    must never be read as "no site available"."""
+    for row in rows:
+        if row["gpi_rerouted"] == "1":
+            assert int(row["longest_inter_tm_ecto_run_aa"]) == 0
+
+
+def test_the_sub_eight_aa_multipass_stratum(rows: list[dict[str, str]]) -> None:
+    """An insertion lengthens a loop rather than replacing it, so a short loop
+    is not a disqualification — s4e9 placed a real site in a 9-aa loop. These 5
+    are the genuinely-multipass short-loop members and the hardest stratum for
+    any validation sample; the other 2 under 8 aa are the GPI pair."""
+    short = {
+        r["gene_symbol"]
+        for r in rows
+        if int(r["longest_inter_tm_ecto_run_aa"]) < 8 and r["gpi_rerouted"] != "1"
+    }
+    assert short == {"TMEM86A", "TMEM86B", "TMEM169", "TMEM139", "TMEM268"}
+
+
+def test_most_members_are_not_numbered_on_the_canonical_sequence_count(
+    rows: list[dict[str, str]],
+) -> None:
+    """71 of 566 members are numbered on something other than the human
+    canonical sequence. That is the size of the member-frame problem in this
+    exact set, and the reason positions are stamped with the sequence they were
+    numbered against rather than assumed canonical."""
+    cohorts = Counter(r["topology_cohort"] for r in rows)
+    assert cohorts["human_canonical"] == 452
+    non_canonical_human = cohorts["human_isoforms"] + cohorts["library_designed_orf"]
+    assert non_canonical_human == 71
+
+
+def test_every_row_carries_the_sequence_it_was_numbered_against(
+    rows: list[dict[str, str]],
+) -> None:
+    """The sha256 is the join key into ``topology_public`` and the stamp that
+    makes a published position unambiguous. A blank one is unusable."""
+    for row in rows:
+        assert len(row["sequence_sha256"]) == 64, row["candidate_id"]
+
+
+def test_provenance_doc_records_the_pinned_hash() -> None:
+    """The hash lives in two places on purpose — the test enforces it, the doc
+    tells a human where the bytes came from. They must agree."""
+    assert EXPECTED_SHA256 in PROVENANCE.read_text()

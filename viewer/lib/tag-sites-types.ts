@@ -75,6 +75,14 @@ export interface TaggedSite {
   cited_tag_residue?: number | null;
   /** Pipeline gate: the quote was found verbatim in the cited source. */
   entailment_verified?: boolean | null;
+  /** The proteoform frame the citation was numbering in, when it was not this
+   *  protein's own: "mature" (the paper counts from the signal-peptide
+   *  cleavage site), "isoform:P54289-2". Null is the ordinary case — the
+   *  position was read in the protein's own frame, or never validated from a
+   *  citation. A recovered position is only auditable if the frame travels
+   *  with it, so this is what separates "the paper said residue 39" from "the
+   *  paper said mature residue 4 and we mapped it". */
+  position_frame?: string | null;
   sources: EvidenceSource[];
   // deterministic-only (null for literature_retrieved / validated_literature):
   plddt: number | null;

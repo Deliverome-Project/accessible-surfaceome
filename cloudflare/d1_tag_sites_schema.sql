@@ -31,6 +31,17 @@ CREATE TABLE IF NOT EXISTS tag_site_public (
   median_conservation        REAL,
   tag_sites_version          TEXT NOT NULL,
   synced_at                  TEXT NOT NULL,
+  -- Agent metadata. These were added to tag_sites.py::DDL and never mirrored
+  -- here, so the "kept in sync" note above was false for five columns; a Worker
+  -- reviewer reading only this file could not see what the route serves.
+  validation_level           TEXT,
+  position_evidence          TEXT,
+  source_tier                TEXT,
+  cited_tag_residue          INTEGER,
+  entailment_verified        INTEGER,
+  -- The proteoform frame a citation was numbering in when it was not the
+  -- protein's own ("mature", "isoform:P54289-2"); NULL for the ordinary case.
+  position_frame             TEXT,
   PRIMARY KEY (uniprot_acc, site_id)
 );
 CREATE INDEX IF NOT EXISTS idx_tag_site_symbol ON tag_site_public (gene_symbol);

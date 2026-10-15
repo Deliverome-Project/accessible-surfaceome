@@ -430,38 +430,74 @@ def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[in
     label is the residue before or after the junction — EndoNB names the one
     before for four of its genes and the one after for TFRC — so a caller
     converting to a junction must consider both ``n`` and ``n - 1``."""
+    return set(residue_mentions_detailed(text, sequence=sequence))
+
+
+#: Forms that carry an amino-acid IDENTITY, and so can be confirmed (or denied)
+#: against a sequence: ``A33``, ``Ala33``, ``alanine 33``. The rest —
+#: ``residue 33``, ``residues 33-40``, ``aa 33`` — name a number and nothing
+#: else, so no sequence can speak to them.
+#:
+#: The distinction is what makes reading a position out of a FOREIGN proteoform
+#: frame safe (see :mod:`accessible_surfaceome.agents.tag_site.frames`). A bare
+#: number confirms in every frame trivially, so it is no evidence that the paper
+#: was numbering in any particular one; a letter-bearing token that the frame's
+#: sequence agrees with is.
+LETTER_CONFIRMED_FORMS: frozenset[str] = frozenset({"code", "three", "full"})
+
+
+def residue_mentions_detailed(
+    text: str | None, *, sequence: str | None = None
+) -> dict[int, frozenset[str]]:
+    """:func:`residue_mentions`, but reporting WHICH spelling produced each
+    position: ``{436: frozenset({"three"}), 484: frozenset({"span"})}``.
+
+    One matcher, two views. The set-returning function above is the whole
+    contract most callers want; the frame resolver needs to know whether a
+    position came from a form carrying a residue letter, because only those can
+    distinguish one proteoform frame from another."""
     if not text:
-        return set()
+        return {}
     runs = _RE_DNA_RUN.findall(text)
     clean = _RE_DNA_RUN.sub(" ", text)
     dna_heavy = sum(len(r) for r in runs) > 0.3 * len(text)
 
-    out: set[int] = set()
+    out: dict[int, set[str]] = {}
+
+    def _add(n: int, form: str) -> None:
+        out.setdefault(n, set()).add(form)
 
     def _confirmed(letter: str, n: int) -> bool:
         if not sequence:
             return True
         return n <= len(sequence) and sequence[n - 1].upper() == letter.upper()
 
-    for rx, table in ((_RE_FULL, _AA_FULL), (_RE_THREE, _AA_THREE)):
+    for rx, table, form in (
+        (_RE_FULL, _AA_FULL, "full"),
+        (_RE_THREE, _AA_THREE, "three"),
+    ):
         for m in rx.finditer(clean):
             n = int(m.group(2))
             if 0 < n <= _MAX_RESIDUE and _confirmed(table[m.group(1).lower()], n):
-                out.add(n)
+                _add(n, form)
     for m in _RE_POSITIONAL.finditer(clean):  # no letter to confirm
         n = int(m.group(1))
         if 0 < n <= _MAX_RESIDUE:
-            out.add(n)
-    for rx in (_RE_SPAN, _RE_DELTA_SPAN, _RE_LIST):  # these claim BOTH numbers
+            _add(n, "positional")
+    for rx, form in (
+        (_RE_SPAN, "span"),
+        (_RE_DELTA_SPAN, "delta_span"),
+        (_RE_LIST, "list"),
+    ):  # these claim BOTH numbers
         for m in rx.finditer(clean):
             for g in (1, 2):
                 n = int(m.group(g))
                 if 0 < n <= _MAX_RESIDUE:
-                    out.add(n)
+                    _add(n, form)
     for m in _RE_AA_TIGHT.finditer(clean):
         n = int(m.group(1))
         if 0 < n <= _MAX_RESIDUE:
-            out.add(n)
+            _add(n, "aa_tight")
 
     for m in _RE_CODE.finditer(clean):
         letter, n = m.group(1).upper(), int(m.group(2))
@@ -469,10 +505,10 @@ def residue_mentions(text: str | None, *, sequence: str | None = None) -> set[in
             continue
         if sequence:
             if n <= len(sequence) and sequence[n - 1].upper() == letter:
-                out.add(n)  # the sequence confirms this is a residue, not noise
+                _add(n, "code")  # the sequence confirms a residue, not noise
         elif not dna_heavy:
-            out.add(n)  # nothing to verify against; trust prose, distrust DNA blocks
-    return out
+            _add(n, "code")  # nothing to verify against; distrust DNA blocks
+    return {n: frozenset(forms) for n, forms in out.items()}
 
 
 def boost_residue_clips(pool, *, sequence: str, topology: str) -> dict[str, set[int]]:
