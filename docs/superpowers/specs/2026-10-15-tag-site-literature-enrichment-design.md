@@ -159,14 +159,32 @@ and it is what makes them tractable rather than special cases:
 * **Numbering is per member.** The same search feeds every member of that gene,
   and each resolves the cited position in its own frame. Two members of one gene
   can legitimately land on different junctions from the same paper.
-* **A gene is never a key.** 45 of the 518 genes have more than one
-  internal-placement member (42×2, 3×3 — the 48 rows by which 566 exceeds 518),
-  and **14 of those 45 have members that disagree on their longest inter-TM
-  loop** (ABCC4 43 aa vs 41, AQP10 34 vs 37, CD53 79 vs 76). A
-  `{gene_symbol: member}` mapping keeps whichever row it saw last, so it is
-  lossy rather than merely redundant. `load_members` returns a list, and
-  `tests/test_tag_sites_member_frames.py` pins all four counts so a future
-  convenience dict has to argue with them.
+* **A gene is never a key**, and the right counts need the species in the key:
+
+  | key | distinct | multi | excess rows | disagree on loop |
+  |---|---|---|---|---|
+  | `gene_symbol` | 518 | 45 | 48 | 14 |
+  | `(species, gene_symbol)` | 543 | 22 | 23 | **7** |
+
+  The gene-keyed 45/48 is the right number for "a `{gene_symbol: member}` dict
+  is lossy" — it keeps whichever row it saw last. But its **14** is mostly
+  species conflation: 9 are a human protein against its mouse or cyno ortholog,
+  which *should* differ.
+
+  The irreducible figure is **7**, and it is 7 rather than the 5 you get by
+  filtering the 14 to same-species, because two genuine same-species conflicts
+  hide inside gene-keyed groups that also span species. **LIM2** is the sharpest
+  and the one a gene-keyed framing explains away: human `library_reference`
+  40 aa against human `isoform` 82 aa, both 4 TM, with a cyno ortholog in the
+  same group taking the blame. All seven are `library_reference` vs `isoform` of
+  the same protein — KCNK4 93/90, PLPP1 52/48, SLC12A4 114/110, SLC15A2
+  210/206, SLC4A7 83/76, LIM2 40/82, TMEM219 161/160 — so the disagreement is
+  about proteoform, not species or curation. **SLC4A7** differs by helix count
+  too (14 TM vs 12), which makes its two members not the same design problem.
+
+  Both shapes are pinned in `tests/test_tag_sites_member_frames.py`. A test
+  pinning only the gene-keyed 14 would stay green if the same-species count
+  doubled.
 * **`topology_acc` is not always a UniProt accession.** For the
   `library_designed_orf` cohort it is the **candidate id** (`l1-p1037`), because
   no UniProt record exists for that form — 158 of the 2,700 L1 rows upstream,

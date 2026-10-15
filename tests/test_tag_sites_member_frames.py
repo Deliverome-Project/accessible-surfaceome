@@ -228,46 +228,114 @@ def test_loop_inventory_gives_the_ectodomain_span_for_a_gpi_rerouted_member() ->
     assert "loop" not in text.lower()
 
 
-def test_the_member_table_has_genes_with_several_members() -> None:
-    """A gene is not a unit of work here, and keying on one loses data.
-
-    45 of the 518 genes have more than one internal-placement member (42 with
-    two, 3 with three), and 14 of those 45 have members that DISAGREE on their
-    longest inter-TM loop — ABCC4 43 aa against 41, AQP10 34 against 37, CD53 79
-    against 76. A `{gene_symbol: member}` mapping silently keeps whichever row
-    it saw last, which is how a site gets numbered against the wrong one of two
-    real proteoforms. `load_members` returns a LIST for this reason, and this
-    test exists so a future convenience dict has to argue with it.
-
-    KCNN2 is the cautionary case in the other direction: it has two L1 members
-    (a 791 aa 6-TM designed ORF and a 231 aa 1-TM isoform) but only the designed
-    ORF needs an internal site, so a per-gene lookup that happens to pick the
-    isoform would read a junction at 246 as out of range rather than as wrong.
-    """
+def _members():
     from pathlib import Path
 
     from accessible_surfaceome.agents.tag_site.member_frames import load_members
     from accessible_surfaceome.paths import REPO_ROOT
 
-    members = load_members(
-        Path(REPO_ROOT) / "data/tag_sites/l1_internal_members.tsv"
-    )
-    assert len(members) == 566
-    by_gene: dict[str, list] = {}
+    return load_members(Path(REPO_ROOT) / "data/tag_sites/l1_internal_members.tsv")
+
+
+def _groups(members, keyfn):
+    out: dict[object, list] = {}
     for m in members:
-        by_gene.setdefault(m.gene_symbol, []).append(m)
+        out.setdefault(keyfn(m), []).append(m)
+    return out
+
+
+def test_a_gene_symbol_is_a_lossy_key_for_members() -> None:
+    """The bug actually hit: a `{gene_symbol: member}` dict keeps whichever row
+    it saw last and drops 48 of the 566.
+
+    This pins the *collapse*, which is real at this key regardless of why the
+    rows differ. It deliberately does NOT assert anything about how many
+    disagree, because at this key that figure is mostly species conflation —
+    see the next test, which is the one a design decision rests on.
+    """
+    members = _members()
+    assert len(members) == 566
+    by_gene = _groups(members, lambda m: m.gene_symbol)
     assert len(by_gene) == 518
     multi = {g: v for g, v in by_gene.items() if len(v) > 1}
     assert len(multi) == 45
-    # Collapsing to one member per gene would drop 48 rows.
     assert sum(len(v) - 1 for v in multi.values()) == 48
-    # And it would be lossy, not merely redundant.
-    disagree = [
-        g
-        for g, v in multi.items()
+
+
+def test_two_members_of_one_gene_and_species_can_disagree_about_the_loop() -> None:
+    """The irreducible fact, and the reason sites are emitted PER MEMBER.
+
+    Keyed on `gene_symbol` alone, 14 groups disagree on their longest inter-TM
+    loop — but 9 of those are a human protein against its mouse or cyno
+    ortholog, which *should* differ. Keying on (species, gene_symbol) gives
+    **7**, and it is 7 rather than the 5 you would get by filtering the 14 to
+    same-species, because two genuine same-species conflicts hide inside
+    gene-keyed groups that also span species.
+
+    LIM2 is that case and it is the sharpest in the set: human
+    `library_reference` 40 aa against human `isoform` 82 aa, both 4 TM, with a
+    cyno ortholog in the same gene-keyed group taking the blame for the
+    difference. A test pinning only the gene-keyed 14 would stay green if the
+    same-species count doubled.
+    """
+    members = _members()
+    by_species_gene = _groups(members, lambda m: (m.species, m.gene_symbol))
+    assert len(by_species_gene) == 543
+    multi = {k: v for k, v in by_species_gene.items() if len(v) > 1}
+    assert len(multi) == 22
+    assert sum(len(v) - 1 for v in multi.values()) == 23
+
+    disagree = {
+        k: v
+        for k, v in multi.items()
         if len({m.longest_inter_tm_ecto_run_aa for m in v}) > 1
-    ]
-    assert len(disagree) == 14
+    }
+    assert len(disagree) == 7
+    assert {g for _, g in disagree} == {
+        "KCNK4", "LIM2", "PLPP1", "SLC12A4", "SLC15A2", "SLC4A7", "TMEM219",
+    }
+    # Every one is a designed reference against an isoform of the same protein,
+    # so the disagreement is about proteoform, not about species or curation.
+    for v in disagree.values():
+        assert {m.candidate_set for m in v} == {"library_reference", "isoform"}
+
+
+def test_the_two_same_species_conflicts_hidden_by_gene_keying() -> None:
+    """LIM2 and TMEM219 disagree within one species AND sit in a gene-keyed
+    group that spans species, so the gene-keyed view attributes their conflict
+    to the ortholog. Pinned by name because they are the counterexample to the
+    framing, not just instances of it."""
+    members = _members()
+    by_gene = _groups(members, lambda m: m.gene_symbol)
+    for gene in ("LIM2", "TMEM219"):
+        rows = by_gene[gene]
+        assert len({m.species for m in rows}) > 1, gene
+        human = [m for m in rows if m.species == "human"]
+        assert len({m.longest_inter_tm_ecto_run_aa for m in human}) > 1, gene
+
+
+def test_an_isoform_can_differ_from_its_reference_in_helix_count() -> None:
+    """SLC4A7: 14 TM against 12 TM between a reference and its isoform. Two
+    members that far apart topologically are not the same design problem, so
+    neither a shared loop inventory nor a shared junction is safe."""
+    members = _members()
+    rows = [m for m in members if m.gene_symbol == "SLC4A7"]
+    assert {m.tm_count for m in rows} == {12, 14}
+
+
+def test_kcnn2_has_only_one_internal_member() -> None:
+    """The cautionary case in the other direction. KCNN2 has two L1 members —
+    a 791 aa 6-TM designed ORF and a 231 aa 1-TM isoform — but only the designed
+    ORF needs an internal site, so the isoform never reaches this table. A
+    per-gene lookup landing on the isoform reads a junction at 246 as OUT OF
+    RANGE rather than as wrong, and out-of-range reads as bad data while
+    wrong-frame reads as a result."""
+    members = _members()
+    rows = [m for m in members if m.gene_symbol == "KCNN2"]
+    assert len(rows) == 1
+    assert rows[0].candidate_id == "l1-p1037"
+    assert rows[0].topology_cohort == "library_designed_orf"
+    assert rows[0].tm_count == 6
 
 
 def test_loop_inventory_is_explicit_when_there_is_no_loop_at_all() -> None:
