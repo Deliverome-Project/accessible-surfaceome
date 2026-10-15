@@ -70,6 +70,11 @@ PROBES: tuple[tuple[str, str], ...] = (
     ("gene_library_member", "/v1/genes/KCNN2"),
     # A non-member deep dive: proves the member-gated keys are gated, not gone.
     ("gene_non_member", "/v1/genes/CD63"),
+    # A Bindome-bearing gene: carries deterministic_features.bindome, which only
+    # 1,391 of ~5,300 published proteins have. None of the other probes do, so
+    # without this one the guard was blind to the very field whose loss it was
+    # built to catch.
+    ("gene_bindome_member", "/v1/genes/ITGBL1"),
     ("gene_evidence", "/v1/genes/CD63/evidence"),
     # Frame-mapped tag site: carries position_frame.
     ("tag_sites_frame_mapped", "/v1/tag-sites/GABRA4"),
