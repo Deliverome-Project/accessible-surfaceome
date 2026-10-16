@@ -50,6 +50,7 @@ import argparse
 import json
 import logging
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -114,7 +115,14 @@ def key_paths(value: Any, prefix: str = "", *, out: set[str] | None = None) -> s
     return out
 
 
-def fetch(base: str, path: str, *, timeout: int = 90) -> Any:
+#: Generous because ``/v1/catalog`` is ~13 MB and a cold edge miss takes well
+#: over a minute. A gate that times out is a gate that gets skipped, and this
+#: one treats any failed probe as "shape unknown" rather than clean — so a tight
+#: timeout does not merely slow it down, it stops it answering at all.
+FETCH_TIMEOUT = 300
+
+
+def fetch(base: str, path: str, *, timeout: int = FETCH_TIMEOUT) -> Any:
     req = urllib.request.Request(base.rstrip("/") + path, headers=UA)  # noqa: S310
     with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310
         # The catalog is ~13 MB; the shape is in the first slice of it, but a
@@ -123,17 +131,31 @@ def fetch(base: str, path: str, *, timeout: int = 90) -> Any:
         return json.loads(r.read())
 
 
-def capture(base: str) -> dict[str, Any]:
+def capture(base: str, *, attempts: int = 3) -> dict[str, Any]:
+    """Fetch every probe and reduce each response to its key paths.
+
+    Each probe is retried, because one unfetchable probe makes the whole run
+    report "shape unknown" rather than clean — which is the right call, but it
+    also means a single dropped connection stops the gate answering at all. A
+    14 MB ``/v1/catalog`` over a shaky link is enough to do it, and a gate that
+    cannot answer is a gate that gets skipped.
+    """
     shape: dict[str, list[str]] = {}
     errors: dict[str, str] = {}
     for name, path in PROBES:
-        try:
-            shape[name] = sorted(key_paths(fetch(base, path)))
-        except (urllib.error.URLError, OSError, ValueError) as exc:
-            errors[name] = f"{type(exc).__name__}: {exc}"
-            log.error("  %-24s %s -> %s", name, path, errors[name])
-            continue
-        log.info("  %-24s %s -> %d key path(s)", name, path, len(shape[name]))
+        for attempt in range(1, attempts + 1):
+            try:
+                shape[name] = sorted(key_paths(fetch(base, path)))
+                errors.pop(name, None)
+                break
+            except (urllib.error.URLError, OSError, ValueError) as exc:
+                errors[name] = f"{type(exc).__name__}: {exc}"
+                log.error("  %-24s %s -> attempt %d/%d: %s",
+                          name, path, attempt, attempts, errors[name])
+                if attempt < attempts:
+                    time.sleep(2 * attempt)
+        if name in shape:
+            log.info("  %-24s %s -> %d key path(s)", name, path, len(shape[name]))
     return {"base": base, "probes": dict(PROBES), "shape": shape, "errors": errors}
 
 
