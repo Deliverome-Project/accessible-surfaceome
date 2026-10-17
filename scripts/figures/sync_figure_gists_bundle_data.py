@@ -38,10 +38,12 @@ in place.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
 import time
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -235,6 +237,33 @@ def _gist_head_sha(gist_id: str, *, settle: bool = False) -> str:
     return prev
 
 
+def _live_hashes(gist_id: str) -> dict[str, str]:
+    """sha256 of every file currently in the gist, keyed by filename.
+
+    Read from each file's raw URL: the gist API truncates large files' inline
+    content. Used to skip pushes whose bytes are already live, because every
+    ``gh gist edit`` creates a new gist revision even when nothing changed,
+    and a new revision is a new SWHID that has to be archived again. On
+    2026-10-17 a full sync re-versioned 8 gists whose content was identical.
+    """
+    out = subprocess.run(
+        ["gh", "api", f"gists/{gist_id}", "--jq", ".files | map({(.filename): .raw_url}) | add"],
+        capture_output=True, text=True,
+    )
+    if out.returncode != 0:
+        raise RuntimeError(f"gh api failed for gist {gist_id}: {out.stderr}")
+    hashes = {}
+    for name, url in (json.loads(out.stdout or "{}") or {}).items():
+        req = urllib.request.Request(url, headers={"User-Agent": "accessible-surfaceome gist sync"})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            hashes[name] = hashlib.sha256(resp.read()).hexdigest()
+    return hashes
+
+
+def _unchanged(local: Path, live: dict[str, str]) -> bool:
+    return live.get(local.name) == hashlib.sha256(local.read_bytes()).hexdigest()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
@@ -258,11 +287,17 @@ def main() -> int:
             continue
         tsv_paths = TSV_BUNDLE.get(slug, [])
         print(f"\n=== {slug}  →  gist {gist_id}")
+        live = {} if args.dry_run else _live_hashes(gist_id)
+        pushed = False
         if not tsv_paths:
             print("  (no bundled TSV for this slug — skip data bundle)")
             # Still push the script + capture SWHID
-            _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
-                 args.dry_run, tolerate_409=True)
+            if _unchanged(mirror, live):
+                print("  mirror unchanged — skip")
+            else:
+                _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
+                     args.dry_run, tolerate_409=True)
+                pushed = True
         else:
             for path in tsv_paths:
                 tsv_local = ROOT / path
@@ -271,12 +306,20 @@ def main() -> int:
                     continue
                 size_mb = tsv_local.stat().st_size / 1e6
                 tag = " ⚠ over 1 MB gist soft cap" if size_mb > 1.0 else ""
+                if _unchanged(tsv_local, live):
+                    print(f"  {path} unchanged — skip")
+                    continue
                 print(f"  bundling {path} ({size_mb:.2f} MB){tag}")
                 _run(["gh", "gist", "edit", gist_id, "-a", str(tsv_local)],
                      args.dry_run)
-            print("  pushing updated mirror")
-            _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
-                 args.dry_run, tolerate_409=True)
+                pushed = True
+            if _unchanged(mirror, live):
+                print("  mirror unchanged — skip")
+            else:
+                print("  pushing updated mirror")
+                _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
+                     args.dry_run, tolerate_409=True)
+                pushed = True
 
         # README (``01_<slug>.md``) is the gist's top file — push it too so
         # number / architecture edits to the README propagate to the live
@@ -284,11 +327,17 @@ def main() -> int:
         # no diff to push (content already current), tolerated as a no-op.
         readme = FIGURES_DIR / f"01_{slug}.md"
         if readme.is_file():
-            print("  pushing updated README")
-            _run(["gh", "gist", "edit", gist_id, "-f", readme.name, str(readme)],
-                 args.dry_run, tolerate_409=True)
+            if _unchanged(readme, live):
+                print("  README unchanged — skip")
+            else:
+                print("  pushing updated README")
+                _run(["gh", "gist", "edit", gist_id, "-f", readme.name, str(readme)],
+                     args.dry_run, tolerate_409=True)
+                pushed = True
 
-        if not args.dry_run:
+        if not args.dry_run and not pushed and slug in swhid_map:
+            print(f"  nothing changed — keeping {swhid_map[slug]}")
+        elif not args.dry_run:
             sha = _gist_head_sha(gist_id, settle=True)
             swhid = f"swh:1:rev:{sha}"
             swhid_map[slug] = swhid

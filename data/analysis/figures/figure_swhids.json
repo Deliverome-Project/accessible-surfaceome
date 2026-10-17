@@ -2,19 +2,19 @@
   {
     "figure": "Figure 1",
     "slug": "db_overlap_upset",
-    "swhid": "swh:1:rev:71301f3236db493ea29bdf7f52aa624490c50f5e",
+    "swhid": "swh:1:rev:967fa9dc03e1eccba2f12e57d938279f536d8e4f",
     "gist": "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"
   },
   {
     "figure": "Figure 2",
     "slug": "db_correctness_by_class",
-    "swhid": "swh:1:rev:81a5c1cb9f4380ad7d635a2fa171dfa4a89b7181",
+    "swhid": "swh:1:rev:b10c602b9774a30e68f5e8710ddfcd6570e0c6a6",
     "gist": "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"
   },
   {
     "figure": "Figure 3",
     "slug": "zero_db_rescues_by_triage",
-    "swhid": "swh:1:rev:96e5f81536d7ac72b06cd0353d5311f11c039783",
+    "swhid": "swh:1:rev:615572071d0b96246881ac601f2f26b7350ceb0b",
     "gist": "https://gist.github.com/beccajcarlson/a4526c9e6de5e958826bf1d764744c1b"
   },
   {
@@ -26,13 +26,13 @@
   {
     "figure": "Figure 5",
     "slug": "deep_dive_final_categories",
-    "swhid": "swh:1:rev:abfacbda9f7ae5b158dd9ae702d30d10d678714b",
+    "swhid": "swh:1:rev:52eb3e6fe8daa6778584ad331148dbc926bb9491",
     "gist": "https://gist.github.com/beccajcarlson/c2441f8d0314c5524463bc85a3e86612"
   },
   {
     "figure": "Figure 6",
     "slug": "deep_dive_record_richness",
-    "swhid": "swh:1:rev:37b6f2303a047702f7d3aa88331cf78fe7b66d5e",
+    "swhid": "swh:1:rev:6e494d1f36ed51be1e4d6efc791e57c6c2f276fb",
     "gist": "https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01"
   },
   {
@@ -44,25 +44,25 @@
   {
     "figure": "Supplementary Figure 1",
     "slug": "db_cutoff_tradeoff",
-    "swhid": "swh:1:rev:31adc2d56fe2092d8a6cfed7d22e72c203beba0c",
+    "swhid": "swh:1:rev:f031679424e52a59e98622b3e8d8c604e3c99204",
     "gist": "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
   },
   {
     "figure": "Supplementary Figure 2",
     "slug": "db_correctness_overall",
-    "swhid": "swh:1:rev:4626bb6e01513bb37809ddf0fac9769da1a22af8",
+    "swhid": "swh:1:rev:c2fc9af3d21a557a894c0fa082a41e83aa015bf5",
     "gist": "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d"
   },
   {
     "figure": "Supplementary Figure 3",
     "slug": "benchmark_cost_vs_accuracy",
-    "swhid": "swh:1:rev:7a0d09c9950f72edbb8bddd44c5fc0f6a0cd3ab6",
+    "swhid": "swh:1:rev:07a03f895195cef41f8e76886f64df5ee22b5adf",
     "gist": "https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41"
   },
   {
     "figure": "Supplementary Figure 4",
     "slug": "curator_vs_agent_reason",
-    "swhid": "swh:1:rev:40790b192d1331c00d9f4e21bd706e9ea0cb0b4c",
+    "swhid": "swh:1:rev:399f2353d63cce242059e1f38ab83205a4d0d62a",
     "gist": "https://gist.github.com/beccajcarlson/c98fe6646ba8b967767d072657da31b7"
   },
   {
@@ -74,13 +74,13 @@
   {
     "figure": "Supplementary Figure 6",
     "slug": "db_vs_sonnet_whole_proteome",
-    "swhid": "swh:1:rev:5253e8982958ab1da74190dcbc9791afa153247c",
+    "swhid": "swh:1:rev:0406bd35e8791a1b239b3a8a9d54aae60a038a24",
     "gist": "https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013"
   },
   {
     "figure": "Supplementary Figure 7",
     "slug": "positive_control_db_coverage_bars",
-    "swhid": "swh:1:rev:7b6c229a2eaa6a1373de8dd16c4b09f8b95b054a",
+    "swhid": "swh:1:rev:30631354d617077d5c2ea942a43ee345c385fc2a",
     "gist": "https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c"
   },
   {
@@ -92,13 +92,13 @@
   {
     "figure": "Supplementary Figure 9",
     "slug": "topology_coverage_by_source",
-    "swhid": "swh:1:rev:d7095aaf3bf7bc58c7373bcfea23d77500f4b7d8",
+    "swhid": "swh:1:rev:5625dfed7165940c52325ac076679dff2121e68d",
     "gist": "https://gist.github.com/beccajcarlson/95b0f4cdcaf6a6b91f57539cd1515a25"
   },
   {
     "figure": "Supplementary Figure 10",
     "slug": "paywall_bot_block_compare",
-    "swhid": "swh:1:rev:cf8881cab6c57c8a35d3c2e4adf9e144f60b663b",
+    "swhid": "swh:1:rev:be6fd2a6b35e98ff9873e860e15fb728e7aa3c12",
     "gist": "https://gist.github.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d"
   },
   {
@@ -110,7 +110,7 @@
   {
     "figure": "Supplementary Figure 12",
     "slug": "evidence_corpus_vs_selected",
-    "swhid": "swh:1:rev:62ebb79d1977c4d17121c7d338d7121d0b6d3bcd",
+    "swhid": "swh:1:rev:69cd4d1cd834652ab2215939b841f1c9dc6ae38d",
     "gist": "https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549"
   },
   {
