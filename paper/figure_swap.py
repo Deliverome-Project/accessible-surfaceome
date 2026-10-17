@@ -310,7 +310,7 @@ def _validate_pdf(path: Path, _spec: FigureSpec) -> list[str]:
     return [
         f"{path.name}: format='pdf' cannot be rendered by WeasyPrint — "
         f"the figure would silently come out blank. Convert to vector "
-        f"SVG (`pdftocairo -svg {path.name} "
+        f"SVG (`uv run python paper/convert_figure_svgs.py`, or `pdftocairo -svg {path.name} "
         f"{path.stem}.svg`) into paper/figures/ and set format='svg'."
     ]
 
