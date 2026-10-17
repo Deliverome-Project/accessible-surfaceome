@@ -70,14 +70,20 @@
   color: var(--ink);
 }
 
+/* Three download links (record JSON / evidence JSON / Markdown) beside the
+ * gene-jump box don't fit one row on a phone: let them wrap onto extra
+ * right-aligned rows rather than squeezing each label onto two lines. */
 .crumbActions {
   margin-left: auto;
   display: inline-flex;
-  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-1) var(--space-3);
 }
 
 .crumbAction {
   position: relative;
+  white-space: nowrap;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: var(--muted);

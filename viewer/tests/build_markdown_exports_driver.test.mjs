@@ -111,7 +111,20 @@ test("fetchEvidenceLedger: a genuine empty ledger (200, evidence: []) is a real 
     [`${BASE}/v1/genes/AAA/evidence`, () => fakeResponse({ status: 200, jsonBody: { evidence: [] } })],
   ]);
   const r = await fetchEvidenceLedger("AAA", { retryOpts: NO_WAIT });
-  assert.deepEqual(r, { ok: true, evidence: [] });
+  assert.deepEqual(r, { ok: true, evidence: [], papers: null });
+});
+
+test("fetchEvidenceLedger: passes the `papers` citation map through (and drops a malformed one)", async () => {
+  const papers = { "PMC:PMC1": { source_id: "PMC:PMC1", pmid: "11", authors_short: "Doe et al.", year: 2020 } };
+  routes = new Map([
+    [`${BASE}/v1/genes/PPP/evidence`, () => fakeResponse({ status: 200, jsonBody: { evidence: [], papers } })],
+    [`${BASE}/v1/genes/QQQ/evidence`, () => fakeResponse({ status: 200, jsonBody: { evidence: [], papers: ["x"] } })],
+  ]);
+  const ok = await fetchEvidenceLedger("PPP", { retryOpts: NO_WAIT });
+  assert.deepEqual(ok, { ok: true, evidence: [], papers });
+  const bad = await fetchEvidenceLedger("QQQ", { retryOpts: NO_WAIT });
+  assert.equal(bad.ok, true);
+  assert.equal(bad.papers, null);
 });
 
 test("fetchEvidenceLedger: degraded then healthy retries and returns the real ledger", async () => {

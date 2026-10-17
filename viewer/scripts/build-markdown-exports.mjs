@@ -11,7 +11,8 @@
 //       - the full UniProt canonical sequence (fetched from AFDB API)
 //       - the per-residue DeepTMHMM topology for canonical + every
 //         alternative isoform on the record
-//       - links back to the JSON record and the Pages page
+//       - links to the viewer page and the public API surfaces (record
+//         JSON, evidence ledger, this Markdown)
 //
 // Run from the ``viewer/`` directory: ``node scripts/build-markdown-exports.mjs``.
 // Safe to re-run — the script overwrites existing .md files.
@@ -39,6 +40,13 @@ const DATA_DIR = path.join(VIEWER_ROOT, "public", "data", "surfaceome");
 const STRUCTURE_DIR = path.join(VIEWER_ROOT, "public", "structure-viewer");
 
 const SITE_BASE = "https://surfaceome.deliverome.org";
+// Public Worker base the brief LINKS to (appendix). Deliberately a constant,
+// not the env-overridable API_BASE below: a test/dev run pointed at another
+// Worker must not leak that host into a published artifact. The per-gene
+// JSON/.md under SITE_BASE/data/surfaceome/ do NOT exist on the live site
+// (prune-export.mjs deletes them from the Pages output), so the API is the
+// only place a reader can fetch the record, its evidence ledger, or this file.
+const PUBLIC_API_BASE = "https://api.deliverome.org/surfaceome";
 
 // Where records come from. Default "api" = the D1-served model: the
 // deep-dive sweep publishes to D1 and the build fetches the full published
@@ -59,9 +67,7 @@ const MD_GENES_FILTER = parseGeneListEnv(process.env.SURFACEOME_MD_GENES);
 // Worker base, normalized to EXCLUDE a trailing /v1 (the loader convention)
 // so /v1 is appended uniformly below. Accepts both ".../surfaceome" (the
 // Pages value) and ".../surfaceome/v1" (legacy) without doubling /v1.
-const RAW_API_BASE = (
-  process.env.SURFACEOME_API_BASE || "https://api.deliverome.org/surfaceome"
-).trim();
+const RAW_API_BASE = (process.env.SURFACEOME_API_BASE || PUBLIC_API_BASE).trim();
 const API_BASE = RAW_API_BASE.replace(/\/+$/, "").replace(/\/v1$/, "");
 
 // Output target. Default "public" = write {SYM}.json + {SYM}.md under
@@ -377,6 +383,151 @@ function citeIds(ids, max = 8) {
   return ` *(cites: ${shown}${ids.length > max ? `, +${ids.length - max}` : ""})*`;
 }
 
+// True for an unset / sentinel enum value — null, undefined, "", or the
+// literal strings "none" / "null" in any case. Used to drop clauses that
+// would otherwise render as "None validation (None)".
+function isNoneLike(v) {
+  if (v == null) return true;
+  const t = String(v).trim();
+  return t === "" || /^(none|null)$/i.test(t);
+}
+
+// "; Strong validation (Genetic KO)" — the antibody-validation clause of
+// one §3 antibody bullet. Mirrors the viewer's SurfaceEvidenceCard pill:
+// `validation_strength: "none"` reads "no validation" (never "None
+// validation"), a missing strength drops the clause, and the strategy
+// parenthetical only appears when it carries a real value.
+function antibodyValidationClause(ab) {
+  const strength = ab.validation_strength;
+  if (strength == null || String(strength).trim() === "") return "";
+  const label = isNoneLike(strength)
+    ? "no validation"
+    : `${prettyEnum(strength)} validation`;
+  const strategy = isNoneLike(ab.validation_strategy)
+    ? ""
+    : ` (${prettyEnum(ab.validation_strategy)})`;
+  return `; ${label}${strategy}`;
+}
+
+// The reference → modulating-state contrast of one accessibility-modulation
+// row, with a trailing " — " separator, or "" when neither is set. Both
+// fields are nullable (schema 2.5.0: a single-context row carries neither);
+// the viewer's AccessibilityModulationTable renders each in its own column
+// and leaves an unset one blank, so never print a literal "null → null".
+function modulationContrast(m) {
+  const base = isNoneLike(m.baseline_context) ? null : m.baseline_context;
+  const mod = isNoneLike(m.modulating_state) ? null : m.modulating_state;
+  if (base && mod) return `${base} → ${mod} — `;
+  if (base) return `reference: ${base} — `;
+  if (mod) return `modulating state: ${mod} — `;
+  return "";
+}
+
+// Ensembl Compara release behind §5 and the data-sources footer. Every
+// Compara row carries it, so fall through mouse → cynomolgus → paralogs
+// before giving up (a gene with no mouse ortholog used to print "—" even
+// when its cyno ortholog row named the release).
+function comparaVersionOf(df) {
+  return (
+    df.orthologs?.mouse?.[0]?.compara_version ??
+    df.orthologs?.cynomolgus?.[0]?.compara_version ??
+    df.paralogs?.[0]?.compara_version ??
+    "—"
+  );
+}
+
+// Verbatim evidence quotes are copied from source full text, which keeps a
+// little inline markup: italic gene names, superscript charges / footnote
+// marks, subscript indices, and abstract section headings
+// (<h4>Results</h4>) spliced mid-sentence. Raw tags show up as literal
+// text in most Markdown renderers, so convert the trivial ones and strip
+// the rest WITHOUT touching the quote's words:
+//   <i>/<em>/<italic> x → *x*   <b>/<strong>/<bold> x → **x**
+//   <sup>/<superscript> x → ^x  <sub>/<subscript> x → x
+//   <h1>–<h6> x → " x: " — the same inline section label the viewer's
+//     stripInlineHtml (lib/textScrub.ts) renders in the evidence drawer,
+//     so "…domain. Conclusions: Disruption…" reads alike on both surfaces
+//   block tags (<p>, <div>, <br>, <sec>, <title>, <list>, …) → a space;
+//   other inline tags (<span>, <xref>, <ext-link>, …) → dropped
+// Only these named tags are touched, so prose like "p<0.05" or "<10 aa"
+// passes through verbatim, and a quote with none of them is returned as-is.
+const QUOTE_INLINE_TAGS =
+  "i|em|italic|b|strong|bold|sup|superscript|sub|subscript|span|u|sc|small|xref|ext-link";
+const QUOTE_BLOCK_TAGS = "h[1-6]|p|div|br|break|sec|title|list|list-item";
+const QUOTE_TAG_RE = new RegExp(
+  `</?(?:${QUOTE_INLINE_TAGS}|${QUOTE_BLOCK_TAGS})(?:\\s[^<>]*)?/?>`,
+  "i",
+);
+function quoteToMarkdown(text) {
+  if (text == null) return text;
+  let s = String(text);
+  if (!QUOTE_TAG_RE.test(s)) return s;
+  const wrap = (tags, fn) => {
+    const re = new RegExp(`<(${tags})(?:\\s[^<>]*)?>([\\s\\S]*?)</\\1\\s*>`, "gi");
+    s = s.replace(re, (_, _tag, inner) => fn(inner));
+  };
+  // Emphasis markers must hug the text (CommonMark: "* x *" is not
+  // emphasis), so move any inner edge whitespace outside the markers.
+  const emph = (marker) => (inner) => {
+    const t = inner.trim();
+    if (!t) return inner;
+    const lead = /^\s/.test(inner) ? " " : "";
+    const trail = /\s$/.test(inner) ? " " : "";
+    return `${lead}${marker}${t}${marker}${trail}`;
+  };
+  wrap("sup|superscript", (inner) => (inner.trim() ? `^${inner.trim()}` : ""));
+  wrap("sub|subscript", (inner) => inner);
+  wrap("h[1-6]", (inner) => (inner.trim() ? ` ${inner.trim()}: ` : " "));
+  wrap("b|strong|bold", emph("**"));
+  wrap("i|em|italic", emph("*"));
+  // Unpaired leftovers: block-level separators → a space; inline → "".
+  s = s.replace(new RegExp(`</?(?:${QUOTE_BLOCK_TAGS})(?:\\s[^<>]*)?/?>`, "gi"), " ");
+  s = s.replace(new RegExp(`</?(?:${QUOTE_INLINE_TAGS})(?:\\s[^<>]*)?/?>`, "gi"), "");
+  // Tidy only the whitespace the conversion can introduce.
+  return s.replace(/[ \t]{2,}/g, " ").trim();
+}
+
+// Citation for every distinct source behind one ledger entry, joined by
+// "; ". `papers` is the `source_id` → NCBI metadata map that
+// /v1/genes/{SYM}/evidence returns alongside the ledger (the record's own
+// SourceRef carries only an accession; field names match the viewer's
+// PaperMetadata type). With metadata a source reads
+// "Chen et al. 2023, [PMID 37165726](…) · [PMC10273066](…)"; without it
+// (snapshot path, or a paper missing from paper_metadata) it degrades to
+// the bare accession links. PMID is the house identifier (CLAUDE.md
+// tooltip rule), so it leads; the PMC link is kept; a DOI only appears
+// when the source itself carries one.
+function evidenceCitations(sources, papers) {
+  const seen = new Set();
+  const out = [];
+  for (const src of sources) {
+    const sid = typeof src.source_id === "string" ? src.source_id : "";
+    const meta = sid && papers ? papers[sid] : undefined;
+    const pmcid =
+      src.pmc_id ||
+      src.pmcid ||
+      meta?.pmc_id ||
+      (sid.startsWith("PMC:") ? sid.slice(4) : null);
+    const pmid =
+      src.pmid || meta?.pmid || (sid.startsWith("PMID:") ? sid.slice(5) : null);
+    const doi = src.doi || null;
+    const key = sid || pmcid || pmid || doi || src.url;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const links = [];
+    if (pmid) links.push(`[PMID ${pmid}](https://pubmed.ncbi.nlm.nih.gov/${pmid}/)`);
+    if (pmcid) links.push(`[${pmcid}](https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcid}/)`);
+    if (doi) links.push(`[doi:${doi}](https://doi.org/${doi})`);
+    if (!links.length && src.url) links.push(src.url);
+    if (!links.length) continue;
+    const byline = [meta?.authors_short, meta?.year]
+      .filter((x) => x != null && x !== "")
+      .join(" ");
+    out.push(`${byline ? `${byline}, ` : ""}${links.join(" · ")}`);
+  }
+  return out.join("; ");
+}
+
 // ECD-identity tiers — same cutoffs the viewer's IsoformsCard uses.
 // Ortholog conservation (higher = better, cross-species evidence transfers).
 function orthologTier(pct) {
@@ -417,7 +568,9 @@ function collectRecordSequences(df) {
 // Markdown rendering
 // --------------------------------------------------------------
 
-function md(rec, structureData, sequences, afdbEntry) {
+// `papers` (optional) is the evidence endpoint's `source_id` → citation
+// metadata map; absent on the offline snapshot path.
+function md(rec, structureData, sequences, afdbEntry, papers = null) {
   const g = rec.gene;
   const e = rec.executive_summary;
   const df = rec.deterministic_features;
@@ -616,7 +769,7 @@ function md(rec, structureData, sequences, afdbEntry) {
             .filter(Boolean)
             .join(" · ");
           lines.push(
-            `- ${ab.name}${meta ? ` (${meta})` : ""} — ${prettyEnum(ab.antibody_epitope_region)} epitope; ${prettyEnum(ab.monoclonal_or_polyclonal)}; ${prettyEnum(ab.validation_strength)} validation${ab.validation_strategy ? ` (${prettyEnum(ab.validation_strategy)})` : ""}${ab.cross_reactivity_notes ? `; ${ab.cross_reactivity_notes}` : ""}`,
+            `- ${ab.name}${meta ? ` (${meta})` : ""} — ${prettyEnum(ab.antibody_epitope_region)} epitope; ${prettyEnum(ab.monoclonal_or_polyclonal)}${antibodyValidationClause(ab)}${ab.cross_reactivity_notes ? `; ${ab.cross_reactivity_notes}` : ""}`,
           );
         }
         lines.push("");
@@ -773,7 +926,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push("");
     for (const m of bc.accessibility_modulation) {
       lines.push(
-        `- *${prettyEnum(m.category)}*${m.cell_state_trigger ? ` · trigger: ${prettyEnum(m.cell_state_trigger)}` : ""}${m.restricted_lineage ? ` · lineage: ${prettyEnum(m.restricted_lineage)}` : ""}: ${m.baseline_context} → ${m.modulating_state} — ${m.change}${m.accessibility_implication ? ` *(→ ${prettyEnum(m.accessibility_implication)})*` : ""}${citeIds(m.cited_evidence_ids)}`,
+        `- *${prettyEnum(m.category)}*${m.cell_state_trigger ? ` · trigger: ${prettyEnum(m.cell_state_trigger)}` : ""}${m.restricted_lineage ? ` · lineage: ${prettyEnum(m.restricted_lineage)}` : ""}: ${modulationContrast(m)}${m.change}${m.accessibility_implication ? ` *(→ ${prettyEnum(m.accessibility_implication)})*` : ""}${citeIds(m.cited_evidence_ids)}`,
       );
     }
     lines.push("");
@@ -800,10 +953,7 @@ function md(rec, structureData, sequences, afdbEntry) {
   // canonical for orthologs + paralogs (isoforms are alternative human forms).
   lines.push("## 5. Isoforms, orthologs & paralogs");
   lines.push("");
-  const comparaVer =
-    df.orthologs.mouse?.[0]?.compara_version ??
-    df.paralogs?.[0]?.compara_version ??
-    "—";
+  const comparaVer = comparaVersionOf(df);
   lines.push(
     `*Deterministic · UniProt + DeepTMHMM ${ct.tool_version} · Ensembl ${comparaVer}. %identity / ECD %id are vs the human canonical (orthologs + paralogs only; isoforms are alternative human forms). Per-residue topology + full sequences are in the appendix.*`,
   );
@@ -1055,32 +1205,9 @@ function md(rec, structureData, sequences, afdbEntry) {
   );
   lines.push("");
   for (const ev of rec.evidence) {
-    const sources = evidenceSources(ev);
-    const seen = new Set();
-    const linkParts = [];
-    for (const src of sources) {
-      const doi = src.doi;
-      const pmid = src.pmid;
-      const pmcid = pmcIdOf(src);
-      const url = src.url;
-      if (doi && !seen.has(`doi:${doi}`)) {
-        linkParts.push(`[doi:${doi}](https://doi.org/${doi})`);
-        seen.add(`doi:${doi}`);
-      }
-      if (pmid && !seen.has(`pmid:${pmid}`)) {
-        linkParts.push(`[PMID ${pmid}](https://pubmed.ncbi.nlm.nih.gov/${pmid}/)`);
-        seen.add(`pmid:${pmid}`);
-      }
-      if (pmcid && !seen.has(`pmc:${pmcid}`)) {
-        linkParts.push(`[${pmcid}](https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcid}/)`);
-        seen.add(`pmc:${pmcid}`);
-      }
-      if (url && !linkParts.length) {
-        linkParts.push(url);
-      }
-    }
+    const citation = evidenceCitations(evidenceSources(ev), papers);
     lines.push(
-      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}*${ev.direction ? ` · ${prettyEnum(ev.direction)}` : ""}${ev.claim_type ? ` · ${prettyEnum(ev.claim_type)}` : ""} — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
+      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}*${ev.direction ? ` · ${prettyEnum(ev.direction)}` : ""}${ev.claim_type ? ` · ${prettyEnum(ev.claim_type)}` : ""} — ${ev.claim}${citation ? ` (${citation})` : ""}`,
     );
     // Assay context — species / cell type / live-vs-fixed / permeabilization,
     // so a reader can tell which claims are human vs. mouse, live vs. fixed.
@@ -1103,23 +1230,27 @@ function md(rec, structureData, sequences, afdbEntry) {
     // The schema field is `quote` (legacy records used `text`).
     const evQuote = ev.spans?.[0]?.quote ?? ev.spans?.[0]?.text;
     if (evQuote) {
-      lines.push(`  > "${evQuote}"`);
+      lines.push(`  > "${quoteToMarkdown(evQuote)}"`);
     }
   }
   lines.push("");
 
   // --- Appendix: Downloads & reproduction ---
+  // Every machine-readable surface links to the public API — the per-gene
+  // files under SITE_BASE/data/surfaceome/ are pruned from the live site.
+  const recordApiUrl = `${PUBLIC_API_BASE}/v1/genes/${g.hgnc_symbol}`;
   lines.push("## Appendix · Downloads & reproduction");
   lines.push("");
   lines.push(
-    `This Markdown is generated from the canonical JSON record at \`/data/surfaceome/${g.hgnc_symbol}.json\`. The JSON is the source of truth; this file is the human-readable mirror.`,
+    `This Markdown is generated from the canonical JSON record served at \`${recordApiUrl}\`, plus its evidence ledger (served separately at \`${recordApiUrl}/evidence\`). The JSON is the source of truth; this file is the human-readable mirror.`,
   );
   lines.push("");
   lines.push("**Links**");
   lines.push("");
   lines.push(`- Viewer page: [${SITE_BASE}/${g.hgnc_symbol}](${SITE_BASE}/${g.hgnc_symbol})`);
-  lines.push(`- Canonical JSON: [${SITE_BASE}/data/surfaceome/${g.hgnc_symbol}.json](${SITE_BASE}/data/surfaceome/${g.hgnc_symbol}.json)`);
-  lines.push(`- This Markdown: [${SITE_BASE}/data/surfaceome/${g.hgnc_symbol}.md](${SITE_BASE}/data/surfaceome/${g.hgnc_symbol}.md)`);
+  lines.push(`- Canonical record (JSON): [${recordApiUrl}](${recordApiUrl})`);
+  lines.push(`- Evidence ledger + citation metadata (JSON): [${recordApiUrl}/evidence](${recordApiUrl}/evidence)`);
+  lines.push(`- This Markdown: [${recordApiUrl}.md](${recordApiUrl}.md)`);
   lines.push(`- AlphaFold DB entry: [${alphafoldEntryUrl(g.uniprot_acc)}](${alphafoldEntryUrl(g.uniprot_acc)})`);
   lines.push(`- AFDB prediction API: [${alphafoldApiUrl(g.uniprot_acc)}](${alphafoldApiUrl(g.uniprot_acc)}) (returns current \`pdbUrl\`, \`cifUrl\`, \`uniprotSequence\`, …)`);
   lines.push(`- UniProt: [https://www.uniprot.org/uniprotkb/${g.uniprot_acc}](https://www.uniprot.org/uniprotkb/${g.uniprot_acc})`);
@@ -1369,7 +1500,7 @@ function md(rec, structureData, sequences, afdbEntry) {
   // --- Data sources footer ---
   lines.push("### Data sources");
   lines.push("");
-  const comparaVersion = df.orthologs.mouse[0]?.compara_version ?? df.paralogs[0]?.compara_version ?? "—";
+  const comparaVersion = comparaVersionOf(df);
   lines.push(`- AlphaFold DB structures — ${s.license} (${s.attribution})`);
   lines.push(`- DeepTMHMM topology — ${ct.tool_version} · DTU Health Tech (Hallgren et al. 2022)`);
   lines.push(`- Ensembl Compara orthologs & paralogs — ${comparaVersion} · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)`);
@@ -1517,7 +1648,13 @@ async function fetchEvidenceLedger(sym, { retryOpts } = {}) {
   if (!Array.isArray(ev)) {
     return { ok: false, reason: "evidence payload not an array" };
   }
-  return { ok: true, evidence: ev };
+  // The same payload carries `papers` — `source_id` → NCBI citation
+  // metadata (joined from public D1 `paper_metadata`), which the ledger
+  // section renders as author/year + PubMed links. Optional: an absent or
+  // malformed map just degrades citations to bare accessions.
+  const p = r.body?.papers;
+  const papers = p && typeof p === "object" && !Array.isArray(p) ? p : null;
+  return { ok: true, evidence: ev, papers };
 }
 
 /**
@@ -1628,7 +1765,9 @@ async function loadRecordsFromApi({ retryOpts } = {}) {
           noteFailure(sym, `evidence: ${evResult.reason}`);
         } else {
           rec.evidence = evResult.evidence;
-          out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+          // `papers` rides alongside the record (not on it) so the
+          // materialized {SYM}.json keeps the SurfaceomeRecord shape.
+          out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec, papers: evResult.papers });
         }
       }
       done += 1;
@@ -1846,6 +1985,7 @@ async function main() {
               failedSyms.add(sym);
             } else {
               entry.rec.evidence = evResult.evidence;
+              entry.papers = evResult.papers;
             }
           }
         },
@@ -1863,7 +2003,7 @@ async function main() {
     }
   }
   console.log(`Exporting ${records.length} records (source=${MD_SOURCE}).`);
-  for (const { name, rec } of records) {
+  for (const { name, rec, papers } of records) {
     // Accept schema v1.x and v2.x. Pinning this to an exact "1.0.0"
     // silently skipped every record once the schema bumped to 1.1.0 —
     // which is what blanked the .md downloads (no file written → 404).
@@ -1942,7 +2082,7 @@ async function main() {
       canonSeq ? `canonical ${canonSeq.length} aa\n` : "(no canonical seq)\n",
     );
     const afdbEntry = uniprot ? await fetchAfdbEntry(uniprot) : null;
-    const mdBody = md(rec, structureData, sequences, afdbEntry);
+    const mdBody = md(rec, structureData, sequences, afdbEntry, papers ?? null);
     const key = name.replace(/\.json$/, ".md");
     if (MD_TARGET === "r2") {
       const sym = rec.gene?.hgnc_symbol ?? name.replace(/\.json$/, "");
@@ -1975,7 +2115,8 @@ async function main() {
 // — the underlying pacing/retry machinery is covered by
 // build-fetch.test.mjs; these are the script-local pieces worth pinning
 // directly (evidence-empty-vs-failure discrimination, the R2 retry/backoff
-// wrapper, the failure-fraction exit decision).
+// wrapper, the failure-fraction exit decision). The rendering exports are
+// pinned by viewer/tests/build_markdown_exports_render.test.mjs.
 export {
   fetchEvidenceLedger,
   loadRecordsFromApi,
@@ -1984,6 +2125,13 @@ export {
   reportSummaryAndMaybeFail,
   shouldSkipBuildCache,
   main,
+  // Rendering — pinned by tests/build_markdown_exports_render.test.mjs.
+  md,
+  quoteToMarkdown,
+  evidenceCitations,
+  modulationContrast,
+  antibodyValidationClause,
+  comparaVersionOf,
 };
 
 // Only auto-run when executed directly (`node build-markdown-exports.mjs`),

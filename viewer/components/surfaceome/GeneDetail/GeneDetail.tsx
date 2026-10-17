@@ -217,8 +217,8 @@ export function GeneDetail({
         ) : null}
 
         {/* Compact toolbar — a small ← icon link is the back-to-catalog
-            affordance. The JSON / Markdown / Feedback actions stay on
-            the right. */}
+            affordance. The record JSON / evidence JSON / Markdown
+            download actions stay on the right. */}
         <nav className={styles.crumbs} aria-label="Page actions">
           <Link
             href="/"
@@ -234,7 +234,7 @@ export function GeneDetail({
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
-              data-hint="The complete machine-readable record for this gene (JSON) — the live, canonical data everything on this page is rendered from."
+              data-hint="The machine-readable record for this gene (JSON) — the live, canonical data this page is rendered from. The evidence ledger (claims, verbatim quotes, citation metadata) is served separately: see Evidence JSON."
               href={`https://api.deliverome.org/surfaceome/v1/genes/${rec.gene.hgnc_symbol}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -243,7 +243,16 @@ export function GeneDetail({
             </a>
             <a
               className={styles.crumbAction}
-              data-hint="Full Markdown export — the complete record plus reanalysis extras not in the JSON: canonical, isoform & cross-species ortholog sequences, per-residue membrane topology (DeepTMHMM), and AlphaFold model download links. Served from R2 via the Worker."
+              data-hint="The evidence ledger for this gene (JSON, /v1/genes/{symbol}/evidence) — every cited claim with its verbatim quote and source, plus NCBI citation metadata (title, authors, journal, year, PMID) for each paper."
+              href={`https://api.deliverome.org/surfaceome/v1/genes/${rec.gene.hgnc_symbol}/evidence`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Evidence JSON ↗
+            </a>
+            <a
+              className={styles.crumbAction}
+              data-hint="Full Markdown brief — the record and its evidence ledger in one human-readable file: every section, each claim with its quote and citation, and an appendix with the canonical, isoform & ortholog sequences, per-residue membrane topology (DeepTMHMM) and AlphaFold model download links. Served from R2 via the Worker."
               href={`https://api.deliverome.org/surfaceome/v1/genes/${rec.gene.hgnc_symbol}.md`}
               target="_blank"
               rel="noopener noreferrer"
