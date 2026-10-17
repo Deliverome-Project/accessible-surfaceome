@@ -24,7 +24,10 @@ Usage::
     uv run python scripts/figures/sync_readme_legends.py --export doc.json
 
 ``--export`` refreshes the JSON from a Drive ``read_file_content`` dump of the
-manuscript (``{"fileContent": ...}``) or a plain-text export, then syncs.
+manuscript (``{"fileContent": ...}``) or a plain-text export, then syncs. The
+dump may be taken with or without comments: inline comment tags and the
+``\\[image\\]`` anchors the export leaves on a legend heading are stripped
+before the legend is read, so neither hides a legend nor reaches the READMEs.
 """
 
 from __future__ import annotations
@@ -54,12 +57,31 @@ def _figure_label(key: str) -> str:
     return key if key.startswith("Figure") else f"Supplementary Figure {key[1:]}"
 
 
+# Two artifacts of the Drive rendering sit between the heading mark and the
+# figure label, and neither is manuscript text. An inline image anchored to the
+# legend paragraph renders as "\[image\]" — before the bold marker when the
+# anchor is not itself bold ("##### \[image\]**Figure 5."), after it when it is
+# ("##### **\[image\]Figure 4."). A dump taken with comments wraps every
+# commented span in tags, and for several legends the commented span is the
+# figure label itself ("##### **<comment_start id=…>Figure 3<comment_end id=…>.").
+# Both are stripped before anything else looks at the line, so the legend
+# matcher and the cleaner only ever see the shape the doc actually reads as.
+_COMMENT_TAG = re.compile(r"<comment_(?:start|end)\s+id=[^>]*>")
+_IMAGE_ANCHOR = re.compile(r"\\?\[image\\?\]")
+
+
+def _strip_export_artifacts(text: str) -> str:
+    """Drop the dump's comment tags and inline-image anchors."""
+    return _IMAGE_ANCHOR.sub("", _COMMENT_TAG.sub("", text))
+
+
 def _clean(text: str) -> str:
     """Strip the Docs export's artifacts and the leading figure label.
 
     The label is re-added by the block template so every README renders it
     the same way regardless of how the doc happened to punctuate it.
     """
+    text = _strip_export_artifacts(text)
     # Docs exports wrap a caption in heading marks ("##### **Figure 1. …") and
     # sometimes leave a trailing "#####"; neither belongs in the legend text.
     text = re.sub(r"^\s*#{1,6}\s*", "", text)
@@ -76,7 +98,9 @@ def _clean(text: str) -> str:
 
 # A legend in the doc export is one heading line: "##### **Figure 3. …" or
 # "##### **Supplementary Figure 12. …". Requiring the heading mark skips stray
-# bold "**Figure 1." paragraphs left over from earlier drafts.
+# bold "**Figure 1." paragraphs left over from earlier drafts. The line is
+# matched after _strip_export_artifacts, so an image anchor or a comment tag
+# between the heading mark and the label does not hide the legend.
 _LEGEND_LINE = re.compile(r"^#{1,6}\s*\*\*(Supplementary\s+)?Figure\s+S?(\d+)\.")
 
 
@@ -87,15 +111,16 @@ def _export(source: Path, keys: set[str]) -> dict[str, str]:
     except (ValueError, KeyError, TypeError):
         text = raw
     found: dict[str, str] = {}
-    for line in text.split("\n"):
-        m = _LEGEND_LINE.match(line.strip())
+    for raw_line in text.split("\n"):
+        line = _strip_export_artifacts(raw_line).strip()
+        m = _LEGEND_LINE.match(line)
         if not m:
             continue
         key = f"S{m.group(2)}" if m.group(1) else f"Figure {m.group(2)}"
         if key in keys:
             if key in found:
                 raise SystemExit(f"{key} appears twice in {source}; resolve in the doc")
-            found[key] = line.strip().lstrip("#").strip()
+            found[key] = line.lstrip("#").strip()
     missing = sorted(keys - found.keys())
     if missing:
         raise SystemExit(f"legends not found in {source}: {', '.join(missing)}")
