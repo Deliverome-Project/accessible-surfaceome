@@ -20,9 +20,10 @@ classifier stop) is excluded from both accuracy and cost, and the cell's
 refusal rate is printed in its label. Only Opus 5.5 refuses on this bench.
 
 Color encodes model generation (orange Claude 4.x, blue Claude 5, teal
-Claude 5.5; darker = larger model or more context), and the two Sonnet 4.6
-configurations the production pipeline uses are lavender. Each label takes
-a darkened shade of its point's color.
+Claude 5.5; darker = larger model or more context). The two lavender points
+are the Sonnet 4.6 configurations the production pipeline runs: + IDs for
+the genome-wide triage sweep, and + IDs + PubMed for the rescue lanes. Each
+label takes a darkened shade of its point's color.
 This is the canonical generator for the cost/accuracy frontier figure; it
 replaced the ``triage_bench_db_barplot.py`` ``make_cost_vs_accuracy_plot``
 path, whose hardcoded model list left cells empty when the data moved to

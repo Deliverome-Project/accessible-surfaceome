@@ -11,10 +11,11 @@ height = mean of the three per-replicate accuracies, with each replicate's
 accuracy overlaid as a point and a run-to-run SEM error bar.
 
 Color encodes model generation (orange Claude 4.x, blue Claude 5, teal
-Claude 5.5; darker = larger model), and the two Sonnet 4.6 configurations the
-production pipeline uses are lavender. Refused calls (``refused`` = 1, a
-safety-classifier stop; only Opus 5.5 refuses here) are excluded from
-accuracy, and the refusal rate is printed on the bar.
+Claude 5.5; darker = larger model). The two lavender bars are the Sonnet 4.6
+configurations the production pipeline runs: + IDs for the genome-wide
+triage sweep, and + IDs + PubMed for the rescue lanes. Refused calls
+(``refused`` = 1, a safety-classifier stop; only Opus 5.5 refuses here) are
+excluded from accuracy, and the refusal rate is printed on the bar.
 
 DATA SOURCE — reads ``data/processed/figures/db_correctness_overall.tsv``
 (built by ``scripts/build_figure_tsvs.py``), the SAME single source of truth the
