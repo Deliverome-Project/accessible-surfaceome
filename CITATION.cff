@@ -10,18 +10,17 @@ message: >-
   you mean a specific snapshot you actually ran against.
 type: software
 authors:
-  # Alphabetical by family name, matching the manuscript.
-  # ORCIDs intentionally omitted rather than guessed — add
-  # `orcid: 'https://orcid.org/0000-0000-0000-0000'` per author
-  # when you have them, and mirror the same values into
-  # .zenodo.json so the two never disagree.
+  # Alphabetical by family name. Names and ORCIDs mirror .zenodo.json;
+  # tests/test_release_author_metadata.py keeps the two in step.
   - given-names: Rebecca J.
     family-names: Carlson
     affiliation: Deliverome Bio, Inc.
     email: becca@deliverome.org
+    orcid: 'https://orcid.org/0000-0002-5423-9717'
   - given-names: Michael J.
     family-names: Smallegan
     affiliation: Coral Biosciences, LLC
+    orcid: 'https://orcid.org/0000-0002-5919-6736'
 repository-code: >-
   https://github.com/Deliverome-Project/accessible-surfaceome
 url: 'https://surfaceome.deliverome.org'

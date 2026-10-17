@@ -373,9 +373,18 @@ SEED_METADATA = {
             "addressed SWHIDs). This record is the supplementary data "
             "layer; the related-identifiers field links the two."
         ),
+        # Mirrors .zenodo.json (tests/test_release_author_metadata.py).
         "creators": [
-            {"name": "Carlson, Rebecca"},
-            {"name": "Smallegan, Michael"},
+            {
+                "name": "Carlson, Rebecca J.",
+                "affiliation": "Deliverome Bio, Inc.",
+                "orcid": "0000-0002-5423-9717",
+            },
+            {
+                "name": "Smallegan, Michael J.",
+                "affiliation": "Coral Biosciences, LLC",
+                "orcid": "0000-0002-5919-6736",
+            },
         ],
         "access_right": "open",
         "license": "cc-by-4.0",

@@ -1,32 +1,43 @@
-"""Guard: the paper build's vector figures exist and are not older than their source.
+"""Guard: the paper build's vector figures exist and match their source PDF.
 
 ``paper/figure_manifest.json`` points most figures at an SVG in
-``paper/figures/``, converted from the canonical render with
-``pdftocairo -svg data/analysis/figures/<slug>.pdf paper/figures/<slug>.svg``.
-The conversion is a manual step, and two things went wrong with it on
-2026-10-12:
+``paper/figures/``, converted from the canonical render
+``data/analysis/figures/<slug>.pdf`` by ``paper/convert_figure_svgs.py``. The
+conversion is a manual step, and it has gone wrong three times:
 
 * Supp S16's SVG had never been made, so the build silently kept the .docx's
-  bitmap for it.
+  bitmap for it (2026-10-12).
 * S2, S4 and S15 were re-rendered after their SVGs were made, so the PDF and
   web editions shipped the old figures. The build's .docx comparison did not
-  flag them because the .docx carried the same old versions.
+  flag them because the .docx carried the same old versions (2026-10-12).
+* S15 was re-rendered again on 2026-10-13 without re-converting. An earlier
+  version of this test compared git commit dates, which CI's shallow clone
+  cannot see, so it passed there.
 
-Re-convert with the command above whenever a canonical PDF changes.
+Each SVG now carries the SHA-256 of the PDF it was converted from, so this
+check works in any checkout. Fix a failure with
+``uv run python paper/convert_figure_svgs.py <slug>``.
 """
 
 from __future__ import annotations
 
+import importlib.util
 import json
-import shutil
-import subprocess
 from pathlib import Path
-
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "paper/figure_manifest.json"
 SEARCH = [ROOT / "paper/figures", ROOT / "data/analysis/figures"]
+
+
+def _converter():
+    spec = importlib.util.spec_from_file_location(
+        "convert_figure_svgs", ROOT / "paper/convert_figure_svgs.py"
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def _entries() -> list[dict]:
@@ -38,38 +49,38 @@ def _entries() -> list[dict]:
     ]
 
 
-def _commit_time(path: Path) -> int | None:
-    out = subprocess.run(
-        ["git", "log", "-1", "--format=%ct", "--", str(path.relative_to(ROOT))],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    ).stdout.strip()
-    return int(out) if out else None
-
-
 def test_every_manifest_figure_has_its_asset() -> None:
     missing = [
         f"{e['slug']}.{e['format']}"
         for e in _entries()
         if not any((d / f"{e['slug']}.{e['format']}").is_file() for d in SEARCH)
     ]
-    assert not missing, f"figure_manifest.json assets not found in paper/ or data/analysis/figures/: {missing}"
+    assert not missing, (
+        f"figure_manifest.json assets not found in paper/ or data/analysis/figures/: {missing}"
+    )
 
 
-@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
-def test_converted_svgs_are_not_older_than_their_pdf() -> None:
+def test_converted_svgs_match_their_source_pdf() -> None:
+    conv = _converter()
     stale = []
-    for e in _entries():
-        svg = ROOT / "paper/figures" / f"{e['slug']}.svg"
-        pdf = ROOT / "data/analysis/figures" / f"{e['slug']}.pdf"
-        if e["format"] != "svg" or not svg.is_file() or not pdf.is_file():
-            continue
-        s, p = _commit_time(svg), _commit_time(pdf)
-        if s is not None and p is not None and p > s:
-            stale.append(e["slug"])
+    for slug in conv.svg_slugs():
+        svg = conv.SVG_DIR / f"{slug}.svg"
+        if svg.is_file() and conv.stamp_of(svg) != conv.pdf_sha256(slug):
+            stale.append(slug)
     assert not stale, (
-        "paper/figures SVGs committed before their canonical PDF was last changed; "
-        f"re-run pdftocairo -svg for: {stale}"
+        "paper/figures SVGs not converted from the current canonical PDF; run "
+        f"`uv run python paper/convert_figure_svgs.py {' '.join(stale)}`"
+    )
+
+
+def test_composed_svgs_match_their_reader_copy() -> None:
+    conv = _converter()
+    differ = [
+        f"{slug} (re-run {script})"
+        for slug, script in conv.COMPOSED.items()
+        if (conv.SVG_DIR / f"{slug}.svg").read_bytes()
+        != (conv.PDF_DIR / f"{slug}.svg").read_bytes()
+    ]
+    assert not differ, (
+        f"composed paper SVGs differ from data/analysis/figures copies: {differ}"
     )
