@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import gzip
 import io
+import json
 import tarfile
 from collections.abc import Sequence
 from datetime import date
@@ -32,6 +33,18 @@ import httpx
 
 ZENODO_API = "https://zenodo.org/api"
 DATA_CONCEPT_RECID = "20805383"  # concept DOI 10.5281/zenodo.20805383
+ZENODO_JSON = Path(__file__).resolve().parents[4] / ".zenodo.json"
+
+
+def canonical_creators() -> list[dict]:
+    """Authors for every Zenodo record, from the repo's ``.zenodo.json``.
+
+    The code record reads ``.zenodo.json`` directly; the data record's new
+    versions would otherwise inherit whatever creators the previous version
+    had, which is how the data record ended up without middle initials or
+    ORCIDs. One source keeps the two record series in step.
+    """
+    return json.loads(ZENODO_JSON.read_text(encoding="utf-8"))["creators"]
 # Reproducibility replicates (Supplementary Figure 16). Not published records —
 # a frozen study bundle, deposited alongside every release from the one it
 # first ships in (a new version inherits the file; re-uploading an unchanged
@@ -150,6 +163,7 @@ def create_draft_version(
     meta.pop("doi", None)
     meta.pop("prereserve_doi", None)
     meta["version"] = version
+    meta["creators"] = canonical_creators()
     meta["publication_date"] = date.today().isoformat()
     http.put(
         d["links"]["self"], headers=auth_header, json={"metadata": meta}
