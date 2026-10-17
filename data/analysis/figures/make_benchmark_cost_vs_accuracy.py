@@ -17,8 +17,9 @@ Opus 4.8 × {naive, + IDs}, Opus 5 × {+ IDs}, Haiku 5.5 and Sonnet 5.5 each ×
 Accuracy is the mean over 3 replicates on the 147-gene bench, over answered
 calls: refused calls (``refused`` = 1) are excluded and the cell's refusal
 rate is printed in its label. Color encodes model generation (orange Claude
-4.x, blue Claude 5, teal Claude 5.5); the two Sonnet 4.6 configurations the
-production pipeline uses are lavender.
+4.x, blue Claude 5, teal Claude 5.5). The two lavender points are the
+Sonnet 4.6 configurations the production pipeline runs: + IDs for the
+genome-wide triage sweep, and + IDs + PubMed for the rescue lanes.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist

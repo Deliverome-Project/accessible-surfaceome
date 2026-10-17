@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Supplementary Figure 6.** No single surface database recovers more than a fraction of the genome-wide accessible surfaceome the triage agent identifies. Because no hand-curated truth exists at genome scale, agreement is measured across all 19,324 protein-coding genes against the production two-stage triage verdict (yes, contextual, or no) as the reference. A database surface call agrees with an agent yes or contextual; a non-surface call agrees only with no. The databases fall hardest on conditionally surface proteins, for which none has an explicit category.
+> **Supplementary Figure 6.** No single surface database recovers more than a fraction of the genome-wide accessible surfaceome the triage agent identifies. Because no hand-curated truth exists at genome scale, agreement is measured across all 19,324 protein-coding genes against the production two-stage triage verdict (yes, contextual, or no) as the reference. A database surface call agrees with an agent yes or contextual; a non-surface call agrees only with no. The databases fall hardest on contextually surface proteins, for which none has an explicit category.
 <!-- END manuscript-legend -->
 
 Whole-genome analog of the 147-gene bench plot

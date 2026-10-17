@@ -7,7 +7,7 @@
 `scripts/figures/sync_readme_legends.py` — edit the manuscript and
 re-run; do not hand-edit inside these markers.*
 
-> **Figure 2.** A tool-free accessibility triage agent classifies hard-to-categorize surface proteins more accurately than any single database. Classification accuracy on SurfaceBench, 147 proteins enriched for disagreement among the five source databases and manually labeled as surface, contextually surface, or non-surface. Bars compare the triage agent (Sonnet 4.6, no external tools) against the five source databases; contextually surface proteins are counted as correct when called surface. Sonnet 4.6 run with 3 replicates. Error bars indicate SEM.
+> **Figure 2.** A tool-free accessibility triage agent classifies hard-to-categorize surface proteins more accurately than any single database. Classification accuracy on SurfaceBench, 147 proteins enriched for disagreement among the five source databases and manually labeled as surface, contextually surface, or non-surface. Bars compare the triage agent (Sonnet 4.6, no external tools) against the five source databases; contextually surface proteins are counted as correct when called surface. Sonnet 4.6 was run with three replicates. Error bars indicate SEM.
 <!-- END manuscript-legend -->
 
 5 surface DBs (UniProt, GO CC, HPA, SURFY, CSPA) + Sonnet 4.6 (+ IDs,

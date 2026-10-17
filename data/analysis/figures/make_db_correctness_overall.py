@@ -14,11 +14,13 @@ Opus 5 / Opus 5.5) with hatched bars for the within-model prompt variants
 (naive / + IDs / + IDs + web / + IDs + PubMed / + IDs at low reasoning
 effort). Groups are packed: a model gets only as many bar slots as it has
 variants. Color encodes model generation (orange Claude 4.x, blue Claude 5,
-teal Claude 5.5; darker = larger model); the two Sonnet 4.6 configurations
-the production pipeline uses are lavender. Bar height is the mean of the
-three per-replicate accuracies over answered calls; points are the
-replicates and error bars are the SEM across replicates. Refused calls
-(``refused`` = 1) are excluded and their rate is printed on the bar.
+teal Claude 5.5; darker = larger model). The two lavender bars are the
+Sonnet 4.6 configurations the production pipeline runs: + IDs for the
+genome-wide triage sweep, and + IDs + PubMed for the rescue lanes. Bar
+height is the mean of the three per-replicate accuracies over answered
+calls; points are the replicates and error bars are the SEM across
+replicates. Refused calls (``refused`` = 1) are excluded and their rate is
+printed on the bar.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
