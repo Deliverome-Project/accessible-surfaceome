@@ -140,7 +140,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         summary:
           "Single gene's ground-truth label and rationale for the latest bench_version.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/ERBB2 | jq '.truth_verdict, .truth_reason'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/CD19 | jq '.truth_verdict, .truth_reason'",
       },
       {
         method: "GET",
@@ -157,16 +157,24 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "Genome-wide",
     blurb:
-      "All ~19,300 protein-coding human genes with their 5-DB surface-vote vector plus the per-model triage matrix (Sonnet across the full genome; Haiku + Opus on the 147 SurfaceBench genes).",
+      "All 19,324 protein-coding human genes with their 5-DB surface-vote vector plus the per-model triage matrix (Sonnet across the full genome; Haiku + Opus on the 147 SurfaceBench genes).",
     endpoints: [
       {
         method: "GET",
         path: "/v1/catalog",
         sizeKey: "/v1/catalog",
         summary:
-          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus a per-model triage matrix (Haiku / Sonnet / Opus × verdict + short reason code; Sonnet applies a pubmed_ncbi rescue when its ncbi call is a false-negative), a deep_dive flag, and — for deep-dived rows — an optional `ddf` projection with the catalog-filterable subset of Filters (surface_accessibility, confidence, evidence_grade, n_papers_selected_band, surface_call_reason, ...). One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}. Top-level `n_papers_selected_cutoffs` reports the cohort percentile thresholds (p10, p90) used to compute `ddf.n_papers_selected_band` on each row. Server-side `json_extract` slims the deep-dive read (~4 KB/row on the wire out of ~120 KB per record).",
+          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus a per-model triage matrix (Haiku / Sonnet / Opus × verdict + short reason code; Sonnet applies a pubmed_ncbi rescue when its ncbi call is a false-negative), a deep_dive flag, and — for deep-dived rows — an optional `ddf` projection with the catalog-filterable subset of Filters (surface_accessibility, confidence, evidence_grade, n_papers_selected_band, surface_call_reason, ...). One row per protein-coding gene (19,324), returned in a single response — there is no pagination (≈14 MB uncompressed, ≈0.5 MB gzipped on the wire); use GET /v1/catalog/{SYMBOL} for one gene. Top-level `row_schema` versions the row shape; `n_papers_selected_cutoffs` reports the cohort percentile thresholds (p10, p90) used to compute `ddf.n_papers_selected_band` on each row. Server-side `json_extract` slims the deep-dive read to ~1.5 KB per deep-dived row (out of ~120 KB per record). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage, .n_papers_selected_cutoffs'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .row_schema, .n_rows, .n_with_triage, .n_papers_selected_cutoffs'",
+      },
+      {
+        method: "GET",
+        path: "/v1/catalog/{SYMBOL}",
+        summary:
+          "One gene's slim catalog row: symbol, UniProt accession, the 5-DB vote vector and its count (n_sources), the deep_dive flag and the number of SURFACE-Bind sites. Backs the DB-presence strip on each gene page. 404 `gene_not_in_universe` for a symbol outside the protein-coding cohort.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/catalog/ERBB2 | jq '.n_sources, .db, .deep_dive'",
       },
       {
         method: "GET",
@@ -182,16 +190,16 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/triage/{SYMBOL}/{model}/{variant}",
         summary:
-          "Per-cell replicate detail for one (gene, model, prompt_variant) cell — any benchmarked model id (e.g. claude-opus-5-5) and variant (naive, ncbi, ncbi_effort_low, web_ncbi, pubmed_ncbi). Returns every replicate's verdict + verdict_reasoning + per-call token usage + latency, plus the agent's overall majority verdict computed across replicates. A replicate the model's safety classifier declined has a null verdict and `error: \"refusal\"`, and is excluded from the majority.",
+          "Per-cell replicate detail for one (gene, model, prompt_variant) cell — any benchmarked model id (e.g. claude-opus-5-5) and variant (naive, ncbi, ncbi_effort_low, web_ncbi, pubmed_ncbi). Returns every replicate's verdict + verdict_reasoning + per-call token usage + latency, plus a `majority` object (verdict, reason, reasoning, confidence, n_reps, agreement) computed across replicates. A replicate the model's safety classifier declined has a null verdict and `error: \"refusal\"`, and is excluded from the majority. Serves the 147 SurfaceBench genes only (it reads the canonical benchmark sweep): any other gene returns `replicates: []` and `majority: null` — use GET /v1/triage/{SYMBOL} for genome-wide runs.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2/claude-sonnet-4-6/ncbi | jq '.majority_verdict, .replicates | length'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/triage/CD19/claude-sonnet-4-6/ncbi | jq '.majority.verdict, (.replicates | length)'",
       },
       {
         method: "GET",
         path: "/v1/triage/export.tsv",
         sizeKey: "/v1/triage/export.tsv",
         summary:
-          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v2 for the full ~19k-gene Sonnet sweep. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
+          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v2 for the full 19,324-gene Sonnet sweep. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
         curl:
           "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1' | head -3",
       },
@@ -202,7 +210,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         sizeKey:
           "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&with_reasoning=1",
         summary:
-          "Full genome-wide triage export WITH agent reasoning: the ~19k-gene Sonnet/NCBI sweep with predicted_key_uncertainty and the agent's free-text verdict_reasoning paragraph appended as the trailing columns. with_reasoning=1 works on any run_id; this is the bulk counterpart to the per-gene /v1/triage/{SYMBOL} reasoning.",
+          "Full genome-wide triage export WITH agent reasoning: the 19,324-gene Sonnet/NCBI sweep with predicted_key_uncertainty and the agent's free-text verdict_reasoning paragraph appended as the trailing columns. with_reasoning=1 works on any run_id; this is the bulk counterpart to the per-gene /v1/triage/{SYMBOL} reasoning.",
         curl:
           "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1' | head -3",
       },
@@ -211,14 +219,14 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "Deep dive",
     blurb:
-      "Per-gene deep-dive SurfaceomeRecords, plus the broad genome-wide ortholog lookup and a liveness check.",
+      "Per-gene deep-dive SurfaceomeRecords (JSON, evidence ledger and Markdown brief), plus the broad genome-wide ortholog lookup, the internalization and tag-site annotations, and a liveness check.",
     endpoints: [
       {
         method: "GET",
         path: "/v1/health",
         sizeKey: "/v1/health",
         summary:
-          "Liveness check. Returns the count of deep-dive SurfaceomeRecords on file.",
+          "Liveness check: { ok, n_annotations, cache_epoch } — n_annotations is the count of deep-dive SurfaceomeRecords on file. Never rate-limited, so uptime probes always succeed.",
         curl: "curl -s https://api.deliverome.org/surfaceome/v1/health",
       },
       {
@@ -226,7 +234,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/genes",
         sizeKey: "/v1/genes",
         summary:
-          "Index of genes with a deep-dive SurfaceomeRecord on file. Summary fields only: gene_symbol, uniprot_acc, schema_version, triage_signal, surface_status, annotated_at.",
+          "Index of genes with a deep-dive SurfaceomeRecord on file. Summary fields only: gene_symbol, uniprot_acc, schema_version, prompt_corpus_version, cohort_run_id, confidence, triage_signal, surface_status, annotated_at.",
         curl: "curl -s https://api.deliverome.org/surfaceome/v1/genes | jq '.count'",
       },
       {
@@ -245,18 +253,45 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         anchor: "genes-evidence",
         sizeKey: "/v1/genes/{SYMBOL}/evidence",
         summary:
-          "The evidence ledger for one gene: { gene, evidence: [...] }, where each entry carries the verbatim quote, its source provenance (PMC / PMID / DOI / URL), evidence tier, and the cross-planner duplicate links. Split out of GET /v1/genes/{SYMBOL} (it was 42–47% of that payload) so consumers that only need the record's reasoning don't pay for the citations; fetch this to resolve the evidence_id chips back to their sources.",
+          "The evidence ledger for one gene: { gene, evidence: [...], papers: {...} }. Each evidence entry carries the verbatim quote, its source provenance (PMC / PMID / DOI / URL), evidence tier, and the cross-planner duplicate links; `papers` is NCBI citation metadata (title, authors, journal, year, PMID / PMCID / DOI) keyed by the source_id the spans cite, so a consumer can render a reference without a second lookup. Split out of GET /v1/genes/{SYMBOL} (it was 42–47% of that payload) so consumers that only need the record's reasoning don't pay for the citations; fetch this to resolve the evidence_id chips back to their sources.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/evidence | jq '.evidence | length'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/evidence | jq '(.evidence | length), (.papers | length)'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}.md",
+        anchor: "genes-markdown",
+        summary:
+          "Rich Markdown brief for one gene (text/markdown), served from R2: the record as readable prose plus reanalysis extras that are not in the JSON — canonical, isoform and ortholog sequences, per-residue DeepTMHMM topology and AlphaFold links. The most agent-friendly single-gene artifact. The symbol is matched exactly, so use the canonical HGNC case (e.g. C11orf24); a wrong-case symbol 404s `markdown_not_found`. Cached 60 s.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2.md | head -5",
       },
       {
         method: "GET",
         path: "/v1/orthologs/{SYMBOL}",
         sizeKey: "/v1/orthologs/{SYMBOL}",
         summary:
-          "Mouse and cynomolgus orthologs for any human gene from the latest Ensembl Compara release (broad genome-wide raw Compara — full-length % identity + orthology type, ~5k genes). The per-gene record's deterministic_features.orthologs is the deeper view: mouse/cyno canonical, ECD % identity + projected topology + sequence, for deep-dived genes only.",
+          "Mouse and cynomolgus orthologs for a human gene from Ensembl Compara release 115 (`release_version: \"ensembl_compara_115\"`; broad genome-wide raw Compara — full-length % identity + orthology type, ~5k genes). Any well-formed symbol returns 200; a gene with no orthologs on file gets `orthologs: []`, not a 404. The per-gene record's deterministic_features.orthologs is the deeper view: mouse/cyno canonical, ECD % identity + projected topology + sequence, for deep-dived genes only.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/orthologs/ERBB2 | jq '.release_version, (.orthologs | length)'",
+      },
+      {
+        method: "GET",
+        path: "/v1/internalization/{SYMBOL}",
+        anchor: "internalization",
+        summary:
+          "Full InternalizationRecord for one gene: the sequence-prior grade (very_high … very_low) with per-isoform topology, motifs and reasoning under `model_priors`, the literature track under `literature`, and NCBI citation metadata under `papers`. Returns 200 with a `null` body when the gene is not in the internalization cohort. The per-gene grade is also on each /v1/catalog row as `intern`.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/internalization/ERBB2 | jq '(.model_priors[] | {model, overall_grade}), .literature.overall_grade'",
+      },
+      {
+        method: "GET",
+        path: "/v1/tag-sites/{SYMBOL}",
+        anchor: "tag-sites",
+        summary:
+          "TaggedSitesFile for one gene: engineered epitope / tag insertion points — deterministic loop, disorder and terminal candidates plus literature-validated sites. Returns 200 with `has_data: false` and `sites: []` when the gene has none.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/tag-sites/ERBB2 | jq '.has_data, (.sites | length), (.sites[0] | {site_kind, residue_label})'",
       },
     ],
   },
@@ -412,8 +447,13 @@ export default async function ApiPage() {
               api.deliverome.org/surfaceome/v1/*
             </code>
             , a Cloudflare Worker backed by a public D1 mirror of the
-            project&apos;s annotation database. No authentication,
-            CORS open to all origins, no rate limits.
+            project&apos;s annotation database. No authentication and
+            CORS open to all origins; generous per-IP rate limits
+            apply (see{" "}
+            <a className={styles.extLink} href="#rate-limits">
+              Rate limits
+            </a>{" "}
+            below).
           </p>
         </header>
 
@@ -561,15 +601,22 @@ export default async function ApiPage() {
 
         <footer className={styles.footnotes}>
           <p>
-            <span className="label-mono">Caching ·</span> List endpoints
-            (<code className={styles.code}>/v1/health</code>,{" "}
+            <span className="label-mono">Caching ·</span>{" "}
+            <code className={styles.code}>Cache-Control: max-age=60</code>{" "}
+            (60 s) for list and index endpoints (
+            <code className={styles.code}>/v1</code>,{" "}
+            <code className={styles.code}>/v1/health</code>,{" "}
             <code className={styles.code}>/v1/genes</code>,{" "}
             <code className={styles.code}>/v1/catalog</code>,{" "}
-            <code className={styles.code}>/v1/triage/*</code>) ship{" "}
-            <code className={styles.code}>Cache-Control: max-age=60</code>;
-            per-gene records, benchmark, and ortholog endpoints ship{" "}
-            <code className={styles.code}>max-age=86400</code> (one day).
-            Build-time consumers should use{" "}
+            <code className={styles.code}>/v1/releases</code>, …), per-gene
+            triage, catalog rows, tag sites and the{" "}
+            <code className={styles.code}>.md</code> briefs;{" "}
+            <code className={styles.code}>max-age=86400</code> (one day) for
+            per-gene records, evidence ledgers, benchmark, orthologs,
+            internalization and the TSV exports;{" "}
+            <code className={styles.code}>max-age=31536000, immutable</code>{" "}
+            (one year) for revision bodies and DOI-published releases.
+            Not-found responses cache for 60 s. Build-time consumers should use{" "}
             <code className={styles.code}>cache: &quot;force-cache&quot;</code>{" "}
             so the response is baked into the static artifact. If a
             server-side lookup used to enrich the record hiccups, the
@@ -578,6 +625,62 @@ export default async function ApiPage() {
             comma-separated list of the fields that may be stale/null) and{" "}
             <code className={styles.code}>Cache-Control: no-store</code> —
             retry rather than caching it yourself.
+          </p>
+          <p id="rate-limits">
+            <span className="label-mono">Rate limits ·</span> Reads are
+            rate-limited per client IP. The limits are generous — they
+            exist to bound cost under abuse, not to gate access — and
+            tighter on the heavy endpoints (
+            <code className={styles.code}>/v1/catalog</code>, every{" "}
+            <code className={styles.code}>*.tsv</code> export, and{" "}
+            <code className={styles.code}>/v1/releases/{"{version}"}</code>
+            ). <code className={styles.code}>/v1/health</code> is never
+            limited. Over the limit, the API answers{" "}
+            <code className={styles.code}>429</code> with{" "}
+            <code className={styles.code}>{`{"error":"rate_limited"}`}</code>{" "}
+            and <code className={styles.code}>Retry-After: 60</code> — wait
+            that long before retrying. For bulk work, pace requests (a
+            couple per second is plenty), prefer the TSV exports or{" "}
+            <code className={styles.code}>/v1/catalog</code> over
+            thousands of per-gene calls, and send an identifying{" "}
+            <code className={styles.code}>User-Agent</code>.
+          </p>
+          <p>
+            <span className="label-mono">Cite &amp; licence ·</span> Data
+            served by this API is{" "}
+            <a
+              className={styles.extLink}
+              href="https://creativecommons.org/licenses/by/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              CC BY 4.0
+            </a>
+            : cite the data concept DOI{" "}
+            <a
+              className={styles.extLink}
+              href="https://doi.org/10.5281/zenodo.20805383"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              10.5281/zenodo.20805383
+            </a>{" "}
+            (or a numbered release&apos;s version DOI, listed by{" "}
+            <code className={styles.code}>/v1/releases</code>). The code,
+            including this Worker and site, is MIT —{" "}
+            <a
+              className={styles.extLink}
+              href="https://doi.org/10.5281/zenodo.22116981"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              10.5281/zenodo.22116981
+            </a>
+            . See{" "}
+            <a className={styles.extLink} href="/reproducibility/">
+              Data and code availability
+            </a>
+            .
           </p>
           <p>
             <span className="label-mono">Schema ·</span> Per-gene records

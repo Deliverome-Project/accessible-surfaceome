@@ -94,20 +94,30 @@ The citation ledger is served separately at `/v1/genes/:symbol/evidence`, which 
 ## Public API
 
 ```
+GET /v1                                    — self-describing index of every endpoint
 GET /v1/health
-GET /v1/genes                      — list of annotated genes
-GET /v1/genes/:symbol              — full SurfaceomeRecord
-GET /v1/genes/:symbol/evidence     — the citation ledger for one gene
-GET /v1/orthologs/:symbol          — mouse + cyno orthologs
-GET /v1/benchmark[/:symbol]        — curated truth labels
-GET /v1/triage/:symbol             — per-call model verdicts
-GET /v1/catalog                    — the full catalog
-GET /v1/catalog/:symbol            — one catalog row
-GET /v1/genes/:symbol.md           — the record as Markdown
-GET /v1/meta/sizes                 — payload sizes per endpoint
+GET /v1/genes                              — list of annotated genes
+GET /v1/genes/:symbol                      — full SurfaceomeRecord
+GET /v1/genes/:symbol/evidence             — the citation ledger for one gene
+GET /v1/genes/:symbol.md                   — the record as Markdown
+GET /v1/genes/:symbol/revisions[/:n]       — archived revision history
+GET /v1/releases[/:version[/genes/:symbol]] — numbered data releases
+GET /v1/orthologs/:symbol                  — mouse + cyno orthologs
+GET /v1/internalization/:symbol            — internalization record
+GET /v1/tag-sites/:symbol                  — epitope/tag insertion sites
+GET /v1/catalog                            — the full catalog
+GET /v1/catalog/:symbol                    — one catalog row
+GET /v1/triage/:symbol                     — per-call model verdicts
+GET /v1/triage/:symbol/:model/:variant     — one benchmark cell's replicates
+GET /v1/triage/export.tsv                  — bulk triage export (TSV)
+GET /v1/benchmark[/:symbol]                — curated truth labels
+GET /v1/benchmark/matrix                   — truth + DB votes + model verdicts
+GET /v1/benchmark/export.tsv               — bulk benchmark export (TSV)
+GET /v1/replicates                         — reproducibility replicates (not published records)
+GET /v1/meta/sizes                         — payload sizes per endpoint
 ```
 
-Served from `https://api.deliverome.org/surfaceome/v1/…`; the `surfaceome/` prefix is stripped before route matching, so `/v1/...` is the contract. [`GET /v1`](https://api.deliverome.org/surfaceome/v1) is a self-describing index of every endpoint.
+Served from `https://api.deliverome.org/surfaceome/v1/…`; the `surfaceome/` prefix is stripped before route matching, so `/v1/...` is the contract. [`GET /v1`](https://api.deliverome.org/surfaceome/v1) is the authoritative, self-describing index of every endpoint, and the [API docs page](https://surfaceome.deliverome.org/api/) documents each one. No authentication; reads are rate-limited per IP (a `429` carries `Retry-After: 60`).
 
 For agents and scripts there is a machine-readable front door: [llms.txt](https://surfaceome.deliverome.org/llms.txt) points at the whole surface, [surfaceome-api.skill.md](https://surfaceome.deliverome.org/surfaceome-api.skill.md) is a downloadable agent skill, and the [API docs page](https://surfaceome.deliverome.org/api/) carries worked `curl` examples. Any gene is also available as Markdown: `/v1/genes/{SYMBOL}.md`. Records are read from a Cloudflare D1 database through a read-only Worker in [`cloudflare/workers/surfaceome_api/`](cloudflare/workers/surfaceome_api/). Deploy with `npx wrangler deploy` from that directory — there is no auto-deploy.
 

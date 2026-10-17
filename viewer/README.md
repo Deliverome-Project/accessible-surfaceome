@@ -28,24 +28,29 @@ npm run build    # next build → ./out (static)
 
 ## Data contract
 
-Per-gene records live under `public/data/surfaceome/{SYMBOL}.json`.
-They must validate against the
-[`SurfaceomeRecord`](../src/accessible_surfaceome/tools/_shared/models.py)
-Pydantic schema. The page bodies read these JSONs via `fs` at build
-time and SSG every gene through `generateStaticParams`.
-
-Reference record: `GPR75.json` (orphan class-A GPCR worked
-example for the v1.0.0 schema).
-
-Same files double as the static fetch endpoint:
-`https://api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` (JSON) and
-`https://api.deliverome.org/surfaceome/v1/genes/{SYMBOL}.md` (Markdown). The
-`public/data/surfaceome/` copies are build-time inputs, not public URLs.
-
-Agents that prefer the live API hit the read-only Worker:
+Public D1 is the **single source of truth** for per-gene deep-dive
+records, and the viewer reads them only through the read-only Worker at
 [`api.deliverome.org/surfaceome/v1/genes/{SYMBOL}`](https://api.deliverome.org/surfaceome/v1/genes)
-(Worker source: `cloudflare/workers/surfaceome_api/`, bound to the
-public D1 mirror `surfaceome_public`). Same `SurfaceomeRecord` shape.
+(Worker source: `cloudflare/workers/surfaceome_api/`, bound to the public
+D1 mirror `surfaceome_public`). Records validate against the
+[`SurfaceomeRecord`](../src/accessible_surfaceome/tools/_shared/models.py)
+Pydantic schema. There is **no on-disk fallback**: the gene page is a
+single client-rendered shell (`app/gene/`) that fetches
+`/v1/genes/{SYMBOL}` and `/v1/genes/{SYMBOL}/evidence` in the browser, and
+the catalogue and benchmark pages are built from `/v1/catalog` and
+`/v1/benchmark/matrix` (pre-fetched by `build:snapshot`, see below). With
+`SURFACEOME_API_BASE=local` the catalogue builds with zero rows and no
+gene routes, so an offline CI build still exercises the chrome without a
+network hit.
+
+The handful of files committed under `public/data/surfaceome/`
+(`{SYMBOL}.json` + `.md`) are a small curated sample, not a fallback the
+pages read. `npm run build:exports` (a standalone ops job) can
+materialize JSON + Markdown for the whole published set from the Worker.
+The public Markdown brief for any gene is
+`https://api.deliverome.org/surfaceome/v1/genes/{SYMBOL}.md`, served from
+R2. See the [API docs page](https://surfaceome.deliverome.org/api/) for
+every endpoint.
 
 ## Deploy to Cloudflare Pages
 
@@ -137,4 +142,5 @@ populate); if the threshold trips, just retry once the Worker is healthy.
   Expression, Landscape, RiskFlags) + primitives (StatusPill, FieldRow,
   CiteCount, SectionCard, DBVotes, GeneHeader)
 - `lib/surfaceome-types.ts` — TypeScript mirror of the Pydantic schema
-- `lib/surfaceome.ts` — fs-backed loader + enum prettifier
+- `lib/surfaceome.ts` — Worker-backed loader (catalog, benchmark, gene
+  list) + enum prettifier
