@@ -17,9 +17,17 @@ collapses them to:
      index so a reader can see per-rep variability instead of a
      pre-aggregated majority view.
 
-Both TSVs are fetched from the public API
+  3. deep-dive-preset-membership.tsv
+     One row per deep-dive gene with its public-catalog preset membership.
+
+All three are fetched from the public API
 (``api.deliverome.org/surfaceome/v1/``) and joined client-side. No
-private credentials needed.
+private credentials needed. Output goes to ``--out-dir`` (default
+/tmp/zenodo_deposit_consolidated, which is also update_zenodo_draft.py's
+default ``--work-dir``), together with ``deposit_manifest.json``.
+
+Step 1 of the numbered-release procedure after ``cut_data_release.py
+--execute`` (see scripts/release/README.md).
 """
 from __future__ import annotations
 
@@ -413,6 +421,12 @@ def validate_and_write_manifest(genome_path: Path, bench_path: Path,
         "files": [genome_path.name, bench_path.name, presets_path.name],
         "genome_rows": len(genome),
         "genome_runs": dict(sorted(lanes.items())),
+        # The PubMed lanes overlap on a few genes, so their row total is not
+        # their gene count; the README states both.
+        "genome_pubmed_rows": sum(n for run, n in lanes.items() if run != GENOME_NCBI_RUN_ID),
+        "genome_pubmed_genes": len(
+            {r["gene_symbol"] for r in genome if r["run_id"] != GENOME_NCBI_RUN_ID}
+        ),
         "benchmark_rows": len(bench),
         "benchmark_cells": len(cells),
         "benchmark_genes": n_genes,
@@ -426,7 +440,16 @@ def validate_and_write_manifest(genome_path: Path, bench_path: Path,
     return out
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    global OUT_DIR
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--out-dir", type=Path, default=OUT_DIR,
+                    help="where to write the TSVs + deposit_manifest.json "
+                         "(default: %(default)s)")
+    OUT_DIR = ap.parse_args(argv).out_dir
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     genome_path = build_genome_consolidated()
     bench_path = build_bench_multirep()

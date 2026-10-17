@@ -232,6 +232,9 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
     },
+    # TODO (pending owner decision — scripts/release/README.md): no
+    # numbered-release script uploads this file; decide whether releases
+    # carry it before relying on the claim below.
     # Per-accession surface calls under both rules: each source's native
     # flag and the SurfaceBench-recalibrated one. Deposited because the
     # recalibrated rule now decides DB membership on the API, the viewer

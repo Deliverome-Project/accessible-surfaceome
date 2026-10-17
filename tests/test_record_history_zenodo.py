@@ -78,12 +78,14 @@ def test_draft_version_flow(tmp_path: Path) -> None:
         return httpx.Response(200, json={})
 
     http = httpx.Client(transport=httpx.MockTransport(handler))
-    url = create_draft_version(
+    draft = create_draft_version(
         token="t", tarball=tarball, version="1.3.0", http=http, api=API
     )
 
     calls = rec.calls()
-    assert url == "https://zenodo.test/deposit/999"
+    assert draft.html_url == "https://zenodo.test/deposit/999"
+    # No top-level "id" on this fixture: taken from the draft's self link.
+    assert draft.deposition_id == "999"
     assert ("DELETE", "/api/files/old") in calls  # old tarball replaced
     assert ("DELETE", "/api/files/readme") not in calls  # other files kept
     assert ("PUT", "/api/files/bucket/deep_dives_1.3.0.tar.gz") in calls

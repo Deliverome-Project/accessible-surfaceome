@@ -26,6 +26,7 @@ import io
 import json
 import tarfile
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
@@ -79,6 +80,19 @@ class ZenodoDraftError(RuntimeError):
     """The draft could not be created or located — needs a human in the Zenodo UI."""
 
 
+@dataclass(frozen=True)
+class DraftVersion:
+    """The draft new version just created.
+
+    ``html_url`` is the page a human reviews and publishes from;
+    ``deposition_id`` is what ``update_zenodo_draft.py --deposit-id`` takes
+    to sync the TSVs + README onto this draft.
+    """
+
+    html_url: str
+    deposition_id: str
+
+
 def create_draft_version(
     *,
     token: str,
@@ -88,8 +102,8 @@ def create_draft_version(
     api: str = ZENODO_API,
     concept_recid: str = DATA_CONCEPT_RECID,
     extra_files: Sequence[Path] = (),
-) -> str:
-    """Create the draft; return its web URL for review.
+) -> DraftVersion:
+    """Create the draft; return its review URL and deposition id.
 
     ``extra_files`` are uploaded alongside the tarball, each replacing an
     inherited file of the same name (e.g. the reproducibility-replicate
@@ -168,4 +182,7 @@ def create_draft_version(
     http.put(
         d["links"]["self"], headers=auth_header, json={"metadata": meta}
     ).raise_for_status()
-    return d["links"]["html"]
+    # The deposit API returns the id on the draft body; fall back to the last
+    # path segment of its own self link (…/deposit/depositions/{id}).
+    deposition_id = str(d.get("id") or d["links"]["self"].rstrip("/").rsplit("/", 1)[-1])
+    return DraftVersion(html_url=d["links"]["html"], deposition_id=deposition_id)

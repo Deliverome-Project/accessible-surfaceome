@@ -9,8 +9,14 @@
 --execute: (1) refuses unless pyproject.toml says the same version,
 (2) sweeps every gene, (3) writes the release + members (immutable),
 (4) exports deep_dives_X.Y.Z.tar.gz from R2, (5) creates a DRAFT new
-version of the Zenodo data record. Then YOU review + publish the draft on
-Zenodo, run --set-doi with the version DOI, and create GitHub release vX.Y.Z.
+version of the Zenodo data record carrying that tarball + the
+reproducibility-replicate bundle. It then prints the rest of the
+procedure with the new draft's deposition id filled in (see
+``next_steps``): build the consolidated TSVs, sync them + the README onto
+the draft with update_zenodo_draft.py (dry-run first), review + publish on
+Zenodo, run --set-doi with the version DOI, and create GitHub release
+vX.Y.Z. scripts/release/README.md ("Numbered data release") documents the
+same sequence.
 
 Right after the pyproject-version check — including on a plain (non
 ``--execute``) dry-run — this does one read-only D1 lookup for whether
@@ -130,6 +136,37 @@ def _get_object_with_retry(key: str) -> bytes | None:
             return None
         raise
     return resp["Body"].read()
+
+
+def next_steps(version: str, deposition_id: str, html_url: str) -> str:
+    """The rest of the release procedure, ready to paste, after the draft exists.
+
+    The draft inherits the previous version's TSVs + README; until they are
+    refreshed onto it, it describes the previous release. Kept as a function
+    so tests pin the exact commands.
+    """
+    return "\n".join(
+        [
+            f"Zenodo DRAFT for {version}: {html_url}",
+            f"  deposition id: {deposition_id}",
+            "",
+            "Next steps (in order):",
+            "  1. Build the consolidated TSVs from the public API:",
+            "       uv run python scripts/release/build_consolidated_deposit_tsvs.py",
+            "  2. Sync the TSVs + README + description onto this draft — dry-run first:",
+            "       uv run python scripts/release/update_zenodo_draft.py "
+            f"--deposit-id {deposition_id} --dry-run",
+            "       uv run python scripts/release/update_zenodo_draft.py "
+            f"--deposit-id {deposition_id}",
+            f"  3. Review the draft at {html_url} (files, README, publication_date)",
+            "     and click Publish. Note the new VERSION DOI (not the concept DOI).",
+            "  4. Record the DOI against the release:",
+            f"       uv run python scripts/release/cut_data_release.py --set-doi {version} "
+            "10.5281/zenodo.<version-record-id>",
+            "  5. Create the GitHub release (the code record is archived from it):",
+            f"       gh release create v{version} --generate-notes",
+        ]
+    )
 
 
 def main() -> None:
@@ -275,7 +312,7 @@ def main() -> None:
     replicates = build_replicates_tarball(ROOT / "data/processed/deep_dive_concordance_v1", args.out_dir)
     with httpx.Client(timeout=900) as http:
         try:
-            url = create_draft_version(
+            draft = create_draft_version(
                 token=token,
                 tarball=tarball,
                 version=version,
@@ -293,9 +330,7 @@ def main() -> None:
         except httpx.HTTPStatusError as exc:
             print(f"{exc} — re-run cut_data_release.py with --resume")
             raise SystemExit(1) from exc
-    print(
-        f"Zenodo DRAFT: {url}\nReview + publish it, then: --set-doi {version} <version DOI>"
-    )
+    print(next_steps(version, draft.deposition_id, draft.html_url))
 
 
 if __name__ == "__main__":

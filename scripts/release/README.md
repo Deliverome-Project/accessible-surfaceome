@@ -3,6 +3,87 @@
 One-shot rituals for promoting `accessible-surfaceome` to durable
 storage. Run manually, only when you're ready.
 
+## Numbered data release (current flow)
+
+This is how a new version of the **data record** (concept DOI
+`10.5281/zenodo.20805383`) is made, e.g. release 1.3.0. Each release gets
+its own version DOI under that concept DOI; the concept DOI always
+resolves to the latest one. Release 1.0.0 (`10.5281/zenodo.20805384`)
+predates this flow and is a published, immutable version — nothing here
+writes to it.
+
+A finished release draft holds exactly these files, and its README
+documents exactly these (`update_zenodo_draft.py` refuses to sync if the
+two disagree):
+
+| File | Produced by |
+|---|---|
+| `triage-runs-genome-with-reasoning.tsv` | `build_consolidated_deposit_tsvs.py` |
+| `triage-benchmark-with-reasoning.tsv` | `build_consolidated_deposit_tsvs.py` |
+| `deep-dive-preset-membership.tsv` | `build_consolidated_deposit_tsvs.py` |
+| `deep_dives_X.Y.Z.tar.gz` | `cut_data_release.py` (`releases.export_release`) |
+| `deep-dive-reproducibility-replicates-v1.tar.gz` | `cut_data_release.py` (re-synced by `update_zenodo_draft.py`) |
+| `README.md` | `update_zenodo_draft.py` |
+
+`deep_dives_X.Y.Z.tar.gz` holds, per member gene, `genes/SYM.json` (the
+record, without its evidence), `genes/SYM.evidence.json`
+(`{gene, evidence[], papers{}}`) and `genes/SYM.md`, plus `manifest.tsv`
+(revision, record-history content hashes `*_hash`, and the raw-byte
+`*_sha256` of every file — only the latter verify the files).
+
+The sequence, in order. `cut_data_release.py --execute` prints steps 3–7
+itself with the new draft's deposition id filled in.
+
+```bash
+# 1. Bump the version in pyproject.toml (the viewer badge reads it too) and
+#    merge that to main.
+
+# 2. Plan, then cut: sweeps record history, writes the release rows
+#    (immutable), exports deep_dives_X.Y.Z.tar.gz from R2, and opens a DRAFT
+#    new version of the data record carrying it + the replicate bundle.
+uv run python scripts/release/cut_data_release.py --version X.Y.Z
+uv run python scripts/release/cut_data_release.py --version X.Y.Z --execute
+#    → prints the draft URL and its deposition id. If it died after the cut,
+#      re-run with --resume --execute.
+
+# 3. Build the consolidated TSVs + deposit_manifest.json from the public API.
+uv run python scripts/release/build_consolidated_deposit_tsvs.py
+
+# 4. Sync the TSVs + README + description onto the draft — dry-run first.
+#    (The draft inherits the previous version's TSVs and description until
+#    this runs, so it describes the previous release.)
+uv run python scripts/release/update_zenodo_draft.py --deposit-id <draft id> --dry-run
+uv run python scripts/release/update_zenodo_draft.py --deposit-id <draft id>
+
+# 5. Review the draft on Zenodo (files, README, publication_date — the
+#    draft's date is the day it was opened) and click Publish. Note the new
+#    VERSION DOI.
+
+# 6. Record the DOI against the release (writes D1 immediately; no dry-run).
+uv run python scripts/release/cut_data_release.py --set-doi X.Y.Z 10.5281/zenodo.<version-record-id>
+
+# 7. Create the GitHub release; the code record is archived from it.
+gh release create vX.Y.Z --generate-notes
+```
+
+Both build/sync scripts default to `/tmp/zenodo_deposit_consolidated`;
+pass the same `--out-dir` / `--work-dir` to both to use another
+directory. `update_zenodo_draft.py --dry-run` without `--deposit-id`
+renders the README + description into the work dir and runs the document
+checks with no Zenodo calls, which is the way to review the README text.
+
+> **TODO — pending owner decision: `db_optimized_cutoffs.tsv`.** The
+> legacy `publish-archive.py` notes below (and its `EXTRA_FILES` comment)
+> describe `data/processed/triage_bench/db_optimized_cutoffs.tsv` as
+> deliberately deposited, but no script in the numbered-release flow
+> uploads it, and the release README does not describe it. Whether it
+> joins the release file set is undecided; until it is, neither add it to
+> a release draft nor claim it in the deposit README. If it is added, put
+> it in `update_zenodo_draft.py`'s `release_filenames` + README together.
+
+The sections below describe `publish-archive.py`, which predates numbered
+releases.
+
 ## Architecture: three Zenodo record series + per-figure SWHIDs
 
 Long-term citable storage for the project splits across four channels:
@@ -14,12 +95,12 @@ Long-term citable storage for the project splits across four channels:
    <https://zenodo.org/account/settings/github/>. You do nothing per
    release once this is on.
 
-2. **Heavy data outputs** (Zenodo record series, **this script**) —
-   triage-runs with reasoning, benchmark runs with reasoning, the
-   eventual deep-dive bundle. Files too large for the repo or not
-   committed at all. Manual deposit each time you want to mint a fresh
-   DOI for new data. Lives at the reserved DOI
-   `10.5281/zenodo.20805384`.
+2. **Heavy data outputs** (Zenodo record series) — triage runs with
+   reasoning, benchmark runs with reasoning, the deep-dive records.
+   Concept DOI `10.5281/zenodo.20805383`; each numbered release is a
+   new version with its own version DOI, made by the numbered-release
+   flow above (1.0.0, `10.5281/zenodo.20805384`, was deposited with
+   `publish-archive.py`).
 
 3. **Manuscript** (Zenodo record series, **separate from data**,
    uses bioRxiv DOI as external) — a one-record-per-preprint series
@@ -45,7 +126,13 @@ manuscript record (3) links to the data record via Related Identifier
 relationships; Zenodo's UI surfaces them on every record's landing
 page.
 
-## What `publish-archive.py` does
+## What `publish-archive.py` does (legacy / ad-hoc deposits)
+
+**Legacy.** New versions of the data record are made with the
+numbered-release flow at the top of this file, not with this script. It
+remains for ad-hoc deposits and for its Software Heritage submission and
+provenance-audit steps; its `EXTRA_FILES` list (per-lane triage TSVs,
+`deep_dives_all.tar.gz`) is the 1.0.0-era file set, not a release's.
 
 Three release tasks in one command:
 
@@ -80,7 +167,8 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
      Sonnet + Opus × 4 prompt variants × 147 bench genes, with DB
      votes + truth labels joined in by the Worker. From
      `/v1/benchmark/export.tsv`.
-   - `db_optimized_cutoffs.tsv` — one row per UniProt accession with
+   - `db_optimized_cutoffs.tsv` (**see the TODO at the top — no
+     numbered-release script uploads it**) — one row per UniProt accession with
      each source's native surface call and its SurfaceBench-recalibrated
      one. UniProt is expanded (TM > 0, signal peptide, or a strict
      subcellular term) and CSPA tightened to high-confidence only; GO,
@@ -315,15 +403,15 @@ without a second DOI to cite.
 ### Why a separate record (not a file in the data deposit)
 
 The "I already have a DOI" option in Zenodo's upload form applies to
-the **whole record's primary DOI**. If you used it on the data deposit
-(20805384), the deposit's identity would become "this is the bioRxiv
+the **whole record's primary DOI**. If you used it on the data deposit,
+the deposit's identity would become "this is the bioRxiv
 preprint" — semantically wrong since the deposit also contains
 genome-wide triage TSVs, the deep-dive bundle, and the README. The
 clean split:
 
 | Record | DOI | Contents |
 |---|---|---|
-| `zenodo.20805384` (this script's data record) | Zenodo-minted `10.5281/zenodo.20805384` | triage TSVs + deep-dive bundle (when ready) + README |
+| Data record, concept `zenodo.20805383` (one version per release; 1.0.0 = `zenodo.20805384`) | Zenodo-minted, one version DOI per release | triage + benchmark TSVs + deep-dive tarball + replicates + README |
 | **New manuscript record** | bioRxiv DOI (external) | `manuscript.pdf` + `manuscript.xml` (JATS) + optionally `manuscript.txt` |
 
 ### The procedure (post-bioRxiv-acceptance)
@@ -351,7 +439,7 @@ clean split:
      (some text-miners prefer it; harmless to add)
 6. **Set license** = CC-BY 4.0 (matches the rest of the project).
 7. **Add Related Identifiers** in the metadata form:
-   - `isSupplementedBy` → `10.5281/zenodo.20805384` (the data record)
+   - `isSupplementedBy` → `10.5281/zenodo.20805383` (the data record's concept DOI)
    - (data record's metadata, separately) `isSupplementTo` →
      the bioRxiv DOI
 8. **Publish.** Zenodo registers the record under the bioRxiv DOI;

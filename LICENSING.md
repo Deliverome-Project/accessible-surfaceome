@@ -2,9 +2,12 @@
 
 This project integrates ~15 public data sources into a derived catalogue of
 human cell-surface proteins. The **code** is MIT (see `LICENSE`). The **derived
-data** shipped in this repository (candidate-universe TSVs, per-gene deep-dive
-records, figure TSVs) is distributed under CC BY 4.0 via the Zenodo deposit
-(concept DOI `10.5281/zenodo.20805383`).
+data** is distributed under CC BY 4.0: the TSVs committed in this repository
+(candidate universe, figure inputs) and the Zenodo data deposit (concept DOI
+`10.5281/zenodo.20805383`), which holds the triage and benchmark runs, the
+per-gene deep-dive records, deep-dive preset membership and the
+reproducibility replicates. The figure TSVs are not in that deposit; they are
+cited through their figure gists' SWHIDs.
 
 This file records the upstream license for each source, what we use it for, and
 whether any upstream payload is redistributed here. Attribution strings shown to

@@ -203,7 +203,12 @@ never lands in history permanently. Numbered releases
 (`data_release`/`data_release_member`) are cut with
 `scripts/release/cut_data_release.py --version X.Y.Z` (after bumping
 `pyproject.toml`); it drafts, never publishes, the Zenodo data-record
-version. History endpoints are path-based only (the zone cache rule
+version, and prints the remaining steps (consolidated TSVs →
+`update_zenodo_draft.py --deposit-id` → publish → `--set-doi` → GitHub
+release), documented in full under "Numbered data release" in
+[scripts/release/README.md](scripts/release/README.md). Its tarball's
+`manifest.tsv` has record-history content hashes (`*_hash`, not file
+checksums) and raw-byte `*_sha256` columns. History endpoints are path-based only (the zone cache rule
 ignores query strings): `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`,
 `/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]`. Cohort-scale I/O (the
 seed, the sweep) is kept off the shared Cloudflare account API budget
