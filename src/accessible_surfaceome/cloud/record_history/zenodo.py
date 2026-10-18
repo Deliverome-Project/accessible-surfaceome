@@ -26,10 +26,13 @@ import io
 import json
 import tarfile
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
 import httpx
+
+from accessible_surfaceome.release.figure_source_data import TARBALL_PREFIX as FIGURE_SOURCE_PREFIX
 
 ZENODO_API = "https://zenodo.org/api"
 DATA_CONCEPT_RECID = "20805383"  # concept DOI 10.5281/zenodo.20805383
@@ -45,11 +48,49 @@ def canonical_creators() -> list[dict]:
     ORCIDs. One source keeps the two record series in step.
     """
     return json.loads(ZENODO_JSON.read_text(encoding="utf-8"))["creators"]
+
+
+# Funders, as listed in the manuscript's Funding section. Zenodo matches
+# funders by ROR id; Renaissance Philanthropy has no ROR record, so it goes
+# in by name. The legacy deposit API used above cannot read or write
+# funding, so scripts/release/apply_zenodo_rdm_metadata.py sets it through
+# the InvenioRDM API as the last step before publishing.
+FUNDERS = [
+    {"funder": {"id": "056y0v115"}},  # Anthropic
+    {"funder": {"id": "00ydx1s47"}},  # Astera Institute
+    {"funder": {"name": "Renaissance Philanthropy"}},
+]
+DATA_LICENSE = "cc0-1.0"
+CODE_LICENSE = "mit"
+
+
+def rdm_creators() -> list[dict]:
+    """``canonical_creators()`` in the InvenioRDM shape (ORCID as an identifier)."""
+    out = []
+    for c in canonical_creators():
+        family, given = (s.strip() for s in c["name"].split(",", 1))
+        person = {"type": "personal", "given_name": given, "family_name": family}
+        if c.get("orcid"):
+            person["identifiers"] = [{"scheme": "orcid", "identifier": c["orcid"]}]
+        entry: dict = {"person_or_org": person}
+        if c.get("affiliation"):
+            entry["affiliations"] = [{"name": c["affiliation"]}]
+        out.append(entry)
+    return out
+
+
 # Reproducibility replicates (Supplementary Figure 16). Not published records —
 # a frozen study bundle, deposited alongside every release from the one it
 # first ships in (a new version inherits the file; re-uploading an unchanged
 # bundle is byte-identical because the tarball is built deterministically).
 REPLICATES_TARBALL_NAME = "deep-dive-reproducibility-replicates-v1.tar.gz"
+
+# Release files named for their version. A new version inherits the previous
+# version's copies, which create_draft_version deletes: the deep-dive tarball
+# is replaced right there, and ``figure-source-data_X.Y.Z.tar.gz``
+# (accessible_surfaceome.release.figure_source_data) is uploaded by
+# scripts/release/update_zenodo_draft.py.
+VERSIONED_FILE_PREFIXES: tuple[str, ...] = ("deep_dives", FIGURE_SOURCE_PREFIX)
 
 
 def build_replicates_tarball(bundle: Path, out_dir: Path) -> Path:
@@ -79,6 +120,19 @@ class ZenodoDraftError(RuntimeError):
     """The draft could not be created or located — needs a human in the Zenodo UI."""
 
 
+@dataclass(frozen=True)
+class DraftVersion:
+    """The draft new version just created.
+
+    ``html_url`` is the page a human reviews and publishes from;
+    ``deposition_id`` is what ``update_zenodo_draft.py --deposit-id`` takes
+    to sync the TSVs + README onto this draft.
+    """
+
+    html_url: str
+    deposition_id: str
+
+
 def create_draft_version(
     *,
     token: str,
@@ -88,8 +142,8 @@ def create_draft_version(
     api: str = ZENODO_API,
     concept_recid: str = DATA_CONCEPT_RECID,
     extra_files: Sequence[Path] = (),
-) -> str:
-    """Create the draft; return its web URL for review.
+) -> DraftVersion:
+    """Create the draft; return its review URL and deposition id.
 
     ``extra_files`` are uploaded alongside the tarball, each replacing an
     inherited file of the same name (e.g. the reproducibility-replicate
@@ -138,13 +192,15 @@ def create_draft_version(
     d = draft.json()
 
     # The new version inherits the previous version's files; replace only
-    # the deep-dive tarball. The triage TSVs, preset-membership TSV and README
-    # carry over from the previous version: refresh them with
+    # the deep-dive tarball, and drop the previous version's figure-source-data
+    # tarball (update_zenodo_draft.py uploads this version's). The triage TSVs,
+    # preset-membership TSV and README carry over from the previous version:
+    # refresh them with
     # `scripts/release/update_zenodo_draft.py --deposit-id <this draft's id>`
     # after build_consolidated_deposit_tsvs.py.
     extra_names = {p.name for p in extra_files}
     for f in d.get("files", []):
-        if f["filename"].startswith("deep_dives") or f["filename"] in extra_names:
+        if f["filename"].startswith(VERSIONED_FILE_PREFIXES) or f["filename"] in extra_names:
             http.delete(f["links"]["self"], headers=auth_header).raise_for_status()
     for path in (tarball, *extra_files):
         with path.open("rb") as fh:
@@ -164,8 +220,12 @@ def create_draft_version(
     meta.pop("prereserve_doi", None)
     meta["version"] = version
     meta["creators"] = canonical_creators()
+    meta["license"] = "cc-zero"  # the legacy API's id for CC0 1.0 (DATA_LICENSE)
     meta["publication_date"] = date.today().isoformat()
     http.put(
         d["links"]["self"], headers=auth_header, json={"metadata": meta}
     ).raise_for_status()
-    return d["links"]["html"]
+    # The deposit API returns the id on the draft body; fall back to the last
+    # path segment of its own self link (…/deposit/depositions/{id}).
+    deposition_id = str(d.get("id") or d["links"]["self"].rstrip("/").rsplit("/", 1)[-1])
+    return DraftVersion(html_url=d["links"]["html"], deposition_id=deposition_id)

@@ -15,7 +15,7 @@ The preprint is pending. Until it appears, please cite the archived code and dat
 | What | Cite | Licence |
 |---|---|---|
 | Code, including the viewer | [10.5281/zenodo.22116981](https://doi.org/10.5281/zenodo.22116981) | MIT |
-| Data — triage runs, benchmark runs, deep-dive records | [10.5281/zenodo.20805383](https://doi.org/10.5281/zenodo.20805383) | CC BY 4.0 |
+| Data — triage runs, benchmark runs, deep-dive records | [10.5281/zenodo.20805383](https://doi.org/10.5281/zenodo.20805383) | CC0 1.0 |
 
 Both are concept DOIs and always resolve to the newest version. Individual figures are separately citable: each is deposited with Software Heritage, and the figure ↔ SWHID ↔ gist map is [`figure_swhids.json`](data/analysis/figures/figure_swhids.json).
 

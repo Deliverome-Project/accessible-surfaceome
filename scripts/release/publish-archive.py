@@ -233,6 +233,8 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
     },
+    # Numbered releases ship this file inside figure-source-data_X.Y.Z.tar.gz
+    # (accessible_surfaceome.release.figure_source_data), not as a loose file.
     # Per-accession surface calls under both rules: each source's native
     # flag and the SurfaceBench-recalibrated one. Deposited because the
     # recalibrated rule now decides DB membership on the API, the viewer
@@ -388,7 +390,7 @@ SEED_METADATA = {
             },
         ],
         "access_right": "open",
-        "license": "cc-by-4.0",
+        "license": "cc-zero",
         "keywords": [
             "surface proteome",
             "drug delivery",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import io
 import os
 import re
@@ -15,6 +16,26 @@ from accessible_surfaceome.cloud.record_history.store import blob_key
 
 # 3 columns per member row; D1 caps a statement at 100 bound parameters.
 MEMBER_ROWS_PER_INSERT = 100 // 3
+
+# manifest.tsv columns in a release tarball. The three ``*_hash`` columns are
+# record-history CONTENT hashes (cloud/record_history/hashing.py: canonical
+# JSON with volatile fields stripped, Markdown with its timestamp
+# normalized). They identify a revision and name its R2 blob, but they are
+# not checksums of the files, so a reader running sha256sum against them
+# sees every file "fail". The three ``*_sha256`` columns are the plain
+# sha256 of the exact bytes written into the tarball. They come last so the
+# original six columns keep their positions.
+MANIFEST_COLUMNS: tuple[str, ...] = (
+    "gene_symbol",
+    "hgnc_id",
+    "revision",
+    "json_hash",
+    "evidence_hash",
+    "md_hash",
+    "json_sha256",
+    "evidence_sha256",
+    "md_sha256",
+)
 
 _DOI_RE = re.compile(r"^10\.5281/zenodo\.\d+$")
 
@@ -171,6 +192,10 @@ def export_release(
     ``os.replace`` once every part has been fetched and written; on any
     failure the partial file is removed and neither it nor the final
     tarball is left behind.
+
+    ``manifest.tsv`` carries both hash families (see ``MANIFEST_COLUMNS``):
+    the record-history content hashes, and the raw-byte sha256 of each file
+    as written, which is what a reader verifies the files against.
     """
     rows = d1.query(
         "SELECT m.gene_symbol AS gene_symbol, r.hgnc_id AS hgnc_id, m.revision AS revision, "
@@ -189,9 +214,10 @@ def export_release(
 
     out = out_dir / f"deep_dives_{version}.tar.gz"
     partial = out_dir / f"{out.name}.partial"
-    lines = ["gene_symbol\thgnc_id\trevision\tjson_hash\tevidence_hash\tmd_hash"]
+    lines = ["\t".join(MANIFEST_COLUMNS)]
 
-    def add(tf: tarfile.TarFile, name: str, data: bytes) -> None:
+    def add(tf: tarfile.TarFile, name: str, data: bytes) -> str:
+        """Write one member; return the sha256 of the bytes written."""
         info = tarfile.TarInfo(name)
         info.size = len(data)
         info.mtime = 0
@@ -201,6 +227,7 @@ def export_release(
         info.gname = ""
         info.mode = 0o644
         tf.addfile(info, io.BytesIO(data))
+        return hashlib.sha256(data).hexdigest()
 
     try:
         with (
@@ -210,28 +237,22 @@ def export_release(
         ):
             for r in rows:
                 sym = r["gene_symbol"]
-                add(tf, f"genes/{sym}.json", get_blob(blob_key(r["json_hash"], "json")))
+                digests = {"json_sha256": "", "evidence_sha256": "", "md_sha256": ""}
+                digests["json_sha256"] = add(
+                    tf, f"genes/{sym}.json", get_blob(blob_key(r["json_hash"], "json"))
+                )
                 if r["evidence_hash"]:
-                    add(
+                    digests["evidence_sha256"] = add(
                         tf,
                         f"genes/{sym}.evidence.json",
                         get_blob(blob_key(r["evidence_hash"], "json")),
                     )
                 if r["md_hash"]:
-                    add(tf, f"genes/{sym}.md", get_blob(blob_key(r["md_hash"], "md")))
-                lines.append(
-                    "\t".join(
-                        str(r[k] or "")
-                        for k in (
-                            "gene_symbol",
-                            "hgnc_id",
-                            "revision",
-                            "json_hash",
-                            "evidence_hash",
-                            "md_hash",
-                        )
+                    digests["md_sha256"] = add(
+                        tf, f"genes/{sym}.md", get_blob(blob_key(r["md_hash"], "md"))
                     )
-                )
+                row = {**r, **digests}
+                lines.append("\t".join(str(row[k] or "") for k in MANIFEST_COLUMNS))
             add(tf, "manifest.tsv", ("\n".join(lines) + "\n").encode())
         os.replace(partial, out)
     except BaseException:

@@ -294,9 +294,74 @@ def test_export_release_writes_parts_and_manifest(tmp_path: Path) -> None:
         "genes/A.md",
         "manifest.tsv",
     ]
-    assert manifest.splitlines()[1] == "A\tHGNC:1\t1\tj\te\tm"
+    header, row = manifest.splitlines()
+    assert header.split("\t") == list(rel.MANIFEST_COLUMNS)
+    # The original six columns keep their positions; the raw-byte sha256 of
+    # each file as written into the tarball is appended after them.
+    assert row.split("\t") == [
+        "A",
+        "HGNC:1",
+        "1",
+        "j",
+        "e",
+        "m",
+        hashlib.sha256(b'{"r":1}').hexdigest(),
+        hashlib.sha256(b'{"e":1}').hexdigest(),
+        hashlib.sha256(b"# A").hexdigest(),
+    ]
     assert record == {"r": 1}
     assert not (tmp_path / "deep_dives_1.3.0.tar.gz.partial").exists()
+
+
+def test_export_release_manifest_sha256_verifies_every_file(tmp_path: Path) -> None:
+    """A reader's check — sha256 of each tar member == its manifest *_sha256 —
+    passes for every file, and a gene with no archived evidence / Markdown
+    gets empty columns for those parts rather than a bogus digest."""
+    d1 = SqliteD1()
+    d1.query(
+        "INSERT INTO record_revision VALUES (?,?,?,?,?,?,?,?,?,?)",
+        ["A", "HGNC:1", 1, "j", "e", "m", "t", "sweep", "2.14.4", "2.50.2"],
+    )
+    d1.query(
+        "INSERT INTO record_revision VALUES (?,?,?,?,?,?,?,?,?,?)",
+        ["B", "HGNC:2", 1, "k", None, None, "t", "sweep", "2.14.4", "2.50.2"],
+    )
+    rel.create_release(
+        d1,
+        version="1.3.0",
+        cut_at="t",
+        github_tag=None,
+        zenodo_version_doi=None,
+        notes=None,
+        members=[("A", 1), ("B", 1)],
+    )
+    blobs = {
+        # Served bytes are not canonical JSON, so the content hash (the blob
+        # key) is never the file's checksum.
+        "records/sha256/j.json": b'{ "r": 1 }\n',
+        "records/sha256/e.json": b'{ "e": 1 }\n',
+        "records/sha256/m.md": b"# A\n",
+        "records/sha256/k.json": b'{ "r": 2 }\n',
+    }
+    out = rel.export_release(d1, "1.3.0", tmp_path, get_blob=blobs.__getitem__)
+    suffix = {"json_sha256": ".json", "evidence_sha256": ".evidence.json", "md_sha256": ".md"}
+    with tarfile.open(out) as tf:
+        manifest = _member(tf, "manifest.tsv").decode().splitlines()
+        header = manifest[0].split("\t")
+        checked = 0
+        for line in manifest[1:]:
+            row = dict(zip(header, line.split("\t"), strict=True))
+            for col, ext in suffix.items():
+                name = f"genes/{row['gene_symbol']}{ext}"
+                if not row[col]:
+                    assert name not in tf.getnames()
+                    continue
+                assert hashlib.sha256(_member(tf, name)).hexdigest() == row[col]
+                assert row[col] != row[col.replace("_sha256", "_hash")]
+                checked += 1
+    assert checked == 4
+    b_row = dict(zip(header, manifest[2].split("\t"), strict=True))
+    assert (b_row["evidence_sha256"], b_row["md_sha256"]) == ("", "")
 
 
 def test_export_release_is_byte_reproducible(tmp_path: Path) -> None:

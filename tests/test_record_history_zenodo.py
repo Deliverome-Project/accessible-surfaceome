@@ -31,6 +31,10 @@ def _draft_json() -> dict:
                 "filename": "deep_dives_all.tar.gz",
                 "links": {"self": f"{API}/files/old"},
             },
+            {
+                "filename": "figure-source-data_1.2.0.tar.gz",
+                "links": {"self": f"{API}/files/oldfig"},
+            },
             {"filename": "README.md", "links": {"self": f"{API}/files/readme"}},
         ],
         "links": {
@@ -78,13 +82,18 @@ def test_draft_version_flow(tmp_path: Path) -> None:
         return httpx.Response(200, json={})
 
     http = httpx.Client(transport=httpx.MockTransport(handler))
-    url = create_draft_version(
+    draft = create_draft_version(
         token="t", tarball=tarball, version="1.3.0", http=http, api=API
     )
 
     calls = rec.calls()
-    assert url == "https://zenodo.test/deposit/999"
+    assert draft.html_url == "https://zenodo.test/deposit/999"
+    # No top-level "id" on this fixture: taken from the draft's self link.
+    assert draft.deposition_id == "999"
     assert ("DELETE", "/api/files/old") in calls  # old tarball replaced
+    # The previous version's figure-source-data tarball is dropped;
+    # update_zenodo_draft.py uploads this version's.
+    assert ("DELETE", "/api/files/oldfig") in calls
     assert ("DELETE", "/api/files/readme") not in calls  # other files kept
     assert ("PUT", "/api/files/bucket/deep_dives_1.3.0.tar.gz") in calls
     assert ("PUT", "/api/deposit/depositions/999") in calls  # metadata

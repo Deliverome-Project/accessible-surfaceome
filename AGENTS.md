@@ -203,7 +203,12 @@ never lands in history permanently. Numbered releases
 (`data_release`/`data_release_member`) are cut with
 `scripts/release/cut_data_release.py --version X.Y.Z` (after bumping
 `pyproject.toml`); it drafts, never publishes, the Zenodo data-record
-version. History endpoints are path-based only (the zone cache rule
+version, and prints the remaining steps (consolidated TSVs →
+`update_zenodo_draft.py --deposit-id` → publish → `--set-doi` → GitHub
+release), documented in full under "Numbered data release" in
+[scripts/release/README.md](scripts/release/README.md). Its tarball's
+`manifest.tsv` has record-history content hashes (`*_hash`, not file
+checksums) and raw-byte `*_sha256` columns. History endpoints are path-based only (the zone cache rule
 ignores query strings): `/v1/genes/{sym}/revisions[/{n}[/evidence|.md]]`,
 `/v1/releases[/{ver}[/genes/{sym}[/evidence|.md]]]`. Cohort-scale I/O (the
 seed, the sweep) is kept off the shared Cloudflare account API budget
@@ -409,7 +414,7 @@ Decide by asking "is this a join a typical reanalyst needs for an obvious questi
 
 CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
 
-**At publication:** swap `BRANCH = "main"` for a pinned commit SHA in every figure script + gist, register the figure files on Zenodo, and update each gist's README to cite the Zenodo DOI alongside the raw GitHub URL.
+**At publication:** re-bundle every gist (`scripts/figures/sync_figure_gists_bundle_data.py`), have Software Heritage archive it, and cite each figure as `swh:1:rev:<sha>` from [data/analysis/figures/swhid_map.json](data/analysis/figures/swhid_map.json) — the SWHID stays the per-figure citation. The Zenodo data record (concept DOI `10.5281/zenodo.20805383`) also carries `figure-source-data_X.Y.Z.tar.gz` in every numbered release: every TSV bundled into a figure gist (`TSV_BUNDLE`) plus the four canonical figure-input TSVs, with a `manifest.tsv` mapping each file to its figure label, gist, SWHID, sha256 and generator ([`release/figure_source_data.py`](src/accessible_surfaceome/release/figure_source_data.py), built and uploaded by `scripts/release/update_zenodo_draft.py`). It makes the record self-contained for reanalysis without replacing the SWHID citation; add figure TSVs to the data record only through it, never as loose files, and keep the manuscript in its own record.
 
 ## Final-Figure Gist Convention
 

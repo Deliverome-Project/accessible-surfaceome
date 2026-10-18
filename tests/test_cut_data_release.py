@@ -22,7 +22,7 @@ from typing import Any
 import httpx
 import pytest
 
-from accessible_surfaceome.cloud.record_history.zenodo import ZenodoDraftError
+from accessible_surfaceome.cloud.record_history.zenodo import DraftVersion, ZenodoDraftError
 
 _SCRIPT = (
     Path(__file__).resolve().parents[1] / "scripts" / "release" / "cut_data_release.py"
@@ -311,6 +311,61 @@ def test_nondefault_zenodo_api_without_resume_is_refused(
 
     with pytest.raises(SystemExit, match="requires --resume"):
         _mod.main()
+
+
+def test_successful_draft_prints_the_rest_of_the_procedure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """After the draft exists, the run prints every remaining command with
+    the new draft's deposition id filled in — the procedure is not left to
+    memory or to a README the operator may not open."""
+    d1 = _FakeD1(release_rows=[])
+    _patch_common(monkeypatch, d1=d1, sweep_result=Counter())
+    monkeypatch.setattr(_mod.rel, "create_release", lambda *a, **kw: None)
+    monkeypatch.setattr(_mod.rel, "latest_members", lambda *a, **kw: [("EGFR", 1)])
+    exported = tmp_path / "deep_dives_x.tar.gz"
+    exported.write_bytes(b"tarball")
+    monkeypatch.setattr(_mod.rel, "export_release", lambda *a, **kw: exported)
+    monkeypatch.setenv("ZENODO_TOKEN", "tok")
+    monkeypatch.setattr(
+        _mod,
+        "create_draft_version",
+        lambda **_kw: DraftVersion(
+            html_url="https://zenodo.test/deposit/4242", deposition_id="4242"
+        ),
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "cut_data_release.py",
+            "--version",
+            _REAL_PYPROJECT_VERSION,
+            "--execute",
+            "--out-dir",
+            str(tmp_path),
+        ],
+    )
+
+    _mod.main()
+
+    out = capsys.readouterr().out
+    v = _REAL_PYPROJECT_VERSION
+    expected = [
+        "deposition id: 4242",
+        "uv run python scripts/release/build_consolidated_deposit_tsvs.py",
+        "uv run python scripts/release/update_zenodo_draft.py --deposit-id 4242 --dry-run",
+        "https://zenodo.test/deposit/4242",
+        f"uv run python scripts/release/cut_data_release.py --set-doi {v} ",
+        f"gh release create v{v} --generate-notes",
+    ]
+    # Each line must appear after the previous one (str.index raises if not).
+    pos = 0
+    for line in expected:
+        pos = out.index(line, pos) + len(line)
+    # The real (non-dry-run) sync is printed too, after its dry-run.
+    dry = out.index("--deposit-id 4242 --dry-run")
+    assert "update_zenodo_draft.py --deposit-id 4242\n" in out[dry:]
 
 
 # ---------------------------------------------------------------------------
