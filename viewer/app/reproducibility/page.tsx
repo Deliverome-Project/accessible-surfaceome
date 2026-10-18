@@ -198,6 +198,14 @@ export default function ReproducibilityPage() {
               — the run-to-run reproducibility replicates behind
               Supplementary Figure 16 (not published records).
             </li>
+            <li>
+              <code>figure-source-data_1.3.0.tar.gz</code> — the source
+              table behind every data figure in the manuscript, the four
+              canonical figure-input tables (including{" "}
+              <code>db_optimized_cutoffs.tsv</code>), and a{" "}
+              <code>manifest.tsv</code> giving each file&apos;s figure,
+              sha256, reproduction gist and SWHID.
+            </li>
           </ul>
           <p className={styles.body}>
             Between releases, the API keeps a write-once history of
