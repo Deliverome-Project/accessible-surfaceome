@@ -84,3 +84,25 @@ def test_composed_svgs_match_their_reader_copy() -> None:
     assert not differ, (
         f"composed paper SVGs differ from data/analysis/figures copies: {differ}"
     )
+
+
+def test_no_paper_svg_places_an_image_through_use() -> None:
+    """WeasyPrint does not render an ``<image>`` placed via ``<use>``.
+
+    pdftocairo writes embedded rasters that way, and the converted Figure 7
+    (viewer screenshots) rendered as an empty box in the paper PDF.
+    """
+    import re
+
+    bad = []
+    for e in _entries():
+        if e["format"] != "svg":
+            continue
+        path = next((d / f"{e['slug']}.svg" for d in SEARCH if (d / f"{e['slug']}.svg").is_file()), None)
+        if path is None:
+            continue
+        text = path.read_text(encoding="utf-8")
+        image_ids = set(re.findall(r'<image[^>]*\bid="([^"]+)"', text))
+        if any(ref in image_ids for ref in re.findall(r'<use[^>]*xlink:href="#([^"]+)"', text)):
+            bad.append(str(path.relative_to(ROOT)))
+    assert not bad, f"SVGs that place an image via <use> (render blank in WeasyPrint): {bad}"
