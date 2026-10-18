@@ -3,7 +3,7 @@
 > An annotated catalogue of human cell-surface proteins: per-gene deep-dive
 > records (where a protein is surface-accessible, the evidence, and the
 > targetability risks), genome-wide database-vote + LLM triage verdicts over
-> all ~19,300 protein-coding genes, and SurfaceBench — a 147-gene labeled eval
+> all 19,324 protein-coding genes, and SurfaceBench — a 147-gene labeled eval
 > comparing LLM triage against curated ground truth.
 
 This site is backed by a public, read-only HTTP API (no authentication, CORS
@@ -21,12 +21,16 @@ genes (the COX1 / WAS class).
 
 ## API endpoints
 
-- [Per-gene record](https://api.deliverome.org/surfaceome/v1/genes/ERBB2): full `SurfaceomeRecord` JSON for one gene (executive summary, evidence ledger, deterministic features, accessibility risks). Replace `ERBB2` with any HGNC symbol (case-insensitive).
-- [Per-gene Markdown mirror](https://api.deliverome.org/surfaceome/v1/genes/ERBB2.md): the same record as human-readable Markdown with sequences + per-residue topology embedded — the most agent-friendly single-gene artifact.
-- [Genome-wide catalog](https://api.deliverome.org/surfaceome/v1/catalog): per-gene 5-DB surface-vote matrix (UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + deep-dive flag for all ~19k genes.
+- [Per-gene record](https://api.deliverome.org/surfaceome/v1/genes/ERBB2): full `SurfaceomeRecord` JSON for one gene (executive summary, surface evidence, deterministic features, accessibility risks). The evidence ledger is not inlined — fetch it separately (next line). Replace `ERBB2` with any HGNC symbol (case-insensitive).
+- [Per-gene evidence ledger](https://api.deliverome.org/surfaceome/v1/genes/ERBB2/evidence): `{ gene, evidence, papers }` — every cited claim with its verbatim quote spans, plus NCBI citation metadata (title, authors, journal, year) keyed by `source_id`.
+- [Per-gene Markdown brief](https://api.deliverome.org/surfaceome/v1/genes/ERBB2.md): the same record as human-readable Markdown with sequences + per-residue topology embedded — the most agent-friendly single-gene artifact. The symbol is matched exactly, so use the canonical HGNC case.
+- [Genome-wide catalog](https://api.deliverome.org/surfaceome/v1/catalog): per-gene 5-DB surface-vote matrix (UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + deep-dive flag for all 19,324 genes. One unpaginated response (≈14 MB uncompressed, ≈0.5 MB gzipped) — fetch it once and filter client-side.
+- [One catalog row](https://api.deliverome.org/surfaceome/v1/catalog/ERBB2): one gene's 5-DB vote vector, `n_sources` and deep-dive flag.
 - [Per-gene triage](https://api.deliverome.org/surfaceome/v1/triage/ERBB2): every triage run on file — model × prompt-variant × replicate — with the agent's free-text `verdict_reasoning`.
-- [Genome-wide triage export, with reasoning (TSV)](https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1): the full ~19k-gene Sonnet/NCBI sweep with the agent's reasoning appended. Drop `with_reasoning=1` for the prose-free figure-input export.
-- [SurfaceBench matrix](https://api.deliverome.org/surfaceome/v1/benchmark/matrix): the 147-gene eval — ground truth + 5 per-DB flags + per-(model × variant) LLM verdicts with reasoning. Models: Opus, Sonnet, Haiku.
+- [Internalization](https://api.deliverome.org/surfaceome/v1/internalization/ERBB2): the gene's InternalizationRecord — sequence-prior grade (`very_high`…`very_low`) with per-isoform reasoning, plus the literature track; `null` if the gene is not in the cohort.
+- [Tag sites](https://api.deliverome.org/surfaceome/v1/tag-sites/ERBB2): engineered epitope/tag insertion points (deterministic + literature-validated); `has_data: false` with `sites: []` when there are none.
+- [Genome-wide triage export, with reasoning (TSV)](https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1): the full 19,324-gene Sonnet/NCBI sweep with the agent's reasoning appended. Drop `with_reasoning=1` for the prose-free figure-input export.
+- [SurfaceBench matrix](https://api.deliverome.org/surfaceome/v1/benchmark/matrix): the 147-gene eval — ground truth + 5 per-DB flags + per-(model × variant) LLM verdicts with reasoning. Eight models: Haiku 4.5 / 5.5, Sonnet 4.6 / 5 / 5.5, Opus 4.8 / 5 / 5.5.
 
 ## Record history & releases
 
@@ -56,4 +60,6 @@ Not published records. 50 deep-dive genes drawn at random were re-analysed for t
 
 - Verdict values are lowercase strings: `yes`, `contextual`, `no`. String-compare exactly.
 - Absent fields are omitted on the wire (older records lack newer fields) — read with optional-chaining / `?? null`.
-- Caching: list endpoints `max-age=60`; per-gene records, benchmark, and ortholog endpoints `max-age=86400`. Build-time consumers should use `cache: "force-cache"`. A degraded enrichment lookup ships 200 with `X-Surfaceome-Degraded` (comma-separated field list) + `Cache-Control: no-store` — retry instead of caching it.
+- Caching: 60 s for list/index endpoints, per-gene triage, catalog rows, tag sites and the `.md` briefs; 1 day for per-gene records, evidence, benchmark, orthologs, internalization and the TSV exports; 1 year (immutable) for revision bodies and DOI-published releases. Build-time consumers should use `cache: "force-cache"`. A degraded enrichment lookup ships 200 with `X-Surfaceome-Degraded` (comma-separated field list) + `Cache-Control: no-store` — retry instead of caching it.
+- Rate limits: reads are rate-limited per client IP (generous; tighter on `/v1/catalog`, the `*.tsv` exports and `/v1/releases/{version}`; `/v1/health` is never limited). Over the limit you get `429 {"error":"rate_limited"}` with `Retry-After: 60`. Pace bulk work and send an identifying User-Agent.
+- Citation & licence: data is CC0 1.0 — cite the data concept DOI 10.5281/zenodo.20805383 (or a numbered release's version DOI from `/v1/releases`); code is MIT — 10.5281/zenodo.22116981.

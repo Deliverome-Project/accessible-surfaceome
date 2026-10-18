@@ -375,9 +375,9 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 **Refresh procedure** (after any sweep that updates predictions in public D1):
 
 ```bash
-# Pulls the latest mainbench_canonical_v1 rows from public D1 and writes
-# data/processed/triage_bench/mainbench_canonical_v2.tsv. Identical shape
-# to /v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1.
+# Pulls the latest mainbench_canonical_v2 rows from public D1 (per-cell
+# majority across replicates) and writes
+# data/processed/triage_bench/mainbench_canonical_v2.tsv.
 uv run python scripts/tsv-export/export_mainbench_to_tsv.py
 
 # Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) into

@@ -6,19 +6,23 @@ export const metadata: Metadata = {
   title: "Data and code availability — Surfaceome",
   description:
     "Code, data, and figure-reproduction handles for the accessible " +
-    "surfaceome project. Repository under MIT; the Zenodo data deposit " +
-    "(DOI 10.5281/zenodo.20805384) under CC BY 4.0; per-figure " +
-    "reproduction gists archived to Software Heritage.",
+    "surfaceome project. Code under MIT (concept DOI " +
+    "10.5281/zenodo.22116981); the Zenodo data deposit (concept DOI " +
+    "10.5281/zenodo.20805383) under CC0 1.0; per-figure reproduction " +
+    "gists archived to Software Heritage.",
 };
 
 /**
  * /reproducibility/ — methods-style "Data and code availability"
- * page. Three handles: the live GitHub repository (MIT, includes this
- * viewer), the published Zenodo data deposit (CC BY 4.0; concept DOI
- * 10.5281/zenodo.20805383, version DOI 10.5281/zenodo.20805384), and a
+ * page. Three handles: the GitHub repository (MIT, includes this
+ * viewer; Zenodo code concept DOI 10.5281/zenodo.22116981, one version
+ * DOI per tagged GitHub release), the Zenodo data deposit (CC0 1.0;
+ * concept DOI 10.5281/zenodo.20805383, one version DOI per numbered data
+ * release — listed on Zenodo and by the API's /v1/releases), and a
  * per-figure reproduction gist archived to Software Heritage
- * (swh:1:rev:<sha>, recorded in swhid_map.json). The code-release
- * archive DOI is minted at the first tagged GitHub release.
+ * (swh:1:rev:<sha>, recorded in swhid_map.json). The deposit-contents
+ * list mirrors data release 1.3.0. The manuscript is NOT part of the
+ * data deposit — it gets its own Zenodo record under the bioRxiv DOI.
  */
 export default function ReproducibilityPage() {
   return (
@@ -31,7 +35,7 @@ export default function ReproducibilityPage() {
           <p className={styles.lede}>
             All code, data, and figures are distributed under open
             licenses with persistent citation handles. Code is MIT; the
-            Zenodo data deposit is CC BY 4.0 with a DOI that resolves
+            Zenodo data deposit is CC0 1.0 with a DOI that resolves
             indefinitely; each figure ships a standalone reproduction
             gist archived to Software Heritage as a content-addressed
             SWHID.
@@ -59,11 +63,22 @@ export default function ReproducibilityPage() {
                 github.com/Deliverome-Project/accessible-surfaceome
               </a>
             </dd>
+            <dt className={styles.handleLabel}>Concept DOI (all versions)</dt>
+            <dd className={styles.handleValue}>
+              <a
+                href="https://doi.org/10.5281/zenodo.22116981"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.extLink}
+              >
+                10.5281/zenodo.22116981
+              </a>
+            </dd>
             <dt className={styles.handleLabel}>License</dt>
             <dd className={styles.handleValue}>MIT</dd>
           </dl>
           <p className={styles.body}>
-            At publication the tagged release is deposited on{" "}
+            Each tagged GitHub release is archived on{" "}
             <a
               href="https://zenodo.org/"
               target="_blank"
@@ -72,10 +87,11 @@ export default function ReproducibilityPage() {
             >
               Zenodo
             </a>{" "}
-            via the GitHub integration, which mints a DOI for the
-            release archive. Zenodo issues a concept DOI that resolves
-            to the latest version and a version DOI for each release;
-            cite the version DOI to pin to a specific snapshot.
+            through the GitHub integration. The concept DOI above
+            resolves to the latest release, and each release also has
+            its own version DOI, listed on its Zenodo record. Cite the
+            concept DOI for the software in general, or a version DOI
+            to pin a specific snapshot.
           </p>
         </section>
 
@@ -86,12 +102,12 @@ export default function ReproducibilityPage() {
           <p className={styles.body}>
             Datasets are deposited on Zenodo under{" "}
             <a
-              href="https://creativecommons.org/licenses/by/4.0/"
+              href="https://creativecommons.org/publicdomain/zero/1.0/"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.extLink}
             >
-              CC BY 4.0
+              CC0 1.0
             </a>
             . The deposit includes:
           </p>
@@ -124,48 +140,76 @@ export default function ReproducibilityPage() {
                 10.5281/zenodo.20805383
               </a>
             </dd>
-            <dt className={styles.handleLabel}>Version DOI (this release)</dt>
-            <dd className={styles.handleValue}>
-              <a
-                href="https://doi.org/10.5281/zenodo.20805384"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.extLink}
-              >
-                10.5281/zenodo.20805384
-              </a>
-            </dd>
             <dt className={styles.handleLabel}>License</dt>
-            <dd className={styles.handleValue}>CC BY 4.0</dd>
+            <dd className={styles.handleValue}>CC0 1.0</dd>
           </dl>
+          <p className={styles.body}>
+            Cite the concept DOI, which always resolves to the latest
+            release. Each numbered data release also has its own version
+            DOI, listed on the Zenodo record and by the API at{" "}
+            <a
+              href="https://api.deliverome.org/surfaceome/v1/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.extLink}
+            >
+              <code>/v1/releases</code>
+            </a>
+            ; cite a version DOI to pin an exact snapshot.
+          </p>
           <p className={styles.body}>
             The Zenodo DOI is wired into the figure generator
             (<code>scripts/figures/embed_figure_gist_metadata.py</code>) so every
             figure PDF/PNG carries the dataset citation in its metadata as
-            soon as it&apos;s rendered. The published deposit contains:
+            soon as it&apos;s rendered. Release 1.3.0 of the deposit
+            contains:
           </p>
           <ul className={styles.list}>
             <li>
               <code>triage-runs-genome-with-reasoning.tsv</code> — every
-              triage agent call across the protein-coding genome (21,950
-              rows: the NCBI-context sweep plus a targeted PubMed-context
-              re-run), with verdict, reason, confidence, and free-text
-              reasoning.
+              triage agent call across the protein-coding genome (33,728
+              rows: the 19,324-gene NCBI-context sweep plus 14,404 rows
+              from four PubMed-context rescue lanes), with verdict,
+              reason, confidence, and free-text reasoning.
             </li>
             <li>
               <code>triage-benchmark-with-reasoning.tsv</code> — the
-              147-protein SurfaceBench (4,851 rows) with truth labels
-              joined to every per-model, per-variant triage call.
+              147-protein SurfaceBench (7,938 rows: 147 genes × 18
+              model-variant cells × 3 replicates) with truth labels
+              joined to every triage call.
             </li>
             <li>
-              <code>deep_dives_all.tar.gz</code> — the 5,130 per-gene
-              deep-dive JSON records, each with its full evidence chain
-              and deep-dive classification.
+              <code>deep-dive-preset-membership.tsv</code> — catalog
+              preset membership for every deep-dived gene (5,332 rows),
+              computed with the predicates documented on the{" "}
+              <a href="/api/#presets" className={styles.extLink}>
+                API page
+              </a>
+              .
+            </li>
+            <li>
+              <code>deep_dives_1.3.0.tar.gz</code> — the 5,332 per-gene
+              deep dives: for each gene the record JSON, its evidence
+              ledger and its Markdown brief, plus a{" "}
+              <code>manifest.tsv</code>.
+            </li>
+            <li>
+              <code>deep-dive-reproducibility-replicates-v1.tar.gz</code>{" "}
+              — the run-to-run reproducibility replicates behind
+              Supplementary Figure 16 (not published records).
             </li>
           </ul>
           <p className={styles.body}>
-            A later version of the deposit will add the manuscript,
-            against the same concept DOI.
+            Between releases, the API keeps a write-once history of
+            every gene: each distinct state it served is archived as a
+            numbered revision at{" "}
+            <code>/v1/genes/{"{SYMBOL}"}/revisions</code>, and the
+            numbered data releases, with their Zenodo version DOIs, are
+            listed at <code>/v1/releases</code>. See the{" "}
+            <a href="/api/#history" className={styles.extLink}>
+              API page
+            </a>{" "}
+            for details.
           </p>
         </section>
 
