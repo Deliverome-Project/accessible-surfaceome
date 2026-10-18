@@ -837,7 +837,12 @@ a Pages binding.
   250 MiB parts (wrangler's put limit is 300 MiB; the agents dump is
   >2 GiB) plus a manifest, and a stable `latest.manifest.json` pointer,
   into the R2 bucket `deliverome-d1-backups`. Manual trigger via
-  `workflow_dispatch`.
+  `workflow_dispatch`. Pushes export only the private `surfaceome_agents`
+  DB; the public `surfaceome_public` export runs on the weekly schedule
+  (Mondays 06:00 UTC) or a manual run with `include_public`, because D1
+  refuses queries while an export runs and the live API reads that DB.
+  The Worker answers `503` + `Retry-After` while D1 is busy rather than
+  failing with a 500.
 - **Layered recovery** (cloudflare/README.md has the full walkthrough):
   Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
   long-term) → on-disk JSON under `data/eval/` and `data/annotations/`
