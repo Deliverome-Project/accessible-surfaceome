@@ -28,7 +28,7 @@ def _load_weasyprint() -> None:
         exec(compile(src.split("from weasyprint import")[0], "paper/build.py", "exec"), ns)
         importlib.import_module("weasyprint")
     except (ImportError, OSError) as exc:
-        pytest.skip(f"paper toolchain unavailable: {exc}")
+        pytest.skip(f"paper toolchain unavailable: {exc}", allow_module_level=True)
 
 
 _load_weasyprint()
