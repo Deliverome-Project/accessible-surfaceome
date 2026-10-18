@@ -1195,8 +1195,11 @@ async function handleGene(env, symbol) {
     // through have the block but not these keys. Without this every already
     // published gene keeps hiding the tool's own classification behind the
     // derived ECD/ICD numbers.
+    // Records store the call as an explicit null too (the Python builder
+    // didn't select the column until 2026-10-17), so test == null, not
+    // === undefined, or the call stays blank on nearly every gene.
     const canonTopoLacksCall = !!existingCanonTopo
-      && existingCanonTopo.predicted_surface_membrane === undefined;
+      && existingCanonTopo.predicted_surface_membrane == null;
     const canonTopoNeedsEnrich =
       !existingCanonTopo || canonTopoIsPlaceholder || canonTopoLacksCall;
     if (canonTopoNeedsEnrich && canonicalTopoVersion) {
@@ -3367,7 +3370,7 @@ async function handleV1Index(env) {
       docs: "https://surfaceome.deliverome.org/api",
       skill: "https://surfaceome.deliverome.org/surfaceome-api.skill.md",
       llms_txt: "https://surfaceome.deliverome.org/llms.txt",
-      record_markdown_template: "https://surfaceome.deliverome.org/data/surfaceome/{symbol}.md",
+      record_markdown_template: "https://api.deliverome.org/surfaceome/v1/genes/{symbol}.md",
       schema: {
         name: "SurfaceomeRecord",
         source: "src/accessible_surfaceome/tools/_shared/models.py",
@@ -3498,12 +3501,12 @@ async function handleMetaSizes(env) {
       approx: true,
       note: DEFAULT_EXPORT_RUN_ID,
     },
-    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1": {
+    [`/v1/triage/export.tsv?run_id=${GENOME_RUN_ID}`]: {
       bytes: r0(genome.export_chars + genome.n * EXPORT_NCOLS),
       approx: true,
       note: GENOME_RUN_ID,
     },
-    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1": {
+    [`/v1/triage/export.tsv?run_id=${GENOME_RUN_ID}&with_reasoning=1`]: {
       bytes: r0(genome.export_chars + genome.reasoning_chars + genome.n * (EXPORT_NCOLS + 2)),
       approx: true,
       note: `${GENOME_RUN_ID} + reasoning`,
@@ -3798,7 +3801,7 @@ async function handleTriageCell(env, symbol, model, variant) {
   if (!BENCH_MATRIX_MODELS.includes(model)) return badRequest("invalid_model");
   if (!BENCH_MATRIX_VARIANTS.includes(variant)) return badRequest("invalid_variant");
   // Scope to the canonical bench run — without this, a gene that also
-  // appears in the whole-genome sweep (genome_full_sonnet_ncbi_v1, same
+  // appears in the whole-genome sweep (genome_full_sonnet_ncbi_v2, same
   // sonnet/ncbi cell) would have its rows collide with the bench reps.
   // One row per replicate number (latest by created_at) so a stray
   // duplicate-replicate row from a bad sync can't surface as two "Rep N".

@@ -307,7 +307,8 @@ def _fetch_canonical_topology(uniprot_acc: str, topology_version: str) -> Isofor
         "SELECT uniprot_acc_full, isoform_id, tm_helix_count, "
         "n_terminal_orientation, c_terminal_orientation, "
         "signal_peptide_length, ecd_length_residues, icd_length_residues, "
-        "per_residue_topology, tool_version, retrieved_at "
+        "per_residue_topology, tool_version, retrieved_at, "
+        "predicted_surface_membrane, predicted_secreted, beta_strand_count, protein_length "
         "FROM topology_public "
         "WHERE uniprot_acc = ? AND cohort = 'human_canonical' "
         "  AND topology_version = ? "
@@ -329,7 +330,23 @@ def _fetch_canonical_topology(uniprot_acc: str, topology_version: str) -> Isofor
         per_residue_topology=r["per_residue_topology"] or "",
         tool_version=r["tool_version"] or "deeptmhmm-1.0.24",
         retrieved_at=_parse_iso(r["retrieved_at"]),
+        # DeepTMHMM's own call and length. Stored as INTEGER (0/1) in D1;
+        # null stays null so a missing column never reads as a confident
+        # false. Records used to be baked without these, which left the
+        # call blank on ~99% of genes.
+        predicted_surface_membrane=_opt_bool(r.get("predicted_surface_membrane")),
+        predicted_secreted=_opt_bool(r.get("predicted_secreted")),
+        beta_strand_count=_opt_int(r.get("beta_strand_count")),
+        protein_length=_opt_int(r.get("protein_length")),
     )
+
+
+def _opt_bool(v) -> bool | None:
+    return None if v is None else bool(int(v))
+
+
+def _opt_int(v) -> int | None:
+    return None if v is None else int(v)
 
 
 def _fetch_canonical_sequence(uniprot_acc: str, topology_version: str) -> str:
