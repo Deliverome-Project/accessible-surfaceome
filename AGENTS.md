@@ -596,6 +596,12 @@ per discovered paper.
   `publish_tag_site_genes.py` cannot reach records that live only in D1. `row_for` counts ONE
   provenance and must be told which — left at the default it counts no `literature_enriched`
   site and records a false dated zero, which nothing downstream can tell from a real one.
+- **The per-gene endpoint serves ALL of a gene's searches.** `handleTagSites` reads every
+  `tag_site_gene_public` row and chooses in the Worker (total order: `searched_at`, series,
+  `candidate_id`), not with `ORDER BY` + `.first()`: the top-level fields describe the newest
+  search, `literature_other_positions` is the deduped UNION across searches, and `searches[]`
+  names each pass by series and member. `.first()` with no `ORDER BY` was safe only while
+  every gene had one row.
 - **A schema field rendered into the output contract costs a cohort re-run.** `SYSTEM_PROMPT`
   ends in `format_output_contract()`, generated from the schema, so a new tag-site field can
   change `prompt_sha` — and both sweeps' resume compares on that, so every archived record
