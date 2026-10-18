@@ -207,7 +207,7 @@ Everything sits under `{root}/` at its path in the project repository:
 |---|---|
 | `README.md` | the layout, how to regenerate each figure, the licence |
 | `manifest.tsv` | one row per (figure, file): {columns} |
-| `data/processed/figures/<slug>.tsv` | a figure's source table, the one bundled into its gist ({s.n_figure_files} in all). Two live elsewhere: {elsewhere_text} |
+| `data/processed/figures/<slug>.tsv` | a figure's source table, the one bundled into its gist ({s.n_figure_files} in all). Some live elsewhere: {elsewhere_text}. Figure 4's two funnel tables have no gist. |
 | `{cu}` | the candidate universe: {n_rows[cu]:,} UniProt accessions, each with every source database's surface call and sub-signals, the triage verdict, and deep-dive / benchmark membership |
 | `{tb}` | the curated benchmark truth labels ({n_rows[tb]:,} genes) |
 | `{mb}` | benchmark predictions: {n_rows[mb]:,} rows, one per (gene × model × prompt variant), the majority verdict across replicates with the truth label joined on |

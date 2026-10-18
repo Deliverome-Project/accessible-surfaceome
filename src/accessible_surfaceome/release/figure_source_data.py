@@ -54,6 +54,18 @@ CANONICAL_FIGURE_INPUTS: tuple[str, ...] = (
     "data/processed/triage_bench/db_optimized_cutoffs.tsv",
 )
 OPTIMIZED_CUTOFFS = "data/processed/triage_bench/db_optimized_cutoffs.tsv"
+# Figure inputs with no reproduction gist, as slug → (manuscript label, files).
+# Figure 4 is a composed schematic; its funnel panel is drawn by
+# scripts/figures/pipeline_funnel.py from the kept and the trimmed universe.
+PANEL_INPUTS: dict[str, tuple[str, tuple[str, ...]]] = {
+    "pipeline_funnel": (
+        "Figure 4",
+        (
+            "data/processed/candidate_universe/candidate_universe_v3.tsv",
+            "data/processed/candidate_universe/candidate_universe_v3_dropped.tsv",
+        ),
+    ),
+}
 
 MANIFEST_COLUMNS: tuple[str, ...] = (
     "role", "figure", "slug", "path", "sha256", "rows", "gist_url", "swhid", "generator",
@@ -88,6 +100,7 @@ def gist_bundle(repo_root: Path = REPO_ROOT) -> dict[str, list[str]]:
 def member_paths(repo_root: Path = REPO_ROOT) -> list[str]:
     """Every data file the tarball carries, repo-relative and sorted."""
     paths = {p for ps in gist_bundle(repo_root).values() for p in ps}
+    paths |= {p for _, ps in PANEL_INPUTS.values() for p in ps}
     return sorted(paths | set(CANONICAL_FIGURE_INPUTS))
 
 
@@ -158,6 +171,21 @@ def manifest_rows(repo_root: Path = REPO_ROOT) -> list[dict[str, str]]:
                 "swhid": swhids.get(slug, ""),
                 "generator": generator if (repo_root / generator).is_file() else "",
             })
+    for slug, (label, paths) in PANEL_INPUTS.items():
+        generator = f"scripts/figures/{slug}.py"
+        for path in paths:
+            data = _read_member(repo_root, path)
+            figure_rows.append({
+                "role": ROLE_FIGURE,
+                "figure": label,
+                "slug": slug,
+                "path": path,
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "rows": str(count_rows(data)),
+                "gist_url": "",
+                "swhid": "",
+                "generator": generator if (repo_root / generator).is_file() else "",
+            })
     figure_rows.sort(key=lambda r: (_label_sort_key(r["figure"]), r["slug"], r["path"]))
     canonical_rows = []
     for path in CANONICAL_FIGURE_INPUTS:
@@ -203,7 +231,7 @@ def join_labels(items: list[str]) -> str:
 def _inner_readme(version: str, rows: list[dict[str, str]], repo_root: Path) -> str:
     root = tarball_name(version).removesuffix(".tar.gz")
     fig = [r for r in rows if r["role"] == ROLE_FIGURE]
-    n_ms = len({r["slug"] for r in fig if r["figure"]})
+    n_ms = len({r["figure"] for r in fig if r["figure"]})
     n_other = len({r["slug"] for r in fig if not r["figure"]})
     other = (f" plus {n_other} figure{'s' if n_other != 1 else ''} published only with the "
              "project's blog posts") if n_other else ""
@@ -227,7 +255,8 @@ each file where the figure scripts read it.
 
 - `manifest.tsv` — one row per (figure, file); columns below.
 - `data/...` — {len(fig)} per-figure source tables, each the exact file bundled
-  into that figure's reproduction gist ({n_ms} manuscript figures{other}), and
+  into that figure's reproduction gist ({n_ms} manuscript figures{other}; Figure
+  4's funnel tables have no gist, so their gist and SWHID columns are blank), and
   the four canonical figure-input tables the per-figure tables are cut from:
 
 {canonical}
@@ -301,8 +330,8 @@ def _build(version: str, repo_root: Path) -> tuple[bytes, Summary]:
     summary = Summary(
         n_files=len(members) - 2,
         n_figure_files=len(fig),
-        n_figures=len({r["slug"] for r in fig}),
-        n_manuscript_figures=len({r["slug"] for r in fig if r["figure"]}),
+        n_figures=len({r["figure"] or r["slug"] for r in fig}),
+        n_manuscript_figures=len({r["figure"] for r in fig if r["figure"]}),
         optimized_cutoffs_rows=int(next(r["rows"] for r in rows if r["path"] == OPTIMIZED_CUTOFFS)),
         compressed_bytes=len(blob),
         uncompressed_bytes=sum(len(members[p]) for p in member_paths(repo_root)),

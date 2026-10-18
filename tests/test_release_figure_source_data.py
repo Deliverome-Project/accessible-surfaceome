@@ -83,7 +83,9 @@ def test_archive_carries_no_build_time_owner_or_filename(built):
 def test_member_list_is_the_gist_bundle_plus_the_canonical_inputs(built):
     bundled = {p for paths in _tsv_bundle().values() for p in paths}
     assert bundled and not bundled & CANONICAL
-    expected = {f"{TOP}/{p}" for p in bundled | CANONICAL} | {f"{TOP}/README.md", f"{TOP}/manifest.tsv"}
+    panels = {p for _, ps in fsd.PANEL_INPUTS.values() for p in ps}
+    expected = {f"{TOP}/{p}" for p in bundled | panels | CANONICAL} | {
+        f"{TOP}/README.md", f"{TOP}/manifest.tsv"}
     assert set(_members(built)) == expected
     assert set(fsd.CANONICAL_FIGURE_INPUTS) == CANONICAL
 
@@ -109,18 +111,29 @@ def test_figure_rows_are_labelled_and_cited(built):
     labels = fsd.figure_labels()
     bundle = _tsv_bundle()
     figure_rows = [r for r in rows if r["role"] == fsd.ROLE_FIGURE]
-    assert {r["slug"] for r in figure_rows} == set(bundle)
-    for r in figure_rows:
+    panel_rows = [r for r in figure_rows if r["slug"] in fsd.PANEL_INPUTS]
+    gist_rows = [r for r in figure_rows if r["slug"] not in fsd.PANEL_INPUTS]
+    assert {r["slug"] for r in gist_rows} == set(bundle)
+    for r in gist_rows:
         assert r["path"] in bundle[r["slug"]]
         assert r["figure"] == labels.get(r["slug"], "")
         assert r["gist_url"].endswith(gists[r["slug"]]), r["slug"]
         assert r["swhid"] == swhids[r["slug"]], r["slug"]
         assert r["generator"] == f"scripts/figures/{r['slug']}.py"
         assert (ROOT / r["generator"]).is_file()
+    # Gist-less panel inputs (Figure 4's funnel): labelled, no gist or SWHID.
+    assert {(r["slug"], r["path"]) for r in panel_rows} == {
+        (s, p) for s, (_, ps) in fsd.PANEL_INPUTS.items() for p in ps
+    }
+    for r in panel_rows:
+        assert r["figure"] == fsd.PANEL_INPUTS[r["slug"]][0]
+        assert r["figure"] in labels.values()
+        assert r["gist_url"] == r["swhid"] == ""
+        assert (ROOT / r["generator"]).is_file()
     # Every manuscript figure drawn from data has its table here.
     assert {r["figure"] for r in figure_rows if r["figure"]} == {
         labels[s] for s in bundle if s in labels
-    }
+    } | {label for label, _ in fsd.PANEL_INPUTS.values()}
     canonical = [r for r in rows if r["role"] == fsd.ROLE_CANONICAL]
     assert {r["path"] for r in canonical} == CANONICAL
     assert all(r["figure"] == r["slug"] == r["gist_url"] == "" for r in canonical)
