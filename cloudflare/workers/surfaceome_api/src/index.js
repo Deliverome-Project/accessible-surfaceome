@@ -1219,22 +1219,9 @@ async function handleGene(env, symbol) {
         "topology_public_canonical",
       );
       if (tr) {
-        if (!record.deterministic_features) record.deterministic_features = {};
-        record.deterministic_features.canonical_topology = {
-          isoform_id: tr.isoform_id || `${uniprot}-1`,
-          uniprot_acc: tr.uniprot_acc_full || uniprot,
-          tm_helix_count: Number(tr.tm_helix_count || 0),
-          n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
-          c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
-          signal_peptide_length: Number(tr.signal_peptide_length || 0),
-          ecd_length_residues: Number(tr.ecd_length_residues || 0),
-          icd_length_residues: Number(tr.icd_length_residues || 0),
-          per_residue_topology: tr.per_residue_topology || "",
-          sequence: tr.sequence ?? null,
-          tool_version: tr.tool_version || "deeptmhmm-1.0.24",
-          retrieved_at: tr.retrieved_at || new Date().toISOString(),
-          // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays
-          // null so "column absent" never reads as a confident false.
+        // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays null
+        // so "column absent" never reads as a confident false.
+        const call = {
           predicted_surface_membrane:
             tr.predicted_surface_membrane == null ? null : Boolean(Number(tr.predicted_surface_membrane)),
           predicted_secreted:
@@ -1244,6 +1231,32 @@ async function handleGene(env, symbol) {
           protein_length:
             tr.protein_length == null ? null : Number(tr.protein_length),
         };
+        if (existingCanonTopo && !canonTopoIsPlaceholder) {
+          // A real annotator block that only lacks the call: fill those
+          // fields and keep every other key as the record stores it.
+          // Rebuilding the block here dropped the record's explicit-null
+          // keys (ecd_pct_identity_to_canonical and friends) on every gene.
+          for (const [k, v] of Object.entries(call)) {
+            if (existingCanonTopo[k] == null) existingCanonTopo[k] = v;
+          }
+        } else {
+          if (!record.deterministic_features) record.deterministic_features = {};
+          record.deterministic_features.canonical_topology = {
+            isoform_id: tr.isoform_id || `${uniprot}-1`,
+            uniprot_acc: tr.uniprot_acc_full || uniprot,
+            tm_helix_count: Number(tr.tm_helix_count || 0),
+            n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+            c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+            signal_peptide_length: Number(tr.signal_peptide_length || 0),
+            ecd_length_residues: Number(tr.ecd_length_residues || 0),
+            icd_length_residues: Number(tr.icd_length_residues || 0),
+            per_residue_topology: tr.per_residue_topology || "",
+            sequence: tr.sequence ?? null,
+            tool_version: tr.tool_version || "deeptmhmm-1.0.24",
+            retrieved_at: tr.retrieved_at || new Date().toISOString(),
+            ...call,
+          };
+        }
       }
     }
 
