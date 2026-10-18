@@ -123,6 +123,11 @@ a second fetch:
 - `paralogs[]` — `paralog_symbol`, `paralog_uniprot_acc`, `{full_length,ecd}_pct_identity`; close paralogs (>80%) additionally carry topology + **`sequence`**.
 - `structure` — `afdb_id`, `afdb_version`, `ecd_mean_plddt`, `ecd_disordered_fraction`, AlphaFold download links **`model_cif_url`** / **`model_pdb_url`** / **`model_pae_url`**, and **`representative_experimental_structure`** (PDBe SIFTS best: `pdb_id`, `chain_id`, `unp_start`/`unp_end`, `resolution_a`, `experimental_method`, `n_experimental_structures`; `null` when no deposited structure).
 - `surface_bind` — SURFACE-Bind MaSIF scoring (Balbi et al. 2026, PMID 41604262): `has_data`, `n_sites`, per-site `sites[]` (`anchor_residue`, `area_a2` BSA, α/β seed counts, `hydrophobicity`), `pdbs[]`.
+- `homo_oligomerization` — predicted homo-oligomer state from the Schweke et al. 2024 atlas: `is_homo_oligomer`, `stoichiometry`, `has_higher_order_complex`, `is_ecd_only`, model filenames (`dimer_pdb_filename`, `complex_pdb_filename`), `source`, `citation`.
+- *Preview blocks (serve-time, may change, not in the manuscript; present only for genes with data):*
+  - `library_designed_topology[]` — DeepTMHMM 1.0.24 topology of the protein each library member's designed CDS actually encodes, matched by exact sequence (`sequence_sha256`; often an isoform rather than the canonical): `candidate_id`, `library`, `per_residue_topology`, `tm_helix_count`, `predicted_surface_membrane`, `topology_acc`, …
+  - `library_designed_structure[]` — which structure to render per library member: `model_url`, `source` (`colabfold` / `alphafold_db`), `residue_offset` (construct residue *i* = model residue *i* + offset), `display_first_model_residue` / `display_last_model_residue`, `is_chosen`, `note`, `mean_plddt`.
+  - `bindome` — binder-design sites recovered from Bindome's BindCraft designs (Wenckstern 2026), kept separate from `surface_bind`.
 
 Older records may lack newer fields — use optional-chaining / `?? null` when reading. A Markdown brief of the full record (with the sequences + per-residue topology embedded) is at `https://api.deliverome.org/surfaceome/v1/genes/{SYMBOL}.md` (exact HGNC case).
 
