@@ -54,6 +54,10 @@ uv run python scripts/release/build_consolidated_deposit_tsvs.py
 #    this runs, so it describes the previous release.)
 uv run python scripts/release/update_zenodo_draft.py --deposit-id <draft id> --dry-run
 uv run python scripts/release/update_zenodo_draft.py --deposit-id <draft id>
+#    Then set creators, funders and the CC0 licence through the InvenioRDM API
+#    (the legacy API above can't carry funding and may drop it). Run it last.
+uv run python scripts/release/apply_zenodo_rdm_metadata.py --record <draft id> --kind data
+uv run python scripts/release/apply_zenodo_rdm_metadata.py --record <draft id> --kind data --execute
 
 # 5. Review the draft on Zenodo (files, README, publication_date — the
 #    draft's date is the day it was opened) and click Publish. Note the new
@@ -64,6 +68,10 @@ uv run python scripts/release/cut_data_release.py --set-doi X.Y.Z 10.5281/zenodo
 
 # 7. Create the GitHub release; the code record is archived from it.
 gh release create vX.Y.Z --generate-notes
+
+# 8. Add the funders to the new code record (.zenodo.json has no funder
+#    field), once Zenodo has archived the release.
+uv run python scripts/release/apply_zenodo_rdm_metadata.py --record <code record id> --kind code --published --execute
 ```
 
 Both build/sync scripts default to `/tmp/zenodo_deposit_consolidated`;

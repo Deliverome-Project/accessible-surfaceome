@@ -402,8 +402,9 @@ curl '{API_BASE}/genes/M6PR/replicates/deep_dive_concordance_v1/full_rerun'
 
 ## License
 
-The data in this deposit is released under CC BY 4.0. It is derived from public
-sources that keep their own terms; the per-source table is in the project's
+The data in this deposit is dedicated to the public domain under CC0 1.0, to
+the extent we hold rights in it. It is derived from public sources that keep
+their own terms; the per-source table is in the project's
 [LICENSING.md]({LICENSING_URL}). In brief: UniProt, GO, the Human Protein
 Atlas, JensenLab COMPARTMENTS, AlphaFold DB, the Schweke homo-oligomer atlas and
 the SURFACE-Bind prediction dataset are CC BY 4.0 (the SURFACE-Bind code is
@@ -474,7 +475,7 @@ def _description_html(version: str) -> str:
         "fixed-evidence replay (builders + synthesizer only). Source data for "
         "Supplementary Figure 16; also queryable at /v1/replicates.<br><br>"
         f"All data files are reproducible from the public read-only API at "
-        f"{API_BASE}/ (no credentials). License: CC BY 4.0; upstream "
+        f"{API_BASE}/ (no credentials). License: CC0 1.0; upstream "
         "sources keep their own terms (see LICENSING.md in the project "
         "repository)."
     )

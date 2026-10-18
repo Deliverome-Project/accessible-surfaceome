@@ -17,7 +17,10 @@ from pathlib import Path
 
 import yaml
 
-from accessible_surfaceome.cloud.record_history.zenodo import canonical_creators
+from accessible_surfaceome.cloud.record_history.zenodo import (
+    canonical_creators,
+    rdm_creators,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 ORCID = re.compile(r"^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$")
@@ -58,3 +61,15 @@ def test_publish_archive_seed_creators_match_zenodo_json() -> None:
 
 def test_data_record_versions_take_zenodo_json_creators() -> None:
     assert canonical_creators() == _zenodo()
+
+
+def test_rdm_creators_keep_names_orcids_and_affiliations() -> None:
+    got = [
+        (
+            f"{c['person_or_org']['family_name']}, {c['person_or_org']['given_name']}",
+            c["person_or_org"]["identifiers"][0]["identifier"],
+            c["affiliations"][0]["name"],
+        )
+        for c in rdm_creators()
+    ]
+    assert got == [(c["name"], c["orcid"], c["affiliation"]) for c in _zenodo()]

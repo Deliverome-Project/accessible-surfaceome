@@ -2,7 +2,8 @@
 
 This project integrates ~15 public data sources into a derived catalogue of
 human cell-surface proteins. The **code** is MIT (see `LICENSE`). The **derived
-data** is distributed under CC BY 4.0: the TSVs committed in this repository
+data** is dedicated to the public domain under CC0 1.0, to the extent we hold
+rights in it: the TSVs committed in this repository
 (candidate universe, figure inputs) and the Zenodo data deposit (concept DOI
 `10.5281/zenodo.20805383`), which holds the triage and benchmark runs, the
 per-gene deep-dive records, deep-dive preset membership and the
@@ -61,6 +62,7 @@ recurring-citation registry `viewer/lib/citations.ts`.
    touches.
 2. **OpenCell** is share-alike (CC BY-SA 4.0). That term can attach to a
    derivative that substantially incorporates its data, so check before
-   shipping such an export under CC BY 4.0.
+   shipping such an export under CC0. No file in the Zenodo data deposit
+   carries OpenCell data today.
 3. Never add any `data/external/blob_cache/`, `data/external/tool_cache.sqlite*`, or PubTator payload
    to a committed or deposited artifact.

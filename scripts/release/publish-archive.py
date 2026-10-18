@@ -390,7 +390,7 @@ SEED_METADATA = {
             },
         ],
         "access_right": "open",
-        "license": "cc-by-4.0",
+        "license": "cc-zero",
         "keywords": [
             "surface proteome",
             "drug delivery",

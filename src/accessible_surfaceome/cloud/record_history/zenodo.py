@@ -46,6 +46,37 @@ def canonical_creators() -> list[dict]:
     ORCIDs. One source keeps the two record series in step.
     """
     return json.loads(ZENODO_JSON.read_text(encoding="utf-8"))["creators"]
+
+
+# Funders, as listed in the manuscript's Funding section. Zenodo matches
+# funders by ROR id; Renaissance Philanthropy has no ROR record, so it goes
+# in by name. The legacy deposit API used above cannot read or write
+# funding, so scripts/release/apply_zenodo_rdm_metadata.py sets it through
+# the InvenioRDM API as the last step before publishing.
+FUNDERS = [
+    {"funder": {"id": "056y0v115"}},  # Anthropic
+    {"funder": {"id": "00ydx1s47"}},  # Astera Institute
+    {"funder": {"name": "Renaissance Philanthropy"}},
+]
+DATA_LICENSE = "cc0-1.0"
+CODE_LICENSE = "mit"
+
+
+def rdm_creators() -> list[dict]:
+    """``canonical_creators()`` in the InvenioRDM shape (ORCID as an identifier)."""
+    out = []
+    for c in canonical_creators():
+        family, given = (s.strip() for s in c["name"].split(",", 1))
+        person = {"type": "personal", "given_name": given, "family_name": family}
+        if c.get("orcid"):
+            person["identifiers"] = [{"scheme": "orcid", "identifier": c["orcid"]}]
+        entry: dict = {"person_or_org": person}
+        if c.get("affiliation"):
+            entry["affiliations"] = [{"name": c["affiliation"]}]
+        out.append(entry)
+    return out
+
+
 # Reproducibility replicates (Supplementary Figure 16). Not published records —
 # a frozen study bundle, deposited alongside every release from the one it
 # first ships in (a new version inherits the file; re-uploading an unchanged
@@ -178,6 +209,7 @@ def create_draft_version(
     meta.pop("prereserve_doi", None)
     meta["version"] = version
     meta["creators"] = canonical_creators()
+    meta["license"] = "cc-zero"  # the legacy API's id for CC0 1.0 (DATA_LICENSE)
     meta["publication_date"] = date.today().isoformat()
     http.put(
         d["links"]["self"], headers=auth_header, json={"metadata": meta}

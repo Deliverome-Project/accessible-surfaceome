@@ -1,7 +1,7 @@
 # NOTICE
 
 `accessible-surfaceome` — code under the MIT License (see `LICENSE`); derived
-data under CC BY 4.0 via the Zenodo deposit (concept DOI
+data under CC0 1.0 via the Zenodo deposit (concept DOI
 `10.5281/zenodo.20805383`).
 
 This product incorporates derived data from the public sources below. It
