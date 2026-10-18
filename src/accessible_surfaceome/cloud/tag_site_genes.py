@@ -96,25 +96,36 @@ def ensure_table(client: D1Client) -> None:
     _ensured = True
 
 
+#: The first pass's site provenance, and so the default thing ``row_for``
+#: counts. The enrichment pass writes ``literature_enriched`` and must say so.
+LITERATURE_PROVENANCE = "literature_retrieved"
+
+
 def row_for(
     record: dict[str, Any],
     *,
     version: str,
     n_papers: int | None = None,
     synced_at: str | None = None,
+    provenance: str = LITERATURE_PROVENANCE,
 ) -> dict[str, Any] | None:
-    """One gene's row from its viewer record, or None if the agent never ran it.
+    """One search's row from its viewer record, or None if the agent never ran it.
 
     ``prompt_sha`` is the test for "ran": the literature agent stamps it on every
     result including an empty one, and a record that has none was written by the
-    deterministic pipeline alone."""
+    deterministic pipeline alone.
+
+    ``provenance`` selects which of the record's sites this row is counting.
+    It matters because one record carries sites from several pipelines: left at
+    the default, an enrichment row would count none of its own sites and record
+    a zero — and a false dated zero is worse than no row at all, since nothing
+    downstream can tell it from a search that genuinely found nothing.
+    """
     if not record.get("prompt_sha"):
         return None
     others = record.get("literature_other_positions") or []
     sites = [
-        s
-        for s in (record.get("sites") or [])
-        if s.get("provenance") == "literature_retrieved"
+        s for s in (record.get("sites") or []) if s.get("provenance") == provenance
     ]
     return {
         "gene_symbol": record.get("gene_symbol", ""),
@@ -159,6 +170,32 @@ def publish_gene_rows(
     finally:
         if owns:
             client.close()
+
+
+def searched_members(
+    client: D1Client, *, run_series: str, prompt_sha: str
+) -> set[tuple[str, str]]:
+    """``(gene_symbol, candidate_id)`` already searched in this series under THIS prompt.
+
+    The skip set for a member-keyed pass. It has to come from this table rather
+    than from ``tag_site_public``, because a member the pass ran and found
+    nothing in has no site rows — and that is the majority case, so a
+    site-derived skip set would re-run (and re-pay for) most of the cohort on
+    every resume.
+
+    Scoped by ``prompt_sha``, so a row written under a different prompt is
+    absent from the set and gets re-run: the repo's rule that a changed prompt
+    must reach the rows it invalidated, with no flag for anyone to remember.
+    Scoped by ``run_series`` too, because the first pass's row for the same
+    gene is a real search under the same prompt — unscoped, it would mask the
+    enrichment for essentially every gene.
+    """
+    rows = client.query(
+        "SELECT gene_symbol, candidate_id FROM tag_site_gene_public "
+        "WHERE run_series = ? AND prompt_sha = ?;",
+        [run_series, prompt_sha],
+    )
+    return {(r["gene_symbol"], r["candidate_id"]) for r in rows}
 
 
 #: Suffix for the retained pre-migration table. A rename is reversible while

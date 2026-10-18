@@ -1024,6 +1024,52 @@ Citations are enriched from `paper_metadata` at publish time — `build_paper_me
 sweeps `tag_site_public` as well as `surface_annotation`, so a paper cited only by a tag site
 still gets a title and byline.
 
+### The enrichment pass: member-keyed, and its resume needs its own write
+
+The second literature pass (`scripts/enrich_tag_site_lit.py`, swept with
+`sweep_tag_site_lit.py --members-file`) runs once per library MEMBER, not per
+gene — 566 members across 518 genes, 45 of which have several. Three couplings
+that each broke something:
+
+- **The skip set is `(gene_symbol, candidate_id)`, never a bare symbol.** A
+  gene-keyed skip set applied to members strands every sibling, and since the
+  first pass already searched all 518 genes it would strand nearly all of them.
+- **A resume is vacuous unless the pass records that it looked.**
+  `publish_tag_sites` writes one row per SITE, and ~80% of these members have no
+  published loop insertion, so the majority outcome leaves no trace.
+  `enrich_member` therefore stamps its own `tag_site_gene_public` row at run
+  time (`searched_row`), keyed `(gene_symbol, candidate_id, run_series)`. The
+  first pass's rows come from `publish_tag_site_genes.py` sweeping committed
+  viewer snapshots; that cannot reach these records, which live only in D1.
+- **`row_for` counts ONE provenance and must be told which.** It defaults to
+  `literature_retrieved`; an enrichment row left at the default counts none of
+  its own `literature_enriched` sites and records a zero. A false dated zero is
+  worse than no row, because nothing downstream can tell it from a search that
+  genuinely found nothing — the distinction the table exists to carry.
+
+`--run-series` names the series, and a members sweep defaults to
+`literature_enriched_v1` rather than inheriting `literature_v1`: the series the
+sweep hands down is the series the child WRITES.
+
+### A schema field rendered into the output contract costs a cohort re-run
+
+`SYSTEM_PROMPT` ends in `format_output_contract()`, generated from the schema,
+so **adding a field to the tag-site schema can change `prompt_sha`** — and both
+sweeps' resume compares on exactly that, so every record archived under the old
+sha reads as stale. `position_frame` did this: it marked all 2,370 archived
+genes stale, about $2,000 of re-runs, to ask the model for a value the pipeline
+resolves after synthesis and overwrites.
+
+A field the model never supplies belongs in `_PIPELINE_INTERNAL` (skipped from
+the contract and NOT named in its closing sentence, since that sentence is
+prompt text too). `test_pipeline_and_code_set_fields_are_not_requested` cannot
+catch this — it iterates the sets, so a field nobody declared is invisible to
+it. The guard that does is `PINNED_PROMPT_SHA` in
+[tests/test_tag_site_output_contract.py](tests/test_tag_site_output_contract.py),
+a `prompt_version -> sha` map: the text cannot move without either a version
+bump or a deliberate edit there. When it fires, decide whether the edit was
+intended before touching the map.
+
 ### The viewer reads the Worker
 
 `fetchTaggedSites(symbol, API_BASE)` prefers `/v1/tag-sites/{SYMBOL}` and falls back to the

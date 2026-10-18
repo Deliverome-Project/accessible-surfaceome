@@ -586,6 +586,24 @@ per discovered paper.
   literature-only file erase the deterministic sites. `sync_tag_sites_to_d1.py` refuses a sync
   that would shrink any gene unless `--allow-deletes`; re-derive with
   `scripts/regenerate_tag_sites.py` (it preserves literature sites) instead of overriding.
+- **The enrichment pass is MEMBER-keyed, and its resume needs its own write.**
+  `enrich_tag_site_lit.py` (swept via `sweep_tag_site_lit.py --members-file`) runs once per
+  library member — 566 across 518 genes, 45 with several — so the skip set is
+  `(gene_symbol, candidate_id)`; a bare symbol strands every sibling of the 518 genes the
+  first pass already searched. And `publish_tag_sites` writes one row per SITE, so the ~80%
+  of members with no published loop insertion leave no trace: `enrich_member` stamps its own
+  `tag_site_gene_public` row at run time, since the first pass's snapshot-scoped
+  `publish_tag_site_genes.py` cannot reach records that live only in D1. `row_for` counts ONE
+  provenance and must be told which — left at the default it counts no `literature_enriched`
+  site and records a false dated zero, which nothing downstream can tell from a real one.
+- **A schema field rendered into the output contract costs a cohort re-run.** `SYSTEM_PROMPT`
+  ends in `format_output_contract()`, generated from the schema, so a new tag-site field can
+  change `prompt_sha` — and both sweeps' resume compares on that, so every archived record
+  reads as stale. `position_frame` did exactly this: 2,370 genes, ~$2,000, to ask the model
+  for a value the pipeline overwrites. Fields the model never supplies go in
+  `_PIPELINE_INTERNAL`; the guard is the `prompt_version -> sha` map `PINNED_PROMPT_SHA` in
+  `tests/test_tag_site_output_contract.py`, because the older guard iterates the declared
+  sets and so cannot see an undeclared field.
 - **The viewer reads the Worker**: `fetchTaggedSites(symbol, API_BASE)`. Without the apiBase
   only the static `/tag-sites/{SYMBOL}.json` is tried, and that asset is not in the Pages
   export.

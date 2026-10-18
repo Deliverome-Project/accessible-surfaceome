@@ -66,11 +66,17 @@ from accessible_surfaceome.agents.tag_site.member_frames import (  # noqa: E402
 from accessible_surfaceome.agents.tag_site.prior_ledger import (  # noqa: E402
     parse_prior_clips,
 )
+from accessible_surfaceome.agents.tag_site.prompt import prompt_sha  # noqa: E402
 from accessible_surfaceome.agents.tag_site.runner import (  # noqa: E402
     run_tag_site_agent,
     to_viewer_sites,
 )
 from accessible_surfaceome.cloud.d1_client import D1Client  # noqa: E402
+from accessible_surfaceome.cloud.tag_site_genes import (  # noqa: E402
+    publish_gene_rows,
+    row_for as gene_row_for,
+    searched_members,
+)
 from accessible_surfaceome.paths import REPO_ROOT  # noqa: E402
 
 MEMBERS_TSV = REPO_ROOT / "data/tag_sites/l1_internal_members.tsv"
@@ -292,6 +298,51 @@ def uniprot_names(acc: str) -> tuple[str, list[str], int]:
     return name, lit.build_aliases("", name, cands), sp_end
 
 
+def searched_row(
+    m: Member,
+    result: Any,
+    sites: list[dict[str, Any]],
+    *,
+    base_acc: str,
+    run_series: str,
+    n_papers: int | None = None,
+) -> dict[str, Any] | None:
+    """The "we searched this member, under this prompt, on this date" row.
+
+    Stamped at run time rather than recovered later by a snapshot pass, for two
+    reasons: these records live in D1 and only three viewer snapshots are
+    committed, so a snapshot-scoped pass would reach almost none of them; and
+    the sweep's resume reads exactly this row, so a pass that does not write it
+    has an empty skip set forever and re-runs the whole cohort on every resume.
+
+    ``None`` when the run never reached the model (no ``prompt_sha``) — dating a
+    search that was not made would make the next resume skip the member for
+    good.
+    """
+    return gene_row_for(
+        {
+            "gene_symbol": m.gene_symbol,
+            "candidate_id": m.candidate_id,
+            "run_series": run_series,
+            "uniprot_acc": base_acc,
+            "generated_at": getattr(result, "generated_at", "") or "",
+            "prompt_sha": getattr(result, "prompt_sha", "") or "",
+            "prompt_version": getattr(result, "prompt_version", "") or "",
+            "model": getattr(result, "model", "") or "",
+            "schema_version": getattr(result, "schema_version", "") or "",
+            "literature_other_positions": [
+                o if isinstance(o, dict) else o.model_dump()
+                for o in (getattr(result, "other_positions", None) or [])
+            ],
+            "literature_notes": getattr(result, "notes", "") or "",
+            "sites": sites,
+        },
+        version=run_series,
+        n_papers=n_papers,
+        provenance=ENRICHED_PROVENANCE,
+    )
+
+
 def enrich_member(
     m: Member,
     fr: MemberFrame,
@@ -302,6 +353,7 @@ def enrich_member(
     pub: D1Client,
     dry_run: bool,
     publish: bool,
+    run_series: str = RUN_SERIES,
 ) -> dict[str, Any]:
     name, aliases, sp_end = uniprot_names(base_acc)
     clips, seen, covered = prior_state(m.gene_symbol, pri=pri, pub=pub)
@@ -341,7 +393,7 @@ def enrich_member(
     cost = sum(getattr(u, "cost_usd", 0.0) or 0.0 for u in usage)
     inter["cost_usd"] = round(cost, 4)
     inter["candidate_id"] = m.candidate_id
-    inter["run_series"] = RUN_SERIES
+    inter["run_series"] = run_series
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     (RUNS_DIR / f"{m.candidate_id}.json").write_text(
         json.dumps(inter, indent=2, default=str)
@@ -371,11 +423,21 @@ def enrich_member(
                 "uniprot_acc": base_acc,
                 "sites": sites,
             },
-            tag_sites_version=RUN_SERIES,
+            tag_sites_version=run_series,
             client=pub,
             provenances=[ENRICHED_PROVENANCE],
         )
         log.info("  %s: published %d enriched row(s)", m.candidate_id, n)
+
+        # And the fact that we LOOKED. Without this row a member that found
+        # nothing is indistinguishable from one never run, so the sweep's skip
+        # set stays empty and every resume re-runs the cohort.
+        srow = searched_row(
+            m, result, sites, base_acc=base_acc, run_series=run_series,
+            n_papers=inter.get("n_papers"),
+        )
+        if srow is not None:
+            publish_gene_rows([srow], client=pub)
     return {
         "candidate_id": m.candidate_id,
         "gene_symbol": m.gene_symbol,
@@ -395,6 +457,12 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true",
                     help="resolve frames and prior state, print the plan, spend nothing")
     ap.add_argument("--no-publish", action="store_true")
+    ap.add_argument("--run-series", default=RUN_SERIES,
+                    help="which search series this run writes and resumes against")
+    ap.add_argument("--resume", action="store_true",
+                    help="skip members already searched in this series under the "
+                         "CURRENT prompt_sha (one archived under a different sha is "
+                         "stale and re-runs)")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -415,6 +483,24 @@ def main() -> int:
              len(members), len({m.gene_symbol for m in members}))
 
     with D1Client.public() as pub, D1Client() as pri:
+        if args.resume:
+            # Sha-aware: a member archived under a DIFFERENT prompt is stale
+            # and runs again, so a prompt edit reaches the rows it invalidated
+            # without anyone having to remember a flag.
+            done = searched_members(
+                pub, run_series=args.run_series, prompt_sha=prompt_sha()
+            )
+            before = len(members)
+            members = [
+                m for m in members
+                if (m.gene_symbol, m.candidate_id) not in done
+            ]
+            log.info("resume: %d searched under this sha; %d of %d pending",
+                     len(done), len(members), before)
+            if not members:
+                log.info("nothing to do")
+                return 0
+
         accs = canonical_accessions(members, pub=pub)
         frames, alternates, unresolved = resolve_frames(
             members, pub=pub, accessions=accs
@@ -440,6 +526,7 @@ def main() -> int:
                         m, fr, alternates[m.candidate_id], base_acc=base_acc,
                         pri=pri, pub=pub,
                         dry_run=args.dry_run, publish=not args.no_publish,
+                        run_series=args.run_series,
                     )
                 )
             except Exception as exc:  # noqa: BLE001 - report per member, keep going
