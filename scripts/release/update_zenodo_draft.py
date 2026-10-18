@@ -370,8 +370,8 @@ variability is visible. The curated truth label is joined onto every row:
 | `truth_reason` | curated reason (controlled vocabulary) |
 | `truth_class` | the benchmark's disagreement bucket for the gene |
 
-followed by the triage columns of file 1 **except `run_id`** — every row is
-from the benchmark run `mainbench_canonical_v2`.
+followed by the triage columns of file 1 **except `run_id` and `triage_pass`** —
+every row is from the benchmark run `mainbench_canonical_v2`.
 
 ---
 
