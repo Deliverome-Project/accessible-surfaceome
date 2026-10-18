@@ -199,7 +199,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/triage/export.tsv",
         sizeKey: "/v1/triage/export.tsv",
         summary:
-          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v2 for the full 19,324-gene Sonnet sweep. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
+          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v2 for the full 19,324-gene Sonnet sweep (the NCBI-context pass). The PubMed-context rescue pass — one pass, 14,404 rows re-triaging the genes the NCBI pass called no — is recorded under four run_ids, one per batch: genome_full_sonnet_pubmed_ncbi_v1, genome_intracellular_pubmed_ncbi_v1, genome_1db_trim_pubmed_ncbi_v1 and genome_optcut_zerodb_pubmed_ncbi_v1. The Zenodo deposit's triage-runs-genome-with-reasoning.tsv combines both passes with a triage_pass column. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
         curl:
           "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1' | head -3",
       },
