@@ -26,7 +26,7 @@ def _load_weasyprint() -> None:
         src = (_ROOT / "paper/build.py").read_text()
         ns: dict = {"__file__": str(_ROOT / "paper/build.py")}
         exec(compile(src.split("from weasyprint import")[0], "paper/build.py", "exec"), ns)
-        import weasyprint  # noqa: F401
+        importlib.import_module("weasyprint")
     except (ImportError, OSError) as exc:
         pytest.skip(f"paper toolchain unavailable: {exc}")
 
