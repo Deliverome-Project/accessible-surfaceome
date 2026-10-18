@@ -1195,8 +1195,11 @@ async function handleGene(env, symbol) {
     // through have the block but not these keys. Without this every already
     // published gene keeps hiding the tool's own classification behind the
     // derived ECD/ICD numbers.
+    // Records store the call as an explicit null too (the Python builder
+    // didn't select the column until 2026-10-17), so test == null, not
+    // === undefined, or the call stays blank on nearly every gene.
     const canonTopoLacksCall = !!existingCanonTopo
-      && existingCanonTopo.predicted_surface_membrane === undefined;
+      && existingCanonTopo.predicted_surface_membrane == null;
     const canonTopoNeedsEnrich =
       !existingCanonTopo || canonTopoIsPlaceholder || canonTopoLacksCall;
     if (canonTopoNeedsEnrich && canonicalTopoVersion) {
@@ -1216,22 +1219,9 @@ async function handleGene(env, symbol) {
         "topology_public_canonical",
       );
       if (tr) {
-        if (!record.deterministic_features) record.deterministic_features = {};
-        record.deterministic_features.canonical_topology = {
-          isoform_id: tr.isoform_id || `${uniprot}-1`,
-          uniprot_acc: tr.uniprot_acc_full || uniprot,
-          tm_helix_count: Number(tr.tm_helix_count || 0),
-          n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
-          c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
-          signal_peptide_length: Number(tr.signal_peptide_length || 0),
-          ecd_length_residues: Number(tr.ecd_length_residues || 0),
-          icd_length_residues: Number(tr.icd_length_residues || 0),
-          per_residue_topology: tr.per_residue_topology || "",
-          sequence: tr.sequence ?? null,
-          tool_version: tr.tool_version || "deeptmhmm-1.0.24",
-          retrieved_at: tr.retrieved_at || new Date().toISOString(),
-          // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays
-          // null so "column absent" never reads as a confident false.
+        // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays null
+        // so "column absent" never reads as a confident false.
+        const call = {
           predicted_surface_membrane:
             tr.predicted_surface_membrane == null ? null : Boolean(Number(tr.predicted_surface_membrane)),
           predicted_secreted:
@@ -1241,6 +1231,32 @@ async function handleGene(env, symbol) {
           protein_length:
             tr.protein_length == null ? null : Number(tr.protein_length),
         };
+        if (existingCanonTopo && !canonTopoIsPlaceholder) {
+          // A real annotator block that only lacks the call: fill those
+          // fields and keep every other key as the record stores it.
+          // Rebuilding the block here dropped the record's explicit-null
+          // keys (ecd_pct_identity_to_canonical and friends) on every gene.
+          for (const [k, v] of Object.entries(call)) {
+            if (existingCanonTopo[k] == null) existingCanonTopo[k] = v;
+          }
+        } else {
+          if (!record.deterministic_features) record.deterministic_features = {};
+          record.deterministic_features.canonical_topology = {
+            isoform_id: tr.isoform_id || `${uniprot}-1`,
+            uniprot_acc: tr.uniprot_acc_full || uniprot,
+            tm_helix_count: Number(tr.tm_helix_count || 0),
+            n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+            c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+            signal_peptide_length: Number(tr.signal_peptide_length || 0),
+            ecd_length_residues: Number(tr.ecd_length_residues || 0),
+            icd_length_residues: Number(tr.icd_length_residues || 0),
+            per_residue_topology: tr.per_residue_topology || "",
+            sequence: tr.sequence ?? null,
+            tool_version: tr.tool_version || "deeptmhmm-1.0.24",
+            retrieved_at: tr.retrieved_at || new Date().toISOString(),
+            ...call,
+          };
+        }
       }
     }
 
@@ -3618,7 +3634,7 @@ async function handleV1Index(env) {
       docs: "https://surfaceome.deliverome.org/api",
       skill: "https://surfaceome.deliverome.org/surfaceome-api.skill.md",
       llms_txt: "https://surfaceome.deliverome.org/llms.txt",
-      record_markdown_template: "https://surfaceome.deliverome.org/data/surfaceome/{symbol}.md",
+      record_markdown_template: "https://api.deliverome.org/surfaceome/v1/genes/{symbol}.md",
       schema: {
         name: "SurfaceomeRecord",
         source: "src/accessible_surfaceome/tools/_shared/models.py",
@@ -3749,12 +3765,12 @@ async function handleMetaSizes(env) {
       approx: true,
       note: DEFAULT_EXPORT_RUN_ID,
     },
-    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1": {
+    [`/v1/triage/export.tsv?run_id=${GENOME_RUN_ID}`]: {
       bytes: r0(genome.export_chars + genome.n * EXPORT_NCOLS),
       approx: true,
       note: GENOME_RUN_ID,
     },
-    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1": {
+    [`/v1/triage/export.tsv?run_id=${GENOME_RUN_ID}&with_reasoning=1`]: {
       bytes: r0(genome.export_chars + genome.reasoning_chars + genome.n * (EXPORT_NCOLS + 2)),
       approx: true,
       note: `${GENOME_RUN_ID} + reasoning`,
@@ -4049,7 +4065,7 @@ async function handleTriageCell(env, symbol, model, variant) {
   if (!BENCH_MATRIX_MODELS.includes(model)) return badRequest("invalid_model");
   if (!BENCH_MATRIX_VARIANTS.includes(variant)) return badRequest("invalid_variant");
   // Scope to the canonical bench run — without this, a gene that also
-  // appears in the whole-genome sweep (genome_full_sonnet_ncbi_v1, same
+  // appears in the whole-genome sweep (genome_full_sonnet_ncbi_v2, same
   // sonnet/ncbi cell) would have its rows collide with the bench reps.
   // One row per replicate number (latest by created_at) so a stray
   // duplicate-replicate row from a bad sync can't surface as two "Rep N".
