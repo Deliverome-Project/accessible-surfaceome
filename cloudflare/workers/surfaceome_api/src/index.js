@@ -4719,8 +4719,55 @@ async function handleGeneMarkdown(env, symbol) {
   });
 }
 
+// D1 refuses queries while a database export runs ("Currently processing a
+// long-running export"), and transiently when overloaded. Those used to escape
+// as uncaught exceptions, so every uncached request failed with a 500 for the
+// length of the export (345 such errors across two backups on 2026-10-17/18).
+// Answer 503 + Retry-After instead, never cached, so clients and the viewer
+// can retry and no error page is stored at the edge.
+const D1_BUSY_PATTERNS = [
+  /long-running export/i,
+  /D1 DB is overloaded/i,
+  /overloaded/i,
+  /Network connection lost/i,
+  /storage operation exceeded timeout/i,
+];
+
+function isD1Busy(e) {
+  const msg = String(e?.message ?? e ?? "");
+  return D1_BUSY_PATTERNS.some((re) => re.test(msg));
+}
+
+function databaseBusy() {
+  return new Response(
+    JSON.stringify({ error: "database_busy", retry_after_s: 30 }, null, 2),
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+        "Retry-After": "30",
+        ...CORS_HEADERS,
+      },
+    },
+  );
+}
+
 export default {
   async fetch(request, env, ctx) {
+    try {
+      return await routeRequest(request, env, ctx);
+    } catch (e) {
+      if (isD1Busy(e)) {
+        console.warn("d1_busy", e?.message);
+        return databaseBusy();
+      }
+      throw e;
+    }
+  },
+};
+
+async function routeRequest(request, env, ctx) {
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -4837,5 +4884,4 @@ export default {
     if ((m = path.match(/^\/v1\/triage\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTriage(env, m[1]));
 
     return notFound("route_not_found");
-  },
-};
+}
