@@ -98,8 +98,8 @@ Gene symbols are case-insensitive on the wire (the Worker uppercases them) but t
 legacy `v0.5` `targetability`/`surface_biology`/`risk_flags` shape — those
 keys no longer exist). Top-level structure:
 
-- `gene` — `hgnc_symbol`, `hgnc_id`, `uniprot_acc`, `ncbi_gene_id`, `ensembl_gene`. Key every downstream lookup on these stable IDs, not the symbol.
-- `triage_signal` / `triage_reasoning` — the first-pass Sonnet triage verdict (`likely_accessible` | `possibly_accessible` | `unlikely` | `unknown`) + its prose.
+- `gene` — `hgnc_symbol`, `hgnc_id`, `uniprot_acc`, `ncbi_gene_id`, `ensembl_gene`, `ensembl_canonical_protein`. Key every downstream lookup on these stable IDs, not the symbol.
+- `triage_signal` / `triage_reasoning` — the **first-pass** Sonnet triage verdict (`likely_accessible` | `possibly_accessible` | `unlikely` | `unknown`) + its prose: the NCBI-context call, made before the deep dive. For the 379 genes the PubMed-context rescue pass reclassified, this still reads the first pass's `unlikely`; their PubMed-pass call is in `/v1/triage/{SYMBOL}` and the triage export.
 - `executive_summary` — `one_paragraph` (human TL;DR), `surface_accessibility` (`high`|`moderate`|`low`|`no`|`uncertain`), `confidence`, `evidence_grade_summary`, `state_dependence`, `subcategory`, `surface_call_reason`, `headline_risks[]`, `accessibility_context_summary`, plus family tags `uniprot_family` / `hgnc_gene_groups[]` / `llm_family`.
 - `filters` — ~35 flat catalog facets for filtering, several paired with a `*_rationale` (e.g. `expression_level`+`expression_level_rationale`, `surface_specificity`+`_rationale`, `has_known_ligand`+`_rationale`): `co_receptor_dependency`, `has_{shed,secreted,epitope_masking,restricted_subdomain}*`, `ecd_accessibility_class`, `evidence_grade`, `evidence_density`, `{mouse,cyno}_ortholog_ecd_pct_identity`, `max_paralog_ecd_pct_identity`, `tumor_associated`, `induction_trigger`, `has_live_cell_surface_evidence`, …
 - `surface_evidence` — `evidence_grade` + `grade_rationale`, `claim_stances[]` (per-claim supports/contradicts + weight), `methods[]` (per-assay: `method_family`, `antibodies[]` with clonality + validation strategy/strength, `expression_observations[]`, `overexpression` construct, `surface_claim_type`, `accessibility_relevance`), `non_surface_expression[]`, `contradicting_evidence[]`.
@@ -107,7 +107,7 @@ keys no longer exist). Top-level structure:
 - `accessibility_risks` — `shed_form`, `secreted_form`, `epitope_masking`, `ecd_size_assessment`, `restricted_subdomain`, `co_receptor_requirements`; each with `severity` / `evidence_strength` / `rationale` / `cited_evidence_ids`.
 - `deterministic_features` — tool output, never LLM-written (see below).
 - `evidence_count` / `primary_evidence_count` / `secondary_evidence_count` — ledger sizes. The ledger itself is **not** in the record: fetch `/v1/genes/{SYMBOL}/evidence`, whose `evidence[]` is the primary/secondary chain (`evidence_id`, `claim`, `claim_type`, `direction`, `evidence_tier`, `assay_context` (species / cell / permeabilization), and `spans[]` with verbatim `quote` + `source` (`pmid` / `pmc_id` / `doi` / `url`)), with `papers{}` resolving each `source_id` to its title / authors / journal / year.
-- `confidence` / `confidence_reasoning`, `deep_dive_tier`, `prompt_corpus_version`, `model_path`, `record_generated_at`.
+- `confidence` / `confidence_reasoning`, `deep_dive_tier` (`canonical` | `likely` | `low` | `uncertain` | `no`) and `deep_dive_facet` (`induced` | `cell_type_restricted` | null), `prompt_corpus_version`, `model_path`, `record_generated_at`.
 
 ### `deterministic_features` — sequences, topology, structure, homology
 
@@ -130,6 +130,25 @@ a second fetch:
   - `bindome` — binder-design sites recovered from Bindome's BindCraft designs (Wenckstern 2026), kept separate from `surface_bind`.
 
 Older records may lack newer fields — use optional-chaining / `?? null` when reading. A Markdown brief of the full record (with the sequences + per-residue topology embedded) is at `https://api.deliverome.org/surfaceome/v1/genes/{SYMBOL}.md` (exact HGNC case).
+
+
+### Fields filled at serve time
+
+`/v1/genes/{SYMBOL}` serves the stored deep-dive record **plus** values the Worker reads from other public tables on each request (cached at the edge). These can change without the record being re-annotated, which is also why numbered releases archive the *served* JSON. Each source is a public D1 table synced from the project's pipelines:
+
+| Field | What the Worker does | Source |
+|---|---|---|
+| `deep_dive_tier`, `deep_dive_facet` | adds | computed from the record's `filters` with the catalog's tier rules (the same labels `/v1/catalog` shows) |
+| `triage_signal`, `triage_reasoning` | sets from the live first-pass call | `triage_run_public`: the SurfaceBench run's replicate 1 for the 147 benchmark genes, otherwise the genome-wide NCBI-context sweep (`genome_full_sonnet_ncbi_v2`) |
+| `gene.ensembl_canonical_protein` | fills when the record lacks it | `gene_identifier_public` (the HGNC-ID-resolved stable-ID table) |
+| `deterministic_features.canonical_topology` | fills DeepTMHMM's own call (`predicted_surface_membrane`, `predicted_secreted`, `beta_strand_count`, `protein_length`) when stored as null; builds the block if missing | `topology_public` (DeepTMHMM 1.0.24) |
+| `deterministic_features.isoform_topologies`, `paralogs`, `orthologs` | refreshes when the source release is newer than the record's | `topology_public`, Ensembl Compara release 115 tables |
+| `deterministic_features.surface_bind`, `homo_oligomerization` | refreshes / back-fills | SURFACE-Bind tables (Balbi et al. 2026, PMID 41604262); Schweke et al. 2024 homo-oligomer atlas |
+| `accessibility_risks.homo_oligomerization_prediction` | adds, mirroring the homo-oligomer block as an epitope-masking risk | Schweke et al. 2024 homo-oligomer atlas |
+| `deterministic_features.bindome` *(preview)* | adds for genes with data; the block carries its own `source`, `citation` and `release` | `bindome_site_public` |
+| `deterministic_features.library_designed_topology` / `library_designed_structure` *(preview)* | adds for library genes | `library_topology_public` -> `topology_public`; `library_structure_public` |
+
+A response whose enrichment hit a database error carries the `X-Surfaceome-Degraded` header and is never cached; retry it.
 
 ## SurfaceBench matrix shape
 
