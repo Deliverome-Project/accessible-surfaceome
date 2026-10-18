@@ -286,13 +286,14 @@ gene that reads a context block and returns a surface-accessibility verdict
 (`yes` / `contextual` / `no`), a controlled-vocabulary reason, a confidence and
 its free-text reasoning, with per-call token / cost / latency accounting.
 
-Five runs, tagged by the `run_id` column:
+Two triage passes, labelled by the `triage_pass` column:
 
-- **`genome_full_sonnet_ncbi_v2`** — the primary sweep with NCBI gene-summary
-  context: **19,324 genes**, one row each.
-- Four **PubMed-context rescue lanes** — **14,404 rows covering 14,395 distinct
-  genes** — which re-triage genes the primary sweep called `no` and at most one
-  surface database supports, with PubMed abstracts in the prompt:
+- **`ncbi`** — the primary sweep with NCBI gene-summary context, `run_id`
+  **`genome_full_sonnet_ncbi_v2`** — 19,324 genes, one row each.
+- **`pubmed`** — the PubMed-context rescue pass: **14,404 rows covering 14,395
+  distinct genes**. It re-triages, with PubMed abstracts in the prompt, the genes
+  the NCBI pass called `no` that at most one surface database supports. It ran
+  in four batches, which `run_id` records for provenance:
   - **`genome_full_sonnet_pubmed_ncbi_v1`** — 2,626 genes in no database whose
     `no` reason was ambiguous (endomembrane, secreted, inner leaflet, …)
   - **`genome_intracellular_pubmed_ncbi_v1`** — 10,287 genes in no database
@@ -301,15 +302,17 @@ Five runs, tagged by the `run_id` column:
   - **`genome_optcut_zerodb_pubmed_ncbi_v1`** — 74 genes that moved from one
     database to none under the optimized CSPA cutoff
 
-  A re-triaged gene carries an NCBI row plus its PubMed row; every other gene
-  carries one row. The lanes are disjoint except for 9 genes the 74-gene lane
-  re-ran after an earlier lane, which carry a row from each (hence 14,404 rows
-  but 14,395 genes). A few lane rows have `prompt_variant` = `naive`: the PubMed
-  fetch failed for that gene and the call ran on the gene symbol alone.
+  A re-triaged gene carries an `ncbi` row plus its `pubmed` row; every other gene
+  carries one row. Nine genes fell in two batches and carry a `pubmed` row from
+  each (hence 14,404 rows but 14,395 genes). In 13 `pubmed` rows (9 genes) the
+  model refused the context-bearing prompt and the call was retried on the gene
+  symbol alone, so `prompt_variant` is `naive` and the call saw neither PubMed
+  nor NCBI context.
 
 | Column | Meaning |
 |---|---|
 | `run_id` | which run the row is from (see above) |
+| `triage_pass` | `ncbi` or `pubmed` — which triage pass produced the row (see above) |
 | `gene_symbol` | HGNC gene symbol |
 | `uniprot_acc`, `hgnc_id`, `ensembl_gene` | stable identifiers |
 | `db_uniprot`, `db_go`, `db_surfy`, `db_cspa`, `db_hpa` | 0/1 — does each of the five surface databases (UniProt, GO, SURFY, CSPA, HPA) call this gene surface? |
@@ -438,9 +441,14 @@ One row per gene with a deep-dive record. The `in_*` columns (1/0) say whether
 the gene falls in each of the public catalog's presets (`canonical`, `likely`,
 `induced`, `cell_type_restricted`), computed with the same predicates the
 catalog uses (`accessible_surfaceome.release.catalog_presets`). The
-`induction_*` columns split `induced` by trigger, and the remaining columns are
+`induction_*` columns split `induced` by trigger, and the next columns are
 the record fields those predicates read, so any preset can be re-derived
-locally.
+locally. The last five columns are each gene's catalog `deep_dive_tier` and
+`deep_dive_facet` (see file 3); `low_lit_uniprot`, the catalog's
+low-literature badge (1 when fewer than 100 papers were found for the gene
+and UniProt calls it surface under the SurfaceBench-optimized cutoff); and the
+two paper counts behind it, `n_papers_found` (the size of the discovery
+corpus) and `n_papers_selected` (papers read in full and cited).
 
 ---
 
@@ -538,11 +546,11 @@ def _description_html(version: str) -> str:
         f"<b>{GENOME_TSV}</b> — 33,728-row "
         "long-format TSV, with each call's verdict, reason, confidence and "
         "free-text reasoning, consolidating the genome-wide Sonnet+NCBI sweep "
-        "(19,324 genes × 1 rep) AND the four PubMed-context rescue "
-        "lanes (14,404 rows, 14,395 distinct genes) that re-triage the genes "
-        "it called no with at most one supporting database. A `run_id` column "
-        "tags every row so the lanes can be split or merged at read time; each "
-        "re-run gene has an NCBI row plus its PubMed row(s). The "
+        "(19,324 genes × 1 rep) AND the PubMed-context rescue pass "
+        "(14,404 rows, 14,395 distinct genes), which re-triages the genes it "
+        "called no with at most one supporting database. A `triage_pass` "
+        "column (ncbi / pubmed) labels every row; each re-run gene has an "
+        "NCBI row plus its PubMed row(s). The "
         "read-side reconciliation rule (prefer PubMed when it is more "
         "inclusive than NCBI) is documented in the README and applied "
         "server-side by the live /v1/catalog endpoint.<br><br>"
@@ -567,8 +575,9 @@ def _description_html(version: str) -> str:
         f"/v1/releases/{version}/genes/{{symbol}}.<br><br>"
         f"<b>{PRESETS_TSV}</b> — one row per deep-dive gene "
         "with 1/0 membership in each public-catalog preset (canonical, likely, "
-        "induced, cell-type restricted) and the record fields the presets "
-        "read.<br><br>"
+        "induced, cell-type restricted), the record fields the presets "
+        "read, the deep-dive tier and facet, and the low-literature "
+        "UniProt-positive badge with its paper counts.<br><br>"
         f"<b>{REPLICATES_TARBALL_NAME}</b> — run-to-run "
         "reproducibility replicates, NOT published records: for 50 randomly "
         "sampled deep-dive genes, the published record as served when the "

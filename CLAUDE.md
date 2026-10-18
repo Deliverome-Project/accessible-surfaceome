@@ -354,8 +354,8 @@ script — no need to install wrangler just to peek at row counts.
   exactly how the 74 orphans appeared. (b) Add its run_id to `RESCUE_RUNS`
   in [scripts/build_candidate_universe_v3.py](scripts/build_candidate_universe_v3.py)
   in the same change, and don't filter the lane on
-  `prompt_variant='pubmed_ncbi'` — a few cells fall back to `naive` when
-  the PubMed fetch fails, and they are still that gene's second look.
+  `prompt_variant='pubmed_ncbi'` — a few cells fall back to `naive`
+  after a model refusal on the context-bearing prompt, and they are still that gene's second look.
 
 For analyses that read the **legacy v1** rows, this composite-source
 SELECT gives "latest verdict per (gene_symbol, model, variant), preferring

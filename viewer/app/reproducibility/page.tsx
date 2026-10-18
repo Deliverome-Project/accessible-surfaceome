@@ -168,9 +168,10 @@ export default function ReproducibilityPage() {
             <li>
               <code>triage-runs-genome-with-reasoning.tsv</code> — every
               triage agent call across the protein-coding genome (33,728
-              rows: the 19,324-gene NCBI-context sweep plus 14,404 rows
-              from four PubMed-context rescue lanes), with verdict,
-              reason, confidence, and free-text reasoning.
+              rows: the 19,324-gene NCBI-context pass plus 14,404 rows
+              from the PubMed-context rescue pass, each labelled by a{" "}
+              <code>triage_pass</code> column), with verdict, reason,
+              confidence, and free-text reasoning.
             </li>
             <li>
               <code>triage-benchmark-with-reasoning.tsv</code> — the
@@ -197,6 +198,14 @@ export default function ReproducibilityPage() {
               <code>deep-dive-reproducibility-replicates-v1.tar.gz</code>{" "}
               — the run-to-run reproducibility replicates behind
               Supplementary Figure 16 (not published records).
+            </li>
+            <li>
+              <code>figure-source-data_1.3.0.tar.gz</code> — the source
+              table behind every data figure in the manuscript, the four
+              canonical figure-input tables (including{" "}
+              <code>db_optimized_cutoffs.tsv</code>), and a{" "}
+              <code>manifest.tsv</code> giving each file&apos;s figure,
+              sha256, reproduction gist and SWHID.
             </li>
           </ul>
           <p className={styles.body}>

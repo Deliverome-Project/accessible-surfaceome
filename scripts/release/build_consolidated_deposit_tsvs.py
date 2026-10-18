@@ -7,9 +7,11 @@ collapses them to:
   1. triage-runs-genome-with-reasoning.tsv
      Single TSV with every (gene × prompt_variant × replicate) row
      from the canonical Sonnet+NCBI sweep (19,324 cells, 1 rep each)
-     and the four Sonnet+PubMed rescue lanes (14,404 cells), tagged
-     with ``run_id`` so the reader can split by lane. A re-triaged gene
-     has an NCBI row plus its PubMed row; every other gene has 1 row.
+     and the Sonnet+PubMed rescue pass (14,404 cells). ``triage_pass``
+     (``ncbi`` / ``pubmed``) says which pass a row came from; ``run_id``
+     keeps its provenance (the PubMed pass ran as four batches). A
+     re-triaged gene has an NCBI row plus its PubMed row; every other
+     gene has 1 row.
 
   2. triage-benchmark-with-reasoning.tsv
      Per-replicate mainbench TSV with curated truth labels joined
@@ -61,7 +63,9 @@ EXPORT_BASE = API_BASE
 # without these columns through release 1.0.0.
 
 GENOME_NCBI_RUN_ID = "genome_full_sonnet_ncbi_v2"
-# The four PubMed-context rescue lanes. Each re-triages a slice of the genes
+# The PubMed-context rescue pass, recorded under four run_ids (one per batch).
+# Public text calls it ONE pass, and every row carries triage_pass = "pubmed";
+# the run_id is provenance only. Each batch re-triages a slice of the genes
 # the NCBI sweep called `no`; together they cover the genes the
 # candidate-universe gate could otherwise drop (CLAUDE.md "run_id
 # conventions"). The deposit used to carry only the first lane. The slices
@@ -94,9 +98,13 @@ def build_genome_consolidated() -> Path:
     )
     variant_idx = ncbi_header.index("prompt_variant")
     gene_idx = ncbi_header.index("gene_symbol")
-    out_header = ["run_id", *ncbi_header]
+    # triage_pass is the plain NCBI-vs-PubMed label. prompt_variant can't be
+    # used for that: in 13 PubMed-pass cells the model refused the
+    # context-bearing prompt and triage_runner retried on the bare-symbol
+    # `naive` prompt.
+    out_header = ["run_id", "triage_pass", *ncbi_header]
     for r in ncbi_rows:
-        r.insert(0, GENOME_NCBI_RUN_ID)
+        r[0:0] = [GENOME_NCBI_RUN_ID, "ncbi"]
     pubmed_rows: list[list[str]] = []
     seen_genes: dict[str, str] = {}
     for run_id in GENOME_PUBMED_RUN_IDS:
@@ -106,7 +114,7 @@ def build_genome_consolidated() -> Path:
                              "endpoint shape changed; re-check before deposit")
         # Collision guard: if the run_id query-string cache ever collides
         # again, a fetch returns some OTHER run. Each lane is a PubMed re-run
-        # (a few cells fall back to `naive` when the PubMed fetch failed), it
+        # (a few cells fall back to `naive` after a model refusal), it
         # is never the size of the full sweep, and it barely overlaps the
         # other lanes.
         variants = {r[variant_idx] for r in rows}
@@ -134,13 +142,16 @@ def build_genome_consolidated() -> Path:
                   f"by run_id): {', '.join(overlap)}")
         for r in rows:
             seen_genes.setdefault(r[gene_idx], run_id)
-            r.insert(0, run_id)
+            r[0:0] = [run_id, "pubmed"]
         pubmed_rows.extend(rows)
-    # Sort by gene_symbol (col 1 after run_id insertion), then prompt_variant
-    # so paired ncbi/pubmed rows for the same gene sit adjacent.
+    # Sort by gene_symbol, NCBI row first, so a re-triaged gene's two calls
+    # sit adjacent in pass order.
     gene_col = out_header.index("gene_symbol")
-    variant_col = out_header.index("prompt_variant")
-    merged = sorted(ncbi_rows + pubmed_rows, key=lambda r: (r[gene_col], r[variant_col]))
+    pass_col = out_header.index("triage_pass")
+    merged = sorted(
+        ncbi_rows + pubmed_rows,
+        key=lambda r: (r[gene_col], r[pass_col] != "ncbi", r[0]),
+    )
 
     out_path = OUT_DIR / "triage-runs-genome-with-reasoning.tsv"
     with out_path.open("w", newline="") as fh:
@@ -261,11 +272,12 @@ def build_deep_dive_presets(genome_path: Path) -> Path:
     print(f"  fetching {API_BASE}/catalog …")
     rc = httpx.get(f"{API_BASE}/catalog", timeout=120.0)
     rc.raise_for_status()
-    ddf_by_symbol = {
-        row["symbol"]: row["ddf"]
+    catalog_rows = {
+        row["symbol"]: row
         for row in rc.json().get("rows", [])
         if row.get("deep_dive") and row.get("ddf")
     }
+    ddf_by_symbol = {sym: row["ddf"] for sym, row in catalog_rows.items()}
     if not ddf_by_symbol:
         raise SystemExit("/v1/catalog returned no deep-dive ``ddf`` blocks — "
                          "endpoint shape changed; cannot build preset membership")
@@ -305,6 +317,17 @@ def build_deep_dive_presets(genome_path: Path) -> Path:
         *[f"induction_{key}" for key, _label, _pred in INDUCTION_SUBS],
         # Raw input fields the predicates read.
         *AUDIT_FIELDS,
+        # The catalog's tier + facet for the gene (same values the records
+        # carry), and the low-literature badge: fewer than
+        # LOW_LIT_PAPERS_MAX papers found AND UniProt calls it surface under
+        # the SurfaceBench-optimized cutoff (is_low_literature_surface). The
+        # badge is computed by the Worker; its two paper counts are here so
+        # it can be re-derived.
+        "deep_dive_tier",
+        "deep_dive_facet",
+        "low_lit_uniprot",
+        "n_papers_found",
+        "n_papers_selected",
     ]
 
     out_rows: list[list[str]] = []
@@ -324,6 +347,8 @@ def build_deep_dive_presets(genome_path: Path) -> Path:
             "1" if pred(ddf) else "0" for _key, _label, pred in INDUCTION_SUBS
         ]
         audit_values = [str(ddf.get(field) or "") for field in AUDIT_FIELDS]
+        crow = catalog_rows[sym]
+        counts = ["" if ddf.get(k) is None else str(ddf[k]) for k in ("n_papers_found", "n_papers_selected")]
         out_rows.append([
             sym,
             str(entry.get("uniprot_acc") or ""),
@@ -332,6 +357,10 @@ def build_deep_dive_presets(genome_path: Path) -> Path:
             *preset_flags,
             *induction_flags,
             *audit_values,
+            str(crow.get("deep_dive_tier") or ""),
+            str(crow.get("deep_dive_facet") or ""),
+            "1" if crow.get("low_lit_uniprot") else "0",
+            *counts,
         ])
     out_rows.sort(key=lambda r: r[0])
 
