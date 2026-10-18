@@ -2867,6 +2867,14 @@ const BENCH_MATRIX_MODELS = [
 // only, whose thinking cannot be disabled).
 const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi", "ncbi_effort_low"];
 const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
+// The run that holds every SurfaceBench cell (all models x variants x 3
+// replicates, scored against the bench truth). The bench genes are also
+// in the genome-wide Sonnet sweeps and the PubMed rescue lanes, which
+// write the same (gene, claude-sonnet-4-6, ncbi | pubmed_ncbi) cells with
+// correct = 0 (those runs have no truth to score against) and a later
+// created_at, so every benchmark query must pin to this run_id or the
+// latest-replicate pick serves the genome-run row instead.
+const BENCH_RUN_ID = "mainbench_canonical_v2";
 // Five gating DBs — same five the homepage CatalogTable renders. The
 // matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
 // but those were demoted from the M1 universe gate and only confused
@@ -2962,7 +2970,10 @@ async function handleBenchmarkMatrix(env) {
   // CPU budget. Runs tagged against any bench_version still count
   // (we don't filter triage_run_public by bench_version, only by
   // gene_symbol membership in the current bench) so the matrix
-  // keeps full Opus/Haiku coverage from earlier sweeps.
+  // keeps full Opus/Haiku coverage from earlier sweeps. It IS pinned
+  // to BENCH_RUN_ID: without that, the genome-wide Sonnet sweep's
+  // later, unscored row won every Sonnet 4.6/ncbi cell (correct = 0 on
+  // all 147 genes) and the rescue lanes' rows won some pubmed_ncbi cells.
   const wantedVariants = BENCH_MATRIX_VARIANTS;
   const variantPlaceholders = wantedVariants.map(() => "?").join(",");
   const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
@@ -2987,7 +2998,8 @@ async function handleBenchmarkMatrix(env) {
               ) AS rn
          FROM triage_run_public t
          INNER JOIN bench_genes b ON t.gene_symbol = b.gene_symbol
-        WHERE t.prompt_variant IN (${variantPlaceholders})
+        WHERE t.run_id = ?
+          AND t.prompt_variant IN (${variantPlaceholders})
           AND t.model IN (${modelPlaceholders})
      )
      SELECT gene_symbol, model, prompt_variant, predicted_verdict,
@@ -2998,7 +3010,7 @@ async function handleBenchmarkMatrix(env) {
             cache_creation_tokens, cache_read_tokens
        FROM ranked
       WHERE rn = 1`
-  ).bind(benchVersion, ...wantedVariants, ...BENCH_MATRIX_MODELS).all();
+  ).bind(benchVersion, BENCH_RUN_ID, ...wantedVariants, ...BENCH_MATRIX_MODELS).all();
 
   // Build a nested map: gene → model → variant → run. The SQL JOIN
   // above already restricts to benchmark genes, so no JS-side
@@ -3120,7 +3132,7 @@ const EXPORT_COLUMNS = [
   // column positions are unchanged.
   "error",
 ];
-const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v2";
+const DEFAULT_EXPORT_RUN_ID = BENCH_RUN_ID;
 // The genome-wide Sonnet/NCBI triage sweep over the full protein-coding
 // cohort (~19k genes). Used as the run_id for the genome-wide export and
 // referenced by the /v1/meta/sizes estimator.
@@ -3526,6 +3538,7 @@ async function handleBenchmarkExport(env) {
          FROM triage_run_public t
          INNER JOIN benchmark_version bv ON bv.gene_symbol = t.gene_symbol
         WHERE bv.bench_version = ?
+          AND t.run_id = ?
           AND t.prompt_variant IN (${variantPlaceholders})
           AND t.model IN (${modelPlaceholders})
      )
@@ -3554,7 +3567,7 @@ async function handleBenchmarkExport(env) {
       WHERE r.rn = 1
       ORDER BY r.gene_symbol, r.model, r.prompt_variant`
   ).bind(
-    benchVersion,
+    benchVersion, BENCH_RUN_ID,
     ...BENCH_MATRIX_VARIANTS, ...BENCH_MATRIX_MODELS,
     benchVersion, universeVersion,
   ).all();
@@ -3667,7 +3680,7 @@ async function handleTriageCell(env, symbol, model, variant) {
             cache_creation_tokens, cache_read_tokens
        FROM ranked WHERE rn = 1
       ORDER BY replicate`
-  ).bind(DEFAULT_EXPORT_RUN_ID, sym, model, variant).all();
+  ).bind(BENCH_RUN_ID, sym, model, variant).all();
   const reps = rows.results;
   // Binary surface-vote majority over valid-verdict reps (yes/contextual =
   // surface; no = not-surface). Representative = the most common raw
