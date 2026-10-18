@@ -287,6 +287,14 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
 
     polish_print_html(html_path)
 
+    # PDF-only figure placement (manifest ``print_place_before``): move a figure
+    # to the foot of a page instead of splitting the text around it.
+    if manifest:
+        from figure_placement import apply_print_placements  # ty: ignore[unresolved-import]
+
+        for line in apply_print_placements(html_path, manifest):
+            print(line)
+
     # Panel markers, applied to the rendered HTML so the PDF and the web
     # edition get the identical treatment from one implementation.
     from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]

@@ -82,6 +82,9 @@ class FigureSpec:
     # otherwise blow up to the full column-span width. None = let the
     # stylesheet decide.
     max_width: str | None = None
+    # PDF-only placement: move the figure block to just before this exact text
+    # in the body (splitting its paragraph there). See paper/figure_placement.py.
+    print_place_before: str | None = None
     description: str = ""
 
     @property
@@ -155,6 +158,7 @@ def _entry_to_spec(entry: dict) -> FigureSpec:
         optional=bool(entry.get("optional", False)),
         allow_embedded_raster=bool(entry.get("allow_embedded_raster", False)),
         max_width=entry.get("max_width"),
+        print_place_before=entry.get("print_place_before"),
         description=entry.get("description", ""),
     )
 

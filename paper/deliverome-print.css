@@ -260,6 +260,15 @@ h2 {
   margin: 1.4em 0 0.5em 0;
 }
 
+/* A heading right after a figure block: with a manifest print_place_before
+ * that figure ends its page and the heading opens the next one. WeasyPrint
+ * keeps a top margin at the head of a column, so the heading would start a
+ * line lower than the neighbouring column. */
+.figure-block + h2,
+.figure-block + h3 {
+  margin-top: 0;
+}
+
 /* The first section heading (Abstract) sits at the very top of the body
  * columns, directly under the title band — drop its top margin so it
  * doesn't render with an empty line above it. */
@@ -315,6 +324,18 @@ p {
   hyphens: auto;
   orphans: 3;
   widows: 3;
+}
+
+/* A paragraph split around a figure (manifest print_place_before): its first
+ * half ends mid-sentence above the figure, so keep that last line justified
+ * and drop the paragraph gap, as if the page simply broke there. */
+p.before-figure {
+  margin-bottom: 0;
+}
+/* Only a mid-sentence split keeps its last line justified; a sentence-final
+ * line stretched to full width reads as a layout bug. */
+p.before-figure.mid-sentence {
+  text-align-last: justify;
 }
 
 a {
