@@ -302,6 +302,11 @@ The classification on each record:
 The tier uses the same rule the project's public catalog applies and is attached
 to each record as served, so the classification here matches that catalog.
 
+**Preview fields.** Some records' `deterministic_features` also carry
+`library_designed_structure`, `library_designed_topology` or `bindome`. These
+are preview features served by the API for work in progress. They are not
+described in the manuscript, and their schema may change in later releases.
+
 **`manifest.tsv` — two kinds of hash.** Use the `*_sha256` columns to verify
 files; the `*_hash` columns are not file checksums.
 
