@@ -153,7 +153,8 @@ def next_steps(version: str, deposition_id: str, html_url: str) -> str:
             "Next steps (in order):",
             "  1. Build the consolidated TSVs from the public API:",
             "       uv run python scripts/release/build_consolidated_deposit_tsvs.py",
-            "  2. Sync the TSVs + README + description onto this draft — dry-run first:",
+            "  2. Sync the TSVs, figure-source-data tarball, README + description onto",
+            "     this draft, from a checkout at the release commit — dry-run first:",
             "       uv run python scripts/release/update_zenodo_draft.py "
             f"--deposit-id {deposition_id} --dry-run",
             "       uv run python scripts/release/update_zenodo_draft.py "

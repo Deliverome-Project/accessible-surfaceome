@@ -414,7 +414,7 @@ Decide by asking "is this a join a typical reanalyst needs for an obvious questi
 
 CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
 
-**At publication:** swap `BRANCH = "main"` for a pinned commit SHA in every figure script + gist, register the figure files on Zenodo, and update each gist's README to cite the Zenodo DOI alongside the raw GitHub URL.
+**At publication:** re-bundle every gist (`scripts/figures/sync_figure_gists_bundle_data.py`), have Software Heritage archive it, and cite each figure as `swh:1:rev:<sha>` from [data/analysis/figures/swhid_map.json](data/analysis/figures/swhid_map.json) — the SWHID stays the per-figure citation. The Zenodo data record (concept DOI `10.5281/zenodo.20805383`) also carries `figure-source-data_X.Y.Z.tar.gz` in every numbered release: every TSV bundled into a figure gist (`TSV_BUNDLE`) plus the four canonical figure-input TSVs, with a `manifest.tsv` mapping each file to its figure label, gist, SWHID, sha256 and generator ([`release/figure_source_data.py`](src/accessible_surfaceome/release/figure_source_data.py), built and uploaded by `scripts/release/update_zenodo_draft.py`). It makes the record self-contained for reanalysis without replacing the SWHID citation; add figure TSVs to the data record only through it, never as loose files, and keep the manuscript in its own record.
 
 ## Final-Figure Gist Convention
 

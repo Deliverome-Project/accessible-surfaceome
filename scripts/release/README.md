@@ -23,6 +23,7 @@ two disagree):
 | `deep-dive-preset-membership.tsv` | `build_consolidated_deposit_tsvs.py` |
 | `deep_dives_X.Y.Z.tar.gz` | `cut_data_release.py` (`releases.export_release`) |
 | `deep-dive-reproducibility-replicates-v1.tar.gz` | `cut_data_release.py` (re-synced by `update_zenodo_draft.py`) |
+| `figure-source-data_X.Y.Z.tar.gz` | `update_zenodo_draft.py` (`release.figure_source_data`) |
 | `README.md` | `update_zenodo_draft.py` |
 
 `deep_dives_X.Y.Z.tar.gz` holds, per member gene, `genes/SYM.json` (the
@@ -30,6 +31,24 @@ record, without its evidence), `genes/SYM.evidence.json`
 (`{gene, evidence[], papers{}}`) and `genes/SYM.md`, plus `manifest.tsv`
 (revision, record-history content hashes `*_hash`, and the raw-byte
 `*_sha256` of every file — only the latter verify the files).
+
+`figure-source-data_X.Y.Z.tar.gz` makes the data record self-contained for
+reanalysis of the figures. Under `figure-source-data_X.Y.Z/` it holds, at their
+repository paths, every TSV bundled into a figure gist (`TSV_BUNDLE` in
+`scripts/figures/sync_figure_gists_bundle_data.py`) plus the four canonical
+figure-input TSVs (`candidate_universe.tsv`, `triage_benchmark_v1.tsv`,
+`mainbench_canonical_v2.tsv`, `db_optimized_cutoffs.tsv`), a `manifest.tsv`
+(one row per figure × file: manuscript label from `paper/figure_manifest.json`,
+slug, path, sha256, row count, gist URL, SWHID, canonical generator) and a
+README. The member list is derived, not curated: a TSV added to `TSV_BUNDLE`
+ships in the next release, and `tests/test_release_figure_source_data.py`
+fails if the tarball's file list ever diverges from it. It is built from the
+working tree, deterministically, so **run `update_zenodo_draft.py` from a
+checkout at the release commit** — the same checkout always gives the same
+bytes, and an unchanged tarball re-syncs as unchanged. `cut_data_release.py`
+deletes the previous version's inherited copy when it opens the draft. SWHIDs
+stay the per-figure citation; this tarball is the in-record copy of the same
+tables.
 
 The sequence, in order. `cut_data_release.py --execute` prints steps 3–7
 itself with the new draft's deposition id filled in.
@@ -49,9 +68,11 @@ uv run python scripts/release/cut_data_release.py --version X.Y.Z --execute
 # 3. Build the consolidated TSVs + deposit_manifest.json from the public API.
 uv run python scripts/release/build_consolidated_deposit_tsvs.py
 
-# 4. Sync the TSVs + README + description onto the draft — dry-run first.
-#    (The draft inherits the previous version's TSVs and description until
-#    this runs, so it describes the previous release.)
+# 4. Sync the TSVs, the figure-source-data tarball (built here from the
+#    checkout — run this from the release commit), README + description onto
+#    the draft — dry-run first. (The draft inherits the previous version's
+#    TSVs and description until this runs, so it describes the previous
+#    release.)
 uv run python scripts/release/update_zenodo_draft.py --deposit-id <draft id> --dry-run
 uv run python scripts/release/update_zenodo_draft.py --deposit-id <draft id>
 #    Then set creators, funders and the CC0 licence through the InvenioRDM API
@@ -77,17 +98,9 @@ uv run python scripts/release/apply_zenodo_rdm_metadata.py --record <code record
 Both build/sync scripts default to `/tmp/zenodo_deposit_consolidated`;
 pass the same `--out-dir` / `--work-dir` to both to use another
 directory. `update_zenodo_draft.py --dry-run` without `--deposit-id`
-renders the README + description into the work dir and runs the document
-checks with no Zenodo calls, which is the way to review the README text.
-
-> **TODO — pending owner decision: `db_optimized_cutoffs.tsv`.** The
-> legacy `publish-archive.py` notes below (and its `EXTRA_FILES` comment)
-> describe `data/processed/triage_bench/db_optimized_cutoffs.tsv` as
-> deliberately deposited, but no script in the numbered-release flow
-> uploads it, and the release README does not describe it. Whether it
-> joins the release file set is undecided; until it is, neither add it to
-> a release draft nor claim it in the deposit README. If it is added, put
-> it in `update_zenodo_draft.py`'s `release_filenames` + README together.
+renders the README + description and builds the figure-source-data tarball
+into the work dir, and runs the document checks with no Zenodo calls, which is
+the way to review the README text and the tarball.
 
 The sections below describe `publish-archive.py`, which predates numbered
 releases.
@@ -124,7 +137,11 @@ Long-term citable storage for the project splits across four channels:
 4. **Per-figure reproduction units** (gists, cited via **SWHID**,
    not DOI) — each figure's gist bundles `01_<slug>.md` + bundled
    TSV(s) + `make_<slug>.py` and is cited as `swh:1:rev:<sha>` of the
-   gist's HEAD commit. See `data/analysis/figures/swhid_map.json`.
+   gist's HEAD commit. See `data/analysis/figures/swhid_map.json`. Each
+   numbered data release (2) also carries the same tables, plus the four
+   canonical figure-input TSVs, in `figure-source-data_X.Y.Z.tar.gz`, so the
+   data record is self-contained for reanalysis; the SWHID stays the
+   figure's citation.
 
 The data record (2) and the code record (1) link to each other via
 `related_identifiers` metadata (data `isSupplementTo` code). The
@@ -175,8 +192,8 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
      Sonnet + Opus × 4 prompt variants × 147 bench genes, with DB
      votes + truth labels joined in by the Worker. From
      `/v1/benchmark/export.tsv`.
-   - `db_optimized_cutoffs.tsv` (**see the TODO at the top — no
-     numbered-release script uploads it**) — one row per UniProt accession with
+   - `db_optimized_cutoffs.tsv` (numbered releases ship it inside
+     `figure-source-data_X.Y.Z.tar.gz` instead) — one row per UniProt accession with
      each source's native surface call and its SurfaceBench-recalibrated
      one. UniProt is expanded (TM > 0, signal peptide, or a strict
      subcellular term) and CSPA tightened to high-confidence only; GO,
@@ -185,11 +202,9 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
      that isn't in the file is 0 under the optimized rule, not its
      native flag. Read from the repo, not the Worker.
 
-     CLAUDE.md says not to push figure-input TSVs into this deposit.
-     This one is a deliberate exception: since 2026-09 the recalibrated
-     rule decides DB membership on the API, the viewer and the benchmark
-     table, so it is a serving-side reference now rather than a figure
-     input. The rule stands for everything else.
+     Since 2026-09 the recalibrated rule decides DB membership on the API,
+     the viewer and the benchmark table, so it is a serving-side reference
+     as well as a figure input.
    - `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
      per published `SurfaceomeRecord`; built by fetching `/v1/genes`
      for the index, then `/v1/genes/<SYMBOL>` per gene.

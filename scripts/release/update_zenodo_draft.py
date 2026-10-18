@@ -1,4 +1,4 @@
-"""Sync the consolidated TSVs + README + description onto a release draft.
+"""Sync the consolidated TSVs, tarballs, README + description onto a release draft.
 
 Step 2 of the numbered-release procedure (scripts/release/README.md,
 "Numbered data release"). ``cut_data_release.py --version X.Y.Z --execute``
@@ -27,7 +27,10 @@ Zenodo deposit API used (edit-in-place on an unpublished draft):
   PUT  /api/deposit/depositions/{id}              — patch metadata
 
 The sync is NON-DESTRUCTIVE and checksum-aware, and touches only the files
-this script manages (the three TSVs, the replicate tarball, README.md):
+this script manages (the three TSVs, the replicate tarball,
+``figure-source-data_X.Y.Z.tar.gz``, README.md). Both tarballs are built here
+from the checkout, deterministically, so syncing from a checkout at the release
+commit always produces the same bytes:
 
   1. Managed files whose content changed (local MD5 != remote checksum)
      are overwritten in place via the bucket PUT. Unchanged ones are skipped.
@@ -35,14 +38,17 @@ this script manages (the three TSVs, the replicate tarball, README.md):
      their exact names are listed in RETIRED_FILENAMES.
   3. Every other file on the draft (``deep_dives_X.Y.Z.tar.gz``, uploaded by
      cut_data_release.py) is left untouched and reported as preserved.
+     (cut_data_release.py deletes the previous version's inherited
+     ``deep_dives_*`` and ``figure-source-data_*`` tarballs when it opens the
+     draft.)
   4. Description + title are refreshed only if they differ.
 
 Before any write it checks the draft against ``release_filenames``, the list
 the README documents: a documented file that is neither on the draft nor
 uploaded by this run is a refusal (the README would describe a file the
-record lacks), as is a ``deep_dives*`` tarball for any other version; any
-other undocumented file left on the draft is reported so it can be removed
-in the Zenodo UI before publishing.
+record lacks), as is a ``deep_dives*`` or ``figure-source-data*`` tarball for
+any other version; any other undocumented file left on the draft is reported
+so it can be removed in the Zenodo UI before publishing.
 
 Environment:
   ZENODO_TOKEN — required whenever --deposit-id is given
@@ -61,6 +67,9 @@ from pathlib import Path
 
 import httpx
 
+from accessible_surfaceome.cloud.record_history.zenodo import VERSIONED_FILE_PREFIXES
+from accessible_surfaceome.release import figure_source_data as fsd
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 # Matches build_consolidated_deposit_tsvs.py's default --out-dir.
 DEFAULT_WORK_DIR = Path("/tmp/zenodo_deposit_consolidated")
@@ -78,6 +87,11 @@ PYPROJECT = REPO_ROOT / "pyproject.toml"
 # deterministically so an unchanged bundle re-syncs as "unchanged".
 REPLICATES_BUNDLE = REPO_ROOT / "data/processed/deep_dive_concordance_v1"
 REPLICATES_TARBALL_NAME = "deep-dive-reproducibility-replicates-v1.tar.gz"
+# figure-source-data_X.Y.Z.tar.gz (accessible_surfaceome.release.figure_source_data)
+# holds every figure's source table + the four canonical figure-input TSVs, as
+# of the release commit. Release files named for their version (deep_dives_*,
+# figure-source-data_*): a draft holds only its own version's.
+VERSIONED_PREFIXES: tuple[str, ...] = VERSIONED_FILE_PREFIXES
 
 CONCEPT_DOI = "10.5281/zenodo.20805383"
 RECORD_TITLE = "The accessible human surfaceome"
@@ -100,6 +114,10 @@ def deep_dive_tarball_name(version: str) -> str:
     return f"deep_dives_{version}.tar.gz"
 
 
+def figure_source_tarball_name(version: str) -> str:
+    return fsd.tarball_name(version)
+
+
 def release_filenames(version: str) -> list[str]:
     """Every file a release draft holds once this script has synced it, in
     README order. The README documents exactly these (check_docs_file_list)."""
@@ -109,6 +127,7 @@ def release_filenames(version: str) -> list[str]:
         deep_dive_tarball_name(version),
         PRESETS_TSV,
         REPLICATES_TARBALL_NAME,
+        figure_source_tarball_name(version),
         README_NAME,
     ]
 
@@ -146,10 +165,86 @@ def _head_sha() -> str:
         return "unknown"
 
 
+def _mb(n_bytes: int) -> str:
+    return f"{n_bytes / 1e6:.1f} MB"
+
+
+def _figure_source_section(version: str) -> str:
+    """README section 6. Counts, sizes and the off-pattern paths come from the
+    tarball a build of this checkout produces, so they can't drift from it."""
+    name = figure_source_tarball_name(version)
+    root = name.removesuffix(".tar.gz")
+    s = fsd.summary(version)
+    rows = fsd.manifest_rows()
+    elsewhere = [r for r in rows if r["role"] == fsd.ROLE_FIGURE
+                 and not r["path"].startswith("data/processed/figures/")]
+    elsewhere_text = "; ".join(
+        f"`{r['path']}` ({r['figure'] or r['slug']})" for r in elsewhere
+    )
+    n_rows = {r["path"]: int(r["rows"]) for r in rows}
+    cu, tb, mb, oc = fsd.CANONICAL_FIGURE_INPUTS
+    columns = ", ".join(f"`{c}`" for c in fsd.MANIFEST_COLUMNS)
+    n_blog = s.n_figures - s.n_manuscript_figures
+    blog = f", plus {n_blog} published with the project's blog posts" if n_blog else ""
+    missing = fsd.figures_without_table(rows)
+    no_table = (f" {fsd.join_labels(missing)} {'has' if len(missing) == 1 else 'have'} "
+                "no source table (a diagram or screenshots)." if missing else "")
+    return f"""## 6. `{name}` — source data for every figure
+
+**{s.n_files} TSVs**, {_mb(s.compressed_bytes)} compressed
+({_mb(s.uncompressed_bytes)} unpacked).
+
+Each published figure is cited by the Software Heritage ID (SWHID) of its
+reproduction gist, which bundles the figure's script and the one table it is
+drawn from. This tarball puts those same tables in this record, together with
+the four canonical figure-input tables they are cut from, so every figure can
+be reanalyzed from this record alone: one table for each of the
+{s.n_manuscript_figures} manuscript figures drawn from data{blog}.{no_table}
+
+Everything sits under `{root}/` at its path in the project repository:
+
+| File | Contents |
+|---|---|
+| `README.md` | the layout, how to regenerate each figure, the licence |
+| `manifest.tsv` | one row per (figure, file): {columns} |
+| `data/processed/figures/<slug>.tsv` | a figure's source table, the one bundled into its gist ({s.n_figure_files} in all). Two live elsewhere: {elsewhere_text} |
+| `{cu}` | the candidate universe: {n_rows[cu]:,} UniProt accessions, each with every source database's surface call and sub-signals, the triage verdict, and deep-dive / benchmark membership |
+| `{tb}` | the curated benchmark truth labels ({n_rows[tb]:,} genes) |
+| `{mb}` | benchmark predictions: {n_rows[mb]:,} rows, one per (gene × model × prompt variant), the majority verdict across replicates with the truth label joined on |
+| `{oc}` | per-accession surface calls under each database's native rule and the SurfaceBench-recalibrated one — a positive list, see below |
+
+In `manifest.tsv`, `figure` is the manuscript label (`Figure 3`,
+`Supplementary Figure 16`), blank for a blog figure and for the canonical
+inputs (`role` = `canonical_input`); `gist_url` and `swhid` identify the
+figure's gist, and `generator` is the figure's canonical script in the code
+record. Each figure regenerates with `uv run make_<slug>.py` from its gist, or
+with `uv run python scripts/figures/<slug>.py` from the code record at this
+release's commit; `tar xzf {name} --strip-components=1` inside a checkout
+puts every table where those scripts read it.
+
+**`db_optimized_cutoffs.tsv` is a positive list.** It holds only the
+{s.optimized_cutoffs_rows:,} accessions that pass at least one recalibrated cutoff
+(UniProt expanded, CSPA tightened; GO, SURFY and HPA unchanged). An
+accession absent from it is 0 under the recalibrated rule — never fall back to
+its native flag.
+
+Verify the files against the manifest, from inside `{root}/`:
+
+```python
+import csv, hashlib
+for row in csv.DictReader(open("manifest.tsv"), delimiter="\\t"):
+    assert hashlib.sha256(open(row["path"], "rb").read()).hexdigest() == row["sha256"], row["path"]
+```
+
+---
+"""
+
+
 def _build_readme(version: str) -> str:
     sha = _head_sha()
     dd = deep_dive_tarball_name(version)
     n_word = _n_data_files_word(version)
+    figure_section = _figure_source_section(version)
     return f"""# The accessible human surfaceome — data release {version}
 
 Data outputs from the **accessible-surfaceome** project, which reconciles which
@@ -158,7 +253,8 @@ most antibody, ADC, and cell-therapy drugs act on. The main public surface
 databases disagree often, so the project scores every protein-coding gene with
 an LLM agent pipeline: a fast genome-wide **triage** pass, a **benchmark**
 against curated ground truth, and an evidence-cited **deep dive** on the strong
-candidates. This deposit holds the data those three stages produced.
+candidates. This deposit holds the data those three stages produced, and the
+source data of the manuscript's figures.
 
 **Release:** `{version}`. **Concept DOI:** `{CONCEPT_DOI}` always resolves to the
 latest release of this record. Each release also gets its own version DOI
@@ -174,10 +270,12 @@ version DOI to point at these bytes.
 | 3 | `{dd}` | the evidence-cited deep-dive records of release {version} |
 | 4 | `{PRESETS_TSV}` | catalog preset membership per deep-dive gene |
 | 5 | `{REPLICATES_TARBALL_NAME}` | run-to-run reproducibility study (not published records) |
+| 6 | `{figure_source_tarball_name(version)}` | the source table of every figure, with a manifest |
 
-Each is a flat TSV or a gzipped tarball of JSON / Markdown, readable with any
-TSV reader (pandas, R) or `tar xzf` — no project code needed. Each is also
-reproducible from the project's public read-only API (recipes at the end).
+Each is a flat TSV or a gzipped tarball of JSON / Markdown / TSV, readable with
+any TSV reader (pandas, R) or `tar xzf` — no project code needed. Files 1–5 are
+also reproducible from the project's public read-only API (recipes at the end);
+file 6 is built from the project repository at this release's commit.
 
 ---
 
@@ -366,9 +464,10 @@ records are queryable from the API, labelled `reproducibility_replicate: true`.
 
 ---
 
+{figure_section}
 ## Reproducing from the public API
 
-Every file is rebuildable from the read-only API at
+Files 1–5 are rebuildable from the read-only API at
 `{API_BASE}/` (no credentials). The triage exports need `&with_reasoning=1`:
 without it they omit `predicted_key_uncertainty` and `verdict_reasoning`.
 
@@ -427,13 +526,15 @@ bioRxiv DOI, not in this record.
 def _description_html(version: str) -> str:
     dd = html.escape(deep_dive_tarball_name(version))
     n_word = _n_data_files_word(version).lower()
+    fs = fsd.summary(version)
     return (
         f"Data release {version} of the accessible-surfaceome project: "
-        "benchmark, triage, and deep-dive data outputs. The concept DOI "
+        "benchmark, triage, and deep-dive data outputs, and the source data of "
+        "the manuscript's figures. The concept DOI "
         f"{CONCEPT_DOI} resolves to the latest release; this version's own DOI "
         f"pins these files. This version ships {n_word} data files plus an "
         "in-deposit README documenting every file and column and how to "
-        "rebuild each from the public API.<br><br>"
+        "rebuild each.<br><br>"
         f"<b>{GENOME_TSV}</b> — 33,728-row "
         "long-format TSV, with each call's verdict, reason, confidence and "
         "free-text reasoning, consolidating the genome-wide Sonnet+NCBI sweep "
@@ -474,8 +575,22 @@ def _description_html(version: str) -> str:
         "study ran, a full from-scratch re-run with the same prompts, and a "
         "fixed-evidence replay (builders + synthesizer only). Source data for "
         "Supplementary Figure 16; also queryable at /v1/replicates.<br><br>"
-        f"All data files are reproducible from the public read-only API at "
-        f"{API_BASE}/ (no credentials). License: CC0 1.0; upstream "
+        f"<b>{html.escape(figure_source_tarball_name(version))}</b> — "
+        f"{fs.n_files} TSVs ({_mb(fs.compressed_bytes)} compressed): the source "
+        f"table of each of the {fs.n_manuscript_figures} manuscript figures "
+        "drawn from data, the same table bundled into the "
+        "figure's reproduction gist (each figure is cited by that gist's "
+        "Software Heritage ID), plus the four canonical figure-input tables "
+        "they are cut from (candidate universe, benchmark truth labels, "
+        "benchmark predictions, and the per-accession database cutoffs, a "
+        "positive list in which an absent accession is 0 under the "
+        "recalibrated rule). A manifest.tsv maps every file to its figure "
+        "label, gist, SWHID and generating script, with its sha256 and row "
+        "count, so each figure can be reanalyzed and regenerated from this "
+        "record alone.<br><br>"
+        f"The first five files are reproducible from the public read-only API at "
+        f"{API_BASE}/ (no credentials); the figure source data is built from "
+        "the project repository at the release commit. License: CC0 1.0; upstream "
         "sources keep their own terms (see LICENSING.md in the project "
         "repository)."
     )
@@ -514,6 +629,26 @@ def check_docs_file_list(readme: str, description: str, version: str) -> list[st
         problems.append(f"description does not say '{word.lower()} data files'")
     if version not in readme or version not in description:
         problems.append(f"README / description do not state release {version}")
+    problems.extend(check_docs_figure_source(readme, description, version))
+    return problems
+
+
+def check_docs_figure_source(readme: str, description: str, version: str) -> list[str]:
+    """The figure-source-data section states what a build of this checkout holds:
+    its file and figure counts, every manifest column, the positive-list count."""
+    s = fsd.summary(version)
+    problems = []
+    for doc_name, text in (("README", readme), ("description", html.unescape(description))):
+        for phrase in (f"{s.n_files} TSVs", f"{s.n_manuscript_figures} manuscript figures",
+                       _mb(s.compressed_bytes)):
+            if phrase not in text:
+                problems.append(f"{doc_name} does not state the figure source data's '{phrase}'")
+    for col in fsd.MANIFEST_COLUMNS:
+        if f"`{col}`" not in readme:
+            problems.append(f"README does not name the figure manifest column {col}")
+    if f"{s.optimized_cutoffs_rows:,} accessions" not in readme:
+        problems.append("README does not state db_optimized_cutoffs.tsv's "
+                        f"{s.optimized_cutoffs_rows:,} accessions")
     return problems
 
 
@@ -557,11 +692,17 @@ def check_docs_against_manifest(readme: str, description: str,
     return problems
 
 
+def prefix_of(name: str) -> str | None:
+    """The VERSIONED_PREFIXES entry a release filename starts with, if any."""
+    return next((p for p in VERSIONED_PREFIXES if name.startswith(p)), None)
+
+
 def check_draft_files(existing: set[str], uploading: set[str], version: str) -> tuple[list[str], list[str]]:
     """(problems, undocumented) for the draft's file set before any write.
 
     ``problems`` refuse the sync: a file the README documents that would
-    still be missing afterwards, or a deep-dive tarball for another version.
+    still be missing afterwards, or a deep-dive / figure-source tarball for
+    another version (cut_data_release.py deletes the inherited ones).
     ``undocumented`` are other files that would remain on the draft without a
     README section (inherited from an earlier version); they are reported so
     they can be removed in the Zenodo UI before publishing.
@@ -574,12 +715,13 @@ def check_draft_files(existing: set[str], uploading: set[str], version: str) -> 
                 if name == deep_dive_tarball_name(version) else "")
         problems.append(f"{name} is documented in the README but would not be on the draft{hint}")
     for name in sorted(after - expected):
-        if name.startswith("deep_dives"):
+        own = next((n for n in expected if prefix_of(n) and prefix_of(n) == prefix_of(name)), None)
+        if own:
             problems.append(
-                f"{name} is on the draft next to {deep_dive_tarball_name(version)} — a release "
-                "draft holds only its own version's deep-dive tarball; delete it in the Zenodo UI"
+                f"{name} is on the draft next to {own} — a release draft holds only its "
+                "own version's tarball; delete it in the Zenodo UI"
             )
-    undocumented = sorted(n for n in after - expected if not n.startswith("deep_dives"))
+    undocumented = sorted(n for n in after - expected if not prefix_of(n))
     return problems, undocumented
 
 
@@ -592,6 +734,11 @@ def _build_replicates_tarball(work_dir: Path) -> Path:
     from accessible_surfaceome.cloud.record_history.zenodo import build_replicates_tarball
 
     return build_replicates_tarball(REPLICATES_BUNDLE, work_dir)
+
+
+def _build_figure_source_tarball(work_dir: Path, version: str) -> Path:
+    """Every figure's source table + the canonical inputs, from this checkout."""
+    return fsd.build_figure_source_tarball(work_dir, version)
 
 
 def _render_docs(work_dir: Path, version: str) -> tuple[Path, str]:
@@ -610,8 +757,8 @@ def main(argv: list[str] | None = None) -> int:
 
     ap = argparse.ArgumentParser(
         description=(
-            "Non-destructively sync the consolidated TSVs, the replicate tarball, "
-            "README and description onto a release draft opened by "
+            "Non-destructively sync the consolidated TSVs, the replicate and "
+            "figure-source-data tarballs, README and description onto a release draft opened by "
             "cut_data_release.py. Only the files it manages are touched; "
             "deep_dives_X.Y.Z.tar.gz (uploaded by cut_data_release.py) is preserved."
         )
@@ -619,7 +766,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--replicates-only", action="store_true",
                     help="sync ONLY the reproducibility-replicate tarball + the "
                          "README / description that document it; leave the TSVs "
-                         "untouched")
+                         "and the figure-source-data tarball untouched")
     ap.add_argument("--deposit-id",
                     help="Zenodo deposition to sync: the draft id cut_data_release.py "
                          "prints when it opens a new version. Required except with "
@@ -630,8 +777,8 @@ def main(argv: list[str] | None = None) -> int:
                          "carry (default: pyproject.toml's version)")
     ap.add_argument("--work-dir", type=Path, default=DEFAULT_WORK_DIR,
                     help="where the built TSVs + deposit_manifest.json are read from and "
-                         "README.md / description.html / the replicate tarball are "
-                         "written (default: %(default)s, build_consolidated_deposit_tsvs.py's "
+                         "README.md / description.html / the replicate and "
+                         "figure-source-data tarballs are written (default: %(default)s, build_consolidated_deposit_tsvs.py's "
                          "default --out-dir)")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the sync plan; issue no PUT / DELETE / metadata write")
@@ -676,6 +823,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"→ README / description checks passed for release {version}")
 
     if not deposit_id:
+        fig = _build_figure_source_tarball(work_dir, version)
+        print(f"→ built {fig} ({_mb(fig.stat().st_size)}) for review")
         print("→ [dry-run] no --deposit-id: rendered + checked the docs only; "
               "no Zenodo calls made")
         return 0
@@ -687,7 +836,10 @@ def main(argv: list[str] | None = None) -> int:
     auth = {"Authorization": f"Bearer {token}"}
 
     managed: list[Path] = [_build_replicates_tarball(work_dir)]
-    print(f"→ built {managed[0]} ({managed[0].stat().st_size / 1024**2:.1f} MB)")
+    if include_tsvs:
+        managed.append(_build_figure_source_tarball(work_dir, version))
+    for p in managed:
+        print(f"→ built {p} ({_mb(p.stat().st_size)})")
     if include_tsvs:
         managed.extend(tsv_paths)
     managed.append(readme_path)

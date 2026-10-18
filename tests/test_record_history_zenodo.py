@@ -31,6 +31,10 @@ def _draft_json() -> dict:
                 "filename": "deep_dives_all.tar.gz",
                 "links": {"self": f"{API}/files/old"},
             },
+            {
+                "filename": "figure-source-data_1.2.0.tar.gz",
+                "links": {"self": f"{API}/files/oldfig"},
+            },
             {"filename": "README.md", "links": {"self": f"{API}/files/readme"}},
         ],
         "links": {
@@ -87,6 +91,9 @@ def test_draft_version_flow(tmp_path: Path) -> None:
     # No top-level "id" on this fixture: taken from the draft's self link.
     assert draft.deposition_id == "999"
     assert ("DELETE", "/api/files/old") in calls  # old tarball replaced
+    # The previous version's figure-source-data tarball is dropped;
+    # update_zenodo_draft.py uploads this version's.
+    assert ("DELETE", "/api/files/oldfig") in calls
     assert ("DELETE", "/api/files/readme") not in calls  # other files kept
     assert ("PUT", "/api/files/bucket/deep_dives_1.3.0.tar.gz") in calls
     assert ("PUT", "/api/deposit/depositions/999") in calls  # metadata

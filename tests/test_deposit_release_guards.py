@@ -109,8 +109,8 @@ def test_readme_documents_exactly_the_release_draft_files():
     sections = sync._README_FILE_HEADING.findall(readme)
     assert sections == [n for n in sync.release_filenames(V) if n != "README.md"]
     assert "deep_dives_1.3.0.tar.gz" in sections
-    for stale in ("deep_dives_all", "db_optimized_cutoffs", "Reserved DOI",
-                  "added to this record in a later draft"):
+    assert "figure-source-data_1.3.0.tar.gz" in sections
+    for stale in ("deep_dives_all", "Reserved DOI", "added to this record in a later draft"):
         assert stale not in readme and stale not in desc, stale
 
 
@@ -151,7 +151,8 @@ def test_readme_api_recipes_reproduce_the_files():
 
 def test_draft_file_check():
     sync = _load(SYNC)
-    managed = {*sync.TSV_FILENAMES, "README.md", sync.REPLICATES_TARBALL_NAME}
+    managed = {*sync.TSV_FILENAMES, "README.md", sync.REPLICATES_TARBALL_NAME,
+               sync.figure_source_tarball_name(V)}
     ok, undocumented = sync.check_draft_files(
         {"deep_dives_1.3.0.tar.gz", "README.md"}, managed, V
     )
@@ -164,11 +165,34 @@ def test_draft_file_check():
         {"deep_dives_1.3.0.tar.gz", "deep_dives_all.tar.gz"}, managed, V
     )
     assert any("deep_dives_all.tar.gz" in p for p in problems)
+    # So is the previous release's figure-source-data tarball.
+    problems, undocumented = sync.check_draft_files(
+        {"deep_dives_1.3.0.tar.gz", "figure-source-data_1.2.0.tar.gz"}, managed, V
+    )
+    assert any("figure-source-data_1.2.0.tar.gz" in p for p in problems)
+    assert undocumented == []
+    # Not uploading this release's figure-source-data tarball is a refusal.
+    problems, _ = sync.check_draft_files(
+        {"deep_dives_1.3.0.tar.gz"}, managed - {sync.figure_source_tarball_name(V)}, V
+    )
+    assert any("figure-source-data_1.3.0.tar.gz" in p for p in problems)
     # Other inherited files are reported, not refused.
     problems, undocumented = sync.check_draft_files(
         {"deep_dives_1.3.0.tar.gz", "old-file.tsv"}, managed, V
     )
     assert problems == [] and undocumented == ["old-file.tsv"]
+
+
+def test_figure_source_doc_check_catches_stale_counts():
+    """The README / description state the figure tarball's file count, figure
+    count and size; a stale number (a figure TSV added to the gists after the
+    text was written) fails the check."""
+    sync = _load(SYNC)
+    readme, desc = sync._build_readme(V), sync._description_html(V)
+    assert sync.check_docs_figure_source(readme, desc, V) == []
+    n = sync.fsd.summary(V).n_files
+    stale = readme.replace(f"{n} TSVs", f"{n - 1} TSVs")
+    assert any(f"'{n} TSVs'" in p for p in sync.check_docs_file_list(stale, desc, V))
 
 
 def test_offline_dry_run_renders_docs_without_network(tmp_path, monkeypatch):
@@ -183,6 +207,8 @@ def test_offline_dry_run_renders_docs_without_network(tmp_path, monkeypatch):
     readme = (tmp_path / "README.md").read_text()
     assert "data release 1.3.0" in readme
     assert (tmp_path / "description.html").exists()
+    # The figure-source tarball is local work, so the offline dry-run builds it for review.
+    assert (tmp_path / "figure-source-data_1.3.0.tar.gz").exists()
 
 
 def test_writes_require_a_deposit_id(tmp_path, monkeypatch):

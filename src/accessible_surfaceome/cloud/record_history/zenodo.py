@@ -32,6 +32,8 @@ from pathlib import Path
 
 import httpx
 
+from accessible_surfaceome.release.figure_source_data import TARBALL_PREFIX as FIGURE_SOURCE_PREFIX
+
 ZENODO_API = "https://zenodo.org/api"
 DATA_CONCEPT_RECID = "20805383"  # concept DOI 10.5281/zenodo.20805383
 ZENODO_JSON = Path(__file__).resolve().parents[4] / ".zenodo.json"
@@ -82,6 +84,13 @@ def rdm_creators() -> list[dict]:
 # first ships in (a new version inherits the file; re-uploading an unchanged
 # bundle is byte-identical because the tarball is built deterministically).
 REPLICATES_TARBALL_NAME = "deep-dive-reproducibility-replicates-v1.tar.gz"
+
+# Release files named for their version. A new version inherits the previous
+# version's copies, which create_draft_version deletes: the deep-dive tarball
+# is replaced right there, and ``figure-source-data_X.Y.Z.tar.gz``
+# (accessible_surfaceome.release.figure_source_data) is uploaded by
+# scripts/release/update_zenodo_draft.py.
+VERSIONED_FILE_PREFIXES: tuple[str, ...] = ("deep_dives", FIGURE_SOURCE_PREFIX)
 
 
 def build_replicates_tarball(bundle: Path, out_dir: Path) -> Path:
@@ -183,13 +192,15 @@ def create_draft_version(
     d = draft.json()
 
     # The new version inherits the previous version's files; replace only
-    # the deep-dive tarball. The triage TSVs, preset-membership TSV and README
-    # carry over from the previous version: refresh them with
+    # the deep-dive tarball, and drop the previous version's figure-source-data
+    # tarball (update_zenodo_draft.py uploads this version's). The triage TSVs,
+    # preset-membership TSV and README carry over from the previous version:
+    # refresh them with
     # `scripts/release/update_zenodo_draft.py --deposit-id <this draft's id>`
     # after build_consolidated_deposit_tsvs.py.
     extra_names = {p.name for p in extra_files}
     for f in d.get("files", []):
-        if f["filename"].startswith("deep_dives") or f["filename"] in extra_names:
+        if f["filename"].startswith(VERSIONED_FILE_PREFIXES) or f["filename"] in extra_names:
             http.delete(f["links"]["self"], headers=auth_header).raise_for_status()
     for path in (tarball, *extra_files):
         with path.open("rb") as fh:
