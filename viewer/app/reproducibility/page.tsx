@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Code, data, and figure-reproduction handles for the accessible " +
     "surfaceome project. Code under MIT (concept DOI " +
     "10.5281/zenodo.22116981); the Zenodo data deposit (concept DOI " +
-    "10.5281/zenodo.20805383) under CC BY 4.0; per-figure reproduction " +
+    "10.5281/zenodo.20805383) under CC0 1.0; per-figure reproduction " +
     "gists archived to Software Heritage.",
 };
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
  * /reproducibility/ — methods-style "Data and code availability"
  * page. Three handles: the GitHub repository (MIT, includes this
  * viewer; Zenodo code concept DOI 10.5281/zenodo.22116981, one version
- * DOI per tagged GitHub release), the Zenodo data deposit (CC BY 4.0;
+ * DOI per tagged GitHub release), the Zenodo data deposit (CC0 1.0;
  * concept DOI 10.5281/zenodo.20805383, one version DOI per numbered data
  * release — listed on Zenodo and by the API's /v1/releases), and a
  * per-figure reproduction gist archived to Software Heritage
@@ -35,7 +35,7 @@ export default function ReproducibilityPage() {
           <p className={styles.lede}>
             All code, data, and figures are distributed under open
             licenses with persistent citation handles. Code is MIT; the
-            Zenodo data deposit is CC BY 4.0 with a DOI that resolves
+            Zenodo data deposit is CC0 1.0 with a DOI that resolves
             indefinitely; each figure ships a standalone reproduction
             gist archived to Software Heritage as a content-addressed
             SWHID.
@@ -102,12 +102,12 @@ export default function ReproducibilityPage() {
           <p className={styles.body}>
             Datasets are deposited on Zenodo under{" "}
             <a
-              href="https://creativecommons.org/licenses/by/4.0/"
+              href="https://creativecommons.org/publicdomain/zero/1.0/"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.extLink}
             >
-              CC BY 4.0
+              CC0 1.0
             </a>
             . The deposit includes:
           </p>
@@ -141,7 +141,7 @@ export default function ReproducibilityPage() {
               </a>
             </dd>
             <dt className={styles.handleLabel}>License</dt>
-            <dd className={styles.handleValue}>CC BY 4.0</dd>
+            <dd className={styles.handleValue}>CC0 1.0</dd>
           </dl>
           <p className={styles.body}>
             Cite the concept DOI, which always resolves to the latest

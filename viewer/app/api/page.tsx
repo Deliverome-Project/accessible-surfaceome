@@ -650,11 +650,11 @@ export default async function ApiPage() {
             served by this API is{" "}
             <a
               className={styles.extLink}
-              href="https://creativecommons.org/licenses/by/4.0/"
+              href="https://creativecommons.org/publicdomain/zero/1.0/"
               target="_blank"
               rel="noopener noreferrer"
             >
-              CC BY 4.0
+              CC0 1.0
             </a>
             : cite the data concept DOI{" "}
             <a

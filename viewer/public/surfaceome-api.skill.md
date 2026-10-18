@@ -290,4 +290,4 @@ A 200 response whose server-side enrichment hit a transient error carries `X-Sur
 - Worker source: `cloudflare/workers/surfaceome_api/src/index.js`
 - D1 schema: `cloudflare/d1_public_schema.sql`
 - Per-gene records validate against the `SurfaceomeRecord` Pydantic schema at `src/accessible_surfaceome/tools/_shared/models.py`. The viewer at https://surfaceome.deliverome.org renders the same records as HTML pages.
-- Citation & licence: data is CC BY 4.0 — cite the data concept DOI `10.5281/zenodo.20805383` (or a numbered release's version DOI from `/v1/releases`); code is MIT — `10.5281/zenodo.22116981`.
+- Citation & licence: data is CC0 1.0 — cite the data concept DOI `10.5281/zenodo.20805383` (or a numbered release's version DOI from `/v1/releases`); code is MIT — `10.5281/zenodo.22116981`.
