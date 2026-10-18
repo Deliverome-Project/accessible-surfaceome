@@ -33,6 +33,7 @@ follow-up R2 spillover can land later when this surfaces in practice.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
 from dataclasses import dataclass
@@ -624,7 +625,50 @@ def resumable_pts_blob(
             cost = 0.0
         if cost > max_resumable_cost_usd:
             return None
+    hydrate_search_logs(blob)
     return blob
+
+
+def hydrate_search_logs(blob: dict[str, Any]) -> bool:
+    """Put each side's ``search_log`` back on a slimmed intermediates blob, in place.
+
+    The D1 copy drops ``plan_trim_select.{a1,a2}.search_log``
+    (:func:`_slim_intermediates_for_d1`); the full pre-slim blob is in R2 at
+    ``_r2_full_audit_key``. A replay or resume that rebuilds a record from the
+    slim blob must restore the log first, or the record publishes with an
+    empty ``search_log``. Returns True when every side carries its log
+    afterwards; False when it can't be restored (no pointer, R2 miss), which
+    callers that publish should treat as a reason to stop.
+    """
+    pts = blob.get("plan_trim_select")
+    if not isinstance(pts, dict):
+        return False
+    missing = [s for s in ("a1", "a2") if isinstance(pts.get(s), dict) and "search_log" not in pts[s]]
+    if not missing:
+        return True
+    key = blob.get("_r2_full_audit_key")
+    if not key:
+        return False
+    from accessible_surfaceome.cloud import r2_client
+
+    cfg = r2_client.R2Config.from_env()
+    bucket = blob.get("_r2_full_audit_bucket")
+    if bucket and bucket != cfg.bucket:
+        cfg = dataclasses.replace(cfg, bucket=bucket)
+    try:
+        raw = r2_client.get_object(key=key, cfg=cfg)
+    except Exception as exc:  # noqa: BLE001 — caller decides whether a miss is fatal
+        logger.warning("search_log hydrate: R2 read of %s failed: %s", key, exc)
+        return False
+    if raw is None:
+        return False
+    full_pts = json.loads(raw).get("plan_trim_select") or {}
+    for side in missing:
+        log = (full_pts.get(side) or {}).get("search_log")
+        if log is None:
+            return False
+        pts[side]["search_log"] = log
+    return True
 
 
 __all__ = [
@@ -634,6 +678,7 @@ __all__ = [
     "ensure_schema",
     "fetch_latest_intermediates_row",
     "fetch_quarantined_genes",
+    "hydrate_search_logs",
     "publish_intermediates",
     "resumable_pts_blob",
 ]

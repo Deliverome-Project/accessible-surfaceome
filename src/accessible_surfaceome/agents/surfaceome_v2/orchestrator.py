@@ -410,11 +410,14 @@ def _dual_from_serialized(gene: str, blob: dict[str, Any]) -> DualPlanTrimSelect
     pipeline reads: ``dual.bundle``, ``dual.a1``, ``dual.a2``,
     ``dual.total_cost_usd``, ``dual.elapsed_s``. The reconstructed
     sides hold zero cost (a replay incurs no PTS spend — that's the
-    whole point) and empty audit logs (the slim path on intermediates
-    drops ``search_log`` etc; we mirror that here).
+    whole point). ``search_log`` is carried over — it becomes the record's
+    ``search_log`` — while the other audit logs stay empty. A slim
+    intermediates blob has no log until
+    :func:`cloud.intermediates.hydrate_search_logs` restores it from R2.
     """
     from accessible_surfaceome.agents.plan_trim_select.runner import (
         PlanTrimSelectResult,
+        search_log_from_dicts,
     )
     from accessible_surfaceome.tools._shared.models import (
         EvidenceClaim,
@@ -445,7 +448,7 @@ def _dual_from_serialized(gene: str, blob: dict[str, Any]) -> DualPlanTrimSelect
             selection_response=None,
             agent_focus=side_blob.get("agent_focus") or "a1",
             claims=claims,
-            search_log=[],
+            search_log=search_log_from_dicts(side_blob.get("search_log")),
             iteration_log=[],
             triage_actions=[],
             pretrim_audits=[],
