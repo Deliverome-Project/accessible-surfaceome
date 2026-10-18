@@ -761,3 +761,58 @@ def test_pipeline_internal_fields_never_reach_the_prompt() -> None:
             f"{name!r} reached the prompt text; that changes prompt_sha and "
             f"marks every already-run gene stale"
         )
+
+
+# --------------------------------------------------------------------------
+# the sha is a cost, so pin it to the version that names it
+# --------------------------------------------------------------------------
+
+#: ``prompt_version -> sha256(SYSTEM_PROMPT)``, pinned deliberately.
+#:
+#: The sha is what the sweeps' resume compares on, so moving it re-runs every
+#: record written under the old one — 2,370 genes at ~$0.9 each for the
+#: literature pass. ``TAG_SITE_PROMPT_VERSION`` is supposed to be bumped in the
+#: same commit as any prompt edit, but a version left alone while the text moves
+#: is invisible: the only evidence is a sweep that suddenly reports nothing
+#: archived.
+#:
+#: Update an entry ONLY together with a version bump, in the commit that
+#: deliberately changes the prompt. A failure here means the prompt text moved;
+#: decide whether that was intended before you touch this map.
+PINNED_PROMPT_SHA = {
+    "1.4.0": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+}
+
+
+def test_the_prompt_text_still_hashes_to_what_its_version_claims() -> None:
+    from accessible_surfaceome.agents.tag_site import prompt as tag_prompt
+
+    version = tag_prompt.TAG_SITE_PROMPT_VERSION
+    expected = PINNED_PROMPT_SHA.get(version)
+    assert expected is not None, (
+        f"prompt version {version} has no pinned sha; add one in the commit that "
+        f"bumped it, so a later incidental edit is visible"
+    )
+    assert tag_prompt.prompt_sha() == expected, (
+        f"SYSTEM_PROMPT changed without a version bump: version {version} still "
+        f"claims ...{expected[-12:]} but the text now hashes to "
+        f"...{tag_prompt.prompt_sha()[-12:]}. Every record archived under the old "
+        f"sha reads as stale and re-runs. If the edit was deliberate, bump "
+        f"TAG_SITE_PROMPT_VERSION and add its sha here; if it was incidental "
+        f"(a schema field rendered into the output contract, say), skip that "
+        f"field instead."
+    )
+
+
+def test_a_field_the_pipeline_overwrites_is_never_asked_of_the_model() -> None:
+    """``position_frame`` is computed from the proteoform frames AFTER synthesis
+    and overwrites whatever arrives, so requesting it buys output tokens for a
+    value that is discarded — and, because the contract is prompt TEXT, it moved
+    the sha and marked all 2,370 archived genes stale.
+
+    The sibling guard above iterates ``_PIPELINE_SET``, so it can only see
+    fields someone already declared; this one names the field directly.
+    """
+    from accessible_surfaceome.agents.tag_site.prompt import SYSTEM_PROMPT
+
+    assert "position_frame" not in SYSTEM_PROMPT
