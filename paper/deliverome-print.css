@@ -317,6 +317,14 @@ p {
   widows: 3;
 }
 
+/* A paragraph split around a figure (manifest print_place_before): its first
+ * half ends mid-sentence above the figure, so keep that last line justified
+ * and drop the paragraph gap, as if the page simply broke there. */
+p.before-figure {
+  text-align-last: justify;
+  margin-bottom: 0;
+}
+
 a {
   color: var(--maroon-mid, #922038);
   text-decoration: none;

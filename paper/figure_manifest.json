@@ -15,7 +15,8 @@
     "3": {
       "slug": "zero_db_rescues_by_triage",
       "format": "svg",
-      "description": "Zero-DB rescues grouped by agent rationale (yes / contextual panels). Vector, converted from zero_db_rescues_by_triage.pdf."
+      "description": "Zero-DB rescues grouped by agent rationale (yes / contextual panels). Vector, converted from zero_db_rescues_by_triage.pdf.",
+      "print_place_before": "2) preclinical and clinical T-cell engager"
     },
     "4": {
       "slug": "deep_dive_flow",
@@ -25,13 +26,15 @@
     "5": {
       "slug": "deep_dive_final_categories",
       "format": "svg",
-      "description": "Five-tier confidence spectrum + positive-call composition. Vector, converted from deep_dive_final_categories.pdf."
+      "description": "Five-tier confidence spectrum + positive-call composition. Vector, converted from deep_dive_final_categories.pdf.",
+      "print_place_before": "Across the 5,332 proteins, all with at least one paper found"
     },
     "6": {
       "slug": "deep_dive_record_richness",
       "format": "png",
       "min_dpi": 600,
-      "description": "Five-panel violin of record richness by confidence tier. Deliberately raster, NOT vector: the per-gene dots (n = 5,130 × 5 panels) make the SVG ~20 MB and slow to render, while the 600-DPI PNG is 14,659 px wide — far above print need."
+      "description": "Five-panel violin of record richness by confidence tier. Deliberately raster, NOT vector: the per-gene dots (n = 5,130 × 5 panels) make the SVG ~20 MB and slow to render, while the 600-DPI PNG is 14,659 px wide — far above print need.",
+      "print_place_before": "Deep-dive records were reproducible across independent runs"
     },
     "7": {
       "slug": "web_preview",
