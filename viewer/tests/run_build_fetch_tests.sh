@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Run the build-fetch pacing/retry hardening tests (node:test, plain
 # Node ESM — no CSS-loader / TSX needed since these files import only
-# scripts/lib/build-fetch.mjs and the two build-*.mjs scripts).
+# scripts/lib/build-fetch.mjs and the two build-*.mjs scripts), plus the
+# Markdown-brief rendering tests for build-markdown-exports.mjs.
 #
 #   bash tests/run_build_fetch_tests.sh
 #
@@ -21,6 +22,7 @@ files=(
   tests/build_data_snapshot_early_abort.test.mjs
   tests/build_markdown_exports_driver.test.mjs
   tests/build_markdown_exports_genes_filter.test.mjs
+  tests/build_markdown_exports_render.test.mjs
 )
 
 node --test "${files[@]}"
