@@ -28,6 +28,11 @@ STAMP_PREFIX = "<!-- source-pdf-sha256: "
 # composer writes the same file to paper/figures/ and data/analysis/figures/,
 # so the test checks those two copies agree instead of a PDF hash.
 COMPOSED = {"deep_dive_flow": "scripts/figures/compose_deep_dive_figure.py"}
+# Raster composites (manifest ``allow_embedded_raster``, e.g. Figure 7's viewer
+# screenshots) are never converted: pdftocairo places each embedded image via
+# ``<use>``, which WeasyPrint does not render, so the converted SVG came out
+# blank in the paper PDF. The build uses their hand-built SVG in
+# data/analysis/figures/ instead.
 
 
 def svg_slugs() -> list[str]:
@@ -39,6 +44,7 @@ def svg_slugs() -> list[str]:
         for e in (m.get(key) or {}).values()
         if e["format"] == "svg"
         and e["slug"] not in COMPOSED
+        and not e.get("allow_embedded_raster")
         and (PDF_DIR / f"{e['slug']}.pdf").is_file()
     )
 
