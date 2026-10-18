@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from accessible_surfaceome.cloud.d1_client import D1Client
+from accessible_surfaceome.tag_sites.retracted import drop_retracted
 
 # DDL kept in sync with cloudflare/d1_tag_sites_schema.sql. D1's HTTP API rejects
 # multi-statement batches, so each statement is submitted separately.
@@ -163,12 +164,18 @@ def flat_row(
 
 
 def rows_for_file(data: dict[str, Any], *, version: str, synced_at: str) -> list[dict[str, Any]]:
-    """Flatten a TaggedSitesFile dict into per-site rows (pure; used by tests)."""
+    """Flatten a TaggedSitesFile dict into per-site rows (pure; used by tests).
+
+    Retracted sites are dropped here because this is the one place a gene's JSON
+    becomes published rows — the real publish and the ``--dry-run`` count both come
+    through it, so neither can write or report a withdrawn row. See
+    :mod:`accessible_surfaceome.tag_sites.retracted`.
+    """
     gene = data["gene_symbol"]
     acc = data["uniprot_acc"]
     return [
         flat_row(s, gene_symbol=gene, uniprot_acc=acc, version=version, synced_at=synced_at)
-        for s in data.get("sites", [])
+        for s in drop_retracted(data.get("sites", []), uniprot_acc=acc)
     ]
 
 
@@ -278,8 +285,12 @@ def publish_tag_sites(
     passed; otherwise a public client is opened + closed."""
     synced_at = datetime.now(UTC).isoformat()
     rows = rows_for_file(data, version=tag_sites_version, synced_at=synced_at)
+    # Scope is what the FILE speaks for, not what survived retraction. Reading it off
+    # `rows` would make a gene whose every site of a provenance is retracted infer an
+    # empty scope, skip the DELETE, and keep serving the withdrawn row — the exact
+    # failure this is here to end.
     scope = sorted(set(provenances)) if provenances is not None else sorted(
-        {r["provenance"] for r in rows if r.get("provenance")}
+        {s["provenance"] for s in data.get("sites", []) if s.get("provenance")}
     )
 
     owns = client is None

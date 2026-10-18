@@ -586,6 +586,14 @@ per discovered paper.
   literature-only file erase the deterministic sites. `sync_tag_sites_to_d1.py` refuses a sync
   that would shrink any gene unless `--allow-deletes`; re-derive with
   `scripts/regenerate_tag_sites.py` (it preserves literature sites) instead of overriding.
+- **A withdrawn site is suppressed by a list, on both surfaces.**
+  `tag_sites/retracted.py` keys `(uniprot_acc, site_id)` to the reason it went away, and is
+  applied in `cloud/tag_sites.py::rows_for_file` (D1) AND `tag_sites/emit.py` (the static
+  `/tag-sites/{SYMBOL}.json` the viewer falls back to) — suppressing one surface leaves the
+  site being recommended on the other. Re-deriving a gene cannot resurrect a retracted site,
+  which is the point: the generator still proposes these. Rows already published are removed
+  by `scripts/cloud/delete_retracted_tag_sites.py` (dry-run by default), not by re-syncing the
+  gene — a re-sync restamps every row's `tag_sites_version` to remove one.
 - **The enrichment pass is MEMBER-keyed, and its resume needs its own write.**
   `enrich_tag_site_lit.py` (swept via `sweep_tag_site_lit.py --members-file`) runs once per
   library member — 566 across 518 genes, 45 with several — so the skip set is
