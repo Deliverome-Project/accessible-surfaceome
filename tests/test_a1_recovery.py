@@ -5,6 +5,8 @@ re-tag mutation — the two pure-logic pieces the backfill + Modal run rely on.
 """
 from __future__ import annotations
 
+import json
+
 from accessible_surfaceome.agents.surfaceome_v2.a1_recovery import (
     claim_is_direct_surface,
     retag_a2_direct_into_a1,
@@ -139,3 +141,118 @@ def test_reconstruct_dual_preserves_n_papers_discovered():
     dual = reconstruct_dual_from_blob(blob)
     assert dual.a1.n_papers_discovered == 237
     assert dual.a2.n_papers_discovered == 210
+
+
+_LOG_ROW = {
+    "tool": "gene_literature",
+    "params": {"mode": "topic_search", "anchors": ["epitope_masking"]},
+    "intent": "standing: epitope-masking evidence",
+    "n_drafts": 3,
+    "n_papers": 25,
+    "elapsed_s": 1.5,
+    "error": None,
+}
+
+
+def _blob(**side_extra: object) -> dict:
+    return {
+        "gene": "GENEX",
+        "bundle": {"hgnc_symbol": "GENEX", "hgnc_id": "HGNC:1", "uniprot_acc": "P00001"},
+        "plan_trim_select": {
+            "a1": {"claims": [], **side_extra},
+            "a2": {"claims": [], **side_extra},
+        },
+    }
+
+
+def test_replay_reconstruction_carries_search_log() -> None:
+    """Both rebuild paths must keep each side's search_log.
+
+    The record's search_log is built from them. Rebuilding with
+    ``search_log=[]`` published 839 records with no search log
+    (found 2026-10-17).
+    """
+    from accessible_surfaceome.agents.surfaceome_v2.a1_recovery import (
+        reconstruct_dual_from_blob,
+    )
+    from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
+        _build_search_log,
+        _dual_from_serialized,
+    )
+
+    blob = _blob(search_log=[_LOG_ROW, {**_LOG_ROW, "unknown_future_key": 1}])
+    for dual in (
+        reconstruct_dual_from_blob(blob),
+        _dual_from_serialized("GENEX", blob["plan_trim_select"] | {"bundle": blob["bundle"]}),
+    ):
+        assert len(dual.a1.search_log) == 2 and len(dual.a2.search_log) == 2
+        entries = _build_search_log(dual)
+        assert len(entries) == 4
+        assert entries[0].query["agent_focus"] == "a1"
+        assert entries[0].mode == "topic_search" and entries[0].n_results == 25
+
+
+def test_hydrate_search_logs_restores_slim_blob_from_r2(monkeypatch) -> None:
+    from accessible_surfaceome.cloud import intermediates, r2_client
+
+    full = _blob(search_log=[_LOG_ROW])
+    slim = intermediates._slim_intermediates_for_d1(full)
+    slim["_r2_full_audit_key"] = "agent_run_intermediates/GENEX/x.json"
+    slim["_r2_full_audit_bucket"] = "audit-bucket"
+    assert "search_log" not in slim["plan_trim_select"]["a1"]
+
+    seen = {}
+    monkeypatch.setattr(
+        r2_client.R2Config, "from_env", classmethod(lambda cls, bucket="b": cls("acct", "tok", bucket))
+    )
+
+    def fake_get(*, key, cfg):
+        seen["key"], seen["bucket"] = key, cfg.bucket
+        return json.dumps(full).encode()
+
+    monkeypatch.setattr(r2_client, "get_object", fake_get)
+    assert intermediates.hydrate_search_logs(slim) is True
+    assert seen == {"key": "agent_run_intermediates/GENEX/x.json", "bucket": "audit-bucket"}
+    assert slim["plan_trim_select"]["a1"]["search_log"] == [_LOG_ROW]
+    assert slim["plan_trim_select"]["a2"]["search_log"] == [_LOG_ROW]
+
+
+def test_hydrate_search_logs_reports_an_unrecoverable_blob() -> None:
+    from accessible_surfaceome.cloud import intermediates
+
+    slim = intermediates._slim_intermediates_for_d1(_blob(search_log=[_LOG_ROW]))
+    assert intermediates.hydrate_search_logs(slim) is False  # no R2 pointer
+    assert intermediates.hydrate_search_logs(_blob(search_log=[])) is True  # nothing missing
+
+
+def test_recover_one_refuses_to_publish_without_a_search_log(monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    from accessible_surfaceome.agents.surfaceome_v2 import a1_recovery, orchestrator
+    from accessible_surfaceome.cloud import surface_annotation
+
+    claim = {
+        "evidence_id": "a2_evi_01",
+        "claim_type": "tissue_expression",
+        "evidence_type": "flow_cytometry",
+        "direction": "supports",
+        "evidence_tier": "primary",
+        "assay_context": {"permeabilized": False, "species": "human"},
+    }
+    blob = _blob()
+    blob["plan_trim_select"]["a2"]["claims"] = [claim]
+    monkeypatch.setattr(a1_recovery, "load_latest_intermediates", lambda gene, at=None: blob)
+    monkeypatch.setattr(a1_recovery, "reconstruct_dual_from_blob", lambda b: object())
+    monkeypatch.setattr(
+        orchestrator,
+        "annotate",
+        lambda gene, cached_dual, persist: SimpleNamespace(
+            record=SimpleNamespace(search_log=[]), error=None, total_cost_usd=0.0
+        ),
+    )
+    published = []
+    monkeypatch.setattr(surface_annotation, "publish_record", lambda *a, **k: published.append(1))
+
+    out = a1_recovery.recover_one("GENEX", publish=True)
+    assert out["status"] == "failed" and "search_log" in out["error"]
+    assert not published

@@ -42,6 +42,7 @@ from accessible_surfaceome.agents.surfaceome_v2.a1_recovery import (
 )
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import annotate
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
+from accessible_surfaceome.cloud.intermediates import hydrate_search_logs
 from accessible_surfaceome.env import load_env
 
 
@@ -64,7 +65,11 @@ def _load_intermediates(
             )
     if not rows:
         raise SystemExit(f"No intermediates row for {gene_symbol}")
-    return json.loads(rows[0]["intermediates_json"])
+    blob = json.loads(rows[0]["intermediates_json"])
+    # The D1 copy is slimmed (no search_log); restore it from the R2 audit so
+    # the replayed record keeps its searches.
+    hydrate_search_logs(blob)
+    return blob
 
 
 def _reconstruct_dual(blob: dict[str, Any]) -> DualPlanTrimSelectResult:

@@ -51,8 +51,10 @@ from accessible_surfaceome.agents.plan_trim_select.runner import (
     DualPlanTrimSelectResult,
     EvidenceClaim,
     PlanTrimSelectResult,
+    search_log_from_dicts,
 )
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
+from accessible_surfaceome.cloud.intermediates import hydrate_search_logs
 from accessible_surfaceome.tools.gene_lookup import IdentifierBundle
 
 # Surface-localization assays the deep-dive grader credits as direct surface
@@ -198,6 +200,9 @@ def reconstruct_dual_from_blob(blob: dict[str, Any]) -> DualPlanTrimSelectResult
             selection_response=None,
             agent_focus=focus,
             claims=claims,
+            # The record's search_log is built from these; a slim D1 blob
+            # needs hydrate_search_logs() first (load_latest_intermediates).
+            search_log=search_log_from_dicts(side_blob.get("search_log")),
             n_claims=len(claims),
             n_anchored=side_blob.get("n_anchored") or len(claims),
             n_papers_total=side_blob.get("n_papers_total") or 0,
@@ -236,7 +241,9 @@ def load_latest_intermediates(gene: str, at: str | None = None) -> dict[str, Any
             )
     if not rows:
         raise LookupError(f"no intermediates row for {gene}")
-    return json.loads(rows[0]["intermediates_json"])
+    blob = json.loads(rows[0]["intermediates_json"])
+    hydrate_search_logs(blob)
+    return blob
 
 
 def recover_one(
@@ -280,6 +287,17 @@ def recover_one(
             "n_moved": retag["n_moved"],
         }
     rec = result.record
+    if publish and not rec.search_log:
+        # A replay rebuilds the record from the original run's evidence; its
+        # searches are that run's. Publishing without them erased the log on
+        # 839 records before this guard existed.
+        return {
+            "gene": gene,
+            "status": "failed",
+            "error": "replayed record has an empty search_log (the original "
+            "run's log could not be restored); refusing to publish",
+            "n_moved": retag["n_moved"],
+        }
     out: dict[str, Any] = {
         "gene": gene,
         "status": "ok",

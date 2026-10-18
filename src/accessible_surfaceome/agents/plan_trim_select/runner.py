@@ -35,7 +35,7 @@ import re
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -432,6 +432,18 @@ class SearchLogEntry:
     n_papers: int
     elapsed_s: float
     error: str | None = None
+
+
+def search_log_from_dicts(rows: list[dict[str, Any]] | None) -> list[SearchLogEntry]:
+    """Rebuild ``SearchLogEntry`` rows from their ``dataclasses.asdict`` form.
+
+    Used wherever a dual is reconstructed from a persisted blob (checkpoint,
+    intermediates, replay). Dropping the log there published records with an
+    empty ``search_log`` (839 records as of 2026-10-17). Unknown keys are
+    ignored so an older or newer blob still loads.
+    """
+    names = {f.name for f in fields(SearchLogEntry)}
+    return [SearchLogEntry(**{k: v for k, v in r.items() if k in names}) for r in rows or []]
 
 
 @dataclass
