@@ -87,10 +87,13 @@ def test_composed_svgs_match_their_reader_copy() -> None:
 
 
 def test_no_paper_svg_places_an_image_through_use() -> None:
-    """WeasyPrint does not render an ``<image>`` placed via ``<use>``.
+    """No paper SVG uses pdftocairo's raster construct (an ``<image>`` placed
+    via ``<use>``).
 
-    pdftocairo writes embedded rasters that way, and the converted Figure 7
-    (viewer screenshots) rendered as an empty box in the paper PDF.
+    WeasyPrint drew nothing for the converted Figure 7, which is built this way.
+    The exact trigger is unknown, so this is a cheap CI-side heuristic; the
+    paper build's render check (``paper/figure_render_check.py``) is the real
+    guard.
     """
     import re
 
