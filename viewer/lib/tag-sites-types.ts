@@ -118,6 +118,18 @@ export interface OtherPosition {
   note?: string;
 }
 
+export interface TagSiteSearch {
+  /** Which pass: ``literature_v1`` or ``literature_enriched_v1``. */
+  run_series: string | null;
+  /** The library member this search describes, ``""`` for a gene-level search. */
+  candidate_id: string;
+  prompt_sha: string | null;
+  prompt_version: string | null;
+  searched_at: string | null;
+  n_papers: number | null;
+  n_sites: number | null;
+}
+
 export interface TaggedSitesFile {
   has_data: boolean;
   gene_symbol: string;
@@ -131,8 +143,16 @@ export interface TaggedSitesFile {
   prompt_version?: string | null;
   generated_at?: string | null;
   /** Published insertion positions that are NOT surface tag sites: tolerated
-   *  but facing the cytoplasm, or reported to abrogate function. */
+   *  but facing the cytoplasm, or reported to abrogate function. The UNION
+   *  across every search of this gene — a function-abrogating insertion does
+   *  not stop being a fact because a later pass did not re-cite it. */
   literature_other_positions?: OtherPosition[];
+  /** Every search this gene has had, newest first. A gene can carry more than
+   *  one: the first literature pass is gene-level (``candidate_id: ""``) and the
+   *  enrichment pass records one per library member, which is the only place a
+   *  per-member answer is visible. The fields above describe the most recent of
+   *  these. Absent on an older Worker. */
+  searches?: TagSiteSearch[];
   /** Per-isoform deterministic tag pins (computed on each isoform's OWN AFDB
    *  model), classified vs the canonical prediction. Optional — absent until the
    *  pipeline regeneration populates it. Consumed by the IsoformsCard topology

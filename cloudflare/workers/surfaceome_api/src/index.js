@@ -4434,27 +4434,71 @@ async function handleTagSites(env, symbol) {
   // nobody looked at — it has no site rows either way — and the published
   // intracellular / function-abrogating positions have nowhere to live.
   // LEFT JOIN semantics: absent row => never searched, which is the claim.
-  let gene = null;
+  //
+  // A gene can carry SEVERAL searches. The table is keyed
+  // (gene_symbol, candidate_id, run_series) so the enrichment pass can record a
+  // second one without overwriting the first — 1,415 of its rows are dated
+  // zeros and each costs a real literature search to reproduce. So every row is
+  // read and the choice is made HERE, rather than by ORDER BY + .first(): the
+  // rows are needed anyway for the union and the array below, and a `.first()`
+  // without an ORDER BY would let SQLite pick, which makes one gene answer
+  // differently from one request to the next and caches per POP.
+  let geneRows = [];
   try {
-    gene = await env.DB.prepare(
-      `SELECT prompt_sha, prompt_version, searched_at, n_papers,
-              other_positions_json, notes
+    const res = await env.DB.prepare(
+      `SELECT gene_symbol, candidate_id, run_series, prompt_sha, prompt_version,
+              searched_at, n_papers, n_sites, other_positions_json, notes
          FROM tag_site_gene_public WHERE gene_symbol = ? COLLATE NOCASE`
     )
       .bind(sym)
-      .first();
+      .all();
+    geneRows = res?.results ?? [];
   } catch {
     // Table not provisioned yet (Worker deployed before the sync): degrade to
     // the previous shape rather than 500, exactly as the site query does.
-    gene = null;
+    geneRows = [];
   }
+  // Newest first, then by series and member so equal timestamps still give one
+  // fixed order. Total: no two rows share all three.
+  geneRows = geneRows.slice().sort((a, b) =>
+    String(b.searched_at ?? "").localeCompare(String(a.searched_at ?? "")) ||
+    String(b.run_series ?? "").localeCompare(String(a.run_series ?? "")) ||
+    String(a.candidate_id ?? "").localeCompare(String(b.candidate_id ?? ""))
+  );
+  const searches = geneRows.map((r) => ({
+    run_series: r.run_series ?? null,
+    candidate_id: r.candidate_id ?? "",
+    prompt_sha: r.prompt_sha ?? null,
+    prompt_version: r.prompt_version ?? null,
+    searched_at: r.searched_at ?? null,
+    n_papers: r.n_papers ?? null,
+    n_sites: r.n_sites ?? null,
+  }));
+  // The existing top-level fields describe the most recent search, so "was this
+  // searched, and when" stays true and becomes more current.
+  const gene = geneRows[0] ?? null;
 
-  let otherPositions = [];
-  if (gene?.other_positions_json) {
+  // UNION, not the newest row's list. A published cytoplasm-facing or
+  // function-abrogating insertion is a fact about the protein; it does not stop
+  // being one because a later pass did not re-cite it, and taking only the
+  // newest list would drop the other pass's with nothing on the page to say so.
+  // Deduped on the serialized entry, since both passes citing the same paper is
+  // the expected case rather than the odd one.
+  const seenPositions = new Set();
+  const otherPositions = [];
+  for (const row of geneRows) {
+    if (!row?.other_positions_json) continue;
+    let parsed = [];
     try {
-      otherPositions = JSON.parse(gene.other_positions_json) || [];
+      parsed = JSON.parse(row.other_positions_json) || [];
     } catch {
-      otherPositions = [];
+      parsed = [];
+    }
+    for (const entry of parsed) {
+      const key = JSON.stringify(entry);
+      if (seenPositions.has(key)) continue;
+      seenPositions.add(key);
+      otherPositions.push(entry);
     }
   }
 
@@ -4472,6 +4516,11 @@ async function handleTagSites(env, symbol) {
     n_papers_searched: gene?.n_papers ?? null,
     literature_other_positions: otherPositions,
     literature_notes: gene?.notes ?? null,
+    // Additive: every search this gene has had, newest first, each named by its
+    // series and the library member it describes ('' for a gene-level search).
+    // The only surface on which a per-member answer is visible at all; an older
+    // viewer ignores it.
+    searches,
   });
 }
 
