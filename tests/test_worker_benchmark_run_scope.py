@@ -4,10 +4,12 @@ The 147 bench genes also sit in the genome-wide Sonnet/NCBI sweep and in the
 PubMed rescue lanes. Those runs write the same (gene, claude-sonnet-4-6,
 ncbi | pubmed_ncbi) cells with a later ``created_at`` and ``correct = 0``
 (they have no truth to score against). ``/v1/benchmark/matrix`` and
-``/v1/benchmark/export.tsv`` pick the latest replicate per cell, so without a
-``run_id`` pin the genome row won: every Sonnet 4.6/ncbi cell served
-``correct: 0``, CD19 included. This runs the Worker's own SQL on a fixture with
-that shape and checks the bench replicate wins.
+``/v1/benchmark/export.tsv`` once picked the latest replicate per cell, so
+without a ``run_id`` pin the genome row won: every Sonnet 4.6/ncbi cell served
+``correct: 0``, CD19 included. Both now aggregate the bench run's replicates
+(``loadBenchCells``); this runs that SQL on a fixture with the same shape and
+checks only bench replicates come back. tests/test_worker_benchmark_majority.py
+covers the aggregation end to end.
 """
 
 from __future__ import annotations
@@ -90,38 +92,31 @@ def test_bench_run_id_constant() -> None:
     assert 'const BENCH_RUN_ID = "mainbench_canonical_v2";' in _src()
 
 
-def test_matrix_serves_the_bench_replicate() -> None:
-    body = _function_body("handleBenchmarkMatrix")
+def test_bench_cells_read_only_the_bench_run() -> None:
+    body = _function_body("loadBenchCells")
     assert (
-        ".bind(benchVersion, BENCH_RUN_ID, ...wantedVariants, ...BENCH_MATRIX_MODELS)"
+        ".bind(BENCH_RUN_ID, benchVersion, ...BENCH_MATRIX_VARIANTS, ...BENCH_MATRIX_MODELS)"
         in body
     )
-    sql = _sql(body, "WITH bench_genes AS")
-    params = ["bench1", "mainbench_canonical_v2", *_VARIANTS, *_MODELS]
-    rows = _fixture().execute(sql, params).fetchall()
-    got = {r["prompt_variant"]: (r["correct"], r["created_at"]) for r in rows}
-    assert got == {
-        "ncbi": (1, "2026-06-01 02:07:11"),
-        "pubmed_ncbi": (1, "2026-06-01 02:11:44"),
-    }
+    sql = _sql(body, "SELECT t.id,")
+    con = _fixture()
+    con.execute("ALTER TABLE triage_run_public ADD COLUMN id INTEGER")
+    params = ["mainbench_canonical_v2", "bench1", *_VARIANTS, *_MODELS]
+    rows = con.execute(sql, params).fetchall()
+    # Every bench replicate and nothing from the genome sweep or rescue lane.
+    assert [(r["prompt_variant"], r["replicate"], r["created_at"]) for r in rows] == [
+        ("ncbi", 1, "2026-05-31 23:02:50"),
+        ("ncbi", 2, "2026-05-31 23:02:51"),
+        ("ncbi", 3, "2026-06-01 02:07:11"),
+        ("pubmed_ncbi", 3, "2026-06-01 02:11:44"),
+    ]
 
 
-def test_export_serves_the_bench_replicate() -> None:
-    body = _function_body("handleBenchmarkExport")
-    assert re.search(
-        r"\.bind\(\s*benchVersion, BENCH_RUN_ID,\s*"
-        r"\.\.\.BENCH_MATRIX_VARIANTS, \.\.\.BENCH_MATRIX_MODELS,"
-        r"\s*benchVersion, universeVersion,",
-        body,
-    )
-    sql = _sql(body, "WITH ranked AS")
-    params = ["bench1", "mainbench_canonical_v2", *_VARIANTS, *_MODELS, "bench1", "cu1"]
-    rows = _fixture().execute(sql, params).fetchall()
-    # The genome / rescue rows are replicate 1; the bench's latest is replicate 3.
-    assert {r["prompt_variant"]: r["replicate"] for r in rows} == {
-        "ncbi": 3,
-        "pubmed_ncbi": 3,
-    }
+def test_matrix_and_export_use_the_bench_cells() -> None:
+    for handler in ("handleBenchmarkMatrix", "handleBenchmarkExport"):
+        body = _function_body(handler)
+        assert "await loadBenchCells(env, benchVersion" in body, handler
+        assert "FROM triage_run_public" not in body, handler
 
 
 def test_triage_cell_is_pinned_to_the_bench_run() -> None:
