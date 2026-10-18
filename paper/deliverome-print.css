@@ -260,6 +260,15 @@ h2 {
   margin: 1.4em 0 0.5em 0;
 }
 
+/* A heading right after a figure block: with a manifest print_place_before
+ * that figure ends its page and the heading opens the next one. WeasyPrint
+ * keeps a top margin at the head of a column, so the heading would start a
+ * line lower than the neighbouring column. */
+.figure-block + h2,
+.figure-block + h3 {
+  margin-top: 0;
+}
+
 /* The first section heading (Abstract) sits at the very top of the body
  * columns, directly under the title band — drop its top margin so it
  * doesn't render with an empty line above it. */
