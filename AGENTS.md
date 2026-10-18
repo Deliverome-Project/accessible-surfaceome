@@ -493,7 +493,10 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
 - **CI backup → R2**: every push to `main` that touches the relevant
   paths (`cloudflare/d1_schema.sql`, `data/annotations/**`,
   `data/triage/**`, `src/accessible_surfaceome/cloud/**`, the
-  backup scripts themselves) triggers `scripts/cloud/d1_export_to_r2.sh`,
+  backup scripts themselves) triggers `scripts/cloud/d1_export_to_r2.sh`
+  for the private `surfaceome_agents` DB (the public `surfaceome_public`
+  export runs only weekly or on an opted-in manual run, since D1 blocks the
+  live API's queries while an export runs),
   which runs
   `wrangler d1 export`, gzips and splits the dump into 250 MiB parts
   (wrangler's put limit is 300 MiB; the agents dump is >2 GiB), verifies
