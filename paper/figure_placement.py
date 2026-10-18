@@ -4,10 +4,11 @@ WeasyPrint cannot float a figure to the bottom of a page, so a figure lands
 wherever the .docx anchored it, and can split the surrounding text above and
 below it. A manifest entry's ``print_place_before`` names the exact body text
 the figure (its ``div.figure-block``: image plus caption) should sit
-immediately before. When that text starts mid-paragraph, the paragraph is
+immediately before; it may also be the start of a section heading. When that text starts mid-paragraph, the paragraph is
 split there, the figure goes between the halves, and the text resumes after
 the figure, the way a journal page breaks a paragraph around a figure. The
-first half gets ``class="before-figure"`` so its last line stays justified.
+first half gets ``class="before-figure"`` (plus ``mid-sentence`` when the split is
+mid-sentence, so its last line stays justified).
 
 PDF only: the web edition reflows, so it keeps the .docx order.
 """
@@ -51,7 +52,9 @@ def _split_point(doc, snippet: str):
     """The single (paragraph, owner, attr, offset) where ``snippet`` starts."""
     pattern = re.compile(r"\s+".join(re.escape(w) for w in snippet.split()))
     hits = []
-    for p in doc.iter("p"):
+    # Paragraphs, and section headings (a figure can be placed just before a
+    # heading; headings are never split).
+    for p in doc.iter("p", "h2", "h3", "h4"):
         if p.xpath("ancestor::div[contains(concat(' ', @class, ' '), ' figure-block ')]"):
             continue
         for owner, attr in _text_nodes(p):
@@ -93,15 +96,23 @@ def apply_print_placements(html_path: Path, manifest: dict) -> list[str]:
             )
             continue
         p, owner, attr, offset = hits[0]
-        block.getparent().remove(block)
         at_start = owner is p and not (p.text or "")[:offset].strip()
+        if p.tag != "p" and not at_start:
+            log.append(f"  ! placement {key}: {spec.print_place_before!r} is inside a heading; left in place")
+            continue
+        block.getparent().remove(block)
         if at_start:
             p.addprevious(block)
             log.append(f"  placed figure {key} before the paragraph starting {spec.print_place_before[:40]!r}")
             continue
         p2 = _split(p, owner, attr, offset)
         classes = (p.get("class") or "").split()
-        p.set("class", " ".join([*classes, "before-figure"]))
+        # Justify the last line only when the split falls mid-sentence; a
+        # sentence-final line stretched to full width looks broken.
+        first_half = " ".join(p.text_content().split())
+        mid_sentence = not re.search(r"[.!?][)\]\"'”’]*$", first_half)
+        extra = ["before-figure", "mid-sentence"] if mid_sentence else ["before-figure"]
+        p.set("class", " ".join([*classes, *extra]))
         p.addnext(block)
         block.addnext(p2)
         log.append(f"  placed figure {key} mid-paragraph, before {spec.print_place_before[:40]!r}")

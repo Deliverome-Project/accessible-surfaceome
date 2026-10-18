@@ -321,8 +321,12 @@ p {
  * half ends mid-sentence above the figure, so keep that last line justified
  * and drop the paragraph gap, as if the page simply broke there. */
 p.before-figure {
-  text-align-last: justify;
   margin-bottom: 0;
+}
+/* Only a mid-sentence split keeps its last line justified; a sentence-final
+ * line stretched to full width reads as a layout bug. */
+p.before-figure.mid-sentence {
+  text-align-last: justify;
 }
 
 a {

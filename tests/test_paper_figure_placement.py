@@ -50,7 +50,7 @@ def test_mid_paragraph_placement_splits_the_paragraph(tmp_path: Path) -> None:
         "2) the list goes on.",
         "Third paragraph.",
     ]
-    assert "before-figure" in els[1].get("class")
+    assert els[1].get("class").split() == ["before-figure", "mid-sentence"]
     assert els[1].find("a") is not None  # inline link stays in the first half
     assert "mid-paragraph" in log[0]
 
@@ -69,3 +69,9 @@ def test_missing_text_leaves_the_figure_in_place_with_a_warning(tmp_path: Path) 
     log, els = _run(tmp_path, "no such words")
     assert [_desc(e) for e in els][1] == "FIG"
     assert log and "found 0 times" in log[0]
+
+
+def test_sentence_final_split_is_not_justified(tmp_path: Path) -> None:
+    _, els = _run(tmp_path, "It cites")
+    assert [_desc(e) for e in els][1:3] == ["Second paragraph starts here.", "FIG"]
+    assert els[1].get("class").split() == ["before-figure"]
