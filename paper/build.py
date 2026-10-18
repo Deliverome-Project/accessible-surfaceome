@@ -282,6 +282,20 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
                 f"--strict figure-swap: {len(report.issues)} unresolved issue(s); "
                 f"fix or relax the manifest, then re-run."
             )
+        # Never ship an empty figure: render every swapped-in asset through
+        # WeasyPrint on its own and stop if any draws nothing (Figure 7 went
+        # out blank on 2026-10-18: WeasyPrint silently failed on its SVG).
+        from figure_render_check import blank_figures  # ty: ignore[unresolved-import]
+
+        blank = blank_figures(report.swapped.values())
+        if blank:
+            names = ", ".join(str(b.relative_to(REPO_ROOT)) if b.is_relative_to(REPO_ROOT) else str(b) for b in blank)
+            raise RuntimeError(
+                f"figure(s) render blank in WeasyPrint: {names}. "
+                "WeasyPrint draws nothing for some SVG it cannot render (Figure 7's "
+                "pdftocairo conversion was one); use a hand-built SVG or a PNG."
+            )
+        print(f"  render check: all {len(set(report.swapped.values()))} figure assets draw content")
 
     from html_polish import polish_print_html  # ty: ignore[unresolved-import]
 
