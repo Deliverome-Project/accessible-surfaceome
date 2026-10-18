@@ -149,7 +149,8 @@ GIST_ORIGINS = [
 #      (bench gene × model × variant). Server endpoint:
 #      /v1/benchmark/export.tsv — bench-scoped, JOINs truth labels
 #      from benchmark_version + DB votes from candidate_universe_public
-#      + latest replicate per cell from triage_run_public. Haiku and
+#      + the majority over each cell's replicates from
+#      triage_run_public (the paper's per-cell numbers). Haiku and
 #      Opus only appear here — the broad triage in #1 is Sonnet-only.
 #
 #   3. deep_dives_all.tar.gz  →  "every published SurfaceomeRecord

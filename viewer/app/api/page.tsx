@@ -129,7 +129,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/benchmark/export.tsv",
         sizeKey: "/v1/benchmark/export.tsv",
         summary:
-          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) for the canonical bench_version. Adds the 5-DB vote vector and truth_verdict / truth_signal / truth_reason to the triage export shape.",
+          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) cell for the canonical bench_version. The verdict is the cell's majority over its 3 replicates, as in the paper, with n_reps, majority_agreement, is_match and replicate-summed *_total telemetry. Adds the 5-DB vote vector and truth_verdict / truth_signal / truth_reason to the triage export shape.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv | head -3",
       },
@@ -148,7 +148,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         anchor: "benchmark-matrix",
         sizeKey: "/v1/benchmark/matrix",
         summary:
-          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. `models` lists the eight benchmarked Claude models (Haiku 4.5 / 5.5, Sonnet 4.6 / 5 / 5.5, Opus 4.8 / 5 / 5.5) and `variants` the prompt variants (naive, ncbi, ncbi_effort_low — the ncbi prompt at low reasoning effort — web_ncbi, pubmed_ncbi); not every model ran every variant, and a missing (model, variant) is null. A cell whose replicates were all declined by the model's safety classifier has `verdict: null` and `error: \"refusal\"`. Drives the SurfaceBench page's side-drawer.",
+          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. `models` lists the eight benchmarked Claude models (Haiku 4.5 / 5.5, Sonnet 4.6 / 5 / 5.5, Opus 4.8 / 5 / 5.5) and `variants` the prompt variants (naive, ncbi, ncbi_effort_low — the ncbi prompt at low reasoning effort — web_ncbi, pubmed_ncbi); not every model ran every variant, and a missing (model, variant) is null. Each cell is the majority over its 3 replicates (refused replicates excluded) — the same per-cell numbers as the paper — with `n_reps`, `majority_agreement` and replicate-summed `totals`; `reasoning` and per-call telemetry come from the representative `replicate`. A cell whose replicates were all declined by the model's safety classifier has `verdict: null` and `error: \"refusal\"`. Drives the SurfaceBench page's side-drawer.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .variants, .headline_variant'",
       },

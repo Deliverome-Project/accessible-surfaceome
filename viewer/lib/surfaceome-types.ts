@@ -1528,15 +1528,24 @@ export type BenchmarkSource =
   | "cspa"
   | "hpa";
 
+/** One (gene, model, variant) cell of the SurfaceBench matrix. The cell is
+ *  the MAJORITY over the run's replicates (refused replicates excluded) —
+ *  the same per-cell numbers the paper and mainbench_canonical_v2.tsv use.
+ *  `verdict` / `reason` / `confidence` / `correct` describe the majority;
+ *  `reasoning` and the per-call telemetry (latency, cost, tokens) come from
+ *  the representative replicate named by `replicate`. A cell whose every
+ *  replicate refused has `verdict: null`, `correct: null`, `n_reps: 0`. */
 export interface BenchmarkVariantResult {
   verdict: string | null;
   reason: string | null;
   confidence: string | null;
   key_uncertainty: string | null;
-  /** Per-call free-text reasoning the agent emitted alongside the
-   *  verdict. Shown in the row-expand reveal so readers can audit
-   *  any specific (gene, model, variant) call's logic. */
+  /** Free-text reasoning from the representative replicate (one that made
+   *  the majority call). Shown in the drawer so readers can audit the
+   *  call's logic. */
   reasoning: string | null;
+  /** Soft-credit match of the majority verdict against truth (yes ≡
+   *  contextual); null when no replicate returned a verdict. */
   correct: number | null;
   latency_s: number | null;
   n_web_searches: number | null;
@@ -1547,6 +1556,22 @@ export interface BenchmarkVariantResult {
   completion_tokens?: number | null;
   cache_creation_tokens?: number | null;
   cache_read_tokens?: number | null;
+  /** Representative replicate number (source of reasoning + telemetry). */
+  replicate?: number | null;
+  /** Replicates that returned a verdict (the majority's denominator). */
+  n_reps?: number;
+  /** Share of n_reps on the winning side, e.g. 0.667 for a 2–1 split. */
+  majority_agreement?: number | null;
+  /** Telemetry summed over every replicate of the cell. */
+  totals?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    cache_creation_tokens: number;
+    cache_read_tokens: number;
+    n_web_searches: number;
+    cost_usd: number;
+    latency_s: number;
+  };
 }
 
 export interface BenchmarkRow {
@@ -1574,6 +1599,9 @@ export interface BenchmarkMatrix {
   /** Optional hint for consumers that want to highlight one variant
    *  visually (e.g. emboss the column header). */
   headline_variant: string;
+  /** "majority_of_replicates": every cell aggregates the run's replicates. */
+  cell_aggregation?: string;
+  run_id?: string;
   n_genes: number;
   rows: BenchmarkRow[];
 }
