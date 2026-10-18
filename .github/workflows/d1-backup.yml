@@ -14,6 +14,13 @@ name: D1 backup → R2
 # Travel (7-30 day automatic point-in-time recovery), this gives us
 # long-term offsite versioning with grep-able SQL for both DBs.
 #
+# The PUBLIC export runs only on the weekly schedule (a quiet hour) or a
+# manual run with `include_public`. D1 refuses queries while an export
+# runs, so exporting `surfaceome_public` on every qualifying push made
+# every uncached API request fail for the length of the export (345 errors
+# across two backups on 2026-10-17/18). The private agents DB, which no
+# live traffic reads, is still exported on every push.
+#
 # Required repo secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN — scoped to D1:Edit and R2:Edit on the account
 #   CLOUDFLARE_ACCOUNT_ID — the account hex
@@ -32,11 +39,6 @@ on:
     paths:
       # Schema / SQL — any change to the D1 schema triggers a fresh dump.
       - "cloudflare/d1_schema.sql"
-      - "cloudflare/d1_public_schema.sql"
-      - "cloudflare/migrations/contact_sites.sql"
-      - "scripts/publish_contact_sites.py"
-      - "scripts/audit/export_contact_release.mjs"
-      - "viewer/public/data/contact-sites/**"
       # Eval data — benchmark TSV + any live run output.
       - "data/eval/triage_benchmark_v1.tsv"
       - "data/eval/triage_haiku_live_run.tsv"
@@ -52,6 +54,11 @@ on:
       - "scripts/cloud/d1_triage_backup.sh"
       - ".github/workflows/d1-backup.yml"
   workflow_dispatch:  # allow manual triggers from the Actions tab
+    inputs:
+      include_public:
+        description: "Also export surfaceome_public (the live API's DB; blocks API queries while it runs)"
+        type: boolean
+        default: false
 
 concurrency:
   group: d1-backup-${{ github.ref }}
@@ -89,6 +96,9 @@ jobs:
         run: bash scripts/cloud/d1_export_to_r2.sh --db surfaceome_agents
 
       - name: Export surfaceome_public → R2
+        # Weekly schedule or explicit opt-in only: the export blocks the
+        # live API's queries while it runs (see the header comment).
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.include_public)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
