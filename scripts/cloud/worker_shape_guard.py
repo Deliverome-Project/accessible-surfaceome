@@ -166,12 +166,14 @@ def main() -> int:
     ap.add_argument("--capture", action="store_true", help="write the baseline")
     ap.add_argument("--check", action="store_true", help="compare against the baseline")
     ap.add_argument("--baseline", type=Path, default=BASELINE)
+    ap.add_argument("--attempts", type=int, default=3,
+                    help="tries per probe; 1 makes a known-unreachable base fast")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if args.capture == args.check:
         ap.error("pass exactly one of --capture / --check")
 
-    captured = capture(args.base)
+    captured = capture(args.base, attempts=max(1, args.attempts))
     if captured["errors"] and args.check:
         # A probe that cannot be fetched proves nothing about its shape, and
         # treating "no paths" as "no regression" is how a guard lies.
@@ -183,8 +185,16 @@ def main() -> int:
         args.baseline.parent.mkdir(parents=True, exist_ok=True)
         args.baseline.write_text(json.dumps(captured, indent=2, sort_keys=True) + "\n")
         total = sum(len(v) for v in captured["shape"].values())
+        # Reported relative to the repo when it is inside it, absolute when it
+        # is not: `relative_to` RAISES for an outside path, and it raised here
+        # after the file had already been written — so the run looked like a
+        # failure while having succeeded.
+        try:
+            shown = args.baseline.relative_to(REPO_ROOT)
+        except ValueError:
+            shown = args.baseline
         log.info("\nwrote %s (%d probes, %d key paths)",
-                 args.baseline.relative_to(REPO_ROOT), len(captured["shape"]), total)
+                 shown, len(captured["shape"]), total)
         if captured["errors"]:
             log.warning("NOTE: %d probe(s) errored and are absent from the baseline",
                         len(captured["errors"]))

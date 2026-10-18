@@ -165,3 +165,26 @@ def test_the_baseline_has_no_orphan_probes() -> None:
     known = {name for name, _ in mod.PROBES}
     orphans = sorted(set(captured) - known)
     assert not orphans, f"baseline holds probes no longer in PROBES: {orphans}"
+
+
+def test_capture_to_a_baseline_outside_the_repo_does_not_crash(tmp_path) -> None:
+    """``--baseline`` takes any path, and the success log reported it relative to
+    the repo root — which raises for a path outside it. The file was already
+    written by then, so the run looked like a failure while having succeeded:
+    the worst of both, and it cost a checklist step mid-deploy.
+
+    An unreachable base keeps this offline; ``--capture`` writes and logs
+    regardless of probe failures, which is the path that crashed.
+    """
+    import subprocess
+    import sys
+
+    out = tmp_path / "shape.json"
+    proc = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts/cloud/worker_shape_guard.py"),
+         "--capture", "--baseline", str(out),
+         "--base", "http://127.0.0.1:9", "--attempts", "1"],
+        capture_output=True, text=True, cwd=str(REPO_ROOT),
+    )
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    assert out.is_file()
