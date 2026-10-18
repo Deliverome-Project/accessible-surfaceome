@@ -168,9 +168,10 @@ export default function ReproducibilityPage() {
             <li>
               <code>triage-runs-genome-with-reasoning.tsv</code> — every
               triage agent call across the protein-coding genome (33,728
-              rows: the 19,324-gene NCBI-context sweep plus 14,404 rows
-              from four PubMed-context rescue lanes), with verdict,
-              reason, confidence, and free-text reasoning.
+              rows: the 19,324-gene NCBI-context pass plus 14,404 rows
+              from the PubMed-context rescue pass, each labelled by a{" "}
+              <code>triage_pass</code> column), with verdict, reason,
+              confidence, and free-text reasoning.
             </li>
             <li>
               <code>triage-benchmark-with-reasoning.tsv</code> — the
