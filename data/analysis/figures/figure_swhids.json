@@ -50,13 +50,13 @@
   {
     "figure": "Supplementary Figure 2",
     "slug": "db_correctness_overall",
-    "swhid": "swh:1:rev:c2fc9af3d21a557a894c0fa082a41e83aa015bf5",
+    "swhid": "swh:1:rev:91b0649669bc4ab04a21f64f3f9e6b950a073386",
     "gist": "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d"
   },
   {
     "figure": "Supplementary Figure 3",
     "slug": "benchmark_cost_vs_accuracy",
-    "swhid": "swh:1:rev:07a03f895195cef41f8e76886f64df5ee22b5adf",
+    "swhid": "swh:1:rev:a551beb918dfb49e9f1df66e5ae7a89f028568b8",
     "gist": "https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41"
   },
   {
