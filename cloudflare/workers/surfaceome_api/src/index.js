@@ -24,12 +24,11 @@ import { handleContactSites } from "./contact-sites.js";
 //   GET /v1/orthologs/:symbol   — ortholog table for a gene
 //   GET /v1/benchmark           — full benchmark truth labels (latest version)
 //   GET /v1/benchmark/matrix    — 147-gene matrix: truth + per-DB flags +
-//                                  per-model headline & alt LLM verdicts
-//   GET /v1/benchmark/export.tsv — 7-column TSV of curated truth labels,
-//                                  mirrors `data/eval/triage_benchmark_v1.tsv`
-//                                  shape (gene/uniprot/class/verdict/
-//                                  signal/reason/rationale). Figure scripts
-//                                  load truth labels from here.
+//                                  per-(model, variant) LLM verdicts, each
+//                                  the majority over the cell's replicates
+//   GET /v1/benchmark/export.tsv — the matrix flattened to one TSV row per
+//                                  (gene, model, variant) cell: majority
+//                                  verdict, truth labels, per-DB votes.
 //   GET /v1/benchmark/:symbol   — single gene's truth label
 //   GET /v1/triage/:symbol      — model verdicts across runs (with costs)
 //   GET /v1/triage/:symbol/:model/:variant — per-cell replicate detail:
@@ -2873,7 +2872,7 @@ const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
 // write the same (gene, claude-sonnet-4-6, ncbi | pubmed_ncbi) cells with
 // correct = 0 (those runs have no truth to score against) and a later
 // created_at, so every benchmark query must pin to this run_id or the
-// latest-replicate pick serves the genome-run row instead.
+// genome-run rows land in the bench cells.
 const BENCH_RUN_ID = "mainbench_canonical_v2";
 // Five gating DBs — same five the homepage CatalogTable renders. The
 // matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
@@ -2882,6 +2881,187 @@ const BENCH_RUN_ID = "mainbench_canonical_v2";
 const BENCH_MATRIX_SOURCES = [
   "uniprot", "go", "surfy", "cspa", "hpa",
 ];
+
+// --- SurfaceBench cell aggregation ----------------------------------------
+// Every (gene, model, variant) cell of the bench run has three replicates.
+// The paper and data/processed/triage_bench/mainbench_canonical_v2.tsv score
+// each cell by its MAJORITY verdict, so the matrix, the export TSV and the
+// per-cell drawer all do the same. This is a line-for-line port of
+// `_collapse_to_majority` in scripts/tsv-export/export_mainbench_to_tsv.py;
+// change both together (tests/test_worker_benchmark_majority.py replays the
+// committed replicate TSV through this code and diffs it against the
+// committed majority TSV).
+//
+//   - Only replicates with a yes / contextual / no verdict vote. A refused
+//     or errored replicate (null verdict) is out of the vote and out of
+//     n_reps, so a cell with one refusal is a majority of the other two.
+//   - The binary surface vote decides the side (yes and contextual both
+//     vote surface), then the most common raw verdict on that side is the
+//     cell's verdict, then the most common reason and the most common
+//     confidence among replicates carrying that verdict.
+//   - Every tie goes to the value seen first in replicate order, which is
+//     what Python's Counter.most_common does on the replicate-ordered rows.
+//   - A cell with no valid replicate has no verdict and is not scored.
+//   - `totals` sums telemetry over ALL the cell's replicates, refused ones
+//     included, exactly like the TSV's token / cost / latency columns.
+//
+// The per-call fields (reasoning, latency, cost, tokens) describe one
+// representative replicate: the lowest-numbered replicate carrying the
+// majority verdict and reason, so the reasoning shown next to a verdict is
+// a replicate that actually made that call.
+
+function benchSurfaceVote(verdict) {
+  if (verdict === "yes" || verdict === "contextual") return true;
+  if (verdict === "no") return false;
+  return null;
+}
+
+// Most common value; ties go to the first one seen (Counter.most_common).
+function benchModeFirstSeen(values) {
+  const tally = new Map();
+  for (const v of values) tally.set(v, (tally.get(v) || 0) + 1);
+  let best = null;
+  let bestN = 0;
+  for (const [v, n] of tally) {
+    if (n > bestN) {
+      best = v;
+      bestN = n;
+    }
+  }
+  return best;
+}
+
+// Soft credit, as in the figures' is_match: yes and contextual agree with
+// each other, no agrees only with no.
+function benchSoftMatch(predicted, truth) {
+  if (!predicted || !truth) return 0;
+  if (predicted === truth) return 1;
+  return benchSurfaceVote(predicted) === true && benchSurfaceVote(truth) === true ? 1 : 0;
+}
+
+// `reps` = one cell's replicates in ascending replicate order. Returns null
+// when no replicate carries a verdict.
+function benchCellMajority(reps) {
+  const valid = reps.filter((r) => benchSurfaceVote(r.predicted_verdict) !== null);
+  if (!valid.length) return null;
+  const winSide = benchModeFirstSeen(valid.map((r) => benchSurfaceVote(r.predicted_verdict)));
+  const winReps = valid.filter((r) => benchSurfaceVote(r.predicted_verdict) === winSide);
+  const verdict = benchModeFirstSeen(winReps.map((r) => r.predicted_verdict));
+  const sameVerdict = winReps.filter((r) => r.predicted_verdict === verdict);
+  const modal = (col) => {
+    const vals = sameVerdict.map((r) => r[col]).filter((v) => v);
+    return vals.length ? benchModeFirstSeen(vals) : null;
+  };
+  const reason = modal("predicted_reason");
+  const confidence = modal("predicted_confidence");
+  const rep = sameVerdict.find((r) => reason == null || r.predicted_reason === reason) ?? sameVerdict[0];
+  return {
+    verdict,
+    reason,
+    confidence,
+    rep,
+    n_reps: valid.length,
+    agreement: Math.round((winReps.length / valid.length) * 1000) / 1000,
+  };
+}
+
+const BENCH_TOTAL_COLUMNS = [
+  "prompt_tokens", "completion_tokens", "cache_creation_tokens",
+  "cache_read_tokens", "n_web_searches", "cost_usd", "latency_s",
+];
+
+// Python 3.12+ sum() over floats is Neumaier-compensated, and the TSV's
+// totals come from it; a naive loop lands one ulp away often enough to flip
+// the sixth decimal of a cost. Same algorithm as CPython's builtin_sum.
+function benchFsum(rows, col) {
+  let sum = 0;
+  let c = 0;
+  for (const r of rows) {
+    const x = Number(r[col]) || 0;
+    const t = sum + x;
+    c += Math.abs(sum) >= Math.abs(x) ? (sum - t) + x : (x - t) + sum;
+    sum = t;
+  }
+  return c && Number.isFinite(c) ? sum + c : sum;
+}
+
+function benchCellTotals(reps) {
+  const totals = {};
+  for (const col of BENCH_TOTAL_COLUMNS) {
+    const sum = benchFsum(reps, col);
+    // toFixed rounds the exact binary value, as Python's round() does;
+    // Math.round(sum * 1e6) would round the already-perturbed product.
+    if (col === "cost_usd") totals[col] = Number(sum.toFixed(6));
+    else if (col === "latency_s") totals[col] = Number(sum.toFixed(3));
+    else totals[col] = Math.trunc(sum);
+  }
+  return totals;
+}
+
+// Read the bench run's replicates for the bench genes and aggregate them to
+// one entry per cell: Map "gene\tmodel\tvariant" -> cell. A cell's `rep` is
+// its representative replicate row (the latest replicate for a cell with no
+// verdict, so its `error` says why). The light columns of all ~8k replicate
+// rows come back in one query; the free-text fields are fetched in a second
+// query for the representative replicates only, so the Worker never pulls
+// three copies of every reasoning string out of D1.
+async function loadBenchCells(env, benchVersion, { withText = false } = {}) {
+  const variantPlaceholders = BENCH_MATRIX_VARIANTS.map(() => "?").join(",");
+  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
+  const repRows = await env.DB.prepare(
+    `SELECT t.id, t.gene_symbol, t.model, t.prompt_variant, t.replicate,
+            t.predicted_verdict, t.predicted_reason, t.predicted_confidence,
+            t.latency_s, t.n_web_searches, t.created_at, t.error,
+            t.cost_usd, t.prompt_tokens, t.completion_tokens,
+            t.cache_creation_tokens, t.cache_read_tokens
+       FROM triage_run_public t
+      WHERE t.run_id = ?
+        AND t.gene_symbol IN (
+              SELECT gene_symbol FROM benchmark_version WHERE bench_version = ?)
+        AND t.prompt_variant IN (${variantPlaceholders})
+        AND t.model IN (${modelPlaceholders})
+      ORDER BY t.gene_symbol, t.model, t.prompt_variant, t.replicate,
+               t.created_at DESC`
+  ).bind(BENCH_RUN_ID, benchVersion, ...BENCH_MATRIX_VARIANTS, ...BENCH_MATRIX_MODELS).all();
+
+  // Group by cell, keeping one row per replicate number (the latest), the
+  // same guard handleTriageCell applies against a duplicate-replicate sync.
+  const byCell = new Map();
+  for (const r of repRows.results) {
+    const key = `${r.gene_symbol}\t${r.model}\t${r.prompt_variant}`;
+    let reps = byCell.get(key);
+    if (!reps) {
+      reps = [];
+      byCell.set(key, reps);
+    }
+    const last = reps[reps.length - 1];
+    if (last && last.replicate === r.replicate) continue;
+    reps.push(r);
+  }
+
+  const cells = new Map();
+  for (const [key, reps] of byCell) {
+    const maj = benchCellMajority(reps);
+    let rep = maj?.rep;
+    if (!rep) {
+      rep = reps[0];
+      for (const r of reps) if ((r.created_at || "") > (rep.created_at || "")) rep = r;
+    }
+    cells.set(key, { reps, maj, rep, totals: benchCellTotals(reps) });
+  }
+
+  if (withText && cells.size) {
+    const ids = [...cells.values()].map((c) => c.rep.id);
+    const textRows = await env.DB.prepare(
+      `SELECT id, predicted_key_uncertainty, verdict_reasoning
+         FROM triage_run_public
+        WHERE id IN (SELECT value FROM json_each(?))`
+    ).bind(JSON.stringify(ids)).all();
+    const textById = new Map(textRows.results.map((r) => [r.id, r]));
+    for (const c of cells.values()) c.text = textById.get(c.rep.id) ?? null;
+  }
+  return cells;
+}
 
 async function handleBenchmarkMatrix(env) {
   // 1. Pick the canonical curated benchmark — the bench_version with
@@ -2958,106 +3138,55 @@ async function handleBenchmarkMatrix(env) {
     }
   }
 
-  // 4. Triage runs for the model/variant grid we care about. The
-  // partition-and-rank used to scan the whole ~19k-row genome-wide
-  // sweep (~228k cells across all model×variant combinations) and
-  // then JS-filter down to the 147 benchmark genes — that's a hot
-  // ROW_NUMBER() window over D1 that exceeded Cloudflare's Worker
-  // CPU budget (HTTP 503, cf-error 1102). Joining inside the SQL
-  // against the benchmark_version table (just 1 bound parameter for
-  // bench_version) shrinks the partition-and-rank working set to
-  // 147 genes × 3 models × 4 variants ≈ 1.7k rows — well inside the
-  // CPU budget. Runs tagged against any bench_version still count
-  // (we don't filter triage_run_public by bench_version, only by
-  // gene_symbol membership in the current bench) so the matrix
-  // keeps full Opus/Haiku coverage from earlier sweeps. It IS pinned
-  // to BENCH_RUN_ID: without that, the genome-wide Sonnet sweep's
-  // later, unscored row won every Sonnet 4.6/ncbi cell (correct = 0 on
-  // all 147 genes) and the rescue lanes' rows won some pubmed_ncbi cells.
-  const wantedVariants = BENCH_MATRIX_VARIANTS;
-  const variantPlaceholders = wantedVariants.map(() => "?").join(",");
-  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
-  const triageRows = await env.DB.prepare(
-    `WITH bench_genes AS (
-       SELECT DISTINCT gene_symbol
-         FROM benchmark_version
-        WHERE bench_version = ?
-     ),
-     ranked AS (
-       SELECT t.gene_symbol, t.model, t.prompt_variant, t.predicted_verdict,
-              t.predicted_reason, t.predicted_confidence, t.predicted_key_uncertainty,
-              t.verdict_reasoning,
-              t.correct, t.latency_s, t.n_web_searches, t.created_at, t.error,
-              t.cost_usd, t.prompt_tokens, t.completion_tokens,
-              t.cache_creation_tokens, t.cache_read_tokens,
-              -- A replicate with a verdict wins over a newer refused or
-              -- errored one, so a refusal never hides a valid call.
-              ROW_NUMBER() OVER (
-                PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY (t.predicted_verdict IS NULL), t.created_at DESC
-              ) AS rn
-         FROM triage_run_public t
-         INNER JOIN bench_genes b ON t.gene_symbol = b.gene_symbol
-        WHERE t.run_id = ?
-          AND t.prompt_variant IN (${variantPlaceholders})
-          AND t.model IN (${modelPlaceholders})
-     )
-     SELECT gene_symbol, model, prompt_variant, predicted_verdict,
-            predicted_reason, predicted_confidence, predicted_key_uncertainty,
-            verdict_reasoning,
-            correct, latency_s, n_web_searches, created_at, error,
-            cost_usd, prompt_tokens, completion_tokens,
-            cache_creation_tokens, cache_read_tokens
-       FROM ranked
-      WHERE rn = 1`
-  ).bind(benchVersion, BENCH_RUN_ID, ...wantedVariants, ...BENCH_MATRIX_MODELS).all();
+  // 4. The bench run's replicates, aggregated to one majority verdict per
+  // (gene, model, variant) cell — the same per-cell numbers the paper and
+  // mainbench_canonical_v2.tsv report (see benchCellMajority). The cell
+  // used to be the single latest replicate, which put the page a few
+  // genes off the paper on several models. Pinned to BENCH_RUN_ID: the
+  // genome-wide Sonnet sweep and the PubMed rescue lanes write the same
+  // (gene, claude-sonnet-4-6, ncbi | pubmed_ncbi) cells with no truth to
+  // score against.
+  const cells = await loadBenchCells(env, benchVersion, { withText: true });
 
-  // Build a nested map: gene → model → variant → run. The SQL JOIN
-  // above already restricts to benchmark genes, so no JS-side
-  // membership check is needed.
-  const runMap = new Map();
-  for (const r of triageRows.results) {
-    let byModel = runMap.get(r.gene_symbol);
-    if (!byModel) {
-      byModel = new Map();
-      runMap.set(r.gene_symbol, byModel);
-    }
-    let byVariant = byModel.get(r.model);
-    if (!byVariant) {
-      byVariant = new Map();
-      byModel.set(r.model, byVariant);
-    }
-    byVariant.set(r.prompt_variant, {
-      verdict: r.predicted_verdict,
-      reason: r.predicted_reason,
-      confidence: r.predicted_confidence,
-      key_uncertainty: r.predicted_key_uncertainty,
-      reasoning: r.verdict_reasoning,
-      correct: r.correct,
-      latency_s: r.latency_s,
-      n_web_searches: r.n_web_searches,
-      created_at: r.created_at,
-      error: r.error,
-      cost_usd: r.cost_usd,
-      prompt_tokens: r.prompt_tokens,
-      completion_tokens: r.completion_tokens,
-      cache_creation_tokens: r.cache_creation_tokens,
-      cache_read_tokens: r.cache_read_tokens,
-    });
-  }
-
-  // 5. Stitch. Flat verdicts dict: model → variant → run (or null when
-  // we have no data for that cell). Replaces the prior headline+alts
-  // split; the page renders all 4 variants per model as their own
-  // columns and shows each cell's verdict_reasoning on row-expand.
+  // 5. Stitch. Flat verdicts dict: model → variant → cell (or null when
+  // no replicate is on file). `correct` is the soft-credit match of the
+  // majority verdict against truth; a cell with no valid replicate keeps
+  // its refusal / error marker but has verdict and correct null, so it is
+  // never scored. `replicate` names the representative replicate whose
+  // reasoning and per-call telemetry the cell carries; `totals` sums the
+  // telemetry over all the cell's replicates.
   const rows = truthRows.results.map((t) => {
-    const byModel = runMap.get(t.gene_symbol);
     const verdicts = {};
     for (const model of BENCH_MATRIX_MODELS) {
-      const byVariant = byModel?.get(model);
       const perVariant = {};
       for (const variant of BENCH_MATRIX_VARIANTS) {
-        perVariant[variant] = byVariant?.get(variant) ?? null;
+        const c = cells.get(`${t.gene_symbol}\t${model}\t${variant}`);
+        if (!c) {
+          perVariant[variant] = null;
+          continue;
+        }
+        const { maj, rep, text } = c;
+        perVariant[variant] = {
+          verdict: maj ? maj.verdict : null,
+          reason: maj ? maj.reason : null,
+          confidence: maj ? maj.confidence : null,
+          key_uncertainty: maj ? (text?.predicted_key_uncertainty ?? null) : null,
+          reasoning: maj ? (text?.verdict_reasoning ?? null) : null,
+          correct: maj ? benchSoftMatch(maj.verdict, t.truth_verdict) : null,
+          latency_s: rep.latency_s,
+          n_web_searches: rep.n_web_searches,
+          created_at: rep.created_at,
+          error: rep.error,
+          cost_usd: rep.cost_usd,
+          prompt_tokens: rep.prompt_tokens,
+          completion_tokens: rep.completion_tokens,
+          cache_creation_tokens: rep.cache_creation_tokens,
+          cache_read_tokens: rep.cache_read_tokens,
+          replicate: rep.replicate,
+          n_reps: maj ? maj.n_reps : 0,
+          majority_agreement: maj ? maj.agreement : null,
+          totals: c.totals,
+        };
       }
       verdicts[model] = perVariant;
     }
@@ -3090,6 +3219,10 @@ async function handleBenchmarkMatrix(env) {
       models: BENCH_MATRIX_MODELS,
       variants: BENCH_MATRIX_VARIANTS,
       headline_variant: BENCH_MATRIX_HEADLINE_VARIANT,
+      // Each cell is the majority across the run's replicates (refused
+      // replicates excluded), as in the paper — not one replicate.
+      cell_aggregation: "majority_of_replicates",
+      run_id: BENCH_RUN_ID,
       n_genes: rows.length,
       rows,
     },
@@ -3165,8 +3298,8 @@ const V1_ENDPOINTS = [
   { group: "Contact sites", method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}/ligands/{ligandId}/evidence", summary: "Original observations, paginated with next_cursor; omit ligands/{ligandId}/ to retrieve every observation including unnamed partners" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark", summary: "147 ground-truth labels for the current bench_version" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/{symbol}", summary: "One gene's ground-truth label + rationale" },
-  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant]" },
-  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/export.tsv", summary: "Long-format TSV of the bench multi-model sweep" },
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant], each the 3-replicate majority" },
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/export.tsv", summary: "Long-format TSV of the bench multi-model sweep, one majority row per cell" },
   { group: "Genome-wide", method: "GET", path: "/v1/catalog", summary: "Per-gene 5-DB surface-vote matrix + latest triage verdict + deep-dive flag (~19k genes)" },
   { group: "Genome-wide", method: "GET", path: "/v1/catalog/{symbol}", summary: "One gene's 5-DB surface-vote row (slim; for the per-gene page's DB-presence strip)" },
   { group: "Genome-wide", method: "GET", path: "/v1/triage/{symbol}", summary: "Every triage run for one gene, with the agent's verdict_reasoning" },
@@ -3486,15 +3619,36 @@ async function handleTriageExport(env, url) {
 }
 
 
-// Long-format TSV: every benchmark gene × every model × every variant
-// (latest replicate per cell), with curated truth labels and per-
-// source DB votes joined in. Same data as `/v1/benchmark/matrix` but
-// reshaped from wide nested JSON to long flat TSV. Drives the
+// Long-format TSV: one row per benchmark gene × model × variant cell, with
+// curated truth labels and per-source DB votes joined in. Same cells as
+// `/v1/benchmark/matrix`, flattened: predicted_* is the cell's majority
+// over its replicates (benchCellMajority — the paper's per-cell numbers),
+// `replicate` and the per-call telemetry columns describe the cell's
+// representative replicate, and the trailing columns carry the majority's
+// n_reps / agreement, the soft-credit is_match against truth, and the
+// telemetry summed over all the cell's replicates (the `*_total` columns
+// equal mainbench_canonical_v2.tsv's token / cost / latency columns). A
+// cell whose replicates all refused keeps its row with an empty verdict,
+// n_reps 0 and an empty is_match. Drives the
 // triage-benchmark-with-reasoning Zenodo deposit file.
 //
 // Replaces an earlier truth-labels-only version of this endpoint —
 // truth labels alone are still available as the truth_* columns here,
 // or as the `/v1/benchmark[/{symbol}]` JSON endpoints.
+const BENCH_EXPORT_COLUMNS = [
+  "gene_symbol", "uniprot_acc",
+  "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
+  "truth_verdict", "truth_signal", "truth_reason",
+  "model", "prompt_variant", "replicate",
+  "predicted_verdict", "predicted_reason", "predicted_confidence",
+  "prompt_tokens", "completion_tokens",
+  "cache_creation_tokens", "cache_read_tokens",
+  "n_web_searches", "cost_usd", "latency_s",
+  // Additive (appended so existing column positions are unchanged).
+  "n_reps", "majority_agreement", "is_match",
+  ...BENCH_TOTAL_COLUMNS.map((c) => `${c}_total`),
+];
+
 async function handleBenchmarkExport(env) {
   // 1. Canonical curated bench_version (same rule as the matrix
   // handler — most labeled rows wins).
@@ -3510,39 +3664,16 @@ async function handleBenchmarkExport(env) {
   }
   const benchVersion = benchRow.bench_version;
 
-  // 2. Truth + DB + model output, joined inside SQL so a single round-
-  // trip returns everything. LEFT JOIN on candidate_universe_public
-  // so bench rows without a current-universe entry still appear (db
-  // columns come out 0).
+  // 2. Per-gene truth + DB votes in one round-trip. LEFT JOIN on
+  // candidate_universe_public so bench rows without a current-universe
+  // entry still appear (db columns come out 0).
   const releaseRow = await env.DB.prepare(
     `SELECT universe_version FROM candidate_universe_release
       ORDER BY loaded_at DESC LIMIT 1`
   ).first();
   const universeVersion = releaseRow?.universe_version ?? "";
-
-  const variantPlaceholders = BENCH_MATRIX_VARIANTS.map(() => "?").join(",");
-  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
-  const rs = await env.DB.prepare(
-    `WITH ranked AS (
-       SELECT t.gene_symbol, t.model, t.prompt_variant, t.replicate,
-              t.predicted_verdict, t.predicted_reason, t.predicted_confidence,
-              t.prompt_tokens, t.completion_tokens,
-              t.cache_creation_tokens, t.cache_read_tokens,
-              t.n_web_searches, t.cost_usd, t.latency_s,
-              -- A replicate with a verdict wins over a newer refused or
-              -- errored one, so a refusal never hides a valid call.
-              ROW_NUMBER() OVER (
-                PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY (t.predicted_verdict IS NULL), t.created_at DESC
-              ) AS rn
-         FROM triage_run_public t
-         INNER JOIN benchmark_version bv ON bv.gene_symbol = t.gene_symbol
-        WHERE bv.bench_version = ?
-          AND t.run_id = ?
-          AND t.prompt_variant IN (${variantPlaceholders})
-          AND t.model IN (${modelPlaceholders})
-     )
-     SELECT r.gene_symbol, bv.uniprot_acc,
+  const genes = await env.DB.prepare(
+    `SELECT bv.gene_symbol, bv.uniprot_acc,
             COALESCE(oc.uniprot_optimized, 0)   AS db_uniprot,
             COALESCE(c.go_surface_flag, 0)      AS db_go,
             COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,
@@ -3551,42 +3682,53 @@ async function handleBenchmarkExport(env) {
             COALESCE(oc.uniprot_optimized, 0) + COALESCE(c.go_surface_flag, 0)
               + COALESCE(c.surfy_surface_flag, 0) + COALESCE(oc.cspa_optimized, 0)
               + COALESCE(c.hpa_surface_flag, 0)  AS n_db_surface,
-            bv.truth_verdict, bv.truth_signal, bv.truth_reason,
-            r.model, r.prompt_variant, r.replicate,
-            r.predicted_verdict, r.predicted_reason, r.predicted_confidence,
-            r.prompt_tokens, r.completion_tokens,
-            r.cache_creation_tokens, r.cache_read_tokens,
-            r.n_web_searches, r.cost_usd, r.latency_s
-       FROM ranked r
-       INNER JOIN benchmark_version bv
-               ON bv.gene_symbol = r.gene_symbol AND bv.bench_version = ?
-       LEFT  JOIN candidate_universe_public c
-               ON c.gene_symbol = r.gene_symbol AND c.universe_version = ?
-       LEFT  JOIN db_optimized_cutoff_public oc
-               ON oc.accession = bv.uniprot_acc
-      WHERE r.rn = 1
-      ORDER BY r.gene_symbol, r.model, r.prompt_variant`
-  ).bind(
-    benchVersion, BENCH_RUN_ID,
-    ...BENCH_MATRIX_VARIANTS, ...BENCH_MATRIX_MODELS,
-    benchVersion, universeVersion,
-  ).all();
+            bv.truth_verdict, bv.truth_signal, bv.truth_reason
+       FROM benchmark_version bv
+       LEFT JOIN candidate_universe_public c
+              ON c.gene_symbol = bv.gene_symbol AND c.universe_version = ?
+       LEFT JOIN db_optimized_cutoff_public oc
+              ON oc.accession = bv.uniprot_acc
+      WHERE bv.bench_version = ?
+      ORDER BY bv.gene_symbol`
+  ).bind(universeVersion, benchVersion).all();
 
-  const cols = [
-    "gene_symbol", "uniprot_acc",
-    "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
-    "truth_verdict", "truth_signal", "truth_reason",
-    "model", "prompt_variant", "replicate",
-    "predicted_verdict", "predicted_reason", "predicted_confidence",
-    "prompt_tokens", "completion_tokens",
-    "cache_creation_tokens", "cache_read_tokens",
-    "n_web_searches", "cost_usd", "latency_s",
-  ];
-  const headers = cols.join("\t");
-  const body = rs.results
-    .map((r) => cols.map((c) => tsvCell(r[c])).join("\t"))
-    .join("\n");
-  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+  // 3. The majority-aggregated cells, emitted gene → model → variant.
+  const cells = await loadBenchCells(env, benchVersion);
+  const models = [...BENCH_MATRIX_MODELS].sort();
+  const variants = [...BENCH_MATRIX_VARIANTS].sort();
+  const lines = [];
+  for (const g of genes.results) {
+    for (const model of models) {
+      for (const variant of variants) {
+        const c = cells.get(`${g.gene_symbol}\t${model}\t${variant}`);
+        if (!c) continue;
+        const { maj, rep, totals } = c;
+        const row = {
+          ...g,
+          model,
+          prompt_variant: variant,
+          replicate: rep.replicate,
+          predicted_verdict: maj?.verdict ?? null,
+          predicted_reason: maj?.reason ?? null,
+          predicted_confidence: maj?.confidence ?? null,
+          prompt_tokens: rep.prompt_tokens,
+          completion_tokens: rep.completion_tokens,
+          cache_creation_tokens: rep.cache_creation_tokens,
+          cache_read_tokens: rep.cache_read_tokens,
+          n_web_searches: rep.n_web_searches,
+          cost_usd: rep.cost_usd,
+          latency_s: rep.latency_s,
+          n_reps: maj ? maj.n_reps : 0,
+          majority_agreement: maj ? maj.agreement : null,
+          is_match: maj ? benchSoftMatch(maj.verdict, g.truth_verdict) : null,
+        };
+        for (const col of BENCH_TOTAL_COLUMNS) row[`${col}_total`] = totals[col];
+        lines.push(BENCH_EXPORT_COLUMNS.map((col) => tsvCell(row[col])).join("\t"));
+      }
+    }
+  }
+  const headers = BENCH_EXPORT_COLUMNS.join("\t");
+  return tsv(`${headers}\n${lines.join("\n")}\n`, { ttl: CACHE_TTL_LONG });
 }
 
 
@@ -3644,10 +3786,10 @@ async function handleInternalization(env, symbol) {
 // Per-(gene, model, variant) replicate detail — backs the benchmark
 // RationaleDrawer's "majority reason first, then all reps on scroll" view.
 // Returns every replicate for the cell (so the drawer can show the
-// per-rep spread), plus a computed `majority` block (the binary
-// surface-vote majority + the winning-side representative replicate's
-// verdict/reason/reasoning). Lazy-loaded by the drawer on open, so the
-// /benchmark/matrix payload stays single-rep + small.
+// per-rep spread), plus a computed `majority` block — the same majority
+// the /benchmark/matrix cell carries (benchCellMajority), with the
+// representative replicate's reasoning. Lazy-loaded by the drawer on open,
+// so the matrix payload carries one reasoning string per cell.
 async function handleTriageCell(env, symbol, model, variant) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -3682,38 +3824,22 @@ async function handleTriageCell(env, symbol, model, variant) {
       ORDER BY replicate`
   ).bind(BENCH_RUN_ID, sym, model, variant).all();
   const reps = rows.results;
-  // Binary surface-vote majority over valid-verdict reps (yes/contextual =
-  // surface; no = not-surface). Representative = the most common raw
-  // verdict on the winning side, with its reason + free-text reasoning.
-  const surfaceVote = (v) =>
-    (v === "yes" || v === "contextual") ? true : (v === "no" ? false : null);
-  const valid = reps.filter((r) => surfaceVote(r.predicted_verdict) !== null);
-  let majority = null;
-  if (valid.length) {
-    const tally = new Map();
-    for (const r of valid) {
-      const s = surfaceVote(r.predicted_verdict);
-      tally.set(s, (tally.get(s) || 0) + 1);
-    }
-    const ranked = [...tally.entries()].sort((a, b) => b[1] - a[1]);
-    const winSide = ranked[0][0];
-    const winReps = valid.filter((r) => surfaceVote(r.predicted_verdict) === winSide);
-    // Representative raw verdict = most common on the winning side.
-    const vTally = new Map();
-    for (const r of winReps) {
-      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
-    }
-    const repVerdict = [...vTally.entries()].sort((a, b) => b[1] - a[1])[0][0];
-    const rep = winReps.find((r) => r.predicted_verdict === repVerdict);
-    majority = {
-      verdict: repVerdict,
-      reason: rep?.predicted_reason ?? null,
-      reasoning: rep?.verdict_reasoning ?? null,
-      confidence: rep?.predicted_confidence ?? null,
-      n_reps: valid.length,
-      agreement: Math.round((winReps.length / valid.length) * 1000) / 1000,
-    };
-  }
+  // The same majority the matrix serves for this cell (benchCellMajority):
+  // binary surface vote over valid-verdict reps, then the modal verdict,
+  // reason and confidence on the winning side, with the representative
+  // replicate's free-text reasoning.
+  const maj = benchCellMajority(reps);
+  const majority = maj
+    ? {
+        verdict: maj.verdict,
+        reason: maj.reason,
+        reasoning: maj.rep.verdict_reasoning ?? null,
+        confidence: maj.confidence,
+        replicate: maj.rep.replicate,
+        n_reps: maj.n_reps,
+        agreement: maj.agreement,
+      }
+    : null;
   return json({
     gene_symbol: sym,
     model,

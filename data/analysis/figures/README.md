@@ -48,7 +48,8 @@ committed TSVs — they don't have API endpoints yet.
   `data/processed/triage_bench/mainbench_canonical_v1.tsv`.
 - `https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv`
   — 147-gene bench-restricted multi-model sweep with truth labels
-  + DB votes joined in (24 cols, one row per gene × model × variant).
+  + DB votes joined in (34 cols, one row per gene × model × variant,
+  verdict = the cell's 3-replicate majority).
   For truth labels only (the historical 7-column shape), use
   `/v1/benchmark` JSON instead.
 - [`data/processed/triage_bench/db_cutoff_tradeoff_points.tsv`](../../processed/triage_bench/db_cutoff_tradeoff_points.tsv)
