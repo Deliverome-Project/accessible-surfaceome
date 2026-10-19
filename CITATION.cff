@@ -47,3 +47,24 @@ license: MIT
 version: 1.3.0
 date-released: '2026-10-17'
 doi: 10.5281/zenodo.22116981
+preferred-citation:
+  type: article
+  title: The accessible human surfaceome
+  authors:
+    - given-names: Rebecca J.
+      family-names: Carlson
+      affiliation: Deliverome Bio, Inc.
+      orcid: 'https://orcid.org/0000-0002-5423-9717'
+    - given-names: L. Robert
+      family-names: Hollingsworth
+      affiliation: Deliverome Bio, Inc.
+      orcid: 'https://orcid.org/0000-0002-4130-3580'
+    - given-names: Michael J.
+      family-names: Smallegan
+      affiliation: Coral Biosciences, LLC
+      orcid: 'https://orcid.org/0000-0002-5919-6736'
+  journal: bioRxiv
+  year: 2026
+  month: 10
+  doi: 10.64898/2026.10.18.759859
+  url: 'https://doi.org/10.64898/2026.10.18.759859'

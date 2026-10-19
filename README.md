@@ -1,6 +1,6 @@
 # The accessible human surfaceome
 
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.22116981-blue)](https://doi.org/10.5281/zenodo.22116981) [![Latest release](https://img.shields.io/github/v/release/Deliverome-Project/accessible-surfaceome)](https://github.com/Deliverome-Project/accessible-surfaceome/releases) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-10.64898%2F2026.10.18.759859-b31b1b)](https://doi.org/10.64898/2026.10.18.759859) [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.22116981-blue)](https://doi.org/10.5281/zenodo.22116981) [![Latest release](https://img.shields.io/github/v/release/Deliverome-Project/accessible-surfaceome)](https://github.com/Deliverome-Project/accessible-surfaceome/releases) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Proteins on the extracellular face of the plasma membrane are important therapeutic targets, because they can direct large-molecule therapeutics to specific cell types and ferry them into the cell. But existing databases disagree substantially on which proteins make up the human plasma membrane proteome, and none focus specifically on the proteins that are *accessible* from outside an intact cell.
 
@@ -10,7 +10,13 @@ This repository is an agentic LLM pipeline that curates the accessible human sur
 
 ## How to cite
 
-The preprint is pending. Until it appears, please cite the archived code and data records:
+Please cite the preprint:
+
+> Carlson, R.J., Hollingsworth, L.R., Smallegan, M.J. (2026). The accessible human surfaceome. *bioRxiv*. [doi:10.64898/2026.10.18.759859](https://doi.org/10.64898/2026.10.18.759859)
+
+An author-deposited copy (the PDF, plus JATS XML and figures) is on [Zenodo](https://zenodo.org/records/23476946) under the same DOI.
+
+To pin the exact code or data you used, also cite the archived records:
 
 | What | Cite | Licence |
 |---|---|---|
