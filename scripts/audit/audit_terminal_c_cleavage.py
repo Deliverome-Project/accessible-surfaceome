@@ -110,7 +110,11 @@ def main() -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLS, delimiter="\t")
+        # lineterminator="\n": csv defaults to "\r\n" per the CSV spec, which
+        # puts a trailing \r on the last field of every row. awk and cut then
+        # see a header field named "netgpi_likelihood\r" and fail on a name that
+        # looks correct, and git rewrites the file the first time it touches it.
+        w = csv.DictWriter(fh, fieldnames=COLS, delimiter="\t", lineterminator="\n")
         w.writeheader()
         w.writerows(out)  # type: ignore[arg-type]
 
