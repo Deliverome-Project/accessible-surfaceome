@@ -128,6 +128,23 @@ separation 1, and relayed that to two sessions. Fixed in `244732793`.
    never confirm one from below) and `tag_length_aa` is NULL throughout, so
    nothing in it licenses a floor for the 51-aa cassette.
 
+   **Settling the floor does NOT settle the 51-aa question, and they will look
+   like one decision.** The corpus has `tag_length_aa` NULL on all 185 rows, so
+   it bounds the floor from above *for an unrecorded cargo size*. The floor runs
+   only on the internal lanes, which cohort-wide is the 24,018 internal
+   deterministic sites — and the only constructs with a known cargo in that
+   population are the six internal loop arms of the S4E9 batch (SLC2A4 67/319,
+   MS4A1 146/161, CCR5 263, AVPR2 302), every one carrying the full 51-aa
+   cassette, roughly five times a typical epitope tag. Their `LOOP_TAG_AA` was
+   collapsed onto `CASSETTE_AA` on 2026-10-18, so the 19-aa internal convention
+   no longer exists there.
+
+   So: a cohort-wide floor change lands on exactly the cargo size the evidence
+   cannot speak to. Move the floor on the false-negative rate if you like — 11
+   of 49 is measured whatever the cargo — but do not let that read as having
+   cleared 51 aa in a tight loop. That is a separate question and it is
+   downstream.
+
    **One open question from that report is now answered.** It asks whether the
    veto also runs on terminal candidates, since a free chain end is not a
    threaded loop. It does not: `FEATURE_DIST_MIN` appears only in
