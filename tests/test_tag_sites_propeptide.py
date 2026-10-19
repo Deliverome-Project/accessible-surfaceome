@@ -1,18 +1,25 @@
 """A cleaved C-terminus cannot carry a tag, and the terminal lane did not know.
 
 A GPI-anchored protein's C-terminal propeptide is cleaved at the omega site and
-replaced by the glycolipid anchor, so a tag placed after it leaves with the
-propeptide and never reaches the surface. The lane builds terminal proposals
-from the DeepTMHMM string alone: it ends extracellular, so the rule proposes a
-C-terminal tag, and nothing in it asks whether that terminus survives
-maturation.
+replaced by the glycolipid anchor, so the precursor C-terminus is not a position
+on the mature protein. The lane builds terminal proposals from the DeepTMHMM
+string alone: it ends extracellular, so the rule proposes a C-terminal tag, and
+nothing in it asks whether that terminus survives maturation.
 
-Measured against UniProt for 19 well-known GPI proteins: **20 of 21
-``terminal_c`` rows in ``tag_site_public`` sit inside an annotated Propeptide**,
-and in every deterministic case ``insert_after_residue`` equals the full
-precursor length exactly, with the GPI omega site one residue before the
-propeptide start. ALPL 524 (propeptide 502-524), CD55 381 (354-381), PRNP 253
-(231-253), THY1 161 (131-161), FOLR1 257 (235-257).
+The mechanism is NOT that the tag is carried off with the propeptide -- the GPI
+signal has to BE the C-terminus to be recognised by the transamidase, so a tag
+appended past it prevents anchoring instead and the protein ends up unanchored
+rather than anchored-and-untagged. Same outcome, different reason; see
+``terminal._c_terminus_cleaved``.
+
+Measured cohort-wide against UniProt: **116 of the 981 deterministic
+``terminal_c`` rows in ``tag_site_public`` sit inside a span maturation
+removes**, and ``insert_after_residue`` equals the full precursor length in every
+one, with the GPI omega site one residue before the propeptide start. ALPL 524
+(propeptide 502-524), CD55 381 (354-381), PRNP 253 (231-253), THY1 161
+(131-161), FOLR1 257 (235-257). An earlier version of this file said "20 of 21
+across 19 well-known GPI proteins" -- that was a hand-picked probe set, not the
+cohort, and it understated the population by an order of magnitude.
 
 **This is a categorical refusal, not a ranking penalty**, and the distinction is
 the one this repo spent a day learning. Thresholds on continuous signals should
