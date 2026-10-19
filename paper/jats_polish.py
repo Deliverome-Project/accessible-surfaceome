@@ -32,6 +32,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -768,11 +769,52 @@ def _tidy(root: Any) -> None:
                 meta.remove(perm)
 
 
-def polish_jats(xml_path: Path, graphic_for: GraphicFor | None = None) -> PolishReport:
+# Elements article-meta places after <pub-date> (JATS 1.2 content model).
+# A pub-date is inserted before the first of these that is present.
+_AFTER_PUB_DATE = (
+    "volume", "issue", "fpage", "elocation-id", "history", "permissions",
+    "self-uri", "related-article", "abstract", "trans-abstract", "kwd-group",
+    "funding-group", "conference", "counts", "custom-meta-group",
+)
+
+
+def set_article_identity(root: Any, doi: str | None = None,
+                         pub_date: date | None = None) -> None:
+    """Record the article's own DOI and posting date in ``article-meta``.
+
+    The .docx has neither: a preprint server assigns the DOI after the
+    manuscript is submitted. Without them a reader of the XML alone cannot
+    tell which article it is, so a deposit made after posting passes both
+    in. Re-running replaces earlier values rather than duplicating them.
+    """
+    meta = root.find("front/article-meta")
+    if meta is None:
+        return
+    if doi:
+        for old in meta.findall("article-id[@pub-id-type='doi']"):
+            meta.remove(old)
+        meta.insert(0, _el("article-id", doi, **{"pub-id-type": "doi"}))
+    if pub_date is not None:
+        for old in meta.findall("pub-date"):
+            meta.remove(old)
+        pd = etree.Element("pub-date", {"publication-format": "electronic", "date-type": "pub"})
+        etree.SubElement(pd, "day").text = f"{pub_date.day:02d}"
+        etree.SubElement(pd, "month").text = f"{pub_date.month:02d}"
+        etree.SubElement(pd, "year").text = str(pub_date.year)
+        anchor = next((c for c in meta if c.tag in _AFTER_PUB_DATE), None)
+        if anchor is None:
+            meta.append(pd)
+        else:
+            anchor.addprevious(pd)
+
+
+def polish_jats(xml_path: Path, graphic_for: GraphicFor | None = None, *,
+                doi: str | None = None, pub_date: date | None = None) -> PolishReport:
     """Polish the JATS file at ``xml_path`` in place and return the report."""
     parser = etree.XMLParser(remove_blank_text=False, resolve_entities=False, no_network=True)
     tree = etree.parse(str(xml_path), parser)
     report = polish(tree.getroot(), graphic_for)
+    set_article_identity(tree.getroot(), doi, pub_date)
     tree.write(str(xml_path), xml_declaration=True, encoding="utf-8",
                doctype=tree.docinfo.doctype or None)
     return report

@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+from datetime import date
 from pathlib import Path
 
 from figure_swap import load_manifest, resolve_asset  # ty: ignore[unresolved-import]
@@ -40,6 +41,8 @@ def build_jats(
     figures_out: Path | None = None,
     href_prefix: str = "figures/",
     extra_args: tuple[str, ...] | list[str] = (),
+    doi: str | None = None,
+    pub_date: date | None = None,
 ) -> tuple[PolishReport, list[Path]]:
     """Convert ``src`` to structured JATS at ``xml_path``.
 
@@ -49,6 +52,9 @@ def build_jats(
     where the figures sit beside the XML. With ``figures_out=None``
     nothing is copied and the XML keeps the images the ``.docx``
     embedded.
+
+    ``doi`` and ``pub_date`` record the article's own DOI and posting
+    date in the front matter; the .docx carries neither.
 
     Returns the polish report and the figure files written.
     """
@@ -87,5 +93,5 @@ def build_jats(
             written.append(dest)
         return f"{href_prefix}{asset.name}"
 
-    report = polish_jats(xml_path, graphic_for)
+    report = polish_jats(xml_path, graphic_for, doi=doi, pub_date=pub_date)
     return report, written

@@ -39,6 +39,14 @@ xmllint --noout --dtdvalid JATS-archivearticle1-mathml3.dtd build/jats/<stem>.xm
 (the DTD is in the JATS 1.2 Archiving package from
 <https://ftp.ncbi.nih.gov/pub/jats/archiving/1.2/>).
 
+The `.docx` carries no DOI or posting date, since the preprint server
+assigns them after submission. For any build that will be deposited after
+posting, pass both so the JATS front matter names the article:
+
+```bash
+bash paper/build.sh manuscript.docx --doi 10.64898/2026.10.18.759859 --pub-date 2026-10-19
+```
+
 Every build checks citations against the reference list in both
 directions and reports the result on stderr: an in-text citation with
 no reference entry, and a reference entry nothing cites. Pass
