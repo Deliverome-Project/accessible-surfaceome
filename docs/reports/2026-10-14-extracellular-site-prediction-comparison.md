@@ -1,0 +1,437 @@
+# Comparing extracellular site predictors: SURFACE-Bind, Bindome, MaSIF rerun
+
+Status: **sweeps complete (2026-10-18).** This section and the next were
+written mid-sweep and their numbers are from partial runs; they are kept for
+the record of what was believed when. **The authoritative figures are in
+"Final results, 2026-10-18" at the end**, regenerated from the finished
+sweeps. Where the two disagree, the later section wins.
+
+## Why
+
+SURFACE-Bind (Balbi 2026 PNAS, [PMID 41604262]) is the only site-level resource
+the catalogue carries, and it covers **1,612 of 5,316** cohort accessions (30%).
+This compares it against a second designability resource (Bindome) and against
+our own rerun of the method SURFACE-Bind itself used (MaSIF-site), to decide
+whether the remaining 70% can be filled in credibly.
+
+## SURFACE-Bind baseline
+
+Of 2,708 proteins listed, only **1,649 carry scored sites** (4,557 sites). Anchor
+residues were classified through the served DeepTMHMM topology:
+
+| Anchor location | Sites | Share |
+|---|---|---|
+| extracellular | 3,492 | 77% |
+| intracellular | 697 | 15% |
+| signal peptide | 166 | 4% |
+| membrane | 119 | 3% |
+| no topology | 83 | 2% |
+
+**1,349 proteins have at least one extracellular site.** Their methods say sites
+in TM domains were removed, but 23% of published anchors are not extracellular —
+the filter caught TM helices and not cytoplasmic regions. Applying the cohort's
+DeepTMHMM strings is a correction to the published set, not just a reimplementation.
+
+## Bindome (BindCraft, 305,806 designs / 8,289 targets)
+
+Bindome publishes no target-side site list: `InterfaceResidues` in its metrics is
+chain B (the binder's own residues) and `Target_Hotspot` is empty for every one of
+the 305,815 rows — all designs used the `no_hotspot` protocol, so sites emerged
+from design rather than being specified. Target sites therefore have to be computed
+from the complex CIFs (chain A/B contacts at 5 A).
+
+Overlap with the 1,349 SURFACE-Bind extracellular-site proteins is **481 (36%)**,
+and strongly topology-dependent: 58% of 0-TM proteins, 40% of single-pass, ~0-15%
+of multi-pass. ECD length does *not* predict exclusion above ~100 residues.
+
+**Coverage, not disagreement, dominates**: Bindome cannot speak to 82% of
+SURFACE-Bind's extracellular sites (62% on proteins it never designed against,
+20% outside every designed domain window).
+
+Concordance on the comparable set (sweep in progress, ~1/3 complete —
+superseded, see "Bindome concordance, final" below):
+**median 0.0 A, 67% of anchors within 5 A, 82% within 10 A** of a Bindome
+interface residue. A matched null (exposed non-interface residues in the same
+domain) gives median 14.9 A and 11% within 5 A — Mann-Whitney p = 1.6e-14,
+AUC 0.812, ~4.6x enrichment. In the reverse direction 39% of Bindome sites are
+>10 A from any SURFACE-Bind anchor, so the union is ~1.6x either alone.
+
+## MaSIF rerun
+
+SURFACE-Bind's published pipeline (from their methods): MaSIF-site per-point
+threshold **0.7** -> **DBSCAN** -> discard clusters **<200 points** -> drop TM
+sites, over **AlphaFold2 models** filtered at pLDDT > 0.6. They do not specify the
+DBSCAN `eps`, the anchor-residue definition, or how site area is computed.
+
+Reproducing that on 4 matched proteins, then applying the DeepTMHMM filter to our
+own sites:
+
+| Gene | our sites (raw -> extracellular) | theirs (all -> EC) | matched |
+|---|---|---|---|
+| LY6G6C | 2 -> 1 | 2 -> 1 | 1/1 |
+| CD8A | 2 -> 2 | 2 -> 1 | 1/1 |
+| IL7R | 6 -> 1 | 1 -> 1 | 1/1 |
+| SPINT2 | 2 -> 0 | 3 -> 2 | 0/2 |
+
+The topology filter is what makes this interpretable: IL7R looked like 6 sites
+against their 1 before filtering and is 1-vs-1 after. Matched site areas are
+4182/3950/3154 A^2; unmatched are 2073/1279 A^2 — we reproduce large sites and
+miss small ones. An `eps` sweep (1.5-8.0 A) leaves the result unchanged, so
+clustering parameters are not the cause. pLDDT does not explain SPINT2 either:
+its anchors sit at 97.7 and 97.6. The open candidates are the MaSIF model variant
+and weights, neither of which their methods name.
+
+## Reproducing SURFACE-Bind: how close, and why not closer
+
+Their published cutoffs are **in their repo**, not the paper — `data.py` and
+`analyze_dataset.py`:
+
+```python
+model = DBSCAN(eps=2.5, min_samples=2)          # data.py:161
+if len(cluster[0]) > NUM_POINTS_THRESHOLD:      # strictly >, 200 per the paper
+sparse_label[sparse_label >= self.bs_threshold] = 1   # 0.7
+```
+
+They also define what the paper omits: the **anchor** is the residue nearest the
+centroid of the cluster's *residue* coordinates; **area** is per-residue SASA summed
+over the cluster (PyRosetta `calc_per_res_hydrophobic_sasa`, 1.4 A probe);
+**hydrophobicity** is Kyte-Doolittle over residues with SASA > 20; and surface points
+map to the nearest *residue centroid*, not the nearest atom.
+
+Swapping our guessed parameters (eps 3.0, min_samples 5, `>=200`) for theirs changed
+**nothing** -- 3/5 recovery either way on the pilot, and every intermediate combination.
+
+Recovery against their published extracellular anchors, 434 validation proteins /
+957 anchors:
+
+| | |
+|---|---|
+| their anchor inside one of our extracellular sites | **429/957 = 44.8%** |
+| null (random extracellular residue in our sites) | 15.0% |
+| **enrichment** | **2.98x** (z = 25.8, p < 1e-10) |
+| proteins recovering >=1 anchor | 296/434 (68%) |
+
+Our sites cover a median **12.9%** of each protein's ECD, so this is a selective
+prediction rather than a blanket.
+
+**The residual gap is not closable.** Their inputs were AlphaFold DB v4; AFDB now
+serves only v6 (v2-v5 all 404), and AlphaFold has been re-run since. Combined with
+the MaSIF model variant they never name, that accounts for the miss, and no parameter
+matching recovers it. Notably Bindome -- a different method entirely -- agrees with
+SURFACE-Bind about as well as our rerun of SURFACE-Bind's own method does, which
+points at the input structures rather than the algorithm. (Not strictly comparable:
+Bindome's figure is a 5 A distance, ours strict residue containment.)
+
+**Implication.** Nobody can reproduce SURFACE-Bind now, including its authors. This
+output should be labelled as its own dataset -- same method and published cutoffs,
+current structures, independent calls -- and not as an extension of their table.
+
+## Known defect: isoform topology
+
+`build_l1_masif_inputs.py` originally queried topology with
+`cohort='human_canonical' AND is_canonical IN ('1',1)`, which excludes the
+`human_isoforms` cohort (8,835 rows). For any library member whose construct is a
+non-canonical isoform, that pulls topology for the wrong sequence -- the same defect
+`check_proteoform_match.py` exists to catch, one layer down. 184 L1 members are
+affected (~8%). 107 of 185 ColabFold-folded ORFs match an existing `human_isoforms`
+row by exact sequence, so most need no new DeepTMHMM; the remaining 78 do.
+
+## Cost
+
+Measured on AlphaFold models (surface prep dominates; prediction is 12-22 s
+regardless of size): 78 s at 125 aa, 197 s at 235, 208 s at 252, 548 s at 459,
+620 s at 1210.
+
+| Scope | Proteins | Compute | Cost | Wall clock @100 |
+|---|---|---|---|---|
+| L1 minus existing SURFACE-Bind sites | 1,202 | 137 core-h | **~$22** | 1.4 h |
+| All L1 canonical (adds a validation set) | 2,420 | ~275 core-h | ~$44 | 2.8 h |
+| Full deep-dive cohort | 5,316 | 635 core-h | ~$100 | 6.3 h |
+
+## Reproducing
+
+```bash
+# Bindome x SURFACE-Bind concordance (detached, resumable)
+uv run modal run --detach modal/bindome_concordance_app.py
+
+# MaSIF-site over the L1 library (detached, resumable, 100 concurrent)
+uv run python scripts/audit/build_l1_masif_inputs.py l1_canonical.json l1_inputs.json
+uv run modal volume put masif-l1 l1_inputs.json /l1_inputs.json
+uv run modal run --detach modal/masif_site_app.py::driver
+
+# site-level comparison + the eps sensitivity check
+uv run --with scikit-learn python scripts/audit/masif_vs_surface_bind_sites.py sb.json masif_out/
+uv run --with scikit-learn python scripts/audit/masif_dbscan_eps_sweep.py sb.json masif_out/
+```
+
+### Note on the MaSIF image
+
+`modal/masif/Dockerfile` exists because the published `pablogainza/masif` image
+cannot run under Modal as shipped. The lineage is pinned to Python 3.6 by PyMesh
+(latest release v0.3, 2020) on Debian 9 / glibc 2.24, while Modal's runtime needs
+>=3.10. The Dockerfile keeps MaSIF's own interpreter at `/masifbin` and installs a
+conda Python 3.11 as the default. It also rebuilds `reduce`, which ships as a
+**32-bit i386 binary** on an x86_64 base and otherwise fails every protonation
+call with "Exec format error" — the surface `.ply` is then never written and the
+failure only surfaces downstream in PyMesh.
+
+[PMID 41604262]: https://pubmed.ncbi.nlm.nih.gov/41604262/
+
+## Where the results live
+
+Both sweeps write to Modal volumes (`masif-l1`, `bindome-concordance`), which sit
+outside this project's provenance chain. The durable copies are committed TSVs:
+
+| File | Rows | Size |
+|---|---|---|
+| `data/processed/extracellular_site_comparison/masif_site_predictions.tsv` | one per MaSIF site | ~0.4 MB |
+| `data/processed/extracellular_site_comparison/bindome_surface_bind_concordance.tsv` | one per SURFACE-Bind anchor | ~0.15 MB |
+
+Both carry `hgnc_id` / `hgnc_symbol` / `uniprot_acc` / `ensembl_gene` / `ncbi_gene_id`
+per the figure-input conventions, and are LFS-exempt so `raw.githubusercontent.com`
+serves them as text. Stable IDs resolve for ~97% of accessions; the remainder are
+TrEMBL entries absent from `gene_identifier_public`.
+
+Regenerate with:
+
+```bash
+uv run python scripts/tsv-export/export_site_comparison_tsvs.py \
+  --masif-dir <masif-l1 sites/> --bindome <fullrun.jsonl> \
+  --out data/processed/extracellular_site_comparison
+```
+
+**Not published to D1 or R2, on purpose.** The sweep is incomplete, ~184 library
+members carry topology from the wrong isoform, and the MaSIF model variant is
+unsettled -- so the served tables would be carrying known-wrong rows. When the data
+is final the natural shape mirrors SURFACE-Bind's: `masif_site_protein` /
+`masif_site_site` in both `d1_schema.sql` and `d1_public_schema.sql`, a sync script
+beside `sync_surface_bind_to_d1.py`, a Worker serve-time join, and a
+`sweep_record_history.py --execute` afterwards. The Bindome concordance is an
+analysis result rather than a per-gene feature and belongs in `data/processed/`,
+not D1.
+
+
+## Library inputs: three defects, and the DeepTMHMM version trap
+
+The L1 sweep was built from an accession-keyed lookup, which is wrong in three
+ways that `library_structure_payload.tsv` and `l1_topology_have.tsv` (both from
+s4e9-orf-design-fg-panel) resolve:
+
+| defect | members |
+|---|---|
+| canonical-only topology, so isoform constructs got the wrong sequence | 95 |
+| AlphaFold-DB-only structures, so 232 got a different proteoform | 232 |
+| filtered to human canonical, so orthologs were never in scope | 196 |
+
+`library_structure_payload.tsv` carries one `is_chosen=1` row per member (2,674
+total: 2,404 AlphaFold DB by `model_url`, 270 ColabFold by `r2_key` under
+`library-colabfold/`), each proteoform-matched to the construct with a zero
+residue offset.
+
+**Scope of the fix is 523 members, not a rebuild.** 1,642 existing results are
+correct (AlphaFold DB + identical proteoform + canonical v1 topology + human) and
+509 more were in flight on correct inputs; only 327 are genuine redos, plus 196
+orthologs that are new work.
+
+### Use DeepTMHMM v1 for topology, and match by sequence hash
+
+`l1_topology_have.tsv` names `topo_2026_09_27_dtm2` / `topo_2026_09_28_dtm2_ortho`
+for 2,539 of its 2,543 rows. Those are **DeepTMHMM 2**
+(`deeptmhmm2_predictor-0.1.0+ckpt.710911459661`). Every other topology row this
+project serves is `deeptmhmm-1.0.24`, so following that file as written mixes two
+predictors inside one dataset with nothing downstream flagging it.
+
+Matching construct sequences by SHA-256 against **v1-only** releases instead:
+
+| | |
+|---|---|
+| matched to a v1 row | **2,642 / 2,674 (98.8%)** |
+| human_canonical / human_isoforms | 2,152 / 190 |
+| `library_designed_orf` (v1 run on the designed ORFs) | 143 |
+| mouse / cyno ortholog | 157 |
+| unmatched (21 cyno, 10 mouse, 1 human) | 32 |
+
+The designed-ORF run exists under both models -- `topo_2026_10_14_l1_designed`
+(v1) and `topo_2026_10_14_dtm2_l1_designed` (v2) -- so selecting v1 is a matter of
+picking the right release, not of new compute. Hash matching is also stricter than
+keying on accession plus cohort, because it verifies the sequence rather than
+trusting the label. `scripts/audit/check_l1_topology_v1_coverage.py` runs the check.
+
+
+## Rebuild, 2026-10-15
+
+Three findings invalidated the first pass. All three came from being
+challenged on a result rather than from the code failing.
+
+### The novelty figure was not trustworthy
+
+The first measurement said 65% of our MaSIF extracellular sites were covered
+by neither SURFACE-Bind nor Bindome. Two confounds, either of which is enough
+to void it:
+
+* **The Bindome slice was 481 of 8,289 targets (6%).** It had been scoped to
+  the proteins overlapping SURFACE-Bind for the *concordance* question, then
+  reused for a *novelty* question. "Not in Bindome" mostly meant "Bindome was
+  never asked".
+* **The MaSIF sites came from clustering parameters that were not theirs.**
+  The sweep ran `DBSCAN(eps=3.0, min_samples=5)` with clusters kept at `>=200`
+  while SURFACE-Bind publishes `eps=2.5, min_samples=2` and `>200`. A commit
+  titled "use SURFACE-Bind's published cutoffs" had updated the comparison
+  scripts and this report but not the sweep. The 4-protein test cited as
+  evidence measured anchor *recovery*, not site *count*, so it never spoke to
+  the question.
+
+### Inputs were derived from an accession, which cannot name a proteoform
+
+The same mistake in three guises: canonical-only topology (so isoform
+constructs were filtered against the wrong sequence), AlphaFold-DB-only
+structures (so 270 members were scored as a different protein), and a
+human-canonical filter (so ~196 mouse and cyno members were silently dropped).
+
+The library already answers all three, keyed on `candidate_id`:
+`library_structure_payload.tsv` gives the structure that is actually being
+ordered, and `library_topology_index.tsv` gives the matching topology row,
+every one `deeptmhmm_v1`. `build_l1_masif_inputs_v2.py` reads both and refuses
+to run if any topology row is dtm2. Its own first build dropped 362 of 2,699
+members by matching `uniprot_acc` when the index names isoform-suffixed
+accessions and candidate ids, which live in `uniprot_acc_full`.
+
+### Re-clustering is now free
+
+The sweep persists per-vertex coordinates, scores and residue assignments
+(56 KB per protein, ~131 MB for the library). `recluster_masif_sites.py`
+replays any parameters over that cache: measured at 0.03 s for 4 proteins.
+The parameter question should never have cost inference, and now does not.
+
+### Rebuild inputs
+
+| | |
+|---|---|
+| Bindome, expanded to every target intersecting the cohort | 1,503 (was 481) |
+| Bindome chain matching | against all known isoforms, not canonical only |
+| MaSIF sweep v2 | 2,699 members, corrected structures + v1 topology |
+| MaSIF clustering | SURFACE-Bind's published parameters |
+
+## Final results, 2026-10-18
+
+The sweeps have finished. Everything below was **regenerated from the
+completed sweep**, not carried forward from the mid-sweep text this section
+replaces. Reproduce with `l1_inputs_v4.json` (the inputs the sweep actually
+read — verified identical by sha256 to the copy on the `masif-l1` Modal
+volume) and the 2,698 records in `sites_v2/`.
+
+### The sweep
+
+| | |
+|---|---|
+| members in inputs | 2,699 |
+| swept | 2,698 |
+| never completed | 1 — `l1-p2496` (SCARA3, Q6AZY7-2) |
+| records carrying an error | 0 |
+| members with ≥1 site | 2,688 |
+| sites | 8,211 |
+
+By compartment: 3,356 extracellular, 2,171 intracellular, 1,692 membrane,
+990 signal-peptide, 2 unknown.
+
+`data/external/masif/masif_sites.tsv` was rebuilt here, because the committed
+copy held 8,206 sites over 2,687 members — the builder had run before
+`l1-p0905` (IGSF3) finished, so that member's 5 sites were absent from the
+published feed while present in the sweep. Nothing else differed.
+
+### Recovery of SURFACE-Bind's published anchors
+
+Over the 742 L1 members that have published SURFACE-Bind extracellular
+anchors (1,647 anchors):
+
+| | |
+|---|---|
+| anchor falls inside one of our EC sites | 743/1,647 = **45.1%** |
+| matched null (random EC residue) | 15.4% |
+| enrichment | **2.92×**, z = 33.3, p < 1e-10 |
+| proteins recovering ≥1 of their anchors | 511/742 (69%) |
+
+Our EC sites cover a median 13.3% of each protein's ECD, which is what the
+null is drawn against. Note this supersedes the "~45%" quoted earlier in this
+report from a partial sweep and a "42.4%" that circulated in review notes;
+neither denominator matched this one, and both should be ignored in favour of
+the table above.
+
+**45% is close to the ceiling for anyone, not a defect in the re-run.** AFDB
+has retired v2–v5, so the exact structures SURFACE-Bind scored no longer
+exist. Adopting their published clustering parameters exactly changed nothing,
+which is the evidence that the gap is the inputs rather than the method.
+
+### Bindome concordance, final
+
+The Bindome run finished at **1,503 cohort-intersecting targets** and
+**51,453 designs** parsed. Expanding from the original 481-protein slice did
+*not* widen the concordance set much, which is worth stating plainly: the
+comparable set needs *both* a Bindome design and a published SURFACE-Bind
+anchor, and that is **477 proteins / 672 measurable anchors**. The expansion
+mattered for the novelty question — where "not in Bindome" was being read as
+"Bindome found nothing" — not for concordance.
+
+| | observed |
+|---|---|
+| median anchor→interface distance | **0.0 Å** |
+| within 5 Å | **63%** |
+| within 10 Å | **75%** |
+
+**The matched null is not reproducible from the stored records.** The earlier
+text quotes a null of median 14.9 Å / 11% within 5 Å and AUC 0.812, drawn from
+*exposed* non-interface residues *in the same domain window*. The per-protein
+records persist Cα coordinates and interface counts but neither the exposure
+nor the domain-window assignment, so that null cannot be recomputed from what
+was kept. A crude substitute — all non-interface Cα, 20 sampled per protein,
+seed 0 — gives median 9.8 Å, 21% within 5 Å, AUC 0.760. That is a weaker and
+more permissive comparison, so it is reported here as a floor rather than
+substituted for the original figure. Either way the direction is unambiguous;
+the exact enrichment is not re-derivable without re-running with the null
+inputs persisted, which is the fix if the number is ever needed for print.
+
+### Regenerated artifacts
+
+Both committed comparison TSVs were stale and have been rebuilt from the
+finished runs:
+
+| | was | now |
+|---|---|---|
+| `masif_site_predictions.tsv` | 4,434 rows | **8,211** |
+| `bindome_surface_bind_concordance.tsv` | 1,490 rows / 465 proteins | **1,610 / 511** |
+| `data/external/masif/masif_sites.tsv` | 8,206 / 2,687 members | **8,211 / 2,688** |
+
+The concordance TSV had been built from the 481-protein slice — the same
+scoping confound that voided the novelty figure, still sitting in a committed
+artifact. Stable ids resolved for 3,376 of 3,704 rows.
+
+### Coverage and overlap — the novelty figure, recomputed
+
+The earlier 65% stays **withdrawn**. It is not replaced by a single
+corrected percentage, because the confound that voided it is still present in
+any single number: most "novel" sites sit on proteins no other source ever
+examined, which is coverage, not discovery. `site_source_overlap.py`
+therefore reports the two separately, and so does this table.
+
+Proteins (n = 2,698):
+
+| | |
+|---|---|
+| has a MaSIF EC site | 1,684 (62%) |
+| has a SURFACE-Bind EC site | 1,042 (39%) |
+| has a Bindome EC site | 404 (15%) |
+| **MaSIF EC only** | **687 (25%)** |
+
+Sites — of our 3,356 MaSIF extracellular sites:
+
+| | |
+|---|---|
+| shared with SURFACE-Bind | 994 |
+| shared with Bindome | 88 |
+| on a protein with **no** other EC site from either source | 1,111 |
+| on a protein that **does** have other EC sites, but at a different site | 1,163 |
+
+The second-to-last row is the honest form of "nobody looked"; only the last
+row is a site another source examined the protein and did not find. Quoting
+their sum as a novelty rate — 2,274 of 3,356, 68% — is the framing that was
+withdrawn, and it should not be reinstated.
