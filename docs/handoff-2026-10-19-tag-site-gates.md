@@ -58,7 +58,11 @@ Two exclusions are categorical and should survive any conversion:
 | enclosure audit (24,018 sites) | `c1b2de389` | merged, TSVs committed |
 | TFRC P-0007 counterexample | `7d92e8372` | merged |
 | construct ↔ proposed-site join | `883892eaa` | merged |
-| **adjacency split** | `244732793` | **unmerged — needs a PR** |
+| adjacency split | `244732793` | committed, **needs a PR** |
+| run-artifact pool + outcomes | `924d34d26` | committed, **needs a PR** |
+| `tag_site_public` column backfill | `9e86b5d04` | committed, **needs a PR** |
+| **GPI C-terminus refusal + the inert-wiring fix** | `cfbcaee42` | committed, **needs a PR** — see §3b |
+| **signal-wiring guard** | `11d905493` | committed, **needs a PR** — see §3a |
 
 Artifacts worth knowing:
 
@@ -97,6 +101,90 @@ on the wrong ruler.
 virtual bond fixes CA-CA at 3.81–3.86 Å *whatever the fold does*. I reported
 ACKR3 P35 as a defect on a 3.83 Å reading that was its distance to C34 at
 separation 1, and relayed that to two sessions. Fixed in `244732793`.
+
+---
+
+## 3a. The bug class that hides best: a signal nothing supplies
+
+**`compute_signals` takes optional signals, and a signal nobody passes is inert
+while every unit test of the lane that consumes it passes.** Both consumers fall
+back *silently*, which is what makes this invisible: `disorder.py` does
+`signals.get("disorder") or {}` and drops to pLDDT, the terminal lane reads a
+missing propeptide as "not annotated". Neither logs, and neither can tell "no
+data for this gene" from "nobody wired it up".
+
+This caught me on my own fix. The GPI propeptide refusal was implemented in
+`terminal.py`, tested eight ways and committed — and `run_gene` had no
+`propeptide` parameter, so it fired on no published gene. Fixed in `cfbcaee42`.
+
+**It is still open, and much larger, for `disorder_tracks`.** Nothing passes it
+anywhere — not `run_gene`, not any driver. So the disorder lane runs on the
+pLDDT proxy that `disorder.py:36` itself measures at a median **40 aa** from
+Tedman's 112 screen-validated junctions, where the published-predictor consensus
+sits at **3 aa**:
+
+| | |
+|---|---|
+| disorder-lane sites placed by the proxy | **12,584 across 2,111 genes** |
+| share of the internal deterministic catalogue | **52%** |
+| `disorder_public` rows already loaded | 97,351 across 24,029 accessions |
+
+The better signal was measured, built, and loaded into D1, and the wire was
+never connected. Wiring it moves over half the catalogue, so it is a deliberate
+cohort re-derive, not a patch — which is why it is recorded rather than done.
+
+`tests/test_tag_sites_signal_wiring.py` pins this. `KNOWN_UNWIRED` is the
+deliberate-edit surface: a new optional signal is either threaded or recorded
+with its measured cost, and neither opening nor closing a gap happens without
+that file changing. The guard was checked against both defect shapes rather
+than assumed.
+
+---
+
+## 3b. GPI-anchored C-termini — fixed, not republished
+
+The terminal lane decided from the DeepTMHMM string alone, and a GPI protein's
+precursor C-terminus is removed at the ω-site. **115 of the 981 deterministic
+`terminal_c` rows** sit past their ω-site at the full precursor length (ALPL
+after 524 vs ω 501; THY1 161 vs 132; PRNP 253 vs 230; NT5E 574 vs 549).
+
+Refused categorically, which is the *opposite* of the call on enclosure, helix
+and the clearance floor — and the distinction is the population. Those vetoed
+sites were published and working; nothing can be published at a residue the cell
+removes first. Same category as a glycosylation sequon.
+
+**The mechanism in my first write-up was wrong** and is corrected in the code: a
+tag appended there is not carried off with the propeptide — the GPI signal has
+to BE the C-terminus to be recognised, so appending past it prevents anchoring
+instead. Same outcome, different reason. The ten literature `terminal_c` rows on
+anchored genes bear it out: CA4 "replacing their C-terminal GPI anchors with" an
+HA tag, IGSF21 "4 aa residues upstream of the putative C-terminal GPI anchor
+signal sequence" (PMID 28864826), and CD59-FLAG / DPEP1-GFP / Islr-GFP /
+PLAUR-GFP fusions, DPEP1-GFP "strongly in an area consistent with the
+endoplasmic reticulum". Some reach the surface, so a detectable C-terminal
+fusion on a GPI protein is attested — but none is the construct this lane
+proposes, and the one paper stating a placement rule puts the tag upstream.
+
+**`cleaved_c_terminus` reads either annotation**, Propeptide preferred, else a
+GPI `Lipidation` with the span starting one residue *after* the ω (the ω carries
+the anchor and survives). Over the 115: Propeptide 110, Lipidation-only 2 (ACHE,
+MSLN), neither 3.
+
+**NetGPI is corroboration, deliberately not a source.** The ~100+ gene list Becca
+remembered is real — `gpi_set.tsv`, 159 genes with ω-sites, in
+`deliverome-analysis` at `analysis/sprint4/s4e9-orf-design-fg-panel/`, commit
+`d541e6a6`, on branches only and never on that repo's `main`, which is why
+nothing here referenced it. It reaches 3 further genes, and of those GML has no
+ω-site at all and GPC5 reports 27 of 572 residues — a number in whichever form
+was submitted, not the canonical frame these records are numbered against.
+Resolving that is the sha256-of-sequence problem, not a column read. The audit
+takes it via `--gpi-set`; the gate does not read it.
+
+Audit: `scripts/audit/audit_terminal_c_cleavage.py` →
+`data/analysis/tag_site_gpi_terminal/terminal_c_cleavage.tsv`, all 1,068
+`terminal_c` rows, GPI and non-GPI reported separately.
+
+**Nothing is republished.** That needs the paced AFDB re-derive (§3, ~9 s/request).
 
 ---
 
@@ -162,12 +250,21 @@ separation 1, and relayed that to two sessions. Fixed in `244732793`.
    no change. **I started this and stopped at the test-reading stage — nothing
    is edited.** Enrichment output currently stores and serves but renders
    nothing.
-5. **The enrichment sweep has not run.** 566 members / 518 genes. 46% cannot
-   host the 51-aa cassette on the permissive topological measure. The
-   no-published-site gap is 53 members ≈ $56; the full sweep ≈ $595 at the
-   measured $1.052/member. One gene re-ran as a spike: KCNN2 for $0.95, which
-   pinned **A458** from a paper citing canonical 246 — a site the live record
-   does not have.
+5. **The enrichment sweep has partly run, and the gap set was the wrong
+   scope.** 566 members / 518 genes; 46% cannot host the 51-aa cassette on the
+   permissive topological measure. Three runs so far:
+   - **KCNN2 spike**, $0.95 — pinned **A458** from a paper citing canonical 246,
+     mapped through the frames module; a site the live record does not have.
+   - **The 53-member no-published-site gap**, 52/52 ok, **$38.33**, 0.6 h — and
+     it yielded **one** site (KCNN3). Selecting members *because* they have no
+     published site selects for genes the literature does not cover, so the
+     measured yield there is ~2%. Do not read that as the pipeline's yield.
+   - **20 random members** (running) — the honest yield estimate. Earlier spike
+     over 20 gave 9 sites (45%).
+
+   **The random sample was drawn WITH replacement** — `l1-p0131` and `l1-p1847`
+   each ran twice, ~$3.5 wasted of ~$17. Fix the draw before the next sweep.
+   Full sweep ≈ $595 at the measured $1.052/member.
 6. **Nothing has been republished.** `tag_site_public` still carries MS4A1 N171
    (inside the 167–183 closure) and ACKR3 P35. Both are now detectable in code.
    P35 should **not** be retired — see §5.
