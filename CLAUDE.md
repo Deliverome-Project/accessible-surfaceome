@@ -1024,6 +1024,33 @@ Citations are enriched from `paper_metadata` at publish time — `build_paper_me
 sweeps `tag_site_public` as well as `surface_annotation`, so a paper cited only by a tag site
 still gets a title and byline.
 
+### Withdrawing a published site
+
+[`tag_sites/retracted.py`](src/accessible_surfaceome/tag_sites/retracted.py) maps
+`(uniprot_acc, site_id)` to the reason a site was withdrawn, and is applied at **both**
+chokepoints: `cloud/tag_sites.py::rows_for_file` on the way into D1, and
+`tag_sites/emit.py` on the way into `viewer/public/tag-sites/{SYMBOL}.json`. Both, because
+`fetchTaggedSites` falls back to that static asset — suppressing one surface leaves the site
+recommended on the other. Keyed on the **accession**, never the symbol, so a retraction
+cannot misfire onto another protein (the COX1 / WAS class).
+
+Re-deriving a gene cannot resurrect a retracted site. That is deliberate: the generator that
+proposed the first two entries does not reject them, so the list — not the gate — is what
+holds them down until the corresponding veto lands.
+
+Rows already published are removed with
+[`scripts/cloud/delete_retracted_tag_sites.py`](scripts/cloud/delete_retracted_tag_sites.py)
+(dry-run by default, `--execute`, idempotent, driven entirely by `RETRACTED`). Use it rather
+than re-syncing the gene: a sync restamps every one of that gene's rows with a new
+`tag_sites_version` in order to drop one, and genes in one retraction can carry different
+stamps. No cache purge is needed — `/v1/tag-sites/{symbol}` returns `json()` without a `ttl`,
+so it takes `CACHE_TTL_SHORT` (60 s) and self-heals.
+
+Adding an entry is a **row-level** act and should stay that way: when a measurement condemns
+a whole class of site, the fix is the gate, not a longer list. The first two entries record
+what was measured about those two sites and deliberately assert no general rule — see the
+module docstring for what the corpus refutes.
+
 ### The enrichment pass: member-keyed, and its resume needs its own write
 
 The second literature pass (`scripts/enrich_tag_site_lit.py`, swept with
