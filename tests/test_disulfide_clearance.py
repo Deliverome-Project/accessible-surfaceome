@@ -287,6 +287,66 @@ class TestInsertSizeBand:
         assert (cls, length) == ("small_epitope", 35)
 
 
+class TestAdjacencyIsPerConvention:
+    """An adjacency exclusion masked on one convention corrupts the others.
+
+    Which cysteine wins flips with the ruler, so a site can be sequence-adjacent
+    on one convention and hundreds of residues away on another. Masking every
+    column on one column's separation throws away the far constraint and reads
+    the site as a pure adjacency artifact.
+    """
+
+    def _frame(self):
+        import pandas as pd
+
+        # Row 0 is the ACKR3 P35 shape: CA-CA and heavy-heavy win on an
+        # adjacent cysteine, CA-SG and heavy-SG on one 252 residues away.
+        return pd.DataFrame(
+            {
+                "ca_ca_a": [3.83, 20.0],
+                "ca_sg_a": [5.94, 20.0],
+                "heavy_sg_a": [3.81, 20.0],
+                "heavy_a": [1.35, 20.0],
+                "ca_ca_seq_sep": [1, 50],
+                "ca_sg_seq_sep": [252, 50],
+                "heavy_sg_seq_sep": [252, 50],
+                "heavy_seq_sep": [1, 50],
+            }
+        )
+
+    def test_mask_is_taken_on_each_conventions_own_winner(self):
+        df = self._frame()
+        # The adjacent-on-heavy-heavy row must still count for CA-SG/heavy-SG,
+        # where its winning cysteine is 252 residues away.
+        assert cal.spatial_mask(df, "heavy").tolist() == [False, True]
+        assert cal.spatial_mask(df, "ca_ca").tolist() == [False, True]
+        assert cal.spatial_mask(df, "ca_sg").tolist() == [True, True]
+        assert cal.spatial_mask(df, "heavy_sg").tolist() == [True, True]
+
+    def test_spatial_sweep_keeps_the_far_constraint(self):
+        """The 3.81 Å heavy-SG constraint must survive the spatial scope.
+
+        Dropping it is how a site retired for sitting 3.81 Å from an
+        unannotated bond nearly got un-retired as an adjacency artifact.
+        """
+        tab = cal.floor_table(self._frame(), spatial_only=True).set_index("floor_a")
+        # heavy-SG keeps both rows, and the 3.81 is rejected by a 4 Å floor.
+        assert tab.loc[4, "heavy_sg_n_sites"] == 2
+        assert tab.loc[4, "heavy_sg_rejected_n"] == 1
+        # heavy-heavy drops the adjacent row, so nothing is left below 4 Å.
+        assert tab.loc[4, "heavy_n_sites"] == 1
+        assert tab.loc[4, "heavy_rejected_n"] == 0
+
+    def test_row_counts_may_differ_per_convention(self):
+        tab = cal.floor_table(self._frame(), spatial_only=True)
+        counts = {c: int(tab.iloc[0][f"{c}_n_sites"]) for c in CONVENTIONS}
+        assert len(set(counts.values())) > 1, (
+            "a per-convention scope must be allowed to have different n per "
+            "column; equal counts here would mean the mask collapsed to one "
+            "convention again"
+        )
+
+
 class TestFloorSweep:
     def test_rejection_is_strictly_below_the_floor(self):
         import pandas as pd

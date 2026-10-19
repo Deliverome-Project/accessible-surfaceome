@@ -72,7 +72,7 @@ The minimum is taken over **every** bonded cysteine, never the nearest by sequen
 
 ## The tightest sites are sequence-adjacent, where distance is not clearance
 
-**9 of 130 measured sites sit within 2 residues of their nearest bonded cysteine in sequence.** At a separation of 1 the numbers are geometric constants, not measurements: heavy-heavy lands at 1.33-1.35 A, which is the peptide C-N bond, and CA-CA at 3.81-3.86 A, which is the Ca-Ca virtual bond. A distance-based floor cannot say anything useful about those sites because every one of them returns the same number for the same reason.
+**10 of 130 measured sites are sequence-adjacent to their winning cysteine on at least one convention** (within 2 residues). At a separation of 1 the numbers are geometric constants, not measurements: heavy-heavy lands at 1.33-1.35 A, which is the peptide C-N bond, and CA-CA at 3.81-3.86 A, which is the Ca-Ca virtual bond. A distance-based floor cannot say anything useful about those sites because every one of them returns the same number for the same reason.
 
 This is not a nuisance to discard. These are **published working sites inserted immediately beside a bonded cysteine**, and that is a stronger statement against a large clearance floor than any distance would be:
 
@@ -90,14 +90,14 @@ This is not a nuisance to discard. These are **published working sites inserted 
 
 The load-bearing row is **ADCYAP1R1 D24** — `surface_and_function`, position `validated`, inserted 1 residue(s) from bonded C25 at 3.84 A CA-CA. A floor anywhere at or above 4 A CA-CA rejects it, and it is a site whose tagged protein was shown both to reach the surface and to still work.
 
-Everything below is therefore reported **twice**: over all measured sites, and over the 121 sites whose junction is more than 2 residues from the cysteine, where the distance really is a spatial clearance. Read the second table when you want to know where a floor bites geometrically, and the first when you want to know what it would reject in practice.
+Everything below is therefore reported **twice**: over all measured sites, and over the non-adjacent sites where the distance really is a spatial clearance. **The second scope is computed per convention**, because a site can be adjacent on one ruler and far on another, so the row count differs per column. Read the spatial scope when you want to know where a floor bites geometrically, and the full one when you want to know what it would reject in practice.
 
-| convention | min, all sites | min, spatial only (sep > 2) |
-|---|---:|---:|
-| CA-CA | 3.81 A | 5.29 A |
-| CA-SG | 4.94 A | 5.04 A |
-| heavy-SG | 3.54 A | 4.13 A |
-| heavy-heavy | 1.33 A | 2.80 A |
+| convention | min, all sites | n spatial | min, spatial only | its binding Cys |
+|---|---:|---:|---:|---|
+| CA-CA | 3.81 A | 122 | 5.29 A | NFASC A603 -> C592 (sep 11) |
+| CA-SG | 4.94 A | 121 | 5.04 A | UMOD D59 -> C52 (sep 7) |
+| heavy-SG | 3.54 A | 122 | 3.54 A | ITGB7 Q427 -> C412 (sep 15) |
+| heavy-heavy | 1.33 A | 121 | 2.80 A | NFASC A603 -> C592 (sep 11) |
 
 ## Retrospective rejections by floor and convention
 
@@ -119,23 +119,23 @@ All 130 measured sites.
 | 15 A | 49 (37.7%) | 43 (33.1%) | 49 (37.7%) | 61 (46.9%) |
 | 16 A | 51 (39.2%) | 47 (36.1%) | 54 (41.5%) | 64 (49.2%) |
 
-Spatial subset only — the 121 sites more than 2 residues from their cysteine:
+Spatial scope — each convention restricted to the sites whose own winning cysteine is more than 2 residues away. The n differs per column by design:
 
-| floor | CA-CA rejected | CA-SG rejected | heavy-SG rejected | heavy-heavy rejected |
+| floor | CA-CA rejected (n=122) | CA-SG rejected (n=121) | heavy-SG rejected (n=122) | heavy-heavy rejected (n=121) |
 |---|---:|---:|---:|---:|
-| 4 A | 0 (0.0%) | 0 (0.0%) | 0 (0.0%) | 6 (5.0%) |
-| 5 A | 0 (0.0%) | 0 (0.0%) | 2 (1.7%) | 9 (7.4%) |
-| 6 A | 5 (4.1%) | 2 (1.7%) | 8 (6.6%) | 9 (7.4%) |
-| 7 A | 8 (6.6%) | 4 (3.3%) | 11 (9.1%) | 12 (9.9%) |
-| 8 A | 9 (7.4%) | 9 (7.4%) | 13 (10.7%) | 17 (14.1%) |
-| 9 A | 9 (7.4%) | 11 (9.1%) | 14 (11.6%) | 19 (15.7%) |
-| 10 A | 13 (10.7%) | 13 (10.7%) | 19 (15.7%) | 24 (19.8%) |
-| 11 A | 19 (15.7%) | 16 (13.2%) | 21 (17.4%) | 28 (23.1%) |
-| 12 A | 22 (18.2%) | 19 (15.7%) | 24 (19.8%) | 32 (26.5%) |
-| 13 A | 23 (19.0%) | 22 (18.2%) | 32 (26.5%) | 42 (34.7%) |
-| 14 A | 28 (23.1%) | 30 (24.8%) | 36 (29.8%) | 48 (39.7%) |
-| 15 A | 40 (33.1%) | 34 (28.1%) | 40 (33.1%) | 52 (43.0%) |
-| 16 A | 42 (34.7%) | 38 (31.4%) | 45 (37.2%) | 55 (45.5%) |
+| 4 A | 0 (0.0%) | 0 (0.0%) | 1 (0.8%) | 6 (5.0%) |
+| 5 A | 0 (0.0%) | 0 (0.0%) | 3 (2.5%) | 9 (7.4%) |
+| 6 A | 6 (4.9%) | 2 (1.7%) | 9 (7.4%) | 9 (7.4%) |
+| 7 A | 9 (7.4%) | 5 (4.1%) | 12 (9.8%) | 12 (9.9%) |
+| 8 A | 10 (8.2%) | 9 (7.4%) | 14 (11.5%) | 17 (14.1%) |
+| 9 A | 10 (8.2%) | 11 (9.1%) | 15 (12.3%) | 19 (15.7%) |
+| 10 A | 14 (11.5%) | 13 (10.7%) | 20 (16.4%) | 24 (19.8%) |
+| 11 A | 20 (16.4%) | 16 (13.2%) | 22 (18.0%) | 28 (23.1%) |
+| 12 A | 23 (18.9%) | 19 (15.7%) | 25 (20.5%) | 32 (26.5%) |
+| 13 A | 24 (19.7%) | 22 (18.2%) | 33 (27.1%) | 42 (34.7%) |
+| 14 A | 29 (23.8%) | 30 (24.8%) | 37 (30.3%) | 48 (39.7%) |
+| 15 A | 41 (33.6%) | 34 (28.1%) | 41 (33.6%) | 52 (43.0%) |
+| 16 A | 43 (35.2%) | 38 (31.4%) | 46 (37.7%) | 55 (45.5%) |
 
 ## Stratified by validation tier
 
